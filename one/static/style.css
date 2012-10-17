@@ -1,0 +1,312 @@
+.contentblock {
+    background-color: #ccc;
+    border-radius: 10px;
+    margin: 5px;
+}
+
+.contentblock p, dl {
+    padding: 5px;
+    margin: 0;
+}
+
+.contentblock h2 {
+    background-color: #000;
+    background-image: url(hexabar.png);
+    background-position: right center;
+    background-repeat: no-repeat;
+    border-radius: 10px;
+    color: #fff;
+    font-weight: bold;
+    padding: 10px;
+    border-style: none!important;
+    margin-bottom: 5px;
+    font-size: 1.3em;
+}
+
+
+/* TABLES */
+table {
+    /*border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;*/
+    background-color: #ccc;
+    border-radius: 10px;
+    margin: 5px;
+}
+
+
+td, th {
+    border-bottom: 1px solid #bbb;
+    padding: 5px;
+    vertical-align: top;
+}
+
+table input,
+table select,
+table textarea {
+    min-width: 300px;
+    border: 1px solid #aaa;
+    display: block;
+}
+input[type=submit], .button, .smallbutton {
+    background-color: #072c61;
+    padding: 5px;
+    text-decoration: none;
+    color: #fff!important;
+    border: 2px solid #fff;
+    border-radius: 10px;
+    min-width: 5em;
+    margin: 0;
+    font-size: .9em;
+    line-height: .9em;
+    font-weight: bold;
+}
+.smallbutton {
+    padding: 1px 5px;
+}
+p.rightbuttons {
+    float: right;
+    margin: 7px 0;
+}
+
+table p.help {
+    font-size: .85em;
+    color: #666;
+}
+
+th.fieldset {
+    background-color: #000;
+    background-image: url(hexabar.png);
+    background-position: right center;
+    background-repeat: no-repeat;
+    border-radius: 10px;
+    color: #fff;
+    font-weight: bold;
+    padding: 10px;
+    border-style: none!important;
+    margin-bottom: 5px;
+    font-size: 1.3em;
+}
+
+html {
+/*    background: #b3b3b3;*/
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+}
+body {
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+    font-size: .9em;
+  background: #dadada url("site_bgr.png") repeat-x;
+background-position: 80px 0;
+
+}
+div#header {
+    margin: 0;
+    padding: 0;
+    height: 80px;
+    background-color: #379acc; /* per www.ik.bme.hu */
+    background-color: #072c61; /* per www.ik.bme.hu */
+    padding-left: 200px;
+    background-image: url(bme_feher2.png);
+    background-repeat: no-repeat;
+    background-position: 20px 18px;
+    border-bottom: 2px solid #fff;
+
+}
+div#header a:link, 
+div#header a:visited {
+    color: #fff;
+}
+div#header #loginblock {
+    position: absolute;
+    right: 0;
+    top: 0;
+    margin: 0;
+    padding: 7px;
+    background-color: #000;
+    background-image: url(hexabar.png);
+    background-position: center center;
+    border-radius: 0 0 0 10px;
+    color: #fff;
+    font-weight: bold;
+}
+div#header #loginblock p {
+    margin: 0;
+}
+div#header h1 {
+    margin: 0;
+    padding: 0 1em;
+    font-size: 2em;
+    line-height: 80px;
+    float: left;
+    color: #fff;
+}
+div#header h1 a {
+    color: #fff;
+    text-decoration: none;
+}
+
+div#content {
+    width: 850px;
+    margin: 0 auto;
+    text-align: left;
+}
+
+div.boxes{
+    width: 420px;
+    float: left;
+}
+div.box {
+    background-color: #000;
+    background-image: url(hexa.png);
+    background-position: center 30%;
+    background-repeat: no-repeat;
+    color: #fff;
+    font-weight: bold;
+    line-height: 1.5em;
+    width: 400px;
+    margin: 10px;
+    padding: 2px;
+    border-radius: 10px;
+    border-top-width: 30px;
+    margin-right: 420px;
+}
+div.box h3 {
+    color: #fff;
+    margin: 0;
+    padding: 3px;
+    text-align: center;
+}
+div.box .content {
+    padding: 5px;
+    margin: 0;
+    min-height: 100px;
+}
+div.box a:link, div.box a:visited {
+    color: #fff;
+}
+a:link, a:visited {
+    color: #892034;
+}
+
+#project_running ul a:link, #project_running ul a:visited,
+#project_closed ul a:link, #project_closed ul a:visited {
+    color: #fff;
+    text-decoration: none;
+}
+
+/* MESSAGES & ERRORS */
+
+ul.messagelist {
+padding: 0 0 5px 0;
+margin: 0;
+text-align: left;
+}
+
+ul.messagelist li {
+font-size: 12px;
+display: block;
+padding: 4px 5px 4px 25px;
+margin: 0 0 3px 0;
+border-bottom: 1px solid #ddd;
+color: #666;
+background: #ffc url(admin/img/icon_success.gif) 5px .3em no-repeat;
+}
+
+ul.messagelist li.warning{
+background-image: url(admin/img/icon_alert.gif);
+}
+
+ul.messagelist li.error{
+background-image: url(admin/img/icon_error.gif);
+}
+
+.errornote {
+font-size: 12px !important;
+display: block;
+padding: 4px 5px 4px 25px;
+margin: 0 0 3px 0;
+border: 1px solid red;
+color: red;
+background: #ffc url(admin/img/icon_error.gif) 5px .3em no-repeat;
+}
+
+ul.errorlist {
+margin: 0 !important;
+padding: 0 !important;
+}
+
+.errorlist li {
+font-size: 12px !important;
+display: block;
+padding: 4px 5px 4px 25px;
+margin: 0 0 3px 0;
+border: 1px solid red;
+color: white;
+background: red url(admin/img/icon_alert.gif) 5px .3em no-repeat;
+}
+
+.errorlist li a {
+color: white;
+text-decoration: underline;
+}
+
+td ul.errorlist {
+margin: 0 !important;
+padding: 0 !important;
+}
+
+td ul.errorlist li {
+margin: 0 !important;
+}
+
+.errors {
+background: #ffc;
+}
+
+.errors input, .errors select, .errors textarea {
+border: 1px solid red;
+}
+
+div.system-message {
+background: #ffc;
+margin: 10px;
+padding: 6px 8px;
+font-size: .8em;
+}
+
+div.system-message p.system-message-title {
+padding: 4px 5px 4px 25px;
+margin: 0;
+color: red;
+background: #ffc url(admin/img/icon_error.gif) 5px .3em no-repeat;
+}
+
+.description {
+font-size: 12px;
+padding: 5px 0 0 12px;
+}
+#state .content p {
+text-align: center;
+}
+#state .content a img {
+ border: solid #072C61 2px;
+ border-radius:10px;
+ background-color: #fff;
+ padding: 3px;
+}
+input.widebutton {
+font-size:25px;
+line-height:1em;
+text-align:left;
+width:400px;
+display:block;
+cursor:pointer;
+}
+.icon-delete {
+background-image: url(/static/icons/Edit-delete-2.png);
+
+}

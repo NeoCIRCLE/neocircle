@@ -1,0 +1,37 @@
+
+        <div class="contentblock" id="state">
+            <h2>Saját gépek</h2>
+            <div class="content">
+{% if instances %}
+<table style="width:388px">
+<tr><th>#</th><th>Megnevezés</th><th>Állapot</th><th style="width: 96px">Műveletek</th></tr>
+{% for i in instances %}
+<tr style="line-height: 22px;">
+	<td>{{i.id}}</td>
+	<td><a href="/vm/show/{{i.id}}/" title="{{i.name}}">{{i.name|truncatechars:20}}</td>
+	<td>{{i.state}}</td>
+	<td>
+{% if i.state == 'ACTIVE' %}
+<a href="{{i.get_connect_uri}}" title="Csatlakozás"><img src="/static/icons/Video-display.png" alt="⌨" /></a><a href="/vm/suspend/{{i.id}}/" onclick="alert('Hamarosan a mozikban.'); return false" title="Felfüggesztés"><img src="/static/icons/Media-playback-pause.png" alt="||" /></a><a href="/vm/delete/{{i.id}}/" onclick="return confirm('Biztosan törli a gépet?')" title="Törlés"><img src="/static/icons/Edit-delete-2.png" alt="⌫" /></a><a href="/vm/reset/{{i.id}}/" onclick="alert('Hamarosan a mozikban.'); return false" title="Újraindítás"><img src="/static/icons/View-refresh.png" alt="↺" /></a>
+{% endif %}
+{% if i.state == 'PENDING' %}
+<img src="/static/load-2.gif" /> indítás...
+{% endif %}
+{% if i.state == 'SUSPENDED' %}
+<a href="/vm/continue/{{i.id}}/" title="Folytatás"><img src="/static/icons/Media-playback-start.png" alt=">" /></a>
+<a href="/vm/delete/{{i.id}}/" onclick="return confirm('Biztosan törli a gépet?')" title="Törlés"><img src="/static/icons/Edit-delete-2.png" alt="⌫" /></a>
+{% endif %}
+{% if i.state == 'FAILED' %}
+<a href="/vm/delete/{{i.id}}/" title="Törlés"><img src="/static/icons/Edit-delete-2.png" alt="⌫" /></a>
+{% endif %}
+
+	</td>
+</tr>
+
+{% endfor %}
+</table>
+{% else %}
+<p>Nem fut egy gép sem.</p>
+{% endif %}
+            </div>
+        </div>

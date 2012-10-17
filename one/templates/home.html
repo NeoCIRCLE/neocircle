@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="boxes">
+        <div class="contentblock" id="state">
+            <h2>Új virtuális gép indítása</h2>
+            <div class="content">
+{% for m in templates %}
+<form method="POST" action="/vm/new/{{m.pk}}/">{% csrf_token %}
+    <p><input type="submit" value="{{m.name}}" class="button widebutton"/></p>
+</form>
+{% endfor %}
+            </div>
+        </div>
+        {% include "box-vmlist.html" %}
+    {% for box in boxes %}
+    {% if forloop.counter0|divisibleby:2 %}
+        <div class="contentblock">
+            <h2>{{ box.title }}</h2>
+            <div class="content">
+                {{ box.text|safe }}
+            </div>
+        </div>
+    {% endif %}
+    {% endfor %}
+</div>
+<div class="boxes">
+    {% for box in boxes %}
+    {% if forloop.counter|divisibleby:2 %}
+        <div class="contentblock">
+            <h2>{{ box.title }}</h2>
+            <div class="content">
+                {{ box.text|safe }}
+            </div>
+        </div>
+    {% endif %}
+    {% endfor %}
+    <div class="contentblock" id="state">
+        <h2>A cluster állapota</h2>
+        <div class="content">
+            <p>
+                <a href="http://cloud.ik.bme.hu/">
+                    <img src="/stat/cpu.png" alt="aktuális terhelés" />
+                    <img src="/stat/ram.png" alt="aktuális memóriafoglaltság" />
+                </a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
