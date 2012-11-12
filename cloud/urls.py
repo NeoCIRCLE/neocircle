@@ -14,5 +14,4 @@ urlpatterns = patterns('',
      url(r'^vm/new/(?P<template>\d+)/$', 'one.views.vm_new', name='vm_new'),
      url(r'^vm/show/(?P<iid>\d+)/$', 'one.views.vm_show', name='vm_show'),
      url(r'^vm/delete/(?P<iid>\d+)/$', 'one.views.vm_delete', name='vm_delete'),
-     url(r'^files/', include('django_bfm.urls'))
 )
