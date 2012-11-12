@@ -18,11 +18,16 @@ class DetailsInline(contrib.admin.StackedInline):
     can_delete = False
 
 class MyUserAdmin(contrib.auth.admin.UserAdmin):
-    list_display = ('username', 'email', 'is_staff', 'date_joined', 'get_profile')
+    list_display = ('username', 'full_name', 'email', 'date_joined', 'instance_count')
     try:
         inlines = inlines + (PersonInline, SshKeyInline, DetailsInline)
     except NameError:
         inlines = (PersonInline, SshKeyInline, DetailsInline)
+    def instance_count(self, obj):
+        return obj.instance_set.count()
+    def full_name(self, obj):
+        return u"%s %s" % (obj.last_name, obj.first_name)
+    full_name.admin_order_field = 'last_name'
 
 
 
@@ -49,6 +54,14 @@ class InstanceAdmin(contrib.admin.ModelAdmin):
     list_display = ['id', 'name', 'owner', 'state']
     readonly_fields = ['ip', 'active_since', 'pw', 'template']
     list_filter = ['owner', 'template', 'state']
+
+class DiskAdmin(contrib.admin.ModelAdmin):
+    model=models.Disk
+class NetworkAdmin(contrib.admin.ModelAdmin):
+    model=models.Network
+
 contrib.admin.site.register(models.Template, TemplateAdmin)
 contrib.admin.site.register(models.Instance, InstanceAdmin)
+contrib.admin.site.register(models.Network, NetworkAdmin)
+contrib.admin.site.register(models.Disk, DiskAdmin)
 

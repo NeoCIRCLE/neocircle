@@ -110,9 +110,8 @@ def vm_show(request, iid):
 
 class VmDeleteView(View):
     def post(self, request, iid, *args, **kwargs):
-
         try:
-            get_object_or_404(Instance, id=id, owner=request.user).one_delete()
+            get_object_or_404(Instance, id=iid, owner=request.user).delete()
             messages.success(request, _('Virtual machine is successfully deleted.'))
         except:
             messages.error(request, _('Failed to delete virtual machine.'))

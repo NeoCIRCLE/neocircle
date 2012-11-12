@@ -124,6 +124,7 @@ INSTALLED_APPS = (
     'school',
     'cloud',
     'south',
+    'django_bfm',
 )
 
 # A sample logging configuration. The only tangible logging

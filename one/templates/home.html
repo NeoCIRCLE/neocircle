@@ -26,16 +26,17 @@
     {% endfor %}
 </div>
 <div class="boxes">
-    {% for box in boxes %}
-    {% if forloop.counter|divisibleby:2 %}
-        <div class="contentblock">
-            <h2>{{ box.title }}</h2>
-            <div class="content">
-                {{ box.text|safe }}
-            </div>
+    <div class="contentblock">
+        <h2>Adattár</h2>
+        <div class="content">
+            <ul>
+            <li>a.out <span class="file-size">4K</span> <span class="file-age">(5 perce)</span> <a href="" class="file-download">Letöltés</a></li>
+            <li>a.out <span class="file-size">4K</span> <span class="file-age">(5 perce)</span> <a href="" class="file-download">Letöltés</a></li>
+            <li class="file-details">Tovább</li>
+            <li class="file-upload">Fájl feltöltése</li>
+            </ul>
         </div>
-    {% endif %}
-    {% endfor %}
+    </div>
     <div class="contentblock" id="state">
         <h2>A cluster állapota</h2>
         <div class="content">
