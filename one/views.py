@@ -105,7 +105,8 @@ def vm_show(request, iid):
 	'id': iid,
         'age': inst.get_age(),
         'instances': _list_instances(request),
-        'i': inst
+        'i': inst,
+	'booting' : inst.active_since,
         }))
 
 class VmDeleteView(View):

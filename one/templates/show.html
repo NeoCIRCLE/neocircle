@@ -3,23 +3,8 @@
 
 {% block js %}
 <script type="text/javascript">
-	{% if state == "PENDING" %}
-		setTimeout("location.reload(true);", 1500)
-	{% endif %}
-	{% if state == "ACTIVE" %}
-		{% if age < 15 %}
-		setTimeout("document.getElementById('wait').style.display='none';document.getElementById('connect').style.display='block';", 15000-{{age}}000);
-		{% endif %}
-		var meloading = false;
-		function connectbutton() {
-			if (meloading) {
-				return false;
-			}
-			meloading = true;
-			setTimeout("document.getElementById('connecting').style.display='none';meloading=false;", 15000);
-			document.getElementById('connecting').style.display='inline';
-			return true;
-		}
+	{% if booting %}
+		setTimeout("location.reload(true);", 2000);
 	{% endif %}
 </script>
 {% endblock %}
@@ -29,14 +14,14 @@
         <div class="contentblock" id="state">
             <h2>{{name}}</h2>
             <div class="content">
-		{% if state == "PENDING" %}
+		{% if state == "PENDING" or state == "ACTIVE" and booting %}
 			<p style="font-size:25px; line-height:2em;text-align:center;"><img src="/static/load-2.gif" /> Gép indítása..</p>
 			<p style="font-size:25px; line-height:2em;text-align:center;">
 				<form action="{% url vm_delete id %}" method="post" onsubmit="return confirm('Biztosan törli a gépet?')">{% csrf_token %}<input type="submit" class="icon-delete" value="Törlés" /></form>
 				<a href="/"><img src="/static/icons/Go-home.png" alt="&lt;-" /></a>
 			</p>
 		{% endif %}
-		{% if state == "ACTIVE" %}
+		{% if state == "ACTIVE" and not booting %}
 			{% if age < 15 %}
 				<p id="wait" style="font-size:25px; line-height:2em;text-align:center;"><img src="/static/load-2.gif" /> Gép indítása...</p>
 				<p id="connect" style="display:none; font-size:25px; line-height:2em;text-align:center;">
