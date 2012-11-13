@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="boxes">
+        <div class="contentblock" id="state">
+            <h2>Törlés</h2>
+            <div class="content">
+		<form action="{% url vm_delete i.id %}" method="post">
+		{% csrf_token %}
+		<p>Biztosan törli a gépet? <input type="submit" value="Törlés" /></p>
+		</form>
+	</div>
+        </div>
+</div>
+{% endblock %}
