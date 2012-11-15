@@ -151,13 +151,21 @@ class Network(models.Model):
     class Meta:
         ordering = ['name']
 
+class InstanceType(models.Model):
+    name = models.CharField(max_length=100, unique=True,
+            verbose_name=_('name'))
+    CPU = models.IntegerField()
+    RAM = models.IntegerField()
+    def __unicode__(self):
+        return u"%s" % self.name
+	
 
 class Template(models.Model):
     name = models.CharField(max_length=100, unique=True,
             verbose_name=_('név'))
     access_type = models.CharField(max_length=10, choices=[('rdp', 'rdp'), ('nx', 'nx'), ('ssh', 'ssh')])
     disk = models.ForeignKey(Disk)
-    instance_type = models.CharField(max_length=20, choices=[('small', 'small'), ('medium', 'medium'), ('large', 'large')])
+    instance_type = models.ForeignKey(InstanceType)
     network = models.ForeignKey(Network)
     owner = models.ForeignKey(User)
     created_at = models.DateTimeField(auto_now_add=True)
