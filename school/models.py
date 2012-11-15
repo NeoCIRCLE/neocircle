@@ -12,7 +12,7 @@ post_save.connect(create_user_profile, sender=User)
 LANGS = [('hu', _('Hungarian')), ('en_US', _('US English'))]
 class Person(models.Model):
     user = models.ForeignKey(User, null=False, blank=False, unique=True)
-    language = models.CharField(max_length=6, choices=LANGS,
+    language = models.CharField(max_length=6, choices=LANGS, default='hu',
             verbose_name=_('Preferred language'))
  
     def __unicode__(self):

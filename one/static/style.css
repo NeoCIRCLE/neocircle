@@ -306,7 +306,9 @@ width:400px;
 display:block;
 cursor:pointer;
 }
+
 .icon-delete {
 background-image: url(/static/icons/Edit-delete-2.png);
-
+background-repeat: no-repeat;
+padding-left: 26px!important;
 }
