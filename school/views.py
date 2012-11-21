@@ -58,6 +58,9 @@ def logout(request):
 
 def login(request):
     attr, error = parse_attributes(request.META)
+    if not attr['niifPersonOrgID']:
+        messages.error(request, _('EduID is not available.'))
+	return redirect('/admin')
     try:
         user = User.objects.get(username=attr['niifPersonOrgID'])
     except User.DoesNotExist:
