@@ -1,5 +1,5 @@
 from django.contrib import admin
-from teszt.firewall.models import *
+from firewall.models import *
 
 
 class HostAdmin(admin.ModelAdmin):
