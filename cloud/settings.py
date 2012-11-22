@@ -123,6 +123,7 @@ INSTALLED_APPS = (
     'one',
     'school',
     'cloud',
+    'firewall',
     'south',
     #'django_bfm',
 )
