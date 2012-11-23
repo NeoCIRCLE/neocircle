@@ -3,10 +3,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 from django.core.exceptions import ValidationError
+from south.modelsinspector import add_introspection_rules
 import re
-
-#from south.modelsinspector import add_introspection_rules
-#add_introspection_rules([], ["^teszt.firewall.models.MACAddressField"])
 
 mac_re = re.compile(r'^([0-9a-fA-F]{2}([:-]?|$)){6}$')
 alfanum_re = re.compile(r'^[A-Za-z0-9_-]+$')
@@ -33,6 +31,7 @@ class MACAddressField(models.Field):
         defaults = {'form_class': MACAddressFormField}
         defaults.update(kwargs)
         return super(MACAddressField, self).formfield(**defaults)
+add_introspection_rules([], ["^firewall\.models\.MACAddressField"])
 
 def val_alfanum(value):
      if not alfanum_re.search(value):
