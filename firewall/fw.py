@@ -6,12 +6,12 @@
 #setup_environ(settings)
 
 from django.contrib import auth
-from teszt.firewall import models
+from firewall import models
 import os
 
 import subprocess
 import re
-DNS_SERVER = "152.66.243.71"
+DNS_SERVER = "152.66.243.60"
 
 
 class firewall:
@@ -246,11 +246,10 @@ class firewall:
 
 	def reload(self):
 		if self.IPV6:
-			process = subprocess.Popen(['/usr/bin/sudo', '/sbin/ip6tables-restore', '-c'], shell=False, stdin=subprocess.PIPE)
+			process = subprocess.Popen(['/usr/bin/ssh', 'fw2', '/usr/bin/sudo', '/sbin/ip6tables-restore', '-c'], shell=False, stdin=subprocess.PIPE)
 			process.communicate("\n".join(self.SZABALYOK)+"\n")
 		else:
-			print "\n".join(self.SZABALYOK)+"\n"+"\n".join(self.SZABALYOK_NAT)+"\n"
-			process = subprocess.Popen(['/usr/bin/sudo', '/sbin/iptables-restore', '-c'], shell=False, stdin=subprocess.PIPE)
+			process = subprocess.Popen(['/usr/bin/ssh', 'fw2', '/usr/bin/sudo', '/sbin/iptables-restore', '-c'], shell=False, stdin=subprocess.PIPE)
 			process.communicate("\n".join(self.SZABALYOK)+"\n"+"\n".join(self.SZABALYOK_NAT)+"\n")
 
 
@@ -258,40 +257,42 @@ class firewall:
 
 def dns():
 	vlans = models.Vlan.objects.all()
-	regex = re.compile(r'^([0-9]+)\.([0-9]+)\.[0-9]+\.[0-9]+$')
+	regex = re.compile(r'^([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)$')
 	DNS = []
-	DNS.append("=cloud.ik.bme.hu:152.66.243.98:::\n")
+	DNS.append("=cloud.ik.bme.hu:152.66.243.98:600::\n")
 	for i_vlan in vlans:
+		m = regex.search(i_vlan.net4)
 		if(i_vlan.name != "DMZ" and i_vlan.name != "PUB"):
-			m = regex.search(i_vlan.net4)
-			DNS.append("Z%s.%s.in-addr.arpa:dns1.ik.bme.hu:ez.miez:\n" % (m.group(2), m.group(1)))
-			DNS.append("&%s.%s.in-addr.arpa::dns1.ik.bme.hu:::\n" % (m.group(2), m.group(1)))
-			DNS.append("Z%s:dns1.ik.bme.hu:ez.miez:\n" % i_vlan.domain)
-			DNS.append("&%s::dns1.ik.bme.hu:::\n" % i_vlan.domain)
+			DNS.append("Z%s.%s.in-addr.arpa:dns1.ik.bme.hu:ez.miez::::::600\n" % (m.group(2), m.group(1)))
+			DNS.append("&%s.%s.in-addr.arpa::dns1.ik.bme.hu:600::\n" % (m.group(2), m.group(1)))
+			DNS.append("Z%s:dns1.ik.bme.hu:ez.miez::::::600\n" % i_vlan.domain)
+			DNS.append("&%s::dns1.ik.bme.hu:600::\n" % i_vlan.domain)
+			if(i_vlan.name == "WAR"):
+				DNS.append("Zdns1.%s.%s.%s.in-addr.arpa:dns1.ik.bme.hu:ez.miez::::::600\n" % (m.group(3), m.group(2), m.group(1)))
+				DNS.append("&dns1.%s.%s.%s.in-addr.arpa::dns1.ik.bme.hu:600::\n" % (m.group(3), m.group(2), m.group(1)))
 		for i_host in i_vlan.host_set.all():
 			ipv4 = ( i_host.pub_ipv4 if i_host.pub_ipv4 else i_host.ipv4 )
-			DNS.append("=%s.%s:%s:::\n" % (i_host.hostname, i_vlan.domain, ipv4))
-	try:
-		process = subprocess.Popen(['/usr/bin/ssh', 'tinydns@%s' % DNS_SERVER], shell=False, stdin=subprocess.PIPE)
-#		print "\n".join(DNS)+"\n"
-		process.communicate("\n".join(DNS)+"\n")
-	except:
-		return
+			m2 = regex.search(ipv4)
+			DNS.append("=%s.%s:%s:600::\n" % (i_host.hostname, i_vlan.domain, ipv4))
+			DNS.append("^%s.dns1.%s.%s.%s.in-addr.arpa:%s.%s:600::\n" % (m2.group(4), m2.group(3), m2.group(2), m2.group(1), i_host.hostname, i_vlan.domain))
+
+	process = subprocess.Popen(['/usr/bin/ssh', 'tinydns@%s' % DNS_SERVER], shell=False, stdin=subprocess.PIPE)
+	process.communicate("\n".join(DNS)+"\n")
+
 
 
 def dhcp():
 	vlans = models.Vlan.objects.all()
 	regex = re.compile(r'^([0-9]+)\.([0-9]+)\.[0-9]+\.[0-9]+\s+([0-9]+)\.([0-9]+)\.[0-9]+\.[0-9]+$')
-	try:
-		f = open('/tools/dhcp3/dhcpd.conf.generated','w')
-	except:
-		return
+	DHCP = []
+
+#/tools/dhcp3/dhcpd.conf.generated
 
 	for i_vlan in vlans:
 		if(i_vlan.dhcp_pool):
 			m = regex.search(i_vlan.dhcp_pool)
 			if(m or i_vlan.dhcp_pool == "manual"):
-				f.write ('''
+				DHCP.append ('''
 				#%(name)s - %(interface)s
 				subnet %(net)s netmask %(netmask)s {
 				  %(extra)s;
@@ -317,7 +318,7 @@ def dhcp():
 				})
 
 				for i_host in i_vlan.host_set.all():
-					f.write ('''
+					DHCP.append ('''
 					host %(hostname)s {
 					  hardware ethernet %(mac)s;
 					  fixed-address %(ipv4)s;
@@ -326,9 +327,10 @@ def dhcp():
 						'mac': i_host.mac,
 						'ipv4': i_host.ipv4,
 					})
-	f.write("\n")
-	f.close()
-	os.system("sudo /etc/init.d/isc-dhcp-server restart")
+
+	process = subprocess.Popen(['/usr/bin/ssh', 'fw2', 'cat > /tools/dhcp3/dhcpd.conf.generated;sudo /etc/init.d/isc-dhcp-server restart'], shell=False, stdin=subprocess.PIPE)
+#	print "\n".join(DHCP)+"\n"
+	process.communicate("\n".join(DHCP)+"\n")
 
 #ipt_filter()
 #ipt_nat()

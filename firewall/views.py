@@ -1,8 +1,8 @@
 from django.shortcuts import render_to_response
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
-from teszt.firewall.models import *
-from teszt.firewall.fw import *
+from firewall.models import *
+from firewall.fw import *
 
 def reload_firewall(request):
 	if request.user.is_authenticated():

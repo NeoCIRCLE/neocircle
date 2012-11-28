@@ -1,46 +1,9 @@
-from django.forms import fields
-from django.db import models
 from django.contrib.auth.models import User
+from django.db import models
+from django.forms import fields
 from django.utils.translation import ugettext_lazy as _
-from django.core.exceptions import ValidationError
+from firewall.fields import *
 from south.modelsinspector import add_introspection_rules
-import re
-
-mac_re = re.compile(r'^([0-9a-fA-F]{2}([:-]?|$)){6}$')
-alfanum_re = re.compile(r'^[A-Za-z0-9_-]+$')
-domain_re = re.compile(r'^([A-Za-z0-9_-]\.?)+$')
-
-class MACAddressFormField(fields.RegexField):
-    default_error_messages = {
-        'invalid': _(u'Enter a valid MAC address.'),
-    }
-
-    def __init__(self, *args, **kwargs):
-        super(MACAddressFormField, self).__init__(mac_re, *args, **kwargs)
-
-class MACAddressField(models.Field):
-    empty_strings_allowed = False
-    def __init__(self, *args, **kwargs):
-        kwargs['max_length'] = 17
-        super(MACAddressField, self).__init__(*args, **kwargs)
-
-    def get_internal_type(self):
-        return "CharField"
-
-    def formfield(self, **kwargs):
-        defaults = {'form_class': MACAddressFormField}
-        defaults.update(kwargs)
-        return super(MACAddressField, self).formfield(**defaults)
-add_introspection_rules([], ["^firewall\.models\.MACAddressField"])
-
-def val_alfanum(value):
-     if not alfanum_re.search(value):
-          raise ValidationError(u'%s - csak betut, kotojelet, alahuzast, szamot tartalmazhat!' % value)
-
-def val_domain(value):
-     if not domain_re.search(value):
-          raise ValidationError(u'%s - helytelen domain' % value)
-
 
 class Rule(models.Model):
 #     DIRECTION_CH=(('TOHOST', 1), ('FROMHOST', 0))
@@ -49,7 +12,7 @@ class Rule(models.Model):
      vlan = models.ForeignKey('Vlan')
      extra = models.TextField(blank=True);
      action = models.BooleanField(default=False)
-#     owner = models.ForeignKey(User)
+     owner = models.ForeignKey(User, blank=True, null=True)
      def __unicode__(self):
         return self.description
 
@@ -88,7 +51,7 @@ class Host(models.Model):
     mac = MACAddressField(unique=True)
     ipv4 = models.GenericIPAddressField(protocol='ipv4', unique=True)
     pub_ipv4 = models.GenericIPAddressField(protocol='ipv4', unique=True, blank=True, null=True)
-    ipv6 = models.GenericIPAddressField(protocol='ipv6', unique=True)
+    ipv6 = models.GenericIPAddressField(protocol='ipv6', unique=True, blank=True)
     description = models.TextField(blank=True)
     comment = models.TextField(blank=True)
     location = models.TextField(blank=True)
@@ -98,6 +61,10 @@ class Host(models.Model):
     rules = models.ManyToManyField('Rule', symmetrical=False, blank=True, null=True)
     def __unicode__(self):
         return self.hostname
+    def save(self, *args, **kwargs):
+        if not self.id and not self.ipv6:
+            self.ipv6 = ipv4_2_ipv6(self.ipv4)
+        super(Host, self).save(*args, **kwargs)
     def groups_l(self):
 	retval = []
 	for grp in self.groups.all():

@@ -4,6 +4,7 @@ from django.contrib import admin
 admin.autodiscover()
 
 import one.views
+import firewall.views
 
 urlpatterns = patterns('',
      url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
@@ -14,4 +15,5 @@ urlpatterns = patterns('',
      url(r'^vm/new/(?P<template>\d+)/$', 'one.views.vm_new', name='vm_new'),
      url(r'^vm/show/(?P<iid>\d+)/$', 'one.views.vm_show', name='vm_show'),
      url(r'^vm/delete/(?P<iid>\d+)/$', 'one.views.vm_delete', name='vm_delete'),
+     url(r'^reload/$', 'firewall.views.reload_firewall', name='reload_firewall'),
 )
