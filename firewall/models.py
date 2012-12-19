@@ -6,15 +6,25 @@ from firewall.fields import *
 from south.modelsinspector import add_introspection_rules
 
 class Rule(models.Model):
-#     DIRECTION_CH=(('TOHOST', 1), ('FROMHOST', 0))
+     CHOICES = (('host', 'host'), ('firewall', 'firewall'), ('vlan', 'vlan'))
      direction = models.BooleanField()
      description = models.TextField(blank=True)
-     vlan = models.ForeignKey('Vlan')
+     vlan = models.ManyToManyField('Vlan', symmetrical=False, blank=True, null=True)
      extra = models.TextField(blank=True);
      action = models.BooleanField(default=False)
      owner = models.ForeignKey(User, blank=True, null=True)
+     r_type = models.CharField(max_length=10, choices=CHOICES)
+     nat = models.BooleanField(default=False)
+     nat_dport = models.IntegerField();
      def __unicode__(self):
-        return self.description
+        return self.desc()
+     def desc(self):
+	return '[' + self.r_type + '] ' + (self.vlan_l() + '->' + self.r_type if self.direction else self.r_type + '->' + self.vlan_l()) + ' ' + self.description
+     def vlan_l(self):
+	retval = []
+	for vl in self.vlan.all():
+		retval.append(vl.name)
+	return ', '.join(retval)
 
 class Vlan(models.Model):
     vid = models.IntegerField(unique=True)
@@ -26,19 +36,29 @@ class Vlan(models.Model):
     net6 = models.GenericIPAddressField(protocol='ipv6', unique=True)
     ipv4 = models.GenericIPAddressField(protocol='ipv4', unique=True)
     ipv6 = models.GenericIPAddressField(protocol='ipv6', unique=True)
-    en_dst = models.ManyToManyField('self', symmetrical=False, blank=True, null=True)
+    snat_ip = models.GenericIPAddressField(protocol='ipv4', blank=True, null=True)
+    snat_to = models.ManyToManyField('self', symmetrical=False, blank=True, null=True)
+    rules = models.ManyToManyField('Rule', related_name="%(app_label)s_%(class)s_related", symmetrical=False, blank=True, null=True)
     description = models.TextField(blank=True)
     comment = models.TextField(blank=True)
     domain = models.TextField(blank=True, validators=[val_domain])
     dhcp_pool = models.TextField(blank=True)
     def __unicode__(self):
         return self.name
-    def en_dst_vlan(self):
-        return self.en_dst.all()
     def net_ipv6(self):
 	return self.net6 + "/" + str(self.prefix6)
     def net_ipv4(self):
 	return self.net4 + "/" + str(self.prefix4)
+    def rules_l(self):
+	retval = []
+	for rl in self.rules.all():
+		retval.append(str(rl))
+	return ', '.join(retval)
+    def snat_to_l(self):
+	retval = []
+	for rl in self.snat_to.all():
+		retval.append(str(rl))
+	return ', '.join(retval)
 
 class Group(models.Model):
     name = models.CharField(max_length=20, unique=True)
@@ -73,7 +93,7 @@ class Host(models.Model):
     def rules_l(self):
 	retval = []
 	for rl in self.rules.all():
-		retval.append(rl.description)
+		retval.append(str(rl))
 	return ', '.join(retval)
 		
 

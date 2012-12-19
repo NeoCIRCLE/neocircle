@@ -7,11 +7,11 @@ class HostAdmin(admin.ModelAdmin):
     ordering = ('-hostname',)
 
 class VlanAdmin(admin.ModelAdmin):
-    list_display = ('vid', 'name', 'en_dst_vlan', 'ipv4', 'net_ipv4', 'ipv6', 'net_ipv6', 'description', 'domain')
+    list_display = ('vid', 'name', 'rules_l', 'ipv4', 'net_ipv4', 'ipv6', 'net_ipv6', 'description', 'domain', 'snat_ip', 'snat_to_l')
     ordering = ('-vid',)
 
 class RuleAdmin(admin.ModelAdmin):
-    list_display = ('description', 'vlan', 'extra', 'direction', 'action')
+    list_display = ('r_type', 'desc', 'description', 'vlan_l', 'owner', 'extra', 'direction', 'action', 'nat', 'nat_dport')
 
 admin.site.register(Host, HostAdmin)
 admin.site.register(Vlan, VlanAdmin)
