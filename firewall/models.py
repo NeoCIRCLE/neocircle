@@ -7,15 +7,21 @@ from south.modelsinspector import add_introspection_rules
 
 class Rule(models.Model):
      CHOICES = (('host', 'host'), ('firewall', 'firewall'), ('vlan', 'vlan'))
+     CHOICES_proto = (('tcp', 'tcp'), ('udp', 'udp'), ('icmp', 'icmp'))
      direction = models.BooleanField()
      description = models.TextField(blank=True)
      vlan = models.ManyToManyField('Vlan', symmetrical=False, blank=True, null=True)
+     dport = models.IntegerField(blank=True, null=True);
+     sport = models.IntegerField(blank=True, null=True);
+     proto = models.CharField(max_length=10, choices=CHOICES_proto, blank=True, null=True)
+     nat_dport = models.IntegerField(blank=True, null=True);
      extra = models.TextField(blank=True);
-     action = models.BooleanField(default=False)
+     accept = models.BooleanField(default=False)
      owner = models.ForeignKey(User, blank=True, null=True)
      r_type = models.CharField(max_length=10, choices=CHOICES)
      nat = models.BooleanField(default=False)
      nat_dport = models.IntegerField();
+
      def __unicode__(self):
         return self.desc()
      def desc(self):
@@ -43,6 +49,7 @@ class Vlan(models.Model):
     comment = models.TextField(blank=True)
     domain = models.TextField(blank=True, validators=[val_domain])
     dhcp_pool = models.TextField(blank=True)
+
     def __unicode__(self):
         return self.name
     def net_ipv6(self):
@@ -63,6 +70,7 @@ class Vlan(models.Model):
 class Group(models.Model):
     name = models.CharField(max_length=20, unique=True)
     rules = models.ManyToManyField('Rule', symmetrical=False, blank=True, null=True)
+
     def __unicode__(self):
         return self.name
 
@@ -79,6 +87,7 @@ class Host(models.Model):
     owner = models.ForeignKey(User)
     groups = models.ManyToManyField('Group', symmetrical=False, blank=True, null=True)
     rules = models.ManyToManyField('Rule', symmetrical=False, blank=True, null=True)
+
     def __unicode__(self):
         return self.hostname
     def save(self, *args, **kwargs):
@@ -100,6 +109,7 @@ class Host(models.Model):
 class Firewall(models.Model):
     name = models.CharField(max_length=20, unique=True)
     rules = models.ManyToManyField('Rule', symmetrical=False, blank=True, null=True)
+
     def __unicode__(self):
         return self.name
 

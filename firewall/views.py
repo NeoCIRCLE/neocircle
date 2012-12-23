@@ -43,31 +43,38 @@ def firewall_api(request):
 		try:
 			data=json.loads(base64.b64decode(request.POST["data"]))
 			command = request.POST["command"]
-			if(command != "create" and command != "destroy"):
-				raise Exception("bajvan")
+
 			if(command == "create"):
-#				data = {"hostname": "hello", "vlan": "dmz", "mac": "00:90:78:83:56:7f", "ip": "10.2.1.99", "description": "teszt", "portforward": [{"sport": 5353, "dport": "4949", "proto": "tcp"}]}
 				data["owner"] = "tarokkk"
 				owner = auth.models.User.objects.get(username=data["owner"])
 				host = models.Host(hostname=data["hostname"], vlan=models.Vlan.objects.get(name=data["vlan"]), mac=data["mac"], ipv4=data["ip"], owner=owner, description=data["description"])
+				host.full_clean()
 				host.save()
+
 				for p in data["portforward"]:
 					proto = "tcp" if (p["proto"] == "tcp") else "udp"
-					rule = models.Rule(direction=True, owner=owner, description="%s %s %s->%s" % (data["hostname"], proto, p["sport"], p["dport"]), extra = "-p %s --dport %s" % (proto, int(p["sport"])), nat=True, action=True, r_type="host", nat_dport=int(p["dport"]))
+					rule = models.Rule(direction=True, owner=owner, description="%s %s %s->%s" % (data["hostname"], proto, p["public_port"], p["private_port"]), dport=int(p["public_port"]), proto=p["proto"], nat=True, accept=True, r_type="host", nat_dport=int(p["private_port"]))
 					rule.save()
 					rule.vlan.add(models.Vlan.objects.get(name="PUB"))
 					host.rules.add(rule)
 
-		except (ValidationError, IntegrityError, AttributeError) as e:
+			elif(command == "destory"):
+				print ""
+
+			else:
+				raise Exception("rossz parancs")
+
+		except (ValidationError, IntegrityError, AttributeError, Exception) as e:
 			return HttpResponse(u"rosszul hasznalod! :(\n%s\n" % e);
 		except:
-			raise
+#			raise
 			return HttpResponse(u"rosszul hasznalod! :(\n");
 		
 		return HttpResponse(u"ok");
 
-	for r in models.Rule.objects.filter(r_type="host"):
-		print [r.host_set.all(), r.group_set.all()]
-		print "VEGE"
+##	for r in models.Rule.objects.filter(r_type="host"):
+##		print [r.host_set.all(), r.group_set.all()]
+##		print "VEGE"
+
 	return HttpResponse(u"ez kerlek egy api lesz!\n");
 

@@ -16,14 +16,27 @@ DNS_SERVER = "152.66.243.60"
 
 class firewall:
 	IPV6=False
-	SZABALYOK=[]
-	SZABALYOK_NAT=[]
+	SZABALYOK = None
+	SZABALYOK_NAT = []
 	vlans = None
 	dmz = None
 	pub = None
 	hosts = None
 	fw = None
 
+	def dportsport(self, rule, repl=True):
+		retval = " "
+		if(rule.proto == "tcp" or rule.proto == "udp"):
+			retval = "-p %s " % rule.proto
+			if(rule.sport):
+				retval += " --sport %s " % rule.sport 
+			if(rule.dport):
+				retval += " --dport %s " % ( rule.nat_dport if (repl and rule.nat and rule.direction) else rule.dport )
+		elif(rule.proto == "icmp"):
+			retval = "-p %s " % rule.proto
+		return retval
+	
+			
 	def iptables(self, s):
 		self.SZABALYOK.append(s)
 
@@ -36,12 +49,10 @@ class firewall:
 		else:
 			ipaddr = host.ipv4
 
-		extra = rule.extra
-		if(rule.nat and rule.direction):
-			extra = re.sub(r'--dport [0-9]+', '--dport %i' %rule.nat_dport, rule.extra)
+		dport_sport = self.dportsport(rule)
 
 		for vlan in rule.vlan.all():
-			if(rule.action):
+			if(rule.accept):
 				if((not rule.direction) and vlan.name == "PUB"):
 					action = "PUB_OUT"
 				else:
@@ -50,21 +61,25 @@ class firewall:
 				action = "LOG_DROP"
 
 			if(rule.direction): #HOSTHOZ megy
-				self.iptables("-A %s_%s -d %s %s -g %s" % (vlan, host.vlan, ipaddr, extra, action));
+				self.iptables("-A %s_%s -d %s %s %s -g %s" % (vlan, host.vlan, ipaddr, dport_sport, rule.extra, action));
 			else:
-				self.iptables("-A %s_%s -s %s %s -g %s" % (host.vlan, vlan, ipaddr, extra, action));
+				self.iptables("-A %s_%s -s %s %s %s -g %s" % (host.vlan, vlan, ipaddr, dport_sport, rule.extra, action));
 
 
 	def fw2vlan(self, rule):	
+		dport_sport = self.dportsport(rule)
+
 		for vlan in rule.vlan.all():
 			if(rule.direction): #HOSTHOZ megy
-				self.iptables("-A INPUT -i %s %s -g %s" % (vlan.interface, rule.extra, "LOG_ACC" if rule.action else "LOG_DROP"));
+				self.iptables("-A INPUT -i %s %s %s -g %s" % (vlan.interface, dport_sport, rule.extra, "LOG_ACC" if rule.accept else "LOG_DROP"));
 			else:
-				self.iptables("-A OUTPUT -o %s %s -g %s" % (vlan.interface, rule.extra, "LOG_ACC" if rule.action else "LOG_DROP"));
+				self.iptables("-A OUTPUT -o %s %s %s -g %s" % (vlan.interface, dport_sport, rule.extra, "LOG_ACC" if rule.accept else "LOG_DROP"));
 
 	def vlan2vlan(self, l_vlan, rule):
+		dport_sport = self.dportsport(rule)
+
 		for vlan in rule.vlan.all():
-			if(rule.action):
+			if(rule.accept):
 				if((not rule.direction) and vlan.name == "PUB"):
 					action = "PUB_OUT"
 				else:
@@ -73,9 +88,9 @@ class firewall:
 				action = "LOG_DROP"
 
 			if(rule.direction): #HOSTHOZ megy
-				self.iptables("-A %s_%s %s -g %s" % (vlan, l_vlan, rule.extra, action));
+				self.iptables("-A %s_%s %s %s -g %s" % (vlan, l_vlan, dport_sport, rule.extra, action));
 			else:
-				self.iptables("-A %s_%s %s -g %s" % (l_vlan, vlan, rule.extra, action));			
+				self.iptables("-A %s_%s %s %s -g %s" % (l_vlan, vlan, dport_sport, rule.extra, action));			
 
 
 	def prerun(self):
@@ -167,7 +182,9 @@ class firewall:
 		#portforward
 		for host in self.hosts.filter(pub_ipv4=None):
 			for rule in host.rules.filter(nat=True, direction=True):
-				self.iptablesnat("-A PREROUTING -d %s %s -j DNAT --to-destination %s:%s" % (host.vlan.snat_ip, rule.extra, host.ipv4, rule.nat_dport))
+				dport_sport = self.dportsport(rule, False)
+				if host.vlan.snat_ip:
+					self.iptablesnat("-A PREROUTING -d %s %s %s -j DNAT --to-destination %s:%s" % (host.vlan.snat_ip, dport_sport, rule.extra, host.ipv4, rule.nat_dport))
 
 		#sajat publikus ipvel rendelkezo gepek szabalyai
 		for host in self.hosts:
@@ -185,7 +202,7 @@ class firewall:
 		#bedrotozott szabalyok
 		self.iptablesnat("-A POSTROUTING -s 10.5.0.0/16 -o vlan0003 -j SNAT --to-source 10.3.255.254") #man elerheto legyen
 		self.iptablesnat("-A POSTROUTING -s 10.5.0.0/16 -o vlan0008 -j SNAT --to-source 10.0.0.247") #wolf halozat a nyomtatashoz
-		self.iptablesnat("-A POSTROUTING -s 10.3.0.0/16 -o vlan0006 -j SNAT --to-source %s" % self.pub.ipv4) #kulonben nemmegy a du
+		self.iptablesnat("-A POSTROUTING -s 10.3.0.0/16 -o vlan0002 -j SNAT --to-source %s" % self.pub.ipv4) #kulonben nemmegy a du
 
 		self.iptablesnat("COMMIT")
 
@@ -236,7 +253,7 @@ class firewall:
 
 	def __init__(self, IPV6=False):
 		self.SZABALYOK=[]
-		self.SZABALYOK=[]
+		self.SZABALYOK_NAT=[]
 		self.IPV6 = IPV6
 		self.vlans = models.Vlan.objects.all()
 		self.hosts = models.Host.objects.all()

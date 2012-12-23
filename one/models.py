@@ -93,7 +93,7 @@ class Disk(models.Model):
     @classmethod
     def update(cls):
         import subprocess
-        proc = subprocess.Popen(["/var/lib/opennebula/bin/occi.sh",
+        proc = subprocess.Popen(["/opt/occi.sh",
         "storage", "list"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         (out, err) = proc.communicate()
         from xml.dom.minidom import parse, parseString
@@ -127,7 +127,7 @@ class Network(models.Model):
     @classmethod
     def update(cls):
         import subprocess
-        proc = subprocess.Popen(["/var/lib/opennebula/bin/occi.sh",
+        proc = subprocess.Popen(["/opt/occi.sh",
         "network", "list"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         (out, err) = proc.communicate()
         from xml.dom.minidom import parse, parseString
@@ -218,7 +218,7 @@ class Instance(models.Model):
 
         if not self.one_id:
             return
-        proc = subprocess.Popen(["/var/lib/opennebula/bin/occi.sh",
+        proc = subprocess.Popen(["/opt/occi.sh",
         "compute", "show",
         "%d"%self.one_id], stdout=subprocess.PIPE)
         (out, err) = proc.communicate()
@@ -298,7 +298,7 @@ class Instance(models.Model):
             f.write(tpl)
             f.close()
             import subprocess
-            proc = subprocess.Popen(["/var/lib/opennebula/bin/occi.sh",
+            proc = subprocess.Popen(["/opt/occi.sh",
                        "compute", "create",
                        f.name], stdout=subprocess.PIPE)
             (out, err) = proc.communicate()
@@ -316,7 +316,7 @@ class Instance(models.Model):
         return inst
 
     def delete(self):
-        proc = subprocess.Popen(["/var/lib/opennebula/bin/occi.sh", "compute",
+        proc = subprocess.Popen(["/opt/occi.sh", "compute",
                "delete", "%d"%self.one_id], stdout=subprocess.PIPE)
         (out, err) = proc.communicate()
 
