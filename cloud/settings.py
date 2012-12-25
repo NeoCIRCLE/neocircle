@@ -125,6 +125,8 @@ INSTALLED_APPS = (
     'cloud',
     'firewall',
     'south',
+    'djcelery',
+    'kombu.transport.django',
     #'django_bfm',
 )
 
@@ -170,4 +172,10 @@ LOGGING = {
 }
 LOGIN_URL="/login"
 AUTH_PROFILE_MODULE = 'school.Person'
+
+import djcelery
+djcelery.setup_loader()
+BROKER_URL = 'django://'
+
+
 # vim: et sw=4 ai fenc=utf8 smarttab :

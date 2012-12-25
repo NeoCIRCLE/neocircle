@@ -11,21 +11,28 @@ class Rule(models.Model):
      direction = models.BooleanField()
      description = models.TextField(blank=True)
      vlan = models.ManyToManyField('Vlan', symmetrical=False, blank=True, null=True)
-     dport = models.IntegerField(blank=True, null=True);
-     sport = models.IntegerField(blank=True, null=True);
+     dport = models.IntegerField(blank=True, null=True)
+     sport = models.IntegerField(blank=True, null=True)
      proto = models.CharField(max_length=10, choices=CHOICES_proto, blank=True, null=True)
-     nat_dport = models.IntegerField(blank=True, null=True);
-     extra = models.TextField(blank=True);
+     nat_dport = models.IntegerField(blank=True, null=True)
+     extra = models.TextField(blank=True)
      accept = models.BooleanField(default=False)
      owner = models.ForeignKey(User, blank=True, null=True)
      r_type = models.CharField(max_length=10, choices=CHOICES)
      nat = models.BooleanField(default=False)
-     nat_dport = models.IntegerField();
+     nat_dport = models.IntegerField(blank=True, null=True)
 
      def __unicode__(self):
         return self.desc()
      def desc(self):
-	return '[' + self.r_type + '] ' + (self.vlan_l() + '->' + self.r_type if self.direction else self.r_type + '->' + self.vlan_l()) + ' ' + self.description
+	para = ""
+	if(self.dport):
+		para = "dport=%s %s" % (self.dport, para)
+	if(self.sport):
+		para = "dport=%s %s" % (self.sport, para)
+	if(self.proto):
+		para = "dport=%s %s" % (self.proto, para)
+	return '[' + self.r_type + '] ' + (self.vlan_l() + '->' + self.r_type if self.direction else self.r_type + '->' + self.vlan_l()) + ' ' + para + ' ' +self.description
      def vlan_l(self):
 	retval = []
 	for vl in self.vlan.all():
@@ -35,8 +42,8 @@ class Rule(models.Model):
 class Vlan(models.Model):
     vid = models.IntegerField(unique=True)
     name = models.CharField(max_length=20, unique=True, validators=[val_alfanum])
-    prefix4 = models.IntegerField(default=16);
-    prefix6 = models.IntegerField(default=80);
+    prefix4 = models.IntegerField(default=16)
+    prefix6 = models.IntegerField(default=80)
     interface = models.CharField(max_length=20, unique=True)
     net4 = models.GenericIPAddressField(protocol='ipv4', unique=True)
     net6 = models.GenericIPAddressField(protocol='ipv6', unique=True)

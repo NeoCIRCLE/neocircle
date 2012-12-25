@@ -397,22 +397,3 @@ for mac, name, ipend in [("18:a9:05:64:19:aa", "mega6", 16), ("00:1e:0b:e9:79:1e
 #	h1.save()
 #except:
 #	print "nemsikerult"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
