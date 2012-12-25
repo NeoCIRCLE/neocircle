@@ -64,4 +64,5 @@ contrib.admin.site.register(models.Template, TemplateAdmin)
 contrib.admin.site.register(models.Instance, InstanceAdmin)
 contrib.admin.site.register(models.Network, NetworkAdmin)
 contrib.admin.site.register(models.Disk, DiskAdmin)
+contrib.admin.site.register(models.InstanceType)
 
