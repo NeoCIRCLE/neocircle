@@ -108,7 +108,7 @@ class Disk(models.Model):
                     d.name=name
                     d.save()
                 except:
-                    Disk(id=id, name=name).save
+                    Disk(id=id, name=name).save()
                 l.append(id)
             Disk.objects.exclude(id__in=l).delete()
 
