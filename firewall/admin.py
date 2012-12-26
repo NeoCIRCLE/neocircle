@@ -3,7 +3,7 @@ from firewall.models import *
 
 
 class HostAdmin(admin.ModelAdmin):
-    list_display = ('hostname', 'vlan', 'ipv4', 'ipv6', 'mac', 'owner', 'groups_l', 'rules_l', 'description')
+    list_display = ('hostname', 'vlan', 'ipv4', 'ipv6', 'pub_ipv4', 'mac', 'shared_ip', 'owner', 'groups_l', 'rules_l', 'description')
     ordering = ('hostname',)
     list_filter = ('owner', 'vlan', 'groups')
     search_fields = ('hostname', 'description', 'ipv4', 'ipv6', 'mac')

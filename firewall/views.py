@@ -18,23 +18,8 @@ def reload_firewall(request):
 	if request.user.is_authenticated():
 		if(request.user.is_superuser):
 			html = u"Be vagy jelentkezve es admin is vagy, kedves %s!" % request.user.username
-			try:
-				print "ipv4"
-				ipv4 = firewall()
-#				html += ipv4.show()
-				ipv4.reload()
-				print "ipv6"
-				ipv6 = firewall(True)
-				ipv6.reload()
-				print "dns"
-				dns()
-				print "dhcp"
-				dhcp()
-				print "vege"
-				html += "<br>sikerult :)"
-			except:
-				raise
-				html += "<br>nem sikerult :("
+			html += "<br> 10 masodperc mulva ujratoltodik"
+			ReloadTask.delay()
 		else:
 			html = u"Be vagy jelentkezve, csak nem vagy admin, kedves %s!" % request.user.username
 	else:
@@ -55,24 +40,14 @@ def firewall_api(request):
 			if(command == "create"):
 				data["owner"] = "opennebula"
 				owner = auth.models.User.objects.get(username=data["owner"])
-				host = models.Host(hostname=data["hostname"], vlan=models.Vlan.objects.get(name=data["vlan"]), mac=data["mac"], ipv4=data["ip"], owner=owner, description=data["description"])
+				host = models.Host(hostname=data["hostname"], vlan=models.Vlan.objects.get(name=data["vlan"]), mac=data["mac"], ipv4=data["ip"], owner=owner, description=data["description"], pub_ipv4=models.Vlan.objects.get(name=data["vlan"]).snat_ip, shared_ip=True)
 				host.full_clean()
 				host.save()
 
-				rule = models.Rule(direction=False, owner=owner, description="%s netezhet" % (data["hostname"]), accept=True, r_type="host", nat_dport=0)
-				rule.save()
-				rule.vlan.add(models.Vlan.objects.get(name="PUB"))
-				host.rules.add(rule)
+				host.EnableNet()
 
 				for p in data["portforward"]:
-					proto = "tcp" if (p["proto"] == "tcp") else "udp"
-					rule = models.Rule(direction=True, owner=owner, description="%s %s %s->%s" % (data["hostname"], proto, p["public_port"], p["private_port"]), dport=int(p["public_port"]), proto=p["proto"], nat=True, accept=True, r_type="host", nat_dport=int(p["private_port"]))
-					rule.save()
-					rule.vlan.add(models.Vlan.objects.get(name="PUB"))
-					rule.vlan.add(models.Vlan.objects.get(name="DMZ"))
-					rule.vlan.add(models.Vlan.objects.get(name="VM-NET"))
-					rule.vlan.add(models.Vlan.objects.get(name="WAR"))
-					host.rules.add(rule)
+					host.AddPort(proto=p["proto"], public=int(p["public_port"]), private=int(p["private_port"]))
 
 			elif(command == "destroy"):
 				data["owner"] = "opennebula"
@@ -80,14 +55,12 @@ def firewall_api(request):
 				owner = auth.models.User.objects.get(username=data["owner"])
 				host = models.Host.objects.get(hostname=data["hostname"], owner=owner)
 
-				for rule in host.rules.filter(owner=owner):
-					rule.delete()
-
+				host.DelRules()
 				host.delete()
 			else:
 				raise Exception("rossz parancs")
 
-			lock("asd")
+			reload_firewall_lock()
 		except (ValidationError, IntegrityError, AttributeError, Exception) as e:
 			return HttpResponse(u"rosszul hasznalod! :(\n%s\n" % e);
 		except:
@@ -96,6 +69,12 @@ def firewall_api(request):
 		
 		return HttpResponse(u"ok");
 
+	host = models.Host.objects.get(hostname="id-298-ubuntu-teszt2")
+	print host.ListPorts()
+	try:
+		host.AddPort("udp", 31337, 3133)
+	except:
+		host.DelPort("udp", 31337)
 	return HttpResponse(u"ez kerlek egy api lesz!\n");
 
 

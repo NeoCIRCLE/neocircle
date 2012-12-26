@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
-from django.forms import fields
+from django.forms import fields, ValidationError
 from django.utils.translation import ugettext_lazy as _
 from firewall.fields import *
 from south.modelsinspector import add_introspection_rules
@@ -85,8 +85,9 @@ class Host(models.Model):
     hostname = models.CharField(max_length=20, unique=True, validators=[val_alfanum])
     mac = MACAddressField(unique=True)
     ipv4 = models.GenericIPAddressField(protocol='ipv4', unique=True)
-    pub_ipv4 = models.GenericIPAddressField(protocol='ipv4', unique=True, blank=True, null=True)
+    pub_ipv4 = models.GenericIPAddressField(protocol='ipv4', blank=True, null=True)
     ipv6 = models.GenericIPAddressField(protocol='ipv6', unique=True, blank=True)
+    shared_ip = models.BooleanField(default=False)
     description = models.TextField(blank=True)
     comment = models.TextField(blank=True)
     location = models.TextField(blank=True)
@@ -100,6 +101,8 @@ class Host(models.Model):
     def save(self, *args, **kwargs):
         if not self.id and not self.ipv6:
             self.ipv6 = ipv4_2_ipv6(self.ipv4)
+	if not self.shared_ip and self.pub_ipv4 and Host.objects.filter(pub_ipv4=self.pub_ipv4):
+	    raise ValidationError("Ha a shared_ip be van pipalva, akkor egyedinek kell lennie a pub_ipv4-nek!")
         super(Host, self).save(*args, **kwargs)
     def groups_l(self):
 	retval = []
@@ -111,7 +114,38 @@ class Host(models.Model):
 	for rl in self.rules.all():
 		retval.append(str(rl))
 	return ', '.join(retval)
-		
+
+    def EnableNet(self):
+	rule = Rule(direction=False, owner=self.owner, description="%s netezhet" % (self.hostname), accept=True, r_type="host")
+	rule.save()
+	rule.vlan.add(Vlan.objects.get(name="PUB"))
+	self.rules.add(rule)
+
+    def AddPort(self, proto, public, private):
+	proto = "tcp" if (proto == "tcp") else "udp"
+	for host in Host.objects.filter(pub_ipv4=self.pub_ipv4):
+		if host.rules.filter(nat=True, proto=proto, dport=public):
+			raise ValidationError("A %s %s port mar hasznalva" % (proto, public))
+	rule = Rule(direction=True, owner=self.owner, description="%s %s %s->%s" % (self.hostname, proto, public, private), dport=public, proto=proto, nat=True, accept=True, r_type="host", nat_dport=private)
+	rule.full_clean()
+	rule.save()
+	rule.vlan.add(Vlan.objects.get(name="PUB"))
+	rule.vlan.add(Vlan.objects.get(name="DMZ"))
+	rule.vlan.add(Vlan.objects.get(name="VM-NET"))
+	rule.vlan.add(Vlan.objects.get(name="WAR"))
+	self.rules.add(rule)
+
+    def DelPort(self, proto, public):
+	self.rules.filter(owner=self.owner, proto=proto, nat=True, dport=public).delete()
+
+    def ListPorts(self):
+	retval = []
+	for rule in self.rules.filter(owner=self.owner, nat=True):
+		retval.append({'public': rule.dport, 'private': rule.nat_dport})
+	return retval
+
+    def DelRules(self):
+	self.rules.filter(owner=self.owner).delete()
 
 class Firewall(models.Model):
     name = models.CharField(max_length=20, unique=True)

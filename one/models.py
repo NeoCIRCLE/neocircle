@@ -9,7 +9,10 @@ from django import forms
 from django.utils.translation import ugettext_lazy as _
 from one.util import keygen
 from school.models import Person
-import subprocess, tempfile, os, stat
+from firewall.models import Host, Rule, Vlan
+from firewall.tasks import reload_firewall_lock
+
+import subprocess, tempfile, os, stat, re
 
 
 pwgen = User.objects.make_random_password 
@@ -187,6 +190,7 @@ class Instance(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     state = models.CharField(max_length=20, choices=[('DEPLOYABLE', 'DEPLOYABLE'), ('PENDING', 'PENDING'), ('DONE', 'DONE'), ('ACTIVE', 'ACTIVE'),('UNKNOWN', 'UNKNOWN'), ('SUSPENDED', 'SUSPENDED'), ('FAILED', 'FAILED')], default='DEPLOYABLE')
     active_since = models.DateTimeField(null=True, blank=True)
+    firewall_host = models.ForeignKey(Host, blank=True, null=True)
     pw = models.CharField(max_length=20)
     one_id = models.IntegerField(unique=True, blank=True, null=True)
     def get_port(self):
@@ -277,6 +281,7 @@ class Instance(models.Model):
                         <NETWORK href="http://www.opennebula.org/network/%(net)d"/>
                     </NIC>
                     <CONTEXT>
+                        <SOURCE>web</SOURCE>
                         <HOSTNAME>cloud-$VMID</HOSTNAME>
                         <NEPTUN>%(neptun)s</NEPTUN>
                         <USERPW>%(pw)s</USERPW>
@@ -313,12 +318,27 @@ class Instance(models.Model):
         inst.name = "%(neptun)s %(template)s (%(id)d)" % {'neptun': owner.username, 'template': template.name, 'id': inst.one_id}
         inst.save()
         inst.update_state()
+        host = Host(vlan=Vlan.objects.get(name=template.network.name), owner=owner, shared_ip=True)
+        host.hostname = u"id-%d_user-%s" % (inst.id, owner.username)
+        host.mac = x.getElementsByTagName("MAC")[0].childNodes[0].nodeValue
+        host.ipv4 = inst.ip
+        host.pub_ipv4 = "152.66.243.161"
+        host.full_clean()
+        host.save()
+        host.EnableNet()
+        host.AddPort("tcp", inst.get_port(), {"rdp": 3389, "nx": 22, "ssh": 22}[inst.template.access_type])
+        inst.firewall_host=host
+        inst.save()
+        reload_firewall_lock()
         return inst
 
     def delete(self):
         proc = subprocess.Popen(["/opt/occi.sh", "compute",
                "delete", "%d"%self.one_id], stdout=subprocess.PIPE)
         (out, err) = proc.communicate()
+        self.firewall_host.DelRules()
+        self.firewall_host.delete()
+        reload_firewall_lock()
 
     class Meta:
         verbose_name = _('instance')

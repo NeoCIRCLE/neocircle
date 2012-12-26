@@ -180,14 +180,14 @@ class firewall:
 
 
 		#portforward
-		for host in self.hosts.filter(pub_ipv4=None):
+		for host in self.hosts.exclude(pub_ipv4=None):
 			for rule in host.rules.filter(nat=True, direction=True):
 				dport_sport = self.dportsport(rule, False)
 				if host.vlan.snat_ip:
-					self.iptablesnat("-A PREROUTING -d %s %s %s -j DNAT --to-destination %s:%s" % (host.vlan.snat_ip, dport_sport, rule.extra, host.ipv4, rule.nat_dport))
+					self.iptablesnat("-A PREROUTING -d %s %s %s -j DNAT --to-destination %s:%s" % (host.pub_ipv4, dport_sport, rule.extra, host.ipv4, rule.nat_dport))
 
 		#sajat publikus ipvel rendelkezo gepek szabalyai
-		for host in self.hosts:
+		for host in self.hosts.exclude(shared_ip=True):
 			if(host.pub_ipv4):
 				self.iptablesnat("-A PREROUTING -d %s -j DNAT --to-destination %s" % (host.pub_ipv4, host.ipv4))
 				self.iptablesnat("-A POSTROUTING -s %s -j SNAT --to-source %s" % (host.ipv4, host.pub_ipv4))
