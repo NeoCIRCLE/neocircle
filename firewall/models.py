@@ -4,6 +4,7 @@ from django.forms import fields, ValidationError
 from django.utils.translation import ugettext_lazy as _
 from firewall.fields import *
 from south.modelsinspector import add_introspection_rules
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Rule(models.Model):
      CHOICES = (('host', 'host'), ('firewall', 'firewall'), ('vlan', 'vlan'))
@@ -11,16 +12,15 @@ class Rule(models.Model):
      direction = models.BooleanField()
      description = models.TextField(blank=True)
      vlan = models.ManyToManyField('Vlan', symmetrical=False, blank=True, null=True)
-     dport = models.IntegerField(blank=True, null=True)
-     sport = models.IntegerField(blank=True, null=True)
+     dport = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1), MaxValueValidator(65535)])
+     sport = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1), MaxValueValidator(65535)])
      proto = models.CharField(max_length=10, choices=CHOICES_proto, blank=True, null=True)
-     nat_dport = models.IntegerField(blank=True, null=True)
      extra = models.TextField(blank=True)
      accept = models.BooleanField(default=False)
      owner = models.ForeignKey(User, blank=True, null=True)
      r_type = models.CharField(max_length=10, choices=CHOICES)
      nat = models.BooleanField(default=False)
-     nat_dport = models.IntegerField(blank=True, null=True)
+     nat_dport = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1), MaxValueValidator(65535)])
 
      def __unicode__(self):
         return self.desc()
@@ -101,7 +101,7 @@ class Host(models.Model):
     def save(self, *args, **kwargs):
         if not self.id and not self.ipv6:
             self.ipv6 = ipv4_2_ipv6(self.ipv4)
-	if not self.shared_ip and self.pub_ipv4 and Host.objects.filter(pub_ipv4=self.pub_ipv4):
+	if not self.shared_ip and self.pub_ipv4 and Host.objects.exclude(id=self.id).filter(pub_ipv4=self.pub_ipv4):
 	    raise ValidationError("Ha a shared_ip be van pipalva, akkor egyedinek kell lennie a pub_ipv4-nek!")
         super(Host, self).save(*args, **kwargs)
     def groups_l(self):

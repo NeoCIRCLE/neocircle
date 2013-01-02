@@ -290,6 +290,10 @@ def dns():
 	DNS.append("^%s.dns1.%s.%s.%s.in-addr.arpa:%s:600::\n" % (76, 243, 66, 152, "ce.hpc.iit.bme.hu"))
 	DNS.append("^%s.dns1.%s.%s.%s.in-addr.arpa:%s:600::\n" % (77, 243, 66, 152, "mon.hpc.iit.bme.hu"))
 
+	DNS.append("Z1.3.0.4.1.0.0.2.8.3.7.0.1.0.0.2.ip6.arpa:dns1.ik.bme.hu:ez.miez::::::600\n") #soa
+	DNS.append("&1.3.0.4.1.0.0.2.8.3.7.0.1.0.0.2.ip6.arpa::dns1.ik.bme.hu:600::\n")      #ns
+	DNS.append("&1.3.0.4.1.0.0.2.8.3.7.0.1.0.0.2.ip6.arpa::nic.bme.hu:600::\n")      #ns
+
 	for i_vlan in vlans:
 		m = regex.search(i_vlan.net4)
 		if(i_vlan.name != "DMZ" and i_vlan.name != "PUB"):
@@ -310,6 +314,14 @@ def dns():
 	process.communicate("\n".join(DNS)+"\n")
 
 
+def prefix_to_mask(prefix):
+	t = [0,0,0,0]
+	for i in range(0,4):
+		if prefix > i*8+7:
+			t[i] = 255
+		elif i*8 < prefix and prefix <= (i+1)*8:
+			t[i] = 256 - (2 ** ((i+1)*8 - prefix))
+	return ".".join([str(i) for i in t])
 
 def dhcp():
 	vlans = models.Vlan.objects.all()
@@ -336,7 +348,7 @@ def dhcp():
 				  allow bootp; allow booting;
 				}''' % {
 					'net': i_vlan.net4,
-					'netmask': "255.255.0.0", #TODO: ez ne legyen belehardkodolva
+					'netmask': prefix_to_mask(i_vlan.prefix4),
 					'domain': i_vlan.domain,
 					'router': i_vlan.ipv4,
 					'ntp': i_vlan.ipv4,

@@ -211,7 +211,7 @@ class Instance(models.Model):
             host = self.get_connect_host()
             pw = self.pw
             return "%(proto)s:cloud:%(pw)s:%(host)s:%(port)d" % {"port": port,
-                                                "proto": proto, "host": host, "pw": pw}
+                                                "proto": proto, "host": self.firewall_host.pub_ipv4, "pw": pw}
         except:
             return
 
