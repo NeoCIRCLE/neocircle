@@ -1,3 +1,4 @@
+# -*- coding: utf8 -*-
 from datetime import datetime
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -20,6 +21,7 @@ from django.views.decorators.http import *
 from django.views.generic import *
 from one.models import *
 import django.contrib.auth as auth
+from firewall.tasks import *
 
 class LoginView(View):
     def get(self, request, *args, **kwargs):
@@ -107,7 +109,42 @@ def vm_show(request, iid):
         'instances': _list_instances(request),
         'i': inst,
 	'booting' : not inst.active_since,
+        'ports': inst.firewall_host.list_ports()
         }))
+
+class VmPortAddView(View):
+    def post(self, request, iid, *args, **kwargs):
+        try:
+            public = int(request.POST['public'])
+            
+            if public >= 22000 and public < 24000:
+                raise ValidationError("a port nem lehet 22000 es 24000 kozott")
+            inst = get_object_or_404(Instance, id=iid, owner=request.user)
+            inst.firewall_host.add_port(proto=request.POST['proto'], public=public, private=int(request.POST['private']))
+            reload_firewall_lock()
+            messages.success(request, _(u"A port hozzáadása sikerült."))
+        except:
+            messages.error(request, _(u"Nem sikerült a kért művelet"))
+#            raise
+        return redirect('/vm/show/%d/' % int(iid))
+
+    def get(self, request, iid, *args, **kwargs):
+        return redirect('/')
+
+vm_port_add = login_required(VmPortAddView.as_view())
+
+@require_safe
+@login_required
+@require_GET
+def vm_port_del(request, iid, proto, public):
+    inst = get_object_or_404(Instance, id=iid, owner=request.user)
+    try:
+        inst.firewall_host.del_port(proto=proto, public=public)
+        reload_firewall_lock()
+        messages.success(request, _(u"A port törlése sikerült."))
+    except:
+        messages.error(request, _(u"Nem sikerült a kért művelet"))
+    return redirect('/vm/show/%d/' % int(iid))
 
 class VmDeleteView(View):
     def post(self, request, iid, *args, **kwargs):

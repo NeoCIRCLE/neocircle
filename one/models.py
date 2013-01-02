@@ -325,8 +325,8 @@ class Instance(models.Model):
         host.pub_ipv4 = "152.66.243.161"
         host.full_clean()
         host.save()
-        host.EnableNet()
-        host.AddPort("tcp", inst.get_port(), {"rdp": 3389, "nx": 22, "ssh": 22}[inst.template.access_type])
+        host.enable_net()
+        host.add_port("tcp", inst.get_port(), {"rdp": 3389, "nx": 22, "ssh": 22}[inst.template.access_type])
         inst.firewall_host=host
         inst.save()
         reload_firewall_lock()
@@ -336,7 +336,7 @@ class Instance(models.Model):
         proc = subprocess.Popen(["/opt/occi.sh", "compute",
                "delete", "%d"%self.one_id], stdout=subprocess.PIPE)
         (out, err) = proc.communicate()
-        self.firewall_host.DelRules()
+        self.firewall_host.del_rules()
         self.firewall_host.delete()
         reload_firewall_lock()
 

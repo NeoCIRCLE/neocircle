@@ -44,10 +44,10 @@ def firewall_api(request):
 				host.full_clean()
 				host.save()
 
-				host.EnableNet()
+				host.enable_net()
 
 				for p in data["portforward"]:
-					host.AddPort(proto=p["proto"], public=int(p["public_port"]), private=int(p["private_port"]))
+					host.add_port(proto=p["proto"], public=int(p["public_port"]), private=int(p["private_port"]))
 
 			elif(command == "destroy"):
 				data["owner"] = "opennebula"
@@ -55,7 +55,7 @@ def firewall_api(request):
 				owner = auth.models.User.objects.get(username=data["owner"])
 				host = models.Host.objects.get(hostname=data["hostname"], owner=owner)
 
-				host.DelRules()
+				host.del_rules()
 				host.delete()
 			else:
 				raise Exception("rossz parancs")
@@ -69,12 +69,6 @@ def firewall_api(request):
 		
 		return HttpResponse(u"ok");
 
-	host = models.Host.objects.get(hostname="id-298-ubuntu-teszt2")
-	print host.ListPorts()
-	try:
-		host.AddPort("udp", 31337, 3133)
-	except:
-		host.DelPort("udp", 31337)
 	return HttpResponse(u"ez kerlek egy api lesz!\n");
 
 

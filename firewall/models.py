@@ -115,14 +115,13 @@ class Host(models.Model):
 		retval.append(str(rl))
 	return ', '.join(retval)
 
-    def EnableNet(self):
-	rule = Rule(direction=False, owner=self.owner, description="%s netezhet" % (self.hostname), accept=True, r_type="host")
-	rule.save()
-	rule.vlan.add(Vlan.objects.get(name="PUB"))
-	self.rules.add(rule)
+    def enable_net(self):
+	self.groups.add(Group.objects.get(name="netezhet"))
 
-    def AddPort(self, proto, public, private):
+    def add_port(self, proto, public, private):
 	proto = "tcp" if (proto == "tcp") else "udp"
+        if public < 1024: 
+        	raise ValidationError("Csak az 1024 feletti portok hasznalhatok")
 	for host in Host.objects.filter(pub_ipv4=self.pub_ipv4):
 		if host.rules.filter(nat=True, proto=proto, dport=public):
 			raise ValidationError("A %s %s port mar hasznalva" % (proto, public))
@@ -130,21 +129,23 @@ class Host(models.Model):
 	rule.full_clean()
 	rule.save()
 	rule.vlan.add(Vlan.objects.get(name="PUB"))
+	rule.vlan.add(Vlan.objects.get(name="HOT"))
+	rule.vlan.add(Vlan.objects.get(name="LAB"))
 	rule.vlan.add(Vlan.objects.get(name="DMZ"))
 	rule.vlan.add(Vlan.objects.get(name="VM-NET"))
 	rule.vlan.add(Vlan.objects.get(name="WAR"))
 	self.rules.add(rule)
 
-    def DelPort(self, proto, public):
+    def del_port(self, proto, public):
 	self.rules.filter(owner=self.owner, proto=proto, nat=True, dport=public).delete()
 
-    def ListPorts(self):
+    def list_ports(self):
 	retval = []
 	for rule in self.rules.filter(owner=self.owner, nat=True):
-		retval.append({'public': rule.dport, 'private': rule.nat_dport})
+		retval.append({'proto': rule.proto, 'public': rule.dport, 'private': rule.nat_dport})
 	return retval
 
-    def DelRules(self):
+    def del_rules(self):
 	self.rules.filter(owner=self.owner).delete()
 
 class Firewall(models.Model):

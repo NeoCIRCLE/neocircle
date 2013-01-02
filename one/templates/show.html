@@ -70,12 +70,28 @@
             <h2>Bejelentkezési adatok</h2>
             <div class="content">
 		<table><tr><th>Protokoll:</th><td>{{i.template.access_type|upper}}</td></tr>
-		       <tr><th>Gépnév:</th><td>cloud.ik.bme.hu</td></tr>
-                       <tr><th>Port:</th><td>{{ i.get_port}}
-</td></tr>
+		       <tr><th>IP:</th><td>{{ i.firewall_host.pub_ipv4}}</td></tr>
+                       <tr><th>Port:</th><td>{{ i.get_port}}</td></tr>
                        <tr><th>Felhasználónév:</th><td>cloud</td></tr>
                        <tr><th>Jelszó:</th><td>{{ i.pw }}</td></tr>
 		</table>
+            </div>
+        </div>
+        <div class="contentblock" id="state">
+            <h2>Portok kezelése</h2>
+            <div class="content">
+                <form action="{% url vm_port_add i.id %}" method="post">
+		{% csrf_token %}
+                <table><tr><th>Protokoll</th><th>Külső port</th><th>Belső port</th></tr>
+                {% for port in ports %}
+                       <tr><td>{{port.proto}}</td><td>{{port.public}}</td><td>{{port.private}}</td><td><a href="/vm/port_del/{{i.id}}/{{port.proto}}/{{port.public}}/">Törlés</a></td></tr>
+                {% endfor %}
+		       <tr><td><select style="min-width:50px;" name=proto><option value="tcp">tcp</option><option value="udp">udp</option></select></td>
+                           <td><input style="min-width:70px;width:70px;" type="text" name="public"/></td>
+                           <td><input style="min-width:70px;width:70px;" type="text" name="private"/></td>
+		           <td><input type="submit" value="Hozzáadás" /></td></tr>
+                </table>
+                </form>
             </div>
         </div>
 </div>
