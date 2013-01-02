@@ -7,9 +7,10 @@ from south.modelsinspector import add_introspection_rules
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Rule(models.Model):
-     CHOICES = (('host', 'host'), ('firewall', 'firewall'), ('vlan', 'vlan'))
+     CHOICES_type = (('host', 'host'), ('firewall', 'firewall'), ('vlan', 'vlan'))
      CHOICES_proto = (('tcp', 'tcp'), ('udp', 'udp'), ('icmp', 'icmp'))
-     direction = models.BooleanField()
+     CHOICES_dir = (('0', 'out'), ('1', 'in'))
+     direction = models.CharField(max_length=1, choices=CHOICES_dir, blank=False)
      description = models.TextField(blank=True)
      vlan = models.ManyToManyField('Vlan', symmetrical=False, blank=True, null=True)
      dport = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1), MaxValueValidator(65535)])
@@ -18,7 +19,7 @@ class Rule(models.Model):
      extra = models.TextField(blank=True)
      accept = models.BooleanField(default=False)
      owner = models.ForeignKey(User, blank=True, null=True)
-     r_type = models.CharField(max_length=10, choices=CHOICES)
+     r_type = models.CharField(max_length=10, choices=CHOICES_type)
      nat = models.BooleanField(default=False)
      nat_dport = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1), MaxValueValidator(65535)])
 
@@ -125,7 +126,7 @@ class Host(models.Model):
 	for host in Host.objects.filter(pub_ipv4=self.pub_ipv4):
 		if host.rules.filter(nat=True, proto=proto, dport=public):
 			raise ValidationError("A %s %s port mar hasznalva" % (proto, public))
-	rule = Rule(direction=True, owner=self.owner, description="%s %s %s->%s" % (self.hostname, proto, public, private), dport=public, proto=proto, nat=True, accept=True, r_type="host", nat_dport=private)
+	rule = Rule(direction='1', owner=self.owner, description="%s %s %s->%s" % (self.hostname, proto, public, private), dport=public, proto=proto, nat=True, accept=True, r_type="host", nat_dport=private)
 	rule.full_clean()
 	rule.save()
 	rule.vlan.add(Vlan.objects.get(name="PUB"))

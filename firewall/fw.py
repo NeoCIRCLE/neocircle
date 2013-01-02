@@ -31,7 +31,7 @@ class firewall:
 			if(rule.sport):
 				retval += " --sport %s " % rule.sport 
 			if(rule.dport):
-				retval += " --dport %s " % ( rule.nat_dport if (repl and rule.nat and rule.direction) else rule.dport )
+				retval += " --dport %s " % ( rule.nat_dport if (repl and rule.nat and rule.direction == '1') else rule.dport )
 		elif(rule.proto == "icmp"):
 			retval = "-p %s " % rule.proto
 		return retval
@@ -53,14 +53,14 @@ class firewall:
 
 		for vlan in rule.vlan.all():
 			if(rule.accept):
-				if((not rule.direction) and vlan.name == "PUB"):
+				if(rule.direction == '0' and vlan.name == "PUB"):
 					action = "PUB_OUT"
 				else:
 					action = "LOG_ACC"
 			else:
 				action = "LOG_DROP"
 
-			if(rule.direction): #HOSTHOZ megy
+			if(rule.direction == '1'): #HOSTHOZ megy
 				self.iptables("-A %s_%s -d %s %s %s -g %s" % (vlan, host.vlan, ipaddr, dport_sport, rule.extra, action));
 			else:
 				self.iptables("-A %s_%s -s %s %s %s -g %s" % (host.vlan, vlan, ipaddr, dport_sport, rule.extra, action));
@@ -70,7 +70,7 @@ class firewall:
 		dport_sport = self.dportsport(rule)
 
 		for vlan in rule.vlan.all():
-			if(rule.direction): #HOSTHOZ megy
+			if(rule.direction == '1'): #HOSTHOZ megy
 				self.iptables("-A INPUT -i %s %s %s -g %s" % (vlan.interface, dport_sport, rule.extra, "LOG_ACC" if rule.accept else "LOG_DROP"));
 			else:
 				self.iptables("-A OUTPUT -o %s %s %s -g %s" % (vlan.interface, dport_sport, rule.extra, "LOG_ACC" if rule.accept else "LOG_DROP"));
@@ -80,14 +80,14 @@ class firewall:
 
 		for vlan in rule.vlan.all():
 			if(rule.accept):
-				if((not rule.direction) and vlan.name == "PUB"):
+				if((rule.direction == '0') and vlan.name == "PUB"):
 					action = "PUB_OUT"
 				else:
 					action = "LOG_ACC"
 			else:
 				action = "LOG_DROP"
 
-			if(rule.direction): #HOSTHOZ megy
+			if(rule.direction == '1'): #HOSTHOZ megy
 				self.iptables("-A %s_%s %s %s -g %s" % (vlan, l_vlan, dport_sport, rule.extra, action));
 			else:
 				self.iptables("-A %s_%s %s %s -g %s" % (l_vlan, vlan, dport_sport, rule.extra, action));			
@@ -181,7 +181,7 @@ class firewall:
 
 		#portforward
 		for host in self.hosts.exclude(pub_ipv4=None):
-			for rule in host.rules.filter(nat=True, direction=True):
+			for rule in host.rules.filter(nat=True, direction='1'):
 				dport_sport = self.dportsport(rule, False)
 				if host.vlan.snat_ip:
 					self.iptablesnat("-A PREROUTING -d %s %s %s -j DNAT --to-destination %s:%s" % (host.pub_ipv4, dport_sport, rule.extra, host.ipv4, rule.nat_dport))
