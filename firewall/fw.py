@@ -141,13 +141,15 @@ class firewall:
 		self.iptables("-N PUB_OUT")
 		if not self.IPV6:
 			self.iptables("-A PUB_OUT -j r_pub_dIP")
-	#	self.iptables("-A PUB_OUT -s $HOST_pbx2_DMZ_IP -p tcp --dport 25 -j LOG_ACC")
+		self.iptables("-A PUB_OUT -s 10.2.0.9 -p tcp --dport 25 -j LOG_ACC")
+		self.iptables("-A PUB_OUT -s 10.2.0.2 -p tcp --dport 25 -j LOG_ACC")
 		self.iptables("-A PUB_OUT -p tcp --dport 25 -j LOG_DROP")
 		self.iptables("-A PUB_OUT -p tcp --dport 445 -j LOG_DROP")
 		self.iptables("-A PUB_OUT -p udp --dport 445 -j LOG_DROP")
 
 		self.iptables("-A FORWARD -m state --state INVALID -g LOG_DROP")
 		self.iptables("-A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT")
+		self.iptables("-A FORWARD -p icmp --icmp-type echo-request -g LOG_ACC")
 		if not self.IPV6:
 			self.iptables("-A FORWARD -j r_pub_sIP -o pub")
 		self.iptables("-A INPUT -m state --state INVALID -g LOG_DROP")
@@ -279,36 +281,75 @@ class firewall:
 			return "\n".join(self.SZABALYOK)+"\n"+"\n".join(self.SZABALYOK_NAT)+"\n"
 
 
+def ipv6_to_octal(ipv6):
+    while len(ipv6.split(':')) < 8:
+        ipv6 = ipv6.replace('::', ':::')
+    octets = []
+    for part in ipv6.split(':'):
+        if not part:
+            octets.extend([0, 0])
+        else:
+            # Pad hex part to 4 digits.
+            part = '%04x' % int(part, 16)
+            octets.append(int(part[:2], 16))
+            octets.append(int(part[2:], 16))
+    return '\\' + '\\'.join(['%03o' % x for x in octets])
+
+
+def ipv6_to_arpa(ipv6):
+    while len(ipv6.split(':')) < 8:
+        ipv6 = ipv6.replace('::', ':::')
+    octets = []
+    for part in ipv6.split(':'):
+        if not part:
+            octets.extend([0, 0, 0, 0])
+        else:
+            # Pad hex part to 4 digits.
+            part = '%04x' % int(part, 16)
+            octets.insert(0, int(part[0], 16))
+            octets.insert(0, int(part[1], 16))
+            octets.insert(0, int(part[2], 16))
+            octets.insert(0, int(part[3], 16))
+    return '.'.join(['%1x' % x for x in octets]) + '.ip6.arpa'
+
+
 
 def dns():
 	vlans = models.Vlan.objects.all()
 	regex = re.compile(r'^([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)$')
 	DNS = []
 	DNS.append("=cloud.ik.bme.hu:152.66.243.98:600::\n")
+	DNS.append("=infocpp.cloud.ik.bme.hu:152.66.241.75:600::\n")
+	DNS.append(":cloud.ik.bme.hu:28:\040\001\007\070\040\001\100\061\000\002\000\000\000\007\000\000:600\n")
 #tarokkknak
 	DNS.append("^%s.dns1.%s.%s.%s.in-addr.arpa:%s:600::\n" % (75, 243, 66, 152, "se.hpc.iit.bme.hu"))
 	DNS.append("^%s.dns1.%s.%s.%s.in-addr.arpa:%s:600::\n" % (76, 243, 66, 152, "ce.hpc.iit.bme.hu"))
 	DNS.append("^%s.dns1.%s.%s.%s.in-addr.arpa:%s:600::\n" % (77, 243, 66, 152, "mon.hpc.iit.bme.hu"))
 
-	DNS.append("Z1.3.0.4.1.0.0.2.8.3.7.0.1.0.0.2.ip6.arpa:dns1.ik.bme.hu:ez.miez::::::600\n") #soa
+	DNS.append("Z1.3.0.4.1.0.0.2.8.3.7.0.1.0.0.2.ip6.arpa:dns1.ik.bme.hu:support.ik.bme.hu::::::600\n") #soa
 	DNS.append("&1.3.0.4.1.0.0.2.8.3.7.0.1.0.0.2.ip6.arpa::dns1.ik.bme.hu:600::\n")      #ns
 	DNS.append("&1.3.0.4.1.0.0.2.8.3.7.0.1.0.0.2.ip6.arpa::nic.bme.hu:600::\n")      #ns
+#	DNS.append("&1.3.0.4.1.0.0.2.8.3.7.0.1.0.0.2.ip6.arpa::ns.bme.hu:600::\n")      #ns
 
 	for i_vlan in vlans:
 		m = regex.search(i_vlan.net4)
 		if(i_vlan.name != "DMZ" and i_vlan.name != "PUB"):
-			DNS.append("Z%s.%s.in-addr.arpa:dns1.ik.bme.hu:ez.miez::::::600\n" % (m.group(2), m.group(1)))
+			DNS.append("Z%s.%s.in-addr.arpa:dns1.ik.bme.hu:support.ik.bme.hu::::::600\n" % (m.group(2), m.group(1)))
 			DNS.append("&%s.%s.in-addr.arpa::dns1.ik.bme.hu:600::\n" % (m.group(2), m.group(1)))
-			DNS.append("Z%s:dns1.ik.bme.hu:ez.miez::::::600\n" % i_vlan.domain)
+			DNS.append("Z%s:dns1.ik.bme.hu:support.ik.bme.hu::::::600\n" % i_vlan.domain)
 			DNS.append("&%s::dns1.ik.bme.hu:600::\n" % i_vlan.domain)
 			if(i_vlan.name == "WAR"):
-				DNS.append("Zdns1.%s.%s.%s.in-addr.arpa:dns1.ik.bme.hu:ez.miez::::::600\n" % (m.group(3), m.group(2), m.group(1)))
+				DNS.append("Zdns1.%s.%s.%s.in-addr.arpa:dns1.ik.bme.hu:support.ik.bme.hu::::::600\n" % (m.group(3), m.group(2), m.group(1)))
 				DNS.append("&dns1.%s.%s.%s.in-addr.arpa::dns1.ik.bme.hu:600::\n" % (m.group(3), m.group(2), m.group(1)))
 		for i_host in i_vlan.host_set.all():
-			ipv4 = ( i_host.pub_ipv4 if i_host.pub_ipv4 else i_host.ipv4 )
+			ipv4 = ( i_host.pub_ipv4 if i_host.pub_ipv4 and not i_host.shared_ip else i_host.ipv4 )
 			m2 = regex.search(ipv4)
+			#ipv4
 			DNS.append("=%s.%s:%s:600::\n" % (i_host.hostname, i_vlan.domain, ipv4))
 			DNS.append("^%s.dns1.%s.%s.%s.in-addr.arpa:%s.%s:600::\n" % (m2.group(4), m2.group(3), m2.group(2), m2.group(1), i_host.hostname, i_vlan.domain))
+			#ipv6
+			DNS.append(":%s.%s:28:%s:600\n" % (i_host.hostname, i_vlan.domain, ipv6_to_octal(i_host.ipv6)))
+			DNS.append("^%s:%s.%s:600::\n" % (ipv6_to_arpa(i_host.ipv6), i_host.hostname, i_vlan.domain))
 
 	process = subprocess.Popen(['/usr/bin/ssh', 'tinydns@%s' % DNS_SERVER], shell=False, stdin=subprocess.PIPE)
 	process.communicate("\n".join(DNS)+"\n")
