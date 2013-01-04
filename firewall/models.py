@@ -1,3 +1,5 @@
+# -*- coding: utf8 -*-
+
 from django.contrib.auth.models import User
 from django.db import models
 from django.forms import fields, ValidationError
@@ -25,15 +27,28 @@ class Rule(models.Model):
 
      def __unicode__(self):
         return self.desc()
+
+     def color_desc(self):
+	para = '</span>'
+	if(self.dport):
+		para = "dport=%s %s" % (self.dport, para)
+	if(self.sport):
+		para = "sport=%s %s" % (self.sport, para)
+	if(self.proto):
+		para = "proto=%s %s" % (self.proto, para)
+	para= '<span style="color: #00FF00;">' + para
+	return '<span style="color: #FF0000;">[' + self.r_type + ']</span> ' + (self.vlan_l() + '<span style="color: #0000FF;">&#8594;</span>' + self.r_type if self.direction=='1' else self.r_type + '<span style="color: #0000FF;">&#8594;</span>' + self.vlan_l()) + ' ' + para + ' ' +self.description
+     color_desc.allow_tags = True
+
      def desc(self):
 	para = ""
 	if(self.dport):
 		para = "dport=%s %s" % (self.dport, para)
 	if(self.sport):
-		para = "dport=%s %s" % (self.sport, para)
+		para = "sport=%s %s" % (self.sport, para)
 	if(self.proto):
-		para = "dport=%s %s" % (self.proto, para)
-	return '[' + self.r_type + '] ' + (self.vlan_l() + '->' + self.r_type if self.direction else self.r_type + '->' + self.vlan_l()) + ' ' + para + ' ' +self.description
+		para = "proto=%s %s" % (self.proto, para)
+	return '[' + self.r_type + '] ' + (self.vlan_l() + '&#8594;' + self.r_type if self.direction=='1' else self.r_type + '&#8594;' + self.vlan_l()) + ' ' + para + ' ' +self.description
      def vlan_l(self):
 	retval = []
 	for vl in self.vlan.all():
@@ -113,9 +128,9 @@ class Host(models.Model):
     def rules_l(self):
 	retval = []
 	for rl in self.rules.all():
-		retval.append(str(rl))
-	return ', '.join(retval)
-
+		retval.append(str(rl.color_desc()))
+	return '<br>'.join(retval)
+    rules_l.allow_tags = True
     def enable_net(self):
 	self.groups.add(Group.objects.get(name="netezhet"))
 
@@ -126,7 +141,7 @@ class Host(models.Model):
 	for host in Host.objects.filter(pub_ipv4=self.pub_ipv4):
 		if host.rules.filter(nat=True, proto=proto, dport=public):
 			raise ValidationError("A %s %s port mar hasznalva" % (proto, public))
-	rule = Rule(direction='1', owner=self.owner, description="%s %s %s->%s" % (self.hostname, proto, public, private), dport=public, proto=proto, nat=True, accept=True, r_type="host", nat_dport=private)
+	rule = Rule(direction='1', owner=self.owner, description="%s %s %s&#8594;%s" % (self.hostname, proto, public, private), dport=public, proto=proto, nat=True, accept=True, r_type="host", nat_dport=private)
 	rule.full_clean()
 	rule.save()
 	rule.vlan.add(Vlan.objects.get(name="PUB"))

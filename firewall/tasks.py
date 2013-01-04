@@ -36,6 +36,7 @@ class ReloadTask(Task):
 			dhcp()
 			print "vege"
 		except:
+			raise
 			print "nem sikerult :("
 
 		print "leall"

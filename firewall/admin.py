@@ -14,7 +14,7 @@ class VlanAdmin(admin.ModelAdmin):
     ordering = ('vid',)
 
 class RuleAdmin(admin.ModelAdmin):
-    list_display = ('r_type', 'desc', 'description', 'vlan_l', 'owner', 'extra', 'direction', 'accept', 'proto', 'sport', 'dport', 'nat', 'nat_dport')
+    list_display = ('r_type', 'color_desc', 'description', 'vlan_l', 'owner', 'extra', 'direction', 'accept', 'proto', 'sport', 'dport', 'nat', 'nat_dport')
     list_filter = ('r_type', 'vlan', 'owner', 'direction', 'accept', 'proto', 'nat')
 
 admin.site.register(Host, HostAdmin)
