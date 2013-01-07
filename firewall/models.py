@@ -36,8 +36,8 @@ class Rule(models.Model):
 		para = "sport=%s %s" % (self.sport, para)
 	if(self.proto):
 		para = "proto=%s %s" % (self.proto, para)
-	para= '<span style="color: #00FF00;">' + para
-	return '<span style="color: #FF0000;">[' + self.r_type + ']</span> ' + (self.vlan_l() + '<span style="color: #0000FF;">&#8594;</span>' + self.r_type if self.direction=='1' else self.r_type + '<span style="color: #0000FF;">&#8594;</span>' + self.vlan_l()) + ' ' + para + ' ' +self.description
+	para= u'<span style="color: #00FF00;">' + para
+	return u'<span style="color: #FF0000;">[' + self.r_type + u']</span> ' + (self.vlan_l() + u'<span style="color: #0000FF;"> ▸ </span>' + self.r_type if self.direction=='1' else self.r_type + u'<span style="color: #0000FF;"> ▸ </span>' + self.vlan_l()) + ' ' + para + ' ' +self.description
      color_desc.allow_tags = True
 
      def desc(self):
@@ -48,7 +48,7 @@ class Rule(models.Model):
 		para = "sport=%s %s" % (self.sport, para)
 	if(self.proto):
 		para = "proto=%s %s" % (self.proto, para)
-	return '[' + self.r_type + '] ' + (self.vlan_l() + '&#8594;' + self.r_type if self.direction=='1' else self.r_type + '&#8594;' + self.vlan_l()) + ' ' + para + ' ' +self.description
+	return '[' + self.r_type + '] ' + (self.vlan_l() + ' ▸ ' + self.r_type if self.direction=='1' else self.r_type + ' ▸ ' + self.vlan_l()) + ' ' + para + ' ' +self.description
      def vlan_l(self):
 	retval = []
 	for vl in self.vlan.all():
@@ -76,18 +76,18 @@ class Vlan(models.Model):
     def __unicode__(self):
         return self.name
     def net_ipv6(self):
-	return self.net6 + "/" + str(self.prefix6)
+	return self.net6 + "/" + unicode(self.prefix6)
     def net_ipv4(self):
-	return self.net4 + "/" + str(self.prefix4)
+	return self.net4 + "/" + unicode(self.prefix4)
     def rules_l(self):
 	retval = []
 	for rl in self.rules.all():
-		retval.append(str(rl))
+		retval.append(unicode(rl))
 	return ', '.join(retval)
     def snat_to_l(self):
 	retval = []
 	for rl in self.snat_to.all():
-		retval.append(str(rl))
+		retval.append(unicode(rl))
 	return ', '.join(retval)
 
 class Group(models.Model):
@@ -128,7 +128,7 @@ class Host(models.Model):
     def rules_l(self):
 	retval = []
 	for rl in self.rules.all():
-		retval.append(str(rl.color_desc()))
+		retval.append(unicode(rl.color_desc()))
 	return '<br>'.join(retval)
     rules_l.allow_tags = True
     def enable_net(self):
@@ -141,7 +141,7 @@ class Host(models.Model):
 	for host in Host.objects.filter(pub_ipv4=self.pub_ipv4):
 		if host.rules.filter(nat=True, proto=proto, dport=public):
 			raise ValidationError("A %s %s port mar hasznalva" % (proto, public))
-	rule = Rule(direction='1', owner=self.owner, description="%s %s %s&#8594;%s" % (self.hostname, proto, public, private), dport=public, proto=proto, nat=True, accept=True, r_type="host", nat_dport=private)
+	rule = Rule(direction='1', owner=self.owner, description=u"%s %s %s ▸ %s" % (self.hostname, proto, public, private), dport=public, proto=proto, nat=True, accept=True, r_type="host", nat_dport=private)
 	rule.full_clean()
 	rule.save()
 	rule.vlan.add(Vlan.objects.get(name="PUB"))
