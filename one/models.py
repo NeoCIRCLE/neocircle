@@ -288,7 +288,7 @@ class Instance(models.Model):
                         <SMBPW>%(smbpw)s</SMBPW>
                         <SSHPRIV>%(sshkey)s</SSHPRIV>
                         <BOOTURL>%(booturl)s</BOOTURL>
-                        <SERVER>152.66.243.73</SERVER>
+                        <SERVER>store.cloud.ik.bme.hu</SERVER>
                     </CONTEXT>
                 </COMPUTE>""" % {"name": u"%s %d" % (owner.username, inst.id),
                                  "instance": template.instance_type,
