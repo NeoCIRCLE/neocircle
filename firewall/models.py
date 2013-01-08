@@ -41,19 +41,19 @@ class Rule(models.Model):
      color_desc.allow_tags = True
 
      def desc(self):
-	para = ""
+	para = u""
 	if(self.dport):
 		para = "dport=%s %s" % (self.dport, para)
 	if(self.sport):
 		para = "sport=%s %s" % (self.sport, para)
 	if(self.proto):
 		para = "proto=%s %s" % (self.proto, para)
-	return '[' + self.r_type + '] ' + (self.vlan_l() + ' ▸ ' + self.r_type if self.direction=='1' else self.r_type + ' ▸ ' + self.vlan_l()) + ' ' + para + ' ' +self.description
+	return u'[' + self.r_type + u'] ' + (self.vlan_l() + u' ▸ ' + self.r_type if self.direction=='1' else self.r_type + u' ▸ ' + self.vlan_l()) + u' ' + para + u' ' +self.description
      def vlan_l(self):
 	retval = []
 	for vl in self.vlan.all():
 		retval.append(vl.name)
-	return ', '.join(retval)
+	return u', '.join(retval)
 
 class Vlan(models.Model):
     vid = models.IntegerField(unique=True)
