@@ -20,17 +20,15 @@ def index(request):
         return HttpResponse('Can not acces to django database!')
     if StoreApi.UserExist(user) != True:
         #Create user
-        if StoreApi.CreateUser(user,password,key_list):
-            pass
-        else:
+        if not StoreApi.CreateUser(user,password,key_list):
             return HttpResponse('User does not exist on store! And could not create!')
     #UpdateAuthorizationInfo
     try:
         auth=request.POST['auth']
-        result='ures'
-        result=UpdateAuthorizationInfo(user,password,key_list)
+        if not StoreApi.UpdateAuthorizationInfo(user,password,key_list):
+           return HttpResponse('Can not update authorization information!')
     except:
-        return HttpResponse('Error: '+result)
+        pass
     #Download handler
     try:
         dl = request.POST['dl']
