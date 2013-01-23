@@ -54,6 +54,9 @@ class firewall:
 		for vlan in rule.vlan.all():
 			if(rule.accept):
 				if(rule.direction == '0' and vlan.name == "PUB"):
+					if(rule.dport == 25):
+						self.iptables("-A PUB_OUT -s %s %s -p tcp --dport 25 -j LOG_ACC" % (ipaddr, rule.extra))
+						break
 					action = "PUB_OUT"
 				else:
 					action = "LOG_ACC"
@@ -141,11 +144,6 @@ class firewall:
 		self.iptables("-N PUB_OUT")
 		if not self.IPV6:
 			self.iptables("-A PUB_OUT -j r_pub_dIP")
-		self.iptables("-A PUB_OUT -s 10.2.0.9 -p tcp --dport 25 -j LOG_ACC")
-		self.iptables("-A PUB_OUT -s 10.2.0.2 -p tcp --dport 25 -j LOG_ACC")
-		self.iptables("-A PUB_OUT -p tcp --dport 25 -j LOG_DROP")
-		self.iptables("-A PUB_OUT -p tcp --dport 445 -j LOG_DROP")
-		self.iptables("-A PUB_OUT -p udp --dport 445 -j LOG_DROP")
 
 		self.iptables("-A FORWARD -m state --state INVALID -g LOG_DROP")
 		self.iptables("-A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT")
@@ -164,6 +162,12 @@ class firewall:
 
 
 	def postrun(self):
+		self.iptables("-A PUB_OUT -s 152.66.243.160/27 -p tcp --dport 25 -j LOG_ACC")
+		self.iptables("-A PUB_OUT -s 152.66.243.160/27 -p tcp --dport 445 -j LOG_ACC")
+		self.iptables("-A PUB_OUT -p tcp --dport 25 -j LOG_DROP")
+		self.iptables("-A PUB_OUT -p tcp --dport 445 -j LOG_DROP")
+		self.iptables("-A PUB_OUT -p udp --dport 445 -j LOG_DROP")
+
 		self.iptables("-A PUB_OUT -g LOG_ACC")
 		self.iptables("-A FORWARD -g LOG_DROP")
 		self.iptables("-A INPUT -g LOG_DROP")
