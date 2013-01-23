@@ -98,7 +98,7 @@ class Group(models.Model):
         return self.name
 
 class Host(models.Model):
-    hostname = models.CharField(max_length=20, unique=True, validators=[val_alfanum])
+    hostname = models.CharField(max_length=40, unique=True, validators=[val_alfanum])
     mac = MACAddressField(unique=True)
     ipv4 = models.GenericIPAddressField(protocol='ipv4', unique=True)
     pub_ipv4 = models.GenericIPAddressField(protocol='ipv4', blank=True, null=True)
@@ -119,6 +119,8 @@ class Host(models.Model):
             self.ipv6 = ipv4_2_ipv6(self.ipv4)
 	if not self.shared_ip and self.pub_ipv4 and Host.objects.exclude(id=self.id).filter(pub_ipv4=self.pub_ipv4):
 	    raise ValidationError("Ha a shared_ip be van pipalva, akkor egyedinek kell lennie a pub_ipv4-nek!")
+        if Host.objects.exclude(id=self.id).filter(pub_ipv4=self.ipv4):
+            raise ValidationError("Egy masik host natolt cimet nem hasznalhatod sajat ipv4-nek")
         super(Host, self).save(*args, **kwargs)
     def groups_l(self):
 	retval = []
@@ -150,6 +152,7 @@ class Host(models.Model):
 	rule.vlan.add(Vlan.objects.get(name="DMZ"))
 	rule.vlan.add(Vlan.objects.get(name="VM-NET"))
 	rule.vlan.add(Vlan.objects.get(name="WAR"))
+	rule.vlan.add(Vlan.objects.get(name="OFF2"))
 	self.rules.add(rule)
 
     def del_port(self, proto, public):
