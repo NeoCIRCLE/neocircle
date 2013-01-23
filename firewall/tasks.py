@@ -4,11 +4,9 @@ import os
 import time
 from firewall.fw import *
 
-LOCK_EXPIRE = 9 # Lock expires in 5 minutes
-lock_id = "blabla"
 
 def reload_firewall_lock():
-	acquire_lock = lambda: cache.add(lock_id, "true", LOCK_EXPIRE)
+	acquire_lock = lambda: cache.add("reload_lock1", "true", 9)
 
 	if acquire_lock():
 		print "megszereztem"
@@ -19,6 +17,13 @@ def reload_firewall_lock():
 
 class ReloadTask(Task):
 	def run(self, **kwargs):
+		acquire_lock = lambda: cache.add("reload_lock1", "true", 90)
+		release_lock = lambda: cache.delete("reload_lock1")
+
+		if not acquire_lock():
+			print "mar folyamatban van egy reload"
+			return
+
 		print "indul"
 		time.sleep(10)
 
@@ -40,3 +45,4 @@ class ReloadTask(Task):
 			print "nem sikerult :("
 
 		print "leall"
+		release_lock()
