@@ -1,0 +1,93 @@
+<table>
+    <tr>
+        <td>Welcome: {{username}}</td>
+        <td>
+            <form action="/store/" method="POST">
+                {% csrf_token %}
+                <input type="submit" value="CopyKeys">
+                <input type="hidden" name="auth" value="True">
+            </form>
+        </td> 
+        <td></td> 
+        <td></td>
+    	<td>
+            <form action="/store/" method="POST"
+               target="uploader-popup" 
+                onSubmit="window.open('/store/', 'uploader-popup', 'width=450,height=300,status=yes,resizable=yes,scrollbars=no,menubar=no,toolbar=no'">
+                {% csrf_token %}
+                <input type="submit" value="Upload">
+                <input type="hidden" name="path" value="{{ path }}">
+                <input type="hidden" name="ul" value="{{ path }}">
+            </form>
+        </td>
+        <td>
+            <form action="/store/" method="POST">
+                {% csrf_token %}
+                <input type="submit" value="New Folder">
+                <input type="hidden" name="path" value="{{ path }}">
+                <input type="text" name="new" value="Folder Name">
+            </form>
+        </td>
+    </tr>
+    <tr>
+        <td>Név</td>
+        <td>Típus</td> 
+        <td>Méret (KB)</td> 
+        <td>Utolsó modosítás</td>
+    	<td>Műveletek</td>
+    </tr>
+    <tr>
+        <td>{% if path != '/' %}
+	    <form action="/store/" method="POST">{% csrf_token %}
+	    	<input type="submit" value="{{ backpath }}">
+		{% if backpath == '/'%}
+	            <input type="hidden" name="path" value="/">
+		{% else %}
+	            <input type="hidden" name="path" value="{{ backpath }}/">
+		{% endif %}
+	    </form>
+	    {% endif %}
+	</td>
+    </tr> 
+    {% if file_list %} 
+    {% for item in file_list %} 
+    <tr> 
+        <td> 
+            {% if item.1 == 'D' %} 
+            <form action="/store/" method="POST">{% csrf_token %}
+		<input type="submit" value="{{ item.0 }}">
+		{% if item.0 != '/' %}
+		<input type="hidden" name="path" value="{{ path }}{{ item.0 }}/">
+		{% else %}
+		    <input type="hidden" name="path" value="/">
+		{% endif %}
+            </form> 
+            {% else %}
+            {{ item.0 }}
+            {% endif %}
+
+        </td>
+        <td>{{ item.1 }}</td>
+        <td>{{ item.2 }}</td>
+        <td>{{ item.3 }}</td>
+    	<td>
+            {% if item.1 != 'D' %}
+                <form action="/store/" method="POST">{% csrf_token %}
+                <input type="submit" value="Download">
+                <input type="hidden" name="path" value="{{ path }}">
+                <input type="hidden" name="dl" value="{{ path }}{{ item.0 }}">
+                </form>
+            {% endif %}
+        </td>
+        <td>
+                 <form action="/store/" method="POST">{% csrf_token %}
+                     <input type="submit" value="Remove">
+                     <input type="hidden" name="path" value="{{ path }}">
+                     <input type="hidden" name="rm" value="{{ path }}{{ item.0 }}">
+                </form>
+	    </td>
+    </tr>
+    {% endfor %}
+    {% endif %}
+</table>
+

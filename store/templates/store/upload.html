@@ -1,0 +1,5 @@
+<form method="POST" action="{{URL}}" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input name="data" type="file" />
+    <input type="submit" value="Feltöltés"/>
+</form

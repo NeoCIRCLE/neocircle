@@ -123,6 +123,7 @@ INSTALLED_APPS = (
     'one',
     'school',
     'cloud',
+    'store',
     'firewall',
     'south',
     'djcelery',
