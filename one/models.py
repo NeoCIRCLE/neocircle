@@ -322,7 +322,7 @@ class Instance(models.Model):
         host.hostname = u"id-%d_user-%s" % (inst.id, owner.username)
         host.mac = x.getElementsByTagName("MAC")[0].childNodes[0].nodeValue
         host.ipv4 = inst.ip
-        host.pub_ipv4 = "152.66.243.161"
+        host.pub_ipv4 = "152.66.243.62"
         host.full_clean()
         host.save()
         host.enable_net()

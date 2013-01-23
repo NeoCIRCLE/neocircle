@@ -323,14 +323,13 @@ def dns():
 	regex = re.compile(r'^([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)$')
 	DNS = []
 	DNS.append("=cloud.ik.bme.hu:152.66.243.98:600::\n")
-	DNS.append("=infocpp.cloud.ik.bme.hu:152.66.241.75:600::\n")
 	DNS.append(":cloud.ik.bme.hu:28:\040\001\007\070\040\001\100\061\000\002\000\000\000\007\000\000:600\n")
 #tarokkknak
 	DNS.append("^%s.dns1.%s.%s.%s.in-addr.arpa:%s:600::\n" % (75, 243, 66, 152, "se.hpc.iit.bme.hu"))
 	DNS.append("^%s.dns1.%s.%s.%s.in-addr.arpa:%s:600::\n" % (76, 243, 66, 152, "ce.hpc.iit.bme.hu"))
 	DNS.append("^%s.dns1.%s.%s.%s.in-addr.arpa:%s:600::\n" % (77, 243, 66, 152, "mon.hpc.iit.bme.hu"))
-	DNS.append("^%s.dns1.%s.%s.%s.in-addr.arpa:%s:600::\n" % (161, 243, 66, 152, "r.cloud.ik.bme.hu"))
-	DNS.append("=r.cloud.ik.bme.hu:152.66.241.161:600::\n")
+	DNS.append("^%s.dns1.%s.%s.%s.in-addr.arpa:%s:600::\n" % (62, 243, 66, 152, "r.cloud.ik.bme.hu"))
+	DNS.append("=r.cloud.ik.bme.hu:152.66.243.62:600::\n")
 
 
 	DNS.append("Z1.3.0.4.1.0.0.2.8.3.7.0.1.0.0.2.ip6.arpa:dns1.ik.bme.hu:support.ik.bme.hu::::::600\n") #soa
