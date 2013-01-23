@@ -35,6 +35,9 @@ def firewall_api(request):
 			if(data["password"] != "bdmegintelrontottaanetet"):
 				raise Exception("rossz jelszo")
 
+			if(not(data["vlan"] == "vm-net" or data["vlan"] == "war")):
+				raise Exception("csak vm-net es war-re mukodik")
+
 			data["hostname"] = re.sub(r' ','_', data["hostname"])
 
 			if(command == "create"):
