@@ -20,6 +20,9 @@ from django.views.decorators.http import *
 from django.views.generic import *
 from one.models import *
 import django.contrib.auth as auth
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 SHIB_ATTRIBUTE_MAP = {
@@ -73,5 +76,7 @@ def login(request):
 
     user.backend = 'django.contrib.auth.backends.ModelBackend'
     auth.login(request, user)
+    logger.warning("Shib login with %s" % request.META)
+
 
     return redirect('/')
