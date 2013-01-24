@@ -42,5 +42,5 @@ def val_domain(value):
           raise ValidationError(u'%s - helytelen domain' % value)
 
 def ipv4_2_ipv6(ipv4):
-	m = ipv4_re.match(ipv4)
-	return "2001:738:2001:4031:%s:%s:%s:0" % (m.group(1), m.group(2), m.group(3))
+    m = ipv4_re.match(ipv4)
+    return "2001:738:2001:4031:%s:%s:%s:0" % (m.group(1), m.group(2), m.group(3))

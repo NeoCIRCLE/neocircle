@@ -9,51 +9,51 @@ from south.modelsinspector import add_introspection_rules
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Rule(models.Model):
-     CHOICES_type = (('host', 'host'), ('firewall', 'firewall'), ('vlan', 'vlan'))
-     CHOICES_proto = (('tcp', 'tcp'), ('udp', 'udp'), ('icmp', 'icmp'))
-     CHOICES_dir = (('0', 'out'), ('1', 'in'))
-     direction = models.CharField(max_length=1, choices=CHOICES_dir, blank=False)
-     description = models.TextField(blank=True)
-     vlan = models.ManyToManyField('Vlan', symmetrical=False, blank=True, null=True)
-     dport = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1), MaxValueValidator(65535)])
-     sport = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1), MaxValueValidator(65535)])
-     proto = models.CharField(max_length=10, choices=CHOICES_proto, blank=True, null=True)
-     extra = models.TextField(blank=True)
-     accept = models.BooleanField(default=False)
-     owner = models.ForeignKey(User, blank=True, null=True)
-     r_type = models.CharField(max_length=10, choices=CHOICES_type)
-     nat = models.BooleanField(default=False)
-     nat_dport = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1), MaxValueValidator(65535)])
+    CHOICES_type = (('host', 'host'), ('firewall', 'firewall'), ('vlan', 'vlan'))
+    CHOICES_proto = (('tcp', 'tcp'), ('udp', 'udp'), ('icmp', 'icmp'))
+    CHOICES_dir = (('0', 'out'), ('1', 'in'))
+    direction = models.CharField(max_length=1, choices=CHOICES_dir, blank=False)
+    description = models.TextField(blank=True)
+    vlan = models.ManyToManyField('Vlan', symmetrical=False, blank=True, null=True)
+    dport = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1), MaxValueValidator(65535)])
+    sport = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1), MaxValueValidator(65535)])
+    proto = models.CharField(max_length=10, choices=CHOICES_proto, blank=True, null=True)
+    extra = models.TextField(blank=True)
+    accept = models.BooleanField(default=False)
+    owner = models.ForeignKey(User, blank=True, null=True)
+    r_type = models.CharField(max_length=10, choices=CHOICES_type)
+    nat = models.BooleanField(default=False)
+    nat_dport = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1), MaxValueValidator(65535)])
 
-     def __unicode__(self):
+    def __unicode__(self):
         return self.desc()
 
-     def color_desc(self):
-	para = '</span>'
-	if(self.dport):
-		para = "dport=%s %s" % (self.dport, para)
-	if(self.sport):
-		para = "sport=%s %s" % (self.sport, para)
-	if(self.proto):
-		para = "proto=%s %s" % (self.proto, para)
-	para= u'<span style="color: #00FF00;">' + para
-	return u'<span style="color: #FF0000;">[' + self.r_type + u']</span> ' + (self.vlan_l() + u'<span style="color: #0000FF;"> ▸ </span>' + self.r_type if self.direction=='1' else self.r_type + u'<span style="color: #0000FF;"> ▸ </span>' + self.vlan_l()) + ' ' + para + ' ' +self.description
-     color_desc.allow_tags = True
+    def color_desc(self):
+        para = '</span>'
+        if(self.dport):
+            para = "dport=%s %s" % (self.dport, para)
+        if(self.sport):
+            para = "sport=%s %s" % (self.sport, para)
+        if(self.proto):
+            para = "proto=%s %s" % (self.proto, para)
+        para= u'<span style="color: #00FF00;">' + para
+        return u'<span style="color: #FF0000;">[' + self.r_type + u']</span> ' + (self.vlan_l() + u'<span style="color: #0000FF;"> ▸ </span>' + self.r_type if self.direction=='1' else self.r_type + u'<span style="color: #0000FF;"> ▸ </span>' + self.vlan_l()) + ' ' + para + ' ' +self.description
+    color_desc.allow_tags = True
 
-     def desc(self):
-	para = u""
-	if(self.dport):
-		para = "dport=%s %s" % (self.dport, para)
-	if(self.sport):
-		para = "sport=%s %s" % (self.sport, para)
-	if(self.proto):
-		para = "proto=%s %s" % (self.proto, para)
-	return u'[' + self.r_type + u'] ' + (self.vlan_l() + u' ▸ ' + self.r_type if self.direction=='1' else self.r_type + u' ▸ ' + self.vlan_l()) + u' ' + para + u' ' +self.description
-     def vlan_l(self):
-	retval = []
-	for vl in self.vlan.all():
-		retval.append(vl.name)
-	return u', '.join(retval)
+    def desc(self):
+        para = u""
+        if(self.dport):
+            para = "dport=%s %s" % (self.dport, para)
+        if(self.sport):
+            para = "sport=%s %s" % (self.sport, para)
+        if(self.proto):
+            para = "proto=%s %s" % (self.proto, para)
+        return u'[' + self.r_type + u'] ' + (self.vlan_l() + u' ▸ ' + self.r_type if self.direction=='1' else self.r_type + u' ▸ ' + self.vlan_l()) + u' ' + para + u' ' +self.description
+    def vlan_l(self):
+        retval = []
+        for vl in self.vlan.all():
+            retval.append(vl.name)
+        return u', '.join(retval)
 
 class Vlan(models.Model):
     vid = models.IntegerField(unique=True)
@@ -76,19 +76,19 @@ class Vlan(models.Model):
     def __unicode__(self):
         return self.name
     def net_ipv6(self):
-	return self.net6 + "/" + unicode(self.prefix6)
+        return self.net6 + "/" + unicode(self.prefix6)
     def net_ipv4(self):
-	return self.net4 + "/" + unicode(self.prefix4)
+        return self.net4 + "/" + unicode(self.prefix4)
     def rules_l(self):
-	retval = []
-	for rl in self.rules.all():
-		retval.append(unicode(rl))
-	return ', '.join(retval)
+        retval = []
+        for rl in self.rules.all():
+            retval.append(unicode(rl))
+        return ', '.join(retval)
     def snat_to_l(self):
-	retval = []
-	for rl in self.snat_to.all():
-		retval.append(unicode(rl))
-	return ', '.join(retval)
+        retval = []
+        for rl in self.snat_to.all():
+            retval.append(unicode(rl))
+        return ', '.join(retval)
 
 class Group(models.Model):
     name = models.CharField(max_length=20, unique=True)
@@ -117,55 +117,55 @@ class Host(models.Model):
     def save(self, *args, **kwargs):
         if not self.id and not self.ipv6:
             self.ipv6 = ipv4_2_ipv6(self.ipv4)
-	if not self.shared_ip and self.pub_ipv4 and Host.objects.exclude(id=self.id).filter(pub_ipv4=self.pub_ipv4):
-	    raise ValidationError("Ha a shared_ip be van pipalva, akkor egyedinek kell lennie a pub_ipv4-nek!")
+        if not self.shared_ip and self.pub_ipv4 and Host.objects.exclude(id=self.id).filter(pub_ipv4=self.pub_ipv4):
+            raise ValidationError("Ha a shared_ip be van pipalva, akkor egyedinek kell lennie a pub_ipv4-nek!")
         if Host.objects.exclude(id=self.id).filter(pub_ipv4=self.ipv4):
             raise ValidationError("Egy masik host natolt cimet nem hasznalhatod sajat ipv4-nek")
         super(Host, self).save(*args, **kwargs)
     def groups_l(self):
-	retval = []
-	for grp in self.groups.all():
-		retval.append(grp.name)
-	return ', '.join(retval)
+        retval = []
+        for grp in self.groups.all():
+            retval.append(grp.name)
+        return ', '.join(retval)
     def rules_l(self):
-	retval = []
-	for rl in self.rules.all():
-		retval.append(unicode(rl.color_desc()))
-	return '<br>'.join(retval)
+        retval = []
+        for rl in self.rules.all():
+            retval.append(unicode(rl.color_desc()))
+        return '<br>'.join(retval)
     rules_l.allow_tags = True
     def enable_net(self):
-	self.groups.add(Group.objects.get(name="netezhet"))
+        self.groups.add(Group.objects.get(name="netezhet"))
 
     def add_port(self, proto, public, private):
-	proto = "tcp" if (proto == "tcp") else "udp"
+        proto = "tcp" if (proto == "tcp") else "udp"
         if public < 1024: 
-        	raise ValidationError("Csak az 1024 feletti portok hasznalhatok")
-	for host in Host.objects.filter(pub_ipv4=self.pub_ipv4):
-		if host.rules.filter(nat=True, proto=proto, dport=public):
-			raise ValidationError("A %s %s port mar hasznalva" % (proto, public))
-	rule = Rule(direction='1', owner=self.owner, description=u"%s %s %s ▸ %s" % (self.hostname, proto, public, private), dport=public, proto=proto, nat=True, accept=True, r_type="host", nat_dport=private)
-	rule.full_clean()
-	rule.save()
-	rule.vlan.add(Vlan.objects.get(name="PUB"))
-	rule.vlan.add(Vlan.objects.get(name="HOT"))
-	rule.vlan.add(Vlan.objects.get(name="LAB"))
-	rule.vlan.add(Vlan.objects.get(name="DMZ"))
-	rule.vlan.add(Vlan.objects.get(name="VM-NET"))
-	rule.vlan.add(Vlan.objects.get(name="WAR"))
-	rule.vlan.add(Vlan.objects.get(name="OFF2"))
-	self.rules.add(rule)
+            raise ValidationError("Csak az 1024 feletti portok hasznalhatok")
+        for host in Host.objects.filter(pub_ipv4=self.pub_ipv4):
+            if host.rules.filter(nat=True, proto=proto, dport=public):
+                raise ValidationError("A %s %s port mar hasznalva" % (proto, public))
+        rule = Rule(direction='1', owner=self.owner, description=u"%s %s %s ▸ %s" % (self.hostname, proto, public, private), dport=public, proto=proto, nat=True, accept=True, r_type="host", nat_dport=private)
+        rule.full_clean()
+        rule.save()
+        rule.vlan.add(Vlan.objects.get(name="PUB"))
+        rule.vlan.add(Vlan.objects.get(name="HOT"))
+        rule.vlan.add(Vlan.objects.get(name="LAB"))
+        rule.vlan.add(Vlan.objects.get(name="DMZ"))
+        rule.vlan.add(Vlan.objects.get(name="VM-NET"))
+        rule.vlan.add(Vlan.objects.get(name="WAR"))
+        rule.vlan.add(Vlan.objects.get(name="OFF2"))
+        self.rules.add(rule)
 
     def del_port(self, proto, public):
-	self.rules.filter(owner=self.owner, proto=proto, nat=True, dport=public).delete()
+        self.rules.filter(owner=self.owner, proto=proto, nat=True, dport=public).delete()
 
     def list_ports(self):
-	retval = []
-	for rule in self.rules.filter(owner=self.owner, nat=True):
-		retval.append({'proto': rule.proto, 'public': rule.dport, 'private': rule.nat_dport})
-	return retval
+        retval = []
+        for rule in self.rules.filter(owner=self.owner, nat=True):
+            retval.append({'proto': rule.proto, 'public': rule.dport, 'private': rule.nat_dport})
+        return retval
 
     def del_rules(self):
-	self.rules.filter(owner=self.owner).delete()
+        self.rules.filter(owner=self.owner).delete()
 
 class Firewall(models.Model):
     name = models.CharField(max_length=20, unique=True)

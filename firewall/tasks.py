@@ -6,43 +6,43 @@ from firewall.fw import *
 
 
 def reload_firewall_lock():
-	acquire_lock = lambda: cache.add("reload_lock1", "true", 9)
+    acquire_lock = lambda: cache.add("reload_lock1", "true", 9)
 
-	if acquire_lock():
-		print "megszereztem"
-		ReloadTask.delay()
-	else:
-		print "nem szereztem meg"
+    if acquire_lock():
+        print "megszereztem"
+        ReloadTask.delay()
+    else:
+        print "nem szereztem meg"
 
 
 class ReloadTask(Task):
-	def run(self, **kwargs):
-		acquire_lock = lambda: cache.add("reload_lock1", "true", 90)
-		release_lock = lambda: cache.delete("reload_lock1")
+    def run(self, **kwargs):
+        acquire_lock = lambda: cache.add("reload_lock1", "true", 90)
+        release_lock = lambda: cache.delete("reload_lock1")
 
-		if not acquire_lock():
-			print "mar folyamatban van egy reload"
-			return
+        if not acquire_lock():
+            print "mar folyamatban van egy reload"
+            return
 
-		print "indul"
-		time.sleep(10)
+        print "indul"
+        time.sleep(10)
 
-		try:
-			print "ipv4"
-			ipv4 = firewall()
-			ipv4.reload()
-#			print ipv4.show()
-			print "ipv6"
-			ipv6 = firewall(True)
-			ipv6.reload()
-			print "dns"
-			dns()
-			print "dhcp"
-			dhcp()
-			print "vege"
-		except:
-			raise
-			print "nem sikerult :("
+        try:
+            print "ipv4"
+            ipv4 = firewall()
+            ipv4.reload()
+#           print ipv4.show()
+            print "ipv6"
+            ipv6 = firewall(True)
+            ipv6.reload()
+            print "dns"
+            dns()
+            print "dhcp"
+            dhcp()
+            print "vege"
+        except:
+            raise
+            print "nem sikerult :("
 
-		print "leall"
-		release_lock()
+        print "leall"
+        release_lock()
