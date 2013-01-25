@@ -1,0 +1,30 @@
+- fields: {name: wifi, nat: true, public: false}
+  model: one.network
+  pk: 1
+- fields: {CPU: 1, RAM: 102, name: small}
+  model: one.instancetype
+  pk: 1
+- fields: {access_type: ssh, created_at: !!timestamp '2013-01-24 23:06:00+00:00', disk: 1, instance_type: 1, name: tty, network: 1, owner: 1}
+  model: one.template
+  pk: 1
+- fields: {name: Copy of ttylinux - kvm}
+  model: one.disk
+  pk: 1
+- fields:
+    comment: ''
+    description: ''
+    dhcp_pool: manual
+    domain: wifi.ik.bme.hu
+    interface: fake
+    ipv4: 192.168.255.254
+    ipv6: 2001:738:2001:4031:168:255:254:0
+    name: 'wifi'
+    net4: 192.168.0.0
+    net6: '2001:738:2001:4031:168::'
+    prefix4: 16
+    prefix6: 80
+    snat_ip: 152.66.243.160
+    snat_to: [4, 7]
+    vid: 168
+  model: firewall.vlan
+  pk: 168
