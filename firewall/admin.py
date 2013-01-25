@@ -6,13 +6,12 @@ from django import contrib
 class AliasInline(contrib.admin.TabularInline):
     model = Alias
 
-
 class HostAdmin(admin.ModelAdmin):
     list_display = ('hostname', 'vlan', 'ipv4', 'ipv6', 'pub_ipv4', 'mac', 'shared_ip', 'owner', 'groups_l', 'rules_l', 'description', 'reverse')
-    ordering = ('hostname',)
+    ordering = ('hostname', )
     list_filter = ('owner', 'vlan', 'groups')
     search_fields = ('hostname', 'description', 'ipv4', 'ipv6', 'mac')
-    filter_horizontal = ('groups', 'rules',)
+    filter_horizontal = ('groups', 'rules', )
     inlines = (AliasInline, )
 
 class HostInline(contrib.admin.TabularInline):
@@ -21,7 +20,7 @@ class HostInline(contrib.admin.TabularInline):
 
 class VlanAdmin(admin.ModelAdmin):
     list_display = ('vid', 'name', 'rules_l', 'ipv4', 'net_ipv4', 'ipv6', 'net_ipv6', 'description', 'domain', 'snat_ip', 'snat_to_l')
-    ordering = ('vid',)
+    ordering = ('vid', )
     inlines = (HostInline, )
 
 class RuleAdmin(admin.ModelAdmin):
