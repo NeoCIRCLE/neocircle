@@ -1,0 +1,2266 @@
+- fields:
+    accept: true
+    description: ''
+    direction: '0'
+    dport: null
+    extra: ''
+    nat: false
+    nat_dport: 0
+    owner: 1
+    proto: null
+    r_type: host
+    sport: null
+    vlan: [4]
+  model: firewall.rule
+  pk: 1
+- fields:
+    accept: true
+    description: ''
+    direction: '0'
+    dport: null
+    extra: ''
+    nat: false
+    nat_dport: 0
+    owner: 1
+    proto: null
+    r_type: host
+    sport: null
+    vlan: [2]
+  model: firewall.rule
+  pk: 2
+- fields:
+    accept: true
+    description: ''
+    direction: '1'
+    dport: null
+    extra: ''
+    nat: false
+    nat_dport: 0
+    owner: 1
+    proto: null
+    r_type: host
+    sport: null
+    vlan: [5]
+  model: firewall.rule
+  pk: 3
+- fields:
+    accept: true
+    description: ssh ik net
+    direction: '1'
+    dport: 22
+    extra: -s 152.66.243.0/24
+    nat: false
+    nat_dport: null
+    owner: 1
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [2, 3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 6
+- fields:
+    accept: true
+    description: icmp
+    direction: '1'
+    dport: null
+    extra: ''
+    nat: false
+    nat_dport: null
+    owner: 1
+    proto: icmp
+    r_type: firewall
+    sport: null
+    vlan: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+  model: firewall.rule
+  pk: 12
+- fields:
+    accept: true
+    description: ''
+    direction: '0'
+    dport: null
+    extra: ''
+    nat: false
+    nat_dport: null
+    owner: 1
+    proto: null
+    r_type: firewall
+    sport: null
+    vlan: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+  model: firewall.rule
+  pk: 15
+- fields:
+    accept: true
+    description: dhcp, time, tftp
+    direction: '1'
+    dport: null
+    extra: -p udp -m multiport --dports 67,69,123
+    nat: false
+    nat_dport: null
+    owner: 1
+    proto: null
+    r_type: firewall
+    sport: null
+    vlan: [1, 2, 6, 8, 10, 12]
+  model: firewall.rule
+  pk: 26
+- fields:
+    accept: true
+    description: iknet
+    direction: '0'
+    dport: null
+    extra: -d 152.66.243.0/24
+    nat: false
+    nat_dport: 0
+    owner: 1
+    proto: null
+    r_type: host
+    sport: null
+    vlan: [4]
+  model: firewall.rule
+  pk: 30
+- fields:
+    accept: true
+    description: munin
+    direction: '1'
+    dport: 4949
+    extra: ''
+    nat: false
+    nat_dport: 0
+    owner: 1
+    proto: tcp
+    r_type: firewall
+    sport: null
+    vlan: [2]
+  model: firewall.rule
+  pk: 31
+- fields:
+    accept: true
+    description: "nyomtat\xF3 egyteru"
+    direction: '0'
+    dport: null
+    extra: -d 10.0.0.253
+    nat: false
+    nat_dport: 0
+    owner: 1
+    proto: null
+    r_type: host
+    sport: null
+    vlan: [9]
+  model: firewall.rule
+  pk: 33
+- fields:
+    accept: true
+    description: 'ssh '
+    direction: '1'
+    dport: 22
+    extra: ''
+    nat: false
+    nat_dport: null
+    owner: 1
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [2, 3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 34
+- fields:
+    accept: true
+    description: vpn
+    direction: '1'
+    dport: 3721
+    extra: ''
+    nat: false
+    nat_dport: null
+    owner: 1
+    proto: udp
+    r_type: firewall
+    sport: null
+    vlan: [4]
+  model: firewall.rule
+  pk: 35
+- fields:
+    accept: true
+    description: iperf
+    direction: '1'
+    dport: 5001
+    extra: ''
+    nat: false
+    nat_dport: 0
+    owner: 1
+    proto: tcp
+    r_type: firewall
+    sport: null
+    vlan: [1, 2, 4, 6]
+  model: firewall.rule
+  pk: 36
+- fields:
+    accept: true
+    description: dns
+    direction: '1'
+    dport: 53
+    extra: ''
+    nat: false
+    nat_dport: null
+    owner: 1
+    proto: udp
+    r_type: host
+    sport: null
+    vlan: [2, 3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 37
+- fields:
+    accept: true
+    description: ssh
+    direction: '1'
+    dport: 532
+    extra: ''
+    nat: false
+    nat_dport: 0
+    owner: 1
+    proto: tcp
+    r_type: firewall
+    sport: null
+    vlan: [1, 2, 4, 6]
+  model: firewall.rule
+  pk: 38
+- fields:
+    accept: true
+    description: (pub)
+    direction: '0'
+    dport: null
+    extra: ''
+    nat: false
+    nat_dport: null
+    owner: 1
+    proto: null
+    r_type: vlan
+    sport: null
+    vlan: [4, 11]
+  model: firewall.rule
+  pk: 39
+- fields:
+    accept: true
+    description: (dmz)
+    direction: '0'
+    dport: null
+    extra: ''
+    nat: false
+    nat_dport: null
+    owner: 1
+    proto: null
+    r_type: vlan
+    sport: null
+    vlan: [6]
+  model: firewall.rule
+  pk: 40
+- fields:
+    accept: true
+    description: (lab)
+    direction: '0'
+    dport: null
+    extra: ''
+    nat: false
+    nat_dport: null
+    owner: 1
+    proto: null
+    r_type: vlan
+    sport: null
+    vlan: [4, 8]
+  model: firewall.rule
+  pk: 41
+- fields:
+    accept: true
+    description: (man)
+    direction: '0'
+    dport: null
+    extra: ''
+    nat: false
+    nat_dport: null
+    owner: 1
+    proto: null
+    r_type: vlan
+    sport: null
+    vlan: [2]
+  model: firewall.rule
+  pk: 42
+- fields:
+    accept: true
+    description: (hot)
+    direction: '0'
+    dport: null
+    extra: ''
+    nat: false
+    nat_dport: null
+    owner: 1
+    proto: null
+    r_type: vlan
+    sport: null
+    vlan: [3, 4, 6, 7]
+  model: firewall.rule
+  pk: 43
+- fields:
+    accept: true
+    description: (vpn)
+    direction: '0'
+    dport: null
+    extra: ''
+    nat: false
+    nat_dport: null
+    owner: 1
+    proto: null
+    r_type: vlan
+    sport: null
+    vlan: [3, 4, 5, 6, 7, 8, 10]
+  model: firewall.rule
+  pk: 44
+- fields:
+    accept: true
+    description: (off)
+    direction: '0'
+    dport: null
+    extra: ''
+    nat: false
+    nat_dport: null
+    owner: 1
+    proto: null
+    r_type: vlan
+    sport: null
+    vlan: [1, 3, 5, 6, 7, 8, 10]
+  model: firewall.rule
+  pk: 45
+- fields:
+    accept: true
+    description: radius bd
+    direction: '1'
+    dport: 1812
+    extra: ''
+    nat: false
+    nat_dport: 0
+    owner: 1
+    proto: udp
+    r_type: host
+    sport: null
+    vlan: [3]
+  model: firewall.rule
+  pk: 46
+- fields:
+    accept: true
+    description: http
+    direction: '1'
+    dport: 80
+    extra: ''
+    nat: false
+    nat_dport: null
+    owner: 1
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [2, 3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 47
+- fields:
+    accept: true
+    description: syslog iknet
+    direction: '1'
+    dport: 1999
+    extra: -s 152.66.243.0/24
+    nat: false
+    nat_dport: null
+    owner: 1
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [2, 3, 4, 6, 7, 8, 10]
+  model: firewall.rule
+  pk: 48
+- fields:
+    accept: true
+    description: pbx
+    direction: '1'
+    dport: null
+    extra: -p tcp -m multiport --dport 80,2000,5060
+    nat: false
+    nat_dport: null
+    owner: 3
+    proto: null
+    r_type: host
+    sport: null
+    vlan: [2, 3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 261
+- fields:
+    accept: true
+    description: pbx
+    direction: '1'
+    dport: null
+    extra: -p udp -m multiport --dport 5000,5060,4569
+    nat: false
+    nat_dport: null
+    owner: 3
+    proto: null
+    r_type: host
+    sport: null
+    vlan: [2, 3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 262
+- fields:
+    accept: true
+    description: "nyomtat\xF3 canon iR2870 (f\xE9nym\xE1sol\xF3)"
+    direction: '0'
+    dport: null
+    extra: -d 10.0.0.251
+    nat: false
+    nat_dport: null
+    owner: 1
+    proto: null
+    r_type: host
+    sport: null
+    vlan: [9]
+  model: firewall.rule
+  pk: 263
+- fields:
+    accept: true
+    description: nyomtato hp laserjet cp1525
+    direction: '0'
+    dport: null
+    extra: -d 10.0.0.65
+    nat: false
+    nat_dport: 0
+    owner: 1
+    proto: null
+    r_type: host
+    sport: null
+    vlan: [9]
+  model: firewall.rule
+  pk: 264
+- fields:
+    accept: true
+    description: identd
+    direction: '1'
+    dport: 113
+    extra: ''
+    nat: false
+    nat_dport: null
+    owner: 1
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [4]
+  model: firewall.rule
+  pk: 265
+- fields:
+    accept: true
+    description: id-81_user-bd tcp 23107->3389
+    direction: '1'
+    dport: 33107
+    extra: ''
+    nat: true
+    nat_dport: 3389
+    owner: 2
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 734
+- fields:
+    accept: true
+    description: ''
+    direction: '1'
+    dport: null
+    extra: ''
+    nat: false
+    nat_dport: null
+    owner: 1
+    proto: null
+    r_type: host
+    sport: null
+    vlan: [4]
+  model: firewall.rule
+  pk: 750
+- fields:
+    accept: true
+    description: ''
+    direction: '0'
+    dport: null
+    extra: ''
+    nat: false
+    nat_dport: null
+    owner: 4
+    proto: null
+    r_type: host
+    sport: null
+    vlan: [8]
+  model: firewall.rule
+  pk: 751
+- fields:
+    accept: true
+    description: id-412-Gabor_BackUp tcp 22005->22
+    direction: '1'
+    dport: 32005
+    extra: ''
+    nat: true
+    nat_dport: 22
+    owner: 5
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 773
+- fields:
+    accept: true
+    description: id-412-Gabor_BackUp tcp 23005->3389
+    direction: '1'
+    dport: 33005
+    extra: ''
+    nat: true
+    nat_dport: 3389
+    owner: 5
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 774
+- fields:
+    accept: true
+    description: id-90_user-bd tcp 23019->3389
+    direction: '1'
+    dport: 33019
+    extra: ''
+    nat: true
+    nat_dport: 3389
+    owner: 2
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 825
+- fields:
+    accept: true
+    description: dns
+    direction: '1'
+    dport: 53
+    extra: ''
+    nat: false
+    nat_dport: null
+    owner: 1
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [2, 3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 849
+- fields:
+    accept: true
+    description: (war)
+    direction: '0'
+    dport: null
+    extra: ''
+    nat: false
+    nat_dport: null
+    owner: 1
+    proto: null
+    r_type: vlan
+    sport: null
+    vlan: [7]
+  model: firewall.rule
+  pk: 850
+- fields:
+    accept: true
+    description: (vm-net)
+    direction: '0'
+    dport: null
+    extra: ''
+    nat: false
+    nat_dport: null
+    owner: 1
+    proto: null
+    r_type: vlan
+    sport: null
+    vlan: [10]
+  model: firewall.rule
+  pk: 851
+- fields:
+    accept: true
+    description: https
+    direction: '1'
+    dport: 443
+    extra: ''
+    nat: false
+    nat_dport: null
+    owner: 1
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [2, 3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 856
+- fields:
+    accept: true
+    description: opennebula novnc
+    direction: '1'
+    dport: 29876
+    extra: ''
+    nat: false
+    nat_dport: null
+    owner: 1
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [2, 3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 859
+- fields:
+    accept: true
+    description: smb server
+    direction: '0'
+    dport: null
+    extra: -d 10.0.0.253
+    nat: false
+    nat_dport: null
+    owner: 3
+    proto: null
+    r_type: host
+    sport: null
+    vlan: [9]
+  model: firewall.rule
+  pk: 866
+- fields:
+    accept: true
+    description: time war
+    direction: '1'
+    dport: 123
+    extra: ''
+    nat: false
+    nat_dport: null
+    owner: 3
+    proto: udp
+    r_type: firewall
+    sport: null
+    vlan: [7]
+  model: firewall.rule
+  pk: 867
+- fields:
+    accept: true
+    description: ''
+    direction: '0'
+    dport: null
+    extra: ''
+    nat: false
+    nat_dport: null
+    owner: 1
+    proto: null
+    r_type: host
+    sport: null
+    vlan: [7]
+  model: firewall.rule
+  pk: 870
+- fields:
+    accept: true
+    description: ''
+    direction: '0'
+    dport: 25
+    extra: ''
+    nat: false
+    nat_dport: null
+    owner: 1
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [4]
+  model: firewall.rule
+  pk: 948
+- fields:
+    accept: true
+    description: (war2)
+    direction: '0'
+    dport: null
+    extra: ''
+    nat: false
+    nat_dport: null
+    owner: 1
+    proto: null
+    r_type: vlan
+    sport: null
+    vlan: [4, 11]
+  model: firewall.rule
+  pk: 949
+- fields:
+    accept: true
+    description: (off2)
+    direction: '0'
+    dport: null
+    extra: ''
+    nat: false
+    nat_dport: null
+    owner: 1
+    proto: null
+    r_type: vlan
+    sport: null
+    vlan: [12]
+  model: firewall.rule
+  pk: 950
+- fields:
+    accept: true
+    description: id-140_user-root tcp 22001 -> 22
+    direction: '1'
+    dport: 32001
+    extra: ''
+    nat: true
+    nat_dport: 22
+    owner: 1
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 964
+- fields:
+    accept: true
+    description: id-689-DP tcp 22066 -> 22
+    direction: '1'
+    dport: 32066
+    extra: ''
+    nat: true
+    nat_dport: 22
+    owner: 5
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 967
+- fields:
+    accept: true
+    description: id-689-DP tcp 23066 -> 3389
+    direction: '1'
+    dport: 33066
+    extra: ''
+    nat: true
+    nat_dport: 3389
+    owner: 5
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 968
+- fields:
+    accept: true
+    description: id-690-DP tcp 22071 -> 22
+    direction: '1'
+    dport: 32071
+    extra: ''
+    nat: true
+    nat_dport: 22
+    owner: 5
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 969
+- fields:
+    accept: true
+    description: id-690-DP tcp 23071 -> 3389
+    direction: '1'
+    dport: 33071
+    extra: ''
+    nat: true
+    nat_dport: 3389
+    owner: 5
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 970
+- fields:
+    accept: true
+    description: id-694-UI tcp 22073 -> 22
+    direction: '1'
+    dport: 32073
+    extra: ''
+    nat: true
+    nat_dport: 22
+    owner: 5
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 971
+- fields:
+    accept: true
+    description: id-694-UI tcp 23073 -> 3389
+    direction: '1'
+    dport: 33073
+    extra: ''
+    nat: true
+    nat_dport: 3389
+    owner: 5
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 972
+- fields:
+    accept: true
+    description: id-696-VERS tcp 22074 -> 22
+    direction: '1'
+    dport: 32074
+    extra: ''
+    nat: true
+    nat_dport: 22
+    owner: 5
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 973
+- fields:
+    accept: true
+    description: id-696-VERS tcp 23074 -> 3389
+    direction: '1'
+    dport: 33074
+    extra: ''
+    nat: true
+    nat_dport: 3389
+    owner: 5
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 974
+- fields:
+    accept: true
+    description: id-145_user-test tcp 23006 -> 3389
+    direction: '1'
+    dport: 33006
+    extra: ''
+    nat: true
+    nat_dport: 3389
+    owner: 7
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 978
+- fields:
+    accept: true
+    description: ''
+    direction: '1'
+    dport: 33009
+    extra: ''
+    nat: true
+    nat_dport: 3389
+    owner: 1
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 980
+- fields:
+    accept: true
+    description: id-708-Hanak-Windows7 tcp 22009 -> 22
+    direction: '1'
+    dport: 32009
+    extra: ''
+    nat: true
+    nat_dport: 22
+    owner: 5
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 984
+- fields:
+    accept: true
+    description: id-708-Hanak-Windows7 tcp 23009 -> 3389
+    direction: '1'
+    dport: 33009
+    extra: ''
+    nat: true
+    nat_dport: 3389
+    owner: 5
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 985
+- fields:
+    accept: true
+    description: levelezhet cronosra
+    direction: '0'
+    dport: 25
+    extra: -d 152.66.243.1
+    nat: false
+    nat_dport: null
+    owner: 1
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [4]
+  model: firewall.rule
+  pk: 988
+- fields:
+    accept: true
+    description: id-156_user-lennon tcp 23013 -> 3389
+    direction: '1'
+    dport: 33013
+    extra: ''
+    nat: true
+    nat_dport: 3389
+    owner: 6
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 994
+- fields:
+    accept: true
+    description: id-158_user-K7YLW5 tcp 22015 -> 22
+    direction: '1'
+    dport: 32015
+    extra: ''
+    nat: true
+    nat_dport: 22
+    owner: 14
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 996
+- fields:
+    accept: true
+    description: "id-161_user-root tcp 22017\u2009\u25B8\u200922"
+    direction: '1'
+    dport: 32017
+    extra: ''
+    nat: true
+    nat_dport: 22
+    owner: 1
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 999
+- fields:
+    accept: true
+    description: "id-165_user-K2JL24 tcp 22021\u2009\u25B8\u200922"
+    direction: '1'
+    dport: 32021
+    extra: ''
+    nat: true
+    nat_dport: 22
+    owner: 11
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 1003
+- fields:
+    accept: true
+    description: "id-740-one-740 tcp 22030\u2009\u25B8\u200922"
+    direction: '1'
+    dport: 32030
+    extra: ''
+    nat: true
+    nat_dport: 22
+    owner: 5
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 1021
+- fields:
+    accept: true
+    description: "id-740-one-740 tcp 23030\u2009\u25B8\u20093389"
+    direction: '1'
+    dport: 33030
+    extra: ''
+    nat: true
+    nat_dport: 3389
+    owner: 5
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 1022
+- fields:
+    accept: true
+    description: "id-748-Dev tcp 22036\u2009\u25B8\u200922"
+    direction: '1'
+    dport: 32036
+    extra: ''
+    nat: true
+    nat_dport: 22
+    owner: 5
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 1027
+- fields:
+    accept: true
+    description: "id-748-Dev tcp 23036\u2009\u25B8\u20093389"
+    direction: '1'
+    dport: 33036
+    extra: ''
+    nat: true
+    nat_dport: 3389
+    owner: 5
+    proto: tcp
+    r_type: host
+    sport: null
+    vlan: [3, 4, 6, 7, 8, 10, 12]
+  model: firewall.rule
+  pk: 1028
+- fields:
+    comment: ''
+    description: ''
+    dhcp_pool: manual
+    domain: off.ik.bme.hu
+    interface: vlan0005
+    ipv4: 10.5.255.254
+    ipv6: 2001:738:2001:4031:5:255:254:0
+    name: 'OFF'
+    net4: 10.5.0.0
+    net6: '2001:738:2001:4031:5::'
+    prefix4: 16
+    prefix6: 80
+    rules: [45]
+    snat_ip: 152.66.243.160
+    snat_to: [4, 7]
+    vid: 5
+  model: firewall.vlan
+  pk: 1
+- fields:
+    comment: ''
+    description: ''
+    dhcp_pool: 10.3.3.2 10.3.3.254
+    domain: man.ik.bme.hu
+    interface: vlan0003
+    ipv4: 10.3.255.254
+    ipv6: 2001:738:2001:4031:3:255:254:0
+    name: MAN
+    net4: 10.3.0.0
+    net6: '2001:738:2001:4031:3::'
+    prefix4: 16
+    prefix6: 80
+    rules: [42]
+    snat_ip: 152.66.243.160
+    snat_to: [4, 7]
+    vid: 3
+  model: firewall.vlan
+  pk: 2
+- fields:
+    comment: ''
+    description: ''
+    dhcp_pool: 10.4.0.2 10.4.0.254
+    domain: hot.ik.bme.hu
+    interface: vlan0004
+    ipv4: 10.4.255.254
+    ipv6: 2001:738:2001:4031:4:255:254:0
+    name: HOT
+    net4: 10.4.0.0
+    net6: '2001:738:2001:4031:4::'
+    prefix4: 16
+    prefix6: 80
+    rules: [43]
+    snat_ip: 152.66.243.160
+    snat_to: [4, 7]
+    vid: 4
+  model: firewall.vlan
+  pk: 3
+- fields:
+    comment: ''
+    description: ''
+    dhcp_pool: ''
+    domain: ''
+    interface: pub
+    ipv4: 152.66.243.160
+    ipv6: 2001:738:2001:4030::fffe
+    name: PUB
+    net4: 152.66.243.0
+    net6: '2001:738:2001:4030::'
+    prefix4: 24
+    prefix6: 64
+    rules: [39]
+    snat_ip: null
+    snat_to: []
+    vid: 66
+  model: firewall.vlan
+  pk: 4
+- fields:
+    comment: ''
+    description: ''
+    dhcp_pool: ''
+    domain: vpn.ik.bme.hu
+    interface: vpn
+    ipv4: 10.1.255.254
+    ipv6: 2001:738:2001:4031:1:255:254:0
+    name: VPN
+    net4: 10.1.0.0
+    net6: '2001:738:2001:4031:1::'
+    prefix4: 16
+    prefix6: 80
+    rules: [44]
+    snat_ip: 152.66.243.160
+    snat_to: [4, 5, 7]
+    vid: 1
+  model: firewall.vlan
+  pk: 5
+- fields:
+    comment: ''
+    description: ''
+    dhcp_pool: manual
+    domain: cloud.ik.bme.hu
+    interface: vlan0002
+    ipv4: 10.2.255.254
+    ipv6: 2001:738:2001:4031:2:255:254:0
+    name: DMZ
+    net4: 10.2.0.0
+    net6: '2001:738:2001:4031:2::'
+    prefix4: 16
+    prefix6: 80
+    rules: [40]
+    snat_ip: null
+    snat_to: []
+    vid: 2
+  model: firewall.vlan
+  pk: 6
+- fields:
+    comment: ''
+    description: ''
+    dhcp_pool: manual
+    domain: cloud.ik.bme.hu
+    interface: vlan0006
+    ipv4: 152.66.243.126
+    ipv6: 2001:738:2001:4031:66:243:126:0
+    name: WAR
+    net4: 152.66.243.64
+    net6: '2001:738:2001:4031:66::'
+    prefix4: 26
+    prefix6: 80
+    rules: [850]
+    snat_ip: null
+    snat_to: []
+    vid: 6
+  model: firewall.vlan
+  pk: 7
+- fields:
+    comment: ''
+    description: ''
+    dhcp_pool: 10.7.0.2 10.7.0.254
+    domain: lab.ik.bme.hu
+    interface: vlan0007
+    ipv4: 10.7.255.254
+    ipv6: 2001:738:2001:4031:7:255:254:0
+    name: LAB
+    net4: 10.7.0.0
+    net6: '2001:738:2001:4031:7::'
+    prefix4: 16
+    prefix6: 80
+    rules: [41]
+    snat_ip: 152.66.243.160
+    snat_to: [4, 7]
+    vid: 7
+  model: firewall.vlan
+  pk: 8
+- fields:
+    comment: ''
+    description: "Ketler office h\xE1l\xF3zata a nyomtat\xF3 miatt (a M\xE1t\xE9 erre\
+      \ azt k\xE9rdezte, hogy a nyomtat\xF3 miatt az \xF6v\xE9?)"
+    dhcp_pool: ''
+    domain: ''
+    interface: vlan0008
+    ipv4: 10.0.0.247
+    ipv6: 2001:738:2001:4031:8:0:247:0
+    name: WOLF
+    net4: 10.0.0.0
+    net6: '2001:738:2001:4031:8::'
+    prefix4: 24
+    prefix6: 80
+    rules: []
+    snat_ip: null
+    snat_to: []
+    vid: 8
+  model: firewall.vlan
+  pk: 9
+- fields:
+    comment: ''
+    description: ''
+    dhcp_pool: manual
+    domain: vm-net.ik.bme.hu
+    interface: vlan0009
+    ipv4: 10.9.255.254
+    ipv6: 2001:738:2001:4031:9:255:254:0
+    name: VM-NET
+    net4: 10.9.0.0
+    net6: '2001:738:2001:4031:9::'
+    prefix4: 16
+    prefix6: 80
+    rules: [851]
+    snat_ip: 152.66.243.62
+    snat_to: [4, 7, 10]
+    vid: 9
+  model: firewall.vlan
+  pk: 10
+- fields:
+    comment: ''
+    description: mozdonyok
+    dhcp_pool: ''
+    domain: ''
+    interface: vlan0010
+    ipv4: 152.66.243.166
+    ipv6: 2001:738:2001:4031:10:255:254:0
+    name: WAR2
+    net4: 152.66.243.160
+    net6: '2001:738:2001:4031:10::'
+    prefix4: 27
+    prefix6: 80
+    rules: [949]
+    snat_ip: null
+    snat_to: []
+    vid: 10
+  model: firewall.vlan
+  pk: 11
+- fields:
+    comment: ''
+    description: ''
+    dhcp_pool: ''
+    domain: ''
+    interface: vlan0011
+    ipv4: 10.11.255.254
+    ipv6: 2001:738:2001:4031:11:255:254:0
+    name: OFF2
+    net4: 10.11.0.0
+    net6: '2001:738:2001:4031:11::'
+    prefix4: 16
+    prefix6: 80
+    rules: [950]
+    snat_ip: 152.66.243.160
+    snat_to: [4, 7]
+    vid: 11
+  model: firewall.vlan
+  pk: 12
+- fields:
+    name: irodai gep
+    rules: [1, 33, 263, 264]
+  model: firewall.group
+  pk: 1
+- fields:
+    name: irodai telefon
+    rules: [30]
+  model: firewall.group
+  pk: 3
+- fields:
+    name: mailezhet cronosra
+    rules: [988]
+  model: firewall.group
+  pk: 7
+- fields:
+    name: mailszerver
+    rules: [948]
+  model: firewall.group
+  pk: 6
+- fields:
+    name: minden pub fele
+    rules: [1, 750]
+  model: firewall.group
+  pk: 5
+- fields:
+    name: netezhet
+    rules: [1, 870]
+  model: firewall.group
+  pk: 4
+- fields:
+    name: vpnrol elerheto
+    rules: [3]
+  model: firewall.group
+  pk: 2
+- fields:
+    comment: ''
+    description: bd gepe
+    groups: [1, 2]
+    hostname: bd
+    ipv4: 10.5.253.6
+    ipv6: 2001:738:2001:4031:5:253:6:0
+    location: ''
+    mac: 00:13:f7:d1:b8:af
+    owner: 2
+    pub_ipv4: null
+    rules: [2]
+    shared_ip: false
+    vlan: 1
+  model: firewall.host
+  pk: 7
+- fields:
+    comment: "saj\xE1t g\xE9p"
+    description: "\u0150ry M\xE1t\xE9 laptopja"
+    groups: [1, 2]
+    hostname: mate
+    ipv4: 10.5.253.5
+    ipv6: 2001:738:2001:4031:5:253:5:0
+    location: ''
+    mac: 64:31:50:93:4e:5d
+    owner: 3
+    pub_ipv4: null
+    rules: [2]
+    shared_ip: false
+    vlan: 1
+  model: firewall.host
+  pk: 8
+- fields:
+    comment: ''
+    description: Cziva Ricsi telefonja
+    groups: [3]
+    hostname: tele8
+    ipv4: 10.5.253.87
+    ipv6: 2001:738:2001:4031:5:253:87:0
+    location: ''
+    mac: 00:90:78:83:56:76
+    owner: 3
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 1
+  model: firewall.host
+  pk: 9
+- fields:
+    comment: ''
+    description: "M\xE1t\xE9 \xE9s bd telefonja"
+    groups: [3]
+    hostname: tele6
+    ipv4: 10.5.253.85
+    ipv6: 2001:738:2001:4031:5:253:85:0
+    location: ''
+    mac: 00:18:f8:84:f9:64
+    owner: 3
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 1
+  model: firewall.host
+  pk: 10
+- fields:
+    comment: ''
+    description: az uj fejgep
+    groups: [2, 4, 6]
+    hostname: cloud
+    ipv4: 10.2.0.7
+    ipv6: 2001:738:2001:4031:2:0:7:0
+    location: ''
+    mac: b4:b5:2f:67:ef:76
+    owner: 4
+    pub_ipv4: 152.66.243.98
+    rules: [2, 3, 34, 47, 751, 856, 859]
+    shared_ip: false
+    vlan: 6
+  model: firewall.host
+  pk: 12
+- fields:
+    comment: ''
+    description: ''
+    groups: []
+    hostname: BLADE-VCETW280200SN
+    ipv4: 10.3.2.2
+    ipv6: 2001:738:2001:4031:3:2:2:0
+    location: ''
+    mac: 00:1b:78:6e:81:42
+    owner: 1
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 2
+  model: firewall.host
+  pk: 17
+- fields:
+    comment: ''
+    description: ''
+    groups: []
+    hostname: BLADE-ILOGB8849B4JH
+    ipv4: 10.3.2.3
+    ipv6: 2001:738:2001:4031:3:2:3:0
+    location: ''
+    mac: 00:22:64:9c:24:96
+    owner: 1
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 2
+  model: firewall.host
+  pk: 18
+- fields:
+    comment: ''
+    description: ''
+    groups: []
+    hostname: BLADE-VCETW280200SK
+    ipv4: 10.3.2.4
+    ipv6: 2001:738:2001:4031:3:2:4:0
+    location: ''
+    mac: 00:1b:78:6e:81:3c
+    owner: 1
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 2
+  model: firewall.host
+  pk: 19
+- fields:
+    comment: ''
+    description: ''
+    groups: []
+    hostname: BLADE-ILOPZ81MP6122
+    ipv4: 10.3.2.5
+    ipv6: 2001:738:2001:4031:3:2:5:0
+    location: ''
+    mac: 00:1e:0b:ec:13:58
+    owner: 1
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 2
+  model: firewall.host
+  pk: 20
+- fields:
+    comment: ''
+    description: ''
+    groups: []
+    hostname: BLADE-ILOCZJ80408UH
+    ipv4: 10.3.2.6
+    ipv6: 2001:738:2001:4031:3:2:6:0
+    location: ''
+    mac: 00:1e:0b:e9:66:78
+    owner: 1
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 2
+  model: firewall.host
+  pk: 21
+- fields:
+    comment: ''
+    description: ''
+    groups: [4]
+    hostname: mega6
+    ipv4: 10.3.1.16
+    ipv6: 2001:738:2001:4031:3:1:16:0
+    location: ''
+    mac: 18:a9:05:64:19:aa
+    owner: 1
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 2
+  model: firewall.host
+  pk: 22
+- fields:
+    comment: ''
+    description: ''
+    groups: [4]
+    hostname: blade1
+    ipv4: 10.3.1.21
+    ipv6: 2001:738:2001:4031:3:1:21:0
+    location: ''
+    mac: 00:1e:0b:e9:79:1e
+    owner: 1
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 2
+  model: firewall.host
+  pk: 23
+- fields:
+    comment: ''
+    description: ''
+    groups: [4]
+    hostname: blade2
+    ipv4: 10.3.1.22
+    ipv6: 2001:738:2001:4031:3:1:22:0
+    location: ''
+    mac: 00:22:64:9c:fd:34
+    owner: 1
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 2
+  model: firewall.host
+  pk: 24
+- fields:
+    comment: ''
+    description: ''
+    groups: [4]
+    hostname: blade3
+    ipv4: 10.3.1.23
+    ipv6: 2001:738:2001:4031:3:1:23:0
+    location: ''
+    mac: 00:1e:0b:ec:65:46
+    owner: 1
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 2
+  model: firewall.host
+  pk: 25
+- fields:
+    comment: ''
+    description: tarokkkk laptopja
+    groups: [1]
+    hostname: tarokkk-off
+    ipv4: 10.5.253.3
+    ipv6: 2001:738:2001:4031:5:253:3:0
+    location: ''
+    mac: e4:11:5b:41:64:d9
+    owner: 4
+    pub_ipv4: null
+    rules: [2]
+    shared_ip: false
+    vlan: 1
+  model: firewall.host
+  pk: 27
+- fields:
+    comment: ''
+    description: tarokkk iptelefonja
+    groups: [3]
+    hostname: tele4
+    ipv4: 10.5.253.83
+    ipv6: 2001:738:2001:4031:5:253:83:0
+    location: ''
+    mac: 00:01:a8:02:2d:2f
+    owner: 3
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 1
+  model: firewall.host
+  pk: 28
+- fields:
+    comment: ''
+    description: ''
+    groups: [2, 4]
+    hostname: mega5
+    ipv4: 10.3.1.15
+    ipv6: 2001:738:2001:4031:3:1:15:0
+    location: ''
+    mac: 18:a9:05:61:fc:be
+    owner: 1
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 2
+  model: firewall.host
+  pk: 30
+- fields:
+    comment: ''
+    description: ''
+    groups: [2]
+    hostname: mega5-ilo
+    ipv4: 10.3.2.15
+    ipv6: 2001:738:2001:4031:3:2:15:0
+    location: ''
+    mac: 18:a9:05:61:fc:c6
+    owner: 1
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 2
+  model: firewall.host
+  pk: 35
+- fields:
+    comment: ''
+    description: ''
+    groups: []
+    hostname: mega6-ilo
+    ipv4: 10.3.2.16
+    ipv6: 2001:738:2001:4031:3:2:16:0
+    location: ''
+    mac: 18:a9:05:64:19:b2
+    owner: 1
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 2
+  model: firewall.host
+  pk: 36
+- fields:
+    comment: ''
+    description: adjatok akkountot tipusu gep
+    groups: [1]
+    hostname: laborteszt
+    ipv4: 10.5.253.10
+    ipv6: 2001:738:2001:4031:5:253:10:0
+    location: ''
+    mac: c8:60:00:ca:bb:47
+    owner: 4
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 1
+  model: firewall.host
+  pk: 105
+- fields:
+    comment: ''
+    description: "Ny\xEDri G\xE1bor iptelefonja"
+    groups: [3]
+    hostname: tele3
+    ipv4: 10.5.253.82
+    ipv6: 2001:738:2001:4031:5:253:82:0
+    location: ''
+    mac: 00:90:78:83:56:72
+    owner: 3
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 1
+  model: firewall.host
+  pk: 300
+- fields:
+    comment: ''
+    description: "konyha \xE9s IL306 iptelefon"
+    groups: [3]
+    hostname: tele7
+    ipv4: 10.5.253.86
+    ipv6: 2001:738:2001:4031:5:253:86:0
+    location: IL312
+    mac: 00:90:78:83:56:75
+    owner: 3
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 1
+  model: firewall.host
+  pk: 303
+- fields:
+    comment: ''
+    description: "K\xE1polnai Rich\xE1rd iptelefonja"
+    groups: [3]
+    hostname: tele2
+    ipv4: 10.5.253.81
+    ipv6: 2001:738:2001:4031:5:253:81:0
+    location: "az asztal\xE1n XDDDD"
+    mac: 00:01:a8:02:2d:40
+    owner: 3
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 1
+  model: firewall.host
+  pk: 304
+- fields:
+    comment: ''
+    description: L212 iptelefon
+    groups: [3]
+    hostname: tele5
+    ipv4: 10.5.253.84
+    ipv6: 2001:738:2001:4031:5:253:84:0
+    location: ''
+    mac: 00:01:a8:02:2d:47
+    owner: 3
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 1
+  model: firewall.host
+  pk: 305
+- fields:
+    comment: "K\xE1polnai Rich\xE1rd adminolja"
+    description: "Deklarat\xEDv Programoz\xE1s hallgat\xF3i shellszerver"
+    groups: [5]
+    hostname: dps
+    ipv4: 152.66.243.72
+    ipv6: 2001:738:2001:4031:66:243:72:0
+    location: cloud-os gep
+    mac: 02:00:98:42:f3:48
+    owner: 5
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 7
+  model: firewall.host
+  pk: 494
+- fields:
+    comment: "\xC9rintettek: Ny\xEDri G\xE1bor (root), Schnell Henrik, Szebi stb.\r\
+      \n"
+    description: "web2grid projektg\xE9p (\xE9s egyebek)\r\n"
+    groups: [5]
+    hostname: bvp6
+    ipv4: 152.66.243.80
+    ipv6: 2001:738:2001:4031:66:243:80:0
+    location: cloud-os gep
+    mac: 02:00:98:42:f3:50
+    owner: 5
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 7
+  model: firewall.host
+  pk: 497
+- fields:
+    comment: ''
+    description: cloud-os gep
+    groups: [4]
+    hostname: Gabor_BackUp
+    ipv4: 10.9.1.5
+    ipv6: 2001:738:2001:4031:9:1:5:0
+    location: ''
+    mac: 02:00:0a:09:01:05
+    owner: 5
+    pub_ipv4: 152.66.243.62
+    rules: [773, 774]
+    shared_ip: true
+    vlan: 10
+  model: firewall.host
+  pk: 501
+- fields:
+    comment: ''
+    description: ''
+    groups: [2, 4]
+    hostname: mega4
+    ipv4: 10.3.1.14
+    ipv6: 2001:738:2001:4031:3:1:14:0
+    location: ''
+    mac: b4:99:ba:aa:20:44
+    owner: 2
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 2
+  model: firewall.host
+  pk: 510
+- fields:
+    comment: ''
+    description: ''
+    groups: []
+    hostname: mega4-ilo
+    ipv4: 10.3.2.14
+    ipv6: 2001:738:2001:4031:3:2:14:0
+    location: ''
+    mac: b4:99:ba:aa:20:46
+    owner: 2
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 2
+  model: firewall.host
+  pk: 511
+- fields:
+    comment: ''
+    description: ''
+    groups: [2, 4]
+    hostname: mega3
+    ipv4: 10.3.1.13
+    ipv6: 2001:738:2001:4031:3:1:13:0
+    location: ''
+    mac: b4:99:ba:aa:1b:d6
+    owner: 2
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 2
+  model: firewall.host
+  pk: 513
+- fields:
+    comment: ''
+    description: ''
+    groups: []
+    hostname: mega3-ilo
+    ipv4: 10.3.2.13
+    ipv6: 2001:738:2001:4031:3:2:13:0
+    location: ''
+    mac: b4:99:ba:aa:1b:d5
+    owner: 2
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 2
+  model: firewall.host
+  pk: 514
+- fields:
+    comment: ''
+    description: ''
+    groups: [4]
+    hostname: id-90_user-bd
+    ipv4: 10.9.1.19
+    ipv6: 2001:738:2001:4031:9:1:19:0
+    location: ''
+    mac: 02:00:0a:09:01:13
+    owner: 2
+    pub_ipv4: 152.66.243.62
+    rules: [825]
+    shared_ip: true
+    vlan: 10
+  model: firewall.host
+  pk: 524
+- fields:
+    comment: "BD szem\xE9lyes akkountoszt\xF3s g\xE9pe"
+    description: cloud-os gep
+    groups: [5]
+    hostname: kagylo
+    ipv4: 152.66.243.65
+    ipv6: 2001:738:2001:4031:66:243:65:0
+    location: ''
+    mac: 02:00:98:42:f3:41
+    owner: 5
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 7
+  model: firewall.host
+  pk: 532
+- fields:
+    comment: ''
+    description: ''
+    groups: [2]
+    hostname: mega1-ilo
+    ipv4: 10.3.2.11
+    ipv6: 2001:738:2001:4031:3:2:11:0
+    location: ''
+    mac: 18:a9:05:c5:67:ca
+    owner: 2
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 2
+  model: firewall.host
+  pk: 535
+- fields:
+    comment: ''
+    description: ''
+    groups: [2, 4]
+    hostname: mega1
+    ipv4: 10.3.1.11
+    ipv6: 2001:738:2001:4031:3:1:11:0
+    location: ''
+    mac: 18:a9:05:c5:67:c8
+    owner: 2
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 2
+  model: firewall.host
+  pk: 536
+- fields:
+    comment: "Admin: Szeber\xE9nyi Imre"
+    description: "GridOO labor hallgat\xF3i szerver"
+    groups: [5]
+    hostname: ParaHead
+    ipv4: 152.66.243.90
+    ipv6: 2001:738:2001:4031:66:243:90:0
+    location: cloud
+    mac: 02:00:98:42:f3:5a
+    owner: 4
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 7
+  model: firewall.host
+  pk: 541
+- fields:
+    comment: ''
+    description: ''
+    groups: [2]
+    hostname: mega2-ilo
+    ipv4: 10.3.2.12
+    ipv6: 2001:738:2001:4031:3:2:12:0
+    location: ''
+    mac: d8:d3:85:ae:f9:7a
+    owner: 2
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 2
+  model: firewall.host
+  pk: 544
+- fields:
+    comment: ''
+    description: ''
+    groups: [2, 4]
+    hostname: mega2
+    ipv4: 10.3.1.12
+    ipv6: 2001:738:2001:4031:3:1:12:0
+    location: ''
+    mac: d8:d3:85:ae:f9:78
+    owner: 2
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 2
+  model: firewall.host
+  pk: 545
+- fields:
+    comment: ''
+    description: cloud-os gep
+    groups: [5]
+    hostname: store
+    ipv4: 152.66.243.70
+    ipv6: 2001:738:2001:4031:66:243:70:0
+    location: ''
+    mac: 02:00:98:42:f3:46
+    owner: 5
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 7
+  model: firewall.host
+  pk: 546
+- fields:
+    comment: ''
+    description: "Ny\xEDri G\xE1bor laptopja"
+    groups: [1, 2, 4]
+    hostname: gabor
+    ipv4: 10.5.253.7
+    ipv6: 2001:738:2001:4031:5:253:7:0
+    location: ''
+    mac: 00:1C:C4:C9:6C:DD
+    owner: 3
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 1
+  model: firewall.host
+  pk: 547
+- fields:
+    comment: ''
+    description: Tarokkk anonim alkoholista szervere.
+    groups: [5]
+    hostname: tarokkk
+    ipv4: 152.66.243.78
+    ipv6: 2001:738:2001:4031:66:243:78:0
+    location: ''
+    mac: 02:00:98:42:f3:4e
+    owner: 5
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 7
+  model: firewall.host
+  pk: 550
+- fields:
+    comment: ''
+    description: harmadik emeleti rendezoben levo linksys switch (regi denes fele
+      halozat resze volt)
+    groups: [2]
+    hostname: switch2
+    ipv4: 10.3.0.3
+    ipv6: 2001:738:2001:4031:3:254:2:0
+    location: ''
+    mac: 00:1e:e5:09:70:19
+    owner: 1
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 2
+  model: firewall.host
+  pk: 554
+- fields:
+    comment: ''
+    description: "Dud\xE1s \xC1d\xE1m laptop"
+    groups: [1, 2]
+    hostname: dudi
+    ipv4: 10.5.253.8
+    ipv6: 2001:738:2001:4031:5:253:8:0
+    location: ''
+    mac: 00:1d:72:3b:64:b7
+    owner: 1
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 1
+  model: firewall.host
+  pk: 555
+- fields:
+    comment: ''
+    description: "Prog2 t\xE1rgyhonlap drupal"
+    groups: [5]
+    hostname: infocpp
+    ipv4: 152.66.243.67
+    ipv6: 2001:738:2001:4031:66:243:67:0
+    location: cloud
+    mac: 02:00:98:42:f3:43
+    owner: 3
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 7
+  model: firewall.host
+  pk: 596
+- fields:
+    comment: ''
+    description: cloud-os gep
+    groups: [5, 6]
+    hostname: zimbra
+    ipv4: 152.66.243.68
+    ipv6: 2001:738:2001:4031:66:243:68:0
+    location: ''
+    mac: 02:00:98:42:f3:44
+    owner: 5
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 7
+  model: firewall.host
+  pk: 612
+- fields:
+    comment: ''
+    description: TeamConcert Windows 2008 server
+    groups: [5]
+    hostname: teamconcert
+    ipv4: 152.66.243.69
+    ipv6: 2001:738:2001:4031:66:243:69:0
+    location: ''
+    mac: 02:00:98:42:f3:45
+    owner: 4
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 7
+  model: firewall.host
+  pk: 618
+- fields:
+    comment: ''
+    description: ''
+    groups: [5, 7]
+    hostname: cporta
+    ipv4: 152.66.243.81
+    ipv6: 2001:738:2001:4031:66:243:81:0
+    location: ''
+    mac: 02:00:98:42:f3:51
+    owner: 3
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 7
+  model: firewall.host
+  pk: 623
+- fields:
+    comment: ''
+    description: cloud-os gep
+    groups: [5, 7]
+    hostname: ui
+    ipv4: 152.66.243.73
+    ipv6: 2001:738:2001:4031:66:243:73:0
+    location: ''
+    mac: 02:00:98:42:f3:49
+    owner: 5
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 7
+  model: firewall.host
+  pk: 630
+- fields:
+    comment: ''
+    description: cloud-os gep
+    groups: [5, 7]
+    hostname: vers
+    ipv4: 152.66.243.74
+    ipv6: 2001:738:2001:4031:66:243:74:0
+    location: ''
+    mac: 02:00:98:42:f3:4a
+    owner: 5
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 7
+  model: firewall.host
+  pk: 631
+- fields:
+    comment: ''
+    description: ''
+    groups: [4]
+    hostname: id-145_user-test
+    ipv4: 10.9.1.6
+    ipv6: 2001:738:2001:4031:9:1:6:0
+    location: ''
+    mac: 02:00:0a:09:01:06
+    owner: 7
+    pub_ipv4: 152.66.243.62
+    rules: [978]
+    shared_ip: true
+    vlan: 10
+  model: firewall.host
+  pk: 635
+- fields:
+    comment: "Migr\xE1lva r\xE9gi cloudr\xF3l: 2013-01-22"
+    description: "Han\xE1k P\xE9ter win7 g\xE9pe"
+    groups: [4]
+    hostname: id-708-Hanak-Windows7
+    ipv4: 10.9.1.9
+    ipv6: 2001:738:2001:4031:9:1:9:0
+    location: cloud-os gep
+    mac: 02:00:0a:09:01:09
+    owner: 5
+    pub_ipv4: 152.66.243.62
+    rules: [984, 985]
+    shared_ip: true
+    vlan: 10
+  model: firewall.host
+  pk: 640
+- fields:
+    comment: ''
+    description: lennon laptopja
+    groups: [1]
+    hostname: lennon
+    ipv4: 10.5.253.11
+    ipv6: 2001:738:2001:4031:5:253:11:0
+    location: ''
+    mac: a4:ba:db:d7:96:4c
+    owner: 6
+    pub_ipv4: null
+    rules: []
+    shared_ip: false
+    vlan: 1
+  model: firewall.host
+  pk: 645
+- fields:
+    comment: ''
+    description: ''
+    groups: [4]
+    hostname: id-156_user-lennon
+    ipv4: 10.9.1.13
+    ipv6: 2001:738:2001:4031:9:1:13:0
+    location: ''
+    mac: 02:00:0a:09:01:0d
+    owner: 6
+    pub_ipv4: 152.66.243.62
+    rules: [994]
+    shared_ip: true
+    vlan: 10
+  model: firewall.host
+  pk: 648
+- fields:
+    comment: ''
+    description: ''
+    groups: [4]
+    hostname: id-158_user-K7YLW5
+    ipv4: 10.9.1.15
+    ipv6: 2001:738:2001:4031:9:1:15:0
+    location: ''
+    mac: 02:00:0a:09:01:0f
+    owner: 14
+    pub_ipv4: 152.66.243.62
+    rules: [996]
+    shared_ip: true
+    vlan: 10
+  model: firewall.host
+  pk: 650
+- fields:
+    comment: ''
+    description: ''
+    groups: [4]
+    hostname: id-161_user-root
+    ipv4: 10.9.1.17
+    ipv6: 2001:738:2001:4031:9:1:17:0
+    location: ''
+    mac: 02:00:0a:09:01:11
+    owner: 1
+    pub_ipv4: 152.66.243.62
+    rules: [999]
+    shared_ip: true
+    vlan: 10
+  model: firewall.host
+  pk: 653
+- fields:
+    comment: ''
+    description: ''
+    groups: [4]
+    hostname: id-165_user-K2JL24
+    ipv4: 10.9.1.21
+    ipv6: 2001:738:2001:4031:9:1:21:0
+    location: ''
+    mac: 02:00:0a:09:01:15
+    owner: 11
+    pub_ipv4: 152.66.243.62
+    rules: [1003]
+    shared_ip: true
+    vlan: 10
+  model: firewall.host
+  pk: 657
+- fields:
+    comment: ''
+    description: ''
+    groups: [4]
+    hostname: id-166_user-TFDAZ6
+    ipv4: 10.9.1.26
+    ipv6: 2001:738:2001:4031:9:1:26:0
+    location: ''
+    mac: 02:00:0a:09:01:1a
+    owner: 13
+    pub_ipv4: 152.66.243.62
+    rules: []
+    shared_ip: true
+    vlan: 10
+  model: firewall.host
+  pk: 664
+- fields:
+    comment: ''
+    description: ''
+    groups: [4]
+    hostname: id-167_user-TFDAZ6
+    ipv4: 10.9.1.27
+    ipv6: 2001:738:2001:4031:9:1:27:0
+    location: ''
+    mac: 02:00:0a:09:01:1b
+    owner: 13
+    pub_ipv4: 152.66.243.62
+    rules: []
+    shared_ip: true
+    vlan: 10
+  model: firewall.host
+  pk: 665
+- fields:
+    comment: ''
+    description: ''
+    groups: [4]
+    hostname: id-169_user-TFDAZ6
+    ipv4: 10.9.1.29
+    ipv6: 2001:738:2001:4031:9:1:29:0
+    location: ''
+    mac: 02:00:0a:09:01:1d
+    owner: 13
+    pub_ipv4: 152.66.243.62
+    rules: []
+    shared_ip: true
+    vlan: 10
+  model: firewall.host
+  pk: 667
+- fields:
+    comment: ''
+    description: cloud-os gep
+    groups: [4]
+    hostname: id-740-one-740
+    ipv4: 10.9.1.30
+    ipv6: 2001:738:2001:4031:9:1:30:0
+    location: ''
+    mac: 02:00:0a:09:01:1e
+    owner: 5
+    pub_ipv4: 152.66.243.62
+    rules: [1021, 1022]
+    shared_ip: true
+    vlan: 10
+  model: firewall.host
+  pk: 668
+- fields:
+    name: default
+    rules: [12, 15, 26, 31, 35, 36, 38, 867]
+  model: firewall.firewall
+  pk: 1
