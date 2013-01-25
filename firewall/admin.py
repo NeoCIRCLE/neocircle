@@ -30,10 +30,14 @@ class RuleAdmin(admin.ModelAdmin):
 class AliasAdmin(admin.ModelAdmin):
     list_display = ('alias', 'host')
 
+class SettingAdmin(admin.ModelAdmin):
+    list_display = ('key', 'value')
+
 
 admin.site.register(Host, HostAdmin)
 admin.site.register(Vlan, VlanAdmin)
 admin.site.register(Rule, RuleAdmin)
 admin.site.register(Alias, AliasAdmin)
+admin.site.register(Setting, SettingAdmin)
 admin.site.register(Group)
 admin.site.register(Firewall)
