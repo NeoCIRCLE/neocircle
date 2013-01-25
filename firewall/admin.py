@@ -3,7 +3,7 @@ from firewall.models import *
 
 
 class HostAdmin(admin.ModelAdmin):
-    list_display = ('hostname', 'vlan', 'ipv4', 'ipv6', 'pub_ipv4', 'mac', 'shared_ip', 'owner', 'groups_l', 'rules_l', 'description')
+    list_display = ('hostname', 'vlan', 'ipv4', 'ipv6', 'pub_ipv4', 'mac', 'shared_ip', 'owner', 'groups_l', 'rules_l', 'description', 'reverse')
     ordering = ('hostname',)
     list_filter = ('owner', 'vlan', 'groups')
     search_fields = ('hostname', 'description', 'ipv4', 'ipv6', 'mac')
@@ -17,9 +17,14 @@ class RuleAdmin(admin.ModelAdmin):
     list_display = ('r_type', 'color_desc', 'description', 'vlan_l', 'owner', 'extra', 'direction', 'accept', 'proto', 'sport', 'dport', 'nat', 'nat_dport')
     list_filter = ('r_type', 'vlan', 'owner', 'direction', 'accept', 'proto', 'nat')
 
+class AliasAdmin(admin.ModelAdmin):
+        list_display = ('alias', 'host')
+
+
 admin.site.register(Host, HostAdmin)
 admin.site.register(Vlan, VlanAdmin)
 admin.site.register(Rule, RuleAdmin)
+admin.site.register(Alias, AliasAdmin)
 admin.site.register(Group)
 admin.site.register(Firewall)
 

@@ -37,7 +37,7 @@ class firewall:
         self.SZABALYOK_NAT.append(s)
 
     def host2vlan(self, host, rule):
-        if(self.IPV6):
+        if(self.IPV6 and host.ipv6):
             ipaddr = host.ipv6 + "/112"
         else:
             ipaddr = host.ipv4
@@ -343,11 +343,16 @@ def dns():
             ipv4 = ( i_host.pub_ipv4 if i_host.pub_ipv4 and not i_host.shared_ip else i_host.ipv4 )
             m2 = regex.search(ipv4)
             # ipv4
-            DNS.append("=%s.%s:%s:600::\n" % (i_host.hostname, i_vlan.domain, ipv4))
-            DNS.append("^%s.dns1.%s.%s.%s.in-addr.arpa:%s.%s:600::\n" % (m2.group(4), m2.group(3), m2.group(2), m2.group(1), i_host.hostname, i_vlan.domain))
+            DNS.append("+%s:%s:600::\n" % (i_host.hostname + u'.' + i_vlan.domain, ipv4))
+            DNS.append("^%s.%s.%s.%s.in-addr.arpa:%s:600::\n" % (m2.group(4), m2.group(3), m2.group(2), m2.group(1), i_host.reverse if(i_host.reverse and len(i_host.reverse)) else i_host.hostname + u'.' + i_vlan.domain))
+            DNS.append("^%s.dns1.%s.%s.%s.in-addr.arpa:%s:600::\n" % (m2.group(4), m2.group(3), m2.group(2), m2.group(1), i_host.reverse if(i_host.reverse and len(i_host.reverse)) else i_host.hostname + u'.' + i_vlan.domain))
             # ipv6
-            DNS.append(":%s.%s:28:%s:600\n" % (i_host.hostname, i_vlan.domain, ipv6_to_octal(i_host.ipv6)))
-            DNS.append("^%s:%s.%s:600::\n" % (ipv6_to_arpa(i_host.ipv6), i_host.hostname, i_vlan.domain))
+            if i_host.ipv6:
+                DNS.append(":%s:28:%s:600\n" % (i_host.hostname + u'.' + i_vlan.domain, ipv6_to_octal(i_host.ipv6)))
+                DNS.append("^%s:%s:600::\n" % (ipv6_to_arpa(i_host.ipv6), i_host.reverse if(i_host.reverse and len(i_host.reverse)) else i_host.hostname + u'.' + i_vlan.domain))
+            # cname
+            for i_alias in i_host.alias_set.all():
+                DNS.append("C%s:%s.%s:600\n" % (i_alias.alias, i_host.hostname, i_vlan.domain))
 
     process = subprocess.Popen(['/usr/bin/ssh', 'tinydns@%s' % DNS_SERVER], shell=False, stdin=subprocess.PIPE)
     process.communicate("\n".join(DNS)+"\n")

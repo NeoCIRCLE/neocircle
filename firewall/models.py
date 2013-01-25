@@ -97,12 +97,19 @@ class Group(models.Model):
     def __unicode__(self):
         return self.name
 
+class Alias(models.Model):
+    host = models.ForeignKey('Host')
+    alias = models.CharField(max_length=40, unique=True, validators=[val_domain])
+    class Meta:
+        verbose_name_plural = 'aliases'
+
 class Host(models.Model):
     hostname = models.CharField(max_length=40, unique=True, validators=[val_alfanum])
+    reverse = models.CharField(max_length=40, validators=[val_domain], blank=True, null=True)
     mac = MACAddressField(unique=True)
     ipv4 = models.GenericIPAddressField(protocol='ipv4', unique=True)
     pub_ipv4 = models.GenericIPAddressField(protocol='ipv4', blank=True, null=True)
-    ipv6 = models.GenericIPAddressField(protocol='ipv6', unique=True, blank=True)
+    ipv6 = models.GenericIPAddressField(protocol='ipv6', unique=True, blank=True, null=True)
     shared_ip = models.BooleanField(default=False)
     description = models.TextField(blank=True)
     comment = models.TextField(blank=True)
@@ -115,7 +122,7 @@ class Host(models.Model):
     def __unicode__(self):
         return self.hostname
     def save(self, *args, **kwargs):
-        if not self.id and not self.ipv6:
+        if not self.id and self.ipv6 == "auto":
             self.ipv6 = ipv4_2_ipv6(self.ipv4)
         if not self.shared_ip and self.pub_ipv4 and Host.objects.exclude(id=self.id).filter(pub_ipv4=self.pub_ipv4):
             raise ValidationError("Ha a shared_ip be van pipalva, akkor egyedinek kell lennie a pub_ipv4-nek!")
@@ -138,7 +145,7 @@ class Host(models.Model):
 
     def add_port(self, proto, public, private):
         proto = "tcp" if (proto == "tcp") else "udp"
-        if public < 1024: 
+        if public < 1024:
             raise ValidationError("Csak az 1024 feletti portok hasznalhatok")
         for host in Host.objects.filter(pub_ipv4=self.pub_ipv4):
             if host.rules.filter(nat=True, proto=proto, dport=public):
