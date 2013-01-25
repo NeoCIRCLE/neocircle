@@ -7,6 +7,13 @@ from django.utils.translation import ugettext_lazy as _
 from firewall.fields import *
 from south.modelsinspector import add_introspection_rules
 from django.core.validators import MinValueValidator, MaxValueValidator
+from modeldict import ModelDict
+
+class Setting(models.Model):
+    key = models.CharField(max_length=32)
+    value = models.CharField(max_length=200)
+
+settings = ModelDict(Setting, key='key', value='value', instances=False)
 
 class Rule(models.Model):
     CHOICES_type = (('host', 'host'), ('firewall', 'firewall'), ('vlan', 'vlan'))
