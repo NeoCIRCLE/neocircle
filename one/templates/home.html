@@ -26,27 +26,91 @@
     {% endfor %}
 </div>
 <div class="boxes">
-    <div class="contentblock">
-        <h2>Adattár</h2>
-        <div class="content">
-            <ul>
-            <li>a.out <span class="file-size">4K</span> <span class="file-age">(5 perce)</span> <a href="" class="file-download">Letöltés</a></li>
-            <li>a.out <span class="file-size">4K</span> <span class="file-age">(5 perce)</span> <a href="" class="file-download">Letöltés</a></li>
-            <li class="file-details">Tovább</li>
-            <li class="file-upload">Fájl feltöltése</li>
-            </ul>
-        </div>
-    </div>
-    <div class="contentblock" id="state">
-        <h2>A cluster állapota</h2>
-        <div class="content">
-            <p>
-                <a href="http://cloud.ik.bme.hu/">
-                    <img src="/stat/cpu.png" alt="aktuális terhelés" />
-                    <img src="/stat/ram.png" alt="aktuális memóriafoglaltság" />
-                </a>
-            </p>
-        </div>
-    </div>
+
+
+                <div class="contentblock">
+                    <h2>
+                        Adattár
+                    </h2>
+                    <div class="content">
+                        <ul class="file-list">
+                            <li class="wm">
+                                <div class="summary">
+                                    <div class="name filetype-c">hello.c</div>
+                                    <div class="actions">
+                                        <a href="#"><img src="/static/icons/pencil.png" alt="rename" /></a>
+                                        <a href="#"><img src="/static/icons/minus-circle.png" alt="delete" /></a>
+                                        <a href="#"><img src="/static/icons/download-cloud.png" alt="download" /></a>
+                                    </div>
+                                    <div class="info">1 Kb</div>
+                                    <div class="clear"></div>
+                                </div>
+                                <div class="details">
+                                    <h3>Részletek</h3>
+                                    <ul>
+                                        <li>Létrehozva: <span class="value">2012.12.29. 23:12</span></li>
+                                        <li>Módosítva: <span class="value">2012.12.29. 23:12</span></li>
+                                        <li>Hozzáférés: <span class="value">2012.12.29. 23:12</span></li>
+                                        <li>Típus: <span class="value">text/plain</span></li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li class="wm">
+                                <div class="summary">
+                                    <div class="name filetype-image">suna.jpg</div>
+                                    <div class="actions">
+                                        <a href="#"><img src="/static/icons/pencil.png" alt="rename" /></a>
+                                        <a href="#"><img src="/static/icons/minus-circle.png" alt="delete" /></a>
+                                        <a href="#"><img src="/static/icons/download-cloud.png" alt="download" /></a>
+                                    </div>
+                                    <div class="info">1 Kb</div>
+                                    <div class="clear"></div>
+                                </div>
+                                <div class="details">
+                                    <h3>Részletek</h3>
+                                    <ul>
+                                        <li>Létrehozva: <span class="value">2012.12.29. 23:12</span></li>
+                                        <li>Módosítva: <span class="value">2012.12.29. 23:12</span></li>
+                                        <li>Hozzáférés: <span class="value">2012.12.29. 23:12</span></li>
+                                        <li>Típus: <span class="value">image/jpg</span></li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li class="wm">
+                                <div class="summary">
+                                    <div class="name filetype-folder">poresz</div>
+                                    <div class="actions">
+                                        <a href="#"><img src="/static/icons/pencil.png" alt="rename" /></a>
+                                        <a href="#"><img src="/static/icons/minus-circle.png" alt="delete" /></a>
+                                    </div>
+                                    <div class="info">katalógus</div>
+                                    <div class="clear"></div>
+                                </div>
+                                <div class="details">
+                                    <h3>Részletek</h3>
+                                    <ul>
+                                        <li>Létrehozva: <span class="value">2012.12.29. 23:12</span></li>
+                                        <li>Módosítva: <span class="value">2012.12.29. 23:12</span></li>
+                                        <li>Hozzáférés: <span class="value">2012.12.29. 23:12</span></li>
+                                        <li>Fájlok: <span class="value">666 db</span></li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li class="file-details wm">
+                                <div class="summary">
+                                    <div class="name filetype-more">Mutasd a régebbi fájlokat!</div>
+                                    <div class="clear"></div>
+                                </div>
+                            </li>
+                            <li class="file-upload wm">
+                                <div class="summary">
+                                    <div class="name filetype-up">Fájlfeltöltés</div>
+                                    <div class="clear"></div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
 </div>
 {% endblock %}

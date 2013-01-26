@@ -7,16 +7,18 @@ from django.db import transaction
 from django.db.models.signals import post_save
 from django import forms
 from django.utils.translation import ugettext_lazy as _
-from one.util import keygen
-from school.models import Person
 from firewall.models import Host, Rule, Vlan
 from firewall.tasks import reload_firewall_lock
+from one.util import keygen
+from school.models import Person
 
 import subprocess, tempfile, os, stat, re
 
+pwgen = User.objects.make_random_password
 
-pwgen = User.objects.make_random_password 
-
+"""
+User creation hook: create cloud details object
+"""
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
             d = UserCloudDetails(user=instance)
@@ -24,13 +26,22 @@ def create_user_profile(sender, instance, created, **kwargs):
             d.save()
 post_save.connect(create_user_profile, sender=User)
 
+"""
+Cloud related details of a user
+"""
 class UserCloudDetails(models.Model):
-    user = models.ForeignKey(User, null=False, blank=False, unique=True)
-    smb_password = models.CharField(max_length=20)
-    ssh_key = models.ForeignKey('SshKey', null=True)
-    ssh_private_key = models.TextField()
+    user = models.ForeignKey(User, null=False, blank=False, unique=True, verbose_name=_('user'))
+    smb_password = models.CharField(max_length=20,
+            verbose_name=_('Samba password'),
+            help_text=_('Generated password for accessing store from Windows.'))
+    ssh_key = models.ForeignKey('SshKey', null=True, verbose_name=_('SSH key (public)'),
+            help_text=_('Generated SSH public key for accessing store from Linux.'))
+    ssh_private_key = models.TextField(verbose_name=_('SSH key (private)'),
+            help_text=_('Generated SSH private key for accessing store from Linux.'))
 
-
+    """
+    Delete old SSH key pair and generate new one.
+    """
     def reset_keys(self):
         pri, pub = keygen()
         self.ssh_private_key = pri
@@ -41,9 +52,15 @@ class UserCloudDetails(models.Model):
             self.ssh_key = SshKey(user=self.user, key=pub)
         self.ssh_key.save()
 
+    """
+    Generate new Samba password.
+    """
     def reset_smb(self):
         self.smb_password = pwgen()
 
+    """
+    Generate key pair and Samba password if needed.
+    """
     def clean(self):
         super(UserCloudDetails, self).clean()
         if not self.ssh_key:
@@ -51,6 +68,9 @@ class UserCloudDetails(models.Model):
             if not self.smb_password or len(self.smb_password) == 0:
                 self.reset_smb()
 
+"""
+Validate OpenSSH keys (length and type).
+"""
 class OpenSshKeyValidator(object):
     valid_types = ['ssh-rsa', 'ssh-dsa']
 
@@ -74,13 +94,16 @@ class OpenSshKeyValidator(object):
         except:
             raise ValidationError(_('Invalid OpenSSH public key.'))
 
-
+"""
+SSH public key (in OpenSSH format).
+"""
 class SshKey(models.Model):
     user = models.ForeignKey(User, null=False, blank=False)
     key = models.CharField(max_length=2000, verbose_name=_('SSH key'),
             help_text=_('<a href="/info/ssh/">SSH public key in OpenSSH format</a> used for shell login '
                 '(2048+ bit RSA preferred). Example: <code>ssh-rsa AAAAB...QtQ== '
                 'john</code>.'), validators=[OpenSshKeyValidator()])
+
     def __unicode__(self):
         try:
             keycomment = self.key.split(None, 2)[2]
@@ -89,10 +112,15 @@ class SshKey(models.Model):
 
         return u"%s (%s)" % (keycomment, self.user)
 
-
+"""
+Virtual disks automatically synchronized with OpenNebula.
+"""
 class Disk(models.Model):
     name = models.CharField(max_length=100, unique=True, verbose_name=_('name'))
 
+    """
+    Get and register virtual disks from OpenNebula.
+    """
     @classmethod
     def update(cls):
         import subprocess
@@ -121,12 +149,17 @@ class Disk(models.Model):
     class Meta:
         ordering = ['name']
 
-
+"""
+Virtual networks automatically synchronized with OpenNebula.
+"""
 class Network(models.Model):
     name = models.CharField(max_length=100, unique=True, verbose_name=_('name'))
-    nat = models.BooleanField()
-    public = models.BooleanField()
-    
+    nat = models.BooleanField(verbose_name=_('NAT'), help_text=_('If network address translation is done.'))
+    public = models.BooleanField(verbose_name=_('public'), help_text=_('If internet gateway is available.'))
+
+    """
+    Get and register virtual networks from OpenNebula.
+    """
     @classmethod
     def update(cls):
         import subprocess
@@ -154,56 +187,84 @@ class Network(models.Model):
     class Meta:
         ordering = ['name']
 
+"""
+Instance types in OCCI configuration (manually synchronized).
+"""
 class InstanceType(models.Model):
     name = models.CharField(max_length=100, unique=True,
             verbose_name=_('name'))
-    CPU = models.IntegerField()
-    RAM = models.IntegerField()
+    CPU = models.IntegerField(help_text=_('CPU cores.'))
+    RAM = models.IntegerField(help_text=_('Mebibytes of memory.'))
     def __unicode__(self):
         return u"%s" % self.name
-	
 
+"""
+Virtual machine template specifying OS, disk, type and network.
+"""
 class Template(models.Model):
     name = models.CharField(max_length=100, unique=True,
-            verbose_name=_('név'))
-    access_type = models.CharField(max_length=10, choices=[('rdp', 'rdp'), ('nx', 'nx'), ('ssh', 'ssh')])
-    disk = models.ForeignKey(Disk)
-    instance_type = models.ForeignKey(InstanceType)
-    network = models.ForeignKey(Network)
-    owner = models.ForeignKey(User)
-    created_at = models.DateTimeField(auto_now_add=True)
+            verbose_name=_('name'))
+    access_type = models.CharField(max_length=10,
+            choices=[('rdp', 'rdp'), ('nx', 'nx'), ('ssh', 'ssh')],
+            verbose_name=_('access method'))
+    disk = models.ForeignKey(Disk, verbose_name=_('disk'))
+    instance_type = models.ForeignKey(InstanceType, verbose_name=_('instance type'))
+    network = models.ForeignKey(Network, verbose_name=_('network'))
+    owner = models.ForeignKey(User, verbose_name=_('owner'))
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_('created at'))
 
     def __unicode__(self):
         return self.name
 
     class Meta:
-        verbose_name = _('sablon')
-        verbose_name_plural = _('sablonok')
+        verbose_name = _('template')
+        verbose_name_plural = _('templates')
 
-
+"""
+Virtual machine instance.
+"""
 class Instance(models.Model):
     name = models.CharField(max_length=100, unique=True,
             verbose_name=_('név'), null=True, blank=True)
-    ip = models.IPAddressField(blank=True, null=True)
-    template = models.ForeignKey(Template)
-    owner = models.ForeignKey(User)
-    created_at = models.DateTimeField(auto_now_add=True)
-    state = models.CharField(max_length=20, choices=[('DEPLOYABLE', 'DEPLOYABLE'), ('PENDING', 'PENDING'), ('DONE', 'DONE'), ('ACTIVE', 'ACTIVE'),('UNKNOWN', 'UNKNOWN'), ('SUSPENDED', 'SUSPENDED'), ('FAILED', 'FAILED')], default='DEPLOYABLE')
-    active_since = models.DateTimeField(null=True, blank=True)
-    firewall_host = models.ForeignKey(Host, blank=True, null=True)
-    pw = models.CharField(max_length=20)
-    one_id = models.IntegerField(unique=True, blank=True, null=True)
+    ip = models.IPAddressField(blank=True, null=True, verbose_name=_('IP address'))
+    template = models.ForeignKey(Template, verbose_name=_('template'))
+    owner = models.ForeignKey(User, verbose_name=_('owner'))
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_('created_at'))
+    state = models.CharField(max_length=20,
+            choices=[('DEPLOYABLE', _('deployable')),
+                ('PENDING', _('pending')),
+                ('DONE', _('done')),
+                ('ACTIVE', _('active')),
+                ('UNKNOWN', _('unknown')),
+                ('SUSPENDED', _('suspended')),
+                ('FAILED', _('failed'))], default='DEPLOYABLE')
+    active_since = models.DateTimeField(null=True, blank=True,
+            verbose_name=_('active since'),
+            help_text=_('Time stamp of successful boot report.'))
+    firewall_host = models.ForeignKey(Host, blank=True, null=True, verbose_name=_('host in firewall'))
+    pw = models.CharField(max_length=20, verbose_name=_('password'), help_text=_('Original password of instance'))
+    one_id = models.IntegerField(unique=True, blank=True, null=True, verbose_name=_('OpenNebula ID'))
+    """
+    Get public port number for default access method.
+    """
     def get_port(self):
         proto = self.template.access_type
         if self.template.network.nat:
             return {"rdp": 23000, "nx": 22000, "ssh": 22000}[proto] + int(self.ip.split('.')[3])
         else:
             return {"rdp": 3389, "nx": 22, "ssh": 22}[proto]
+    """
+    Get public hostname.
+    """
     def get_connect_host(self):
         if self.template.network.nat:
             return 'cloud'
         else:
             return self.ip
+
+    """
+    Get access parameters in URI format.
+    """
     def get_connect_uri(self):
         try:
             proto = self.template.access_type
@@ -217,6 +278,10 @@ class Instance(models.Model):
 
     def __unicode__(self):
         return self.name
+
+    """
+    Get and update VM state from OpenNebula.
+    """
     def update_state(self):
         import subprocess
 
@@ -241,11 +306,14 @@ class Instance(models.Model):
         self.save()
         return x
 
+    """
+    Get age of VM in seconds.
+    """
     def get_age(self):
         from datetime import datetime
         age = 0
         try:
-            age = (datetime.now().replace(tzinfo=None) 
+            age = (datetime.now().replace(tzinfo=None)
                 - self.active_since.replace(tzinfo=None)).seconds
         except:
             pass
@@ -253,8 +321,11 @@ class Instance(models.Model):
 
     @models.permalink
     def get_absolute_url(self):
-            return ('vm_show', None, {'iid':self.id,})
+            return ('vm_show', None, {'iid':self.id})
 
+    """
+    Submit a new instance to OpenNebula.
+    """
     @classmethod
     def submit(cls, template, owner):
         from django.template.defaultfilters import escape
@@ -296,10 +367,9 @@ class Instance(models.Model):
                                  "net": template.network.id,
                                  "pw": escape(inst.pw),
                                  "smbpw": escape(details.smb_password),
-                             "sshkey": escape(details.ssh_private_key),
-                             "neptun": escape(owner.username),
-                             "booturl": "http://cloud.ik.bme.hu/b/%s/" % token,
-                             }
+                                 "sshkey": escape(details.ssh_private_key),
+                                 "neptun": escape(owner.username),
+                                 "booturl": "http://cloud.ik.bme.hu/b/%s/" % token, }
             f.write(tpl)
             f.close()
             import subprocess
@@ -332,6 +402,9 @@ class Instance(models.Model):
         reload_firewall_lock()
         return inst
 
+    """
+    Delete host in OpenNebula.
+    """
     def delete(self):
         proc = subprocess.Popen(["/opt/occi.sh", "compute",
                "delete", "%d"%self.one_id], stdout=subprocess.PIPE)
@@ -343,8 +416,3 @@ class Instance(models.Model):
     class Meta:
         verbose_name = _('instance')
         verbose_name_plural = _('instances')
-
-
-
-
-# vim: et sw=4 ai fenc=utf8 smarttab :
