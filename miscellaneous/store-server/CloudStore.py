@@ -45,7 +45,7 @@ def neptun_POST(neptun):
         #DOWNLOAD LINK GENERATOR
         elif request.json['CMD'] == 'DOWNLOAD':
             dl_path = home_path+'/'+request.json['PATH']
-            dl_path = os.path.normpath(dl_path)
+            dl_path = os.path.realpath(dl_path)
             if not dl_path.startswith(home_path):
                 abort(400, 'Invalid download path.') 
             if( os.path.isfile(dl_path) ):
@@ -59,7 +59,7 @@ def neptun_POST(neptun):
         #UPLOAD
         elif request.json['CMD'] == 'UPLOAD':
             up_path = home_path+'/'+request.json['PATH']
-            up_path = os.path.normpath(up_path)
+            up_path = os.path.realpath(up_path)
             if not up_path.startswith(home_path):
                 abort(400, 'Invalid upload path.')
             if os.path.exists(up_path) == True and os.path.isdir(up_path):
@@ -72,9 +72,11 @@ def neptun_POST(neptun):
         elif request.json['CMD'] == 'MOVE':
             src_path = home_path+'/'+request.json['SOURCE']
             dst_path = home_path+'/'+request.json['DESTINATION']
-            if not os.path.normpath(src_path).startswith(home_path):
+            src_path = os.path.realpath(src_path)
+            dst_path = os.path.realpath(dst_path)
+            if not src_path.startswith(home_path):
                 abort(400, 'Invalid source path.')
-            if not os.path.normpath(dst_path).startswith(home_path):
+            if not dst_path.startswith(home_path):
                 abort(400, 'Invalid destination path.')
             if os.path.exists(src_path) == True and os.path.exists(dst_path) == True and os.path.isdir(dst_path) == True:
                 shutil.move(src_path,dst_path)
@@ -85,7 +87,8 @@ def neptun_POST(neptun):
         #RENAME
         elif request.json['CMD'] == 'RENAME': 
             src_path = home_path+'/'+request.json['PATH']
-            if not os.path.normpath(src_path).startswith(home_path):
+            src_path = os.path.realpath(src_path)
+            if not src_path.startswith(home_path):
                 abort(400, 'Invalid source path.')
             dst_path = os.path.dirname(src_path)+'/'+request.json['NEW_NAME']
             if os.path.exists(src_path) == True:
@@ -96,7 +99,8 @@ def neptun_POST(neptun):
         #NEW FOLDER
         elif request.json['CMD'] == 'NEW_FOLDER':
             dir_path = home_path+'/'+request.json['PATH']
-            if not os.path.normpath(dir_path).startswith(home_path):
+            dir_path = os.path.realpath(dir_path)
+            if not dir_path.startswith(home_path):
                 abort(400, 'Invalid directory path.')
             if os.path.exists(dir_path) == True:
                 abort(400, "Directory already exist!")
@@ -106,7 +110,8 @@ def neptun_POST(neptun):
         #REMOVE
         elif request.json['CMD'] == 'REMOVE':
             remove_path = home_path+'/'+request.json['PATH']
-            if not os.path.normpath(remove_path).startswith(home_path):
+            remove_path = os.path.realpath(remove_path)
+            if not remove_path.startswith(home_path):
                 abort(400, 'Invalid path.')
             if os.path.exists(remove_path) != True:
                 abort(404, "Path not found!")
@@ -187,7 +192,7 @@ def upload(hash_num):
     if os.path.exists(up_path):
         abort(400, 'File already exists')
     #Check if upload path valid
-    if not os.path.normpath(up_path).startswith('/home'):
+    if not up_path.startswith('/home'):
         abort(400, 'Invalid path.')
     os.remove(ROOT_WWW_FOLDER+'/'+hash_num)
     #Get the real upload path
@@ -205,7 +210,7 @@ def upload(hash_num):
         datalength += len(chunk)
     f.close()
     os.chown(up_path,getpwnam(username).pw_uid,getpwnam(username).pw_gid)
-    os.chmod(up_path,0744)
+    os.chmod(up_path,0644)
     return 'Upload finished: '+file_name+' - '+str(datalength)+' Byte'
 
 
@@ -245,7 +250,7 @@ def updateSSHAuthorizedKeys(username,key_list):
 
 def list_directory(home,path):
     #Check for path breakout
-    if not os.path.normpath(path).startswith(home):
+    if not os.path.realpath(path).startswith(home):
         abort(400, 'Invalid path.')
     #Check if path exist
     if os.path.exists(path) != True:
