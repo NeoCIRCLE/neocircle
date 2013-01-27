@@ -53,29 +53,29 @@
     {% for item in file_list %} 
     <tr> 
         <td> 
-            {% if item.1 == 'D' %} 
+            {% if item.TYPE == 'D' %} 
             <form action="/store/" method="POST">{% csrf_token %}
-		<input type="submit" value="{{ item.0 }}">
-		{% if item.0 != '/' %}
-		<input type="hidden" name="path" value="{{ path }}{{ item.0 }}/">
+		<input type="submit" value="{{ item.NAME }}">
+		{% if item.NAME != '/' %}
+		<input type="hidden" name="path" value="{{ path }}{{ item.NAME }}/">
 		{% else %}
 		    <input type="hidden" name="path" value="/">
 		{% endif %}
             </form> 
             {% else %}
-            {{ item.0 }}
+            {{ item.NAME }}
             {% endif %}
 
         </td>
-        <td>{{ item.1 }}</td>
-        <td>{{ item.2 }}</td>
-        <td>{{ item.3 }}</td>
+        <td>{{ item.TYPE }}</td>
+        <td>{{ item.SIZE }}</td>
+        <td>{{ item.MTIME }}</td>
     	<td>
-            {% if item.1 != 'D' %}
+            {% if item.TYPE != 'D' %}
                 <form action="/store/" method="POST">{% csrf_token %}
                 <input type="submit" value="Download">
                 <input type="hidden" name="path" value="{{ path }}">
-                <input type="hidden" name="dl" value="{{ path }}{{ item.0 }}">
+                <input type="hidden" name="dl" value="{{ path }}{{ item.NAME }}">
                 </form>
             {% endif %}
         </td>
@@ -83,7 +83,7 @@
                  <form action="/store/" method="POST">{% csrf_token %}
                      <input type="submit" value="Remove">
                      <input type="hidden" name="path" value="{{ path }}">
-                     <input type="hidden" name="rm" value="{{ path }}{{ item.0 }}">
+                     <input type="hidden" name="rm" value="{{ path }}{{ item.NAME }}">
                 </form>
 	    </td>
     </tr>
