@@ -6,6 +6,30 @@
     <title>{% block title %}IK Cloud{% endblock %}</title>
     <link rel="stylesheet" href="/static/style.css" />
     <link rel="icon" type="image/png" href="/static/favicon.png" />
+        <link rel="icon" type="image/png" href="one/static/favicon.png">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <script src="http://code.jquery.com/jquery.min.js"></script>
+        <script type="text/javascript">
+$(function(){
+    $('.wm').click(function(){
+        if($(this).children('.details').is(':hidden')){
+            $(this).children('.details')
+                .css('height',0)
+                .css('padding','0px 5px')
+                .show()
+                .animate({height:160,paddingTop:15,paddingBottom:15},700);
+        } else {
+            var that=this;
+            $(this).children('.details')
+                .css('height',130)
+                .css('padding','15px 5px')
+                .animate({height:0,paddingTop:0,paddingBottom:0},700,function(){
+                $(that).children('.details').hide();
+            });
+        }
+    })
+})
+        </script>
 
     {{ form.media }}
     {% block js %}{% endblock %}
