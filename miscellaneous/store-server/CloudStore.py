@@ -10,7 +10,7 @@ from pwd import getpwnam
 
 ROOT_WWW_FOLDER='/var/www'
 ROOT_BIN_FOLDER='/opt/store-server'
-SITE_URL='https://store.cloud.ik.bme.hu'
+SITE_URL='http://store.cloud.ik.bme.hu:8080'
 USER_MANAGER='UserManager.sh'
 
 @route('/')
@@ -270,7 +270,8 @@ def list_directory(home,path):
                     is_dir = 'D'
                 else:
                     is_dir = 'F'
-                tuplelist.append((item, is_dir, os.path.getsize(static_route)/1024 , os.path.getmtime(static_route) ))
+		element = { 'NAME' : item, 'TYPE' : is_dir, 'SIZE' : os.path.getsize(static_route)/1024, 'MTIME' : os.path.getmtime(static_route) }
+                tuplelist.append(element)
             return json.dumps(tuplelist)
 
 def getQuotaStatus(neptun):
