@@ -83,7 +83,7 @@
     is_superuser: true
     last_login: 2013-01-22 15:21:22+00:00
     last_name: ''
-    password: pbkdf2_sha256$10000$gx04X6OpW8kW$iCU3cuhqQcvq7I8tRVkrnES03ty/3vqN8ou4xZgfPBQ=
+    password: pbkdf2_sha256$10000$tHbyy0OTBCBQ$YVdhrXZVK6wi7Px/zX5zmpOGkQUnddXXdrwNFnJskx0=
     user_permissions: []
     username: test
   model: auth.user
