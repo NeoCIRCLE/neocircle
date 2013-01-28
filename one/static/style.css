@@ -117,7 +117,9 @@ a:link,a:visited{
     float: left;
 }
 .wm .status{
+  text-align: right;
     float: right;
+    width: 60px;
 }
 .wm .id{
     float: right;
@@ -132,11 +134,15 @@ a:link,a:visited{
 .file-list .info{
     float: right;
     width: 60px;
+    text-align: right;
 }
 .wm .actions{
     float: right;
-    width: 60px;
     margin-left: 5px;
+    display: none;
+}
+.wm:hover .actions{
+  display: block;
 }
 .wm .actions a{
     height: 16px;
