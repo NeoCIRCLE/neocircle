@@ -23,7 +23,10 @@ a:link,a:visited{
   margin:0;
   padding:5px;
 }
-.contentblock ul{
+.contentblock{
+  list-style: none;
+}
+.wm-list{
   list-style: none;
 }
 
