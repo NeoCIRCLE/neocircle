@@ -2,7 +2,7 @@
 from django.http import HttpResponse
 from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext
-from store.models import StoreApi
+from store.api import StoreApi
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 import os

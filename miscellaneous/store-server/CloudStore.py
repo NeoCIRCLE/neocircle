@@ -6,16 +6,34 @@ from bottle import route, run, request, static_file, abort, redirect, app
 import json, os, shutil
 import uuid
 import subprocess
+import ConfigParser
 from pwd import getpwnam
 
-ROOT_WWW_FOLDER='/var/www'
-ROOT_BIN_FOLDER='/opt/store-server'
-SITE_URL='https://store.cloud.ik.bme.hu'
-USER_MANAGER='UserManager.sh'
+#Get configuration file
+config = ConfigParser.ConfigParser()
+config.read('store.config')
+
+
+#ROOT_WWW_FOLDER='/var/www'
+ROOT_WWW_FOLDER = config.get('store', 'root_www_folder')
+#ROOT_BIN_FOLDER='/opt/store-server'
+ROOT_BIN_FOLDER = config.get('store', 'root_bin_folder')
+#SITE_URL='http://store.cloud.ik.bme.hu:8080'
+SITE_URL = config.get('store', 'site_url')
+#USER_MANAGER='UserManager.sh'
+USER_MANAGER = config.get('store', 'user_manager')
+#Standalone server
+SITE_HOST = config.get('store', 'site_host')
+SITE_PORT = config.get('store', 'site_port')
 
 @route('/')
 def index():
-    return "It works!"
+    response = "NONE"
+    try:
+        response = request.environi.get('SSL_CLIENT_VERIFY', 'NONE')
+    except:
+        pass
+    return "It works! SSL: "+response
 
 #@route('/<neptun:re:[a-zA-Z0-9]{6}>', method='GET')
 @route('/<neptun>', method='GET')
@@ -270,7 +288,8 @@ def list_directory(home,path):
                     is_dir = 'D'
                 else:
                     is_dir = 'F'
-                tuplelist.append((item, is_dir, os.path.getsize(static_route)/1024 , os.path.getmtime(static_route) ))
+                element = { 'NAME' : item, 'TYPE' : is_dir, 'SIZE' : os.path.getsize(static_route)/1024, 'MTIME' : os.path.getmtime(static_route) }
+                tuplelist.append(element)
             return json.dumps(tuplelist)
 
 def getQuotaStatus(neptun):
@@ -278,6 +297,6 @@ def getQuotaStatus(neptun):
     return output.split()
     
 if __name__ == "__main__":
-    run(host='0.0.0.0', port=8080)
+    run(host=SITE_HOST, port=SITE_PORT)
 else:
     application=app()
