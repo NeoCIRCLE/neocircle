@@ -23,6 +23,9 @@ a:link,a:visited{
   margin:0;
   padding:5px;
 }
+.contentblock ul{
+  list-style: none;
+}
 
 .contentblock h2
 {
@@ -107,7 +110,7 @@ a:link,a:visited{
 .wm .details .value{
   float: right;
 }
-.wm:hover{
+.wm .summary:hover{
     background-color: #b1b1b1;
 }
 .wm .name{
