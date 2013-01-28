@@ -11,17 +11,21 @@
         <script src="/static/jquery.min.js"></script>
         <script type="text/javascript">
 $(function(){
+    $('.wm .summary').each(function(){
+      this.originalHeight=parseInt($(this).next('.details').css('height'));
+    })
     $('.wm .summary').click(function(){
         if($(this).next('.details').is(':hidden')){
             $(this).next('.details')
                 .css('height',0)
                 .css('padding','0px 5px')
                 .show()
-                .animate({height:160,paddingTop:15,paddingBottom:15},700);
+                .animate({height:this.originalHeight,paddingTop:15,paddingBottom:15},700);
         } else {
             var that=this;
             $(this).next('.details')
-                .css('height',130)
+              //2*15px paddingot le kell vonni, a jQuery szar
+                .css('height',this.originalHeight-30)
                 .css('padding','15px 5px')
                 .animate({height:0,paddingTop:0,paddingBottom:0},700,function(){
                 $(that).next('.details').hide();
