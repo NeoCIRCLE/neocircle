@@ -413,6 +413,40 @@ class Instance(models.Model):
         self.firewall_host.delete()
         reload_firewall_lock()
 
+    """
+    Change host state in OpenNebula.
+    """
+    def _change_state(self, new_state):
+        from django.template.defaultfilters import escape
+        out = ""
+        with tempfile.NamedTemporaryFile(delete=False) as f:
+            os.chmod(f.name, stat.S_IRUSR|stat.S_IWUSR|stat.S_IRGRP|stat.S_IROTH)
+            tpl = u"""
+                <COMPUTE>
+                    <ID>%(id)d</ID>
+                    <STATE>%(state)s</STATE>
+                </COMPUTE>""" % {"id": self.one_id,
+                                 "state": new_state}
+            f.write(tpl)
+            f.close()
+            import subprocess
+            proc = subprocess.Popen(["/opt/occi.sh",
+                       "compute", "update",
+                       f.name], stdout=subprocess.PIPE)
+            (out, err) = proc.communicate()
+            os.unlink(f.name)
+            print "out: " + out
+
+    def stop(self):
+        self._change_state("STOPPED")
+    def resume(self):
+        self._change_state("RESUME")
+    def poweroff(self):
+        self._change_state("POWEROFF")
+    def restart(self):
+        self._change_state("RESTART")
+
+
     class Meta:
         verbose_name = _('instance')
         verbose_name_plural = _('instances')
