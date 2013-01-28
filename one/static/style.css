@@ -105,10 +105,16 @@ a:link,a:visited{
   background-image: url(icons/animal-penguin.png)
 }
 .wm .details .type{
-  background-image: url(icons/processor.png)
+  background-image: url(icons/box-share.png)
 }
 .wm .details .date{
   background-image: url(icons/calendar-day.png)
+}
+.wm .details .cpu{
+  background-image: url(icons/processor.png)
+}
+.wm .details .memory{
+  background-image: url(icons/memory.png)
 }
 .wm .details .value{
   float: right;
@@ -196,6 +202,9 @@ a:link,a:visited{
 .wm-list.modal{
   border-radius: 4px;
   border: 1px solid #666;
+}
+.wm-list.modal input{
+  padding: 2px 10px;
 }
 .wm-list.modal .wm:nth-child(1) .summary{
   border-top: none;
