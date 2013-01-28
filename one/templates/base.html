@@ -37,6 +37,13 @@ $(function(){
             });
         },2000);
     })
+    $('#new-wm-button').click(function(){
+      $('#modal').show();
+      $('#modal-container').html($('#new-wm').html());
+    });
+    $('#shadow').click(function(){
+      $('#modal').hide();
+    })
 })
         </script>
 
