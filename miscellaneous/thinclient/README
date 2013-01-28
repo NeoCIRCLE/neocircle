@@ -1,0 +1,6 @@
+#Install
+cp rdp.sh /usr/local/bin/rdp
+cp enc.pl /usr/local/bin/enc.pl
+cp rdp.desktop  ~/.local/share/applications/
+### Ezt lehet hogy érdemesebb kézzel vagy echo >> mlg kiderül
+cp mimeapps.list ~/.local/share/applications/
