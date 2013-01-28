@@ -119,6 +119,9 @@ a:link,a:visited{
 .wm .details .value{
   float: right;
 }
+.wm .details a{
+  text-decoration: underline;
+}
 .wm .summary:hover{
     background-color: #b1b1b1;
 }
