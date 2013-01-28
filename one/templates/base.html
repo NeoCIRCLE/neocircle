@@ -11,20 +11,20 @@
         <script src="/static/jquery.min.js"></script>
         <script type="text/javascript">
 $(function(){
-    $('.wm').click(function(){
-        if($(this).children('.details').is(':hidden')){
-            $(this).children('.details')
+    $('.wm .summary').click(function(){
+        if($(this).next('.details').is(':hidden')){
+            $(this).next('.details')
                 .css('height',0)
                 .css('padding','0px 5px')
                 .show()
                 .animate({height:160,paddingTop:15,paddingBottom:15},700);
         } else {
             var that=this;
-            $(this).children('.details')
+            $(this).next('.details')
                 .css('height',130)
                 .css('padding','15px 5px')
                 .animate({height:0,paddingTop:0,paddingBottom:0},700,function(){
-                $(that).children('.details').hide();
+                $(that).next('.details').hide();
             });
         }
     })
