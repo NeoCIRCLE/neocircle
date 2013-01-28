@@ -193,7 +193,7 @@ a:link,a:visited{
 .filetype-up {
     background-image: url(icons/upload-cloud.png);
 }
-#new-wm-button .name{
+.wm.new .name{
     background-image: url(icons/computer--plus.png);
 }
 .wm-on{
