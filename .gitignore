@@ -39,3 +39,8 @@ nosetests.xml
 *~
 
 local_settings.py
+
+client.crt
+client.key
+miscellaneous/store-server/store.config
+
