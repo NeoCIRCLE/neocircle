@@ -5,13 +5,21 @@
 <div class="boxes">
         <div class="contentblock" id="state">
             <h2>Virtuális gépek</h2>
-            <div class="content">
-{% for m in templates %}
-<form method="POST" action="/vm/new/{{m.pk}}/">{% csrf_token %}
-    <p><input type="submit" value="{{m.name}}" class="button widebutton"/></p>
-</form>
-{% endfor %}
-            </div>
+            <ul class="wm-list">
+                <li id="new-wm-button" class="wm">
+                    <div class="summary">
+                        <div class="name">Új gép indítása</div>
+                        <div class="clear"></div>
+                    </div>
+                </li>
+                <li id="new-wm" style="display: none">
+                    {% for m in templates %}
+                        <form method="POST" action="/vm/new/{{m.pk}}/">{% csrf_token %}
+                            <p><input type="submit" value="{{m.name}}" class="button widebutton"/></p>
+                        </form>
+                    {% endfor %}
+                </li>
+            </ul>
         </div>
         {% include "box-vmlist.html" %}
     {% for box in boxes %}
