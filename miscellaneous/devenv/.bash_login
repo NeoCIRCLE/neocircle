@@ -1,0 +1,15 @@
+
+cd /opt/webadmin/
+if [ -d cloud ]
+then
+	:
+else
+	echo Run init.sh? [N/y]
+	read
+	if [ "$REPLY" = y ]
+	then
+		passwd
+		/home/cloud/init.sh
+	fi
+fi
+cd cloud
