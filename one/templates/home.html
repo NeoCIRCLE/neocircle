@@ -3,26 +3,88 @@
 
 {% block content %}
 <div class="boxes">
-        <div class="contentblock" id="state">
-            <h2>Virtuális gépek</h2>
-            <ul class="wm-list">
-                {% include "box-vmlist.html" %}
-                <li id="new-wm-button" class="wm">
-                    <div class="summary">
-                        <div class="name">Új gép indítása</div>
-                        <div class="clear"></div>
-                    </div>
-                </li>
-                <li id="new-wm" style="display: none">
-                    <h2>Rendelkezésre álló sablonok</h2>
+    <div class="contentblock" id="state">
+        <h2>Virtuális gépek</h2>
+        <ul class="wm-list">
+            {% include "box-vmlist.html" %}
+            <li id="new-wm-button" class="wm new">
+                <div class="summary">
+                    <div class="name">Új gép indítása</div>
+                    <div class="clear"></div>
+                </div>
+            </li>
+            <li id="new-wm" style="display: none">
+                <h2>Rendelkezésre álló sablonok</h2>
+                <ul class="wm-list modal">
                     {% for m in templates %}
+                    <li class="wm">
                         <form method="POST" action="/vm/new/{{m.pk}}/">{% csrf_token %}
-                            <p><input type="submit" value="{{m.name}}" class="button widebutton"/></p>
+                            <div class="summary">
+                                <div class="name wm-on">{{m.name}}</div>
+                                <div class="status">
+                                    <input type="submit" value="Indítás"/>
+                                </div>
+                                <div class="clear"></div>
+                            </div>
+                            <div class="details">
+                                <h3>
+                                    Részletek
+                                </h3>
+                                <ul>
+                                    <li class="name">Rendszer: <span class="value">{{m.disk.name}}</span></li>
+                                    <li class="type">Instance típus: <span class="value">{{m.instance_type.name}}</span></li>
+                                    <li class="memory">Memória: <span class="value">{{m.instance_type.RAM}} MiB</span></li>
+                                    <li class="cpu">CPU magok: <span class="value">{{m.instance_type.CPU}}</span></li>
+                                </ul>
+                            </div>
                         </form>
+                    </li>
                     {% endfor %}
-                </li>
-            </ul>
-        </div>
+                </ul>
+            </li>
+        </ul>
+    </div>
+    <div class="contentblock" id="template">
+        <h2>Saját sablonok</h2>
+        <ul class="wm-list">
+            { include "box-templatelist.html" lesz majd itt }
+            <li id="new-template-button" class="wm new">
+                <div class="summary">
+                    <div class="name">Új Sablon</div>
+                    <div class="clear"></div>
+                </div>
+            </li>
+            <li id="new-template" style="display: none">
+                <h2>Rendelkezésre álló sablonok</h2>
+                <ul class="wm-list modal">
+                    {% for m in templates %}
+                    <li class="wm">
+                        <form method="POST" action="/vm/new/{{m.pk}}/">{% csrf_token %}
+                            <div class="summary">
+                                <div class="name wm-on">{{m.name}}</div>
+                                <div class="status">
+                                    <input type="submit" value="Indítás"/>
+                                </div>
+                                <div class="clear"></div>
+                            </div>
+                            <div class="details">
+                                <h3>
+                                    Részletek
+                                </h3>
+                                <ul>
+                                    <li class="name">Rendszer: <span class="value">{{m.disk.name}}</span></li>
+                                    <li class="type">Instance típus: <span class="value">{{m.instance_type.name}}</span></li>
+                                    <li class="memory">Memória: <span class="value">{{m.instance_type.RAM}} MiB</span></li>
+                                    <li class="cpu">CPU magok: <span class="value">{{m.instance_type.CPU}}</span></li>
+                                </ul>
+                            </div>
+                        </form>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </li>
+        </ul>
+    </div>
     {% for box in boxes %}
     {% if forloop.counter0|divisibleby:2 %}
         <div class="contentblock">

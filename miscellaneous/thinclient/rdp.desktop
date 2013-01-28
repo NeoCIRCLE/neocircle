@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=RDP Client
+Exec=/usr/local/bin/rdp %u
+Icon=
+Type=Application
+Terminal=false
+MimeType=x-scheme-handler/rdp;

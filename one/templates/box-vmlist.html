@@ -4,7 +4,7 @@
     <div class="summary">
         <!--<div class="id">161</div>-->
         <div class="name {% if i.state == 'ACTIVE' %}wm-on{% else %}wm-off{% endif %}">
-            <a href="/vm/show/{{i.id}}/" title="{{i.name}}">{{i.name|truncatechars:20}}</a>
+            {{i.name|truncatechars:20}}
         </div>
         <div class="status">
             {{i.state}}
@@ -36,6 +36,7 @@
             <li class="os-linux">Operációs rendszer: <span class="value">{{i.template.disk.name}}</span></li>
             <li class="type">Instance típus: <span class="value">{{i.template.instance_type.name}}</span></li>
             <li class="date">Létrehozás dátuma: <span class="value">{{i.created_at}}</span></li>
+            <li>&nbsp;<span class="value"><a href="/vm/show/{{i.id}}/" title="{{i.name}}">További részletek</a></span></li>
         </ul>
     </div>
 </li>

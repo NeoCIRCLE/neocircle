@@ -4,30 +4,36 @@
 <html lang="{{lang}}">
 <head>
     <title>{% block title %}IK Cloud{% endblock %}</title>
+    <link href='http://fonts.googleapis.com/css?family=Metrophobic' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="/static/style.css" />
     <link rel="icon" type="image/png" href="/static/favicon.png" />
-        <link rel="icon" type="image/png" href="one/static/favicon.png">
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <script src="/static/jquery.min.js"></script>
-        <script type="text/javascript">
+    <link rel="icon" type="image/png" href="one/static/favicon.png">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <script src="/static/jquery.min.js"></script>
+    <script type="text/javascript">
 $(function(){
-    $('.wm .summary').click(function(){
-        if($(this).next('.details').is(':hidden')){
+    $('.wm .summary').each(function(){
+      this.originalHeight=parseInt($(this).next('.details').css('height'));
+    })
+    var toggleDetails=function(){
+      if($(this).next('.details').is(':hidden')){
             $(this).next('.details')
                 .css('height',0)
                 .css('padding','0px 5px')
                 .show()
-                .animate({height:160,paddingTop:15,paddingBottom:15},700);
+                .animate({height:this.originalHeight,paddingTop:15,paddingBottom:15},700);
         } else {
             var that=this;
             $(this).next('.details')
-                .css('height',130)
+              //2*15px paddingot le kell vonni, a jQuery szar
+                .css('height',this.originalHeight-30)
                 .css('padding','15px 5px')
                 .animate({height:0,paddingTop:0,paddingBottom:0},700,function(){
                 $(that).next('.details').hide();
             });
         }
-    })
+    }
+    $('.wm .summary').click(toggleDetails);
     $('#load-more-files').click(function(){
         $('.actions', this).show();
         var that=this;
@@ -40,6 +46,10 @@ $(function(){
     $('#new-wm-button').click(function(){
       $('#modal').show();
       $('#modal-container').html($('#new-wm').html());
+      $('#modal-container .wm .summary').each(function(){
+        this.originalHeight=parseInt($(this).next('.details').css('height'));
+      })
+      $('#modal-container .wm .summary').click(toggleDetails);
     });
     $('#shadow').click(function(){
       $('#modal').hide();
