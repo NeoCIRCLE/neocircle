@@ -4,18 +4,19 @@
 <html lang="{{lang}}">
 <head>
     <title>{% block title %}IK Cloud{% endblock %}</title>
+    <link href='http://fonts.googleapis.com/css?family=Metrophobic' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="/static/style.css" />
     <link rel="icon" type="image/png" href="/static/favicon.png" />
-        <link rel="icon" type="image/png" href="one/static/favicon.png">
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <script src="/static/jquery.min.js"></script>
-        <script type="text/javascript">
+    <link rel="icon" type="image/png" href="one/static/favicon.png">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <script src="/static/jquery.min.js"></script>
+    <script type="text/javascript">
 $(function(){
     $('.wm .summary').each(function(){
       this.originalHeight=parseInt($(this).next('.details').css('height'));
     })
-    $('.wm .summary').click(function(){
-        if($(this).next('.details').is(':hidden')){
+    var toggleDetails=function(){
+      if($(this).next('.details').is(':hidden')){
             $(this).next('.details')
                 .css('height',0)
                 .css('padding','0px 5px')
@@ -31,7 +32,8 @@ $(function(){
                 $(that).next('.details').hide();
             });
         }
-    })
+    }
+    $('.wm .summary').click(toggleDetails);
     $('#load-more-files').click(function(){
         $('.actions', this).show();
         var that=this;
@@ -44,6 +46,10 @@ $(function(){
     $('#new-wm-button').click(function(){
       $('#modal').show();
       $('#modal-container').html($('#new-wm').html());
+      $('#modal-container .wm .summary').each(function(){
+        this.originalHeight=parseInt($(this).next('.details').css('height'));
+      })
+      $('#modal-container .wm .summary').click(toggleDetails);
     });
     $('#shadow').click(function(){
       $('#modal').hide();
