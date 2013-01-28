@@ -15,12 +15,26 @@
             </li>
             <li id="new-wm" style="display: none">
                 <h2>Rendelkezésre álló sablonok</h2>
-                <ul class="wm-list">
+                <ul class="wm-list modal">
                     {% for m in templates %}
                     <li class="wm">
                         <form method="POST" action="/vm/new/{{m.pk}}/">{% csrf_token %}
-                            <div>
-                                <input type="submit" value="{{m.name}}" class="summary"/>
+                            <div class="summary">
+                                {{m.name}}
+                                <div class="actions">
+                                    <input type="submit" value="Indítás"/>
+                                </div>
+                            </div>
+                            <div class="details">
+                                <h3>
+                                    Részletek
+                                </h3>
+                                <ul>
+                                    <li>Rendszer: <span class="value">{{m.disk.name}}</span></li>
+                                    <li>Instance típus: <span class="value">{{m.instance_type.name}}</span></li>
+                                    <li>Memória: <span class="value">{{m.instance_type.RAM}} MiB</span></li>
+                                    <li>CPU magok: <span class="value">{{m.instance_type.CPU}}</span></li>
+                                </ul>
                             </div>
                         </form>
                     </li>
