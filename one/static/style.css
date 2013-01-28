@@ -23,6 +23,9 @@ a:link,a:visited{
   margin:0;
   padding:5px;
 }
+.contentblock ul{
+  list-style: none;
+}
 
 .contentblock h2
 {
@@ -107,14 +110,16 @@ a:link,a:visited{
 .wm .details .value{
   float: right;
 }
-.wm:hover{
+.wm .summary:hover{
     background-color: #b1b1b1;
 }
 .wm .name{
     float: left;
 }
 .wm .status{
+  text-align: right;
     float: right;
+    width: 60px;
 }
 .wm .id{
     float: right;
@@ -129,11 +134,15 @@ a:link,a:visited{
 .file-list .info{
     float: right;
     width: 60px;
+    text-align: right;
 }
 .wm .actions{
     float: right;
-    width: 60px;
     margin-left: 5px;
+    display: none;
+}
+.wm:hover .actions{
+  display: block;
 }
 .wm .actions a{
     height: 16px;
@@ -154,8 +163,14 @@ a:link,a:visited{
 .filetype-c {
     background-image: url(icons/document-visual-studio.png);
 }
+.filetype-text {
+    background-image: url(icons/document.png);
+}
 .filetype-image {
     background-image: url(icons/document-image.png);
+}
+.filetype-zip {
+    background-image: url(icons/folder-zipper.png);
 }
 .filetype-folder {
     background-image: url(icons/folder-horizontal.png);
@@ -260,6 +275,7 @@ body
   background-position:80px 0;
   margin:0;
   padding:0;
+  overflow: scroll;
 }
 
 #header
