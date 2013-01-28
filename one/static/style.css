@@ -193,46 +193,12 @@ a:link,a:visited{
 .wm-off{
     background-image: url(icons/computer-off.png);
 }
-
-table
-{
-  background-color:#ccc;
-  border-radius:10px;
-  margin:5px;
+.wm-list.modal{
+  border-radius: 4px;
+  border: 1px solid #666;
 }
-
-td,th
-{
-  border-bottom:1px solid #bbb;
-  vertical-align:top;
-  padding:5px;
-}
-
-table input,table select,table textarea
-{
-  min-width:300px;
-  border:1px solid #aaa;
-  display:block;
-}
-
-input[type=submit],.button,.smallbutton
-{
-  background-color:#072c61;
-  text-decoration:none;
-  color:#fff!important;
-  border:2px solid #fff;
-  border-radius:10px;
-  min-width:5em;
-  font-size:.9em;
-  line-height:.9em;
-  font-weight:700;
-  margin:0;
-  padding:5px;
-}
-
-.smallbutton
-{
-  padding:1px 5px;
+.wm-list.modal .wm:nth-child(1) .summary{
+  border-top: none;
 }
 
 p.rightbuttons
@@ -522,4 +488,6 @@ ul.errorlist,td ul.errorlist
     background-color: #fff;
     border-radius: 4px;
     padding: 20px;
+    box-shadow: 0 0 30px rgba(0,0,0,0.4);
+    border: 1px solid #333;
 }
