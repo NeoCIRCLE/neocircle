@@ -3,26 +3,32 @@
 
 {% block content %}
 <div class="boxes">
-        <div class="contentblock" id="state">
-            <h2>Virtuális gépek</h2>
-            <ul class="wm-list">
-                {% include "box-vmlist.html" %}
-                <li id="new-wm-button" class="wm">
-                    <div class="summary">
-                        <div class="name">Új gép indítása</div>
-                        <div class="clear"></div>
-                    </div>
-                </li>
-                <li id="new-wm" style="display: none">
-                    <h2>Rendelkezésre álló sablonok</h2>
+    <div class="contentblock" id="state">
+        <h2>Virtuális gépek</h2>
+        <ul class="wm-list">
+            {% include "box-vmlist.html" %}
+            <li id="new-wm-button" class="wm">
+                <div class="summary">
+                    <div class="name">Új gép indítása</div>
+                    <div class="clear"></div>
+                </div>
+            </li>
+            <li id="new-wm" style="display: none">
+                <h2>Rendelkezésre álló sablonok</h2>
+                <ul class="wm-list">
                     {% for m in templates %}
+                    <li class="wm">
                         <form method="POST" action="/vm/new/{{m.pk}}/">{% csrf_token %}
-                            <p><input type="submit" value="{{m.name}}" class="button widebutton"/></p>
+                            <div>
+                                <input type="submit" value="{{m.name}}" class="summary"/>
+                            </div>
                         </form>
+                    </li>
                     {% endfor %}
-                </li>
-            </ul>
-        </div>
+                </ul>
+            </li>
+        </ul>
+    </div>
     {% for box in boxes %}
     {% if forloop.counter0|divisibleby:2 %}
         <div class="contentblock">
