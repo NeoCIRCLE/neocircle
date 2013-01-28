@@ -162,6 +162,45 @@ class VmDeleteView(View):
 
 vm_delete = login_required(VmDeleteView.as_view())
 
+@login_required
+@require_POST
+def vm_stop(request, iid, *args, **kwargs):
+    try:
+        get_object_or_404(Instance, id=iid, owner=request.user).stop()
+        messages.success(request, _('Virtual machine is successfully stopped.'))
+    except:
+        messages.error(request, _('Failed to stop virtual machine.'))
+    return redirect('/')
+
+@login_required
+@require_POST
+def vm_resume(request, iid, *args, **kwargs):
+    try:
+        get_object_or_404(Instance, id=iid, owner=request.user).resume()
+        messages.success(request, _('Virtual machine is successfully resumed.'))
+    except:
+        messages.error(request, _('Failed to resume virtual machine.'))
+    return redirect('/')
+
+@login_required
+@require_POST
+def vm_power_off(request, iid, *args, **kwargs):
+    try:
+        get_object_or_404(Instance, id=iid, owner=request.user).poweroff()
+        messages.success(request, _('Virtual machine is successfully powered off.'))
+    except:
+        messages.error(request, _('Failed to power off virtual machine.'))
+    return redirect('/')
+
+@login_required
+@require_POST
+def vm_restart(request, iid, *args, **kwargs):
+    try:
+        get_object_or_404(Instance, id=iid, owner=request.user).restart()
+        messages.success(request, _('Virtual machine is successfully restarted.'))
+    except:
+        messages.error(request, _('Failed to restart virtual machine.'))
+    return redirect('/')
 
 def vm_active(request, token):
     id = signing.loads(token, salt='activate', max_age=300)
