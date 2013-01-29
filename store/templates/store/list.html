@@ -71,13 +71,11 @@
         <td>{{ item.SIZE }}</td>
         <td>{{ item.MTIME }}</td>
     	<td>
-            {% if item.TYPE != 'D' %}
                 <form action="/store/" method="POST">{% csrf_token %}
                 <input type="submit" value="Download">
                 <input type="hidden" name="path" value="{{ path }}">
                 <input type="hidden" name="dl" value="{{ path }}{{ item.NAME }}">
                 </form>
-            {% endif %}
         </td>
         <td>
                  <form action="/store/" method="POST">{% csrf_token %}

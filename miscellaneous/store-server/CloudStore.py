@@ -25,6 +25,9 @@ USER_MANAGER = config.get('store', 'user_manager')
 #Standalone server
 SITE_HOST = config.get('store', 'site_host')
 SITE_PORT = config.get('store', 'site_port')
+#Temporary dir for tar.gz
+TEMP_DIR = config.get('store', 'temp_dir')
+
 
 @route('/')
 def index():
@@ -59,21 +62,32 @@ def neptun_POST(neptun):
             if os.path.exists(list_path) != True:
                 abort(404, "Path not found!")
             else:
-                return list_directory(home_path,list_path)
+                return list_directory(home_path, list_path)
         #DOWNLOAD LINK GENERATOR
         elif request.json['CMD'] == 'DOWNLOAD':
             dl_path = home_path+'/'+request.json['PATH']
             dl_path = os.path.realpath(dl_path)
             if not dl_path.startswith(home_path):
                 abort(400, 'Invalid download path.') 
+            dl_hash = str(uuid.uuid4())
             if( os.path.isfile(dl_path) ):
-                dl_hash = str(uuid.uuid4())
                 os.symlink(dl_path, ROOT_WWW_FOLDER+'/'+dl_hash)
                 #Debug 
                 #redirect('http://store.cloud.ik.bme.hu:8080/dl/'+dl_hash)
                 return json.dumps({'LINK' : SITE_URL+'/dl/'+dl_hash})
             else:
-                abort(400, 'Can\'t download folder')
+                #Tar directore in /home/user
+                chdir = os.path.dirname(dl_path)
+                folder_name = os.path.basename(dl_path)
+                try:
+                    os.makedirs(TEMP_DIR+'/'+neptun, 0700)
+                except:
+                    pass
+                temp_path = TEMP_DIR+'/'+neptun+'/'+folder_name+'.tar.gz'
+                with open(os.devnull, "w") as fnull:
+                    result = subprocess.call(['/bin/tar', 'zcvf', temp_path, '-C', chdir, folder_name], stdout = fnull, stderr = fnull)
+                os.symlink(temp_path, ROOT_WWW_FOLDER+'/'+dl_hash)
+                return json.dumps({'LINK' : SITE_URL+'/dl/'+dl_hash})
         #UPLOAD
         elif request.json['CMD'] == 'UPLOAD':
             up_path = home_path+'/'+request.json['PATH']
@@ -97,7 +111,7 @@ def neptun_POST(neptun):
             if not dst_path.startswith(home_path):
                 abort(400, 'Invalid destination path.')
             if os.path.exists(src_path) == True and os.path.exists(dst_path) == True and os.path.isdir(dst_path) == True:
-                shutil.move(src_path,dst_path)
+                shutil.move(src_path, dst_path)
                 return
             else:
             #TODO
@@ -190,7 +204,7 @@ def new_user(neptun):
 @route('/dl/<hash_num>', method='GET')
 def dl_hash(hash_num):
     hash_path = ROOT_WWW_FOLDER 
-    if os.path.exists(hash_path) != True:
+    if os.path.exists(hash_path+'/'+hash_num) != True:
         abort(404, "File not found!")
     else:
         filename = os.path.basename(os.path.realpath(hash_path+'/'+hash_num))
