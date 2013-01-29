@@ -1,7 +1,9 @@
 <form action="/" method="post">
 	<div id="new-template-step-1" class="wizard">
 		<div class="progress">
-			<div class="bar" style="width: 33%"></div>
+			<div class="bar-container">
+				<div class="bar" style="width: 33%"></div>
+			</div>
 			<h3>1/3</h3>
 		</div>
 		<h2>1. lépés</h2>
@@ -9,29 +11,44 @@
 		<ul>
 			<li>
 				<label for="new-template-name">Név</label>
-				<input placeholder="A sablon rövid neve" name="name" id="new-template-name" />
+				<input type="text" placeholder="A sablon rövid neve" name="name" id="new-template-name" />
 				<div class="clear"></div>
 			</li>
 			<li>
 				<label for="new-template-type">Típus</label>
-				<select name="type" id="new-template-type">
-					<option value="labor">Labor</option>
-					<option value="project">Project</option>
-				</select>
+				<ul class="radio">
+					<li>
+						<input type="radio" name="type" value="labor" id="new-template-type-labor" />
+						<label for="new-template-type-labor">Labor</label>
+					</li>
+					<li>
+						<input type="radio" name="type" value="project" id="new-template-type-project" />
+						<label for="new-template-type-project">Project</label>
+					</li>
+				</ul>
 				<div class="clear"></div>
 			</li>
 			<li>
 				<label for="new-template-size">Méret</label>
-				<select name="size" id="new-template-size">
-					<option value="small">small</option>
-					<option value="medium">medium</option>
-					<option value="large">large</option>
-				</select>
+				<ul class="radio">
+					<li>
+						<input type="radio" name="size" value="small" id="new-template-size-small" />
+						<label for="new-template-size-small">Kicsi</label>
+					</li>
+					<li>
+						<input type="radio" name="size" value="medium" id="new-template-size-medium" />
+						<label for="new-template-size-medium">Közepes</label>
+					</li>
+					<li>
+						<input type="radio" name="size" value="large" id="new-template-size-large" />
+						<label for="new-template-size-large">Nagy</label>
+					</li>
+				</ul>
 				<div class="clear"></div>
 			</li>
 			<li style="border: none">
 				<label for="new-template-description">Leírás</label>
-				<textarea name="description" id="new-template-description">A sablonhoz fűzött megjegyzések.</textarea>
+				<textarea name="description" id="new-template-description" placeholder="A sablonhoz fűzött megjegyzések"></textarea>
 				<div class="clear"></div>
 			</li>
 		</ul>

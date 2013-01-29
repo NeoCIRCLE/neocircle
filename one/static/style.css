@@ -88,16 +88,26 @@ a:link,a:visited{
   padding: 5px;
   margin: 10px 5px;
 }
-.wizard .progress .bar{
-  background-color: green;
-  height: 15px;
+.wizard h2{
+  margin: 10px 0;
+}
+.wizard .progress .bar-container{
+  border: 1px solid #666;
+  box-shadow: 0 0 20px rgba(0,0,0,0.2);
+  border-radius: 4px;
+  height: 20px;
   position: absolute;
   z-index: -1;
+  width: 500px;
+}
+.wizard .progress .bar{
+  height: 20px;
+  background-color: rgb(102, 196, 0);
 }
 .wizard .progress{
   text-align: center;
 }
-#modal-container .wizard input, #modal-container .wizard select {
+.wizard input[type=text] {
   display: block;
   float: right;
   padding: 5px;
@@ -108,11 +118,13 @@ a:link,a:visited{
   border: none;
   border-radius: 4px;
 }
-#modal-container .wizard input:focus{
+
+.wizard input:focus{
   box-shadow: 0 0 12px rgb(128,128,255);
   outline: none;
 }
-#modal-container .wizard textarea{
+
+.wizard textarea{
   float: right;
   padding: 5px;
   margin: 10px 5px;
@@ -123,6 +135,18 @@ a:link,a:visited{
   text-align: right;
     box-shadow: 0 0 10px rgba(0,0,0,0.3);
   border: none;
+}
+.wizard ul.radio{
+  float: right;
+}
+.wizard .radio li{
+  float: left;
+  padding: 5px;
+  margin: 10px 5px;
+  border-bottom: none !important;
+}
+.wizard .radio label{
+  float: none !important;
 }
 .wizard nav a{
   display: block;
