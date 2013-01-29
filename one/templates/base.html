@@ -20,8 +20,9 @@ $(function(){
             $(this).next('.details')
                 .css('height',0)
                 .css('padding','0px 5px')
-                .show()
                 .animate({height:this.originalHeight,paddingTop:15,paddingBottom:15},700);
+            $(this).parent('.wm').addClass('opened');
+
         } else {
             var that=this;
             $(this).next('.details')
@@ -29,7 +30,7 @@ $(function(){
                 .css('height',this.originalHeight-30)
                 .css('padding','15px 5px')
                 .animate({height:0,paddingTop:0,paddingBottom:0},700,function(){
-                $(that).next('.details').hide();
+                $(that).parent('.wm').removeClass('opened');
             });
         }
     }

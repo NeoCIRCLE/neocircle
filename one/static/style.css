@@ -89,6 +89,9 @@ a:link,a:visited{
   padding: 15px 5px;
   display: none;
 }
+.wm.opened .details{
+  display: block;
+}
 .wm .details h3{
   font-weight: normal;
 }
