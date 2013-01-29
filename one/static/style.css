@@ -97,7 +97,7 @@ a:link,a:visited{
 .wizard .progress{
   text-align: center;
 }
-#modal-container .wizard input, #modal-container .wizard select{
+#modal-container .wizard input, #modal-container .wizard select, #modal-container .wizard textarea {
   display: block;
   float: right;
   padding: 5px;

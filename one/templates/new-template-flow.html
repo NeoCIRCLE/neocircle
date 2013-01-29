@@ -9,20 +9,20 @@
 		<ul>
 			<li>
 				<label for="new-template-name">Név</label>
-				<input placeholder="A sablon rövid neve" name="name" />
+				<input placeholder="A sablon rövid neve" name="name" id="new-template-name"/>
 				<div class="clear"></div>
 			</li>
 			<li>
-				<label for="new-template-name">Típus</label>
-				<select name="type">
+				<label for="new-template-type">Típus</label>
+				<select name="type" id="new-template-type">
 					<option value="labor">Labor</option>
 					<option value="project">Project</option>
 				</select>
 				<div class="clear"></div>
 			</li>
 			<li>
-				<label for="new-template-name">Méret</label>
-				<select name="size">
+				<label for="new-template-size">Méret</label>
+				<select name="size" id="new-template-size">
 					<option value="small">small</option>
 					<option value="medium">medium</option>
 					<option value="large">large</option>
@@ -30,8 +30,10 @@
 				<div class="clear"></div>
 			</li>
 			<li>
-				<label for="new-template-name">Név</label>
-				<input placeholder="A sablon rövid neve" name="name" />
+				<label for="new-template-description">Leírás</label>
+				<textarea name="description" id="new-template-description">
+					A sablonhoz fűzött megjegyzések.
+				</textarea>
 				<div class="clear"></div>
 			</li>
 		</ul>
