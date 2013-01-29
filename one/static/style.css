@@ -71,6 +71,12 @@ a:link,a:visited{
     border-style: solid;
     border-color: #FFFF66 transparent transparent transparent;
 }
+#template .wm .summary .name{
+  background-image: url(icons/document-template.png)
+}
+#new-template-button .name{
+  background-image: url(icons/document--plus.png) !important
+}
 .wm .summary{
     padding: 15px 5px;
     border-top: 1px solid #888;
@@ -119,8 +125,23 @@ a:link,a:visited{
 .wm .details .memory{
   background-image: url(icons/memory.png)
 }
+.wm .details .count{
+  background-image: url(icons/documents-stack.png)
+}
 .wm .details .value{
   float: right;
+  width: 200px;
+  text-align: right;
+}
+.wm .summary.unfinished{
+  background-color: #FFFF66;
+}
+.wm .details .description{
+  font-size: inherit;
+  background-image: url(icons/document-snippet.png)
+}
+.wm .details .description .value{
+  font-size: 0.8em;
 }
 .wm .details a{
   text-decoration: underline;
@@ -307,14 +328,14 @@ div#header h1
 
 div#content
 {
-  width:850px;
+  width:970px;
   text-align:left;
   margin:0 auto;
 }
 
 div.boxes
 {
-  width:420px;
+  width:480px;
   float:left;
 }
 
