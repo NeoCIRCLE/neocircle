@@ -77,6 +77,33 @@ a:link,a:visited{
 #new-template-button .name{
   background-image: url(icons/document--plus.png) !important
 }
+#modal-container ul{
+  list-style: none;
+}
+#modal-container .wizard li{
+  border-bottom: 1px dotted #999;
+}
+#modal-container .wizard label{
+  float: left;
+  padding: 5px;
+  margin: 10px 5px;
+}
+.wizard .progress .bar{
+  background-color: green;
+  height: 15px;
+  position: absolute;
+  z-index: -1;
+}
+.wizard .progress{
+  text-align: center;
+}
+#modal-container .wizard input, #modal-container .wizard select{
+  display: block;
+  float: right;
+  padding: 5px;
+  margin: 10px 5px;
+  width: 200px;
+}
 .wm .summary{
     padding: 15px 5px;
     border-top: 1px solid #888;

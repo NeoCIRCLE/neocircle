@@ -22,7 +22,6 @@ $(function(){
                 .css('padding','0px 5px')
                 .animate({height:this.originalHeight,paddingTop:15,paddingBottom:15},700);
             $(this).parent('.wm').addClass('opened');
-
         } else {
             var that=this;
             $(this).next('.details')
@@ -51,6 +50,10 @@ $(function(){
         this.originalHeight=parseInt($(this).next('.details').css('height'));
       })
       $('#modal-container .wm .summary').click(toggleDetails);
+    });
+    $('#new-template-button').click(function(){
+      $('#modal').show();
+      $('#modal-container').html($('#new-template').html());
     });
     $('#shadow').click(function(){
       $('#modal').hide();
