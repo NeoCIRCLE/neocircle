@@ -1,0 +1,7 @@
+#!/bin/bash
+
+echo "En vagyok a $0 !"
+
+wget -q -O /dev/null "$BOOTURL"
+
+
