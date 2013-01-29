@@ -127,11 +127,11 @@ nx)
 A
 	/usr/NX/bin/nxclient --session $f
 ;;
-ssh)
+shell)
 	#/usr/NX/bin/nxclient --dialog ok --message "Jelszó: $password" &
-	rm /home/user/.ssh/known_hosts
+	#rm /home/user/.ssh/known_hosts
 	#rxvt-unicode -e sh -c "ssh $user@$host -p$port; sleep 2"
-	rxvt-unicode -e sh -c "sshpass -p "$password" ssh -o StrictHostKeyChecking=no $user@$host -p$port; sleep 2"
+	gnome-terminal -e "sshpass -p "$password" ssh -o StrictHostKeyChecking=no $user@$host -p$port"
 ;;
 *)
 	xmessage "$scheme is not supported."
