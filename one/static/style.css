@@ -149,6 +149,7 @@ a:link,a:visited{
   float: none !important;
 }
 .wizard nav a{
+  text-decoration: underline;
   display: block;
 }
 .wizard nav .prev{
