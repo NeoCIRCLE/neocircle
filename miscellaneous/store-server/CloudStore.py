@@ -11,7 +11,7 @@ from pwd import getpwnam
 
 #Get configuration file
 config = ConfigParser.ConfigParser()
-config.read('store.config')
+config.read('/opt/webadmin/cloud/miscellaneous/store-server/store.config')
 
 
 #ROOT_WWW_FOLDER='/var/www'

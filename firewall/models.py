@@ -31,6 +31,8 @@ class Rule(models.Model):
     r_type = models.CharField(max_length=10, choices=CHOICES_type)
     nat = models.BooleanField(default=False)
     nat_dport = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1), MaxValueValidator(65535)])
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
 
     def __unicode__(self):
         return self.desc()
@@ -79,6 +81,8 @@ class Vlan(models.Model):
     comment = models.TextField(blank=True)
     domain = models.TextField(blank=True, validators=[val_domain])
     dhcp_pool = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
 
     def __unicode__(self):
         return self.name
@@ -100,6 +104,8 @@ class Vlan(models.Model):
 class Group(models.Model):
     name = models.CharField(max_length=20, unique=True)
     rules = models.ManyToManyField('Rule', symmetrical=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
 
     def __unicode__(self):
         return self.name
@@ -107,6 +113,9 @@ class Group(models.Model):
 class Alias(models.Model):
     host = models.ForeignKey('Host')
     alias = models.CharField(max_length=40, unique=True, validators=[val_domain])
+    owner = models.ForeignKey(User, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
     class Meta:
         verbose_name_plural = 'aliases'
 
@@ -125,6 +134,8 @@ class Host(models.Model):
     owner = models.ForeignKey(User)
     groups = models.ManyToManyField('Group', symmetrical=False, blank=True, null=True)
     rules = models.ManyToManyField('Rule', symmetrical=False, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
 
     def __unicode__(self):
         return self.hostname
