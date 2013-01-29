@@ -76,16 +76,15 @@ def neptun_POST(neptun):
                 #redirect('http://store.cloud.ik.bme.hu:8080/dl/'+dl_hash)
                 return json.dumps({'LINK' : SITE_URL+'/dl/'+dl_hash})
             else:
-                #Tar directore in /home/user
-                chdir = os.path.dirname(dl_path)
-                folder_name = os.path.basename(dl_path)
                 try:
                     os.makedirs(TEMP_DIR+'/'+neptun, 0700)
                 except:
                     pass
-                temp_path = TEMP_DIR+'/'+neptun+'/'+folder_name+'.tar.gz'
+                folder_name = os.path.basename(dl_path)
+                temp_path = TEMP_DIR+'/'+neptun+'/'+folder_name+'.zip'
                 with open(os.devnull, "w") as fnull:
-                    result = subprocess.call(['/bin/tar', 'zcvf', temp_path, '-C', chdir, folder_name], stdout = fnull, stderr = fnull)
+                    # zip -rqDj vmi.zip /home/tarokkk/vpn-ik
+                    result = subprocess.call(['/usr/bin/zip', '-rqDj', temp_path, dl_path], stdout = fnull, stderr = fnull)
                 os.symlink(temp_path, ROOT_WWW_FOLDER+'/'+dl_hash)
                 return json.dumps({'LINK' : SITE_URL+'/dl/'+dl_hash})
         #UPLOAD
