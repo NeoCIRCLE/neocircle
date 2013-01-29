@@ -1,0 +1,8 @@
+#!/bin/bash
+
+echo "En vagyok a $0 !"
+
+/etc/init.d/ssh stop
+dpkg-reconfigure openssh-server
+/etc/init.d/ssh start
+

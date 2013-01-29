@@ -3,6 +3,7 @@
 application/nx-session=gedit.desktop;
 x-scheme-handler/rdp=rdp.desktop
 x-scheme-handler/nx=rdp.desktop
+x-scheme-handler/shell=rdp.desktop
 
 [Default Applications]
 text/html=chromium-browser.desktop

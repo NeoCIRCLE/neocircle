@@ -1,0 +1,6 @@
+#!/bin/bash
+
+echo "En vagyok a $0 !"
+
+echo "$USER:$USERPW" | chpasswd
+
