@@ -71,5 +71,7 @@ site_port = 9000
 site_url = http://${LOCAL_IP}:%(site_port)s
 #User manager script (add, del, set, update)
 user_manager = FAKEUserManager.sh
+#Temporary directory
+temp_dir = /tmp/dl
 EOF
 sudo /opt/webadmin/cloud/miscellaneous/store-server/CloudStore.py >/dev/null 2>&1 &
