@@ -104,6 +104,13 @@ a:link,a:visited{
   margin: 10px 5px;
   width: 200px;
   text-align: right;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  border: none;
+  border-radius: 4px;
+}
+#modal-container .wizard input:focus{
+  box-shadow: 0 0 12px rgb(128,128,255);
+  outline: none;
 }
 #modal-container .wizard textarea{
   float: right;
@@ -114,6 +121,17 @@ a:link,a:visited{
   font-family:'Metrophobic',sans-serif;
   font-size: 12px;
   text-align: right;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  border: none;
+}
+.wizard nav a{
+  display: block;
+}
+.wizard nav .prev{
+  float: left;
+}
+.wizard nav .next{
+  float: right;
 }
 .wm .summary{
     padding: 15px 5px;
