@@ -15,32 +15,34 @@
             </li>
             <li id="new-wm" style="display: none">
                 <h2>Rendelkezésre álló sablonok</h2>
-                <ul class="wm-list modal">
-                    {% for m in templates %}
-                    <li class="wm">
-                        <form method="POST" action="/vm/new/{{m.pk}}/">{% csrf_token %}
-                            <div class="summary">
-                                <div class="name wm-on">{{m.name}}</div>
-                                <div class="status">
-                                    <input type="submit" value="Indítás"/>
+                <div class="container">
+                    <ul class="wm-list modal">
+                        {% for m in templates %}
+                        <li class="wm">
+                            <form method="POST" action="/vm/new/{{m.pk}}/">{% csrf_token %}
+                                <div class="summary">
+                                    <div class="name wm-on">{{m.name}}</div>
+                                    <div class="status">
+                                        <input type="submit" value="Indítás"/>
+                                    </div>
+                                    <div class="clear"></div>
                                 </div>
-                                <div class="clear"></div>
-                            </div>
-                            <div class="details">
-                                <h3>
-                                    Részletek
-                                </h3>
-                                <ul>
-                                    <li class="name">Rendszer: <span class="value">{{m.disk.name}}</span></li>
-                                    <li class="type">Instance típus: <span class="value">{{m.instance_type.name}}</span></li>
-                                    <li class="memory">Memória: <span class="value">{{m.instance_type.RAM}} MiB</span></li>
-                                    <li class="cpu">CPU magok: <span class="value">{{m.instance_type.CPU}}</span></li>
-                                </ul>
-                            </div>
-                        </form>
-                    </li>
-                    {% endfor %}
-                </ul>
+                                <div class="details">
+                                    <h3>
+                                        Részletek
+                                    </h3>
+                                    <ul>
+                                        <li class="name">Rendszer: <span class="value">{{m.disk.name}}</span></li>
+                                        <li class="type">Instance típus: <span class="value">{{m.instance_type.name}}</span></li>
+                                        <li class="memory">Memória: <span class="value">{{m.instance_type.RAM}} MiB</span></li>
+                                        <li class="cpu">CPU magok: <span class="value">{{m.instance_type.CPU}}</span></li>
+                                    </ul>
+                                </div>
+                            </form>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
             </li>
         </ul>
     </div>

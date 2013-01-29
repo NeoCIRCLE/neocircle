@@ -44,7 +44,10 @@ a:link,a:visited{
   margin-top:0;
   padding:10px;
 }
-
+#modal-container .container{
+  max-height: 400px;
+  overflow: auto;
+}
 #new-wm-tooltip{
     position: relative;
 }
@@ -495,7 +498,7 @@ ul.errorlist,td ul.errorlist
     left:50%;
     top:50%;
     margin-left: -270px;
-    margin-top: -100px;
+    margin-top: -200px;
     min-height: 200px;
     background-color: #fff;
     border-radius: 4px;
