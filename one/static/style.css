@@ -180,7 +180,7 @@ a:link,a:visited{
     margin-left: 5px;
     display: none;
 }
-.wm:hover .actions{
+.wm:hover .actions, .wm.opened .actions{
   display: block;
 }
 .wm .actions a{
