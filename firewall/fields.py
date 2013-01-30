@@ -25,7 +25,7 @@ class MACAddressField(models.Field):
         super(MACAddressField, self).__init__(*args, **kwargs)
 
     def get_internal_type(self):
-        return "CharField"
+        return 'CharField'
 
     def formfield(self, **kwargs):
         defaults = {'form_class': MACAddressFormField}
@@ -34,13 +34,19 @@ class MACAddressField(models.Field):
 add_introspection_rules([], ["firewall\.fields\.MACAddressField"])
 
 def val_alfanum(value):
-     if not alfanum_re.search(value):
-          raise ValidationError(u'%s - csak betut, kotojelet, alahuzast, szamot tartalmazhat!' % value)
+    if alfanum_re.search(value) is None:
+        raise ValidationError(
+            _(u'%s - only letters, numbers, underscores and hyphens are '
+               'allowed!') % value)
 
 def val_domain(value):
-     if not domain_re.search(value):
-          raise ValidationError(u'%s - helytelen domain' % value)
+    if domain_re.search(value) is None:
+        raise ValidationError(_(u'%s - invalid domain') % value)
 
 def ipv4_2_ipv6(ipv4):
+    """Convert IPv4 addr. string to IPv6 addr. string."""
     m = ipv4_re.match(ipv4)
-    return "2001:738:2001:4031:%s:%s:%s:0" % (m.group(1), m.group(2), m.group(3))
+    if m is None:
+        raise ValidationError(_(u'%s - not an IPv4 address') % ipv4)
+    return ("2001:738:2001:4031:%s:%s:%s:0" %
+        (m.group(1), m.group(2), m.group(3)))
