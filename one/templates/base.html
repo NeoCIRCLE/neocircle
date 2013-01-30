@@ -101,7 +101,7 @@ $(function(){
         {% endblock %}
         {% block header %}
             {% block header_title %}
-            <h1><a href="/">IK Cloud</a></h1>
+            <h1><a href="/">IK Cloud <span style="font-size: 21px">&beta;</span></a></h1>
             {% endblock %}
         {% endblock %}
     </div>
@@ -116,6 +116,7 @@ $(function(){
 
     <div id="content">
         {% block content %}{% endblock %}
+        <div class="clear"></div>
     </div>
     <div id="modal" style="display: none">
         <div id="shadow"></div>
