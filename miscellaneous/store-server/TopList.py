@@ -17,7 +17,9 @@ def update_new(name):
     try:
         os.mkdir(top_dir)
     except OSError:
-        pass
+        for f in os.listdir(top_dir):
+            if os.readlink(os.path.join(top_dir, f)) == name:
+                return
     for i in range(1, COUNT):
         try:
             os.rename(os.path.join(top_dir, str(i+1)), os.path.join(top_dir, str(i)))
