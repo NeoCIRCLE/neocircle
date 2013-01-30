@@ -11,4 +11,4 @@ else
         source /home/cloud/init.sh
     fi
 fi
-cd cloud
+cd /opt/webadmin/cloud

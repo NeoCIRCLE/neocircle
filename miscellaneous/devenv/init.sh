@@ -47,3 +47,4 @@ git clone 'ssh://git@giccero.cloud.ik.bme.hu/cloud'
 
 cd cloud
 source miscellaneous/devenv/nextinit.sh
+set +e
