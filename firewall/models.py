@@ -12,6 +12,7 @@ from modeldict import ModelDict
 class Setting(models.Model):
     key = models.CharField(max_length=32)
     value = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
 
 settings = ModelDict(Setting, key='key', value='value', instances=False)
 
@@ -19,9 +20,10 @@ class Rule(models.Model):
     CHOICES_type = (('host', 'host'), ('firewall', 'firewall'), ('vlan', 'vlan'))
     CHOICES_proto = (('tcp', 'tcp'), ('udp', 'udp'), ('icmp', 'icmp'))
     CHOICES_dir = (('0', 'out'), ('1', 'in'))
+
     direction = models.CharField(max_length=1, choices=CHOICES_dir, blank=False)
     description = models.TextField(blank=True)
-    vlan = models.ManyToManyField('Vlan', symmetrical=False, blank=True, null=True)
+    foreign_network = models.ForeignKey('VlanGroup', related_name="ForeignRules")
     dport = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1), MaxValueValidator(65535)])
     sport = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(1), MaxValueValidator(65535)])
     proto = models.CharField(max_length=10, choices=CHOICES_proto, blank=True, null=True)
@@ -34,20 +36,22 @@ class Rule(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 
+    vlan = models.ForeignKey('Vlan', related_name="rules", blank=True, null=True)
+    vlangroup = models.ForeignKey('VlanGroup', related_name="rules", blank=True, null=True)
+    host = models.ForeignKey('Host', related_name="rules", blank=True, null=True)
+    hostgroup = models.ForeignKey('Group', related_name="rules", blank=True, null=True)
+    firewall = models.ForeignKey('Firewall', related_name="rules", blank=True, null=True)
+
     def __unicode__(self):
         return self.desc()
 
-    def color_desc(self):
-        para = '</span>'
-        if(self.dport):
-            para = "dport=%s %s" % (self.dport, para)
-        if(self.sport):
-            para = "sport=%s %s" % (self.sport, para)
-        if(self.proto):
-            para = "proto=%s %s" % (self.proto, para)
-        para= u'<span style="color: #00FF00;">' + para
-        return u'<span style="color: #FF0000;">[' + self.r_type + u']</span> ' + (self.vlan_l() + u'<span style="color: #0000FF;"> ▸ </span>' + self.r_type if self.direction=='1' else self.r_type + u'<span style="color: #0000FF;"> ▸ </span>' + self.vlan_l()) + ' ' + para + ' ' +self.description
-    color_desc.allow_tags = True
+    def clean(self):
+        count = 0
+        for field in [self.vlan, self.vlangroup, self.host, self.hostgroup, self.firewall]:
+             if field is None:
+                 count = count + 1
+        if count != 4:
+            raise ValidationError('jaj')
 
     def desc(self):
         para = u""
@@ -57,12 +61,7 @@ class Rule(models.Model):
             para = "sport=%s %s" % (self.sport, para)
         if(self.proto):
             para = "proto=%s %s" % (self.proto, para)
-        return u'[' + self.r_type + u'] ' + (self.vlan_l() + u' ▸ ' + self.r_type if self.direction=='1' else self.r_type + u' ▸ ' + self.vlan_l()) + u' ' + para + u' ' +self.description
-    def vlan_l(self):
-        retval = []
-        for vl in self.vlan.all():
-            retval.append(vl.name)
-        return u', '.join(retval)
+        return u'[' + self.r_type + u'] ' + (unicode(self.foreign_network) + u' ▸ ' + self.r_type if self.direction=='1' else self.r_type + u' ▸ ' + unicode(self.foreign_network)) + u' ' + para + u' ' +self.description
 
 class Vlan(models.Model):
     vid = models.IntegerField(unique=True)
@@ -76,34 +75,38 @@ class Vlan(models.Model):
     ipv6 = models.GenericIPAddressField(protocol='ipv6', unique=True)
     snat_ip = models.GenericIPAddressField(protocol='ipv4', blank=True, null=True)
     snat_to = models.ManyToManyField('self', symmetrical=False, blank=True, null=True)
-    rules = models.ManyToManyField('Rule', related_name="%(app_label)s_%(class)s_related", symmetrical=False, blank=True, null=True)
     description = models.TextField(blank=True)
     comment = models.TextField(blank=True)
     domain = models.TextField(blank=True, validators=[val_domain])
     dhcp_pool = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    owner = models.ForeignKey(User, blank=True, null=True)
     modified_at = models.DateTimeField(auto_now=True)
 
     def __unicode__(self):
         return self.name
+
     def net_ipv6(self):
         return self.net6 + "/" + unicode(self.prefix6)
+
     def net_ipv4(self):
         return self.net4 + "/" + unicode(self.prefix4)
-    def rules_l(self):
-        retval = []
-        for rl in self.rules.all():
-            retval.append(unicode(rl))
-        return ', '.join(retval)
-    def snat_to_l(self):
-        retval = []
-        for rl in self.snat_to.all():
-            retval.append(unicode(rl))
-        return ', '.join(retval)
+
+class VlanGroup(models.Model):
+    name = models.CharField(max_length=20, unique=True)
+    vlans = models.ManyToManyField('Vlan', symmetrical=False, blank=True, null=True)
+    description = models.TextField(blank=True)
+    owner = models.ForeignKey(User, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+    def __unicode__(self):
+        return self.name
 
 class Group(models.Model):
     name = models.CharField(max_length=20, unique=True)
-    rules = models.ManyToManyField('Rule', symmetrical=False, blank=True, null=True)
+    description = models.TextField(blank=True)
+    owner = models.ForeignKey(User, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 
@@ -116,6 +119,7 @@ class Alias(models.Model):
     owner = models.ForeignKey(User, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
+
     class Meta:
         verbose_name_plural = 'aliases'
 
@@ -133,12 +137,12 @@ class Host(models.Model):
     vlan = models.ForeignKey('Vlan')
     owner = models.ForeignKey(User)
     groups = models.ManyToManyField('Group', symmetrical=False, blank=True, null=True)
-    rules = models.ManyToManyField('Rule', symmetrical=False, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 
     def __unicode__(self):
         return self.hostname
+
     def save(self, *args, **kwargs):
         if not self.id and self.ipv6 == "auto":
             self.ipv6 = ipv4_2_ipv6(self.ipv4)
@@ -146,18 +150,9 @@ class Host(models.Model):
             raise ValidationError("Ha a shared_ip be van pipalva, akkor egyedinek kell lennie a pub_ipv4-nek!")
         if Host.objects.exclude(id=self.id).filter(pub_ipv4=self.ipv4):
             raise ValidationError("Egy masik host natolt cimet nem hasznalhatod sajat ipv4-nek")
+        self.full_clean()
         super(Host, self).save(*args, **kwargs)
-    def groups_l(self):
-        retval = []
-        for grp in self.groups.all():
-            retval.append(grp.name)
-        return ', '.join(retval)
-    def rules_l(self):
-        retval = []
-        for rl in self.rules.all():
-            retval.append(unicode(rl.color_desc()))
-        return '<br>'.join(retval)
-    rules_l.allow_tags = True
+
     def enable_net(self):
         self.groups.add(Group.objects.get(name="netezhet"))
 
@@ -168,17 +163,9 @@ class Host(models.Model):
         for host in Host.objects.filter(pub_ipv4=self.pub_ipv4):
             if host.rules.filter(nat=True, proto=proto, dport=public):
                 raise ValidationError("A %s %s port mar hasznalva" % (proto, public))
-        rule = Rule(direction='1', owner=self.owner, description=u"%s %s %s ▸ %s" % (self.hostname, proto, public, private), dport=public, proto=proto, nat=True, accept=True, r_type="host", nat_dport=private)
+        rule = Rule(direction='1', owner=self.owner, dport=public, proto=proto, nat=True, accept=True, r_type="host", nat_dport=private, host=host, foreign_network=VlanGroup.objects.get(name=settings["default_vlangroup"]))
         rule.full_clean()
         rule.save()
-        rule.vlan.add(Vlan.objects.get(name="PUB"))
-        rule.vlan.add(Vlan.objects.get(name="HOT"))
-        rule.vlan.add(Vlan.objects.get(name="LAB"))
-        rule.vlan.add(Vlan.objects.get(name="DMZ"))
-        rule.vlan.add(Vlan.objects.get(name="VM-NET"))
-        rule.vlan.add(Vlan.objects.get(name="WAR"))
-        rule.vlan.add(Vlan.objects.get(name="OFF2"))
-        self.rules.add(rule)
 
     def del_port(self, proto, public):
         self.rules.filter(owner=self.owner, proto=proto, nat=True, dport=public).delete()
@@ -194,7 +181,6 @@ class Host(models.Model):
 
 class Firewall(models.Model):
     name = models.CharField(max_length=20, unique=True)
-    rules = models.ManyToManyField('Rule', symmetrical=False, blank=True, null=True)
 
     def __unicode__(self):
         return self.name

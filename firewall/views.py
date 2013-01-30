@@ -17,6 +17,8 @@ import sys
 def reload_firewall(request):
     if request.user.is_authenticated():
         if(request.user.is_superuser):
+            ipv4 = firewall()
+            return HttpResponse(ipv4.show())
             html = u"Be vagy jelentkezve es admin is vagy, kedves %s!" % request.user.username
             html += "<br> 10 masodperc mulva ujratoltodik"
             ReloadTask.delay()
