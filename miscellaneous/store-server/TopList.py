@@ -8,6 +8,8 @@ wm = WatchManager()
 mask = IN_CREATE | IN_MODIFY | IN_DONT_FOLLOW
 
 def update_new(name):
+    if os.path.normpath(name).find("/.") != -1:
+        return
     home = pwd.getpwuid(os.stat(name).st_uid).pw_dir
     top_dir = os.path.join(home, "../.top")
     try:
@@ -17,12 +19,14 @@ def update_new(name):
     try:
         os.unlink(os.path.join(top_dir, str(COUNT)))
     except OSError:
-        pass
+        print "Failed to unlink " + str(COUNT) + ".\n"
+        print e
     for i in range(1, COUNT):
         try:
             os.rename(os.path.join(top_dir, str(i+1)), os.path.join(top_dir, str(i)))
-        except OSError:
-            pass
+        except OSError as e:
+            print "Failed to rename " + str(i+1) + " to "+str(i)+" in "+top_dir+".\n"
+            print e
     os.symlink(name, os.path.join(top_dir, str(COUNT)))
 
 class Process(ProcessEvent):
