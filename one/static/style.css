@@ -5,6 +5,9 @@
 a{
     text-decoration: none;
 }
+abbr{
+  border-bottom: 1px dotted #666;
+}
 a:link,a:visited{
     color:black;
 }
