@@ -1,3 +1,5 @@
+# -*- coding: utf8 -*-
+
 from django.contrib import admin
 from firewall.models import *
 from django import contrib
