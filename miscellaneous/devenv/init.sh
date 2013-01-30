@@ -16,6 +16,9 @@ then
         echo -n "Your name: "
         read NAME
         git config --global user.name "$NAME"
+        echo -n "Your e-mail address: "
+        read MAIL
+        git config --global user.email "$MAIL"
 fi
 
 
