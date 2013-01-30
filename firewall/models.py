@@ -12,6 +12,7 @@ from modeldict import ModelDict
 class Setting(models.Model):
     key = models.CharField(max_length=32)
     value = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
 
 settings = ModelDict(Setting, key='key', value='value', instances=False)
 
@@ -19,6 +20,7 @@ class Rule(models.Model):
     CHOICES_type = (('host', 'host'), ('firewall', 'firewall'), ('vlan', 'vlan'))
     CHOICES_proto = (('tcp', 'tcp'), ('udp', 'udp'), ('icmp', 'icmp'))
     CHOICES_dir = (('0', 'out'), ('1', 'in'))
+
     direction = models.CharField(max_length=1, choices=CHOICES_dir, blank=False)
     description = models.TextField(blank=True)
     vlan = models.ManyToManyField('Vlan', symmetrical=False, blank=True, null=True)
@@ -82,12 +84,15 @@ class Vlan(models.Model):
     domain = models.TextField(blank=True, validators=[val_domain])
     dhcp_pool = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    owner = models.ForeignKey(User, blank=True, null=True)
     modified_at = models.DateTimeField(auto_now=True)
 
     def __unicode__(self):
         return self.name
+
     def net_ipv6(self):
         return self.net6 + "/" + unicode(self.prefix6)
+
     def net_ipv4(self):
         return self.net4 + "/" + unicode(self.prefix4)
     def rules_l(self):
@@ -116,6 +121,7 @@ class Alias(models.Model):
     owner = models.ForeignKey(User, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
+
     class Meta:
         verbose_name_plural = 'aliases'
 
@@ -139,6 +145,7 @@ class Host(models.Model):
 
     def __unicode__(self):
         return self.hostname
+
     def save(self, *args, **kwargs):
         if not self.id and self.ipv6 == "auto":
             self.ipv6 = ipv4_2_ipv6(self.ipv4)
