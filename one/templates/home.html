@@ -15,6 +15,9 @@
             </li>
             <li id="new-wm" style="display: none">
                 <h2>Rendelkezésre álló sablonok</h2>
+                <p>
+                    Mese, hogy mit is lehet csinálni.
+                </p>
                 <div class="container">
                     <ul class="wm-list modal">
                         {% for m in templates %}
@@ -97,9 +100,6 @@
                     <div class="clear"></div>
                 </div>
             </li>
-            <script type="text/html" id="new-template" style="display: none">
-                {% include "new-template-flow.html" %}
-            </script>
         </ul>
     </div>
     {% for box in boxes %}
