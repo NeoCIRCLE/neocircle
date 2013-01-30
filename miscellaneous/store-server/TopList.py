@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import os, os.path
 from pyinotify import WatchManager, Notifier, ThreadedNotifier, EventsCodes, ProcessEvent, IN_DONT_FOLLOW, IN_CREATE, IN_MODIFY
 import pwd
