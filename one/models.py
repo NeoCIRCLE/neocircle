@@ -183,7 +183,7 @@ class Network(models.Model):
             cls.objects.exclude(id__in=l).delete()
 
     def __unicode__(self):
-        return u"%s (vlan%03d)" % (self.name, self.id)
+        return self.name
     class Meta:
         ordering = ['name']
 

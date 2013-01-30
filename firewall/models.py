@@ -163,7 +163,7 @@ class Host(models.Model):
         for host in Host.objects.filter(pub_ipv4=self.pub_ipv4):
             if host.rules.filter(nat=True, proto=proto, dport=public):
                 raise ValidationError("A %s %s port mar hasznalva" % (proto, public))
-        rule = Rule(direction='1', owner=self.owner, dport=public, proto=proto, nat=True, accept=True, r_type="host", nat_dport=private, host=host, foreign_network=VlanGroup.objects.get(name=settings["default_vlangroup"]))
+        rule = Rule(direction='1', owner=self.owner, dport=public, proto=proto, nat=True, accept=True, r_type="host", nat_dport=private, host=self, foreign_network=VlanGroup.objects.get(name=settings["default_vlangroup"]))
         rule.full_clean()
         rule.save()
 

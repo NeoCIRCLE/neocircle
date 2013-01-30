@@ -12,12 +12,18 @@ class RuleInline(contrib.admin.TabularInline):
     model = Rule
 
 class HostAdmin(admin.ModelAdmin):
-    list_display = ('hostname', 'vlan', 'ipv4', 'ipv6', 'pub_ipv4', 'mac', 'shared_ip', 'owner', 'description', 'reverse')
+    list_display = ('hostname', 'vlan', 'ipv4', 'ipv6', 'pub_ipv4', 'mac', 'shared_ip', 'owner', 'description', 'reverse', 'groups_l')
     ordering = ('hostname', )
     list_filter = ('owner', 'vlan', 'groups')
     search_fields = ('hostname', 'description', 'ipv4', 'ipv6', 'mac')
     filter_horizontal = ('groups', )
     inlines = (AliasInline, RuleInline)
+
+    def groups_l(self, instance):
+        retval = []
+        for i in instance.groups.all():
+            retval.append(i.name)
+        return u', '.join(retval)
 
 class HostInline(contrib.admin.TabularInline):
     model = Host
@@ -26,7 +32,7 @@ class HostInline(contrib.admin.TabularInline):
 class VlanAdmin(admin.ModelAdmin):
     list_display = ('vid', 'name', 'ipv4', 'net_ipv4', 'ipv6', 'net_ipv6', 'description', 'domain', 'snat_ip', )
     ordering = ('vid', )
-    inlines = (HostInline, RuleInline)
+    inlines = (RuleInline, )
 
 class RuleAdmin(admin.ModelAdmin):
     list_display = ('r_type', 'color_desc', 'owner', 'extra', 'direction', 'accept', 'proto', 'sport', 'dport', 'nat', 'nat_dport', 'used_in')
