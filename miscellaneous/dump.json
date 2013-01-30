@@ -256,156 +256,6 @@
   },
   {
     "pk": 1,
-    "model": "one.userclouddetails",
-    "fields": {
-      "ssh_private_key": "-----xxx PRIVATE KEY-----",
-      "user": 1,
-"smb_password": "kamu",
-      "ssh_key": null
-    }
-  },
-  {
-    "pk": 2,
-    "model": "one.userclouddetails",
-    "fields": {
-      "ssh_private_key": "-----xxx PRIVATE KEY-----",
-      "user": 2,
-"smb_password": "kamu",
-      "ssh_key": 6
-    }
-  },
-  {
-    "pk": 3,
-    "model": "one.userclouddetails",
-    "fields": {
-      "ssh_private_key": "-----xxx PRIVATE KEY-----",
-      "user": 3,
-"smb_password": "kamu",
-      "ssh_key": null
-    }
-  },
-  {
-    "pk": 4,
-    "model": "one.userclouddetails",
-    "fields": {
-      "ssh_private_key": "-----xxx PRIVATE KEY-----",
-      "user": 4,
-"smb_password": "kamu",
-      "ssh_key": null
-    }
-  },
-  {
-    "pk": 5,
-    "model": "one.userclouddetails",
-    "fields": {
-      "ssh_private_key": "-----xxx PRIVATE KEY-----",
-      "user": 5,
-"smb_password": "kamu",
-      "ssh_key": null
-    }
-  },
-  {
-    "pk": 6,
-    "model": "one.userclouddetails",
-    "fields": {
-      "ssh_private_key": "-----xxx PRIVATE KEY-----",
-      "user": 6,
-"smb_password": "kamu",
-      "ssh_key": 8
-    }
-  },
-  {
-    "pk": 7,
-    "model": "one.userclouddetails",
-    "fields": {
-      "ssh_private_key": "-----xxx PRIVATE KEY-----",
-      "user": 7,
-"smb_password": "kamu",
-      "ssh_key": 4
-    }
-  },
-  {
-    "pk": 11,
-    "model": "one.userclouddetails",
-    "fields": {
-      "ssh_private_key": "-----xxx PRIVATE KEY-----",
-      "user": 11,
-"smb_password": "kamu",
-      "ssh_key": null
-    }
-  },
-  {
-    "pk": 12,
-    "model": "one.userclouddetails",
-    "fields": {
-      "ssh_private_key": "-----xxx PRIVATE KEY-----",
-      "user": 12,
-"smb_password": "kamu",
-      "ssh_key": null
-    }
-  },
-  {
-    "pk": 13,
-    "model": "one.userclouddetails",
-    "fields": {
-      "ssh_private_key": "-----xxx PRIVATE KEY-----",
-      "user": 13,
-"smb_password": "kamu",
-      "ssh_key": null
-    }
-  },
-  {
-    "pk": 14,
-    "model": "one.userclouddetails",
-    "fields": {
-      "ssh_private_key": "-----xxx PRIVATE KEY-----",
-      "user": 14,
-"smb_password": "kamu",
-      "ssh_key": null
-    }
-  },
-  {
-    "pk": 15,
-    "model": "one.userclouddetails",
-    "fields": {
-      "ssh_private_key": "-----xxx PRIVATE KEY-----",
-      "user": 15,
-"smb_password": "kamu",
-      "ssh_key": null
-    }
-  },
-  {
-    "pk": 16,
-    "model": "one.userclouddetails",
-    "fields": {
-      "ssh_private_key": "-----xxx PRIVATE KEY-----",
-      "user": 16,
-"smb_password": "kamu",
-      "ssh_key": null
-    }
-  },
-  {
-    "pk": 17,
-    "model": "one.userclouddetails",
-    "fields": {
-      "ssh_private_key": "-----xxx PRIVATE KEY-----",
-      "user": 17,
-"smb_password": "kamu",
-      "ssh_key": null
-    }
-  },
-  {
-    "pk": 18,
-    "model": "one.userclouddetails",
-    "fields": {
-      "ssh_private_key": "-----xxx PRIVATE KEY-----",
-      "user": 18,
-"smb_password": "kamu",
-      "ssh_key": null
-    }
-  },
-  {
-    "pk": 1,
     "model": "one.sshkey",
     "fields": {
       "user": 1,
@@ -3504,6 +3354,31 @@
     }
   },
   {
+    "pk": 1170,
+    "model": "firewall.rule",
+    "fields": {
+      "r_type": "host",
+      "direction": "0",
+      "vlan": null,
+      "description": "",
+      "proto": null,
+      "firewall": null,
+      "created_at": "2013-01-30T21:28:01Z",
+      "extra": "",
+      "modified_at": "2013-01-30T21:28:01Z",
+      "owner": 1,
+      "accept": true,
+      "dport": null,
+      "host": 7,
+      "nat_dport": null,
+      "hostgroup": null,
+      "nat": false,
+      "foreign_network": 5,
+      "sport": null,
+      "vlangroup": null
+    }
+  },
+  {
     "pk": 1,
     "model": "firewall.vlan",
     "fields": {
@@ -4243,10 +4118,10 @@
     "fields": {
       "comment": "",
       "vlan": 1,
-      "reverse": null,
+      "reverse": "",
       "created_at": "2013-01-27T23:00:00Z",
       "hostname": "bd",
-      "modified_at": "2013-01-27T23:00:00Z",
+      "modified_at": "2013-01-30T21:28:01Z",
       "location": "",
       "pub_ipv4": null,
       "mac": "00:13:f7:d1:b8:af",
@@ -6577,96 +6452,6 @@
     "model": "django.queue",
     "fields": {
       "name": "f72ef8f4-1ace-350f-baf2-769bd03038a5.reply.celery.pidbox"
-    }
-  },
-  {
-    "pk": 441,
-    "model": "django.message",
-    "fields": {
-      "queue": 1,
-      "visible": false,
-      "sent_at": "2013-01-30T19:30:23Z",
-      "payload": "{\"body\": \"gAJ9cQEoVQdyZXRyaWVzcQJLAFUEdGFza3EDVRlmaXJld2FsbC50YXNrcy5SZWxvYWRUYXNrcQRVCGVycmJhY2tzcQVOVQljYWxsYmFja3NxBk5VBmt3YXJnc3EHfXEIVQNldGFxCU5VBGFyZ3NxCl1xC1UCaWRxDFUkOGIzYjYzYmUtNzY2Zi00Y2ZmLTkyMzAtNDhlZjE0YWFlOWY1cQ1VB2V4cGlyZXNxDk5VA3V0Y3EPiHUu\", \"headers\": {}, \"content-type\": \"application/x-python-serialize\", \"properties\": {\"exclusive\": false, \"name\": \"celery\", \"body_encoding\": \"base64\", \"delivery_info\": {\"priority\": 0, \"routing_key\": \"celery\", \"exchange\": \"celery\"}, \"auto_delete\": false, \"delivery_mode\": 2, \"no_ack\": false, \"alias\": null, \"queue_arguments\": null, \"binding_arguments\": null, \"delivery_tag\": 1, \"bindings\": [], \"durable\": true}, \"content-encoding\": \"binary\"}"
-    }
-  },
-  {
-    "pk": 442,
-    "model": "django.message",
-    "fields": {
-      "queue": 1,
-      "visible": false,
-      "sent_at": "2013-01-30T19:32:08Z",
-      "payload": "{\"body\": \"gAJ9cQEoVQdyZXRyaWVzcQJLAFUEdGFza3EDVRlmaXJld2FsbC50YXNrcy5SZWxvYWRUYXNrcQRVCGVycmJhY2tzcQVOVQljYWxsYmFja3NxBk5VBmt3YXJnc3EHfXEIVQNldGFxCU5VBGFyZ3NxCl1xC1UCaWRxDFUkOTkzZjg3ZGItYzZjMi00ZTUzLWJiZWQtZTBhNjUzZjllZWJicQ1VB2V4cGlyZXNxDk5VA3V0Y3EPiHUu\", \"headers\": {}, \"content-type\": \"application/x-python-serialize\", \"properties\": {\"exclusive\": false, \"name\": \"celery\", \"body_encoding\": \"base64\", \"delivery_info\": {\"priority\": 0, \"routing_key\": \"celery\", \"exchange\": \"celery\"}, \"auto_delete\": false, \"delivery_mode\": 2, \"no_ack\": false, \"alias\": null, \"queue_arguments\": null, \"binding_arguments\": null, \"delivery_tag\": 1, \"bindings\": [], \"durable\": true}, \"content-encoding\": \"binary\"}"
-    }
-  },
-  {
-    "pk": 443,
-    "model": "django.message",
-    "fields": {
-      "queue": 1,
-      "visible": false,
-      "sent_at": "2013-01-30T19:33:22Z",
-      "payload": "{\"body\": \"gAJ9cQEoVQdyZXRyaWVzcQJLAFUEdGFza3EDVRlmaXJld2FsbC50YXNrcy5SZWxvYWRUYXNrcQRVCGVycmJhY2tzcQVOVQljYWxsYmFja3NxBk5VBmt3YXJnc3EHfXEIVQNldGFxCU5VBGFyZ3NxCl1xC1UCaWRxDFUkZTFiNTdkYWMtNjExMi00ZjkxLTk2NjQtNjgwMzlhNjEyOWYzcQ1VB2V4cGlyZXNxDk5VA3V0Y3EPiHUu\", \"headers\": {}, \"content-type\": \"application/x-python-serialize\", \"properties\": {\"exclusive\": false, \"name\": \"celery\", \"body_encoding\": \"base64\", \"delivery_info\": {\"priority\": 0, \"routing_key\": \"celery\", \"exchange\": \"celery\"}, \"auto_delete\": false, \"delivery_mode\": 2, \"no_ack\": false, \"alias\": null, \"queue_arguments\": null, \"binding_arguments\": null, \"delivery_tag\": 2, \"bindings\": [], \"durable\": true}, \"content-encoding\": \"binary\"}"
-    }
-  },
-  {
-    "pk": 444,
-    "model": "django.message",
-    "fields": {
-      "queue": 1,
-      "visible": false,
-      "sent_at": "2013-01-30T19:40:33Z",
-      "payload": "{\"body\": \"gAJ9cQEoVQdyZXRyaWVzcQJLAFUEdGFza3EDVRlmaXJld2FsbC50YXNrcy5SZWxvYWRUYXNrcQRVCGVycmJhY2tzcQVOVQljYWxsYmFja3NxBk5VBmt3YXJnc3EHfXEIVQNldGFxCU5VBGFyZ3NxCl1xC1UCaWRxDFUkZWJmNjY4OTctODQ4Ny00N2Q1LTk3ZjYtZDg5NDllYzM2NTVhcQ1VB2V4cGlyZXNxDk5VA3V0Y3EPiHUu\", \"headers\": {}, \"content-type\": \"application/x-python-serialize\", \"properties\": {\"exclusive\": false, \"name\": \"celery\", \"body_encoding\": \"base64\", \"delivery_info\": {\"priority\": 0, \"routing_key\": \"celery\", \"exchange\": \"celery\"}, \"auto_delete\": false, \"delivery_mode\": 2, \"no_ack\": false, \"alias\": null, \"queue_arguments\": null, \"binding_arguments\": null, \"delivery_tag\": 1, \"bindings\": [], \"durable\": true}, \"content-encoding\": \"binary\"}"
-    }
-  },
-  {
-    "pk": 445,
-    "model": "django.message",
-    "fields": {
-      "queue": 1,
-      "visible": false,
-      "sent_at": "2013-01-30T19:42:33Z",
-      "payload": "{\"body\": \"gAJ9cQEoVQdyZXRyaWVzcQJLAFUEdGFza3EDVRlmaXJld2FsbC50YXNrcy5SZWxvYWRUYXNrcQRVCGVycmJhY2tzcQVOVQljYWxsYmFja3NxBk5VBmt3YXJnc3EHfXEIVQNldGFxCU5VBGFyZ3NxCl1xC1UCaWRxDFUkZTVmMjI0YWQtMTI2ZC00NzBjLTk2ZjYtZjgyNzI0OGUzOGNicQ1VB2V4cGlyZXNxDk5VA3V0Y3EPiHUu\", \"headers\": {}, \"content-type\": \"application/x-python-serialize\", \"properties\": {\"exclusive\": false, \"name\": \"celery\", \"body_encoding\": \"base64\", \"delivery_info\": {\"priority\": 0, \"routing_key\": \"celery\", \"exchange\": \"celery\"}, \"auto_delete\": false, \"delivery_mode\": 2, \"no_ack\": false, \"alias\": null, \"queue_arguments\": null, \"binding_arguments\": null, \"delivery_tag\": 1, \"bindings\": [], \"durable\": true}, \"content-encoding\": \"binary\"}"
-    }
-  },
-  {
-    "pk": 446,
-    "model": "django.message",
-    "fields": {
-      "queue": 1,
-      "visible": false,
-      "sent_at": "2013-01-30T20:49:02Z",
-      "payload": "{\"body\": \"gAJ9cQEoVQdyZXRyaWVzcQJLAFUEdGFza3EDVRlmaXJld2FsbC50YXNrcy5SZWxvYWRUYXNrcQRVCGVycmJhY2tzcQVOVQljYWxsYmFja3NxBk5VBmt3YXJnc3EHfXEIVQNldGFxCU5VBGFyZ3NxCl1xC1UCaWRxDFUkY2M1YjRkMTgtN2Q3Zi00ODIxLWI2ZWMtZGEzODZhMmI5YWE4cQ1VB2V4cGlyZXNxDk5VA3V0Y3EPiHUu\", \"headers\": {}, \"content-type\": \"application/x-python-serialize\", \"properties\": {\"exclusive\": false, \"name\": \"celery\", \"body_encoding\": \"base64\", \"delivery_info\": {\"priority\": 0, \"routing_key\": \"celery\", \"exchange\": \"celery\"}, \"auto_delete\": false, \"delivery_mode\": 2, \"no_ack\": false, \"alias\": null, \"queue_arguments\": null, \"binding_arguments\": null, \"delivery_tag\": 2, \"bindings\": [], \"durable\": true}, \"content-encoding\": \"binary\"}"
-    }
-  },
-  {
-    "pk": 447,
-    "model": "django.message",
-    "fields": {
-      "queue": 1,
-      "visible": false,
-      "sent_at": "2013-01-30T20:49:11Z",
-      "payload": "{\"body\": \"gAJ9cQEoVQdyZXRyaWVzcQJLAFUEdGFza3EDVRlmaXJld2FsbC50YXNrcy5SZWxvYWRUYXNrcQRVCGVycmJhY2tzcQVOVQljYWxsYmFja3NxBk5VBmt3YXJnc3EHfXEIVQNldGFxCU5VBGFyZ3NxCl1xC1UCaWRxDFUkZWY2YzllM2QtZGRmZC00ODgyLThkOTItMmMyOGU3MjlhMWE5cQ1VB2V4cGlyZXNxDk5VA3V0Y3EPiHUu\", \"headers\": {}, \"content-type\": \"application/x-python-serialize\", \"properties\": {\"exclusive\": false, \"name\": \"celery\", \"body_encoding\": \"base64\", \"delivery_info\": {\"priority\": 0, \"routing_key\": \"celery\", \"exchange\": \"celery\"}, \"auto_delete\": false, \"delivery_mode\": 2, \"no_ack\": false, \"alias\": null, \"queue_arguments\": null, \"binding_arguments\": null, \"delivery_tag\": 1, \"bindings\": [], \"durable\": true}, \"content-encoding\": \"binary\"}"
-    }
-  },
-  {
-    "pk": 448,
-    "model": "django.message",
-    "fields": {
-      "queue": 1,
-      "visible": false,
-      "sent_at": "2013-01-30T20:49:24Z",
-      "payload": "{\"body\": \"gAJ9cQEoVQdyZXRyaWVzcQJLAFUEdGFza3EDVRlmaXJld2FsbC50YXNrcy5SZWxvYWRUYXNrcQRVCGVycmJhY2tzcQVOVQljYWxsYmFja3NxBk5VBmt3YXJnc3EHfXEIVQNldGFxCU5VBGFyZ3NxCl1xC1UCaWRxDFUkZTQyZDg0YmQtYjc1Mi00N2E5LWJiNDEtNGY5NmEzMmUyMDA4cQ1VB2V4cGlyZXNxDk5VA3V0Y3EPiHUu\", \"headers\": {}, \"content-type\": \"application/x-python-serialize\", \"properties\": {\"exclusive\": false, \"name\": \"celery\", \"body_encoding\": \"base64\", \"delivery_info\": {\"priority\": 0, \"routing_key\": \"celery\", \"exchange\": \"celery\"}, \"auto_delete\": false, \"delivery_mode\": 2, \"no_ack\": false, \"alias\": null, \"queue_arguments\": null, \"binding_arguments\": null, \"delivery_tag\": 3, \"bindings\": [], \"durable\": true}, \"content-encoding\": \"binary\"}"
-    }
-  },
-  {
-    "pk": 449,
-    "model": "django.message",
-    "fields": {
-      "queue": 1,
-      "visible": false,
-      "sent_at": "2013-01-30T20:49:33Z",
-      "payload": "{\"body\": \"gAJ9cQEoVQdyZXRyaWVzcQJLAFUEdGFza3EDVRlmaXJld2FsbC50YXNrcy5SZWxvYWRUYXNrcQRVCGVycmJhY2tzcQVOVQljYWxsYmFja3NxBk5VBmt3YXJnc3EHfXEIVQNldGFxCU5VBGFyZ3NxCl1xC1UCaWRxDFUkYzE3MjFjMDAtZDA5Yy00YTRkLWFlMjMtOGY1YWQxYWY2Y2RjcQ1VB2V4cGlyZXNxDk5VA3V0Y3EPiHUu\", \"headers\": {}, \"content-type\": \"application/x-python-serialize\", \"properties\": {\"exclusive\": false, \"name\": \"celery\", \"body_encoding\": \"base64\", \"delivery_info\": {\"priority\": 0, \"routing_key\": \"celery\", \"exchange\": \"celery\"}, \"auto_delete\": false, \"delivery_mode\": 2, \"no_ack\": false, \"alias\": null, \"queue_arguments\": null, \"binding_arguments\": null, \"delivery_tag\": 2, \"bindings\": [], \"durable\": true}, \"content-encoding\": \"binary\"}"
     }
   }
 ]
