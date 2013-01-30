@@ -11,8 +11,14 @@ mask = IN_CREATE | IN_MODIFY | IN_DONT_FOLLOW
 Register given file to ~/../.top dir as a symbolic link.
 """
 def update_new(name):
-    if os.path.normpath(name).find("/.") != -1:
-        return
+    norm = os.path.normpath(name)
+    if norm != name:
+        return # link
+    name = norm
+
+    if name.find("/.") != -1:
+        return # hidden file (or file in hidden dir)
+
     home = pwd.getpwuid(os.stat(name).st_uid).pw_dir
     if not name.startswith(home):
         return # outside home
