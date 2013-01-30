@@ -22,8 +22,7 @@ def update_new(name):
         try:
             os.rename(os.path.join(top_dir, str(i+1)), os.path.join(top_dir, str(i)))
         except OSError as e:
-            print "Failed to rename " + str(i+1) + " to "+str(i)+" in "+top_dir+".\n"
-            print e
+            pass
     os.symlink(name, os.path.join(top_dir, str(COUNT)))
 
 class Process(ProcessEvent):
