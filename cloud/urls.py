@@ -25,4 +25,5 @@ urlpatterns = patterns('',
      url(r'^reload/$', 'firewall.views.reload_firewall', name='reload_firewall'),
      url(r'^fwapi/$', 'firewall.views.firewall_api', name='firewall_api'),
      url(r'^store/$', 'store.views.index', name='store_index'),
+     url(r'^store/top/$', 'store.views.toplist', name='store_top'),
 )

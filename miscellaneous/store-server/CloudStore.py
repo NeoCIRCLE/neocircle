@@ -168,6 +168,17 @@ def cmd_remove(request, neptun, home_path):
             return
 COMMANDS['REMOVE'] = cmd_remove
 
+def cmd_toplist(request, neptun, home_path):
+    d = []
+    try:
+        top_dir = os.path.normpath(os.path.join(home_path, "../.top"))
+        d = [file_dict(os.readlink(os.path.join(top_dir, f)), home_path)
+                for f in os.listdir(top_dir)]
+    except:
+        pass
+    return json.dumps(sorted(d, key=lambda f: f['MTIME']))
+COMMANDS['TOPLIST'] = cmd_toplist
+
 @route('/set/<neptun>', method='POST')
 def set_keys(neptun):
     key_list = []
