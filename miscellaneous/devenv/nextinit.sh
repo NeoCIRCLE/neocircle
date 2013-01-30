@@ -3,9 +3,7 @@
 cd /opt/webadmin/cloud
 ./manage.py syncdb --noinput
 ./manage.py migrate
-echo '"test" user password:'
 ./manage.py loaddata miscellaneous/dump.json
-./manage.py changepassword test
 ./manage.py update
 
 #Set up store server
@@ -36,3 +34,5 @@ sudo /opt/webadmin/cloud/miscellaneous/store-server/TopList.py >/dev/null 2>&1 &
 cd /opt/webadmin/cloud/miscellaneous/devenv
 
 sudo cp vimrc.local /etc/vim/vimrc.local
+
+./manage.py changepassword test

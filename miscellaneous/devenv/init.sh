@@ -46,4 +46,4 @@ mv cloud cloud.$(date +%s) || true
 git clone 'ssh://git@giccero.cloud.ik.bme.hu/cloud'
 
 cd cloud
-miscellaneous/devenv/nextinit.sh
+source miscellaneous/devenv/nextinit.sh
