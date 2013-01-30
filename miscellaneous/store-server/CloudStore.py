@@ -247,13 +247,14 @@ def upload(hash_num):
     # TODO setuid subcommand
     # Check if file exist (root can overwrite anything not safe)
     f = open(up_path , 'wb')
-    datalength = 0
-    for chunk in fbuffer(file_data.file):
-        f.write(chunk)
-        datalength += len(chunk)
-    f.close()
     os.chown(up_path, getpwnam(username).pw_uid, getpwnam(username).pw_gid)
     os.chmod(up_path, 0644)
+    f.close()
+    with open(up_path , 'wb') as f:
+        datalength = 0
+        for chunk in fbuffer(file_data.file):
+            f.write(chunk)
+            datalength += len(chunk)
     return 'Upload finished: '+file_name+' - '+str(datalength)+' Byte'
 
 
