@@ -28,11 +28,13 @@ user_manager = FAKEUserManager.sh
 #Temporary directory
 temp_dir = /tmp/dl
 EOF
-sudo /opt/webadmin/cloud/miscellaneous/store-server/CloudStore.py >/dev/null 2>&1 &
-sudo /opt/webadmin/cloud/miscellaneous/store-server/TopList.py >/dev/null 2>&1 &
+sudo /opt/webadmin/cloud/miscellaneous/store-server/CloudStore.py >/tmp/CloudStore.log 2>&1 &
+disown $!
+sudo /opt/webadmin/cloud/miscellaneous/store-server/TopList.py >/tmp/TopList.log 2>&1 &
+disown $!
 
 cd /opt/webadmin/cloud/miscellaneous/devenv
 
 sudo cp vimrc.local /etc/vim/vimrc.local
 
-./manage.py changepassword test
+/opt/webadmin/cloud/manage.py changepassword test || /opt/webadmin/cloud/manage.py createsuperuser test || true
