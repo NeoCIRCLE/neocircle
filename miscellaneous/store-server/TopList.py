@@ -18,11 +18,6 @@ def update_new(name):
         os.mkdir(top_dir)
     except OSError:
         pass
-    try:
-        os.unlink(os.path.join(top_dir, str(COUNT)))
-    except OSError:
-        print "Failed to unlink " + str(COUNT) + ".\n"
-        print e
     for i in range(1, COUNT):
         try:
             os.rename(os.path.join(top_dir, str(i+1)), os.path.join(top_dir, str(i)))
