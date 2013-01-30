@@ -23,19 +23,38 @@ SITE_HOST = config.get('store', 'site_host')
 SITE_PORT = config.get('store', 'site_port')
 # Temporary dir for tar.gz
 TEMP_DIR = config.get('store', 'temp_dir')
+#ForceSSL
+try:
+    FORCE_SSL = config.get('store', 'force_ssl') == "True"
+except:
+    FORCE_SSL = False
 
+
+def force_ssl(original_function):
+    def new_function(*args, **kwargs):
+        ssl = request.environ.get('SSL_CLIENT_VERIFY', 'NONE')
+        if ssl != "SUCCESS":
+            abort(403, "Forbidden requests. This site need SSL verification! SSL status: "+ssl)
+        else:
+            return original_function(*args, **kwargs)
+    if FORCE_SSL:
+        return new_function
+    else:
+        return original_function(*args, **kwargs)
 
 @route('/')
+@force_ssl
 def index():
     response = "NONE"
     try:
-        response = request.environi.get('SSL_CLIENT_VERIFY', 'NONE')
+        response = request.environ.get('SSL_CLIENT_VERIFY', 'NONE')
     except:
         pass
     return "It works! SSL: "+response
 
 # @route('/<neptun:re:[a-zA-Z0-9]{6}>', method='GET')
 @route('/<neptun>', method='GET')
+@force_ssl
 def neptun_GET(neptun):
     home_path = '/home/'+neptun+'/home'
     if os.path.exists(home_path) != True:
@@ -47,6 +66,7 @@ def neptun_GET(neptun):
 COMMANDS = {}
 
 @route('/<neptun>', method='POST')
+@force_ssl
 def neptun_POST(neptun):
     # Check if user avaiable (home folder ready)
     home_path = '/home/'+neptun+'/home'
@@ -180,6 +200,7 @@ def cmd_toplist(request, neptun, home_path):
 COMMANDS['TOPLIST'] = cmd_toplist
 
 @route('/set/<neptun>', method='POST')
+@force_ssl
 def set_keys(neptun):
     key_list = []
     smb_password = ''
@@ -198,6 +219,7 @@ def set_keys(neptun):
 
 
 @route('/new/<neptun>', method='POST')
+@force_ssl
 def new_user(neptun):
     key_list = []
     smbpasswd=''
