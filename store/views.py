@@ -6,6 +6,7 @@ from store.api import StoreApi
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 import os
+import json
 
 @login_required
 def index(request):
@@ -17,7 +18,7 @@ def index(request):
         for key in request.user.sshkey_set.all():
             key_list.append(key.key)
     except:
-        return HttpResponse('Can not acces to django database!')
+        return HttpResponse('Can not acces to django database!', status_code=404)
     if StoreApi.userexist(user) != True:
         #Create user
         if not StoreApi.createuser(user,password,key_list):
