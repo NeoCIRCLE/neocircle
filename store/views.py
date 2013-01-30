@@ -66,6 +66,13 @@ def index(request):
     file_list = StoreApi.listfolder(user,path)
     return render_to_response('store/list.html', RequestContext(request, {'file_list': file_list, 'path' : path, 'backpath' : backpath, 'username' : user}))
 
+@login_required
+def toplist(request):
+    user = request.user.username
+    path = backpath = '/'
+    file_list = StoreApi.toplist(user)
+    return render_to_response('store/list.html', RequestContext(request, {'file_list': file_list, 'path' : path, 'backpath' : backpath, 'username' : user}))
+
 def logout(request):
         auth.logout(request)
         return redirect('/')

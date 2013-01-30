@@ -168,6 +168,17 @@ def cmd_remove(request, neptun, home_path):
             return
 COMMANDS['REMOVE'] = cmd_remove
 
+def cmd_toplist(request, neptun, home_path):
+    d = []
+    try:
+        top_dir = os.path.normpath(os.path.join(home_path, "../.top"))
+        d = [file_dict(os.readlink(os.path.join(top_dir, f)), home_path)
+                for f in os.listdir(top_dir)]
+    except:
+        pass
+    return json.dumps(sorted(d, key=lambda f: f['MTIME']))
+COMMANDS['TOPLIST'] = cmd_toplist
+
 @route('/set/<neptun>', method='POST')
 def set_keys(neptun):
     key_list = []
@@ -247,13 +258,14 @@ def upload(hash_num):
     # TODO setuid subcommand
     # Check if file exist (root can overwrite anything not safe)
     f = open(up_path , 'wb')
-    datalength = 0
-    for chunk in fbuffer(file_data.file):
-        f.write(chunk)
-        datalength += len(chunk)
-    f.close()
     os.chown(up_path, getpwnam(username).pw_uid, getpwnam(username).pw_gid)
     os.chmod(up_path, 0644)
+    f.close()
+    with open(up_path , 'wb') as f:
+        datalength = 0
+        for chunk in fbuffer(file_data.file):
+            f.write(chunk)
+            datalength += len(chunk)
     return 'Upload finished: '+file_name+' - '+str(datalength)+' Byte'
 
 
@@ -304,18 +316,21 @@ def list_directory(home, path):
             return json.dumps((os.path.basename(path), 'F', os.path.getsize(path), os.path.getmtime(path)))
         # List directory and return list
         else:
-            tuplelist = []
             filelist = os.listdir(path)
-        # Add type support
-            for item in filelist:
-                static_route = path+"/"+item
-                if os.path.isdir(static_route):
-                    is_dir = 'D'
-                else:
-                    is_dir = 'F'
-                element = { 'NAME' : item, 'TYPE' : is_dir, 'SIZE' : os.path.getsize(static_route)/1024, 'MTIME' : os.path.getmtime(static_route) }
-                tuplelist.append(element)
-            return json.dumps(tuplelist)
+            dictlist = [file_dict(os.path.join(path, f), home) for f in filelist]
+            return json.dumps(dictlist)
+
+def file_dict(path, home):
+    basename = os.path.basename(path.rstrip('/'))
+    if os.path.isdir(path):
+        is_dir = 'D'
+    else:
+        is_dir = 'F'
+    return {'NAME': basename,
+            'TYPE': is_dir,
+            'SIZE': os.path.getsize(path)/1024,
+            'MTIME': os.path.getmtime(path),
+            'DIR': os.path.relpath(os.path.dirname(path), home)}
 
 def getQuotaStatus(neptun):
     output=subprocess.check_output([ROOT_BIN_FOLDER+'/'+USER_MANAGER, 'status', neptun], stderr=subprocess.STDOUT)

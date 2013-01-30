@@ -76,6 +76,18 @@ class StoreApi:
         else:
             raise Http404
     @staticmethod
+    def toplist(neptun):
+        url = settings['store_url']+'/'+neptun
+        payload = json.dumps({ 'CMD' : 'TOPLIST'})
+        r = StoreApi.post_request(url, payload)
+        if r.status_code == requests.codes.ok:
+            tupplelist = json.loads(r.content)
+            for item in tupplelist:
+                item['MTIME'] = time.ctime(item['MTIME'])
+            return tupplelist
+        else:
+            raise Http404
+    @staticmethod
     def requestdownload(neptun, path):
         url = settings['store_url']+'/'+neptun
         payload = json.dumps({ 'CMD' : 'DOWNLOAD', 'PATH' : path })
