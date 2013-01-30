@@ -11,7 +11,9 @@ def update_new(name):
     if os.path.normpath(name).find("/.") != -1:
         return
     home = pwd.getpwuid(os.stat(name).st_uid).pw_dir
-    top_dir = os.path.join(home, "../.top")
+    if not name.startswith(home):
+        return
+    top_dir = os.path.normpath(os.path.join(home, "../.top"))
     try:
         os.mkdir(top_dir)
     except OSError:
