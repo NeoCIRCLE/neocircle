@@ -44,6 +44,8 @@ def neptun_GET(neptun):
         statistics=getQuotaStatus(neptun)
         return { 'Used' : statistics[0], 'Soft' : statistics[1], 'Hard' : statistics[2]}
 
+COMMANDS = {}
+
 @route('/<neptun>', method='POST')
 def neptun_POST(neptun):
     # Check if user avaiable (home folder ready)
@@ -51,106 +53,120 @@ def neptun_POST(neptun):
     if os.path.exists(home_path) != True:
         abort(401, 'The requested user does not exist!')
     else:
-        # Parse post
-        # LISTING
-        if request.json['CMD'] == 'LIST':
-            list_path = home_path+request.json['PATH']
-            if os.path.exists(list_path) != True:
-                abort(404, "Path not found!")
-            else:
-                return list_directory(home_path, list_path)
-        # DOWNLOAD LINK GENERATOR
-        elif request.json['CMD'] == 'DOWNLOAD':
-            dl_path = home_path+'/'+request.json['PATH']
-            dl_path = os.path.realpath(dl_path)
-            if not dl_path.startswith(home_path):
-                abort(400, 'Invalid download path.')
-            dl_hash = str(uuid.uuid4())
-            if( os.path.isfile(dl_path) ):
-                os.symlink(dl_path, ROOT_WWW_FOLDER+'/'+dl_hash)
-                # Debug
-                # redirect('http://store.cloud.ik.bme.hu:8080/dl/'+dl_hash)
-                return json.dumps({'LINK' : SITE_URL+'/dl/'+dl_hash})
-            else:
-                try:
-                    os.makedirs(TEMP_DIR+'/'+neptun, 0700)
-                except:
-                    pass
-                folder_name = os.path.basename(dl_path)
-                temp_path = TEMP_DIR+'/'+neptun+'/'+folder_name+'.zip'
-                with open(os.devnull, "w") as fnull:
-                    # zip -rqDj vmi.zip /home/tarokkk/vpn-ik
-                    result = subprocess.call(['/usr/bin/zip', '-rqDj', temp_path, dl_path], stdout = fnull, stderr = fnull)
-                os.symlink(temp_path, ROOT_WWW_FOLDER+'/'+dl_hash)
-                return json.dumps({'LINK' : SITE_URL+'/dl/'+dl_hash})
-        # UPLOAD
-        elif request.json['CMD'] == 'UPLOAD':
-            up_path = home_path+'/'+request.json['PATH']
-            up_path = os.path.realpath(up_path)
-            if not up_path.startswith(home_path):
-                abort(400, 'Invalid upload path.')
-            if os.path.exists(up_path) == True and os.path.isdir(up_path):
-                up_hash = str(uuid.uuid4())
-                os.symlink(up_path, ROOT_WWW_FOLDER+'/'+up_hash)
-                return json.dumps({ 'LINK' : SITE_URL+'/ul/'+up_hash})
-            else:
-                abort(400, 'Upload directory not exists!')
-        # MOVE
-        elif request.json['CMD'] == 'MOVE':
-            src_path = home_path+'/'+request.json['SOURCE']
-            dst_path = home_path+'/'+request.json['DESTINATION']
-            src_path = os.path.realpath(src_path)
-            dst_path = os.path.realpath(dst_path)
-            if not src_path.startswith(home_path):
-                abort(400, 'Invalid source path.')
-            if not dst_path.startswith(home_path):
-                abort(400, 'Invalid destination path.')
-            if os.path.exists(src_path) == True and os.path.exists(dst_path) == True and os.path.isdir(dst_path) == True:
-                shutil.move(src_path, dst_path)
-                return
-            else:
-            # TODO
-                abort(400, "Can not move the file.")
-        # RENAME
-        elif request.json['CMD'] == 'RENAME':
-            src_path = home_path+'/'+request.json['PATH']
-            src_path = os.path.realpath(src_path)
-            if not src_path.startswith(home_path):
-                abort(400, 'Invalid source path.')
-            dst_path = os.path.dirname(src_path)+'/'+request.json['NEW_NAME']
-            if os.path.exists(src_path) == True:
-                os.rename(src_path, dst_path)
-            else:
-                abort(404, "File or Folder not found!")
-            return
-        # NEW FOLDER
-        elif request.json['CMD'] == 'NEW_FOLDER':
-            dir_path = home_path+'/'+request.json['PATH']
-            dir_path = os.path.realpath(dir_path)
-            if not dir_path.startswith(home_path):
-                abort(400, 'Invalid directory path.')
-            if os.path.exists(dir_path) == True:
-                abort(400, "Directory already exist!")
-            else:
-                os.mkdir(dir_path, 0755)
-                return
-        # REMOVE
-        elif request.json['CMD'] == 'REMOVE':
-            remove_path = home_path+'/'+request.json['PATH']
-            remove_path = os.path.realpath(remove_path)
-            if not remove_path.startswith(home_path):
-                abort(400, 'Invalid path.')
-            if os.path.exists(remove_path) != True:
-                abort(404, "Path not found!")
-            else:
-                if os.path.isdir(remove_path) == True:
-                    shutil.rmtree(remove_path)
-                    return
-                else:
-                    os.remove(remove_path)
-                    return
-        else:
+        try:
+            return COMMANDS[request.json['CMD']](request, neptun, home_path)
+        except KeyError:
             abort(400, "Command not found!")
+
+
+# LISTING
+def cmd_list(request, neptun, home_path):
+    list_path = home_path+request.json['PATH']
+    if os.path.exists(list_path) != True:
+        abort(404, "Path not found!")
+    else:
+        return list_directory(home_path, list_path)
+COMMANDS['LIST'] = cmd_list
+
+# DOWNLOAD LINK GENERATOR
+def cmd_download(request, neptun, home_path):
+    dl_path = home_path+'/'+request.json['PATH']
+    dl_path = os.path.realpath(dl_path)
+    if not dl_path.startswith(home_path):
+        abort(400, 'Invalid download path.')
+    dl_hash = str(uuid.uuid4())
+    if( os.path.isfile(dl_path) ):
+        os.symlink(dl_path, ROOT_WWW_FOLDER+'/'+dl_hash)
+        # Debug
+        # redirect('http://store.cloud.ik.bme.hu:8080/dl/'+dl_hash)
+        return json.dumps({'LINK' : SITE_URL+'/dl/'+dl_hash})
+    else:
+        try:
+            os.makedirs(TEMP_DIR+'/'+neptun, 0700)
+        except:
+            pass
+        folder_name = os.path.basename(dl_path)
+        temp_path = TEMP_DIR+'/'+neptun+'/'+folder_name+'.zip'
+        with open(os.devnull, "w") as fnull:
+            # zip -rqDj vmi.zip /home/tarokkk/vpn-ik
+            result = subprocess.call(['/usr/bin/zip', '-rqDj', temp_path, dl_path], stdout = fnull, stderr = fnull)
+        os.symlink(temp_path, ROOT_WWW_FOLDER+'/'+dl_hash)
+        return json.dumps({'LINK' : SITE_URL+'/dl/'+dl_hash})
+COMMANDS['DOWNLOAD'] = cmd_download
+
+# UPLOAD
+def cmd_upload(request, neptun, home_path):
+    up_path = home_path+'/'+request.json['PATH']
+    up_path = os.path.realpath(up_path)
+    if not up_path.startswith(home_path):
+        abort(400, 'Invalid upload path.')
+    if os.path.exists(up_path) == True and os.path.isdir(up_path):
+        up_hash = str(uuid.uuid4())
+        os.symlink(up_path, ROOT_WWW_FOLDER+'/'+up_hash)
+        return json.dumps({ 'LINK' : SITE_URL+'/ul/'+up_hash})
+    else:
+        abort(400, 'Upload directory not exists!')
+COMMANDS['UPLOAD'] = cmd_upload
+
+# MOVE
+def cmd_move(request, neptun, home_path):
+    src_path = home_path+'/'+request.json['SOURCE']
+    dst_path = home_path+'/'+request.json['DESTINATION']
+    src_path = os.path.realpath(src_path)
+    dst_path = os.path.realpath(dst_path)
+    if not src_path.startswith(home_path):
+        abort(400, 'Invalid source path.')
+    if not dst_path.startswith(home_path):
+        abort(400, 'Invalid destination path.')
+    if os.path.exists(src_path) == True and os.path.exists(dst_path) == True and os.path.isdir(dst_path) == True:
+        shutil.move(src_path, dst_path)
+        return
+    else:
+    # TODO
+        abort(400, "Can not move the file.")
+COMMANDS['MOVE'] = cmd_move
+
+# RENAME
+def cmd_rename(request, neptun, home_path):
+    src_path = home_path+'/'+request.json['PATH']
+    src_path = os.path.realpath(src_path)
+    if not src_path.startswith(home_path):
+        abort(400, 'Invalid source path.')
+    dst_path = os.path.dirname(src_path)+'/'+request.json['NEW_NAME']
+    if os.path.exists(src_path) == True:
+        os.rename(src_path, dst_path)
+    else:
+        abort(404, "File or Folder not found!")
+COMMANDS['RENAME'] = cmd_rename
+
+# NEW FOLDER
+def cmd_new_folder(request, neptun, home_path):
+    dir_path = home_path+'/'+request.json['PATH']
+    dir_path = os.path.realpath(dir_path)
+    if not dir_path.startswith(home_path):
+        abort(400, 'Invalid directory path.')
+    if os.path.exists(dir_path) == True:
+        abort(400, "Directory already exist!")
+    else:
+        os.mkdir(dir_path, 0755)
+COMMANDS['NEW_FOLDER'] = cmd_new_folder
+
+# REMOVE
+def cmd_remove(request, neptun, home_path):
+    remove_path = home_path+'/'+request.json['PATH']
+    remove_path = os.path.realpath(remove_path)
+    if not remove_path.startswith(home_path):
+        abort(400, 'Invalid path.')
+    if os.path.exists(remove_path) != True:
+        abort(404, "Path not found!")
+    else:
+        if os.path.isdir(remove_path) == True:
+            shutil.rmtree(remove_path)
+            return
+        else:
+            os.remove(remove_path)
+            return
+COMMANDS['REMOVE'] = cmd_remove
 
 @route('/set/<neptun>', method='POST')
 def set_keys(neptun):
