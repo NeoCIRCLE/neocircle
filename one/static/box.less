@@ -61,11 +61,24 @@
     &.opened .actions{
         display: block !important;
     }
+    &.small .summary{
+        padding: 5px;
+        cursor: default;
+        &:hover{
+            background-color: #c1c1c1;
+        }
+        .name{
+            background: none !important;
+            text-align: center;
+            float: none;
+        }
+    }
     .summary{
         padding: 15px 5px;
         border-top: 1px solid #888;
         cursor: pointer;
         background-color: #c1c1c1;
+        position: relative;
         &.unfinished{
             background-color: #FFFF66;
         }
@@ -73,6 +86,17 @@
             background-color: #b1b1b1;
             .actions{
                 display: block;
+            }
+        }
+        .quota{
+            left: 0;
+            top: 0;
+            z-index: 0;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            .used{
+                height: 100%;
             }
         }
         .id{
@@ -84,16 +108,22 @@
             padding-left: 25px;
             background-repeat: no-repeat;
             background-position: 0 0;
+            z-index: 2;
+            position: relative;
         }
         .status{
             text-align: right;
             float: right;
             width: 60px;
+            z-index: 2;
+            position: relative;
         }
         .actions{
             float: right;
             margin-left: 5px;
             display: none;
+            z-index: 2;
+            position: relative;
             a{
                 height: 16px;
                 width: 16px;
@@ -164,6 +194,8 @@
             background-image: url(icons/document-snippet.png);
             .value{
                 font-size: 0.8em;
+                word-spacing: 3px;
+                width: 350px;
             }
         }
     }
