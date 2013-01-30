@@ -20,3 +20,4 @@ DROP DATABASE webadmin;
 A
 
 sudo chpasswd <<<'cloud:ezmiez'
+rm ~/.ssh/authorized_keys
