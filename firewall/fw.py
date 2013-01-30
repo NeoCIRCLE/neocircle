@@ -38,6 +38,9 @@ class firewall:
         self.SZABALYOK_NAT.append(s)
 
     def host2vlan(self, host, rule):
+        if rule.foreign_network is None:
+            return
+
         if(self.IPV6 and host.ipv6):
             ipaddr = host.ipv6 + "/112"
         else:
@@ -45,7 +48,7 @@ class firewall:
 
         dport_sport = self.dportsport(rule)
 
-        for vlan in rule.vlan.all():
+        for vlan in rule.foreign_network.vlans.all():
             if(rule.accept):
                 if(rule.direction == '0' and vlan.name == "PUB"):
                     if(rule.dport == 25):
@@ -64,18 +67,24 @@ class firewall:
 
 
     def fw2vlan(self, rule):
+        if rule.foreign_network is None:
+            return
+
         dport_sport = self.dportsport(rule)
 
-        for vlan in rule.vlan.all():
+        for vlan in rule.foreign_network.vlans.all():
             if(rule.direction == '1'): # HOSTHOZ megy
                 self.iptables("-A INPUT -i %s %s %s -g %s" % (vlan.interface, dport_sport, rule.extra, "LOG_ACC" if rule.accept else "LOG_DROP"))
             else:
                 self.iptables("-A OUTPUT -o %s %s %s -g %s" % (vlan.interface, dport_sport, rule.extra, "LOG_ACC" if rule.accept else "LOG_DROP"))
 
     def vlan2vlan(self, l_vlan, rule):
+        if rule.foreign_network is None:
+            return
+
         dport_sport = self.dportsport(rule)
 
-        for vlan in rule.vlan.all():
+        for vlan in rule.foreign_network.vlans.all():
             if(rule.accept):
                 if((rule.direction == '0') and vlan.name == "PUB"):
                     action = "PUB_OUT"
