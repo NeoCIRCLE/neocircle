@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-#TODO File permission checks
+# TODO File permission checks
 
 from bottle import route, run, request, static_file, abort, redirect, app
 import json, os, shutil
@@ -9,23 +9,19 @@ import subprocess
 import ConfigParser
 from pwd import getpwnam
 
-#Get configuration file
+# Get configuration file
 config = ConfigParser.ConfigParser()
 config.read('/opt/webadmin/cloud/miscellaneous/store-server/store.config')
 
 
-#ROOT_WWW_FOLDER='/var/www'
 ROOT_WWW_FOLDER = config.get('store', 'root_www_folder')
-#ROOT_BIN_FOLDER='/opt/store-server'
 ROOT_BIN_FOLDER = config.get('store', 'root_bin_folder')
-#SITE_URL='http://store.cloud.ik.bme.hu:8080'
 SITE_URL = config.get('store', 'site_url')
-#USER_MANAGER='UserManager.sh'
 USER_MANAGER = config.get('store', 'user_manager')
-#Standalone server
+# Standalone server
 SITE_HOST = config.get('store', 'site_host')
 SITE_PORT = config.get('store', 'site_port')
-#Temporary dir for tar.gz
+# Temporary dir for tar.gz
 TEMP_DIR = config.get('store', 'temp_dir')
 
 
@@ -38,7 +34,7 @@ def index():
         pass
     return "It works! SSL: "+response
 
-#@route('/<neptun:re:[a-zA-Z0-9]{6}>', method='GET')
+# @route('/<neptun:re:[a-zA-Z0-9]{6}>', method='GET')
 @route('/<neptun>', method='GET')
 def neptun_GET(neptun):
     home_path = '/home/'+neptun+'/home'
@@ -50,30 +46,30 @@ def neptun_GET(neptun):
 
 @route('/<neptun>', method='POST')
 def neptun_POST(neptun):
-    #Check if user avaiable (home folder ready)
+    # Check if user avaiable (home folder ready)
     home_path = '/home/'+neptun+'/home'
     if os.path.exists(home_path) != True:
         abort(401, 'The requested user does not exist!')
     else:
-        #Parse post
-        #LISTING
+        # Parse post
+        # LISTING
         if request.json['CMD'] == 'LIST':
             list_path = home_path+request.json['PATH']
             if os.path.exists(list_path) != True:
                 abort(404, "Path not found!")
             else:
                 return list_directory(home_path, list_path)
-        #DOWNLOAD LINK GENERATOR
+        # DOWNLOAD LINK GENERATOR
         elif request.json['CMD'] == 'DOWNLOAD':
             dl_path = home_path+'/'+request.json['PATH']
             dl_path = os.path.realpath(dl_path)
             if not dl_path.startswith(home_path):
-                abort(400, 'Invalid download path.') 
+                abort(400, 'Invalid download path.')
             dl_hash = str(uuid.uuid4())
             if( os.path.isfile(dl_path) ):
                 os.symlink(dl_path, ROOT_WWW_FOLDER+'/'+dl_hash)
-                #Debug 
-                #redirect('http://store.cloud.ik.bme.hu:8080/dl/'+dl_hash)
+                # Debug
+                # redirect('http://store.cloud.ik.bme.hu:8080/dl/'+dl_hash)
                 return json.dumps({'LINK' : SITE_URL+'/dl/'+dl_hash})
             else:
                 try:
@@ -87,7 +83,7 @@ def neptun_POST(neptun):
                     result = subprocess.call(['/usr/bin/zip', '-rqDj', temp_path, dl_path], stdout = fnull, stderr = fnull)
                 os.symlink(temp_path, ROOT_WWW_FOLDER+'/'+dl_hash)
                 return json.dumps({'LINK' : SITE_URL+'/dl/'+dl_hash})
-        #UPLOAD
+        # UPLOAD
         elif request.json['CMD'] == 'UPLOAD':
             up_path = home_path+'/'+request.json['PATH']
             up_path = os.path.realpath(up_path)
@@ -99,7 +95,7 @@ def neptun_POST(neptun):
                 return json.dumps({ 'LINK' : SITE_URL+'/ul/'+up_hash})
             else:
                 abort(400, 'Upload directory not exists!')
-        #MOVE 
+        # MOVE
         elif request.json['CMD'] == 'MOVE':
             src_path = home_path+'/'+request.json['SOURCE']
             dst_path = home_path+'/'+request.json['DESTINATION']
@@ -113,10 +109,10 @@ def neptun_POST(neptun):
                 shutil.move(src_path, dst_path)
                 return
             else:
-            #TODO
+            # TODO
                 abort(400, "Can not move the file.")
-        #RENAME
-        elif request.json['CMD'] == 'RENAME': 
+        # RENAME
+        elif request.json['CMD'] == 'RENAME':
             src_path = home_path+'/'+request.json['PATH']
             src_path = os.path.realpath(src_path)
             if not src_path.startswith(home_path):
@@ -127,7 +123,7 @@ def neptun_POST(neptun):
             else:
                 abort(404, "File or Folder not found!")
             return
-        #NEW FOLDER
+        # NEW FOLDER
         elif request.json['CMD'] == 'NEW_FOLDER':
             dir_path = home_path+'/'+request.json['PATH']
             dir_path = os.path.realpath(dir_path)
@@ -138,7 +134,7 @@ def neptun_POST(neptun):
             else:
                 os.mkdir(dir_path, 0755)
                 return
-        #REMOVE
+        # REMOVE
         elif request.json['CMD'] == 'REMOVE':
             remove_path = home_path+'/'+request.json['PATH']
             remove_path = os.path.realpath(remove_path)
@@ -166,9 +162,9 @@ def set_keys(neptun):
             key_list.append(key)
     except:
         abort(400, 'Wrong syntax!')
-    result = subprocess.call([ROOT_BIN_FOLDER+'/'+USER_MANAGER,'set',neptun,smbpasswd])
+    result = subprocess.call([ROOT_BIN_FOLDER+'/'+USER_MANAGER, 'set', neptun, smbpasswd])
     if result == 0:
-        updateSSHAuthorizedKeys(neptun,key_list)
+        updateSSHAuthorizedKeys(neptun, key_list)
         return
     elif result == 2:
         abort(403, 'User does not exist!')
@@ -178,40 +174,40 @@ def set_keys(neptun):
 def new_user(neptun):
     key_list = []
     smbpasswd=''
-    try: 
+    try:
         smbpasswd = request.json['SMBPASSWD']
     except:
         abort(400, 'Invalid syntax')
-    #Call user creator script
-    result = subprocess.call([ROOT_BIN_FOLDER+'/'+USER_MANAGER,'add',neptun,smbpasswd])
+    # Call user creator script
+    result = subprocess.call([ROOT_BIN_FOLDER+'/'+USER_MANAGER, 'add', neptun, smbpasswd])
     if result == 0:
         try:
             for key in request.json['KEYS']:
                 key_list.append(key)
-            updateSSHAuthorizedKeys(neptun,key_list)
+            updateSSHAuthorizedKeys(neptun, key_list)
         except:
-            abort(400,'SSH')
+            abort(400, 'SSH')
         return
     elif result == 2:
         abort(403, 'User already exist!')
     else:
         abort(400, 'An error occured!')
 
-    
 
-#Static file
+
+# Static file
 @route('/dl/<hash_num>', method='GET')
 def dl_hash(hash_num):
-    hash_path = ROOT_WWW_FOLDER 
+    hash_path = ROOT_WWW_FOLDER
     if os.path.exists(hash_path+'/'+hash_num) != True:
         abort(404, "File not found!")
     else:
         filename = os.path.basename(os.path.realpath(hash_path+'/'+hash_num))
-        return static_file(hash_num,root=hash_path,download=filename)
-@route('/ul/<hash_num>', method='POST')            
+        return static_file(hash_num, root=hash_path, download=filename)
+@route('/ul/<hash_num>', method='POST')
 def upload(hash_num):
     if not os.path.exists(ROOT_WWW_FOLDER+'/'+hash_num):
-        abort (404,'Token not found!')
+        abort (404, 'Token not found!')
     try:
         file_data = request.files.data
         file_name = file_data.filename
@@ -222,79 +218,79 @@ def upload(hash_num):
     up_path = os.path.realpath(ROOT_WWW_FOLDER+'/'+hash_num+'/'+file_name)
     if os.path.exists(up_path):
         abort(400, 'File already exists')
-    #Check if upload path valid
+    # Check if upload path valid
     if not up_path.startswith('/home'):
         abort(400, 'Invalid path.')
     os.remove(ROOT_WWW_FOLDER+'/'+hash_num)
-    #Get the real upload path
-    #Delete the hash link
-    #Get the username from path for proper ownership
-    username=up_path.split('/',3)[2]
-    #os.setegid(getpwnam(username).pw_gid)
-    #os.seteuid(getpwnam(username).pw_uid)
-    #TODO setuid subcommand
-    #Check if file exist (root can overwrite anything not safe)
+    # Get the real upload path
+    # Delete the hash link
+    # Get the username from path for proper ownership
+    username=up_path.split('/', 3)[2]
+    # os.setegid(getpwnam(username).pw_gid)
+    # os.seteuid(getpwnam(username).pw_uid)
+    # TODO setuid subcommand
+    # Check if file exist (root can overwrite anything not safe)
     f = open(up_path , 'wb')
     datalength = 0
     for chunk in fbuffer(file_data.file):
         f.write(chunk)
         datalength += len(chunk)
     f.close()
-    os.chown(up_path,getpwnam(username).pw_uid,getpwnam(username).pw_gid)
-    os.chmod(up_path,0644)
+    os.chown(up_path, getpwnam(username).pw_uid, getpwnam(username).pw_gid)
+    os.chmod(up_path, 0644)
     return 'Upload finished: '+file_name+' - '+str(datalength)+' Byte'
 
 
 
 
-#Define filebuffer for big uploads
+# Define filebuffer for big uploads
 def fbuffer(f, chunk_size=4096):
    while True:
       chunk = f.read(chunk_size)
       if not chunk: break
       yield chunk
 
-#Update users .ssh/authorized_keys
-def updateSSHAuthorizedKeys(username,key_list):
+# Update users .ssh/authorized_keys
+def updateSSHAuthorizedKeys(username, key_list):
     user_home_ssh = '/home/'+username+'/home/.ssh'
     user_uid=getpwnam(username).pw_uid
     user_gid=getpwnam(username).pw_gid
     if not os.path.exists(user_home_ssh):
         os.mkdir(user_home_ssh, 0700)
-    os.chown(user_home_ssh,user_uid,user_gid)
+    os.chown(user_home_ssh, user_uid, user_gid)
     auth_file_name = user_home_ssh+'/authorized_keys'
-    auth_file = open(auth_file_name,'w')
+    auth_file = open(auth_file_name, 'w')
     for key in key_list:
         auth_file.write(key+'\n')
     auth_file.close()
-    os.chmod(auth_file_name,0600)
-    os.chown(auth_file_name,user_uid,user_gid)
+    os.chmod(auth_file_name, 0600)
+    os.chown(auth_file_name, user_uid, user_gid)
     return
 
-#For debug purpose
-#@route('/ul/<hash_num>', method='GET')
-#def upload_get(hash_num):
+# For debug purpose
+# @route('/ul/<hash_num>', method='GET')
+# def upload_get(hash_num):
 #    return """<form method="POST" action="/ul/{hash}" enctype="multipart/form-data">
 #   <input name="data" type="file" />
-#	<input type="submit" />
-#</form>""".format(hash=hash_num)
+#   <input type="submit" />
+# </form>""".format(hash=hash_num)
 
-def list_directory(home,path):
-    #Check for path breakout
+def list_directory(home, path):
+    # Check for path breakout
     if not os.path.realpath(path).startswith(home):
         abort(400, 'Invalid path.')
-    #Check if path exist
+    # Check if path exist
     if os.path.exists(path) != True:
-        abort(404,'No such file or directory')
+        abort(404, 'No such file or directory')
     else:
-        #If it's a file return with list
+        # If it's a file return with list
         if os.path.isdir(path) != True:
             return json.dumps((os.path.basename(path), 'F', os.path.getsize(path), os.path.getmtime(path)))
-        #List directory and return list
+        # List directory and return list
         else:
             tuplelist = []
             filelist = os.listdir(path)
-        #Add type support
+        # Add type support
             for item in filelist:
                 static_route = path+"/"+item
                 if os.path.isdir(static_route):
@@ -306,9 +302,9 @@ def list_directory(home,path):
             return json.dumps(tuplelist)
 
 def getQuotaStatus(neptun):
-    output=subprocess.check_output([ROOT_BIN_FOLDER+'/'+USER_MANAGER,'status',neptun], stderr=subprocess.STDOUT)
+    output=subprocess.check_output([ROOT_BIN_FOLDER+'/'+USER_MANAGER, 'status', neptun], stderr=subprocess.STDOUT)
     return output.split()
-    
+
 if __name__ == "__main__":
     run(host=SITE_HOST, port=SITE_PORT)
 else:
