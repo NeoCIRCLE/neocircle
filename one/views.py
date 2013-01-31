@@ -73,6 +73,13 @@ def home(request):
         'instances': _list_instances(request),
         }))
 
+@require_GET
+@login_required
+def ajax_template_wizard(request):
+    return render_to_response('new-template-flow.html', RequestContext(request,{
+        'templates': Template.objects.all(),
+        }))
+
 @require_POST
 @login_required
 def vm_new(request, template):
@@ -116,7 +123,7 @@ class VmPortAddView(View):
     def post(self, request, iid, *args, **kwargs):
         try:
             public = int(request.POST['public'])
-            
+
             if public >= 22000 and public < 24000:
                 raise ValidationError("a port nem lehet 22000 es 24000 kozott")
             inst = get_object_or_404(Instance, id=iid, owner=request.user)

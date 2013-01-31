@@ -33,4 +33,6 @@ urlpatterns = patterns('',
     url(r'^fwapi/$', 'firewall.views.firewall_api', name='firewall_api'),
     url(r'^store/$', 'store.views.index', name='store_index'),
     url(r'^store/top/$', 'store.views.toplist', name='store_top'),
+    url(r'^ajax/templateWizard$', 'one.views.ajax_template_wizard',
+        name='ajax_template_wizard'),
 )

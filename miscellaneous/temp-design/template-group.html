@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="hu-hu">
+<head>
+    <title>IK Cloud</title>
+    <link href='http://fonts.googleapis.com/css?family=Metrophobic' rel='stylesheet' type='text/css'>
+    <link rel="icon" type="image/png" href="/static/favicon.png" />
+    <link rel="icon" type="image/png" href="one/static/favicon.png">
+    <link rel="stylesheet/less" href="../../one/static/style.less" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <script src="../../one/static/jquery.min.js"></script>
+    <script src="../../one/static/less.min.js"></script>
+    <script type="text/javascript">
+    var toggleDetails1;
+    var toggleDetails2;
+$(function(){
+    $('.wm .summary').each(function(){
+      this.originalHeight=parseInt($(this).next('.details').css('height'));
+    })
+    toggleDetails1=function(){
+      if($(this).next('.details').is(':hidden')){
+            $(this).next('.details').slideDown(700);
+        } else {
+            $(this).next('.details').slideUp(700);
+        }
+    }
+    toggleDetails2=function(){
+      if($(this).next('.template-details').is(':hidden')){
+            $(this).next('.template-details').slideDown(400);
+        } else {
+            $(this).next('.template-details').slideUp(400);
+        }
+    }
+    $('.wm .summary').click(toggleDetails1);
+    $('#template .wm .summary').click(toggleDetails2);
+    $('#load-more-files').click(function(){
+        $('.actions', this).show();
+        var that=this;
+        setTimeout(function(){
+            $(that).prev('li').slideDown(500,function(){
+                $('.actions', that).hide();
+            });
+        },2000);
+    })
+    $('#new-wm-button').click(function(){
+        $('#modal').show();
+        $('#modal-container').html($('#new-wm').html());
+        $('#modal-container .wm .summary').each(function(){
+            this.originalHeight=parseInt($(this).next('.details').css('height'));
+        })
+        $('#modal-container .wm .summary').click(toggleDetails);
+        });
+    $('#new-template-button').click(function(){
+        $('#modal').show();
+        $('#modal-container').html($('#new-template').html());
+    });
+    $('#shadow').click(function(){
+        $('#modal').hide();
+    })
+    $('#new-template-button').click(function(){
+        $.get('/ajax/templateWizard', function(data){
+            $('#modal-container').html(data);
+        })
+        $('#modal').show();
+    });
+})
+        </script>
+</head>
+<body>
+    <div id="header">
+            <div id="loginblock"><p>
+                   Bejelentkezve: cloud.
+                   <a href="/logout/">Kijelentkezés</a>.
+                   <a href="/admin/">Admin</a>.
+               </p>
+           </div>
+            <h1><a href="/">IK Cloud <span style="font-size: 21px">&beta;</span></a></h1>
+    </div>
+    <div id="content">
+<div class="boxes">
+    <div class="contentblock" id="state">
+        <h2>Virtuális gépek</h2>
+        <ul class="wm-list">
+<li class="wm">
+    <div class="summary">
+        <div class="name wm-on">
+            cloud test (32)
+        </div>
+        <div class="status">
+            ACTIVE
+        </div>
+        <div class="actions">
+            <a href="rdp:cloud:Q4EUrggGvr:152.66.243.62:3389" title="Csatlakozás"><img src="../../one/static/icons/plug.png" alt="connect" /></a>
+            <a href="/vm/suspend/7/" onclick="alert('Hamarosan a mozikban.'); return false" title="Felfüggesztés"><img src="../../one/static/icons/control-pause.png" alt="pause" /></a>
+            <a href="/vm/delete/7/" onclick="return confirm('Biztosan törli a gépet?')" title="Törlés"><img src="../../one/static/icons/minus-circle.png" alt="delete" /></a>
+            <a href="/vm/reset/7/" onclick="alert('Hamarosan a mozikban.'); return false" title="Újraindítás"><img src="../../one/static/icons/arrow-circle-double.png" alt="↺" /></a>
+        </div>
+        <div class="clear"></div>
+    </div>
+    <div class="details">
+        <div class="container">
+            <ul>
+                <li class="name">Gép neve: <span class="value">cloud test (32)</span></li>
+                <li class="os-linux">Operációs rendszer: <span class="value">Copy of ttylinux - kvm</span></li>
+                <li class="type">Instance típus: <span class="value">small</span></li>
+                <li class="date">Létrehozás dátuma: <span class="value">2013. január 30. 14.56.34</span></li>
+                <li class="date">Lejáratig: <span class="value"><abbr title="1 nap, 5 óra, 34 perc">1 nap</abbr></span></li>
+                <li>&nbsp;<span class="value"><a href="/vm/show/7/" title="cloud test (32)">További részletek</a></span></li>
+            </ul>
+        </div>
+    </div>
+</li>
+
+
+
+            <li id="new-wm-button" class="wm new">
+                <div class="summary">
+                    <div class="name">Új gép indítása</div>
+                    <div class="clear"></div>
+                </div>
+            </li>
+            <li id="new-wm" style="display: none">
+                <h2>Rendelkezésre álló sablonok</h2>
+                <p>
+                    Mese, hogy mit is lehet csinálni.
+                </p>
+                <div class="container">
+                    <ul class="wm-list modal">
+
+                        <li class="wm">
+                            <form method="POST" action="/vm/new/2/"><div style='display:none'><input type='hidden' name='csrfmiddlewaretoken' value='QQdfjrFaIqdVw8NqhxyPVQIeuiHIzxjJ' /></div>
+                                <div class="summary">
+                                    <div class="name wm-on">test</div>
+                                    <div class="status">
+                                        3/10
+                                    </div>
+                                    <div class="clear"></div>
+                                </div>
+                                <div class="details">
+                                    <h3>
+                                        Részletek
+                                    </h3>
+                                    <ul>
+                                        <li class="name">Rendszer: <span class="value">Copy of ttylinux - kvm</span></li>
+                                        <li class="type">Instance típus: <span class="value">small</span></li>
+                                        <li class="memory">Memória: <span class="value">100 MiB</span></li>
+                                        <li class="cpu">CPU magok: <span class="value">1</span></li>
+                                        <li>&nbsp;<span class="value"><input type="submit" value="Indítás"/></span></li>
+                                    </ul>
+                                </div>
+                            </form>
+                        </li>
+
+                    </ul>
+                </div>
+            </li>
+        </ul>
+    </div>
+    <div class="contentblock" id="template">
+        <h2>Saját sablonok</h2>
+        <ul class="wm-list">
+            <li class="wm">
+                <div class="summary">
+                    <div class="quota">
+                        <div class="used" style="background-color: rgba(0,255,0,0.2); width: 20%"></div>
+                    </div>
+                    <div class="name">Win7 Matlab (1$/instance)</div>
+                    <div class="status">2$/10$</div>
+                    <div class="actions">
+                        <a href="#" title="Átnevezés"><img src="../../one/static/icons/pencil.png" alt="rename" /></a>
+                        <a href="#" title="Törlés"><img src="../../one/static/icons/minus-circle.png" alt="delete" /></a>
+                        <a href="#" title="Megosztás"><img src="../../one/static/icons/user-share.png" alt="share" /></a>
+                    </div>
+                    <div class="clear"></div>
+                </div>
+                <div class="template-details">
+                    <ul>
+                        <li>
+                            <div class="quota">
+                                <div class="used" style="background-color: rgba(0,255,0,0.2); width: 16%"></div>
+                            </div>
+                            <div class="group-name">
+                                <a href="#">Csoport1 (6 user)</a>
+                            </div>
+                            <div class="status">
+                                1/6 (1 instance/user)
+                            </div>
+                            <div class="clear"></div>
+                        </li>
+                        <li>
+                            <div class="quota">
+                                <div class="used" style="background-color: rgba(0,255,0,0.2); width: 25%"></div>
+                            </div>
+                            <div class="group-name">
+                                <a href="#">Csoport2 (2 user)</a>
+                            </div>
+                            <div class="status">
+                                1/4 (2 instance/user)
+                            </div>
+                            <div class="clear"></div>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li class="wm">
+                <div class="summary">
+                    <div class="quota">
+                        <div class="used" style="background-color: rgba(255,128,0,0.2); width: 50%"></div>
+                    </div>
+                    <div class="name">Linux Java (1$/instance)</div>
+                    <div class="status">20$/40$</div>
+                    <div class="actions">
+                        <a href="#" title="Átnevezés"><img src="../../one/static/icons/pencil.png" alt="rename" /></a>
+                        <a href="#" title="Törlés"><img src="../../one/static/icons/minus-circle.png" alt="delete" /></a>
+                        <a href="#" title="Megosztás"><img src="../../one/static/icons/user-share.png" alt="share" /></a>
+                    </div>
+                    <div class="clear"></div>
+                </div>
+                <div class="template-details">
+                    <ul>
+                        <li>
+                            <div class="quota">
+                                <div class="used" style="background-color: rgba(255,0,0,0.2); width: 100%"></div>
+                            </div>
+                            <div class="group-name">
+                                <a href="#">Csoport1 (6 user)</a>
+                            </div>
+                            <div class="status">
+                                6/6 (1 instance/user)
+                            </div>
+                            <div class="clear"></div>
+                        </li>
+                        <li>
+                            <div class="quota">
+                                <div class="used" style="background-color: rgba(255,128,0,0.2); width: 75%"></div>
+                            </div>
+                            <div class="group-name">
+                                <a href="#">Csoport2 (4 user)</a>
+                            </div>
+                            <div class="status">
+                                3/4 (1 instance/user)
+                            </div>
+                            <div class="clear"></div>
+                        </li>
+                        <li>
+                            <div class="quota">
+                                <div class="used" style="background-color: rgba(0,255,0,0.2); width: 10%"></div>
+                            </div>
+                            <div class="group-name">
+                                <a href="#">Csoport3 (5 user)</a>
+                            </div>
+                            <div class="status">
+                                1/10 (2 instance/user)
+                            </div>
+                            <div class="clear"></div>
+                        </li>
+                        <li>
+                            <div class="quota">
+                                <div class="used" style="background-color: rgba(200,200,0,0.2); width: 50%"></div>
+                            </div>
+                            <div class="group-name">
+                                <a href="#">Csoport4 (20 user)</a>
+                            </div>
+                            <div class="status">
+                                10/20 (1 instance/user)
+                            </div>
+                            <div class="clear"></div>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+            <li id="new-template-button" class="wm new">
+                <div class="summary">
+                    <div class="name">Új Sablon</div>
+                    <div class="clear"></div>
+                </div>
+            </li>
+            <li class="wm small">
+                <div class="summary">
+                    <div class="quota">
+                        <div class="used" style="background-color: rgba(0,255,0,0.5); width: 19%"></div>
+                    </div>
+                    <div class="name">Kvóta: 50/100</div>
+                    <div class="clear"></div>
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>
+<div class="boxes">
+    <div class="contentblock">
+        <h2>
+            Adattár
+        </h2>
+        <div class="content">
+            <ul class="file-list">
+                <li class="wm">
+                    <div class="summary">
+                        <div class="name filetype-c">hello.c</div>
+                        <div class="info">1 Kb</div>
+                        <div class="actions">
+                            <a href="#"><img src="../../one/static/icons/pencil.png" alt="rename" /></a>
+                            <a href="#"><img src="../../one/static/icons/minus-circle.png" alt="delete" /></a>
+                            <a href="#"><img src="../../one/static/icons/download-cloud.png" alt="download" /></a>
+                        </div>
+                        <div class="clear"></div>
+                    </div>
+                    <div class="details">
+                        <h3>Részletek</h3>
+                        <ul>
+                            <li>Létrehozva: <span class="value">2012.12.29. 23:12</span></li>
+                            <li>Módosítva: <span class="value">2012.12.29. 23:12</span></li>
+                            <li>Hozzáférés: <span class="value">2012.12.29. 23:12</span></li>
+                            <li>Típus: <span class="value">text/plain</span></li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="wm">
+                    <div class="summary">
+                        <div class="name filetype-image">suna.jpg</div>
+                        <div class="info">1 Kb</div>
+                        <div class="actions">
+                            <a href="#"><img src="../../one/static/icons/pencil.png" alt="rename" /></a>
+                            <a href="#"><img src="../../one/static/icons/minus-circle.png" alt="delete" /></a>
+                            <a href="#"><img src="../../one/static/icons/download-cloud.png" alt="download" /></a>
+                        </div>
+                        <div class="clear"></div>
+                    </div>
+                    <div class="details">
+                        <h3>Részletek</h3>
+                        <ul>
+                            <li>Létrehozva: <span class="value">2012.12.29. 23:12</span></li>
+                            <li>Módosítva: <span class="value">2012.12.29. 23:12</span></li>
+                            <li>Hozzáférés: <span class="value">2012.12.29. 23:12</span></li>
+                            <li>Típus: <span class="value">image/jpg</span></li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="wm">
+                    <div class="summary">
+                        <div class="name filetype-folder">poresz</div>
+                        <div class="info">katalógus</div>
+                        <div class="actions">
+                            <a href="#"><img src="../../one/static/icons/pencil.png" alt="rename" /></a>
+                            <a href="#"><img src="../../one/static/icons/minus-circle.png" alt="delete" /></a>
+                        </div>
+                        <div class="clear"></div>
+                    </div>
+                    <div class="details">
+                        <h3>Részletek</h3>
+                        <ul>
+                            <li>Létrehozva: <span class="value">2012.12.29. 23:12</span></li>
+                            <li>Módosítva: <span class="value">2012.12.29. 23:12</span></li>
+                            <li>Hozzáférés: <span class="value">2012.12.29. 23:12</span></li>
+                            <li>Fájlok: <span class="value">666 db</span></li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="wm" style="display: none">
+                    <div class="summary">
+                        <div class="name filetype-text">matlab_serial.txt</div>
+                        <div class="info">358 Kb</div>
+                        <div class="actions">
+                            <a href="#"><img src="../../one/static/icons/pencil.png" alt="rename" /></a>
+                            <a href="#"><img src="../../one/static/icons/minus-circle.png" alt="delete" /></a>
+                            <a href="#"><img src="../../one/static/icons/download-cloud.png" alt="download" /></a>
+                        </div>
+                        <div class="clear"></div>
+                    </div>
+                    <div class="details">
+                        <h3>Részletek</h3>
+                        <ul>
+                            <li>Létrehozva: <span class="value">2012.12.29. 23:12</span></li>
+                            <li>Módosítva: <span class="value">2012.12.29. 23:12</span></li>
+                            <li>Hozzáférés: <span class="value">2012.12.29. 23:12</span></li>
+                            <li>Típus: <span class="value">text/plain</span></li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="file-details wm" id="load-more-files">
+                    <div class="summary">
+                        <div class="name filetype-more">
+                            Mutasd a régebbi fájlokat!
+                        </div>
+                        <div class="actions" style="text-align: right; display: none">
+                            <img src="/static/load-4.gif" alt="loading" />
+                        </div>
+                        <div class="clear"></div>
+                    </div>
+                </li>
+                <li class="file-upload wm">
+                    <div class="summary">
+                        <div class="name filetype-up">Fájlfeltöltés</div>
+                        <div class="clear"></div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+        <div class="clear"></div>
+    </div>
+    <div id="modal" style="display: none">
+        <div id="shadow"></div>
+        <div id="modal-container">
+
+        </div>
+    </div>
+</body>
+</html>

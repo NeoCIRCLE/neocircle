@@ -8,7 +8,7 @@ then
     exit 1
 fi
 
-
+cp /opt/webadmin/cloud/miscellaneous/devenv/{.bash_login,init.sh,clean.sh} ~/
 rm -rf /opt/webadmin/cloud*
 rm .bash_history
 rm -f ~/.gitconfig
@@ -20,3 +20,5 @@ DROP DATABASE webadmin;
 A
 
 sudo chpasswd <<<'cloud:ezmiez'
+sudo passwd -e cloud
+rm ~/.ssh/authorized_keys

@@ -1,4 +1,4 @@
-<form action="/" method="post">
+<form action="/" method="post" id="template-wizard">
 	<div id="new-template-step-1" class="wizard">
 		<div class="progress">
 			<div class="bar-container">
@@ -57,11 +57,100 @@
 			<a href="#" class="next">Tovább &raquo;</a>
 			<div class="clear"></div>
 		</nav>
+		<script type="text/javascript">
+			$(function(){
+				$('#new-template-step-1 nav .next').click(function(){
+					$('#new-template-step-1').hide();
+					$('#new-template-step-2').show();
+				})
+				$('#new-template-step-1 nav .prev').click(function(){
+					$('#modal').hide();
+				})
+			})
+		</script>
 	</div>
-	<div id="new-template-step-2" style="display: none">
-		
+	<div id="new-template-step-2" class="wizard" style="display: none">
+		<div class="progress">
+			<div class="bar-container">
+				<div class="bar" style="width: 66%"></div>
+			</div>
+			<h3>2/3</h3>
+		</div>
+		<h2>2. lépés</h2>
+		<p>Leírás, mit is kéne itt ezen az ablakon csinálni, és miért jó, ha azt csinálja, amit.</p>
+		<div class="container">
+            <ul class="wm-list modal">
+                {% for m in templates %}
+                <li class="wm">
+                    <form method="POST" action="/vm/new/{{m.pk}}/">{% csrf_token %}
+                        <div class="summary">
+                            <div class="name wm-on">{{m.name}}</div>
+                            <div class="status">
+                                <input type="submit" value="Indítás"/>
+                            </div>
+                            <div class="clear"></div>
+                        </div>
+                        <div class="details">
+                            <h3>
+                                Részletek
+                            </h3>
+                            <ul>
+                                <li class="name">Rendszer: <span class="value">{{m.disk.name}}</span></li>
+                                <li class="type">Instance típus: <span class="value">{{m.instance_type.name}}</span></li>
+                                <li class="memory">Memória: <span class="value">{{m.instance_type.RAM}} MiB</span></li>
+                                <li class="cpu">CPU magok: <span class="value">{{m.instance_type.CPU}}</span></li>
+                            </ul>
+                        </div>
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+		<nav>
+			<a href="#" class="prev">&laquo; Mégse</a>
+			<a href="#" class="next">Tovább &raquo;</a>
+			<div class="clear"></div>
+		</nav>
+		<script type="text/javascript">
+			$(function(){
+
+					console.log('foo');
+				$('#modal .wm .summary').each(function(){
+
+					$(this).next('.details').show();
+					console.log($(this).next('.details').css('display'), $(this).next('.details').css('height'));
+					//this.originalHeight=parseInt($(this).next('.details').css('height'));
+				})
+				$('#modal .wm .summary').click(function(){
+					if($(this).next('.details').is(':hidden')){
+						$(this).next('.details')
+							.slideDown(700);
+						$(this).parent('.wm').addClass('opened');
+					} else {
+						var that=this;
+						$(this).next('.details')
+							.removeClass('opened')
+							.slideUp(700);
+				}
+			});
+				$('#new-template-step-2 nav .prev').click(function(){
+					$('#new-template-step-2').hide();
+					$('#new-template-step-1').show();
+				})
+				$('#new-template-step-2 nav .next').click(function(){
+					$('#new-template-step-2').hide();
+					$('#new-template-step-3').show();
+					$.ajax({
+						'type': 'POST',
+						'url': '/ajax/templateWizard',
+						'data': $('#template-wizard').serialize()
+					})
+					.done(function(){ console.log('ok')});
+				})
+			})
+		</script>
 	</div>
-	<div id="new-template-step-3" style="display: none">
-		
+	<div id="new-template-step-3" class="wizard" style="display: none">
+
 	</div>
 </form>

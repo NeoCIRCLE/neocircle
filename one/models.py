@@ -183,7 +183,7 @@ class Network(models.Model):
             cls.objects.exclude(id__in=l).delete()
 
     def __unicode__(self):
-        return u"%s (vlan%03d)" % (self.name, self.id)
+        return self.name
     class Meta:
         ordering = ['name']
 
@@ -392,8 +392,7 @@ class Instance(models.Model):
         host.hostname = u"id-%d_user-%s" % (inst.id, owner.username)
         host.mac = x.getElementsByTagName("MAC")[0].childNodes[0].nodeValue
         host.ipv4 = inst.ip
-        host.pub_ipv4 = "152.66.243.62"
-        host.full_clean()
+        host.pub_ipv4 = Vlan.objects.get(name=template.network.name).snat_ip
         host.save()
         host.enable_net()
         host.add_port("tcp", inst.get_port(), {"rdp": 3389, "nx": 22, "ssh": 22}[inst.template.access_type])
@@ -409,7 +408,6 @@ class Instance(models.Model):
         proc = subprocess.Popen(["/opt/occi.sh", "compute",
                "delete", "%d"%self.one_id], stdout=subprocess.PIPE)
         (out, err) = proc.communicate()
-        self.firewall_host.del_rules()
         self.firewall_host.delete()
         reload_firewall_lock()
 

@@ -12,11 +12,12 @@
     <script src="/static/jquery.min.js"></script>
     <script src="/static/less.min.js"></script>
     <script type="text/javascript">
+    var toggleDetails;
 $(function(){
     $('.wm .summary').each(function(){
       this.originalHeight=parseInt($(this).next('.details').css('height'));
     })
-    var toggleDetails=function(){
+    toggleDetails=function(){
       if($(this).next('.details').is(':hidden')){
             $(this).next('.details')
                 .show()
@@ -47,20 +48,26 @@ $(function(){
         },2000);
     })
     $('#new-wm-button').click(function(){
-      $('#modal').show();
-      $('#modal-container').html($('#new-wm').html());
-      $('#modal-container .wm .summary').each(function(){
-        this.originalHeight=parseInt($(this).next('.details').css('height'));
-      })
-      $('#modal-container .wm .summary').click(toggleDetails);
-    });
+        $('#modal').show();
+        $('#modal-container').html($('#new-wm').html());
+        $('#modal-container .wm .summary').each(function(){
+            this.originalHeight=parseInt($(this).next('.details').css('height'));
+        })
+        $('#modal-container .wm .summary').click(toggleDetails);
+        });
     $('#new-template-button').click(function(){
-      $('#modal').show();
-      $('#modal-container').html($('#new-template').html());
+        $('#modal').show();
+        $('#modal-container').html($('#new-template').html());
     });
     $('#shadow').click(function(){
-      $('#modal').hide();
+        $('#modal').hide();
     })
+    $('#new-template-button').click(function(){
+        $.get('/ajax/templateWizard', function(data){
+            $('#modal-container').html(data);
+        })
+        $('#modal').show();
+    });
 })
         </script>
 
@@ -94,7 +101,7 @@ $(function(){
         {% endblock %}
         {% block header %}
             {% block header_title %}
-            <h1><a href="/">IK Cloud</a></h1>
+            <h1><a href="/">IK Cloud <span style="font-size: 21px">&beta;</span></a></h1>
             {% endblock %}
         {% endblock %}
     </div>
@@ -109,10 +116,12 @@ $(function(){
 
     <div id="content">
         {% block content %}{% endblock %}
+        <div class="clear"></div>
     </div>
     <div id="modal" style="display: none">
         <div id="shadow"></div>
         <div id="modal-container">
+
         </div>
     </div>
 </body>
