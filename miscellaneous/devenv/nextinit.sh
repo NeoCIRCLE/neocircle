@@ -45,4 +45,4 @@ sudo cp vimrc.local /etc/vim/vimrc.local
 cd /opt/webadmin/cloud
 ./manage.py changepassword test
 
-exit 0
+true
