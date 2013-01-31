@@ -2,7 +2,7 @@
 
 for i in cloudstore toplist django
 do
-    sudo stop $i
+    sudo stop $i || true
 done
 set -x
 cd /opt/webadmin/cloud
