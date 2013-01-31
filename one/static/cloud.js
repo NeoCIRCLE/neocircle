@@ -85,9 +85,9 @@ $(function(){
                 url: '/ajax/store/list',
                 dataType: 'json',
                 success: function(data){
-                    $('.file-list .real').css({left:0,position:'relative'}).animate({left:'-100%'},1000).promise().done(function(){
+                    $('.file-list .real').css({left:0,position:'relative'}).animate({left:'-100%'},500).promise().done(function(){
                         loadFolderDone(data);
-                        $('.file-list .real').css({left:'-300%',position:'relative'}).animate({left:0},1000);
+                        $('.file-list .real').css({left:'-300%',position:'relative'}).animate({left:0},500);
                     });
                 },
             })
