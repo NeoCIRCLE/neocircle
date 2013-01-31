@@ -29,10 +29,13 @@ user_manager = FAKEUserManager.sh
 #Temporary directory
 temp_dir = /tmp/dl
 EOF
-sudo /opt/webadmin/cloud/miscellaneous/store-server/CloudStore.py >/tmp/CloudStore.log 2>&1 &
-disown $!
-sudo /opt/webadmin/cloud/miscellaneous/store-server/TopList.py >/tmp/TopList.log 2>&1 &
-disown $!
+
+for i in cloudstore toplist django
+do
+    sudo stop $i || true
+    sudo cp /opt/webadmin/cloud/miscellaneous/devenv/$i.conf /etc/init/
+    sudo start $i
+done
 
 cd /opt/webadmin/cloud/miscellaneous/devenv
 
