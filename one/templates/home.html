@@ -184,10 +184,11 @@
         </h2>
         <div class="content">
             <ul class="file-list">
+                <!-- ko foreach: files -->
                 <li class="wm">
                     <div class="summary">
-                        <div class="name filetype-c">hello.c</div>
-                        <div class="info">1 Kb</div>
+                        <div class="name" data-bind="text: NAME, attr: {class: getTypeClass}"></div>
+                        <div class="info" data-bind="text: SIZE"></div>
                         <div class="actions">
                             <a href="#"><img src="/static/icons/pencil.png" alt="rename" /></a>
                             <a href="#"><img src="/static/icons/minus-circle.png" alt="delete" /></a>
@@ -196,77 +197,15 @@
                         <div class="clear"></div>
                     </div>
                     <div class="details">
-                        <h3>Részletek</h3>
-                        <ul>
-                            <li>Létrehozva: <span class="value">2012.12.29. 23:12</span></li>
-                            <li>Módosítva: <span class="value">2012.12.29. 23:12</span></li>
-                            <li>Hozzáférés: <span class="value">2012.12.29. 23:12</span></li>
-                            <li>Típus: <span class="value">text/plain</span></li>
-                        </ul>
-                    </div>
-                </li>
-                <li class="wm">
-                    <div class="summary">
-                        <div class="name filetype-image">suna.jpg</div>
-                        <div class="info">1 Kb</div>
-                        <div class="actions">
-                            <a href="#"><img src="/static/icons/pencil.png" alt="rename" /></a>
-                            <a href="#"><img src="/static/icons/minus-circle.png" alt="delete" /></a>
-                            <a href="#"><img src="/static/icons/download-cloud.png" alt="download" /></a>
+                        <div class="details-container">
+                            <ul>
+                                <li>Módosítva: <span class="value" data-bind="text: MTIME"></span></li>
+                                <li>Típus: <span class="value" data-bind="text: TYPE"></span></li>
+                            </ul>
                         </div>
-                        <div class="clear"></div>
-                    </div>
-                    <div class="details">
-                        <h3>Részletek</h3>
-                        <ul>
-                            <li>Létrehozva: <span class="value">2012.12.29. 23:12</span></li>
-                            <li>Módosítva: <span class="value">2012.12.29. 23:12</span></li>
-                            <li>Hozzáférés: <span class="value">2012.12.29. 23:12</span></li>
-                            <li>Típus: <span class="value">image/jpg</span></li>
-                        </ul>
                     </div>
                 </li>
-                <li class="wm">
-                    <div class="summary">
-                        <div class="name filetype-folder">poresz</div>
-                        <div class="info">katalógus</div>
-                        <div class="actions">
-                            <a href="#"><img src="/static/icons/pencil.png" alt="rename" /></a>
-                            <a href="#"><img src="/static/icons/minus-circle.png" alt="delete" /></a>
-                        </div>
-                        <div class="clear"></div>
-                    </div>
-                    <div class="details">
-                        <h3>Részletek</h3>
-                        <ul>
-                            <li>Létrehozva: <span class="value">2012.12.29. 23:12</span></li>
-                            <li>Módosítva: <span class="value">2012.12.29. 23:12</span></li>
-                            <li>Hozzáférés: <span class="value">2012.12.29. 23:12</span></li>
-                            <li>Fájlok: <span class="value">666 db</span></li>
-                        </ul>
-                    </div>
-                </li>
-                <li class="wm" style="display: none">
-                    <div class="summary">
-                        <div class="name filetype-text">matlab_serial.txt</div>
-                        <div class="info">358 Kb</div>
-                        <div class="actions">
-                            <a href="#"><img src="/static/icons/pencil.png" alt="rename" /></a>
-                            <a href="#"><img src="/static/icons/minus-circle.png" alt="delete" /></a>
-                            <a href="#"><img src="/static/icons/download-cloud.png" alt="download" /></a>
-                        </div>
-                        <div class="clear"></div>
-                    </div>
-                    <div class="details">
-                        <h3>Részletek</h3>
-                        <ul>
-                            <li>Létrehozva: <span class="value">2012.12.29. 23:12</span></li>
-                            <li>Módosítva: <span class="value">2012.12.29. 23:12</span></li>
-                            <li>Hozzáférés: <span class="value">2012.12.29. 23:12</span></li>
-                            <li>Típus: <span class="value">text/plain</span></li>
-                        </ul>
-                    </div>
-                </li>
+                <!-- /ko -->
                 <li class="file-details wm" id="load-more-files">
                     <div class="summary">
                         <div class="name filetype-more">
