@@ -5,6 +5,7 @@ from django.template import RequestContext
 from store.api import StoreApi
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.views.decorators.csrf import csrf_exempt
 import os
 import json
 
@@ -66,6 +67,32 @@ def index(request):
     backpath = os.path.normpath(os.path.dirname(os.path.dirname(path)))
     file_list = StoreApi.listfolder(user,path)
     return render_to_response('store/list.html', RequestContext(request, {'file_list': file_list, 'path' : path, 'backpath' : backpath, 'username' : user}))
+
+@csrf_exempt
+@login_required
+def ajax_listfolder(request):
+    user = request.user.username
+    try:
+        details = request.user.userclouddetails_set.all()[0]
+        password = details.smb_password
+        key_list = []
+        for key in request.user.sshkey_set.all():
+            key_list.append(key.key)
+    except:
+        return HttpResponse('Can not acces to django database!', status_code=404)
+    if StoreApi.userexist(user) != True:
+        #Create user
+        if not StoreApi.createuser(user,password,key_list):
+            return HttpResponse('User does not exist on store! And could not create!', status_code=404)
+    path = '/'
+    try:
+        path = request.POST['path']
+    except:
+        pass
+    #Normalize path (Need double dirname /folder/ -> /folder -> /
+    backpath = os.path.normpath(os.path.dirname(os.path.dirname(path)))
+    file_list = StoreApi.listfolder(user,path)
+    return HttpResponse(json.dumps(file_list))
 
 @login_required
 def toplist(request):
