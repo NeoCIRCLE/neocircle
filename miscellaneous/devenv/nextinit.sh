@@ -9,9 +9,9 @@ cd /opt/webadmin/cloud
 ./manage.py syncdb --noinput
 ./manage.py migrate
 ./manage.py loaddata miscellaneous/dump.json
-./manage.py loaddata miscellaneous/dev.json
+./manage.py loaddata miscellaneous/devenv/dev.json
 ./manage.py update
-./manage.py loaddata miscellaneous/dev.json
+./manage.py loaddata miscellaneous/devenv/dev.json
 set +x
 
 #Set up store server
