@@ -48,6 +48,15 @@
                     </ul>
                 </div>
             </li>
+            <li class="wm small">
+                <div class="summary">
+                    <div class="quota">
+                        <div class="used" style="background-color: rgba(0,255,0,0.2); width: 0%"></div>
+                    </div>
+                    <div class="name">Saját Kvóta: 0/10</div>
+                    <div class="clear"></div>
+                </div>
+            </li>
         </ul>
     </div>
     <div class="contentblock" id="template">
@@ -56,7 +65,7 @@
             <li class="wm">
                 <div class="summary">
                     <div class="quota">
-                        <div class="used" style="background-color: rgba(0,255,0,0.5); width: 20%"></div>
+                        <div class="used" style="background-color: rgba(0,255,0,0.2); width: 20%"></div>
                     </div>
                     <div class="name">Win7 Matlab</div>
                     <div class="status">2/10</div>
@@ -68,7 +77,6 @@
                     <div class="clear"></div>
                 </div>
                 <div class="details">
-                    <h3>Részletek</h3>
                     <ul>
                         <li class="name">Rendszer: <span class="value">Windows 7 Desktop</span></li>
                         <li class="description">Leírás: <span class="value">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin nibh arcu, cursus et sodales eu, iaculis id metus. Suspendisse et mauris nisi, luctus feugiat nisi. Nullam elementum tincidunt urna a luctus.</span><div class="clear"></div></li>
@@ -81,7 +89,7 @@
             <li class="wm">
                 <div class="summary">
                     <div class="quota">
-                        <div class="used" style="background-color: rgba(255,128,0,0.5); width: 70%"></div>
+                        <div class="used" style="background-color: rgba(255,128,0,0.2); width: 70%"></div>
                     </div>
                     <div class="name">Win7 Matlab</div>
                     <div class="status">7/10</div>
@@ -93,7 +101,6 @@
                     <div class="clear"></div>
                 </div>
                 <div class="details">
-                    <h3>Részletek</h3>
                     <ul>
                         <li class="name">Rendszer: <span class="value">Windows 7 Desktop</span></li>
                         <li class="description">Leírás: <span class="value">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin nibh arcu, cursus et sodales eu, iaculis id metus. Suspendisse et mauris nisi, luctus feugiat nisi. Nullam elementum tincidunt urna a luctus.</span><div class="clear"></div></li>
@@ -106,7 +113,7 @@
             <li class="wm">
                 <div class="summary">
                     <div class="quota">
-                        <div class="used" style="background-color: rgba(255,0,0,0.5); width: 100%"></div>
+                        <div class="used" style="background-color: rgba(255,0,0,0.2); width: 100%"></div>
                     </div>
                     <div class="name">Win7 Matlab</div>
                     <div class="status">10/10</div>
@@ -118,7 +125,6 @@
                     <div class="clear"></div>
                 </div>
                 <div class="details">
-                    <h3>Részletek</h3>
                     <ul>
                         <li class="name">Rendszer: <span class="value">Windows 7 Desktop</span></li>
                         <li class="description">Leírás: <span class="value">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin nibh arcu, cursus et sodales eu, iaculis id metus. Suspendisse et mauris nisi, luctus feugiat nisi. Nullam elementum tincidunt urna a luctus.</span><div class="clear"></div></li>
@@ -139,7 +145,6 @@
                     <div class="clear"></div>
                 </div>
                 <div class="details">
-                    <h3>Részletek</h3>
                     <ul>
                         <li class="name">Rendszer: <span class="value">Windows 7 Desktop</span></li>
                         <li class="description">Leírás: <span class="value">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin nibh arcu, cursus et sodales eu, iaculis id metus. Suspendisse et mauris nisi, luctus feugiat nisi. Nullam elementum tincidunt urna a luctus.</span><div class="clear"></div></li>
@@ -158,9 +163,9 @@
             <li class="wm small">
                 <div class="summary">
                     <div class="quota">
-                        <div class="used" style="background-color: rgba(0,255,0,0.5); width: 19%"></div>
+                        <div class="used" style="background-color: rgba(0,255,0,0.2); width: 19%"></div>
                     </div>
-                    <div class="name">Kvóta: 19/100</div>
+                    <div class="name">Elosztható Kvóta: 19/100</div>
                     <div class="clear"></div>
                 </div>
             </li>
@@ -184,11 +189,25 @@
         </h2>
         <div class="content">
             <ul class="file-list">
-                <!-- ko foreach: files -->
-                <li class="wm">
+                <li class="wm small">
                     <div class="summary">
-                        <div class="name" data-bind="text: NAME, attr: {class: getTypeClass}"></div>
-                        <div class="info" data-bind="text: SIZE"></div>
+                        <div class="name">Jelenlegi hely: <span data-bind="text: currentPath"></span></div>
+                        <div class="clear"></div>
+                    </div>
+                </li>
+                <li class="wm real" data-bind="visible: notInRoot, click: jumpUp">
+                    <div class="summary">
+                        <div class="name filetype-jump-out">
+                            Szülő mappa
+                        </div>
+                        <div class="clear"></div>
+                    </div>
+                </li>
+                <!-- ko foreach: files -->
+                <li class="wm real">
+                    <div class="summary" data-bind="click: clickHandler">
+                        <div class="name" data-bind="text: name, attr: {class: getTypeClass}"></div>
+                        <div class="info" data-bind="text: size"></div>
                         <div class="actions">
                             <a href="#"><img src="/static/icons/pencil.png" alt="rename" /></a>
                             <a href="#"><img src="/static/icons/minus-circle.png" alt="delete" /></a>
@@ -199,8 +218,8 @@
                     <div class="details">
                         <div class="details-container">
                             <ul>
-                                <li>Módosítva: <span class="value" data-bind="text: MTIME"></span></li>
-                                <li>Típus: <span class="value" data-bind="text: TYPE"></span></li>
+                                <li>Módosítva: <span class="value" data-bind="text: mTime"></span></li>
+                                <li>Típus: <span class="value" data-bind="text: type"></span></li>
                             </ul>
                         </div>
                     </div>
