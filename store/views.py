@@ -115,6 +115,27 @@ def ajax_download(request):
     return HttpResponse('File not found!', status_code=404)
 
 @login_required
+def ajax_delete(request):
+    user = request.user.username
+    try:
+        details = request.user.userclouddetails_set.all()[0]
+        password = details.smb_password
+        key_list = []
+        for key in request.user.sshkey_set.all():
+            key_list.append(key.key)
+    except:
+        return HttpResponse('Can not acces to django database!', status_code=404)
+    if StoreApi.userexist(user) != True:
+        if not StoreApi.createuser(user,password,key_list):
+            return HttpResponse('User does not exist on store! And could not create!', status_code=404)
+    try:
+        rm = request.POST['rm']
+        return HttpResponse(json.dumps({'success':StoreApi.requestremove(user,rm)}))
+    except:
+        pass
+    return HttpResponse('File not found!', status_code=404)
+
+@login_required
 def toplist(request):
     user = request.user.username
     path = backpath = '/'

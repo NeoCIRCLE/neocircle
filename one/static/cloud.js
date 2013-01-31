@@ -118,16 +118,7 @@ $(function(){
                         type: 'fájl',
                         mTime: d.MTIME,
                         getTypeClass: 'name filetype-text',
-                        clickHandler: function(item){
-                            $.ajax({
-                                type: 'POST',
-                                data: 'dl='+self.currentPath()+item.originalName,
-                                url: '/ajax/store/download',
-                                dataType: 'json',
-                                success: function(data){
-                                    window.location.href=data.url;
-                                }
-                            })
+                        clickHandler: function(item, event){
                         }
                     };
                 }
@@ -135,6 +126,29 @@ $(function(){
             self.files(viewData);
         }
         self.currentPath=ko.observable('/');
+
+        self.download=function(item){
+            $.ajax({
+                type: 'POST',
+                data: 'dl='+self.currentPath()+item.originalName,
+                url: '/ajax/store/download',
+                dataType: 'json',
+                success: function(data){
+                    window.location.href=data.url;
+                }
+            })
+        }
+        self.delete=function(item){
+             $.ajax({
+                type: 'POST',
+                data: 'rm='+self.currentPath()+item.originalName,
+                url: '/ajax/store/delete',
+                dataType: 'json',
+                success: function(data){
+                    loadFolder(self.currentPath());
+                }
+            })
+        }
         loadFolder(self.currentPath());
     }
     var model=new Model();
