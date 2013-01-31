@@ -1,11 +1,18 @@
 #!/bin/bash
 
+for i in cloudstore toplist django
+do
+    sudo stop $i
+done
+set -x
 cd /opt/webadmin/cloud
 ./manage.py syncdb --noinput
 ./manage.py migrate
 ./manage.py loaddata miscellaneous/dump.json
 ./manage.py loaddata miscellaneous/dev.json
 ./manage.py update
+./manage.py loaddata miscellaneous/dev.json
+set +x
 
 #Set up store server
 rm -rf /var/www/*
@@ -32,7 +39,6 @@ EOF
 
 for i in cloudstore toplist django
 do
-    sudo stop $i || true
     sudo cp /opt/webadmin/cloud/miscellaneous/devenv/$i.conf /etc/init/
     sudo start $i
 done
