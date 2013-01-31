@@ -1,0 +1,110 @@
+[
+  {
+    "pk": 7,
+    "model": "auth.user",
+    "fields": {
+      "username": "test",
+      "first_name": "",
+      "last_name": "",
+      "is_active": true,
+      "is_superuser": true,
+      "is_staff": true,
+      "last_login": "2013-01-30T23:33:32Z",
+      "groups": [],
+      "user_permissions": [],
+      "password": "pbkdf2_sha256$10000$LbTrj1qFLbLq$9F2K+3WXE/cb+/EjxwTf+1bmhKxm37MuTPZ/l7vyzn0=",
+      "email": "",
+      "date_joined": "2013-01-16T12:36:01Z"
+    }
+  },
+  {
+    "pk": 9,
+    "model": "one.template",
+    "fields": {
+      "name": "Ubuntu 12.04 desktop",
+      "created_at": "2013-01-31T10:11:08Z",
+      "access_type": "nx",
+      "instance_type": 3,
+      "owner": 1,
+      "disk": 1,
+      "network": 2
+    }
+  },
+  {
+    "pk": 10,
+    "model": "one.template",
+    "fields": {
+      "name": "Windows 7",
+      "created_at": "2013-01-31T10:11:21Z",
+      "access_type": "rdp",
+      "instance_type": 2,
+      "owner": 1,
+      "disk": 1,
+      "network": 2
+    }
+  },
+  {
+    "pk": 1,
+    "model": "store.setting",
+    "fields": {
+      "value": "True",
+      "key": "basic_auth"
+    }
+  },
+  {
+    "pk": 2,
+    "model": "store.setting",
+    "fields": {
+      "value": "False",
+      "key": "verify_ssl"
+    }
+  },
+  {
+    "pk": 3,
+    "model": "store.setting",
+    "fields": {
+      "value": "False",
+      "key": "ssl_auth"
+    }
+  },
+  {
+    "pk": 4,
+    "model": "store.setting",
+    "fields": {
+      "value": "IQu8Eice",
+      "key": "store_client_pass"
+    }
+  },
+  {
+    "pk": 5,
+    "model": "store.setting",
+    "fields": {
+      "value": "admin",
+      "key": "store_client_user"
+    }
+  },
+  {
+    "pk": 6,
+    "model": "store.setting",
+    "fields": {
+      "value": "/opt/webadmin/cloud/client.key",
+      "key": "store_client_key"
+    }
+  },
+  {
+    "pk": 7,
+    "model": "store.setting",
+    "fields": {
+      "value": "/opt/webadmin/cloud/client.crt",
+      "key": "store_client_cert"
+    }
+  },
+  {
+    "pk": 8,
+    "model": "store.setting",
+    "fields": {
+      "value": "http://localhost:9000",
+      "key": "store_url"
+    }
+  }
+]

@@ -4,6 +4,7 @@ cd /opt/webadmin/cloud
 ./manage.py syncdb --noinput
 ./manage.py migrate
 ./manage.py loaddata miscellaneous/dump.json
+./manage.py loaddata miscellaneous/dev.json
 ./manage.py update
 
 #Set up store server
@@ -36,5 +37,4 @@ disown $!
 cd /opt/webadmin/cloud/miscellaneous/devenv
 
 sudo cp vimrc.local /etc/vim/vimrc.local
-
-/opt/webadmin/cloud/manage.py changepassword test || /opt/webadmin/cloud/manage.py createsuperuser test || true
+exit 0
