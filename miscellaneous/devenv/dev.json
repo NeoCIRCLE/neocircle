@@ -106,5 +106,14 @@
       "value": "http://localhost:9000",
       "key": "store_url"
     }
+  },
+  {
+    "pk": 2,
+    "model": "one.network",
+    "fields": {
+      "name": "VM-NET",
+      "nat": true,
+      "public": false
+    }
   }
 ]
