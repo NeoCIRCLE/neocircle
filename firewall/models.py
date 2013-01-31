@@ -122,7 +122,7 @@ class Alias(models.Model):
 
     def clean(self):
         # FIXME later: critical race condition
-        for h in Host.objects:
+        for h in Host.objects.all():
             if h.get_fqdn() == self.alias:
                 raise ValidationError(_("Host name already used."))
 
@@ -190,7 +190,7 @@ class Host(models.Model):
 
     def clean(self):
         # FIXME later: critical race condition
-        for a in Alias.objects:
+        for a in Alias.objects.all():
             if self.get_fqdn() == a.alias:
                 raise ValidationError(_("Host name already used as alias."))
 
