@@ -179,6 +179,10 @@ class Host(models.Model):
     def del_rules(self):
         self.rules.filter(owner=self.owner).delete()
 
+    def get_fqdn(self):
+        return self.hostname + u'.' + self.vlan.domain
+
+
 class Firewall(models.Model):
     name = models.CharField(max_length=20, unique=True)
 
