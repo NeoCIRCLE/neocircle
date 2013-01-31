@@ -40,4 +40,9 @@ done
 cd /opt/webadmin/cloud/miscellaneous/devenv
 
 sudo cp vimrc.local /etc/vim/vimrc.local
+
+
+cd /opt/webadmin/cloud
+./manage.py changepassword test
+
 exit 0
