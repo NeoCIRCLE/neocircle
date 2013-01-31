@@ -28,4 +28,5 @@ urlpatterns = patterns('',
      url(r'^store/top/$', 'store.views.toplist', name='store_top'),
      url(r'^ajax/templateWizard$', 'one.views.ajax_template_wizard', name='ajax_template_wizard'),
      url(r'^ajax/store/list$', 'store.views.ajax_listfolder', name='store_ajax_listfolder'),
+     url(r'^ajax/store/download$', 'store.views.ajax_download', name='store_ajax_download'),
 )

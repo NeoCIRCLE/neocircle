@@ -112,13 +112,22 @@ $(function(){
                     };
                 } else {
                     viewData[i]={
+                        originalName: d.NAME,
                         name: d.NAME.length>30?(d.NAME.substr(0,27)+'...'):d.NAME,
                         size: data[i].SIZE+'K',
                         type: 'fájl',
                         mTime: d.MTIME,
                         getTypeClass: 'name filetype-text',
-                        clickHandler: function(){
-
+                        clickHandler: function(item){
+                            $.ajax({
+                                type: 'POST',
+                                data: 'dl='+self.currentPath()+item.originalName,
+                                url: '/ajax/store/download',
+                                dataType: 'json',
+                                success: function(data){
+                                    window.location.href=data.url;
+                                }
+                            })
                         }
                     };
                 }

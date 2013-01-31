@@ -68,7 +68,6 @@ def index(request):
     file_list = StoreApi.listfolder(user,path)
     return render_to_response('store/list.html', RequestContext(request, {'file_list': file_list, 'path' : path, 'backpath' : backpath, 'username' : user}))
 
-@csrf_exempt
 @login_required
 def ajax_listfolder(request):
     user = request.user.username
@@ -93,6 +92,27 @@ def ajax_listfolder(request):
     backpath = os.path.normpath(os.path.dirname(os.path.dirname(path)))
     file_list = StoreApi.listfolder(user,path)
     return HttpResponse(json.dumps(file_list))
+
+@login_required
+def ajax_download(request):
+    user = request.user.username
+    try:
+        details = request.user.userclouddetails_set.all()[0]
+        password = details.smb_password
+        key_list = []
+        for key in request.user.sshkey_set.all():
+            key_list.append(key.key)
+    except:
+        return HttpResponse('Can not acces to django database!', status_code=404)
+    if StoreApi.userexist(user) != True:
+        if not StoreApi.createuser(user,password,key_list):
+            return HttpResponse('User does not exist on store! And could not create!', status_code=404)
+    try:
+        dl = request.POST['dl']
+        return HttpResponse(json.dumps({'url':StoreApi.requestdownload(user,dl)}))
+    except:
+        pass
+    return HttpResponse('File not found!', status_code=404)
 
 @login_required
 def toplist(request):
