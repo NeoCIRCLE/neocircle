@@ -71,14 +71,16 @@ $(function(){
     var Model=function(){
         var self=this;
         self.files=ko.observableArray();
+        self.allFiles=[];
         self.notInRoot=ko.observable(false);
+        self.fileLimit=5;
         self.jumpUp=function(){
             var s=self.currentPath();
             self.currentPath(s.substr(0,s.substr(0,s.length-1).lastIndexOf('/')+1));
             loadFolder(self.currentPath());
         }
         var loadFolder=function(path){
-            console.log('loadFolder');
+            self.fileLimit=5;
             $.ajax({
                 type: 'POST',
                 data: 'path='+path,
@@ -94,39 +96,57 @@ $(function(){
         }
         var loadFolderDone=function(data){
             self.notInRoot(self.currentPath().lastIndexOf('/') !== 0);
+            self.files([]);
+            self.allFiles=data;
             var viewData=[];
+            var added=0;
             for(var i in data){
-                var d=data[i];
-                if(data[i].TYPE === 'D'){
-                    viewData[i]={
-                        originalName: d.NAME,
-                        name: d.NAME.length>30?(d.NAME.substr(0,27)+'...'):d.NAME,
-                        size: 'katalógus',
-                        type: 'katalógus',
-                        mTime: d.MTIME,
-                        getTypeClass: 'name filetype-folder',
-                        clickHandler: function(item){
-                            self.currentPath(self.currentPath()+item.originalName+'/');
-                            loadFolder(self.currentPath());
-                        }
-                    };
-                } else {
-                    viewData[i]={
-                        originalName: d.NAME,
-                        name: d.NAME.length>30?(d.NAME.substr(0,27)+'...'):d.NAME,
-                        size: data[i].SIZE+'K',
-                        type: 'fájl',
-                        mTime: d.MTIME,
-                        getTypeClass: 'name filetype-text',
-                        clickHandler: function(item, event){
-                        }
-                    };
-                }
+                added++;
+                if(added<6)
+                    addFile(data[i]);
             }
-            self.files(viewData);
+        }
+        var addFile=function(d){
+            var viewData;
+            if(d.TYPE === 'D'){
+                viewData={
+                    originalName: d.NAME,
+                    name: d.NAME.length>30?(d.NAME.substr(0,27)+'...'):d.NAME,
+                    size: 'katalógus',
+                    type: 'katalógus',
+                    mTime: d.MTIME,
+                    getTypeClass: 'name filetype-folder',
+                    clickHandler: function(item){
+                        self.currentPath(self.currentPath()+item.originalName+'/');
+                        loadFolder(self.currentPath());
+                    }
+                };
+            } else {
+                viewData={
+                    originalName: d.NAME,
+                    name: d.NAME.length>30?(d.NAME.substr(0,27)+'...'):d.NAME,
+                    size: d.SIZE+'K',
+                    type: 'fájl',
+                    mTime: d.MTIME,
+                    getTypeClass: 'name filetype-text',
+                    clickHandler: function(item, event){
+                    }
+                };
+            }
+            self.files.push(viewData);
+        }
+        self.fadeIn=function(e){
+            console.log(e,arguments);
+            $(e).hide().slideDown(500);
         }
         self.currentPath=ko.observable('/');
-
+        self.showMore=function(){
+            for(var i=self.fileLimit;i<self.fileLimit+5;i++){
+                if(self.allFiles[i] === undefined) break;
+                addFile(self.allFiles[i]);
+            }
+            self.fileLimit+=5;
+        }
         self.download=function(item){
             $.ajax({
                 type: 'POST',

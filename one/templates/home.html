@@ -203,7 +203,13 @@
                         <div class="clear"></div>
                     </div>
                 </li>
-                <!-- ko foreach: files -->
+                <li class="wm small real" data-bind="visible: files().length == 0">
+                    <div class="summary">
+                        <div class="name">Nincs megjeleníthető fájl.</div>
+                        <div class="clear"></div>
+                    </div>
+                </li>
+                <!-- ko foreach: {data:files,afterAdd:fadeIn} -->
                 <li class="wm real">
                     <div class="summary" data-bind="click: clickHandler">
                         <div class="name" data-bind="text: name, attr: {class: getTypeClass}"></div>
@@ -231,13 +237,10 @@
                     </div>
                 </li>
                 <!-- /ko -->
-                <li class="file-details wm" id="load-more-files">
-                    <div class="summary">
+                <li class="file-details wm" id="load-more-files" data-bind="visible: (files().length>0 && files().length != allFiles.length)">
+                    <div class="summary" data-bind="click: showMore">
                         <div class="name filetype-more">
-                            Mutasd a régebbi fájlokat!
-                        </div>
-                        <div class="actions" style="text-align: right; display: none">
-                            <img src="/static/load-4.gif" alt="loading" />
+                            Mutass több fájlt!
                         </div>
                         <div class="clear"></div>
                     </div>
