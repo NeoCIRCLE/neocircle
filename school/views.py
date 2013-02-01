@@ -14,6 +14,7 @@ from django.shortcuts import render, render_to_response, get_object_or_404, redi
 from django.template import RequestContext
 from django.template.loader import render_to_string
 from django.utils.decorators import method_decorator
+from django.utils.http import is_safe_url
 from django.utils.translation import get_language as lang
 from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.http import *
@@ -78,5 +79,7 @@ def login(request):
     auth.login(request, user)
     logger.warning("Shib login with %s" % request.META)
 
-
+    redirect_to = request.REQUEST.get(auth.redirect_field_name, '')
+    if not is_safe_url(url=redirect_to, host=request.get_host()):
+        redirect_to = settings.LOGIN_REDIRECT_URL
     return redirect('/')
