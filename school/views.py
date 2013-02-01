@@ -79,7 +79,7 @@ def login(request):
     auth.login(request, user)
     logger.warning("Shib login with %s" % request.META)
 
-    redirect_to = request.REQUEST.get(auth.redirect_field_name, '')
+    redirect_to = request.REQUEST.get(auth.REDIRECT_FIELD_NAME, '')
     if not is_safe_url(url=redirect_to, host=request.get_host()):
         redirect_to = settings.LOGIN_REDIRECT_URL
-    return redirect('/')
+    return redirect(redirect_to)
