@@ -82,8 +82,17 @@ class Group(models.Model):
     class Meta:
         unique_together = (('name', 'course', 'semester', ), )
 
+    def owner_list(self):
+        if self.owners:
+            return ", ".join([u.last_name if u.last_name else u.username for u in self.owners.all()])
+        else:
+            return _("n/a")
+
+    def member_count(self):
+        return self.members.count()
+
     def __unicode__(self):
         if self.course:
             return "%s (%s)" % (self.name, self.course.short())
         else:
-            return "%s (%s)" % (self.name, ", ".join([u.last_name for u in self.owners.all()]))
+            return "%s (%s)" % (self.name, self.owner_list())

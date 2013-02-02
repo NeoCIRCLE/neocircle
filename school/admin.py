@@ -17,6 +17,7 @@ class CourseAdmin(contrib.admin.ModelAdmin):
 class GroupAdmin(contrib.admin.ModelAdmin):
     model = models.Group
     filter_horizontal = ('owners', 'members', )
+    list_display = ('name', 'course', 'semester', 'owner_list', 'member_count')
 
 class SemesterAdmin(contrib.admin.ModelAdmin):
     model=models.Semester
