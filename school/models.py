@@ -23,6 +23,7 @@ class Person(models.Model):
 class Course(models.Model):
     code = models.CharField(max_length=10, unique=True)
     name = models.CharField(max_length=80, null=True, blank=True)
+    short_name = models.CharField(max_length=10, null=True, blank=True)
     default_group = models.ForeignKey('Group', null=True, blank=True,
             related_name='default_group_of')
     owners = models.ManyToManyField(User, blank=True, null=True)
@@ -37,8 +38,20 @@ class Course(models.Model):
         self.full_clean()
         super(Course, self).save(*args, **kwargs)
 
+    def __unicode__(self):
+        if self.short_name:
+            return u"%s (%s)" % (self.code, self.name)
+        else:
+            return self.code
+    def short(self):
+        if self.short_name:
+            return self.short_name
+        else:
+            return self.code
+
 
 class Semester(models.Model):
+    name = models.CharField(max_length=20, unique=True, null=False)
     start = models.DateField()
     end = models.DateField()
 
@@ -54,6 +67,10 @@ class Semester(models.Model):
         except:
             raise ValidationError(_('There is no current semester.'))
 
+    def __unicode__(self):
+        return self.name
+
+
 
 class Group(models.Model):
     name = models.CharField(max_length=80, unique=True)
@@ -64,3 +81,9 @@ class Group(models.Model):
 
     class Meta:
         unique_together = (('name', 'course', 'semester', ), )
+
+    def __unicode__(self):
+        if self.course:
+            return "%s (%s)" % (self.name, self.course.short())
+        else:
+            return "%s (%s)" % (self.name, ", ".join([u.last_name for u in self.owners.all()]))
