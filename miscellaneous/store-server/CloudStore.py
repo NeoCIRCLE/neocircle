@@ -32,15 +32,15 @@ except:
 
 def force_ssl(original_function):
     def new_function(*args, **kwargs):
-        ssl = request.environ.get('SSL_CLIENT_VERIFY', 'NONE')
-        if ssl != "SUCCESS":
-            abort(403, "Forbidden requests. This site need SSL verification! SSL status: "+ssl)
+        if FORCE_SSL:
+            ssl = request.environ.get('SSL_CLIENT_VERIFY', 'NONE')
+            if ssl != "SUCCESS":
+                abort(403, "Forbidden requests. This site need SSL verification! SSL status: "+ssl)
+            else:
+                return original_function(*args, **kwargs)
         else:
             return original_function(*args, **kwargs)
-    if FORCE_SSL:
-        return new_function
-    else:
-        return original_function(*args, **kwargs)
+    return new_function
 
 @route('/')
 @force_ssl
