@@ -5,8 +5,8 @@ rmtag () {
 	sed -e 's/<[^>]*>//g' -e 's/^[ \t]*//g' -e 's/[ \t]*$//g'
 }
 
-wget -q --user=ircbot --password=rahX5eir --no-check-certificate 'https://giccero.cloud.ik.bme.hu/trac/cloud/login?referer=%2Ftrac%2Fcloud%2Ftimeline%3Fmilestone%3Don%26ticket%3Don%26wiki%3Don%26max%3D50%26authors%3D%26daysback%3D1%26format%3Drss' -O-|grep -E '(<guid|<title|<link)' |
-while read guid; read title; read link
+wget -q --user=ircbot --password=rahX5eir --no-check-certificate 'https://giccero.cloud.ik.bme.hu/trac/cloud/login?referer=%2Ftrac%2Fcloud%2Ftimeline%3Fmilestone%3Don%26ticket%3Don%26wiki%3Don%26max%3D50%26authors%3D%26daysback%3D1%26format%3Drss' -O-|grep -E '(<guid|<title|<link)' | sed -e '1,4d' |
+while  read title; read link ;read guid
 do
 
 	guid=$(rmtag <<<"$guid")
