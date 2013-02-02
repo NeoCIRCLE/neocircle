@@ -35,11 +35,11 @@ def login(request):
         messages.error(request, _('EduID is not available.'))
         return redirect('/admin')
     except User.DoesNotExist:
-        user = User(username=attr['niifPersonOrgID'])
+        user = User(username=request.META['niifPersonOrgID'])
         user.set_unusable_password()
     user.first_name = request.META['givenName']
     user.last_name = request.META['sn']
-    user.email = attr['email']
+    user.email = request.META['email']
     user.save()
 
     user.backend = 'django.contrib.auth.backends.ModelBackend'
