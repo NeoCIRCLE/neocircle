@@ -17,8 +17,18 @@ post_save.connect(create_user_profile, sender=User)
 class Person(models.Model):
     user = models.ForeignKey(User, null=False, blank=False, unique=True)
 
+    def short_name(self):
+        if user.last_name:
+            return user.last_name
+        else:
+            return user.username
+
     def __unicode__(self):
-        return self.user.__unicode__()
+        if user.last_name and user.first_name:
+            return _("%(first)s %(last)s" % {'first': user.first_name,
+                                             'last': user.last_name})
+        else:
+            return user.username
 
 class Course(models.Model):
     code = models.CharField(max_length=10, unique=True)
@@ -26,7 +36,7 @@ class Course(models.Model):
     short_name = models.CharField(max_length=10, null=True, blank=True)
     default_group = models.ForeignKey('Group', null=True, blank=True,
             related_name='default_group_of')
-    owners = models.ManyToManyField(User, blank=True, null=True)
+    owners = models.ManyToManyField(Person, blank=True, null=True)
     def get_or_create_default_group(self):
             self.default_group = Group(name=self.name,
                     semester=Semester.get_current())
@@ -50,7 +60,7 @@ class Course(models.Model):
             return self.code
     def owner_list(self):
         if self.owners:
-            return ", ".join([u.last_name if u.last_name else u.username for u in self.owners.all()])
+            return ", ".join([p.short_name() for p in self.owners.all()])
         else:
             return _("n/a")
 
@@ -81,15 +91,15 @@ class Group(models.Model):
     name = models.CharField(max_length=80, unique=True)
     course = models.ForeignKey('Course', null=True, blank=True)
     semester = models.ForeignKey('Semester', null=False, blank=False)
-    owners = models.ManyToManyField(User, blank=True, null=True, related_name='owned_groups')
-    members = models.ManyToManyField(User, blank=True, null=True, related_name='course_groups')
+    owners = models.ManyToManyField(Person, blank=True, null=True, related_name='owned_groups')
+    members = models.ManyToManyField(Person, blank=True, null=True, related_name='course_groups')
 
     class Meta:
         unique_together = (('name', 'course', 'semester', ), )
 
     def owner_list(self):
         if self.owners:
-            return ", ".join([u.last_name if u.last_name else u.username for u in self.owners.all()])
+            return ", ".join([p.short_name() for p in self.owners.all()])
         else:
             return _("n/a")
 
