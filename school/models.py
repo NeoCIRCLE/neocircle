@@ -48,6 +48,11 @@ class Course(models.Model):
             return self.short_name
         else:
             return self.code
+    def owner_list(self):
+        if self.owners:
+            return ", ".join([u.last_name if u.last_name else u.username for u in self.owners.all()])
+        else:
+            return _("n/a")
 
 
 class Semester(models.Model):
