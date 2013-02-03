@@ -51,7 +51,7 @@ def login(request):
         attended = request.META['HTTP_NIIFEDUPERSONATTENDEDCOURSE']
         if attended == '':
             attended = []
-        else
+        else:
             attended = attended.split(';')
         for c in attended:
             co = Course.objects.get_or_create(code=c)
