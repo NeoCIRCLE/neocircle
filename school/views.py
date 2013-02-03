@@ -44,6 +44,7 @@ def login(request):
     user.email = request.META['email']
     user.save()
     p, created = Person.objects.get_or_create(user=user)
+    p.save()
 
     try:
         sem = Semester.get_current()
@@ -55,15 +56,18 @@ def login(request):
             attended = attended.split(';')
         for c in attended:
             co, created = Course.objects.get_or_create(code=c)
+            if created:
+                logger.warning("django Course %s created" % c)
             g = co.get_or_create_default_group()
             if p.course_groups.filter(semester=sem, course=co).count() == 0:
                 try:
-                    p.course_groups.add(g)
+                    g.members.add(p)
+                    g.save()
                     messages.info(request, _('Course "%s" added.') % g.course)
                 except Exception as e:
                     logger.warning("Django ex %s" % e)
-    except ValidationError:
-        pass
+    except ValidationError as e:
+        logger.warning("Django ex4 %s" % e)
 
     held = request.META['HTTP_NIIFEDUPERSONHELDCOURSE']
     if held == '':
@@ -72,6 +76,8 @@ def login(request):
         held = held.split(';')
     for c in held:
         co, created = Course.objects.get_or_create(code=c)
+        if created:
+            logger.warning("django Course %s created" % c)
         g = co.get_or_create_default_group()
         try:
             co.owners.add(p)
@@ -79,6 +85,9 @@ def login(request):
             messages.info(request, _('Course "%s" ownership added.') % g.course)
         except Exception as e:
             logger.warning("Django ex %s" % e)
+        co.save()
+        g.save()
+
 
 
     p.save()

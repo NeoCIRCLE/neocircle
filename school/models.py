@@ -41,9 +41,15 @@ class Course(models.Model):
             related_name='default_group_of')
     owners = models.ManyToManyField(Person, blank=True, null=True)
     def get_or_create_default_group(self):
-            self.default_group = Group(name=self.name,
-                    semester=Semester.get_current())
-            self.default_group.save()
+        if self.default_group:
+            return self.default_group
+        else:
+            default_group = Group(name=_("%s -- default") % self.short(),
+                    semester=Semester.get_current(), course=self)
+            default_group.save()
+            self.default_group_id = default_group.id
+            self.save()
+            return default_group
     def save(self, *args, **kwargs):
         if self.default_group:
             self.default_group.course = self
