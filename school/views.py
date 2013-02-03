@@ -1,4 +1,5 @@
 from datetime import datetime
+from django.core.exceptions import ValidationError
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -41,7 +42,34 @@ def login(request):
     user.last_name = request.META['sn']
     user.email = request.META['email']
     user.save()
+    p, created = Person.objects.get_or_create(user=user)
 
+    try:
+        sem = Semester.get_current()
+
+        for c in request.META['HTTP_NIIFEDUPERSONATTENDEDCOURSE'].split(';'):
+            co = Course.objects.get_or_create(code=c)
+            g = co.get_or_create_default_group()
+            if p.course_groups.filter(semester=sem, course=co).count() == 0:
+                try:
+                    p.course_groups.add(g)
+                    messages.info(request, _('Course "%s" added.') % g.course)
+                except:
+                    pass
+    except ValidationError:
+        pass
+
+    for c in request.META['HTTP_NIIFEDUPERSONHELDCOURSE'].split(';'):
+        co = Course.objects.get_or_create(code=c)
+        g = co.get_or_create_default_group()
+        try:
+            co.owners.add(p)
+            g.owners.add(p)
+            messages.info(request, _('Course "%s" ownership added.') % g.course)
+        except:
+            pass
+
+    p.save()
     user.backend = 'django.contrib.auth.backends.ModelBackend'
     auth.login(request, user)
     logger.warning("Shib login with %s" % request.META)
