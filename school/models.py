@@ -34,7 +34,7 @@ class Person(models.Model):
             return u.username
 
 class Course(models.Model):
-    code = models.CharField(max_length=10, unique=True)
+    code = models.CharField(max_length=20, unique=True)
     name = models.CharField(max_length=80, null=True, blank=True)
     short_name = models.CharField(max_length=10, null=True, blank=True)
     default_group = models.ForeignKey('Group', null=True, blank=True,
