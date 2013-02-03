@@ -54,14 +54,14 @@ def login(request):
         else:
             attended = attended.split(';')
         for c in attended:
-            co = Course.objects.get_or_create(code=c)
+            co, created = Course.objects.get_or_create(code=c)
             g = co.get_or_create_default_group()
             if p.course_groups.filter(semester=sem, course=co).count() == 0:
                 try:
                     p.course_groups.add(g)
                     messages.info(request, _('Course "%s" added.') % g.course)
-                except:
-                    pass
+                except Exception as e:
+                    logger.warning("Django ex %s" % e)
     except ValidationError:
         pass
 
@@ -71,14 +71,15 @@ def login(request):
     else:
         held = held.split(';')
     for c in held:
-        co = Course.objects.get_or_create(code=c)
+        co, created = Course.objects.get_or_create(code=c)
         g = co.get_or_create_default_group()
         try:
             co.owners.add(p)
             g.owners.add(p)
             messages.info(request, _('Course "%s" ownership added.') % g.course)
-        except:
-            pass
+        except Exception as e:
+            logger.warning("Django ex %s" % e)
+
 
     p.save()
     user.backend = 'django.contrib.auth.backends.ModelBackend'
