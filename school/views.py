@@ -2,7 +2,7 @@ from datetime import datetime
 from django.core.exceptions import ValidationError
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group as AGroup
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.core import signing
@@ -89,6 +89,15 @@ def login(request):
         g.save()
 
 
+    affiliation = request.META['affiliation']
+    if affiliation == '':
+        affiliation = []
+    else:
+        affiliation = affiliation.split(';')
+    for a in affiliation:
+        g, created = AGroup.objects.get_or_create(name=a)
+        user.groups.add(g)
+    user.save()
 
     p.save()
     user.backend = 'django.contrib.auth.backends.ModelBackend'
