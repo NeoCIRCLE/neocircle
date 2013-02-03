@@ -18,17 +18,20 @@ class Person(models.Model):
     user = models.ForeignKey(User, null=False, blank=False, unique=True)
 
     def short_name(self):
-        if user.last_name:
-            return user.last_name
+        if self.user.last_name:
+            return self.user.last_name
         else:
-            return user.username
+            return self.user.username
 
     def __unicode__(self):
-        if user.last_name and user.first_name:
-            return _("%(first)s %(last)s" % {'first': user.first_name,
-                                             'last': user.last_name})
+        u = self.user
+        if not u:
+            return unicode(_("(none)"))
+        if u.last_name and u.first_name:
+            return _("%(first)s %(last)s") % {'first': u.first_name,
+                                             'last': u.last_name}
         else:
-            return user.username
+            return u.username
 
 class Course(models.Model):
     code = models.CharField(max_length=10, unique=True)
