@@ -20,6 +20,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.http import *
 from django.views.generic import *
 from one.models import *
+from school.models import *
 import django.contrib.auth as auth
 import logging
 
@@ -47,7 +48,12 @@ def login(request):
     try:
         sem = Semester.get_current()
 
-        for c in request.META['HTTP_NIIFEDUPERSONATTENDEDCOURSE'].split(';'):
+        attended = request.META['HTTP_NIIFEDUPERSONATTENDEDCOURSE']
+        if attended == '':
+            attended = []
+        else
+            attended = attended.split(';')
+        for c in attended:
             co = Course.objects.get_or_create(code=c)
             g = co.get_or_create_default_group()
             if p.course_groups.filter(semester=sem, course=co).count() == 0:
@@ -59,7 +65,12 @@ def login(request):
     except ValidationError:
         pass
 
-    for c in request.META['HTTP_NIIFEDUPERSONHELDCOURSE'].split(';'):
+    held = request.META['HTTP_NIIFEDUPERSONHELDCOURSE']
+    if held == '':
+        held = []
+    else:
+        held = held.split(';')
+    for c in held:
         co = Course.objects.get_or_create(code=c)
         g = co.get_or_create_default_group()
         try:
