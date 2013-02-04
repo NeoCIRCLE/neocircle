@@ -79,7 +79,8 @@ def index(request):
     #Normalize path (Need double dirname /folder/ -> /folder -> /
     backpath = os.path.normpath(os.path.dirname(os.path.dirname(path)))
     file_list = StoreApi.listfolder(user,path)
-    return render_to_response('store/list.html', RequestContext(request, {'file_list': file_list, 'path' : path, 'backpath' : backpath, 'username' : user}))
+    quota = StoreApi.requestquota(user)
+    return render_to_response('store/list.html', RequestContext(request, {'file_list': file_list, 'path' : path, 'backpath' : backpath, 'username' : user, 'quota' : quota}))
 
 @login_required
 def ajax_listfolder(request):

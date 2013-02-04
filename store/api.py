@@ -129,6 +129,14 @@ class StoreApi:
         else:
             return False
     @staticmethod
+    def requestquota(neptun):
+        url = settings['store_url']+'/'+neptun
+        r = StoreApi.get_request(url)
+        if r.status_code == requests.codes.ok:
+            return json.loads(r.content)
+        else:
+            return False
+    @staticmethod
     def userexist(neptun):
         url = settings['store_url']+'/'+neptun
         r = StoreApi.get_request(url)
