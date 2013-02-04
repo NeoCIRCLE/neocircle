@@ -120,6 +120,12 @@ class Alias(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 
+    def clean(self):
+        # FIXME later: critical race condition
+        for h in Host.objects.all():
+            if h.get_fqdn() == self.alias:
+                raise ValidationError(_("Host name already used."))
+
     class Meta:
         verbose_name_plural = 'aliases'
 
@@ -178,6 +184,17 @@ class Host(models.Model):
 
     def del_rules(self):
         self.rules.filter(owner=self.owner).delete()
+
+    def get_fqdn(self):
+        return self.hostname + u'.' + self.vlan.domain
+
+    def clean(self):
+        # FIXME later: critical race condition
+        for a in Alias.objects.all():
+            if self.get_fqdn() == a.alias:
+                raise ValidationError(_("Host name already used as alias."))
+
+
 
 class Firewall(models.Model):
     name = models.CharField(max_length=20, unique=True)

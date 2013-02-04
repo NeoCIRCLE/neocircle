@@ -4,11 +4,13 @@
     <link rel="icon" type="image/png" href="https://cloud.ik.bme.hu/static/favicon.png">
     <link rel="icon" type="image/png" href="https://cloud.ik.bme.hu/one/static/favicon.png">
     <link href='http://fonts.googleapis.com/css?family=Metrophobic' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Ubuntu+Condensed&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Ubuntu&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
     <style type="text/css" id="less:static-style">body {
       word-spacing: 3px;
       letter-spacing: 0.5px;
   min-height: 100%;
-  font-family: 'Metrophobic', sans-serif;
+  font-family: 'Ubuntu', sans-serif;
   font-size: .9em;
   background: #dadada url(https://cloud.ik.bme.hu/static/site_bgr.png) repeat-x;
   background-position: 80px 0;
@@ -27,11 +29,13 @@
   border: 1px solid #aaa;
   box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
   margin: 20px;
+  text-align: center;
 }
 .contentblock p,
 .contentblock dl {
   margin: 0;
   padding: 5px;
+  font-size: 1.3em;
 }
 .contentblock h2 {
   background-color: #000;
@@ -391,7 +395,7 @@
   margin: 10px 5px;
   width: 300px;
   height: 100px;
-  font-family: 'Metrophobic', sans-serif;
+  font-family: 'Ubuntu', sans-serif;
   font-size: 12px;
   text-align: right;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
@@ -436,6 +440,9 @@ a:link,
 a:visited {
   color: black;
 }
+strong {
+    font-size: .9em;
+}
 </style>
 
 <!--<script src="./IK Cloud_files/jquery.min.js"></script>-->
@@ -443,12 +450,12 @@ a:visited {
 
 </head>
 
-<body style="zoom: 1; ">
+<body>
     <div id="header">
 
 
 
-            <h1><a href="http://cloud.ik.bme.hu/">IK Cloud <span style="font-size: 21px">β</span></a></h1>
+            <h1><a href="http://cloud.ik.bme.hu/">IK Cloud</a></h1>
 
 
     </div>
@@ -463,32 +470,51 @@ a:visited {
     <div class="contentblock" id="state">
         <h2>A projektről</h2>
         <div>
-            <p>A BME IK és IIT együttműködésében, a VIK támogatásával hosszabb
-            ideje folyik a cloud oktatási-kutatási célú felhasználását
-            megalapozó munka.</p>
-            <p>A rendszerünk segítségével egyrészt kiváltható a tanszéken
-            működő öregedő szerverpark jelentős része, másrészt új
-            lehetőség az önálló, valamint tantermi hallgatói- és kutatómunka
-            támogatásában az igény szerint indítható, nagy kapacitású virtuális
-            infrastruktúra.</p>
-            <p>Lehetőség van tantárgyra szabott szoftverkörnyezet biztosítására
-            a tantermi órák vagy az otthoni feladatok elvégzéséhez, vagy
-            önkiszolgáló felületen pillanatok alatt indítható projektek, önálló
-            labor, szakdolgozat, diplomaterv, vagy TDK-munka támogatásához
-            virtuális gép.</p>
-            <p style="text-align:center;"><a href="https://cloud.ik.bme.hu/">Próbálja ki a rendszert most!</a></p>
+            <p>Az <strong>IK Cloud</strong> a BME IK és IIT együttműködésében, a VIK
+            támogatásával hosszabb ideje folyó munka során jött létre.
+            A kutatás célja <strong>a cloud oktatási-kutatási célú felhasználásának</strong>
+            vonzóvá tétele.
+            </p>
+            <p>
+            A nagy kapacitású virtuális infrastruktúra azonban új lehetőséget is nyújt.
+            <strong>Igény szerint</strong> indíthatóak virtuális gépek:
+            gördülékennyé válik a tantermi és otthoni <strong>hallgatói munka,</strong> 
+            a kutatási <strong>projektek dinamikus IT támogatása.</strong>
+            </p>
+            <p><img src="IK Cloud_files/cloud-migration.png" /></p>
+            <p>A rendszerünk segítségével <strong>kiváltható</strong> a tanszéken
+            működő öregedő szerverpark jelentős része.</p>
         </div>
     </div>
 
 </div>
 <div class="boxes">
-    <div class="contentblock" id="state" lang="en">
-        <h2>About the project</h2>
+
+    <div class="contentblock" id="state">
+        <h2>Virtuális labor</h2>
         <div>
-            <p>…</p>
+            <p><img src="IK Cloud_files/cloud-lab.png" /></p>
+            <p>Lehetőség van <strong>tantárgyra szabott környezet</strong> biztosítására
+            a tantermi mérések vagy az otthoni feladatok elvégzéséhez, vagy az
+            önkiszolgáló felületen pillanatok alatt indítható <strong>projektek, önálló
+            labor, szakdolgozat, diplomaterv, vagy TDK-munka</strong> segítéséhez
+            virtuális gép.</p>
+            <!--<p style="text-align:center;"><a
+                href="https://cloud.ik.bme.hu/">Próbálja ki a rendszert
+                most!</a></p>-->
         </div>
     </div>
 
+    <div class="contentblock" id="state" lang="en">
+        <h2>About the project</h2>
+        <div>
+            <p>The project aims to harness the power of cloud computing in
+            education and research. Our self service portal helps migrating
+            old servers, and on-demand launching appliances prepared by the
+            teacher.</p>
+            </p>
+        </div>
+    </div>
 </div>
 
         <div class="clear"></div>

@@ -360,16 +360,16 @@ def dns():
         for i_host in i_vlan.host_set.all():
             ipv4 = ( i_host.pub_ipv4 if i_host.pub_ipv4 and not i_host.shared_ip else i_host.ipv4 )
             reverse = i_host.reverse if(i_host.reverse and len(i_host.reverse)) else i_host.hostname + u'.' + i_vlan.domain
-            hostname = i_host.hostname + u'.' + i_vlan.domain
+            hostname = i_host.get_fqdn()
 
             # ipv4
             if i_host.ipv4:
                 # A record
                 DNS.append("+%s:%s:%s" % (hostname, ipv4, models.settings['dns_ttl']))
                 # PTR record 4.3.2.1.in-addr.arpa
-                DNS.append("^%s:%s:%s" % (ipv4_to_arpa(i_host.ipv4), reverse, models.settings['dns_ttl']))
+                DNS.append("^%s:%s:%s" % (ipv4_to_arpa(ipv4), reverse, models.settings['dns_ttl']))
                 # PTR record 4.dns1.3.2.1.in-addr.arpa
-                DNS.append("^%s:%s:%s" % (ipv4_to_arpa(i_host.ipv4, cname=True), reverse, models.settings['dns_ttl']))
+                DNS.append("^%s:%s:%s" % (ipv4_to_arpa(ipv4, cname=True), reverse, models.settings['dns_ttl']))
 
             # ipv6
             if i_host.ipv6:
