@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import RSA
 import gtk
 import webkit
 import gobject
@@ -8,25 +7,50 @@ import base64
 import subprocess
 import os
 
+def keygen(length=1024):
+    import os, base64
+    from datetime import date
+    from Crypto.PublicKey import RSA
+
+    key = RSA.generate(length, os.urandom)
+    try:
+        pub = key.exportKey('OpenSSH')
+        if not pub.startswith("ssh-"):
+            raise ValueError(pub)
+    except:
+        ssh_rsa = '00000007' + base64.b16encode('ssh-rsa')
+        exponent = '%x' % (key.e, )
+        if len(exponent) % 2:
+            exponent = '0' + exponent
+
+        ssh_rsa += '%08x' % (len(exponent) / 2, )
+        ssh_rsa += exponent
+
+        modulus = '%x' % (key.n, )
+        if len(modulus) % 2:
+            modulus = '0' + modulus
+
+        if modulus[0] in '89abcdef':
+            modulus = '00' + modulus
+
+        ssh_rsa += '%08x' % (len(modulus) / 2, )
+        ssh_rsa += modulus
+
+        pub = 'ssh-rsa %s' % (
+            base64.b64encode(base64.b16decode(ssh_rsa.upper())), )
+    return key.exportKey(), "%s %s" % (pub, "cloud-%s" % date.today())
+
+
 ### Settings ###
-KEY_DIR = "/home/tarokkk/Dropbox/python/"
+KEY_DIR = "/tmp/"
 KEY_FILE = KEY_DIR+"/id_rsa"
 #Initalize keypair
-private_key = RSA.generate(2048)
-public_key = private_key.publickey()
+private_key, public_key = keygen(2048)
 
 #Saver private_key
-f = open(KEY_FILE,'w')
-f.write(private_key.exportKey())
-f.close()
-open_ssh_key = public_key.exportKey('OpenSSH')
-os.chmod(KEY_FILE, 0600)
-
-f = open(KEY_DIR+'/'+'id_rsa.pub','w')
-f.write(open_ssh_key)
-f.close()
-pub_key_string = base64.b64encode(open_ssh_key)
-#print pub_key_string
+with open(KEY_FILE,'w') as f:
+    f.write(private_key)
+pub_key_string = base64.b64encode(public_key)
 
 
 class Browser:
