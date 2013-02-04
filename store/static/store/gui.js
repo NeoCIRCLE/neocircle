@@ -22,7 +22,8 @@ function postKey(key) {
             function (respond) {
                 alert(respond);
                 }
-            );
+            )
+    .error(function (respond) { alert(JSON.stringify(respond)); });
     }
 function resetKey() {
     $.post("/store/gui/", "",

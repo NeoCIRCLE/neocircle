@@ -16,6 +16,9 @@ class StoreApi:
 #    ssl_auth = True
 #    verify_ssl = False
     @staticmethod
+    def get_host():
+        return settings['store_host']
+    @staticmethod
     def post_request(url, payload):
         headers = {'content-type': 'application/json'}
         if settings['ssl_auth'] == 'True' and settings['basic_auth'] == 'True':
@@ -123,6 +126,14 @@ class StoreApi:
         r = StoreApi.post_request(url, payload)
         if r.status_code == requests.codes.ok:
             return True
+        else:
+            return False
+    @staticmethod
+    def requestquota(neptun):
+        url = settings['store_url']+'/'+neptun
+        r = StoreApi.get_request(url)
+        if r.status_code == requests.codes.ok:
+            return json.loads(r.content)
         else:
             return False
     @staticmethod

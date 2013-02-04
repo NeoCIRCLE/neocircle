@@ -23,6 +23,7 @@ from one.models import *
 from school.models import *
 import django.contrib.auth as auth
 import logging
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +31,7 @@ def logout(request):
     auth.logout(request)
     return redirect('/Shibboleth.sso/Logout?return=https%3a%2f%2fcloud.ik.bme.hu%2f')
 
+@ensure_csrf_cookie
 def login(request):
     try:
         user = User.objects.get(username=request.META['niifPersonOrgID'])
