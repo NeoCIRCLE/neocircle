@@ -23,6 +23,11 @@ SITE_HOST = config.get('store', 'site_host')
 SITE_PORT = config.get('store', 'site_port')
 # Temporary dir for tar.gz
 TEMP_DIR = config.get('store', 'temp_dir')
+#Redirect
+try:
+    REDIRECT_URL = config.get('store', 'redirect_url')
+except:
+    REDIRECT_URL = "https://cloud.ik.bme.hu"
 #ForceSSL
 try:
     FORCE_SSL = config.get('store', 'force_ssl') == "True"
@@ -288,8 +293,12 @@ def upload(hash_num):
         for chunk in fbuffer(file_data.file):
             f.write(chunk)
             datalength += len(chunk)
-    return 'Upload finished: '+file_name+' - '+str(datalength)+' Byte'
-
+    try: 
+        redirect_address = request.headers.get('Referer')
+    except:
+	redirect_address = REDIRECT_URL 
+    redirect(redirect_address)
+    #return 'Upload finished: '+file_name+' - '+str(datalength)+' Byte'
 
 
 
