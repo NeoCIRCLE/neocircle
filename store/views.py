@@ -1,4 +1,5 @@
 # Create your views here.
+from django.core.context_processors import csrf
 from django.http import HttpResponse
 from django.shortcuts import render_to_response, redirect
 from django.template import RequestContext
@@ -122,10 +123,11 @@ def toplist(request):
     file_list = StoreApi.toplist(user)
     return render_to_response('store/list.html', RequestContext(request, {'file_list': file_list, 'path' : path, 'backpath' : backpath, 'username' : user}))
 
+@login_required
 def gui(request):
     user = request.user.username
     if request.method == 'GET':
-        return render_to_response('store/gui.html',  RequestContext(request, {'username' : user, 'host' : '10.9.1.86'}))
+        return render_to_response('store/gui.html',  RequestContext(request, {'username' : user, 'host' : StoreApi.get_host()}))
     elif request.method == 'POST':
         try:
             details = request.user.userclouddetails_set.all()[0]

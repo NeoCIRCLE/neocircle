@@ -16,6 +16,9 @@ class StoreApi:
 #    ssl_auth = True
 #    verify_ssl = False
     @staticmethod
+    def get_host():
+        return settings['store_host']
+    @staticmethod
     def post_request(url, payload):
         headers = {'content-type': 'application/json'}
         if settings['ssl_auth'] == 'True' and settings['basic_auth'] == 'True':
