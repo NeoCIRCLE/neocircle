@@ -55,9 +55,10 @@ def login(request):
         else:
             attended = attended.split(';')
         for c in attended:
-            co, created = Course.objects.get_or_create(code=c)
-            if created:
-                logger.warning("django Course %s created" % c)
+            try:
+                co = Course.objects.get(code=c)
+            except:
+                continue
             g = co.get_or_create_default_group()
             if p.course_groups.filter(semester=sem, course=co).count() == 0:
                 try:
