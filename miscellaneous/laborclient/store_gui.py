@@ -68,7 +68,7 @@ class Browser:
 
         #Init browser
         self.browser = webkit.WebView()
-        #self.browser.connect('load-committed', self.load_committed_cb)
+        self.browser.connect('onload-event', self.load_committed_cb)
 #        self.browser.open("http://10.9.1.86:8080")
         self.browser.open("https://cloud.ik.bme.hu/store/gui/")
         self.browser.connect("navigation-requested", self.on_navigation_requested)
@@ -141,6 +141,7 @@ class Browser:
     def store(self, widget):
         self.browser.open("https://cloud.ik.bme.hu/store/gui/")
     def load_committed_cb(self,web_view, frame):
+        self.browser.execute_script('document.getElementsByTagName("a")[0].target="";')
         #uri = frame.get_uri()
         #print uri
         #print web_view.get_title()
