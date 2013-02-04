@@ -225,11 +225,11 @@ Virtual machine instance.
 """
 class Instance(models.Model):
     name = models.CharField(max_length=100, unique=True,
-            verbose_name=_('név'), null=True, blank=True)
+            verbose_name=_('name'), null=True, blank=True)
     ip = models.IPAddressField(blank=True, null=True, verbose_name=_('IP address'))
     template = models.ForeignKey(Template, verbose_name=_('template'))
     owner = models.ForeignKey(User, verbose_name=_('owner'))
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_('created_at'))
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_('created at'))
     state = models.CharField(max_length=20,
             choices=[('DEPLOYABLE', _('deployable')),
                 ('PENDING', _('pending')),
