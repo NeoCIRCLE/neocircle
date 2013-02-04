@@ -4,72 +4,15 @@
 <html lang="{{lang}}">
 <head>
     <title>{% block title %}IK Cloud{% endblock %}</title>
-    <link href='http://fonts.googleapis.com/css?family=Metrophobic' rel='stylesheet' type='text/css'>
+    <link href="https://fonts.googleapis.com/css?family=Titillium+Web&amp;subset=latin,latin-ext" rel="stylesheet" type="text/css">
     <link rel="icon" type="image/png" href="/static/favicon.png" />
     <link rel="icon" type="image/png" href="one/static/favicon.png">
     <link rel="stylesheet/less" href="/static/style.less" />
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <script src="/static/jquery.min.js"></script>
     <script src="/static/less.min.js"></script>
-    <script type="text/javascript">
-    var toggleDetails;
-$(function(){
-    $('.wm .summary').each(function(){
-      this.originalHeight=parseInt($(this).next('.details').css('height'));
-    })
-    toggleDetails=function(){
-      if($(this).next('.details').is(':hidden')){
-            $(this).next('.details')
-                .show()
-                .css('height',0)
-                .css('padding','0px 5px')
-                .animate({height:this.originalHeight,paddingTop:15,paddingBottom:15},700);
-            $(this).parent('.wm').addClass('opened');
-        } else {
-            var that=this;
-            $(this).next('.details')
-              //2*15px paddingot le kell vonni, a jQuery szar
-                .css('height',this.originalHeight-30)
-                .css('padding','15px 5px')
-                .animate({height:0,paddingTop:0,paddingBottom:0},700,function(){
-                $(that).parent('.wm').removeClass('opened');
-                $(that).next('.details').hide();
-            });
-        }
-    }
-    $('.wm .summary').click(toggleDetails);
-    $('#load-more-files').click(function(){
-        $('.actions', this).show();
-        var that=this;
-        setTimeout(function(){
-            $(that).prev('li').slideDown(500,function(){
-                $('.actions', that).hide();
-            });
-        },2000);
-    })
-    $('#new-wm-button').click(function(){
-        $('#modal').show();
-        $('#modal-container').html($('#new-wm').html());
-        $('#modal-container .wm .summary').each(function(){
-            this.originalHeight=parseInt($(this).next('.details').css('height'));
-        })
-        $('#modal-container .wm .summary').click(toggleDetails);
-        });
-    $('#new-template-button').click(function(){
-        $('#modal').show();
-        $('#modal-container').html($('#new-template').html());
-    });
-    $('#shadow').click(function(){
-        $('#modal').hide();
-    })
-    $('#new-template-button').click(function(){
-        $.get('/ajax/templateWizard', function(data){
-            $('#modal-container').html(data);
-        })
-        $('#modal').show();
-    });
-})
-        </script>
+    <script src="/static/knockout.min.js"></script>
+    <script type="text/javascript" src="/static/cloud.js"></script>
 
     {{ form.media }}
     {% block js %}{% endblock %}

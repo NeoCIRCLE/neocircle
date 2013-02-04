@@ -7,7 +7,7 @@ from django.db import transaction
 from django.db.models.signals import post_save
 from django import forms
 from django.utils.translation import ugettext_lazy as _
-from firewall.models import Host, Rule, Vlan
+from firewall.models import Host, Rule, Vlan, settings
 from firewall.tasks import reload_firewall_lock
 from one.util import keygen
 from school.models import Person

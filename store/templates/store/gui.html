@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Store Gui</title>
+        <script src="/static/jquery.min.js"></script>
+        <script type="text/javascript" src="/static/store/gui.js"></script>
+    </head>
+    <body>
+        EZ LESZ A GUI JOL!
+        <form action="login:{{ username }}:{{ host }}">
+            <input type=submit name="login_button" id="login_button" value="login"/>
+        </form>
+        <form action="mount:true">
+            <input type=submit name="mount_button" id="mount_button" value="mount" hidden="true"/>
+        </form>
+        <form action="umount:true">
+            <input type=submit name="umount_button" id="umount_button" value="umount" hidden="true"/>
+        </form>
+        <form action="logout:{{ username }}:{{ host }}">
+            <input type=submit name="logout_button" id="logout_button" value="logout" hidden="true"/>
+        </form>
+    </body>
+</html>
