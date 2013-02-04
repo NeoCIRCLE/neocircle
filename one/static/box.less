@@ -138,6 +138,16 @@
                 }
             }
         }
+        #new-folder-form {
+            float: right;
+            margin-left: 5px;
+            display: none;
+            z-index: 2;
+            position: relative;
+        }
+    }
+    &.opened #new-folder-form {
+        display: block;
     }
     .details{
         border-top: 1px solid #888;
@@ -206,9 +216,6 @@
             }
         }
     }
-    &.opened .details{
-        display: block;
-    }
     &.new .name{
         background-image: url(icons/computer--plus.png);
     }
@@ -239,13 +246,16 @@
     background-image: url(icons/folder-zipper.png);
 }
 .filetype-folder {
-    background-image: url(icons/folder-horizontal.png);
+    background-image: url(icons/folder.png);
 }
 .filetype-more {
     background-image: url(icons/arrow-circle-double.png);
 }
 .filetype-up {
     background-image: url(icons/upload-cloud.png);
+}
+.filetype-new-folder {
+    background-image: url(icons/folder--plus.png);
 }
 .filetype-jump-out {
     background-image: url(icons/arrow-curve-090.png);
