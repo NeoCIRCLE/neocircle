@@ -127,6 +127,18 @@ def ajax_delete(request):
     return HttpResponse('File not found!', status_code=404)
 
 @login_required
+def ajax_new_folder(request):
+    user = request.user.username
+    try:
+        path = request.POST['path']
+        new = request.POST['new']
+        success = StoreApi.requestnewfolder(user,path+'/'+new)
+        return HttpResponse(json.dumps({'success':success}))
+    except:
+        pass
+    return HttpResponse('Error!', status_code=404)
+
+@login_required
 def toplist(request):
     user = request.user.username
     path = backpath = '/'

@@ -61,6 +61,16 @@
                         <div class="clear"></div>
                     </div>
                 </li>
+                <li class="wm">
+                    <div class="summary">
+                        <div class="name filetype-new-folder">Új mappa</div>
+                        <div id="new-folder-form">
+                            <input type="text" placeholder="Új mappa neve" data-bind="value: newFolderName, click: function(m,e){console.log(arguments); e.preventDefault(); e.stopPropagation(); return false;}" />
+                            <input type="submit" data-bind="click: newFolder, clickBubble: false" value="Létrehozás" />
+                        </div>
+                        <div class="clear"></div>
+                    </div>
+                </li>
                 <li class="file-upload wm">
                     <div class="summary" data-bind="click: getUploadURL">
                         <div class="name filetype-up">Fájlfeltöltés</div>

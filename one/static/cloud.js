@@ -28,15 +28,15 @@ $(function() {
         }
     });
     toggleDetails = function() {
-        if($(this).next('.details').is(':hidden')) {
-            $(this).next('.details').slideDown(700);
-            $(this).parent('.wm').addClass('opened');
+        if($(this).parent('.wm').hasClass('opened')){
+            $(this).parent('.wm').removeClass('opened');
+            $(this).next('.details').slideUp(700);
         } else {
-            var that = this;
-            $(this).next('.details').slideUp(700, function() {
-                $(that).parent('.wm').removeClass('opened');
-            });
+            console.log('addClass');
+            $(this).parent('.wm').addClass('opened');
+            $(this).next('.details').slideDown(700);
         }
+
     }
     $('.wm .summary').unbind('click').click(toggleDetails);
     $('#load-more-files').click(function() {
@@ -76,9 +76,8 @@ $(function() {
         self.allFiles = [];
         self.notInRoot = ko.observable(false);
         self.fileLimit = 5;
-        var disabled = false;
-
         function throttle(f) {
+            var disabled = false;
             return function() {
                 if(disabled) {
                     console.log('disabled');
@@ -195,18 +194,29 @@ $(function() {
         }
         self.uploadURL=ko.observable('/');
         self.getUploadURL=function(){
-            console.log('sad')
             $.ajax({
                 type: 'POST',
-                data: 'ul='+self.currentPath(),
+                data: 'ul='+self.currentPath()+'&next='+encodeURI(window.location.href),
                 url: '/ajax/store/upload',
                 dataType: 'json',
                 success: function(data){
-                    console.log('asdasd', data);
                     self.uploadURL(data.url);
                 }
             }).error(function(){ console.log('asd', arguments)})
         }
+        self.newFolderName=ko.observable();
+        self.newFolder=throttle(function(i,e){
+            $(e.target).parent().parent().parent().removeClass('opened');
+            $.ajax({
+                type: 'POST',
+                data: 'new='+self.newFolderName()+'&path='+self.currentPath(),
+                url: '/ajax/store/newFolder',
+                dataType: 'json',
+                success: function(data){
+                    loadFolder(self.currentPath());
+                }
+            })
+        });
         loadFolder(self.currentPath());
     }
     var model = new Model();
