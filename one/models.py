@@ -268,6 +268,8 @@ class Instance(models.Model):
     def get_connect_uri(self):
         try:
             proto = self.template.access_type
+            if proto == 'ssh':
+                proto = 'shell'
             port = self.get_port()
             host = self.get_connect_host()
             pw = self.pw
