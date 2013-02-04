@@ -106,6 +106,17 @@ def ajax_download(request):
     return HttpResponse('File not found!', status_code=404)
 
 @login_required
+def ajax_upload(request):
+    user = request.user.username
+    try:
+        ul = request.POST['ul']
+        url = StoreApi.requestupload(user,ul)
+        return HttpResponse(json.dumps({'url':url}))
+    except:
+        pass
+    return HttpResponse('Error!', status_code=404)
+
+@login_required
 def ajax_delete(request):
     user = request.user.username
     try:

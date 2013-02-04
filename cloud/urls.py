@@ -30,5 +30,6 @@ urlpatterns = patterns('',
      url(r'^ajax/templateWizard$', 'one.views.ajax_template_wizard', name='ajax_template_wizard'),
      url(r'^ajax/store/list$', 'store.views.ajax_listfolder', name='store_ajax_listfolder'),
      url(r'^ajax/store/download$', 'store.views.ajax_download', name='store_ajax_download'),
+     url(r'^ajax/store/upload$', 'store.views.ajax_upload', name='store_ajax_upload'),
      url(r'^ajax/store/delete$', 'store.views.ajax_delete', name='store_ajax_delete'),
 )

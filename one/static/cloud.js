@@ -193,6 +193,20 @@ $(function() {
                 }
             })
         }
+        self.uploadURL=ko.observable('/');
+        self.getUploadURL=function(){
+            console.log('sad')
+            $.ajax({
+                type: 'POST',
+                data: 'ul='+self.currentPath(),
+                url: '/ajax/store/upload',
+                dataType: 'json',
+                success: function(data){
+                    console.log('asdasd', data);
+                    self.uploadURL(data.url);
+                }
+            }).error(function(){ console.log('asd', arguments)})
+        }
         loadFolder(self.currentPath());
     }
     var model = new Model();
@@ -213,6 +227,8 @@ $(function() {
         console.log(e);
         e.stopPropagation();
         e.preventDefault();
+        console.log(e.dataTransfer.files)
+
         return false;
     });
 })
