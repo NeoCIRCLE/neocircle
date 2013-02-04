@@ -60,7 +60,7 @@ class Browser:
         #Init window components
         gobject.threads_init()
         self.window = gtk.Window()
-        self.window.connect("destroy", gtk.main_quit)
+        self.window.connect("destroy", self.destroy)
         self.window.set_title("IK CloudStore Login")
 
         #Init toolbar
@@ -89,6 +89,10 @@ class Browser:
         self.window.add(self.vbox)
         #self.window.add(self.browser)
         self.window.show_all()
+
+    def destroy(self, dummy):
+        self.browser.execute_script("resetKey()")
+        gtk.main_quit()
 
     def on_navigation_requested(self, view, frame, req, data=None):
         uri = req.get_uri()
