@@ -305,9 +305,9 @@ $(function() {
             return false;
         });
         self.quota = {
-            rawUsed: ko.observable(),
-            rawSoft: ko.observable(),
-            rawHard: ko.observable()
+            rawUsed: ko.observable(0),
+            rawSoft: ko.observable(0),
+            rawHard: ko.observable(0)
         };
         self.quota.used=ko.computed(function(){
             var suffix = 'KB MB GB'.split(' ');
