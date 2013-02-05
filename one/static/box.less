@@ -93,6 +93,7 @@
     }
     .summary{
         padding: 15px 5px;
+        line-height: 1.7em;
         border-top: 1px solid #888;
         cursor: pointer;
         background-color: #c1c1c1;
@@ -151,6 +152,20 @@
             z-index: 2;
             position: relative;
         }
+        input {
+            border: none;
+            border-radius: 2px;
+            border-bottom: 1px solid #888;
+            margin: 0px 5px;
+            padding: 1px;
+            background: rgba(0,0,0,0.1);
+            font-family: 'Titillium Web', sans-serif;
+            outline: none;
+        }
+        input[type=submit]{
+            border: 1px solid #888;
+            cursor: pointer;
+        }
     }
     &.opened #new-folder-form {
         display: block;
@@ -168,6 +183,7 @@
                 height: 40px;
                 text-align: center;
                 line-height: 40px;
+                font-size: 0.8em;
             }
         }
         h3{
@@ -243,8 +259,9 @@
     }
     .info{
         float: right;
-        width: 60px;
+        width: 65px;
         text-align: right;
+        font-size: 0.8em;
     }
 }
 .filetype-c {
