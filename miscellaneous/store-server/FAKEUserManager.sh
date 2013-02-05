@@ -80,7 +80,7 @@ case $COMMAND in
         ;;
     'status')
 #        echo $(quota -w ${USER_NAME} 2>/dev/null | tail -1 | awk '{ print $2" "$3" "$4 }')
-        echo "1000 1000 1000"
+        echo "1916 2097152 2621440"
         ;;
     *)
         echo "Usage: UserManager.sh COMMAND USER PASSWORD"
