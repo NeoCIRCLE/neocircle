@@ -283,7 +283,7 @@ def upload(hash_num):
     # Check if upload path valid
     if not up_path.startswith('/home'):
         abort(400, 'Invalid path.')
-    
+
     os.remove(ROOT_WWW_FOLDER+'/'+hash_num)
     # Get the real upload path
     # Delete the hash link
@@ -300,8 +300,8 @@ def upload(hash_num):
             datalength += len(chunk)
     try:
         redirect_address = request.headers.get('Referer')
-    os.chown(up_path, getpwnam(username).pw_uid, getpwnam(username).pw_gid)
-    os.chmod(up_path, 0644)
+        os.chown(up_path, getpwnam(username).pw_uid, getpwnam(username).pw_gid)
+        os.chmod(up_path, 0644)
     except:
 	    redirect_address = REDIRECT_URL
     response.set_header('Access-Control-Allow-Origin', '*')
