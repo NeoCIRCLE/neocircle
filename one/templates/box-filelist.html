@@ -101,7 +101,11 @@
                             <div class="used" style="background-color: rgba(0,255,0,0.2)" data-bind="style: {width: quota.usedBar}"></div>
                             <div class="softLimit" data-bind="style: {left: quota.softPos}"></div>
                         </div>
-                        <div class="name">Kvóta: <span data-bind="text: quota.used"></span>/<span data-bind="text: quota.hard"></span></div>
+                        <div class="name">
+                            Kvóta: <span data-bind="text: quota.used"></span>/
+                            <abbr data-bind="text: quota.soft" title="Soft limit"></abbr>
+                            (<abbr title="Hard limit" data-bind="text: quota.hard"></abbr>)
+                        </div>
                         <div class="clear"></div>
                     </div>
                 </li>

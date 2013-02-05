@@ -34,4 +34,5 @@ urlpatterns = patterns('',
      url(r'^ajax/store/delete$', 'store.views.ajax_delete', name='store_ajax_delete'),
      url(r'^ajax/store/newFolder$', 'store.views.ajax_new_folder', name='store_ajax_new_folder'),
      url(r'^ajax/store/quota$', 'store.views.ajax_quota', name='store_ajax_quota'),
+     url(r'^ajax/store/rename$', 'store.views.ajax_rename', name='store_ajax_rename'),
 )

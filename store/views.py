@@ -149,6 +149,18 @@ def ajax_new_folder(request):
     return HttpResponse('Error!', status_code=404)
 
 @login_required
+def ajax_rename(request):
+    user = request.user.username
+    try:
+        path = request.POST['path']
+        new = request.POST['new']
+        success = StoreApi.requestrename(user,path,new)
+        return HttpResponse(json.dumps({'success':success}))
+    except:
+        pass
+    return HttpResponse('Error!', status_code=404)
+
+@login_required
 def toplist(request):
     user = request.user.username
     path = backpath = '/'

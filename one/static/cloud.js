@@ -203,7 +203,16 @@ $(function() {
 <input type="submit" value="Átnevezés" />');
             $(e.target).parent().parent().parent().find('.name input[type=submit]').click(function() {
                 var newName = $(e.target).parent().parent().parent().find('.name input[type=text]').val();
-                loadFolder(self.currentPath());
+                $.ajax({
+                    type: 'POST',
+                    data: 'path='+self.currentPath()+item.originalName+'&new='+newName,
+                    url: '/ajax/store/rename',
+                    dataType: 'json',
+                    success: function(data){
+                        console.log(data);
+                        loadFolder(self.currentPath());
+                    }
+                })
             })
         }
         self.uploadURL = ko.observable('/');
