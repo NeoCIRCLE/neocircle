@@ -2,6 +2,7 @@ from django.contrib import auth
 from firewall import models
 from modeldict import *
 import os
+from cloud.settings import firewall_settings as settings
 
 import subprocess
 import re
@@ -350,13 +351,13 @@ def dns():
     for i_vlan in vlans:
         m = regex.search(i_vlan.net4)
         if(i_vlan.name != "DMZ" and i_vlan.name != "PUB"):
-            DNS.append("Z%s.%s.in-addr.arpa:%s:support.ik.bme.hu::::::%s" % (m.group(2), m.group(1), models.settings['dns_hostname'], models.settings['dns_ttl']))
-            DNS.append("&%s.%s.in-addr.arpa::%s:%s:" % (m.group(2), m.group(1), models.settings['dns_hostname'], models.settings['dns_ttl']))
-            DNS.append("Z%s:%s:support.ik.bme.hu::::::%s" % (i_vlan.domain, models.settings['dns_hostname'], models.settings['dns_ttl']))
-            DNS.append("&%s::%s:%s" % (i_vlan.domain, models.settings['dns_hostname'], models.settings['dns_ttl']))
+            DNS.append("Z%s.%s.in-addr.arpa:%s:support.ik.bme.hu::::::%s" % (m.group(2), m.group(1), settings['dns_hostname'], settings['dns_ttl']))
+            DNS.append("&%s.%s.in-addr.arpa::%s:%s:" % (m.group(2), m.group(1), settings['dns_hostname'], settings['dns_ttl']))
+            DNS.append("Z%s:%s:support.ik.bme.hu::::::%s" % (i_vlan.domain, settings['dns_hostname'], settings['dns_ttl']))
+            DNS.append("&%s::%s:%s" % (i_vlan.domain, settings['dns_hostname'], settings['dns_ttl']))
             if(i_vlan.name == "WAR"):
-                DNS.append("Zdns1.%s.%s.%s.in-addr.arpa:%s:support.ik.bme.hu::::::%s" % (m.group(3), m.group(2), m.group(1), models.settings['dns_hostname'], models.settings['dns_ttl']))
-                DNS.append("&dns1.%s.%s.%s.in-addr.arpa::%s:%s::" % (m.group(3), m.group(2), m.group(1), models.settings['dns_hostname'], models.settings['dns_ttl']))
+                DNS.append("Zdns1.%s.%s.%s.in-addr.arpa:%s:support.ik.bme.hu::::::%s" % (m.group(3), m.group(2), m.group(1), settings['dns_hostname'], settings['dns_ttl']))
+                DNS.append("&dns1.%s.%s.%s.in-addr.arpa::%s:%s::" % (m.group(3), m.group(2), m.group(1), settings['dns_hostname'], settings['dns_ttl']))
         for i_host in i_vlan.host_set.all():
             ipv4 = ( i_host.pub_ipv4 if i_host.pub_ipv4 and not i_host.shared_ip else i_host.ipv4 )
             reverse = i_host.reverse if(i_host.reverse and len(i_host.reverse)) else i_host.hostname + u'.' + i_vlan.domain
@@ -365,24 +366,24 @@ def dns():
             # ipv4
             if i_host.ipv4:
                 # A record
-                DNS.append("+%s:%s:%s" % (hostname, ipv4, models.settings['dns_ttl']))
+                DNS.append("+%s:%s:%s" % (hostname, ipv4, settings['dns_ttl']))
                 # PTR record 4.3.2.1.in-addr.arpa
-                DNS.append("^%s:%s:%s" % (ipv4_to_arpa(ipv4), reverse, models.settings['dns_ttl']))
+                DNS.append("^%s:%s:%s" % (ipv4_to_arpa(ipv4), reverse, settings['dns_ttl']))
                 # PTR record 4.dns1.3.2.1.in-addr.arpa
-                DNS.append("^%s:%s:%s" % (ipv4_to_arpa(ipv4, cname=True), reverse, models.settings['dns_ttl']))
+                DNS.append("^%s:%s:%s" % (ipv4_to_arpa(ipv4, cname=True), reverse, settings['dns_ttl']))
 
             # ipv6
             if i_host.ipv6:
                 # AAAA record
-                DNS.append(":%s:28:%s:%s" % (hostname, ipv6_to_octal(i_host.ipv6), models.settings['dns_ttl']))
+                DNS.append(":%s:28:%s:%s" % (hostname, ipv6_to_octal(i_host.ipv6), settings['dns_ttl']))
                 # PTR record
-                DNS.append("^%s:%s:%s" % (ipv6_to_arpa(i_host.ipv6), reverse, models.settings['dns_ttl']))
+                DNS.append("^%s:%s:%s" % (ipv6_to_arpa(i_host.ipv6), reverse, settings['dns_ttl']))
 
             # cname
             for i_alias in i_host.alias_set.all():
-                DNS.append("C%s:%s:%s" % (i_alias.alias, hostname, models.settings['dns_ttl']))
+                DNS.append("C%s:%s:%s" % (i_alias.alias, hostname, settings['dns_ttl']))
 
-    process = subprocess.Popen(['/usr/bin/ssh', 'tinydns@%s' % models.settings['dns_hostname']], shell=False, stdin=subprocess.PIPE)
+    process = subprocess.Popen(['/usr/bin/ssh', 'tinydns@%s' % settings['dns_hostname']], shell=False, stdin=subprocess.PIPE)
     process.communicate("\n".join(DNS)+"\n")
     # print "\n".join(DNS)+"\n"
 
@@ -425,7 +426,7 @@ def dhcp():
                     'domain': i_vlan.domain,
                     'router': i_vlan.ipv4,
                     'ntp': i_vlan.ipv4,
-                    'dnsserver': models.settings['rdns_ip'],
+                    'dnsserver': settings['rdns_ip'],
                     'extra': "range %s" % i_vlan.dhcp_pool if m else "deny unknown-clients",
                     'interface': i_vlan.interface,
                     'name': i_vlan.name,
