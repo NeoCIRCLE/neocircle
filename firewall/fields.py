@@ -9,6 +9,7 @@ mac_re = re.compile(r'^([0-9a-fA-F]{2}([:-]?|$)){6}$')
 alfanum_re = re.compile(r'^[A-Za-z0-9_-]+$')
 domain_re = re.compile(r'^([A-Za-z0-9_-]\.?)+$')
 ipv4_re = re.compile('^[0-9]+\.([0-9]+)\.([0-9]+)\.([0-9]+)$')
+reverse_domain_re = re.compile(r'^(%\([abcd]\)d|[a-z0-9.-])+$')
 
 class MACAddressFormField(fields.RegexField):
     default_error_messages = {
@@ -40,6 +41,10 @@ def val_alfanum(value):
 def val_domain(value):
      if not domain_re.search(value):
           raise ValidationError(u'%s - helytelen domain' % value)
+
+def val_reverse_domain(value):
+    if not reverse_domain_re.search(value):
+        raise ValidationError(u'%s - reverse domain' % value)
 
 def ipv4_2_ipv6(ipv4):
     m = ipv4_re.match(ipv4)
