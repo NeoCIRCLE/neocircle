@@ -283,6 +283,7 @@ def upload(hash_num):
     # Check if upload path valid
     if not up_path.startswith('/home'):
         abort(400, 'Invalid path.')
+    
     os.remove(ROOT_WWW_FOLDER+'/'+hash_num)
     # Get the real upload path
     # Delete the hash link
@@ -292,10 +293,6 @@ def upload(hash_num):
     # os.seteuid(getpwnam(username).pw_uid)
     # TODO setuid subcommand
     # Check if file exist (root can overwrite anything not safe)
-    f = open(up_path , 'wb')
-    os.chown(up_path, getpwnam(username).pw_uid, getpwnam(username).pw_gid)
-    os.chmod(up_path, 0644)
-    f.close()
     with open(up_path , 'wb') as f:
         datalength = 0
         for chunk in fbuffer(file_data.file):
@@ -303,8 +300,10 @@ def upload(hash_num):
             datalength += len(chunk)
     try:
         redirect_address = request.headers.get('Referer')
+    os.chown(up_path, getpwnam(username).pw_uid, getpwnam(username).pw_gid)
+    os.chmod(up_path, 0644)
     except:
-	redirect_address = REDIRECT_URL
+	    redirect_address = REDIRECT_URL
     response.set_header('Access-Control-Allow-Origin', '*')
     response.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
     response.set_header('Access-Control-Allow-Headers', 'Content-Type, Content-Range, Content-Disposition, Content-Description')
@@ -329,10 +328,9 @@ def updateSSHAuthorizedKeys(username, key_list):
         os.mkdir(user_home_ssh, 0700)
     os.chown(user_home_ssh, user_uid, user_gid)
     auth_file_name = user_home_ssh+'/authorized_keys'
-    auth_file = open(auth_file_name, 'w')
-    for key in key_list:
-        auth_file.write(key+'\n')
-    auth_file.close()
+    with open(auth_file_name, 'w') as auth_file:
+        for key in key_list:
+            auth_file.write(key+'\n')
     os.chmod(auth_file_name, 0600)
     os.chown(auth_file_name, user_uid, user_gid)
     return
