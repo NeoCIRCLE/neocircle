@@ -102,8 +102,8 @@ def ajax_quota(request):
     user = request.user.username
     if StoreApi.userexist(user) != True:
         estabilish_store_user(user)
-    #return HttpResponse(json.dumps(StoreApi.requestquota(user)))
-    return HttpResponse(json.dumps({'Used':20,'Soft':160,'Hard':200}))
+    return HttpResponse(json.dumps(StoreApi.requestquota(user)))
+    #return HttpResponse(json.dumps({'Used':20,'Soft':160,'Hard':200}))
 
 @login_required
 def ajax_download(request):

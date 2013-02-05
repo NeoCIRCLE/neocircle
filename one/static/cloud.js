@@ -70,7 +70,7 @@ $(function() {
     });
     $('#old-upload').click(function(e) {
         e.preventDefault();
-        $(this).parent().hide().next('div').show();
+        $(this).parent().hide().parent().find('#old-upload-form').show();
         return false;
     })
 
@@ -197,12 +197,12 @@ $(function() {
                 }
             })
         }
-        self.rename=function(item,e){
+        self.rename = function(item, e) {
             $(e.target).parent().parent().parent().unbind('click');
-            $(e.target).parent().parent().parent().find('.name').html('<input type="text" value="'+item.originalName+'" />\
+            $(e.target).parent().parent().parent().find('.name').html('<input type="text" value="' + item.originalName + '" />\
 <input type="submit" value="Átnevezés" />');
-            $(e.target).parent().parent().parent().find('.name input[type=submit]').click(function(){
-                var newName=$(e.target).parent().parent().parent().find('.name input[type=text]').val();
+            $(e.target).parent().parent().parent().find('.name input[type=submit]').click(function() {
+                var newName = $(e.target).parent().parent().parent().find('.name input[type=text]').val();
                 loadFolder(self.currentPath());
             })
         }
@@ -257,7 +257,7 @@ $(function() {
                     self.uploadURL('/');
                     loadFolder(self.currentPath());
                 };
-                xhr.onerror =function(){
+                xhr.onerror = function() {
                     $('.file-upload').removeClass('opened');
                     $('.file-upload .details').slideUp(700);
                     $('#upload-zone').show();
@@ -273,19 +273,19 @@ $(function() {
                             var complete = (event.loaded / event.total * 100 | 0);
                             //progress.value = progress.innerHTML = complete;
                             self.uploadProgress(parseInt(complete) + '%');
-                            var suffix='B KB MB GB'.split(' ');
-                            var l=event.loaded;
-                            var t=event.total;
-                            for(var i=0;l>1024;i++){
-                                l/=1024;
+                            var suffix = 'B KB MB GB'.split(' ');
+                            var l = event.loaded;
+                            var t = event.total;
+                            for(var i = 0; l > 1024; i++) {
+                                l /= 1024;
                             }
-                            l=l.toFixed(1)+' '+suffix[i];
-                            for(var i=0;t>1024;i++){
-                                t/=1024;
+                            l = l.toFixed(1) + ' ' + suffix[i];
+                            for(var i = 0; t > 1024; i++) {
+                                t /= 1024;
                             }
-                            t=t.toFixed(1)+' '+suffix[i];
-                            if(complete<100) {
-                                $('#upload-progress-text').html('Feltöltés: '+l+'/'+t+' ('+(event.loaded / event.total * 100).toFixed(2)+'%)');
+                            t = t.toFixed(1) + ' ' + suffix[i];
+                            if(complete < 100) {
+                                $('#upload-progress-text').html('Feltöltés: ' + l + '/' + t + ' (' + (event.loaded / event.total * 100).toFixed(2) + '%)');
                             } else {
                                 $('#upload-progress-text').html('Feltöltés: Mindjárt kész...');
                             }
