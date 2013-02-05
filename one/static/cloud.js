@@ -199,6 +199,15 @@ $(function() {
                 }
             })
         }
+        self.rename=function(item,e){
+            $(e.target).parent().parent().parent().unbind('click');
+            $(e.target).parent().parent().parent().find('.name').html('<input type="text" value="'+item.originalName+'" />\
+<input type="submit" value="Átnevezés" />');
+            $(e.target).parent().parent().parent().find('.name input[type=submit]').click(function(){
+                var newName=$(e.target).parent().parent().parent().find('.name input[type=text]').val();
+                loadFolder(self.currentPath());
+            })
+        }
         self.uploadURL = ko.observable('/');
         self.getUploadURL = function() {
             $.ajax({

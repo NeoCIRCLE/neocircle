@@ -31,7 +31,7 @@
                         <div class="name" data-bind="text: name, attr: {class: getTypeClass}"></div>
                         <div class="info" data-bind="text: size"></div>
                         <div class="actions">
-                            <a href="#">
+                            <a href="#" data-bind="click: $parent.rename, clickBubble: false">
                                 <img src="/static/icons/pencil.png" alt="rename" />
                             </a>
                             <a href="#" data-bind="click: $parent.delete, clickBubble: false">
