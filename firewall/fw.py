@@ -357,6 +357,9 @@ def dns():
             if i_host.ipv6:
                 DNS.append("^%s:%s:%s" % (ipv6_to_arpa(i_host.ipv6), reverse, models.settings['dns_ttl']))
 
+    for domain in models.Domain.objects.all():
+        DNS.append("Z%s:%s:support.ik.bme.hu::::::%s" % (domain.name, settings['dns_hostname'], models.settings['dns_ttl']))
+
     for r in models.Record.objects.all():
         d = r.get_data()
         if d['type'] == 'A':
