@@ -74,8 +74,18 @@ $(function() {
         return false;
     })
 
+    function convert(n, skip) {
+        skip = skip | 0;
+        var suffix = 'B KB MB GB'.split(' ');
+        for(var i = skip; n > 1024; i++) {
+            n /= 1024;
+        }
+        return n.toFixed(2) + ' ' + suffix[i];
+    }
+
     function Model() {
         var self = this;
+        var uploadURLRequestInProgress=false;
         self.files = ko.observableArray();
         self.allFiles = [];
         self.notInRoot = ko.observable(false);
@@ -138,13 +148,6 @@ $(function() {
             }
 
         function addFile(d) {
-            function convert(n){
-                var suffix = 'B KB MB GB'.split(' ');
-                for(var i=0;n>1024;i++){
-                    n/=1024;
-                }
-                return n.toFixed(2)+' '+suffix[i];
-            }
             var viewData;
             if(d.TYPE === 'D') {
                 viewData = {
@@ -213,10 +216,10 @@ $(function() {
                 var newName = $(e.target).parent().parent().parent().find('.name input[type=text]').val();
                 $.ajax({
                     type: 'POST',
-                    data: 'path='+self.currentPath()+item.originalName+'&new='+newName,
+                    data: 'path=' + self.currentPath() + item.originalName + '&new=' + newName,
                     url: '/ajax/store/rename',
                     dataType: 'json',
-                    success: function(data){
+                    success: function(data) {
                         console.log(data);
                         loadFolder(self.currentPath());
                     }
@@ -225,6 +228,7 @@ $(function() {
         }
         self.uploadURL = ko.observable('/');
         self.getUploadURL = function() {
+            uploadURLRequestInProgress=true;
             $.ajax({
                 type: 'POST',
                 data: 'ul=' + self.currentPath() + '&next=' + encodeURI(window.location.href),
@@ -232,6 +236,7 @@ $(function() {
                 dataType: 'json',
                 success: function(data) {
                     self.uploadURL(data.url);
+                    uploadURLRequestInProgress=false;
                 }
             })
         }
@@ -264,6 +269,7 @@ $(function() {
             // now post a new XHR request
             if(tests.formdata) {
                 var xhr = new XMLHttpRequest();
+                var start = new Date().getTime();
                 xhr.open('POST', self.uploadURL());
                 xhr.onload = xhr.onerror = function() {
                     $('.file-upload').removeClass('opened');
@@ -277,10 +283,10 @@ $(function() {
                 if(tests.progress) {
                     $('#upload-zone').hide();
                     $('#upload-progress-text').show();
-                    var originalUsedQuota=self.quota.rawUsed();
+                    var originalUsedQuota = self.quota.rawUsed();
                     xhr.upload.onprogress = function(event) {
                         if(event.lengthComputable) {
-                            self.quota.rawUsed(originalUsedQuota+parseInt(event.loaded/1024));
+                            self.quota.rawUsed(originalUsedQuota + parseInt(event.loaded / 1024));
                             var complete = (event.loaded / event.total * 100 | 0);
                             //progress.value = progress.innerHTML = complete;
                             self.uploadProgress(complete.toFixed(1) + '%');
@@ -295,10 +301,11 @@ $(function() {
                                 t /= 1024;
                             }
                             t = t.toFixed(1) + ' ' + suffix[i];
+                            var diff = new Date().getTime() - start;
                             if(complete < 100) {
-                                $('#upload-progress-text').html('Feltöltés: ' + l + '/' + t + ' (' + (event.loaded / event.total * 100).toFixed(2) + '%)');
+                                $('#upload-progress-text').html('Feltöltés: ' + convert(event.loaded / diff * 1000) + '/s (' + (event.loaded / event.total * 100).toFixed(2) + '%)');
                             } else {
-                                $('#upload-progress-text').html('Feltöltés: Mindjárt kész...');
+                                $('#upload-progress-text').html('Feltöltés: Kész, feldolgozás...');
                             }
                         }
                     }
@@ -313,34 +320,27 @@ $(function() {
             readfiles(e.dataTransfer.files);
             return false;
         });
+        document.addEventListener('dragover', function(e) {
+            if(!uploadURLRequestInProgress && self.uploadURL() == '/'){
+                $('.file-upload .summary').click();
+            }
+            e.stopPropagation();
+            e.preventDefault();
+            return false;
+        });
         self.quota = {
             rawUsed: ko.observable(0),
             rawSoft: ko.observable(0),
             rawHard: ko.observable(0)
         };
-        self.quota.used=ko.computed(function(){
-            var suffix = 'KB MB GB'.split(' ');
-            var l=self.quota.rawUsed();
-            for(var i = 0; l > 1024; i++) {
-                l /= 1024;
-            }
-            return l.toFixed(1)+' '+suffix[i];
+        self.quota.used = ko.computed(function() {
+            return convert(self.quota.rawUsed(),1);
         });
-        self.quota.hard=ko.computed(function(){
-            var suffix = 'KB MB GB'.split(' ');
-            var l=self.quota.rawHard();
-            for(var i = 0; l > 1024; i++) {
-                l /= 1024;
-            }
-            return l.toFixed(1)+' '+suffix[i];
+        self.quota.hard = ko.computed(function() {
+            return convert(self.quota.rawHard(),1);
         });
-        self.quota.soft=ko.computed(function(){
-            var suffix = 'KB MB GB'.split(' ');
-            var l=self.quota.rawSoft();
-            for(var i = 0; l > 1024; i++) {
-                l /= 1024;
-            }
-            return l.toFixed(1)+' '+suffix[i];
+        self.quota.soft = ko.computed(function() {
+            return convert(self.quota.rawSoft(),1);
         });
         self.quota.usedBar = ko.computed(function() {
             return(self.quota.rawUsed() / self.quota.rawHard() * 100).toFixed(0) + '%';
@@ -367,14 +367,18 @@ $(function() {
     var model = new Model();
     ko.applyBindings(model);
     document.addEventListener('dragenter', function(e) {
-        e.stopPropagation();
-        e.preventDefault();
-        return false;
-    });
-    document.addEventListener('dragover', function(e) {
+        console.log('enter');
+        //$('.file-upload .summary').click();
         e.stopPropagation();
         e.preventDefault();
         return false;
     });
 
+    document.addEventListener('drag', function(e) {
+        console.log('drag');
+        //$('.file-upload .summary').click();
+        e.stopPropagation();
+        e.preventDefault();
+        return false;
+    });
 })
