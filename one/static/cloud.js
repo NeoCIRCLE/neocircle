@@ -248,7 +248,7 @@ $(function() {
             if(tests.formdata) {
                 var xhr = new XMLHttpRequest();
                 xhr.open('POST', self.uploadURL());
-                xhr.onload = function() {
+                xhr.onload = xhr.onerror = function() {
                     $('.file-upload').removeClass('opened');
                     $('.file-upload .details').slideUp(700);
                     $('#upload-zone').show();
@@ -256,14 +256,6 @@ $(function() {
                     self.uploadProgress('0%');
                     self.uploadURL('/');
                     loadFolder(self.currentPath());
-                };
-                xhr.onerror = function() {
-                    $('.file-upload').removeClass('opened');
-                    $('.file-upload .details').slideUp(700);
-                    $('#upload-zone').show();
-                    $('#upload-progress-text').hide();
-                    self.uploadProgress('0%');
-                    self.uploadURL('/');
                 }
                 if(tests.progress) {
                     $('#upload-zone').hide();
@@ -274,7 +266,7 @@ $(function() {
                             self.quota.rawUsed(originalUsedQuota+parseInt(event.loaded/1024));
                             var complete = (event.loaded / event.total * 100 | 0);
                             //progress.value = progress.innerHTML = complete;
-                            self.uploadProgress(parseInt(complete) + '%');
+                            self.uploadProgress(complete.toFixed(1) + '%');
                             var suffix = 'B KB MB GB'.split(' ');
                             var l = event.loaded;
                             var t = event.total;
