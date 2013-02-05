@@ -21,9 +21,10 @@ class HostAdmin(admin.ModelAdmin):
     inlines = (AliasInline, RuleInline)
 
     def groups_l(self, instance):
+        """Returns instance's groups' names as a comma-separated list."""
         retval = []
-        for i in instance.groups.all():
-            retval.append(i.name)
+        for group in instance.groups.all():
+            retval.append(group.name)
         return u', '.join(retval)
 
 class HostInline(contrib.admin.TabularInline):
@@ -44,25 +45,34 @@ class RuleAdmin(admin.ModelAdmin):
         'proto', 'nat')
 
     def color_desc(self, instance):
+        """Returns a colorful description of the instance."""
         para = '</span>'
-        if(instance.dport):
-            para = "dport=%s %s" % (instance.dport, para)
-        if(instance.sport):
-            para = "sport=%s %s" % (instance.sport, para)
-        if(instance.proto):
-            para = "proto=%s %s" % (instance.proto, para)
-        para= u'<span style="color: #00FF00;">' + para
-        return u'<span style="color: #FF0000;">[' + instance.r_type + u']</span> ' + (instance.foreign_network.name + u'<span style="color: #0000FF;"> ▸ </span>' + instance.r_type if instance.direction=='1' else instance.r_type + u'<span style="color: #0000FF;"> ▸ </span>' + instance.foreign_network.name) + ' ' + para + ' ' + instance.description
+        if instance.dport:
+            para = 'dport=%s %s' % (instance.dport, para)
+        if instance.sport:
+            para = 'sport=%s %s' % (instance.sport, para)
+        if instance.proto:
+            para = 'proto=%s %s' % (instance.proto, para)
+        para = u'<span style="color: #00FF00;">' + para
+        return (
+            u'<span style="color: #FF0000;">[%s]</span> ' % instance.r_type +
+            (u'%s<span style="color: #0000FF;"> ▸ </span>%s' %
+                ((instance.foreign_network.name, instance.r_type)
+                 if instance.direction == '1' else
+                 (instance.r_type, instance.foreign_network.name))) +
+            ' ' + para + ' ' + instance.description)
     color_desc.allow_tags = True
 
     def vlan_l(self, instance):
+        """Returns instance's VLANs' names as a comma-separated list."""
         retval = []
-        for vl in instance.foreign_network.vlans.all():
-            retval.append(vl.name)
+        for vlan in instance.foreign_network.vlans.all():
+            retval.append(vlan.name)
         return u', '.join(retval)
 
     def used_in(self, instance):
-        for field in [instance.vlan, instance.vlangroup, instance.host, instance.hostgroup, instance.firewall]:
+        for field in [instance.vlan, instance.vlangroup, instance.host,
+                instance.hostgroup, instance.firewall]:
             if field is not None:
                 return unicode(field) + ' ' + field._meta.object_name
 

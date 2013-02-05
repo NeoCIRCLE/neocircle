@@ -34,17 +34,19 @@ class MACAddressField(models.Field):
 add_introspection_rules([], ["firewall\.fields\.MACAddressField"])
 
 def val_alfanum(value):
+    """Check whether the parameter is a valid alphanumeric value."""
     if alfanum_re.search(value) is None:
         raise ValidationError(
             _(u'%s - only letters, numbers, underscores and hyphens are '
                'allowed!') % value)
 
 def val_domain(value):
+    """Check wheter the parameter is a valid domin."""
     if domain_re.search(value) is None:
         raise ValidationError(_(u'%s - invalid domain') % value)
 
 def ipv4_2_ipv6(ipv4):
-    """Convert IPv4 addr. string to IPv6 addr. string."""
+    """Convert IPv4 address string to IPv6 address string."""
     m = ipv4_re.match(ipv4)
     if m is None:
         raise ValidationError(_(u'%s - not an IPv4 address') % ipv4)

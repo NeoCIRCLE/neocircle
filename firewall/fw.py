@@ -10,8 +10,8 @@ import json
 
 class firewall:
     IPV6=False
-    SZABALYOK = None
-    SZABALYOK_NAT = []
+    RULES = None
+    RULES_NAT = []
     vlans = None
     dmz = None
     pub = None
@@ -19,51 +19,58 @@ class firewall:
     fw = None
 
     def dportsport(self, rule, repl=True):
-        retval = " "
-        if(rule.proto == "tcp" or rule.proto == "udp"):
-            retval = "-p %s " % rule.proto
-            if(rule.sport):
-                retval += " --sport %s " % rule.sport
-            if(rule.dport):
-                retval += " --dport %s " % ( rule.nat_dport if (repl and rule.nat and rule.direction == '1') else rule.dport )
-        elif(rule.proto == "icmp"):
-            retval = "-p %s " % rule.proto
+        retval = ' '
+        if rule.proto == 'tcp' or rule.proto == 'udp':
+            retval = '-p %s ' % rule.proto
+            if rule.sport:
+                retval += ' --sport %s ' % rule.sport
+            if rule.dport:
+                retval += ' --dport %s ' % (rule.nat_dport
+                        if (repl and rule.nat and rule.direction == '1')
+                        else rule.dport)
+        elif rule.proto == 'icmp':
+            retval = '-p %s ' % rule.proto
         return retval
 
 
     def iptables(self, s):
-        self.SZABALYOK.append(s)
+        """Append rule."""
+        self.RULES.append(s)
 
     def iptablesnat(self, s):
-        self.SZABALYOK_NAT.append(s)
+        self.RULES_NAT.append(s)
 
     def host2vlan(self, host, rule):
         if rule.foreign_network is None:
             return
 
-        if(self.IPV6 and host.ipv6):
-            ipaddr = host.ipv6 + "/112"
+        if self.IPV6 and host.ipv6:
+            ipaddr = host.ipv6 + '/112'
         else:
             ipaddr = host.ipv4
 
         dport_sport = self.dportsport(rule)
 
         for vlan in rule.foreign_network.vlans.all():
-            if(rule.accept):
-                if(rule.direction == '0' and vlan.name == "PUB"):
-                    if(rule.dport == 25):
-                        self.iptables("-A PUB_OUT -s %s %s -p tcp --dport 25 -j LOG_ACC" % (ipaddr, rule.extra))
+            if rule.accept:
+                if rule.direction == '0' and vlan.name == 'PUB':
+                    if rule.dport == 25:
+                        self.iptables('-A PUB_OUT -s %s %s -p tcp '
+                                '--dport 25 -j LOG_ACC' %
+                                (ipaddr, rule.extra))
                         break
-                    action = "PUB_OUT"
+                    action = 'PUB_OUT'
                 else:
-                    action = "LOG_ACC"
+                    action = 'LOG_ACC'
             else:
-                action = "LOG_DROP"
+                action = 'LOG_DROP'
 
-            if(rule.direction == '1'): # HOSTHOZ megy
-                self.iptables("-A %s_%s -d %s %s %s -g %s" % (vlan, host.vlan, ipaddr, dport_sport, rule.extra, action))
+            if rule.direction == '1': # going TO host
+                self.iptables('-A %s_%s -d %s %s %s -g %s' % (vlan,
+                    host.vlan, ipaddr, dport_sport, rule.extra, action))
             else:
-                self.iptables("-A %s_%s -s %s %s %s -g %s" % (host.vlan, vlan, ipaddr, dport_sport, rule.extra, action))
+                self.iptables('-A %s_%s -s %s %s %s -g %s' % (host.vlan,
+                    vlan, ipaddr, dport_sport, rule.extra, action))
 
 
     def fw2vlan(self, rule):
@@ -73,10 +80,14 @@ class firewall:
         dport_sport = self.dportsport(rule)
 
         for vlan in rule.foreign_network.vlans.all():
-            if(rule.direction == '1'): # HOSTHOZ megy
-                self.iptables("-A INPUT -i %s %s %s -g %s" % (vlan.interface, dport_sport, rule.extra, "LOG_ACC" if rule.accept else "LOG_DROP"))
+            if rule.direction == '1': # going TO host
+                self.iptables('-A INPUT -i %s %s %s -g %s' %
+                    (vlan.interface, dport_sport, rule.extra,
+                        'LOG_ACC' if rule.accept else 'LOG_DROP'))
             else:
-                self.iptables("-A OUTPUT -o %s %s %s -g %s" % (vlan.interface, dport_sport, rule.extra, "LOG_ACC" if rule.accept else "LOG_DROP"))
+                self.iptables('-A OUTPUT -o %s %s %s -g %s' %
+                    (vlan.interface, dport_sport, rule.extra,
+                        'LOG_ACC' if rule.accept else 'LOG_DROP'))
 
     def vlan2vlan(self, l_vlan, rule):
         if rule.foreign_network is None:
@@ -85,144 +96,163 @@ class firewall:
         dport_sport = self.dportsport(rule)
 
         for vlan in rule.foreign_network.vlans.all():
-            if(rule.accept):
-                if((rule.direction == '0') and vlan.name == "PUB"):
-                    action = "PUB_OUT"
+            if rule.accept:
+                if rule.direction == '0' and vlan.name == 'PUB':
+                    action = 'PUB_OUT'
                 else:
-                    action = "LOG_ACC"
+                    action = 'LOG_ACC'
             else:
-                action = "LOG_DROP"
+                action = 'LOG_DROP'
 
-            if(rule.direction == '1'): # HOSTHOZ megy
-                self.iptables("-A %s_%s %s %s -g %s" % (vlan, l_vlan, dport_sport, rule.extra, action))
+            if rule.direction == '1': # going TO host
+                self.iptables('-A %s_%s %s %s -g %s' % (vlan, l_vlan,
+                    dport_sport, rule.extra, action))
             else:
-                self.iptables("-A %s_%s %s %s -g %s" % (l_vlan, vlan, dport_sport, rule.extra, action))
+                self.iptables('-A %s_%s %s %s -g %s' % (l_vlan, vlan,
+                    dport_sport, rule.extra, action))
 
 
     def prerun(self):
-        self.iptables("*filter")
-        self.iptables(":INPUT DROP [88:6448]")
-        self.iptables(":FORWARD DROP [0:0]")
-        self.iptables(":OUTPUT DROP [50:6936]")
+        self.iptables('*filter')
+        self.iptables(':INPUT DROP [88:6448]')
+        self.iptables(':FORWARD DROP [0:0]')
+        self.iptables(':OUTPUT DROP [50:6936]')
 
         # inicialize logging
-        self.iptables("-N LOG_DROP")
+        self.iptables('-N LOG_DROP')
         # windows port scan are silently dropped
-        self.iptables("-A LOG_DROP -p tcp --dport 445 -j DROP")
-        self.iptables("-A LOG_DROP -p udp --dport 137 -j DROP")
-        self.iptables("-A LOG_DROP -j LOG --log-level 7 --log-prefix \"[ipt][drop]\"")
-        self.iptables("-A LOG_DROP -j DROP")
-        self.iptables("-N LOG_ACC")
-        self.iptables("-A LOG_ACC -j LOG --log-level 7 --log-prefix \"[ipt][isok]\"")
-        self.iptables("-A LOG_ACC -j ACCEPT")
+        self.iptables('-A LOG_DROP -p tcp --dport 445 -j DROP')
+        self.iptables('-A LOG_DROP -p udp --dport 137 -j DROP')
+        self.iptables('-A LOG_DROP -j LOG --log-level 7'
+                '--log-prefix "[ipt][drop]"')
+        self.iptables('-A LOG_DROP -j DROP')
+        self.iptables('-N LOG_ACC')
+        self.iptables('-A LOG_ACC -j LOG --log-level 7'
+                '--log-prefix "[ipt][isok]"')
+        self.iptables('-A LOG_ACC -j ACCEPT')
 
         if not self.IPV6:
             # The chain which test is a packet has a valid public destination IP
             # (RFC-3330) packages passing this chain has valid destination IP addressed
-            self.iptables("-N r_pub_dIP")
-            self.iptables("-A r_pub_dIP -d 0.0.0.0/8 -g LOG_DROP")
-            self.iptables("-A r_pub_dIP -d 169.254.0.0/16 -g LOG_DROP")
-            self.iptables("-A r_pub_dIP -d 172.16.0.0/12 -g LOG_DROP")
-            self.iptables("-A r_pub_dIP -d 192.0.2.0/24 -g LOG_DROP")
-            self.iptables("-A r_pub_dIP -d 192.168.0.0/16 -g LOG_DROP")
-            self.iptables("-A r_pub_dIP -d 127.0.0.0/8 -g LOG_DROP")
-#           self.iptables("-A r_pub_dIP -d 10.0.0.0/8 -g LOG_DROP")
+            self.iptables('-N r_pub_dIP')
+            self.iptables('-A r_pub_dIP -d 0.0.0.0/8 -g LOG_DROP')
+            self.iptables('-A r_pub_dIP -d 169.254.0.0/16 -g LOG_DROP')
+            self.iptables('-A r_pub_dIP -d 172.16.0.0/12 -g LOG_DROP')
+            self.iptables('-A r_pub_dIP -d 192.0.2.0/24 -g LOG_DROP')
+            self.iptables('-A r_pub_dIP -d 192.168.0.0/16 -g LOG_DROP')
+            self.iptables('-A r_pub_dIP -d 127.0.0.0/8 -g LOG_DROP')
+            # self.iptables('-A r_pub_dIP -d 10.0.0.0/8 -g LOG_DROP')
 
             # The chain which test is a packet has a valid public source IP
             # (RFC-3330) packages passing this chain has valid destination IP addressed
-            self.iptables("-N r_pub_sIP")
-            self.iptables("-A r_pub_sIP -s 0.0.0.0/8 -g LOG_DROP")
-            self.iptables("-A r_pub_sIP -s 169.254.0.0/16 -g LOG_DROP")
-            self.iptables("-A r_pub_sIP -s 172.16.0.0/12 -g LOG_DROP")
-            self.iptables("-A r_pub_sIP -s 192.0.2.0/24 -g LOG_DROP")
-            self.iptables("-A r_pub_sIP -s 192.168.0.0/16 -g LOG_DROP")
-            self.iptables("-A r_pub_sIP -s 127.0.0.0/8 -g LOG_DROP")
-            # self.iptables("-A r_pub_sIP -s 10.0.0.0/8 -g LOG_DROP")
+            self.iptables('-N r_pub_sIP')
+            self.iptables('-A r_pub_sIP -s 0.0.0.0/8 -g LOG_DROP')
+            self.iptables('-A r_pub_sIP -s 169.254.0.0/16 -g LOG_DROP')
+            self.iptables('-A r_pub_sIP -s 172.16.0.0/12 -g LOG_DROP')
+            self.iptables('-A r_pub_sIP -s 192.0.2.0/24 -g LOG_DROP')
+            self.iptables('-A r_pub_sIP -s 192.168.0.0/16 -g LOG_DROP')
+            self.iptables('-A r_pub_sIP -s 127.0.0.0/8 -g LOG_DROP')
+            # self.iptables('-A r_pub_sIP -s 10.0.0.0/8 -g LOG_DROP')
 
-            # chain which tests if the destination specified by the DMZ host is valid
-            self.iptables("-N r_DMZ_dIP")
-            self.iptables("-A r_DMZ_dIP -d 10.2.0.0/16 -j RETURN")
-            self.iptables("-A r_DMZ_dIP -j r_pub_dIP")
+            # Chain which tests whether the destination specified by the
+            # DMZ host is valid
+            self.iptables('-N r_DMZ_dIP')
+            self.iptables('-A r_DMZ_dIP -d 10.2.0.0/16 -j RETURN')
+            self.iptables('-A r_DMZ_dIP -j r_pub_dIP')
 
-        self.iptables("-N PUB_OUT")
+        self.iptables('-N PUB_OUT')
         if not self.IPV6:
-            self.iptables("-A PUB_OUT -j r_pub_dIP")
+            self.iptables('-A PUB_OUT -j r_pub_dIP')
 
-        self.iptables("-A FORWARD -m state --state INVALID -g LOG_DROP")
-        self.iptables("-A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT")
-        self.iptables("-A FORWARD -p icmp --icmp-type echo-request -g LOG_ACC")
+        self.iptables('-A FORWARD -m state --state INVALID -g LOG_DROP')
+        self.iptables('-A FORWARD -m state --state ESTABLISHED,RELATED'
+                '-j ACCEPT')
+        self.iptables('-A FORWARD -p icmp --icmp-type echo-request'
+                '-g LOG_ACC')
         if not self.IPV6:
-            self.iptables("-A FORWARD -j r_pub_sIP -o pub")
-        self.iptables("-A INPUT -m state --state INVALID -g LOG_DROP")
-        self.iptables("-A INPUT -i lo -j ACCEPT")
+            self.iptables('-A FORWARD -j r_pub_sIP -o pub')
+        self.iptables('-A INPUT -m state --state INVALID -g LOG_DROP')
+        self.iptables('-A INPUT -i lo -j ACCEPT')
         if not self.IPV6:
-            self.iptables("-A INPUT -j r_pub_sIP")
-        self.iptables("-A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT")
+            self.iptables('-A INPUT -j r_pub_sIP')
+        self.iptables('-A INPUT -m state --state ESTABLISHED,RELATED'
+                '-j ACCEPT')
 
-        self.iptables("-A OUTPUT -m state --state INVALID -g LOG_DROP")
-        self.iptables("-A OUTPUT -o lo -j ACCEPT")
-        self.iptables("-A OUTPUT -m state --state ESTABLISHED,RELATED -j ACCEPT")
+        self.iptables('-A OUTPUT -m state --state INVALID -g LOG_DROP')
+        self.iptables('-A OUTPUT -o lo -j ACCEPT')
+        self.iptables('-A OUTPUT -m state --state ESTABLISHED,RELATED'
+                '-j ACCEPT')
 
 
     def postrun(self):
-        self.iptables("-A PUB_OUT -s 152.66.243.160/27 -p tcp --dport 25 -j LOG_ACC")
-        self.iptables("-A PUB_OUT -s 152.66.243.160/27 -p tcp --dport 445 -j LOG_ACC")
-        self.iptables("-A PUB_OUT -p tcp --dport 25 -j LOG_DROP")
-        self.iptables("-A PUB_OUT -p tcp --dport 445 -j LOG_DROP")
-        self.iptables("-A PUB_OUT -p udp --dport 445 -j LOG_DROP")
+        self.iptables('-A PUB_OUT -s 152.66.243.160/27 -p tcp --dport 25'
+                '-j LOG_ACC')
+        self.iptables('-A PUB_OUT -s 152.66.243.160/27 -p tcp --dport 445'
+                '-j LOG_ACC')
+        self.iptables('-A PUB_OUT -p tcp --dport 25 -j LOG_DROP')
+        self.iptables('-A PUB_OUT -p tcp --dport 445 -j LOG_DROP')
+        self.iptables('-A PUB_OUT -p udp --dport 445 -j LOG_DROP')
 
-        self.iptables("-A PUB_OUT -g LOG_ACC")
-        self.iptables("-A FORWARD -g LOG_DROP")
-        self.iptables("-A INPUT -g LOG_DROP")
-        self.iptables("-A OUTPUT -g LOG_DROP")
-        self.iptables("COMMIT")
+        self.iptables('-A PUB_OUT -g LOG_ACC')
+        self.iptables('-A FORWARD -g LOG_DROP')
+        self.iptables('-A INPUT -g LOG_DROP')
+        self.iptables('-A OUTPUT -g LOG_DROP')
+        self.iptables('COMMIT')
 
 
 
 
     def ipt_nat(self):
-        self.iptablesnat("*nat")
-        self.iptablesnat(":PREROUTING ACCEPT [0:0]")
-        self.iptablesnat(":INPUT ACCEPT [0:0]")
-        self.iptablesnat(":OUTPUT ACCEPT [1:708]")
-        self.iptablesnat(":POSTROUTING ACCEPT [1:708]")
-
+        self.iptablesnat('*nat')
+        self.iptablesnat(':PREROUTING ACCEPT [0:0]')
+        self.iptablesnat(':INPUT ACCEPT [0:0]')
+        self.iptablesnat(':OUTPUT ACCEPT [1:708]')
+        self.iptablesnat(':POSTROUTING ACCEPT [1:708]')
 
         # portforward
         for host in self.hosts.exclude(pub_ipv4=None):
             for rule in host.rules.filter(nat=True, direction='1'):
                 dport_sport = self.dportsport(rule, False)
                 if host.vlan.snat_ip:
-                    self.iptablesnat("-A PREROUTING -d %s %s %s -j DNAT --to-destination %s:%s" % (host.pub_ipv4, dport_sport, rule.extra, host.ipv4, rule.nat_dport))
+                    self.iptablesnat('-A PREROUTING -d %s %s %s -j DNAT'
+                            '--to-destination %s:%s' % (host.pub_ipv4,
+                                dport_sport, rule.extra, host.ipv4,
+                                rule.nat_dport))
 
-        # sajat publikus ipvel rendelkezo gepek szabalyai
+        # rules for machines with dedicated public IP
         for host in self.hosts.exclude(shared_ip=True):
-            if(host.pub_ipv4):
-                self.iptablesnat("-A PREROUTING -d %s -j DNAT --to-destination %s" % (host.pub_ipv4, host.ipv4))
-                self.iptablesnat("-A POSTROUTING -s %s -j SNAT --to-source %s" % (host.ipv4, host.pub_ipv4))
+            if host.pub_ipv4:
+                self.iptablesnat('-A PREROUTING -d %s -j DNAT'
+                        '--to-destination %s' % (host.pub_ipv4, host.ipv4))
+                self.iptablesnat('-A POSTROUTING -s %s -j SNAT'
+                        '--to-source %s' % (host.ipv4, host.pub_ipv4))
 
-        # alapertelmezett nat szabalyok a vlanokra
+        # default NAT rules for VLANs
         for s_vlan in self.vlans:
-            if(s_vlan.snat_ip):
+            if s_vlan.snat_ip:
                 for d_vlan in s_vlan.snat_to.all():
-                    self.iptablesnat("-A POSTROUTING -s %s -o %s -j SNAT --to-source %s" % (s_vlan.net_ipv4(), d_vlan.interface, s_vlan.snat_ip))
+                    self.iptablesnat('-A POSTROUTING -s %s -o %s -j SNAT'
+                            '--to-source %s' % (s_vlan.net_ipv4(),
+                                d_vlan.interface, s_vlan.snat_ip))
 
 
-        # bedrotozott szabalyok
-        self.iptablesnat("-A POSTROUTING -s 10.5.0.0/16 -o vlan0003 -j SNAT --to-source 10.3.255.254") # man elerheto legyen
-        self.iptablesnat("-A POSTROUTING -s 10.5.0.0/16 -o vlan0008 -j SNAT --to-source 10.0.0.247") # wolf halozat a nyomtatashoz
-        self.iptablesnat("-A POSTROUTING -s 10.3.0.0/16 -o vlan0002 -j SNAT --to-source %s" % self.pub.ipv4) # kulonben nemmegy a du
+        # hard-wired rules
+        self.iptablesnat('-A POSTROUTING -s 10.5.0.0/16 -o vlan0003 -j SNAT'
+                '--to-source 10.3.255.254') # man elerheto legyen
+        self.iptablesnat('-A POSTROUTING -s 10.5.0.0/16 -o vlan0008 -j SNAT'
+                '--to-source 10.0.0.247') # wolf network for printing
+        self.iptablesnat('-A POSTROUTING -s 10.3.0.0/16 -o vlan0002 -j SNAT'
+                '--to-source %s' % self.pub.ipv4) # kulonben nemmegy a du
 
-        self.iptablesnat("COMMIT")
+        self.iptablesnat('COMMIT')
 
     def ipt_filter(self):
-        regexp = re.compile('[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')
-        regexp_icmp = re.compile('icmp')
+        ipv4_re = re.compile('([0-9]{1,3}\.){3}[0-9]{1,3}')
 
-        # futas elotti dolgok
+        # pre-run stuff
         self.prerun()
 
-        # tuzfal sajat szabalyai
+        # firewall's own rules
         for f in self.fw:
             for rule in f.rules.all():
                 self.fw2vlan(rule)
@@ -230,10 +260,10 @@ class firewall:
         # zonak kozotti lancokra ugras
         for s_vlan in self.vlans:
             for d_vlan in self.vlans:
-                self.iptables("-N %s_%s" % (s_vlan, d_vlan))
-                self.iptables("-A FORWARD -i %s -o %s -g %s_%s" % (s_vlan.interface, d_vlan.interface, s_vlan, d_vlan))
+                self.iptables('-N %s_%s' % (s_vlan, d_vlan))
+                self.iptables('-A FORWARD -i %s -o %s -g %s_%s' % (s_vlan.interface, d_vlan.interface, s_vlan, d_vlan))
 
-        # hosztok szabalyai
+        # hosts' rules
         for i_vlan in self.vlans:
             for i_host in i_vlan.host_set.all():
                 for group in i_host.groups.all():
@@ -242,7 +272,7 @@ class firewall:
                 for rule in i_host.rules.all():
                     self.host2vlan(i_host, rule)
 
-        # vlanok kozotti kommunikacio engedelyezese
+        # enable communication between VLANs
         for s_vlan in self.vlans:
             for rule in s_vlan.rules.all():
                 self.vlan2vlan(s_vlan, rule)
@@ -250,23 +280,23 @@ class firewall:
         # zonak kozotti lancokat zarja le
         for s_vlan in self.vlans:
             for d_vlan in self.vlans:
-                self.iptables("-A %s_%s -g LOG_DROP" % (s_vlan, d_vlan))
+                self.iptables('-A %s_%s -g LOG_DROP' % (s_vlan, d_vlan))
 
-        # futas utani dolgok
+        # post-run stuff
         self.postrun()
 
         if self.IPV6:
-            self.SZABALYOK = [x for x in self.SZABALYOK if not regexp.search(x)]
-            self.SZABALYOK = [regexp_icmp.sub('icmpv6', x) for x in self.SZABALYOK]
+            self.RULES = [x for x in self.RULES if not ipv4_re.search(x)]
+            self.RULES = [x.replace('icmp', 'icmpv6') for x in self.RULES]
 
     def __init__(self, IPV6=False):
-        self.SZABALYOK=[]
-        self.SZABALYOK_NAT=[]
+        self.RULES=[]
+        self.RULES_NAT=[]
         self.IPV6 = IPV6
         self.vlans = models.Vlan.objects.all()
         self.hosts = models.Host.objects.all()
-        self.dmz = models.Vlan.objects.get(name="DMZ")
-        self.pub = models.Vlan.objects.get(name="PUB")
+        self.dmz = models.Vlan.objects.get(name='DMZ')
+        self.pub = models.Vlan.objects.get(name='PUB')
         self.fw = models.Firewall.objects.all()
         self.ipt_filter()
         if not self.IPV6:
@@ -274,17 +304,23 @@ class firewall:
 
     def reload(self):
         if self.IPV6:
-            process = subprocess.Popen(['/usr/bin/ssh', 'fw2', '/usr/bin/sudo', '/sbin/ip6tables-restore', '-c'], shell=False, stdin=subprocess.PIPE)
-            process.communicate("\n".join(self.SZABALYOK)+"\n")
+            process = subprocess.Popen(['/usr/bin/ssh', 'fw2',
+                    '/usr/bin/sudo', '/sbin/ip6tables-restore', '-c'],
+                shell=False, stdin=subprocess.PIPE)
+            process.communicate('\n'.join(self.RULES) + '\n')
         else:
-            process = subprocess.Popen(['/usr/bin/ssh', 'fw2', '/usr/bin/sudo', '/sbin/iptables-restore', '-c'], shell=False, stdin=subprocess.PIPE)
-            process.communicate("\n".join(self.SZABALYOK)+"\n"+"\n".join(self.SZABALYOK_NAT)+"\n")
+            process = subprocess.Popen(['/usr/bin/ssh', 'fw2',
+                    '/usr/bin/sudo', '/sbin/iptables-restore', '-c'],
+                shell=False, stdin=subprocess.PIPE)
+            process.communicate('\n'.join(self.RULES) + '\n' +
+                    '\n'.join(self.RULES_NAT) + '\n')
 
     def show(self):
         if self.IPV6:
-            return "\n".join(self.SZABALYOK)+"\n"
+            return '\n'.join(self.RULES) + '\n'
         else:
-            return "\n".join(self.SZABALYOK)+"\n"+"\n".join(self.SZABALYOK_NAT)+"\n"
+            return ('\n'.join(self.RULES) + '\n' +
+                '\n'.join(self.RULES_NAT) + '\n')
 
 
 def ipv6_to_octal(ipv6):
@@ -303,10 +339,12 @@ def ipv6_to_octal(ipv6):
 
 def ipv4_to_arpa(ipv4, cname=False):
     m2 = re.search(r'^([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)$', ipv4)
-    if(cname):
-        return "%s.dns1.%s.%s.%s.in-addr.arpa" % (m2.group(4), m2.group(3), m2.group(2), m2.group(1))
+    if cname:
+        return ('%s.dns1.%s.%s.%s.in-addr.arpa' %
+            (m2.group(4), m2.group(3), m2.group(2), m2.group(1)))
     else:
-        return "%s.%s.%s.%s.in-addr.arpa" % (m2.group(4), m2.group(3), m2.group(2), m2.group(1))
+        return ('%s.%s.%s.%s.in-addr.arpa' %
+            (m2.group(4), m2.group(3), m2.group(2), m2.group(1)))
 
 def ipv6_to_arpa(ipv6):
     while len(ipv6.split(':')) < 8:
@@ -325,7 +363,6 @@ def ipv6_to_arpa(ipv6):
     return '.'.join(['%1x' % x for x in octets]) + '.ip6.arpa'
 
 
-
 # =fqdn:ip:ttl          A, PTR
 # &fqdn:ip:x:ttl        NS
 # ZfqdnSOA
@@ -339,50 +376,80 @@ def dns():
     regex = re.compile(r'^([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)$')
     DNS = []
     DNS.append("=cloud.ik.bme.hu:152.66.243.98:600::")
-    DNS.append(":cloud.ik.bme.hu:28:\040\001\007\070\040\001\100\061\000\002\000\000\000\007\000\000:600")
+    DNS.append(":cloud.ik.bme.hu:28:"
+        "\040\001\007\070\040\001\100\061\000\002\000\000\000\007\000\000:"
+        "600")
     DNS.append("=r.cloud.ik.bme.hu:152.66.243.62:600::")
 
 
-    DNS.append("Z1.3.0.4.1.0.0.2.8.3.7.0.1.0.0.2.ip6.arpa:dns1.ik.bme.hu:support.ik.bme.hu::::::600") # soa
-    DNS.append("&1.3.0.4.1.0.0.2.8.3.7.0.1.0.0.2.ip6.arpa::dns1.ik.bme.hu:600::")      # ns rekord
-    DNS.append("&1.3.0.4.1.0.0.2.8.3.7.0.1.0.0.2.ip6.arpa::nic.bme.hu:600::")      # ns rekord
+    DNS.append("Z1.3.0.4.1.0.0.2.8.3.7.0.1.0.0.2.ip6.arpa:"
+        "dns1.ik.bme.hu:support.ik.bme.hu::::::600") # soa
+    DNS.append("&1.3.0.4.1.0.0.2.8.3.7.0.1.0.0.2.ip6.arpa::"
+        "dns1.ik.bme.hu:600::")      # ns rekord
+    DNS.append("&1.3.0.4.1.0.0.2.8.3.7.0.1.0.0.2.ip6.arpa::"
+        "nic.bme.hu:600::")      # ns rekord
 
     for i_vlan in vlans:
         m = regex.search(i_vlan.net4)
-        if(i_vlan.name != "DMZ" and i_vlan.name != "PUB"):
-            DNS.append("Z%s.%s.in-addr.arpa:%s:support.ik.bme.hu::::::%s" % (m.group(2), m.group(1), models.settings['dns_hostname'], models.settings['dns_ttl']))
-            DNS.append("&%s.%s.in-addr.arpa::%s:%s:" % (m.group(2), m.group(1), models.settings['dns_hostname'], models.settings['dns_ttl']))
-            DNS.append("Z%s:%s:support.ik.bme.hu::::::%s" % (i_vlan.domain, models.settings['dns_hostname'], models.settings['dns_ttl']))
-            DNS.append("&%s::%s:%s" % (i_vlan.domain, models.settings['dns_hostname'], models.settings['dns_ttl']))
-            if(i_vlan.name == "WAR"):
-                DNS.append("Zdns1.%s.%s.%s.in-addr.arpa:%s:support.ik.bme.hu::::::%s" % (m.group(3), m.group(2), m.group(1), models.settings['dns_hostname'], models.settings['dns_ttl']))
-                DNS.append("&dns1.%s.%s.%s.in-addr.arpa::%s:%s::" % (m.group(3), m.group(2), m.group(1), models.settings['dns_hostname'], models.settings['dns_ttl']))
+        if i_vlan.name != "DMZ" and i_vlan.name != "PUB":
+            DNS.append("Z%s.%s.in-addr.arpa:%s:support.ik.bme.hu::::::%s" %
+                    (m.group(2), m.group(1), models.settings['dns_hostname'],
+                        models.settings['dns_ttl']))
+            DNS.append("&%s.%s.in-addr.arpa::%s:%s:" % (m.group(2),
+                m.group(1), models.settings['dns_hostname'],
+                models.settings['dns_ttl']))
+            DNS.append("Z%s:%s:support.ik.bme.hu::::::%s" % (i_vlan.domain,
+                models.settings['dns_hostname'], models.settings['dns_ttl']))
+            DNS.append("&%s::%s:%s" % (i_vlan.domain,
+                models.settings['dns_hostname'], models.settings['dns_ttl']))
+            if i_vlan.name == "WAR":
+                DNS.append("Zdns1.%s.%s.%s.in-addr.arpa:%s:"
+                        "support.ik.bme.hu::::::%s" % (m.group(3),
+                            m.group(2), m.group(1),
+                            models.settings['dns_hostname'],
+                            models.settings['dns_ttl']))
+                DNS.append("&dns1.%s.%s.%s.in-addr.arpa::%s:%s::" %
+                        (m.group(3), m.group(2), m.group(1),
+                            models.settings['dns_hostname'],
+                            models.settings['dns_ttl']))
         for i_host in i_vlan.host_set.all():
-            ipv4 = ( i_host.pub_ipv4 if i_host.pub_ipv4 and not i_host.shared_ip else i_host.ipv4 )
-            reverse = i_host.reverse if(i_host.reverse and len(i_host.reverse)) else i_host.hostname + u'.' + i_vlan.domain
+            ipv4 = (i_host.pub_ipv4
+                    if i_host.pub_ipv4 and not i_host.shared_ip
+                    else i_host.ipv4)
+            reverse = (i_host.reverse
+                    if i_host.reverse and len(i_host.reverse)
+                    else i_host.hostname + u'.' + i_vlan.domain)
             hostname = i_host.hostname + u'.' + i_vlan.domain
 
             # ipv4
             if i_host.ipv4:
                 # A record
-                DNS.append("+%s:%s:%s" % (hostname, ipv4, models.settings['dns_ttl']))
+                DNS.append("+%s:%s:%s" % (hostname, ipv4,
+                    models.settings['dns_ttl']))
                 # PTR record 4.3.2.1.in-addr.arpa
-                DNS.append("^%s:%s:%s" % (ipv4_to_arpa(i_host.ipv4), reverse, models.settings['dns_ttl']))
+                DNS.append("^%s:%s:%s" % (ipv4_to_arpa(i_host.ipv4),
+                    reverse, models.settings['dns_ttl']))
                 # PTR record 4.dns1.3.2.1.in-addr.arpa
-                DNS.append("^%s:%s:%s" % (ipv4_to_arpa(i_host.ipv4, cname=True), reverse, models.settings['dns_ttl']))
+                DNS.append("^%s:%s:%s" %
+                        (ipv4_to_arpa(i_host.ipv4, cname=True),
+                            reverse, models.settings['dns_ttl']))
 
             # ipv6
             if i_host.ipv6:
                 # AAAA record
-                DNS.append(":%s:28:%s:%s" % (hostname, ipv6_to_octal(i_host.ipv6), models.settings['dns_ttl']))
+                DNS.append(":%s:28:%s:%s" % (hostname,
+                    ipv6_to_octal(i_host.ipv6), models.settings['dns_ttl']))
                 # PTR record
-                DNS.append("^%s:%s:%s" % (ipv6_to_arpa(i_host.ipv6), reverse, models.settings['dns_ttl']))
+                DNS.append("^%s:%s:%s" % (ipv6_to_arpa(i_host.ipv6),
+                    reverse, models.settings['dns_ttl']))
 
             # cname
             for i_alias in i_host.alias_set.all():
-                DNS.append("C%s:%s:%s" % (i_alias.alias, hostname, models.settings['dns_ttl']))
+                DNS.append("C%s:%s:%s" % (i_alias.alias, hostname,
+                    models.settings['dns_ttl']))
 
-    process = subprocess.Popen(['/usr/bin/ssh', 'tinydns@%s' % models.settings['dns_hostname']], shell=False, stdin=subprocess.PIPE)
+    process = subprocess.Popen(['/usr/bin/ssh', 'tinydns@%s' %
+        models.settings['dns_hostname']], shell=False, stdin=subprocess.PIPE)
     process.communicate("\n".join(DNS)+"\n")
     # print "\n".join(DNS)+"\n"
 
@@ -390,15 +457,16 @@ def dns():
 def prefix_to_mask(prefix):
     t = [0, 0, 0, 0]
     for i in range(0, 4):
-        if prefix > i*8+7:
+        if prefix > i * 8 + 7:
             t[i] = 255
-        elif i*8 < prefix and prefix <= (i+1)*8:
-            t[i] = 256 - (2 ** ((i+1)*8 - prefix))
+        elif i * 8 < prefix and prefix <= (i + 1) * 8:
+            t[i] = 256 - (2 ** ((i + 1) * 8 - prefix))
     return ".".join([str(i) for i in t])
 
 def dhcp():
     vlans = models.Vlan.objects.all()
-    regex = re.compile(r'^([0-9]+)\.([0-9]+)\.[0-9]+\.[0-9]+\s+([0-9]+)\.([0-9]+)\.[0-9]+\.[0-9]+$')
+    regex = re.compile(r'^([0-9]+)\.([0-9]+)\.[0-9]+\.[0-9]+\s+'
+            r'([0-9]+)\.([0-9]+)\.[0-9]+\.[0-9]+$')
     DHCP = []
 
 # /tools/dhcp3/dhcpd.conf.generated
@@ -408,25 +476,26 @@ def dhcp():
             m = regex.search(i_vlan.dhcp_pool)
             if(m or i_vlan.dhcp_pool == "manual"):
                 DHCP.append ('''
-                # %(name)s - %(interface)s
-                subnet %(net)s netmask %(netmask)s {
-                  %(extra)s;
-                  option domain-name "%(domain)s";
-                  option routers %(router)s;
-                  option domain-name-servers %(dnsserver)s;
-                  option ntp-servers %(ntp)s;
-                  next-server %(tftp)s;
-                  authoritative;
-                  filename \"pxelinux.0\";
-                  allow bootp; allow booting;
-                }''' % {
+    # %(name)s - %(interface)s
+    subnet %(net)s netmask %(netmask)s {
+      %(extra)s;
+      option domain-name "%(domain)s";
+      option routers %(router)s;
+      option domain-name-servers %(dnsserver)s;
+      option ntp-servers %(ntp)s;
+      next-server %(tftp)s;
+      authoritative;
+      filename \"pxelinux.0\";
+      allow bootp; allow booting;
+    }'''        % {
                     'net': i_vlan.net4,
                     'netmask': prefix_to_mask(i_vlan.prefix4),
                     'domain': i_vlan.domain,
                     'router': i_vlan.ipv4,
                     'ntp': i_vlan.ipv4,
                     'dnsserver': models.settings['rdns_ip'],
-                    'extra': "range %s" % i_vlan.dhcp_pool if m else "deny unknown-clients",
+                    'extra': "range %s" % (i_vlan.dhcp_pool
+                        if m else "deny unknown-clients"),
                     'interface': i_vlan.interface,
                     'name': i_vlan.name,
                     'tftp': i_vlan.ipv4
@@ -443,7 +512,10 @@ def dhcp():
                         'ipv4': i_host.ipv4,
                     })
 
-    process = subprocess.Popen(['/usr/bin/ssh', 'fw2', 'cat > /tools/dhcp3/dhcpd.conf.generated;sudo /etc/init.d/isc-dhcp-server restart'], shell=False, stdin=subprocess.PIPE)
+    process = subprocess.Popen(['/usr/bin/ssh', 'fw2',
+        'cat > /tools/dhcp3/dhcpd.conf.generated;'
+        'sudo /etc/init.d/isc-dhcp-server restart'], shell=False,
+        stdin=subprocess.PIPE)
 #   print "\n".join(DHCP)+"\n"
     process.communicate("\n".join(DHCP)+"\n")
 
