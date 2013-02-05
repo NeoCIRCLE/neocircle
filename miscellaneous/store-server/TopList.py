@@ -12,7 +12,7 @@ mask = IN_CREATE | IN_MODIFY | IN_DONT_FOLLOW
 Register given file to ~/../.top dir as a symbolic link.
 """
 def update_new(name):
-    norm = os.path.normpath(name)
+    norm = os.path.realpath(name)
     if norm != name:
         return # link
     name = norm
@@ -24,7 +24,7 @@ def update_new(name):
     if not name.startswith(home):
         return # outside home
 
-    top_dir = os.path.normpath(os.path.join(home, "../.top"))
+    top_dir = os.path.realpath(os.path.join(home, "../.top"))
     try:
         os.mkdir(top_dir)
     except OSError:

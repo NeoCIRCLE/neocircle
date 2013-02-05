@@ -2,7 +2,7 @@
 
 for i in cloudstore toplist django
 do
-    sudo stop $i
+    sudo stop $i || true
 done
 set -x
 cd /opt/webadmin/cloud
@@ -50,5 +50,9 @@ sudo cp vimrc.local /etc/vim/vimrc.local
 
 cd /opt/webadmin/cloud
 ./manage.py changepassword test
+
+git config --global alias.prettylog 'log --graph --all --decorate --date-order --pretty="%C(yellow)%h%Cred%d%Creset - %C(cyan)%an %Creset: %s %Cgreen(%cr)"'
+git config --global color.ui true
+git config --global core.editor vim
 
 true

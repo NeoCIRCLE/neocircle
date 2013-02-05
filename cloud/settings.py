@@ -179,6 +179,27 @@ import djcelery
 djcelery.setup_loader()
 BROKER_URL = 'django://'
 
+store_settings = {
+        "basic_auth": "True",
+        "verify_ssl": "False",
+        "ssl_auth": "False",
+        "store_client_pass":  "IQu8Eice",
+        "store_client_user":  "admin",
+        "store_client_key": "/opt/webadmin/cloud/client.key",
+        "store_client_cert": "/opt/webadmin/cloud/client.crt",
+        "store_url": "http://localhost:9000",
+}
+
+
+firewall_settings = {
+    "default_vlangroup": "publikus",
+    "reload_sleep": "10",
+    "dns_hostname": "dns1.ik.bme.hu",
+    "rdns_ip": "152.66.243.60",
+    "dns_ip": "152.66.243.60",
+    "dns_ttl": "300",
+}
+
 try:
     from cloud.local_settings import *
 except:

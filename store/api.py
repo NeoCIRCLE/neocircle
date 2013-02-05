@@ -1,8 +1,7 @@
 from django.db import models
 from django.http import Http404
 import json, requests, time
-from modeldict import ModelDict
-from store.models import settings
+from cloud.settings import store_settings as settings
 
 # Create your models here.
 #TODO Handle exceptions locally
@@ -15,6 +14,9 @@ class StoreApi:
 #    store_password = 'IQu8Eice'
 #    ssl_auth = True
 #    verify_ssl = False
+    @staticmethod
+    def get_host():
+        return settings['store_host']
     @staticmethod
     def post_request(url, payload):
         headers = {'content-type': 'application/json'}
@@ -123,6 +125,14 @@ class StoreApi:
         r = StoreApi.post_request(url, payload)
         if r.status_code == requests.codes.ok:
             return True
+        else:
+            return False
+    @staticmethod
+    def requestquota(neptun):
+        url = settings['store_url']+'/'+neptun
+        r = StoreApi.get_request(url)
+        if r.status_code == requests.codes.ok:
+            return json.loads(r.content)
         else:
             return False
     @staticmethod

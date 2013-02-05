@@ -48,6 +48,15 @@
                     </ul>
                 </div>
             </li>
+            <li class="wm small">
+                <div class="summary">
+                    <div class="quota">
+                        <div class="used" style="background-color: rgba(0,255,0,0.2); width: 0%"></div>
+                    </div>
+                    <div class="name">Saját Kvóta: 0/10</div>
+                    <div class="clear"></div>
+                </div>
+            </li>
         </ul>
     </div>
     <div class="contentblock" id="template">
@@ -56,7 +65,7 @@
             <li class="wm">
                 <div class="summary">
                     <div class="quota">
-                        <div class="used" style="background-color: rgba(0,255,0,0.5); width: 20%"></div>
+                        <div class="used" style="background-color: rgba(0,255,0,0.2); width: 20%"></div>
                     </div>
                     <div class="name">Win7 Matlab</div>
                     <div class="status">2/10</div>
@@ -68,7 +77,6 @@
                     <div class="clear"></div>
                 </div>
                 <div class="details">
-                    <h3>Részletek</h3>
                     <ul>
                         <li class="name">Rendszer: <span class="value">Windows 7 Desktop</span></li>
                         <li class="description">Leírás: <span class="value">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin nibh arcu, cursus et sodales eu, iaculis id metus. Suspendisse et mauris nisi, luctus feugiat nisi. Nullam elementum tincidunt urna a luctus.</span><div class="clear"></div></li>
@@ -81,7 +89,7 @@
             <li class="wm">
                 <div class="summary">
                     <div class="quota">
-                        <div class="used" style="background-color: rgba(255,128,0,0.5); width: 70%"></div>
+                        <div class="used" style="background-color: rgba(255,128,0,0.2); width: 70%"></div>
                     </div>
                     <div class="name">Win7 Matlab</div>
                     <div class="status">7/10</div>
@@ -93,7 +101,6 @@
                     <div class="clear"></div>
                 </div>
                 <div class="details">
-                    <h3>Részletek</h3>
                     <ul>
                         <li class="name">Rendszer: <span class="value">Windows 7 Desktop</span></li>
                         <li class="description">Leírás: <span class="value">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin nibh arcu, cursus et sodales eu, iaculis id metus. Suspendisse et mauris nisi, luctus feugiat nisi. Nullam elementum tincidunt urna a luctus.</span><div class="clear"></div></li>
@@ -106,7 +113,7 @@
             <li class="wm">
                 <div class="summary">
                     <div class="quota">
-                        <div class="used" style="background-color: rgba(255,0,0,0.5); width: 100%"></div>
+                        <div class="used" style="background-color: rgba(255,0,0,0.2); width: 100%"></div>
                     </div>
                     <div class="name">Win7 Matlab</div>
                     <div class="status">10/10</div>
@@ -118,7 +125,6 @@
                     <div class="clear"></div>
                 </div>
                 <div class="details">
-                    <h3>Részletek</h3>
                     <ul>
                         <li class="name">Rendszer: <span class="value">Windows 7 Desktop</span></li>
                         <li class="description">Leírás: <span class="value">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin nibh arcu, cursus et sodales eu, iaculis id metus. Suspendisse et mauris nisi, luctus feugiat nisi. Nullam elementum tincidunt urna a luctus.</span><div class="clear"></div></li>
@@ -139,7 +145,6 @@
                     <div class="clear"></div>
                 </div>
                 <div class="details">
-                    <h3>Részletek</h3>
                     <ul>
                         <li class="name">Rendszer: <span class="value">Windows 7 Desktop</span></li>
                         <li class="description">Leírás: <span class="value">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin nibh arcu, cursus et sodales eu, iaculis id metus. Suspendisse et mauris nisi, luctus feugiat nisi. Nullam elementum tincidunt urna a luctus.</span><div class="clear"></div></li>
@@ -158,9 +163,9 @@
             <li class="wm small">
                 <div class="summary">
                     <div class="quota">
-                        <div class="used" style="background-color: rgba(0,255,0,0.5); width: 19%"></div>
+                        <div class="used" style="background-color: rgba(0,255,0,0.2); width: 19%"></div>
                     </div>
-                    <div class="name">Kvóta: 19/100</div>
+                    <div class="name">Elosztható Kvóta: 19/100</div>
                     <div class="clear"></div>
                 </div>
             </li>
@@ -177,115 +182,5 @@
     {% endif %}
     {% endfor %}
 </div>
-<div class="boxes">
-    <div class="contentblock">
-        <h2>
-            Adattár
-        </h2>
-        <div class="content">
-            <ul class="file-list">
-                <li class="wm">
-                    <div class="summary">
-                        <div class="name filetype-c">hello.c</div>
-                        <div class="info">1 Kb</div>
-                        <div class="actions">
-                            <a href="#"><img src="/static/icons/pencil.png" alt="rename" /></a>
-                            <a href="#"><img src="/static/icons/minus-circle.png" alt="delete" /></a>
-                            <a href="#"><img src="/static/icons/download-cloud.png" alt="download" /></a>
-                        </div>
-                        <div class="clear"></div>
-                    </div>
-                    <div class="details">
-                        <h3>Részletek</h3>
-                        <ul>
-                            <li>Létrehozva: <span class="value">2012.12.29. 23:12</span></li>
-                            <li>Módosítva: <span class="value">2012.12.29. 23:12</span></li>
-                            <li>Hozzáférés: <span class="value">2012.12.29. 23:12</span></li>
-                            <li>Típus: <span class="value">text/plain</span></li>
-                        </ul>
-                    </div>
-                </li>
-                <li class="wm">
-                    <div class="summary">
-                        <div class="name filetype-image">suna.jpg</div>
-                        <div class="info">1 Kb</div>
-                        <div class="actions">
-                            <a href="#"><img src="/static/icons/pencil.png" alt="rename" /></a>
-                            <a href="#"><img src="/static/icons/minus-circle.png" alt="delete" /></a>
-                            <a href="#"><img src="/static/icons/download-cloud.png" alt="download" /></a>
-                        </div>
-                        <div class="clear"></div>
-                    </div>
-                    <div class="details">
-                        <h3>Részletek</h3>
-                        <ul>
-                            <li>Létrehozva: <span class="value">2012.12.29. 23:12</span></li>
-                            <li>Módosítva: <span class="value">2012.12.29. 23:12</span></li>
-                            <li>Hozzáférés: <span class="value">2012.12.29. 23:12</span></li>
-                            <li>Típus: <span class="value">image/jpg</span></li>
-                        </ul>
-                    </div>
-                </li>
-                <li class="wm">
-                    <div class="summary">
-                        <div class="name filetype-folder">poresz</div>
-                        <div class="info">katalógus</div>
-                        <div class="actions">
-                            <a href="#"><img src="/static/icons/pencil.png" alt="rename" /></a>
-                            <a href="#"><img src="/static/icons/minus-circle.png" alt="delete" /></a>
-                        </div>
-                        <div class="clear"></div>
-                    </div>
-                    <div class="details">
-                        <h3>Részletek</h3>
-                        <ul>
-                            <li>Létrehozva: <span class="value">2012.12.29. 23:12</span></li>
-                            <li>Módosítva: <span class="value">2012.12.29. 23:12</span></li>
-                            <li>Hozzáférés: <span class="value">2012.12.29. 23:12</span></li>
-                            <li>Fájlok: <span class="value">666 db</span></li>
-                        </ul>
-                    </div>
-                </li>
-                <li class="wm" style="display: none">
-                    <div class="summary">
-                        <div class="name filetype-text">matlab_serial.txt</div>
-                        <div class="info">358 Kb</div>
-                        <div class="actions">
-                            <a href="#"><img src="/static/icons/pencil.png" alt="rename" /></a>
-                            <a href="#"><img src="/static/icons/minus-circle.png" alt="delete" /></a>
-                            <a href="#"><img src="/static/icons/download-cloud.png" alt="download" /></a>
-                        </div>
-                        <div class="clear"></div>
-                    </div>
-                    <div class="details">
-                        <h3>Részletek</h3>
-                        <ul>
-                            <li>Létrehozva: <span class="value">2012.12.29. 23:12</span></li>
-                            <li>Módosítva: <span class="value">2012.12.29. 23:12</span></li>
-                            <li>Hozzáférés: <span class="value">2012.12.29. 23:12</span></li>
-                            <li>Típus: <span class="value">text/plain</span></li>
-                        </ul>
-                    </div>
-                </li>
-                <li class="file-details wm" id="load-more-files">
-                    <div class="summary">
-                        <div class="name filetype-more">
-                            Mutasd a régebbi fájlokat!
-                        </div>
-                        <div class="actions" style="text-align: right; display: none">
-                            <img src="/static/load-4.gif" alt="loading" />
-                        </div>
-                        <div class="clear"></div>
-                    </div>
-                </li>
-                <li class="file-upload wm">
-                    <div class="summary">
-                        <div class="name filetype-up">Fájlfeltöltés</div>
-                        <div class="clear"></div>
-                    </div>
-                </li>
-            </ul>
-        </div>
-    </div>
-</div>
+{% include "box-filelist.html" %}
 {% endblock %}

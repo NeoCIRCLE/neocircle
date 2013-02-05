@@ -1,0 +1,17 @@
+#!/bin/bash
+
+exec >>/tmp/pclog 2>&1
+date
+id
+
+read old new
+
+old=$(git rev-parse "$old")
+new=$(git rev-parse "$new")
+
+for i in $(git rev-list $old..$new)
+do
+	sudo -u www-data /usr/local/bin/trac-admin /srv/trac/cloud/ changeset added cloud "$i"
+	git log --decorate --date-order --format='%h %d - %an: %s' "$i~..$i" > /home/git/irc/irc.atw.hu/#ik/in
+done
+
