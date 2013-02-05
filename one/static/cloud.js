@@ -138,6 +138,13 @@ $(function() {
             }
 
         function addFile(d) {
+            function convert(n){
+                var suffix = 'B KB MB GB'.split(' ');
+                for(var i=0;n>1024;i++){
+                    n/=1024;
+                }
+                return n.toFixed(2)+' '+suffix[i];
+            }
             var viewData;
             if(d.TYPE === 'D') {
                 viewData = {
@@ -155,12 +162,13 @@ $(function() {
                 viewData = {
                     originalName: d.NAME,
                     name: d.NAME.length > 30 ? (d.NAME.substr(0, 27) + '...') : d.NAME,
-                    size: d.SIZE + 'K',
+                    size: convert(d.SIZE),
                     type: 'fájl',
                     mTime: d.MTIME,
                     getTypeClass: 'name filetype-text',
                     clickHandler: function(item, event) {}
                 };
+                console.log(viewData);
             }
             self.files.push(viewData);
         }
