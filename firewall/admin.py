@@ -5,9 +5,6 @@ from firewall.models import *
 from django import contrib
 
 
-class AliasInline(contrib.admin.TabularInline):
-    model = Alias
-
 class RuleInline(contrib.admin.TabularInline):
     model = Rule
 
@@ -94,7 +91,6 @@ class RecordAdmin(admin.ModelAdmin):
 admin.site.register(Host, HostAdmin)
 admin.site.register(Vlan, VlanAdmin)
 admin.site.register(Rule, RuleAdmin)
-admin.site.register(Alias, AliasAdmin)
 admin.site.register(Group, GroupAdmin)
 admin.site.register(VlanGroup)
 admin.site.register(Firewall, FirewallAdmin)

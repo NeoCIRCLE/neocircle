@@ -339,14 +339,6 @@ def dns():
     vlans = models.Vlan.objects.all()
     regex = re.compile(r'^([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)$')
     DNS = []
-    DNS.append("=cloud.ik.bme.hu:152.66.243.98:600::")
-    DNS.append(":cloud.ik.bme.hu:28:\040\001\007\070\040\001\100\061\000\002\000\000\000\007\000\000:600")
-    DNS.append("=r.cloud.ik.bme.hu:152.66.243.62:600::")
-
-
-    DNS.append("Z1.3.0.4.1.0.0.2.8.3.7.0.1.0.0.2.ip6.arpa:dns1.ik.bme.hu:support.ik.bme.hu::::::600") # soa
-    DNS.append("&1.3.0.4.1.0.0.2.8.3.7.0.1.0.0.2.ip6.arpa::dns1.ik.bme.hu:600::")      # ns rekord
-    DNS.append("&1.3.0.4.1.0.0.2.8.3.7.0.1.0.0.2.ip6.arpa::nic.bme.hu:600::")      # ns rekord
 
     for i_vlan in vlans:
         m = regex.search(i_vlan.net4)

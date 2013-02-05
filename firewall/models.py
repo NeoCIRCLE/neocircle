@@ -109,22 +109,6 @@ class Group(models.Model):
     def __unicode__(self):
         return self.name
 
-class Alias(models.Model):
-    host = models.ForeignKey('Host')
-    alias = models.CharField(max_length=40, unique=True, validators=[val_domain])
-    owner = models.ForeignKey(User, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    modified_at = models.DateTimeField(auto_now=True)
-
-    def clean(self):
-        # FIXME later: critical race condition
-        for h in Host.objects.all():
-            if h.get_fqdn() == self.alias:
-                raise ValidationError(_("Host name already used."))
-
-    class Meta:
-        verbose_name_plural = 'aliases'
-
 class Host(models.Model):
     hostname = models.CharField(max_length=40, unique=True, validators=[val_alfanum])
     reverse = models.CharField(max_length=40, validators=[val_domain], blank=True, null=True)
