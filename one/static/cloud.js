@@ -32,7 +32,6 @@ $(function() {
             $(this).parent('.wm').removeClass('opened');
             $(this).next('.details').slideUp(700);
         } else {
-            console.log('addClass');
             $(this).parent('.wm').addClass('opened');
             $(this).next('.details').slideDown(700);
         }
@@ -86,7 +85,6 @@ $(function() {
             var disabled = false;
             return function() {
                 if(disabled) {
-                    console.log('disabled');
                     return
                 };
                 disabled = true;
@@ -218,8 +216,6 @@ $(function() {
                 success: function(data) {
                     self.uploadURL(data.url);
                 }
-            }).error(function() {
-                console.log('asd', arguments)
             })
         }
         self.newFolderName = ko.observable();
@@ -252,14 +248,12 @@ $(function() {
             if(tests.formdata) {
                 var xhr = new XMLHttpRequest();
                 xhr.open('POST', self.uploadURL());
-                console.log(xhr);
                 xhr.onload = function() {
                     self.uploadProgress('0%');
                     loadFolder(self.currentPath());
                 };
                 if(tests.progress) {
                     xhr.upload.onprogress = function(event) {
-                        console.log(event);
                         if(event.lengthComputable) {
                             var complete = (event.loaded / event.total * 100 | 0);
                             //progress.value = progress.innerHTML = complete;
@@ -272,10 +266,8 @@ $(function() {
             }
         }
         document.addEventListener('drop', function(e) {
-            console.log(e);
             e.stopPropagation();
             e.preventDefault();
-            console.log(e.dataTransfer.files)
             readfiles(e.dataTransfer.files);
             return false;
         });
@@ -309,13 +301,11 @@ $(function() {
     var model = new Model();
     ko.applyBindings(model);
     document.addEventListener('dragenter', function(e) {
-        console.log(e);
         e.stopPropagation();
         e.preventDefault();
         return false;
     });
     document.addEventListener('dragover', function(e) {
-        console.log(e);
         e.stopPropagation();
         e.preventDefault();
         return false;
