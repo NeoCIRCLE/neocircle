@@ -1,0 +1,271 @@
+# django-one module
+# Copyright (C) 2013 BME IK
+# This file is distributed under the same license as the django-one package.
+# Mate Ory <orymate@iit.bme.hu>, 2013.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2013-02-05 00:17+0100\n"
+"PO-Revision-Date: 2013-02-05 00:18+0100\n"
+"Last-Translator: Mate Ory <orymate@iit.bme.hu>\n"
+"Language-Team: LANGUAGE <cloud@ik.bme.hu>\n"
+"Language: hu\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
+#: admin.py:40
+msgid "Update status"
+msgstr "Állapot frissítése"
+
+#: admin.py:45
+msgid "Submit VM"
+msgstr "VM beküldése"
+
+#: models.py:33
+msgid "user"
+msgstr "felhasználó"
+
+#: models.py:35
+msgid "Samba password"
+msgstr "Samba jelszó"
+
+#: models.py:36
+msgid "Generated password for accessing store from Windows."
+msgstr "Generált jelszó az adattár eléréséhez Windows alól."
+
+#: models.py:37
+msgid "SSH key (public)"
+msgstr "SSH kulcs (nyilvános)"
+
+#: models.py:38
+msgid "Generated SSH public key for accessing store from Linux."
+msgstr "Generált SSH publikus kulcs az adattár eléréséhez Linux alól."
+
+#: models.py:39
+msgid "SSH key (private)"
+msgstr "SSH kulcs (magán)"
+
+#: models.py:40
+msgid "Generated SSH private key for accessing store from Linux."
+msgstr "Generált SSH privát kulcs az adattár eléréséhez Linux alól."
+
+#: models.py:86
+#, python-format
+msgid "OpenSSH key type %s is not supported."
+msgstr "A következő OpenSSH kulcstípus nincs támogatva: %s."
+
+#: models.py:95
+msgid "Invalid OpenSSH public key."
+msgstr "Érvénytelen OpenSSH nyilvános kulcs."
+
+#: models.py:102
+msgid "SSH key"
+msgstr "SSH kulcs"
+
+#: models.py:103
+msgid ""
+"<a href=\"/info/ssh/\">SSH public key in OpenSSH format</a> used for shell "
+"login (2048+ bit RSA preferred). Example: <code>ssh-rsa AAAAB...QtQ== john</"
+"code>."
+msgstr ""
+"<a href=\"/info/ssh/\">SSH nyilvános kulcs OpenSSH formátumban</a> az SSH "
+"bejelentkezéshez – ajánlás: 2048+ bites RSA. Példa: <code><code>ssh-rsa "
+"AAAAB...QtQ== jozsi</a>."
+
+#: models.py:111
+msgid "unnamed"
+msgstr "névtelen"
+
+#: models.py:119 models.py:156 models.py:195 models.py:206 models.py:228
+msgid "name"
+msgstr "név"
+
+#: models.py:157
+msgid "NAT"
+msgstr "NAT"
+
+#: models.py:157
+msgid "If network address translation is done."
+msgstr "Hálózati címfordítás történik-e."
+
+#: models.py:158
+msgid "public"
+msgstr "publikus"
+
+#: models.py:158
+msgid "If internet gateway is available."
+msgstr "Van-e elérheti internetes útválasztás."
+
+#: models.py:196
+msgid "CPU cores."
+msgstr "CPU magok száma."
+
+#: models.py:197
+msgid "Mebibytes of memory."
+msgstr "Memória mérete mebibyte-ban."
+
+#: models.py:209
+msgid "access method"
+msgstr "elérési mód"
+
+#: models.py:210
+msgid "disk"
+msgstr "lemez"
+
+#: models.py:211
+msgid "instance type"
+msgstr "példánytípus"
+
+#: models.py:212
+msgid "network"
+msgstr "hálózat"
+
+#: models.py:213 models.py:231
+msgid "owner"
+msgstr "tulajdonos"
+
+#: models.py:214 models.py:232
+msgid "created at"
+msgstr "létrehozás ideje"
+
+#: models.py:220 models.py:230
+msgid "template"
+msgstr "sablon"
+
+#: models.py:221
+msgid "templates"
+msgstr "sablonok"
+
+#: models.py:229
+msgid "IP address"
+msgstr "IP cím"
+
+#: models.py:234
+msgid "deployable"
+msgstr "beküldhető"
+
+#: models.py:235
+msgid "pending"
+msgstr "várakozó"
+
+#: models.py:236
+msgid "done"
+msgstr "kész"
+
+#: models.py:237
+msgid "active"
+msgstr "aktív"
+
+#: models.py:238
+msgid "unknown"
+msgstr "ismeretlen"
+
+#: models.py:239
+msgid "suspended"
+msgstr "felfüggesztett"
+
+#: models.py:240
+msgid "failed"
+msgstr "hiba"
+
+#: models.py:242
+msgid "active since"
+msgstr "aktívvá válás ideje"
+
+#: models.py:243
+msgid "Time stamp of successful boot report."
+msgstr "A sikeres indulás jelentésének időpontja."
+
+#: models.py:244
+msgid "host in firewall"
+msgstr "gép a tűzfalban"
+
+#: models.py:245
+msgid "password"
+msgstr "jelszó"
+
+#: models.py:245
+msgid "Original password of instance"
+msgstr "A példány eredeti jelszava."
+
+#: models.py:246
+msgid "OpenNebula ID"
+msgstr "OpenNebula ID"
+
+#: models.py:451
+msgid "instance"
+msgstr "példány"
+
+#: models.py:452
+msgid "instances"
+msgstr "példányok"
+
+#: views.py:92
+msgid "Failed to create virtual machine."
+msgstr "A virtuális gép indítása sikertelen."
+
+#: views.py:128
+msgid "Port number is in a restricted domain (22000 to 24000)."
+msgstr "A megadott port foglalt tartományba esik (22000-től 24000-ig)."
+
+#: views.py:132
+#, python-format
+msgid "Port %d successfully added."
+msgstr "%d számú port hozzáadása sikeres."
+
+#: views.py:134
+msgid "Adding port failed."
+msgstr "Port hozzáadása sikertelen."
+
+#: views.py:151
+#, python-format
+msgid "Port %d successfully removed."
+msgstr "%d számú port eltávolítása sikeres."
+
+#: views.py:153
+msgid "Removing port failed."
+msgstr "Port eltávolítása sikertelen."
+
+#: views.py:160
+msgid "Virtual machine is successfully deleted."
+msgstr "A virtuális gép törlése sikeres."
+
+#: views.py:162
+msgid "Failed to delete virtual machine."
+msgstr "A virtuális gép törlése sikertelen."
+
+#: views.py:177
+msgid "Virtual machine is successfully stopped."
+msgstr "A virtuális gép sikeresen leállt."
+
+#: views.py:179
+msgid "Failed to stop virtual machine."
+msgstr "A virtuális gép leállítása sikertelen."
+
+#: views.py:187
+msgid "Virtual machine is successfully resumed."
+msgstr "A virtuális gép sikeresen folytatva."
+
+#: views.py:189
+msgid "Failed to resume virtual machine."
+msgstr "A virtuális gép visszatöltése sikertelen."
+
+#: views.py:197
+msgid "Virtual machine is successfully powered off."
+msgstr "A virtuális gép kikapcsolása sikeres."
+
+#: views.py:199
+msgid "Failed to power off virtual machine."
+msgstr "A virtuális gép kikapcsolása sikertelen."
+
+#: views.py:207
+msgid "Virtual machine is successfully restarted."
+msgstr "A virtuális gép újraindítása sikeres."
+
+#: views.py:209
+msgid "Failed to restart virtual machine."
+msgstr "A virtuális gép újraindítása sikertelen."

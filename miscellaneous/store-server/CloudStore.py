@@ -359,7 +359,7 @@ def file_dict(path, home):
         is_dir = 'F'
     return {'NAME': basename,
             'TYPE': is_dir,
-            'SIZE': os.path.getsize(path)/1024,
+            'SIZE': os.path.getsize(path),
             'MTIME': os.path.getmtime(path),
             'DIR': os.path.relpath(os.path.dirname(path), home)}
 

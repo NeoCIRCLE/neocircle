@@ -7,14 +7,9 @@ from django.utils.translation import ugettext_lazy as _
 from firewall.fields import *
 from south.modelsinspector import add_introspection_rules
 from django.core.validators import MinValueValidator, MaxValueValidator
-from modeldict import ModelDict
-
-class Setting(models.Model):
-    key = models.CharField(max_length=32)
-    value = models.CharField(max_length=200)
-    description = models.TextField(blank=True)
-
-settings = ModelDict(Setting, key='key', value='value', instances=False)
+from cloud.settings import firewall_settings as settings
+from django.utils.ipv6 import is_valid_ipv6_address
+import re
 
 class Rule(models.Model):
     CHOICES_type = (('host', 'host'), ('firewall', 'firewall'), ('vlan', 'vlan'))
@@ -77,7 +72,8 @@ class Vlan(models.Model):
     snat_to = models.ManyToManyField('self', symmetrical=False, blank=True, null=True)
     description = models.TextField(blank=True)
     comment = models.TextField(blank=True)
-    domain = models.TextField(blank=True, validators=[val_domain])
+    domain = models.ForeignKey('Domain')
+    reverse_domain = models.TextField(validators=[val_reverse_domain])
     dhcp_pool = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     owner = models.ForeignKey(User, blank=True, null=True)
@@ -113,22 +109,6 @@ class Group(models.Model):
     def __unicode__(self):
         return self.name
 
-class Alias(models.Model):
-    host = models.ForeignKey('Host')
-    alias = models.CharField(max_length=40, unique=True, validators=[val_domain])
-    owner = models.ForeignKey(User, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    modified_at = models.DateTimeField(auto_now=True)
-
-    def clean(self):
-        # FIXME later: critical race condition
-        for h in Host.objects.all():
-            if h.get_fqdn() == self.alias:
-                raise ValidationError(_("Host name already used."))
-
-    class Meta:
-        verbose_name_plural = 'aliases'
-
 class Host(models.Model):
     hostname = models.CharField(max_length=40, unique=True, validators=[val_alfanum])
     reverse = models.CharField(max_length=40, validators=[val_domain], blank=True, null=True)
@@ -150,6 +130,7 @@ class Host(models.Model):
         return self.hostname
 
     def save(self, *args, **kwargs):
+        id = self.id
         if not self.id and self.ipv6 == "auto":
             self.ipv6 = ipv4_2_ipv6(self.ipv4)
         if not self.shared_ip and self.pub_ipv4 and Host.objects.exclude(id=self.id).filter(pub_ipv4=self.pub_ipv4):
@@ -158,6 +139,10 @@ class Host(models.Model):
             raise ValidationError("Egy masik host natolt cimet nem hasznalhatod sajat ipv4-nek")
         self.full_clean()
         super(Host, self).save(*args, **kwargs)
+        if(id is None):
+            Record(domain=self.vlan.domain, host=self, type='A', owner=self.owner).save()
+            if self.ipv6 == "auto":
+                Record(domain=self.vlan.domain, host=self, type='AAAA', owner=self.owner).save()
 
     def enable_net(self):
         self.groups.add(Group.objects.get(name="netezhet"))
@@ -186,14 +171,7 @@ class Host(models.Model):
         self.rules.filter(owner=self.owner).delete()
 
     def get_fqdn(self):
-        return self.hostname + u'.' + self.vlan.domain
-
-    def clean(self):
-        # FIXME later: critical race condition
-        for a in Alias.objects.all():
-            if self.get_fqdn() == a.alias:
-                raise ValidationError(_("Host name already used as alias."))
-
+        return self.hostname + u'.' + unicode(self.vlan.domain)
 
 
 class Firewall(models.Model):
@@ -201,4 +179,93 @@ class Firewall(models.Model):
 
     def __unicode__(self):
         return self.name
+
+class Domain(models.Model):
+    name = models.CharField(max_length=40, validators=[val_domain])
+    owner = models.ForeignKey(User)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+    ttl = models.IntegerField(default=600)
+    description = models.TextField(blank=True)
+
+    def __unicode__(self):
+        return self.name
+
+class Record(models.Model):
+    CHOICES_type = (('A', 'A'), ('CNAME', 'CNAME'), ('AAAA', 'AAAA'), ('MX', 'MX'), ('NS', 'NS'), ('PTR', 'PTR'), ('TXT', 'TXT'))
+    name = models.CharField(max_length=40, validators=[val_domain], blank=True, null=True)
+    domain = models.ForeignKey('Domain')
+    host = models.ForeignKey('Host', blank=True, null=True)
+    type = models.CharField(max_length=6, choices=CHOICES_type)
+    address = models.CharField(max_length=40, blank=True, null=True)
+    ttl = models.IntegerField(default=600)
+    owner = models.ForeignKey(User)
+    description = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+    def __unicode__(self):
+        return self.desc()
+
+    def desc(self):
+        a = self.get_data()
+        if a:
+            return a['name'] + u' ' + a['type'] + u' ' + a['address']
+        return '(nincs)'
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super(Record, self).save(*args, **kwargs)
+
+    def clean(self):
+        if not((not self.name and self.host) or self.name.endswith(u'.' + self.domain.name) or self.name == self.domain.name ):
+            raise ValidationError(u'nemok')
+
+        if self.host and self.type in ['CNAME', 'A', 'AAAA', 'PTR']:
+            if self.type == 'CNAME':
+                if not self.name or self.address:
+                    raise ValidationError(u'CNAME rekordnal csak a name legyen kitoltve, ha van host beallitva')
+            elif self.type == 'PTR':
+                if not self.address or self.name:
+                    raise ValidationError(u'PTR rekordnal csak a name legyen kitoltve, ha van host beallitva')
+            elif self.name or self.address:
+                raise ValidationError(u'A, AAAA rekord eseten nem szabad megadni name-t, address-t, ha tarsitva van host')
+        else:
+            if not (self.name and self.address):
+                raise ValidationError(u'name v address hianyzik')
+
+            if self.type == 'A':
+                if not ipv4_re.match(self.address):
+                    raise ValidationError(u'ez nem ipcim, ez nudli!')
+            elif self.type in ['CNAME', 'NS', 'PTR', 'TXT']:
+                if not domain_re.match(self.address):
+                    raise ValidationError(u'ez nem domain, ez nudli!')
+            elif self.type == 'AAAA':
+                if not is_valid_ipv6_address(self.address):
+                    raise ValidationError(u'ez nem ipv6cim, ez nudli!')
+            elif self.type == 'MX':
+                mx = self.address.split(':', 1)
+                if not (len(mx) == 2 and mx[0].isdigit() and domain_re.match(mx[1])):
+                    raise ValidationError(u'prioritas:hostname')
+            else:
+                raise ValidationError(u'ez ismeretlen rekord, ez nudli!')
+
+    def get_data(self):
+        retval = { 'name': self.name, 'type': self.type, 'ttl': self.ttl, 'address': self.address }
+        if self.host:
+            if self.type == 'A':
+                retval['address'] = self.host.pub_ipv4 if self.host.pub_ipv4 and not self.host.shared_ip else self.host.ipv4
+                retval['name'] = self.host.get_fqdn()
+            elif self.type == 'AAAA':
+                if not self.host.ipv6:
+                    return None
+                retval['address'] = self.host.ipv6
+                retval['name'] = self.host.get_fqdn()
+            elif self.type == 'CNAME':
+                retval['address'] = self.host.get_fqdn()
+        if not (retval['address'] and retval['name']):
+            return None
+        return retval
+
+
 

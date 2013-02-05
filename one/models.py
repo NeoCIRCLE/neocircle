@@ -7,12 +7,12 @@ from django.db import transaction
 from django.db.models.signals import post_save
 from django import forms
 from django.utils.translation import ugettext_lazy as _
-from firewall.models import Host, Rule, Vlan, settings
+from firewall.models import Host, Rule, Vlan
 from firewall.tasks import reload_firewall_lock
 from one.util import keygen
 from school.models import Person
 
-import subprocess, tempfile, os, stat, re
+import subprocess, tempfile, os, stat, re, base64, struct
 
 pwgen = User.objects.make_random_password
 
@@ -26,6 +26,7 @@ def create_user_profile(sender, instance, created, **kwargs):
             d.save()
 post_save.connect(create_user_profile, sender=User)
 
+
 """
 Cloud related details of a user
 """
@@ -36,7 +37,7 @@ class UserCloudDetails(models.Model):
             help_text=_('Generated password for accessing store from Windows.'))
     ssh_key = models.ForeignKey('SshKey', null=True, verbose_name=_('SSH key (public)'),
             help_text=_('Generated SSH public key for accessing store from Linux.'))
-    ssh_private_key = models.TextField(verbose_name=_('SSH key (private)'),
+    ssh_private_key = models.TextField(verbose_name=_('SSH key (private)'), null=True,
             help_text=_('Generated SSH private key for accessing store from Linux.'))
 
     """
@@ -51,6 +52,8 @@ class UserCloudDetails(models.Model):
         except:
             self.ssh_key = SshKey(user=self.user, key=pub)
         self.ssh_key.save()
+        self.ssh_key_id = self.ssh_key.id
+        self.save()
 
     """
     Generate new Samba password.
@@ -58,15 +61,12 @@ class UserCloudDetails(models.Model):
     def reset_smb(self):
         self.smb_password = pwgen()
 
-    """
-    Generate key pair and Samba password if needed.
-    """
-    def clean(self):
-        super(UserCloudDetails, self).clean()
-        if not self.ssh_key:
-            self.reset_keys()
-            if not self.smb_password or len(self.smb_password) == 0:
-                self.reset_smb()
+def reset_keys(sender, instance, created, **kwargs):
+    if created:
+        instance.reset_smb()
+        instance.reset_keys()
+
+post_save.connect(reset_keys, sender=UserCloudDetails)
 
 """
 Validate OpenSSH keys (length and type).
@@ -100,7 +100,7 @@ SSH public key (in OpenSSH format).
 class SshKey(models.Model):
     user = models.ForeignKey(User, null=False, blank=False)
     key = models.CharField(max_length=2000, verbose_name=_('SSH key'),
-            help_text=_('<a href="/info/ssh/">SSH public key in OpenSSH format</a> used for shell login '
+            help_text=_('<a href="/info/ssh/">SSH public key in OpenSSH format</a> used for shell and store login '
                 '(2048+ bit RSA preferred). Example: <code>ssh-rsa AAAAB...QtQ== '
                 'john</code>.'), validators=[OpenSshKeyValidator()])
 
@@ -225,11 +225,11 @@ Virtual machine instance.
 """
 class Instance(models.Model):
     name = models.CharField(max_length=100, unique=True,
-            verbose_name=_('név'), null=True, blank=True)
+            verbose_name=_('name'), null=True, blank=True)
     ip = models.IPAddressField(blank=True, null=True, verbose_name=_('IP address'))
     template = models.ForeignKey(Template, verbose_name=_('template'))
     owner = models.ForeignKey(User, verbose_name=_('owner'))
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_('created_at'))
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_('created at'))
     state = models.CharField(max_length=20,
             choices=[('DEPLOYABLE', _('deployable')),
                 ('PENDING', _('pending')),
@@ -268,6 +268,8 @@ class Instance(models.Model):
     def get_connect_uri(self):
         try:
             proto = self.template.access_type
+            if proto == 'ssh':
+                proto = 'sshterm'
             port = self.get_port()
             host = self.get_connect_host()
             pw = self.pw

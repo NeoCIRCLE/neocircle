@@ -3,7 +3,7 @@ from django.core.cache import cache
 import os
 import time
 from firewall.fw import *
-from firewall.models import settings
+from cloud.settings import firewall_settings as settings
 
 def reload_firewall_lock():
     acquire_lock = lambda: cache.add("reload_lock1", "true", 9)

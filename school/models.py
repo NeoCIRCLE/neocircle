@@ -44,7 +44,7 @@ class Course(models.Model):
         if self.default_group:
             return self.default_group
         else:
-            default_group = Group(name=_("%s -- default") % self.short(),
+            default_group = Group(name=_("%s (auto)") % self.short(),
                     semester=Semester.get_current(), course=self)
             default_group.save()
             self.default_group_id = default_group.id

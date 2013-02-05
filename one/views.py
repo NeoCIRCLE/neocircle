@@ -1,4 +1,4 @@
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 from datetime import datetime
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -125,13 +125,13 @@ class VmPortAddView(View):
             public = int(request.POST['public'])
 
             if public >= 22000 and public < 24000:
-                raise ValidationError("a port nem lehet 22000 es 24000 kozott")
+                raise ValidationError(_("Port number is in a restricted domain (22000 to 24000)."))
             inst = get_object_or_404(Instance, id=iid, owner=request.user)
             inst.firewall_host.add_port(proto=request.POST['proto'], public=public, private=int(request.POST['private']))
             reload_firewall_lock()
-            messages.success(request, _(u"A port hozzáadása sikerült."))
+            messages.success(request, _(u"Port %d successfully added.") % public)
         except:
-            messages.error(request, _(u"Nem sikerült a kért művelet"))
+            messages.error(request, _(u"Adding port failed."))
 #            raise
         return redirect('/vm/show/%d/' % int(iid))
 
@@ -148,9 +148,9 @@ def vm_port_del(request, iid, proto, public):
     try:
         inst.firewall_host.del_port(proto=proto, public=public)
         reload_firewall_lock()
-        messages.success(request, _(u"A port törlése sikerült."))
+        messages.success(request, _(u"Port %d successfully removed.") % public)
     except:
-        messages.error(request, _(u"Nem sikerült a kért művelet"))
+        messages.error(request, _(u"Removing port failed."))
     return redirect('/vm/show/%d/' % int(iid))
 
 class VmDeleteView(View):
