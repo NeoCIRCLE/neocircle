@@ -69,7 +69,7 @@ $(function() {
         })
         $('#modal').show();
     });
-    $('#old-upload').click(function(e){
+    $('#old-upload').click(function(e) {
         e.preventDefault();
         $(this).parent().hide().next('div').show();
         return false;
@@ -236,8 +236,8 @@ $(function() {
 
         function readfiles(files) {
             var formData = tests.formdata ? new FormData() : null;
-            for (var i = 0; i < files.length; i++) {
-                if (tests.formdata) formData.append('data', files[i]);
+            for(var i = 0; i < files.length; i++) {
+                if(tests.formdata) formData.append('data', files[i]);
             }
             // now post a new XHR request
             if(tests.formdata) {
@@ -254,7 +254,7 @@ $(function() {
                         if(event.lengthComputable) {
                             var complete = (event.loaded / event.total * 100 | 0);
                             //progress.value = progress.innerHTML = complete;
-                            self.uploadProgress(parseInt(complete)+'%');
+                            self.uploadProgress(parseInt(complete) + '%');
                         }
                     }
                 }
@@ -270,6 +270,31 @@ $(function() {
             readfiles(e.dataTransfer.files);
             return false;
         });
+        self.quota = {
+            used: ko.observable(),
+            soft: ko.observable(),
+            hard: ko.observable()
+        };
+        self.quota.usedBar = ko.computed(function() {
+            return(self.quota.used() / self.quota.hard() * 100).toFixed(0) + '%';
+        }, self);
+        self.quota.softPos = ko.computed(function() {
+            return(self.quota.soft() / self.quota.hard() * 100).toFixed(0) + '%';
+        }, self)
+
+        function refreshQuota() {
+            $.ajax({
+                'type': 'GET',
+                'url': '/ajax/store/quota',
+                dataType: 'json',
+                success: function(data) {
+                    self.quota.used(parseInt(data.Used));
+                    self.quota.soft(parseInt(data.Soft));
+                    self.quota.hard(parseInt(data.Hard));
+                }
+            })
+        }
+        refreshQuota();
         loadFolder(self.currentPath());
     }
     var model = new Model();

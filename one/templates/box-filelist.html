@@ -97,9 +97,10 @@
                 <li class="wm small">
                     <div class="summary">
                         <div class="quota">
-                            <div class="used" style="background-color: rgba(0,255,0,0.2); width: 2%"></div>
+                            <div class="used" style="background-color: rgba(0,255,0,0.2)" data-bind="style: {width: quota.usedBar}"></div>
+                            <div class="softLimit" data-bind="style: {left: quota.softPos}"></div>
                         </div>
-                        <div class="name">Kvóta: 20MB/2GB</div>
+                        <div class="name">Kvóta: <span data-bind="text: quota.used"></span>/<span data-bind="text: quota.hard"></span></div>
                         <div class="clear"></div>
                     </div>
                 </li>
