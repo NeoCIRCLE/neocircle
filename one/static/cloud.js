@@ -74,23 +74,61 @@ $(function() {
         return false;
     })
 
-    function convert(n, skip) {
+    /**
+     * Convert bytes to human readable format
+     */
+    function convert(n, skip, precision) {
         skip = skip | 0;
+        precision = precision|2;
         var suffix = 'B KB MB GB'.split(' ');
         for(var i = skip; n > 1024; i++) {
             n /= 1024;
         }
-        return n.toFixed(2) + ' ' + suffix[i];
+        return n.toFixed(precision) + ' ' + suffix[i];
     }
 
     function Model() {
+        //alias for this
         var self = this;
         var uploadURLRequestInProgress=false;
+        //currently displayed files
         self.files = ko.observableArray();
+        //all fetched files
         self.allFiles = [];
+        //false, if you are in /
         self.notInRoot = ko.observable(false);
+        //default file limit
         self.fileLimit = 5;
+        //defalut path to display
+        self.currentPath = ko.observable('/');
+        //default upload url (invalid)
+        self.uploadURL = ko.observable('/');
+        self.newFolderName = ko.observable();
+        self.uploadProgress = ko.observable('0%');
+        self.quota = {
+            rawUsed: ko.observable(0),
+            rawSoft: ko.observable(0),
+            rawHard: ko.observable(0)
+        };
+        self.quota.used = ko.computed(function() {
+            return convert(self.quota.rawUsed(),1);
+        });
+        self.quota.hard = ko.computed(function() {
+            return convert(self.quota.rawHard(),1);
+        });
+        self.quota.soft = ko.computed(function() {
+            return convert(self.quota.rawSoft(),1);
+        });
+        self.quota.usedBar = ko.computed(function() {
+            return(self.quota.rawUsed() / self.quota.rawHard() * 100).toFixed(0) + '%';
+        }, self);
+        self.quota.softPos = ko.computed(function() {
+            return(self.quota.rawSoft() / self.quota.rawHard() * 100).toFixed(0) + '%';
+        }, self)
 
+        /**
+         * Returns throttled function
+         */
         function throttle(f) {
             var disabled = false;
             return function() {
@@ -104,10 +142,18 @@ $(function() {
                 f.apply(null, arguments);
             }
         }
+
+        /**
+         * Loads the parent folder
+         */
         self.jumpUp = function() {
             var s = self.currentPath();
             loadFolder(s.substr(0, s.substr(0, s.length - 1).lastIndexOf('/') + 1));
         }
+
+        /**
+         * Loads the specified folder
+         */
         var loadFolder = throttle(function(path) {
             self.currentPath(path);
             self.fileLimit = 5;
@@ -135,18 +181,24 @@ $(function() {
             })
         })
 
+        /**
+         * After loadFolder completes, this function updates the UI
+         */
         function loadFolderDone(data) {
-                var viewData = [];
-                var added = 0;
-                self.notInRoot(self.currentPath().lastIndexOf('/') !== 0);
-                self.files([]);
-                self.allFiles = data;
-                for(var i in data) {
-                    added++;
-                    if(added < 6) addFile(data[i]);
-                }
+            var viewData = [];
+            var added = 0;
+            self.notInRoot(self.currentPath().lastIndexOf('/') !== 0);
+            self.files([]);
+            self.allFiles = data;
+            for(var i in data) {
+                added++;
+                if(added < 6) addFile(data[i]);
             }
+        }
 
+        /**
+         * Add file to the displayed files list
+         */
         function addFile(d) {
             var viewData;
             if(d.TYPE === 'D') {
@@ -175,10 +227,17 @@ $(function() {
             }
             self.files.push(viewData);
         }
+
+        /**
+         * After 'addFile', this function animates the new item
+         */
         self.fadeIn = function(e) {
             $(e).hide().slideDown(500);
         }
-        self.currentPath = ko.observable('/');
+
+        /**
+         * Shows 5 more files (in the current folder)
+         */
         self.showMore = function() {
             for(var i = self.fileLimit; i < self.fileLimit + 5; i++) {
                 if(self.allFiles[i] === undefined) break;
@@ -186,6 +245,10 @@ $(function() {
             }
             self.fileLimit += 5;
         }
+
+        /**
+         * Downloads the specified file (or folder zipped)
+         */
         self.download = function(item) {
             $.ajax({
                 type: 'POST',
@@ -197,6 +260,10 @@ $(function() {
                 }
             })
         }
+
+        /**
+         * Deletes the specified file (or folder)
+         */
         self.delete = function(item) {
             $.ajax({
                 type: 'POST',
@@ -208,6 +275,10 @@ $(function() {
                 }
             })
         }
+
+        /**
+         * Renames the specified file
+         */
         self.rename = function(item, e) {
             $(e.target).parent().parent().parent().unbind('click');
             $(e.target).parent().parent().parent().find('.name').html('<input type="text" value="' + item.originalName + '" />\
@@ -226,7 +297,10 @@ $(function() {
                 })
             })
         }
-        self.uploadURL = ko.observable('/');
+
+        /**
+         * Requests a new upload link from the store server
+         */
         self.getUploadURL = function() {
             uploadURLRequestInProgress=true;
             $.ajax({
@@ -240,7 +314,10 @@ $(function() {
                 }
             })
         }
-        self.newFolderName = ko.observable();
+
+        /**
+         * Creates a new folder (and then reloads the current folder)
+         */
         self.newFolder = throttle(function(i, e) {
             $(e.target).parent().parent().parent().removeClass('opened');
             $.ajax({
@@ -253,7 +330,10 @@ $(function() {
                 }
             })
         });
-        self.uploadProgress = ko.observable('0%');
+
+        /**
+         * Drag'n'drop tests
+         */
         var tests = {
             filereader: typeof FileReader != 'undefined',
             dnd: 'draggable' in document.createElement('span'),
@@ -261,6 +341,9 @@ $(function() {
             progress: "upload" in new XMLHttpRequest
         };
 
+        /**
+         * Uploads the specified file(s)
+         */
         function readfiles(files) {
             var formData = tests.formdata ? new FormData() : null;
             for(var i = 0; i < files.length; i++) {
@@ -314,6 +397,10 @@ $(function() {
                 xhr.send(formData);
             }
         }
+
+        /**
+         * Drag'n'drop listeners
+         */
         document.addEventListener('drop', function(e) {
             e.stopPropagation();
             e.preventDefault();
@@ -328,27 +415,10 @@ $(function() {
             e.preventDefault();
             return false;
         });
-        self.quota = {
-            rawUsed: ko.observable(0),
-            rawSoft: ko.observable(0),
-            rawHard: ko.observable(0)
-        };
-        self.quota.used = ko.computed(function() {
-            return convert(self.quota.rawUsed(),1);
-        });
-        self.quota.hard = ko.computed(function() {
-            return convert(self.quota.rawHard(),1);
-        });
-        self.quota.soft = ko.computed(function() {
-            return convert(self.quota.rawSoft(),1);
-        });
-        self.quota.usedBar = ko.computed(function() {
-            return(self.quota.rawUsed() / self.quota.rawHard() * 100).toFixed(0) + '%';
-        }, self);
-        self.quota.softPos = ko.computed(function() {
-            return(self.quota.rawSoft() / self.quota.rawHard() * 100).toFixed(0) + '%';
-        }, self)
 
+        /**
+         * Fetch quota information
+         */
         function refreshQuota() {
             $.ajax({
                 'type': 'GET',
@@ -361,6 +431,8 @@ $(function() {
                 }
             })
         }
+
+        //initialization
         refreshQuota();
         loadFolder(self.currentPath());
     }
