@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-02-05 19:27+0100\n"
-"PO-Revision-Date: 2013-02-05 20:01+0100\n"
+"POT-Creation-Date: 2013-02-05 22:32+0100\n"
+"PO-Revision-Date: 2013-02-05 22:34+0100\n"
 "Last-Translator: \n"
 "Language-Team: American English <kde-i18n-doc@kde.org>\n"
 "Language: en_US\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "X-Generator: Lokalize 1.4\n"
 
-#: models.py:29
+#: models.py:28 models.py:92
 msgid "(none)"
 msgstr "(nincs)"
 
@@ -26,18 +26,86 @@ msgstr "(nincs)"
 msgid "%(first)s %(last)s"
 msgstr "%(last)s %(first)s"
 
-#: models.py:47
+#: models.py:37
+msgid "person"
+msgstr "személy"
+
+#: models.py:38
+msgid "persons"
+msgstr "személyek"
+
+#: models.py:42
+msgid "course code"
+msgstr "tárgykód"
+
+#: models.py:44 models.py:46 models.py:98 models.py:124
+msgid "name"
+msgstr "név"
+
+#: models.py:48
+msgid "default group"
+msgstr "alapértelmezett csoport"
+
+#: models.py:49
+msgid "New users will automatically get to this group."
+msgstr "Az új hallgatók automatikusan ebbe a csoportba kerülnek."
+
+#: models.py:51 models.py:93 models.py:127 models.py:140
+msgid "owners"
+msgstr "tulajdonosok"
+
+#: models.py:54 models.py:125
+msgid "course"
+msgstr "tárgy"
+
+#: models.py:55
+msgid "courses"
+msgstr "tárgyak"
+
+#: models.py:61
 #, python-format
 msgid "%s (auto)"
 msgstr "%s (auto)"
 
-#: models.py:74 models.py:113
-msgid "n/a"
-msgstr "n/a"
+#: models.py:86
+msgid "short name"
+msgstr "rövid név"
 
-#: models.py:92
+#: models.py:99
+msgid "start"
+msgstr "kezdet"
+
+#: models.py:100
+msgid "end"
+msgstr "vége"
+
+#: models.py:103 models.py:126
+msgid "semester"
+msgstr "félév"
+
+#: models.py:104
+msgid "semesters"
+msgstr "félévek"
+
+#: models.py:117
 msgid "There is no current semester."
 msgstr "Nincs aktuális félév."
+
+#: models.py:128
+msgid "members"
+msgstr "tagok"
+
+#: models.py:132
+msgid "group"
+msgstr "csoport"
+
+#: models.py:133
+msgid "groups"
+msgstr "csoportok"
+
+#: models.py:139
+msgid "n/a"
+msgstr "n/a"
 
 #: views.py:39
 msgid "EduID is not available."
