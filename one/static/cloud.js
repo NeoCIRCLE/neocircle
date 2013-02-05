@@ -249,15 +249,46 @@ $(function() {
                 var xhr = new XMLHttpRequest();
                 xhr.open('POST', self.uploadURL());
                 xhr.onload = function() {
+                    $('.file-upload').removeClass('opened');
+                    $('.file-upload .details').slideUp(700);
+                    $('#upload-zone').show();
+                    $('#upload-progress-text').hide();
                     self.uploadProgress('0%');
+                    self.uploadURL('/');
                     loadFolder(self.currentPath());
                 };
+                xhr.onerror =function(){
+                    $('.file-upload').removeClass('opened');
+                    $('.file-upload .details').slideUp(700);
+                    $('#upload-zone').show();
+                    $('#upload-progress-text').hide();
+                    self.uploadProgress('0%');
+                    self.uploadURL('/');
+                }
                 if(tests.progress) {
+                    $('#upload-zone').hide();
+                    $('#upload-progress-text').show();
                     xhr.upload.onprogress = function(event) {
                         if(event.lengthComputable) {
                             var complete = (event.loaded / event.total * 100 | 0);
                             //progress.value = progress.innerHTML = complete;
                             self.uploadProgress(parseInt(complete) + '%');
+                            var suffix='B KB MB GB'.split(' ');
+                            var l=event.loaded;
+                            var t=event.total;
+                            for(var i=0;l>1024;i++){
+                                l/=1024;
+                            }
+                            l=l.toFixed(1)+' '+suffix[i];
+                            for(var i=0;t>1024;i++){
+                                t/=1024;
+                            }
+                            t=t.toFixed(1)+' '+suffix[i];
+                            if(complete<100) {
+                                $('#upload-progress-text').html('Feltöltés: '+l+'/'+t+' ('+(event.loaded / event.total * 100).toFixed(2)+'%)');
+                            } else {
+                                $('#upload-progress-text').html('Feltöltés: Mindjárt kész...');
+                            }
                         }
                     }
                 }
