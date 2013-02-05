@@ -2,7 +2,7 @@
 
 # TODO File permission checks
 
-from bottle import route, run, request, static_file, abort, redirect, app
+from bottle import route, run, request, static_file, abort, redirect, app, response
 import json, os, shutil
 import uuid
 import subprocess
@@ -258,6 +258,14 @@ def dl_hash(hash_num):
     else:
         filename = os.path.basename(os.path.realpath(hash_path+'/'+hash_num))
         return static_file(hash_num, root=hash_path, download=filename)
+
+@route('/ul/<hash_num>', method='OPTIONS')
+def upload_allow(hash_num):
+    response.set_header('Access-Control-Allow-Origin', '*')
+    response.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+    response.set_header('Access-Control-Allow-Headers', 'Content-Type, Content-Range, Content-Disposition, Content-Description')
+    return 'ok'
+
 @route('/ul/<hash_num>', method='POST')
 def upload(hash_num):
     if not os.path.exists(ROOT_WWW_FOLDER+'/'+hash_num):
@@ -293,10 +301,13 @@ def upload(hash_num):
         for chunk in fbuffer(file_data.file):
             f.write(chunk)
             datalength += len(chunk)
-    try: 
+    try:
         redirect_address = request.headers.get('Referer')
     except:
-	redirect_address = REDIRECT_URL 
+	redirect_address = REDIRECT_URL
+    response.set_header('Access-Control-Allow-Origin', '*')
+    response.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+    response.set_header('Access-Control-Allow-Headers', 'Content-Type, Content-Range, Content-Disposition, Content-Description')
     redirect(redirect_address)
     #return 'Upload finished: '+file_name+' - '+str(datalength)+' Byte'
 

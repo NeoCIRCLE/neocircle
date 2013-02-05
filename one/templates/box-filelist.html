@@ -73,16 +73,24 @@
                 </li>
                 <li class="file-upload wm">
                     <div class="summary" data-bind="click: getUploadURL">
+                        <div class="quota">
+                            <div id="upload-progress" class="used" style="background-color: rgba(0,255,0,0.2);" data-bind="style: {width: uploadProgress}"></div>
+                        </div>
                         <div class="name filetype-up">Fájlfeltöltés</div>
                         <div class="clear"></div>
                     </div>
                     <div class="details">
                         <div class="container">
-                            <form method="POST" data-bind="attr: {action: uploadURL}" enctype="multipart/form-data">
-                                {% csrf_token %}
-                                <input name="data" type="file" />
-                                <input type="submit" value="Feltöltés"/>
-                            </form>
+                            <div id="upload-zone" class="upload-zone">
+                                A feltöltéshez húzza ide a fájlt. <a href="#" id="old-upload">Hagyományos fájltfeltöltési felület</a>
+                                <img class="preview" />
+                            </div>
+                            <div style="display: none" class="upload-zone">
+                                <form action="/" method="POST" data-bind="attr: {action: uploadURL}" enctype="multipart/form-data">
+                                    <input type="file" name="data" />
+                                    <input type="submit" value="Feltöltés" />
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </li>

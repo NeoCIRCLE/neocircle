@@ -28,7 +28,7 @@ $(function() {
         }
     });
     toggleDetails = function() {
-        if($(this).parent('.wm').hasClass('opened')){
+        if($(this).parent('.wm').hasClass('opened')) {
             $(this).parent('.wm').removeClass('opened');
             $(this).next('.details').slideUp(700);
         } else {
@@ -69,6 +69,11 @@ $(function() {
         })
         $('#modal').show();
     });
+    $('#old-upload').click(function(e){
+        e.preventDefault();
+        $(this).parent().hide().next('div').show();
+        return false;
+    })
 
     function Model() {
         var self = this;
@@ -76,6 +81,7 @@ $(function() {
         self.allFiles = [];
         self.notInRoot = ko.observable(false);
         self.fileLimit = 5;
+
         function throttle(f) {
             var disabled = false;
             return function() {
@@ -122,16 +128,17 @@ $(function() {
         })
 
         function loadFolderDone(data) {
-            var viewData = [];
-            var added = 0;
-            self.notInRoot(self.currentPath().lastIndexOf('/') !== 0);
-            self.files([]);
-            self.allFiles = data;
-            for(var i in data) {
-                added++;
-                if(added < 6) addFile(data[i]);
+                var viewData = [];
+                var added = 0;
+                self.notInRoot(self.currentPath().lastIndexOf('/') !== 0);
+                self.files([]);
+                self.allFiles = data;
+                for(var i in data) {
+                    added++;
+                    if(added < 6) addFile(data[i]);
+                }
             }
-        }
+
         function addFile(d) {
             var viewData;
             if(d.TYPE === 'D') {
@@ -192,30 +199,76 @@ $(function() {
                 }
             })
         }
-        self.uploadURL=ko.observable('/');
-        self.getUploadURL=function(){
+        self.uploadURL = ko.observable('/');
+        self.getUploadURL = function() {
             $.ajax({
                 type: 'POST',
-                data: 'ul='+self.currentPath()+'&next='+encodeURI(window.location.href),
+                data: 'ul=' + self.currentPath() + '&next=' + encodeURI(window.location.href),
                 url: '/ajax/store/upload',
                 dataType: 'json',
-                success: function(data){
+                success: function(data) {
                     self.uploadURL(data.url);
                 }
-            }).error(function(){ console.log('asd', arguments)})
+            }).error(function() {
+                console.log('asd', arguments)
+            })
         }
-        self.newFolderName=ko.observable();
-        self.newFolder=throttle(function(i,e){
+        self.newFolderName = ko.observable();
+        self.newFolder = throttle(function(i, e) {
             $(e.target).parent().parent().parent().removeClass('opened');
             $.ajax({
                 type: 'POST',
-                data: 'new='+self.newFolderName()+'&path='+self.currentPath(),
+                data: 'new=' + self.newFolderName() + '&path=' + self.currentPath(),
                 url: '/ajax/store/newFolder',
                 dataType: 'json',
-                success: function(data){
+                success: function(data) {
                     loadFolder(self.currentPath());
                 }
             })
+        });
+        self.uploadProgress = ko.observable('0%');
+        var tests = {
+            filereader: typeof FileReader != 'undefined',
+            dnd: 'draggable' in document.createElement('span'),
+            formdata: !! window.FormData,
+            progress: "upload" in new XMLHttpRequest
+        };
+
+        function readfiles(files) {
+            var formData = tests.formdata ? new FormData() : null;
+            for (var i = 0; i < files.length; i++) {
+                if (tests.formdata) formData.append('data', files[i]);
+            }
+            // now post a new XHR request
+            if(tests.formdata) {
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', self.uploadURL());
+                console.log(xhr);
+                xhr.onload = function() {
+                    self.uploadProgress('0%');
+                    loadFolder(self.currentPath());
+                };
+                if(tests.progress) {
+                    xhr.upload.onprogress = function(event) {
+                        console.log(event);
+                        if(event.lengthComputable) {
+                            var complete = (event.loaded / event.total * 100 | 0);
+                            //progress.value = progress.innerHTML = complete;
+                            self.uploadProgress(parseInt(complete)+'%');
+                        }
+                    }
+                }
+
+                xhr.send(formData);
+            }
+        }
+        document.addEventListener('drop', function(e) {
+            console.log(e);
+            e.stopPropagation();
+            e.preventDefault();
+            console.log(e.dataTransfer.files)
+            readfiles(e.dataTransfer.files);
+            return false;
         });
         loadFolder(self.currentPath());
     }
@@ -233,12 +286,5 @@ $(function() {
         e.preventDefault();
         return false;
     });
-    document.addEventListener('drop', function(e) {
-        console.log(e);
-        e.stopPropagation();
-        e.preventDefault();
-        console.log(e.dataTransfer.files)
 
-        return false;
-    });
 })
