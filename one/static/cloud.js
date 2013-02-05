@@ -268,8 +268,10 @@ $(function() {
                 if(tests.progress) {
                     $('#upload-zone').hide();
                     $('#upload-progress-text').show();
+                    var originalUsedQuota=self.quota.rawUsed();
                     xhr.upload.onprogress = function(event) {
                         if(event.lengthComputable) {
+                            self.quota.rawUsed(originalUsedQuota+parseInt(event.loaded/1024));
                             var complete = (event.loaded / event.total * 100 | 0);
                             //progress.value = progress.innerHTML = complete;
                             self.uploadProgress(parseInt(complete) + '%');
@@ -303,15 +305,39 @@ $(function() {
             return false;
         });
         self.quota = {
-            used: ko.observable(),
-            soft: ko.observable(),
-            hard: ko.observable()
+            rawUsed: ko.observable(),
+            rawSoft: ko.observable(),
+            rawHard: ko.observable()
         };
+        self.quota.used=ko.computed(function(){
+            var suffix = 'KB MB GB'.split(' ');
+            var l=self.quota.rawUsed();
+            for(var i = 0; l > 1024; i++) {
+                l /= 1024;
+            }
+            return l.toFixed(1)+' '+suffix[i];
+        });
+        self.quota.hard=ko.computed(function(){
+            var suffix = 'KB MB GB'.split(' ');
+            var l=self.quota.rawHard();
+            for(var i = 0; l > 1024; i++) {
+                l /= 1024;
+            }
+            return l.toFixed(1)+' '+suffix[i];
+        });
+        self.quota.soft=ko.computed(function(){
+            var suffix = 'KB MB GB'.split(' ');
+            var l=self.quota.rawSoft();
+            for(var i = 0; l > 1024; i++) {
+                l /= 1024;
+            }
+            return l.toFixed(1)+' '+suffix[i];
+        });
         self.quota.usedBar = ko.computed(function() {
-            return(self.quota.used() / self.quota.hard() * 100).toFixed(0) + '%';
+            return(self.quota.rawUsed() / self.quota.rawHard() * 100).toFixed(0) + '%';
         }, self);
         self.quota.softPos = ko.computed(function() {
-            return(self.quota.soft() / self.quota.hard() * 100).toFixed(0) + '%';
+            return(self.quota.rawSoft() / self.quota.rawHard() * 100).toFixed(0) + '%';
         }, self)
 
         function refreshQuota() {
@@ -320,9 +346,9 @@ $(function() {
                 'url': '/ajax/store/quota',
                 dataType: 'json',
                 success: function(data) {
-                    self.quota.used(parseInt(data.Used));
-                    self.quota.soft(parseInt(data.Soft));
-                    self.quota.hard(parseInt(data.Hard));
+                    self.quota.rawUsed(parseInt(data.Used));
+                    self.quota.rawSoft(parseInt(data.Soft));
+                    self.quota.rawHard(parseInt(data.Hard));
                 }
             })
         }
