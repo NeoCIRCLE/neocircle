@@ -89,6 +89,12 @@
                                 <p>{% trans 'Upload limit is 1GB per file!' %}</p>
                             </div>
                             <div style="display: none" id="upload-progress-text" class="upload-zone"></div>
+                            <div style="display: none" id="upload-error" class="upload-zone">
+                                <p id="upload-error-size" style="display: none">{% trans "Error: File is bigger than 1GB!" %}</p>
+                                <p id="upload-error-server" style="display: none">{% trans "Error: Upload server is not available!" %}</p>
+                                <p id="upload-error-overwrite" style="display: none">{% trans "Error: File already exists!" %}</p>
+                                <p id="upload-error-unknown" style="display: none"></p>
+                            </div>
                             <div style="display: none" class="upload-zone" id="old-upload-form">
                                 <form action="/" method="POST" data-bind="attr: {action: uploadURL}" enctype="multipart/form-data">
                                     <input type="file" name="data" />
