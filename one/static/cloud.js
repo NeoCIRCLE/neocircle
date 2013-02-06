@@ -338,15 +338,23 @@ $(function() {
          * Deletes the specified file (or folder)
          */
         self.delete = function(item) {
-            $.ajax({
-                type: 'POST',
-                data: 'rm=' + self.currentPath() + item.originalName,
-                url: '/ajax/store/delete',
-                dataType: 'json',
-                success: function(data) {
-                    self.files.remove(item);
-                }
-            })
+            $('#modal').show();
+            $('#modal-container').html('Biztosan törlöd a(z) <strong>' + item.originalName + '</strong> ' + (item.type == 'fájl' ? 'fájlt' : 'mappát (és a teljes tartalmát)') + '? <br /><input class="ok" type="button" value="Naná!" style="float: left"/><input class="cancel" type="button" value="Fittyfenét!" style="float: right" />');
+            $('#modal-container .ok').click(function() {
+                $('#modal').hide();
+                $.ajax({
+                    type: 'POST',
+                    data: 'rm=' + self.currentPath() + item.originalName,
+                    url: '/ajax/store/delete',
+                    dataType: 'json',
+                    success: function(data) {
+                        self.files.remove(item);
+                    }
+                })
+            });
+            $('#modal-container .cancel').click(function() {
+                $('#modal').hide();
+            });
         }
 
         /**
