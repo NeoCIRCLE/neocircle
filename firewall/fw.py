@@ -372,7 +372,7 @@ def dns():
             DNS.append("C%s:%s:%s" % (d['name'], d['address'], d['ttl']))
         elif d['type'] == 'MX':
             mx = d['address'].split(':', 2)
-            DNS.append("@%(fqdn)s::%(mx)s:%(dist)s:%(ttl)s" % (d['name'], mx[1], mx[0], d['ttl']))
+            DNS.append("@%(fqdn)s::%(mx)s:%(dist)s:%(ttl)s" % {'fqdn': d['name'], 'mx': mx[1], 'dist': mx[0], 'ttl': d['ttl']})
 
     process = subprocess.Popen(['/usr/bin/ssh', 'tinydns@%s' % settings['dns_hostname']], shell=False, stdin=subprocess.PIPE)
     process.communicate("\n".join(DNS)+"\n")
