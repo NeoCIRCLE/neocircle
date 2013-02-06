@@ -109,14 +109,14 @@ def vm_show(request, iid):
     inst = get_object_or_404(Instance, id=iid, owner=request.user)
     inst.update_state()
     return render_to_response("show.html", RequestContext(request,{
-	'uri': inst.get_connect_uri(),
-	'state': inst.state,
-	'name': inst.name,
-	'id': iid,
+        'uri': inst.get_connect_uri(),
+        'state': inst.state,
+        'name': inst.name,
+        'id': iid,
         'age': inst.get_age(),
         'instances': _list_instances(request),
         'i': inst,
-	'booting' : not inst.active_since,
+        'booting' : not inst.active_since,
         'ports': inst.firewall_host.list_ports()
         }))
 
