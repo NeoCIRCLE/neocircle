@@ -29,7 +29,7 @@ TIME_ZONE = 'Europe/Budapest'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
-LANGUAGE_CODE = 'hu-hu'
+LANGUAGE_CODE = 'hu'
 
 SITE_ID = 1
 

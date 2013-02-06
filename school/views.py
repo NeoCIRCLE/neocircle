@@ -111,4 +111,6 @@ def login(request):
     redirect_to = request.REQUEST.get(auth.REDIRECT_FIELD_NAME, '')
     if not is_safe_url(url=redirect_to, host=request.get_host()):
         redirect_to = settings.LOGIN_REDIRECT_URL
-    return redirect(redirect_to)
+    response = redirect(redirect_to)
+    response.set_cookie(settings.LANGUAGE_COOKIE_NAME, p.language, 10*365*24*3600)
+    return response
