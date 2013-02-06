@@ -4,8 +4,19 @@
 {% block js %}
 <script type="text/javascript">
 	{% if booting %}
-		setTimeout("location.reload(true);", 2000);
-	{% endif %}
+    var timer=setInterval(function(){
+        $.ajax({
+            type: 'GET',
+            dataType: 'json',
+            url: '/ajax/vm/status/{{ id }}',
+            success: function(data){
+                if(!data.booting){
+                    window.location.reload();
+                }
+            }
+        })
+    },2000);
+    {% endif %}
 </script>
 {% endblock %}
 
