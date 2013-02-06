@@ -1,21 +1,21 @@
 # django-one module
 # Copyright (C) 2013 BME IK
 # This file is distributed under the same license as the django-one package.
-# Mate Ory <orymate@iit.bme.hu>, 2013.
 #
+# Mate Ory <orymate@iit.bme.hu>, 2013.
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-02-06 14:24+0100\n"
-"PO-Revision-Date: 2013-02-05 00:18+0100\n"
-"Last-Translator: Mate Ory <orymate@iit.bme.hu>\n"
-"Language-Team: LANGUAGE <cloud@ik.bme.hu>\n"
+"PO-Revision-Date: 2013-02-06 14:19+0100\n"
+"Language-Team: Hungarian <cloud@ik.bme.hu>\n"
 "Language: hu\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"X-Generator: Lokalize 1.4\n"
 
 #: admin.py:40
 msgid "Update status"
@@ -67,7 +67,6 @@ msgid "SSH key"
 msgstr "SSH kulcs"
 
 #: models.py:103
-#, fuzzy
 msgid ""
 "<a href=\"/info/ssh/\">SSH public key in OpenSSH format</a> used for shell "
 "and store login (2048+ bit RSA preferred). Example: <code>ssh-rsa AAAAB..."
@@ -273,160 +272,156 @@ msgstr "A virtuális gép újraindítása sikertelen."
 
 #: templates/box-filelist.html:26
 msgid "No files."
-msgstr ""
+msgstr "Nincs megjeleníthető fájl."
 
 #: templates/box-filelist.html:37
-#, fuzzy
 msgid "rename"
-msgstr "név"
+msgstr "átnevezés"
 
 #: templates/box-filelist.html:40
 msgid "remove"
-msgstr ""
+msgstr "eltávolítás"
 
 #: templates/box-filelist.html:43
 msgid "download"
-msgstr ""
+msgstr "letöltés"
 
 #: templates/box-filelist.html:51
 msgid "Last modification"
-msgstr ""
+msgstr "Utolsó módosítás"
 
 #: templates/box-filelist.html:52
 msgid "Type"
-msgstr ""
+msgstr "Típus"
 
 #: templates/box-filelist.html:61
 msgid "Show more files…"
-msgstr ""
+msgstr "Több fájl megjelenítése…"
 
 #: templates/box-filelist.html:68
 msgid "Create folder"
-msgstr ""
+msgstr "Mappa létrehozása"
 
 #: templates/box-filelist.html:70
 msgid "Name of new folder"
-msgstr ""
+msgstr "Új mappa neve"
 
 #: templates/box-filelist.html:81
 msgid "File upload"
-msgstr ""
+msgstr "Fájlfeltöltés"
 
 #: templates/box-filelist.html:87
 msgid "Drag and drop files here to start uploading."
-msgstr ""
+msgstr "Húzza ide a fájlt a feltöltés megkezdéséhez."
 
 #: templates/box-filelist.html:88
 msgid ""
 "You can also use the <a href=\"#\" id=\"old-upload\">the traditional upload "
 "form</a>."
 msgstr ""
+"Használhatja a <a href=\"#\" id=\"old-upload\">hagyományos feltöltő űrlapot<"
+"/a> is."
 
 #: templates/box-filelist.html:108
 msgid "File quota"
-msgstr ""
+msgstr "Fájlkvóta"
 
 #: templates/box-filelist.html:108
 msgid "Used space"
-msgstr ""
+msgstr "Használt terület"
 
 #: templates/box-filelist.html:108
 msgid "soft limit"
-msgstr ""
+msgstr "puha limit"
 
 #: templates/box-filelist.html:109
 msgid "hard limit"
-msgstr ""
+msgstr "kemény limit"
 
 #: templates/home.html:14
 msgid "Start new machine"
-msgstr ""
+msgstr "Új gép indítása"
 
 #: templates/home.html:19
-#, fuzzy
 msgid "Available templates"
-msgstr "sablonok"
+msgstr "Elérhető sablonok"
 
 #: templates/home.html:21
 msgid "Choose one of the following templates to launch."
-msgstr ""
+msgstr "Válasszon egyet az alábbi sablonok közül."
 
 #: templates/home.html:37
 msgid "Details"
-msgstr ""
+msgstr "Részletek"
 
 #: templates/home.html:40 templates/home.html.py:84
 msgid "System"
-msgstr ""
+msgstr "Rendszer"
 
 #: templates/home.html:41
 msgid "Size"
-msgstr ""
+msgstr "Méret"
 
 #: templates/home.html:42
 msgid "Memory"
-msgstr ""
+msgstr "Memória"
 
 #: templates/home.html:43
 #, python-format
 msgid "%(m)s MiB"
-msgstr ""
+msgstr "%(m)s MiB"
 
 #: templates/home.html:44
-#, fuzzy
 msgid "CPU cores"
-msgstr "CPU magok száma."
+msgstr "CPU magok"
 
 #: templates/home.html:45
 msgid "Launch"
-msgstr ""
+msgstr "Indítás"
 
 #: templates/home.html:59
 #, python-format
 msgid "Personal quota: %(used)s/%(all)s"
-msgstr ""
+msgstr "Személyes kvóta: %(used)s/%s(all)s"
 
 #: templates/home.html:66
-#, fuzzy
 msgid "My templates"
-msgstr "sablonok"
+msgstr "Saját sablonok"
 
 #: templates/home.html:76
-#, fuzzy
 msgid "Rename"
-msgstr "név"
+msgstr "Átnevezés"
 
 #: templates/home.html:77
 msgid "Remove"
-msgstr ""
+msgstr "Törlés"
 
 #: templates/home.html:78
 msgid "Share"
-msgstr ""
+msgstr "Megosztás"
 
 #: templates/home.html:85
 msgid "Description"
-msgstr ""
+msgstr "Leírás"
 
 #: templates/home.html:86
-#, fuzzy
 msgid "Created at"
-msgstr "létrehozás ideje"
+msgstr "Létrehozás ideje"
 
 #: templates/home.html:87
 msgid "Modified at"
-msgstr ""
+msgstr "Módosítás ideje"
 
 #: templates/home.html:88
-#, fuzzy
 msgid "Running instances"
-msgstr "példányok"
+msgstr "Futó példányok"
 
 #: templates/home.html:143
 msgid "unfinished"
-msgstr ""
+msgstr "félkész"
 
 #: templates/home.html:171
 #, python-format
 msgid "Share quota: %(used)s/%(all)s"
-msgstr ""
+msgstr "Megosztó kvóta: %(used)s/%(all)s"
+
