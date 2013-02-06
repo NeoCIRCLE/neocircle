@@ -25,8 +25,8 @@ class RDP:
             self.connect_rdp()
         elif self.scheme == "nx":
             self.connect_nx()
-        elif self.scheme == "shellterm":
-            self.connect_term()
+        elif self.scheme == "sshterm":
+            self.connect_sshterm()
         else:
             return False
     def get_temporary_file(self):
@@ -38,6 +38,15 @@ class RDP:
             os.unlink(tmpfile.name)
             return self.get_temporary_file()
 
+    def connect_sshterm(self):
+        #try:
+        ssh_subcommand = 'sshpass -p "%(password)s" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null %(username)s@%(host)s -p%(port)s' \
+        % {'username' : self.username, 'password' : self.password, 'host' : self.host, 'port' : self.port}
+        ssh_command = ["gnome-terminal", "-e", ssh_subcommand]
+        proc = subprocess.check_call(ssh_command, stdout = subprocess.PIPE)
+        #except:
+        #    print "Error"
+
     def connect_rdp(self):
         rdp_command = ["rdesktop", "-khu", "-E", "-P", "-0", "-f", "-u", self.username, "-p", self.password, self.host+":"+self.port]
         try:
@@ -45,16 +54,6 @@ class RDP:
         except:
             self.dialog_box("Unable to connect to host: "+self.host+" at port "+self.port)
 
-    #   
-    #   rdesktop -khu -E -P -0 -f -u "$user" -p "$password" "$host":"$port" 2>$tmp
-    #   if grep '^ERROR' <$tmp
-    #   then
-    #       err="$(grep '^ERROR' $tmp)"
-    #       rm /home/user/.ssh/known_hosts
-    #       /usr/NX/bin/nxclient --dialog error --message "$err" &
-    #   fi
-    #   rm $tmp
-    #
     def connect_nx(self):
         #Generate temproary config
         password_enc = nxkey.NXKeyGen(self.password).getEncrypted()
