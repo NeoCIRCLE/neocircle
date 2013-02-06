@@ -218,21 +218,18 @@ class Record(models.Model):
         super(Record, self).save(*args, **kwargs)
 
     def clean(self):
-        if not((not self.name and self.host) or self.name.endswith(u'.' + self.domain.name) or self.name == self.domain.name ):
-            raise ValidationError(u'nemok')
+        if(self.name.endswith(u'.')):
+            raise ValidationError(u'a domain nem végződhet pontra')
 
-        if self.host and self.type in ['CNAME', 'A', 'AAAA', 'PTR']:
+        if self.host and self.type in ['CNAME', 'A', 'AAAA']:
             if self.type == 'CNAME':
                 if not self.name or self.address:
                     raise ValidationError(u'CNAME rekordnal csak a name legyen kitoltve, ha van host beallitva')
-            elif self.type == 'PTR':
-                if not self.address or self.name:
-                    raise ValidationError(u'PTR rekordnal csak a name legyen kitoltve, ha van host beallitva')
             elif self.name or self.address:
                 raise ValidationError(u'A, AAAA rekord eseten nem szabad megadni name-t, address-t, ha tarsitva van host')
         else:
-            if not (self.name and self.address):
-                raise ValidationError(u'name v address hianyzik')
+            if not self.address:
+                raise ValidationError(u'address hianyzik')
 
             if self.type == 'A':
                 if not ipv4_re.match(self.address):
@@ -251,7 +248,7 @@ class Record(models.Model):
                 raise ValidationError(u'ez ismeretlen rekord, ez nudli!')
 
     def get_data(self):
-        retval = { 'name': self.name, 'type': self.type, 'ttl': self.ttl, 'address': self.address }
+        retval = { 'type': self.type, 'ttl': self.ttl, 'address': self.address }
         if self.host:
             if self.type == 'A':
                 retval['address'] = self.host.pub_ipv4 if self.host.pub_ipv4 and not self.host.shared_ip else self.host.ipv4
@@ -263,6 +260,11 @@ class Record(models.Model):
                 retval['name'] = self.host.get_fqdn()
             elif self.type == 'CNAME':
                 retval['address'] = self.host.get_fqdn()
+        else:
+            if not self.name:
+                retval['name'] = unicode(self.domain)
+            else:
+                retval['name'] = self.name + u'.' + unicode(self.domain)
         if not (retval['address'] and retval['name']):
             return None
         return retval
