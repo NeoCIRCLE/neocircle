@@ -240,7 +240,9 @@ $(function() {
                     type: 'fájl',
                     mTime: d.MTIME,
                     getTypeClass: 'name filetype-text',
-                    clickHandler: function(item, event) {}
+                    clickHandler: function(item,e) {
+                        toggleDetails.call(e.currentTarget);
+                    }
                 };
                 console.log(viewData);
             }
