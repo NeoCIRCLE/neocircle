@@ -165,7 +165,7 @@ def cmd_rename(request, neptun, home_path):
 COMMANDS['RENAME'] = cmd_rename
 
 # NEW FOLDER
-def cmd_new_folder(request, neptun, home_path):
+def cmd_new_folder(request, username, home_path):
     dir_path = home_path+'/'+request.json['PATH']
     dir_path = os.path.realpath(dir_path)
     if not dir_path.startswith(home_path):
@@ -174,6 +174,7 @@ def cmd_new_folder(request, neptun, home_path):
         abort(400, "Directory already exist!")
     else:
         os.mkdir(dir_path, 0755)
+        os.chown(dir_path, getpwnam(username).pw_uid, getpwnam(username).pw_gid)
 COMMANDS['NEW_FOLDER'] = cmd_new_folder
 
 # REMOVE
@@ -295,13 +296,13 @@ def upload(hash_num):
     # Check if file exist (root can overwrite anything not safe)
     with open(up_path , 'wb') as f:
         datalength = 0
-        for chunk in fbuffer(file_data.file):
+        for chunk in fbuffer(file_data.file, chunk_size=1048576):
             f.write(chunk)
             datalength += len(chunk)
+    os.chown(up_path, getpwnam(username).pw_uid, getpwnam(username).pw_gid)
+    os.chmod(up_path, 0644)
     try:
         redirect_address = request.headers.get('Referer')
-        os.chown(up_path, getpwnam(username).pw_uid, getpwnam(username).pw_gid)
-        os.chmod(up_path, 0644)
     except:
 	    redirect_address = REDIRECT_URL
     response.set_header('Access-Control-Allow-Origin', '*')
