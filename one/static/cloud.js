@@ -280,10 +280,18 @@ $(function() {
          * Renames the specified file
          */
         self.rename = function(item, e) {
-            $(e.target).parent().parent().parent().unbind('click');
+            var oldName=$(e.target).parent().parent().parent().find('.name').html();
+            $(e.target).parent().unbind('click').click(function(){
+                $(e.target).parent().parent().parent().find('.name').html(oldName);
+                $(e.target).parent().click(function(e){
+                    self.rename(item,e);
+                });
+            })
+            //$(e.target).parent().parent().parent().unbind('click');
             $(e.target).parent().parent().parent().find('.name').html('<input type="text" value="' + item.originalName + '" />\
 <input type="submit" value="Átnevezés" />');
-            $(e.target).parent().parent().parent().find('.name input[type=submit]').click(function() {
+            $(e.target).parent().parent().parent().find('.name input[type=submit]').click(function(e) {
+                e.preventDefault();
                 var newName = $(e.target).parent().parent().parent().find('.name input[type=text]').val();
                 $.ajax({
                     type: 'POST',
@@ -295,6 +303,7 @@ $(function() {
                         loadFolder(self.currentPath());
                     }
                 })
+                return false;
             })
         }
 
@@ -354,7 +363,9 @@ $(function() {
                 var xhr = new XMLHttpRequest();
                 var start = new Date().getTime();
                 xhr.open('POST', self.uploadURL());
+                xhr.onreadystatechange=function(){console.log(xhr,arguments)}
                 xhr.onload = xhr.onerror = function() {
+                    console.log(xhr.status);
                     $('.file-upload').removeClass('opened');
                     $('.file-upload .details').slideUp(700);
                     $('#upload-zone').show();
@@ -393,7 +404,6 @@ $(function() {
                         }
                     }
                 }
-
                 xhr.send(formData);
             }
         }
