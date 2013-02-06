@@ -382,7 +382,7 @@ msgstr "Indítás"
 #: templates/home.html:59
 #, python-format
 msgid "Personal quota: %(used)s/%(all)s"
-msgstr "Személyes kvóta: %(used)s/%s(all)s"
+msgstr "Személyes kvóta: %(used)s/%(all)s"
 
 #: templates/home.html:66
 msgid "My templates"
