@@ -35,7 +35,7 @@
                         <div class="clear"></div>
                     </div>
                 </li>
-                <!-- ko foreach: {data:files,afterAdd:fadeIn} -->
+                <!-- ko foreach: {data:files,afterAdd:fadeIn,beforeRemove:fadeOutFile} -->
                 <li class="wm real">
                     <div class="summary" data-bind="click: clickHandler">
                         <div class="name" data-bind="text: name, attr: {class: getTypeClass}"></div>

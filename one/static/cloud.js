@@ -308,6 +308,17 @@ $(function() {
             $(e).hide().slideDown(500);
         }
 
+        self.fadeOutFile = function(e) {
+            try {
+                $(e).slideUp(500, function() {
+                    console.log('sssaa', e);
+                    e.parentNode.removeChild(e);
+                });
+            } catch(ex) {
+                e.parentNode.removeChild(e);
+            }
+        }
+
         /**
          * Downloads the specified file (or folder zipped)
          */
