@@ -15,7 +15,7 @@
                                 <option value="date">Dátum szerint</option>
                             </select>
                         </div>
-                        <div class="name">Jelenlegi hely: <span data-bind="text: currentPath"></span></div>
+                        <div class="name"><small>Jelenlegi hely: <span data-bind="text: currentPath"></span></small></div>
                         <div class="clear"></div>
                     </div>
                 </li>
@@ -56,8 +56,8 @@
                     <div class="details">
                         <div class="details-container">
                             <ul>
-                                <li>{% trans "Last modification" %}: <small class="value" data-bind="text: mTime"></small></li>
-                                <li>{% trans "Type" %}: <span class="value" data-bind="text: type"></span></li>
+                                <li class="date">{% trans "Last modification" %}: <small class="value" data-bind="text: mTime"></small></li>
+                                <li class="filetype-text">{% trans "Type" %}: <span class="value" data-bind="text: type"></span></li>
                             </ul>
                         </div>
                     </div>
@@ -65,14 +65,6 @@
                 <!-- /ko -->
             </ul>
             <ul class="file-list">
-                <li class="file-details wm small-row" id="load-more-files" data-bind="visible: (files().length>0 && files().length != allFiles.length)">
-                    <div class="summary" data-bind="click: showMore">
-                        <div class="name filetype-more">
-                            {% trans "Show more files…" %} (<span data-bind="text: allFiles.length-files().length"></span> {% trans "hidden" context "is" %})
-                        </div>
-                        <div class="clear"></div>
-                    </div>
-                </li>
                 <li class="wm small-row">
                     <div class="summary" id="new-folder">
                         <div class="name filetype-new-folder">{% trans "Create folder" %}</div>

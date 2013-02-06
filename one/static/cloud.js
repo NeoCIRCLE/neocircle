@@ -38,15 +38,6 @@ $(function() {
 
     }
     $('.wm .summary').unbind('click').click(toggleDetails);
-    $('#load-more-files').click(function() {
-        $('.actions', this).show();
-        var that = this;
-        setTimeout(function() {
-            $(that).prev('li').slideDown(500, function() {
-                $('.actions', that).hide();
-            });
-        }, 2000);
-    })
     $('#new-wm-button').click(function() {
         $('#modal').show();
         $('#modal-container').html($('#new-wm').html());
@@ -76,11 +67,9 @@ $(function() {
     $('.quota .used').each(function() {
         var s = this;
         $(this).css('backgroundColor', function(w) {
-            console.log(s, parseFloat(w));
             return 'hsla(' + (120 - parseFloat(w) / 438 * 120).toFixed(0) + ',100%,50%,0.2)';
         }($(this).css('width')));
         if(parseInt($(this).css('width')) > 0) $(this).css('borderRight', function(w) {
-            console.log(s, parseFloat(w));
             return '1px solid hsla(' + (120 - parseFloat(w) / 438 * 120).toFixed(0) + ',100%,30%,0.4)';
         }($(this).css('width')));
     });
@@ -108,12 +97,8 @@ $(function() {
         var uploadURLRequestInProgress = false;
         //currently displayed files
         self.files = ko.observableArray();
-        //all fetched files
-        self.allFiles = [];
         //false, if you are in /
         self.notInRoot = ko.observable(false);
-        //default file limit
-        self.fileLimit = 5;
         //defalut path to display
         self.currentPath = ko.observable('/');
         //default upload url (invalid)
@@ -144,7 +129,6 @@ $(function() {
 
         $('#current-location select').on('change', function() {
             self.sortBy($('#current-location select').val());
-            sortOriginalFiles();
             sortFiles();
         })
 
@@ -219,28 +203,6 @@ $(function() {
                     }
                 }[self.sortBy()]);
             }
-        var sortOriginalFiles = function() {
-                self.allFiles.sort({
-                    name: function(a, b) {
-                        if(a.TYPE === b.TYPE) {
-                            return a.NAME.localeCompare(b.NAME);
-                        }
-                        if(a.TYPE === 'F') {
-                            return 1;
-                        }
-                        return -1;
-                    },
-                    date: function(a, b) {
-                        if(a.TYPE === b.TYPE) {
-                            return new Date(b.MTIME).getTime() - new Date(a.MTIME).getTime();
-                        }
-                        if(a.TYPE === 'F') {
-                            return 1;
-                        }
-                        return -1;
-                    }
-                }[self.sortBy()]);
-            }
 
             /**
              * Loads the specified folder
@@ -281,11 +243,8 @@ $(function() {
             var added = 0;
             self.notInRoot(self.currentPath().lastIndexOf('/') !== 0);
             self.files([]);
-            self.allFiles = data;
-            sortOriginalFiles();
-            for(var i in self.allFiles) {
-                added++;
-                if(added < 6) addFile(self.allFiles[i]);
+            for(var i in data) {
+                addFile(data[i]);
             }
             sortFiles();
         }
@@ -309,18 +268,35 @@ $(function() {
                     }
                 };
             } else {
+                var type = 'text';
+                var ext = {
+                    image: /\.(jpg|png|gif|jpeg)$/,
+                    pdf: /\.pdf$/,
+                    doc: /\.docx?$/,
+                    excel: /\.xlsx?$/,
+                    csv: /\.csv$/,
+                    php: /\.php$/,
+                    tex: /\.tex$/,
+                    ppt: /\.pptx?/,
+                    music: /\.(wav|mp3)$/
+                };
+                for(var i in ext) {
+                    if(d.NAME.match(ext[i])) {
+                        type = i;
+                        break;
+                    }
+                }
                 viewData = {
                     originalName: d.NAME,
                     name: d.NAME.length > 30 ? (d.NAME.substr(0, 27) + '...') : d.NAME,
                     size: convert(d.SIZE),
                     type: 'fájl',
                     mTime: d.MTIME,
-                    getTypeClass: 'name filetype-text',
+                    getTypeClass: 'name filetype-'+type,
                     clickHandler: function(item, e) {
                         toggleDetails.call(e.currentTarget);
                     }
                 };
-                console.log(viewData);
             }
             self.files.push(viewData);
         }
@@ -330,18 +306,6 @@ $(function() {
          */
         self.fadeIn = function(e) {
             $(e).hide().slideDown(500);
-        }
-
-        /**
-         * Shows 5 more files (in the current folder)
-         */
-        self.showMore = function() {
-            for(var i = self.fileLimit; i < self.fileLimit + 5; i++) {
-                if(self.allFiles[i] === undefined) break;
-                addFile(self.allFiles[i]);
-            }
-            self.fileLimit += 5;
-            sortFiles();
         }
 
         /**
@@ -369,7 +333,7 @@ $(function() {
                 url: '/ajax/store/delete',
                 dataType: 'json',
                 success: function(data) {
-                    loadFolder(self.currentPath());
+                    self.files.remove(item);
                 }
             })
         }
@@ -397,7 +361,6 @@ $(function() {
                     url: '/ajax/store/rename',
                     dataType: 'json',
                     success: function(data) {
-                        console.log(data);
                         loadFolder(self.currentPath());
                     }
                 })
@@ -471,11 +434,7 @@ $(function() {
                 var xhr = new XMLHttpRequest();
                 var start = new Date().getTime();
                 xhr.open('POST', self.uploadURL());
-                xhr.onreadystatechange = function() {
-                    console.log(xhr, arguments)
-                }
                 xhr.onload = xhr.onerror = function() {
-                    console.log(xhr.status);
                     $('.file-upload').removeClass('opened');
                     $('.file-upload .details').slideUp(700);
                     $('#upload-zone').show();
@@ -562,16 +521,12 @@ $(function() {
     var model = new Model();
     ko.applyBindings(model);
     document.addEventListener('dragenter', function(e) {
-        console.log('enter');
-        //$('.file-upload .summary').click();
         e.stopPropagation();
         e.preventDefault();
         return false;
     });
 
     document.addEventListener('drag', function(e) {
-        console.log('drag');
-        //$('.file-upload .summary').click();
         e.stopPropagation();
         e.preventDefault();
         return false;

@@ -289,7 +289,6 @@
 
 .file-list{
     list-style: none;
-    overflow: auto;
     max-height: 400px;
     .name{
         float: left;
@@ -308,6 +307,7 @@
     }
 }
 #file-list {
+    overflow-y: scroll;
     li:nth-child(3) .summary{
         border-top: none;
     }
@@ -319,8 +319,16 @@
         border-bottom: 1px solid #888
     }
 }
-#current-location .summary{
-    border-bottom: 1px solid #888
+#current-location{
+    .summary{
+        border-bottom: 1px solid #888;
+        height: 25px;
+        .name {
+            position: absolute;
+            left: 100px;
+            text-align: left;
+        }
+    }
 }
 .filetype-c {
     background-image: url(icons/document-visual-studio.png);
@@ -333,6 +341,33 @@
 }
 .filetype-zip {
     background-image: url(icons/folder-zipper.png);
+}
+.filetype-pdf {
+    background-image: url(icons/document-pdf.png);
+}
+.filetype-doc {
+    background-image: url(icons/document-word.png);
+}
+.filetype-excel {
+    background-image: url(icons/document-excel.png);
+}
+.filetype-csv {
+    background-image: url(icons/document-excel-csv.png);
+}
+.filetype-php {
+    background-image: url(icons/document-php.png);
+}
+.filetype-tex {
+    background-image: url(icons/document-tex.png);
+}
+.filetype-ppt {
+    background-image: url(icons/document-powerpoint.png);
+}
+.filetype-music {
+    background-image: url(icons/document-music.png);
+}
+.filetype-movie {
+    background-image: url(icons/document-film.png);
 }
 .filetype-folder {
     background-image: url(icons/folder.png);
