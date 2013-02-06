@@ -200,7 +200,16 @@ $(function() {
                             return 1;
                         }
                         return -1;
-                    }
+                    },
+                    size: function(a, b) {
+                        if(a.type === b.type) {
+                            return b.originalSize-a.originalSize;
+                        }
+                        if(a.type === 'fájl') {
+                            return 1;
+                        }
+                        return -1;
+                    },
                 }[self.sortBy()]);
             }
 
@@ -258,6 +267,7 @@ $(function() {
             if(d.TYPE === 'D') {
                 viewData = {
                     originalName: d.NAME,
+                    originalSize: 0,
                     name: d.NAME.length > 30 ? (d.NAME.substr(0, 27) + '...') : d.NAME,
                     size: 'katalógus',
                     type: 'katalógus',
@@ -288,6 +298,7 @@ $(function() {
                 }
                 viewData = {
                     originalName: d.NAME,
+                    originalSize: d.SIZE,
                     name: d.NAME.length > 30 ? (d.NAME.substr(0, 27) + '...') : d.NAME,
                     size: convert(d.SIZE),
                     type: 'fájl',
