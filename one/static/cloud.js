@@ -144,6 +144,25 @@ $(function() {
         }
 
         /**
+         * Delay the function call for `f` until `g` evaluates true
+         * Default check interval is 1 sec
+         */
+        function delayUntil(f,g,timeout){
+            var timeout=timeout|1000;
+            function check(){
+                var o=arguments;
+                if(!g()){
+                    setTimeout(function(){check.apply(null,o)},timeout);
+                    return;
+                }
+                f.apply(null,o);
+            }
+            return function(){
+                check.apply(null,arguments);
+            }
+        }
+
+        /**
          * Loads the parent folder
          */
         self.jumpUp = function() {
@@ -353,7 +372,7 @@ $(function() {
         /**
          * Uploads the specified file(s)
          */
-        function readfiles(file) {
+        var readfiles=delayUntil(function(file) {
             //1 GB file limit
             if(file.size > 1024*1024*1024) {
                 $('#upload-zone').hide();
@@ -416,7 +435,9 @@ $(function() {
                 }
                 xhr.send(formData);
             }
-        }
+        }, function() {
+            return self.uploadURL() !== '/';
+        },200);
 
         /**
          * Drag'n'drop listeners
