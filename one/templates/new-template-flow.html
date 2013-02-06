@@ -1,35 +1,37 @@
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 <form action="/" method="post" id="template-wizard">
     <div id="new-template-step-1" class="wizard">
         <div class="progress">
             <div class="bar-container">
                 <div class="bar" style="width: 33%"></div>
             </div>
-            <h3>1/3</h3>
+            <h3>{% blocktrans with step=1 all=3 %}{{step}}/{{all}}{% endblocktrans %}</h3>
         </div>
-        <h2>1. lépés</h2>
+        <h2>{% blocktrans with step=1 %}Step {{step}}{% endblocktrans %}</h2>
         <p>Leírás, mit is kéne itt ezen az ablakon csinálni, és miért jó, ha azt csinálja, amit.</p>
         <ul>
             <li>
-                <label for="new-template-name">Név</label>
-                <input type="text" placeholder="A sablon rövid neve" name="name" id="new-template-name" />
+            <label for="new-template-name">{% trans "Name" %}</label>
+                <input type="text" placeholder="{% trans "Short name of template" %}" name="name" id="new-template-name" />
                 <div class="clear"></div>
             </li>
             <li>
-                <label for="new-template-type">Típus</label>
+            <label for="new-template-type">{% trans "Type" %}</label>
                 <ul class="radio">
                     <li>
                         <input type="radio" name="type" value="labor" id="new-template-type-labor" />
-                        <label for="new-template-type-labor">Labor</label>
+                        <label for="new-template-type-labor">{% trans "Lab" %}</label>
                     </li>
                     <li>
                         <input type="radio" name="type" value="project" id="new-template-type-project" />
-                        <label for="new-template-type-project">Project</label>
+                        <label for="new-template-type-project">{% trans "Project" %}</label>
                     </li>
                 </ul>
                 <div class="clear"></div>
             </li>
             <li>
-                <label for="new-template-size">Méret</label>
+                <label for="new-template-size">{% trans "Size" %}</label>
                 <ul class="radio">
                     <li>
                         <input type="radio" name="size" value="small" id="new-template-size-small" />
@@ -47,14 +49,14 @@
                 <div class="clear"></div>
             </li>
             <li style="border: none">
-                <label for="new-template-description">Leírás</label>
-                <textarea name="description" id="new-template-description" placeholder="A sablonhoz fűzött megjegyzések"></textarea>
+                <label for="new-template-description">{% trans "Description" %}</label>
+                <textarea name="description" id="new-template-description" placeholder="{% trans "Comments about the template" %}"></textarea>
                 <div class="clear"></div>
             </li>
         </ul>
         <nav>
-            <a href="#" class="prev">&laquo; Mégse</a>
-            <a href="#" class="next">Tovább &raquo;</a>
+            <a href="#" class="prev">{% trans "&laquo; Cancel" %}</a>
+            <a href="#" class="next">{% trans "Next &raquo; %}</a>
             <div class="clear"></div>
         </nav>
         <script type="text/javascript">
@@ -74,9 +76,9 @@
             <div class="bar-container">
                 <div class="bar" style="width: 66%"></div>
             </div>
-            <h3>2/3</h3>
+            <h3>{% blocktrans with step=2 all=3 %}{{step}}/{{all}}{% endblocktrans %}</h3>
         </div>
-        <h2>2. lépés</h2>
+        <h2>{% blocktrans with step=2 %}Step {{step}}{% endblocktrans %}</h2>
         <p>Leírás, mit is kéne itt ezen az ablakon csinálni, és miért jó, ha azt csinálja, amit.</p>
         <div class="container">
             <ul class="wm-list modal">
@@ -92,13 +94,13 @@
                         </div>
                         <div class="details">
                             <h3>
-                                Részletek
+                                {% trans "Details" %}
                             </h3>
                             <ul>
-                                <li class="name">Rendszer: <span class="value">{{m.disk.name}}</span></li>
-                                <li class="type">Instance típus: <span class="value">{{m.instance_type.name}}</span></li>
-                                <li class="memory">Memória: <span class="value">{{m.instance_type.RAM}} MiB</span></li>
-                                <li class="cpu">CPU magok: <span class="value">{{m.instance_type.CPU}}</span></li>
+                                <li class="name">{% trans "System" %}: <span class="value">{{m.disk.name}}</span></li>
+                                <li class="type">{% trans "Size" %}: <span class="value">{{m.instance_type.name}}</span></li>
+                                <li class="memory">{% trans "Memory" %}: <span class="value">{{m.instance_type.RAM}} MiB</span></li>
+                                <li class="cpu">{% trans "CPU cores" %}: <span class="value">{{m.instance_type.CPU}}</span></li>
                             </ul>
                         </div>
                     </form>
@@ -107,8 +109,8 @@
             </ul>
         </div>
         <nav>
-            <a href="#" class="prev">&laquo; Mégse</a>
-            <a href="#" class="next">Tovább &raquo;</a>
+            <a href="#" class="prev">{% trans "&laquo; Cancel" %}</a>
+            <a href="#" class="next">{% trans "Next &raquo;" %}</a>
             <div class="clear"></div>
         </nav>
         <script type="text/javascript">
