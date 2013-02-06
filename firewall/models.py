@@ -248,8 +248,8 @@ class Record(models.Model):
                 raise ValidationError(u'ez ismeretlen rekord, ez nudli!')
 
     def get_data(self):
-        retval = { 'type': self.type, 'ttl': self.ttl, 'address': self.address }
-        if self.host:
+        retval = { 'name': self.name, 'type': self.type, 'ttl': self.ttl, 'address': self.address }
+        if self.host and self.type in ['CNAME', 'A', 'AAAA']:
             if self.type == 'A':
                 retval['address'] = self.host.pub_ipv4 if self.host.pub_ipv4 and not self.host.shared_ip else self.host.ipv4
                 retval['name'] = self.host.get_fqdn()
