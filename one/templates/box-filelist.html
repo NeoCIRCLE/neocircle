@@ -55,10 +55,10 @@
                     </div>
                 </li>
                 <!-- /ko -->
-                <li class="file-details wm" id="load-more-files" data-bind="visible: (files().length>0 && files().length != allFiles.length)">
+                <li class="file-details wm small-row" id="load-more-files" data-bind="visible: (files().length>0 && files().length != allFiles.length)">
                     <div class="summary" data-bind="click: showMore">
                         <div class="name filetype-more">
-                            {% trans "Show more files…" %}
+                            {% trans "Show more files…" %} (<span data-bind="text: allFiles.length-files().length"></span> hidden)
                         </div>
                         <div class="clear"></div>
                     </div>
