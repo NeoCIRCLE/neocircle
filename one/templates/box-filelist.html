@@ -9,6 +9,12 @@
             <ul class="file-list">
                 <li class="wm small" id="current-location">
                     <div class="summary">
+                        <div class="sort">
+                            <select data-bind="value: sortBy">
+                                <option value="name">Név szerint</option>
+                                <option value="date">Dátum szerint</option>
+                            </select>
+                        </div>
                         <div class="name">Jelenlegi hely: <span data-bind="text: currentPath"></span></div>
                         <div class="clear"></div>
                     </div>
