@@ -1,0 +1,28 @@
+#!/bin/bash
+
+echo "En vagyok a $0 !"
+
+if ! grep -qs -P '^\s*auto eth0' /etc/network/interfaces; then
+	arr=( $((echo 'ibase=16' ; ifconfig eth0 | awk '/HWaddr/ {print $5}' | tr ':a-z' '\nA-Z') | bc ) )
+	ipv4="${arr[2]}.${arr[3]}.${arr[4]}.${arr[5]}"
+	gw4="${arr[2]}.${arr[3]}.255.254"
+	ipv6="2001:738:2001:4031:${arr[3]}:${arr[4]}:${arr[5]}:0"
+	gw6="2001:738:2001:4031:${arr[3]}:255:254:0"
+
+	echo ok "$ipv4 $ipv6 $gw4 $gw6"
+	cat <<EOF >> /etc/network/interfaces
+auto eth0
+iface eth0 inet static
+	address $ipv4
+	netmask 255.255.0.0
+	gateway $gw4
+	dns-nameservers 152.66.243.60
+iface eth0 inet6 static
+	address $ipv6
+	netmask 80
+	gateway $gw6
+EOF
+	ifconfig eth0 0;ifdown eth0;ifup eth0
+
+fi
+
