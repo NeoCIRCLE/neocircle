@@ -10,36 +10,36 @@
             {{i.state}}
         </div>
         <div class="actions">
-        	{% if i.state == 'ACTIVE' %}
-			<a href="{{i.get_connect_uri}}" title="Csatlakozás">
+            {% if i.state == 'ACTIVE' %}
+            <a href="{{i.get_connect_uri}}" title="Csatlakozás">
                 <img src="static/icons/plug.png" alt="connect" />
             </a>
-			<a href="/vm/suspend/{{i.id}}/" onclick="alert('Hamarosan a mozikban.'); return false" title="Felfüggesztés">
+            <a href="/vm/suspend/{{i.id}}/" onclick="alert('Hamarosan a mozikban.'); return false" title="Felfüggesztés">
                 <img src="/static/icons/control-pause.png" alt="pause" />
             </a>
-			<a href="/vm/delete/{{i.id}}/" onclick="return confirm('Biztosan törli a gépet?')" title="Törlés">
+            <a href="/vm/delete/{{i.id}}/" onclick="return confirm('Biztosan törli a gépet?')" title="Törlés">
                 <img src="/static/icons/minus-circle.png" alt="delete" />
             </a>
-			<a href="/vm/reset/{{i.id}}/" onclick="alert('Hamarosan a mozikban.'); return false" title="Újraindítás">
+            <a href="/vm/reset/{{i.id}}/" onclick="alert('Hamarosan a mozikban.'); return false" title="Újraindítás">
                 <img src="/static/icons/arrow-circle-double.png" alt="↺" />
             </a>
-			{% endif %}
-			{% if i.state == 'PENDING' %}
-			<img src="/static/load-2.gif" /> indítás...
-			{% endif %}
-			{% if i.state == 'SUSPENDED' %}
-			<a href="/vm/continue/{{i.id}}/" title="Folytatás">
+            {% endif %}
+            {% if i.state == 'PENDING' %}
+            <img src="/static/load-2.gif" /> indítás...
+            {% endif %}
+            {% if i.state == 'SUSPENDED' %}
+            <a href="/vm/continue/{{i.id}}/" title="Folytatás">
                 <img src="/static/icons/control.png" alt="resume" />
             </a>
-			<a href="/vm/delete/{{i.id}}/" onclick="return confirm('Biztosan törli a gépet?')" title="Törlés">
+            <a href="/vm/delete/{{i.id}}/" onclick="return confirm('Biztosan törli a gépet?')" title="Törlés">
                 <img src="/static/icons/minus-circle.png" alt="delete" />
             </a>
-			{% endif %}
-			{% if i.state == 'FAILED' %}
-			<a href="/vm/delete/{{i.id}}/" title="Törlés">
+            {% endif %}
+            {% if i.state == 'FAILED' %}
+            <a href="/vm/delete/{{i.id}}/" title="Törlés">
                 <img src="/static/icons/minus-circle.png" alt="delete" />
             </a>
-			{% endif %}
+            {% endif %}
         </div>
         <div class="clear"></div>
     </div>
