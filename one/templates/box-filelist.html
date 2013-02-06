@@ -1,3 +1,5 @@
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 <div class="boxes">
     <div class="contentblock">
         <h2>
@@ -21,7 +23,7 @@
                 </li>
                 <li class="wm small real" data-bind="visible: files().length == 0">
                     <div class="summary">
-                        <div class="name">Nincs megjeleníthető fájl.</div>
+                        <div class="name">{% trans "No files." %}</div>
                         <div class="clear"></div>
                     </div>
                 </li>
@@ -32,13 +34,13 @@
                         <div class="info" data-bind="text: size"></div>
                         <div class="actions">
                             <a href="#" data-bind="click: $parent.rename, clickBubble: false">
-                                <img src="/static/icons/pencil.png" alt="rename" />
+                                <img src="/static/icons/pencil.png" alt="{% trans "rename" %}" />
                             </a>
                             <a href="#" data-bind="click: $parent.delete, clickBubble: false">
-                                <img src="/static/icons/minus-circle.png" alt="delete" />
+                                <img src="/static/icons/minus-circle.png" alt="{% trans "remove" %}" />
                             </a>
                             <a href="#" data-bind="click: $parent.download, clickBubble: false">
-                                <img src="/static/icons/download-cloud.png" alt="download" />
+                                <img src="/static/icons/download-cloud.png" alt="{% trans "download" %}" />
                             </a>
                         </div>
                         <div class="clear"></div>
@@ -46,8 +48,8 @@
                     <div class="details">
                         <div class="details-container">
                             <ul>
-                                <li>Módosítva: <span class="value" data-bind="text: mTime"></span></li>
-                                <li>Típus: <span class="value" data-bind="text: type"></span></li>
+                                <li>{% trans "Last modification" %}: <span class="value" data-bind="text: mTime"></span></li>
+                                <li>{% trans "Type" %}: <span class="value" data-bind="text: type"></span></li>
                             </ul>
                         </div>
                     </div>
@@ -56,16 +58,16 @@
                 <li class="file-details wm" id="load-more-files" data-bind="visible: (files().length>0 && files().length != allFiles.length)">
                     <div class="summary" data-bind="click: showMore">
                         <div class="name filetype-more">
-                            Mutass több fájlt!
+                            {% trans "Show more files…" %}
                         </div>
                         <div class="clear"></div>
                     </div>
                 </li>
                 <li class="wm">
                     <div class="summary">
-                        <div class="name filetype-new-folder">Új mappa</div>
+                        <div class="name filetype-new-folder">{% trans "Create folder" %}</div>
                         <div id="new-folder-form">
-                            <input type="text" placeholder="Új mappa neve" data-bind="value: newFolderName, click: function(m,e){console.log(arguments); e.preventDefault(); e.stopPropagation(); return false;}" />
+                            <input type="text" placeholder="{% trans "Name of new folder" %}" data-bind="value: newFolderName, click: function(m,e){console.log(arguments); e.preventDefault(); e.stopPropagation(); return false;}" />
                             <input type="submit" data-bind="click: newFolder, clickBubble: false" value="Létrehozás" />
                         </div>
                         <div class="clear"></div>
@@ -76,13 +78,14 @@
                         <div class="quota">
                             <div id="upload-progress" class="used" style="background-color: rgba(0,255,0,0.2);" data-bind="style: {width: uploadProgress}"></div>
                         </div>
-                        <div class="name filetype-up">Fájlfeltöltés</div>
+                        <div class="name filetype-up">{% trans "File upload" %}</div>
                         <div class="clear"></div>
                     </div>
                     <div class="details">
                         <div class="container">
                             <div id="upload-zone" class="upload-zone">
-                                A feltöltéshez húzza ide a fájlt. <a href="#" id="old-upload">Hagyományos fájltfeltöltési felület</a>
+                                <p>{% trans "Drag and drop files here to start uploading." %}</p>
+                                <p>{% trans 'You can also use the <a href="#" id="old-upload">the traditional upload form</a>.' %}</p>
                                 <img class="preview" />
                             </div>
                             <div style="display: none" id="upload-progress-text" class="upload-zone"></div>
@@ -102,9 +105,8 @@
                             <div class="softLimit" data-bind="style: {left: quota.softPos}"></div>
                         </div>
                         <div class="name">
-                            Kvóta: <span data-bind="text: quota.used"></span>/
-                            <abbr data-bind="text: quota.soft" title="Soft limit"></abbr>
-                            (<abbr title="Hard limit" data-bind="text: quota.hard"></abbr>)
+                            {% trans "File quota" %}: <abbr data-bind="text: quota.used" title="{% trans "Used space" %}"></span>/<abbr data-bind="text: quota.soft" title="{% trans "soft limit" %}"></abbr>
+                            (<abbr title="{% trans "hard limit" %}" data-bind="text: quota.hard"></abbr>)
                         </div>
                         <div class="clear"></div>
                     </div>
