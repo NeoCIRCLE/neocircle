@@ -315,7 +315,7 @@ $(function() {
                 url: '/ajax/store/delete',
                 dataType: 'json',
                 success: function(data) {
-                    loadFolder(self.currentPath());
+                    self.files.remove(item);
                 }
             })
         }
