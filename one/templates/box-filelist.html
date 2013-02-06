@@ -68,7 +68,7 @@
                 <li class="file-details wm small-row" id="load-more-files" data-bind="visible: (files().length>0 && files().length != allFiles.length)">
                     <div class="summary" data-bind="click: showMore">
                         <div class="name filetype-more">
-                            {% trans "Show more files…" %} (<span data-bind="text: allFiles.length-files().length"></span> hidden)
+                            {% trans "Show more files…" %} (<span data-bind="text: allFiles.length-files().length"></span> {% trans "hidden" context="is" %})
                         </div>
                         <div class="clear"></div>
                     </div>

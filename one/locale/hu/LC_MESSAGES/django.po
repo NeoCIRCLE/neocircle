@@ -7,8 +7,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-02-06 18:20+0100\n"
+"POT-Creation-Date: 2013-02-06 19:32+0100\n"
 "PO-Revision-Date: 2013-02-06 18:23+0100\n"
+"Last-Translator: \n"
 "Language-Team: Hungarian <cloud@ik.bme.hu>\n"
 "Language: hu\n"
 "MIME-Version: 1.0\n"
@@ -16,7 +17,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "X-Generator: Lokalize 1.4\n"
-"Last-Translator: \n"
 
 #: admin.py:40
 msgid "Update status"
@@ -205,69 +205,69 @@ msgstr "példány"
 msgid "instances"
 msgstr "példányok"
 
-#: views.py:92
+#: views.py:93
 msgid "Failed to create virtual machine."
 msgstr "A virtuális gép indítása sikertelen."
 
-#: views.py:128
+#: views.py:136
 msgid "Port number is in a restricted domain (22000 to 24000)."
 msgstr "A megadott port foglalt tartományba esik (22000-től 24000-ig)."
 
-#: views.py:132
+#: views.py:140
 #, python-format
 msgid "Port %d successfully added."
 msgstr "%d számú port hozzáadása sikeres."
 
-#: views.py:134
+#: views.py:142
 msgid "Adding port failed."
 msgstr "Port hozzáadása sikertelen."
 
-#: views.py:151
+#: views.py:159
 #, python-format
 msgid "Port %d successfully removed."
 msgstr "%d számú port eltávolítása sikeres."
 
-#: views.py:153
+#: views.py:161
 msgid "Removing port failed."
 msgstr "Port eltávolítása sikertelen."
 
-#: views.py:160
+#: views.py:168
 msgid "Virtual machine is successfully deleted."
 msgstr "A virtuális gép törlése sikeres."
 
-#: views.py:162
+#: views.py:170
 msgid "Failed to delete virtual machine."
 msgstr "A virtuális gép törlése sikertelen."
 
-#: views.py:177
+#: views.py:185
 msgid "Virtual machine is successfully stopped."
 msgstr "A virtuális gép sikeresen leállt."
 
-#: views.py:179
+#: views.py:187
 msgid "Failed to stop virtual machine."
 msgstr "A virtuális gép leállítása sikertelen."
 
-#: views.py:187
+#: views.py:195
 msgid "Virtual machine is successfully resumed."
 msgstr "A virtuális gép sikeresen folytatva."
 
-#: views.py:189
+#: views.py:197
 msgid "Failed to resume virtual machine."
 msgstr "A virtuális gép visszatöltése sikertelen."
 
-#: views.py:197
+#: views.py:205
 msgid "Virtual machine is successfully powered off."
 msgstr "A virtuális gép kikapcsolása sikeres."
 
-#: views.py:199
+#: views.py:207
 msgid "Failed to power off virtual machine."
 msgstr "A virtuális gép kikapcsolása sikertelen."
 
-#: views.py:207
+#: views.py:215
 msgid "Virtual machine is successfully restarted."
 msgstr "A virtuális gép újraindítása sikeres."
 
-#: views.py:209
+#: views.py:217
 msgid "Failed to restart virtual machine."
 msgstr "A virtuális gép újraindítása sikertelen."
 
@@ -275,51 +275,55 @@ msgstr "A virtuális gép újraindítása sikertelen."
 msgid ":("
 msgstr ":("
 
-#: templates/box-filelist.html:26
+#: templates/box-filelist.html:28
 msgid "No files."
 msgstr "Nincs megjeleníthető fájl."
 
-#: templates/box-filelist.html:37
+#: templates/box-filelist.html:39
 msgid "rename"
 msgstr "átnevezés"
 
-#: templates/box-filelist.html:40
+#: templates/box-filelist.html:42
 msgid "remove"
 msgstr "eltávolítás"
 
-#: templates/box-filelist.html:43
+#: templates/box-filelist.html:45
 msgid "download"
 msgstr "letöltés"
 
-#: templates/box-filelist.html:51
+#: templates/box-filelist.html:53
 msgid "Last modification"
 msgstr "Utolsó módosítás"
 
-#: templates/box-filelist.html:52 templates/new-template-flow.html:20
+#: templates/box-filelist.html:54 templates/new-template-flow.html:20
 msgid "Type"
 msgstr "Típus"
 
-#: templates/box-filelist.html:61
+#: templates/box-filelist.html:65
 msgid "Show more files…"
 msgstr "Több fájl megjelenítése…"
 
-#: templates/box-filelist.html:68
+#: templates/box-filelist.html:65
+msgid "hidden"
+msgstr "rejtett"
+
+#: templates/box-filelist.html:72
 msgid "Create folder"
 msgstr "Mappa létrehozása"
 
-#: templates/box-filelist.html:70
+#: templates/box-filelist.html:74
 msgid "Name of new folder"
 msgstr "Új mappa neve"
 
-#: templates/box-filelist.html:81
+#: templates/box-filelist.html:85
 msgid "File upload"
 msgstr "Fájlfeltöltés"
 
-#: templates/box-filelist.html:87
+#: templates/box-filelist.html:91
 msgid "Drag and drop files here to start uploading."
 msgstr "Húzza ide a fájlt a feltöltés megkezdéséhez."
 
-#: templates/box-filelist.html:88
+#: templates/box-filelist.html:92
 msgid ""
 "You can also use the <a href=\"#\" id=\"old-upload\">the traditional upload "
 "form</a>."
@@ -327,35 +331,35 @@ msgstr ""
 "Használhatja a <a href=\"#\" id=\"old-upload\">hagyományos feltöltő űrlapot</"
 "a> is."
 
-#: templates/box-filelist.html:89
+#: templates/box-filelist.html:93
 msgid "Upload limit is 1GB per file!"
 msgstr "A feltöltési limit 1GiB fájlonként!"
 
-#: templates/box-filelist.html:93
+#: templates/box-filelist.html:97
 msgid "Error: File is bigger than 1GB!"
 msgstr "Hiba: a fájl nagyobb 1 GiB-nál."
 
-#: templates/box-filelist.html:94
+#: templates/box-filelist.html:98
 msgid "Error: Upload server is not available!"
 msgstr "Hiba: a feltöltő kiszolgáló nem érhető el."
 
-#: templates/box-filelist.html:95
+#: templates/box-filelist.html:99
 msgid "Error: File already exists!"
 msgstr "Hiba: a fájl már létezik."
 
-#: templates/box-filelist.html:114
+#: templates/box-filelist.html:118
 msgid "File quota"
 msgstr "Fájlkvóta"
 
-#: templates/box-filelist.html:114
+#: templates/box-filelist.html:118
 msgid "Used space"
 msgstr "Használt terület"
 
-#: templates/box-filelist.html:114
+#: templates/box-filelist.html:118
 msgid "soft limit"
 msgstr "puha limit"
 
-#: templates/box-filelist.html:115
+#: templates/box-filelist.html:119
 msgid "hard limit"
 msgstr "kemény limit"
 
@@ -539,4 +543,3 @@ msgstr "&laquo; Mégsem"
 #: templates/new-template-flow.html:113
 msgid "Next &raquo;"
 msgstr "Tovább &raquo;"
-
