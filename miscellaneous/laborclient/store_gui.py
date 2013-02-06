@@ -112,12 +112,13 @@ class Browser:
         self.toolbar.add(self.store_button)
         self.toolbar.add(self.help_button)
         self.vbox = gtk.VBox(False, 0)
-        self.vbox.pack_start(self.toolbar, False, True, 0)
+        #self.vbox.pack_start(self.toolbar, False, True, 0)
         self.scrolledwindow = gtk.ScrolledWindow()
         self.scrolledwindow.add(self.webview)
         self.vbox.add(self.scrolledwindow)
         self.window.add(self.vbox)
         #self.window.add(self.webview)
+        self.window.maximize()
         self.window.show_all()
 
     def destroy(self, dummy):
@@ -159,7 +160,7 @@ class Browser:
             self.webview.execute_script("document.getElementById(\"mount_button\").hidden=false ;")
             self.webview.execute_script("document.getElementById(\"umount_button\").hidden=true ;")
             return True
-        elif scheme == "nx" or scheme == "rdp" or scheme == "shellterm":
+        elif scheme == "nx" or scheme == "rdp" or scheme == "sshterm":
             connection = rdp.RDP(uri)
             Process(target=connection.connect).start()
             return True
