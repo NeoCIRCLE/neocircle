@@ -124,7 +124,14 @@ $(function() {
         }, self);
         self.quota.softPos = ko.computed(function() {
             return(self.quota.rawSoft() / self.quota.rawHard() * 100).toFixed(0) + '%';
-        }, self)
+        }, self);
+        self.sortBy=ko.observable('name');
+
+        $('#current-location select').on('change', function(){
+            self.sortBy($('#current-location select').val());
+            sortOriginalFiles();
+            sortFiles();
+        })
 
         /**
          * Returns throttled function
@@ -170,6 +177,51 @@ $(function() {
             loadFolder(s.substr(0, s.substr(0, s.length - 1).lastIndexOf('/') + 1));
         }
 
+        var sortFiles = function(){
+            self.files.sort({
+                name: function(a,b){
+                    if(a.type === b.type){
+                        return a.originalName.localeCompare(b.originalName);
+                    }
+                    if(a.type === 'fájl'){
+                        return 1;
+                    }
+                    return -1;
+                },
+                date: function(a,b){
+                    if(a.type === b.type){
+                        return new Date(b.mTime).getTime()-new Date(a.mTime).getTime();
+                    }
+                    if(a.type === 'fájl'){
+                        return 1;
+                    }
+                    return -1;
+                }
+            }[self.sortBy()]);
+        }
+        var sortOriginalFiles = function(){
+            self.allFiles.sort({
+                name: function(a,b){
+                    if(a.TYPE === b.TYPE){
+                        return a.NAME.localeCompare(b.NAME);
+                    }
+                    if(a.TYPE === 'F'){
+                        return 1;
+                    }
+                    return -1;
+                },
+                date: function(a,b){
+                    if(a.TYPE === b.TYPE){
+                        return new Date(b.MTIME).getTime()-new Date(a.MTIME).getTime();
+                    }
+                    if(a.TYPE === 'F'){
+                        return 1;
+                    }
+                    return -1;
+                }
+            }[self.sortBy()]);
+        }
+
         /**
          * Loads the specified folder
          */
@@ -209,10 +261,12 @@ $(function() {
             self.notInRoot(self.currentPath().lastIndexOf('/') !== 0);
             self.files([]);
             self.allFiles = data;
-            for(var i in data) {
+            sortOriginalFiles();
+            for(var i in self.allFiles) {
                 added++;
-                if(added < 6) addFile(data[i]);
+                if(added < 6) addFile(self.allFiles[i]);
             }
+            sortFiles();
         }
 
         /**
@@ -265,6 +319,7 @@ $(function() {
                 addFile(self.allFiles[i]);
             }
             self.fileLimit += 5;
+            sortFiles();
         }
 
         /**
