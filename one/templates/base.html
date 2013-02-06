@@ -31,14 +31,11 @@
                {% else %}
                    <a href="/login/">Bejelentkezés</a>.
                {% endif %}
-               <!--{% if lang == 'hu' %}
-               <a href="/language/en-US/">In English</a>.
+               {% if lang == 'hu' %}
+               <a href="/language/en/">In English</a>.
                {% else %}
                <a href="/language/hu/">Magyarul</a>.
-                   {% if autolang %}
-                   <p style="position: absolute; top: 40px; right: 1em;" class="triangle-border top">Böngészője kifejezetten angol tartalmat kért.<br/>A <a href="/language/hu/">magyar változat</a> részletesebb és frissebb!</p>
-                   {% endif %}
-               {% endif %}-->
+               {% endif %}
                </p>
            </div>
         {% endblock %}

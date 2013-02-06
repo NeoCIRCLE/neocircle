@@ -114,3 +114,24 @@ def login(request):
     response = redirect(redirect_to)
     response.set_cookie(settings.LANGUAGE_COOKIE_NAME, p.language, 10*365*24*3600)
     return response
+
+def language(request, lang):
+    cname = settings.LANGUAGE_COOKIE_NAME
+    if not cname:
+        cname = 'django_language'
+    redirect_to = request.META['HTTP_REFERER']
+    r = redirect(redirect_to)
+    if not redirect_to:
+        redirect_to = "/"
+
+    try:
+        p = Person.objects.get(user=request.user)
+        p.language = lang
+        p.save()
+    except ValidationError as e:
+        messages.error(e)
+    except:
+        messages.error(_("Could not found Person object."))
+    r.set_cookie(cname, lang, 10*365*24*3600)
+    return r
+
