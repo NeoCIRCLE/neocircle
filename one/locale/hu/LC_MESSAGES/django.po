@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-02-06 19:41+0100\n"
+"POT-Creation-Date: 2013-02-06 19:51+0100\n"
 "PO-Revision-Date: 2013-02-06 18:23+0100\n"
 "Last-Translator: \n"
 "Language-Team: Hungarian <cloud@ik.bme.hu>\n"
@@ -308,8 +308,9 @@ msgid "Show more files…"
 msgstr "Több fájl megjelenítése…"
 
 #: templates/box-filelist.html:71
+msgctxt "is"
 msgid "hidden"
-msgstr "rejtett"
+msgstr "van elrejtve"
 
 #: templates/box-filelist.html:78
 msgid "Create folder"
