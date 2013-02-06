@@ -35,5 +35,6 @@ urlpatterns = patterns('',
      url(r'^ajax/store/newFolder$', 'store.views.ajax_new_folder', name='store_ajax_new_folder'),
      url(r'^ajax/store/quota$', 'store.views.ajax_quota', name='store_ajax_quota'),
      url(r'^ajax/store/rename$', 'store.views.ajax_rename', name='store_ajax_rename'),
+     url(r'^ajax/vm/status/(?P<iid>\d+)$', 'one.views.vm_ajax_instance_status', name='vm_ajax_instance_status'),
      url(r'^language/(?P<lang>[-A-Za-z]+)/$', 'school.views.language', name='language'),
 )
