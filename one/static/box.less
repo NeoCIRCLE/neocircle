@@ -119,6 +119,23 @@
             background-position: 0 0;
             z-index: 2;
             position: relative;
+            &.filetype-new-folder {
+                float: left;
+
+            }
+        }
+        @placeholderColor: #555;
+        input::-webkit-input-placeholder{
+            color: @placeholderColor;
+        }
+        input:-moz-placeholder{
+            color: @placeholderColor;
+        }
+        input::-moz-placeholder{
+            color: @placeholderColor;
+        }
+        input:-ms-input-placeholder{
+            color: @placeholderColor;
         }
         .status{
             text-align: right;
