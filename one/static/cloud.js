@@ -353,11 +353,21 @@ $(function() {
         /**
          * Uploads the specified file(s)
          */
-        function readfiles(files) {
-            var formData = tests.formdata ? new FormData() : null;
-            for(var i = 0; i < files.length; i++) {
-                if(tests.formdata) formData.append('data', files[i]);
+        function readfiles(file) {
+            //1 GB file limit
+            if(file.size > 1024*1024*1024) {
+                $('#upload-zone').hide();
+                $('#upload-error').show();
+                $('#upload-error-size').show();
+                setTimeout(function(){
+                    $('#upload-zone').show();
+                    $('#upload-error').hide();
+                    $('#upload-error-size').hide();
+                },3000);
+                return;
             }
+            var formData = tests.formdata ? new FormData() : null;
+            formData.append('data', file);
             // now post a new XHR request
             if(tests.formdata) {
                 var xhr = new XMLHttpRequest();
@@ -414,7 +424,7 @@ $(function() {
         document.addEventListener('drop', function(e) {
             e.stopPropagation();
             e.preventDefault();
-            readfiles(e.dataTransfer.files);
+            readfiles(e.dataTransfer.files[0]);
             return false;
         });
         document.addEventListener('dragover', function(e) {
