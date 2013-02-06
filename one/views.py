@@ -22,6 +22,7 @@ from django.views.generic import *
 from one.models import *
 import django.contrib.auth as auth
 from firewall.tasks import *
+import json
 
 class LoginView(View):
     def get(self, request, *args, **kwargs):
@@ -118,6 +119,13 @@ def vm_show(request, iid):
 	'booting' : not inst.active_since,
         'ports': inst.firewall_host.list_ports()
         }))
+
+@require_safe
+@login_required
+def vm_ajax_instance_status(request, iid):
+    inst = get_object_or_404(Instance, id=iid, owner=request.user)
+    inst.update_state()
+    return HttpResponse(json.dumps({'booting': not inst.active_since, 'state': inst.state}))
 
 class VmPortAddView(View):
     def post(self, request, iid, *args, **kwargs):
