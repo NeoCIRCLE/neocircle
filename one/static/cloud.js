@@ -73,28 +73,28 @@ $(function() {
         $(this).parent().hide().parent().find('#old-upload-form').show();
         return false;
     });
-    $('.quota .used').each(function(){
-        var s=this;
-        $(this).css('backgroundColor', function(w){
+    $('.quota .used').each(function() {
+        var s = this;
+        $(this).css('backgroundColor', function(w) {
             console.log(s, parseFloat(w));
-            return 'hsla('+(120-parseFloat(w)/438*120).toFixed(0)+',100%,50%,0.2)';
+            return 'hsla(' + (120 - parseFloat(w) / 438 * 120).toFixed(0) + ',100%,50%,0.2)';
         }($(this).css('width')));
-        if(parseInt($(this).css('width'))>0)
-        $(this).css('borderRight', function(w){
+        if(parseInt($(this).css('width')) > 0) $(this).css('borderRight', function(w) {
             console.log(s, parseFloat(w));
-            return '1px solid hsla('+(120-parseFloat(w)/438*120).toFixed(0)+',100%,30%,0.4)';
+            return '1px solid hsla(' + (120 - parseFloat(w) / 438 * 120).toFixed(0) + ',100%,30%,0.4)';
         }($(this).css('width')));
     });
-    $('#new-folder').click(function(){
+    $('#new-folder').click(function() {
         $('#new-folder-form input')[0].focus();
     })
 
     /**
      * Convert bytes to human readable format
      */
+
     function convert(n, skip, precision) {
         skip = skip | 0;
-        precision = precision|2;
+        precision = precision | 2;
         var suffix = 'B KB MB GB'.split(' ');
         for(var i = skip; n > 1024; i++) {
             n /= 1024;
@@ -105,7 +105,7 @@ $(function() {
     function Model() {
         //alias for this
         var self = this;
-        var uploadURLRequestInProgress=false;
+        var uploadURLRequestInProgress = false;
         //currently displayed files
         self.files = ko.observableArray();
         //all fetched files
@@ -126,13 +126,13 @@ $(function() {
             rawHard: ko.observable(0)
         };
         self.quota.used = ko.computed(function() {
-            return convert(self.quota.rawUsed(),1);
+            return convert(self.quota.rawUsed(), 1);
         });
         self.quota.hard = ko.computed(function() {
-            return convert(self.quota.rawHard(),1);
+            return convert(self.quota.rawHard(), 1);
         });
         self.quota.soft = ko.computed(function() {
-            return convert(self.quota.rawSoft(),1);
+            return convert(self.quota.rawSoft(), 1);
         });
         self.quota.usedBar = ko.computed(function() {
             return(self.quota.rawUsed() / self.quota.rawHard() * 100).toFixed(0) + '%';
@@ -140,9 +140,9 @@ $(function() {
         self.quota.softPos = ko.computed(function() {
             return(self.quota.rawSoft() / self.quota.rawHard() * 100).toFixed(0) + '%';
         }, self);
-        self.sortBy=ko.observable('name');
+        self.sortBy = ko.observable('name');
 
-        $('#current-location select').on('change', function(){
+        $('#current-location select').on('change', function() {
             self.sortBy($('#current-location select').val());
             sortOriginalFiles();
             sortFiles();
@@ -151,6 +151,7 @@ $(function() {
         /**
          * Returns throttled function
          */
+
         function throttle(f) {
             var disabled = false;
             return function() {
@@ -169,18 +170,22 @@ $(function() {
          * Delay the function call for `f` until `g` evaluates true
          * Default check interval is 1 sec
          */
-        function delayUntil(f,g,timeout){
-            var timeout=timeout|1000;
-            function check(){
-                var o=arguments;
-                if(!g()){
-                    setTimeout(function(){check.apply(null,o)},timeout);
+
+        function delayUntil(f, g, timeout) {
+            var timeout = timeout | 1000;
+
+            function check() {
+                var o = arguments;
+                if(!g()) {
+                    setTimeout(function() {
+                        check.apply(null, o)
+                    }, timeout);
                     return;
                 }
-                f.apply(null,o);
+                f.apply(null, o);
             }
-            return function(){
-                check.apply(null,arguments);
+            return function() {
+                check.apply(null, arguments);
             }
         }
 
@@ -192,54 +197,54 @@ $(function() {
             loadFolder(s.substr(0, s.substr(0, s.length - 1).lastIndexOf('/') + 1));
         }
 
-        var sortFiles = function(){
-            self.files.sort({
-                name: function(a,b){
-                    if(a.type === b.type){
-                        return a.originalName.localeCompare(b.originalName);
+        var sortFiles = function() {
+                self.files.sort({
+                    name: function(a, b) {
+                        if(a.type === b.type) {
+                            return a.originalName.localeCompare(b.originalName);
+                        }
+                        if(a.type === 'fájl') {
+                            return 1;
+                        }
+                        return -1;
+                    },
+                    date: function(a, b) {
+                        if(a.type === b.type) {
+                            return new Date(b.mTime).getTime() - new Date(a.mTime).getTime();
+                        }
+                        if(a.type === 'fájl') {
+                            return 1;
+                        }
+                        return -1;
                     }
-                    if(a.type === 'fájl'){
-                        return 1;
+                }[self.sortBy()]);
+            }
+        var sortOriginalFiles = function() {
+                self.allFiles.sort({
+                    name: function(a, b) {
+                        if(a.TYPE === b.TYPE) {
+                            return a.NAME.localeCompare(b.NAME);
+                        }
+                        if(a.TYPE === 'F') {
+                            return 1;
+                        }
+                        return -1;
+                    },
+                    date: function(a, b) {
+                        if(a.TYPE === b.TYPE) {
+                            return new Date(b.MTIME).getTime() - new Date(a.MTIME).getTime();
+                        }
+                        if(a.TYPE === 'F') {
+                            return 1;
+                        }
+                        return -1;
                     }
-                    return -1;
-                },
-                date: function(a,b){
-                    if(a.type === b.type){
-                        return new Date(b.mTime).getTime()-new Date(a.mTime).getTime();
-                    }
-                    if(a.type === 'fájl'){
-                        return 1;
-                    }
-                    return -1;
-                }
-            }[self.sortBy()]);
-        }
-        var sortOriginalFiles = function(){
-            self.allFiles.sort({
-                name: function(a,b){
-                    if(a.TYPE === b.TYPE){
-                        return a.NAME.localeCompare(b.NAME);
-                    }
-                    if(a.TYPE === 'F'){
-                        return 1;
-                    }
-                    return -1;
-                },
-                date: function(a,b){
-                    if(a.TYPE === b.TYPE){
-                        return new Date(b.MTIME).getTime()-new Date(a.MTIME).getTime();
-                    }
-                    if(a.TYPE === 'F'){
-                        return 1;
-                    }
-                    return -1;
-                }
-            }[self.sortBy()]);
-        }
+                }[self.sortBy()]);
+            }
 
-        /**
-         * Loads the specified folder
-         */
+            /**
+             * Loads the specified folder
+             */
         var loadFolder = throttle(function(path) {
             self.currentPath(path);
             self.fileLimit = 5;
@@ -270,6 +275,7 @@ $(function() {
         /**
          * After loadFolder completes, this function updates the UI
          */
+
         function loadFolderDone(data) {
             var viewData = [];
             var added = 0;
@@ -287,6 +293,7 @@ $(function() {
         /**
          * Add file to the displayed files list
          */
+
         function addFile(d) {
             var viewData;
             if(d.TYPE === 'D') {
@@ -309,7 +316,7 @@ $(function() {
                     type: 'fájl',
                     mTime: d.MTIME,
                     getTypeClass: 'name filetype-text',
-                    clickHandler: function(item,e) {
+                    clickHandler: function(item, e) {
                         toggleDetails.call(e.currentTarget);
                     }
                 };
@@ -371,11 +378,11 @@ $(function() {
          * Renames the specified file
          */
         self.rename = function(item, e) {
-            var oldName=$(e.target).parent().parent().parent().find('.name').html();
-            $(e.target).parent().unbind('click').click(function(){
+            var oldName = $(e.target).parent().parent().parent().find('.name').html();
+            $(e.target).parent().unbind('click').click(function() {
                 $(e.target).parent().parent().parent().find('.name').html(oldName);
-                $(e.target).parent().click(function(e){
-                    self.rename(item,e);
+                $(e.target).parent().click(function(e) {
+                    self.rename(item, e);
                 });
             })
             //$(e.target).parent().parent().parent().unbind('click');
@@ -402,7 +409,7 @@ $(function() {
          * Requests a new upload link from the store server
          */
         self.getUploadURL = function() {
-            uploadURLRequestInProgress=true;
+            uploadURLRequestInProgress = true;
             $.ajax({
                 type: 'POST',
                 data: 'ul=' + self.currentPath() + '&next=' + encodeURI(window.location.href),
@@ -410,7 +417,7 @@ $(function() {
                 dataType: 'json',
                 success: function(data) {
                     self.uploadURL(data.url);
-                    uploadURLRequestInProgress=false;
+                    uploadURLRequestInProgress = false;
                 }
             })
         }
@@ -444,17 +451,17 @@ $(function() {
         /**
          * Uploads the specified file(s)
          */
-        var readfiles=delayUntil(function(file) {
+        var readfiles = delayUntil(function(file) {
             //1 GB file limit
-            if(file.size > 1024*1024*1024) {
+            if(file.size > 1024 * 1024 * 1024) {
                 $('#upload-zone').hide();
                 $('#upload-error').show();
                 $('#upload-error-size').show();
-                setTimeout(function(){
+                setTimeout(function() {
                     $('#upload-zone').show();
                     $('#upload-error').hide();
                     $('#upload-error-size').hide();
-                },3000);
+                }, 3000);
                 return;
             }
             var formData = tests.formdata ? new FormData() : null;
@@ -464,7 +471,9 @@ $(function() {
                 var xhr = new XMLHttpRequest();
                 var start = new Date().getTime();
                 xhr.open('POST', self.uploadURL());
-                xhr.onreadystatechange=function(){console.log(xhr,arguments)}
+                xhr.onreadystatechange = function() {
+                    console.log(xhr, arguments)
+                }
                 xhr.onload = xhr.onerror = function() {
                     console.log(xhr.status);
                     $('.file-upload').removeClass('opened');
@@ -509,7 +518,7 @@ $(function() {
             }
         }, function() {
             return self.uploadURL() !== '/';
-        },200);
+        }, 200);
 
         /**
          * Drag'n'drop listeners
@@ -521,7 +530,7 @@ $(function() {
             return false;
         });
         document.addEventListener('dragover', function(e) {
-            if(!uploadURLRequestInProgress && self.uploadURL() == '/'){
+            if(!uploadURLRequestInProgress && self.uploadURL() == '/') {
                 $('.file-upload .summary').click();
             }
             e.stopPropagation();
@@ -532,6 +541,7 @@ $(function() {
         /**
          * Fetch quota information
          */
+
         function refreshQuota() {
             $.ajax({
                 'type': 'GET',
