@@ -13,6 +13,7 @@ $::dummyString = "{{{{";
 #
 my $password = @ARGV[0];
 print $password,"\n";
+print encodePassword($password),"\n";
 my $scrambled_string = scrambleString($password);
 print $scrambled_string,"\n";
 
@@ -83,7 +84,7 @@ sub getRandomValidCharFromList
   my $tm = localtime;
   my $k = ($tm->sec);
 
-  return 0;
+  return getvalidCharList(0);
 }
 
 
@@ -100,6 +101,7 @@ sub scrambleString
   if (length($str) < 32)
   {
     $sRet .= $::dummyString;
+    print "Added dummy $sRet\n";
   }
 
   for ( my $iR = (length($str) - 1); $iR >= 0; $iR--)
@@ -108,32 +110,38 @@ sub scrambleString
     #Reverse string.
     #
     $sRet .= substr($str,$iR,1);
+    print "Reverse: $sRet\n";
   }
 
   if (length($sRet) < 32)
   {
     $sRet .= $::dummyString;
+    print "Added dummy2 $sRet\n";
   }
 
   my $app=getRandomValidCharFromList();
+  print "Random valid char: $app\n";
   my $k=ord($app);
   my $l=$k + length($sRet) -2;
   $sRet= $app.$sRet;
-
+  print "Random $sRet\n\n";
   for (my $i1 = 1; $i1 < length($sRet); $i1++)
   {
 
     my $app2=substr($sRet,$i1,1);
+    print "For cycle app2= $app2\n}";
     my $j = findCharInList($app2);
+    print "For cícle j= $j\n";
     if ($j == -1)
     {
       return $sRet;
     }
     my $i = ($j + $l * ($i1 + 1)) % $::numValidCharList;
+    print "For cícle: i= $i\n";
     my $car=getvalidCharList($i);
 
     $sRet=substr_replace($sRet,$car,$i1,1);
-
+    print "For cycle sRet: $sRet\n\n"
   }
 
   my $c = (ord(getRandomValidCharFromList())) + 2;

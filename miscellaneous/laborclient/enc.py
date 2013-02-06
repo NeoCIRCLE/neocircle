@@ -3,6 +3,7 @@
 import sys
 import random
 import re
+from xml.sax.saxutils import escape
 
 numValidCharList = 85
 dummyString = "{{{{"
@@ -51,8 +52,8 @@ def findCharInList(c):
     return i
 
 def getRandomValidCharFromList():
-    #return getvalidCharList(random.randint(0,60))
-    return getvalidCharList(0)
+    return getvalidCharList(random.randint(0,60))
+    #return getvalidCharList(0)
 
 def scrambleString(s):
 
@@ -63,24 +64,31 @@ def scrambleString(s):
     strp = encodePassword(s)
     if len(strp) < 32:
         sRet += dummyString
-    for iR in reversed(range(len(strp)-1)):
+        #print "Added dummy "+sRet
+    for iR in reversed(range(len(strp))):
         sRet += strp[iR:iR+1]
+        #print "Reverse: "+sRet
     if len(sRet) < 32:
         sRet += dummyString
-
+        #print "Added dummy2 "+sRet
     app = getRandomValidCharFromList()
+    #print "Random valid char: "+app
     k = ord(app)
     l = k + len(sRet) - 2
     sRet = app + sRet
-
+    #print "Random "+sRet+"\n"
     for i1 in range(1, len(sRet)):
         app2 = sRet[i1 : i1 + 1]
+        #print "For cycle app2= "+str(app2)
         j = findCharInList(app2)
+        #print "For cycle j= "+str(j)
         if j == -1:
             return sRet
         i = (j + l * (i1 + 1)) % numValidCharList
+        #print "For cycle i= "+str(i)
         car = getvalidCharList(i)
         sRet = substr_replace(sRet,car,i1,1)
+        #print "For cycle sRet: "+sRet+"\n"
     c = (ord(getRandomValidCharFromList())) + 2
     c2 = chr(c)
     sRet = sRet + c2
@@ -88,18 +96,7 @@ def scrambleString(s):
 
 def URLEncode(url):
 
-    theURL = url
-    #theURL =~ s/&/&amp;/g;
-    url = re.sub("&","&amp",url)
-    #theURL =~ s/\"\"/&quot;/g;
-    url = re.sub("\"","&quot",url)
-    #theURL =~ s/\'/&#039;/g;
-    url = re.sub("\"","&quot",url)
-    #theURL =~ s/</&lt;/g;
-    url = re.sub("<","&lt",url)
-    #theURL =~ s/>/&gt;/g;
-    url = re.sub(">","&gt",url)
-    return theURL
+    return escape(url)
 
 def substr_replace(in_str,ch,pos,qt):
     clist = list(in_str)
@@ -116,6 +113,7 @@ def substr_replace(in_str,ch,pos,qt):
 
 
 if __name__ == "__main__":
-    password = sys.argv[0]
+    password = sys.argv[1]
     print password
+    #print encodePassword(password)
     print scrambleString(password)
