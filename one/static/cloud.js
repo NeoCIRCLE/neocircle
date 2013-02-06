@@ -76,11 +76,9 @@ $(function() {
     $('.quota .used').each(function() {
         var s = this;
         $(this).css('backgroundColor', function(w) {
-            console.log(s, parseFloat(w));
             return 'hsla(' + (120 - parseFloat(w) / 438 * 120).toFixed(0) + ',100%,50%,0.2)';
         }($(this).css('width')));
         if(parseInt($(this).css('width')) > 0) $(this).css('borderRight', function(w) {
-            console.log(s, parseFloat(w));
             return '1px solid hsla(' + (120 - parseFloat(w) / 438 * 120).toFixed(0) + ',100%,30%,0.4)';
         }($(this).css('width')));
     });
@@ -320,7 +318,6 @@ $(function() {
                         toggleDetails.call(e.currentTarget);
                     }
                 };
-                console.log(viewData);
             }
             self.files.push(viewData);
         }
@@ -397,7 +394,6 @@ $(function() {
                     url: '/ajax/store/rename',
                     dataType: 'json',
                     success: function(data) {
-                        console.log(data);
                         loadFolder(self.currentPath());
                     }
                 })
@@ -471,11 +467,7 @@ $(function() {
                 var xhr = new XMLHttpRequest();
                 var start = new Date().getTime();
                 xhr.open('POST', self.uploadURL());
-                xhr.onreadystatechange = function() {
-                    console.log(xhr, arguments)
-                }
                 xhr.onload = xhr.onerror = function() {
-                    console.log(xhr.status);
                     $('.file-upload').removeClass('opened');
                     $('.file-upload .details').slideUp(700);
                     $('#upload-zone').show();
@@ -562,16 +554,12 @@ $(function() {
     var model = new Model();
     ko.applyBindings(model);
     document.addEventListener('dragenter', function(e) {
-        console.log('enter');
-        //$('.file-upload .summary').click();
         e.stopPropagation();
         e.preventDefault();
         return false;
     });
 
     document.addEventListener('drag', function(e) {
-        console.log('drag');
-        //$('.file-upload .summary').click();
         e.stopPropagation();
         e.preventDefault();
         return false;
