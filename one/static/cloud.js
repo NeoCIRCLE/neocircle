@@ -292,7 +292,7 @@ $(function() {
                     size: convert(d.SIZE),
                     type: 'fájl',
                     mTime: d.MTIME,
-                    getTypeClass: 'name filetype-'+type,
+                    getTypeClass: 'name filetype-' + type,
                     clickHandler: function(item, e) {
                         toggleDetails.call(e.currentTarget);
                     }
