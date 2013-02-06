@@ -289,7 +289,6 @@
 
 .file-list{
     list-style: none;
-    overflow: auto;
     max-height: 400px;
     .name{
         float: left;
@@ -308,6 +307,7 @@
     }
 }
 #file-list {
+    overflow-y: scroll;
     li:nth-child(3) .summary{
         border-top: none;
     }
