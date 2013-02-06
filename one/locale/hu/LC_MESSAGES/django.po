@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-02-06 14:24+0100\n"
+"POT-Creation-Date: 2013-02-06 18:20+0100\n"
 "PO-Revision-Date: 2013-02-06 14:19+0100\n"
 "Language-Team: Hungarian <cloud@ik.bme.hu>\n"
 "Language: hu\n"
@@ -270,6 +270,10 @@ msgstr "A virtuális gép újraindítása sikeres."
 msgid "Failed to restart virtual machine."
 msgstr "A virtuális gép újraindítása sikertelen."
 
+#: templates/404.html:7 templates/404.html.py:10
+msgid ":("
+msgstr ""
+
 #: templates/box-filelist.html:26
 msgid "No files."
 msgstr "Nincs megjeleníthető fájl."
@@ -290,7 +294,7 @@ msgstr "letöltés"
 msgid "Last modification"
 msgstr "Utolsó módosítás"
 
-#: templates/box-filelist.html:52
+#: templates/box-filelist.html:52 templates/new-template-flow.html:20
 msgid "Type"
 msgstr "Típus"
 
@@ -319,24 +323,116 @@ msgid ""
 "You can also use the <a href=\"#\" id=\"old-upload\">the traditional upload "
 "form</a>."
 msgstr ""
-"Használhatja a <a href=\"#\" id=\"old-upload\">hagyományos feltöltő űrlapot<"
-"/a> is."
+"Használhatja a <a href=\"#\" id=\"old-upload\">hagyományos feltöltő űrlapot</"
+"a> is."
 
-#: templates/box-filelist.html:108
+#: templates/box-filelist.html:89
+msgid "Upload limit is 1GB per file!"
+msgstr ""
+
+#: templates/box-filelist.html:93
+msgid "Error: File is bigger than 1GB!"
+msgstr ""
+
+#: templates/box-filelist.html:94
+msgid "Error: Upload server is not available!"
+msgstr ""
+
+#: templates/box-filelist.html:95
+msgid "Error: File already exists!"
+msgstr ""
+
+#: templates/box-filelist.html:114
 msgid "File quota"
 msgstr "Fájlkvóta"
 
-#: templates/box-filelist.html:108
+#: templates/box-filelist.html:114
 msgid "Used space"
 msgstr "Használt terület"
 
-#: templates/box-filelist.html:108
+#: templates/box-filelist.html:114
 msgid "soft limit"
 msgstr "puha limit"
 
-#: templates/box-filelist.html:109
+#: templates/box-filelist.html:115
 msgid "hard limit"
 msgstr "kemény limit"
+
+#: templates/box-vmlist.html:16 templates/box-vmlist.html.py:17
+msgid "Connect"
+msgstr ""
+
+#: templates/box-vmlist.html:19 templates/box-vmlist.html.py:20
+#, fuzzy
+msgid "Suspend"
+msgstr "felfüggesztett"
+
+#: templates/box-vmlist.html:22 templates/box-vmlist.html.py:23
+#: templates/box-vmlist.html:36 templates/box-vmlist.html.py:37
+#: templates/box-vmlist.html:41 templates/box-vmlist.html.py:42
+msgid "Delete"
+msgstr ""
+
+#: templates/box-vmlist.html:25
+msgid "Reboot"
+msgstr ""
+
+#: templates/box-vmlist.html:30
+msgid "starting…"
+msgstr ""
+
+#: templates/box-vmlist.html:33 templates/box-vmlist.html.py:34
+msgid "Resume"
+msgstr ""
+
+#: templates/box-vmlist.html:51
+#, fuzzy
+msgid "Hostname"
+msgstr "név"
+
+#: templates/box-vmlist.html:52 templates/home.html:40
+#: templates/home.html.py:84 templates/new-template-flow.html:100
+msgid "System"
+msgstr "Rendszer"
+
+#: templates/box-vmlist.html:53 templates/home.html:41
+#: templates/new-template-flow.html:34 templates/new-template-flow.html:101
+msgid "Size"
+msgstr "Méret"
+
+#: templates/box-vmlist.html:54 templates/home.html:86
+msgid "Created at"
+msgstr "Létrehozás ideje"
+
+#: templates/box-vmlist.html:55
+msgid "Expiration"
+msgstr ""
+
+#: templates/box-vmlist.html:56
+#, fuzzy
+msgid "More details"
+msgstr "Részletek"
+
+#: templates/box-vmlist.html:66
+msgid "You have not started any machines yet."
+msgstr ""
+
+#: templates/box-vmlist.html:69
+msgid "Choose a template, and you can use the system in a minute."
+msgstr ""
+
+#: templates/confirm_delete.html:6
+#, fuzzy
+msgid "Remove machine"
+msgstr "Törlés"
+
+#: templates/confirm_delete.html:10
+msgid "Are you sure?"
+msgstr ""
+
+#: templates/confirm_delete.html:10 templates/home.html:77
+msgid "Remove"
+msgstr "Törlés"
 
 #: templates/home.html:14
 msgid "Start new machine"
@@ -350,19 +446,11 @@ msgstr "Elérhető sablonok"
 msgid "Choose one of the following templates to launch."
 msgstr "Válasszon egyet az alábbi sablonok közül."
 
-#: templates/home.html:37
+#: templates/home.html:37 templates/new-template-flow.html:97
 msgid "Details"
 msgstr "Részletek"
 
-#: templates/home.html:40 templates/home.html.py:84
-msgid "System"
-msgstr "Rendszer"
-
-#: templates/home.html:41
-msgid "Size"
-msgstr "Méret"
-
-#: templates/home.html:42
+#: templates/home.html:42 templates/new-template-flow.html:102
 msgid "Memory"
 msgstr "Memória"
 
@@ -371,7 +459,7 @@ msgstr "Memória"
 msgid "%(m)s MiB"
 msgstr "%(m)s MiB"
 
-#: templates/home.html:44
+#: templates/home.html:44 templates/new-template-flow.html:103
 msgid "CPU cores"
 msgstr "CPU magok"
 
@@ -392,21 +480,13 @@ msgstr "Saját sablonok"
 msgid "Rename"
 msgstr "Átnevezés"
 
-#: templates/home.html:77
-msgid "Remove"
-msgstr "Törlés"
-
 #: templates/home.html:78
 msgid "Share"
 msgstr "Megosztás"
 
-#: templates/home.html:85
+#: templates/home.html:85 templates/new-template-flow.html:52
 msgid "Description"
 msgstr "Leírás"
-
-#: templates/home.html:86
-msgid "Created at"
-msgstr "Létrehozás ideje"
 
 #: templates/home.html:87
 msgid "Modified at"
@@ -425,3 +505,40 @@ msgstr "félkész"
 msgid "Share quota: %(used)s/%(all)s"
 msgstr "Megosztó kvóta: %(used)s/%(all)s"
 
+#: templates/new-template-flow.html:9 templates/new-template-flow.html:79
+#, fuzzy, python-format
+msgid "%(step)s/%(all)s"
+msgstr "Megosztó kvóta: %(used)s/%(all)s"
+
+#: templates/new-template-flow.html:11 templates/new-template-flow.html:81
+#, python-format
+msgid "Step %(step)s"
+msgstr ""
+
+#: templates/new-template-flow.html:15
+msgid "Name"
+msgstr ""
+
+#: templates/new-template-flow.html:16
+msgid "Short name of template"
+msgstr ""
+
+#: templates/new-template-flow.html:24
+msgid "Lab"
+msgstr ""
+
+#: templates/new-template-flow.html:28
+msgid "Project"
+msgstr ""
+
+#: templates/new-template-flow.html:53
+msgid "Comments about the template"
+msgstr ""
+
+#: templates/new-template-flow.html:58 templates/new-template-flow.html:112
+msgid "&laquo; Cancel"
+msgstr ""
+
+#: templates/new-template-flow.html:113
+msgid "Next &raquo;"
+msgstr ""
