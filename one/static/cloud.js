@@ -268,13 +268,31 @@ $(function() {
                     }
                 };
             } else {
+                var type = 'text';
+                var ext = {
+                    image: /\.(jpg|png|gif|jpeg)$/,
+                    pdf: /\.pdf$/,
+                    doc: /\.docx?$/,
+                    excel: /\.xlsx?$/,
+                    csv: /\.csv$/,
+                    php: /\.php$/,
+                    tex: /\.tex$/,
+                    ppt: /\.pptx?/,
+                    music: /\.(wav|mp3)$/
+                };
+                for(var i in ext) {
+                    if(d.NAME.match(ext[i])) {
+                        type = i;
+                        break;
+                    }
+                }
                 viewData = {
                     originalName: d.NAME,
                     name: d.NAME.length > 30 ? (d.NAME.substr(0, 27) + '...') : d.NAME,
                     size: convert(d.SIZE),
                     type: 'fájl',
                     mTime: d.MTIME,
-                    getTypeClass: 'name filetype-text',
+                    getTypeClass: 'name filetype-'+type,
                     clickHandler: function(item, e) {
                         toggleDetails.call(e.currentTarget);
                     }
