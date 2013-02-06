@@ -1,3 +1,5 @@
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 {% if instances %}
 {% for i in instances %}
 <li class="wm">
@@ -11,33 +13,33 @@
         </div>
         <div class="actions">
             {% if i.state == 'ACTIVE' %}
-            <a href="{{i.get_connect_uri}}" title="Csatlakozás">
-                <img src="static/icons/plug.png" alt="connect" />
+            <a href="{{i.get_connect_uri}}" title="{% trans "Connect" %}">
+                <img src="static/icons/plug.png" alt="{% trans "Connect" %}" />
             </a>
-            <a href="/vm/suspend/{{i.id}}/" onclick="alert('Hamarosan a mozikban.'); return false" title="Felfüggesztés">
-                <img src="/static/icons/control-pause.png" alt="pause" />
+            <a href="/vm/suspend/{{i.id}}/" onclick="alert('Hamarosan a mozikban.'); return false" title="{% trans "Suspend" %}">
+                <img src="/static/icons/control-pause.png" alt="{% trans "Suspend" %}" />
             </a>
-            <a href="/vm/delete/{{i.id}}/" onclick="return confirm('Biztosan törli a gépet?')" title="Törlés">
-                <img src="/static/icons/minus-circle.png" alt="delete" />
+            <a href="/vm/delete/{{i.id}}/" onclick="return confirm('Biztosan törli a gépet?')" title="{% trans "Delete" %}">
+                <img src="/static/icons/minus-circle.png" alt="{% trans "Delete" %}" />
             </a>
-            <a href="/vm/reset/{{i.id}}/" onclick="alert('Hamarosan a mozikban.'); return false" title="Újraindítás">
+            <a href="/vm/reset/{{i.id}}/" onclick="alert('Hamarosan a mozikban.'); return false" title="{% trans "Reboot" %}">
                 <img src="/static/icons/arrow-circle-double.png" alt="↺" />
             </a>
             {% endif %}
             {% if i.state == 'PENDING' %}
-            <img src="/static/load-2.gif" /> indítás...
+            <img src="/static/load-2.gif" /> {% trans "starting…" %}
             {% endif %}
             {% if i.state == 'SUSPENDED' %}
-            <a href="/vm/continue/{{i.id}}/" title="Folytatás">
-                <img src="/static/icons/control.png" alt="resume" />
+            <a href="/vm/continue/{{i.id}}/" title="{% trans "Resume" %}">
+                <img src="/static/icons/control.png" alt="{% trans "Resume" %}" />
             </a>
-            <a href="/vm/delete/{{i.id}}/" onclick="return confirm('Biztosan törli a gépet?')" title="Törlés">
-                <img src="/static/icons/minus-circle.png" alt="delete" />
+            <a href="/vm/delete/{{i.id}}/" onclick="return confirm('Biztosan törli a gépet?')" title="{% trans "Delete" %}">
+                <img src="/static/icons/minus-circle.png" alt="{% trans "Delete" %}" />
             </a>
             {% endif %}
             {% if i.state == 'FAILED' %}
-            <a href="/vm/delete/{{i.id}}/" title="Törlés">
-                <img src="/static/icons/minus-circle.png" alt="delete" />
+            <a href="/vm/delete/{{i.id}}/" title="{% trans "Delete" %}">
+                <img src="/static/icons/minus-circle.png" alt="{% trans "Delete" %}" />
             </a>
             {% endif %}
         </div>
@@ -46,12 +48,12 @@
     <div class="details">
         <div class="details-container"><h3>Részletek</h3>
             <ul>
-                <li class="name">Gép neve: <span class="value">{{i.name}}</span></li>
-                <li class="os-linux">Operációs rendszer: <span class="value">{{i.template.disk.name}}</span></li>
-                <li class="type">Instance típus: <span class="value">{{i.template.instance_type.name}}</span></li>
-                <li class="date">Létrehozás dátuma: <span class="value">{{i.created_at}}</span></li>
-                <li class="date">Lejáratig: <span class="value"><abbr title="1 nap, 5 óra, 34 perc">1 nap</abbr></span></li>
-                <li>&nbsp;<span class="value"><a href="/vm/show/{{i.id}}/" title="{{i.name}}">További részletek</a></span></li>
+                <li class="name">{% trans "Hostname" %}: <span class="value">{{i.name}}</span></li>
+                <li class="os-linux">{% trans "System" %}: <span class="value">{{i.template.disk.name}}</span></li>
+                <li class="type">{% trans "Size" %}: <span class="value">{{i.template.instance_type.name}}</span></li>
+                <li class="date">{% trans "Created at" %}: <span class="value">{{i.created_at}}</span></li>
+                <li class="date">{% trans "Expiration" %}: <span class="value"><abbr title="1 nap, 5 óra, 34 perc">1 nap</abbr></span></li>
+                <li>&nbsp;<span class="value"><a href="/vm/show/{{i.id}}/" title="{{i.name}}">{% trans "More details" %}</a></span></li>
             </ul>
         </div>
     </div>
@@ -61,10 +63,10 @@
 <div id="new-wm-tooltip">
     <div id="new-wm-tooltip-container">
         <p>
-            Még nem indított egy gépet sem.
+            {% trans "You have not started any machines yet." %}
         </p>
         <p>
-            Válasszon sablont, és septiben használhatja a kiválasztott rendszert.
+            {% trans "Choose a template, and you can use the system in a minute." %}
         </p>
     </div>
 </div>
