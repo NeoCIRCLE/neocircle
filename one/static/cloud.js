@@ -38,15 +38,6 @@ $(function() {
 
     }
     $('.wm .summary').unbind('click').click(toggleDetails);
-    $('#load-more-files').click(function() {
-        $('.actions', this).show();
-        var that = this;
-        setTimeout(function() {
-            $(that).prev('li').slideDown(500, function() {
-                $('.actions', that).hide();
-            });
-        }, 2000);
-    })
     $('#new-wm-button').click(function() {
         $('#modal').show();
         $('#modal-container').html($('#new-wm').html());
@@ -106,12 +97,8 @@ $(function() {
         var uploadURLRequestInProgress = false;
         //currently displayed files
         self.files = ko.observableArray();
-        //all fetched files
-        self.allFiles = [];
         //false, if you are in /
         self.notInRoot = ko.observable(false);
-        //default file limit
-        self.fileLimit = 5;
         //defalut path to display
         self.currentPath = ko.observable('/');
         //default upload url (invalid)
@@ -142,7 +129,6 @@ $(function() {
 
         $('#current-location select').on('change', function() {
             self.sortBy($('#current-location select').val());
-            sortOriginalFiles();
             sortFiles();
         })
 
@@ -217,28 +203,6 @@ $(function() {
                     }
                 }[self.sortBy()]);
             }
-        var sortOriginalFiles = function() {
-                self.allFiles.sort({
-                    name: function(a, b) {
-                        if(a.TYPE === b.TYPE) {
-                            return a.NAME.localeCompare(b.NAME);
-                        }
-                        if(a.TYPE === 'F') {
-                            return 1;
-                        }
-                        return -1;
-                    },
-                    date: function(a, b) {
-                        if(a.TYPE === b.TYPE) {
-                            return new Date(b.MTIME).getTime() - new Date(a.MTIME).getTime();
-                        }
-                        if(a.TYPE === 'F') {
-                            return 1;
-                        }
-                        return -1;
-                    }
-                }[self.sortBy()]);
-            }
 
             /**
              * Loads the specified folder
@@ -279,11 +243,8 @@ $(function() {
             var added = 0;
             self.notInRoot(self.currentPath().lastIndexOf('/') !== 0);
             self.files([]);
-            self.allFiles = data;
-            sortOriginalFiles();
-            for(var i in self.allFiles) {
-                added++;
-                if(added < 6) addFile(self.allFiles[i]);
+            for(var i in data) {
+                addFile(data[i]);
             }
             sortFiles();
         }
@@ -327,18 +288,6 @@ $(function() {
          */
         self.fadeIn = function(e) {
             $(e).hide().slideDown(500);
-        }
-
-        /**
-         * Shows 5 more files (in the current folder)
-         */
-        self.showMore = function() {
-            for(var i = self.fileLimit; i < self.fileLimit + 5; i++) {
-                if(self.allFiles[i] === undefined) break;
-                addFile(self.allFiles[i]);
-            }
-            self.fileLimit += 5;
-            sortFiles();
         }
 
         /**

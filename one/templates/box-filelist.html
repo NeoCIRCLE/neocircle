@@ -65,14 +65,6 @@
                 <!-- /ko -->
             </ul>
             <ul class="file-list">
-                <li class="file-details wm small-row" id="load-more-files" data-bind="visible: (files().length>0 && files().length != allFiles.length)">
-                    <div class="summary" data-bind="click: showMore">
-                        <div class="name filetype-more">
-                            {% trans "Show more files…" %} (<span data-bind="text: allFiles.length-files().length"></span> {% trans "hidden" context "is" %})
-                        </div>
-                        <div class="clear"></div>
-                    </div>
-                </li>
                 <li class="wm small-row">
                     <div class="summary" id="new-folder">
                         <div class="name filetype-new-folder">{% trans "Create folder" %}</div>
