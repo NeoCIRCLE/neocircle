@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-02-06 18:20+0100\n"
-"PO-Revision-Date: 2013-02-06 14:19+0100\n"
+"PO-Revision-Date: 2013-02-06 18:23+0100\n"
 "Language-Team: Hungarian <cloud@ik.bme.hu>\n"
 "Language: hu\n"
 "MIME-Version: 1.0\n"
@@ -16,6 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "X-Generator: Lokalize 1.4\n"
+"Last-Translator: \n"
 
 #: admin.py:40
 msgid "Update status"
@@ -272,7 +273,7 @@ msgstr "A virtuális gép újraindítása sikertelen."
 
 #: templates/404.html:7 templates/404.html.py:10
 msgid ":("
-msgstr ""
+msgstr ":("
 
 #: templates/box-filelist.html:26
 msgid "No files."
@@ -328,19 +329,19 @@ msgstr ""
 
 #: templates/box-filelist.html:89
 msgid "Upload limit is 1GB per file!"
-msgstr ""
+msgstr "A feltöltési limit 1GiB fájlonként!"
 
 #: templates/box-filelist.html:93
 msgid "Error: File is bigger than 1GB!"
-msgstr ""
+msgstr "Hiba: a fájl nagyobb 1 GiB-nál."
 
 #: templates/box-filelist.html:94
 msgid "Error: Upload server is not available!"
-msgstr ""
+msgstr "Hiba: a feltöltő kiszolgáló nem érhető el."
 
 #: templates/box-filelist.html:95
 msgid "Error: File already exists!"
-msgstr ""
+msgstr "Hiba: a fájl már létezik."
 
 #: templates/box-filelist.html:114
 msgid "File quota"
@@ -360,35 +361,33 @@ msgstr "kemény limit"
 
 #: templates/box-vmlist.html:16 templates/box-vmlist.html.py:17
 msgid "Connect"
-msgstr ""
+msgstr "Csatlakozás"
 
 #: templates/box-vmlist.html:19 templates/box-vmlist.html.py:20
-#, fuzzy
 msgid "Suspend"
-msgstr "felfüggesztett"
+msgstr "Felfüggesztés"
 
 #: templates/box-vmlist.html:22 templates/box-vmlist.html.py:23
 #: templates/box-vmlist.html:36 templates/box-vmlist.html.py:37
 #: templates/box-vmlist.html:41 templates/box-vmlist.html.py:42
 msgid "Delete"
-msgstr ""
+msgstr "Törlés"
 
 #: templates/box-vmlist.html:25
 msgid "Reboot"
-msgstr ""
+msgstr "Újraindítás"
 
 #: templates/box-vmlist.html:30
 msgid "starting…"
-msgstr ""
+msgstr "indítás…"
 
 #: templates/box-vmlist.html:33 templates/box-vmlist.html.py:34
 msgid "Resume"
-msgstr ""
+msgstr "Folytatás"
 
 #: templates/box-vmlist.html:51
-#, fuzzy
 msgid "Hostname"
-msgstr "név"
+msgstr "Gépnév"
 
 #: templates/box-vmlist.html:52 templates/home.html:40
 #: templates/home.html.py:84 templates/new-template-flow.html:100
@@ -406,29 +405,27 @@ msgstr "Létrehozás ideje"
 
 #: templates/box-vmlist.html:55
 msgid "Expiration"
-msgstr ""
+msgstr "Lejárat"
 
 #: templates/box-vmlist.html:56
-#, fuzzy
 msgid "More details"
-msgstr "Részletek"
+msgstr "További részletek"
 
 #: templates/box-vmlist.html:66
 msgid "You have not started any machines yet."
-msgstr ""
+msgstr "Még nem indított egy gépet sem."
 
 #: templates/box-vmlist.html:69
 msgid "Choose a template, and you can use the system in a minute."
-msgstr ""
+msgstr "Válasszon egy sablont, és egy percen belül használhatja a rendszert."
 
 #: templates/confirm_delete.html:6
-#, fuzzy
 msgid "Remove machine"
-msgstr "Törlés"
+msgstr "Gép törlése"
 
 #: templates/confirm_delete.html:10
 msgid "Are you sure?"
-msgstr ""
+msgstr "Biztos benne?"
 
 #: templates/confirm_delete.html:10 templates/home.html:77
 msgid "Remove"
@@ -506,39 +503,40 @@ msgid "Share quota: %(used)s/%(all)s"
 msgstr "Megosztó kvóta: %(used)s/%(all)s"
 
 #: templates/new-template-flow.html:9 templates/new-template-flow.html:79
-#, fuzzy, python-format
+#, python-format
 msgid "%(step)s/%(all)s"
-msgstr "Megosztó kvóta: %(used)s/%(all)s"
+msgstr "%(step)s/%(all)s"
 
 #: templates/new-template-flow.html:11 templates/new-template-flow.html:81
 #, python-format
 msgid "Step %(step)s"
-msgstr ""
+msgstr "%(step)s. lépés"
 
 #: templates/new-template-flow.html:15
 msgid "Name"
-msgstr ""
+msgstr "Név"
 
 #: templates/new-template-flow.html:16
 msgid "Short name of template"
-msgstr ""
+msgstr "A sablon rövid neve"
 
 #: templates/new-template-flow.html:24
 msgid "Lab"
-msgstr ""
+msgstr "Labor"
 
 #: templates/new-template-flow.html:28
 msgid "Project"
-msgstr ""
+msgstr "Projekt"
 
 #: templates/new-template-flow.html:53
 msgid "Comments about the template"
-msgstr ""
+msgstr "Megjegyzések a sablonról"
 
 #: templates/new-template-flow.html:58 templates/new-template-flow.html:112
 msgid "&laquo; Cancel"
-msgstr ""
+msgstr "&laquo; Mégsem"
 
 #: templates/new-template-flow.html:113
 msgid "Next &raquo;"
-msgstr ""
+msgstr "Tovább &raquo;"
+
