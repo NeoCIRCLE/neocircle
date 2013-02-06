@@ -4,6 +4,11 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.core.exceptions import ValidationError
 from datetime import datetime
+from django.conf import settings
+
+
+LANGUAGE_CODE = settings.LANGUAGE_CODE
+LANGUAGE_CHOICES = (('hu', _('Hungarian')), ('en', _('English')))
 
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
@@ -15,6 +20,8 @@ post_save.connect(create_user_profile, sender=User)
 
 class Person(models.Model):
     user = models.ForeignKey(User, null=False, blank=False, unique=True)
+    language = models.CharField(verbose_name=_('language'), blank=False, max_length=10,
+            choices=LANGUAGE_CHOICES, default=LANGUAGE_CODE)
 
     def short_name(self):
         if self.user.last_name:
