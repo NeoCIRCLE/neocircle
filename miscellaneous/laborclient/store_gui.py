@@ -4,12 +4,14 @@ import gtk
 import webkit
 import gobject
 import base64
-import subprocess
 import os
-
+import sys
+import rdp
+from multiprocessing import Process
 ### Settings ###
 KEY_DIR = "/tmp/"
 KEY_FILE = KEY_DIR+"/id_rsa"
+
 
 class KeyGen:
     """Attributes:
@@ -122,11 +124,6 @@ class Browser:
         self.webview.execute_script("resetKey()")
         gtk.main_quit()
 
-    def parse_remote_login(uri):
-        #rdp:cloud:qYSv3eQJYY:152.66.243.62:23037
-        scheme, user, password, host, port = uri.split(':',4)
-
-
     def on_navigation_requested(self, view, frame, req, data=None):
         uri = req.get_uri()
         #print "On nav: " + uri
@@ -162,6 +159,10 @@ class Browser:
             self.webview.execute_script("document.getElementById(\"mount_button\").hidden=false ;")
             self.webview.execute_script("document.getElementById(\"umount_button\").hidden=true ;")
             return True
+        elif scheme == "nx" or scheme == "rdp" or scheme == "shellterm":
+            connection = rdp.RDP(uri)
+            Process(target=connection.connect).start()
+            return True
         else:
             return False
     def mount_sshfs_folder(self,neptun,host):
@@ -176,7 +177,7 @@ class Browser:
         self.webview.open("https://login.bme.hu/admin/")
 
     def store(self, widget):
-        self.webview.open("https://cloud.ik.bme.hu/store/gui/")
+        self.webview.open("https://cloud.ik.bme.hu/")
     def load_committed_cb(self,web_view, frame):
         self.webview.execute_script('document.getElementsByTagName("a")[0].target="";')
         #uri = frame.get_uri()
@@ -186,7 +187,7 @@ class Browser:
 
     def main(self):
         gtk.main()
-
+    
 if __name__ == "__main__":
     browser = Browser()
     browser.main()
