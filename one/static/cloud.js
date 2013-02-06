@@ -72,6 +72,18 @@ $(function() {
         e.preventDefault();
         $(this).parent().hide().parent().find('#old-upload-form').show();
         return false;
+    });
+    $('.quota .used').each(function(){
+        var s=this;
+        $(this).css('backgroundColor', function(w){
+            console.log(s, parseFloat(w));
+            return 'hsla('+(120-parseFloat(w)/438*120).toFixed(0)+',100%,50%,0.2)';
+        }($(this).css('width')));
+        if(parseInt($(this).css('width'))>0)
+        $(this).css('borderRight', function(w){
+            console.log(s, parseFloat(w));
+            return '1px solid hsla('+(120-parseFloat(w)/438*120).toFixed(0)+',100%,30%,0.4)';
+        }($(this).css('width')));
     })
 
     /**
