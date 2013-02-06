@@ -84,6 +84,9 @@ $(function() {
             console.log(s, parseFloat(w));
             return '1px solid hsla('+(120-parseFloat(w)/438*120).toFixed(0)+',100%,30%,0.4)';
         }($(this).css('width')));
+    });
+    $('#new-folder').click(function(){
+        $('#new-folder-form input')[0].focus();
     })
 
     /**
