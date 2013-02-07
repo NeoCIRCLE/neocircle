@@ -41,8 +41,7 @@
             </p>
             {% endif %}
         {% if state == "ACTIVE" and not booting %}
-            {% if age
-            < 15 %}
+            {% if age < 15 %}
                 <p id="wait" style="font-size:25px; line-height:2em;text-align:center;">
                 <img src="/static/load-2.gif" />
                 Gép indítása...
