@@ -39,13 +39,13 @@ class RDP:
             return self.get_temporary_file()
 
     def connect_sshterm(self):
-        #try:
-        ssh_subcommand = 'sshpass -p "%(password)s" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null %(username)s@%(host)s -p%(port)s' \
-        % {'username' : self.username, 'password' : self.password, 'host' : self.host, 'port' : self.port}
-        ssh_command = ["gnome-terminal", "-e", ssh_subcommand]
-        proc = subprocess.check_call(ssh_command, stdout = subprocess.PIPE)
-        #except:
-        #    print "Error"
+        try:
+            ssh_subcommand = 'sshpass -p "%(password)s" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null %(username)s@%(host)s -p%(port)s' \
+            % {'username' : self.username, 'password' : self.password, 'host' : self.host, 'port' : self.port}
+            ssh_command = ["gnome-terminal", "-e", ssh_subcommand]
+            proc = subprocess.check_call(ssh_command, stdout = subprocess.PIPE)
+        except:
+            self.dialog_box("Unable to connect to host: "+self.host+" at port "+self.port)
 
     def connect_rdp(self):
         rdp_command = ["rdesktop", "-khu", "-E", "-P", "-0", "-f", "-u", self.username, "-p", self.password, self.host+":"+self.port]
