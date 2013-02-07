@@ -3,7 +3,7 @@
 
 {% block js %}
 <script type="text/javascript">
-	{% if booting %}
+    {% if booting %}
     var timer=setInterval(function(){
         $.ajax({
             type: 'GET',
@@ -22,96 +22,170 @@
 
 {% block content %}
 <div class="boxes">
-        <div class="contentblock" id="state">
-            <h2>{{name}}</h2>
-            <div class="content">
-		{% if state == "PENDING" or state == "ACTIVE" and booting %}
-			<p style="font-size:25px; line-height:2em;text-align:center;"><img src="/static/load-2.gif" /> Gép indítása..</p>
-			<p style="font-size:25px; line-height:2em;text-align:center;">
-				<form action="{% url vm_delete id %}" method="post" onsubmit="return confirm('Biztosan törli a gépet?')">{% csrf_token %}<input type="submit" class="icon-delete" value="Törlés" /></form>
-				<a href="/"><img src="/static/icons/Go-home.png" alt="&lt;-" /></a>
-			</p>
-		{% endif %}
-		{% if state == "ACTIVE" and not booting %}
-			{% if age < 15 %}
-				<p id="wait" style="font-size:25px; line-height:2em;text-align:center;"><img src="/static/load-2.gif" /> Gép indítása...</p>
-				<p id="connect" style="display:none; font-size:25px; line-height:2em;text-align:center;">
-					<a href="{{uri}}" class="button" onclick="return connectbutton();">
-						<img src="/static/load-1.gif" id="connecting" style="display:none;" /> Csatlakozás
-					</a>
-				</p>
-				<p style="font-size:25px; line-height:2em;text-align:center;">
-				<form action="{% url vm_delete id %}" method="post" onsubmit="return confirm('Biztosan törli a gépet?')">{% csrf_token %}<input type="submit" class="icon-delete" value="Törlés" /></form>
-					<a href="/"><img src="/static/icons/Go-home.png" alt="&lt;-" /></a>
-				</p>
-			{% else %}
-				<p id="connect" style="font-size:25px; line-height:2em;text-align:center;">
-					<a href="{{uri}}" class="button" onclick="return connectbutton();">
-						<img src="/static/load-1.gif" id="connecting" style="display:none;" /> Csatlakozás
-					</a>
-				</p>
-				<p style="font-size:25px; line-height:2em;text-align:center;">
-				<form action="{% url vm_delete id %}" method="post" onsubmit="return confirm('Biztosan törli a gépet?')">{% csrf_token %}<input type="submit" class="icon-delete" value="Törlés" /></form>
-					<a href="/"><img src="/static/icons/Go-home.png" alt="&lt;-" /></a>
-				</p>
-			{% endif %}
-		{% endif %}
-		{% if state == "DONE" %}
-			<p style="font-size:25px; line-height:2em;text-align:center;">A gép törölve van!</p>
-			<p style="font-size:25px; line-height:2em;text-align:center;">
-				<a href="/"><img src="/static/icons/Go-home.png" alt="⌫" /></a>
-			</p>
-		{% endif %}
-		{% if state == "FAILED" %}
-			<p style="font-size:25px; line-height:2em;text-align:center;">Váratlan hiba lépett fel.</p>
-			<p style="font-size:25px; line-height:2em;text-align:center;">
-				<form action="{% url vm_delete id %}" method="post" onsubmit="return confirm('Biztosan törli a gépet?')">{% csrf_token %}<input type="submit" class="icon-delete" value="Törlés" /></form>
-				<a href="/"><img src="/static/icons/Go-home.png" alt="⌫" /></a>
-			</p>
-		{% endif %}
-		{% if state == "SUSPENDED" %}
-			<p style="font-size:25px; line-height:2em;text-align:center;">
-				<a href="/vm/suspend/{{i.id}}/"><img src="/static/icons/Media-playback-start.png" alt="&gt;" /></a>
-				<a href="/"><img src="/static/icons/Go-home.png" alt="⌫" /></a>
-			</p>
-		{% endif %}
-            </div>
-        </div>
-        <div class="contentblock" id="state">
-            <h2>Bejelentkezési adatok</h2>
-            <div class="content">
-		<table><tr><th>Protokoll:</th><td>{{i.template.access_type|upper}}</td></tr>
-		       <tr><th>IP:</th><td>{{ i.firewall_host.pub_ipv4}}</td></tr>
-                       <tr><th>Port:</th><td>{{ i.get_port}}</td></tr>
-                       <tr><th>Felhasználónév:</th><td>cloud</td></tr>
-                       <tr><th>Jelszó:</th><td>{{ i.pw }}</td></tr>
-		</table>
-            </div>
-        </div>
-        <div class="contentblock" id="state">
-            <h2>Portok kezelése</h2>
-            <div class="content">
-                <form action="{% url vm_port_add i.id %}" method="post">
-		{% csrf_token %}
-                <table><tr><th>Protokoll</th><th>Külső port</th><th>Belső port</th></tr>
-                {% for port in ports %}
-                       <tr><td>{{port.proto}}</td><td>{{port.public}}</td><td>{{port.private}}</td><td><a href="/vm/port_del/{{i.id}}/{{port.proto}}/{{port.public}}/">Törlés</a></td></tr>
-                {% endfor %}
-		       <tr><td><select style="min-width:50px;" name=proto><option value="tcp">tcp</option><option value="udp">udp</option></select></td>
-                           <td><input style="min-width:70px;width:70px;" type="text" name="public"/></td>
-                           <td><input style="min-width:70px;width:70px;" type="text" name="private"/></td>
-		           <td><input type="submit" value="Hozzáadás" /></td></tr>
-                </table>
+    <div class="contentblock" id="state">
+        <h2>{{name}}</h2>
+        <div class="content">
+            {% if state == "PENDING" or state == "ACTIVE" and booting %}
+            <p style="font-size:25px; line-height:2em;text-align:center;">
+                <img src="/static/load-2.gif" />
+                Gép indítása..
+            </p>
+            <p style="font-size:25px; line-height:2em;text-align:center;">
+                <form action="{% url vm_delete id %}" method="post" onsubmit="return confirm('Biztosan törli a gépet?')">
+                    {% csrf_token %}
+                    <input type="submit" class="icon-delete" value="Törlés" />
                 </form>
-            </div>
+                <a href="/">
+                    <img src="/static/icons/Go-home.png" alt="&lt;-" />
+                </a>
+            </p>
+            {% endif %}
+        {% if state == "ACTIVE" and not booting %}
+            {% if age
+            < 15 %}
+                <p id="wait" style="font-size:25px; line-height:2em;text-align:center;">
+                <img src="/static/load-2.gif" />
+                Gép indítása...
+            </p>
+            <p id="connect" style="display:none; font-size:25px; line-height:2em;text-align:center;">
+                <a href="{{uri}}" class="button" onclick="return connectbutton();">
+                    <img src="/static/load-1.gif" id="connecting" style="display:none;" />
+                    Csatlakozás
+                </a>
+            </p>
+            <p style="font-size:25px; line-height:2em;text-align:center;">
+                <form action="{% url vm_delete id %}" method="post" onsubmit="return confirm('Biztosan törli a gépet?')">
+                    {% csrf_token %}
+                    <input type="submit" class="icon-delete" value="Törlés" />
+                </form>
+                <a href="/">
+                    <img src="/static/icons/Go-home.png" alt="&lt;-" />
+                </a>
+            </p>
+            {% else %}
+            <p id="connect" style="font-size:25px; line-height:2em;text-align:center;">
+                <a href="{{uri}}" class="button" onclick="return connectbutton();">
+                    <img src="/static/load-1.gif" id="connecting" style="display:none;" />
+                    Csatlakozás
+                </a>
+            </p>
+            <p style="font-size:25px; line-height:2em;text-align:center;">
+                <form action="{% url vm_delete id %}" method="post" onsubmit="return confirm('Biztosan törli a gépet?')">
+                    {% csrf_token %}
+                    <input type="submit" class="icon-delete" value="Törlés" />
+                </form>
+                <a href="/">
+                    <img src="/static/icons/Go-home.png" alt="&lt;-" />
+                </a>
+            </p>
+            {% endif %}
+        {% endif %}
+        {% if state == "DONE" %}
+            <p style="font-size:25px; line-height:2em;text-align:center;">A gép törölve van!</p>
+            <p style="font-size:25px; line-height:2em;text-align:center;">
+                <a href="/">
+                    <img src="/static/icons/Go-home.png" alt="⌫" />
+                </a>
+            </p>
+            {% endif %}
+        {% if state == "FAILED" %}
+            <p style="font-size:25px; line-height:2em;text-align:center;">Váratlan hiba lépett fel.</p>
+            <p style="font-size:25px; line-height:2em;text-align:center;">
+                <form action="{% url vm_delete id %}" method="post" onsubmit="return confirm('Biztosan törli a gépet?')">
+                    {% csrf_token %}
+                    <input type="submit" class="icon-delete" value="Törlés" />
+                </form>
+                <a href="/">
+                    <img src="/static/icons/Go-home.png" alt="⌫" />
+                </a>
+            </p>
+            {% endif %}
+        {% if state == "SUSPENDED" %}
+            <p style="font-size:25px; line-height:2em;text-align:center;">
+                <a href="/vm/suspend/{{i.id}}/">
+                    <img src="/static/icons/Media-playback-start.png" alt="&gt;" />
+                </a>
+                <a href="/">
+                    <img src="/static/icons/Go-home.png" alt="⌫" />
+                </a>
+            </p>
+            {% endif %}
         </div>
+    </div>
+    <div class="contentblock" id="state">
+        <h2>Bejelentkezési adatok</h2>
+        <div class="content">
+            <table>
+                <tr>
+                    <th>Protokoll:</th>
+                    <td>{{i.template.access_type|upper}}</td>
+                </tr>
+                <tr>
+                    <th>IP:</th>
+                    <td>{{ i.firewall_host.pub_ipv4}}</td>
+                </tr>
+                <tr>
+                    <th>Port:</th>
+                    <td>{{ i.get_port}}</td>
+                </tr>
+                <tr>
+                    <th>Felhasználónév:</th>
+                    <td>cloud</td>
+                </tr>
+                <tr>
+                    <th>Jelszó:</th>
+                    <td>{{ i.pw }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="contentblock" id="state">
+        <h2>Portok kezelése</h2>
+        <div class="content">
+            <form action="{% url vm_port_add i.id %}" method="post">
+                {% csrf_token %}
+                <table>
+                    <tr>
+                        <th>Protokoll</th>
+                        <th>Külső port</th>
+                        <th>Belső port</th>
+                    </tr>
+                    {% for port in ports %}
+                    <tr>
+                        <td>{{port.proto}}</td>
+                        <td>{{port.public}}</td>
+                        <td>{{port.private}}</td>
+                        <td>
+                            <a href="/vm/port_del/{{i.id}}/{{port.proto}}/{{port.public}}/">Törlés</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    <tr>
+                        <td>
+                            <select style="min-width:50px;" name=proto>
+                                <option value="tcp">tcp</option>
+                                <option value="udp">udp</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input style="min-width:70px;width:70px;" type="text" name="public"/>
+                        </td>
+                        <td>
+                            <input style="min-width:70px;width:70px;" type="text" name="private"/>
+                        </td>
+                        <td>
+                            <input type="submit" value="Hozzáadás" />
+                        </td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+    </div>
 </div>
 <div class="boxes">
     <div class="contentblock" id="state">
         <h2>Virtuális gépek</h2>
-        <ul class="wm-list">
-	       {% include "box-vmlist.html" %}
-       </ul>
-   </div>
+        <ul class="wm-list">{% include "box-vmlist.html" %}</ul>
+    </div>
 </div>
 {% endblock %}
