@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-02-06 19:51+0100\n"
+"POT-Creation-Date: 2013-02-07 11:23+0100\n"
 "PO-Revision-Date: 2013-02-06 18:23+0100\n"
 "Last-Translator: \n"
 "Language-Team: Hungarian <cloud@ik.bme.hu>\n"
@@ -279,56 +279,47 @@ msgstr ":("
 msgid "Data store"
 msgstr "Adattár"
 
-#: templates/box-filelist.html:34
+#: templates/box-filelist.html:35
 msgid "No files."
 msgstr "Nincs megjeleníthető fájl."
 
-#: templates/box-filelist.html:45
+#: templates/box-filelist.html:46
 msgid "rename"
 msgstr "átnevezés"
 
-#: templates/box-filelist.html:48
+#: templates/box-filelist.html:49
 msgid "remove"
 msgstr "eltávolítás"
 
-#: templates/box-filelist.html:51
+#: templates/box-filelist.html:52
 msgid "download"
 msgstr "letöltés"
 
-#: templates/box-filelist.html:59
+#: templates/box-filelist.html:60
 msgid "Last modification"
 msgstr "Utolsó módosítás"
 
-#: templates/box-filelist.html:60 templates/new-template-flow.html:20
+#: templates/box-filelist.html:61 templates/new-template-flow.html:20
 msgid "Type"
 msgstr "Típus"
 
 #: templates/box-filelist.html:71
-msgid "Show more files…"
-msgstr "Több fájl megjelenítése…"
-
-#: templates/box-filelist.html:71
-msgctxt "is"
-msgid "hidden"
-msgstr "van elrejtve"
-
-#: templates/box-filelist.html:78
 msgid "Create folder"
 msgstr "Mappa létrehozása"
 
-#: templates/box-filelist.html:80
+#: templates/box-filelist.html:73
 msgid "Name of new folder"
 msgstr "Új mappa neve"
 
-#: templates/box-filelist.html:91
+#: templates/box-filelist.html:84
 msgid "File upload"
 msgstr "Fájlfeltöltés"
 
-#: templates/box-filelist.html:97
+#: templates/box-filelist.html:90
 msgid "Drag and drop files here to start uploading."
 msgstr "Húzza ide a fájlt a feltöltés megkezdéséhez."
 
-#: templates/box-filelist.html:98
+#: templates/box-filelist.html:91
 msgid ""
 "You can also use the <a href=\"#\" id=\"old-upload\">the traditional upload "
 "form</a>."
@@ -336,35 +327,35 @@ msgstr ""
 "Használhatja a <a href=\"#\" id=\"old-upload\">hagyományos feltöltő űrlapot</"
 "a> is."
 
-#: templates/box-filelist.html:99
+#: templates/box-filelist.html:92
 msgid "Upload limit is 1GB per file!"
 msgstr "A feltöltési limit 1GiB fájlonként!"
 
-#: templates/box-filelist.html:103
+#: templates/box-filelist.html:96
 msgid "Error: File is bigger than 1GB!"
 msgstr "Hiba: a fájl nagyobb 1 GiB-nál."
 
-#: templates/box-filelist.html:104
+#: templates/box-filelist.html:97
 msgid "Error: Upload server is not available!"
 msgstr "Hiba: a feltöltő kiszolgáló nem érhető el."
 
-#: templates/box-filelist.html:105
+#: templates/box-filelist.html:98
 msgid "Error: File already exists!"
 msgstr "Hiba: a fájl már létezik."
 
-#: templates/box-filelist.html:124
+#: templates/box-filelist.html:117
 msgid "File quota"
 msgstr "Fájlkvóta"
 
-#: templates/box-filelist.html:124
+#: templates/box-filelist.html:117
 msgid "Used space"
 msgstr "Használt terület"
 
-#: templates/box-filelist.html:124
+#: templates/box-filelist.html:117
 msgid "soft limit"
 msgstr "puha limit"
 
-#: templates/box-filelist.html:125
+#: templates/box-filelist.html:118
 msgid "hard limit"
 msgstr "kemény limit"
 
@@ -552,3 +543,10 @@ msgstr "&laquo; Mégsem"
 #: templates/new-template-flow.html:113
 msgid "Next &raquo;"
 msgstr "Tovább &raquo;"
+
+#~ msgid "Show more files…"
+#~ msgstr "Több fájl megjelenítése…"
+
+#~ msgctxt "is"
+#~ msgid "hidden"
+#~ msgstr "van elrejtve"
