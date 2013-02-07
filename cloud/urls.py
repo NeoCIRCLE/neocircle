@@ -7,6 +7,10 @@ import one.views
 import firewall.views
 #import store.views
 
+js_info_dict = {
+            'packages': ('one', ),
+}
+
 urlpatterns = patterns('',
      url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
      url(r'^admin/', include(admin.site.urls)),
@@ -37,4 +41,5 @@ urlpatterns = patterns('',
      url(r'^ajax/store/rename$', 'store.views.ajax_rename', name='store_ajax_rename'),
      url(r'^ajax/vm/status/(?P<iid>\d+)$', 'one.views.vm_ajax_instance_status', name='vm_ajax_instance_status'),
      url(r'^language/(?P<lang>[-A-Za-z]+)/$', 'school.views.language', name='language'),
+     url(r'^jsi18n/$', 'django.views.i18n.javascript_catalog', js_info_dict),
 )
