@@ -64,11 +64,11 @@ $(function() {
     $('.quota .used').each(function() {
         var s = this;
         $(this).css('backgroundColor', function(w) {
-            return 'hsla(' + (120 - parseFloat(w) / 438 * 120).toFixed(0) + ',100%,50%,0.2)';
-        }($(this).css('width')));
+            return 'hsla(' + (120 - parseFloat(w) / 100*120).toFixed(0) + ',100%,50%,0.2)';
+        }($(this)[0].style.width));
         if(parseInt($(this).css('width')) > 0) $(this).css('borderRight', function(w) {
-            return '1px solid hsla(' + (120 - parseFloat(w) / 438 * 120).toFixed(0) + ',100%,30%,0.4)';
-        }($(this).css('width')));
+            return '1px solid hsla(' + (120 - parseFloat(w) / 100 * 120).toFixed(0) + ',100%,30%,0.4)';
+        }($(this)[0].style.width));
     });
     $('#new-folder').click(function() {
         $('#new-folder-form input')[0].focus();
