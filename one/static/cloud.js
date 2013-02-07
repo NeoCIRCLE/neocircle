@@ -41,9 +41,6 @@ $(function() {
     $('#new-wm-button').click(function() {
         $('#modal').show();
         $('#modal-container').html($('#new-wm').html());
-        $('#modal-container .wm .summary').each(function() {
-            this.originalHeight = parseInt($(this).next('.details').css('height'));
-        })
         $('#modal-container .wm .summary').click(toggleDetails);
     });
     $('#new-template-button').click(function() {
