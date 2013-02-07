@@ -187,7 +187,7 @@ $(function() {
                         if(a.type === b.type) {
                             return a.originalName.localeCompare(b.originalName);
                         }
-                        if(a.type === 'fájl') {
+                        if(a.type === gettext('file')) {
                             return 1;
                         }
                         return -1;
@@ -196,7 +196,7 @@ $(function() {
                         if(a.type === b.type) {
                             return new Date(b.mTime).getTime() - new Date(a.mTime).getTime();
                         }
-                        if(a.type === 'fájl') {
+                        if(a.type === gettext('file')) {
                             return 1;
                         }
                         return -1;
@@ -205,7 +205,7 @@ $(function() {
                         if(a.type === b.type) {
                             return b.originalSize-a.originalSize;
                         }
-                        if(a.type === 'fájl') {
+                        if(a.type === gettext('file')) {
                             return 1;
                         }
                         return -1;
@@ -301,7 +301,7 @@ $(function() {
                     originalSize: d.SIZE,
                     name: d.NAME.length > 30 ? (d.NAME.substr(0, 27) + '...') : d.NAME,
                     size: convert(d.SIZE),
-                    type: 'fájl',
+                    type: gettext('file'),
                     mTime: d.MTIME,
                     getTypeClass: 'name filetype-' + type,
                     clickHandler: function(item, e) {
@@ -350,7 +350,15 @@ $(function() {
          */
         self.delete = function(item) {
             $('#modal').show();
-            $('#modal-container').html('Biztosan törlöd a(z) <strong>' + item.originalName + '</strong> ' + (item.type == 'fájl' ? 'fájlt' : 'mappát (és a teljes tartalmát)') + '? <br /><input class="ok" type="button" value="Naná!" style="float: left"/><input class="cancel" type="button" value="Fittyfenét!" style="float: right" />');
+            s = "";
+            if (item.type == gettext('file')) {
+                s = gettext("You are removing the file <strong>%s</strong>.");
+            }
+            else {
+                s = gettext("You are removing the folder <strong>%s</strong> (and its content).");
+            }
+
+            $('#modal-container').html(interpolate(s, [item.originalName]) + " " + gettext("Are you sure?") + '<br /><input class="ok" type="button" value="' + gettext("Delete") + '" style="float: left"/><input class="cancel" type="button" value="' + gettext('Cancel') + '" style="float: right" />');
             $('#modal-container .ok').click(function() {
                 $('#modal').hide();
                 $.ajax({
@@ -496,9 +504,9 @@ $(function() {
                             t = t.toFixed(1) + ' ' + suffix[i];
                             var diff = new Date().getTime() - start;
                             if(complete < 100) {
-                                $('#upload-progress-text').html('Feltöltés: ' + convert(event.loaded / diff * 1000) + '/s (' + (event.loaded / event.total * 100).toFixed(2) + '%)');
+                                $('#upload-progress-text').html(gettext('Upload') + ': ' + convert(event.loaded / diff * 1000) + '/s (' + (event.loaded / event.total * 100).toFixed(2) + '%)');
                             } else {
-                                $('#upload-progress-text').html('Feltöltés: Kész, feldolgozás...');
+                                $('#upload-progress-text').html(gettext('Upload') + ': ' + gettext('done, processing...'));
                             }
                         }
                     }
