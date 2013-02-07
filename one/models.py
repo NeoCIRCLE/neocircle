@@ -10,7 +10,8 @@ from django.utils.translation import ugettext_lazy as _
 from firewall.models import Host, Rule, Vlan
 from firewall.tasks import reload_firewall_lock
 from one.util import keygen
-from school.models import Person
+from school.models import Person, Group
+from datetime import timedelta as td
 
 import subprocess, tempfile, os, stat, re, base64, struct
 
@@ -39,6 +40,10 @@ class UserCloudDetails(models.Model):
             help_text=_('Generated SSH public key for accessing store from Linux.'))
     ssh_private_key = models.TextField(verbose_name=_('SSH key (private)'), null=True,
             help_text=_('Generated SSH private key for accessing store from Linux.'))
+    share_quota = models.IntegerField(verbose_name=_('share quota'), default=100)
+    instance_quota = models.IntegerField(verbose_name=_('instance quota'), default=20)
+    disk_quota = models.IntegerField(verbose_name=_('disk quota'), default=2048,
+            help_text=_('Disk quota in mebibytes.'))
 
     """
     Delete old SSH key pair and generate new one.
@@ -111,6 +116,26 @@ class SshKey(models.Model):
             keycomment = _("unnamed")
 
         return u"%s (%s)" % (keycomment, self.user)
+
+TEMPLATE_STATES = (("INIT", _('init')), ("PREP", _('perparing')), ("SAVE", _('saving')), ("READY", _('ready')))
+
+
+TYPES = {"LAB": {"verbose_name": _('lab'),         "suspend": td(hours=5),  "delete": td(days=15)},
+         "PROJECT": {"verbose_name": _('project'), "suspend": td(weeks=5),  "delete": td(days=366/2)},
+         "SERVER": {"verbose_name": _('server'),   "suspend": td(days=365), "delete": None},
+         }
+TYPES_C = tuple([(i[0], i[1]["verbose_name"]) for i in TYPES.items()])
+class Share(models.Model):
+    name = models.CharField(max_length=100, unique=True, verbose_name=_('name'))
+    description = models.TextField(verbose_name=_('description'))
+    template = models.ForeignKey('Template', null=False, blank=False)
+    group = models.ForeignKey(Group, null=False, blank=False)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_('created at'))
+    type = models.CharField(choices=TYPES_C, max_length=10, blank=False, null=False)
+    instance_limit = models.IntegerField(verbose_name=_('instance limit'),
+            help_text=_('Maximal count of instances launchable for this share.'))
+    per_user_limit = models.IntegerField(verbose_name=_('per user limit'),
+            help_text=_('Maximal count of instances launchable by a single user.'))
 
 """
 Virtual disks automatically synchronized with OpenNebula.
@@ -244,6 +269,9 @@ class Instance(models.Model):
     firewall_host = models.ForeignKey(Host, blank=True, null=True, verbose_name=_('host in firewall'))
     pw = models.CharField(max_length=20, verbose_name=_('password'), help_text=_('Original password of instance'))
     one_id = models.IntegerField(unique=True, blank=True, null=True, verbose_name=_('OpenNebula ID'))
+    share = models.ForeignKey('Share', blank=True, null=True, verbose_name=_('share'))
+    time_of_suspend = models.DateTimeField(default=None, verbose_name=_('time of suspend'), null=True, blank=False)
+    time_of_delete = models.DateTimeField(default=None, verbose_name=_('time of delete'), null=True, blank=False)
     """
     Get public port number for default access method.
     """
