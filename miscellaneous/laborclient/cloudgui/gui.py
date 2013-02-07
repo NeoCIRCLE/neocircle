@@ -58,21 +58,13 @@ class KeyGen:
         return key.exportKey(), "%s %s" % (pub, "cloud-%s" % date.today())
 
 
-#Initalize keypair
-keygen = KeyGen()
-private_key = keygen.private_key
-public_key = keygen.public_key
-
-#Saver private_key to KEY_FILE
-with open(KEY_FILE,'w') as f:
-    f.write(private_key)
-#
-pub_key_string = base64.b64encode(public_key)
 
 
 class Browser:
     neptun = ""
     host = ""
+    private_key_file = ""
+    public_key_b64 = ""
     def __init__(self):
         #Init window components
         gobject.threads_init()
@@ -98,7 +90,7 @@ class Browser:
         self.webview = webkit.WebView()
         self.webview.connect('onload-event', self.load_committed_cb)
 #        self.webview.open("http://10.9.1.86:8080")
-        self.webview.open("https://cloud.ik.bme.hu/")
+        self.webview.open("https://cloud.ik.bme.hu/store/gui/")
         self.webview.connect("navigation-requested", self.on_navigation_requested)
         #self.webview.open("http://index.hu")
         
@@ -121,13 +113,24 @@ class Browser:
         self.window.maximize()
         self.window.show_all()
 
+    def init_keypair():
+        keygen = KeyGen()
+        private_key = keygen.private_key
+        public_key = keygen.public_key
+
+        #Saver private_key to KEY_FILE
+        with tempfile.NamedTemporaryFile(mode='w', delete=False) as f:
+            f.write(private_key)
+            self.private_key_file = f.name
+        self.public_key_b64 =  base64.b64encode(public_key)
+    
     def destroy(self, dummy):
         self.webview.execute_script("resetKey()")
         gtk.main_quit()
 
     def on_navigation_requested(self, view, frame, req, data=None):
         uri = req.get_uri()
-        #print "On nav: " + uri
+        print "On nav: " + uri
         scheme, rest = uri.split(':', 1)
         #print scheme
         try:
@@ -139,7 +142,7 @@ class Browser:
         except:
             pass
         if scheme == 'login':
-            self.webview.execute_script("postKey(\"%s\")" % pub_key_string)
+            self.webview.execute_script("postKey(\"%s\")" % self.public_key_b64)
             self.webview.execute_script("document.getElementById(\"login_button\").hidden=true ;")
             self.webview.execute_script("document.getElementById(\"logout_button\").hidden=false ;")
             self.webview.execute_script("document.getElementById(\"mount_button\").hidden=false ;")
@@ -181,7 +184,10 @@ class Browser:
         self.webview.open("https://cloud.ik.bme.hu/")
     def load_committed_cb(self,web_view, frame):
         self.webview.execute_script('document.getElementsByTagName("a")[0].target="";')
-        #uri = frame.get_uri()
+        uri = frame.get_uri()
+        if str(uri) == "https://cloud.ik.bme.hu/store/gui/":
+            self.webview.execute_script("postKey(\"%s\")" % self.public_key_b64)
+            print "Mounting"
         #print uri
         #print web_view.get_title()
         return 
