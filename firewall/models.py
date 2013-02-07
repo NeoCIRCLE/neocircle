@@ -218,7 +218,7 @@ class Record(models.Model):
         super(Record, self).save(*args, **kwargs)
 
     def clean(self):
-        if(self.name.endswith(u'.')):
+        if self.name and self.name.endswith(u'.'):
             raise ValidationError(u'a domain nem végződhet pontra')
 
         if self.host and self.type in ['CNAME', 'A', 'AAAA']:
