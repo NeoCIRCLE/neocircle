@@ -35,7 +35,6 @@ $(function() {
             $(this).parent('.wm').addClass('opened');
             $(this).next('.details').slideDown(700);
         }
-
     }
     $('.wm .summary').unbind('click').click(toggleDetails);
     $('#new-wm-button').click(function() {
@@ -64,7 +63,7 @@ $(function() {
     $('.quota .used').each(function() {
         var s = this;
         $(this).css('backgroundColor', function(w) {
-            return 'hsla(' + (120 - parseFloat(w) / 100*120).toFixed(0) + ',100%,50%,0.2)';
+            return 'hsla(' + (120 - parseFloat(w) / 100 * 120).toFixed(0) + ',100%,50%,0.2)';
         }($(this)[0].style.width));
         if(parseInt($(this).css('width')) > 0) $(this).css('borderRight', function(w) {
             return '1px solid hsla(' + (120 - parseFloat(w) / 100 * 120).toFixed(0) + ',100%,30%,0.4)';
@@ -200,7 +199,7 @@ $(function() {
                     },
                     size: function(a, b) {
                         if(a.type === b.type) {
-                            return b.originalSize-a.originalSize;
+                            return b.originalSize - a.originalSize;
                         }
                         if(a.type === gettext('file')) {
                             return 1;
@@ -213,7 +212,7 @@ $(function() {
             /**
              * Loads the specified folder
              */
-        var loadFolder = throttle(function(path) {
+        var loadFolder = throttle(function(path, fast) {
             self.currentPath(path);
             self.fileLimit = 5;
             $.ajax({
@@ -222,20 +221,24 @@ $(function() {
                 url: '/ajax/store/list',
                 dataType: 'json',
                 success: function(data) {
-                    $('.file-list .real').css({
-                        left: 0,
-                        position: 'relative'
-                    }).animate({
-                        left: '-100%'
-                    }, 500).promise().done(function() {
-                        loadFolderDone(data);
+                    if(!fast) {
                         $('.file-list .real').css({
-                            left: '-300%',
+                            left: 0,
                             position: 'relative'
                         }).animate({
-                            left: 0
-                        }, 500);
-                    });
+                            left: '-100%'
+                        }, 500).promise().done(function() {
+                            loadFolderDone(data);
+                            $('.file-list .real').css({
+                                left: '-300%',
+                                position: 'relative'
+                            }).animate({
+                                left: 0
+                            }, 500);
+                        });
+                    } else {
+                        loadFolderDone(data);
+                    }
                 },
             })
         })
@@ -319,7 +322,6 @@ $(function() {
         self.fadeOutFile = function(e) {
             try {
                 $(e).slideUp(500, function() {
-                    console.log('sssaa', e);
                     e.parentNode.removeChild(e);
                 });
             } catch(ex) {
@@ -348,10 +350,9 @@ $(function() {
         self.delete = function(item) {
             $('#modal').show();
             s = "";
-            if (item.type == gettext('file')) {
+            if(item.type == gettext('file')) {
                 s = gettext("You are removing the file <strong>%s</strong>.");
-            }
-            else {
+            } else {
                 s = gettext("You are removing the folder <strong>%s</strong> (and its content).");
             }
 
@@ -377,16 +378,22 @@ $(function() {
          * Renames the specified file
          */
         self.rename = function(item, e) {
+            e.stopPropagation();
             var oldName = $(e.target).parent().parent().parent().find('.name').html();
-            $(e.target).parent().unbind('click').click(function() {
+            $(e.target).parent().unbind('click').click(function(f) {
+                f.stopPropagation();
                 $(e.target).parent().parent().parent().find('.name').html(oldName);
-                $(e.target).parent().click(function(e) {
-                    self.rename(item, e);
+                $(e.target).parent().click(function(g) {
+                    g.stopPropagation();
+                    self.rename(item, g);
                 });
             })
             //$(e.target).parent().parent().parent().unbind('click');
             $(e.target).parent().parent().parent().find('.name').html('<input type="text" value="' + item.originalName + '" />\
 <input type="submit" value="Átnevezés" />');
+            $(e.target).parent().parent().parent().find('.name input').click(function(f){
+                f.stopPropagation();
+            })
             $(e.target).parent().parent().parent().find('.name input[type=submit]').click(function(e) {
                 e.preventDefault();
                 var newName = $(e.target).parent().parent().parent().find('.name input[type=text]').val();
@@ -396,7 +403,7 @@ $(function() {
                     url: '/ajax/store/rename',
                     dataType: 'json',
                     success: function(data) {
-                        loadFolder(self.currentPath());
+                        loadFolder(self.currentPath(),true);
                     }
                 })
                 return false;
@@ -431,7 +438,7 @@ $(function() {
                 url: '/ajax/store/newFolder',
                 dataType: 'json',
                 success: function(data) {
-                    loadFolder(self.currentPath());
+                    loadFolder(self.currentPath(),true);
                 }
             })
         });
