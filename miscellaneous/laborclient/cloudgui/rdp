@@ -1,0 +1,12 @@
+#!/usr/bin/python
+import sys
+import cloudgui
+
+if __name__ == '__main__':
+    try:
+        uri = sys.argv[1]
+    except:
+        print "No URI presented!"
+        sys.exit()
+    rdp = cloudgui.rdp.RDP(uri)
+    rdp.connect()

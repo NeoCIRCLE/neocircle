@@ -3,5 +3,5 @@ setup(
     name = "CloudGUI",
     version = "0.1",
     packages = ['cloudgui',], 
-    scripts = ['cloud.py',],
+    scripts = ['cloud','rdp',],
     )
