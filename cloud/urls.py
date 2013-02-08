@@ -44,4 +44,5 @@ urlpatterns = patterns('',
      url(r'^jsi18n/$', 'django.views.i18n.javascript_catalog', js_info_dict),
      url(r'^b/(?P<token>.*)/$', 'one.views.boot_token', name='boot_token'),
      url(r'^group/show/(?P<gid>\d+)/$', 'school.views.group_show', name='group_show'),
+     url(r'^group/new/$', 'school.views.group_new', name='group_new'),
 )
