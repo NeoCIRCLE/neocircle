@@ -24,6 +24,7 @@ from school.models import *
 import django.contrib.auth as auth
 import logging
 import json
+import re
 from django.views.decorators.csrf import ensure_csrf_cookie
 
 logger = logging.getLogger(__name__)
@@ -137,7 +138,34 @@ def language(request, lang):
     r.set_cookie(cname, lang, 10*365*24*3600)
     return r
 
+@login_required
 def group_show(request, gid):
     user = request.user
     group = get_object_or_404(Group, id=gid)
     return render_to_response("show-group.html", RequestContext(request,{}))
+
+def group_new(request):
+    name = request.POST['name']
+    semester = Semester.objects.get(id=request.POST['semester'])
+    members_list = re.split('\r?\n', request.POST['members'])
+    members = []
+    for member in members_list:
+        if re.match('^[a-zA-Z][a-zA-Z0-9]{5}$', member) == None:
+            messages.error(request, _('Invalid NEPTUN code found.'))
+            return redirect('/')
+        try:
+            user = User.objects.get(username=member)
+            person = user.person_set.all()[0]
+        except User.DoesNotExist:
+            pass
+        members.append(person)
+    owner = request.user.person_set.all()[0]
+    group = Group()
+    group.name = name
+    group.semester = semester
+    group.save()
+    for member in members:
+        group.members.add(person)
+    group.owners.add(owner)
+    group.save()
+    return redirect('/group/show/%s' % group.id)

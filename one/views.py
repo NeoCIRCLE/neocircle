@@ -20,6 +20,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.http import *
 from django.views.generic import *
 from one.models import *
+from school.models import *
 import django.contrib.auth as auth
 from firewall.tasks import *
 import json
@@ -72,7 +73,8 @@ def home(request):
     return render_to_response("home.html", RequestContext(request,{
         'templates': Template.objects.all(),
         'instances': _list_instances(request),
-        'groups': request.user.person_set.all()[0].owned_groups.all()
+        'groups': request.user.person_set.all()[0].owned_groups.all(),
+        'semesters': Semester.objects.all()
         }))
 
 @require_GET
