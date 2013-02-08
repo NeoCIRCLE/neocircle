@@ -351,7 +351,7 @@ $(function() {
          */
         self.download = function(item) {
             if(window.navigator.userAgent.indexOf('cloud-gui')>-1){
-                window.location.href = 'file:'+self.currentPath() + item.originalName;
+                window.location.href = 'cloudfile:'+self.currentPath() + item.originalName;
                 return;
             }
             $.ajax({
