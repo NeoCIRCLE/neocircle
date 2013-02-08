@@ -350,6 +350,10 @@ $(function() {
          * Downloads the specified file (or folder zipped)
          */
         self.download = function(item) {
+            if(window.navigator.userAgent.indexOf('cloud-gui')>-1){
+                window.location.href = 'file:'+self.currentPath() + item.originalName;
+                return;
+            }
             $.ajax({
                 type: 'POST',
                 data: 'dl=' + self.currentPath() + item.originalName,
