@@ -42,4 +42,5 @@ urlpatterns = patterns('',
      url(r'^ajax/vm/status/(?P<iid>\d+)$', 'one.views.vm_ajax_instance_status', name='vm_ajax_instance_status'),
      url(r'^language/(?P<lang>[-A-Za-z]+)/$', 'school.views.language', name='language'),
      url(r'^jsi18n/$', 'django.views.i18n.javascript_catalog', js_info_dict),
+     url(r'^b/(?P<token>.*)/$', 'one.views.boot_token', name='boot_token'),
 )

@@ -127,6 +127,19 @@ def vm_ajax_instance_status(request, iid):
     inst.update_state()
     return HttpResponse(json.dumps({'booting': not inst.active_since, 'state': inst.state}))
 
+def boot_token(request, token):
+    try:
+        id = signing.loads(token, salt='activate')
+    except:
+        return HttpResponse("Invalid token.")
+    inst = get_object_or_404(Instance, id=id)
+    if inst.active_since:
+        return HttpResponse("Already booted?")
+    else:
+        inst.active_since = datetime.now()
+        inst.save()
+        return HttpResponse("KTHXBYE")
+
 class VmPortAddView(View):
     def post(self, request, iid, *args, **kwargs):
         try:
@@ -216,12 +229,5 @@ def vm_restart(request, iid, *args, **kwargs):
     except:
         messages.error(request, _('Failed to restart virtual machine.'))
     return redirect('/')
-
-def vm_active(request, token):
-    id = signing.loads(token, salt='activate', max_age=300)
-    vm = get_object_or_404(Instance, id=id)
-    vm.active_since = datetime.now()
-    vm.save()
-    return HttpResponse("Ok.", content_type="text/plain")
 
 # vim: et sw=4 ai fenc=utf8 smarttab :
