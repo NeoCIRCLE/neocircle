@@ -57,7 +57,7 @@ $(function() {
     });
     $('#old-upload').click(function(e) {
         e.preventDefault();
-        $(this).parent().hide().parent().find('#old-upload-form').show();
+        $(this).parent().parent().hide().parent().find('#old-upload-form').show();
         return false;
     });
     $('.quota .used').each(function() {
