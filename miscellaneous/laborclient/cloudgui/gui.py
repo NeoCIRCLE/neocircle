@@ -10,7 +10,6 @@ import rdp
 from multiprocessing import Process
 import subprocess
 import tempfile
-import getpass
 
 class KeyGen:
     """Attributes:
@@ -110,7 +109,14 @@ class Browser:
         self.public_key_b64 =  base64.b64encode(public_key)
     
     def destroy(self, dummy):
-        self.umount_sshfs_folder()
+        try:
+            os.unlink(self.private_key_file)
+        except:
+            pass
+        try:
+            self.umount_sshfs_folder()
+        except:
+            pass
         gtk.main_quit()
 
     def on_navigation_requested(self, view, frame, req, data=None):
@@ -128,14 +134,14 @@ class Browser:
         except:
             False
     def mount_sshfs_folder(self):
-        self.folder = getpass.gethome() + "/sshfs"
+        self.folder = os.path.expanduser("~/sshfs")
         neptun = self.params["neptun"]
         host = self.params["host"]
         try:
-            os.makedirs(folder, 0644)
+            os.makedirs(self.folder, 0644)
         except:
             pass
-        result = subprocess.call(['/usr/bin/sshfs', '-o', 'IdentityFile='+self.private_key_file, neptun+"@"+host+":home", folder])
+        result = subprocess.call(['/usr/bin/sshfs', '-o', 'IdentityFile='+self.private_key_file, neptun+"@"+host+":home", self.folder])
         #print result
     def umount_sshfs_folder(self):
         try:
@@ -175,6 +181,7 @@ class Browser:
             ### JS
             self.post_key(self.public_key_b64)
             ### Parse values and do mounting ###
+        elif uri.startswith("https://cloud.ik.bme.hu/?"):
             try:
                 uri, params = uri.split('?', 1)
                 values = params.split('&')
@@ -185,10 +192,10 @@ class Browser:
                     self.mount_sshfs_folder()
                 except Exception as e:
                     print e
-                finally:
-                    os.unlink(self.private_key_file)
             except:
                 pass 
+            finally:
+                os.unlink(self.private_key_file)
         return True
     def main(self):
         gtk.main()
