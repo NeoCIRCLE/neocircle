@@ -2,5 +2,73 @@
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
 {% block content %}
-Figyelem emberek!
+<div class="boxes">
+    <div class="contentblock">
+        <h2>Summary</h2>
+    </div>
+    <div class="contentblock" id="group-members">
+        <h2>{% trans "Members" %}</h2>
+        <ul class="wm-list">
+            {% for member in members %}
+            <li class="wm small-row">
+                <div class="summary">
+                    <div class="name">
+                        {% if not member.user %}
+                        {{member.code}}
+                        {% else %}
+                        {{member}} ({{member.code}})
+                        {% endif %}
+                    </div>
+                    <div class="clear"></div>
+                </div>
+                <div class="details">
+                    <div class="container">
+                        {% if not member.user %}
+                        {% trans "This user never logged in, no data available" %}
+                        {% else %}
+                        {{member}} ({{member.code}})
+                        {% endif %}
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+            <li class="wm small-row">
+                <div class="summary" id="new-member">
+                    <div class="name">{% trans "Add user" %}</div>
+                    <div id="new-member-form">
+                        <input type="text" placeholder="{% trans "User NEPTUN code" %}" />
+                        <input type="submit" value="{% trans "Add user" %}" />
+                    </div>
+                    <div class="clear"></div>
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>
+<div class="boxes">
+    <div class="contentblock">
+        <h2>{% trans "Templates" %}</h2>
+        <ul class="wm-list">
+            <div id="new-wm-tooltip">
+                <div id="new-wm-tooltip-container">
+                    <p>
+                        {% trans "This group has no shared templates." %}
+                    </p>
+                    <p>
+                        {% trans "Share one, and the group members can start their own virtual machine." %}
+                    </p>
+                    <div id="new-wm-tooltip-tail"></div>
+                </div>
+            </div>
+            <li class="wm">
+                <div class="summary">
+                    <div class="name">
+                        {% trans "Sablon megosztása" %}
+                    </div>
+                    <div class="clear"></div>
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>
 {% endblock %}

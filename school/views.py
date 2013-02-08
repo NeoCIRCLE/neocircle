@@ -142,7 +142,10 @@ def language(request, lang):
 def group_show(request, gid):
     user = request.user
     group = get_object_or_404(Group, id=gid)
-    return render_to_response("show-group.html", RequestContext(request,{}))
+    return render_to_response("show-group.html", RequestContext(request,{
+        'group': group,
+        'members': group.members.all()
+        }))
 
 def group_new(request):
     name = request.POST['name']
@@ -153,7 +156,7 @@ def group_new(request):
         if re.match('^[a-zA-Z][a-zA-Z0-9]{5}$', member) == None:
             messages.error(request, _('Invalid NEPTUN code found.'))
             return redirect('/')
-        person = Person.objects.get_or_create(code=member)
+        person, created = Person.objects.get_or_create(code=member)
         members.append(person)
     owner = request.user.person_set.all()[0]
     group = Group()
@@ -161,7 +164,7 @@ def group_new(request):
     group.semester = semester
     group.save()
     for member in members:
-        group.members.add(person)
+        group.members.add(member)
     group.owners.add(owner)
     group.save()
     return redirect('/group/show/%s' % group.id)
