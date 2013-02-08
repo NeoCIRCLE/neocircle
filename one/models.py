@@ -330,9 +330,6 @@ class Instance(models.Model):
             x = parseString(out)
             self.vnet_ip = x.getElementsByTagName("IP")[0].childNodes[0].nodeValue.split('.')[3]
             state = x.getElementsByTagName("STATE")[0].childNodes[0].nodeValue
-            if self.state == 'PENDING' and state == 'ACTIVE':
-                from datetime import datetime
-                self.active_since = datetime.now()
             self.state = state
         except:
             self.state = 'UNKNOWN'
