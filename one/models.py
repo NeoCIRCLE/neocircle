@@ -357,7 +357,7 @@ class Instance(models.Model):
     Submit a new instance to OpenNebula.
     """
     @classmethod
-    def submit(cls, template, owner):
+    def submit(cls, template, owner, extra=""):
         from django.template.defaultfilters import escape
         out = ""
         inst = Instance(pw=pwgen(), template=template, owner=owner)
@@ -390,6 +390,7 @@ class Instance(models.Model):
                         <SSHPRIV>%(sshkey)s</SSHPRIV>
                         <BOOTURL>%(booturl)s</BOOTURL>
                         <SERVER>store.cloud.ik.bme.hu</SERVER>
+                        %(extra)s
                     </CONTEXT>
                 </COMPUTE>""" % {"name": u"%s %d" % (owner.username, inst.id),
                                  "instance": template.instance_type,
@@ -399,7 +400,8 @@ class Instance(models.Model):
                                  "smbpw": escape(details.smb_password),
                                  "sshkey": escape(details.ssh_private_key),
                                  "neptun": escape(owner.username),
-                                 "booturl": "http://cloud.ik.bme.hu/b/%s/" % token, }
+                                 "booturl": "http://cloud.ik.bme.hu/b/%s/" % token,
+                                 "extra": extra}
             f.write(tpl)
             f.close()
             import subprocess
