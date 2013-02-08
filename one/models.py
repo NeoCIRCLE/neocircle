@@ -12,6 +12,8 @@ from firewall.tasks import reload_firewall_lock
 from one.util import keygen
 from school.models import Person, Group
 from datetime import timedelta as td
+from django.db.models.signals import post_delete
+
 
 import subprocess, tempfile, os, stat, re, base64, struct
 
@@ -436,7 +438,7 @@ class Instance(models.Model):
     """
     Delete host in OpenNebula.
     """
-    def delete(self):
+    def one_delete(self):
         proc = subprocess.Popen(["/opt/occi.sh", "compute",
                "delete", "%d"%self.one_id], stdout=subprocess.PIPE)
         (out, err) = proc.communicate()
@@ -503,3 +505,13 @@ class Instance(models.Model):
     class Meta:
         verbose_name = _('instance')
         verbose_name_plural = _('instances')
+
+def delete_instance(sender, instance, using, **kwargs):
+    if instance.state != "DONE":
+        instance.one_delete()
+    try:
+        instance.host.delete()
+    except:
+        pass
+post_delete.connect(delete_instance, sender=Instance, dispatch_uid="delete_instance")
+
