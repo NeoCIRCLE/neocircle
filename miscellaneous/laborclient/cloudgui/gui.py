@@ -60,6 +60,7 @@ class KeyGen:
 
 class Browser:
     version = "0.1"
+    mounted = False
     neptun = ""
     host = ""
     private_key_file = ""
@@ -129,6 +130,10 @@ class Browser:
                 connection = rdp.RDP(uri)
                 Process(target=connection.connect).start()
                 return True
+            elif scheme == "cloudfile":
+                file_path = os.path.normpath(rest)
+                subprocess.call(["xdg-open","file://"+self.folder+file_path])
+                return True
             else:
                 return False
         except:
@@ -182,20 +187,22 @@ class Browser:
             self.post_key(self.public_key_b64)
             ### Parse values and do mounting ###
         elif uri.startswith("https://cloud.ik.bme.hu/?"):
-            try:
-                uri, params = uri.split('?', 1)
-                values = params.split('&')
-                for p in values:
-                    key, value = p.split('=',1)
-                    self.params[key] = value
+            if self.mounted != True:
                 try:
-                    self.mount_sshfs_folder()
-                except Exception as e:
-                    print e
-            except:
-                pass 
-            finally:
-                os.unlink(self.private_key_file)
+                    uri, params = uri.split('?', 1)
+                    values = params.split('&')
+                    for p in values:
+                        key, value = p.split('=',1)
+                        self.params[key] = value
+                    try:
+                        self.mount_sshfs_folder()
+                    except Exception as e:
+                        print e
+                    self.mounted = True
+                except:
+                    pass 
+                finally:
+                    os.unlink(self.private_key_file)
         return True
     def main(self):
         gtk.main()
