@@ -87,6 +87,8 @@ class Browser:
         self.webview.connect("navigation-requested", self.on_navigation_requested)
         settings = webkit.WebSettings()
         settings.set_property('user-agent', 'cloud-gui '+self.version)
+        settings.set_property('enable-accelerated-compositing', True)
+        settings.set_property("enable-default-context-menu", False)
         self.webview.set_settings(settings)
 
         #Connect things
