@@ -402,7 +402,7 @@ class Instance(models.Model):
                                  "smbpw": escape(details.smb_password),
                                  "sshkey": escape(details.ssh_private_key),
                                  "neptun": escape(owner.username),
-                                 "booturl": "http://cloud.ik.bme.hu/b/%s/" % token,
+                                 "booturl": "https://cloud.ik.bme.hu/b/%s/" % token,
                                  "extra": extra}
             f.write(tpl)
             f.close()
