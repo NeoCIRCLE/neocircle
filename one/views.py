@@ -72,6 +72,7 @@ def home(request):
     return render_to_response("home.html", RequestContext(request,{
         'templates': Template.objects.all(),
         'instances': _list_instances(request),
+        'groups': request.user.person_set.all()[0].owned_groups.all()
         }))
 
 @require_GET
