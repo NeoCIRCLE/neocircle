@@ -59,10 +59,13 @@ class DiskAdmin(contrib.admin.ModelAdmin):
     model=models.Disk
 class NetworkAdmin(contrib.admin.ModelAdmin):
     model=models.Network
+class ShareAdmin(contrib.admin.ModelAdmin):
+    model=models.Network
 
 contrib.admin.site.register(models.Template, TemplateAdmin)
 contrib.admin.site.register(models.Instance, InstanceAdmin)
 contrib.admin.site.register(models.Network, NetworkAdmin)
 contrib.admin.site.register(models.Disk, DiskAdmin)
+contrib.admin.site.register(models.Share, ShareAdmin)
 contrib.admin.site.register(models.InstanceType)
 
