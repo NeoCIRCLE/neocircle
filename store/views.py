@@ -185,11 +185,14 @@ def gui(request):
             lab_key_decoded = base64.b64decode(request.POST['KEY'])
             key_list.append(lab_key_decoded)
         except:
-            pass
-        if not StoreApi.updateauthorizationinfo(user, password, key_list):
-            return HttpResponse('Can not update authorization information!')
+            if StoreApi.updateauthorizationinfo(user, password, key_list):
+                return HttpResponse('Keys resetted succesfully!')
+            else:
+                return HttpResponse('Can not update authorization information!')
+        if StoreApi.updateauthorizationinfo(user, password, key_list):
+            return HttpResponse('https://cloud.ik.bme.hu/?neptun='+user+"&"+"host="+StoreApi.get_host())
         else:
-            return HttpResponse('Updated key information!')
+            return HttpResponse('Can not update authorization information!')
     else:
         return HttpResponse('Method not found!', status_code=404)
 

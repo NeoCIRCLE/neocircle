@@ -16,22 +16,6 @@ function getCookie(name) {
 }
 var csrftoken = getCookie('csrftoken');
 
-
-function postKey(key) {
-    $.post("/store/gui/", { "KEY" : key }, 
-            function (respond) {
-                alert(respond);
-                }
-            )
-    .error(function (respond) { alert(JSON.stringify(respond)); });
-    }
-function resetKey() {
-    $.post("/store/gui/", "",
-            function (respond) {
-                alert(respond);
-                }
-            );
-    }
 $.ajaxSetup({
     crossDomain: false, // obviates need for sameOrigin test
     beforeSend: function(xhr, settings) {
