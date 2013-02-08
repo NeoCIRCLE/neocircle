@@ -71,7 +71,24 @@ $(function() {
     });
     $('#new-folder').click(function() {
         $('#new-folder-form input')[0].focus();
-    })
+    });
+    $('#new-group').click(function(){
+        var content=$('#new-group-wizard').html();
+        $('#new-group-wizard').parent()[0].removeChild($('#new-group-wizard')[0]);
+        $('#modal').show();
+        $('#modal-container').html(content);
+        function updateSummary(){
+            $('#new-group-summary-name').html($('#new-group-name').val());
+            $('#new-group-summary-count').html(function(text){
+                var m=text.match(/\s*[a-z][0-9a-z]{5}\s*(\r|\n|$)+/gi);
+                return m?m.length:0;
+            }($('#new-group-members').val()));
+            $('#new-group-summary-semester').html($('#new-group-semester')[0].options[$('#new-group-semester')[0].selectedIndex].innerHTML)
+        }
+        $('#new-group-name').change(updateSummary);
+        $('#new-group-semester').change(updateSummary);
+        $('#new-group-members').change(updateSummary);
+    });
 
     /**
      * Convert bytes to human readable format
