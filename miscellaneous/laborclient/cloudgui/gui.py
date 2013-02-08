@@ -122,7 +122,15 @@ class Browser:
 
     def on_navigation_requested(self, view, frame, req, data=None):
         uri = req.get_uri()
-        if uri == "https://cloud.ik.bme.hu/logout/":
+        if uri == "https://login.bme.hu/admin/":
+            gobject.threads_init()
+            window = gtk.Window(type=gtk.WINDOW_TOPLEVEL)
+            browser = webkit.WebView()
+            browser.open(uri)
+            window.add(browser)
+            window.show_all()
+            return True
+        elif uri == "https://cloud.ik.bme.hu/logout/":
             self.umount_sshfs_folder()
         try:
             scheme, rest = uri.split(":", 1)
@@ -175,11 +183,11 @@ class Browser:
         self.webview.execute_script(js)
         
     def load_committed_cb(self,web_view, frame):
+        uri = frame.get_uri()
         try:
             self.webview.execute_script('document.getElementsByTagName("a")[0].target="";')
         except:
             pass
-        uri = frame.get_uri()
         ### Send keys via JavaScript ###
         if uri == "https://cloud.ik.bme.hu/store/gui/":
             self.init_keypair()
