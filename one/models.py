@@ -477,6 +477,12 @@ class Instance(models.Model):
         self._change_state("POWEROFF")
     def restart(self):
         self._change_state("RESTART")
+    def save_as(self):
+        """
+        Save image and shut down.
+        """
+        self._update_vm('<DISK id="0"><SAVE_AS name="template-%d"/></DISK>' % self.template.id)
+        self._change_state("SHUTDOWN")
 
 
     class Meta:
