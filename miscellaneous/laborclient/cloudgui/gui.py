@@ -128,18 +128,18 @@ class Browser:
         except:
             False
     def mount_sshfs_folder(self):
-        user = getpass.getuser()
+        self.folder = getpass.gethome() + "/sshfs"
         neptun = self.params["neptun"]
         host = self.params["host"]
         try:
-            os.makedirs("/home/"+user+"/sshfs", 0644)
+            os.makedirs(folder, 0644)
         except:
             pass
-        result = subprocess.call(['/usr/bin/sshfs', '-o', 'IdentityFile='+self.private_key_file, neptun+"@"+host+":home", "/home/"+user+"/sshfs"])
+        result = subprocess.call(['/usr/bin/sshfs', '-o', 'IdentityFile='+self.private_key_file, neptun+"@"+host+":home", folder])
         #print result
     def umount_sshfs_folder(self):
         try:
-            result = subprocess.call(['/bin/fusermount', '-u', "/home/tarokkk/sshfs"])
+            result = subprocess.call(['/bin/fusermount', '-u', self.folder])
         except:
             pass
     def post_key(self,key = None):
