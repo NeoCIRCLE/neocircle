@@ -1,0 +1,10 @@
+#!/usr/bin/python
+
+import cloudgui
+
+if __name__ == '__main__':
+    try:
+        browser = cloudgui.gui.Browser()
+        browser.main()
+    finally:
+        browser.umount_sshfs_folder()
