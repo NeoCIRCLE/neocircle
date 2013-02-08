@@ -8,36 +8,7 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Deleting model 'Entity'
-        db.delete_table('school_entity')
-
-        # Deleting model 'LessonClass'
-        db.delete_table('school_lessonclass')
-
-        # Deleting model 'Lesson'
-        db.delete_table('school_lesson')
-
-        # Deleting model 'Person'
-        db.delete_table('school_person')
-
-        # Deleting model 'Mark'
-        db.delete_table('school_mark')
-
-        # Deleting model 'Course'
-        db.delete_table('school_course')
-
-        # Deleting model 'Semester'
-        db.delete_table('school_semester')
-
-        # Deleting model 'Event'
-        db.delete_table('school_event')
-
-        # Deleting model 'Attendance'
-        db.delete_table('school_attendance')
-
-        # Deleting model 'Group'
-        db.delete_table('school_group')
-
+        pass
 
     def backwards(self, orm):
         # Adding model 'Entity'
