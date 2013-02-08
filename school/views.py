@@ -140,4 +140,4 @@ def language(request, lang):
 def group_show(request, gid):
     user = request.user
     group = get_object_or_404(Group, id=gid)
-    return 'majd lesz valami!'
+    return render_to_response("show-group.html", RequestContext(request,{}))
