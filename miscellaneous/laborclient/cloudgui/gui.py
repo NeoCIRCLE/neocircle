@@ -8,10 +8,9 @@ import os
 import sys
 import rdp
 from multiprocessing import Process
-### Settings ###
-KEY_DIR = "/tmp/"
-KEY_FILE = KEY_DIR+"/id_rsa"
-
+import subprocess
+import tempfile
+import getpass
 
 class KeyGen:
     """Attributes:
@@ -61,10 +60,12 @@ class KeyGen:
 
 
 class Browser:
+    version = "0.1"
     neptun = ""
     host = ""
     private_key_file = ""
     public_key_b64 = ""
+    params = {}
     def __init__(self):
         #Init window components
         gobject.threads_init()
@@ -74,46 +75,28 @@ class Browser:
 
 
         #DEBUG
-        print self.window.get_resizable()
         self.window.set_decorated(True)
-
-        #self.window.connect(
-
         self.window.set_title("IK CloudStore Login")
         self.window.set_default_size(1024,600)
         self.window.set_position(gtk.WIN_POS_CENTER)
 
-        #Init toolbar
-        self.toolbar = gtk.Toolbar()
-
         #Init browser
         self.webview = webkit.WebView()
         self.webview.connect('onload-event', self.load_committed_cb)
-#        self.webview.open("http://10.9.1.86:8080")
         self.webview.open("https://cloud.ik.bme.hu/store/gui/")
         self.webview.connect("navigation-requested", self.on_navigation_requested)
-        #self.webview.open("http://index.hu")
-        
-        #Sample button
-        self.help_button = gtk.ToolButton(gtk.STOCK_HELP)
-        self.help_button.connect("clicked",self.hello)
-        self.store_button = gtk.ToolButton(gtk.STOCK_HOME)
-        self.store_button.connect("clicked",self.store)
-        
+        settings = webkit.WebSettings()
+        settings.set_property('user-agent', 'cloud-gui '+self.version)
+        self.webview.set_settings(settings)
+
         #Connect things
-        self.toolbar.add(self.store_button)
-        self.toolbar.add(self.help_button)
-        self.vbox = gtk.VBox(False, 0)
-        #self.vbox.pack_start(self.toolbar, False, True, 0)
         self.scrolledwindow = gtk.ScrolledWindow()
         self.scrolledwindow.add(self.webview)
-        self.vbox.add(self.scrolledwindow)
-        self.window.add(self.vbox)
-        #self.window.add(self.webview)
+        self.window.add(self.scrolledwindow)
         self.window.maximize()
         self.window.show_all()
 
-    def init_keypair():
+    def init_keypair(self):
         keygen = KeyGen()
         private_key = keygen.private_key
         public_key = keygen.public_key
@@ -125,79 +108,90 @@ class Browser:
         self.public_key_b64 =  base64.b64encode(public_key)
     
     def destroy(self, dummy):
-        self.webview.execute_script("resetKey()")
+        self.umount_sshfs_folder()
         gtk.main_quit()
 
     def on_navigation_requested(self, view, frame, req, data=None):
         uri = req.get_uri()
-        print "On nav: " + uri
-        scheme, rest = uri.split(':', 1)
-        #print scheme
+        if uri == "https://cloud.ik.bme.hu/logout/":
+            self.umount_sshfs_folder()
         try:
-            self.neptun, rest = rest.split(':', 1)
-            #print "Nep: "+neptun
-            self.host, values = rest.split('?', 1)
-            #print "Host: "+host
-            #print "Values: "+values
+            scheme, rest = uri.split(":", 1)
+            if scheme == "nx" or scheme == "rdp" or scheme == "sshterm":
+                connection = rdp.RDP(uri)
+                Process(target=connection.connect).start()
+                return True
+            else:
+                return False
+        except:
+            False
+    def mount_sshfs_folder(self):
+        user = getpass.getuser()
+        neptun = self.params["neptun"]
+        host = self.params["host"]
+        try:
+            os.makedirs("/home/"+user+"/sshfs", 0644)
         except:
             pass
-        if scheme == 'login':
-            self.webview.execute_script("postKey(\"%s\")" % self.public_key_b64)
-            self.webview.execute_script("document.getElementById(\"login_button\").hidden=true ;")
-            self.webview.execute_script("document.getElementById(\"logout_button\").hidden=false ;")
-            self.webview.execute_script("document.getElementById(\"mount_button\").hidden=false ;")
-            return True
-        elif scheme == 'logout':
-            self.webview.execute_script("resetKey()")
-            self.webview.execute_script("document.getElementById(\"logout_button\").hidden=true ;")
-            self.webview.execute_script("document.getElementById(\"login_button\").hidden=false ;")
-            self.webview.execute_script("document.getElementById(\"mount_button\").hidden=true ;")
-            return True
-        elif scheme == "mount":
-            self.mount_sshfs_folder(self.neptun,self.host)
-            self.webview.execute_script("document.getElementById(\"mount_button\").hidden=true ;")
-            self.webview.execute_script("document.getElementById(\"umount_button\").hidden=false ;")
-            return True
-        elif scheme == "umount":
-            self.umount_sshfs_folder()
-            self.webview.execute_script("document.getElementById(\"mount_button\").hidden=false ;")
-            self.webview.execute_script("document.getElementById(\"umount_button\").hidden=true ;")
-            return True
-        elif scheme == "nx" or scheme == "rdp" or scheme == "sshterm":
-            connection = rdp.RDP(uri)
-            Process(target=connection.connect).start()
-            return True
-        else:
-            return False
-    def mount_sshfs_folder(self,neptun,host):
-        with open(os.devnull, "w") as fnull:
-            result = subprocess.call(['/usr/bin/sshfs', '-o', 'IdentityFile='+KEY_DIR+"/id_rsa", neptun+"@"+host+":home", "/home/tarokkk/sshfs"])
+        result = subprocess.call(['/usr/bin/sshfs', '-o', 'IdentityFile='+self.private_key_file, neptun+"@"+host+":home", "/home/"+user+"/sshfs"])
         #print result
     def umount_sshfs_folder(self):
-        with open(os.devnull, "w") as fnull:
+        try:
             result = subprocess.call(['/bin/fusermount', '-u', "/home/tarokkk/sshfs"])
-
-    def hello(self, widget):
-        self.webview.open("https://login.bme.hu/admin/")
-
-    def store(self, widget):
-        self.webview.open("https://cloud.ik.bme.hu/")
+        except:
+            pass
+    def post_key(self,key = None):
+        if key != None:
+            js = '''
+            $.post("/store/gui/", { "KEY" : "%(key)s" }, 
+                                function (respond) {
+                                    window.location = respond;
+                                    }
+                                )
+                             .error(function (respond) { alert(JSON.stringify(respond)); });
+                           ''' % { "key" : key }
+        else:
+            js = '''
+            $.post("/store/gui/", "", 
+                                function (respond) {
+                                    window.alert(respond);
+                                    }
+                                )
+                             .error(function (respond) { alert(JSON.stringify(respond)); });
+                           '''
+        self.webview.execute_script(js)
+        
     def load_committed_cb(self,web_view, frame):
-        self.webview.execute_script('document.getElementsByTagName("a")[0].target="";')
+        try:
+            self.webview.execute_script('document.getElementsByTagName("a")[0].target="";')
+        except:
+            pass
         uri = frame.get_uri()
-        if str(uri) == "https://cloud.ik.bme.hu/store/gui/":
-            self.webview.execute_script("postKey(\"%s\")" % self.public_key_b64)
-            print "Mounting"
-        #print uri
-        #print web_view.get_title()
-        return 
-
+        ### Send keys via JavaScript ###
+        if uri == "https://cloud.ik.bme.hu/store/gui/":
+            self.init_keypair()
+            ### JS
+            self.post_key(self.public_key_b64)
+            ### Parse values and do mounting ###
+            try:
+                uri, params = uri.split('?', 1)
+                values = params.split('&')
+                for p in values:
+                    key, value = p.split('=',1)
+                    self.params[key] = value
+                try:
+                    self.mount_sshfs_folder()
+                except Exception as e:
+                    print e
+                finally:
+                    os.unlink(self.private_key_file)
+            except:
+                pass 
+        return True
     def main(self):
         gtk.main()
     
 if __name__ == "__main__":
     browser = Browser()
     browser.main()
-
-
 
