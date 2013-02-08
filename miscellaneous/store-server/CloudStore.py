@@ -322,13 +322,9 @@ def fbuffer(f, chunk_size=4096):
 
 # Update users .ssh/authorized_keys
 def updateSSHAuthorizedKeys(username, key_list):
-    user_home_ssh = '/home/'+username+'/home/.ssh'
     user_uid=getpwnam(username).pw_uid
     user_gid=getpwnam(username).pw_gid
-    if not os.path.exists(user_home_ssh):
-        os.mkdir(user_home_ssh, 0700)
-    os.chown(user_home_ssh, user_uid, user_gid)
-    auth_file_name = user_home_ssh+'/authorized_keys'
+    auth_file_name = "/home/"+username+"/authorized_keys"
     with open(auth_file_name, 'w') as auth_file:
         for key in key_list:
             auth_file.write(key+'\n')
