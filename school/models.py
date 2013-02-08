@@ -133,7 +133,7 @@ class Semester(models.Model):
 
 
 class Group(models.Model):
-    name = models.CharField(max_length=80, unique=True, verbose_name=_('name'))
+    name = models.CharField(max_length=80, verbose_name=_('name'))
     course = models.ForeignKey('Course', null=True, blank=True, verbose_name=_('course'))
     semester = models.ForeignKey('Semester', null=False, blank=False, verbose_name=_('semester'))
     owners = models.ManyToManyField(Person, blank=True, null=True, related_name='owned_groups', verbose_name=_('owners'))
