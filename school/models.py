@@ -13,15 +13,20 @@ LANGUAGE_CHOICES = (('hu', _('Hungarian')), ('en', _('English')))
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
         try:
-            Person.objects.create(user=instance)
+            p = Person.objects.get(code=instance.username)
+        except Exception:
+            p = Person.objects.create(code=instance.username)
         except:
-            pass
+            return
+        p.code = instance.username
+        p.save()
 post_save.connect(create_user_profile, sender=User)
 
 class Person(models.Model):
-    user = models.ForeignKey(User, null=False, blank=False, unique=True)
+    user = models.ForeignKey(User, null=True, blank=True, unique=True)
     language = models.CharField(verbose_name=_('language'), blank=False, max_length=10,
             choices=LANGUAGE_CHOICES, default=LANGUAGE_CODE)
+    code = models.CharField(_('code'), max_length=30, unique=True)
 
     def short_name(self):
         if self.user.last_name:
