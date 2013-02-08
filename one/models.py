@@ -242,6 +242,8 @@ class Template(models.Model):
     owner = models.ForeignKey(User, verbose_name=_('owner'))
     created_at = models.DateTimeField(auto_now_add=True, verbose_name=_('created at'))
     state = models.CharField(max_length=10, choices=TEMPLATE_STATES, default='NEW')
+    public = models.BooleanField(verbose_name=_('public'), default=False,
+            help_text=_('If other users can derive templates of this one.'))
 
     def __unicode__(self):
         return self.name
