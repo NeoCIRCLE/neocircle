@@ -16,7 +16,32 @@
                     </div>
                     <div class="details">
                         <ul>
-                            <li>asd</li>
+                            <li>
+                                {% trans "Course" %}:
+                                <span class="value">
+                                    {% if group.course %}
+                                    {{group.course.name}}
+                                    {% else %}
+                                    {% trans "Not assigned" %}
+                                    {% endif %}
+                                </span>
+                            </li>
+                            <li>
+                                {% trans "Semester" %}:
+                                <span class="value">{{group.semester.name}}</span>
+                            </li>
+                            <li>
+                                {% trans "Owner(s)" %}:
+                                <span class="value">{{group.owner_list}}</span>
+                            </li>
+                            <li>
+                                {% trans "Member count" %}:
+                                <span class="value">{{group.member_count}}</span>
+                            </li>
+                            <li>
+                                &nbsp;
+                                <span class="value"><a href="/group/show/{{group.id}}">{% trans "More details" %}</a></span>
+                            </li>
                         </ul>
                     </div>
                 </li>
@@ -36,8 +61,14 @@
                 {% endif %}
                 <li class="wm" id="new-group">
                     <div class="summary">
-                        <div class="name">Új csoport felvétele</div>
+                        <div class="name">{% trans "Create new group" %}</div>
                         <div class="clear"></div>
+                    </div>
+                    <div id="new-group-wizard" style="display: none">
+                        <h3>{% trans "Create new group" %}</h3>
+                        <p>
+                            <textarea placeholder="{% trans 'Student NEPTUN codes, one per line' %}"></textarea>
+                        </p>
                     </div>
                 </li>
             </ul>
