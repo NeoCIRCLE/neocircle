@@ -46,7 +46,8 @@ def login(request):
     user.last_name = request.META['sn']
     user.email = request.META['email']
     user.save()
-    p, created = Person.objects.get_or_create(user=user)
+    p, created = Person.objects.get_or_create(code=user.username)
+    p.user_id = user.id
     p.save()
 
     try:
