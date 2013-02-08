@@ -494,7 +494,9 @@ class Instance(models.Model):
         if len(disks) != 1:
             return false
         self.template.disk_id = disks[0].id
+        self.template.status = 'READY'
         self.template.save()
+        self.host.delete()
         return True
 
 
