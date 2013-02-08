@@ -1,6 +1,5 @@
 from django.contrib import auth
 from firewall import models
-from modeldict import *
 import os
 from cloud.settings import firewall_settings as settings
 
