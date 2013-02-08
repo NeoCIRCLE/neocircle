@@ -31,10 +31,6 @@
     ul{
         list-style: none;
     }
-    input {
-        margin: 5px 10px;
-        padding: 3px;
-    }
 }
 .wizard{
     li{
@@ -42,8 +38,8 @@
     }
     label{
         float: left;
-        padding: 5px;
-        margin: 10px 5px;
+        padding: 3px;
+        margin: 10px 5px 10px -5px;
     }
     h2{
         margin: 10px 0;
@@ -67,29 +63,10 @@
     input[type=text] {
         display: block;
         float: right;
-        padding: 5px;
-        margin: 10px 5px;
-        width: 200px;
-        text-align: right;
-        box-shadow: 0 0 10px rgba(0,0,0,0.3);
-        border: none;
-        border-radius: 4px;
-    }
-    input:focus{
-        box-shadow: 0 0 12px rgb(128,128,255);
-        outline: none;
     }
     textarea{
         float: right;
-        padding: 5px;
-        margin: 10px 5px;
-        width: 300px;
-        height: 100px;
-        font-family:'Metrophobic',sans-serif;
-        font-size: 12px;
         text-align: right;
-        box-shadow: 0 0 10px rgba(0,0,0,0.3);
-        border: none;
     }
     nav{
         a{
@@ -110,11 +87,17 @@
         li{
             float: left;
             padding: 5px;
-            margin: 10px 5px;
+            margin: 10px 3px;
             border-bottom: none !important;
         }
         label{
             float: none !important;
         }
+    }
+}
+
+#new-template-name {
+    input {
+        margin: 10px 5px;
     }
 }
