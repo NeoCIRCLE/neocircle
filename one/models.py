@@ -481,8 +481,21 @@ class Instance(models.Model):
         """
         Save image and shut down.
         """
-        self._update_vm('<DISK id="0"><SAVE_AS name="template-%d"/></DISK>' % self.template.id)
+        imgname = "template-%d-%d" % (self.tempfile.id, self.id)
+        self._update_vm('<DISK id="0"><SAVE_AS name="%s"/></DISK>' % imgname)
         self._change_state("SHUTDOWN")
+    def is_save_as_done(self):
+        self.update_state()
+        if self.state != DONE:
+            return false
+        Disk.update()
+        imgname = "template-%d-%d" % (self.tempfile.id, self.id)
+        disks = Disk.objects.filter(name=imgname)
+        if len(disks) != 1:
+            return false
+        self.template.disk_id = disks[1].id
+        self.template.save()
+        return True
 
 
     class Meta:
