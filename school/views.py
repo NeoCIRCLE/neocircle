@@ -23,6 +23,7 @@ from one.models import *
 from school.models import *
 import django.contrib.auth as auth
 import logging
+import json
 from django.views.decorators.csrf import ensure_csrf_cookie
 
 logger = logging.getLogger(__name__)
@@ -135,3 +136,7 @@ def language(request, lang):
     r.set_cookie(cname, lang, 10*365*24*3600)
     return r
 
+def group_show(request, gid):
+    user = request.user
+    group = get_object_or_404(Group, id=gid)
+    return 'majd lesz valami!'
