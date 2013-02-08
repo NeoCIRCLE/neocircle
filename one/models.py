@@ -223,6 +223,8 @@ class InstanceType(models.Model):
     def __unicode__(self):
         return u"%s" % self.name
 
+TEMPLATE_STATES = (('NEW', _('new')), ('PREPARING', _('preparing')),
+                   ('SAVING', _('saving')), ('READY', _('ready')), )
 """
 Virtual machine template specifying OS, disk, type and network.
 """
@@ -237,6 +239,7 @@ class Template(models.Model):
     network = models.ForeignKey(Network, verbose_name=_('network'))
     owner = models.ForeignKey(User, verbose_name=_('owner'))
     created_at = models.DateTimeField(auto_now_add=True, verbose_name=_('created at'))
+    state = models.CharField(max_length=10, choices=TEMPLATE_STATES, default='NEW')
 
     def __unicode__(self):
         return self.name
