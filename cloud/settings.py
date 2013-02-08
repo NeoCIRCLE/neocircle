@@ -127,6 +127,7 @@ INSTALLED_APPS = (
     'south',
     'djcelery',
     'kombu.transport.django',
+    'django_extensions',
 )
 
 # A sample logging configuration. The only tangible logging
