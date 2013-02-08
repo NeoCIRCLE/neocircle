@@ -153,11 +153,7 @@ def group_new(request):
         if re.match('^[a-zA-Z][a-zA-Z0-9]{5}$', member) == None:
             messages.error(request, _('Invalid NEPTUN code found.'))
             return redirect('/')
-        try:
-            user = User.objects.get(username=member)
-            person = user.person_set.all()[0]
-        except User.DoesNotExist:
-            pass
+        person = Person.objects.get_or_create(code=member)
         members.append(person)
     owner = request.user.person_set.all()[0]
     group = Group()
