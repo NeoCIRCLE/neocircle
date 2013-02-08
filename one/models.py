@@ -443,20 +443,16 @@ class Instance(models.Model):
         self.firewall_host.delete()
         reload_firewall_lock()
 
-    """
-    Change host state in OpenNebula.
-    """
-    def _change_state(self, new_state):
-        from django.template.defaultfilters import escape
+    def _update_vm(self, template):
         out = ""
         with tempfile.NamedTemporaryFile(delete=False) as f:
             os.chmod(f.name, stat.S_IRUSR|stat.S_IWUSR|stat.S_IRGRP|stat.S_IROTH)
             tpl = u"""
                 <COMPUTE>
                     <ID>%(id)d</ID>
-                    <STATE>%(state)s</STATE>
+                    %(template)s
                 </COMPUTE>""" % {"id": self.one_id,
-                                 "state": new_state}
+                                 "template": template}
             f.write(tpl)
             f.close()
             import subprocess
@@ -466,6 +462,12 @@ class Instance(models.Model):
             (out, err) = proc.communicate()
             os.unlink(f.name)
             print "out: " + out
+
+    """
+    Change host state in OpenNebula.
+    """
+    def _change_state(self, new_state):
+        self._update_vm("<STATE>" + new_state + "</STATE>")
 
     def stop(self):
         self._change_state("STOPPED")
