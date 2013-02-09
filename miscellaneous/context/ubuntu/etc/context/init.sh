@@ -4,21 +4,26 @@ export BASEDIR=$(dirname $0)
 export USER="cloud"
 export HOME=$(awk -F: -v u=$USER '$1==u{print $6}' /etc/passwd)
 
+mkdir -p "$BASEDIR/mnt"
 cd "$BASEDIR"
 
 mount -t iso9660 /dev/cdrom1 "$BASEDIR/mnt" 2> /dev/null
 
 if [ $? -eq 0 -a -f "$BASEDIR/firstrun" -a -f "$BASEDIR/mnt/context.sh" ]; then
-	. "$BASEDIR/mnt/context.sh"
+    . "$BASEDIR/mnt/context.sh"
 
-	# hogy tudom kiexportalni ennel szebben ezeket a valtozokat?
-	eval `grep -o '^[a-zA-Z0-9]\+=' "$BASEDIR/mnt/context.sh" | while read x; do echo export ${x%=};done`
+    if [ "$RECONTEXT" != "YES" ]; then
+        rm "$BASEDIR/firstrun"
+    else
+        touch /run/context-cleanup
+    fi
 
-	run-parts "$BASEDIR/init.d"
+    for i in $BASEDIR/init.d/*; do
+        source $i
+    done
 
-	rm "$BASEDIR/firstrun"
 else
-	echo "mar korabban lefutott!"
+    echo "mar korabban lefutott!"
 fi
 
 umount /dev/cdrom1 2>/dev/null

@@ -8,4 +8,5 @@ chmod 600 "$HOME/.ssh/id_rsa"
 mkdir "$HOME/sshfs"
 chown "$USER:$USER" -R "$HOME"
 
+sed -i 's/^<volume user=.*//' /etc/security/pam_mount.conf.xml
 sed -i "s/^\(<\/pam_mount>.*\)/<volume user=\"$USER\" fstype=\"fuse\" path=\"sshfs#${NEPTUN}@${SERVER}:home\" mountpoint=\"~\/sshfs\" options=\"nonempty,reconnect,StrictHostKeyChecking=no\" \/>\n\1/" /etc/security/pam_mount.conf.xml

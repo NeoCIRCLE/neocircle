@@ -2,5 +2,7 @@
 
 echo "En vagyok a $0 !"
 
-echo "export NEPTUN=$NEPTUN"  >> $HOME/.profile
+if [ "$RECONTEXT" != "YES" ]; then
+    echo "export NEPTUN=$NEPTUN"  >> $HOME/.profile
+fi
 

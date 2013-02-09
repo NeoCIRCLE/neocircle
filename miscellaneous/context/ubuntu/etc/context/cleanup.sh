@@ -1,5 +1,13 @@
 #!/bin/bash
 
-#rm -f /etc/ssh/ssh_host_*
+if [ ! -f /run/context-cleanup ]; then
+    exit 0
+fi
+
 stop rsyslog
-rm -fr /home/cloud/.bash_history /root/.bash_history /var/log/*
+echo -e "auto lo\niface lo inet loopback\n" > /etc/network/interfaces
+sed -i 's/^<volume user=.*//' /etc/security/pam_mount.conf.xml
+rm -rf ~cloud/{.bash_history,.ssh/id_rsa}
+rm -rf ~root/{.bash_history}
+rm -rf /etc/ssh/ssh_host_*
+
