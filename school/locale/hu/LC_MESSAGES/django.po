@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-02-09 20:16+0100\n"
-"PO-Revision-Date: 2013-02-09 20:49+0100\n"
+"POT-Creation-Date: 2013-02-09 21:07+0100\n"
+"PO-Revision-Date: 2013-02-09 21:05+0100\n"
 "Last-Translator: \n"
 "Language-Team: American English <kde-l10n-hu@kde.org>\n"
 "Language: en_US\n"
@@ -150,9 +150,8 @@ msgid "Invalid NEPTUN code"
 msgstr "Érvénytelen Neptun-kód"
 
 #: templates/show-group.html:10
-#, fuzzy
 msgid "Members"
-msgstr "tagok"
+msgstr "Tagok"
 
 #: templates/show-group.html:24
 msgid "Remove"
@@ -184,6 +183,5 @@ msgstr ""
 "Osszon meg egyet, hogy a csoport tagjai is elindíthassák egy példányát."
 
 #: templates/show-group.html:71
-msgid "Sablon megosztása"
-msgstr ""
-
+msgid "Share template"
+msgstr "Sablon megosztása"

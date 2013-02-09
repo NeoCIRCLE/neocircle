@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-02-09 20:16+0100\n"
-"PO-Revision-Date: 2013-02-09 20:39+0100\n"
+"POT-Creation-Date: 2013-02-09 21:07+0100\n"
+"PO-Revision-Date: 2013-02-09 21:06+0100\n"
 "Last-Translator: \n"
 "Language-Team: Hungarian <kde-l10n-hu@kde.org>\n"
 "Language: hu\n"
@@ -484,7 +484,8 @@ msgstr "Saját csoportok"
 #: templates/box-grouplist.html:17 templates/box-vmlist.html:22
 #: templates/box-vmlist.html.py:23 templates/box-vmlist.html:36
 #: templates/box-vmlist.html.py:37 templates/box-vmlist.html:41
-#: templates/box-vmlist.html.py:42 templates/show.html:136
+#: templates/box-vmlist.html.py:42 templates/show.html:71
+#: templates/show.html.py:136
 msgid "Delete"
 msgstr "Törlés"
 
@@ -611,7 +612,7 @@ msgstr "Biztos benne?"
 msgid "Remove"
 msgstr "Törlés"
 
-#: templates/home.html:9
+#: templates/home.html:9 templates/show.html:164
 msgid "Virtual machines"
 msgstr "Virtuális gépek"
 
@@ -771,10 +772,6 @@ msgstr "Fut"
 msgid "Stopped"
 msgstr "Leállítva"
 
-#: templates/show.html:71
-msgid "Deletedeleted"
-msgstr ""
-
 #: templates/show.html:76
 msgid "Unexpected error occured"
 msgstr "Váratlan hiba történt"
@@ -802,6 +799,10 @@ msgstr "Felhasználónév"
 #: templates/show.html:113
 msgid "Password"
 msgstr "Jelszó"
+
+#: templates/show.html:120
+msgid "Port administration"
+msgstr "Portok kezelése"
 
 #: templates/show.html:127
 msgid "Public port"

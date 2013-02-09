@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-02-09 20:16+0100\n"
-"PO-Revision-Date: 2013-02-09 20:39+0100\n"
+"POT-Creation-Date: 2013-02-09 21:07+0100\n"
+"PO-Revision-Date: 2013-02-09 21:06+0100\n"
 "Last-Translator: \n"
 "Language-Team: Hungarian <kde-l10n-hu@kde.org>\n"
 "Language: hu\n"
@@ -22,7 +22,7 @@ msgid "Cancel"
 msgstr "Mégsem"
 
 #: static/cloud.js:125
-#, fuzzy, c-format
+#, c-format
 msgid "Are you sure stopping %s?"
 msgstr "Biztos benne?"
 
@@ -31,7 +31,7 @@ msgid "Stop"
 msgstr "Felfüggesztés"
 
 #: static/cloud.js:135
-#, fuzzy, c-format
+#, c-format
 msgid "Are you sure deleting %s?"
 msgstr "Biztos benne?"
 
@@ -40,7 +40,7 @@ msgid "Delete"
 msgstr "Törlés"
 
 #: static/cloud.js:145
-#, fuzzy, c-format
+#, c-format
 msgid "Are you sure restarting %s?"
 msgstr "Biztos benne?"
 
@@ -49,7 +49,7 @@ msgid "Restart"
 msgstr "Újraindítás"
 
 #: static/cloud.js:209
-#, fuzzy, c-format
+#, c-format
 msgid "Are you sure deleting <strong>%s</strong>"
 msgstr "Törli a következő fájlt: <strong>%s</strong>."
 
@@ -79,4 +79,3 @@ msgstr "Feltöltés"
 #: static/cloud.js:665
 msgid "done, processing..."
 msgstr "kész, feldolgozás..."
-
