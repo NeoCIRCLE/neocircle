@@ -12,7 +12,7 @@ from firewall.tasks import reload_firewall_lock
 from one.util import keygen
 from school.models import Person, Group
 from datetime import timedelta as td
-from django.db.models.signals import post_delete
+from django.db.models.signals import post_delete, pre_delete
 
 
 import subprocess, tempfile, os, stat, re, base64, struct
@@ -536,4 +536,12 @@ def delete_instance(sender, instance, using, **kwargs):
     except:
         pass
 post_delete.connect(delete_instance, sender=Instance, dispatch_uid="delete_instance")
+
+def delete_instance_pre(sender, instance, using, **kwargs):
+    try:
+        if instance.template.state != "DONE":
+            instance.check_if_is_save_as_done()
+    except:
+        pass
+pre_delete.connect(delete_instance_pre, sender=Instance, dispatch_uid="delete_instance_pre")
 
