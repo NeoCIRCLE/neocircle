@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-02-05 22:32+0100\n"
+"POT-Creation-Date: 2013-02-09 20:16+0100\n"
 "PO-Revision-Date: 2013-02-05 22:34+0100\n"
 "Last-Translator: \n"
 "Language-Team: American English <kde-i18n-doc@kde.org>\n"
@@ -17,107 +17,171 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "X-Generator: Lokalize 1.4\n"
 
-#: models.py:28 models.py:92
+#: models.py:11
+msgid "Hungarian"
+msgstr ""
+
+#: models.py:11
+msgid "English"
+msgstr ""
+
+#: models.py:27
+msgid "language"
+msgstr ""
+
+#: models.py:29
+msgid "code"
+msgstr ""
+
+#: models.py:40 models.py:104
 msgid "(none)"
 msgstr "(nincs)"
 
-#: models.py:31
+#: models.py:43
 #, python-format
 msgid "%(first)s %(last)s"
 msgstr "%(last)s %(first)s"
 
-#: models.py:37
+#: models.py:49
 msgid "person"
 msgstr "személy"
 
-#: models.py:38
+#: models.py:50
 msgid "persons"
 msgstr "személyek"
 
-#: models.py:42
+#: models.py:54
 msgid "course code"
 msgstr "tárgykód"
 
-#: models.py:44 models.py:46 models.py:98 models.py:124
+#: models.py:56 models.py:58 models.py:110 models.py:136
 msgid "name"
 msgstr "név"
 
-#: models.py:48
+#: models.py:60
 msgid "default group"
 msgstr "alapértelmezett csoport"
 
-#: models.py:49
+#: models.py:61
 msgid "New users will automatically get to this group."
 msgstr "Az új hallgatók automatikusan ebbe a csoportba kerülnek."
 
-#: models.py:51 models.py:93 models.py:127 models.py:140
+#: models.py:63 models.py:105 models.py:139 models.py:152
 msgid "owners"
 msgstr "tulajdonosok"
 
-#: models.py:54 models.py:125
+#: models.py:66 models.py:137
 msgid "course"
 msgstr "tárgy"
 
-#: models.py:55
+#: models.py:67
 msgid "courses"
 msgstr "tárgyak"
 
-#: models.py:61
+#: models.py:73
 #, python-format
 msgid "%s (auto)"
 msgstr "%s (auto)"
 
-#: models.py:86
+#: models.py:98
 msgid "short name"
 msgstr "rövid név"
 
-#: models.py:99
+#: models.py:111
 msgid "start"
 msgstr "kezdet"
 
-#: models.py:100
+#: models.py:112
 msgid "end"
 msgstr "vége"
 
-#: models.py:103 models.py:126
+#: models.py:115 models.py:138
 msgid "semester"
 msgstr "félév"
 
-#: models.py:104
+#: models.py:116
 msgid "semesters"
 msgstr "félévek"
 
-#: models.py:117
+#: models.py:129
 msgid "There is no current semester."
 msgstr "Nincs aktuális félév."
 
-#: models.py:128
+#: models.py:140
 msgid "members"
 msgstr "tagok"
 
-#: models.py:132
+#: models.py:144
 msgid "group"
 msgstr "csoport"
 
-#: models.py:133
+#: models.py:145
 msgid "groups"
 msgstr "csoportok"
 
-#: models.py:139
+#: models.py:151
 msgid "n/a"
 msgstr "n/a"
 
-#: views.py:39
+#: views.py:41
 msgid "EduID is not available."
 msgstr "Az EduID nem elérhető."
 
-#: views.py:69
+#: views.py:72
 #, python-format
 msgid "Course \"%s\" added."
 msgstr "„%s” tárgy hozzáadva."
 
-#: views.py:88
+#: views.py:91
 #, python-format
 msgid "Course \"%s\" ownership added."
 msgstr "„%s” tárgy oktatóihoz felvéve."
 
+#: views.py:137
+msgid "Could not found Person object."
+msgstr ""
+
+#: views.py:158
+msgid "Invalid NEPTUN code found."
+msgstr ""
+
+#: views.py:179 views.py:194
+msgid "Invalid NEPTUN code"
+msgstr ""
+
+#: templates/show-group.html:10
+#, fuzzy
+msgid "Members"
+msgstr "tagok"
+
+#: templates/show-group.html:24
+msgid "Remove"
+msgstr ""
+
+#: templates/show-group.html:32
+msgid "This user never logged in, no data available"
+msgstr ""
+
+#: templates/show-group.html:42 templates/show-group.html.py:45
+msgid "Add user"
+msgstr ""
+
+#: templates/show-group.html:44
+msgid "User NEPTUN code"
+msgstr ""
+
+#: templates/show-group.html:55
+msgid "Templates"
+msgstr ""
+
+#: templates/show-group.html:60
+msgid "This group has no shared templates."
+msgstr ""
+
+#: templates/show-group.html:63
+msgid "Share one, and the group members can start their own virtual machine."
+msgstr ""
+
+#: templates/show-group.html:71
+msgid "Sablon megosztása"
+msgstr ""

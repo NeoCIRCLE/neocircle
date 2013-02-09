@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-02-07 11:23+0100\n"
+"POT-Creation-Date: 2013-02-09 20:16+0100\n"
 "PO-Revision-Date: 2013-02-07 11:26+0100\n"
 "Last-Translator: \n"
 "Language-Team: Hungarian <cloud@ik.bme.hu>\n"
@@ -17,38 +17,65 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "X-Generator: Lokalize 1.4\n"
 
-#: static/cloud.js:190 static/cloud.js.c:199 static/cloud.js.c:208
-#: static/cloud.js:304 static/cloud.js.c:354
+#: static/cloud.js:111 static/cloud.js.c:511
+msgid "Cancel"
+msgstr "Mégsem"
+
+#: static/cloud.js:125
+#, fuzzy, c-format
+msgid "Are you sure stopping %s?"
+msgstr "Biztos benne?"
+
+#: static/cloud.js:126
+msgid "Stop"
+msgstr ""
+
+#: static/cloud.js:135
+#, fuzzy, c-format
+msgid "Are you sure deleting %s?"
+msgstr "Biztos benne?"
+
+#: static/cloud.js:136 static/cloud.js.c:209 static/cloud.js.c:511
+msgid "Delete"
+msgstr "Törlés"
+
+#: static/cloud.js:145
+#, fuzzy, c-format
+msgid "Are you sure restarting %s?"
+msgstr "Biztos benne?"
+
+#: static/cloud.js:146
+msgid "Restart"
+msgstr ""
+
+#: static/cloud.js:209
+#, fuzzy, c-format
+msgid "Are you sure deleting <strong>%s</strong>"
+msgstr "Törli a következő fájlt: <strong>%s</strong>."
+
+#: static/cloud.js:333 static/cloud.js.c:342 static/cloud.js.c:351
+#: static/cloud.js:452 static/cloud.js.c:505
 msgid "file"
 msgstr "fájl"
 
-#: static/cloud.js:355
+#: static/cloud.js:506
 #, c-format
 msgid "You are removing the file <strong>%s</strong>."
 msgstr "Törli a következő fájlt: <strong>%s</strong>."
 
-#: static/cloud.js:358
+#: static/cloud.js:508
 #, c-format
 msgid "You are removing the folder <strong>%s</strong> (and its content)."
 msgstr "Törli a következő könyvtárat és tartalmát: <strong>%s</strong>."
 
-#: static/cloud.js:361
+#: static/cloud.js:511
 msgid "Are you sure?"
 msgstr "Biztos benne?"
 
-#: static/cloud.js:361
-msgid "Delete"
-msgstr "Törlés"
-
-#: static/cloud.js:361
-msgid "Cancel"
-msgstr "Mégsem"
-
-#: static/cloud.js:507 static/cloud.js.c:509
+#: static/cloud.js:663 static/cloud.js.c:665
 msgid "Upload"
 msgstr "Feltöltés"
 
-#: static/cloud.js:509
+#: static/cloud.js:665
 msgid "done, processing..."
 msgstr "kész, feldolgozás..."
-
