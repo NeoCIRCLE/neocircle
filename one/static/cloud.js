@@ -161,7 +161,6 @@ $(function() {
     function manage_vm(id, state) {
         $.ajax({
             type: 'POST',
-            data: '',
             url: '/vm/' + state + '/' + id + '/',
             success: function(data) {}
         })
