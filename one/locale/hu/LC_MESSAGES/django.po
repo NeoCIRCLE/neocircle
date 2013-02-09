@@ -8,9 +8,9 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-02-09 20:16+0100\n"
-"PO-Revision-Date: 2013-02-06 18:23+0100\n"
+"PO-Revision-Date: 2013-02-09 20:39+0100\n"
 "Last-Translator: \n"
-"Language-Team: Hungarian <cloud@ik.bme.hu>\n"
+"Language-Team: Hungarian <kde-l10n-hu@kde.org>\n"
 "Language: hu\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -55,23 +55,20 @@ msgid "Generated SSH private key for accessing store from Linux."
 msgstr "Generált SSH privát kulcs az adattár eléréséhez Linux alól."
 
 #: models.py:45
-#, fuzzy
 msgid "share quota"
-msgstr "Fájlkvóta"
+msgstr "megosztó kvóta"
 
 #: models.py:46
-#, fuzzy
 msgid "instance quota"
-msgstr "példánytípus"
+msgstr "példány kvóta"
 
 #: models.py:47
-#, fuzzy
 msgid "disk quota"
-msgstr "Fájlkvóta"
+msgstr "lemezkvóta"
 
 #: models.py:48
 msgid "Disk quota in mebibytes."
-msgstr ""
+msgstr "Lemezkvóta mebibyte-okban."
 
 #: models.py:93
 #, python-format
@@ -102,45 +99,43 @@ msgstr "névtelen"
 
 #: models.py:122
 msgid "init"
-msgstr ""
+msgstr "új"
 
 #: models.py:122
 msgid "perparing"
-msgstr ""
+msgstr "előkészítés"
 
 #: models.py:122 models.py:234
 msgid "saving"
-msgstr ""
+msgstr "mentés"
 
 #: models.py:122 models.py:234
 msgid "ready"
-msgstr ""
+msgstr "kész"
 
 #: models.py:125
-#, fuzzy
 msgid "lab"
-msgstr "Labor"
+msgstr "labor"
 
 #: models.py:125
 msgid "For lab or home work with short life time."
-msgstr ""
+msgstr "Géptermi vagy otthoni feladatokhoz (rövid élettartam)."
 
 #: models.py:126
-#, fuzzy
 msgid "project"
-msgstr "Projekt"
+msgstr "projekt"
 
 #: models.py:126
 msgid "For project work."
-msgstr ""
+msgstr "Projektmunkához."
 
 #: models.py:127
 msgid "server"
-msgstr ""
+msgstr "szerver"
 
 #: models.py:127
 msgid "For long term server use."
-msgstr ""
+msgstr "Hosszú távú, szerver felhasználáshoz."
 
 #: models.py:132 models.py:147 models.py:184 models.py:223 models.py:240
 #: models.py:275
@@ -148,30 +143,28 @@ msgid "name"
 msgstr "név"
 
 #: models.py:133 models.py:252
-#, fuzzy
 msgid "description"
-msgstr "Leírás"
+msgstr "leírás"
 
 #: models.py:136 models.py:248 models.py:279
 msgid "created at"
 msgstr "létrehozás ideje"
 
 #: models.py:138
-#, fuzzy
 msgid "instance limit"
-msgstr "példánytípus"
+msgstr "példánykorlát"
 
 #: models.py:139
 msgid "Maximal count of instances launchable for this share."
-msgstr ""
+msgstr "A megosztás alapján futtatható példányok maximális száma."
 
 #: models.py:140
 msgid "per user limit"
-msgstr ""
+msgstr "felhasználónkénti korlát"
 
 #: models.py:141
 msgid "Maximal count of instances launchable by a single user."
-msgstr ""
+msgstr "Egy felhasználó által indítható példányok száma."
 
 #: models.py:185
 msgid "NAT"
@@ -199,17 +192,15 @@ msgstr "Memória mérete mebibyte-ban."
 
 #: models.py:226
 msgid "credits"
-msgstr ""
+msgstr "kredit"
 
 #: models.py:227
-#, fuzzy
 msgid "Price of instance."
-msgstr "példány"
+msgstr "Példány értéke."
 
 #: models.py:233
-#, fuzzy
 msgid "new"
-msgstr "hálózat"
+msgstr "új"
 
 #: models.py:243
 msgid "access method"
@@ -233,16 +224,16 @@ msgstr "tulajdonos"
 
 #: models.py:251
 msgid "If other users can derive templates of this one."
-msgstr ""
+msgstr "Más felhasználók készíthetnek-e ez alapján új sablonokat."
 
 #: models.py:253
 msgid "operating system"
-msgstr ""
+msgstr "operációs rendszer"
 
 #: models.py:254
 #, python-format
 msgid "Name of operating system in format like \"%s\"."
-msgstr ""
+msgstr "Operációs rendszer neve a következő formában: „%s”."
 
 #: models.py:267 models.py:277
 msgid "template"
@@ -309,18 +300,16 @@ msgid "OpenNebula ID"
 msgstr "OpenNebula ID"
 
 #: models.py:294
-#, fuzzy
 msgid "share"
-msgstr "Megosztás"
+msgstr "megosztás"
 
 #: models.py:295
 msgid "time of suspend"
-msgstr ""
+msgstr "felfüggesztés ideje"
 
 #: models.py:296
-#, fuzzy
 msgid "time of delete"
-msgstr "A sablon rövid neve"
+msgstr "törlés ideje"
 
 #: models.py:528
 msgid "instance"
@@ -332,7 +321,7 @@ msgstr "példányok"
 
 #: views.py:112
 msgid "Template is being saved..."
-msgstr ""
+msgstr "A sablon mentése folyamatban van…"
 
 #: views.py:135
 msgid "Failed to create virtual machine."
@@ -490,7 +479,7 @@ msgstr "kemény limit"
 
 #: templates/box-grouplist.html:6
 msgid "My Groups"
-msgstr ""
+msgstr "Saját csoportok"
 
 #: templates/box-grouplist.html:17 templates/box-vmlist.html:22
 #: templates/box-vmlist.html.py:23 templates/box-vmlist.html:36
@@ -501,25 +490,24 @@ msgstr "Törlés"
 
 #: templates/box-grouplist.html:25
 msgid "Course"
-msgstr ""
+msgstr "Tárgy"
 
 #: templates/box-grouplist.html:30
 msgid "Not assigned"
-msgstr ""
+msgstr "Nincs hozzárendelve"
 
 #: templates/box-grouplist.html:35 templates/box-grouplist.html.py:79
 #: templates/box-grouplist.html:94
 msgid "Semester"
-msgstr ""
+msgstr "Félév"
 
 #: templates/box-grouplist.html:39
-#, fuzzy
 msgid "Owner(s)"
-msgstr "tulajdonos"
+msgstr "Tulajdonos(ok)"
 
 #: templates/box-grouplist.html:43 templates/box-grouplist.html.py:95
 msgid "Member count"
-msgstr ""
+msgstr "Tagok száma"
 
 #: templates/box-grouplist.html:48 templates/box-vmlist.html:57
 msgid "More details"
@@ -527,37 +515,35 @@ msgstr "További részletek"
 
 #: templates/box-grouplist.html:58
 msgid "You have no groups"
-msgstr ""
+msgstr "Még nincs egy csoportja sem."
 
 #: templates/box-grouplist.html:61
 msgid "Create a new one, and add your students to the new group"
-msgstr ""
+msgstr "Hozzon létre egyet, és vegye fel hallgatóit."
 
 #: templates/box-grouplist.html:69 templates/box-grouplist.html.py:74
-#, fuzzy
 msgid "Create new group"
-msgstr "Mappa létrehozása"
+msgstr "Csoport létrehozása"
 
 #: templates/box-grouplist.html:75 templates/box-grouplist.html.py:93
-#, fuzzy
 msgid "Group name"
-msgstr "átnevezés"
+msgstr "Csoport neve"
 
 #: templates/box-grouplist.html:87
 msgid "Members"
-msgstr ""
+msgstr "Tagok"
 
 #: templates/box-grouplist.html:89
 msgid "Student NEPTUN codes, one per line"
-msgstr ""
+msgstr "Hallgatók Neptun-kódja, soronként egy"
 
 #: templates/box-grouplist.html:91
 msgid "Summary"
-msgstr ""
+msgstr "Áttekintés"
 
 #: templates/box-grouplist.html:99
 msgid "Done"
-msgstr ""
+msgstr "Kész"
 
 #: templates/box-vmlist.html:16 templates/box-vmlist.html.py:17
 msgid "Connect"
@@ -565,11 +551,11 @@ msgstr "Csatlakozás"
 
 #: templates/box-vmlist.html:19 templates/box-vmlist.html.py:20
 msgid "Pause"
-msgstr ""
+msgstr "Felfüggesztés"
 
 #: templates/box-vmlist.html:25
 msgid "Restart"
-msgstr ""
+msgstr "Újraindítás"
 
 #: templates/box-vmlist.html:30
 msgid "starting…"
@@ -589,9 +575,8 @@ msgid "System"
 msgstr "Rendszer"
 
 #: templates/box-vmlist.html:53
-#, fuzzy
 msgid "Template"
-msgstr "sablon"
+msgstr "Sablon"
 
 #: templates/box-vmlist.html:54 templates/home.html:41
 #: templates/new-template-flow.html:21 templates/show.html:85
@@ -709,12 +694,11 @@ msgstr "%(step)s. lépés"
 
 #: templates/new-template-flow-1.html:12
 msgid "Please choose the base system you want to customize."
-msgstr ""
+msgstr "Válasszon egy alaprendszert, amelyet testre kíván szabni."
 
 #: templates/new-template-flow-1.html:16
-#, fuzzy
 msgid "There are no available templates."
-msgstr "Elérhető sablonok"
+msgstr "Nincs elérhető sablon."
 
 #: templates/new-template-flow-1.html:29 templates/new-template-flow.html:50
 msgid "&laquo; Cancel"
@@ -726,7 +710,7 @@ msgstr "Tovább &raquo;"
 
 #: templates/new-template-flow.html:12
 msgid "Change the parameters as needed."
-msgstr ""
+msgstr "Változtassa meg a paramétereket szükség szerint."
 
 #: templates/new-template-flow.html:15
 msgid "Name"
@@ -734,107 +718,102 @@ msgstr "Név"
 
 #: templates/new-template-flow.html:17
 msgid "Please choose a different name."
-msgstr ""
+msgstr "Kérem, válasszon eltérő nevet."
 
 #: templates/new-template-flow.html:36
 #, python-format
 msgid "%(n)s core"
 msgid_plural "%(n)s cores"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%(n)s mag"
+msgstr[1] "%(n)s mag"
 
 #: templates/show.html:27
 msgid "This is a master image for your new template."
-msgstr ""
+msgstr "Ez egy mestergép az új sablonhoz."
 
 #: templates/show.html:31
 msgid "Save"
-msgstr ""
+msgstr "Mentés"
 
 #: templates/show.html:36
-#, fuzzy
 msgid "Connect to the machine."
-msgstr "Új gép indítása"
+msgstr "Csatlakozzon a géphez."
 
 #: templates/show.html:37
 msgid "Do all the needed installation/customization."
-msgstr ""
+msgstr "Végezze el a szükséges telepítést, testreszabást."
 
 #: templates/show.html:38
 msgid "Log off (keep the machine running)."
-msgstr ""
+msgstr "Jelentkezzen ki (a gépet NE állítsa le)."
 
 #: templates/show.html:39
 msgid "Click on the \"save\" button on the right."
-msgstr ""
+msgstr "Kattintson jobboldalt a „mentés” gombra."
 
 #: templates/show.html:40
 msgid "The machine will be shut down and its disk saved."
-msgstr ""
+msgstr "A gép leáll, lemeze mentésre kerül."
 
 #: templates/show.html:41
 msgid "You can share the template with your groups."
-msgstr ""
+msgstr "Megoszthatja a sablont csoportjaival."
 
 #: templates/show.html:54
-#, fuzzy
 msgid "Starting..."
-msgstr "indítás…"
+msgstr "Indítás…"
 
 #: templates/show.html:61
 msgid "Running"
-msgstr ""
+msgstr "Fut"
 
 #: templates/show.html:66
 msgid "Stopped"
-msgstr ""
+msgstr "Leállítva"
 
 #: templates/show.html:71
-#, fuzzy
 msgid "Deletedeleted"
-msgstr "Törlés"
+msgstr ""
 
 #: templates/show.html:76
 msgid "Unexpected error occured"
-msgstr ""
+msgstr "Váratlan hiba történt"
 
 #: templates/show.html:93
 msgid "Login credentials"
-msgstr ""
+msgstr "Belépési adatok"
 
 #: templates/show.html:97 templates/show.html.py:126
 msgid "Protocol"
-msgstr ""
+msgstr "Protokoll"
 
 #: templates/show.html:101
 msgid "IP"
-msgstr ""
+msgstr "IP"
 
 #: templates/show.html:105
 msgid "Port"
-msgstr ""
+msgstr "Port"
 
 #: templates/show.html:109
-#, fuzzy
 msgid "Username"
-msgstr "átnevezés"
+msgstr "Felhasználónév"
 
 #: templates/show.html:113
-#, fuzzy
 msgid "Password"
-msgstr "jelszó"
+msgstr "Jelszó"
 
 #: templates/show.html:127
 msgid "Public port"
-msgstr ""
+msgstr "Külső port"
 
 #: templates/show.html:128
 msgid "Private port"
-msgstr ""
+msgstr "Belső port"
 
 #: templates/show.html:154
 msgid "Add"
-msgstr ""
+msgstr "Hozzáadás"
 
 #~ msgid "Suspend"
 #~ msgstr "Felfüggesztés"

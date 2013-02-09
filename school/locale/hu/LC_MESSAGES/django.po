@@ -7,9 +7,9 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-02-09 20:16+0100\n"
-"PO-Revision-Date: 2013-02-05 22:34+0100\n"
+"PO-Revision-Date: 2013-02-09 20:49+0100\n"
 "Last-Translator: \n"
-"Language-Team: American English <kde-i18n-doc@kde.org>\n"
+"Language-Team: American English <kde-l10n-hu@kde.org>\n"
 "Language: en_US\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -19,19 +19,19 @@ msgstr ""
 
 #: models.py:11
 msgid "Hungarian"
-msgstr ""
+msgstr "Magyar"
 
 #: models.py:11
 msgid "English"
-msgstr ""
+msgstr "Angol"
 
 #: models.py:27
 msgid "language"
-msgstr ""
+msgstr "nyelv"
 
 #: models.py:29
 msgid "code"
-msgstr ""
+msgstr "kód"
 
 #: models.py:40 models.py:104
 msgid "(none)"
@@ -139,15 +139,15 @@ msgstr "„%s” tárgy oktatóihoz felvéve."
 
 #: views.py:137
 msgid "Could not found Person object."
-msgstr ""
+msgstr "Nem található Személy objektum."
 
 #: views.py:158
 msgid "Invalid NEPTUN code found."
-msgstr ""
+msgstr "Érvénytelen Neptun-kód."
 
 #: views.py:179 views.py:194
 msgid "Invalid NEPTUN code"
-msgstr ""
+msgstr "Érvénytelen Neptun-kód"
 
 #: templates/show-group.html:10
 #, fuzzy
@@ -156,32 +156,34 @@ msgstr "tagok"
 
 #: templates/show-group.html:24
 msgid "Remove"
-msgstr ""
+msgstr "Eltávolítás"
 
 #: templates/show-group.html:32
 msgid "This user never logged in, no data available"
-msgstr ""
+msgstr "Ez a felhasználó még nem lépett be, nincs adat róla"
 
 #: templates/show-group.html:42 templates/show-group.html.py:45
 msgid "Add user"
-msgstr ""
+msgstr "Felhasználó hozzáadása"
 
 #: templates/show-group.html:44
 msgid "User NEPTUN code"
-msgstr ""
+msgstr "Felhasználó Neptun-kódja"
 
 #: templates/show-group.html:55
 msgid "Templates"
-msgstr ""
+msgstr "Sablonok"
 
 #: templates/show-group.html:60
 msgid "This group has no shared templates."
-msgstr ""
+msgstr "Ennek a csoportnak egy sablon sincs megosztva."
 
 #: templates/show-group.html:63
 msgid "Share one, and the group members can start their own virtual machine."
 msgstr ""
+"Osszon meg egyet, hogy a csoport tagjai is elindíthassák egy példányát."
 
 #: templates/show-group.html:71
 msgid "Sablon megosztása"
 msgstr ""
+

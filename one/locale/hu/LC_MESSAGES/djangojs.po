@@ -7,9 +7,9 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-02-09 20:16+0100\n"
-"PO-Revision-Date: 2013-02-07 11:26+0100\n"
+"PO-Revision-Date: 2013-02-09 20:39+0100\n"
 "Last-Translator: \n"
-"Language-Team: Hungarian <cloud@ik.bme.hu>\n"
+"Language-Team: Hungarian <kde-l10n-hu@kde.org>\n"
 "Language: hu\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -28,7 +28,7 @@ msgstr "Biztos benne?"
 
 #: static/cloud.js:126
 msgid "Stop"
-msgstr ""
+msgstr "Felfüggesztés"
 
 #: static/cloud.js:135
 #, fuzzy, c-format
@@ -46,7 +46,7 @@ msgstr "Biztos benne?"
 
 #: static/cloud.js:146
 msgid "Restart"
-msgstr ""
+msgstr "Újraindítás"
 
 #: static/cloud.js:209
 #, fuzzy, c-format
@@ -79,3 +79,4 @@ msgstr "Feltöltés"
 #: static/cloud.js:665
 msgid "done, processing..."
 msgstr "kész, feldolgozás..."
+
