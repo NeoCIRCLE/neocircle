@@ -497,7 +497,7 @@ class Instance(models.Model):
     def poweroff(self):
         self._change_state("POWEROFF")
     def restart(self):
-        self._change_state("RESTART")
+        self._change_state("RESET")
     def save_as(self):
         """
         Save image and shut down.
