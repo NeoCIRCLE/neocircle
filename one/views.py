@@ -115,7 +115,7 @@ def vm_show(request, iid):
         'uri': inst.get_connect_uri(),
         'state': inst.state,
         'name': inst.name,
-        'id': iid,
+        'id': int(iid),
         'age': inst.get_age(),
         'instances': _list_instances(request),
         'i': inst,
