@@ -99,7 +99,7 @@
                 </tr>
                 <tr>
                     <th>{% trans "IP" %}:</th>
-                    <td>{{ i.firewall_host.pub_ipv4}}</td>
+                    <td>{{ i.firewall_host.pub_ipv4 }}</td>
                 </tr>
                 <tr>
                     <th>{% trans "Port" %}:</th>
@@ -117,7 +117,7 @@
         </div>
     </div>
     <div class="contentblock" id="ports">
-        <h2>Portok kezelése</h2>
+        <h2>{% trans "Port administration" %}</h2>
         <div class="content">
             <form action="{% url vm_port_add i.id %}" method="post">
                 {% csrf_token %}
@@ -161,7 +161,7 @@
 </div>
 <div class="boxes">
     <div class="contentblock" id="vm-list">
-        <h2>Virtuális gépek</h2>
+        <h2>{% trans "Virtual machines" %}</h2>
         <ul class="wm-list">{% include "box-vmlist.html" %}</ul>
     </div>
 </div>

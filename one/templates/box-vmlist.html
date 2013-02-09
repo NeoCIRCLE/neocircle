@@ -3,7 +3,7 @@
 {% if instances %}
 {% for i in instances %}
 <li class="wm">
-<div class="summary {% if id == i.id %}selected-summary{% elif i.template.state == "NEW" %}unfinished{% endif %}">
+<div class="summary {% if id == i.id %}selected-summary{% endif %} {% if i.template.state == "NEW" %}unfinished{% endif %}">
         <!--<div class="id"></div>-->
         <div class="name {% if i.state == 'ACTIVE' %}wm-on{% else %}wm-off{% endif %}">
             {{i.name|truncatechars:20}}
