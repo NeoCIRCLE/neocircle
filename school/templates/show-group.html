@@ -19,6 +19,11 @@
                         {{member}} ({{member.code}})
                         {% endif %}
                     </div>
+                    <div class="actions">
+                        <a href="#" class="remove" data-gid="{{group.id}}" data-neptun="{{member.code}}">
+                            <img src="/static/icons/minus-circle.png" alt="{% trans 'Remove' %}" />
+                        </a>
+                    </div>
                     <div class="clear"></div>
                 </div>
                 <div class="details">
@@ -37,7 +42,7 @@
                     <div class="name">{% trans "Add user" %}</div>
                     <div id="new-member-form">
                         <input type="text" placeholder="{% trans "User NEPTUN code" %}" />
-                        <input type="submit" value="{% trans "Add user" %}" />
+                        <input type="submit" value="{% trans "Add user" %}" data-id="{{group.id}}"/>
                     </div>
                     <div class="clear"></div>
                 </div>

@@ -169,3 +169,33 @@ def group_new(request):
     group.owners.add(owner)
     group.save()
     return redirect('/group/show/%s' % group.id)
+
+@login_required
+def group_ajax_add_new_member(request, gid):
+    group = get_object_or_404(Group, id=gid)
+    member = request.POST['neptun']
+    if re.match('^[a-zA-Z][a-zA-Z0-9]{5}$', member) == None:
+        status = json.dumps({'status': 'Error'})
+        messages.error(request, _('Invalid NEPTUN code'))
+        return HttpResponse(status)
+    person, created = Person.objects.get_or_create(code=member)
+    group.members.add(person)
+    group.save()
+    return HttpResponse(json.dumps({
+        'status': 'OK'
+        }))
+
+@login_required
+def group_ajax_remove_member(request, gid):
+    group = get_object_or_404(Group, id=gid)
+    member = request.POST['neptun']
+    if re.match('^[a-zA-Z][a-zA-Z0-9]{5}$', member) == None:
+        status = json.dumps({'status': 'Error'})
+        messages.error(request, _('Invalid NEPTUN code'))
+        return HttpResponse(status)
+    person, created = Person.objects.get_or_create(code=member)
+    group.members.remove(person)
+    group.save()
+    return HttpResponse(json.dumps({
+        'status': 'OK'
+        }))
