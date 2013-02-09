@@ -49,4 +49,5 @@ urlpatterns = patterns('',
      url(r'^group/new/$', 'school.views.group_new', name='group_new'),
      url(r'^ajax/group/(?P<gid>\d+)/add/$', 'school.views.group_ajax_add_new_member', name='group_ajax_add_new_member'),
      url(r'^ajax/group/(?P<gid>\d+)/remove/$', 'school.views.group_ajax_remove_member', name='group_ajax_remove_member'),
+     url(r'^ajax/group/delete/$', 'school.views.group_ajax_delete', name='group_ajax_delete'),
 )

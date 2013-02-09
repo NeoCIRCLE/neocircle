@@ -168,34 +168,56 @@ $(function() {
     $('#new-member').click(function() {
         $('#new-member-form').toggle();
     });
-    $('#new-member-form input').click(function(e){
+    $('#new-member-form input').click(function(e) {
         e.stopPropagation();
     });
-    $('#new-member-form input[type=submit]').click(function(){
-        var neptun=$(this).prev().val();
+    $('#new-member-form input[type=submit]').click(function() {
+        var neptun = $(this).prev().val();
         $.ajax({
             type: 'POST',
-            url: '/ajax/group/'+$(this).data('id')+'/add/',
-            data: 'neptun='+neptun,
+            url: '/ajax/group/' + $(this).data('id') + '/add/',
+            data: 'neptun=' + neptun,
             dataType: 'json',
-            success: function(data){
+            success: function(data) {
                 window.location.reload();
             }
-        }).error(function(data){
+        }).error(function(data) {
             //TODO: fancy modal alert
             alert(JSON.parse(data.responseText).status);
         })
     });
-    $('#group-members .remove').click(function(e){
-        e.preventDefault(); e.stopPropagation();
+    $('#group-members .remove').click(function(e) {
+        e.preventDefault();
+        e.stopPropagation();
         $.ajax({
             type: 'POST',
-            url: '/ajax/group/'+$(this).data('gid')+'/remove/',
-            data: 'neptun='+$(this).data('neptun'),
-            success: function(data){
+            url: '/ajax/group/' + $(this).data('gid') + '/remove/',
+            data: 'neptun=' + $(this).data('neptun'),
+            success: function(data) {
                 window.location.reload();
             }
         });
+    });
+
+    $('#groups .delete').click(function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var gid = $(this).data('id');
+        var name = $(this).data('name');
+        vm_confirm_popup(
+        interpolate(
+        gettext('Are you sure deleting <strong>%s</strong>'), [name]), gettext('Delete'), function() {
+            $.ajax({
+                type: 'POST',
+                url: '/ajax/group/delete/',
+                data: 'gid=' + gid,
+                success: function() {
+                    window.location.reload();
+                }
+            }).error(function() {
+                window.location.reload();
+            })
+        })
     })
 
     /**
