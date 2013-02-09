@@ -249,8 +249,8 @@ def new_user(neptun):
         print "Invalid syntax"
         abort(400, 'Invalid syntax')
     # Call user creator script
-    print smbpasswd+" "+str(quota)
     result = subprocess.call([ROOT_BIN_FOLDER+'/'+USER_MANAGER, 'add', neptun, smbpasswd, str(quota), hard_quota(quota)])
+    print "add "+neptun+" "+smbpasswd+" "+str(quota)+" "+hard_quota(quota)
     if result == 0:
         try:
             for key in request.json['KEYS']:
@@ -331,7 +331,7 @@ def upload(hash_num):
 
 # Return hard quota from quota
 def hard_quota(quota):
-    return str(int(quota*1.25))
+    return str(int(int(quota)*1.25))
 
 # Define filebuffer for big uploads
 def fbuffer(f, chunk_size=4096):

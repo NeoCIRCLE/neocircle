@@ -18,6 +18,8 @@ umask 022
         fi
 case $COMMAND in
     'add')
+        SOFT_QUOTA="$4"
+        HARD_QUOTA="$5"
         if [ "x${SMB_PASSWD}" == "x" ]; then
             exit 1
         fi
