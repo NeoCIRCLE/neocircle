@@ -3,7 +3,7 @@
 {% if instances %}
 {% for i in instances %}
 <li class="wm">
-    <div class="summary {% if id == i.id %}selected-summary{% endif %}">
+<div class="summary {% if id == i.id %}selected-summary{% elif i.template.state == "NEW" %}unfinished{% endif %}">
         <!--<div class="id"></div>-->
         <div class="name {% if i.state == 'ACTIVE' %}wm-on{% else %}wm-off{% endif %}">
             {{i.name|truncatechars:20}}
@@ -16,8 +16,8 @@
             <a href="{{i.get_connect_uri}}" title="{% trans "Connect" %}">
                 <img src="/static/icons/plug.png" alt="{% trans "Connect" %}" />
             </a>
-            <a href="#"  class="stop-vm-button" data-name="{{ i.name}}" data-id="{{ i.id }}" title="{% trans "Stop" %}">
-                <img src="/static/icons/control-pause.png" alt="{% trans "Suspend" %}" />
+            <a href="#"  class="stop-vm-button" data-name="{{ i.name}}" data-id="{{ i.id }}" title="{% trans "Pause" %}">
+                <img src="/static/icons/control-pause.png" alt="{% trans "Pause" %}" />
             </span>
             <a href="#"  class="delete-vm-button" data-name="{{ i.name}}" data-id="{{ i.id }}" title="{% trans "Delete" %}">
                 <img src="/static/icons/minus-circle.png" alt="{% trans "Delete" %}" />
