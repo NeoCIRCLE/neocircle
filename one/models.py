@@ -511,7 +511,7 @@ class Instance(models.Model):
     def check_if_is_save_as_done(self):
         self.update_state()
         if self.state != 'DONE':
-            return false
+            return False
         Disk.update()
         imgname = "template-%d-%d" % (self.template.id, self.id)
         disks = Disk.objects.filter(name=imgname)
