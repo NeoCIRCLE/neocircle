@@ -39,7 +39,7 @@
                 <!-- ko foreach: {data:files,afterAdd:fadeIn,beforeRemove:fadeOutFile} -->
                 <li class="wm real">
                     <div class="summary" data-bind="click: clickHandler">
-                        <div class="name" data-bind="text: name, attr: {class: getTypeClass}"></div>
+                        <div class="name" data-bind="text: name, attr: {class: getTypeClass, title: originalName}"></div>
                         <div class="info" data-bind="text: size"></div>
                         <div class="actions">
                             <a href="#" data-bind="click: $parent.rename, clickBubble: false">

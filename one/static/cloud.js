@@ -443,10 +443,11 @@ $(function() {
                         break;
                     }
                 }
+                var extension=d.NAME.match(/\.\w+$/)[0].substr(1);
                 viewData = {
                     originalName: d.NAME,
                     originalSize: d.SIZE,
-                    name: d.NAME.length > 30 ? (d.NAME.substr(0, 27) + '...') : d.NAME,
+                    name: d.NAME.length > 30 ? (d.NAME.substr(0, 20) + '... ('+extension+')') : d.NAME,
                     size: convert(d.SIZE),
                     type: gettext('file'),
                     mTime: d.MTIME,
