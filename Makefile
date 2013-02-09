@@ -8,6 +8,7 @@ pull: default
 
 po:
 	for i in */; do cd $$i; ../manage.py makemessages --all || true; cd ..; done
+	for i in */; do cd $$i; ../manage.py makemessages --all -d djangojs || true; cd ..; done
 
 migrate:
 	./manage.py migrate
