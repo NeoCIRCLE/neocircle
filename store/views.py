@@ -15,13 +15,14 @@ def estabilish_store_user(user):
     try:
         details = request.user.userclouddetails_set.all()[0]
         password = details.smb_password
+        quota = details.disk_quota
         key_list = []
         for key in request.user.sshkey_set.all():
             key_list.append(key.key)
     except:
         return HttpResponse('Can not acces to django database!', status_code=404)
         #Create user
-        if not StoreApi.createuser(user,password,key_list):
+        if not StoreApi.createuser(user, password, key_list, str(quota)):
             return HttpResponse('User does not exist on store! And could not create!')
 
 @login_required

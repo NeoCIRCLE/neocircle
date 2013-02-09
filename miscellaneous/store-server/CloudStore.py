@@ -229,7 +229,7 @@ def set_quota(neptun):
         quota = request.json['QUOTA']
     except:
         abort(400, 'Wrong syntax!')
-    result = subprocess.call([ROOT_BIN_FOLDER+'/'+USER_MANAGER, 'setquota', neptun, quota, hard_quota(quota)])
+    result = subprocess.call([ROOT_BIN_FOLDER+'/'+USER_MANAGER, 'setquota', neptun, str(quota), hard_quota(quota)])
     if result == 0:
         return
     elif result == 2:
@@ -240,25 +240,30 @@ def set_quota(neptun):
 @force_ssl
 def new_user(neptun):
     key_list = []
-    smbpasswd=''
+    smbpasswd = ''
+    quota = ''
     try:
         smbpasswd = request.json['SMBPASSWD']
-        quota = request.josn['QUOTA']
+        quota = request.json['QUOTA']
     except:
+        print "Invalid syntax"
         abort(400, 'Invalid syntax')
     # Call user creator script
-    result = subprocess.call([ROOT_BIN_FOLDER+'/'+USER_MANAGER, 'add', neptun, smbpasswd, quota, hard_quota(quota)])
+    print smbpasswd+" "+str(quota)
+    result = subprocess.call([ROOT_BIN_FOLDER+'/'+USER_MANAGER, 'add', neptun, smbpasswd, str(quota), hard_quota(quota)])
     if result == 0:
         try:
             for key in request.json['KEYS']:
                 key_list.append(key)
             updateSSHAuthorizedKeys(neptun, key_list)
         except:
+            print "SSH error"
             abort(400, 'SSH')
         return
     elif result == 2:
         abort(403, 'User already exist!')
     else:
+        print "Error"
         abort(400, 'An error occured!')
 
 
@@ -326,7 +331,7 @@ def upload(hash_num):
 
 # Return hard quota from quota
 def hard_quota(quota):
-    return str(int(quota)*1.25)
+    return str(int(quota*1.25))
 
 # Define filebuffer for big uploads
 def fbuffer(f, chunk_size=4096):

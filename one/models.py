@@ -13,7 +13,7 @@ from one.util import keygen
 from school.models import Person, Group
 from datetime import timedelta as td
 from django.db.models.signals import post_delete, pre_delete
-
+from store.api import StoreApi
 
 import subprocess, tempfile, os, stat, re, base64, struct
 
@@ -67,6 +67,23 @@ class UserCloudDetails(models.Model):
     """
     def reset_smb(self):
         self.smb_password = pwgen()
+
+def set_quota(sender, instance, created, **kwargs):
+    if not StoreApi.userexist(instance.user.username):
+        try:
+            password = instance.smb_password
+            quota = instance.disk_quota * 1024
+            key_list = []
+            for key in instance.user.sshkey_set.all():
+                key_list.append(key.key)
+        except:
+            pass
+        #Create user
+        if not StoreApi.createuser(instance.user.username, password, key_list, quota):
+            pass
+    else:
+        StoreApi.set_quota(instance.user.username, instance.disk_quota)
+post_save.connect(set_quota, sender=UserCloudDetails)
 
 def reset_keys(sender, instance, created, **kwargs):
     if created:

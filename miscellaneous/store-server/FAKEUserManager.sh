@@ -82,6 +82,10 @@ case $COMMAND in
 #        echo $(quota -w ${USER_NAME} 2>/dev/null | tail -1 | awk '{ print $2" "$3" "$4 }')
         echo "1916 2097152 2621440"
         ;;
+    'setquota')
+        echo "$1 $2 $3 $4" > /tmp/asd
+        exit 0
+        ;;
     *)
         echo "Usage: UserManager.sh COMMAND USER PASSWORD"
         exit 1

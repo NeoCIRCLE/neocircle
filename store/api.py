@@ -146,6 +146,15 @@ class StoreApi:
         else:
             return False
     @staticmethod
+    def set_quota(neptun, quota):
+        url = settings['store_url']+'/quota/'+neptun
+        payload = json.dumps({ 'QUOTA' : quota })
+        r = StoreApi.post_request(url, payload)
+        if r.status_code == requests.codes.ok:
+            return True
+        else:
+            return False
+    @staticmethod
     def userexist(neptun):
         url = settings['store_url']+'/'+neptun
         r = StoreApi.get_request(url)
@@ -154,9 +163,9 @@ class StoreApi:
         else:
             return False
     @staticmethod
-    def createuser(neptun, password, key_list):
+    def createuser(neptun, password, key_list, quota):
         url = settings['store_url']+'/new/'+neptun
-        payload = json.dumps({ 'SMBPASSWD' : password, 'KEYS' : key_list })
+        payload = json.dumps({ 'SMBPASSWD' : password, 'KEYS' : key_list, 'QUOTA' : quota })
         r = StoreApi.post_request(url, payload)
         if r.status_code == requests.codes.ok:
             return True

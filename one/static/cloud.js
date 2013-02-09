@@ -162,7 +162,14 @@ $(function() {
         $.ajax({
             type: 'POST',
             url: '/vm/' + state + '/' + id + '/',
-            success: function(data) {}
+            success: function(data, b, c) {
+                if ( state == "resume" ){
+                    window.location.href = '/vm/show/'+id+"/";
+                }
+                else {
+                    window.location.reload();
+                }
+            }
         })
     }
     $('#new-member').click(function() {
