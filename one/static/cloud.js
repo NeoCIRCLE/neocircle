@@ -39,16 +39,16 @@ $(function() {
     $('.wm .summary').unbind('click').click(toggleDetails);
     $('.stop-vm-button').click(function() {
         stop_vm($(this).data('id'), $(this).data('name'));
-    }); 
+    });
     $('.resume-vm-button').click(function() {
         manage_vm($(this).data('id'), "resume");
-    }); 
+    });
     $('.delete-vm-button').click(function() {
         delete_vm($(this).data('id'), $(this).data('name'));
-    }); 
+    });
     $('.restart-vm-button').click(function() {
         restart_vm($(this).data('id'), $(this).data('name'));
-    }); 
+    });
     $('#new-wm-button').click(function() {
         $('#modal').show();
         $('#modal-container').html($('#new-wm').html());
@@ -101,7 +101,6 @@ $(function() {
         $('#new-group-semester').change(updateSummary);
         $('#new-group-members').change(updateSummary);
     });
-   
     /**
      * Confirm pop-up window
      */
@@ -153,6 +152,9 @@ $(function() {
             }
         })
     }
+    $('#new-member').click(function(){
+        $('#new-member-form').toggle();
+    })
 
     /**
      * Convert bytes to human readable format
