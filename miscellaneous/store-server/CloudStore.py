@@ -65,7 +65,7 @@ def neptun_GET(neptun):
     if os.path.exists(home_path) != True:
         abort(401, 'The requested user does not exist!')
     else:
-        statistics=getQuotaStatus(neptun)
+        statistics=get_quota(neptun)
         return { 'Used' : statistics[0], 'Soft' : statistics[1], 'Hard' : statistics[2]}
 
 COMMANDS = {}
@@ -222,6 +222,18 @@ def set_keys(neptun):
         return
     elif result == 2:
         abort(403, 'User does not exist!')
+@route('/quota/<neptun>', method='POST')
+@force_ssl
+def set_quota(neptun):
+    try:
+        quota = request.json['QUOTA']
+    except:
+        abort(400, 'Wrong syntax!')
+    result = subprocess.call([ROOT_BIN_FOLDER+'/'+USER_MANAGER, 'setquota', neptun, quota, hard_quota(quota)])
+    if result == 0:
+        return
+    elif result == 2:
+        abort(403, 'User does not exist!')
 
 
 @route('/new/<neptun>', method='POST')
@@ -231,10 +243,11 @@ def new_user(neptun):
     smbpasswd=''
     try:
         smbpasswd = request.json['SMBPASSWD']
+        quota = request.josn['QUOTA']
     except:
         abort(400, 'Invalid syntax')
     # Call user creator script
-    result = subprocess.call([ROOT_BIN_FOLDER+'/'+USER_MANAGER, 'add', neptun, smbpasswd])
+    result = subprocess.call([ROOT_BIN_FOLDER+'/'+USER_MANAGER, 'add', neptun, smbpasswd, quota, hard_quota(quota)])
     if result == 0:
         try:
             for key in request.json['KEYS']:
@@ -311,7 +324,9 @@ def upload(hash_num):
     redirect(redirect_address)
     #return 'Upload finished: '+file_name+' - '+str(datalength)+' Byte'
 
-
+# Return hard quota from quota
+def hard_quota(quota):
+    return str(int(quota)*1.25)
 
 # Define filebuffer for big uploads
 def fbuffer(f, chunk_size=4096):
@@ -369,9 +384,16 @@ def file_dict(path, home):
             'MTIME': os.path.getmtime(path),
             'DIR': os.path.relpath(os.path.dirname(path), home)}
 
-def getQuotaStatus(neptun):
+def get_quota(neptun):
     output=subprocess.check_output([ROOT_BIN_FOLDER+'/'+USER_MANAGER, 'status', neptun], stderr=subprocess.STDOUT)
     return output.split()
+
+def set_quota(neptun, quota):
+    try:
+        output=subprocess.check_output([ROOT_BIN_FOLDER+'/'+USER_MANAGER, 'setquota', neptun, quota, hard_quota(quota)], stderr=subprocess.STDOUT)
+    except:
+        return False
+    return True
 
 if __name__ == "__main__":
     run(host=SITE_HOST, port=SITE_PORT)

@@ -13,12 +13,18 @@ USER_NAME="$2"
 SMB_PASSWD="$3"
 umask 022
 
-case $COMMAND in
-    'add')
         if [ "x${USER_NAME}" == "x" ]; then
             exit 1
         fi
+case $COMMAND in
+    'add')
         if [ "x${SMB_PASSWD}" == "x" ]; then
+            exit 1
+        fi
+        if [ "x${SOFT_QUOTA}" == "x" ]; then
+            exit 1
+        fi
+        if [ "x${HARD_QUOTA}" == "x" ]; then
             exit 1
         fi
         #Check if user already exist
@@ -40,9 +46,13 @@ case $COMMAND in
         echo "User ${USER_NAME} CREATED at `date`" >> /root/users.log
         #Set quotas
         #           Username   Soft     Hard Inode Dev
-        setquota ${USER_NAME} 2097152 2621440 0 0 /home
+#        setquota ${USER_NAME} 2097152 2621440 0 0 /home
+        setquota ${USER_NAME} ${SOFT_QUOTA} ${HARD_QUOTA} 0 0 /home
         ;;
     'set')
+        if [ "x${SMB_PASSWD}" == "x" ]; then
+            exit 1
+        fi
         id ${USER_NAME} > /dev/null 2>&1
         if [ $? == '0' ]; then
             echo -e "${SMB_PASSWD}\n${SMB_PASSWD}\n" | passwd ${USER_NAME} >/dev/null 2>&1
@@ -80,6 +90,17 @@ case $COMMAND in
         ;;
     'status')
         echo $(quota -w ${USER_NAME} 2>/dev/null | tail -1 | awk '{ print $2" "$3" "$4 }')
+        ;;
+    'setquota')
+        SOFT_QUOTA="$3"
+        HARD_QUOTA="$4"
+        if [ "x${SOFT_QUOTA}" == "x" ]; then
+            exit 1
+        fi
+        if [ "x${HARD_QUOTA}" == "x" ]; then
+            exit 1
+        fi
+        setquota ${USER_NAME} ${SOFT_QUOTA} ${HARD_QUOTA} 0 0 /home
         ;;
     *)
         echo "Usage: UserManager.sh COMMAND USER PASSWORD"
