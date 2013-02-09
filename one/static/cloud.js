@@ -105,8 +105,17 @@ $(function() {
     /**
      * Confirm pop-up window
      */
-    function vm_confirm_popup(confirm_message, button_text) {
-        return confirm(confirm_message);
+
+    function vm_confirm_popup(confirm_message, button_text, success) {
+        $('#modal').show();
+        $('#modal-container').html(confirm_message + '<br /><input class="ok" type="button" value="' + button_text + '" style="float: left"/><input class="cancel" type="button" value="' + gettext('Cancel') + '" style="float: right" />');
+        $('#modal-container .ok').click(function() {
+            $('#modal').hide();
+            success();
+        });
+        $('#modal-container .cancel').click(function() {
+            $('#modal').hide();
+        });
     }
     /**
      * Manage VM State (STOP)
@@ -114,9 +123,9 @@ $(function() {
 
     function stop_vm(id, name) {
         confirm_message = interpolate(gettext("Are you sure stopping %s?"), [name])
-        if (vm_confirm_popup(confirm_message, gettext("Stop"))) {
+        vm_confirm_popup(confirm_message, gettext("Stop"), function() {
             manage_vm(id, "stop")
-        }
+        });
     }
     /**
      * Manage VM State (DELETE)
@@ -124,9 +133,9 @@ $(function() {
 
     function delete_vm(id, name) {
         confirm_message = interpolate(gettext("Are you sure deleting %s?"), [name])
-        if (vm_confirm_popup(confirm_message, gettext("Delete"))) {
+        vm_confirm_popup(confirm_message, gettext("Delete"), function() {
             manage_vm(id, "delete")
-        }
+        })
     }
     /**
      * Manage VM State (RESET)
@@ -134,9 +143,9 @@ $(function() {
 
     function restart_vm(id, name) {
         confirm_message = interpolate(gettext("Are you sure restarting %s?"), [name])
-        if (vm_confirm_popup(confirm_message, gettext("Restart"))) {
+        vm_confirm_popup(confirm_message, gettext("Restart"), function() {
             manage_vm(id, "restart")
-        }
+        })
     }
     /**
      * Manage VM State (RESUME)
