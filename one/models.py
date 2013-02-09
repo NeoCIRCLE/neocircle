@@ -82,7 +82,7 @@ def set_quota(sender, instance, created, **kwargs):
         if not StoreApi.createuser(instance.user.username, password, key_list, quota):
             pass
     else:
-        StoreApi.set_quota(instance.user.username, instance.disk_quota)
+        StoreApi.set_quota(instance.user.username, instance.disk_quota*1024)
 post_save.connect(set_quota, sender=UserCloudDetails)
 
 def reset_keys(sender, instance, created, **kwargs):

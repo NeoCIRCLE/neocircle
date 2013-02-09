@@ -15,7 +15,7 @@ def estabilish_store_user(user):
     try:
         details = request.user.userclouddetails_set.all()[0]
         password = details.smb_password
-        quota = details.disk_quota
+        quota = details.disk_quota * 1024
         key_list = []
         for key in request.user.sshkey_set.all():
             key_list.append(key.key)
