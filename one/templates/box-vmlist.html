@@ -3,8 +3,8 @@
 {% if instances %}
 {% for i in instances %}
 <li class="wm">
-    <div class="summary">
-        <!--<div class="id">161</div>-->
+    <div class="summary {% if id == i.id %}selected-summary{% endif %}">
+        <!--<div class="id"></div>-->
         <div class="name {% if i.state == 'ACTIVE' %}wm-on{% else %}wm-off{% endif %}">
             {{i.name|truncatechars:20}}
         </div>
