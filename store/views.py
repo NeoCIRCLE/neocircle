@@ -11,7 +11,7 @@ import os
 import json
 import base64
 
-def estabilish_store_user(user):
+def estabilish_store_user(request, user):
     try:
         details = request.user.userclouddetails_set.all()[0]
         password = details.smb_password
@@ -22,14 +22,14 @@ def estabilish_store_user(user):
     except:
         return HttpResponse('Can not acces to django database!', status_code=404)
         #Create user
-        if not StoreApi.createuser(user, password, key_list, str(quota)):
-            return HttpResponse('User does not exist on store! And could not create!')
+    if not StoreApi.createuser(user, password, key_list, str(quota)):
+        return HttpResponse('User does not exist on store! And could not create!')
 
 @login_required
 def index(request):
     user = request.user.username
     if StoreApi.userexist(user) != True:
-        estabilish_store_user(user)
+        estabilish_store_user(request, user)
     #UpdateAuthorizationInfo
     try:
         auth=request.POST['auth']
@@ -41,14 +41,14 @@ def index(request):
                 key_list.append(key.key)
         except:
             return HttpResponse('Can not acces to django database!', status_code=404)
-        if not StoreApi.updateauthorizationinfo(user,password,key_list):
+        if not StoreApi.updateauthorizationinfo(user, password, key_list):
            return HttpResponse('Can not update authorization information!')
     except:
         pass
     #Download handler
     try:
         dl = request.POST['dl']
-        return redirect(StoreApi.requestdownload(user,dl))
+        return redirect(StoreApi.requestdownload(user, dl))
     except:
         pass
     #Upload handler
@@ -87,7 +87,7 @@ def index(request):
 def ajax_listfolder(request):
     user = request.user.username
     if StoreApi.userexist(user) != True:
-        estabilish_store_user(user)
+        estabilish_store_user(request, user)
     path = '/'
     try:
         path = request.POST['path']
@@ -102,7 +102,7 @@ def ajax_listfolder(request):
 def ajax_quota(request):
     user = request.user.username
     if StoreApi.userexist(user) != True:
-        estabilish_store_user(user)
+        estabilish_store_user(request, user)
     return HttpResponse(json.dumps(StoreApi.requestquota(user)))
     #return HttpResponse(json.dumps({'Used':20,'Soft':160,'Hard':200}))
 
