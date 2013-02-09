@@ -1,7 +1,13 @@
 SHELL := /bin/bash
 
 
-all: migrate collectstatic mo restart
+default: migrate collectstatic mo restart
+
+pull: default
+	git pull
+
+po:
+	for i in */; do cd $$i; ../manage.py makemessages --all || true; cd ..; done
 
 migrate:
 	./manage.py migrate
