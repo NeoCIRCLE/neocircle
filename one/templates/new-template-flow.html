@@ -10,6 +10,87 @@
         </div>
         <h2>{% blocktrans with step=1 %}Step {{step}}{% endblocktrans %}</h2>
         <p>Leírás, mit is kéne itt ezen az ablakon csinálni, és miért jó, ha azt csinálja, amit.</p>
+        <div class="container">
+            <ul class="wm-list modal">
+                {% for m in templates %}
+                <li class="wm">
+                    <form method="POST" action="/vm/new/{{m.pk}}/">{% csrf_token %}
+                        <div class="summary">
+                            <div class="name wm-on">{{m.name}}</div>
+                            <div class="status">
+                                <input type="submit" value="Indítás"/>
+                            </div>
+                            <div class="clear"></div>
+                        </div>
+                        <div class="details">
+                            <h3>
+                                {% trans "Details" %}
+                            </h3>
+                            <ul>
+                                <li class="name">{% trans "System" %}: <span class="value">{{m.disk.name}}</span></li>
+                                <li class="type">{% trans "Size" %}: <span class="value">{{m.instance_type.name}}</span></li>
+                                <li class="memory">{% trans "Memory" %}: <span class="value">{{m.instance_type.RAM}} MiB</span></li>
+                                <li class="cpu">{% trans "CPU cores" %}: <span class="value">{{m.instance_type.CPU}}</span></li>
+                            </ul>
+                        </div>
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <nav>
+            <a href="#" class="prev">{% trans "&laquo; Cancel" %}</a>
+            <a href="#" class="next">{% trans "Next &raquo;" %}</a>
+            <div class="clear"></div>
+        </nav>
+        <script type="text/javascript">
+            $(function(){
+
+                    console.log('foo');
+                $('#modal .wm .summary').each(function(){
+
+                    $(this).next('.details').show();
+                    console.log($(this).next('.details').css('display'), $(this).next('.details').css('height'));
+                    //this.originalHeight=parseInt($(this).next('.details').css('height'));
+                })
+                $('#modal .wm .summary').click(function(){
+                    if($(this).next('.details').is(':hidden')){
+                        $(this).next('.details')
+                            .slideDown(700);
+                        $(this).parent('.wm').addClass('opened');
+                    } else {
+                        var that=this;
+                        $(this).next('.details')
+                            .removeClass('opened')
+                            .slideUp(700);
+                }
+            });
+                $('#new-template-step-1 nav .prev').click(function(){
+                    $('#new-template-step-1').hide();
+                    $('#new-template-step-1').show();
+                })
+                $('#new-template-step-1 nav .next').click(function(){
+                    $('#new-template-step-1').hide();
+                    $('#new-template-step-3').show();
+                    $.ajax({
+                        'type': 'POST',
+                        'url': '/ajax/templateWizard',
+                        'data': $('#template-wizard').serialize()
+                    })
+                    .done(function(){ console.log('ok')});
+                })
+            })
+        </script>
+    </div>
+    <div id="new-template-step-2" class="wizard" style="display: none">
+        <div class="progress">
+            <div class="bar-container">
+                <div class="bar" style="width: 66%"></div>
+            </div>
+            <h3>{% blocktrans with step=2 all=3 %}{{step}}/{{all}}{% endblocktrans %}</h3>
+        </div>
+        <h2>{% blocktrans with step=2 %}Step {{step}}{% endblocktrans %}</h2>
+        <p>Leírás, mit is kéne itt ezen az ablakon csinálni, és miért jó, ha azt csinálja, amit.</p>
         <ul>
             <li>
             <label for="new-template-name">{% trans "Name" %}</label>
@@ -67,87 +148,6 @@
                 })
                 $('#new-template-step-1 nav .prev').click(function(){
                     $('#modal').hide();
-                })
-            })
-        </script>
-    </div>
-    <div id="new-template-step-2" class="wizard" style="display: none">
-        <div class="progress">
-            <div class="bar-container">
-                <div class="bar" style="width: 66%"></div>
-            </div>
-            <h3>{% blocktrans with step=2 all=3 %}{{step}}/{{all}}{% endblocktrans %}</h3>
-        </div>
-        <h2>{% blocktrans with step=2 %}Step {{step}}{% endblocktrans %}</h2>
-        <p>Leírás, mit is kéne itt ezen az ablakon csinálni, és miért jó, ha azt csinálja, amit.</p>
-        <div class="container">
-            <ul class="wm-list modal">
-                {% for m in templates %}
-                <li class="wm">
-                    <form method="POST" action="/vm/new/{{m.pk}}/">{% csrf_token %}
-                        <div class="summary">
-                            <div class="name wm-on">{{m.name}}</div>
-                            <div class="status">
-                                <input type="submit" value="Indítás"/>
-                            </div>
-                            <div class="clear"></div>
-                        </div>
-                        <div class="details">
-                            <h3>
-                                {% trans "Details" %}
-                            </h3>
-                            <ul>
-                                <li class="name">{% trans "System" %}: <span class="value">{{m.disk.name}}</span></li>
-                                <li class="type">{% trans "Size" %}: <span class="value">{{m.instance_type.name}}</span></li>
-                                <li class="memory">{% trans "Memory" %}: <span class="value">{{m.instance_type.RAM}} MiB</span></li>
-                                <li class="cpu">{% trans "CPU cores" %}: <span class="value">{{m.instance_type.CPU}}</span></li>
-                            </ul>
-                        </div>
-                    </form>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-        <nav>
-            <a href="#" class="prev">{% trans "&laquo; Cancel" %}</a>
-            <a href="#" class="next">{% trans "Next &raquo;" %}</a>
-            <div class="clear"></div>
-        </nav>
-        <script type="text/javascript">
-            $(function(){
-
-                    console.log('foo');
-                $('#modal .wm .summary').each(function(){
-
-                    $(this).next('.details').show();
-                    console.log($(this).next('.details').css('display'), $(this).next('.details').css('height'));
-                    //this.originalHeight=parseInt($(this).next('.details').css('height'));
-                })
-                $('#modal .wm .summary').click(function(){
-                    if($(this).next('.details').is(':hidden')){
-                        $(this).next('.details')
-                            .slideDown(700);
-                        $(this).parent('.wm').addClass('opened');
-                    } else {
-                        var that=this;
-                        $(this).next('.details')
-                            .removeClass('opened')
-                            .slideUp(700);
-                }
-            });
-                $('#new-template-step-2 nav .prev').click(function(){
-                    $('#new-template-step-2').hide();
-                    $('#new-template-step-1').show();
-                })
-                $('#new-template-step-2 nav .next').click(function(){
-                    $('#new-template-step-2').hide();
-                    $('#new-template-step-3').show();
-                    $.ajax({
-                        'type': 'POST',
-                        'url': '/ajax/templateWizard',
-                        'data': $('#template-wizard').serialize()
-                    })
-                    .done(function(){ console.log('ok')});
                 })
             })
         </script>
