@@ -84,16 +84,17 @@ $(function() {
     $('#new-folder').click(function() {
         $('#new-folder-form input')[0].focus();
     });
-    $('#new-group').click(function(){
-        var content=$('#new-group-wizard').html();
+    $('#new-group').click(function() {
+        var content = $('#new-group-wizard').html();
         $('#new-group-wizard').parent()[0].removeChild($('#new-group-wizard')[0]);
         $('#modal').show();
         $('#modal-container').html(content);
-        function updateSummary(){
+
+        function updateSummary() {
             $('#new-group-summary-name').html($('#new-group-name').val());
-            $('#new-group-summary-count').html(function(text){
-                var m=text.match(/\s*[a-z][0-9a-z]{5}\s*(\r|\n|$)+/gi);
-                return m?m.length:0;
+            $('#new-group-summary-count').html(function(text) {
+                var m = text.match(/\s*[a-z][0-9a-z]{5}\s*(\r|\n|$)+/gi);
+                return m ? m.length : 0;
             }($('#new-group-members').val()));
             $('#new-group-summary-semester').html($('#new-group-semester')[0].options[$('#new-group-semester')[0].selectedIndex].innerHTML)
         }
@@ -110,6 +111,7 @@ $(function() {
     /**
      * Manage VM State (STOP)
      */
+
     function stop_vm(id, name) {
         confirm_message = interpolate(gettext("Are you sure stopping %s?"), [name])
         if (vm_confirm_popup(confirm_message, gettext("Stop"))) {
@@ -119,6 +121,7 @@ $(function() {
     /**
      * Manage VM State (DELETE)
      */
+
     function delete_vm(id, name) {
         confirm_message = interpolate(gettext("Are you sure deleting %s?"), [name])
         if (vm_confirm_popup(confirm_message, gettext("Delete"))) {
@@ -128,6 +131,7 @@ $(function() {
     /**
      * Manage VM State (RESET)
      */
+
     function restart_vm(id, name) {
         confirm_message = interpolate(gettext("Are you sure restarting %s?"), [name])
         if (vm_confirm_popup(confirm_message, gettext("Restart"))) {
@@ -137,22 +141,23 @@ $(function() {
     /**
      * Manage VM State (RESUME)
      */
+
     function resume_vm(id, name) {
         manage_vm(id, "resume")
     }
     /**
      * Manage VM State generic
      */
+
     function manage_vm(id, state) {
         $.ajax({
             type: 'POST',
             data: '',
-            url: '/vm/'+state+'/'+id+'/',
-            success: function(data) {
-            }
+            url: '/vm/' + state + '/' + id + '/',
+            success: function(data) {}
         })
     }
-    $('#new-member').click(function(){
+    $('#new-member').click(function() {
         $('#new-member-form').toggle();
     })
 
@@ -416,8 +421,8 @@ $(function() {
          * Downloads the specified file (or folder zipped)
          */
         self.download = function(item) {
-            if(window.navigator.userAgent.indexOf('cloud-gui')>-1){
-                window.location.href = 'cloudfile:'+self.currentPath() + item.originalName;
+            if(window.navigator.userAgent.indexOf('cloud-gui') > -1) {
+                window.location.href = 'cloudfile:' + self.currentPath() + item.originalName;
                 return;
             }
             $.ajax({
@@ -478,7 +483,7 @@ $(function() {
             //$(e.target).parent().parent().parent().unbind('click');
             $(e.target).parent().parent().parent().find('.name').html('<input type="text" value="' + item.originalName + '" />\
 <input type="submit" value="Átnevezés" />');
-            $(e.target).parent().parent().parent().find('.name input').click(function(f){
+            $(e.target).parent().parent().parent().find('.name input').click(function(f) {
                 f.stopPropagation();
             })
             $(e.target).parent().parent().parent().find('.name input[type=submit]').click(function(e) {
@@ -490,7 +495,7 @@ $(function() {
                     url: '/ajax/store/rename',
                     dataType: 'json',
                     success: function(data) {
-                        loadFolder(self.currentPath(),true);
+                        loadFolder(self.currentPath(), true);
                     }
                 })
                 return false;
@@ -525,7 +530,7 @@ $(function() {
                 url: '/ajax/store/newFolder',
                 dataType: 'json',
                 success: function(data) {
-                    loadFolder(self.currentPath(),true);
+                    loadFolder(self.currentPath(), true);
                 }
             })
         });
