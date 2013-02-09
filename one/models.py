@@ -244,6 +244,16 @@ class Template(models.Model):
     state = models.CharField(max_length=10, choices=TEMPLATE_STATES, default='NEW')
     public = models.BooleanField(verbose_name=_('public'), default=False,
             help_text=_('If other users can derive templates of this one.'))
+    description = models.TextField(verbose_name=_('description'), blank=True)
+    system = models.TextField(verbose_name=_('operating system'), blank=True,
+            help_text=(_('Name of operating system in format like "%s".') %
+            "Ubuntu 12.04 LTS Desktop amd64"))
+
+    def os_type(self):
+        if self.access_type == 'rdp':
+            return "win"
+        else:
+            return "linux"
 
     def __unicode__(self):
         return self.name

@@ -49,7 +49,8 @@
         <div class="details-container">
             <ul>
                 <li class="name">{% trans "Hostname" %}: <span class="value">{{i.name}}</span></li>
-                <li class="os-linux">{% trans "System" %}: <span class="value">{{i.template.disk.name}}</span></li>
+                <li class="os-{{i.template.os_type}}">{% trans "System" %}: <span class="value">{{i.template.system}}</span></li>
+                <li class="tpl">{% trans "Template" %}: <span class="value">{{i.template.name}}</span></li>
                 <li class="type">{% trans "Size" %}: <span class="value">{{i.template.instance_type.name}}</span></li>
                 <li class="date">{% trans "Created at" %}: <span class="value">{{i.created_at}}</span></li>
                 <li class="date">{% trans "Expiration" %}: <span class="value"><abbr title="1 nap, 5 óra, 34 perc">1 nap</abbr></span></li>
