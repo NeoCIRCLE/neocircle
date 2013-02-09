@@ -85,7 +85,7 @@ class Course(models.Model):
         super(Course, self).save(*args, **kwargs)
 
     def __unicode__(self):
-        if self.short_name:
+        if self.name:
             return u"%s (%s)" % (self.code, self.name)
         else:
             return self.code
