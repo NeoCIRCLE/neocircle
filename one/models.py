@@ -429,6 +429,7 @@ class Instance(models.Model):
         host.mac = x.getElementsByTagName("MAC")[0].childNodes[0].nodeValue
         host.ipv4 = inst.ip
         host.pub_ipv4 = Vlan.objects.get(name=template.network.name).snat_ip
+        host.ipv6 = "auto"
         host.save()
         host.enable_net()
         host.add_port("tcp", inst.get_port(), {"rdp": 3389, "nx": 22, "ssh": 22}[inst.template.access_type])
