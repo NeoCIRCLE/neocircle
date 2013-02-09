@@ -3,14 +3,14 @@
 
 {% block js %}
 <script type="text/javascript">
-    {% if booting %}
+    {% if booting or state != 'ACTIVE' %}
     var timer=setInterval(function(){
         $.ajax({
             type: 'GET',
             dataType: 'json',
             url: '/ajax/vm/status/{{ id }}',
             success: function(data){
-                if(!data.booting){
+                if( !data.booting  && data.state == 'ACTIVE'){
                     window.location.reload();
                 }
             }
@@ -25,10 +25,10 @@
     <div class="contentblock" id="state">
         <h2>{{name}}</h2>
         <div class="content">
-            {% if state == "PENDING" or state == "ACTIVE" and booting %}
+        {% if state == "PENDING" or state == "ACTIVE" and booting %}
             <p style="font-size:25px; line-height:2em;text-align:center;">
                 <img src="/static/load-2.gif" />
-                Gép indítása..
+                {% trans "The machine is starting..." %}
             </p>
             <p style="font-size:25px; line-height:2em;text-align:center;">
                 <form action="{% url vm_delete id %}" method="post" onsubmit="return confirm('Biztosan törli a gépet?')">
@@ -39,17 +39,12 @@
                     <img src="/static/icons/Go-home.png" alt="&lt;-" />
                 </a>
             </p>
-            {% endif %}
-        {% if state == "ACTIVE" and not booting %}
-            {% if age < 15 %}
-                <p id="wait" style="font-size:25px; line-height:2em;text-align:center;">
-                <img src="/static/load-2.gif" />
-                Gép indítása...
-            </p>
-            <p id="connect" style="display:none; font-size:25px; line-height:2em;text-align:center;">
+
+        {% elif state == "ACTIVE" and not booting %}
+            <p id="connect" style="display:block; font-size:25px; line-height:2em;text-align:center;">
                 <a href="{{uri}}" class="button" onclick="return connectbutton();">
                     <img src="/static/load-1.gif" id="connecting" style="display:none;" />
-                    Csatlakozás
+                    {% trans "Connect" %}
                 </a>
             </p>
             <p style="font-size:25px; line-height:2em;text-align:center;">
@@ -61,12 +56,9 @@
                     <img src="/static/icons/Go-home.png" alt="&lt;-" />
                 </a>
             </p>
-            {% else %}
-            <p id="connect" style="font-size:25px; line-height:2em;text-align:center;">
-                <a href="{{uri}}" class="button" onclick="return connectbutton();">
-                    <img src="/static/load-1.gif" id="connecting" style="display:none;" />
-                    Csatlakozás
-                </a>
+        {% elif state == "STOPPED" %}
+            <p style="font-size:25px; line-height:2em;text-align:center;">
+            {% trans "The machine is stopped" %}
             </p>
             <p style="font-size:25px; line-height:2em;text-align:center;">
                 <form action="{% url vm_delete id %}" method="post" onsubmit="return confirm('Biztosan törli a gépet?')">
@@ -77,18 +69,21 @@
                     <img src="/static/icons/Go-home.png" alt="&lt;-" />
                 </a>
             </p>
-            {% endif %}
         {% endif %}
         {% if state == "DONE" %}
-            <p style="font-size:25px; line-height:2em;text-align:center;">A gép törölve van!</p>
+            <p style="font-size:25px; line-height:2em;text-align:center;">
+            {% trans "The machine deleted" %}
+            </p>
             <p style="font-size:25px; line-height:2em;text-align:center;">
                 <a href="/">
                     <img src="/static/icons/Go-home.png" alt="⌫" />
                 </a>
             </p>
-            {% endif %}
+        {% endif %}
         {% if state == "FAILED" %}
-            <p style="font-size:25px; line-height:2em;text-align:center;">Váratlan hiba lépett fel.</p>
+            <p style="font-size:25px; line-height:2em;text-align:center;">
+                {% trans "Unexpected error occured" %}
+            </p>
             <p style="font-size:25px; line-height:2em;text-align:center;">
                 <form action="{% url vm_delete id %}" method="post" onsubmit="return confirm('Biztosan törli a gépet?')">
                     {% csrf_token %}
@@ -99,7 +94,7 @@
                 </a>
             </p>
             {% endif %}
-        {% if state == "SUSPENDED" %}
+        {% if state == "STOPPPED" %}
             <p style="font-size:25px; line-height:2em;text-align:center;">
                 <a href="/vm/suspend/{{i.id}}/">
                     <img src="/static/icons/Media-playback-start.png" alt="&gt;" />
@@ -112,27 +107,27 @@
         </div>
     </div>
     <div class="contentblock" id="vm-credentials">
-        <h2>Bejelentkezési adatok</h2>
+        <h2>{% trans "Login credentials" %}</h2>
         <div class="content">
             <table>
                 <tr>
-                    <th>Protokoll:</th>
+                    <th>{% trans "Protocol" %}:</th>
                     <td>{{i.template.access_type|upper}}</td>
                 </tr>
                 <tr>
-                    <th>IP:</th>
+                    <th>{% trans "IP" %}:</th>
                     <td>{{ i.firewall_host.pub_ipv4}}</td>
                 </tr>
                 <tr>
-                    <th>Port:</th>
+                    <th>{% trans "Port" %}:</th>
                     <td>{{ i.get_port}}</td>
                 </tr>
                 <tr>
-                    <th>Felhasználónév:</th>
+                    <th>{% trans "Username" %}:</th>
                     <td>cloud</td>
                 </tr>
                 <tr>
-                    <th>Jelszó:</th>
+                    <th>{% trans "Password" %}:</th>
                     <td>{{ i.pw }}</td>
                 </tr>
             </table>
@@ -145,9 +140,9 @@
                 {% csrf_token %}
                 <table>
                     <tr>
-                        <th>Protokoll</th>
-                        <th>Külső port</th>
-                        <th colspan="2">Belső port</th>
+                        <th>{% trans "Protocol" %}</th>
+                        <th>{% trans "Public port" %}</th>
+                        <th colspan="2">{% trans "Private port" %}</th>
                     </tr>
                     {% for port in ports %}
                     <tr>
@@ -155,7 +150,7 @@
                         <td>{{port.public}}</td>
                         <td>{{port.private}}</td>
                         <td>
-                            <a href="/vm/port_del/{{i.id}}/{{port.proto}}/{{port.public}}/">Törlés</a>
+                            <a href="/vm/port_del/{{i.id}}/{{port.proto}}/{{port.public}}/">{% trans "Delete" %}</a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -173,7 +168,7 @@
                             <input style="min-width:70px;width:70px;" type="text" name="private"/>
                         </td>
                         <td>
-                            <input type="submit" value="Hozzáadás" />
+                            <input type="submit" style="min-width:3em" value="{% trans "Add" %}" />
                         </td>
                     </tr>
                 </table>
