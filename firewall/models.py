@@ -141,7 +141,7 @@ class Host(models.Model):
         super(Host, self).save(*args, **kwargs)
         if(id is None):
             Record(domain=self.vlan.domain, host=self, type='A', owner=self.owner).save()
-            if self.ipv6 == "auto":
+            if self.ipv6:
                 Record(domain=self.vlan.domain, host=self, type='AAAA', owner=self.owner).save()
 
     def enable_net(self):
