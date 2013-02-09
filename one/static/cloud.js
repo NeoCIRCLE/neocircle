@@ -37,6 +37,18 @@ $(function() {
         }
     }
     $('.wm .summary').unbind('click').click(toggleDetails);
+    $('.stop-vm-button').click(function() {
+        stop_vm($(this).data('id'), $(this).data('name'));
+    }); 
+    $('.resume-vm-button').click(function() {
+        manage_vm($(this).data('id'), "resume");
+    }); 
+    $('.delete-vm-button').click(function() {
+        delete_vm($(this).data('id'), $(this).data('name'));
+    }); 
+    $('.restart-vm-button').click(function() {
+        restart_vm($(this).data('id'), $(this).data('name'));
+    }); 
     $('#new-wm-button').click(function() {
         $('#modal').show();
         $('#modal-container').html($('#new-wm').html());
@@ -89,6 +101,58 @@ $(function() {
         $('#new-group-semester').change(updateSummary);
         $('#new-group-members').change(updateSummary);
     });
+   
+    /**
+     * Confirm pop-up window
+     */
+    function vm_confirm_popup(confirm_message, button_text) {
+        return confirm(confirm_message);
+    }
+    /**
+     * Manage VM State (STOP)
+     */
+    function stop_vm(id, name) {
+        confirm_message = interpolate(gettext("Are you sure stopping %s?"), [name])
+        if (vm_confirm_popup(confirm_message, gettext("Stop"))) {
+            manage_vm(id, "stop")
+        }
+    }
+    /**
+     * Manage VM State (DELETE)
+     */
+    function delete_vm(id, name) {
+        confirm_message = interpolate(gettext("Are you sure deleting %s?"), [name])
+        if (vm_confirm_popup(confirm_message, gettext("Delete"))) {
+            manage_vm(id, "delete")
+        }
+    }
+    /**
+     * Manage VM State (RESET)
+     */
+    function restart_vm(id, name) {
+        confirm_message = interpolate(gettext("Are you sure restarting %s?"), [name])
+        if (vm_confirm_popup(confirm_message, gettext("Restart"))) {
+            manage_vm(id, "restart")
+        }
+    }
+    /**
+     * Manage VM State (RESUME)
+     */
+    function resume_vm(id, name) {
+        manage_vm(id, "resume")
+    }
+    /**
+     * Manage VM State generic
+     */
+    function manage_vm(id, state) {
+        $.ajax({
+            type: 'POST',
+            data: '',
+            url: '/vm/'+state+'/'+id+'/',
+            success: function(data) {
+            }
+        })
+    }
 
     /**
      * Convert bytes to human readable format
