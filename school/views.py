@@ -147,6 +147,7 @@ def group_show(request, gid):
         'members': group.members.all()
         }))
 
+@login_required
 def group_new(request):
     name = request.POST['name']
     semester = Semester.objects.get(id=request.POST['semester'])
