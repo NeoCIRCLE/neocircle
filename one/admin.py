@@ -47,6 +47,7 @@ submit_vm.short_description = _('Submit VM')
 
 class TemplateAdmin(contrib.admin.ModelAdmin):
     model=models.Template
+    list_display = ('name', 'state', 'owner', 'system')
 
 class InstanceAdmin(contrib.admin.ModelAdmin):
     model=models.Instance

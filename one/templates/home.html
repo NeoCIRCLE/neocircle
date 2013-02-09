@@ -73,6 +73,9 @@
     <div class="contentblock" id="template">
         <h2>{% trans "My templates" %}</h2>
         <ul class="wm-list">
+            {% for t in mytemplates %}
+            <li class="wm">{{t.name}}</li>
+            {% endfor %}
             <li class="wm">
                 <div class="summary">
                     <div class="quota">

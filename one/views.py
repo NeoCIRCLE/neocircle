@@ -10,7 +10,6 @@ from django.core.mail import mail_managers, send_mail
 from django.db import transaction
 from django.forms import ModelForm, Textarea
 from django.http import Http404
-#from django_shibboleth.forms import BaseRegisterForm
 from django.shortcuts import render, render_to_response, get_object_or_404, redirect
 from django.template import RequestContext
 from django.template.loader import render_to_string
@@ -19,11 +18,14 @@ from django.utils.translation import get_language as lang
 from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.http import *
 from django.views.generic import *
+from firewall.tasks import *
 from one.models import *
 from school.models import *
 import django.contrib.auth as auth
-from firewall.tasks import *
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 class LoginView(View):
     def get(self, request, *args, **kwargs):
@@ -32,12 +34,12 @@ class LoginView(View):
             nex = request.GET['next']
         except:
             pass
-        return render_to_response("login.html", RequestContext(request,{'next': nex}))
+        return render_to_response("login.html", RequestContext(request, {'next': nex}))
     def post(self, request, *args, **kwargs):
         if request.POST['pw'] != 'ezmiez':
             return redirect('/')
         p, created = User.objects.get_or_create(username=request.POST['neptun'])
-	if created:
+        if created:
             p.set_unusable_password()
         if not p.email:
             p.email = "%s@nc.hszk.bme.hu" % p.username
@@ -70,29 +72,66 @@ def _list_instances(request):
 @require_GET
 @login_required
 def home(request):
-    return render_to_response("home.html", RequestContext(request,{
-        'templates': Template.objects.all(),
+    return render_to_response("home.html", RequestContext(request, {
+        'templates': Template.objects.filter(state='READY'),
+        'mytemplates': Template.objects.filter(owner=request.user),
         'instances': _list_instances(request),
         'groups': request.user.person_set.all()[0].owned_groups.all(),
         'semesters': Semester.objects.all()
         }))
 
-@require_GET
+def ajax_template_name_unique(request, name):
+    s = "True"
+    if Template.objects.filter(name=name).exists():
+        s = "False"
+    return HttpResponse(s)
+
+class AjaxTemplateWizard(View):
+    def get(self, request, *args, **kwargs):
+        return render_to_response('new-template-flow-1.html', RequestContext(request,{
+            'templates': Template.objects.filter(public=True)
+                # + Template.objects.filter(owner=request.user),
+            }))
+    def post(self, request, *args, **kwargs):
+        base = get_object_or_404(Template, id=request.POST['base'])
+        if base.owner != request.user and not base.public and not request.user.is_superuser:
+            raise PermissionDenied()
+        return render_to_response('new-template-flow.html', RequestContext(request, {
+            'sizes': InstanceType.objects.all(),
+            'base': base,
+            }))
+ajax_template_wizard = login_required(AjaxTemplateWizard.as_view())
+
+@require_POST
 @login_required
-def ajax_template_wizard(request):
-    return render_to_response('new-template-flow.html', RequestContext(request,{
-        'templates': Template.objects.all(),
-        }))
+def vm_saveas(request, vmid):
+    inst = get_object_or_404(Instance, pk=vmid)
+    if inst.owner != request.user and not request.user.is_superuser:
+        raise PermissionDenied()
+    inst.save_as()
+    messages.success(request, _("Template is being saved..."))
+    return redirect(inst)
+
 
 @require_POST
 @login_required
 def vm_new(request, template):
-    m = get_object_or_404(Template, pk=template)
+    base = get_object_or_404(Template, pk=template)
+    if "name" in request.POST:
+        if base.owner != request.user and not base.public and not request.user.is_superuser:
+            raise PermissionDenied()
+        name = request.POST['name']
+        t = Template.objects.create(name=name, disk=base.disk, instance_type_id=request.POST['size'], network=base.network, owner=request.user)
+        t.access_type = base.access_type
+        t.description = request.POST['description']
+        t.system = base.system
+        t.save()
+        base = t
     try:
-        i = Instance.submit(m, request.user)
+        i = Instance.submit(base, request.user, extra="<RECONTEXT>YES</RECONTEXT>")
         return redirect(i)
-    except:
-        raise
+    except Exception as e:
+        logger.error('Failed to create virtual machine.' + unicode(e))
         messages.error(request, _('Failed to create virtual machine.'))
         return redirect('/')
 
@@ -111,6 +150,8 @@ vm_list = login_required(VmListView.as_view())
 def vm_show(request, iid):
     inst = get_object_or_404(Instance, id=iid, owner=request.user)
     inst.update_state()
+    if inst.template.state == "SAVING":
+        inst.check_if_is_save_as_done()
     return render_to_response("show.html", RequestContext(request,{
         'uri': inst.get_connect_uri(),
         'state': inst.state,
@@ -188,7 +229,7 @@ class VmDeleteView(View):
 
     def get(self, request, iid, *args, **kwargs):
         i = get_object_or_404(Instance, id=iid, owner=request.user)
-        return render_to_response("confirm_delete.html", RequestContext(request,{
+        return render_to_response("confirm_delete.html", RequestContext(request, {
             'i': i}))
 
 vm_delete = login_required(VmDeleteView.as_view())

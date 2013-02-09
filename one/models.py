@@ -122,10 +122,11 @@ class SshKey(models.Model):
 TEMPLATE_STATES = (("INIT", _('init')), ("PREP", _('perparing')), ("SAVE", _('saving')), ("READY", _('ready')))
 
 
-TYPES = {"LAB": {"verbose_name": _('lab'),         "suspend": td(hours=5),  "delete": td(days=15)},
-         "PROJECT": {"verbose_name": _('project'), "suspend": td(weeks=5),  "delete": td(days=366/2)},
-         "SERVER": {"verbose_name": _('server'),   "suspend": td(days=365), "delete": None},
+TYPES = {"LAB": {"verbose_name": _('lab'),         "id": "LAB",     "suspend": td(hours=5),  "delete": td(days=15),    "help_text": _('For lab or home work with short life time.')},
+         "PROJECT": {"verbose_name": _('project'), "id": "PROJECT", "suspend": td(weeks=5),  "delete": td(days=366/2), "help_text": _('For project work.')},
+         "SERVER": {"verbose_name": _('server'),   "id": "SERVER",  "suspend": td(days=365), "delete": None,           "help_text": _('For long term server use.')},
          }
+TYPES_L = sorted(TYPES.values(), key=lambda m: m["suspend"])
 TYPES_C = tuple([(i[0], i[1]["verbose_name"]) for i in TYPES.items()])
 class Share(models.Model):
     name = models.CharField(max_length=100, unique=True, verbose_name=_('name'))
@@ -222,10 +223,14 @@ class InstanceType(models.Model):
             verbose_name=_('name'))
     CPU = models.IntegerField(help_text=_('CPU cores.'))
     RAM = models.IntegerField(help_text=_('Mebibytes of memory.'))
+    credit = models.IntegerField(verbose_name=_('credits'),
+            help_text=_('Price of instance.'))
     def __unicode__(self):
         return u"%s" % self.name
+    class Meta:
+        ordering = ['credit']
 
-TEMPLATE_STATES = (('NEW', _('new')), ('PREPARING', _('preparing')),
+TEMPLATE_STATES = (('NEW', _('new')), 
                    ('SAVING', _('saving')), ('READY', _('ready')), )
 """
 Virtual machine template specifying OS, disk, type and network.
@@ -455,7 +460,8 @@ class Instance(models.Model):
         proc = subprocess.Popen(["/opt/occi.sh", "compute",
                "delete", "%d"%self.one_id], stdout=subprocess.PIPE)
         (out, err) = proc.communicate()
-        self.firewall_host.delete()
+        if self.firewall_host:
+            self.firewall_host.delete()
         reload_firewall_lock()
 
     def _update_vm(self, template):
@@ -499,7 +505,10 @@ class Instance(models.Model):
         imgname = "template-%d-%d" % (self.template.id, self.id)
         self._update_vm('<DISK id="0"><SAVE_AS name="%s"/></DISK>' % imgname)
         self._change_state("SHUTDOWN")
-    def is_save_as_done(self):
+        t = self.template
+        t.state = 'SAVING'
+        t.save()
+    def check_if_is_save_as_done(self):
         self.update_state()
         if self.state != 'DONE':
             return false
@@ -509,9 +518,9 @@ class Instance(models.Model):
         if len(disks) != 1:
             return false
         self.template.disk_id = disks[0].id
-        self.template.status = 'READY'
+        self.template.state = 'READY'
         self.template.save()
-        self.host.delete()
+        self.firewall_host.delete()
         return True
 
 
@@ -523,7 +532,7 @@ def delete_instance(sender, instance, using, **kwargs):
     if instance.state != "DONE":
         instance.one_delete()
     try:
-        instance.host.delete()
+        instance.firewall_host.delete()
     except:
         pass
 post_delete.connect(delete_instance, sender=Instance, dispatch_uid="delete_instance")

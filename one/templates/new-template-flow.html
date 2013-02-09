@@ -1,88 +1,7 @@
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
-<form action="/" method="post" id="template-wizard">
-    <div id="new-template-step-1" class="wizard">
-        <div class="progress">
-            <div class="bar-container">
-                <div class="bar" style="width: 33%"></div>
-            </div>
-            <h3>{% blocktrans with step=1 all=3 %}{{step}}/{{all}}{% endblocktrans %}</h3>
-        </div>
-        <h2>{% blocktrans with step=1 %}Step {{step}}{% endblocktrans %}</h2>
-        <p>Leírás, mit is kéne itt ezen az ablakon csinálni, és miért jó, ha azt csinálja, amit.</p>
-        <div class="container">
-            <ul class="wm-list modal">
-                {% for m in templates %}
-                <li class="wm">
-                    <form method="POST" action="/vm/new/{{m.pk}}/">{% csrf_token %}
-                        <div class="summary">
-                            <div class="name wm-on">{{m.name}}</div>
-                            <div class="status">
-                                <input type="submit" value="Indítás"/>
-                            </div>
-                            <div class="clear"></div>
-                        </div>
-                        <div class="details">
-                            <h3>
-                                {% trans "Details" %}
-                            </h3>
-                            <ul>
-                                <li class="name">{% trans "System" %}: <span class="value">{{m.disk.name}}</span></li>
-                                <li class="type">{% trans "Size" %}: <span class="value">{{m.instance_type.name}}</span></li>
-                                <li class="memory">{% trans "Memory" %}: <span class="value">{{m.instance_type.RAM}} MiB</span></li>
-                                <li class="cpu">{% trans "CPU cores" %}: <span class="value">{{m.instance_type.CPU}}</span></li>
-                            </ul>
-                        </div>
-                    </form>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-        <nav>
-            <a href="#" class="prev">{% trans "&laquo; Cancel" %}</a>
-            <a href="#" class="next">{% trans "Next &raquo;" %}</a>
-            <div class="clear"></div>
-        </nav>
-        <script type="text/javascript">
-            $(function(){
-
-                    console.log('foo');
-                $('#modal .wm .summary').each(function(){
-
-                    $(this).next('.details').show();
-                    console.log($(this).next('.details').css('display'), $(this).next('.details').css('height'));
-                    //this.originalHeight=parseInt($(this).next('.details').css('height'));
-                })
-                $('#modal .wm .summary').click(function(){
-                    if($(this).next('.details').is(':hidden')){
-                        $(this).next('.details')
-                            .slideDown(700);
-                        $(this).parent('.wm').addClass('opened');
-                    } else {
-                        var that=this;
-                        $(this).next('.details')
-                            .removeClass('opened')
-                            .slideUp(700);
-                }
-            });
-                $('#new-template-step-1 nav .prev').click(function(){
-                    $('#new-template-step-1').hide();
-                    $('#new-template-step-1').show();
-                })
-                $('#new-template-step-1 nav .next').click(function(){
-                    $('#new-template-step-1').hide();
-                    $('#new-template-step-3').show();
-                    $.ajax({
-                        'type': 'POST',
-                        'url': '/ajax/templateWizard',
-                        'data': $('#template-wizard').serialize()
-                    })
-                    .done(function(){ console.log('ok')});
-                })
-            })
-        </script>
-    </div>
-    <div id="new-template-step-2" class="wizard" style="display: none">
+<form action="/vm/new/{{base.id}}/" method="post" id="template-wizard">{% csrf_token %}
+    <div id="new-template-step-2" class="wizard">
         <div class="progress">
             <div class="bar-container">
                 <div class="bar" style="width: 66%"></div>
@@ -90,69 +9,77 @@
             <h3>{% blocktrans with step=2 all=3 %}{{step}}/{{all}}{% endblocktrans %}</h3>
         </div>
         <h2>{% blocktrans with step=2 %}Step {{step}}{% endblocktrans %}</h2>
-        <p>Leírás, mit is kéne itt ezen az ablakon csinálni, és miért jó, ha azt csinálja, amit.</p>
+        <p>{% trans "Change the parameters as needed." %}</p>
         <ul>
             <li>
             <label for="new-template-name">{% trans "Name" %}</label>
-                <input type="text" placeholder="{% trans "Short name of template" %}" name="name" id="new-template-name" />
+                <input type="text" name="name" id="new-template-name" value="{{base.name}}"
+                class="error validated" title="{% trans "Please choose a different name." %}" />
                 <div class="clear"></div>
             </li>
-            <li>
-            <label for="new-template-type">{% trans "Type" %}</label>
-                <ul class="radio">
-                    <li>
-                        <input type="radio" name="type" value="labor" id="new-template-type-labor" />
-                        <label for="new-template-type-labor">{% trans "Lab" %}</label>
-                    </li>
-                    <li>
-                        <input type="radio" name="type" value="project" id="new-template-type-project" />
-                        <label for="new-template-type-project">{% trans "Project" %}</label>
-                    </li>
-                </ul>
-                <div class="clear"></div>
-            </li>
-            <li>
+            <li class="new-tpl-size">
                 <label for="new-template-size">{% trans "Size" %}</label>
                 <ul class="radio">
+                    {% for s in sizes %}
                     <li>
-                        <input type="radio" name="size" value="small" id="new-template-size-small" />
-                        <label for="new-template-size-small">Kicsi</label>
+                        <label>
+                            <input type="radio" name="size" value="{{s.id}}" id="new-template-size-{{s.id}}"
+                            {% if s == base.instance_type %}checked="checked"{% endif %} />
+                            {{s.name}}
+                        </label>
                     </li>
-                    <li>
-                        <input type="radio" name="size" value="medium" id="new-template-size-medium" />
-                        <label for="new-template-size-medium">Közepes</label>
-                    </li>
-                    <li>
-                        <input type="radio" name="size" value="large" id="new-template-size-large" />
-                        <label for="new-template-size-large">Nagy</label>
-                    </li>
+                    {% endfor %}
                 </ul>
+                {% for s in sizes %}
+                <p id="new-template-size-summary-{{s.id}}" class="size-summary clear"
+                {% if s != base.instance_type %}style="display:none"{% endif %}>
+                    <span class="cpu">{% blocktrans count n=s.CPU %}{{n}} core{% plural %}{{n}} cores{% endblocktrans %}</span>
+                    <span class="memory">{{s.RAM}} MiB</span>
+                    <span class="credit">{{s.credit}}</span>
+                </p>
+                {% endfor %}
                 <div class="clear"></div>
             </li>
             <li style="border: none">
                 <label for="new-template-description">{% trans "Description" %}</label>
-                <textarea name="description" id="new-template-description" placeholder="{% trans "Comments about the template" %}"></textarea>
+                <textarea name="description" id="new-template-description" style="text-align: left">{{base.description}}</textarea>
                 <div class="clear"></div>
             </li>
         </ul>
         <nav>
             <a href="#" class="prev">{% trans "&laquo; Cancel" %}</a>
-            <a href="#" class="next">{% trans "Next &raquo;" %}</a>
+            <input type="submit" value="{% trans "Launch" %}" />
             <div class="clear"></div>
         </nav>
         <script type="text/javascript">
             $(function(){
-                $('#new-template-step-1 nav .next').click(function(){
-                    $('#new-template-step-1').hide();
-                    $('#new-template-step-2').show();
-                })
-                $('#new-template-step-1 nav .prev').click(function(){
+                $('#new-template-step-2 nav .prev').click(function(){
                     $('#modal').hide();
                 })
+                $(".new-tpl-size input[name='size']").click(function(e){
+                    var v = $(".new-tpl-size input[name='size']:checked").val();
+                    $("p.size-summary").hide();
+                    $("#new-template-size-summary-" + v).show();
+                });
+                $("#new-template-name").change(function(e){
+                    var s = $(this).val();
+                    $.ajax({
+                        'type': 'GET',
+                        'url': '/ajax/template_name_unique/' + s,
+                        'success': function(data, b, c) {
+                            if (s != $("#new-template-name").val()) {
+                                return True;
+                            }
+                            if (data == "True") {
+                                $('#new-template-name').removeClass("error");
+                            }
+                            else {
+                                $('#new-template-name').addClass("error");
+                            }
+                        }
+                    });
+                });
             })
         </script>
-    </div>
-    <div id="new-template-step-3" class="wizard" style="display: none">
-
     </div>
 </form>
