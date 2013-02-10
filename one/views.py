@@ -77,7 +77,8 @@ def home(request):
         'mytemplates': Template.objects.filter(owner=request.user),
         'instances': _list_instances(request),
         'groups': request.user.person_set.all()[0].owned_groups.all(),
-        'semesters': Semester.objects.all()
+        'semesters': Semester.objects.all(),
+        'userdetails': UserCloudDetails.objects.get(user=request.user),
         }))
 
 def ajax_template_name_unique(request, name):

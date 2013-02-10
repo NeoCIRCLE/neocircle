@@ -68,6 +68,15 @@ class UserCloudDetails(models.Model):
     def reset_smb(self):
         self.smb_password = pwgen()
 
+    def get_weighted_instance_count(self):
+        c = 0
+        for i in self.user.instance_set.all():
+            if i.state in ('ACTIVE', 'PENDING', ):
+                c = c + i.template.instance_type.credit
+        return c
+    def get_instance_pc(self):
+        return 100*self.get_weighted_instance_count()/self.instance_quota
+
 def set_quota(sender, instance, created, **kwargs):
     if not StoreApi.userexist(instance.user.username):
         try:
