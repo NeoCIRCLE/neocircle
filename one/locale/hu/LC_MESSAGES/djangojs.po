@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-02-09 20:16+0100\n"
+"POT-Creation-Date: 2013-02-10 01:31+0100\n"
 "PO-Revision-Date: 2013-02-09 21:12+0100\n"
 "Last-Translator: \n"
 "Language-Team: Hungarian <kde-l10n-hu@kde.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "X-Generator: Lokalize 1.4\n"
 
-#: static/cloud.js:111 static/cloud.js.c:511
+#: static/cloud.js:111 static/cloud.js.c:518
 msgid "Cancel"
 msgstr "Mégsem"
 
@@ -35,7 +35,7 @@ msgstr "Felfüggesztés"
 msgid "Are you sure deleting %s?"
 msgstr "Biztosan törli a következőt: %s?"
 
-#: static/cloud.js:136 static/cloud.js.c:209 static/cloud.js.c:511
+#: static/cloud.js:136 static/cloud.js.c:216 static/cloud.js.c:518
 msgid "Delete"
 msgstr "Törlés"
 
@@ -48,36 +48,34 @@ msgstr "Biztosan újraindítja a következőt: %s?"
 msgid "Restart"
 msgstr "Újraindítás"
 
-#: static/cloud.js:209
+#: static/cloud.js:216
 #, c-format
 msgid "Are you sure deleting <strong>%s</strong>"
 msgstr "Törli a következő fájlt: <strong>%s</strong>"
 
-#: static/cloud.js:333 static/cloud.js.c:342 static/cloud.js.c:351
-#: static/cloud.js:452 static/cloud.js.c:505
+#: static/cloud.js:340 static/cloud.js.c:349 static/cloud.js.c:358
+#: static/cloud.js:459 static/cloud.js.c:512
 msgid "file"
 msgstr "fájl"
 
-#: static/cloud.js:506
+#: static/cloud.js:513
 #, c-format
 msgid "You are removing the file <strong>%s</strong>."
 msgstr "Törli a következő fájlt: <strong>%s</strong>."
 
-#: static/cloud.js:508
+#: static/cloud.js:515
 #, c-format
 msgid "You are removing the folder <strong>%s</strong> (and its content)."
 msgstr "Törli a következő könyvtárat és tartalmát: <strong>%s</strong>."
 
-#: static/cloud.js:511
+#: static/cloud.js:518
 msgid "Are you sure?"
 msgstr "Biztos benne?"
 
-#: static/cloud.js:663 static/cloud.js.c:665
+#: static/cloud.js:670 static/cloud.js.c:672
 msgid "Upload"
 msgstr "Feltöltés"
 
-#: static/cloud.js:665
+#: static/cloud.js:672
 msgid "done, processing..."
 msgstr "kész, feldolgozás..."
-
-
