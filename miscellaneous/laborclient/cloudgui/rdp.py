@@ -53,8 +53,11 @@ class RDP:
         rdp_command = ["rdesktop", "-khu", "-E", "-P", "-0", "-f", "-u", self.username, "-p", self.password, self.host+":"+self.port]
         try:
             proc = subprocess.check_call(rdp_command, stdout = subprocess.PIPE)
-        except:
-            self.dialog_box("Unable to connect to host: "+self.host+" at port "+self.port)
+        except subprocess.CalledProcessError as e:
+            if e.returncode != 1:
+                print e
+                print e.returncode
+                self.dialog_box("Unable to connect to host: "+self.host+" at port "+self.port)
 
     def connect_nx(self):
         #Generate temproary config

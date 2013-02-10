@@ -135,8 +135,7 @@ class Browser:
         try:
             scheme, rest = uri.split(":", 1)
             if scheme == "nx" or scheme == "rdp" or scheme == "sshterm":
-                connection = rdp.RDP(uri)
-                Process(target=connection.connect).start()
+                subprocess.Popen(["/usr/local/bin/rdp",uri])
                 return True
             elif scheme == "cloudfile":
                 file_path = os.path.normpath(rest)
@@ -153,7 +152,7 @@ class Browser:
         try:
             os.makedirs(self.folder)
         except:
-            print "Error"
+            pass
         result = subprocess.call(['/usr/bin/sshfs', '-o', 'IdentityFile='+self.private_key_file+',StrictHostKeyChecking=no', neptun+"@"+host+":home", self.folder])
         #print result
     def umount_sshfs_folder(self):
