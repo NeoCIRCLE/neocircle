@@ -484,7 +484,13 @@ $(function() {
                         break;
                     }
                 }
-                var extension=d.NAME.match(/\.\w+$/)[0].substr(1);
+                var extension;
+                try {
+                    extension=d.NAME.match(/\.\w+$/)[0].substr(1);
+                }
+                catch (ex) {
+                    extension='N/A';
+                }
                 viewData = {
                     originalName: d.NAME,
                     originalSize: d.SIZE,
