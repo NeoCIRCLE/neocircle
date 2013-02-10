@@ -326,7 +326,7 @@ class Instance(models.Model):
     def get_port(self):
         proto = self.template.access_type
         if self.template.network.nat:
-            return {"rdp": 23000, "nx": 22000, "ssh": 22000}[proto] + int(self.ip.split('.')[3])
+            return {"rdp": 23000, "nx": 22000, "ssh": 22000}[proto] + int(self.ip.split('.')[2]) * 256 + int(self.ip.split('.')[3])
         else:
             return {"rdp": 3389, "nx": 22, "ssh": 22}[proto]
     """
