@@ -135,7 +135,7 @@ $(function() {
      */
 
     function stop_vm(id, name) {
-        confirm_message = interpolate(gettext("Are you sure stopping %s?"), [name])
+        confirm_message = interpolate(gettext("Are you sure stopping %s?"), ["<strong>"+name+"</strong>"])
         vm_confirm_popup(confirm_message, gettext("Stop"), function() {
             manage_vm(id, "stop")
         });
@@ -145,7 +145,7 @@ $(function() {
      */
 
     function delete_vm(id, name) {
-        confirm_message = interpolate(gettext("Are you sure deleting %s?"), [name])
+        confirm_message = interpolate(gettext("Are you sure deleting %s?"), ["<strong>"+name+"</strong>"])
         vm_confirm_popup(confirm_message, gettext("Delete"), function() {
             manage_vm(id, "delete")
         })
@@ -155,7 +155,7 @@ $(function() {
      */
 
     function restart_vm(id, name) {
-        confirm_message = interpolate(gettext("Are you sure restarting %s?"), [name])
+        confirm_message = interpolate(gettext("Are you sure restarting %s?"), ["<strong>"+name+"</strong>"])
         vm_confirm_popup(confirm_message, gettext("Restart"), function() {
             manage_vm(id, "restart")
         })
@@ -190,7 +190,7 @@ $(function() {
      * Template delete
      */
     function delete_template_confirm(id, name) {
-        confirm_message = interpolate(gettext("Are you sure deleting this %s template?"), [name])
+        confirm_message = interpolate(gettext("Are you sure deleting this %s template?"), ["<strong>"+name+"</strong>"])
         vm_confirm_popup(confirm_message, gettext("Delete"), function() {
             delete_template(id)
         })
