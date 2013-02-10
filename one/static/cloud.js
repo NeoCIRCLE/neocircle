@@ -527,7 +527,8 @@ $(function() {
         /**
          * Downloads the specified file (or folder zipped)
          */
-        self.download = function(item) {
+        self.download = function(item, ev) {
+            ev.stopPropagation(); ev.preventDefault();
             if(window.navigator.userAgent.indexOf('cloud-gui') > -1) {
                 window.location.href = 'cloudfile:' + self.currentPath() + item.originalName;
                 return;
@@ -546,7 +547,8 @@ $(function() {
         /**
          * Deletes the specified file (or folder)
          */
-        self.delete = function(item) {
+        self.delete = function(item, ev) {
+            ev.stopPropagation(); ev.preventDefault();
             $('#modal').show();
             s = "";
             if(item.type == gettext('file')) {
@@ -577,10 +579,10 @@ $(function() {
          * Renames the specified file
          */
         self.rename = function(item, e) {
-            e.stopPropagation();
+            e.stopPropagation(); e.preventDefault();
             var oldName = $(e.target).parent().parent().parent().find('.name').html();
             $(e.target).parent().unbind('click').click(function(f) {
-                f.stopPropagation();
+                f.stopPropagation(); f.preventDefault();
                 $(e.target).parent().parent().parent().find('.name').html(oldName);
                 $(e.target).parent().click(function(g) {
                     g.stopPropagation();
