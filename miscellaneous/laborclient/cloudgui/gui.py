@@ -154,7 +154,7 @@ class Browser:
             os.makedirs(self.folder, 0644)
         except:
             pass
-        result = subprocess.call(['/usr/bin/sshfs', '-o', 'IdentityFile='+self.private_key_file, neptun+"@"+host+":home", self.folder])
+        result = subprocess.call(['/usr/bin/sshfs', '-o', 'IdentityFile='+self.private_key_file+',StrictHostKeyChecking=no', neptun+"@"+host+":home", self.folder])
         #print result
     def umount_sshfs_folder(self):
         try:
