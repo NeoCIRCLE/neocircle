@@ -2,7 +2,7 @@
 {% get_current_language as LANGUAGE_CODE %}
 {% if instances %}
 {% for i in instances %}
-<li class="wm">
+<li class="wm {% if id == i.id %}opened{% endif %}">
 <div class="summary {% if id == i.id %}selected-summary{% endif %} {% if i.template.state == "NEW" %}unfinished{% endif %}">
         <!--<div class="id"></div>-->
         <div class="name {% if i.state == 'ACTIVE' %}wm-on{% else %}wm-off{% endif %}">
@@ -45,7 +45,7 @@
         </div>
         <div class="clear"></div>
     </div>
-    <div class="details">
+    <div class="details" {% if id == i.id %}style="display: block;"{% endif %}>
         <div class="details-container">
             <ul>
                 <li class="name">{% trans "Hostname" %}: <span class="value">{{i.name}}</span><div class="clear"></div></li>
