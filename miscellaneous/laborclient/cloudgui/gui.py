@@ -151,9 +151,9 @@ class Browser:
         neptun = self.params["neptun"]
         host = self.params["host"]
         try:
-            os.makedirs(self.folder, 0644)
+            os.makedirs(self.folder)
         except:
-            pass
+            print "Error"
         result = subprocess.call(['/usr/bin/sshfs', '-o', 'IdentityFile='+self.private_key_file+',StrictHostKeyChecking=no', neptun+"@"+host+":home", self.folder])
         #print result
     def umount_sshfs_folder(self):

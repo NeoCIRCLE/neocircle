@@ -5,9 +5,11 @@ import subprocess
 import os
 import sys
 import gtk
+import gobject
 
 class RDP:
     def __init__(self, uri):
+        gobject.threads_init()
         self.scheme, self.username, self.password, self.host, self.port = uri.split(':',4)
     def dialog_box(self,text):
       #  Window = gtk.Window()
