@@ -13,7 +13,7 @@
         </div>
         <div class="actions">
             {% if i.state == 'ACTIVE' %}
-            <a href="{{i.get_connect_uri}}" title="{% trans "Connect" %}">
+            <a href="{{i.get_connect_uri}}" class="connect-vm-button" title="{% trans "Connect" %}">
                 <img src="/static/icons/plug.png" alt="{% trans "Connect" %}" />
             </a>
             <a href="#"  class="stop-vm-button" data-name="{{ i.name}}" data-id="{{ i.id }}" title="{% trans "Pause" %}">

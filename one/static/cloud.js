@@ -41,6 +41,9 @@ $(function() {
         delete_template_confirm($(this).data('id'), $(this).data('name'));
     });
     $('.wm .summary').unbind('click').click(toggleDetails);
+    $('.connect-vm-button').click(function(e) {
+        e.stopPropagation();
+    });
     $('.stop-vm-button').click(function(e) {
         e.preventDefault(); e.stopPropagation();
         stop_vm($(this).data('id'), $(this).data('name'));
