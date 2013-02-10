@@ -168,6 +168,10 @@ def vm_show(request, iid):
     inst.update_state()
     if inst.template.state == "SAVING":
         inst.check_if_is_save_as_done()
+    try:
+        ports = inst.firewall_host.list_ports()
+    except:
+        ports = None
     return render_to_response("show.html", RequestContext(request,{
         'uri': inst.get_connect_uri(),
         'state': inst.state,
@@ -177,7 +181,7 @@ def vm_show(request, iid):
         'instances': _list_instances(request),
         'i': inst,
         'booting' : not inst.active_since,
-        'ports': inst.firewall_host.list_ports()
+        'ports': ports,
         }))
 
 @require_safe

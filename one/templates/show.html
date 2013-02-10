@@ -116,6 +116,7 @@
             </table>
         </div>
     </div>
+    {% if i.firewall_host %}
     <div class="contentblock" id="ports">
         <h2>{% trans "Port administration" %}</h2>
         <div class="content">
@@ -158,6 +159,7 @@
             </form>
         </div>
     </div>
+    {% endif %}
 </div>
 <div class="boxes">
     <div class="contentblock" id="vm-list">
