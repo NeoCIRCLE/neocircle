@@ -365,8 +365,7 @@ class Instance(models.Model):
 
         if not self.one_id:
             return
-        proc = subprocess.Popen(["/opt/occi.sh",
-        "compute", "show",
+        proc = subprocess.Popen(["/opt/occi.sh", "compute", "show",
         "%d"%self.one_id], stdout=subprocess.PIPE)
         (out, err) = proc.communicate()
         x = None
@@ -379,6 +378,8 @@ class Instance(models.Model):
         except:
             self.state = 'UNKNOWN'
         self.save()
+        if self.template.state == 'SAVING':
+            self.check_if_is_save_as_done()
         return x
 
     """
@@ -471,7 +472,13 @@ class Instance(models.Model):
         host.ipv4 = inst.ip
         host.pub_ipv4 = Vlan.objects.get(name=template.network.name).snat_ip
         host.ipv6 = "auto"
-        host.save()
+        try:
+            host.save()
+        except:
+            for i in Host.objects.filter(ipv4=host.ipv4).all():
+                logger.warning('Delete orphan fw host (%s) of %s.' % (i, inst))
+                i.delete()
+            host.save()
         host.enable_net()
         host.add_port("tcp", inst.get_port(), {"rdp": 3389, "nx": 22, "ssh": 22}[inst.template.access_type])
         inst.firewall_host=host
@@ -486,8 +493,14 @@ class Instance(models.Model):
         proc = subprocess.Popen(["/opt/occi.sh", "compute",
                "delete", "%d"%self.one_id], stdout=subprocess.PIPE)
         (out, err) = proc.communicate()
+        self.firewall_host_delete()
+
+    def firewall_host_delete(self):
         if self.firewall_host:
-            self.firewall_host.delete()
+            h = self.firewall_host
+            self.firewall_host = None
+            self.save()
+            h.delete()
         reload_firewall_lock()
 
     def _update_vm(self, template):
@@ -535,7 +548,6 @@ class Instance(models.Model):
         t.state = 'SAVING'
         t.save()
     def check_if_is_save_as_done(self):
-        self.update_state()
         if self.state != 'DONE':
             return False
         Disk.update()
@@ -546,7 +558,7 @@ class Instance(models.Model):
         self.template.disk_id = disks[0].id
         self.template.state = 'READY'
         self.template.save()
-        self.firewall_host.delete()
+        self.firewall_host_delete()
         return True
 
 
@@ -558,7 +570,7 @@ def delete_instance(sender, instance, using, **kwargs):
     if instance.state != "DONE":
         instance.one_delete()
     try:
-        instance.firewall_host.delete()
+        instance.firewall_host_delete()
     except:
         pass
 post_delete.connect(delete_instance, sender=Instance, dispatch_uid="delete_instance")
