@@ -94,7 +94,7 @@ def ajax_template_delete(request):
         return HttpResponse(unicode(_("Template is still shared.")), status=404)
     else:
         template.safe_delete()
-        return HttpResponse(unicode(_("Template succesfully deleted.")))
+        return HttpResponse(unicode(_("Template successfully deleted.")))
 
 def ajax_template_name_unique(request, name):
     s = "True"

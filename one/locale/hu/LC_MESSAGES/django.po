@@ -7,10 +7,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-02-10 14:24+0100\n"
-"PO-Revision-Date: 2013-02-10 01:33+0100\n"
+"POT-Creation-Date: 2013-02-10 14:28+0100\n"
+"PO-Revision-Date: 2013-02-10 14:29+0100\n"
 "Last-Translator: \n"
-"Language-Team: Hungarian <kde-l10n-hu@kde.org>\n"
+"Language-Team: Hungarian <cloud@ik.bme.hu>\n"
 "Language: hu\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -320,24 +320,20 @@ msgid "instances"
 msgstr "példányok"
 
 #: views.py:89
-#, fuzzy
 msgid "Invalid template ID."
-msgstr "Elérhető sablonok"
+msgstr "Nincs ilyen sablon."
 
 #: views.py:92
-#, fuzzy
 msgid "There are running instances of this template."
-msgstr "Nincs elérhető sablon."
+msgstr "A sablonnak még vannak futó példányai."
 
 #: views.py:94
-#, fuzzy
 msgid "Template is still shared."
-msgstr "A sablon mentése folyamatban van…"
+msgstr "A sablon még meg van osztva."
 
 #: views.py:97
-#, fuzzy
-msgid "Template succesfully deleted."
-msgstr "A virtuális gép törlése sikeres."
+msgid "Template successfully deleted."
+msgstr "A sablon törlése sikeres."
 
 #: views.py:128
 msgid "Template is being saved..."
