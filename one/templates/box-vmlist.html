@@ -48,12 +48,21 @@
     <div class="details">
         <div class="details-container">
             <ul>
-                <li class="name">{% trans "Hostname" %}: <span class="value">{{i.name}}</span></li>
-                <li class="os-{{i.template.os_type}}">{% trans "System" %}: <span class="value">{{i.template.system}}</span></li>
-                <li class="tpl">{% trans "Template" %}: <span class="value">{{i.template.name}}</span></li>
-                <li class="type">{% trans "Size" %}: <span class="value">{{i.template.instance_type.name}}</span></li>
+                <li class="name">{% trans "Hostname" %}: <span class="value">{{i.name}}</span><div class="clear"></div></li>
+                <li class="os-{{i.template.os_type}}">{% trans "System" %}: <span class="value">{{i.template.system}}</span><div class="clear"></div></li>
+                <li class="template">{% trans "Template" %}: <span class="value">{{i.template.name}}</span><div class="clear"></div></li>
+                <li class="type">{% trans "Size" %}: <span class="value">{{i.template.instance_type.name}}:
+                    <span class="cpu">{{i.template.instance_type.CPU}}</span>
+                    <span class="memory">{{i.template.instance_type.RAM}}</span>
+                    <span class="credit">{{i.template.instance_type.credit}}</span>
+                </span></li>
                 <li class="date">{% trans "Created at" %}: <span class="value">{{i.created_at}}</span></li>
-                <li class="date">{% trans "Expiration" %}: <span class="value"><abbr title="1 nap, 5 óra, 34 perc">1 nap</abbr></span></li>
+                {% if i.time_of_suspend %}
+                <li class="date">{% trans "time of suspend"|capfirst %}: <span class="value"><abbr title="{{i.time_of_suspend}}">{{i.time_of_suspend|timeuntil}}</abbr></span></li>
+                {% endif %}
+                {% if i.time_of_delete %}
+                <li class="date">{% trans "time of delete"|capfirst %}: <span class="value"><abbr title="{{i.time_of_delete}}">{{i.time_of_delete|timeuntil}}</abbr></span></li>
+                {% endif %}
                 <li>&nbsp;<span class="value"><a href="/vm/show/{{i.id}}/" title="{{i.name}}">{% trans "More details" %}</a></span></li>
             </ul>
         </div>

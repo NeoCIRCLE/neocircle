@@ -3,19 +3,13 @@
     <div class="contentblock" id="template">
         <h2>{% trans "My templates" %}</h2>
         <ul class="wm-list">
-<!-- ----- -->
             {% for t in mytemplates %}
-            <li class="wm">{{t.name}}</li>
-            {% endfor %}
             <li class="wm">
                 <div class="summary">
-                    <div class="quota">
-                        <div class="used" style="background-color: rgba(0,255,0,0.2); width: 20%"></div>
-                    </div>
-                    <div class="name">Win7 Matlab</div>
-                    <div class="status">2/10</div>
+                    <div class="name">{{t.name}}</div>
+                    <div class="status">{{t.state}}</div>
                     <div class="actions">
-                        <a href="#" title="{% trans "Rename" %}"><img src="/static/icons/pencil.png" alt="{% trans "Rename" %}" /></a>
+                        <a href="#" title="{% trans "Edit" %}"><img src="/static/icons/pencil.png" alt="{% trans "Edit" %}" /></a>
                         <a href="#" title="{% trans "Remove" %}"><img src="/static/icons/minus-circle.png" alt="{% trans "Remove" %}" /></a>
                         <a href="#" title="{% trans "Share" %}"><img src="static/icons/user-share.png" alt="{% trans "Share" %}" /></a>
                     </div>
@@ -23,83 +17,32 @@
                 </div>
                 <div class="details">
                     <ul>
-                        <li class="name">{% trans "System" %}: <span class="value">Windows 7 Desktop</span></li>
-                        <li class="description">{% trans "Description" %}: <span class="value">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin nibh arcu, cursus et sodales eu, iaculis id metus. Suspendisse et mauris nisi, luctus feugiat nisi. Nullam elementum tincidunt urna a luctus.</span><div class="clear"></div></li>
-                        <li class="date">{% trans "Created at" %}: <span class="value">2013.01.10. 13:40:22</span></li>
-                        <li class="date">{% trans "Modified at" %}: <span class="value">2013.01.10. 13:40:22</span></li>
-                        <li class="count">{% trans "Running instances" %}: <span class="value">1</span></li>
+                        <li class="name">{% trans "System" %}: <span class="value">{{t.system}}</span><div class="clear"></div></li>
+                        <li class="type">{% trans "Size" %}: <span class="value">{{t.instance_type}}:
+                            <span class="cpu">{{t.instance_type.CPU}}</span>
+                            <span class="memory">{{t.instance_type.RAM}}</span>
+                            <span class="credit">{{t.instance_type.credit}}</span>
+                        </span></li>
+                        <li class="description">{% trans "Description" %}: <span class="value">{{t.description}}</span><div class="clear"></div></li>
+                        <li class="date">{% trans "Created at" %}: <span class="value">{{t.created_at}} ({{t.owner.get_profile}})</span></li>
+                        <li class="count">{% trans "Running instances" %}: <span class="value">{{t.instance_set.count}}</span></li>
                     </ul>
                 </div>
             </li>
-            <li class="wm">
-                <div class="summary">
-                    <div class="quota">
-                        <div class="used" style="background-color: rgba(255,128,0,0.2); width: 70%"></div>
+            {% endfor %}
+            {% if not mytemplates %}
+                <div id="new-wm-tooltip">
+                    <div id="new-wm-tooltip-container">
+                        <p>
+                            {% trans "You have no own templates." %}
+                        </p>
+                        <p>
+                            {% trans "Create a new one, and share it with your students. Or you can also use a common one." %}
+                        </p>
+                        <div id="new-wm-tooltip-tail"></div>
                     </div>
-                    <div class="name">Win7 Matlab</div>
-                    <div class="status">7/10</div>
-                    <div class="actions">
-                        <a href="#" title="Átnevezés"><img src="/static/icons/pencil.png" alt="rename" /></a>
-                        <a href="#" title="Törlés"><img src="/static/icons/minus-circle.png" alt="delete" /></a>
-                        <a href="#" title="Megosztás"><img src="static/icons/user-share.png" alt="share" /></a>
-                    </div>
-                    <div class="clear"></div>
                 </div>
-                <div class="details">
-                    <ul>
-                        <li class="name">Rendszer: <span class="value">Windows 7 Desktop</span></li>
-                        <li class="description">Leírás: <span class="value">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin nibh arcu, cursus et sodales eu, iaculis id metus. Suspendisse et mauris nisi, luctus feugiat nisi. Nullam elementum tincidunt urna a luctus.</span><div class="clear"></div></li>
-                        <li class="date">Létrehozva: <span class="value">2013.01.10. 13:40:22</span></li>
-                        <li class="date">Módosítva: <span class="value">2013.01.10. 13:40:22</span></li>
-                        <li class="count">Futó példányok: <span class="value">5 db</span></li>
-                    </ul>
-                </div>
-            </li>
-            <li class="wm">
-                <div class="summary">
-                    <div class="quota">
-                        <div class="used" style="background-color: rgba(255,0,0,0.2); width: 100%"></div>
-                    </div>
-                    <div class="name">Win7 Matlab</div>
-                    <div class="status">10/10</div>
-                    <div class="actions">
-                        <a href="#" title="Átnevezés"><img src="/static/icons/pencil.png" alt="rename" /></a>
-                        <a href="#" title="Törlés"><img src="/static/icons/minus-circle.png" alt="delete" /></a>
-                        <a href="#" title="Megosztás"><img src="static/icons/user-share.png" alt="share" /></a>
-                    </div>
-                    <div class="clear"></div>
-                </div>
-                <div class="details">
-                    <ul>
-                        <li class="name">Rendszer: <span class="value">Windows 7 Desktop</span></li>
-                        <li class="description">Leírás: <span class="value">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin nibh arcu, cursus et sodales eu, iaculis id metus. Suspendisse et mauris nisi, luctus feugiat nisi. Nullam elementum tincidunt urna a luctus.</span><div class="clear"></div></li>
-                        <li class="date">Létrehozva: <span class="value">2013.01.10. 13:40:22</span></li>
-                        <li class="date">Módosítva: <span class="value">2013.01.10. 13:40:22</span></li>
-                        <li class="count">Futó példányok: <span class="value">10 db</span></li>
-                    </ul>
-                </div>
-            </li>
-            <li class="wm">
-                <div class="summary unfinished">
-                    <div class="name">Win7 Matlab</div>
-                    <div class="status">{% trans "unfinished" %}</div>
-                    <div class="actions">
-                        <a href="#" title="Átnevezés"><img src="/static/icons/pencil.png" alt="rename" /></a>
-                        <a href="#" title="Törlés"><img src="/static/icons/minus-circle.png" alt="delete" /></a>
-                    </div>
-                    <div class="clear"></div>
-                </div>
-                <div class="details">
-                    <ul>
-                        <li class="name">Rendszer: <span class="value">Windows 7 Desktop</span></li>
-                        <li class="description">Leírás: <span class="value">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin nibh arcu, cursus et sodales eu, iaculis id metus. Suspendisse et mauris nisi, luctus feugiat nisi. Nullam elementum tincidunt urna a luctus.</span><div class="clear"></div></li>
-                        <li class="date">Létrehozva: <span class="value">2013.01.10. 13:40:22</span></li>
-                        <li class="date">Módosítva: <span class="value">2013.01.10. 13:40:22</span></li>
-                        <li class="count">Futó példányok: <span class="value">8 db</span></li>
-                    </ul>
-                </div>
-            </li>
-<!-- ----- -->
+            {% endif %}
             <li id="new-template-button" class="wm new">
                 <div class="summary">
                     <div class="name">Új Sablon</div>
