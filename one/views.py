@@ -81,6 +81,21 @@ def home(request):
         'userdetails': UserCloudDetails.objects.get(user=request.user),
         }))
 
+@login_required
+def ajax_template_delete(request):
+    try:
+        template_id = request.POST['id']
+    except:
+        return HttpResponse(unicode(_("Invalid template ID.")), status=404)
+    template = get_object_or_404(Template, id=template_id)
+    if template.instance_set.exists():
+        return HttpResponse(unicode(_("There are running instances of this template.")), status=404)
+    elif template.share_set.exists():
+        return HttpResponse(unicode(_("Template is still shared.")), status=404)
+    else:
+        template.safe_delete()
+        return HttpResponse(unicode(_("Template succesfully deleted.")))
+
 def ajax_template_name_unique(request, name):
     s = "True"
     if Template.objects.filter(name=name).exists():

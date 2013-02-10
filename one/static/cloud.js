@@ -36,6 +36,9 @@ $(function() {
             $(this).next('.details').slideDown(700);
         }
     }
+    $('.delete-template-button').click(function() {
+        delete_template_confirm($(this).data('id'), $(this).data('name'));
+    });
     $('.wm .summary').unbind('click').click(toggleDetails);
     $('.stop-vm-button').click(function() {
         stop_vm($(this).data('id'), $(this).data('name'));
@@ -172,6 +175,37 @@ $(function() {
             }
         })
     }
+
+    /**
+     * Template delete
+     */
+    function delete_template_confirm(id, name) {
+        confirm_message = interpolate(gettext("Are you sure deleting this %s template?"), [name])
+        vm_confirm_popup(confirm_message, gettext("Delete"), function() {
+            delete_template(id)
+        })
+    }
+    /**
+     * Template delete
+     */
+    function delete_template(id) {
+        $.ajax({
+            type: 'POST',
+            url: '/ajax/template/delete/',
+            data: 'id=' + id,
+            dataType: 'json',
+            statusCode: {
+                404: function(data) {
+                    alert(data['responseText']);
+                },
+                200: function(data) {
+                $("#t"+id).remove()
+            },
+
+            }
+        })
+    }
+
     $('#new-member').click(function() {
         $('#new-member-form').toggle();
     });

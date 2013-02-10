@@ -14,9 +14,12 @@ from school.models import Person, Group
 from datetime import timedelta as td
 from django.db.models.signals import post_delete, pre_delete
 from store.api import StoreApi
+from django.db import transaction
 
+import logging
 import subprocess, tempfile, os, stat, re, base64, struct
 
+logger = logging.getLogger(__name__)
 pwgen = User.objects.make_random_password
 
 """
@@ -288,6 +291,15 @@ class Template(models.Model):
 
     def __unicode__(self):
         return self.name
+
+    @transaction.commit_on_success
+    def safe_delete(self):
+        if not self.instance_set.exists():
+            self.delete()
+            return True
+        else:
+            logger.info("Could not delete template. Instances still running!")
+            return False
 
     class Meta:
         verbose_name = _('template')

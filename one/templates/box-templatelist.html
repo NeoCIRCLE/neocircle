@@ -4,13 +4,13 @@
         <h2>{% trans "My templates" %}</h2>
         <ul class="wm-list">
             {% for t in mytemplates %}
-            <li class="wm">
+            <li class="wm" id="t{{t.id }}">
                 <div class="summary">
                     <div class="name">{{t.name}}</div>
                     <div class="status">{{t.state}}</div>
                     <div class="actions">
                         <a href="#" title="{% trans "Edit" %}"><img src="/static/icons/pencil.png" alt="{% trans "Edit" %}" /></a>
-                        <a href="#" title="{% trans "Remove" %}"><img src="/static/icons/minus-circle.png" alt="{% trans "Remove" %}" /></a>
+                        <a href="#" class="delete-template-button" data-id="{{ t.id }}" data-name="{{ t.name }}" title="{% trans "Remove" %}"><img src="/static/icons/minus-circle.png" alt="{% trans "Remove" %}" /></a>
                         <a href="#" title="{% trans "Share" %}"><img src="static/icons/user-share.png" alt="{% trans "Share" %}" /></a>
                     </div>
                     <div class="clear"></div>

@@ -20,7 +20,7 @@ def estabilish_store_user(request, user):
         for key in request.user.sshkey_set.all():
             key_list.append(key.key)
     except:
-        return HttpResponse('Can not acces to django database!', status_code=404)
+        return HttpResponse('Can not acces to django database!', status=404)
         #Create user
     if not StoreApi.createuser(user, password, key_list, str(quota)):
         return HttpResponse('User does not exist on store! And could not create!')
@@ -40,7 +40,7 @@ def index(request):
             for key in request.user.sshkey_set.all():
                 key_list.append(key.key)
         except:
-            return HttpResponse('Can not acces to django database!', status_code=404)
+            return HttpResponse('Can not acces to django database!', status=404)
         if not StoreApi.updateauthorizationinfo(user, password, key_list):
            return HttpResponse('Can not update authorization information!')
     except:
@@ -114,7 +114,7 @@ def ajax_download(request):
         return HttpResponse(json.dumps({'url':StoreApi.requestdownload(user,dl)}))
     except:
         pass
-    return HttpResponse('File not found!', status_code=404)
+    return HttpResponse('File not found!', status=404)
 
 @login_required
 def ajax_upload(request):
@@ -125,7 +125,7 @@ def ajax_upload(request):
         return HttpResponse(json.dumps({'url':url}))
     except:
         pass
-    return HttpResponse('Error!', status_code=404)
+    return HttpResponse('Error!', status=404)
 
 @login_required
 def ajax_delete(request):
@@ -135,7 +135,7 @@ def ajax_delete(request):
         return HttpResponse(json.dumps({'success':StoreApi.requestremove(user,rm)}))
     except:
         pass
-    return HttpResponse('File not found!', status_code=404)
+    return HttpResponse('File not found!', status=404)
 
 @login_required
 def ajax_new_folder(request):
@@ -147,7 +147,7 @@ def ajax_new_folder(request):
         return HttpResponse(json.dumps({'success':success}))
     except:
         pass
-    return HttpResponse('Error!', status_code=404)
+    return HttpResponse('Error!', status=404)
 
 @login_required
 def ajax_rename(request):
@@ -159,7 +159,7 @@ def ajax_rename(request):
         return HttpResponse(json.dumps({'success':success}))
     except:
         pass
-    return HttpResponse('Error!', status_code=404)
+    return HttpResponse('Error!', status=404)
 
 @login_required
 def toplist(request):
@@ -181,7 +181,7 @@ def gui(request):
             for key in request.user.sshkey_set.all():
                 key_list.append(key.key)
         except:
-            return HttpResponse('Can not acces to django database!', status_code=404)
+            return HttpResponse('Can not acces to django database!', status=404)
         try:
             lab_key_decoded = base64.b64decode(request.POST['KEY'])
             key_list.append(lab_key_decoded)
@@ -195,7 +195,7 @@ def gui(request):
         else:
             return HttpResponse('Can not update authorization information!')
     else:
-        return HttpResponse('Method not found!', status_code=404)
+        return HttpResponse('Method not found!', status=404)
 
 def logout(request):
         auth.logout(request)
