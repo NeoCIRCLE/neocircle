@@ -47,8 +47,9 @@
             </li>
         </ul>
         <nav>
-            <a href="#" class="prev">{% trans "&laquo; Cancel" %}</a>
-            <input type="submit" value="{% trans "Launch" %}" />
+            <!-- <a href="#" class="prev">{% trans "&laquo; Cancel" %}</a> -->
+            <input type="reset" class="prev" value="{% trans "Cancel" %}" />
+            <input type="submit" class="next" value="{% trans "Launch master instance" %}" />
             <div class="clear"></div>
         </nav>
         <script type="text/javascript">
@@ -61,6 +62,7 @@
                     $("p.size-summary").hide();
                     $("#new-template-size-summary-" + v).show();
                 });
+                $('#new-template-step-2 nav .next').attr("disabled", "disabled");
                 $("#new-template-name").change(function(e){
                     var s = $(this).val();
                     $.ajax({
@@ -72,9 +74,11 @@
                             }
                             if (data == "True") {
                                 $('#new-template-name').removeClass("error");
+                                $('#new-template-step-2 nav .next').removeAttr("disabled");
                             }
                             else {
                                 $('#new-template-name').addClass("error");
+                                $('#new-template-step-2 nav .next').attr("disabled", "disabled");
                             }
                         }
                     });

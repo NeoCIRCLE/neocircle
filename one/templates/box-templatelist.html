@@ -5,7 +5,7 @@
         <ul class="wm-list">
             {% for t in mytemplates %}
             <li class="wm" id="t{{t.id }}">
-                <div class="summary">
+                <div class="summary {% if t.state == 'NEW' or t.state == 'SAVING'%}unfinished{% endif %}">
                     <div class="name">{{t.name}}</div>
                     <div class="status">{{t.state}}</div>
                     <div class="actions">
