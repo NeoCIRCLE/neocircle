@@ -27,7 +27,7 @@
             </a>
             {% endif %}
             {% if i.state == 'PENDING' %}
-            <img src="/static/load-2.gif" /> {% trans "starting…" %}
+            <img src="/static/load.gif" /> {% trans "starting…" %}
             {% endif %}
             {% if i.state == 'STOPPED' %}
             <a href="#"  class="resume-vm-button" data-name="{{ i.name}}" data-id="{{ i.id }}" title="{% trans "Resume" %}">
