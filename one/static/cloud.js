@@ -110,6 +110,8 @@ $(function() {
         $('#new-group-semester').change(updateSummary);
         $('#new-group-members').change(updateSummary);
     });
+    toggleDetails.apply($('.selected-summary'));
+    toggleDetails.apply($('.selected-summary'));
     /**
      * Confirm pop-up window
      */
