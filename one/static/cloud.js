@@ -36,20 +36,25 @@ $(function() {
             $(this).next('.details').slideDown(700);
         }
     }
-    $('.delete-template-button').click(function() {
+    $('.delete-template-button').click(function(e) {
+        e.preventDefault(); e.stopPropagation();
         delete_template_confirm($(this).data('id'), $(this).data('name'));
     });
     $('.wm .summary').unbind('click').click(toggleDetails);
-    $('.stop-vm-button').click(function() {
+    $('.stop-vm-button').click(function(e) {
+        e.preventDefault(); e.stopPropagation();
         stop_vm($(this).data('id'), $(this).data('name'));
     });
-    $('.resume-vm-button').click(function() {
+    $('.resume-vm-button').click(function(e) {
+        e.preventDefault(); e.stopPropagation();
         manage_vm($(this).data('id'), "resume");
     });
-    $('.delete-vm-button').click(function() {
+    $('.delete-vm-button').click(function(e) {
+        e.preventDefault(); e.stopPropagation();
         delete_vm($(this).data('id'), $(this).data('name'));
     });
-    $('.restart-vm-button').click(function() {
+    $('.restart-vm-button').click(function(e) {
+        e.preventDefault(); e.stopPropagation();
         restart_vm($(this).data('id'), $(this).data('name'));
     });
     $('#new-wm-button').click(function() {
