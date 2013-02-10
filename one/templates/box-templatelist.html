@@ -30,6 +30,8 @@
                 </div>
             </li>
             {% endfor %}
+            <!-- rgb(164, 179, 199) -->
+
             {% if not mytemplates %}
                 <div id="new-wm-tooltip">
                     <div id="new-wm-tooltip-container">
@@ -49,6 +51,33 @@
                     <div class="clear"></div>
                 </div>
             </li>
+            {% if publictemplates %}
+            {% for t in publictemplates %}
+            <li class="wm" id="t{{t.id }}">
+                <div class="summary public-template">
+                    <div class="name">{{t.name}}</div>
+                    <div class="status">{{t.state}}</div>
+                    <div class="actions">
+                        <a href="#" title="{% trans "Share" %}"><img src="static/icons/user-share.png" alt="{% trans "Share" %}" /></a>
+                    </div>
+                    <div class="clear"></div>
+                </div>
+                <div class="details">
+                    <ul>
+                        <li class="name">{% trans "System" %}: <span class="value">{{t.system}}</span><div class="clear"></div></li>
+                        <li class="type">{% trans "Size" %}: <span class="value">{{t.instance_type}}:
+                            <span class="cpu">{{t.instance_type.CPU}}</span>
+                            <span class="memory">{{t.instance_type.RAM}}</span>
+                            <span class="credit">{{t.instance_type.credit}}</span>
+                        </span></li>
+                        <li class="description">{% trans "Description" %}: <span class="value">{{t.description}}</span><div class="clear"></div></li>
+                        <li class="date" >{% trans "Created at" %}: <span class="value">{{t.created_at}} ({{t.owner.get_profile}})</span><div class="clear"></div></li>
+                        <li class="count">{% trans "Running instances" %}: <span class="value">{{t.instance_set.count}}</span></li>
+                    </ul>
+                </div>
+            </li>
+            {% endfor %}
+            {% endif %}
             <li class="wm small">
                 <div class="summary">
                     <div class="quota">

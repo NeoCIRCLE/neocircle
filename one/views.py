@@ -75,6 +75,7 @@ def home(request):
     return render_to_response("home.html", RequestContext(request, {
         'templates': Template.objects.filter(state='READY'),
         'mytemplates': Template.objects.filter(owner=request.user),
+        'publictemplates': Template.objects.filter(public=True),
         'instances': _list_instances(request),
         'groups': request.user.person_set.all()[0].owned_groups.all(),
         'semesters': Semester.objects.all(),
@@ -92,6 +93,8 @@ def ajax_template_delete(request):
         return HttpResponse(unicode(_("There are running instances of this template.")), status=404)
     elif template.share_set.exists():
         return HttpResponse(unicode(_("Template is still shared.")), status=404)
+    elif template.owner != request.user:
+        return HttpResponse(unicode(_("You don't have permission to delete this template.")), status=404)
     else:
         template.safe_delete()
         return HttpResponse(unicode(_("Template successfully deleted.")))
