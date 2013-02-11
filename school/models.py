@@ -29,6 +29,9 @@ class Person(models.Model):
             choices=LANGUAGE_CHOICES, default=LANGUAGE_CODE)
     code = models.CharField(_('code'), max_length=30, unique=True)
 
+    def get_owned_shares(self):
+        return one.models.Share.objects.filter(group__in=self.owned_groups.all())
+
     def get_shares(self):
         return one.models.Share.objects.filter(group__in=self.course_groups.all())
 

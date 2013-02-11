@@ -210,7 +210,9 @@ def vm_new(request, template=None, share=None):
         t.save()
         base = t
     try:
-        i = Instance.submit(base, request.user, extra="<RECONTEXT>YES</RECONTEXT>", share=share)
+        #Gány quota
+        if share == None or (share != None and share.get_running() < share.instance_limit):
+            i = Instance.submit(base, request.user, extra="<RECONTEXT>YES</RECONTEXT>", share=share)
         return redirect(i)
     except Exception as e:
         logger.error('Failed to create virtual machine.' + unicode(e))
