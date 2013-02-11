@@ -75,7 +75,7 @@ def home(request):
     return render_to_response("home.html", RequestContext(request, {
         'templates': Template.objects.filter(state='READY'),
         'mytemplates': Template.objects.filter(owner=request.user),
-        'publictemplates': Template.objects.filter(public=True),
+        'publictemplates': Template.objects.filter(public=True, state='READY'),
         'instances': _list_instances(request),
         'groups': request.user.person_set.all()[0].owned_groups.all(),
         'semesters': Semester.objects.all(),
@@ -104,6 +104,15 @@ def ajax_template_name_unique(request, name):
     if Template.objects.filter(name=name).exists():
         s = "False"
     return HttpResponse(s)
+
+@login_required
+def vm_credentials(request, iid):
+    vm = get_object_or_404(Instance, pk=iid)
+    if vm.owner == request.user:
+        return render_to_response('vm-credentials.html', RequestContext(request, { 'i' : vm }))
+    else:
+        return HttpResponse("Stale id.")
+
 
 class AjaxTemplateWizard(View):
     def get(self, request, *args, **kwargs):

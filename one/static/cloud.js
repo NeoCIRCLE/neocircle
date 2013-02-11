@@ -41,9 +41,12 @@ $(function() {
         delete_template_confirm($(this).data('id'), $(this).data('name'));
     });
     $('.wm .summary').unbind('click').click(toggleDetails);
-    $('.connect-vm-button').click(function(e) {
-        e.stopPropagation();
-    });
+    if (window.navigator.userAgent.indexOf('cloud-gui') != 0) {
+        $('.connect-vm-button').click(function(e) {
+            e.preventDefault(); e.stopPropagation();
+            get_vm_details($(this).data('id'));
+        });
+    }
     $('.stop-vm-button').click(function(e) {
         e.preventDefault(); e.stopPropagation();
         stop_vm($(this).data('id'), $(this).data('name'));
@@ -65,19 +68,22 @@ $(function() {
         $('#modal-container').html($('#new-wm').html());
         $('#modal-container .wm .summary').click(toggleDetails);
     });
+    /*
+     *FIXME Most ez itt miért van 2x??????
+     */
     $('#new-template-button').click(function() {
         $('#modal').show();
         $('#modal-container').html($('#new-template').html());
     });
-    $('#shadow').click(function() {
-        $('#modal').hide();
-    })
     $('#new-template-button').click(function() {
         $.get('/ajax/templateWizard', function(data) {
             $('#modal-container').html(data);
         })
         $('#modal').show();
     });
+    $('#shadow').click(function() {
+        $('#modal').hide();
+    })
     $('#old-upload').click(function(e) {
         e.preventDefault();
         $(this).parent().parent().hide().parent().find('#old-upload-form').show();
@@ -115,6 +121,15 @@ $(function() {
     });
     toggleDetails.apply($('.selected-summary'));
     toggleDetails.apply($('.selected-summary'));
+    /**
+     * Connect button new window
+     */
+    function get_vm_details(id) {
+        $.get('/vm/credentials/'+id, function(data) {
+            $('#modal-container').html(data);
+        })
+        $('#modal').show();
+    };
     /**
      * Confirm pop-up window
      */
