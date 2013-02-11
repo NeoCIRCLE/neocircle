@@ -26,16 +26,15 @@
                     <ul class="shares">
                         {% for i in t.myshares %}
                         <li>
-
-                                <div class="quota">
-                                    <div class="used" style="width: {{ i.get_instance_pc }}%"></div>
-                                </div>
+                            <div class="quota">
+                                <div class="used" style="width: {{ i.get_instance_pc|unlocalize }}%"></div>
+                            </div>
                             <form action="/vm/unshare/{{i.id}}/" method="post">
                                 <span title="{{i.name}}">{{i.name|truncatechars:20}}</span>
                                 ({{i.get_running}}/{{i.instance_limit}} = {{i.get_instance_pc}}%)
 
                                 {% csrf_token %}
-                                <input type="submit" value="unshare" style="float: right"/>
+                                <input type="submit" value="{% trans "Delete" %}" style="float: right"/>
                             </form>
                             <div class="clear"></div>
                         </li>
@@ -100,12 +99,15 @@
                     <ul class="shares">
                         {% for i in t.myshares %}
                         <li>
+                            <div class="quota">
+                                <div class="used" style="width: {{ i.get_instance_pc|unlocalize }}%"></div>
+                            </div>
                             <form action="/vm/unshare/{{i.id}}/" method="post">
                                 <span title="{{i.name}}">{{i.name|truncatechars:20}}</span>
                                 ({{i.get_running}}/{{i.instance_limit}} = {{i.get_instance_pc}}%)
 
                                 {% csrf_token %}
-                                <input type="submit" value="unshare" style="float: right"/>
+                                <input type="submit" value="{% trans "Delete" %}" style="float: right"/>
                             </form>
                             <div class="clear"></div>
                         </li>
