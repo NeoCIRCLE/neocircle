@@ -52,6 +52,10 @@ $(function() {
             e.stopPropagation();
         });
     }
+    $('.try-template-button').click(function(e) {
+        e.preventDefault(); e.stopPropagation();
+        new_vm($(this).data('id') );
+    });
     $('.stop-vm-button').click(function(e) {
         e.preventDefault(); e.stopPropagation();
         stop_vm($(this).data('id'), $(this).data('name'));
@@ -203,12 +207,25 @@ $(function() {
             type: 'POST',
             url: '/vm/' + state + '/' + id + '/',
             success: function(data, b, c) {
-                if ( state == "resume" ){
+                if ( state == "resume"){
                     window.location.href = '/vm/show/'+id+"/";
                 }
                 else {
                     window.location.reload();
                 }
+            }
+        })
+    }
+    /**
+     * New VM
+     */
+    function new_vm(template_id) {
+        $.ajax({
+            type: 'POST',
+            url: 'ajax/vm/new/' + template_id + '/',
+            success: function(data, b, xhrRequest) {
+                window.location.href = xhrRequest.getResponseHeader("Location");
+                //alert(xhrRequest.getResponseHeader("Location"));
             }
         })
     }

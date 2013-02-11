@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
-from django.core import signing
+from django.core import signing, urlresolvers
 from django.core.mail import mail_managers, send_mail
 from django.db import transaction
 from django.forms import ModelForm, Textarea
@@ -115,7 +115,7 @@ def vm_credentials(request, iid):
         vm = get_object_or_404(Instance, pk=iid, owner=request.user)
         return render_to_response('vm-credentials.html', RequestContext(request, { 'i' : vm }))
     except:
-        return HttpResponse(_("Could not get Virtual Machine credentials."), code=404)
+        return HttpResponse(_("Could not get Virtual Machine credentials."), status=404)
         messages.error(request, _('Failed to power off virtual machine.'))
 
 class AjaxTemplateWizard(View):
@@ -189,10 +189,12 @@ def vm_saveas(request, vmid):
     messages.success(request, _("Template is being saved..."))
     return redirect(inst)
 
+def vm_new_ajax(request, template ):
+    return vm_new(request, template, redir=False)
 
 @require_POST
 @login_required
-def vm_new(request, template=None, share=None):
+def vm_new(request, template=None, share=None, redir=True):
     base = None
     extra = None
     if template:
@@ -215,10 +217,15 @@ def vm_new(request, template=None, share=None):
         #Gány quota
         if share == None or (share != None and share.get_running() < share.instance_limit) or extra:
             i = Instance.submit(base, request.user, extra=extra, share=share)
-        return redirect(i)
+        if redir:
+            return redirect(i)
+        else:
+            response = HttpResponse("Created", status=201)
+            response['Location'] = i.get_absolute_url()
+            return response
     except Exception as e:
         logger.error('Failed to create virtual machine.' + unicode(e))
-        messages.error(request, _('Failed to create virtual machine.'))
+        messages.error(request, _('Failed to create virtual machine.')+unicode(e))
         return redirect('/')
 
 class VmListView(ListView):
