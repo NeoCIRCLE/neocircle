@@ -154,18 +154,24 @@ def group_show(request, gid):
     user = request.user
     group = get_object_or_404(Group, id=gid)
     mytemplates = [t for t in Template.objects.filter(owner=request.user).all()]
+    noshare = True
     for i, t in enumerate(mytemplates):
         t.myshares = t.share_set.filter(group=group)
+        if t.myshares.exists():
+            noshare = False
         mytemplates[i] = t
     publictemplates = [t for t in Template.objects.filter(public=True, state='READY').all()]
     for i, t in enumerate(publictemplates):
         t.myshares = t.share_set.filter(group=group)
+        if t.myshares.exists():
+            noshare = False
         publictemplates[i] = t
     return render_to_response("show-group.html", RequestContext(request,{
         'group': group,
         'members': group.members.all(),
         'mytemplates': mytemplates,
         'publictemplates': publictemplates,
+        'noshare': noshare,
         }))
 
 @login_required

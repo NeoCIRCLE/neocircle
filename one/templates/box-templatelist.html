@@ -11,7 +11,7 @@
                         <ul>
                         {% for i in t.myshares %}
                         <li>{{i.name}} -&gt; {{i.group}} ({{i.get_running}}/{{i.instance_limit}} = {{i.get_instance_pc}}%)
-                            <form style="display:inline" action="/vm/unshare/{{i.id}}/" method="post"><input type="submit" value="unshare"/></form>
+                            <form style="display:inline" action="/vm/unshare/{{i.id}}/" method="post">{% csrf_token %}<input type="submit" value="unshare"/></form>
                         </li>
                         {% endfor %}
                         {% endif %}
@@ -72,7 +72,7 @@
                         <ul>
                         {% for i in t.myshares %}
                         <li>{{i.name}} -&gt; {{i.group}} ({{i.get_running}}/{{i.instance_limit}} = {{i.get_instance_pc}}%)
-                            <form style="display:inline" action="/vm/unshare/{{i.id}}/" method="post"><input type="submit" value="unshare"/></form>
+                            <form style="display:inline" action="/vm/unshare/{{i.id}}/" method="post">{% csrf_token %}<input type="submit" value="unshare"/></form>
                         </li>
                         {% endfor %}
                         {% endif %}

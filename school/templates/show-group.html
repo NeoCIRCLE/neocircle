@@ -51,7 +51,7 @@
     </div>
 </div>
 <div class="boxes">
-
+    {% if noshare %}
             <div id="new-wm-tooltip" style="position:absolute">
                 <div id="new-wm-tooltip-container">
                     <p>
@@ -63,6 +63,7 @@
                     <div id="new-wm-tooltip-tail"></div> 
                 </div>
             </div>
+        {% endif %}
             {% include "box-templatelist.html" %}
 </div>
 {% endblock %}
