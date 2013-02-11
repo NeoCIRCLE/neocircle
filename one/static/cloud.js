@@ -48,7 +48,9 @@ $(function() {
         });
     }
     else {
-        e.stopPropagation();
+        $('.connect-vm-button').click(function(e) {
+            e.stopPropagation();
+        });
     }
     $('.stop-vm-button').click(function(e) {
         e.preventDefault(); e.stopPropagation();
