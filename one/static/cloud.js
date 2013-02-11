@@ -47,6 +47,9 @@ $(function() {
             get_vm_details($(this).data('id'));
         });
     }
+    else {
+        e.stopPropagation();
+    }
     $('.stop-vm-button').click(function(e) {
         e.preventDefault(); e.stopPropagation();
         stop_vm($(this).data('id'), $(this).data('name'));
