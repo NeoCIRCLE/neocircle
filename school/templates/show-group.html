@@ -3,9 +3,9 @@
 {% get_current_language as LANGUAGE_CODE %}
 {% block content %}
 <div class="boxes">
-    <div class="contentblock">
+    <!-- <div class="contentblock">
         <h2>Summary</h2>
-    </div>
+    </div> -->
     <div class="contentblock" id="group-members">
         <h2>{% trans "Members" %}</h2>
         <ul class="wm-list">
@@ -31,7 +31,7 @@
                         {% if not member.user %}
                         {% trans "This user never logged in, no data available" %}
                         {% else %}
-                        {{member}} ({{member.code}})
+                        {{member}} ({{member.code}}) <a href="mailto:{{member.user.email}}">E-mail</a>
                         {% endif %}
                     </div>
                 </div>
@@ -51,18 +51,19 @@
     </div>
 </div>
 <div class="boxes">
-
-            <div id="new-wm-tooltip" style="position:absolute">
-                <div id="new-wm-tooltip-container">
-                    <p>
-                        {% trans "This group has no shared templates." %}
-                    </p>
-                    <p>
-                        {% trans "Share one, and the group members can start their own virtual machine." %}
-                    </p>
-                    <div id="new-wm-tooltip-tail"></div> 
-                </div>
+    {% if noshare %}
+        <div id="new-wm-tooltip" style="position:absolute">
+            <div id="new-wm-tooltip-container">
+                <p>
+                    {% trans "This group has no shared templates." %}
+                </p>
+                <p>
+                    {% trans "Share one, and the group members can start their own virtual machine." %}
+                </p>
+                <div id="new-wm-tooltip-tail"></div>
             </div>
-            {% include "box-templatelist.html" %}
+        </div>
+    {% endif %}
+        {% include "box-templatelist.html" %}
 </div>
 {% endblock %}

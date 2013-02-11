@@ -3,7 +3,8 @@ SHELL := /bin/bash
 
 default: migrate collectstatic mo restart
 
-pull: default
+pulldef: pull default
+pull:
 	git pull
 
 po:

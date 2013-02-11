@@ -65,7 +65,7 @@
             <li class="wm small">
                 <div class="summary">
                     <div class="quota">
-                        <div class="used" style="background-color: rgba(0,255,0,0.2); width: {{userdetails.get_instance_pc}}%"></div>
+                        <div class="used" style="background-color: rgba(0,255,0,0.2); width: {{userdetails.get_instance_pc|unlocalize}}%"></div>
                     </div>
                     <div class="name">{% blocktrans with used=userdetails.get_weighted_instance_count all=userdetails.instance_quota %}Personal quota: {{used}}/{{all}}{% endblocktrans %}</div>
                     <div class="clear"></div>
@@ -84,7 +84,8 @@
     {% endif %}
     {% endfor %}
 {% include "box-templatelist.html" %}
+
+{% include "box-grouplist.html" %}
 </div>
 {% include "box-filelist.html" %}
-{% include "box-grouplist.html" %}
 {% endblock %}

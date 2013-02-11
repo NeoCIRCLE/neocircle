@@ -1,8 +1,10 @@
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
-<form action="/ajax/share/{{base.id}}" method="post" id="template-wizard">{% csrf_token %}
+<form action="/ajax/share/{{base.id}}/" method="post" id="template-wizard">{% csrf_token %}
     <div id="new-share" class="wizard">
         <h2>{% blocktrans with t=base.name%}Sharing template: {{t}}{% endblocktrans %}</h2>
+        {% if not group %}
+        <div class="hilight">
         <p>{% trans "Choose a group" %}</p>
                 {% if not groups %}
                     <p class="hilight">{% trans "You have no groups." %}</p>
@@ -10,14 +12,18 @@
         <ul>
             <li>
                 <label for="share-group">{% trans "Group" %}</label>
-                <select name="group"{% if not groups %} disabled=""{%endif%}>
+                <select id="share-group-select" name="group"{% if not groups %} disabled=""{%endif%}>
                     <option value="" selected="" class="dummy">--</option>
                     {%for i in groups%}<option value="{{i.id}}">{{i.name}} ({{i.members.count}})</option>{%endfor%}
                 </select>
                 <div class="clear"></div>
             </li>
         </ul>
+        </div>
         <div class="clear"></div>
+        {% else %}
+        <input type="hidden" name="group" value="{{group.id}}" />
+        {% endif %}
         <p>{% trans "Change the parameters as needed." %}</p>
         <ul>
             <li>
@@ -71,22 +77,23 @@
         </ul>
         <nav>
             <input type="reset" class="prev" value="{% trans "Cancel" %}" />
-            <input type="submit" value="{% trans "Share" %}" {% if not groups %} disabled=""{%endif%}/>
+            <input type="submit" value="{% trans "Share" %}" {% if not groups %}{%endif%}/>
             <div class="clear"></div>
         </nav>
         <script type="text/javascript">
             $(function(){
-                if ("" == $(":selected this").val())
+                {% if not group %}
+                if (!$("select#share-group-select :selected").val())
                     $('#new-share input[type=submit]').attr("disabled", "")
                 else
                     $('#new-share input[type=submit]').removeAttr("disabled")
-                $('#new-share select').change(function(e) {
-                    if ("" == $(":selected this").val())
+                $('#new-share select#share-group-select').change(function(e) {
+                    if (!$(":selected", this).val())
                         $('#new-share input[type=submit]').attr("disabled", "")
                     else
                         $('#new-share input[type=submit]').removeAttr("disabled")
                 })
-
+                {% endif %}
                 $('#new-share nav .prev').click(function(){
                     $('#modal').hide();
                 })
