@@ -62,7 +62,8 @@ def login(request):
         for c in attended:
             try:
                 co = Course.objects.get(code=c)
-            except:
+            except Exception as e:
+                logger.warning("Django could not get Course %s: %s" % (c, e))
                 continue
             g = co.get_or_create_default_group()
             if p.course_groups.filter(semester=sem, course=co).count() == 0:
@@ -70,7 +71,9 @@ def login(request):
                     g.members.add(p)
                     g.save()
                     messages.info(request, _('Course "%s" added.') % g.course)
+                    logger.warning('Django Course "%s" added.' % g.course)
                 except Exception as e:
+                    messages.error(request, _('Failed to add course "%s".') % g.course)
                     logger.warning("Django ex %s" % e)
     except ValidationError as e:
         logger.warning("Django ex4 %s" % e)
@@ -83,13 +86,14 @@ def login(request):
     for c in held:
         co, created = Course.objects.get_or_create(code=c)
         if created:
-            logger.warning("django Course %s created" % c)
+            logger.warning("Django Course %s created" % c)
         g = co.get_or_create_default_group()
         try:
             co.owners.add(p)
             g.owners.add(p)
             messages.info(request, _('Course "%s" ownership added.') % g.course)
         except Exception as e:
+            messages.error(request, _('Failed to add course "%s" ownership.') % g.course)
             logger.warning("Django ex %s" % e)
         co.save()
         g.save()
@@ -107,9 +111,9 @@ def login(request):
             g = Group.objects.filter(name=a)
             g.members.add(p)
             g.save()
-            messages.info(request, _('Course "%s" added.') % g.course)
+            logger.warning("Django affiliation %s added to %s" % (a, p))
         except:
-            pass
+            logger.warning("Django FAIL affiliation %s added to %s" % (a, p))
     user.save()
 
     p.save()
