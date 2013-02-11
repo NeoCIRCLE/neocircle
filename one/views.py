@@ -193,7 +193,8 @@ def vm_saveas(request, vmid):
 @require_POST
 @login_required
 def vm_new(request, template=None, share=None):
-    base = None 
+    base = None
+    extra = None
     if template:
         base = get_object_or_404(Template, pk=template)
     else:
@@ -209,10 +210,11 @@ def vm_new(request, template=None, share=None):
         t.system = base.system
         t.save()
         base = t
+        extra = "<RECONTEXT>YES</RECONTEXT>"
     try:
         #Gány quota
-        if share == None or (share != None and share.get_running() < share.instance_limit):
-            i = Instance.submit(base, request.user, extra="<RECONTEXT>YES</RECONTEXT>", share=share)
+        if share == None or (share != None and share.get_running() < share.instance_limit) or extra:
+            i = Instance.submit(base, request.user, extra=extra, share=share)
         return redirect(i)
     except Exception as e:
         logger.error('Failed to create virtual machine.' + unicode(e))
