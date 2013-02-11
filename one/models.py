@@ -79,6 +79,14 @@ class UserCloudDetails(models.Model):
         return c
     def get_instance_pc(self):
         return 100*self.get_weighted_instance_count()/self.instance_quota
+    def get_weighted_share_count(self):
+        c = 0
+        for i in Share.objects.filter(owner=self.user).all():
+            c = c + i.template.instance_type.credit * i.instance_limit
+        return c
+    def get_share_pc(self):
+        return 100*self.get_weighted_share_count()/self.share_quota
+
 
 def set_quota(sender, instance, created, **kwargs):
     if not StoreApi.userexist(instance.user.username):
@@ -168,6 +176,7 @@ class Share(models.Model):
             help_text=_('Maximal count of instances launchable for this share.'))
     per_user_limit = models.IntegerField(verbose_name=_('per user limit'),
             help_text=_('Maximal count of instances launchable by a single user.'))
+    owner = models.ForeignKey(User, null=True, blank=True)
 
     def get_running_or_stopped(self):
         return Instance.objects.all().exclude(state='DONE').filter(share=self).count()

@@ -172,6 +172,7 @@ def group_show(request, gid):
         'mytemplates': mytemplates,
         'publictemplates': publictemplates,
         'noshare': noshare,
+        'userdetails': UserCloudDetails.objects.get(user=request.user),
         }))
 
 @login_required

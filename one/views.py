@@ -137,6 +137,9 @@ ajax_template_wizard = login_required(AjaxTemplateWizard.as_view())
 
 class AjaxShareWizard(View):
     def get(self, request, id, gid=None, *args, **kwargs):
+        det = UserCloudDetails.objects.get(user=request.user)
+        if det.get_weighted_share_count() >= det.share_quota:
+            return HttpResponse(unicode(_('You do not have any free share quota.')))
         types = TYPES_L
         types[0]['default'] = True
         for i, t in enumerate(types):
@@ -146,13 +149,14 @@ class AjaxShareWizard(View):
         if gid:
             gid = get_object_or_404(Group, id=gid)
 
-        return render_to_response('new-share.html', RequestContext(request,{
+        return render_to_response('new-share.html', RequestContext(request, {
             'base': get_object_or_404(Template, id=id),
             'groups': request.user.person_set.all()[0].owned_groups.all(),
             'types': types,
             'group': gid,
             }))
     def post(self, request, id, gid=None, *args, **kwargs):
+        det = UserCloudDetails.objects.get(user=request.user)
         base = get_object_or_404(Template, id=id)
         if base.owner != request.user and not base.public and not request.user.is_superuser:
             raise PermissionDenied()
@@ -168,10 +172,12 @@ class AjaxShareWizard(View):
         if not stype in TYPES.keys():
             raise PermissionDenied()
         il = request.POST['instance_limit']
-        # TODO check quota
+        if det.get_weighted_share_count() + int(il)*base.instance_type.credit > det.share_quota:
+            messages.error(request, _('You do not have enough free share quota.'))
+            return redirect('/')
         s = Share.objects.create(name=request.POST['name'], description=request.POST['description'],
                 type=stype, instance_limit=il, per_user_limit=request.POST['per_user_limit'],
-                group=group, template=base)
+                group=group, template=base, owner=request.user)
         messages.success(request, _('Successfully shared %s.') % base)
         return redirect(group)
 ajax_share_wizard = login_required(AjaxShareWizard.as_view())

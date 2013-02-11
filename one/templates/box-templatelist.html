@@ -1,4 +1,5 @@
 {% load i18n %}
+{% load l10n %}
 {% get_current_language as LANGUAGE_CODE %}
     <div class="contentblock" id="template">
         <h2>{% trans "Templates" %}</h2>
@@ -131,9 +132,9 @@
             <li class="wm small">
                 <div class="summary">
                     <div class="quota">
-                        <div class="used" style="background-color: rgba(0,255,0,0.2); width: 19%"></div>
+                        <div class="used" style="background-color: rgba(0,255,0,0.2); width: {{userdetails.get_share_pc|unlocalize}}%"></div>
                     </div>
-                    <div class="name">{% blocktrans with used=19 all=100 %}Share quota: {{used}}/{{all}}{% endblocktrans %}</div>
+                    <div class="name">{% blocktrans with used=userdetails.get_weighted_share_count all=userdetails.share_quota %}Share quota: {{used}}/{{all}}{% endblocktrans %}</div>
                     <div class="clear"></div>
                 </div>
             </li>
