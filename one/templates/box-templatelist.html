@@ -1,7 +1,7 @@
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
     <div class="contentblock" id="template">
-        <h2>{% trans "My templates" %}</h2>
+        <h2>{% trans "Templates" %}</h2>
         <ul class="wm-list">
             {% for t in mytemplates %}
             <li class="wm" id="t{{t.id }}">
@@ -11,7 +11,7 @@
                     <div class="actions">
                         <a href="#" title="{% trans "Edit" %}"><img src="/static/icons/pencil.png" alt="{% trans "Edit" %}" /></a>
                         <a href="#" class="delete-template-button" data-id="{{ t.id }}" data-name="{{ t.name }}" title="{% trans "Remove" %}"><img src="/static/icons/minus-circle.png" alt="{% trans "Remove" %}" /></a>
-                        <a href="#" title="{% trans "Share" %}"><img src="static/icons/user-share.png" alt="{% trans "Share" %}" /></a>
+                        <a href="#" class="template-share" data-id="{{t.id}}" title="{% trans "Share" %}"><img src="static/icons/user-share.png" alt="{% trans "Share" %}" /></a>
                     </div>
                     <div class="clear"></div>
                 </div>
@@ -30,9 +30,8 @@
                 </div>
             </li>
             {% endfor %}
-            <!-- rgb(164, 179, 199) -->
 
-            {% if not mytemplates %}
+            {% if not mytemplates and not group %}
                 <div id="new-wm-tooltip">
                     <div id="new-wm-tooltip-container">
                         <p>
@@ -45,12 +44,14 @@
                     </div>
                 </div>
             {% endif %}
+            {% if not group %}
             <li id="new-template-button" class="wm new">
                 <div class="summary">
                     <div class="name">Új Sablon</div>
                     <div class="clear"></div>
                 </div>
             </li>
+            {% endif %}
             {% if publictemplates %}
             {% for t in publictemplates %}
             <li class="wm" id="t{{t.id }}">
@@ -58,7 +59,7 @@
                     <div class="name">{{t.name}}</div>
                     <div class="status">{{t.state}}</div>
                     <div class="actions">
-                        <a href="#" title="{% trans "Share" %}"><img src="static/icons/user-share.png" alt="{% trans "Share" %}" /></a>
+                        <a href="#" class="template-share" data-id="{{t.id}}" {%if group%}data-gid="{{group.id}}"{%endif%} title="{% trans "Share" %}"><img src="static/icons/user-share.png" alt="{% trans "Share" %}" /></a>
                     </div>
                     <div class="clear"></div>
                 </div>

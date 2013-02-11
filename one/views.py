@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 from django.conf import settings
+from datetime import timedelta as td
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
@@ -131,6 +132,51 @@ class AjaxTemplateWizard(View):
             'base': base,
             }))
 ajax_template_wizard = login_required(AjaxTemplateWizard.as_view())
+
+
+class AjaxShareWizard(View):
+    def get(self, request, id, gid=None, *args, **kwargs):
+        types = TYPES_L
+        types[0]['default'] = True
+        for i, t in enumerate(types):
+            t['deletex'] = datetime.now() + td(seconds=1) + t['delete'] if t['delete'] else None
+            t['suspendx'] = datetime.now() + td(seconds=1) + t['suspend'] if t['suspend'] else None
+            types[i] = t
+        if gid:
+            gid = get_object_or_404(Group, id=gid)
+
+        return render_to_response('new-share.html', RequestContext(request,{
+            'base': get_object_or_404(Template, id=id),
+            'groups': request.user.person_set.all()[0].owned_groups.all(),
+            'types': types,
+            'group': gid,
+            }))
+    def post(self, request, id, gid=None, *args, **kwargs):
+        base = get_object_or_404(Template, id=id)
+        if base.owner != request.user and not base.public and not request.user.is_superuser:
+            raise PermissionDenied()
+        group = None
+        if gid:
+            group = get_object_or_404(Group, id=gid)
+        else:
+            group = get_object_or_404(Group, id=request.POST['group'])
+
+        if not group.owners.filter(user=request.user).exists():
+            raise PermissionDenied()
+        stype = request.POST['type']
+        if not stype in TYPES.keys():
+            raise PermissionDenied()
+        il = request.POST['instance_limit']
+        # TODO check quota
+        s = Share.objects.create(name=request.POST['name'], description=request.POST['description'],
+                type=stype, instance_limit=il, per_user_limit=request.POST['per_user_limit'],
+                group=group, template=base)
+        messages.success(request, _('Successfully shared %s.') % base)
+        return redirect('/')
+ajax_share_wizard = login_required(AjaxShareWizard.as_view())
+
+
+
 
 @require_POST
 @login_required

@@ -295,6 +295,23 @@
         background-image: url(icons/computer--plus.png);
     }
 }
+#new-share .type-summary, .share-type .value {
+    &.type-summary {
+        font-size: .8em;
+        text-align: right;
+    }
+    span {
+        background-position: left center;
+        background-repeat: no-repeat;
+        padding-left: 18px;
+            &.suspend{
+                background-image: url(icons/control-pause.png)
+            }
+            &.delete{
+                background-image: url(icons/minus-circle.png)
+            }
+    }
+}
 #template-wizard .size-summary, .type .value {
     &.size-summary {
         font-size: .8em;

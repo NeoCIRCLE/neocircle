@@ -87,6 +87,13 @@ $(function() {
     $('#shadow').click(function() {
         $('#modal').hide();
     })
+    $('.template-share').click(function(e) {
+        e.preventDefault(); e.stopPropagation();
+        $.get('/ajax/share/'+$(this).data('id'), function(data) {
+            $('#modal-container').html(data);
+        })
+        $('#modal').show();
+    });
     $('#old-upload').click(function(e) {
         e.preventDefault();
         $(this).parent().parent().hide().parent().find('#old-upload-form').show();

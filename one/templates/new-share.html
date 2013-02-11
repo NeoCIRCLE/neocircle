@@ -1,0 +1,101 @@
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+<form action="/ajax/share/{{base.id}}" method="post" id="template-wizard">{% csrf_token %}
+    <div id="new-share" class="wizard">
+        <h2>{% blocktrans with t=base.name%}Sharing template: {{t}}{% endblocktrans %}</h2>
+        <p>{% trans "Choose a group" %}</p>
+                {% if not groups %}
+                    <p class="hilight">{% trans "You have no groups." %}</p>
+                {% endif %}
+        <ul>
+            <li>
+                <label for="share-group">{% trans "Group" %}</label>
+                <select name="group"{% if not groups %} disabled=""{%endif%}>
+                    <option value="" selected="" class="dummy">--</option>
+                    {%for i in groups%}<option value="{{i.id}}">{{i.name}} ({{i.members.count}})</option>{%endfor%}
+                </select>
+                <div class="clear"></div>
+            </li>
+        </ul>
+        <div class="clear"></div>
+        <p>{% trans "Change the parameters as needed." %}</p>
+        <ul>
+            <li>
+            <label for="share-name">{% trans "Name of share" %}</label>
+                <input type="text" name="name" id="share-name" value="{{base.name}}" />
+                <div class="clear"></div>
+            </li>
+            <li class="li-share-type">
+            <label for="share-type">{% trans "Type" %}</label>
+                <ul class="radio">
+                    {% for s in types %}
+                    <li>
+                        <label>
+                            <input type="radio" name="type" value="{{s.id}}" id="share-type-{{s.id}}"
+                            {% if s.default %}checked="checked"{% endif %} />
+                            {{s.verbose_name}}
+                        </label>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% for s in types %}
+                <p id="share-type-summary-{{s.id}}" class="type-summary clear"
+                {% if not s.default %}style="display:none"{% endif %}>
+                    {{s.help_text}}
+                    ({% if s.suspend %}
+                    <span class="suspend"
+                        title="{% blocktrans with time=s.suspend %}Suspend after {{time}}.{%endblocktrans%}">
+                        {{s.suspendx|timeuntil}}
+                    </span>
+                    {%endif%}{% if s.delete %}<span class="delete"
+                        title="{% blocktrans with time=s.delete %}Delete after {{time}}.{%endblocktrans%}">
+                        {{s.deletex|timeuntil}}</span>{%endif%})
+                </p>
+                {% endfor %}
+                <div class="clear"></div>
+            </li>
+            <li class="clear">
+            <label for="share-instance-limit">{% trans "Maximal count of instances" %}</label>
+                <input type="number" name="instance_limit" id="share-instance-limit" value="10" />
+            </li>
+            <li class="clear">
+            <label for="share-instance-limit">{% trans "Maximal count of instaces/user" %}</label>
+                <input type="number" name="per_user_limit" id="share-per-user-limit" value="1" />
+            </li>
+
+            <li style="border: none" class="clear">
+                <label for="share-description">{% trans "Description" %}</label>
+                <textarea name="description" id="share-description" style="text-align: left">{{base.description}}</textarea>
+                <div class="clear"></div>
+            </li>
+        </ul>
+        <nav>
+            <input type="reset" class="prev" value="{% trans "Cancel" %}" />
+            <input type="submit" value="{% trans "Share" %}" {% if not groups %} disabled=""{%endif%}/>
+            <div class="clear"></div>
+        </nav>
+        <script type="text/javascript">
+            $(function(){
+                if ("" == $(":selected this").val())
+                    $('#new-share input[type=submit]').attr("disabled", "")
+                else
+                    $('#new-share input[type=submit]').removeAttr("disabled")
+                $('#new-share select').change(function(e) {
+                    if ("" == $(":selected this").val())
+                        $('#new-share input[type=submit]').attr("disabled", "")
+                    else
+                        $('#new-share input[type=submit]').removeAttr("disabled")
+                })
+
+                $('#new-share nav .prev').click(function(){
+                    $('#modal').hide();
+                })
+                $("#new-share input[name='type']").click(function(e){ /* TODO */
+                    var v = $("#new-share input[name='type']:checked").val();
+                    $("p.type-summary").hide();
+                    $("#share-type-summary-" + v).show();
+                });
+            })
+        </script>
+    </div>
+</form>

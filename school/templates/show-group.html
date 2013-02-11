@@ -51,10 +51,8 @@
     </div>
 </div>
 <div class="boxes">
-    <div class="contentblock">
-        <h2>{% trans "Templates" %}</h2>
-        <ul class="wm-list">
-            <div id="new-wm-tooltip">
+
+            <div id="new-wm-tooltip" style="position:absolute">
                 <div id="new-wm-tooltip-container">
                     <p>
                         {% trans "This group has no shared templates." %}
@@ -62,18 +60,9 @@
                     <p>
                         {% trans "Share one, and the group members can start their own virtual machine." %}
                     </p>
-                    <div id="new-wm-tooltip-tail"></div>
+                    <div id="new-wm-tooltip-tail"></div> 
                 </div>
             </div>
-            <li class="wm">
-                <div class="summary">
-                    <div class="name">
-                        {% trans "Share template" %}
-                    </div>
-                    <div class="clear"></div>
-                </div>
-            </li>
-        </ul>
-    </div>
+            {% include "box-templatelist.html" %}
 </div>
 {% endblock %}
