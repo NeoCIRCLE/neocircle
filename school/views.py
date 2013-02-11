@@ -112,7 +112,7 @@ def login(request):
             g.members.add(p)
             g.save()
             logger.warning("Django affiliation group %s added to %s" % (a, p))
-        except e as Exception:
+        except Exception as e:
             logger.warning("Django FAIL affiliation group %s added to %s %s" % (a, p, e))
     user.save()
 
