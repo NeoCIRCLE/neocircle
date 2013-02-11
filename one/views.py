@@ -332,6 +332,23 @@ class VmDeleteView(View):
 vm_delete = login_required(VmDeleteView.as_view())
 
 @login_required
+#@require_POST
+def vm_unshare(request, id, *args, **kwargs):
+    s = get_object_or_404(Share, id=id)
+    g = s.group
+    if not g.owners.filter(user=request.user).exists():
+        raise PermissionDenied()
+    try:
+        if s.get_running_or_stopped() > 0:
+            messages.error(request, _('There are machines running of this share.'))
+        else:
+            s.delete()
+            messages.success(request, _('Share is successfully removed.'))
+    except:
+        messages.error(request, _('Failed to remove share.'))
+    return redirect(g)
+
+@login_required
 @require_POST
 def vm_stop(request, iid, *args, **kwargs):
     try:

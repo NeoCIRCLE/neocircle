@@ -166,3 +166,7 @@ class Group(models.Model):
             return "%s (%s)" % (self.name, self.course.short())
         else:
             return "%s (%s)" % (self.name, self.owner_list())
+
+    @models.permalink
+    def get_absolute_url(self):
+            return ('group_show', None, {'gid':self.id})
