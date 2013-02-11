@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-02-11 15:51+0100\n"
+"POT-Creation-Date: 2013-02-11 16:13+0100\n"
 "PO-Revision-Date: 2013-02-11 15:56+0100\n"
 "Last-Translator: \n"
 "Language-Team: American English <cloud@ik.bme.hu>\n"
@@ -160,8 +160,8 @@ msgid "Invalid NEPTUN code"
 msgstr "Érvénytelen Neptun-kód"
 
 #: templates/show-group.html:10
-msgid "Members"
-msgstr "Tagok"
+msgid "Members of"
+msgstr "Tagok: "
 
 #: templates/show-group.html:24
 msgid "Remove"
