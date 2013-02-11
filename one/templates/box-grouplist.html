@@ -2,9 +2,7 @@
 {% get_current_language as LANGUAGE_CODE %}
 <div class="boxes" id="groups">
     <div class="contentblock">
-        <h2>
-            {% trans "My Groups" %}
-        </h2>
+        <h2>{% trans "My Groups" %}</h2>
         <div class="content">
             <ul class="wm-list">
                 {% if groups %}
@@ -45,7 +43,9 @@
                             </li>
                             <li>
                                 &nbsp;
-                                <span class="value"><a href="/group/show/{{group.id}}">{% trans "More details" %}</a></span>
+                                <span class="value">
+                                    <a href="/group/show/{{group.id}}">{% trans "More details" %}</a>
+                                </span>
                             </li>
                         </ul>
                     </div>
@@ -54,9 +54,7 @@
                 {% else %}
                 <div id="new-wm-tooltip">
                     <div id="new-wm-tooltip-container">
-                        <p>
-                            {% trans "You have no groups." %}
-                        </p>
+                        <p>{% trans "You have no groups." %}</p>
                         <p>
                             {% trans "Create a new one, and add your students to the new group." %}
                         </p>
@@ -89,19 +87,23 @@
                                 <textarea name="members" placeholder="{% trans 'Student NEPTUN codes, one per line' %}" id="new-group-members"></textarea>
                             </p>
                             <!--<h4>{% trans "Summary" %}</h4>
-                            <p>
-                                <strong>{% trans "Group name" %}:</strong> <span id="new-group-summary-name"></span><br />
-                                <strong>{% trans "Semester" %}:</strong> <span id="new-group-summary-semester"></span><br />
-                                <strong>{% trans "Member count" %}:</strong> <span id="new-group-summary-count"></span><br />
-                            </p>-->
-                            <p>
-                                {% csrf_token %}
-                                <input type="submit" value="{% trans "Done" %}">
-                            </p>
-                        </form>
-                    </div>
-                </li>
-            </ul>
-        </div>
+                        <p> <strong>{% trans "Group name" %}:</strong>
+                            <span id="new-group-summary-name"></span>
+                            <br /> <strong>{% trans "Semester" %}:</strong>
+                            <span id="new-group-summary-semester"></span>
+                            <br />
+                            <strong>{% trans "Member count" %}:</strong>
+                            <span id="new-group-summary-count"></span>
+                            <br />
+                        </p>
+                        -->
+                        <p>
+                            {% csrf_token %}
+                            <input type="submit" value="{% trans "Done" %}"></p>
+                    </form>
+                </div>
+            </li>
+        </ul>
     </div>
+</div>
 </div>

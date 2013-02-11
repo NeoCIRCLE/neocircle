@@ -2,8 +2,6 @@
 {% load i18n %}
 {% load l10n %}
 {% get_current_language as LANGUAGE_CODE %}
-
-
 {% block content %}
 <div class="boxes">
     <div class="contentblock" id="state">
@@ -17,9 +15,9 @@
                 </div>
             </li>
             <li id="new-wm" style="display: none">
-            <h2>{% trans "Available shares" %}</h2>
+                <h2>{% trans "Available shares" %}</h2>
                 <p>
-                {% trans "Choose one of the following shared templates to launch." %}
+                    {% trans "Choose one of the following shared templates to launch." %}
                 </p>
                 <div class="container">
                     <ul class="wm-list modal">
@@ -27,29 +25,52 @@
                         <li class="wm">
                             <div class="summary">
                                 <div class="quota">
-                                    <div class="used" style="width:{% if s.running_shared >=  s.per_user_limit %}100%{% else %}{{ s.get_instance_pc|unlocalize }}%{% endif %}"/></div>
+                                    <div class="used" style="width:{% if s.running_shared >=  s.per_user_limit %}100%{% else %}{{ s.get_instance_pc|unlocalize }}%{% endif %}"/>
+                                    </div>
                                 </div>
-                                <div class="name wm-on">{{s.name}} - {{ s.group.name }}   ({{ s.running_shared }}/{{ s.per_user_limit }})</div>
-                                <div class="status">
-                                    {{s.get_running}}/{{s.instance_limit}}
+                                <div class="name wm-on">
+                                    {{s.name}} - {{ s.group.name }}   ({{ s.running_shared }}/{{ s.per_user_limit }})
                                 </div>
+                                <div class="status">{{s.get_running}}/{{s.instance_limit}}</div>
                                 <div class="clear"></div>
                             </div>
                             <div class="details">
                                 <div class="details-container">
                                     <ul>
-                                        <li class="os-{{s.template.os_type}}">{% trans "System" %}: <span class="value">{{s.template.system}}</span><div class="clear"></div></li>
-                                        <li class="type">{% trans "Size" %}: <span class="value">{{s.template.instance_type.name}}</span></li>
-                                        <li class="share-type">{% trans "Type" %}: <span class="value">{{s.type }}</span></li>
-                                        <li class="memory">{% trans "Memory" %}:
-                                            <span class="value">{% blocktrans with m=s.template.instance_type.RAM %}{{m}} MiB{% endblocktrans %}</span></li>
-                                        <li class="cpu">{% trans "CPU cores" %}: <span class="value">{{s.template.instance_type.CPU}}</span></li>
-                                        <li class="description">{% trans "Description" %}:<span class="value">{{s.description}}</span><div class="clear"></div></li>
+                                        <li class="os-{{s.template.os_type}}">
+                                            {% trans "System" %}:
+                                            <span class="value">{{s.template.system}}</span>
+                                            <div class="clear"></div>
+                                        </li>
+                                        <li class="type">
+                                            {% trans "Size" %}:
+                                            <span class="value">{{s.template.instance_type.name}}</span>
+                                        </li>
+                                        <li class="share-type">
+                                            {% trans "Type" %}:
+                                            <span class="value">{{s.type }}</span>
+                                        </li>
+                                        <li class="memory">
+                                            {% trans "Memory" %}:
+                                            <span class="value">
+                                                {% blocktrans with m=s.template.instance_type.RAM %}{{m}} MiB{% endblocktrans %}
+                                            </span>
+                                        </li>
+                                        <li class="cpu">
+                                            {% trans "CPU cores" %}:
+                                            <span class="value">{{s.template.instance_type.CPU}}</span>
+                                        </li>
+                                        <li class="description">
+                                            {% trans "Description" %}:
+                                            <span class="value">{{s.description}}</span>
+                                            <div class="clear"></div>
+                                        </li>
                                         <li>
                                             &nbsp;
                                             <span class="value">
-                                                <form method="POST" action="/vm/new/s{{s.pk}}/">{% csrf_token %}
-                                                    <input {% if  s.running_shared >= s.per_user_limit  or s.get_running >= s.instance_limit%}disabled{% endif %} type="submit" value="{% trans "Launch" %}"/>
+                                                <form method="POST" action="/vm/new/s{{s.pk}}/">
+                                                    {% csrf_token %}
+                                                    <input {% if  s.running_shared >= s.per_user_limit  or s.get_running >= s.nstance_limit%}disabled{% endif %} type="submit" value="{% trans "Launch" %}"/>
                                                 </form>
                                             </span>
                                             <div class="clear"></div>
@@ -67,7 +88,9 @@
                     <div class="quota">
                         <div class="used" style="background-color: rgba(0,255,0,0.2); width: {{userdetails.get_instance_pc|unlocalize}}%"></div>
                     </div>
-                    <div class="name">{% blocktrans with used=userdetails.get_weighted_instance_count all=userdetails.instance_quota %}Personal quota: {{used}}/{{all}}{% endblocktrans %}</div>
+                    <div class="name">
+                        {% blocktrans with used=userdetails.get_weighted_instance_count all=userdetails.instance_quota %}Personal quota: {{used}}/{{all}}{% endblocktrans %}
+                    </div>
                     <div class="clear"></div>
                 </div>
             </li>
@@ -75,12 +98,10 @@
     </div>
     {% for box in boxes %}
     {% if forloop.counter0|divisibleby:2 %}
-        <div class="contentblock">
-            <h2>{{ box.title }}</h2>
-            <div class="content">
-                {{ box.text|safe }}
-            </div>
-        </div>
+    <div class="contentblock">
+        <h2>{{ box.title }}</h2>
+        <div class="content">{{ box.text|safe }}</div>
+    </div>
     {% endif %}
     {% endfor %}
 {% include "box-templatelist.html" %}

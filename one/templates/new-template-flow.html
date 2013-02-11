@@ -1,18 +1,21 @@
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
-<form action="/vm/new/{{base.id}}/" method="post" id="template-wizard">{% csrf_token %}
+<form action="/vm/new/{{base.id}}/" method="post" id="template-wizard">
+    {% csrf_token %}
     <div id="new-template-step-2" class="wizard">
         <div class="progress">
             <div class="bar-container">
                 <div class="bar" style="width: 66%"></div>
             </div>
-            <h3>{% blocktrans with step=2 all=3 %}{{step}}/{{all}}{% endblocktrans %}</h3>
+            <h3>
+                {% blocktrans with step=2 all=3 %}{{step}}/{{all}}{% endblocktrans %}
+            </h3>
         </div>
         <h2>{% blocktrans with step=2 %}Step {{step}}{% endblocktrans %}</h2>
         <p>{% trans "Change the parameters as needed." %}</p>
         <ul>
             <li>
-            <label for="new-template-name">{% trans "Name" %}</label>
+                <label for="new-template-name">{% trans "Name" %}</label>
                 <input type="text" name="name" id="new-template-name" value="{{base.name}}"
                 class="error validated" title="{% trans "Please choose a different name." %}" />
                 <div class="clear"></div>
@@ -33,7 +36,9 @@
                 {% for s in sizes %}
                 <p id="new-template-size-summary-{{s.id}}" class="size-summary clear"
                 {% if s != base.instance_type %}style="display:none"{% endif %}>
-                    <span class="cpu">{% blocktrans count n=s.CPU %}{{n}} core{% plural %}{{n}} cores{% endblocktrans %}</span>
+                    <span class="cpu">
+                        {% blocktrans count n=s.CPU %}{{n}} core{% plural %}{{n}} cores{% endblocktrans %}
+                    </span>
                     <span class="memory">{{s.RAM}} MiB</span>
                     <span class="credit">{{s.credit}}</span>
                 </p>
@@ -47,12 +52,13 @@
             </li>
         </ul>
         <nav>
-            <!-- <a href="#" class="prev">{% trans "&laquo; Cancel" %}</a> -->
-            <input type="reset" class="prev" value="{% trans "Cancel" %}" />
-            <input type="submit" class="next" value="{% trans "Launch master instance" %}" />
-            <div class="clear"></div>
-        </nav>
-        <script type="text/javascript">
+            <!-- <a href="#" class="prev">{% trans "&laquo; Cancel" %}</a>
+        -->
+        <input type="reset" class="prev" value="{% trans "Cancel" %}" />
+        <input type="submit" class="next" value="{% trans "Launch master instance" %}" />
+        <div class="clear"></div>
+    </nav>
+    <script type="text/javascript">
             $(function(){
                 $('#new-template-step-2 nav .prev').click(function(){
                     $('#modal').hide();
@@ -85,5 +91,5 @@
                 });
             })
         </script>
-    </div>
+</div>
 </form>

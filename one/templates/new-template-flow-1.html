@@ -1,15 +1,20 @@
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
-<form action="/ajax/templateWizard" method="post" id="template-wizard">{% csrf_token %}
+<form action="/ajax/templateWizard" method="post" id="template-wizard">
+    {% csrf_token %}
     <div id="new-template-step-1" class="wizard">
         <div class="progress">
             <div class="bar-container">
                 <div class="bar" style="width: 33%"></div>
             </div>
-            <h3>{% blocktrans with step=1 all=3 %}{{step}}/{{all}}{% endblocktrans %}</h3>
+            <h3>
+                {% blocktrans with step=1 all=3 %}{{step}}/{{all}}{% endblocktrans %}
+            </h3>
         </div>
         <h2>{% blocktrans with step=1 %}Step {{step}}{% endblocktrans %}</h2>
-        <p class="help">{% trans "Please choose the base system you want to customize." %}</p>
+        <p class="help">
+            {% trans "Please choose the base system you want to customize." %}
+        </p>
         <div class="container">
             <ul class="tpl-list modal">
                 {% if not templates %}
@@ -18,7 +23,12 @@
                 {% for m in templates %}
                 <li class="tpl">
                     <div class="summary">
-                        <div class="name tpl os-{{m.os_type}}" title="{{m.description}}"><label><input type="radio" name="base" value="{{m.id}}" /> {{m.name}}</label></div>
+                        <div class="name tpl os-{{m.os_type}}" title="{{m.description}}">
+                            <label>
+                                <input type="radio" name="base" value="{{m.id}}" />
+                                {{m.name}}
+                            </label>
+                        </div>
                         <div class="clear"></div>
                     </div>
                 </li>
@@ -56,5 +66,5 @@
             })
         </script>
     </div>
-    </div>
+</div>
 </form>

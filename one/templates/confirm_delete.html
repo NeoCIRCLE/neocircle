@@ -7,7 +7,10 @@
         <div class="content">
             <form action="{% url vm_delete i.id %}" method="post">
                 {% csrf_token %}
-                <p>{% trans "Are you sure?" %} <input type="submit" value="{% trans "Remove" %}" /></p>
+                <p>
+                    {% trans "Are you sure?" %}
+                    <input type="submit" value="{% trans "Remove" %}" />
+                </p>
             </form>
         </div>
     </div>

@@ -2,9 +2,7 @@
 {% get_current_language as LANGUAGE_CODE %}
 <div class="boxes">
     <div class="contentblock">
-        <h2>
-            {% trans "Data store" %}
-        </h2>
+        <h2>{% trans "Data store" %}</h2>
         <div class="content">
             <ul class="file-list">
                 <li class="wm small" id="current-location">
@@ -16,7 +14,12 @@
                                 <option value="size">Méret szerint</option>
                             </select>
                         </div>
-                        <div class="name"><small>Jelenlegi hely: <span data-bind="text: currentPath"></span></small></div>
+                        <div class="name">
+                            <small>
+                                Jelenlegi hely:
+                                <span data-bind="text: currentPath"></span>
+                            </small>
+                        </div>
                         <div class="clear"></div>
                     </div>
                 </li>
@@ -24,9 +27,7 @@
             <ul class="file-list" id="file-list">
                 <li class="wm real" data-bind="visible: notInRoot, click: jumpUp">
                     <div class="summary">
-                        <div class="name filetype-jump-out">
-                            ..
-                        </div>
+                        <div class="name filetype-jump-out">..</div>
                         <div class="clear"></div>
                     </div>
                 </li>
@@ -57,14 +58,19 @@
                     <div class="details">
                         <div class="details-container">
                             <ul>
-                                <li class="date">{% trans "Last modification" %}: <small class="value" data-bind="text: mTime"></small></li>
-                                <li class="filetype-text">{% trans "Type" %}: <span class="value" data-bind="text: type"></span></li>
+                                <li class="date">
+                                    {% trans "Last modification" %}:
+                                    <small class="value" data-bind="text: mTime"></small>
+                                </li>
+                                <li class="filetype-text">
+                                    {% trans "Type" %}:
+                                    <span class="value" data-bind="text: type"></span>
+                                </li>
                             </ul>
                         </div>
                     </div>
                 </li>
-                <!-- /ko -->
-            </ul>
+                <!-- /ko --> </ul>
             <ul class="file-list">
                 <li class="wm small-row">
                     <div class="summary" id="new-folder">
@@ -88,7 +94,11 @@
                         <div class="container">
                             <div id="upload-zone" class="upload-zone">
                                 <p>{% trans "Drag and drop files here to start uploading." %}</p>
-                                <p>{% trans 'You can also use the <a href="#" id="old-upload">the traditional upload form</a>.' %}</p>
+                                <p>
+                                    {% trans 'You can also use the
+                                    <a href="#" id="old-upload">the traditional upload form</a>
+                                    .' %}
+                                </p>
                                 <p>{% trans 'Upload limit is 1GB per file!' %}</p>
                             </div>
                             <div style="display: none" id="upload-progress-text" class="upload-zone"></div>
@@ -114,8 +124,11 @@
                             <div class="softLimit" data-bind="style: {left: quota.softPos}"></div>
                         </div>
                         <div class="name">
-                            {% trans "File quota" %}: <abbr data-bind="text: quota.used" title="{% trans "Used space" %}"></abbr>/<abbr data-bind="text: quota.soft" title="{% trans "soft limit" %}"></abbr>
-                            (<abbr title="{% trans "hard limit" %}" data-bind="text: quota.hard"></abbr>)
+                            {% trans "File quota" %}: <abbr data-bind="text: quota.used" title="{% trans "Used space" %}"></abbr>
+                            / <abbr data-bind="text: quota.soft" title="{% trans "soft limit" %}"></abbr>
+                            (
+                            <abbr title="{% trans "hard limit" %}" data-bind="text: quota.hard"></abbr>
+                            )
                         </div>
                         <div class="clear"></div>
                     </div>

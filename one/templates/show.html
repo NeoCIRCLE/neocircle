@@ -24,57 +24,61 @@
 
 {% if i.template.state != "READY" %}
 <div class="contentblock wide note big">
-    <p>{% blocktrans %}This is a master image for your new template.{% endblocktrans %}</p>
-    <form action="{% url one.views.vm_saveas id %}" method="POST">{% csrf_token %}
+    <p>
+        {% blocktrans %}This is a master image for your new template.{% endblocktrans %}
+    </p>
+    <form action="{% url one.views.vm_saveas id %}" method="POST">
+        {% csrf_token %}
         {% if i.template.state == "NEW" %}
-            <p style="float: right; margin-top:2em;margin-right:1em;">
-                <input type="submit" value="{% trans "Save" %}" class="big" style="background-color:rgba(102, 255, 0, 0.4)" />
-            </p>
+        <p style="float: right; margin-top:2em;margin-right:1em;">
+            <input type="submit" value="{% trans "Save" %}" class="big" style="background-color:rgba(102, 255, 0, 0.4)" />
+        </p>
         {% endif %}
     </form>
     <ol>
         <li{% if i.template.state == "SAVING" %} class="done"{%endif%}>{% blocktrans %}Connect to the machine.{% endblocktrans %}</li>
-        <li{% if i.template.state == "SAVING" %} class="done"{%endif%}>{% blocktrans %}Do all the needed installation/customization.{% endblocktrans %}</li>
-        <li{% if i.template.state == "SAVING" %} class="done"{%endif%}>{% blocktrans %}Log off (keep the machine running).{% endblocktrans %}</li>
-        <li{% if i.template.state == "SAVING" %} class="done"{%endif%}>{% blocktrans %}Click on the "save" button on the right.{% endblocktrans %}</li>
-        <li>{% blocktrans %}The machine will be shut down and its disk saved.{% endblocktrans %}</li>
-        <li>{% blocktrans %}You can share the template with your groups.{% endblocktrans %}</li>
+        <li{% if i.template.state == "SAVING" %} class="done"{%endif%}>
+            {% blocktrans %}Do all the needed installation/customization.{% endblocktrans %}
+        </li>
+        <li{% if i.template.state == "SAVING" %} class="done"{%endif%}>
+            {% blocktrans %}Log off (keep the machine running).{% endblocktrans %}
+        </li>
+        <li{% if i.template.state == "SAVING" %} class="done"{%endif%}>
+            {% blocktrans %}Click on the "save" button on the right.{% endblocktrans %}
+        </li>
+        <li>
+            {% blocktrans %}The machine will be shut down and its disk saved.{% endblocktrans %}
+        </li>
+        <li>
+            {% blocktrans %}You can share the template with your groups.{% endblocktrans %}
+        </li>
     </ol>
 </div>
 {% endif %}
-
-
 <div class="boxes">
     <div class="contentblock wm" id="state">
         <h2>{{name}}</h2>
         <div class="content">
-        {% if state == "PENDING" or state == "ACTIVE" and booting %}
+            {% if state == "PENDING" or state == "ACTIVE" and booting %}
             <p style="font-size:25px; line-height:2em;text-align:center;">
                 <img src="/static/load.gif" />
                 {% trans "Starting..." %}
             </p>
-
-        {% elif state == "ACTIVE" and not booting %}
+            {% elif state == "ACTIVE" and not booting %}
             <p id="connect" style="display:block; font-size:25px; line-height:2em;text-align:center;">
                 <a href="{{uri}}" class="button" onclick="return connectbutton();">
                     <img src="/static/load.gif" id="connecting" style="display:none;" />
                     {% trans "Running" %}
                 </a>
             </p>
-        {% elif state == "STOPPED" %}
-            <p style="font-size:25px; line-height:2em;text-align:center;">
-            {% trans "Stopped" %}
-            </p>
-        {% endif %}
+            {% elif state == "STOPPED" %}
+            <p style="font-size:25px; line-height:2em;text-align:center;">{% trans "Stopped" %}</p>
+            {% endif %}
         {% if state == "DONE" %}
-            <p style="font-size:25px; line-height:2em;text-align:center;">
-            {% trans "Deleted" %}
-            </p>
-        {% endif %}
+            <p style="font-size:25px; line-height:2em;text-align:center;">{% trans "Deleted" %}</p>
+            {% endif %}
         {% if state == "FAILED" %}
-            <p style="font-size:25px; line-height:2em;text-align:center;">
-                {% trans "Unexpected error occured" %}
-            </p>
+            <p style="font-size:25px; line-height:2em;text-align:center;">{% trans "Unexpected error occured" %}</p>
             {% endif %}
         </div>
     </div>

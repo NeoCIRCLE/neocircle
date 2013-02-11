@@ -1,18 +1,37 @@
-
 {% extends "base.html" %}
 {% load i18n %}
 
 {% block content %}
 <div class="boxes">
     <div class="contentblock" id="project_closed">
-            <h2>Bejelentkezés</h2>
-            <div class="content">
-		<p>A tesztüzem alatt a felhasználók belépése és azonosítása "önbevallásos" alapon működik (a jövőben <a href="http://login.bme.hu/">EduID-s</a> bejelentkezésre lesz lehetőség):</p>
-		<form action="/login/" method="POST">{% csrf_token %}
-		<p><label>NEPTUN-kód: <input maxlength="8" size="8" type="text" name="neptun" required pattern="[A-Z][A-Z0-9]{5}" onkeyup="javascript:this.value=this.value.toUpperCase();"/></label></p>
-		<p><label>Jelszó: <input maxlength="8" size="8" type="password" name="pw" required /></label></p>
-	<p><input type="hidden" name="next" value="{{nex}}"/><input type="submit" value="Bejelentkezés"/></label></p>
-            </div>
+        <h2>Bejelentkezés</h2>
+        <div class="content">
+            <p>
+                A tesztüzem alatt a felhasználók belépése és azonosítása "önbevallásos" alapon működik (a jövőben
+                <a href="http://login.bme.hu/">EduID-s</a>
+                bejelentkezésre lesz lehetőség):
+            </p>
+            <form action="/login/" method="POST">
+                {% csrf_token %}
+                <p>
+                    <label>
+                        NEPTUN-kód:
+                        <input maxlength="8" size="8" type="text" name="neptun" required pattern="[A-Z][A-Z0-9]{5}" onkeyup="javascript:this.value=this.value.toUpperCase();"/>
+                    </label>
+                </p>
+                <p>
+                    <label>
+                        Jelszó:
+                        <input maxlength="8" size="8" type="password" name="pw" required />
+                    </label>
+                </p>
+                <p>
+                    <input type="hidden" name="next" value="{{nex}}"/>
+                    <input type="submit" value="Bejelentkezés"/>
+                </p>
+            </form>
         </div>
+    </div>
+</div>
 </div>
 {% endblock %}
