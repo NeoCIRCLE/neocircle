@@ -113,7 +113,7 @@ $(function() {
     });
     $('#new-group').click(function() {
         var content = $('#new-group-wizard').html();
-        $('#new-group-wizard').parent()[0].removeChild($('#new-group-wizard')[0]);
+//        $('#new-group-wizard').parent()[0].removeChild($('#new-group-wizard')[0]);
         $('#modal').show();
         $('#modal-container').html(content);
 
