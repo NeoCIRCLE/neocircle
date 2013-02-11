@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-02-10 14:28+0100\n"
+"POT-Creation-Date: 2013-02-11 15:51+0100\n"
 "PO-Revision-Date: 2013-02-10 14:27+0100\n"
 "Last-Translator: \n"
 "Language-Team: Hungarian <cloud@ik.bme.hu>\n"
@@ -17,71 +17,71 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "X-Generator: Lokalize 1.4\n"
 
-#: static/cloud.js:114 static/cloud.js.c:552
+#: static/cloud.js:155 static/cloud.js.c:614
 msgid "Cancel"
 msgstr "Mégsem"
 
-#: static/cloud.js:128
+#: static/cloud.js:169
 #, c-format
 msgid "Are you sure stopping %s?"
 msgstr "Biztosan felfüggeszti a következőt: %s?"
 
-#: static/cloud.js:129
+#: static/cloud.js:170
 msgid "Stop"
 msgstr "Felfüggesztés"
 
-#: static/cloud.js:138
+#: static/cloud.js:179
 #, c-format
 msgid "Are you sure deleting %s?"
 msgstr "Biztosan törli a következőt: %s?"
 
-#: static/cloud.js:139 static/cloud.js.c:184 static/cloud.js.c:250
-#: static/cloud.js:552
+#: static/cloud.js:180 static/cloud.js.c:238 static/cloud.js.c:304
+#: static/cloud.js:614
 msgid "Delete"
 msgstr "Törlés"
 
-#: static/cloud.js:148
+#: static/cloud.js:189
 #, c-format
 msgid "Are you sure restarting %s?"
 msgstr "Biztosan újraindítja a következőt: %s?"
 
-#: static/cloud.js:149
+#: static/cloud.js:190
 msgid "Restart"
 msgstr "Újraindítás"
 
-#: static/cloud.js:183
+#: static/cloud.js:237
 #, c-format
 msgid "Are you sure deleting this %s template?"
 msgstr "Biztosan törli a következő sablont: %s?"
 
-#: static/cloud.js:250
+#: static/cloud.js:304
 #, c-format
 msgid "Are you sure deleting <strong>%s</strong>"
 msgstr "Törli a következő fájlt: <strong>%s</strong>"
 
-#: static/cloud.js:374 static/cloud.js.c:383 static/cloud.js.c:392
-#: static/cloud.js:493 static/cloud.js.c:546
+#: static/cloud.js:428 static/cloud.js.c:437 static/cloud.js.c:446
+#: static/cloud.js:553 static/cloud.js.c:608
 msgid "file"
 msgstr "fájl"
 
-#: static/cloud.js:547
+#: static/cloud.js:609
 #, c-format
 msgid "You are removing the file <strong>%s</strong>."
 msgstr "Törli a következő fájlt: <strong>%s</strong>."
 
-#: static/cloud.js:549
+#: static/cloud.js:611
 #, c-format
 msgid "You are removing the folder <strong>%s</strong> (and its content)."
 msgstr "Törli a következő könyvtárat és tartalmát: <strong>%s</strong>."
 
-#: static/cloud.js:552
+#: static/cloud.js:614
 msgid "Are you sure?"
 msgstr "Biztos benne?"
 
-#: static/cloud.js:704 static/cloud.js.c:706
+#: static/cloud.js:766 static/cloud.js.c:768
 msgid "Upload"
 msgstr "Feltöltés"
 
-#: static/cloud.js:706
+#: static/cloud.js:768
 msgid "done, processing..."
 msgstr "kész, feldolgozás..."
