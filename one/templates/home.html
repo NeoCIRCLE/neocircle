@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% load l10n %}
 {% get_current_language as LANGUAGE_CODE %}
 
 
@@ -26,7 +27,7 @@
                         <li class="wm">
                             <div class="summary">
                                 <div class="quota">
-                                    <div class="used" style="width: {{ s.get_instance_pc }}%"></div>
+                                    <div class="used" style="width: {{ s.get_instance_pc|unlocalize }}%"></div>
                                 </div>
                                 <div class="name wm-on">{{s.name}}</div>
                                 <div class="status">
