@@ -5,6 +5,7 @@ from django.db.models.signals import post_save
 from django.core.exceptions import ValidationError
 from datetime import datetime
 from django.conf import settings
+import one.models
 
 
 LANGUAGE_CODE = settings.LANGUAGE_CODE
@@ -27,6 +28,9 @@ class Person(models.Model):
     language = models.CharField(verbose_name=_('language'), blank=False, max_length=10,
             choices=LANGUAGE_CHOICES, default=LANGUAGE_CODE)
     code = models.CharField(_('code'), max_length=30, unique=True)
+
+    def get_shares(self):
+        return one.models.Share.objects.filter(group__in=self.course_groups.all())
 
     def short_name(self):
         if self.user.last_name:

@@ -74,6 +74,7 @@ def _list_instances(request):
 @login_required
 def home(request):
     return render_to_response("home.html", RequestContext(request, {
+        'shares': request.user.person_set.all()[0].get_shares(),
         'templates': Template.objects.filter(state='READY'),
         'mytemplates': Template.objects.filter(owner=request.user),
         'publictemplates': Template.objects.filter(public=True, state='READY'),
@@ -191,13 +192,18 @@ def vm_saveas(request, vmid):
 
 @require_POST
 @login_required
-def vm_new(request, template):
-    base = get_object_or_404(Template, pk=template)
+def vm_new(request, template=None, share=None):
+    base = None 
+    if template:
+        base = get_object_or_404(Template, pk=template)
+    else:
+        share = get_object_or_404(Share, pk=share)
+        base = share.template
     if "name" in request.POST:
         if base.owner != request.user and not base.public and not request.user.is_superuser:
             raise PermissionDenied()
         name = request.POST['name']
-        t = Template.objects.create(name=name, disk=base.disk, instance_type_id=request.POST['size'], network=base.network, owner=request.user)
+        t = Template.objects.create(name=name, disk=base.disk, instance_type_id=request.POST['size'], network=base.network, owner=request.user, share=share)
         t.access_type = base.access_type
         t.description = request.POST['description']
         t.system = base.system
