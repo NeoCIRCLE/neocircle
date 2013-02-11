@@ -50,6 +50,8 @@
             <ul>
                 <li class="name">{% trans "Hostname" %}: <span class="value">{{i.name}}</span><div class="clear"></div></li>
                 <li class="os-{{i.template.os_type}}">{% trans "System" %}: <span class="value">{{i.template.system}}</span><div class="clear"></div></li>
+                <li class="template">{% trans "Type" %}: <span class="value">{{i.share.type}}</span><div class="clear"></div></li>
+                <li class="template">{% trans "Share" %}: <span class="value">{{i.share.name}}</span><div class="clear"></div></li>
                 <li class="template">{% trans "Template" %}: <span class="value">{{i.template.name}}</span><div class="clear"></div></li>
                 <li class="type">{% trans "Size" %}: <span class="value">{{i.template.instance_type.name}}:
                     <span class="cpu">{{i.template.instance_type.CPU}}</span>

@@ -226,7 +226,16 @@ def vm_new(request, template=None, share=None, redir=True):
     try:
         #Gány quota
         if share == None or (share != None and share.get_running() < share.instance_limit) or extra:
+            time_of_suspend = None
+            time_of_delete = None
+            if TYPES[share.type]['suspend']:
+                time_of_suspend = TYPES[share.type]['suspend']+datetime.now()
+            if  TYPES[share.type]['delete']:
+                time_of_delete = TYPES[share.type]['delete']+datetime.now()
             i = Instance.submit(base, request.user, extra=extra, share=share)
+            i.time_of_suspend = time_of_suspend
+            i.time_of_delete = time_of_delete
+            i.save()
         if redir:
             return redirect(i)
         else:
