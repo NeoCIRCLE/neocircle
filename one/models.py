@@ -283,6 +283,8 @@ class Template(models.Model):
             help_text=(_('Name of operating system in format like "%s".') %
             "Ubuntu 12.04 LTS Desktop amd64"))
 
+    def running_instances(self):
+        return self.instance_set.exclude(state='DONE').count()
     def os_type(self):
         if self.access_type == 'rdp':
             return "win"
@@ -294,7 +296,7 @@ class Template(models.Model):
 
     @transaction.commit_on_success
     def safe_delete(self):
-        if not self.instance_set.exists():
+        if not self.instance_set.exclude(state='DONE').exists():
             self.delete()
             return True
         else:

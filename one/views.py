@@ -89,15 +89,17 @@ def ajax_template_delete(request):
     except:
         return HttpResponse(unicode(_("Invalid template ID.")), status=404)
     template = get_object_or_404(Template, id=template_id)
-    if template.instance_set.exists():
+    if template.running_instances() > 0:
         return HttpResponse(unicode(_("There are running instances of this template.")), status=404)
     elif template.share_set.exists():
         return HttpResponse(unicode(_("Template is still shared.")), status=404)
     elif template.owner != request.user:
         return HttpResponse(unicode(_("You don't have permission to delete this template.")), status=404)
     else:
-        template.safe_delete()
-        return HttpResponse(unicode(_("Template successfully deleted.")))
+        if template.safe_delete():
+            return HttpResponse(unicode(_("Template successfully deleted.")))
+        else:
+            return HttpResponse(unicode(_("Unexpected error happened.")), status=404)
 
 def ajax_template_name_unique(request, name):
     s = "True"
@@ -107,12 +109,12 @@ def ajax_template_name_unique(request, name):
 
 @login_required
 def vm_credentials(request, iid):
-    vm = get_object_or_404(Instance, pk=iid)
-    if vm.owner == request.user:
+    try:
+        vm = get_object_or_404(Instance, pk=iid, owner=request.user)
         return render_to_response('vm-credentials.html', RequestContext(request, { 'i' : vm }))
-    else:
-        return HttpResponse("Stale id.")
-
+    except:
+        return HttpResponse(_("Could not get Virtual Machine credentials."), code=404)
+        messages.error(request, _('Failed to power off virtual machine.'))
 
 class AjaxTemplateWizard(View):
     def get(self, request, *args, **kwargs):
