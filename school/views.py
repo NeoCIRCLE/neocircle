@@ -103,6 +103,13 @@ def login(request):
     for a in affiliation:
         g, created = AGroup.objects.get_or_create(name=a)
         user.groups.add(g)
+        try:
+            g = Group.objects.filter(name=a)
+            g.members.add(p)
+            g.save()
+            messages.info(request, _('Course "%s" added.') % g.course)
+        except:
+            pass
     user.save()
 
     p.save()
