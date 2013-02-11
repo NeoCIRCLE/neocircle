@@ -88,12 +88,12 @@
                             <p>
                                 <textarea name="members" placeholder="{% trans 'Student NEPTUN codes, one per line' %}" id="new-group-members"></textarea>
                             </p>
-                            <h4>{% trans "Summary" %}</h4>
+                            <!--<h4>{% trans "Summary" %}</h4>
                             <p>
                                 <strong>{% trans "Group name" %}:</strong> <span id="new-group-summary-name"></span><br />
                                 <strong>{% trans "Semester" %}:</strong> <span id="new-group-summary-semester"></span><br />
                                 <strong>{% trans "Member count" %}:</strong> <span id="new-group-summary-count"></span><br />
-                            </p>
+                            </p>-->
                             <p>
                                 {% csrf_token %}
                                 <input type="submit" value="{% trans "Done" %}">

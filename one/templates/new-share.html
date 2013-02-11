@@ -5,20 +5,20 @@
         <h2>{% blocktrans with t=base.name%}Sharing template: {{t}}{% endblocktrans %}</h2>
         {% if not group %}
         <div class="hilight">
-        <p>{% trans "Choose a group" %}</p>
-                {% if not groups %}
-                    <p class="hilight">{% trans "You have no groups." %}</p>
-                {% endif %}
-        <ul>
-            <li>
-                <label for="share-group">{% trans "Group" %}</label>
-                <select id="share-group-select" name="group"{% if not groups %} disabled=""{%endif%}>
-                    <option value="" selected="" class="dummy">--</option>
-                    {%for i in groups%}<option value="{{i.id}}">{{i.name}} ({{i.members.count}})</option>{%endfor%}
-                </select>
-                <div class="clear"></div>
-            </li>
-        </ul>
+            <p style="margin: 5px">{% trans "Choose a group" %}</p>
+            {% if not groups %}
+            <p style="margin: 5px">{% trans "You have no groups." %}</p>
+            {% endif %}
+            <ul style="margin: 5px">
+                <li>
+                    <label for="share-group">{% trans "Group" %}</label>
+                    <select id="share-group-select" name="group"{% if not groups %} disabled=""{%endif%}>
+                        <option value="" selected="" class="dummy">--</option>
+                        {%for i in groups%}<option value="{{i.id}}">{{i.name}} ({{i.members.count}})</option>{%endfor%}
+                    </select>
+                    <div class="clear"></div>
+                </li>
+            </ul>
         </div>
         <div class="clear"></div>
         {% else %}
@@ -33,40 +33,42 @@
             </li>
             <li class="li-share-type">
             <label for="share-type">{% trans "Type" %}</label>
-                <ul class="radio">
-                    {% for s in types %}
-                    <li>
-                        <label>
-                            <input type="radio" name="type" value="{{s.id}}" id="share-type-{{s.id}}"
-                            {% if s.default %}checked="checked"{% endif %} />
-                            {{s.verbose_name}}
-                        </label>
-                    </li>
-                    {% endfor %}
-                </ul>
+            <ul class="radio">
                 {% for s in types %}
-                <p id="share-type-summary-{{s.id}}" class="type-summary clear"
-                {% if not s.default %}style="display:none"{% endif %}>
-                    {{s.help_text}}
-                    ({% if s.suspend %}
-                    <span class="suspend"
-                        title="{% blocktrans with time=s.suspend %}Suspend after {{time}}.{%endblocktrans%}">
-                        {{s.suspendx|timeuntil}}
-                    </span>
-                    {%endif%}{% if s.delete %}<span class="delete"
-                        title="{% blocktrans with time=s.delete %}Delete after {{time}}.{%endblocktrans%}">
-                        {{s.deletex|timeuntil}}</span>{%endif%})
-                </p>
+                <li>
+                    <label>
+                        <input type="radio" name="type" value="{{s.id}}" id="share-type-{{s.id}}"
+                        {% if s.default %}checked="checked"{% endif %} />
+                        {{s.verbose_name}}
+                    </label>
+                </li>
                 {% endfor %}
+            </ul>
+            {% for s in types %}
+            <p id="share-type-summary-{{s.id}}" class="type-summary clear"
+            {% if not s.default %}style="display:none"{% endif %}>
+                {{s.help_text}}
+                ({% if s.suspend %}
+                <span class="suspend"
+                    title="{% blocktrans with time=s.suspend %}Suspend after {{time}}.{%endblocktrans%}">
+                    {{s.suspendx|timeuntil}}
+                </span>
+                {%endif%}{% if s.delete %}<span class="delete"
+                    title="{% blocktrans with time=s.delete %}Delete after {{time}}.{%endblocktrans%}">
+                    {{s.deletex|timeuntil}}</span>{%endif%})
+            </p>
+            {% endfor %}
+            <div class="clear"></div>
+            </li>
+            <li>
+                <label for="share-instance-limit">{% trans "Maximal count of instances" %}</label>
+                <input type="number" name="instance_limit" id="share-instance-limit" value="10" />
                 <div class="clear"></div>
             </li>
-            <li class="clear">
-            <label for="share-instance-limit">{% trans "Maximal count of instances" %}</label>
-                <input type="number" name="instance_limit" id="share-instance-limit" value="10" />
-            </li>
-            <li class="clear">
-            <label for="share-instance-limit">{% trans "Maximal count of instaces/user" %}</label>
+            <li>
+                <label for="share-instance-limit">{% trans "Maximal count of instaces/user" %}</label>
                 <input type="number" name="per_user_limit" id="share-per-user-limit" value="1" />
+                <div class="clear"></div>
             </li>
 
             <li style="border: none" class="clear">
