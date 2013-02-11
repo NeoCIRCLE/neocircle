@@ -203,7 +203,7 @@ def vm_new(request, template=None, share=None):
         if base.owner != request.user and not base.public and not request.user.is_superuser:
             raise PermissionDenied()
         name = request.POST['name']
-        t = Template.objects.create(name=name, disk=base.disk, instance_type_id=request.POST['size'], network=base.network, owner=request.user, share=share)
+        t = Template.objects.create(name=name, disk=base.disk, instance_type_id=request.POST['size'], network=base.network, owner=request.user)
         t.access_type = base.access_type
         t.description = request.POST['description']
         t.system = base.system
