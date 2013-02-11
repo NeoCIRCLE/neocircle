@@ -173,7 +173,7 @@ class AjaxShareWizard(View):
                 type=stype, instance_limit=il, per_user_limit=request.POST['per_user_limit'],
                 group=group, template=base)
         messages.success(request, _('Successfully shared %s.') % base)
-        return redirect('/')
+        return redirect(group)
 ajax_share_wizard = login_required(AjaxShareWizard.as_view())
 
 

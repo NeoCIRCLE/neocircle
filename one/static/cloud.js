@@ -95,7 +95,7 @@ $(function() {
     })
     $('.template-share').click(function(e) {
         e.preventDefault(); e.stopPropagation();
-        $.get('/ajax/share/'+$(this).data('id'), function(data) {
+        $.get('/ajax/share/'+$(this).data('id')+'/'+$(this).data('gid'), function(data) {
             $('#modal-container').html(data);
         })
         $('#modal').show();
