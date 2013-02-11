@@ -169,6 +169,12 @@ class Share(models.Model):
     per_user_limit = models.IntegerField(verbose_name=_('per user limit'),
             help_text=_('Maximal count of instances launchable by a single user.'))
 
+    def get_running_or_stopped(self):
+        return Instance.objects.all().exclude(state='DONE').filter(share=self).count()
+    def get_running(self):
+        return Instance.objects.all().exclude(state='DONE').exclude(state='STOPPED').filter(share=self).count()
+    def get_instance_pc(self):
+        return float(self.get_running()) / self.instance_limit * 100
 """
 Virtual disks automatically synchronized with OpenNebula.
 """
@@ -417,10 +423,10 @@ class Instance(models.Model):
     Submit a new instance to OpenNebula.
     """
     @classmethod
-    def submit(cls, template, owner, extra=""):
+    def submit(cls, template, owner, extra="", share=None):
         from django.template.defaultfilters import escape
         out = ""
-        inst = Instance(pw=pwgen(), template=template, owner=owner)
+        inst = Instance(pw=pwgen(), template=template, owner=owner, share=share)
         inst.save()
         with tempfile.NamedTemporaryFile(delete=False) as f:
             os.chmod(f.name, stat.S_IRUSR|stat.S_IWUSR|stat.S_IRGRP|stat.S_IROTH)

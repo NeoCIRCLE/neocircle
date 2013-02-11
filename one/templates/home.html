@@ -26,11 +26,11 @@
                         <li class="wm">
                             <div class="summary">
                                 <div class="quota">
-                                    <div class="used" style="width: 40%"></div>
+                                    <div class="used" style="width: {{ s.get_instance_pc }}%"></div>
                                 </div>
                                 <div class="name wm-on">{{s.name}}</div>
                                 <div class="status">
-                                    3/10
+                                    {{s.get_running}}/{{s.instance_limit}}
                                 </div>
                                 <div class="clear"></div>
                             </div>
