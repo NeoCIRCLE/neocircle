@@ -169,6 +169,7 @@ class Share(models.Model):
     per_user_limit = models.IntegerField(verbose_name=_('per user limit'),
             help_text=_('Maximal count of instances launchable by a single user.'))
 
+
     def get_running_or_stopped(self):
         return Instance.objects.all().exclude(state='DONE').filter(share=self).count()
     def get_running(self):

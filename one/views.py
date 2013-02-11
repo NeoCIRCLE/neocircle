@@ -73,8 +73,12 @@ def _list_instances(request):
 @require_GET
 @login_required
 def home(request):
+    shares = [s for s in request.user.person_set.all()[0].get_shares()]
+    for i, s in enumerate(shares):
+        s.running_shared = s.instance_set.all().exclude(state="DONE").filter(owner=request.user).count()
+        shares[i] = s
     return render_to_response("home.html", RequestContext(request, {
-        'shares': request.user.person_set.all()[0].get_shares(),
+        'shares': shares,
         'templates': Template.objects.filter(state='READY'),
         'mytemplates': Template.objects.filter(owner=request.user),
         'publictemplates': Template.objects.filter(public=True, state='READY'),

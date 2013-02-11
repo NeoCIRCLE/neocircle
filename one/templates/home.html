@@ -27,9 +27,9 @@
                         <li class="wm">
                             <div class="summary">
                                 <div class="quota">
-                                    <div class="used" style="width: {{ s.get_instance_pc|unlocalize }}%"></div>
+                                    <div class="used" style="width:{% if s.running_shared >=  s.per_user_limit %}100%{% else %}{{ s.get_instance_pc|unlocalize }}%{% endif %}"/></div>
                                 </div>
-                                <div class="name wm-on">{{s.name}}</div>
+                                <div class="name wm-on">{{s.name}} - {{ s.group.name }}   ({{ s.running_shared }}/{{ s.per_user_limit }})</div>
                                 <div class="status">
                                     {{s.get_running}}/{{s.instance_limit}}
                                 </div>
@@ -49,7 +49,7 @@
                                             &nbsp;
                                             <span class="value">
                                                 <form method="POST" action="/vm/new/s{{s.pk}}/">{% csrf_token %}
-                                                    <input type="submit" value="{% trans "Launch" %}"/>
+                                                    <input {% if  s.running_shared >= s.per_user_limit  or s.get_running >= s.instance_limit%}disabled{% endif %} type="submit" value="{% trans "Launch" %}"/>
                                                 </form>
                                             </span>
                                             <div class="clear"></div>
