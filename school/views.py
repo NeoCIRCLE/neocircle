@@ -108,12 +108,12 @@ def login(request):
         g, created = AGroup.objects.get_or_create(name=a)
         user.groups.add(g)
         try:
-            g = Group.objects.filter(name=a)
+            g = Group.objects.filter(name=a)[0]
             g.members.add(p)
             g.save()
-            logger.warning("Django affiliation %s added to %s" % (a, p))
-        except:
-            logger.warning("Django FAIL affiliation %s added to %s" % (a, p))
+            logger.warning("Django affiliation group %s added to %s" % (a, p))
+        except e as Exception:
+            logger.warning("Django FAIL affiliation group %s added to %s %s" % (a, p, e))
     user.save()
 
     p.save()
