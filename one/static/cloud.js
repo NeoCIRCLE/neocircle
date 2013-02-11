@@ -224,7 +224,7 @@ $(function() {
             type: 'POST',
             url: 'ajax/vm/new/' + template_id + '/',
             success: function(data, b, xhrRequest) {
-                window.location.href = xhrRequest.getResponseHeader("Location");
+                window.location.href = '/'; //xhrRequest.getResponseHeader("Location");
                 //alert(xhrRequest.getResponseHeader("Location"));
             }
         })
