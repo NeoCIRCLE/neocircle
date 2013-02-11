@@ -77,12 +77,12 @@
         </ul>
         <nav>
             <input type="reset" class="prev" value="{% trans "Cancel" %}" />
-            <input type="submit" value="{% trans "Share" %}" {% if not groups %} disabled=""{%endif%}/>
+            <input type="submit" value="{% trans "Share" %}" {% if not groups %}{%endif%}/>
             <div class="clear"></div>
         </nav>
         <script type="text/javascript">
             $(function(){
-        {% if not group %}
+                {% if not group %}
                 if (!$("select#share-group-select :selected").val())
                     $('#new-share input[type=submit]').attr("disabled", "")
                 else
@@ -94,7 +94,6 @@
                         $('#new-share input[type=submit]').removeAttr("disabled")
                 })
                 {% endif %}
-
                 $('#new-share nav .prev').click(function(){
                     $('#modal').hide();
                 })

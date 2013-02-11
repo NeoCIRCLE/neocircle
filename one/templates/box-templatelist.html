@@ -6,25 +6,41 @@
             {% for t in mytemplates %}
             <li class="wm" id="t{{t.id }}">
                 <div class="summary {% if t.state == 'NEW' or t.state == 'SAVING'%}unfinished{% endif %}">
-                    <div class="name">{{t.name}}
-                        {% if t.myshares %}
-                        <ul>
-                        {% for i in t.myshares %}
-                        <li>{{i.name}} -&gt; {{i.group}} ({{i.get_running}}/{{i.instance_limit}} = {{i.get_instance_pc}}%)
-                            <form style="display:inline" action="/vm/unshare/{{i.id}}/" method="post">{% csrf_token %}<input type="submit" value="unshare"/></form>
-                        </li>
-                        {% endfor %}
-                        {% endif %}
+                    <div class="name">
+                        {{t.name}}
                     </div>
+
                     <div class="status">{{t.state}}</div>
                     <div class="actions">
+                        {% if t.state == 'READY' %}
                         <a href="#" class="try-template-button" data-id="{{t.id}}" title="{% trans "Try"  %}">
                             <img src="/static/icons/control.png" alt="{% trans "Start" %}"/></a>
                         <a href="#" title="{% trans "Edit" %}"><img src="/static/icons/pencil.png" alt="{% trans "Edit" %}" /></a>
-                        <a href="#" class="delete-template-button" data-id="{{ t.id }}" data-name="{{ t.name }}" title="{% trans "Remove" %}"><img src="/static/icons/minus-circle.png" alt="{% trans "Remove" %}" /></a>
                         <a href="#" class="template-share" data-id="{{t.id}}" data-gid="{{group.id}}" title="{% trans "Share" %}"><img src="/static/icons/user-share.png" alt="{% trans "Share" %}" /></a>
+                        {% endif %}
+                        <a href="#" class="delete-template-button" data-id="{{ t.id }}" data-name="{{ t.name }}" title="{% trans "Remove" %}"><img src="/static/icons/minus-circle.png" alt="{% trans "Remove" %}" /></a>
                     </div>
                     <div class="clear"></div>
+                    {% if t.myshares %}
+                    <ul class="shares">
+                        {% for i in t.myshares %}
+                        <li>
+
+                                <div class="quota">
+                                    <div class="used" style="width: {{ i.get_instance_pc }}%"></div>
+                                </div>
+                            <form action="/vm/unshare/{{i.id}}/" method="post">
+                                <span title="{{i.name}}">{{i.name|truncatechars:20}}</span>
+                                ({{i.get_running}}/{{i.instance_limit}} = {{i.get_instance_pc}}%)
+
+                                {% csrf_token %}
+                                <input type="submit" value="unshare" style="float: right"/>
+                            </form>
+                            <div class="clear"></div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
                 </div>
                 <div class="details">
                     <ul>
@@ -67,23 +83,34 @@
             {% for t in publictemplates %}
             <li class="wm" id="t{{t.id }}">
                 <div class="summary public-template">
-                    <div class="name">{{t.name}}
-                        {% if t.myshares %}
-                        <ul>
-                        {% for i in t.myshares %}
-                        <li>{{i.name}} -&gt; {{i.group}} ({{i.get_running}}/{{i.instance_limit}} = {{i.get_instance_pc}}%)
-                            <form style="display:inline" action="/vm/unshare/{{i.id}}/" method="post">{% csrf_token %}<input type="submit" value="unshare"/></form>
-                        </li>
-                        {% endfor %}
-                        {% endif %}
+                    <div class="name">
+                        {{t.name}}
                     </div>
                     <div class="status">{{t.state}}</div>
                     <div class="actions">
+                        {% if t.state == 'READY' %}
                         <a href="#" class="try-template-button" data-id="{{t.id}}" title="{% trans "Try"  %}">
                             <img src="/static/icons/control.png" alt="{% trans "Start" %}"/></a>
                         <a href="#" class="template-share" data-id="{{t.id}}" data-gid="{{group.id}}" title="{% trans "Share" %}"><img src="/static/icons/user-share.png" alt="{% trans "Share" %}" /></a>
+                        {% endif %}
                     </div>
                     <div class="clear"></div>
+                    {% if t.myshares %}
+                    <ul class="shares">
+                        {% for i in t.myshares %}
+                        <li>
+                            <form action="/vm/unshare/{{i.id}}/" method="post">
+                                <span title="{{i.name}}">{{i.name|truncatechars:20}}</span>
+                                ({{i.get_running}}/{{i.instance_limit}} = {{i.get_instance_pc}}%)
+
+                                {% csrf_token %}
+                                <input type="submit" value="unshare" style="float: right"/>
+                            </form>
+                            <div class="clear"></div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
                 </div>
                 <div class="details">
                     <ul>
