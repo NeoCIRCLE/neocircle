@@ -1,6 +1,6 @@
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
-<form action="/ajax/share/{{base.id}}" method="post" id="template-wizard">{% csrf_token %}
+<form action="/ajax/share/{{base.id}}/" method="post" id="template-wizard">{% csrf_token %}
     <div id="new-share" class="wizard">
         <h2>{% blocktrans with t=base.name%}Sharing template: {{t}}{% endblocktrans %}</h2>
         {% if not group %}
@@ -82,6 +82,7 @@
         </nav>
         <script type="text/javascript">
             $(function(){
+        {% if not group %}
                 if (!$("select#share-group-select :selected").val())
                     $('#new-share input[type=submit]').attr("disabled", "")
                 else
@@ -92,6 +93,7 @@
                     else
                         $('#new-share input[type=submit]').removeAttr("disabled")
                 })
+                {% endif %}
 
                 $('#new-share nav .prev').click(function(){
                     $('#modal').hide();
