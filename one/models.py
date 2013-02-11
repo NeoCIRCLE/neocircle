@@ -158,7 +158,7 @@ TYPES = {"LAB": {"verbose_name": _('lab'),         "id": "LAB",     "suspend": t
 TYPES_L = sorted(TYPES.values(), key=lambda m: m["suspend"])
 TYPES_C = tuple([(i[0], i[1]["verbose_name"]) for i in TYPES.items()])
 class Share(models.Model):
-    name = models.CharField(max_length=100, unique=True, verbose_name=_('name'))
+    name = models.CharField(max_length=100, verbose_name=_('name'))
     description = models.TextField(verbose_name=_('description'))
     template = models.ForeignKey('Template', null=False, blank=False)
     group = models.ForeignKey(Group, null=False, blank=False)
