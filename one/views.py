@@ -132,9 +132,14 @@ class AjaxTemplateWizard(View):
         base = get_object_or_404(Template, id=request.POST['base'])
         if base.owner != request.user and not base.public and not request.user.is_superuser:
             raise PermissionDenied()
+        try:
+            maxshare = Template.objects.order_by('-pk')[0].pk + 1
+        except:
+            maxshare = 1
         return render_to_response('new-template-flow.html', RequestContext(request, {
             'sizes': InstanceType.objects.all(),
             'base': base,
+            'maxshare': maxshare,
             }))
 ajax_template_wizard = login_required(AjaxTemplateWizard.as_view())
 

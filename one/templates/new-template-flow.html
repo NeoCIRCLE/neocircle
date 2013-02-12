@@ -16,8 +16,8 @@
         <ul>
             <li>
                 <label for="new-template-name">{% trans "Name" %}</label>
-                <input type="text" name="name" id="new-template-name" value="{{base.name}}"
-                class="error validated" title="{% trans "Please choose a different name." %}" />
+                <input type="text" name="name" id="new-template-name" value="{{base.name}} {{maxshare}}"
+                class="validated" />
                 <div class="clear"></div>
             </li>
             <li class="new-tpl-size">
