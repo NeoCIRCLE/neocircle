@@ -3,9 +3,6 @@
 {% get_current_language as LANGUAGE_CODE %}
 {% block content %}
 <div class="boxes">
-    <!-- <div class="contentblock">
-        <h2>Summary</h2>
-    </div> -->
     <div class="contentblock" id="group-members">
         <h2>{% trans "Members of" %}: {{group.name}}</h2>
         <ul class="wm-list">
@@ -43,6 +40,49 @@
                     <div id="new-member-form">
                         <input type="text" placeholder="{% trans "User NEPTUN code" %}" />
                         <input type="submit" value="{% trans "Add user" %}" data-id="{{group.id}}"/>
+                    </div>
+                    <div class="clear"></div>
+                </div>
+            </li>
+        </ul>
+    </div>
+    <div class="contentblock" id="group-owners">
+        <h2>{% trans "Owners of" %}: {{group.name}}</h2>
+        <ul class="wm-list">
+            {% for owner in owners %}
+            <li class="wm small-row">
+                <div class="summary">
+                    <div class="name">
+                        {% if not owner.user %}
+                        {{owner.code}}
+                        {% else %}
+                        {{owner}} ({{owner.code}})
+                        {% endif %}
+                    </div>
+                    <div class="actions">
+                        <a href="#" class="remove" data-gid="{{group.id}}" data-neptun="{{owner.code}}">
+                            <img src="/static/icons/minus-circle.png" alt="{% trans 'Remove' %}" />
+                        </a>
+                    </div>
+                    <div class="clear"></div>
+                </div>
+                <div class="details">
+                    <div class="container">
+                        {% if not owner.user %}
+                        {% trans "This user never logged in, no data available" %}
+                        {% else %}
+                        {{owner}} ({{owner.code}}) <a href="mailto:{{owner.user.email}}">E-mail</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+            <li class="wm small-row">
+                <div class="summary" id="new-owner">
+                    <div class="name">{% trans "Add owner" %}</div>
+                    <div id="new-owner-form">
+                        <input type="text" placeholder="{% trans "Owner name/NEPTUN" %}" />
+                        <input type="submit" value="{% trans "Add owner" %}" data-id="{{group.id}}"/>
                     </div>
                     <div class="clear"></div>
                 </div>
