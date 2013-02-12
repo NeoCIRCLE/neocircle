@@ -37,6 +37,7 @@
                             <div class="details">
                                 <div class="details-container">
                                     <ul>
+<<<<<<< Updated upstream
                                         <li class="os-{{s.template.os_type}}">
                                             {% trans "System" %}:
                                             <span class="value">{{s.template.system}}</span>
@@ -44,21 +45,24 @@
                                         </li>
                                         <li class="type">
                                             {% trans "Size" %}:
-                                            <span class="value">{{s.template.instance_type.name}}</span>
+                                            <span class="value">
+                                                {{s.template.instance_type.name}}
+                                                <span class="cpu">{{s.template.instance_type.CPU}}</span>
+                                                <span class="memory">{{s.template.instance_type.RAM}}</span>
+                                                <span class="credit">{{s.template.instance_type.credit}}</span>
+                                            </span>
                                         </li>
                                         <li class="share-type">
                                             {% trans "Type" %}:
                                             <span class="value">{{s.type }}</span>
-                                        </li>
-                                        <li class="memory">
-                                            {% trans "Memory" %}:
-                                            <span class="value">
-                                                {% blocktrans with m=s.template.instance_type.RAM %}{{m}} MiB{% endblocktrans %}
+                                            ({% if s.get_type.suspend %}
+                                            <span class="suspend"
+                                                title="{% blocktrans with time=s.get_type.suspend %}Suspend after {{time}}.{%endblocktrans%}">
+                                                {{s.get_type.suspendx|timeuntil}}
                                             </span>
-                                        </li>
-                                        <li class="cpu">
-                                            {% trans "CPU cores" %}:
-                                            <span class="value">{{s.template.instance_type.CPU}}</span>
+                                            {%endif%}{% if s.get_type.delete %}<span class="delete"
+                                                title="{% blocktrans with time=s.get_type.delete %}Delete after {{time}}.{%endblocktrans%}">
+                                                {{s.get_type.deletex|timeuntil}}</span>{%endif%})
                                         </li>
                                         <li class="description">
                                             {% trans "Description" %}:

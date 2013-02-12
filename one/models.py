@@ -16,6 +16,7 @@ from django.db.models.signals import post_delete, pre_delete
 from store.api import StoreApi
 from django.db import transaction
 
+from datetime import datetime
 import logging
 import subprocess, tempfile, os, stat, re, base64, struct
 
@@ -178,7 +179,11 @@ class Share(models.Model):
             help_text=_('Maximal count of instances launchable by a single user.'))
     owner = models.ForeignKey(User, null=True, blank=True)
 
-
+    def get_type(self):
+        t = TYPES[self.type]
+        t['deletex'] = datetime.now() + td(seconds=1) + t['delete'] if t['delete'] else None
+        t['suspendx'] = datetime.now() + td(seconds=1) + t['suspend'] if t['suspend'] else None
+        return t
     def get_running_or_stopped(self, user=None):
         running = Instance.objects.all().exclude(state='DONE').filter(share=self)
         if user:
