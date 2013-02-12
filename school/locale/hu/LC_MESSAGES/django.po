@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-02-11 16:13+0100\n"
+"POT-Creation-Date: 2013-02-12 20:06+0100\n"
 "PO-Revision-Date: 2013-02-11 15:56+0100\n"
 "Last-Translator: \n"
 "Language-Team: American English <cloud@ik.bme.hu>\n"
@@ -33,93 +33,93 @@ msgstr "nyelv"
 msgid "code"
 msgstr "kód"
 
-#: models.py:47 models.py:111
-msgid "(none)"
-msgstr "(nincs)"
-
-#: models.py:50
+#: models.py:53
 #, python-format
 msgid "%(first)s %(last)s"
 msgstr "%(last)s %(first)s"
 
-#: models.py:56
+#: models.py:59
 msgid "person"
 msgstr "személy"
 
-#: models.py:57
+#: models.py:60
 msgid "persons"
 msgstr "személyek"
 
-#: models.py:61
+#: models.py:64
 msgid "course code"
 msgstr "tárgykód"
 
-#: models.py:63 models.py:65 models.py:117 models.py:143
+#: models.py:66 models.py:68 models.py:120 models.py:146
 msgid "name"
 msgstr "név"
 
-#: models.py:67
+#: models.py:70
 msgid "default group"
 msgstr "alapértelmezett csoport"
 
-#: models.py:68
+#: models.py:71
 msgid "New users will automatically get to this group."
 msgstr "Az új hallgatók automatikusan ebbe a csoportba kerülnek."
 
-#: models.py:70 models.py:112 models.py:146 models.py:159
+#: models.py:73 models.py:115 models.py:149 models.py:162
 msgid "owners"
 msgstr "tulajdonosok"
 
-#: models.py:73 models.py:144
+#: models.py:76 models.py:147
 msgid "course"
 msgstr "tárgy"
 
-#: models.py:74
+#: models.py:77
 msgid "courses"
 msgstr "tárgyak"
 
-#: models.py:80
+#: models.py:83
 #, python-format
 msgid "%s (auto)"
 msgstr "%s (auto)"
 
-#: models.py:105
+#: models.py:108
 msgid "short name"
 msgstr "rövid név"
 
-#: models.py:118
+#: models.py:114
+msgid "(none)"
+msgstr "(nincs)"
+
+#: models.py:121
 msgid "start"
 msgstr "kezdet"
 
-#: models.py:119
+#: models.py:122
 msgid "end"
 msgstr "vége"
 
-#: models.py:122 models.py:145
+#: models.py:125 models.py:148
 msgid "semester"
 msgstr "félév"
 
-#: models.py:123
+#: models.py:126
 msgid "semesters"
 msgstr "félévek"
 
-#: models.py:136
+#: models.py:139
 msgid "There is no current semester."
 msgstr "Nincs aktuális félév."
 
-#: models.py:147
+#: models.py:150
 msgid "members"
 msgstr "tagok"
 
-#: models.py:151
+#: models.py:154
 msgid "group"
 msgstr "csoport"
 
-#: models.py:152
+#: models.py:155
 msgid "groups"
 msgstr "csoportok"
 
-#: models.py:158
+#: models.py:161
 msgid "n/a"
 msgstr "n/a"
 
@@ -151,39 +151,61 @@ msgstr "„%s” tárgy oktatóihoz felvétel sikertelen."
 msgid "Could not found Person object."
 msgstr "Nem található Személy objektum."
 
-#: views.py:186
+#: views.py:187
 msgid "Invalid NEPTUN code found."
 msgstr "Érvénytelen Neptun-kód."
 
-#: views.py:207 views.py:222
+#: views.py:208 views.py:223
 msgid "Invalid NEPTUN code"
 msgstr "Érvénytelen Neptun-kód"
 
-#: templates/show-group.html:10
+#: templates/show-group.html:7
 msgid "Members of"
 msgstr "Tagok: "
 
-#: templates/show-group.html:24
+#: templates/show-group.html:21 templates/show-group.html.py:74
 msgid "Remove"
 msgstr "Eltávolítás"
 
-#: templates/show-group.html:32
+#: templates/show-group.html:29 templates/show-group.html.py:82
 msgid "This user never logged in, no data available"
 msgstr "Ez a felhasználó még nem lépett be, nincs adat róla"
 
-#: templates/show-group.html:42 templates/show-group.html.py:45
+#: templates/show-group.html:33 templates/show-group.html.py:86
+msgid "Name"
+msgstr ""
+
+#: templates/show-group.html:36 templates/show-group.html.py:89
+msgid "NEPTUN"
+msgstr ""
+
+#: templates/show-group.html:49 templates/show-group.html.py:52
 msgid "Add user"
 msgstr "Felhasználó hozzáadása"
 
-#: templates/show-group.html:44
+#: templates/show-group.html:51
 msgid "User NEPTUN code"
 msgstr "Felhasználó Neptun-kódja"
 
-#: templates/show-group.html:58
+#: templates/show-group.html:60
+#, fuzzy
+msgid "Owners of"
+msgstr "tulajdonosok"
+
+#: templates/show-group.html:102 templates/show-group.html.py:105
+#, fuzzy
+msgid "Add owner"
+msgstr "Felhasználó hozzáadása"
+
+#: templates/show-group.html:104
+msgid "Owner name/NEPTUN"
+msgstr ""
+
+#: templates/show-group.html:118
 msgid "This group has no shared templates."
 msgstr "Ennek a csoportnak egy sablon sincs megosztva."
 
-#: templates/show-group.html:61
+#: templates/show-group.html:121
 msgid "Share one, and the group members can start their own virtual machine."
 msgstr ""
 "Osszon meg egyet, hogy a csoport tagjai is elindíthassák egy példányát."
