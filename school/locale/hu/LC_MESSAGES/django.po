@@ -1,15 +1,15 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 #
-# , 2013.
+# Mate Ory <orymate@iit.bme.hu>, 2013.
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-02-12 20:06+0100\n"
-"PO-Revision-Date: 2013-02-11 15:56+0100\n"
-"Last-Translator: \n"
-"Language-Team: American English <cloud@ik.bme.hu>\n"
+"PO-Revision-Date: 2013-02-12 20:26+0100\n"
+"Last-Translator: Mate Ory <orymate@iit.bme.hu>\n"
+"Language-Team: American English <kde-i18n-doc@kde.org>\n"
 "Language: en_US\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -161,7 +161,7 @@ msgstr "Érvénytelen Neptun-kód"
 
 #: templates/show-group.html:7
 msgid "Members of"
-msgstr "Tagok: "
+msgstr "Tagok"
 
 #: templates/show-group.html:21 templates/show-group.html.py:74
 msgid "Remove"
@@ -173,11 +173,11 @@ msgstr "Ez a felhasználó még nem lépett be, nincs adat róla"
 
 #: templates/show-group.html:33 templates/show-group.html.py:86
 msgid "Name"
-msgstr ""
+msgstr "Név"
 
 #: templates/show-group.html:36 templates/show-group.html.py:89
 msgid "NEPTUN"
-msgstr ""
+msgstr "NEPTUN"
 
 #: templates/show-group.html:49 templates/show-group.html.py:52
 msgid "Add user"
@@ -188,18 +188,16 @@ msgid "User NEPTUN code"
 msgstr "Felhasználó Neptun-kódja"
 
 #: templates/show-group.html:60
-#, fuzzy
 msgid "Owners of"
-msgstr "tulajdonosok"
+msgstr "Tulajdonosok"
 
 #: templates/show-group.html:102 templates/show-group.html.py:105
-#, fuzzy
 msgid "Add owner"
-msgstr "Felhasználó hozzáadása"
+msgstr "Tulajdonos hozzáadása"
 
 #: templates/show-group.html:104
 msgid "Owner name/NEPTUN"
-msgstr ""
+msgstr "Tulajdonos neve/NEPTUN-kódja"
 
 #: templates/show-group.html:118
 msgid "This group has no shared templates."

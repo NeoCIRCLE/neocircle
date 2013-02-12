@@ -8,9 +8,9 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-02-12 20:06+0100\n"
-"PO-Revision-Date: 2013-02-11 15:56+0100\n"
+"PO-Revision-Date: 2013-02-12 20:23+0100\n"
 "Last-Translator: \n"
-"Language-Team: Hungarian <cloud@ik.bme.hu>\n"
+"Language-Team: Hungarian <kde-i18n-doc@kde.org>\n"
 "Language: hu\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -373,29 +373,35 @@ msgid ""
 "You do not have any free quota. You can not launch this until you stop an "
 "other instance."
 msgstr ""
+"Nincs szabad kvótája. Addig nem tud gépet indítani, amíg le nem állít egyet."
 
 #: views.py:234
 msgid ""
 "The share does not have any free quota. You can not launch this until "
 "someone stops an instance."
 msgstr ""
+"Ennek a megosztásnak elfogyott a kvótája. Nem tudja addig elindítani, "
+"amíg valaki le nem állít egy példányt."
 
 #: views.py:237
 msgid ""
 "You do not have any free quota for this share. You can not launch this until "
 "you stop an other instance."
 msgstr ""
+"Nincs szabad kvótája ehhez a megosztáshoz. Nem tudja addig elindítani, amíg "
+"nem állít le egy másik példányt."
 
 #: views.py:240
-#, fuzzy
 msgid "You are not a member of the share group."
-msgstr "Nincs elég szabad kvótája."
+msgstr "Nem tagja a megosztás csoportjának."
 
 #: views.py:261
 msgid ""
 "You have no permission to try this instance without a share. Launch a new "
 "instance through a share."
 msgstr ""
+"Nincs joga a sablon kipróbálására megosztás nélkül. Próbálja egy megosztáson "
+"keresztül."
 
 #: views.py:274
 msgid "Failed to create virtual machine."
@@ -437,7 +443,7 @@ msgstr "A sablonnak még vannak futó példányai."
 
 #: views.py:397
 msgid "Share is successfully removed."
-msgstr "%d számú port eltávolítása sikeres."
+msgstr "Megosztás eltávolítása sikeres."
 
 #: views.py:399
 msgid "Failed to remove share."
@@ -762,7 +768,7 @@ msgstr "Törlés %(time)s után."
 
 #: templates/home.html:77
 msgid "Quota reached"
-msgstr ""
+msgstr "Kvóta betelt"
 
 #: templates/home.html:77
 msgid "Launch"
