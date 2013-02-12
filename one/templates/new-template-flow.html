@@ -69,7 +69,7 @@
                 $("#new-template-name").keyup(function(){
                     var timer;
                     return function(e){
-                        var self=this;
+                        var self = this;
                         clearTimeout(timer);
                         timer=setTimeout(function(){
                             var s = $(self).val();
@@ -95,6 +95,23 @@
                         }, 1000)
                     }
                 }());
+                $("#template-wizard").submit(function(e){
+                    e.preventDefault();
+                    $.ajax({
+                        'type': 'GET',
+                        'url': '/ajax/template_name_unique/' + $("#new-template-name").val(),
+                        'success': function(data, b, c) {
+                            if (data == "True") {
+                                $("#template-wizard").unbind('submit').submit()
+                            }
+                            else {
+                                $('#new-template-name').addClass("error");
+                                $('#new-template-step-2 nav .next').attr("disabled", "disabled");
+                                $('#new-template-name').prop("title", gettext('Please choose a different name.'));
+                            }
+                        }
+                    });
+                });
             })
         </script>
     </div>
