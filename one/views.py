@@ -287,6 +287,8 @@ def vm_new(request, template=None, share=None, redir=True):
             inst.time_of_suspend = time_of_suspend
             inst.time_of_delete = time_of_delete
             inst.save()
+    elif extra and base:
+        base.delete()
     return _redirect_or_201(inst.get_absolute_url() if inst else '/', redir)
 
 class VmListView(ListView):
