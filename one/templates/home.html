@@ -70,7 +70,7 @@
                                             <span class="value">
                                                 <form method="POST" action="/vm/new/s{{s.pk}}/">
                                                     {% csrf_token %}
-                                                    <input {% if  s.running_shared >= s.per_user_limit  or s.get_running >= s.nstance_limit%}disabled{% endif %} type="submit" value="{% trans "Launch" %}"/>
+                                                    <input {% if  s.running_shared >= s.per_user_limit  or s.get_running >= s.instance_limit%}disabled="disabled" value="{% trans "Quota reached" %}" {%else%}value="{% trans "Launch" %}"{% endif %} type="submit" />
                                                 </form>
                                             </span>
                                             <div class="clear"></div>
