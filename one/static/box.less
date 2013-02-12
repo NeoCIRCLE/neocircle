@@ -165,16 +165,6 @@
 
             }
         }
-        .shares {
-            margin-left: 40px;
-            li {
-                height: 30px;
-                position: relative;
-                form {
-                    position: relative;
-                }
-            }
-        }
         @placeholderColor: #555;
         input::-webkit-input-placeholder{
             color: @placeholderColor;
@@ -555,5 +545,40 @@ table {
         display: none;
         z-index: 2;
         position: relative;
+    }
+}
+
+.shares {
+    margin: 5px;
+    list-style: none;
+    li {
+        border-radius: 4px;
+        border: 1px solid #888;
+        height: 30px;
+        position: relative;
+        margin: 5px 0;
+        line-height: 30px;
+        padding-left: 10px;
+        background-color: rgba(0,0,0,0.05);
+        &:hover{
+            background-color: rgba(0,0,0,0.1);
+            border: 1px solid #666;
+            input {
+                border-left: 1px solid #666;
+            }
+        }
+        form {
+            position: relative;
+        }
+        input {
+            border: none;
+            border-radius: 0;
+            border-left: 1px solid #888;
+            box-shadow: none;
+            position: relative;
+            top: -1px;
+            height: 30px;
+            right: -5px;
+        }
     }
 }
