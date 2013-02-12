@@ -77,13 +77,6 @@ $(function() {
         $('#modal-container').html($('#new-wm').html());
         $('#modal-container .wm .summary').click(toggleDetails);
     });
-    /*
-     *FIXME Most ez itt miért van 2x??????
-     */
-    $('#new-template-button').click(function() {
-        $('#modal').show();
-        $('#modal-container').html($('#new-template').html());
-    });
     $('#new-template-button').click(function() {
         $.get('/ajax/templateWizard', function(data) {
             $('#modal-container').html(data);
