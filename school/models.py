@@ -47,7 +47,7 @@ class Person(models.Model):
     def __unicode__(self):
         u = self.user
         if not u:
-            return unicode(_("(none)"))
+            return self.code
         if u.last_name and u.first_name:
             # TRANSLATORS: full name format used in enumerations
             return _("%(first)s %(last)s") % {'first': u.first_name,
