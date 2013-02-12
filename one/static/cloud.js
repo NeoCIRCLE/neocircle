@@ -72,6 +72,14 @@ $(function() {
         e.preventDefault(); e.stopPropagation();
         restart_vm($(this).data('id'), $(this).data('name'));
     });
+    $('.renew-suspend-vm-button').click(function(e) {
+        e.preventDefault(); e.stopPropagation();
+        renew_suspend_vm($(this).data('id'))
+    });
+    $('.renew-delete-vm-button').click(function(e) {
+        e.preventDefault(); e.stopPropagation();
+        renew_delete_vm($(this).data('id'))
+    });
     $('#new-wm-button').click(function() {
         $('#modal').show();
         $('#modal-container').html($('#new-wm').html());
@@ -193,6 +201,20 @@ $(function() {
 
     function resume_vm(id, name) {
         manage_vm(id, "resume")
+    }
+    /**
+     * Renew vm suspend time.
+     */
+
+    function renew_suspend_vm(id) {
+        manage_vm(id, "renew/suspend")
+    }
+    /**
+     * Renew vm deletion time.
+     */
+
+    function renew_delete_vm(id) {
+        manage_vm(id, "renew/delete")
     }
     /**
      * Manage VM State generic

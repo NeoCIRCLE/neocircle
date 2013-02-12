@@ -421,6 +421,16 @@ def vm_resume(request, iid, *args, **kwargs):
 
 @login_required
 @require_POST
+def vm_renew(request, which, iid, *args, **kwargs):
+    try:
+        get_object_or_404(Instance, id=iid, owner=request.user).renew(which)
+        messages.success(request, _('Virtual machine is successfully renewed.'))
+    except:
+        messages.error(request, _('Failed to renew virtual machine.'))
+    return redirect('/')
+
+@login_required
+@require_POST
 def vm_power_off(request, iid, *args, **kwargs):
     try:
         get_object_or_404(Instance, id=iid, owner=request.user).poweroff()
