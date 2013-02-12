@@ -27,7 +27,7 @@ $(function() {
             }
         }
     });
-    toggleDetails = function() {
+    toggleDetails = throttle(function(){
         if($(this).parent('.wm').hasClass('opened')) {
             $(this).parent('.wm').removeClass('opened');
             $(this).next('.details').slideUp(700);
@@ -35,7 +35,7 @@ $(function() {
             $(this).parent('.wm').addClass('opened');
             $(this).next('.details').slideDown(700);
         }
-    }
+    })
     $('.delete-template-button').click(function(e) {
         e.preventDefault(); e.stopPropagation();
         delete_template_confirm($(this).data('id'), $(this).data('name'));
