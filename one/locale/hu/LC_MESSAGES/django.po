@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-02-12 21:38+0100\n"
+"POT-Creation-Date: 2013-02-12 21:52+0100\n"
 "PO-Revision-Date: 2013-02-12 21:40+0100\n"
 "Last-Translator: Mate Ory <orymate@iit.bme.hu>\n"
 "Language-Team: Hungarian <kde-i18n-doc@kde.org>\n"
@@ -534,35 +534,43 @@ msgstr "Fájlfeltöltés"
 msgid "Drag and drop files here to start uploading."
 msgstr "Húzza ide a fájlt a feltöltés megkezdéséhez."
 
-#: templates/box-filelist.html:102
+#: templates/box-filelist.html:98
+msgid ""
+"You can also use the <a href=\"#\" id=\"old-upload\">the traditional upload "
+"form</a>."
+msgstr ""
+"Használhatja a <a href=\"#\" id=\"old-upload\">hagyományos feltöltő űrlapot</"
+"a> is."
+
+#: templates/box-filelist.html:100
 msgid "Upload limit is 1GB per file!"
 msgstr "A feltöltési limit 1GiB fájlonként!"
 
-#: templates/box-filelist.html:106
+#: templates/box-filelist.html:104
 msgid "Error: File is bigger than 1GB!"
 msgstr "Hiba: a fájl nagyobb 1 GiB-nál."
 
-#: templates/box-filelist.html:107
+#: templates/box-filelist.html:105
 msgid "Error: Upload server is not available!"
 msgstr "Hiba: a feltöltő kiszolgáló nem érhető el."
 
-#: templates/box-filelist.html:108
+#: templates/box-filelist.html:106
 msgid "Error: File already exists!"
 msgstr "Hiba: a fájl már létezik."
 
-#: templates/box-filelist.html:127
+#: templates/box-filelist.html:125
 msgid "File quota"
 msgstr "Fájlkvóta"
 
-#: templates/box-filelist.html:127
+#: templates/box-filelist.html:125
 msgid "Used space"
 msgstr "Használt terület"
 
-#: templates/box-filelist.html:128
+#: templates/box-filelist.html:126
 msgid "soft limit"
 msgstr "puha limit"
 
-#: templates/box-filelist.html:130
+#: templates/box-filelist.html:128
 msgid "hard limit"
 msgstr "kemény limit"
 
@@ -957,13 +965,6 @@ msgstr "Belső port"
 #: templates/show.html:148
 msgid "Add"
 msgstr "Hozzáadás"
-
-#~ msgid ""
-#~ "You can also use the <a href=\"#\" id=\"old-upload\">the traditional "
-#~ "upload form</a>."
-#~ msgstr ""
-#~ "Használhatja a <a href=\"#\" id=\"old-upload\">hagyományos feltöltő "
-#~ "űrlapot</a> is."
 
 #~ msgid "Summary"
 #~ msgstr "Áttekintés"
