@@ -871,4 +871,5 @@ $(function() {
         e.preventDefault();
         return false;
     });
+    gettext('Please choose a different name.');
 })

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-02-12 21:52+0100\n"
+"POT-Creation-Date: 2013-02-12 22:07+0100\n"
 "PO-Revision-Date: 2013-02-12 21:40+0100\n"
 "Last-Translator: Mate Ory <orymate@iit.bme.hu>\n"
 "Language-Team: Hungarian <kde-i18n-doc@kde.org>\n"
@@ -347,35 +347,35 @@ msgstr "Váratlan hiba történt."
 msgid "Could not get Virtual Machine credentials."
 msgstr "Nem találhatóak a virutális gép adatai."
 
-#: views.py:123 views.py:439
+#: views.py:123 views.py:444
 msgid "Failed to power off virtual machine."
 msgstr "A virtuális gép kikapcsolása sikertelen."
 
-#: views.py:146
+#: views.py:151
 msgid "You do not have any free share quota."
 msgstr "Nincs szabad kvótája."
 
-#: views.py:180
+#: views.py:185
 msgid "You do not have enough free share quota."
 msgstr "Nincs elég szabad kvótája."
 
-#: views.py:185
+#: views.py:190
 #, python-format
 msgid "Successfully shared %s."
 msgstr "„%s” megosztása sikeres."
 
-#: views.py:199
+#: views.py:204
 msgid "Template is being saved..."
 msgstr "A sablon mentése folyamatban van…"
 
-#: views.py:230
+#: views.py:235
 msgid ""
 "You do not have any free quota. You can not launch this until you stop an "
 "other instance."
 msgstr ""
 "Nincs szabad kvótája. Addig nem tud gépet indítani, amíg le nem állít egyet."
 
-#: views.py:234
+#: views.py:239
 msgid ""
 "The share does not have any free quota. You can not launch this until "
 "someone stops an instance."
@@ -383,7 +383,7 @@ msgstr ""
 "Ennek a megosztásnak elfogyott a kvótája. Nem tudja addig elindítani, amíg "
 "valaki le nem állít egy példányt."
 
-#: views.py:237
+#: views.py:242
 msgid ""
 "You do not have any free quota for this share. You can not launch this until "
 "you stop an other instance."
@@ -391,11 +391,11 @@ msgstr ""
 "Nincs szabad kvótája ehhez a megosztáshoz. Nem tudja addig elindítani, amíg "
 "nem állít le egy másik példányt."
 
-#: views.py:240
+#: views.py:245
 msgid "You are not a member of the share group."
 msgstr "Nem tagja a megosztás csoportjának."
 
-#: views.py:261
+#: views.py:266
 msgid ""
 "You have no permission to try this instance without a share. Launch a new "
 "instance through a share."
@@ -403,85 +403,85 @@ msgstr ""
 "Nincs joga a sablon kipróbálására megosztás nélkül. Próbálja egy megosztáson "
 "keresztül."
 
-#: views.py:274
+#: views.py:279
 msgid "Failed to create virtual machine."
 msgstr "A virtuális gép indítása sikertelen."
 
-#: views.py:341
+#: views.py:346
 msgid "Port number is in a restricted domain (22000 to 24000)."
 msgstr "A megadott port foglalt tartományba esik (22000-től 24000-ig)."
 
-#: views.py:345
+#: views.py:350
 #, python-format
 msgid "Port %d successfully added."
 msgstr "%d számú port hozzáadása sikeres."
 
-#: views.py:347
+#: views.py:352
 msgid "Adding port failed."
 msgstr "Port hozzáadása sikertelen."
 
-#: views.py:364
+#: views.py:369
 #, python-format
 msgid "Port %d successfully removed."
 msgstr "%d számú port eltávolítása sikeres."
 
-#: views.py:366
+#: views.py:371
 msgid "Removing port failed."
 msgstr "Port eltávolítása sikertelen."
 
-#: views.py:373
+#: views.py:378
 msgid "Virtual machine is successfully deleted."
 msgstr "A virtuális gép törlése sikeres."
 
-#: views.py:375
+#: views.py:380
 msgid "Failed to delete virtual machine."
 msgstr "A virtuális gép törlése sikertelen."
 
-#: views.py:394
+#: views.py:399
 msgid "There are machines running of this share."
 msgstr "A sablonnak még vannak futó példányai."
 
-#: views.py:397
+#: views.py:402
 msgid "Share is successfully removed."
 msgstr "Megosztás eltávolítása sikeres."
 
-#: views.py:399
+#: views.py:404
 msgid "Failed to remove share."
 msgstr "Megosztás törlése sikertelen."
 
-#: views.py:407
+#: views.py:412
 msgid "Virtual machine is successfully stopped."
 msgstr "A virtuális gép sikeresen leállt."
 
-#: views.py:409
+#: views.py:414
 msgid "Failed to stop virtual machine."
 msgstr "A virtuális gép leállítása sikertelen."
 
-#: views.py:417
+#: views.py:422
 msgid "Virtual machine is successfully resumed."
 msgstr "A virtuális gép sikeresen folytatva."
 
-#: views.py:419
+#: views.py:424
 msgid "Failed to resume virtual machine."
 msgstr "A virtuális gép visszatöltése sikertelen."
 
-#: views.py:427
+#: views.py:432
 msgid "Virtual machine is successfully renewed."
 msgstr "A virtuális gép sikeresen meghosszabbítva."
 
-#: views.py:429
+#: views.py:434
 msgid "Failed to renew virtual machine."
 msgstr "A virtuális gép meghosszabbítása sikertelen."
 
-#: views.py:437
+#: views.py:442
 msgid "Virtual machine is successfully powered off."
 msgstr "A virtuális gép kikapcsolása sikeres."
 
-#: views.py:447
+#: views.py:452
 msgid "Virtual machine is successfully restarted."
 msgstr "A virtuális gép újraindítása sikeres."
 
-#: views.py:449
+#: views.py:454
 msgid "Failed to restart virtual machine."
 msgstr "A virtuális gép újraindítása sikertelen."
 
@@ -858,10 +858,6 @@ msgstr "Tovább &raquo;"
 msgid "Name"
 msgstr "Név"
 
-#: templates/new-template-flow.html:20
-msgid "Please choose a different name."
-msgstr "Kérem, válasszon eltérő nevet."
-
 #: templates/new-template-flow.html:40
 #, python-format
 msgid "%(n)s core"
@@ -965,6 +961,9 @@ msgstr "Belső port"
 #: templates/show.html:148
 msgid "Add"
 msgstr "Hozzáadás"
+
+#~ msgid "Please choose a different name."
+#~ msgstr "Kérem, válasszon eltérő nevet."
 
 #~ msgid "Summary"
 #~ msgstr "Áttekintés"
