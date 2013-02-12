@@ -7,9 +7,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-02-12 20:06+0100\n"
-"PO-Revision-Date: 2013-02-12 20:23+0100\n"
-"Last-Translator: \n"
+"POT-Creation-Date: 2013-02-12 21:38+0100\n"
+"PO-Revision-Date: 2013-02-12 21:40+0100\n"
+"Last-Translator: Mate Ory <orymate@iit.bme.hu>\n"
 "Language-Team: Hungarian <kde-i18n-doc@kde.org>\n"
 "Language: hu\n"
 "MIME-Version: 1.0\n"
@@ -307,15 +307,15 @@ msgstr "megosztás"
 msgid "time of suspend"
 msgstr "felfüggesztés ideje"
 
-#: models.py:366 templates/box-vmlist.html:96
+#: models.py:366 templates/box-vmlist.html:99
 msgid "time of delete"
 msgstr "törlés ideje"
 
-#: models.py:610
+#: models.py:618
 msgid "instance"
 msgstr "példány"
 
-#: models.py:611
+#: models.py:619
 msgid "instances"
 msgstr "példányok"
 
@@ -347,7 +347,7 @@ msgstr "Váratlan hiba történt."
 msgid "Could not get Virtual Machine credentials."
 msgstr "Nem találhatóak a virutális gép adatai."
 
-#: views.py:123 views.py:429
+#: views.py:123 views.py:439
 msgid "Failed to power off virtual machine."
 msgstr "A virtuális gép kikapcsolása sikertelen."
 
@@ -380,8 +380,8 @@ msgid ""
 "The share does not have any free quota. You can not launch this until "
 "someone stops an instance."
 msgstr ""
-"Ennek a megosztásnak elfogyott a kvótája. Nem tudja addig elindítani, "
-"amíg valaki le nem állít egy példányt."
+"Ennek a megosztásnak elfogyott a kvótája. Nem tudja addig elindítani, amíg "
+"valaki le nem állít egy példányt."
 
 #: views.py:237
 msgid ""
@@ -466,14 +466,22 @@ msgid "Failed to resume virtual machine."
 msgstr "A virtuális gép visszatöltése sikertelen."
 
 #: views.py:427
+msgid "Virtual machine is successfully renewed."
+msgstr "A virtuális gép sikeresen meghosszabbítva."
+
+#: views.py:429
+msgid "Failed to renew virtual machine."
+msgstr "A virtuális gép meghosszabbítása sikertelen."
+
+#: views.py:437
 msgid "Virtual machine is successfully powered off."
 msgstr "A virtuális gép kikapcsolása sikeres."
 
-#: views.py:437
+#: views.py:447
 msgid "Virtual machine is successfully restarted."
 msgstr "A virtuális gép újraindítása sikeres."
 
-#: views.py:439
+#: views.py:449
 msgid "Failed to restart virtual machine."
 msgstr "A virtuális gép újraindítása sikertelen."
 
@@ -590,7 +598,7 @@ msgstr "Tulajdonos(ok)"
 msgid "Member count"
 msgstr "Tagok száma"
 
-#: templates/box-grouplist.html:47 templates/box-vmlist.html:104
+#: templates/box-grouplist.html:47 templates/box-vmlist.html:110
 msgid "More details"
 msgstr "További részletek"
 
@@ -724,11 +732,19 @@ msgstr "Gépnév"
 msgid "Template"
 msgstr "Sablon"
 
-#: templates/box-vmlist.html:115
+#: templates/box-vmlist.html:91 templates/box-vmlist.html.py:92
+msgid "Renew suspend time"
+msgstr "Felfüggesztési idő meghosszabbítása"
+
+#: templates/box-vmlist.html:101 templates/box-vmlist.html.py:102
+msgid "Renew deletion time"
+msgstr "Törlési idő meghosszabbítása"
+
+#: templates/box-vmlist.html:121
 msgid "You have not started any machines yet."
 msgstr "Még nem indított egy gépet sem."
 
-#: templates/box-vmlist.html:117
+#: templates/box-vmlist.html:123
 msgid "Choose a template, and you can use the system in a minute."
 msgstr "Válasszon egy sablont, és egy percen belül használhatja a rendszert."
 
