@@ -36,10 +36,13 @@ class Person(models.Model):
         return one.models.Share.objects.filter(group__in=self.course_groups.all())
 
     def short_name(self):
-        if self.user.last_name:
-            return self.user.last_name
+        if self.user:
+            if self.user.last_name:
+                return self.user.last_name
+            else:
+                return self.user.username
         else:
-            return self.user.username
+            return self.code
 
     def __unicode__(self):
         u = self.user
