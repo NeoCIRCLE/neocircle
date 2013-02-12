@@ -52,13 +52,11 @@
             </li>
         </ul>
         <nav>
-            <!-- <a href="#" class="prev">{% trans "&laquo; Cancel" %}</a>
-        -->
-        <input type="reset" class="prev" value="{% trans "Cancel" %}" />
-        <input type="submit" class="next" value="{% trans "Launch master instance" %}" />
-        <div class="clear"></div>
-    </nav>
-    <script type="text/javascript">
+            <input type="reset" class="prev" value="{% trans "Cancel" %}" />
+            <input type="submit" class="next" value="{% trans "Launch master instance" %}" />
+            <div class="clear"></div>
+        </nav>
+        <script type="text/javascript">
             $(function(){
                 $('#new-template-step-2 nav .prev').click(function(){
                     $('#modal').hide();
@@ -102,5 +100,5 @@
                 }());
             })
         </script>
-</div>
+    </div>
 </form>
