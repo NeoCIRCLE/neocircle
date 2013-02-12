@@ -179,10 +179,19 @@ class Share(models.Model):
     owner = models.ForeignKey(User, null=True, blank=True)
 
 
-    def get_running_or_stopped(self):
-        return Instance.objects.all().exclude(state='DONE').filter(share=self).count()
-    def get_running(self):
-        return Instance.objects.all().exclude(state='DONE').exclude(state='STOPPED').filter(share=self).count()
+    def get_running_or_stopped(self, user=None):
+        running = Instance.objects.all().exclude(state='DONE').filter(share=self)
+        if user:
+            return running.filter(owner=user).count()
+        else:
+            return running.count()
+
+    def get_running(self, user=None):
+        running = Instance.objects.all().exclude(state='DONE').exclude(state='STOPPED').filter(share=self)
+        if user:
+            return running.filter(owner=user).count()
+        else:
+            return running.count()
     def get_instance_pc(self):
         return float(self.get_running()) / self.instance_limit * 100
 """

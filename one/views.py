@@ -199,8 +199,47 @@ def vm_saveas(request, vmid):
     messages.success(request, _("Template is being saved..."))
     return redirect(inst)
 
-def vm_new_ajax(request, template ):
+def vm_new_ajax(request, template):
     return vm_new(request, template, redir=False)
+
+def _redirect_or_201(path, redir):
+    if redir:
+        return redirect(path)
+    else:
+        response = HttpResponse("Created", status=201)
+        response['Location'] = path
+        return response
+
+def _template_for_save(base, request):
+    if base.owner != request.user and not base.public and not request.user.is_superuser:
+        raise PermissionDenied()
+    name = request.POST['name']
+    t = Template.objects.create(name=name, disk=base.disk, instance_type_id=request.POST['size'], network=base.network, owner=request.user)
+    t.access_type = base.access_type
+    t.description = request.POST['description']
+    t.system = base.system
+    t.save()
+    return t
+
+def _check_quota(request, template, share):
+    """
+    Returns if the given request is permitted to run the new vm.
+    """
+    det = UserCloudDetails.objects.get(user=request.user)
+    if det.get_weighted_instance_count() + template.instance_type.credit >= det.instance_quota:
+        messages.error(request, _('You do not have any free quota. You can not launch this until you stop an other instance.'))
+        return False
+    if share:
+        if share.get_running() + 1 > share.instance_limit:
+            messages.error(request, _('The share does not have any free quota. You can not launch this until someone stops an instance.'))
+            return False
+        elif share.get_running_or_stopped(request.user) + 1 > share.per_user_limit:
+            messages.error(request, _('You do not have any free quota for this share. You can not launch this until you stop an other instance.'))
+            return False
+        if not share.group.members.filter(user=request.user) and not share.group.owners.filter(user=request.user):
+            messages.error(request, _('You are not a member of the share group.'))
+            return False
+    return True
 
 @require_POST
 @login_required
@@ -212,43 +251,33 @@ def vm_new(request, template=None, share=None, redir=True):
     else:
         share = get_object_or_404(Share, pk=share)
         base = share.template
+
     if "name" in request.POST:
-        if base.owner != request.user and not base.public and not request.user.is_superuser:
-            raise PermissionDenied()
-        name = request.POST['name']
-        t = Template.objects.create(name=name, disk=base.disk, instance_type_id=request.POST['size'], network=base.network, owner=request.user)
-        t.access_type = base.access_type
-        t.description = request.POST['description']
-        t.system = base.system
-        t.save()
-        base = t
+        base = _template_for_save(base, request)
         extra = "<RECONTEXT>YES</RECONTEXT>"
-    try:
-        #Gány quota
-        if (share == None or (share != None and share.get_running() < share.instance_limit)) or extra:
-            time_of_suspend = None
-            time_of_delete = None
-            try:
-                TYPES[share.type]['suspend']
-                time_of_suspend = TYPES[share.type]['suspend']+datetime.now()
-                TYPES[share.type]['delete']
-                time_of_delete = TYPES[share.type]['delete']+datetime.now()
-            except:
-                pass
-            i = Instance.submit(base, request.user, extra=extra, share=share)
-            i.time_of_suspend = time_of_suspend
-            i.time_of_delete = time_of_delete
-            i.save()
-        if redir:
-            return redirect(i)
-        else:
-            response = HttpResponse("Created", status=201)
-            response['Location'] = i.get_absolute_url()
-            return response
-    except Exception as e:
-        logger.error('Failed to create virtual machine.' + unicode(e))
-        messages.error(request, _('Failed to create virtual machine.')+unicode(e))
-        return redirect('/')
+    go = _check_quota(request, base, share)
+
+    if not share and not base.public and base.owner != request.user:
+        messages.error(request, _('You have no permission to try this instance without a share. Launch a new instance through a share.'))
+        go = False
+    type = share.type if share else 'LAB'
+    TYPES[type]['suspend']
+    time_of_suspend = TYPES[type]['suspend']+datetime.now()
+    TYPES[type]['delete']
+    time_of_delete = TYPES[type]['delete']+datetime.now()
+    inst = None
+    if go:
+        try:
+            inst = Instance.submit(base, request.user, extra=extra, share=share)
+        except Exception as e:
+            logger.error('Failed to create virtual machine.' + unicode(e))
+            messages.error(request, _('Failed to create virtual machine.'))
+            inst = None
+        if inst:
+            inst.time_of_suspend = time_of_suspend
+            inst.time_of_delete = time_of_delete
+            inst.save()
+    return _redirect_or_201(inst.get_absolute_url() if inst else '/', redir)
 
 class VmListView(ListView):
     context_object_name = 'instances'
