@@ -8,7 +8,6 @@
         <li class="wm" id="t{{t.id }}">
             <div class="summary {% if t.state == 'NEW' or t.state == 'SAVING'%}unfinished{% endif %}">
                 <div class="name">{{t.name}}</div>
-
                 <div class="status">{{t.state}}</div>
                 <div class="actions">
                     {% if t.state == 'READY' %}
@@ -36,10 +35,9 @@
                         </div>
                         <form action="/vm/unshare/{{i.id}}/" method="post">
                             <span title="{{i.name}}">{{i.name|truncatechars:20}}</span>
-                            ({{i.get_running}}/{{i.instance_limit}} = {{i.get_instance_pc}}%)
-
+                                ({{i.get_running}}/{{i.instance_limit}})
                                 {% csrf_token %}
-                            <input type="submit" value="{% trans "Delete" %}" style="float: right"/>
+                            <input class="unshare" type="submit" value="{% trans "Delete" %}" style="float: right"/>
                         </form>
                         <div class="clear"></div>
                     </li>
@@ -127,8 +125,7 @@
                         </div>
                         <form action="/vm/unshare/{{i.id}}/" method="post">
                             <span title="{{i.name}}">{{i.name|truncatechars:20}}</span>
-                            ({{i.get_running}}/{{i.instance_limit}} = {{i.get_instance_pc}}%)
-
+                            ({{i.get_running}}/{{i.instance_limit}})
                                 {% csrf_token %}
                             <input type="submit" value="{% trans "Delete" %}" style="float: right"/>
                         </form>
