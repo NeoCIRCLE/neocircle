@@ -47,14 +47,15 @@ submit_vm.short_description = _('Submit VM')
 
 class TemplateAdmin(contrib.admin.ModelAdmin):
     model=models.Template
-    list_display = ('name', 'state', 'owner', 'system')
+    list_display = ('name', 'state', 'owner', 'system', 'public')
+    list_filter = ('owner', 'public')
 
 class InstanceAdmin(contrib.admin.ModelAdmin):
     model=models.Instance
-    actions = [update_state,submit_vm]
-    list_display = ['id', 'name', 'owner', 'state']
-    readonly_fields = ['ip', 'active_since', 'pw', 'template']
-    list_filter = ['owner', 'template', 'state']
+    actions = [update_state, submit_vm]
+    list_display = ('id', 'name', 'owner', 'state')
+    readonly_fields = ('ip', 'active_since', 'pw', 'template')
+    list_filter = ('owner', 'template', 'state')
 
 class DiskAdmin(contrib.admin.ModelAdmin):
     model=models.Disk
@@ -62,6 +63,8 @@ class NetworkAdmin(contrib.admin.ModelAdmin):
     model=models.Network
 class ShareAdmin(contrib.admin.ModelAdmin):
     model=models.Network
+    list_filter = ('group', 'template', )
+    list_display = ('name', 'owner', 'template', 'group', )
 
 contrib.admin.site.register(models.Template, TemplateAdmin)
 contrib.admin.site.register(models.Instance, InstanceAdmin)
