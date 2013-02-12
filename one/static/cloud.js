@@ -331,6 +331,24 @@ $(function() {
         return n.toFixed(precision) + ' ' + suffix[i];
     }
 
+    /**
+     * Returns throttled function
+     */
+
+    function throttle(f) {
+        var disabled = false;
+        return function() {
+            if(disabled) {
+                return
+            };
+            disabled = true;
+            setTimeout(function() {
+                disabled = false;
+            }, 700);
+            f.apply(this, arguments);
+        }
+    }
+
     function Model() {
         //alias for this
         var self = this;
@@ -371,24 +389,6 @@ $(function() {
             self.sortBy($('#current-location select').val());
             sortFiles();
         })
-
-        /**
-         * Returns throttled function
-         */
-
-        function throttle(f) {
-            var disabled = false;
-            return function() {
-                if(disabled) {
-                    return
-                };
-                disabled = true;
-                setTimeout(function() {
-                    disabled = false;
-                }, 700);
-                f.apply(null, arguments);
-            }
-        }
 
         /**
          * Delay the function call for `f` until `g` evaluates true
