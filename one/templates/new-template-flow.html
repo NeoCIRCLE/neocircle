@@ -69,26 +69,37 @@
                     $("#new-template-size-summary-" + v).show();
                 });
                 $('#new-template-step-2 nav .next').attr("disabled", "disabled");
-                $("#new-template-name").change(function(e){
-                    var s = $(this).val();
-                    $.ajax({
-                        'type': 'GET',
-                        'url': '/ajax/template_name_unique/' + s,
-                        'success': function(data, b, c) {
-                            if (s != $("#new-template-name").val()) {
-                                return True;
-                            }
-                            if (data == "True") {
-                                $('#new-template-name').removeClass("error");
-                                $('#new-template-step-2 nav .next').removeAttr("disabled");
-                            }
-                            else {
-                                $('#new-template-name').addClass("error");
-                                $('#new-template-step-2 nav .next').attr("disabled", "disabled");
-                            }
-                        }
-                    });
-                });
+                $("#new-template-name").keyup(function(){
+                    var timer;
+                    return function(e){
+                        var self=this;
+                        clearTimeout(timer);
+                        console.log('asdasdasdasd');
+                        timer=setTimeout(function(){
+                            console.log('asd');
+                            var s = $(self).val();
+                            $.ajax({
+                                'type': 'GET',
+                                'url': '/ajax/template_name_unique/' + s,
+                                'success': function(data, b, c) {
+                                    if (s != $("#new-template-name").val()) {
+                                        return true;
+                                    }
+                                    if (data == "True") {
+                                        $('#new-template-name').removeClass("error");
+                                        $('#new-template-step-2 nav .next').removeAttr("disabled");
+                                        $('#new-template-name').removeProp("title");
+                                    }
+                                    else {
+                                        $('#new-template-name').addClass("error");
+                                        $('#new-template-step-2 nav .next').attr("disabled", "disabled");
+                                        $('#new-template-name').prop("title", gettext('Please choose a different name.'));
+                                    }
+                                }
+                            });
+                        }, 1000)
+                    }
+                }());
             })
         </script>
 </div>
