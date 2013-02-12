@@ -381,7 +381,10 @@ def vm_port_del(request, iid, proto, public):
 class VmDeleteView(View):
     def post(self, request, iid, *args, **kwargs):
         try:
-            get_object_or_404(Instance, id=iid, owner=request.user).delete()
+            inst = get_object_or_404(Instance, id=iid, owner=request.user)
+            if inst.template.state != 'READY' and inst.template.owner == request.user:
+                inst.template.delete()
+            inst.delete()
             messages.success(request, _('Virtual machine is successfully deleted.'))
         except:
             messages.error(request, _('Failed to delete virtual machine.'))
