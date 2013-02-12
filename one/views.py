@@ -257,10 +257,15 @@ def vm_new(request, template=None, share=None, redir=True):
         share = get_object_or_404(Share, pk=share)
         base = share.template
 
+    go = True
     if "name" in request.POST:
-        base = _template_for_save(base, request)
-        extra = "<RECONTEXT>YES</RECONTEXT>"
-    go = _check_quota(request, base, share)
+        try:
+            base = _template_for_save(base, request)
+            extra = "<RECONTEXT>YES</RECONTEXT>"
+        except:
+            messages.error(request, _('Can not create template.'))
+            go = False
+    go = go and _check_quota(request, base, share)
 
     if not share and not base.public and base.owner != request.user:
         messages.error(request, _('You have no permission to try this instance without a share. Launch a new instance through a share.'))
