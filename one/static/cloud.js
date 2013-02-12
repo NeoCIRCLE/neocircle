@@ -85,6 +85,7 @@ $(function() {
     });
     $('#shadow').click(function() {
         $('#modal').hide();
+        $('#modal-container').html('');
     })
     $('.template-share').click(function(e) {
         e.preventDefault(); e.stopPropagation();
@@ -112,10 +113,12 @@ $(function() {
     });
     $('#new-group').click(function() {
         var content = $('#new-group-wizard').html();
-//        $('#new-group-wizard').parent()[0].removeChild($('#new-group-wizard')[0]);
+        $('#new-group-wizard').html('');
         $('#modal').show();
         $('#modal-container').html(content);
-
+        $('#shadow').click(function() {
+            $('#new-group-wizard').html(content);
+        })
         function updateSummary() {
             $('#new-group-summary-name').html($('#new-group-name').val());
             $('#new-group-summary-count').html(function(text) {
