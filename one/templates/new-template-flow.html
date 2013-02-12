@@ -72,9 +72,7 @@
                     return function(e){
                         var self=this;
                         clearTimeout(timer);
-                        console.log('asdasdasdasd');
                         timer=setTimeout(function(){
-                            console.log('asd');
                             var s = $(self).val();
                             $.ajax({
                                 'type': 'GET',
