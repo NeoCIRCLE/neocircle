@@ -37,9 +37,9 @@
         border-bottom: 1px dotted #999;
     }
     label{
-        float: left;
+        display: inline-block;
         padding: 3px;
-        margin: 10px 5px 10px -5px;
+        margin: 10px 5px;
     }
     h2{
         margin: 10px 0;
@@ -94,17 +94,21 @@
     }
     ul.radio{
         float: right;
+        label {
+            float: left;
+            margin: 0;
+        }
     }
     .radio{
         li{
             float: left;
             padding: 5px;
-            margin: 10px 3px;
+            margin: 5px 3px;
             border-bottom: none !important;
         }
-        label{
-            float: none !important;
-        }
+    }
+    .size-summary {
+        margin: 10px;
     }
 }
 
