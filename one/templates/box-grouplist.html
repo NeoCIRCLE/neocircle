@@ -69,41 +69,36 @@
                     </div>
                     <div id="new-group-wizard" style="display: none">
                         <form action="/group/new/" method="POST" class="wizard">
-                            <h3>{% trans "Create new group" %}</h3>
-                            <h4>{% trans "Group name" %}</h4>
-                            <p>
-                                <input type="text" name="name" id="new-group-name" />
-                            </p>
-                            <h4>{% trans "Semester" %}</h4>
-                            <p>
-                                <select name="semester" id="new-group-semester">
-                                    {% for semester in semesters %}
-                                    <option value="{{semester.id}}">{{semester.name}}</option>
-                                    {% endfor %}
-                                </select>
-                            </p>
-                            <h4>{% trans "Members" %}</h4>
-                            <p>
-                                <textarea name="members" placeholder="{% trans 'Student NEPTUN codes, one per line' %}" id="new-group-members"></textarea>
-                            </p>
-                            <!--<h4>{% trans "Summary" %}</h4>
-                        <p> <strong>{% trans "Group name" %}:</strong>
-                            <span id="new-group-summary-name"></span>
-                            <br /> <strong>{% trans "Semester" %}:</strong>
-                            <span id="new-group-summary-semester"></span>
-                            <br />
-                            <strong>{% trans "Member count" %}:</strong>
-                            <span id="new-group-summary-count"></span>
-                            <br />
-                        </p>
-                        -->
-                        <p>
                             {% csrf_token %}
-                            <input type="submit" value="{% trans "Done" %}"></p>
-                    </form>
-                </div>
-            </li>
-        </ul>
+                            <h3>{% trans "Create new group" %}</h3>
+                            <ul>
+                                <li>
+                                    <label for="new-group-name">{% trans "Group name" %}</label>
+                                    <input type="text" name="name" id="new-group-name" />
+                                </li>
+                                <li>
+                                    <label for="new-group-semester">{% trans "Semester" %}</label>
+                                    <select name="semester" id="new-group-semester">
+                                        {% for semester in semesters %}
+                                        <option value="{{semester.id}}">{{semester.name}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </li>
+                                <li>
+                                    <label for="new-group-members">{% trans "Members" %}</label>
+                                    <textarea name="members" placeholder="{% trans 'Student NEPTUN codes, one per line' %}" id="new-group-members"></textarea>
+                                    <div class="clear"></div>
+                                </li>
+                            </ul>
+                            <nav>
+                                <input type="reset" class="prev" value="{% trans "Cancel" %}" />
+                                <input type="submit" class="next" value="{% trans "Done" %}" />
+                                <div class="clear"></div>
+                            </nav>
+                        </form>
+                    </div>
+                </li>
+            </ul>
+        </div>
     </div>
-</div>
 </div>
