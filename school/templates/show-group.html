@@ -28,7 +28,17 @@
                         {% if not member.user %}
                         {% trans "This user never logged in, no data available" %}
                         {% else %}
-                        {{member}} ({{member.code}}) <a href="mailto:{{member.user.email}}">E-mail</a>
+                        <ul>
+                            <li>
+                                {% trans "Name" %}<span class="value">{{member}}</span>
+                            </li>
+                            <li>
+                                {% trans "NEPTUN" %}<span class="value">{{member.code}}</span>
+                            </li>
+                            <li>
+                                E-mail:<span class="value"><a href="mailto:{{member.user.email}}">{{member.user.email}}</a></span>
+                            </li>
+                        </ul>
                         {% endif %}
                     </div>
                 </div>
@@ -71,7 +81,17 @@
                         {% if not owner.user %}
                         {% trans "This user never logged in, no data available" %}
                         {% else %}
-                        {{owner}} ({{owner.code}}) <a href="mailto:{{owner.user.email}}">E-mail</a>
+                        <ul>
+                            <li>
+                                {% trans "Name" %}<span class="value">{{owner}}</span>
+                            </li>
+                            <li>
+                                {% trans "NEPTUN" %}<span class="value">{{owner.code}}</span>
+                            </li>
+                            <li>
+                                E-mail:<span class="value"><a href="mailto:{{owner.user.email}}">{{owner.user.email}}</a></span>
+                            </li>
+                        </ul>
                         {% endif %}
                     </div>
                 </div>
