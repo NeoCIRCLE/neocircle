@@ -103,7 +103,11 @@
             {% for t in publictemplates %}
         <li class="wm" id="t{{t.id }}">
             <div class="summary public-template">
-                <div class="name">{{t.name}}</div>
+                <div class="name">
+                    {{t.name}}
+                    <img src="/static/icons/lock-small.png" alt="{% trans "locked" %}"
+                     title="{% trans "This is a shared template." %}" />
+                </div>
                 <div class="status">{{t.state}}</div>
                 <div class="actions">
                     {% if t.state == 'READY' %}

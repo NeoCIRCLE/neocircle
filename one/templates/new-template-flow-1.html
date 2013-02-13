@@ -27,6 +27,10 @@
                             <label>
                                 <input type="radio" name="base" value="{{m.id}}" />
                                 {{m.name}}
+                                {% if m.public %}
+                                    <img src="/static/icons/lock-small.png" alt="{% trans "locked" %}"
+                                     title="{% trans "This is a shared template." %}" />
+                                 {% endif %}
                             </label>
                         </div>
                         <div class="clear"></div>
