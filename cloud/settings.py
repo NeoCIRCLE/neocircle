@@ -179,7 +179,13 @@ AUTH_PROFILE_MODULE = 'school.Person'
 
 import djcelery
 djcelery.setup_loader()
-BROKER_URL = 'django://'
+BROKER_URL = 'amqp://nyuszi:teszt@localhost:5672/django'
+CELERY_ROUTES = {
+    'firewall.tasks.ReloadTask': {'queue': 'local'},
+    'firewall.tasks.reload_dns_task': {'queue': 'dns'},
+    'firewall.tasks.reload_firewall_task': {'queue': 'firewall'},
+    'firewall.tasks.reload_dhcp_task': {'queue': 'dhcp'},
+}
 
 store_settings = {
         "basic_auth": "True",
