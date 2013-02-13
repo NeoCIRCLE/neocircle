@@ -353,7 +353,7 @@ class Instance(models.Model):
                 ('DONE', _('done')),
                 ('ACTIVE', _('active')),
                 ('UNKNOWN', _('unknown')),
-                ('SUSPENDED', _('suspended')),
+                ('STOPPED', _('suspended')),
                 ('FAILED', _('failed'))], default='DEPLOYABLE')
     active_since = models.DateTimeField(null=True, blank=True,
             verbose_name=_('active since'),
@@ -364,6 +364,7 @@ class Instance(models.Model):
     share = models.ForeignKey('Share', blank=True, null=True, verbose_name=_('share'))
     time_of_suspend = models.DateTimeField(default=None, verbose_name=_('time of suspend'), null=True, blank=False)
     time_of_delete = models.DateTimeField(default=None, verbose_name=_('time of delete'), null=True, blank=False)
+    waiting = models.BooleanField(default=False)
     """
     Get public port number for default access method.
     """
@@ -413,6 +414,7 @@ class Instance(models.Model):
         "%d"%self.one_id], stdout=subprocess.PIPE)
         (out, err) = proc.communicate()
         x = None
+        old_state = self.state
         try:
             from xml.dom.minidom import parse, parseString
             x = parseString(out)
@@ -421,6 +423,8 @@ class Instance(models.Model):
             self.state = state
         except:
             self.state = 'UNKNOWN'
+        if self.state != old_state:
+            self.waiting = False
         self.save()
         if self.template.state == 'SAVING':
             self.check_if_is_save_as_done()
@@ -575,6 +579,8 @@ class Instance(models.Model):
 
     def stop(self):
         self._change_state("STOPPED")
+        self.waiting = True
+        self.save()
     def resume(self):
         self._change_state("RESUME")
     def poweroff(self):
@@ -596,6 +602,8 @@ class Instance(models.Model):
         imgname = "template-%d-%d" % (self.template.id, self.id)
         self._update_vm('<DISK id="0"><SAVE_AS name="%s"/></DISK>' % imgname)
         self._change_state("SHUTDOWN")
+        self.waiting = True
+        self.save()
         t = self.template
         t.state = 'SAVING'
         t.save()
