@@ -107,9 +107,12 @@
     </div>
     {% endif %}
     {% endfor %}
-{% include "box-templatelist.html" %}
 
-{% include "box-grouplist.html" %}
+{% if userdetails.share_quota %}
+    {% include "box-templatelist.html" %}
+    {% include "box-grouplist.html" %}
+{% endif %}
+
 </div>
 {% include "box-filelist.html" %}
 {% endblock %}
