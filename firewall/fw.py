@@ -317,9 +317,9 @@ class firewall:
 
     def get(self):
         if self.IPV6:
-            return { 'filter': self.SZABALYOK, }
+            return { 'filter': self.RULES, }
         else:
-            return { 'filter': self.SZABALYOK, 'nat':self.SZABALYOK_NAT }
+            return { 'filter': self.RULES, 'nat':self.RULES_NAT }
 
     def show(self):
         if self.IPV6:
