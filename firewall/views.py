@@ -4,6 +4,7 @@ from django.shortcuts import render_to_response
 from firewall.models import *
 from firewall.fw import *
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 from django.db import IntegrityError
 from tasks import *
 from celery.task.control import inspect
@@ -30,7 +31,7 @@ def reload_firewall(request):
     return HttpResponse(html)
 
 @csrf_exempt
-@require_post
+@require_POST
 def firewall_api(request):
     try:
         data=json.loads(base64.b64decode(request.POST["data"]))
