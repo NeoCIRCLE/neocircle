@@ -165,9 +165,9 @@ class firewall:
             self.iptables('-A PUB_OUT -j r_pub_dIP')
 
         self.iptables('-A FORWARD -m state --state INVALID -g LOG_DROP')
-        self.iptables('-A FORWARD -m state --state ESTABLISHED,RELATED'
+        self.iptables('-A FORWARD -m state --state ESTABLISHED,RELATED '
                 '-j ACCEPT')
-        self.iptables('-A FORWARD -p icmp --icmp-type echo-request'
+        self.iptables('-A FORWARD -p icmp --icmp-type echo-request '
                 '-g LOG_ACC')
         if not self.IPV6:
             self.iptables('-A FORWARD -j r_pub_sIP -o pub')
@@ -175,19 +175,19 @@ class firewall:
         self.iptables('-A INPUT -i lo -j ACCEPT')
         if not self.IPV6:
             self.iptables('-A INPUT -j r_pub_sIP')
-        self.iptables('-A INPUT -m state --state ESTABLISHED,RELATED'
+        self.iptables('-A INPUT -m state --state ESTABLISHED,RELATED '
                 '-j ACCEPT')
 
         self.iptables('-A OUTPUT -m state --state INVALID -g LOG_DROP')
         self.iptables('-A OUTPUT -o lo -j ACCEPT')
-        self.iptables('-A OUTPUT -m state --state ESTABLISHED,RELATED'
+        self.iptables('-A OUTPUT -m state --state ESTABLISHED,RELATED '
                 '-j ACCEPT')
 
 
     def postrun(self):
-        self.iptables('-A PUB_OUT -s 152.66.243.160/27 -p tcp --dport 25'
+        self.iptables('-A PUB_OUT -s 152.66.243.160/27 -p tcp --dport 25 '
                 '-j LOG_ACC')
-        self.iptables('-A PUB_OUT -s 152.66.243.160/27 -p tcp --dport 445'
+        self.iptables('-A PUB_OUT -s 152.66.243.160/27 -p tcp --dport 445 '
                 '-j LOG_ACC')
         self.iptables('-A PUB_OUT -p tcp --dport 25 -j LOG_DROP')
         self.iptables('-A PUB_OUT -p tcp --dport 445 -j LOG_DROP')
@@ -214,7 +214,7 @@ class firewall:
             for rule in host.rules.filter(nat=True, direction='1'):
                 dport_sport = self.dportsport(rule, False)
                 if host.vlan.snat_ip:
-                    self.iptablesnat('-A PREROUTING -d %s %s %s -j DNAT'
+                    self.iptablesnat('-A PREROUTING -d %s %s %s -j DNAT '
                             '--to-destination %s:%s' % (host.pub_ipv4,
                                 dport_sport, rule.extra, host.ipv4,
                                 rule.nat_dport))
@@ -222,26 +222,26 @@ class firewall:
         # rules for machines with dedicated public IP
         for host in self.hosts.exclude(shared_ip=True):
             if host.pub_ipv4:
-                self.iptablesnat('-A PREROUTING -d %s -j DNAT'
+                self.iptablesnat('-A PREROUTING -d %s -j DNAT '
                         '--to-destination %s' % (host.pub_ipv4, host.ipv4))
-                self.iptablesnat('-A POSTROUTING -s %s -j SNAT'
+                self.iptablesnat('-A POSTROUTING -s %s -j SNAT '
                         '--to-source %s' % (host.ipv4, host.pub_ipv4))
 
         # default NAT rules for VLANs
         for s_vlan in self.vlans:
             if s_vlan.snat_ip:
                 for d_vlan in s_vlan.snat_to.all():
-                    self.iptablesnat('-A POSTROUTING -s %s -o %s -j SNAT'
+                    self.iptablesnat('-A POSTROUTING -s %s -o %s -j SNAT '
                             '--to-source %s' % (s_vlan.net_ipv4(),
                                 d_vlan.interface, s_vlan.snat_ip))
 
 
         # hard-wired rules
-        self.iptablesnat('-A POSTROUTING -s 10.5.0.0/16 -o vlan0003 -j SNAT'
+        self.iptablesnat('-A POSTROUTING -s 10.5.0.0/16 -o vlan0003 -j SNAT '
                 '--to-source 10.3.255.254') # man elerheto legyen
-        self.iptablesnat('-A POSTROUTING -s 10.5.0.0/16 -o vlan0008 -j SNAT'
+        self.iptablesnat('-A POSTROUTING -s 10.5.0.0/16 -o vlan0008 -j SNAT '
                 '--to-source 10.0.0.247') # wolf network for printing
-        self.iptablesnat('-A POSTROUTING -s 10.3.0.0/16 -o vlan0002 -j SNAT'
+        self.iptablesnat('-A POSTROUTING -s 10.3.0.0/16 -o vlan0002 -j SNAT '
                 '--to-source %s' % self.pub.ipv4) # kulonben nemmegy a du
 
         self.iptablesnat('COMMIT')
