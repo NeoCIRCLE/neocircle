@@ -112,15 +112,15 @@
 </div>
 <div class="boxes">
     {% if noshare %}
-        <div id="new-wm-tooltip" style="position:absolute">
-            <div id="new-wm-tooltip-container">
+        <div class="tooltip" style="position:absolute">
+            <div class="container">
                 <p>
                     {% trans "This group has no shared templates." %}
                 </p>
                 <p>
                     {% trans "Share one, and the group members can start their own virtual machine." %}
                 </p>
-                <div id="new-wm-tooltip-tail"></div>
+                <div class="tail"></div>
             </div>
         </div>
     {% endif %}

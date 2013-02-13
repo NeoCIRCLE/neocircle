@@ -81,13 +81,13 @@
         {% endfor %}
 
             {% if not mytemplates and not group %}
-        <div id="new-wm-tooltip">
-            <div id="new-wm-tooltip-container">
+        <div class="tooltip">
+            <div class="container">
                 <p>{% trans "You have no own templates." %}</p>
                 <p>
                     {% trans "Create a new one, and share it with your students. Or you can also use a common one." %}
                 </p>
-                <div id="new-wm-tooltip-tail"></div>
+                <div class="tail"></div>
             </div>
         </div>
         {% endif %}
