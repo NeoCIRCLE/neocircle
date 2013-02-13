@@ -118,7 +118,7 @@ class firewall:
         self.iptables(':FORWARD DROP [0:0]')
         self.iptables(':OUTPUT DROP [50:6936]')
 
-        # inicialize logging
+        # initialize logging
         self.iptables('-N LOG_DROP')
         # windows port scan are silently dropped
         self.iptables('-A LOG_DROP -p tcp --dport 445 -j DROP')
@@ -475,7 +475,7 @@ def dhcp():
                     'ntp': i_vlan.ipv4,
                     'dnsserver': settings['rdns_ip'],
                     'extra': "range %s" % (i_vlan.dhcp_pool
-                        if m else "deny unknown-clients"),
+                        if m else "deny unknown clients"),
                     'interface': i_vlan.interface,
                     'name': i_vlan.name,
                     'tftp': i_vlan.ipv4

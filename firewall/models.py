@@ -162,9 +162,11 @@ class Host(models.Model):
             self.ipv6 = ipv4_2_ipv6(self.ipv4)
         if (not self.shared_ip and self.pub_ipv4 and Host.objects.
                 exclude(id=self.id).filter(pub_ipv4=self.pub_ipv4)):
-            raise ValidationError("Ha a shared_ip be van pipalva, akkor egyedinek kell lennie a pub_ipv4-nek!")
+            raise ValidationError(_("If shared_ip has been checked, "
+                "pub_ipv4 has to be unique."))
         if Host.objects.exclude(id=self.id).filter(pub_ipv4=self.ipv4):
-            raise ValidationError("Egy masik host natolt cimet nem hasznalhatod sajat ipv4-nek")
+            raise ValidationError(_("You can't use another host's NAT'd "
+                "address as your own IPv4."))
         self.full_clean()
         super(Host, self).save(*args, **kwargs)
         if id is None:
@@ -180,10 +182,10 @@ class Host(models.Model):
     def add_port(self, proto, public, private):
         proto = "tcp" if (proto == "tcp") else "udp"
         if public < 1024:
-            raise ValidationError("Csak az 1024 feletti portok hasznalhatok")
+            raise ValidationError(_("Only ports above 1024 can be used."))
         for host in Host.objects.filter(pub_ipv4=self.pub_ipv4):
             if host.rules.filter(nat=True, proto=proto, dport=public):
-                raise ValidationError("A %s %s port mar hasznalva" %
+                raise ValidationError(_("Port %s %s is already in use.") %
                         (proto, public))
         rule = Rule(direction='1', owner=self.owner, dport=public,
                 proto=proto, nat=True, accept=True, r_type="host",
@@ -249,7 +251,7 @@ class Record(models.Model):
         a = self.get_data()
         if a:
             return a['name'] + u' ' + a['type'] + u' ' + a['address']
-        return '(nincs)'
+        return '(empty)'
 
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -257,36 +259,39 @@ class Record(models.Model):
 
     def clean(self):
         if self.name and self.name.endswith(u'.'):
-            raise ValidationError(u'a domain nem végződhet pontra')
+            raise ValidationError(_("Domain can't be terminated with a dot."))
 
         if self.host and self.type in ['CNAME', 'A', 'AAAA']:
             if self.type == 'CNAME':
                 if not self.name or self.address:
-                    raise ValidationError(u'CNAME rekordnal csak a name '
-                        'legyen kitoltve, ha van host beallitva')
+                    raise ValidationError(_("Only the 'name' field should "
+                            "be filled with a CNAME record if a host is "
+                            "set."))
             elif self.name or self.address:
-                raise ValidationError(u'A, AAAA rekord eseten nem szabad '
-                    'megadni name-t, address-t, ha tarsitva van host')
+                raise ValidationError(_("'name' and 'address' can't be "
+                        "specified with an A or AAAA record if a host is "
+                        "set."))
         else:
             if not self.address:
-                raise ValidationError(u'address hianyzik')
+                raise ValidationError(_("'address' field must be filled."))
 
             if self.type == 'A':
                 if not ipv4_re.match(self.address):
-                    raise ValidationError(u'ez nem ipcim, ez nudli!')
+                    raise ValidationError(_("Not a valid IPv4 address."))
             elif self.type in ['CNAME', 'NS', 'PTR', 'TXT']:
                 if not domain_re.match(self.address):
-                    raise ValidationError(u'ez nem domain, ez nudli!')
+                    raise ValidationError(_("Not a valid domain."))
             elif self.type == 'AAAA':
                 if not is_valid_ipv6_address(self.address):
-                    raise ValidationError(u'ez nem ipv6cim, ez nudli!')
+                    raise ValidationError(_("Not a valid IPv6 address."))
             elif self.type == 'MX':
                 mx = self.address.split(':', 1)
                 if not (len(mx) == 2 and mx[0].isdigit() and
                         domain_re.match(mx[1])):
-                    raise ValidationError(u'prioritas:hostname')
+                    raise ValidationError(_("Invalid address. "
+                        "Valid format: <priority>:<hostname>"))
             else:
-                raise ValidationError(u'ez ismeretlen rekord, ez nudli!')
+                raise ValidationError(_("Unknown record."))
 
     def get_data(self):
         retval = { 'name': self.name, 'type': self.type, 'ttl': self.ttl,

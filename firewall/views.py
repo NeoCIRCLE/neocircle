@@ -7,6 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db import IntegrityError               
 from tasks import *
 from celery.task.control import inspect
+from django.utils.translation import ugettext_lazy as _
 
 import re
 import base64
@@ -17,71 +18,66 @@ import sys
 def reload_firewall(request):
     if request.user.is_authenticated():
         if request.user.is_superuser:
-            html = (u"Be vagy jelentkezve es admin is vagy, kedves %s!" %
-                    request.user.username)
-            html += "<br> 10 masodperc mulva ujratoltodik"
+            html = ((_("Dear %s, you've signed in as administrator!") %
+                    request.user.username) + "<br>" +
+                    _("Reloading in 10 seconds..."))
             ReloadTask.delay()
         else:
-            html = (u"Be vagy jelentkezve, csak nem vagy admin, kedves %s!"
+            html = (_("Dear %s, you've signed in!")
                     % request.user.username)
     else:
-        html = u"Nem vagy bejelentkezve, kedves ismeretlen!"
+        html = _("Dear anonymous, you've not signed in yet!")
     return HttpResponse(html)
 
 @csrf_exempt
+@require_post
 def firewall_api(request):
-    if request.method == 'POST':
-        try:
-            data=json.loads(base64.b64decode(request.POST["data"]))
-            command = request.POST["command"]
-            if data["password"] != "bdmegintelrontottaanetet":
-                raise Exception("rossz jelszo")
+    try:
+        data=json.loads(base64.b64decode(request.POST["data"]))
+        command = request.POST["command"]
+        if data["password"] != "bdmegintelrontottaanetet":
+            raise Exception(_("Wrong password."))
 
-            if not (data["vlan"] == "vm-net" or data["vlan"] == "war"):
-                raise Exception("csak vm-net es war-re mukodik")
+        if not (data["vlan"] == "vm-net" or data["vlan"] == "war"):
+            raise Exception(_("Only vm-net and war can be used."))
 
-            data["hostname"] = re.sub(r' ','_', data["hostname"])
+        data["hostname"] = re.sub(r' ','_', data["hostname"])
 
-            if command == "create":
-                data["owner"] = "opennebula"
-                owner = auth.models.User.objects.get(username=data["owner"])
-                host = models.Host(hostname=data["hostname"],
-                        vlan=models.Vlan.objects.get(name=data["vlan"]),
-                        mac=data["mac"], ipv4=data["ip"], owner=owner,
-                        description=data["description"], pub_ipv4=models.
-                            Vlan.objects.get(name=data["vlan"]).snat_ip,
-                        shared_ip=True)
-                host.full_clean()
-                host.save()
+        if command == "create":
+            data["owner"] = "opennebula"
+            owner = auth.models.User.objects.get(username=data["owner"])
+            host = models.Host(hostname=data["hostname"],
+                    vlan=models.Vlan.objects.get(name=data["vlan"]),
+                    mac=data["mac"], ipv4=data["ip"], owner=owner,
+                    description=data["description"], pub_ipv4=models.
+                        Vlan.objects.get(name=data["vlan"]).snat_ip,
+                    shared_ip=True)
+            host.full_clean()
+            host.save()
 
-                host.enable_net()
+            host.enable_net()
 
-                for p in data["portforward"]:
-                    host.add_port(proto=p["proto"],
-                            public=int(p["public_port"]),
-                            private=int(p["private_port"]))
+            for p in data["portforward"]:
+                host.add_port(proto=p["proto"],
+                        public=int(p["public_port"]),
+                        private=int(p["private_port"]))
 
-            elif command == "destroy":
-                data["owner"] = "opennebula"
-                print data["hostname"]
-                owner = auth.models.User.objects.get(username=data["owner"])
-                host = models.Host.objects.get(hostname=data["hostname"],
-                        owner=owner)
+        elif command == "destroy":
+            data["owner"] = "opennebula"
+            print data["hostname"]
+            owner = auth.models.User.objects.get(username=data["owner"])
+            host = models.Host.objects.get(hostname=data["hostname"],
+                    owner=owner)
 
-                host.del_rules()
-                host.delete()
-            else:
-                raise Exception("rossz parancs")
+            host.del_rules()
+            host.delete()
+        else:
+            raise Exception(_("Unknown command."))
 
-            reload_firewall_lock()
-        except (ValidationError, IntegrityError, AttributeError, Exception) as e:
-            return HttpResponse(u"rosszul hasznalod! :(\n%s\n" % e);
-        except:
-#           raise
-            return HttpResponse(u"rosszul hasznalod! :(\n");
-        
-        return HttpResponse(u"ok");
-
-    return HttpResponse(u"ez kerlek egy api lesz!\n");
-
-
+        reload_firewall_lock()
+    except (ValidationError, IntegrityError, AttributeError, Exception) as e:
+        return HttpResponse(_("Something went wrong!\n%s\n") % e);
+    except:
+        return HttpResponse(_("Something went wrong!\n"));
+    
+    return HttpResponse(_("OK"));

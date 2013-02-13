@@ -95,12 +95,12 @@ class RecordAdmin(admin.ModelAdmin):
 
     def address_(self, instance):
         a = instance.get_data()
-        if(a):
+        if a:
             return a['address']
 
     def name_(self, instance):
         a = instance.get_data()
-        if(a):
+        if a:
             return a['name']
 
 admin.site.register(Host, HostAdmin)

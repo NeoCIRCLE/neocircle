@@ -47,6 +47,7 @@ def val_domain(value):
         raise ValidationError(_(u'%s - invalid domain') % value)
 
 def val_reverse_domain(value):
+    """Check whether the parameter is a valid reverse domain."""
     if not reverse_domain_re.search(value):
         raise ValidationError(u'%s - reverse domain' % value)
 
