@@ -1,0 +1,46 @@
+{% extends "summary.html" %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+{% block nameclass %}{% if vm.state == 'ACTIVE' %}vm-on{% else %}vm-off{% endif %}{% endblock nameclass %}
+
+{% block name %}
+    {{vm.name|truncatechars:20}}
+{% endblock %}
+
+{% block status %}
+    {{vm.state}}
+{% endblock status %}
+
+{% block actions %}
+    {% if vm.waiting %}
+        <img src="/static/load.gif" />
+    {% elif vm.state == 'ACTIVE' %}
+        <a href="{{vm.get_connect_uri}}" data-id="{{ vm.id  }}" class="connect-vm-button" title="{% trans "Connect" %}">
+            <img src="/static/icons/plug.png" alt="{% trans "Connect" %}" />
+        </a>
+        <a href="#"  class="stop-vm-button" data-name="{{ vm.name }}" data-id="{{ vm.id }}" title="{% trans "Pause" %}">
+            <img src="/static/icons/control-pause.png" alt="{% trans "Pause" %}" />
+        </a>
+        <a href="#"  class="delete-vm-button" data-name="{{ vm.name }}" data-id="{{ vm.id }}" title="{% trans "Delete" %}">
+            <img src="/static/icons/minus-circle.png" alt="{% trans "Delete" %}" />
+        </a>
+        <a href="#"  class="restart-vm-button" data-name="{{ vm.name }}" data-id="{{ vm.id }}" title="{% trans "Restart" %}">
+            <img src="/static/icons/arrow-circle-double.png" alt="↺" />
+        </a>
+    {% elif vm.state == 'PENDING' %}
+        <img src="/static/load.gif" />
+        {% trans "starting…" %}
+    {% elif vm.state == 'STOPPED' %}
+        <a href="#"  class="resume-vm-button" data-name="{{ vm.name }}" data-id="{{ vm.id }}" title="{% trans "Resume" %}">
+            <img src="/static/icons/control.png" alt="{% trans "Resume" %}" />
+        </a>
+        <a href="#"  class="delete-vm-button" data-name="{{ vm.name }}" data-id="{{ vm.id }}" title="{% trans "Delete" %}">
+            <img src="/static/icons/minus-circle.png" alt="{% trans "Delete" %}" />
+        </a>
+    {% elif vm.state == 'FAILED' %}
+        <a href="#"  class="delete-vm-button" data-name="{{ vm.name }}" data-id="{{ vm.id }}" title="{% trans "Delete" %}">
+            <img src="/static/icons/minus-circle.png" alt="{% trans "Delete" %}" />
+        </a>
+    {% endif %}
+{% endblock actions %}
