@@ -169,6 +169,13 @@ def toplist(request):
     return render_to_response('store/list.html', RequestContext(request, {'file_list': file_list, 'path' : path, 'backpath' : backpath, 'username' : user}))
 
 @login_required
+def ajax_toplist(request):
+    user = request.user.username
+    path = backpath = '/'
+    file_list = StoreApi.toplist(user)
+    return HttpResponse(json.dumps(file_list))
+
+@login_required
 def gui(request):
     user = request.user.username
     if request.method == 'GET':
