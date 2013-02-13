@@ -36,17 +36,17 @@
         {% endif %}
     </form>
     <ol>
-        <li{% if i.template.state == "SAVING" %} class="done"{%endif%}>{% blocktrans %}Connect to the machine.{% endblocktrans %}</li>
-        <li{% if i.template.state == "SAVING" %} class="done"{%endif%}>
+        <li{% if i.template.state != "NEW" %} class="done"{%endif%}>{% blocktrans %}Connect to the machine.{% endblocktrans %}</li>
+        <li{% if i.template.state != "NEW" %} class="done"{%endif%}>
             {% blocktrans %}Do all the needed installation/customization.{% endblocktrans %}
         </li>
-        <li{% if i.template.state == "SAVING" %} class="done"{%endif%}>
+        <li{% if i.template.state != "NEW" %} class="done"{%endif%}>
             {% blocktrans %}Log off (keep the machine running).{% endblocktrans %}
         </li>
-        <li{% if i.template.state == "SAVING" %} class="done"{%endif%}>
+        <li{% if i.template.state != "NEW" %} class="done"{%endif%}>
             {% blocktrans %}Click on the "save" button on the right.{% endblocktrans %}
         </li>
-        <li>
+        <li{% if i.template.state == "READY" %} class="done"{%endif%}>
             {% blocktrans %}The machine will be shut down and its disk saved.{% endblocktrans %}
         </li>
         <li>
