@@ -123,11 +123,11 @@ class firewall:
         # windows port scan are silently dropped
         self.iptables('-A LOG_DROP -p tcp --dport 445 -j DROP')
         self.iptables('-A LOG_DROP -p udp --dport 137 -j DROP')
-        self.iptables('-A LOG_DROP -j LOG --log-level 7'
+        self.iptables('-A LOG_DROP -j LOG --log-level 7 '
                 '--log-prefix "[ipt][drop]"')
         self.iptables('-A LOG_DROP -j DROP')
         self.iptables('-N LOG_ACC')
-        self.iptables('-A LOG_ACC -j LOG --log-level 7'
+        self.iptables('-A LOG_ACC -j LOG --log-level 7 '
                 '--log-prefix "[ipt][isok]"')
         self.iptables('-A LOG_ACC -j ACCEPT')
 
