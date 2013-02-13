@@ -388,7 +388,10 @@ class VmDeleteView(View):
             messages.success(request, _('Virtual machine is successfully deleted.'))
         except:
             messages.error(request, _('Failed to delete virtual machine.'))
-        return redirect('/')
+        if request.is_ajax():
+            return HttpResponse("")
+        else:
+            return redirect('/')
 
     def get(self, request, iid, *args, **kwargs):
         i = get_object_or_404(Instance, id=iid, owner=request.user)
