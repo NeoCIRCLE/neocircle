@@ -1,0 +1,74 @@
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+<form action="/ajax/templateWizard" method="post" id="template-wizard">
+    {% csrf_token %}
+    <div id="new-template-step-1" class="wizard">
+        <div class="progress">
+            <div class="bar-container">
+                <div class="bar" style="width: 33%"></div>
+            </div>
+            <h3>
+                {% blocktrans with step=1 all=3 %}{{step}}/{{all}}{% endblocktrans %}
+            </h3>
+        </div>
+        <h2>{% blocktrans with step=1 %}Step {{step}}{% endblocktrans %}</h2>
+        <p class="help">
+            {% trans "Please choose the base system you want to customize." %}
+        </p>
+        <div class="container">
+            <ul class="tpl-list modal">
+                {% if not templates %}
+                <p>{% trans "There are no available templates." %}</p>
+                {% endif %}
+                {% for m in templates %}
+                <li class="tpl">
+                    <div class="summary">
+                        <div class="name tpl os-{{m.os_type}}" title="{{m.description}}">
+                            <label>
+                                <input type="radio" name="base" value="{{m.id}}" />
+                                {{m.name}}
+                                {% if m.public %}
+                                    <img src="/static/icons/lock-small.png" alt="{% trans "locked" %}"
+                                     title="{% trans "This is a shared template." %}" />
+                                 {% endif %}
+                            </label>
+                        </div>
+                        <div class="clear"></div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <nav>
+            <input type="reset" class="prev" value="{% trans "Cancel" %}" />
+            <input type="submit" class="next" value="{% trans "Next &raquo;" %}" />
+            <div class="clear"></div>
+        </nav>
+        <script type="text/javascript">
+            $(function(){
+                $('#template-wizard nav .prev').click(function(){
+                    $('#modal').hide();
+                })
+                $('#template-wizard').unbind('submit').submit(function(e){
+                    if ($("#template-wizard input[type=radio]:checked").length==0) {
+                        $("#template-wizard .help").addClass('hilight');
+                    }
+                    else {
+                        $.ajax({
+                            'type': 'POST',
+                            'url': '/ajax/templateWizard',
+                            'data': $('#template-wizard').serialize(),
+                            'success': function(data) {
+                              $('#modal-container').html(data);
+                            }
+                        });
+                    }
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                })
+            })
+        </script>
+    </div>
+</div>
+</form>

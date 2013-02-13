@@ -2,7 +2,7 @@
 
 # TODO File permission checks
 
-from bottle import route, run, request, static_file, abort, redirect, app
+from bottle import route, run, request, static_file, abort, redirect, app, response
 import json, os, shutil
 import uuid
 import subprocess
@@ -65,7 +65,7 @@ def neptun_GET(neptun):
     if os.path.exists(home_path) != True:
         abort(401, 'The requested user does not exist!')
     else:
-        statistics=getQuotaStatus(neptun)
+        statistics=get_quota(neptun)
         return { 'Used' : statistics[0], 'Soft' : statistics[1], 'Hard' : statistics[2]}
 
 COMMANDS = {}
@@ -165,7 +165,7 @@ def cmd_rename(request, neptun, home_path):
 COMMANDS['RENAME'] = cmd_rename
 
 # NEW FOLDER
-def cmd_new_folder(request, neptun, home_path):
+def cmd_new_folder(request, username, home_path):
     dir_path = home_path+'/'+request.json['PATH']
     dir_path = os.path.realpath(dir_path)
     if not dir_path.startswith(home_path):
@@ -174,6 +174,7 @@ def cmd_new_folder(request, neptun, home_path):
         abort(400, "Directory already exist!")
     else:
         os.mkdir(dir_path, 0755)
+        os.chown(dir_path, getpwnam(username).pw_uid, getpwnam(username).pw_gid)
 COMMANDS['NEW_FOLDER'] = cmd_new_folder
 
 # REMOVE
@@ -221,30 +222,48 @@ def set_keys(neptun):
         return
     elif result == 2:
         abort(403, 'User does not exist!')
+@route('/quota/<neptun>', method='POST')
+@force_ssl
+def set_quota(neptun):
+    try:
+        quota = request.json['QUOTA']
+    except:
+        abort(400, 'Wrong syntax!')
+    result = subprocess.call([ROOT_BIN_FOLDER+'/'+USER_MANAGER, 'setquota', neptun, str(quota), hard_quota(quota)])
+    if result == 0:
+        return
+    elif result == 2:
+        abort(403, 'User does not exist!')
 
 
 @route('/new/<neptun>', method='POST')
 @force_ssl
 def new_user(neptun):
     key_list = []
-    smbpasswd=''
+    smbpasswd = ''
+    quota = ''
     try:
         smbpasswd = request.json['SMBPASSWD']
+        quota = request.json['QUOTA']
     except:
+        print "Invalid syntax"
         abort(400, 'Invalid syntax')
     # Call user creator script
-    result = subprocess.call([ROOT_BIN_FOLDER+'/'+USER_MANAGER, 'add', neptun, smbpasswd])
+    result = subprocess.call([ROOT_BIN_FOLDER+'/'+USER_MANAGER, 'add', neptun, smbpasswd, str(quota), hard_quota(quota)])
+    print "add "+neptun+" "+smbpasswd+" "+str(quota)+" "+hard_quota(quota)
     if result == 0:
         try:
             for key in request.json['KEYS']:
                 key_list.append(key)
             updateSSHAuthorizedKeys(neptun, key_list)
         except:
+            print "SSH error"
             abort(400, 'SSH')
         return
     elif result == 2:
         abort(403, 'User already exist!')
     else:
+        print "Error"
         abort(400, 'An error occured!')
 
 
@@ -258,6 +277,14 @@ def dl_hash(hash_num):
     else:
         filename = os.path.basename(os.path.realpath(hash_path+'/'+hash_num))
         return static_file(hash_num, root=hash_path, download=filename)
+
+@route('/ul/<hash_num>', method='OPTIONS')
+def upload_allow(hash_num):
+    response.set_header('Access-Control-Allow-Origin', '*')
+    response.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+    response.set_header('Access-Control-Allow-Headers', 'Content-Type, Content-Range, Content-Disposition, Content-Description')
+    return 'ok'
+
 @route('/ul/<hash_num>', method='POST')
 def upload(hash_num):
     if not os.path.exists(ROOT_WWW_FOLDER+'/'+hash_num):
@@ -275,6 +302,7 @@ def upload(hash_num):
     # Check if upload path valid
     if not up_path.startswith('/home'):
         abort(400, 'Invalid path.')
+
     os.remove(ROOT_WWW_FOLDER+'/'+hash_num)
     # Get the real upload path
     # Delete the hash link
@@ -284,23 +312,26 @@ def upload(hash_num):
     # os.seteuid(getpwnam(username).pw_uid)
     # TODO setuid subcommand
     # Check if file exist (root can overwrite anything not safe)
-    f = open(up_path , 'wb')
-    os.chown(up_path, getpwnam(username).pw_uid, getpwnam(username).pw_gid)
-    os.chmod(up_path, 0644)
-    f.close()
     with open(up_path , 'wb') as f:
         datalength = 0
-        for chunk in fbuffer(file_data.file):
+        for chunk in fbuffer(file_data.file, chunk_size=1048576):
             f.write(chunk)
             datalength += len(chunk)
-    try: 
+    os.chown(up_path, getpwnam(username).pw_uid, getpwnam(username).pw_gid)
+    os.chmod(up_path, 0644)
+    try:
         redirect_address = request.headers.get('Referer')
     except:
-	redirect_address = REDIRECT_URL 
+	    redirect_address = REDIRECT_URL
+    response.set_header('Access-Control-Allow-Origin', '*')
+    response.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+    response.set_header('Access-Control-Allow-Headers', 'Content-Type, Content-Range, Content-Disposition, Content-Description')
     redirect(redirect_address)
     #return 'Upload finished: '+file_name+' - '+str(datalength)+' Byte'
 
-
+# Return hard quota from quota
+def hard_quota(quota):
+    return str(int(int(quota)*1.25))
 
 # Define filebuffer for big uploads
 def fbuffer(f, chunk_size=4096):
@@ -311,17 +342,12 @@ def fbuffer(f, chunk_size=4096):
 
 # Update users .ssh/authorized_keys
 def updateSSHAuthorizedKeys(username, key_list):
-    user_home_ssh = '/home/'+username+'/home/.ssh'
     user_uid=getpwnam(username).pw_uid
     user_gid=getpwnam(username).pw_gid
-    if not os.path.exists(user_home_ssh):
-        os.mkdir(user_home_ssh, 0700)
-    os.chown(user_home_ssh, user_uid, user_gid)
-    auth_file_name = user_home_ssh+'/authorized_keys'
-    auth_file = open(auth_file_name, 'w')
-    for key in key_list:
-        auth_file.write(key+'\n')
-    auth_file.close()
+    auth_file_name = "/home/"+username+"/authorized_keys"
+    with open(auth_file_name, 'w') as auth_file:
+        for key in key_list:
+            auth_file.write(key+'\n')
     os.chmod(auth_file_name, 0600)
     os.chown(auth_file_name, user_uid, user_gid)
     return
@@ -363,9 +389,16 @@ def file_dict(path, home):
             'MTIME': os.path.getmtime(path),
             'DIR': os.path.relpath(os.path.dirname(path), home)}
 
-def getQuotaStatus(neptun):
+def get_quota(neptun):
     output=subprocess.check_output([ROOT_BIN_FOLDER+'/'+USER_MANAGER, 'status', neptun], stderr=subprocess.STDOUT)
     return output.split()
+
+def set_quota(neptun, quota):
+    try:
+        output=subprocess.check_output([ROOT_BIN_FOLDER+'/'+USER_MANAGER, 'setquota', neptun, quota, hard_quota(quota)], stderr=subprocess.STDOUT)
+    except:
+        return False
+    return True
 
 if __name__ == "__main__":
     run(host=SITE_HOST, port=SITE_PORT)

@@ -11,24 +11,25 @@ import os
 import json
 import base64
 
-def estabilish_store_user(user):
+def estabilish_store_user(request, user):
     try:
         details = request.user.userclouddetails_set.all()[0]
         password = details.smb_password
+        quota = details.disk_quota * 1024
         key_list = []
         for key in request.user.sshkey_set.all():
             key_list.append(key.key)
     except:
-        return HttpResponse('Can not acces to django database!', status_code=404)
+        return HttpResponse('Can not acces to django database!', status=404)
         #Create user
-        if not StoreApi.createuser(user,password,key_list):
-            return HttpResponse('User does not exist on store! And could not create!')
+    if not StoreApi.createuser(user, password, key_list, str(quota)):
+        return HttpResponse('User does not exist on store! And could not create!')
 
 @login_required
 def index(request):
     user = request.user.username
     if StoreApi.userexist(user) != True:
-        estabilish_store_user(user)
+        estabilish_store_user(request, user)
     #UpdateAuthorizationInfo
     try:
         auth=request.POST['auth']
@@ -39,15 +40,15 @@ def index(request):
             for key in request.user.sshkey_set.all():
                 key_list.append(key.key)
         except:
-            return HttpResponse('Can not acces to django database!', status_code=404)
-        if not StoreApi.updateauthorizationinfo(user,password,key_list):
+            return HttpResponse('Can not acces to django database!', status=404)
+        if not StoreApi.updateauthorizationinfo(user, password, key_list):
            return HttpResponse('Can not update authorization information!')
     except:
         pass
     #Download handler
     try:
         dl = request.POST['dl']
-        return redirect(StoreApi.requestdownload(user,dl))
+        return redirect(StoreApi.requestdownload(user, dl))
     except:
         pass
     #Upload handler
@@ -86,7 +87,7 @@ def index(request):
 def ajax_listfolder(request):
     user = request.user.username
     if StoreApi.userexist(user) != True:
-        estabilish_store_user(user)
+        estabilish_store_user(request, user)
     path = '/'
     try:
         path = request.POST['path']
@@ -98,6 +99,14 @@ def ajax_listfolder(request):
     return HttpResponse(json.dumps(file_list))
 
 @login_required
+def ajax_quota(request):
+    user = request.user.username
+    if StoreApi.userexist(user) != True:
+        estabilish_store_user(request, user)
+    return HttpResponse(json.dumps(StoreApi.requestquota(user)))
+    #return HttpResponse(json.dumps({'Used':20,'Soft':160,'Hard':200}))
+
+@login_required
 def ajax_download(request):
     user = request.user.username
     try:
@@ -105,7 +114,7 @@ def ajax_download(request):
         return HttpResponse(json.dumps({'url':StoreApi.requestdownload(user,dl)}))
     except:
         pass
-    return HttpResponse('File not found!', status_code=404)
+    return HttpResponse('File not found!', status=404)
 
 @login_required
 def ajax_upload(request):
@@ -116,7 +125,7 @@ def ajax_upload(request):
         return HttpResponse(json.dumps({'url':url}))
     except:
         pass
-    return HttpResponse('Error!', status_code=404)
+    return HttpResponse('Error!', status=404)
 
 @login_required
 def ajax_delete(request):
@@ -126,7 +135,7 @@ def ajax_delete(request):
         return HttpResponse(json.dumps({'success':StoreApi.requestremove(user,rm)}))
     except:
         pass
-    return HttpResponse('File not found!', status_code=404)
+    return HttpResponse('File not found!', status=404)
 
 @login_required
 def ajax_new_folder(request):
@@ -138,7 +147,19 @@ def ajax_new_folder(request):
         return HttpResponse(json.dumps({'success':success}))
     except:
         pass
-    return HttpResponse('Error!', status_code=404)
+    return HttpResponse('Error!', status=404)
+
+@login_required
+def ajax_rename(request):
+    user = request.user.username
+    try:
+        path = request.POST['path']
+        new = request.POST['new']
+        success = StoreApi.requestrename(user,path,new)
+        return HttpResponse(json.dumps({'success':success}))
+    except:
+        pass
+    return HttpResponse('Error!', status=404)
 
 @login_required
 def toplist(request):
@@ -160,18 +181,21 @@ def gui(request):
             for key in request.user.sshkey_set.all():
                 key_list.append(key.key)
         except:
-            return HttpResponse('Can not acces to django database!', status_code=404)
+            return HttpResponse('Can not acces to django database!', status=404)
         try:
             lab_key_decoded = base64.b64decode(request.POST['KEY'])
             key_list.append(lab_key_decoded)
         except:
-            pass
-        if not StoreApi.updateauthorizationinfo(user, password, key_list):
-            return HttpResponse('Can not update authorization information!')
+            if StoreApi.updateauthorizationinfo(user, password, key_list):
+                return HttpResponse('Keys resetted succesfully!')
+            else:
+                return HttpResponse('Can not update authorization information!')
+        if StoreApi.updateauthorizationinfo(user, password, key_list):
+            return HttpResponse('https://cloud.ik.bme.hu/?neptun='+user+"&"+"host="+StoreApi.get_host())
         else:
-            return HttpResponse('Updated key information!')
+            return HttpResponse('Can not update authorization information!')
     else:
-        return HttpResponse('Method not found!', status_code=404)
+        return HttpResponse('Method not found!', status=404)
 
 def logout(request):
         auth.logout(request)

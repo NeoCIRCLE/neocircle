@@ -3,99 +3,161 @@
 
 {% block js %}
 <script type="text/javascript">
-	{% if booting %}
-		setTimeout("location.reload(true);", 2000);
-	{% endif %}
+    {% if booting or state != 'ACTIVE' %}
+    var timer=setInterval(function(){
+        $.ajax({
+            type: 'GET',
+            dataType: 'json',
+            url: '/ajax/vm/status/{{ id }}',
+            success: function(data){
+                if( !data.booting  && data.state == 'ACTIVE'){
+                    window.location.reload();
+                }
+            }
+        })
+    },2000);
+    {% endif %}
 </script>
 {% endblock %}
 
 {% block content %}
+
+{% if i.template.state != "READY" %}
+<div class="contentblock wide note big">
+    <p>
+        {% blocktrans %}This is a master image for your new template.{% endblocktrans %}
+    </p>
+    <form action="{% url one.views.vm_saveas id %}" method="POST">
+        {% csrf_token %}
+        {% if i.template.state == "NEW" %}
+        <p style="float: right; margin-top:2em;margin-right:1em;">
+            <input type="submit" value="{% trans "Save" %}" class="big" style="background-color:rgba(102, 255, 0, 0.4)" />
+        </p>
+        {% endif %}
+    </form>
+    <ol>
+        <li{% if i.template.state != "NEW" %} class="done"{%endif%}>{% blocktrans %}Connect to the machine.{% endblocktrans %}</li>
+        <li{% if i.template.state != "NEW" %} class="done"{%endif%}>
+            {% blocktrans %}Do all the needed installation/customization.{% endblocktrans %}
+        </li>
+        <li{% if i.template.state != "NEW" %} class="done"{%endif%}>
+            {% blocktrans %}Log off (keep the machine running).{% endblocktrans %}
+        </li>
+        <li{% if i.template.state != "NEW" %} class="done"{%endif%}>
+            {% blocktrans %}Click on the "save" button on the right.{% endblocktrans %}
+        </li>
+        <li{% if i.template.state == "READY" %} class="done"{%endif%}>
+            {% blocktrans %}The machine will be shut down and its disk saved.{% endblocktrans %}
+        </li>
+        <li>
+            {% blocktrans %}You can share the template with your groups.{% endblocktrans %}
+        </li>
+    </ol>
+</div>
+{% endif %}
 <div class="boxes">
-        <div class="contentblock" id="state">
-            <h2>{{name}}</h2>
-            <div class="content">
-		{% if state == "PENDING" or state == "ACTIVE" and booting %}
-			<p style="font-size:25px; line-height:2em;text-align:center;"><img src="/static/load-2.gif" /> Gép indítása..</p>
-			<p style="font-size:25px; line-height:2em;text-align:center;">
-				<form action="{% url vm_delete id %}" method="post" onsubmit="return confirm('Biztosan törli a gépet?')">{% csrf_token %}<input type="submit" class="icon-delete" value="Törlés" /></form>
-				<a href="/"><img src="/static/icons/Go-home.png" alt="&lt;-" /></a>
-			</p>
-		{% endif %}
-		{% if state == "ACTIVE" and not booting %}
-			{% if age < 15 %}
-				<p id="wait" style="font-size:25px; line-height:2em;text-align:center;"><img src="/static/load-2.gif" /> Gép indítása...</p>
-				<p id="connect" style="display:none; font-size:25px; line-height:2em;text-align:center;">
-					<a href="{{uri}}" class="button" onclick="return connectbutton();">
-						<img src="/static/load-1.gif" id="connecting" style="display:none;" /> Csatlakozás
-					</a>
-				</p>
-				<p style="font-size:25px; line-height:2em;text-align:center;">
-				<form action="{% url vm_delete id %}" method="post" onsubmit="return confirm('Biztosan törli a gépet?')">{% csrf_token %}<input type="submit" class="icon-delete" value="Törlés" /></form>
-					<a href="/"><img src="/static/icons/Go-home.png" alt="&lt;-" /></a>
-				</p>
-			{% else %}
-				<p id="connect" style="font-size:25px; line-height:2em;text-align:center;">
-					<a href="{{uri}}" class="button" onclick="return connectbutton();">
-						<img src="/static/load-1.gif" id="connecting" style="display:none;" /> Csatlakozás
-					</a>
-				</p>
-				<p style="font-size:25px; line-height:2em;text-align:center;">
-				<form action="{% url vm_delete id %}" method="post" onsubmit="return confirm('Biztosan törli a gépet?')">{% csrf_token %}<input type="submit" class="icon-delete" value="Törlés" /></form>
-					<a href="/"><img src="/static/icons/Go-home.png" alt="&lt;-" /></a>
-				</p>
-			{% endif %}
-		{% endif %}
-		{% if state == "DONE" %}
-			<p style="font-size:25px; line-height:2em;text-align:center;">A gép törölve van!</p>
-			<p style="font-size:25px; line-height:2em;text-align:center;">
-				<a href="/"><img src="/static/icons/Go-home.png" alt="⌫" /></a>
-			</p>
-		{% endif %}
-		{% if state == "FAILED" %}
-			<p style="font-size:25px; line-height:2em;text-align:center;">Váratlan hiba lépett fel.</p>
-			<p style="font-size:25px; line-height:2em;text-align:center;">
-				<form action="{% url vm_delete id %}" method="post" onsubmit="return confirm('Biztosan törli a gépet?')">{% csrf_token %}<input type="submit" class="icon-delete" value="Törlés" /></form>
-				<a href="/"><img src="/static/icons/Go-home.png" alt="⌫" /></a>
-			</p>
-		{% endif %}
-		{% if state == "SUSPENDED" %}
-			<p style="font-size:25px; line-height:2em;text-align:center;">
-				<a href="/vm/suspend/{{i.id}}/"><img src="/static/icons/Media-playback-start.png" alt="&gt;" /></a>
-				<a href="/"><img src="/static/icons/Go-home.png" alt="⌫" /></a>
-			</p>
-		{% endif %}
-            </div>
+    <div class="contentblock wm" id="state">
+        <h2>{{name}}</h2>
+        <div class="content">
+            {% if state == "PENDING" or state == "ACTIVE" and booting %}
+            <p style="font-size:25px; line-height:2em;text-align:center;">
+                <img src="/static/load.gif" />
+                {% trans "Starting..." %}
+            </p>
+            {% elif state == "ACTIVE" and not booting %}
+            <p id="connect" style="display:block; font-size:25px; line-height:2em;text-align:center;">
+                <a href="{{uri}}" class="button" onclick="return connectbutton();">
+                    <img src="/static/load.gif" id="connecting" style="display:none;" />
+                    {% trans "Running" %}
+                </a>
+            </p>
+            {% elif state == "STOPPED" %}
+            <p style="font-size:25px; line-height:2em;text-align:center;">{% trans "Stopped" %}</p>
+            {% endif %}
+        {% if state == "DONE" %}
+            <p style="font-size:25px; line-height:2em;text-align:center;">{% trans "Deleted" %}</p>
+            {% endif %}
+        {% if state == "FAILED" %}
+            <p style="font-size:25px; line-height:2em;text-align:center;">{% trans "Unexpected error occured" %}</p>
+            {% endif %}
         </div>
-        <div class="contentblock" id="state">
-            <h2>Bejelentkezési adatok</h2>
-            <div class="content">
-		<table><tr><th>Protokoll:</th><td>{{i.template.access_type|upper}}</td></tr>
-		       <tr><th>IP:</th><td>{{ i.firewall_host.pub_ipv4}}</td></tr>
-                       <tr><th>Port:</th><td>{{ i.get_port}}</td></tr>
-                       <tr><th>Felhasználónév:</th><td>cloud</td></tr>
-                       <tr><th>Jelszó:</th><td>{{ i.pw }}</td></tr>
-		</table>
-            </div>
+    </div>
+    <div class="contentblock" id="vm-credentials">
+        <h2>{% trans "Login credentials" %}</h2>
+        <div class="content">
+            <table>
+                <tr>
+                    <th>{% trans "Protocol" %}:</th>
+                    <td>{{i.template.access_type|upper}}</td>
+                </tr>
+                <tr>
+                    <th>{% trans "IP" %}:</th>
+                    <td>{{ i.firewall_host.pub_ipv4 }}</td>
+                </tr>
+                <tr>
+                    <th>{% trans "Port" %}:</th>
+                    <td>{{ i.get_port}}</td>
+                </tr>
+                <tr>
+                    <th>{% trans "Username" %}:</th>
+                    <td>cloud</td>
+                </tr>
+                <tr>
+                    <th>{% trans "Password" %}:</th>
+                    <td>{{ i.pw }}</td>
+                </tr>
+            </table>
         </div>
-        <div class="contentblock" id="state">
-            <h2>Portok kezelése</h2>
-            <div class="content">
-                <form action="{% url vm_port_add i.id %}" method="post">
-		{% csrf_token %}
-                <table><tr><th>Protokoll</th><th>Külső port</th><th>Belső port</th></tr>
-                {% for port in ports %}
-                       <tr><td>{{port.proto}}</td><td>{{port.public}}</td><td>{{port.private}}</td><td><a href="/vm/port_del/{{i.id}}/{{port.proto}}/{{port.public}}/">Törlés</a></td></tr>
-                {% endfor %}
-		       <tr><td><select style="min-width:50px;" name=proto><option value="tcp">tcp</option><option value="udp">udp</option></select></td>
-                           <td><input style="min-width:70px;width:70px;" type="text" name="public"/></td>
-                           <td><input style="min-width:70px;width:70px;" type="text" name="private"/></td>
-		           <td><input type="submit" value="Hozzáadás" /></td></tr>
+    </div>
+    {% if i.firewall_host %}
+    <div class="contentblock" id="ports">
+        <h2>{% trans "Port administration" %}</h2>
+        <div class="content">
+            <form action="{% url vm_port_add i.id %}" method="post">
+                {% csrf_token %}
+                <table>
+                    <tr>
+                        <th>{% trans "Protocol" %}</th>
+                        <th>{% trans "Public port" %}</th>
+                        <th colspan="2">{% trans "Private port" %}</th>
+                    </tr>
+                    {% for port in ports %}
+                    <tr>
+                        <td>{{port.proto}}</td>
+                        <td>{{port.public}}</td>
+                        <td>{{port.private}}</td>
+                        <td>
+                            <a href="/vm/port_del/{{i.id}}/{{port.proto}}/{{port.public}}/">{% trans "Delete" %}</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    <tr>
+                        <td>
+                            <select style="min-width:50px;" name=proto>
+                                <option value="tcp">tcp</option>
+                                <option value="udp">udp</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input style="min-width:70px;width:70px;" type="text" name="public"/>
+                        </td>
+                        <td>
+                            <input style="min-width:70px;width:70px;" type="text" name="private"/>
+                        </td>
+                        <td>
+                            <input type="submit" style="min-width:3em" value="{% trans "Add" %}" />
+                        </td>
+                    </tr>
                 </table>
-                </form>
-            </div>
+            </form>
         </div>
+    </div>
+    {% endif %}
 </div>
 <div class="boxes">
-	{% include "box-vmlist.html" %}
+    <div class="contentblock" id="vm-list">
+        <h2>{% trans "Virtual machines" %}</h2>
+        <ul class="wm-list">{% include "box-vmlist.html" %}</ul>
+    </div>
 </div>
 {% endblock %}

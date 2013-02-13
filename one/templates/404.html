@@ -1,10 +1,12 @@
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 <!doctype html>
-<html lang="en">
+<html lang="{{LANGUAGE_CODE}}">
 <head>
     <meta charset="UTF-8">
-    <title>404 - A manóba</title>
+    <title>404 - {% trans ":(" %}</title>
 </head>
 <body>
-    <h1>404 - A manóba!</h1>
+    <h1>404 - {% trans ":(" %}</h1>
 </body>
 </html>

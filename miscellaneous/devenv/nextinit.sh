@@ -1,5 +1,6 @@
 #!/bin/bash
 
+sudo pip install django_extensions
 for i in cloudstore toplist django
 do
     sudo stop $i || true

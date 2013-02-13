@@ -6,57 +6,55 @@
     <title>{% block title %}IK Cloud{% endblock %}</title>
     <link href="https://fonts.googleapis.com/css?family=Titillium+Web&amp;subset=latin,latin-ext" rel="stylesheet" type="text/css">
     <link rel="icon" type="image/png" href="/static/favicon.png" />
-    <link rel="icon" type="image/png" href="one/static/favicon.png">
     <link rel="stylesheet/less" href="/static/style.less" />
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <script src="/static/jquery.min.js"></script>
+    <script type="text/javascript" src="{% url django.views.i18n.javascript_catalog %}"></script>
+    <script type="text/javascript">
+        window.localStorage.clear();
+    </script>
     <script src="/static/less.min.js"></script>
     <script src="/static/knockout.min.js"></script>
     <script type="text/javascript" src="/static/cloud.js"></script>
-
     {{ form.media }}
     {% block js %}{% endblock %}
 </head>
-
 <body>
     <div id="header">
         {% block login %}
-            <div id="loginblock"><p>
-               {% if user.is_authenticated %}
-                   Bejelentkezve: {{ user.username }}.
-                   <a href="/logout/">Kijelentkezés</a>.
-                   {% if user.is_staff %}
-                   <a href="/admin/">Admin</a>.
-                   {% endif %}
-               {% else %}
-                   <a href="/login/">Bejelentkezés</a>.
-               {% endif %}
-               <!--{% if lang == 'hu' %}
-               <a href="/language/en-US/">In English</a>.
-               {% else %}
-               <a href="/language/hu/">Magyarul</a>.
-                   {% if autolang %}
-                   <p style="position: absolute; top: 40px; right: 1em;" class="triangle-border top">Böngészője kifejezetten angol tartalmat kért.<br/>A <a href="/language/hu/">magyar változat</a> részletesebb és frissebb!</p>
-                   {% endif %}
-               {% endif %}-->
-               </p>
-           </div>
+        <div id="loginblock"><p>
+            {% if user.is_authenticated %}
+            Bejelentkezve: {{ user.username }}.
+            <a href="/logout/">Kijelentkezés</a>.
+            {% if user.is_staff %}
+            <a href="/admin/">Admin</a>.
+            {% endif %}
+            {% else %}
+            <a href="/login/">Bejelentkezés</a>.
+            {% endif %}
+            {% if lang == 'hu' %}
+            <a href="/language/en/">In English</a>.
+            {% else %}
+            <a href="/language/hu/">Magyarul</a>.
+            {% endif %}
+            </p>
+        </div>
         {% endblock %}
         {% block header %}
-            {% block header_title %}
-            <h1><a href="/">IK Cloud <span style="font-size: 21px">&beta;</span></a></h1>
-            {% endblock %}
+        {% block header_title %}
+        <h1><a href="/">IK Cloud</a></h1>
+        {% endblock %}
         {% endblock %}
     </div>
-
     {% block messages %}
-        {% if messages %}
-        <ul class="messagelist">{% for message in messages %}
-          <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-        {% endfor %}</ul>
-        {% endif %}
+    {% if messages %}
+    <ul class="messagelist">
+    {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+    </ul>
+    {% endif %}
     {% endblock messages %}
-
     <div id="content">
         {% block content %}{% endblock %}
         <div class="clear"></div>

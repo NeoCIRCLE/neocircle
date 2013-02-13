@@ -10,10 +10,17 @@ from django.utils.translation import ugettext_lazy as _
 from firewall.models import Host, Rule, Vlan
 from firewall.tasks import reload_firewall_lock
 from one.util import keygen
-from school.models import Person
+from school.models import Person, Group
+from datetime import timedelta as td
+from django.db.models.signals import post_delete, pre_delete
+from store.api import StoreApi
+from django.db import transaction
 
+from datetime import datetime
+import logging
 import subprocess, tempfile, os, stat, re, base64, struct
 
+logger = logging.getLogger(__name__)
 pwgen = User.objects.make_random_password
 
 """
@@ -39,6 +46,10 @@ class UserCloudDetails(models.Model):
             help_text=_('Generated SSH public key for accessing store from Linux.'))
     ssh_private_key = models.TextField(verbose_name=_('SSH key (private)'), null=True,
             help_text=_('Generated SSH private key for accessing store from Linux.'))
+    share_quota = models.IntegerField(verbose_name=_('share quota'), default=0)
+    instance_quota = models.IntegerField(verbose_name=_('instance quota'), default=20)
+    disk_quota = models.IntegerField(verbose_name=_('disk quota'), default=2048,
+            help_text=_('Disk quota in mebibytes.'))
 
     """
     Delete old SSH key pair and generate new one.
@@ -60,6 +71,40 @@ class UserCloudDetails(models.Model):
     """
     def reset_smb(self):
         self.smb_password = pwgen()
+
+    def get_weighted_instance_count(self):
+        c = 0
+        for i in self.user.instance_set.all():
+            if i.state in ('ACTIVE', 'PENDING', ):
+                c = c + i.template.instance_type.credit
+        return c
+    def get_instance_pc(self):
+        return 100*self.get_weighted_instance_count()/self.instance_quota
+    def get_weighted_share_count(self):
+        c = 0
+        for i in Share.objects.filter(owner=self.user).all():
+            c = c + i.template.instance_type.credit * i.instance_limit
+        return c
+    def get_share_pc(self):
+        return 100*self.get_weighted_share_count()/self.share_quota
+
+
+def set_quota(sender, instance, created, **kwargs):
+    if not StoreApi.userexist(instance.user.username):
+        try:
+            password = instance.smb_password
+            quota = instance.disk_quota * 1024
+            key_list = []
+            for key in instance.user.sshkey_set.all():
+                key_list.append(key.key)
+        except:
+            pass
+        #Create user
+        if not StoreApi.createuser(instance.user.username, password, key_list, quota):
+            pass
+    else:
+        StoreApi.set_quota(instance.user.username, instance.disk_quota*1024)
+post_save.connect(set_quota, sender=UserCloudDetails)
 
 def reset_keys(sender, instance, created, **kwargs):
     if created:
@@ -112,6 +157,48 @@ class SshKey(models.Model):
 
         return u"%s (%s)" % (keycomment, self.user)
 
+TEMPLATE_STATES = (("INIT", _('init')), ("PREP", _('perparing')), ("SAVE", _('saving')), ("READY", _('ready')))
+
+
+TYPES = {"LAB": {"verbose_name": _('lab'),         "id": "LAB",     "suspend": td(hours=5),  "delete": td(days=15),    "help_text": _('For lab or home work with short life time.')},
+         "PROJECT": {"verbose_name": _('project'), "id": "PROJECT", "suspend": td(weeks=5),  "delete": td(days=366/2), "help_text": _('For project work.')},
+         "SERVER": {"verbose_name": _('server'),   "id": "SERVER",  "suspend": td(days=365), "delete": None,           "help_text": _('For long term server use.')},
+         }
+TYPES_L = sorted(TYPES.values(), key=lambda m: m["suspend"])
+TYPES_C = tuple([(i[0], i[1]["verbose_name"]) for i in TYPES.items()])
+class Share(models.Model):
+    name = models.CharField(max_length=100, verbose_name=_('name'))
+    description = models.TextField(verbose_name=_('description'))
+    template = models.ForeignKey('Template', null=False, blank=False)
+    group = models.ForeignKey(Group, null=False, blank=False)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_('created at'))
+    type = models.CharField(choices=TYPES_C, max_length=10, blank=False, null=False)
+    instance_limit = models.IntegerField(verbose_name=_('instance limit'),
+            help_text=_('Maximal count of instances launchable for this share.'))
+    per_user_limit = models.IntegerField(verbose_name=_('per user limit'),
+            help_text=_('Maximal count of instances launchable by a single user.'))
+    owner = models.ForeignKey(User, null=True, blank=True)
+
+    def get_type(self):
+        t = TYPES[self.type]
+        t['deletex'] = datetime.now() + td(seconds=1) + t['delete'] if t['delete'] else None
+        t['suspendx'] = datetime.now() + td(seconds=1) + t['suspend'] if t['suspend'] else None
+        return t
+    def get_running_or_stopped(self, user=None):
+        running = Instance.objects.all().exclude(state='DONE').filter(share=self)
+        if user:
+            return running.filter(owner=user).count()
+        else:
+            return running.count()
+
+    def get_running(self, user=None):
+        running = Instance.objects.all().exclude(state='DONE').exclude(state='STOPPED').filter(share=self)
+        if user:
+            return running.filter(owner=user).count()
+        else:
+            return running.count()
+    def get_instance_pc(self):
+        return float(self.get_running()) / self.instance_limit * 100
 """
 Virtual disks automatically synchronized with OpenNebula.
 """
@@ -195,9 +282,15 @@ class InstanceType(models.Model):
             verbose_name=_('name'))
     CPU = models.IntegerField(help_text=_('CPU cores.'))
     RAM = models.IntegerField(help_text=_('Mebibytes of memory.'))
+    credit = models.IntegerField(verbose_name=_('credits'),
+            help_text=_('Price of instance.'))
     def __unicode__(self):
         return u"%s" % self.name
+    class Meta:
+        ordering = ['credit']
 
+TEMPLATE_STATES = (('NEW', _('new')), 
+                   ('SAVING', _('saving')), ('READY', _('ready')), )
 """
 Virtual machine template specifying OS, disk, type and network.
 """
@@ -212,9 +305,33 @@ class Template(models.Model):
     network = models.ForeignKey(Network, verbose_name=_('network'))
     owner = models.ForeignKey(User, verbose_name=_('owner'))
     created_at = models.DateTimeField(auto_now_add=True, verbose_name=_('created at'))
+    state = models.CharField(max_length=10, choices=TEMPLATE_STATES, default='NEW')
+    public = models.BooleanField(verbose_name=_('public'), default=False,
+            help_text=_('If other users can derive templates of this one.'))
+    description = models.TextField(verbose_name=_('description'), blank=True)
+    system = models.TextField(verbose_name=_('operating system'), blank=True,
+            help_text=(_('Name of operating system in format like "%s".') %
+            "Ubuntu 12.04 LTS Desktop amd64"))
+
+    def running_instances(self):
+        return self.instance_set.exclude(state='DONE').count()
+    def os_type(self):
+        if self.access_type == 'rdp':
+            return "win"
+        else:
+            return "linux"
 
     def __unicode__(self):
         return self.name
+
+    @transaction.commit_on_success
+    def safe_delete(self):
+        if not self.instance_set.exclude(state='DONE').exists():
+            self.delete()
+            return True
+        else:
+            logger.info("Could not delete template. Instances still running!")
+            return False
 
     class Meta:
         verbose_name = _('template')
@@ -236,7 +353,7 @@ class Instance(models.Model):
                 ('DONE', _('done')),
                 ('ACTIVE', _('active')),
                 ('UNKNOWN', _('unknown')),
-                ('SUSPENDED', _('suspended')),
+                ('STOPPED', _('suspended')),
                 ('FAILED', _('failed'))], default='DEPLOYABLE')
     active_since = models.DateTimeField(null=True, blank=True,
             verbose_name=_('active since'),
@@ -244,13 +361,17 @@ class Instance(models.Model):
     firewall_host = models.ForeignKey(Host, blank=True, null=True, verbose_name=_('host in firewall'))
     pw = models.CharField(max_length=20, verbose_name=_('password'), help_text=_('Original password of instance'))
     one_id = models.IntegerField(unique=True, blank=True, null=True, verbose_name=_('OpenNebula ID'))
+    share = models.ForeignKey('Share', blank=True, null=True, verbose_name=_('share'))
+    time_of_suspend = models.DateTimeField(default=None, verbose_name=_('time of suspend'), null=True, blank=False)
+    time_of_delete = models.DateTimeField(default=None, verbose_name=_('time of delete'), null=True, blank=False)
+    waiting = models.BooleanField(default=False)
     """
     Get public port number for default access method.
     """
     def get_port(self):
         proto = self.template.access_type
         if self.template.network.nat:
-            return {"rdp": 23000, "nx": 22000, "ssh": 22000}[proto] + int(self.ip.split('.')[3])
+            return {"rdp": 23000, "nx": 22000, "ssh": 22000}[proto] + int(self.ip.split('.')[2]) * 256 + int(self.ip.split('.')[3])
         else:
             return {"rdp": 3389, "nx": 22, "ssh": 22}[proto]
     """
@@ -289,23 +410,24 @@ class Instance(models.Model):
 
         if not self.one_id:
             return
-        proc = subprocess.Popen(["/opt/occi.sh",
-        "compute", "show",
+        proc = subprocess.Popen(["/opt/occi.sh", "compute", "show",
         "%d"%self.one_id], stdout=subprocess.PIPE)
         (out, err) = proc.communicate()
         x = None
+        old_state = self.state
         try:
             from xml.dom.minidom import parse, parseString
             x = parseString(out)
             self.vnet_ip = x.getElementsByTagName("IP")[0].childNodes[0].nodeValue.split('.')[3]
             state = x.getElementsByTagName("STATE")[0].childNodes[0].nodeValue
-            if self.state == 'PENDING' and state == 'ACTIVE':
-                from datetime import datetime
-                self.active_since = datetime.now()
             self.state = state
         except:
             self.state = 'UNKNOWN'
+        if self.state != old_state:
+            self.waiting = False
         self.save()
+        if self.template.state == 'SAVING':
+            self.check_if_is_save_as_done()
         return x
 
     """
@@ -329,10 +451,10 @@ class Instance(models.Model):
     Submit a new instance to OpenNebula.
     """
     @classmethod
-    def submit(cls, template, owner):
+    def submit(cls, template, owner, extra="", share=None):
         from django.template.defaultfilters import escape
         out = ""
-        inst = Instance(pw=pwgen(), template=template, owner=owner)
+        inst = Instance(pw=pwgen(), template=template, owner=owner, share=share)
         inst.save()
         with tempfile.NamedTemporaryFile(delete=False) as f:
             os.chmod(f.name, stat.S_IRUSR|stat.S_IWUSR|stat.S_IRGRP|stat.S_IROTH)
@@ -362,6 +484,7 @@ class Instance(models.Model):
                         <SSHPRIV>%(sshkey)s</SSHPRIV>
                         <BOOTURL>%(booturl)s</BOOTURL>
                         <SERVER>store.cloud.ik.bme.hu</SERVER>
+                        %(extra)s
                     </CONTEXT>
                 </COMPUTE>""" % {"name": u"%s %d" % (owner.username, inst.id),
                                  "instance": template.instance_type,
@@ -371,7 +494,8 @@ class Instance(models.Model):
                                  "smbpw": escape(details.smb_password),
                                  "sshkey": escape(details.ssh_private_key),
                                  "neptun": escape(owner.username),
-                                 "booturl": "http://cloud.ik.bme.hu/b/%s/" % token, }
+                                 "booturl": "https://cloud.ik.bme.hu/b/%s/" % token,
+                                 "extra": extra}
             f.write(tpl)
             f.close()
             import subprocess
@@ -395,7 +519,14 @@ class Instance(models.Model):
         host.mac = x.getElementsByTagName("MAC")[0].childNodes[0].nodeValue
         host.ipv4 = inst.ip
         host.pub_ipv4 = Vlan.objects.get(name=template.network.name).snat_ip
-        host.save()
+        host.ipv6 = "auto"
+        try:
+            host.save()
+        except:
+            for i in Host.objects.filter(ipv4=host.ipv4).all():
+                logger.warning('Delete orphan fw host (%s) of %s.' % (i, inst))
+                i.delete()
+            host.save()
         host.enable_net()
         host.add_port("tcp", inst.get_port(), {"rdp": 3389, "nx": 22, "ssh": 22}[inst.template.access_type])
         inst.firewall_host=host
@@ -406,27 +537,30 @@ class Instance(models.Model):
     """
     Delete host in OpenNebula.
     """
-    def delete(self):
+    def one_delete(self):
         proc = subprocess.Popen(["/opt/occi.sh", "compute",
                "delete", "%d"%self.one_id], stdout=subprocess.PIPE)
         (out, err) = proc.communicate()
-        self.firewall_host.delete()
+        self.firewall_host_delete()
+
+    def firewall_host_delete(self):
+        if self.firewall_host:
+            h = self.firewall_host
+            self.firewall_host = None
+            self.save()
+            h.delete()
         reload_firewall_lock()
 
-    """
-    Change host state in OpenNebula.
-    """
-    def _change_state(self, new_state):
-        from django.template.defaultfilters import escape
+    def _update_vm(self, template):
         out = ""
         with tempfile.NamedTemporaryFile(delete=False) as f:
             os.chmod(f.name, stat.S_IRUSR|stat.S_IWUSR|stat.S_IRGRP|stat.S_IROTH)
             tpl = u"""
                 <COMPUTE>
                     <ID>%(id)d</ID>
-                    <STATE>%(state)s</STATE>
+                    %(template)s
                 </COMPUTE>""" % {"id": self.one_id,
-                                 "state": new_state}
+                                 "template": template}
             f.write(tpl)
             f.close()
             import subprocess
@@ -437,16 +571,75 @@ class Instance(models.Model):
             os.unlink(f.name)
             print "out: " + out
 
+    """
+    Change host state in OpenNebula.
+    """
+    def _change_state(self, new_state):
+        self._update_vm("<STATE>" + new_state + "</STATE>")
+
     def stop(self):
         self._change_state("STOPPED")
+        self.waiting = True
+        self.save()
     def resume(self):
         self._change_state("RESUME")
     def poweroff(self):
         self._change_state("POWEROFF")
     def restart(self):
-        self._change_state("RESTART")
+        self._change_state("RESET")
+    def renew(self, which):
+        if which == 'suspend':
+            self.time_of_suspend = self.share.get_type()['suspendx']
+        elif which == 'delete':
+            self.time_of_delete = self.share.get_type()['deletex']
+        else:
+            raise ValueError('No such expiration type.')
+        self.save()
+    def save_as(self):
+        """
+        Save image and shut down.
+        """
+        imgname = "template-%d-%d" % (self.template.id, self.id)
+        self._update_vm('<DISK id="0"><SAVE_AS name="%s"/></DISK>' % imgname)
+        self._change_state("SHUTDOWN")
+        self.waiting = True
+        self.save()
+        t = self.template
+        t.state = 'SAVING'
+        t.save()
+    def check_if_is_save_as_done(self):
+        if self.state != 'DONE':
+            return False
+        Disk.update()
+        imgname = "template-%d-%d" % (self.template.id, self.id)
+        disks = Disk.objects.filter(name=imgname)
+        if len(disks) != 1:
+            return false
+        self.template.disk_id = disks[0].id
+        self.template.state = 'READY'
+        self.template.save()
+        self.firewall_host_delete()
+        return True
 
 
     class Meta:
         verbose_name = _('instance')
         verbose_name_plural = _('instances')
+
+def delete_instance(sender, instance, using, **kwargs):
+    if instance.state != "DONE":
+        instance.one_delete()
+    try:
+        instance.firewall_host_delete()
+    except:
+        pass
+post_delete.connect(delete_instance, sender=Instance, dispatch_uid="delete_instance")
+
+def delete_instance_pre(sender, instance, using, **kwargs):
+    try:
+        if instance.template.state != "DONE":
+            instance.check_if_is_save_as_done()
+    except:
+        pass
+pre_delete.connect(delete_instance_pre, sender=Instance, dispatch_uid="delete_instance_pre")
+

@@ -43,6 +43,21 @@ body
         margin-top:0;
         padding:10px;
     }
+    &.wide {
+        margin-right: 30px;
+    }
+    &.note {
+        background-color: #ffc;
+    }
+    ol {
+        margin-left: 2em;
+        li.done {
+            color: #aaa;
+        }
+    }
+}
+.big {
+    font-size: 2em;
 }
 .wm-list{
     list-style: none;
@@ -50,87 +65,166 @@ body
 
 ul.messagelist
 {
-  text-align:left;
-  margin:0;
-  padding:0 0 5px;
+    text-align:left;
+    margin:0;
+    padding:0 0 5px;
 }
 
 ul.messagelist li
 {
-  font-size:12px;
-  display:block;
-  border-bottom:1px solid #ddd;
-  color:#666;
-  background:#ffc url(admin/img/icon_success.gif) 5px .3em no-repeat;
-  margin:0 0 3px;
-  padding:4px 5px 4px 25px;
+    font-size:12px;
+    display:block;
+    border-bottom:1px solid #ddd;
+    color:#666;
+    background:#ffc url(admin/img/icon_success.gif) 5px .3em no-repeat;
+    margin:0 0 3px;
+    padding:4px 5px 4px 25px;
 }
 
 ul.messagelist li.warning
 {
-  background-image:url(admin/img/icon_alert.gif);
+    background-image:url(admin/img/icon_alert.gif);
 }
 
 ul.messagelist li.error
 {
-  background-image:url(admin/img/icon_error.gif);
+    background-image:url(admin/img/icon_error.gif);
+}
+input.validated {
+    padding-right: 15px;
+    background-image: url(admin/img/icon_success.gif);
+    background-repeat: no-repeat;
+    background-position: right center;
+    &.error
+    {
+        background:#fcc url(admin/img/icon_error.gif) right center no-repeat;
+        padding-right: 15px;
+    }
 }
 
 .errornote
 {
-  font-size:12px!important;
-  display:block;
-  border:1px solid red;
-  color:red;
-  background:#ffc url(admin/img/icon_error.gif) 5px .3em no-repeat;
-  margin:0 0 3px;
-  padding:4px 5px 4px 25px;
+    font-size:12px!important;
+    display:block;
+    border:1px solid red;
+    color:red;
+    background:#ffc url(admin/img/icon_error.gif) 5px .3em no-repeat;
+    margin:0 0 3px;
+    padding:4px 5px 4px 25px;
 }
 
 .errorlist li
 {
-  font-size:12px!important;
-  display:block;
-  border:1px solid red;
-  color:#FFF;
-  background:red url(admin/img/icon_alert.gif) 5px .3em no-repeat;
-  margin:0 0 3px;
-  padding:4px 5px 4px 25px;
+    font-size:12px!important;
+    display:block;
+    border:1px solid red;
+    color:#FFF;
+    background:red url(admin/img/icon_alert.gif) 5px .3em no-repeat;
+    margin:0 0 3px;
+    padding:4px 5px 4px 25px;
 }
 
 .errorlist li a
 {
-  color:#FFF;
-  text-decoration:underline;
+    color:#FFF;
+    text-decoration:underline;
 }
 
 td ul.errorlist li
 {
-  margin:0!important;
+    margin:0!important;
 }
 
 .errors
 {
-  background:#ffc;
+    background:#ffc;
 }
 
 .errors input,.errors select,.errors textarea
 {
-  border:1px solid red;
+    border:1px solid red;
 }
 
 div.system-message
 {
-  background:#ffc;
-  font-size:.8em;
-  margin:10px;
-  padding:6px 8px;
+    background:#ffc;
+    font-size:.8em;
+    margin:10px;
+    padding:6px 8px;
 }
 
 div.system-message p.system-message-title
 {
-  color:red;
-  background:#ffc url(admin/img/icon_error.gif) 5px .3em no-repeat;
-  margin:0;
-  padding:4px 5px 4px 25px;
+    color:red;
+    background:#ffc url(admin/img/icon_error.gif) 5px .3em no-repeat;
+    margin:0;
+    padding:4px 5px 4px 25px;
+}
+
+small {
+  font-size: 0.8em;
+}
+
+input {
+    border-radius: 2px;
+    border: 1px solid #777;
+    padding: 2px;
+    margin: 1px 5px;
+    background: rgba(0,0,0,0.1);
+    font-family: 'Titillium Web', sans-serif;
+    outline: none;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.2), 0 0 5px rgba(0,0,0,0.2);
+    -webkit-transition: box-shadow 0.5s;
+    -moz-transition: box-shadow 0.5s;
+    -o-transition: box-shadow 0.5s;
+    transition: box-shadow 0.5s;
+    &:hover{
+        border: 1px solid #666;
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.2), 0 0 5px rgba(255,255,0,0.5);
+    };
+    &:focus{
+        border: 1px solid #555;
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.2), 0 0 10px rgba(255,255,0,0.8);
+    }
+}
+
+input[type=submit], input[type=button], input[type=reset]{
+    border: 1px solid #777;
+    cursor: pointer;
+    box-shadow: 0 0 5px rgba(0,0,0,0.2);
+    -webkit-transition: background 0.5s;
+    -moz-transition: background 0.5s;
+    -o-transition: background 0.5s;
+    transition: background 0.5s;
+    &:hover{
+        background: rgba(0,0,0,0.2);
+    };
+}
+
+textarea {
+    border-radius: 2px;
+    border: 1px solid #777;
+    padding: 5px;
+    margin: 10px 5px;
+    width: 300px;
+    height: 100px;
+    background: rgba(0,0,0,0.1);
+    font-family: 'Titillium Web', sans-serif;
+    outline: none;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.2), 0 0 5px rgba(0,0,0,0.2);
+    -webkit-transition: box-shadow 0.5s;
+    -moz-transition: box-shadow 0.5s;
+    -o-transition: box-shadow 0.5s;
+    transition: box-shadow 0.5s;
+    &:hover{
+        border: 1px solid #666;
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.2), 0 0 5px rgba(255,255,0,0.5);
+    };
+    &:focus{
+        border: 1px solid #555;
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.2), 0 0 10px rgba(255,255,0,0.8);
+    }
+}
+.hilight {
+    background-color: #ff6;
 }

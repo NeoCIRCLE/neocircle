@@ -128,11 +128,30 @@ class StoreApi:
         else:
             return False
     @staticmethod
+    def requestrename(neptun, old_path, new_name):
+        url = settings['store_url']+'/'+neptun
+        payload = json.dumps({'CMD':'RENAME','NEW_NAME':new_name,'PATH':old_path})
+        headers = {'content-type': 'application/json'}
+        r = StoreApi.post_request(url, payload)
+        if r.status_code == requests.codes.ok:
+            return True
+        else:
+            return False
+    @staticmethod
     def requestquota(neptun):
         url = settings['store_url']+'/'+neptun
         r = StoreApi.get_request(url)
         if r.status_code == requests.codes.ok:
             return json.loads(r.content)
+        else:
+            return False
+    @staticmethod
+    def set_quota(neptun, quota):
+        url = settings['store_url']+'/quota/'+neptun
+        payload = json.dumps({ 'QUOTA' : quota })
+        r = StoreApi.post_request(url, payload)
+        if r.status_code == requests.codes.ok:
+            return True
         else:
             return False
     @staticmethod
@@ -144,9 +163,9 @@ class StoreApi:
         else:
             return False
     @staticmethod
-    def createuser(neptun, password, key_list):
+    def createuser(neptun, password, key_list, quota):
         url = settings['store_url']+'/new/'+neptun
-        payload = json.dumps({ 'SMBPASSWD' : password, 'KEYS' : key_list })
+        payload = json.dumps({ 'SMBPASSWD' : password, 'KEYS' : key_list, 'QUOTA' : quota })
         r = StoreApi.post_request(url, payload)
         if r.status_code == requests.codes.ok:
             return True

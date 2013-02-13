@@ -5,11 +5,11 @@ from firewall.models import *
 from django import contrib
 
 
-class AliasInline(contrib.admin.TabularInline):
-    model = Alias
-
 class RuleInline(contrib.admin.TabularInline):
     model = Rule
+
+class RecordInline(contrib.admin.TabularInline):
+    model = Record
 
 class HostAdmin(admin.ModelAdmin):
     list_display = ('hostname', 'vlan', 'ipv4', 'ipv6', 'pub_ipv4', 'mac',
@@ -18,7 +18,7 @@ class HostAdmin(admin.ModelAdmin):
     list_filter = ('owner', 'vlan', 'groups')
     search_fields = ('hostname', 'description', 'ipv4', 'ipv6', 'mac')
     filter_horizontal = ('groups', )
-    inlines = (AliasInline, RuleInline)
+    inlines = (RuleInline, RecordInline)
 
     def groups_l(self, instance):
         """Returns instance's groups' names as a comma-separated list."""
@@ -87,10 +87,28 @@ class GroupAdmin(admin.ModelAdmin):
 class FirewallAdmin(admin.ModelAdmin):
     inlines = (RuleInline, )
 
+class DomainAdmin(admin.ModelAdmin):
+    list_display = ('name', 'owner')
+
+class RecordAdmin(admin.ModelAdmin):
+    list_display = ('name_', 'type', 'address_', 'ttl', 'host', 'owner')
+
+    def address_(self, instance):
+        a = instance.get_data()
+        if(a):
+            return a['address']
+
+    def name_(self, instance):
+        a = instance.get_data()
+        if(a):
+            return a['name']
+
 admin.site.register(Host, HostAdmin)
 admin.site.register(Vlan, VlanAdmin)
 admin.site.register(Rule, RuleAdmin)
-admin.site.register(Alias, AliasAdmin)
 admin.site.register(Group, GroupAdmin)
 admin.site.register(VlanGroup)
 admin.site.register(Firewall, FirewallAdmin)
+admin.site.register(Domain, DomainAdmin)
+admin.site.register(Record, RecordAdmin)
+
