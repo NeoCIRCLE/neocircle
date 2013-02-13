@@ -47,7 +47,26 @@ update_state.short_description = _('Update status')
 def submit_vm(modeladmin, request, queryset):
     for i in queryset.all():
         i.submit(request.user)
+        i.update_state()
 submit_vm.short_description = _('Submit VM')
+
+def delete_vm(modeladmin, request, queryset):
+    for i in queryset.exclude(state='DONE').all():
+        i.one_delete()
+        i.update_state()
+delete_vm.short_description = _('Delete VM')
+
+def suspend_vm(modeladmin, request, queryset):
+    for i in queryset.filter(state='ACTIVE').all():
+        i.stop()
+        i.update_state()
+suspend_vm.short_description = _('Suspend VM')
+
+def resume_vm(modeladmin, request, queryset):
+    for i in queryset.filter(state__in=('STOPPED', 'SUSPENDED')).all():
+        i.resume()
+        i.update_state()
+resume_vm.short_description = _('Resume VM')
 
 
 class TemplateAdmin(contrib.admin.ModelAdmin):
@@ -57,10 +76,12 @@ class TemplateAdmin(contrib.admin.ModelAdmin):
 
 class InstanceAdmin(contrib.admin.ModelAdmin):
     model=models.Instance
-    actions = [update_state, submit_vm]
+    actions = [update_state, submit_vm, delete_vm, suspend_vm, resume_vm]
     list_display = ('id', 'name', owner_person, 'state')
     readonly_fields = ('ip', 'active_since', 'pw', 'template')
     list_filter = ('owner', 'template', 'state')
+    def queryset(self, request):
+        return super(InstanceAdmin, self).queryset(request)
 
 class DiskAdmin(contrib.admin.ModelAdmin):
     model=models.Disk
