@@ -261,7 +261,8 @@ class firewall:
         for s_vlan in self.vlans:
             for d_vlan in self.vlans:
                 self.iptables('-N %s_%s' % (s_vlan, d_vlan))
-                self.iptables('-A FORWARD -i %s -o %s -g %s_%s' % (s_vlan.interface, d_vlan.interface, s_vlan, d_vlan))
+                self.iptables('-A FORWARD -i %s -o %s -g %s_%s' %
+                    (s_vlan.interface, d_vlan.interface, s_vlan, d_vlan))
 
         # hosts' rules
         for i_vlan in self.vlans:
