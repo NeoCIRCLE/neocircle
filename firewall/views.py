@@ -19,7 +19,7 @@ def reload_firewall(request):
     if request.user.is_authenticated():
         if request.user.is_superuser:
             html = ((_("Dear %s, you've signed in as administrator!") %
-                    request.user.username) + "<br>" +
+                    request.user.username) + "<br />" +
                     _("Reloading in 10 seconds..."))
             ReloadTask.delay()
         else:

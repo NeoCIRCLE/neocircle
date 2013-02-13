@@ -30,5 +30,3 @@ def keygen(length=1024):
         pub = 'ssh-rsa %s' % (
             base64.b64encode(base64.b16decode(ssh_rsa.upper())), )
     return key.exportKey(), "%s %s" % (pub, "cloud-%s" % date.today())
-        
-
