@@ -16,12 +16,14 @@ import sys
 
 def reload_firewall(request):
     if request.user.is_authenticated():
-        if(request.user.is_superuser):
-            html = u"Be vagy jelentkezve es admin is vagy, kedves %s!" % request.user.username
+        if request.user.is_superuser:
+            html = (u"Be vagy jelentkezve es admin is vagy, kedves %s!" %
+                    request.user.username)
             html += "<br> 10 masodperc mulva ujratoltodik"
             ReloadTask.delay()
         else:
-            html = u"Be vagy jelentkezve, csak nem vagy admin, kedves %s!" % request.user.username
+            html = (u"Be vagy jelentkezve, csak nem vagy admin, kedves %s!"
+                    % request.user.username)
     else:
         html = u"Nem vagy bejelentkezve, kedves ismeretlen!"
     return HttpResponse(html)
@@ -32,31 +34,39 @@ def firewall_api(request):
         try:
             data=json.loads(base64.b64decode(request.POST["data"]))
             command = request.POST["command"]
-            if(data["password"] != "bdmegintelrontottaanetet"):
+            if data["password"] != "bdmegintelrontottaanetet":
                 raise Exception("rossz jelszo")
 
-            if(not(data["vlan"] == "vm-net" or data["vlan"] == "war")):
+            if not (data["vlan"] == "vm-net" or data["vlan"] == "war"):
                 raise Exception("csak vm-net es war-re mukodik")
 
             data["hostname"] = re.sub(r' ','_', data["hostname"])
 
-            if(command == "create"):
+            if command == "create":
                 data["owner"] = "opennebula"
                 owner = auth.models.User.objects.get(username=data["owner"])
-                host = models.Host(hostname=data["hostname"], vlan=models.Vlan.objects.get(name=data["vlan"]), mac=data["mac"], ipv4=data["ip"], owner=owner, description=data["description"], pub_ipv4=models.Vlan.objects.get(name=data["vlan"]).snat_ip, shared_ip=True)
+                host = models.Host(hostname=data["hostname"],
+                        vlan=models.Vlan.objects.get(name=data["vlan"]),
+                        mac=data["mac"], ipv4=data["ip"], owner=owner,
+                        description=data["description"], pub_ipv4=models.
+                            Vlan.objects.get(name=data["vlan"]).snat_ip,
+                        shared_ip=True)
                 host.full_clean()
                 host.save()
 
                 host.enable_net()
 
                 for p in data["portforward"]:
-                    host.add_port(proto=p["proto"], public=int(p["public_port"]), private=int(p["private_port"]))
+                    host.add_port(proto=p["proto"],
+                            public=int(p["public_port"]),
+                            private=int(p["private_port"]))
 
-            elif(command == "destroy"):
+            elif command == "destroy":
                 data["owner"] = "opennebula"
                 print data["hostname"]
                 owner = auth.models.User.objects.get(username=data["owner"])
-                host = models.Host.objects.get(hostname=data["hostname"], owner=owner)
+                host = models.Host.objects.get(hostname=data["hostname"],
+                        owner=owner)
 
                 host.del_rules()
                 host.delete()
