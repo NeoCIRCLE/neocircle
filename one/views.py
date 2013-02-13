@@ -28,42 +28,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class LoginView(View):
-    def get(self, request, *args, **kwargs):
-        nex = '/'
-        try:
-            nex = request.GET['next']
-        except:
-            pass
-        return render_to_response("login.html", RequestContext(request, {'next': nex}))
-    def post(self, request, *args, **kwargs):
-        if request.POST['pw'] != 'ezmiez':
-            return redirect('/')
-        p, created = User.objects.get_or_create(username=request.POST['neptun'])
-        if created:
-            p.set_unusable_password()
-        if not p.email:
-            p.email = "%s@nc.hszk.bme.hu" % p.username
-        p.save()
-        if not p.person_set.exists():
-            person = Person(neptun = p.username)
-            p.person_set.add(person)
-            p.save()
-        p.backend = 'django.contrib.auth.backends.ModelBackend'
-        auth.login(request, p)
-        path = '/'
-        try:
-            path = request.POST['next']
-            if not path.startswith("/"):
-                path = '/'
-        except:
-            pass
-        return redirect(path)
-
-def logout(request):
-        auth.logout(request)
-        return redirect('/')
-
 def _list_instances(request):
     instances = Instance.objects.exclude(state='DONE').filter(owner=request.user)
     for i in instances:
