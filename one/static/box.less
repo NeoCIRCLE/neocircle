@@ -33,39 +33,40 @@
     }
 }
 
-#new-wm-tooltip{
+.tooltip{
     position: relative;
     z-index: 1;
-}
-#new-wm-tooltip-container{
-    margin: 10px 10px 5px 150px;
-    border-radius: 4px;
-    border: 1px solid #888;
-    background: #FFFF66;
-    box-shadow: 0 0 20px rgba(0,0,0,0.2);
-    p{
-        text-align: left;
-        font-size: 0.8em;
-        word-spacing: 2px;
-        padding: 5px;
-    }
-    #new-wm-tooltip-tail{
-        position: absolute;
-        left: 350px;
-        border-width: 17px;
-        border-style: solid;
-        border-color: #888 transparent transparent transparent;
-        &:after{
-            content: "";
+    .container{
+        margin: 10px 10px 5px 150px;
+        border-radius: 4px;
+        border: 1px solid #888;
+        background: #FFFF66;
+        box-shadow: 0 0 20px rgba(0,0,0,0.2);
+        p{
+            text-align: left;
+            font-size: 0.8em;
+            word-spacing: 2px;
+            padding: 5px;
+        }
+        .tail{
             position: absolute;
-            left: -17px;
-            top: -18px;
+            left: 350px;
             border-width: 17px;
             border-style: solid;
-            border-color: #FFFF66 transparent transparent transparent;
+            border-color: #888 transparent transparent transparent;
+            &:after{
+                content: "";
+                position: absolute;
+                left: -17px;
+                top: -18px;
+                border-width: 17px;
+                border-style: solid;
+                border-color: #FFFF66 transparent transparent transparent;
+            }
         }
     }
 }
+
 
 .wm{
     &.opened .actions{
