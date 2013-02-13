@@ -124,9 +124,9 @@ def vm_credentials(request, iid):
 
 class AjaxTemplateWizard(View):
     def get(self, request, *args, **kwargs):
-        return render_to_response('new-template-flow-1.html', RequestContext(request,{
-            'templates': Template.objects.filter(public=True)
-                # + Template.objects.filter(owner=request.user),
+        return render_to_response('new-template-flow-1.html', RequestContext(request, {
+            'templates': [t for t in Template.objects.filter(public=True).all()] +
+                         [t for t in Template.objects.filter(owner=request.user).all()],
             }))
     def post(self, request, *args, **kwargs):
         base = get_object_or_404(Template, id=request.POST['base'])
