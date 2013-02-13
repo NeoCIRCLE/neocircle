@@ -46,7 +46,7 @@ class UserCloudDetails(models.Model):
             help_text=_('Generated SSH public key for accessing store from Linux.'))
     ssh_private_key = models.TextField(verbose_name=_('SSH key (private)'), null=True,
             help_text=_('Generated SSH private key for accessing store from Linux.'))
-    share_quota = models.IntegerField(verbose_name=_('share quota'), default=100)
+    share_quota = models.IntegerField(verbose_name=_('share quota'), default=0)
     instance_quota = models.IntegerField(verbose_name=_('instance quota'), default=20)
     disk_quota = models.IntegerField(verbose_name=_('disk quota'), default=2048,
             help_text=_('Disk quota in mebibytes.'))
