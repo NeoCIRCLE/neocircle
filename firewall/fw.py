@@ -280,6 +280,12 @@ class firewall:
             process = subprocess.Popen(['/usr/bin/ssh', 'fw2', '/usr/bin/sudo', '/sbin/iptables-restore', '-c'], shell=False, stdin=subprocess.PIPE)
             process.communicate("\n".join(self.SZABALYOK)+"\n"+"\n".join(self.SZABALYOK_NAT)+"\n")
 
+    def get(self):
+        if self.IPV6:
+            return { 'filter': self.SZABALYOK, }
+        else:
+            return { 'filter': self.SZABALYOK, 'nat':self.SZABALYOK_NAT }
+
     def show(self):
         if self.IPV6:
             return "\n".join(self.SZABALYOK)+"\n"
@@ -373,6 +379,7 @@ def dns():
             mx = d['address'].split(':', 2)
             DNS.append("@%(fqdn)s::%(mx)s:%(dist)s:%(ttl)s" % {'fqdn': d['name'], 'mx': mx[1], 'dist': mx[0], 'ttl': d['ttl']})
 
+    return DNS
     process = subprocess.Popen(['/usr/bin/ssh', 'tinydns@%s' % settings['dns_hostname']], shell=False, stdin=subprocess.PIPE)
     process.communicate("\n".join(DNS)+"\n")
     # print "\n".join(DNS)+"\n"
@@ -434,6 +441,7 @@ def dhcp():
                         'ipv4': i_host.ipv4,
                     })
 
+    return DHCP
     process = subprocess.Popen(['/usr/bin/ssh', 'fw2', 'cat > /tools/dhcp3/dhcpd.conf.generated;sudo /etc/init.d/isc-dhcp-server restart'], shell=False, stdin=subprocess.PIPE)
 #   print "\n".join(DHCP)+"\n"
     process.communicate("\n".join(DHCP)+"\n")

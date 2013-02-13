@@ -9,6 +9,7 @@ from south.modelsinspector import add_introspection_rules
 from django.core.validators import MinValueValidator, MaxValueValidator
 from cloud.settings import firewall_settings as settings
 from django.utils.ipv6 import is_valid_ipv6_address
+from django.db.models.signals import post_save
 import re
 
 class Rule(models.Model):
@@ -270,4 +271,16 @@ class Record(models.Model):
         return retval
 
 
+def send_task(sender, instance, created, **kwargs):
+    from firewall.tasks import ReloadTask
+    ReloadTask.apply_async(args=[sender.__name__])
 
+
+post_save.connect(send_task, sender=Host)
+post_save.connect(send_task, sender=Rule)
+post_save.connect(send_task, sender=Domain)
+post_save.connect(send_task, sender=Record)
+post_save.connect(send_task, sender=Vlan)
+post_save.connect(send_task, sender=Firewall)
+post_save.connect(send_task, sender=Group)
+post_save.connect(send_task, sender=Host)

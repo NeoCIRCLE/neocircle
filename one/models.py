@@ -8,7 +8,6 @@ from django.db.models.signals import post_save
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 from firewall.models import Host, Rule, Vlan
-from firewall.tasks import reload_firewall_lock
 from one.util import keygen
 from school.models import Person, Group
 from datetime import timedelta as td
@@ -531,7 +530,6 @@ class Instance(models.Model):
         host.add_port("tcp", inst.get_port(), {"rdp": 3389, "nx": 22, "ssh": 22}[inst.template.access_type])
         inst.firewall_host=host
         inst.save()
-        reload_firewall_lock()
         return inst
 
     """
@@ -549,7 +547,6 @@ class Instance(models.Model):
             self.firewall_host = None
             self.save()
             h.delete()
-        reload_firewall_lock()
 
     def _update_vm(self, template):
         out = ""
