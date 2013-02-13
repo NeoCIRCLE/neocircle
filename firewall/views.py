@@ -3,8 +3,8 @@ from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from firewall.models import *
 from firewall.fw import *
-from django.views.decorators.csrf import csrf_exempt              
-from django.db import IntegrityError               
+from django.views.decorators.csrf import csrf_exempt
+from django.db import IntegrityError
 from tasks import *
 from celery.task.control import inspect
 from django.utils.translation import ugettext_lazy as _
@@ -79,5 +79,5 @@ def firewall_api(request):
         return HttpResponse(_("Something went wrong!\n%s\n") % e);
     except:
         return HttpResponse(_("Something went wrong!\n"));
-    
+ 
     return HttpResponse(_("OK"));

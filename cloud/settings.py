@@ -155,9 +155,9 @@ LOGGING = {
             'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler'
         },
-        'syslog':{ 
-            'level':'WARNING', 
-            'class': 'logging.handlers.SysLogHandler', 
+        'syslog':{
+            'level':'WARNING',
+            'class': 'logging.handlers.SysLogHandler',
             'address': '/dev/log',
         },
 
