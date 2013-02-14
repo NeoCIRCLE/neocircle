@@ -1,11 +1,11 @@
-{% extends "entry.html" %}
+{% extends "box/entry.html" %}
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
 
 {% block summaryclass %}{% if id == vm.id %}selected-summary{% endif %} {% if vm.template.state == "NEW" %}unfinished{% endif %}{% endblock summaryclass %}
 
 {% block summary %}
-    {% include "box/summary-vm.html"}
+    {% include "box/summary-vm.html" %}
 {% endblock summary %}
 
 {% block details %}
