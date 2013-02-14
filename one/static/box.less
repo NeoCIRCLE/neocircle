@@ -67,8 +67,10 @@
     }
 }
 
-
-.wm{
+.entry-list {
+    list-style-type: none;
+}
+.entry{
     &.opened .actions{
         display: block !important;
     }
@@ -435,10 +437,10 @@
 .filetype-jump-out {
     background-image: url(icons/arrow-curve-090.png);
 }
-.wm-on{
+.vm-on{
     background-image: url(icons/computer-cloud.png);
 }
-.wm-off{
+.vm-off{
     background-image: url(icons/computer-off.png);
 }
 
@@ -463,7 +465,7 @@
 }
 
 #template{
-    .wm {
+    .entry {
         .template-details{
             margin: 0;
             padding: 0;
@@ -514,7 +516,7 @@ table {
 }
 
 #groups {
-    .wm {
+    .entry {
         .summary {
             .name {
                 background-image: url(icons/users.png);
