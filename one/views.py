@@ -45,7 +45,6 @@ def home(request):
         'shares': shares,
         'templates': Template.objects.filter(state='READY'),
         'mytemplates': Template.objects.filter(owner=request.user),
-        'publictemplates': Template.objects.filter(public=True, state='READY'),
         'instances': _list_instances(request),
         'groups': request.user.person_set.all()[0].owned_groups.all(),
         'semesters': Semester.objects.all(),
