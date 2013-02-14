@@ -3,15 +3,15 @@
 {% get_current_language as LANGUAGE_CODE %}
 {% block content %}
 <div class="boxes">
-    {% include "box/box-vm.html" %}
+    {% include "box/vm/box.html" %}
 
 {% if userdetails.share_quota %}
-    {% include "box/box-template.html" %}
+    {% include "box/template/box.html" %}
     {% include "box-grouplist.html" %}
 {% endif %}
 
 </div>
 <div class="boxes">
-    {% include "box/box-file.html" %}
+    {% include "box/file/box.html" %}
 </div>
 {% endblock %}
