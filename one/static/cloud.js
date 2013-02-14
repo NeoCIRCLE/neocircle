@@ -139,6 +139,10 @@ $(function() {
         $('#new-group-semester').change(updateSummary);
         $('#new-group-members').change(updateSummary);
     });
+    $('#vm-password-show').click(function(){
+        $('#vm-password-show').hide();
+        $('#vm-password').show();
+    })
     toggleDetails.apply($('.selected-summary'));
     toggleDetails.apply($('.selected-summary'));
     /**
