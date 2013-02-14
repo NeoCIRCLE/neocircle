@@ -142,6 +142,18 @@ $(function() {
     $('#vm-password-show').click(function(){
         $('#vm-password-show').hide();
         $('#vm-password').show();
+    });
+    $('.hidden-password').each(function(){
+        $(this).val('******');
+    });
+    $('.hidden-password').click(function(){
+        if(!$(this).hasClass('shown')){
+            $(this).val($(this).data('value'));
+            $(this).addClass('shown');
+        } else {
+            $(this).val('******');
+            $(this).removeClass('shown');
+        }
     })
     toggleDetails.apply($('.selected-summary'));
     toggleDetails.apply($('.selected-summary'));
