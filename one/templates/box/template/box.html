@@ -10,7 +10,7 @@
 {% block content %}
 <ul class="vm-list entry-list">
     {% for t in mytemplates %}
-        {% include "box/entry-template.html" %}
+        {% include "box/template/entry.html" %}
     {% endfor %}
 
     {% if not mytemplates and not group %}
