@@ -1,0 +1,64 @@
+{% extends "box/base/box.html" %}
+{% load i18n %}
+{% load l10n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+{% block title %}
+    {% trans "My Groups" %}
+{% endblock title %}
+
+{% block content %}
+<ul class="vm-list entry-list" id="groups">
+    {% if groups %}
+    {% for group in groups %}
+        {% include "box/group/entry.html" %}
+    {% endfor %}
+    {% else %}
+    <div class="tooltip">
+        <div class="container">
+            <p>{% trans "You have no groups." %}</p>
+            <p>
+                {% trans "Create a new one, and add your students to the new group." %}
+            </p>
+            <div class="tail"></div>
+        </div>
+    </div>
+    {% endif %}
+    <li class="entry" id="new-group">
+        <div class="summary">
+            <div class="name">{% trans "Create new group" %}</div>
+            <div class="clear"></div>
+        </div>
+        <div id="new-group-wizard" style="display: none">
+            <form action="/group/new/" method="POST" class="wizard">
+                {% csrf_token %}
+                <h3>{% trans "Create new group" %}</h3>
+                <ul>
+                    <li>
+                        <label for="new-group-name">{% trans "Group name" %}</label>
+                        <input type="text" name="name" id="new-group-name" />
+                    </li>
+                    <li>
+                        <label for="new-group-semester">{% trans "Semester" %}</label>
+                        <select name="semester" id="new-group-semester">
+                            {% for semester in semesters %}
+                            <option value="{{semester.id}}">{{semester.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </li>
+                    <li>
+                        <label for="new-group-members">{% trans "Members" %}</label>
+                        <textarea name="members" placeholder="{% trans 'Student NEPTUN codes, one per line' %}" id="new-group-members"></textarea>
+                        <div class="clear"></div>
+                    </li>
+                </ul>
+                <nav>
+                    <input type="reset" class="prev" value="{% trans "Cancel" %}" />
+                    <input type="submit" class="next" value="{% trans "Done" %}" />
+                    <div class="clear"></div>
+                </nav>
+            </form>
+        </div>
+    </li>
+</ul>
+{% endblock content %}

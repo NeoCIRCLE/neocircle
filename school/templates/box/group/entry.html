@@ -1,0 +1,54 @@
+{% extends "box/base/entry.html" %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+{% block content %}
+<li class="entry">
+    {{ block.super }}
+</li>
+{% endblock content %}
+
+{% block summary %}
+<div class="summary">
+    <div class="name">{{ group.name }}</div>
+    <div class="actions">
+        <a href="#" class="delete" data-id="{{group.id}}" data-name="{{group.name}}">
+            <img src="/static/icons/minus-circle.png" alt="{% trans "Delete" %}" />
+        </a>
+    </div>
+    <div class="clear"></div>
+</div>
+{% endblock summary %}
+
+{% block details %}
+<ul>
+    <li>
+        {% trans "Course" %}:
+        <span class="value">
+            {% if group.course %}
+            {{group.course.name}}
+            {% else %}
+            {% trans "Not assigned" %}
+            {% endif %}
+        </span>
+    </li>
+    <li>
+        {% trans "Semester" %}:
+        <span class="value">{{group.semester.name}}</span>
+    </li>
+    <li>
+        {% trans "Owner(s)" %}:
+        <span class="value">{{group.owner_list}}</span>
+    </li>
+    <li>
+        {% trans "Member count" %}:
+        <span class="value">{{group.member_count}}</span>
+    </li>
+    <li>
+        &nbsp;
+        <span class="value">
+            <a href="/group/show/{{group.id}}">{% trans "More details" %}</a>
+        </span>
+    </li>
+</ul>
+{% endblock details %}
