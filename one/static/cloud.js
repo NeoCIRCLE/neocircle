@@ -28,11 +28,11 @@ $(function() {
         }
     });
     toggleDetails = throttle(function(){
-        if($(this).parent('.wm').hasClass('opened')) {
-            $(this).parent('.wm').removeClass('opened');
+        if($(this).parent('.entry').hasClass('opened')) {
+            $(this).parent('.entry').removeClass('opened');
             $(this).next('.details').slideUp(700);
         } else {
-            $(this).parent('.wm').addClass('opened');
+            $(this).parent('.entry').addClass('opened');
             $(this).next('.details').slideDown(700);
         }
     })
@@ -40,7 +40,7 @@ $(function() {
         e.preventDefault(); e.stopPropagation();
         delete_template_confirm($(this).data('id'), $(this).data('name'));
     });
-    $('.wm .summary').unbind('click').click(toggleDetails);
+    $('.entry .summary').unbind('click').click(toggleDetails);
     if (window.navigator.userAgent.indexOf('cloud-gui') != 0) {
         $('.connect-vm-button').click(function(e) {
             e.preventDefault(); e.stopPropagation();
@@ -80,10 +80,10 @@ $(function() {
         e.preventDefault(); e.stopPropagation();
         renew_delete_vm($(this).data('id'))
     });
-    $('#new-wm-button').click(function() {
+    $('#new-vm-button').click(function() {
         $('#modal').show();
-        $('#modal-container').html($('#new-wm').html());
-        $('#modal-container .wm .summary').click(toggleDetails);
+        $('#modal-container').html($('#new-vm').html());
+        $('#modal-container .entry .summary').click(toggleDetails);
     });
     $('#new-template-button').click(function() {
         $.get('/ajax/templateWizard', function(data) {
