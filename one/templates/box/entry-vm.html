@@ -2,6 +2,12 @@
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
 
+{% block content %}
+<li class="entry {% if id == vm.id %}opened{% endif %}">
+    {{block.super }}
+</li>
+{% endblock content %}
+
 {% block summary %}
     {% include "box/summary-vm.html" %}
 {% endblock summary %}

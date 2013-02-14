@@ -1,8 +1,8 @@
-<li class="entry {% block entryclass %}{% endblock entryclass %}">
+{% block content %}
     {% block summary %}{% endblock summary %}
     <div class="details">
         <div class="details-container">
             {% block details %}{% endblock details %}
         </div>
     </div>
-</li>
+{% endblock content %}
