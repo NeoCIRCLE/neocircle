@@ -1,0 +1,122 @@
+{% extends "box/base.html" %}
+{% load i18n %}
+{% load l10n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+{% block title %}
+    {% trans "Templates" %}
+{% endblock title %}
+
+{% block content %}
+<ul class="vm-list entry-list">
+    {% for t in mytemplates %}
+        {% include "box/entry-template.html" %}
+    {% endfor %}
+
+    {% if not mytemplates and not group %}
+    <div class="tooltip">
+        <div class="container">
+            <p>{% trans "You have no own templates." %}</p>
+            <p>
+                {% trans "Create a new one, and share it with your students. Or you can also use a common one." %}
+            </p>
+            <div class="tail"></div>
+        </div>
+    </div>
+    {% endif %}
+    {% if not group %}
+    <li id="new-template-button" class="entry new">
+        <div class="summary">
+            <div class="name">Új Sablon</div>
+            <div class="clear"></div>
+        </div>
+    </li>
+    {% endif %}
+    {% if publictemplates %}
+        {% for t in publictemplates %}
+            <li class="entry" id="t{{t.id }}">
+                <div class="summary public-template">
+                    <div class="name">
+                        {{t.name}}
+                        <img src="/static/icons/lock-small.png" alt="{% trans "locked" %}"
+                         title="{% trans "This is a shared template." %}" />
+                    </div>
+                    <div class="status">{{t.state}}</div>
+                    <div class="actions">
+                        {% if t.state == 'READY' %}
+                        <a href="#" class="try-template-button" data-id="{{t.id}}" title="{% trans "Try"  %}">
+                            <img src="/static/icons/control.png" alt="{% trans "Start" %}"/>
+                        </a>
+                        <a href="#" class="template-share" data-id="{{t.id}}" data-gid="{{group.id}}" title="{% trans "Share" %}">
+                            <img src="/static/icons/user-share.png" alt="{% trans "Share" %}" />
+                        </a>
+                        {% endif %}
+                    </div>
+                    <div class="clear"></div>
+                    {% if t.myshares %}
+                    <ul class="shares">
+                        {% for i in t.myshares %}
+                        <li>
+                            <div class="quota">
+                                <div class="used" style="width: {{ i.get_instance_pc|unlocalize }}%"></div>
+                            </div>
+                            <form action="/vm/unshare/{{i.id}}/" method="post">
+                                <span title="{{i.name}}">{{i.name|truncatechars:20}}</span>
+                                ({{i.get_running}}/{{i.instance_limit}})
+                                    {% csrf_token %}
+                                <input type="submit" value="{% trans "Delete" %}" style="float: right"/>
+                            </form>
+                            <div class="clear"></div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+                <div class="details">
+                    <ul>
+                        <li class="name">
+                            {% trans "System" %}:
+                            <span class="value">{{t.system}}</span>
+                            <div class="clear"></div>
+                        </li>
+                        <li class="type">
+                            {% trans "Size" %}:
+                            <span class="value">
+                                {{t.instance_type}}:
+                                <span class="cpu">{{t.instance_type.CPU}}</span>
+                                <span class="memory">{{t.instance_type.RAM}}</span>
+                                <span class="credit">{{t.instance_type.credit}}</span>
+                            </span>
+                        </li>
+                        <li class="description">
+                            {% trans "Description" %}:
+                            <span class="value">{{t.description}}</span>
+                            <div class="clear"></div>
+                        </li>
+                        <li class="date" >
+                            {% trans "Created at" %}:
+                            <span class="value">{{t.created_at}} ({{t.owner.get_profile}})</span>
+                            <div class="clear"></div>
+                        </li>
+                        <li class="count">
+                            {% trans "Running instances" %}:
+                            <span class="value">{{t.running_instances}}</span>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+        {% endfor %}
+    {% endif %}
+    <li class="entry small">
+        <div class="summary">
+            <div class="quota">
+                <div class="used" style="background-color: rgba(0,255,0,0.2); width: {{userdetails.get_share_pc|unlocalize}}%"></div>
+            </div>
+            <div class="name">
+                {% blocktrans with used=userdetails.get_weighted_share_count all=userdetails.share_quota %}Share quota: {{used}}/{{all}}{% endblocktrans %}
+            </div>
+            <div class="clear"></div>
+        </div>
+    </li>
+</ul>
+{% endblock content %}

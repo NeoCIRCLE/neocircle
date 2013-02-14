@@ -1,0 +1,46 @@
+{% extends "box/entry.html" %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+{% block content %}
+<li class="entry" id="t{{t.id }}">
+    {{ block.super }}
+</li>
+{% endblock content %}
+
+{% block summary %}
+    {% include "box/summary-vm.html" %}
+{% endblock summary %}
+
+{% block details %}
+<ul>
+    <li class="name">
+        {% trans "System" %}:
+        <span class="value">{{t.system}}</span>
+        <div class="clear"></div>
+    </li>
+    <li class="type">
+        {% trans "Size" %}:
+        <span class="value">
+            {{t.instance_type}}:
+            <span class="cpu">{{t.instance_type.CPU}}</span>
+            <span class="memory">{{t.instance_type.RAM}}</span>
+            <span class="credit">{{t.instance_type.credit}}</span>
+        </span>
+    </li>
+    <li class="description">
+        {% trans "Description" %}:
+        <span class="value">{{t.description}}</span>
+        <div class="clear"></div>
+    </li>
+    <li class="date" >
+        {% trans "Created at" %}:
+        <span class="value">{{t.created_at}} ({{t.owner.get_profile}})</span>
+        <div class="clear"></div>
+    </li>
+    <li class="count">
+        {% trans "Running instances" %}:
+        <span class="value">{{ t.running_instances }}</span>
+    </li>
+</ul>
+{% endblock details %}
