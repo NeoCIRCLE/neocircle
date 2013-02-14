@@ -20,12 +20,11 @@ class HostAdmin(admin.ModelAdmin):
     filter_horizontal = ('groups', )
     inlines = (RuleInline, RecordInline)
 
-    def groups_l(self, instance):
+    @staticmethod
+    def groups_l(instance):
         """Returns instance's groups' names as a comma-separated list."""
-        retval = []
-        for group in instance.groups.all():
-            retval.append(group.name)
-        return u', '.join(retval)
+        names = [group.name for group in instance.groups.all()]
+        return u', '.join(names)
 
 class HostInline(contrib.admin.TabularInline):
     model = Host
