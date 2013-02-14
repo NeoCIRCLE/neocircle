@@ -1,7 +1,5 @@
 <li class="entry {% block entryclass %}{% endblock entryclass %}">
-    <div class="summary {% block summaryclass %}{% endblock summaryclass %}">
-        {% block summary %}{% endblock summary %}
-    </div>
+    {% block summary %}{% endblock summary %}
     <div class="details">
         <div class="details-container">
             {% block details %}{% endblock details %}

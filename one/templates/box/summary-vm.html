@@ -2,10 +2,16 @@
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
 
-{% block nameclass %}{% if vm.state == 'ACTIVE' %}vm-on{% else %}vm-off{% endif %}{% endblock nameclass %}
+{% block content %}
+<div class="summary {% if id == vm.id %}selected-summary{% endif %} {% if vm.template.state == "NEW" %}unfinished{% endif %}">
+    {{ block.super }}
+</div>
+{% endblock content %}
 
 {% block name %}
+<div class="name {% if i.state == 'ACTIVE' %}vm-on{% else %}vm-off{% endif %}">
     {{vm.name|truncatechars:20}}
+</div>
 {% endblock %}
 
 {% block status %}

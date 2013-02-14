@@ -1,10 +1,10 @@
-<div class="name {% block nameclass %}{% endblock %}">
+{% block content %}
     {% block name %}{% endblock %}
-</div>
-<div class="status">
-    {% block status %}{% endblock status %}
-</div>
-<div class="actions">
-    {% block actions %}{% endblock actions %}
-</div>
-<div class="clear"></div>
+    <div class="status">
+        {% block status %}{% endblock status %}
+    </div>
+    <div class="actions">
+        {% block actions %}{% endblock actions %}
+    </div>
+    <div class="clear"></div>
+{% endblock content %}
