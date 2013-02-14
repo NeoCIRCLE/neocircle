@@ -4,7 +4,7 @@
     <div class="contentblock">
         <h2>{% trans "Data store" %}</h2>
         <ul class="file-list">
-            <li class="wm small" id="current-location">
+            <li class="entry small" id="current-location">
                 <div class="summary">
                     <div class="sort">
                         <select data-bind="value: sortBy">
@@ -24,20 +24,20 @@
             </li>
         </ul>
         <ul class="file-list" id="file-list">
-            <li class="wm real" data-bind="visible: notInRoot, click: jumpUp">
+            <li class="entry real" data-bind="visible: notInRoot, click: jumpUp">
                 <div class="summary">
                     <div class="name filetype-jump-out">..</div>
                     <div class="clear"></div>
                 </div>
             </li>
-            <li class="wm small real" data-bind="visible: files().length == 0">
+            <li class="entry small real" data-bind="visible: files().length == 0">
                 <div class="summary">
                     <div class="name">{% trans "No files." %}</div>
                     <div class="clear"></div>
                 </div>
             </li>
             <!-- ko foreach: {data:files,afterAdd:fadeIn,beforeRemove:fadeOutFile} -->
-            <li class="wm real">
+            <li class="entry real">
                 <div class="summary" data-bind="click: clickHandler">
                     <div class="name" data-bind="text: name, attr: {class: getTypeClass, title: originalName}"></div>
                     <div class="info" data-bind="text: size"></div>
@@ -71,7 +71,7 @@
             </li>
             <!-- /ko --> </ul>
         <ul class="file-list">
-            <li class="wm small-row">
+            <li class="entry small-row">
                 <div class="summary" id="new-folder">
                     <div class="name filetype-new-folder">{% trans "Create folder" %}</div>
                     <div id="new-folder-form">
@@ -81,7 +81,7 @@
                     <div class="clear"></div>
                 </div>
             </li>
-            <li class="file-upload wm small-row">
+            <li class="file-upload entry small-row">
                 <div class="summary" data-bind="click: getUploadURL">
                     <div class="quota">
                         <div id="upload-progress" class="used" style="background-color: rgba(0,255,0,0.2);" data-bind="style: {width: uploadProgress}"></div>
@@ -114,7 +114,7 @@
                     </div>
                 </div>
             </li>
-            <li class="wm small">
+            <li class="entry small">
                 <div class="summary">
                     <div class="quota">
                         <div class="used" style="background-color: rgba(0,255,0,0.2)" data-bind="style: {width: quota.usedBar}"></div>

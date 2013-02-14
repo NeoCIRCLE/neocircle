@@ -3,9 +3,9 @@
 {% get_current_language as LANGUAGE_CODE %}
 <div class="contentblock" id="template">
     <h2>{% trans "Templates" %}</h2>
-    <ul class="wm-list">
+    <ul class="vm-list entry-list">
         {% for t in mytemplates %}
-        <li class="wm" id="t{{t.id }}">
+        <li class="entry" id="t{{t.id }}">
             <div class="summary {% if t.state == 'NEW' or t.state == 'SAVING'%}unfinished{% endif %}">
                 <div class="name">{{t.name}}</div>
                 <div class="status">{{t.state}}</div>
@@ -92,7 +92,7 @@
         </div>
         {% endif %}
             {% if not group %}
-        <li id="new-template-button" class="wm new">
+        <li id="new-template-button" class="entry new">
             <div class="summary">
                 <div class="name">Új Sablon</div>
                 <div class="clear"></div>
@@ -101,7 +101,7 @@
         {% endif %}
             {% if publictemplates %}
             {% for t in publictemplates %}
-        <li class="wm" id="t{{t.id }}">
+        <li class="entry" id="t{{t.id }}">
             <div class="summary public-template">
                 <div class="name">
                     {{t.name}}
@@ -174,7 +174,7 @@
         </li>
         {% endfor %}
             {% endif %}
-        <li class="wm small">
+        <li class="entry small">
             <div class="summary">
                 <div class="quota">
                     <div class="used" style="background-color: rgba(0,255,0,0.2); width: {{userdetails.get_share_pc|unlocalize}}%"></div>

@@ -4,10 +4,10 @@
     <div class="contentblock">
         <h2>{% trans "My Groups" %}</h2>
         <div class="content">
-            <ul class="wm-list">
+            <ul class="vm-list entry-list">
                 {% if groups %}
                 {% for group in groups %}
-                <li class="wm">
+                <li class="entry">
                     <div class="summary">
                         <div class="name">{{ group.name }}</div>
                         <div class="actions">
@@ -62,7 +62,7 @@
                     </div>
                 </div>
                 {% endif %}
-                <li class="wm" id="new-group">
+                <li class="entry" id="new-group">
                     <div class="summary">
                         <div class="name">{% trans "Create new group" %}</div>
                         <div class="clear"></div>

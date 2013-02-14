@@ -24,21 +24,21 @@
         </div>
     </div>
     {% endif %}
-    <li id="new-wm-button" class="wm new">
+    <li id="new-vm-button" class="entry new">
         <div class="summary">
             <div class="name">{% trans "Start new machine" %}</div>
             <div class="clear"></div>
         </div>
     </li>
-    <li id="new-wm" style="display: none">
+    <li id="new-vm" style="display: none">
         <h2>{% trans "Available shares" %}</h2>
         <p>
             {% trans "Choose one of the following shared templates to launch." %}
         </p>
         <div class="container">
-            <ul class="wm-list modal">
+            <ul class="vm-list entry-list">
                 {% for s in shares %}
-                <li class="wm">
+                <li class="entry">
                     <div class="summary">
                         <div class="quota">
                             <div class="used" style="width:{% if s.running_shared >=  s.per_user_limit %}100%{% else %}{{ s.get_instance_pc|unlocalize }}%{% endif %}"/>
@@ -102,7 +102,7 @@
             </ul>
         </div>
     </li>
-    <li class="wm small">
+    <li class="entry small">
         <div class="summary">
             <div class="quota">
                 <div class="used" style="background-color: rgba(0,255,0,0.2); width: {{userdetails.get_instance_pc|unlocalize}}%"></div>
