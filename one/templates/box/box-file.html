@@ -1,0 +1,91 @@
+{% extends "box/base.html" %}
+{% load i18n %}
+{% load l10n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+{% block title %}
+    {% trans "Virtual machines" %}
+{% endblock title %}
+
+{% block content %}
+<ul class="file-list" id="file-list">
+    <li class="entry real" data-bind="visible: notInRoot, click: jumpUp">
+        <div class="summary">
+            <div class="name filetype-jump-out">..</div>
+            <div class="clear"></div>
+        </div>
+    </li>
+    <li class="entry small real" data-bind="visible: files().length == 0">
+        <div class="summary">
+            <div class="name">{% trans "No files." %}</div>
+            <div class="clear"></div>
+        </div>
+    </li>
+    <!-- ko foreach: {data:files,afterAdd:fadeIn,beforeRemove:fadeOutFile} -->
+    <li class="entry real">
+        {% include "box/entry-file.html" %}
+    </li>
+    <!-- /ko -->
+</ul>
+<ul class="file-list">
+    <li class="entry small-row">
+        <div class="summary" id="new-folder">
+            <div class="name filetype-new-folder">{% trans "Create folder" %}</div>
+            <div id="new-folder-form">
+                <input type="text" placeholder="{% trans "Name of new folder" %}" data-bind="value: newFolderName, click: function(m,e){console.log(arguments); e.preventDefault(); e.stopPropagation(); return false;}" />
+                <input type="submit" data-bind="click: newFolder, clickBubble: false" value="Létrehozás" />
+            </div>
+            <div class="clear"></div>
+        </div>
+    </li>
+    <li class="file-upload entry small-row">
+        <div class="summary" data-bind="click: getUploadURL">
+            <div class="quota">
+                <div id="upload-progress" class="used" style="background-color: rgba(0,255,0,0.2);" data-bind="style: {width: uploadProgress}"></div>
+            </div>
+            <div class="name filetype-up">{% trans "File upload" %}</div>
+            <div class="clear"></div>
+        </div>
+        <div class="details">
+            <div class="container">
+                <div id="upload-zone" class="upload-zone">
+                    <p>{% trans "Drag and drop files here to start uploading." %}</p>
+                    <p>
+                        {% trans 'You can also use the <a href="#" id="old-upload">the traditional upload form</a>.' %}
+                    </p>
+                    <p>{% trans 'Upload limit is 1GB per file!' %}</p>
+                </div>
+                <div style="display: none" id="upload-progress-text" class="upload-zone"></div>
+                <div style="display: none" id="upload-error" class="upload-zone">
+                    <p id="upload-error-size" style="display: none">{% trans "Error: File is bigger than 1GB!" %}</p>
+                    <p id="upload-error-server" style="display: none">{% trans "Error: Upload server is not available!" %}</p>
+                    <p id="upload-error-overwrite" style="display: none">{% trans "Error: File already exists!" %}</p>
+                    <p id="upload-error-unknown" style="display: none"></p>
+                </div>
+                <div style="display: none" class="upload-zone" id="old-upload-form">
+                    <form action="/" method="POST" data-bind="attr: {action: uploadURL}" enctype="multipart/form-data">
+                        <input type="file" name="data" />
+                        <input type="submit" value="Feltöltés" />
+                    </form>
+                </div>
+            </div>
+        </div>
+    </li>
+    <li class="entry small">
+        <div class="summary">
+            <div class="quota">
+                <div class="used" style="background-color: rgba(0,255,0,0.2)" data-bind="style: {width: quota.usedBar}"></div>
+                <div class="softLimit" data-bind="style: {left: quota.softPos}"></div>
+            </div>
+            <div class="name">
+                {% trans "File quota" %}: <abbr data-bind="text: quota.used" title="{% trans "Used space" %}"></abbr>
+                / <abbr data-bind="text: quota.soft" title="{% trans "soft limit" %}"></abbr>
+                (
+                <abbr title="{% trans "hard limit" %}" data-bind="text: quota.hard"></abbr>
+                )
+            </div>
+            <div class="clear"></div>
+        </div>
+    </li>
+</ul>
+{% endblock content %}

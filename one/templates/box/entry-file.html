@@ -1,0 +1,35 @@
+{% extends "box/entry.html" %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+{% block summary %}
+<div class="summary" data-bind="click: clickHandler">
+    <div class="name" data-bind="text: name, attr: {class: getTypeClass, title: originalName}"></div>
+    <div class="info" data-bind="text: size"></div>
+    <div class="actions">
+        <a href="#" data-bind="click: $parent.rename, clickBubble: false">
+            <img src="/static/icons/pencil.png" alt="{% trans "rename" %}" />
+        </a>
+        <a href="#" data-bind="click: $parent.delete, clickBubble: false">
+            <img src="/static/icons/minus-circle.png" alt="{% trans "remove" %}" />
+        </a>
+        <a href="#" data-bind="click: $parent.download, clickBubble: false">
+            <img src="/static/icons/download-cloud.png" alt="{% trans "download" %}" />
+        </a>
+    </div>
+    <div class="clear"></div>
+</div>
+{% endblock summary %}
+
+{% block details %}
+<ul>
+    <li class="date">
+        {% trans "Last modification" %}:
+        <small class="value" data-bind="text: mTime"></small>
+    </li>
+    <li class="filetype-text">
+        {% trans "Type" %}:
+        <span class="value" data-bind="text: type"></span>
+    </li>
+</ul>
+{% endblock details %}
