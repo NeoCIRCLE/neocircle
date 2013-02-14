@@ -4,6 +4,23 @@
 {% block content %}
 <div class="boxes">
     {% include "box/vm/box.html" %}
+    <div class="contentblock">
+        <h2>{% trans "User details" %}</h2>
+        <div class="content">
+            <ul style="list-style: none">
+                <li style="padding: 5px">
+                    {% trans "Public key" %}
+                    <textarea style="float: right">{{userdetails.ssh_key.key}}</textarea>
+                    <div class="clear"></div>
+                </li>
+                <li style="padding: 5px">
+                    {% trans "Samba password" %}
+                    <input style="float: right" class="hidden-password" type="text" data-value="{{userdetails.smb_password}}" />
+                    <div class="clear"></div>
+                </li>
+            </ul>
+        </div>
+    </div>
 
 {% if userdetails.share_quota %}
     {% include "box/template/box.html" %}
