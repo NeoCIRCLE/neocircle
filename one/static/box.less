@@ -71,8 +71,14 @@
     list-style-type: none;
 }
 .entry{
-    &.opened .actions{
-        display: block !important;
+    &.opened {
+        .actions{
+            display: block !important;
+        }
+        .summary .name .details {
+            display: inline;
+            border: none;
+        }
     }
     &.small .summary{
         padding: 5px;
@@ -151,6 +157,10 @@
             .actions{
                 display: block;
             }
+            .name .details {
+                display: inline;
+                border: none;
+            }
         }
 
         .id{
@@ -166,7 +176,9 @@
             position: relative;
             &.filetype-new-folder {
                 float: left;
-
+            }
+            .details {
+                display: none;
             }
         }
         @placeholderColor: #555;
