@@ -10,7 +10,10 @@
 
 {% block summary %}
 <div class="summary">
-    <div class="name">{{ group.name }}</div>
+    <div class="name">
+        {{ group.name }}
+        <small class="details">(<a href="/group/show/{{group.id}}">{% trans "More details" %}</a>)</small>
+    </div>
     <div class="actions">
         <a href="#" class="delete" data-id="{{group.id}}" data-name="{{group.name}}">
             <img src="/static/icons/minus-circle.png" alt="{% trans "Delete" %}" />

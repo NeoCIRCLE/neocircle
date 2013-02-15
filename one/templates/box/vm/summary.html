@@ -10,7 +10,7 @@
 
 {% block name %}
 <div class="name {% if i.state == 'ACTIVE' %}vm-on{% else %}vm-off{% endif %}">
-    {{vm.name|truncatechars:20}}
+    {{vm.name|truncatechars:20}} <small class="details">(<a href="/vm/show/{{vm.id}}/" title="{{vm.name}}">{% trans "More details" %}</a>)</small>
 </div>
 {% endblock %}
 
