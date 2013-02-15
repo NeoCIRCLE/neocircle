@@ -163,6 +163,18 @@ $(function() {
     function get_vm_details(id) {
         $.get('/vm/credentials/'+id, function(data) {
             $('#modal-container').html(data);
+            $('.hidden-password').each(function(){
+                $(this).val('******');
+            });
+            $('.hidden-password').click(function(){
+                if(!$(this).hasClass('shown')){
+                    $(this).val($(this).data('value'));
+                    $(this).addClass('shown');
+                } else {
+                    $(this).val('******');
+                    $(this).removeClass('shown');
+                }
+            })
         })
         $('#modal').show();
     };
