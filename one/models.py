@@ -1,23 +1,23 @@
 # coding=utf-8
+
+from datetime import datetime
+from datetime import timedelta as td
+import subprocess, tempfile, os, stat, re, base64, struct, logging
+
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core import signing
 from django.db import models
 from django.db import transaction
+from django.db.models.signals import post_delete, pre_delete
 from django.db.models.signals import post_save
 from django import forms
 from django.utils.translation import ugettext_lazy as _
-from firewall.models import Host, Rule, Vlan
-from one.util import keygen
-from school.models import Person, Group
-from datetime import timedelta as td
-from django.db.models.signals import post_delete, pre_delete
-from store.api import StoreApi
-from django.db import transaction
 
-from datetime import datetime
-import logging
-import subprocess, tempfile, os, stat, re, base64, struct
+from firewall.models import Host, Rule, Vlan
+from school.models import Person, Group
+from store.api import StoreApi
+from .util import keygen
 
 logger = logging.getLogger(__name__)
 pwgen = User.objects.make_random_password
@@ -33,19 +33,19 @@ post_save.connect(create_user_profile, sender=User)
 
 class UserCloudDetails(models.Model):
     """Cloud related details of a user."""
-    user = models.ForeignKey(User, null=False, blank=False, unique=True,
-            verbose_name=_('user'))
+    user = models.OneToOneField(User, verbose_name=_('user'),
+            related_name='cloud_details')
     smb_password = models.CharField(max_length=20,
             verbose_name=_('Samba password'),
             help_text=_('Generated password for accessing store from '
                 'Windows.'))
-    ssh_key = models.ForeignKey('SshKey', null=True,
-            verbose_name=_('SSH key (public)'),
+    ssh_key = models.ForeignKey('SshKey', verbose_name=_('SSH key (public)'),
+            null=True, blank=True, related_name='userclouddetails_set',
             help_text=_('Generated SSH public key for accessing store from '
-                'Linux.'))
+                    'Linux.'))
     ssh_private_key = models.TextField(verbose_name=_('SSH key (private)'),
-            null=True, help_text=_('Generated SSH private key for '
-                'accessing store from Linux.'))
+            blank=True, help_text=_('Generated SSH private key for '
+                    'accessing store from Linux.'))
     share_quota = models.IntegerField(verbose_name=_('share quota'),
             default=0)
     instance_quota = models.IntegerField(verbose_name=_('instance quota'),
@@ -139,12 +139,12 @@ class OpenSshKeyValidator(object):
 
 class SshKey(models.Model):
     """SSH public key (in OpenSSH format)."""
-    user = models.ForeignKey(User, null=False, blank=False)
-    key = models.CharField(max_length=2000, verbose_name=_('SSH key'),
+    user = models.ForeignKey(User, related_name='sshkey_set')
+    key = models.TextField(verbose_name=_('SSH key'),
             help_text=_('<a href="/info/ssh/">SSH public key in OpenSSH '
-                'format</a> used for shell and store login '
-                '(2048+ bit RSA preferred). Example: '
-                '<code>ssh-rsa AAAAB...QtQ== john</code>.'),
+                    'format</a> used for shell and store login '
+                    '(2048+ bit RSA preferred). Example: '
+                    '<code>ssh-rsa AAAAB...QtQ== john</code>.'),
             validators=[OpenSshKeyValidator()])
 
     def __unicode__(self):
@@ -174,19 +174,18 @@ TYPES_C = tuple([(i[0], i[1]["verbose_name"]) for i in TYPES.items()])
 class Share(models.Model):
     name = models.CharField(max_length=100, verbose_name=_('name'))
     description = models.TextField(verbose_name=_('description'))
-    template = models.ForeignKey('Template', null=False, blank=False)
-    group = models.ForeignKey(Group, null=False, blank=False)
+    template = models.ForeignKey('Template', related_name='share_set')
+    group = models.ForeignKey(Group, related_name='share_set')
     created_at = models.DateTimeField(auto_now_add=True,
             verbose_name=_('created at'))
-    type = models.CharField(choices=TYPES_C, max_length=10, blank=False,
-            null=False)
+    type = models.CharField(choices=TYPES_C, max_length=10)
     instance_limit = models.IntegerField(verbose_name=_('instance limit'),
             help_text=_('Maximal count of instances launchable for this '
                 'share.'))
     per_user_limit = models.IntegerField(verbose_name=_('per user limit'),
             help_text=_('Maximal count of instances launchable by a single '
                 'user.'))
-    owner = models.ForeignKey(User, null=True, blank=True)
+    owner = models.ForeignKey(User, null=True, blank=True, related_name='share_set')
 
     def get_type(self):
         t = TYPES[self.type]
@@ -218,8 +217,14 @@ class Disk(models.Model):
     name = models.CharField(max_length=100, unique=True,
             verbose_name=_('name'))
 
-    @classmethod
-    def update(cls):
+    class Meta:
+        ordering = ['name']
+
+    def __unicode__(self):
+        return u"%s (#%d)" % (self.name, self.id)
+
+    @staticmethod
+    def update():
         """Get and register virtual disks from OpenNebula."""
         import subprocess
         proc = subprocess.Popen(["/opt/occi.sh", "storage", "list"],
@@ -241,12 +246,6 @@ class Disk(models.Model):
                 l.append(id)
             Disk.objects.exclude(id__in=l).delete()
 
-    def __unicode__(self):
-        return u"%s (#%d)" % (self.name, self.id)
-
-    class Meta:
-        ordering = ['name']
-
 class Network(models.Model):
     """Virtual networks automatically synchronized with OpenNebula."""
     name = models.CharField(max_length=100, unique=True,
@@ -256,8 +255,14 @@ class Network(models.Model):
     public = models.BooleanField(verbose_name=_('public'),
             help_text=_('If internet gateway is available.'))
 
-    @classmethod
-    def update(cls):
+    class Meta:
+        ordering = ['name']
+
+    def __unicode__(self):
+        return self.name
+
+    @staticmethod
+    def update():
         """Get and register virtual networks from OpenNebula."""
         import subprocess
         proc = subprocess.Popen(["/opt/occi.sh", "network", "list"],
@@ -279,10 +284,6 @@ class Network(models.Model):
                 l.append(id)
             cls.objects.exclude(id__in=l).delete()
 
-    def __unicode__(self):
-        return self.name
-    class Meta:
-        ordering = ['name']
 
 class InstanceType(models.Model):
     """Instance types in OCCI configuration (manually synchronized)."""
@@ -292,10 +293,12 @@ class InstanceType(models.Model):
     RAM = models.IntegerField(help_text=_('Mebibytes of memory.'))
     credit = models.IntegerField(verbose_name=_('credits'),
             help_text=_('Price of instance.'))
-    def __unicode__(self):
-        return u"%s" % self.name
+
     class Meta:
         ordering = ['credit']
+
+    def __unicode__(self):
+        return u"%s" % self.name
 
 TEMPLATE_STATES = (('NEW', _('new')), ('SAVING', _('saving')),
                    ('READY', _('ready')), )
@@ -306,11 +309,13 @@ class Template(models.Model):
     access_type = models.CharField(max_length=10,
             choices=[('rdp', 'rdp'), ('nx', 'nx'), ('ssh', 'ssh')],
             verbose_name=_('access method'))
-    disk = models.ForeignKey(Disk, verbose_name=_('disk'))
-    instance_type = models.ForeignKey(InstanceType,
+    disk = models.ForeignKey(Disk, verbose_name=_('disk'), related_name='template_set')
+    instance_type = models.ForeignKey(InstanceType, related_name='template_set',
             verbose_name=_('instance type'))
-    network = models.ForeignKey(Network, verbose_name=_('network'))
-    owner = models.ForeignKey(User, verbose_name=_('owner'))
+    network = models.ForeignKey(Network, verbose_name=_('network'),
+            related_name='template_set')
+    owner = models.ForeignKey(User, verbose_name=_('owner'),
+            related_name='template_set')
     created_at = models.DateTimeField(auto_now_add=True,
             verbose_name=_('created at'))
     state = models.CharField(max_length=10, choices=TEMPLATE_STATES,
@@ -322,16 +327,22 @@ class Template(models.Model):
             help_text=(_('Name of operating system in format like "%s".') %
             "Ubuntu 12.04 LTS Desktop amd64"))
 
+    class Meta:
+        verbose_name = _('template')
+        verbose_name_plural = _('templates')
+
+    def __unicode__(self):
+        return self.name
+
     def running_instances(self):
         return self.instance_set.exclude(state='DONE').count()
+
+    @property
     def os_type(self):
         if self.access_type == 'rdp':
             return "win"
         else:
             return "linux"
-
-    def __unicode__(self):
-        return self.name
 
     @transaction.commit_on_success
     def safe_delete(self):
@@ -342,18 +353,16 @@ class Template(models.Model):
             logger.info("Could not delete template. Instances still running!")
             return False
 
-    class Meta:
-        verbose_name = _('template')
-        verbose_name_plural = _('templates')
-
 class Instance(models.Model):
     """Virtual machine instance."""
     name = models.CharField(max_length=100, unique=True,
-            verbose_name=_('name'), null=True, blank=True)
+            verbose_name=_('name'), blank=True)
     ip = models.IPAddressField(blank=True, null=True,
             verbose_name=_('IP address'))
-    template = models.ForeignKey(Template, verbose_name=_('template'))
-    owner = models.ForeignKey(User, verbose_name=_('owner'))
+    template = models.ForeignKey(Template, verbose_name=_('template'),
+            related_name='instance_set')
+    owner = models.ForeignKey(User, verbose_name=_('owner'),
+            related_name='instance_set')
     created_at = models.DateTimeField(auto_now_add=True,
             verbose_name=_('created at'))
     state = models.CharField(max_length=20,
@@ -369,18 +378,30 @@ class Instance(models.Model):
             verbose_name=_('active since'),
             help_text=_('Time stamp of successful boot report.'))
     firewall_host = models.ForeignKey(Host, blank=True, null=True,
-            verbose_name=_('host in firewall'))
+            verbose_name=_('host in firewall'), related_name='instance_set')
     pw = models.CharField(max_length=20, verbose_name=_('password'),
             help_text=_('Original password of instance'))
     one_id = models.IntegerField(unique=True, blank=True, null=True,
             verbose_name=_('OpenNebula ID'))
     share = models.ForeignKey('Share', blank=True, null=True,
-            verbose_name=_('share'))
+            verbose_name=_('share'), related_name='instance_set')
     time_of_suspend = models.DateTimeField(default=None,
-            verbose_name=_('time of suspend'), null=True, blank=False)
+            verbose_name=_('time of suspend'), null=True, blank=True)
     time_of_delete = models.DateTimeField(default=None,
-            verbose_name=_('time of delete'), null=True, blank=False)
+            verbose_name=_('time of delete'), null=True, blank=True)
     waiting = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = _('instance')
+        verbose_name_plural = _('instances')
+
+    def __unicode__(self):
+        return self.name
+
+    @models.permalink
+    def get_absolute_url(self):
+            return ('vm_show', None, {'iid':self.id})
+
     def get_port(self):
         """Get public port number for default access method."""
         proto = self.template.access_type
@@ -409,9 +430,6 @@ class Instance(models.Model):
                      "host": self.firewall_host.pub_ipv4})
         except:
             return
-
-    def __unicode__(self):
-        return self.name
 
     def update_state(self):
         """Get and update VM state from OpenNebula."""
@@ -451,10 +469,6 @@ class Instance(models.Model):
             pass
         return age
 
-    @models.permalink
-    def get_absolute_url(self):
-            return ('vm_show', None, {'iid':self.id})
-
     @classmethod
     def submit(cls, template, owner, extra="", share=None):
         """Submit a new instance to OpenNebula."""
@@ -466,7 +480,7 @@ class Instance(models.Model):
             os.chmod(f.name, stat.S_IRUSR|stat.S_IWUSR|stat.S_IRGRP|stat.S_IROTH)
             token = signing.dumps(inst.id, salt='activate')
             try:
-                details = owner.userclouddetails_set.all()[0]
+                details = owner.cloud_details
             except:
                 details = UserCloudDetails(user=owner)
                 details.save()
@@ -608,6 +622,7 @@ class Instance(models.Model):
         t = self.template
         t.state = 'SAVING'
         t.save()
+
     def check_if_is_save_as_done(self):
         if self.state != 'DONE':
             return False
@@ -615,17 +630,12 @@ class Instance(models.Model):
         imgname = "template-%d-%d" % (self.template.id, self.id)
         disks = Disk.objects.filter(name=imgname)
         if len(disks) != 1:
-            return false
+            return False
         self.template.disk_id = disks[0].id
         self.template.state = 'READY'
         self.template.save()
         self.firewall_host_delete()
         return True
-
-
-    class Meta:
-        verbose_name = _('instance')
-        verbose_name_plural = _('instances')
 
 def delete_instance(sender, instance, using, **kwargs):
     if instance.state != "DONE":

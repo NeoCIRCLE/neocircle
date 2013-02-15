@@ -13,7 +13,7 @@ import base64
 
 def estabilish_store_user(request, user):
     try:
-        details = request.user.userclouddetails_set.all()[0]
+        details = request.user.cloud_details
         password = details.smb_password
         quota = details.disk_quota * 1024
         key_list = []
@@ -34,7 +34,7 @@ def index(request):
     try:
         auth=request.POST['auth']
         try:
-            details = request.user.userclouddetails_set.all()[0]
+            details = request.user.cloud_details
             password = details.smb_password
             key_list = []
             for key in request.user.sshkey_set.all():
@@ -182,7 +182,7 @@ def gui(request):
         return render_to_response('store/gui.html',  RequestContext(request, {'username' : user, 'host' : StoreApi.get_host()}))
     elif request.method == 'POST':
         try:
-            details = request.user.userclouddetails_set.all()[0]
+            details = request.user.cloud_details
             password = details.smb_password
             key_list = []
             for key in request.user.sshkey_set.all():
