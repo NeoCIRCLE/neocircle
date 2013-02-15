@@ -559,9 +559,10 @@ class Instance(models.Model):
 
     def one_delete(self):
         """Delete host in OpenNebula."""
-        proc = subprocess.Popen(["/opt/occi.sh", "compute", "delete",
-            "%d" % self.one_id], stdout=subprocess.PIPE)
-        (out, err) = proc.communicate()
+        if self.one_id and self.state != 'DONE':
+            proc = subprocess.Popen(["/opt/occi.sh", "compute", "delete",
+                    "%d" % self.one_id], stdout=subprocess.PIPE)
+            (out, err) = proc.communicate()
         self.firewall_host_delete()
 
     def firewall_host_delete(self):
