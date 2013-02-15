@@ -13,7 +13,7 @@
         {% for vm in instances %}
             {% include "box/vm/entry.html" %}
         {% endfor %}
-    {% else %}
+    {% elif not just_list_vms %}
     <div class="tooltip">
         <div class="container">
             <p>{% trans "You have not started any machines yet." %}</p>
@@ -24,6 +24,7 @@
         </div>
     </div>
     {% endif %}
+    {% if not just_list_vms %}
     <li id="new-vm-button" class="entry new small-row">
         <div class="summary">
             <div class="name">{% trans "Start new machine" %}</div>
@@ -102,6 +103,7 @@
             </ul>
         </div>
     </li>
+    {% endif %}
     <li class="entry small">
         <div class="summary">
             <div class="quota">
