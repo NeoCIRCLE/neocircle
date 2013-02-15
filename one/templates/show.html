@@ -132,9 +132,6 @@
     {% endif %}
 </div>
 <div class="boxes">
-    <div class="contentblock" id="vm-list">
-        <h2>{% trans "Virtual machines" %}</h2>
-        <ul class="wm-list">{% include "box-vmlist.html" %}</ul>
-    </div>
+    {% include "box/vm/box.html" with just_list_vms=1 %}
 </div>
 {% endblock %}
