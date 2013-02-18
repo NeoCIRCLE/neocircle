@@ -4,7 +4,7 @@
 {% get_current_language as LANGUAGE_CODE %}
 
 {% block title %}
-    {% trans "Virtual machines" %}<span data-bind="click: loadTopList">top</span>
+    {% trans "Virtual machines" %}
 {% endblock title %}
 
 {% block content %}
@@ -55,6 +55,12 @@
                 <input type="text" placeholder="{% trans "Name of new folder" %}" data-bind="value: newFolderName, click: function(m,e){console.log(arguments); e.preventDefault(); e.stopPropagation(); return false;}" />
                 <input type="submit" data-bind="click: newFolder, clickBubble: false" value="Létrehozás" />
             </div>
+            <div class="clear"></div>
+        </div>
+    </li>
+    <li class="entry small-row">
+        <div class="summary" id="new-folder">
+            <div class="name" data-bind="click: loadTopList">{% trans "Toplist" %}</div>
             <div class="clear"></div>
         </div>
     </li>
