@@ -4,7 +4,7 @@
 {% get_current_language as LANGUAGE_CODE %}
 
 {% block title %}
-    {% trans "My Groups" %} <a id="show-hidden-groups" href="#">asd</a>
+    {% trans "My Groups" %}
 {% endblock title %}
 
 {% block content %}
@@ -24,6 +24,12 @@
         </div>
     </div>
     {% endif %}
+    <li id="show-hidden-groups" class="entry small-row">
+        <div class="summary">
+            <div class="name">{% trans "Show hidden groups" %}</div>
+            <div class="clear"></div>
+        </div>
+    </li>
     <li class="entry small-row" id="new-group">
         <div class="summary">
             <div class="name">{% trans "Create new group" %}</div>
