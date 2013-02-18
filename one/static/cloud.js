@@ -318,7 +318,7 @@ $(function() {
         hidden_groups_for_user.push(id);
         hidden_groups[current_user]=hidden_groups_for_user;
         window.localStorage.setItem('hidden_groups', JSON.stringify(hidden_groups));
-        $('#group-'+id).hide();
+        $('#group-'+id).slideUp(700);
     }
 
     function hide_groups(){
@@ -346,7 +346,9 @@ $(function() {
         e.preventDefault(); e.stopPropagation();
         show_hidden_groups();
         $('#groups > li').each(function(){
-            $(this).show();
+            if($(this).is(':hidden')){
+                $(this).slideDown(700);
+            }
         })
     })
 
