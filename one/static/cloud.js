@@ -337,21 +337,32 @@ $(function() {
     }
     hide_groups();
 
+    function hidden_group_count(){
+        var hidden_groups=JSON.parse(window.localStorage.getItem('hidden_groups'))||{};
+        return (hidden_groups[current_user]||[]).length;
+    }
+    if(hidden_group_count() == 0){
+        $('#show-hidden-groups').hide();
+    }
+
     $('.hide-group').click(function(e){
         e.preventDefault(); e.stopPropagation();
         hide_group($(this).data('id'));
+        if($('#show-hidden-groups').is(':hidden')){
+            $('#show-hidden-groups').slideDown(700);
+        }
         return false;
     });
     $('#show-hidden-groups').click(function(e){
         e.preventDefault(); e.stopPropagation();
         show_hidden_groups();
+        $('#show-hidden-groups').slideUp(700);
         $('#groups > li').each(function(){
             if($(this).is(':hidden')){
                 $(this).slideDown(700);
             }
         })
     })
-
     $('#new-member').click(function() {
         $('#new-member-form').toggle();
     });
