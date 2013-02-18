@@ -3,7 +3,7 @@
 {% get_current_language as LANGUAGE_CODE %}
 
 {% block content %}
-<li class="entry">
+<li class="entry" id="group-{{group.id}}">
     {{ block.super }}
 </li>
 {% endblock content %}
@@ -17,6 +17,9 @@
     <div class="actions">
         <a href="#" class="delete" data-id="{{group.id}}" data-name="{{group.name}}">
             <img src="/static/icons/minus-circle.png" alt="{% trans "Delete" %}" />
+        </a>
+        <a href="#" class="hide-group" data-id="{{group.id}}">
+            <img src="/" alt="{% trans "Hide" %}" />
         </a>
     </div>
     <div class="clear"></div>
