@@ -553,7 +553,32 @@ $(function() {
                     }
                 },
             })
-        })
+        });
+
+        self.loadTopList = throttle(function(){
+            self.currentPath('/');
+            $.ajax({
+                type: 'POST',
+                url: '/ajax/store/top/',
+                dataType: 'json',
+                success: function(data){
+                    $('.file-list .real').css({
+                            left: 0,
+                            position: 'relative'
+                        }).animate({
+                            left: '-100%'
+                        }, 500).promise().done(function() {
+                            loadFolderDone(data);
+                            $('.file-list .real').css({
+                                left: '-300%',
+                                position: 'relative'
+                            }).animate({
+                                left: 0
+                            }, 500);
+                        });
+                }
+            })
+        });
 
         /**
          * After loadFolder completes, this function updates the UI
