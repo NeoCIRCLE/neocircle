@@ -4,7 +4,7 @@
 {% get_current_language as LANGUAGE_CODE %}
 
 {% block title %}
-    {% trans "Virtual machines" %}
+    {% trans "Virtual machines" %}<span data-bind="click: loadTopList">top</span>
 {% endblock title %}
 
 {% block content %}
