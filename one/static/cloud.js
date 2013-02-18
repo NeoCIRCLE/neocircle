@@ -308,6 +308,48 @@ $(function() {
         })
     }
 
+    function hide_group(id){
+        var hidden_groups=JSON.parse(window.localStorage.getItem('hidden_groups'))||{};
+        var hidden_groups_for_user=hidden_groups[current_user]||[];
+        for(var i in hidden_groups_for_user){
+            var hide=hidden_groups_for_user[i];
+            if(hide == id) return false;
+        }
+        hidden_groups_for_user.push(id);
+        hidden_groups[current_user]=hidden_groups_for_user;
+        window.localStorage.setItem('hidden_groups', JSON.stringify(hidden_groups));
+        $('#group-'+id).hide();
+    }
+
+    function hide_groups(){
+        var hidden_groups=JSON.parse(window.localStorage.getItem('hidden_groups'))||{};
+        var hidden_groups_for_user=hidden_groups[current_user]||[];
+        for(var i in hidden_groups_for_user){
+            var hide=hidden_groups_for_user[i];
+            $('#group-'+hide).hide();
+        }
+    }
+
+    function show_hidden_groups(){
+        var hidden_groups=JSON.parse(window.localStorage.getItem('hidden_groups'))||{};
+        hidden_groups[current_user]=[];
+        window.localStorage.setItem('hidden_groups', JSON.stringify(hidden_groups));
+    }
+    hide_groups();
+
+    $('.hide-group').click(function(e){
+        e.preventDefault(); e.stopPropagation();
+        hide_group($(this).data('id'));
+        return false;
+    });
+    $('#show-hidden-groups').click(function(e){
+        e.preventDefault(); e.stopPropagation();
+        show_hidden_groups();
+        $('#groups > li').each(function(){
+            $(this).show();
+        })
+    })
+
     $('#new-member').click(function() {
         $('#new-member-form').toggle();
     });

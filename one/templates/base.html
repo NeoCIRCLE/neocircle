@@ -12,6 +12,7 @@
     <script type="text/javascript" src="{% url django.views.i18n.javascript_catalog %}"></script>
     <script type="text/javascript">
         window.localStorage.clear();
+        var current_user={{user.id}};
     </script>
     <script src="/static/less.min.js"></script>
     <script src="/static/knockout.min.js"></script>
