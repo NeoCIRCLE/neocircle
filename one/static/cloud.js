@@ -527,7 +527,6 @@ $(function() {
              */
         var loadFolder = throttle(function(path, fast) {
             self.currentPath(path);
-            self.fileLimit = 5;
             $.ajax({
                 type: 'POST',
                 data: 'path=' + path,
