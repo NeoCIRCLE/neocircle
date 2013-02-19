@@ -143,7 +143,7 @@
       "is_active": true,
       "is_superuser": true,
       "is_staff": true,
-      "last_login": "2013-01-22T15:21:22Z",
+      "last_login": "2013-02-19T15:26:42Z",
       "groups": [],
       "user_permissions": [],
       "email": "",
@@ -495,6 +495,142 @@
     }
   },
   {
+    "pk": 90,
+    "model": "one.sshkey",
+    "fields": {
+      "user": 1,
+      "key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQDmmCXLmtXgrYwFEUoi95hMfqkjSVuLyyawRMl82kCh+cskEij3cazwoWxUgKDzQcIhEX84DbYYX4Sq4ZibkxsXCCny5ujAxcUFFiZabYJxHdReuI+PfHv1Pb8IBH2ARGp9rPUZpNIzt7sKRtAOqUmdLqg+lyUw/7ExPqma4s4VqQ== cloud-2013-02-19"
+    }
+  },
+  {
+    "pk": 91,
+    "model": "one.sshkey",
+    "fields": {
+      "user": 2,
+      "key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCRgEzDAA0cO6YlWmp3+cOAn88dWT3lhqngqsq9Pf45Qs8Tul+hmAkjmCwRSYIe00un86avKigspUn0RWUAACFl0FiZ/L5IYYOfZg0haI2a+/kSgtSQMrZc8xOz1J9maxVI+nj9ki8c49Z9dmBPLHBQ1dKG7IHWimChtI5U1Q3QTQ== cloud-2013-02-19"
+    }
+  },
+  {
+    "pk": 92,
+    "model": "one.sshkey",
+    "fields": {
+      "user": 3,
+      "key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQDanoR/FMDwlVckJsK3hJ+ibJC+hahhH1K3vJLGSAgHskm+Tdt/KQoaDqwoE2zMmDjXqY5u+os9r+yrFk443nhd0ePccAFWFK1Xjq1NNdr4/4mnhqszzjMC7iS0TjP084tcVI8wwZnZyC9aIbiE+Yq46M2CIqdSxXhnpVK+gy5YmQ== cloud-2013-02-19"
+    }
+  },
+  {
+    "pk": 93,
+    "model": "one.sshkey",
+    "fields": {
+      "user": 4,
+      "key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCj9vSKqa8+LyI22AwqwBQs/h20Ykt1i8CPkbg+QFwriXPbAXvP/u22AkOrXvgrfbusTo527a+L7znv28FbwIlaYtgYDD08kogsqGOjSJ2+YUioUz/Q+TQCoABwIjEsLCWaoufmxXVfKdGsygs7YIie9c9u32V85CtvXj96CGVfhQ== cloud-2013-02-19"
+    }
+  },
+  {
+    "pk": 94,
+    "model": "one.sshkey",
+    "fields": {
+      "user": 5,
+      "key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCy/Q7FFIsdQn9EMxSGGhTsprGceHt9aedx9Yuj6J1RXm2wF7KJ20RT59iDB3ETFPYHCsGsej59YN3a5+pMvH1EMxJ0FuqxojdrxApeZIiKZImaXyO/BoshUu/0i8ufRHmoGOBDJPr5VnmTo6OJkB5eo1t1P7D2zAzIEt+P4ciirQ== cloud-2013-02-19"
+    }
+  },
+  {
+    "pk": 95,
+    "model": "one.sshkey",
+    "fields": {
+      "user": 6,
+      "key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQDZ8AZHwKsVE2zCeWg2cnHSOgmTqTSOKrTVyuOcFYlz4MKt/jRCFsW1KrhLMhunz6bQNVy6+cj/5EMLBuES1T3k5h1eiPUigF3bfgkbNcFEbbyROSgsqIEKaL6mCdwz7237Is66IzhX7tBWAGQI0xoGvLuJadbXGIItWfFjgq0YHQ== cloud-2013-02-19"
+    }
+  },
+  {
+    "pk": 96,
+    "model": "one.sshkey",
+    "fields": {
+      "user": 7,
+      "key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCpScNYe4jC/sWVnX12rcRG45N6MdWEjQEx+0VHd3UGMtmj2PBiCsZ2Q5zSk3hWPY2Flf/dEWhPIf6bh1pxe+iqcDDUyrtPbH/sp6cuJSkNPeCXS1DLsaDIwgFk7kpBVTFO6EQMCG/bg2n2+Vy6/n+t5/WpbQamzS2VNawGItAF5w== cloud-2013-02-19"
+    }
+  },
+  {
+    "pk": 97,
+    "model": "one.sshkey",
+    "fields": {
+      "user": 12,
+      "key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQC4JR32/9APzlda+wdw4NpvRV0W5Q94jZ4T1Gz9O3fcoaVbxh/6Q+8PNXPAuN4RDFUFsgYju+l6CVqfN+E0t4bzk+g6URxSHjnKCvYxzdWfzUGj/keUG4cwuCjpVNsMDpP/2ly3dXPxeth0MPZV7iN4UeC0BnMXv7nvbzvyqzlgAw== cloud-2013-02-19"
+    }
+  },
+  {
+    "pk": 98,
+    "model": "one.sshkey",
+    "fields": {
+      "user": 13,
+      "key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCSReXRUKJ3qyqlYsYVa/jABYlxEXBv+4STUBYcAnzNHwwAIaH0HaxXmE2tUAe/ZrqhDoEjXaYHPAu540XutCpHCNoQh/AvYCm5CUj85JJntCvpFBDTMkS6XZqB/P6qmpwfMjs/1JVFP/bLEAU9g5UbJ7SeGxn6mrrUN/0uo9jbnQ== cloud-2013-02-19"
+    }
+  },
+  {
+    "pk": 99,
+    "model": "one.sshkey",
+    "fields": {
+      "user": 14,
+      "key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCnmVq/2+Cvf8QvnIE5W0mOrX6UKHqiGbF6fY6ehIFQ7+ybupUlHaOw7lfUmCqiYIK0JuF5GenQKc65QbyiwYbVgQQHyyu/qCo8njr28Hm8np33TcKzuw2nAG0KFQaBkGRUHPk88nccUeNeLTm02AVcQRFur6pZ9Oj2Rfo+t16Dyw== cloud-2013-02-19"
+    }
+  },
+  {
+    "pk": 100,
+    "model": "one.sshkey",
+    "fields": {
+      "user": 15,
+      "key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQDZ9CE2uTLZkHZZPFXywkPloaKWbDGFhIq5Hkm4KX2OXHqUM5kcpzIDBlueg8m8tuCeXGvI3lSvj//bKb1tPUfZOdL5xfrbmPrxGKRuKyouHlphCNf9/TUbsmk2a08o44pRjss1/LJBYmMl9a82Eqoq3yekUNDR2EyGAaxdd3I6fw== cloud-2013-02-19"
+    }
+  },
+  {
+    "pk": 101,
+    "model": "one.sshkey",
+    "fields": {
+      "user": 16,
+      "key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQDdF990hU0lPIcW2Zgziuvm8LC7MBY8vGAsi9lue3M74k8iqwd1DWSlraA1rKyRRytA2Ller91H2taHkqnF+0IPpknvyEzp0Ik0WhfijpIQy0E9Tlmat04IGE49bfXVNB+UOG/hg4JoXvr+Nkr1zDnZM9b4dVVSmCXdOJ4zfmIdaw== cloud-2013-02-19"
+    }
+  },
+  {
+    "pk": 102,
+    "model": "one.sshkey",
+    "fields": {
+      "user": 17,
+      "key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQC6qwNhBU1it9qyLTOQdFceKD84evv5UfIw+Fc+u7hxdOtKYW8lhfAAtLwPOZaXzBL+yMzryZmjhsiY5LCu1x6Jw559NuLaEyanzIsmIGD9Vc8MpyorulF4Lly6lYKWmXFDcByAN5aNJkhK26flIVv6m1TZatHOFlKzoDE11rRXxw== cloud-2013-02-19"
+    }
+  },
+  {
+    "pk": 103,
+    "model": "one.sshkey",
+    "fields": {
+      "user": 18,
+      "key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCb3ecK/nZyzjQ1fNfW1vmjZ6AySrLdsOcc67Zn8Aogn/EaRlCjk3ruipgPEw1rvoTIrSiAV8WLlEaIcZL0b1uLJ6PrqvgWXTpp5DR3JybMBcP74boIjX0MdGjkwgpqP2xRVsd0VXISiBBglntZfZu+m+wtPZdFeSy56aeMw5MlFw== cloud-2013-02-19"
+    }
+  },
+  {
+    "pk": 104,
+    "model": "one.sshkey",
+    "fields": {
+      "user": 20,
+      "key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQCWzDJERp/18CS3IIvItT79DJWeFYzPNUQrinWz7+8lq5MiKvuH2Wkfy8YXbQ1YqTBtr0kUirPsHVc6pGUyUg4Tu0Dptio6BrQszZ9krUfi+kudt/aMGluJ3oCIcBYCB9GPs1q/1AIs3dPBO4Slag8dMDISQo6rUAjBZzIBCIYH4Q== cloud-2013-02-19"
+    }
+  },
+  {
+    "pk": 105,
+    "model": "one.sshkey",
+    "fields": {
+      "user": 21,
+      "key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQC6MpjXa5DWX7OF201w97z3ELiHOUIQLO5faXExrlaZ/Cp1vOcTYHH+N2aCpcI0ssJVE2fwN4EFBw16RetvFPAinx7q3bO1etr1z/crOlIiN83rAN62+KzmIunQa4fww0AaLYZChSR/DFfFhrygdh0dTs6L7F8nglFbrPu1Jaqytw== cloud-2013-02-19"
+    }
+  },
+  {
+    "pk": 106,
+    "model": "one.sshkey",
+    "fields": {
+      "user": 22,
+      "key": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQDgezY5Yc4m8HCMqwdLnehMQC3R1m95xe8haXiFLlOgHCc106hRDBl+DzLG9ktiQs8LWvriKuy/1CX3NYO9XYj52mmJUt7ugR2AUnJuuF73yXDwiFGASQCXH84l8edW1NMrBwbArpWVV+IgwDDcEFTI+LCFQPPsBjU4/n5E1oYDXQ== cloud-2013-02-19"
+    }
+  },
+  {
     "pk": 1,
     "model": "one.disk",
     "fields": {
@@ -831,13 +967,6 @@
     }
   },
   {
-    "pk": 12,
-    "model": "one.disk",
-    "fields": {
-      "name": "windows7_64-ctx"
-    }
-  },
-  {
     "pk": 46,
     "model": "one.disk",
     "fields": {
@@ -849,6 +978,13 @@
     "model": "one.disk",
     "fields": {
       "name": "windows7-teszt"
+    }
+  },
+  {
+    "pk": 12,
+    "model": "one.disk",
+    "fields": {
+      "name": "windows7_64-ctx"
     }
   },
   {
@@ -961,26 +1097,29 @@
     "pk": 1,
     "model": "one.instancetype",
     "fields": {
+      "credit": 1,
       "RAM": 4096,
       "name": "large",
       "CPU": 2
     }
   },
   {
-    "pk": 2,
+    "pk": 3,
     "model": "one.instancetype",
     "fields": {
-      "RAM": 2048,
-      "name": "medium",
+      "credit": 1,
+      "RAM": 1024,
+      "name": "small",
       "CPU": 1
     }
   },
   {
-    "pk": 3,
+    "pk": 2,
     "model": "one.instancetype",
     "fields": {
-      "RAM": 1024,
-      "name": "small",
+      "credit": 3,
+      "RAM": 2048,
+      "name": "medium",
       "CPU": 1
     }
   },
@@ -990,6 +1129,8 @@
     "fields": {
       "name": "Windows 7",
       "created_at": "2012-12-26T20:16:49Z",
+      "description": "",
+      "system": "",
       "access_type": "rdp",
       "instance_type": 3,
       "state": "NEW",
@@ -1005,6 +1146,8 @@
     "fields": {
       "name": "Ubuntu 12.04 Desktop",
       "created_at": "2013-01-23T13:48:14Z",
+      "description": "",
+      "system": "",
       "access_type": "nx",
       "instance_type": 3,
       "state": "NEW",
@@ -1020,6 +1163,8 @@
     "fields": {
       "name": "Ubuntu 12.04 Server",
       "created_at": "2013-01-29T17:19:50Z",
+      "description": "",
+      "system": "",
       "access_type": "ssh",
       "instance_type": 3,
       "state": "NEW",
@@ -1038,6 +1183,7 @@
       "ip": "10.9.1.19",
       "created_at": "2012-12-29T19:33:17Z",
       "share": null,
+      "waiting": false,
       "firewall_host": 524,
       "active_since": "2012-12-29T19:33:25Z",
       "state": "ACTIVE",
@@ -1057,6 +1203,7 @@
       "ip": "10.9.1.37",
       "created_at": "2013-01-24T23:23:52Z",
       "share": null,
+      "waiting": false,
       "firewall_host": 675,
       "active_since": "2013-01-24T23:24:00Z",
       "state": "ACTIVE",
@@ -1076,6 +1223,7 @@
       "ip": "10.9.1.45",
       "created_at": "2013-01-25T11:11:54Z",
       "share": null,
+      "waiting": false,
       "firewall_host": 684,
       "active_since": "2013-01-25T11:12:00Z",
       "state": "ACTIVE",
@@ -1095,6 +1243,7 @@
       "ip": "10.9.1.46",
       "created_at": "2013-01-25T11:13:36Z",
       "share": null,
+      "waiting": false,
       "firewall_host": 685,
       "active_since": "2013-01-25T11:13:41Z",
       "state": "ACTIVE",
@@ -1114,6 +1263,7 @@
       "ip": "10.9.1.105",
       "created_at": "2013-02-05T09:33:58Z",
       "share": null,
+      "waiting": false,
       "firewall_host": 789,
       "active_since": "2013-02-05T09:34:01Z",
       "state": "ACTIVE",
@@ -1133,6 +1283,7 @@
       "ip": "10.9.1.107",
       "created_at": "2013-02-05T17:48:23Z",
       "share": null,
+      "waiting": false,
       "firewall_host": 793,
       "active_since": "2013-02-05T17:48:31Z",
       "state": "ACTIVE",
@@ -1152,6 +1303,7 @@
       "ip": "10.9.1.108",
       "created_at": "2013-02-05T22:08:47Z",
       "share": null,
+      "waiting": false,
       "firewall_host": 795,
       "active_since": "2013-02-05T22:08:52Z",
       "state": "ACTIVE",
@@ -1171,6 +1323,7 @@
       "ip": "10.9.1.115",
       "created_at": "2013-02-06T21:23:32Z",
       "share": null,
+      "waiting": false,
       "firewall_host": 809,
       "active_since": "2013-02-06T21:23:41Z",
       "state": "DONE",
@@ -1190,6 +1343,7 @@
       "ip": "10.9.1.120",
       "created_at": "2013-02-08T14:51:27Z",
       "share": null,
+      "waiting": false,
       "firewall_host": 815,
       "active_since": null,
       "state": "DONE",
@@ -1209,6 +1363,7 @@
       "ip": "10.9.1.121",
       "created_at": "2013-02-08T23:29:10Z",
       "share": null,
+      "waiting": false,
       "firewall_host": 819,
       "active_since": "2013-02-08T23:29:23Z",
       "state": "ACTIVE",
@@ -7689,6 +7844,36 @@
   },
   {
     "pk": 1,
+    "model": "firewall.blacklist",
+    "fields": {
+      "created_at": "2013-02-19T15:17:14Z",
+      "reason": "abjuzerkedett",
+      "modified_at": "2013-02-19T15:24:41Z",
+      "ipv4": "10.133.0.1"
+    }
+  },
+  {
+    "pk": 2,
+    "model": "firewall.blacklist",
+    "fields": {
+      "created_at": "2013-02-19T15:24:55Z",
+      "reason": "turulkodott",
+      "modified_at": "2013-02-19T15:24:55Z",
+      "ipv4": "10.2.0.199"
+    }
+  },
+  {
+    "pk": 3,
+    "model": "firewall.blacklist",
+    "fields": {
+      "created_at": "2013-02-19T15:25:04Z",
+      "reason": "nem tudom",
+      "modified_at": "2013-02-19T15:25:04Z",
+      "ipv4": "188.227.225.161"
+    }
+  },
+  {
+    "pk": 1,
     "model": "south.migrationhistory",
     "fields": {
       "applied": "2012-11-21T13:46:11Z",
@@ -8180,6 +8365,69 @@
       "applied": "2013-02-08T23:55:01Z",
       "app_name": "one",
       "migration": "0007_auto__add_field_template_public"
+    }
+  },
+  {
+    "pk": 56,
+    "model": "south.migrationhistory",
+    "fields": {
+      "applied": "2013-02-19T14:58:14Z",
+      "app_name": "firewall",
+      "migration": "0029_auto__add_field_vlan_domain"
+    }
+  },
+  {
+    "pk": 57,
+    "model": "south.migrationhistory",
+    "fields": {
+      "applied": "2013-02-19T14:58:15Z",
+      "app_name": "djcelery",
+      "migration": "0001_initial"
+    }
+  },
+  {
+    "pk": 58,
+    "model": "south.migrationhistory",
+    "fields": {
+      "applied": "2013-02-19T14:58:15Z",
+      "app_name": "djcelery",
+      "migration": "0002_v25_changes"
+    }
+  },
+  {
+    "pk": 59,
+    "model": "south.migrationhistory",
+    "fields": {
+      "applied": "2013-02-19T14:58:15Z",
+      "app_name": "djcelery",
+      "migration": "0003_v26_changes"
+    }
+  },
+  {
+    "pk": 60,
+    "model": "south.migrationhistory",
+    "fields": {
+      "applied": "2013-02-19T14:58:15Z",
+      "app_name": "djcelery",
+      "migration": "0004_v30_changes"
+    }
+  },
+  {
+    "pk": 61,
+    "model": "south.migrationhistory",
+    "fields": {
+      "applied": "2013-02-19T14:58:15Z",
+      "app_name": "django",
+      "migration": "0001_initial"
+    }
+  },
+  {
+    "pk": 62,
+    "model": "south.migrationhistory",
+    "fields": {
+      "applied": "2013-02-19T15:00:06Z",
+      "app_name": "firewall",
+      "migration": "0030_auto__del_setting__del_alias__add_blacklist"
     }
   },
   {
