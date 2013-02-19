@@ -1,6 +1,6 @@
 var toggleDetails;
 $(function() {
-    toggleDetails = cloud.throttle(function(){
+    toggleDetails = cloud.throttle(function() {
         if($(this).parent('.entry').hasClass('opened')) {
             $(this).parent('.entry').removeClass('opened');
             $(this).next('.details').slideUp(700);
@@ -10,47 +10,55 @@ $(function() {
         }
     })
     $('.delete-template-button').click(function(e) {
-        e.preventDefault(); e.stopPropagation();
+        e.preventDefault();
+        e.stopPropagation();
         delete_template_confirm($(this).data('id'), $(this).data('name'));
     });
     $('.entry .summary').unbind('click').click(toggleDetails);
-    if (window.navigator.userAgent.indexOf('cloud-gui') > -1) {
+    if(window.navigator.userAgent.indexOf('cloud-gui') > -1) {
         $('.connect-vm-button').click(function(e) {
-            e.preventDefault(); e.stopPropagation();
+            e.preventDefault();
+            e.stopPropagation();
             get_vm_details($(this).data('id'));
         });
-    }
-    else {
+    } else {
         $('.connect-vm-button').click(function(e) {
             e.stopPropagation();
         });
     }
     $('.try-template-button').click(function(e) {
-        e.preventDefault(); e.stopPropagation();
-        new_vm($(this).data('id') );
+        e.preventDefault();
+        e.stopPropagation();
+        new_vm($(this).data('id'));
     });
     $('.stop-vm-button').click(function(e) {
-        e.preventDefault(); e.stopPropagation();
+        e.preventDefault();
+        e.stopPropagation();
         stop_vm($(this).data('id'), $(this).data('name'));
     });
     $('.resume-vm-button').click(function(e) {
-        e.preventDefault(); e.stopPropagation();
+        e.preventDefault();
+        e.stopPropagation();
         manage_vm($(this).data('id'), "resume");
     });
     $('.delete-vm-button').click(function(e) {
-        e.preventDefault(); e.stopPropagation();
+        e.preventDefault();
+        e.stopPropagation();
         delete_vm($(this).data('id'), $(this).data('name'));
     });
     $('.restart-vm-button').click(function(e) {
-        e.preventDefault(); e.stopPropagation();
+        e.preventDefault();
+        e.stopPropagation();
         restart_vm($(this).data('id'), $(this).data('name'));
     });
     $('.renew-suspend-vm-button').click(function(e) {
-        e.preventDefault(); e.stopPropagation();
+        e.preventDefault();
+        e.stopPropagation();
         renew_suspend_vm($(this).data('id'))
     });
     $('.renew-delete-vm-button').click(function(e) {
-        e.preventDefault(); e.stopPropagation();
+        e.preventDefault();
+        e.stopPropagation();
         renew_delete_vm($(this).data('id'))
     });
     $('#new-vm-button').click(function() {
@@ -69,8 +77,9 @@ $(function() {
         $('#modal-container').html('');
     })
     $('.template-share').click(function(e) {
-        e.preventDefault(); e.stopPropagation();
-        $.get('/ajax/share/'+$(this).data('id')+'/'+$(this).data('gid'), function(data) {
+        e.preventDefault();
+        e.stopPropagation();
+        $.get('/ajax/share/' + $(this).data('id') + '/' + $(this).data('gid'), function(data) {
             $('#modal-container').html(data);
         })
         $('#modal').show();
@@ -100,6 +109,7 @@ $(function() {
         $('#shadow').click(function() {
             $('#new-group-wizard').html(content);
         })
+
         function updateSummary() {
             $('#new-group-summary-name').html($('#new-group-name').val());
             $('#new-group-summary-count').html(function(text) {
@@ -112,15 +122,15 @@ $(function() {
         $('#new-group-semester').change(updateSummary);
         $('#new-group-members').change(updateSummary);
     });
-    $('#vm-password-show').click(function(){
+    $('#vm-password-show').click(function() {
         $('#vm-password-show').hide();
         $('#vm-password').show();
     });
-    $('.hidden-password').each(function(){
+    $('.hidden-password').each(function() {
         $(this).val('******');
     });
-    $('.hidden-password').click(function(){
-        if(!$(this).hasClass('shown')){
+    $('.hidden-password').click(function() {
+        if(!$(this).hasClass('shown')) {
             $(this).val($(this).data('value'));
             $(this).addClass('shown');
         } else {
@@ -133,14 +143,15 @@ $(function() {
     /**
      * Connect button new window
      */
+
     function get_vm_details(id) {
-        $.get('/vm/credentials/'+id, function(data) {
+        $.get('/vm/credentials/' + id, function(data) {
             $('#modal-container').html(data);
-            $('.hidden-password').each(function(){
+            $('.hidden-password').each(function() {
                 $(this).val('******');
             });
-            $('.hidden-password').click(function(){
-                if(!$(this).hasClass('shown')){
+            $('.hidden-password').click(function() {
+                if(!$(this).hasClass('shown')) {
                     $(this).val($(this).data('value'));
                     $(this).addClass('shown');
                 } else {
@@ -171,7 +182,7 @@ $(function() {
      */
 
     function stop_vm(id, name) {
-        confirm_message = interpolate(gettext("Are you sure stopping %s?"), ["<strong>"+name+"</strong>"])
+        confirm_message = interpolate(gettext("Are you sure stopping %s?"), ["<strong>" + name + "</strong>"])
         vm_confirm_popup(confirm_message, gettext("Stop"), function() {
             manage_vm(id, "stop")
         });
@@ -181,7 +192,7 @@ $(function() {
      */
 
     function delete_vm(id, name) {
-        confirm_message = interpolate(gettext("Are you sure deleting %s?"), ["<strong>"+name+"</strong>"])
+        confirm_message = interpolate(gettext("Are you sure deleting %s?"), ["<strong>" + name + "</strong>"])
         vm_confirm_popup(confirm_message, gettext("Delete"), function() {
             manage_vm(id, "delete")
         })
@@ -191,7 +202,7 @@ $(function() {
      */
 
     function restart_vm(id, name) {
-        confirm_message = interpolate(gettext("Are you sure restarting %s?"), ["<strong>"+name+"</strong>"])
+        confirm_message = interpolate(gettext("Are you sure restarting %s?"), ["<strong>" + name + "</strong>"])
         vm_confirm_popup(confirm_message, gettext("Restart"), function() {
             manage_vm(id, "restart")
         })
@@ -226,10 +237,9 @@ $(function() {
             type: 'POST',
             url: '/vm/' + state + '/' + id + '/',
             success: function(data, b, c) {
-                if ( state == "resume"){
-                    window.location.href = '/vm/show/'+id+"/";
-                }
-                else {
+                if(state == "resume") {
+                    window.location.href = '/vm/show/' + id + "/";
+                } else {
                     window.location.reload();
                 }
             }
@@ -238,6 +248,7 @@ $(function() {
     /**
      * New VM
      */
+
     function new_vm(template_id) {
         $.ajax({
             type: 'POST',
@@ -245,7 +256,6 @@ $(function() {
             success: function(data, b, xhrRequest) {
                 window.location.href = '/'; //xhrRequest.getResponseHeader("Location");
                 //alert(xhrRequest.getResponseHeader("Location"));
-
                 window.location.href = xhrRequest.getResponseHeader("Location");
             }
         })
@@ -254,8 +264,9 @@ $(function() {
     /**
      * Template delete
      */
+
     function delete_template_confirm(id, name) {
-        confirm_message = interpolate(gettext("Are you sure deleting this %s template?"), ["<strong>"+name+"</strong>"])
+        confirm_message = interpolate(gettext("Are you sure deleting this %s template?"), ["<strong>" + name + "</strong>"])
         vm_confirm_popup(confirm_message, gettext("Delete"), function() {
             delete_template(id)
         })
@@ -263,6 +274,7 @@ $(function() {
     /**
      * Template delete
      */
+
     function delete_template(id) {
         $.ajax({
             type: 'POST',
@@ -274,64 +286,66 @@ $(function() {
                     alert(data['responseText']);
                 },
                 200: function(data) {
-                $("#t"+id).remove()
-            },
+                    $("#t" + id).remove()
+                },
 
             }
         })
     }
 
-    function hide_group(id){
-        var hidden_groups=JSON.parse(window.localStorage.getItem('hidden_groups'))||{};
-        var hidden_groups_for_user=hidden_groups[current_user]||[];
-        for(var i in hidden_groups_for_user){
-            var hide=hidden_groups_for_user[i];
+    function hide_group(id) {
+        var hidden_groups = JSON.parse(window.localStorage.getItem('hidden_groups')) || {};
+        var hidden_groups_for_user = hidden_groups[current_user] || [];
+        for(var i in hidden_groups_for_user) {
+            var hide = hidden_groups_for_user[i];
             if(hide == id) return false;
         }
         hidden_groups_for_user.push(id);
-        hidden_groups[current_user]=hidden_groups_for_user;
+        hidden_groups[current_user] = hidden_groups_for_user;
         window.localStorage.setItem('hidden_groups', JSON.stringify(hidden_groups));
-        $('#group-'+id).slideUp(700);
+        $('#group-' + id).slideUp(700);
     }
 
-    function hide_groups(){
-        var hidden_groups=JSON.parse(window.localStorage.getItem('hidden_groups'))||{};
-        var hidden_groups_for_user=hidden_groups[current_user]||[];
-        for(var i in hidden_groups_for_user){
-            var hide=hidden_groups_for_user[i];
-            $('#group-'+hide).hide();
+    function hide_groups() {
+        var hidden_groups = JSON.parse(window.localStorage.getItem('hidden_groups')) || {};
+        var hidden_groups_for_user = hidden_groups[current_user] || [];
+        for(var i in hidden_groups_for_user) {
+            var hide = hidden_groups_for_user[i];
+            $('#group-' + hide).hide();
         }
     }
 
-    function show_hidden_groups(){
-        var hidden_groups=JSON.parse(window.localStorage.getItem('hidden_groups'))||{};
-        hidden_groups[current_user]=[];
+    function show_hidden_groups() {
+        var hidden_groups = JSON.parse(window.localStorage.getItem('hidden_groups')) || {};
+        hidden_groups[current_user] = [];
         window.localStorage.setItem('hidden_groups', JSON.stringify(hidden_groups));
     }
     hide_groups();
 
-    function hidden_group_count(){
-        var hidden_groups=JSON.parse(window.localStorage.getItem('hidden_groups'))||{};
-        return (hidden_groups[current_user]||[]).length;
+    function hidden_group_count() {
+        var hidden_groups = JSON.parse(window.localStorage.getItem('hidden_groups')) || {};
+        return(hidden_groups[current_user] || []).length;
     }
-    if(hidden_group_count() == 0){
+    if(hidden_group_count() == 0) {
         $('#show-hidden-groups').hide();
     }
 
-    $('.hide-group').click(function(e){
-        e.preventDefault(); e.stopPropagation();
+    $('.hide-group').click(function(e) {
+        e.preventDefault();
+        e.stopPropagation();
         hide_group($(this).data('id'));
-        if($('#show-hidden-groups').is(':hidden')){
+        if($('#show-hidden-groups').is(':hidden')) {
             $('#show-hidden-groups').slideDown(700);
         }
         return false;
     });
-    $('#show-hidden-groups').click(function(e){
-        e.preventDefault(); e.stopPropagation();
+    $('#show-hidden-groups').click(function(e) {
+        e.preventDefault();
+        e.stopPropagation();
         show_hidden_groups();
         $('#show-hidden-groups').slideUp(700);
-        $('#groups > li').each(function(){
-            if($(this).is(':hidden')){
+        $('#groups > li').each(function() {
+            if($(this).is(':hidden')) {
                 $(this).slideDown(700);
             }
         })
