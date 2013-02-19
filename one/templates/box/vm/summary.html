@@ -20,7 +20,7 @@
 
 {% block actions %}
     {% if vm.waiting %}
-        <img src="/static/load.gif" />
+        <img src="/static/image/load.gif" />
     {% elif vm.state == 'ACTIVE' %}
         <a href="{{vm.get_connect_uri}}" data-id="{{ vm.id  }}" class="connect-vm-button" title="{% trans "Connect" %}">
             <img src="/static/icons/plug.png" alt="{% trans "Connect" %}" />
@@ -35,7 +35,7 @@
             <img src="/static/icons/arrow-circle-double.png" alt="↺" />
         </a>
     {% elif vm.state == 'PENDING' %}
-        <img src="/static/load.gif" />
+        <img src="/static/image/load.gif" />
         {% trans "starting…" %}
     {% elif vm.state == 'STOPPED' %}
         <a href="#"  class="resume-vm-button" data-name="{{ vm.name }}" data-id="{{ vm.id }}" title="{% trans "Resume" %}">
