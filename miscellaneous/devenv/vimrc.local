@@ -1,6 +1,6 @@
 highlight ExtraWhitespace ctermfg=white ctermbg=red guibg=red guifg=white
-match ExtraWhitespace /\(\s\+$\|^\s*\t\|,[^ ]\|[;]$\|#[^ ].\|def [A-Z]\|class [a-z]\)/
-autocmd BufWinEnter * match ExtraWhitespace /\(\s\+$\|^\s*\t\|,[^ ]\|[;]$\|#[^ ].\|def [A-Z]\|class [a-z]\)/
+autocmd! filetype python match ExtraWhitespace /\(\s\+$\|^\s*\t\|,[^ ]\|[;]$\|#[^ ].\|def [A-Z]\|class [a-z]\)/
+autocmd BufWinEnter filetype python match ExtraWhitespace /\(\s\+$\|^\s*\t\|,[^ ]\|[;]$\|#[^ ].\|def [A-Z]\|class [a-z]\)/
 autocmd BufWinLeave * call clearmatches()
 
 set et
