@@ -14,6 +14,21 @@ $(function() {
         e.stopPropagation();
         delete_template_confirm($(this).data('id'), $(this).data('name'));
     });
+    $('.delete-key-button').click(function(e){
+        var id=$(this).data('id');
+        e.preventDefault();
+        e.stopPropagation();
+        vm_confirm_popup(gettext('Are you sure deleting key?'), gettext('Delete'), function(){
+            $.ajax({
+                'type': 'POST',
+                'data': 'id='+id,
+                'url': '/ajax/key/delete/',
+                'success': function(){
+                    $('#key-'+id).slideUp(700);
+                }
+            });
+        });
+    });
     $('.entry .summary').unbind('click').click(toggleDetails);
     if(window.navigator.userAgent.indexOf('cloud-gui') > -1) {
         $('.connect-vm-button').click(function(e) {
