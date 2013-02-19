@@ -7,6 +7,7 @@ import subprocess
 import re
 import json
 from datetime import datetime, timedelta
+from django.db.models import Q
 
 
 class firewall:
@@ -298,9 +299,9 @@ class firewall:
             return ('\n'.join(self.RULES) + '\n' +
                 '\n'.join(self.RULES_NAT) + '\n')
 
-def ipset(self):
+def ipset():
     week = datetime.now()-timedelta(days=7)
-    return models.Blacklist.objects.filter(modified_at__gte=week).values_list('ipv4', flat=True)
+    return models.Blacklist.objects.filter(Q(type='tempban', modified_at__gte=week) | Q(type='permban')).values_list('ipv4', flat=True)
 
 
 def ipv6_to_octal(ipv6):
