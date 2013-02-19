@@ -328,6 +328,12 @@ class Blacklist(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super(Blacklist, self).save(*args, **kwargs)
+    def __unicode__(self):
+        return self.ipv4
+
 def send_task(sender, instance, created, **kwargs):
     from firewall.tasks import ReloadTask
     ReloadTask.apply_async(args=[sender.__name__])

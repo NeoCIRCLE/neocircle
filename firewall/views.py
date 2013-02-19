@@ -39,6 +39,14 @@ def firewall_api(request):
         if data["password"] != "bdmegintelrontottaanetet":
             raise Exception(_("Wrong password."))
 
+        if command == "blacklist":
+            obj, created = Blacklist.objects.get_or_create(ipv4=data["ip"])
+            if created:
+                obj.reason=data["reason"]
+                obj.snort_message=data["snort_message"]
+            obj.save()
+            return HttpResponse(_("OK"));
+
         if not (data["vlan"] == "vm-net" or data["vlan"] == "war"):
             raise Exception(_("Only vm-net and war can be used."))
 
@@ -75,7 +83,6 @@ def firewall_api(request):
         else:
             raise Exception(_("Unknown command."))
 
-        reload_firewall_lock()
     except (ValidationError, IntegrityError, AttributeError, Exception) as e:
         return HttpResponse(_("Something went wrong!\n%s\n") % e);
     except:
