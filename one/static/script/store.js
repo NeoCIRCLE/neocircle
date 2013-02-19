@@ -83,7 +83,7 @@ var cloud = (function(cloud) {
         /**
          * Loads the specified folder
          */
-        var loadFolder = throttle(function(path, fast) {
+        var loadFolder = cloud.throttle(function(path, fast) {
             self.currentPath(path);
             $.ajax({
                 type: 'POST',
@@ -113,7 +113,7 @@ var cloud = (function(cloud) {
             })
         });
 
-        self.loadTopList = throttle(function() {
+        self.loadTopList = cloud.throttle(function() {
             self.currentPath('/');
             $.ajax({
                 type: 'POST',
@@ -201,7 +201,7 @@ var cloud = (function(cloud) {
                     originalName: d.NAME,
                     originalSize: d.SIZE,
                     name: d.NAME.length > 30 ? (d.NAME.substr(0, 20) + '... (' + extension + ')') : d.NAME,
-                    size: convert(d.SIZE),
+                    size: cloud.convert(d.SIZE),
                     type: gettext('file'),
                     mTime: d.MTIME,
                     getTypeClass: 'name filetype-' + type,
@@ -341,7 +341,7 @@ var cloud = (function(cloud) {
         /**
          * Creates a new folder (and then reloads the current folder)
          */
-        self.newFolder = throttle(function(i, e) {
+        self.newFolder = cloud.throttle(function(i, e) {
             $(e.target).parent().parent().parent().removeClass('opened');
             $.ajax({
                 type: 'POST',
@@ -367,7 +367,7 @@ var cloud = (function(cloud) {
         /**
          * Uploads the specified file(s)
          */
-        var readfiles = delayUntil(function(file) {
+        var readfiles = cloud.delayUntil(function(file) {
             //1 GB file limit
             if(file.size > 1024 * 1024 * 1024) {
                 $('#upload-zone').hide();
@@ -419,7 +419,7 @@ var cloud = (function(cloud) {
                             t = t.toFixed(1) + ' ' + suffix[i];
                             var diff = new Date().getTime() - start;
                             if(complete < 100) {
-                                $('#upload-progress-text').html(gettext('Upload') + ': ' + convert(event.loaded / diff * 1000) + '/s (' + (event.loaded / event.total * 100).toFixed(2) + '%)');
+                                $('#upload-progress-text').html(gettext('Upload') + ': ' + cloud.convert(event.loaded / diff * 1000) + '/s (' + (event.loaded / event.total * 100).toFixed(2) + '%)');
                             } else {
                                 $('#upload-progress-text').html(gettext('Upload') + ': ' + gettext('done, processing...'));
                             }
@@ -484,4 +484,5 @@ var cloud = (function(cloud) {
         e.preventDefault();
         return false;
     });
+    return cloud;
 })(cloud || {});

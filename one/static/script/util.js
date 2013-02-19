@@ -50,4 +50,5 @@ var cloud = (function(cloud) {
             check.apply(null, arguments);
         }
     }
+    return cloud;
 })(cloud || {});
