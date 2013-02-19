@@ -95,4 +95,7 @@ urlpatterns = patterns('',
             name='group_ajax_remove_member'),
     url(r'^ajax/group/delete/$', 'school.views.group_ajax_delete',
             name='group_ajax_delete'),
+    url(r'^key/add/$', 'one.views.key_add', name='key_add'),
+    url(r'^ajax/key/delete/$', 'one.views.key_ajax_delete',
+            name='key_ajax_delete'),
 )

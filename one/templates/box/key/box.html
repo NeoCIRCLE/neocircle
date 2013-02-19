@@ -18,7 +18,7 @@
             <div class="clear"></div>
         </div>
         <div class="details">
-            <form style="padding-bottom: 10px" action="/key/add/">
+            <form style="padding-bottom: 10px" action="/key/add/" method="POST">
                 {% csrf_token %}
                 <textarea style="margin-bottom: 5px" name="key" placeholder="{% trans "Public key in OpenSSH format" %}"></textarea><br />
                 <input type="submit" style="margin-left: 10px;" value="{% trans "Save" %}" />

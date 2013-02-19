@@ -431,4 +431,28 @@ def vm_restart(request, iid, *args, **kwargs):
         messages.error(request, _('Failed to restart virtual machine.'))
     return redirect('/')
 
+@login_required
+@require_POST
+def key_add(request):
+    try:
+        key=SshKey()
+        #TODO: validate key
+        key.key=request.POST['key']
+        key.user=request.user
+        key.save()
+    except:
+        messages.error(request, _('Failed to add public key'))
+    return redirect('/')
+
+@login_required
+@require_POST
+def key_ajax_delete(request):
+    try:
+        #TODO: permission check
+        key=get_object_or_404(SshKey, id=request.POST['id'])
+        key.delete()
+    except:
+        messages.error(request, _('Failed to delete public key'))
+    return 'OK'
+
 # vim: et sw=4 ai fenc=utf8 smarttab :
