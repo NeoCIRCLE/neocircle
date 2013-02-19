@@ -1,0 +1,26 @@
+{% extends "box/base/box.html" %}
+{% load i18n %}
+{% load l10n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+{% block title %}
+    {% trans "Public keys" %}
+{% endblock title %}
+
+{% block content %}
+<ul class="entry-list" id="keys">
+    {% for key in keys %}
+        {% include "box/key/entry.html" %}
+    {% endfor %}
+    <li class="entry small-row">
+        <div class="summary" id="new-key">
+            <div class="name">{% trans "Add public key" %}</div>
+            <div id="new-key-form">
+                <input type="text" placeholder="{% trans "Public key in OpenSSH format" %}" />
+                <input type="submit" value="{% trans "Add key" %}" />
+            </div>
+            <div class="clear"></div>
+        </div>
+    </li>
+</ul>
+{% endblock content %}
