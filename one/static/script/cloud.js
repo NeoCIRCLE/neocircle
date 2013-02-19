@@ -14,7 +14,7 @@ $(function() {
         delete_template_confirm($(this).data('id'), $(this).data('name'));
     });
     $('.entry .summary').unbind('click').click(toggleDetails);
-    if (window.navigator.userAgent.indexOf('cloud-gui') != 0) {
+    if (window.navigator.userAgent.indexOf('cloud-gui') > -1) {
         $('.connect-vm-button').click(function(e) {
             e.preventDefault(); e.stopPropagation();
             get_vm_details($(this).data('id'));
