@@ -102,6 +102,9 @@ class RecordAdmin(admin.ModelAdmin):
         if a:
             return a['name']
 
+class BlacklistAdmin(admin.ModelAdmin):
+    list_display = ('ipv4', 'reason', 'created_at', 'modified_at')
+
 admin.site.register(Host, HostAdmin)
 admin.site.register(Vlan, VlanAdmin)
 admin.site.register(Rule, RuleAdmin)
@@ -110,4 +113,5 @@ admin.site.register(VlanGroup)
 admin.site.register(Firewall, FirewallAdmin)
 admin.site.register(Domain, DomainAdmin)
 admin.site.register(Record, RecordAdmin)
+admin.site.register(Blacklist, BlacklistAdmin)
 

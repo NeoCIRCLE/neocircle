@@ -6,6 +6,7 @@ from cloud.settings import firewall_settings as settings
 import subprocess
 import re
 import json
+from datetime import datetime, timedelta
 
 
 class firewall:
@@ -17,6 +18,7 @@ class firewall:
     pub = None
     hosts = None
     fw = None
+    ipset = None
 
     def dportsport(self, rule, repl=True):
         retval = ' '
@@ -133,13 +135,14 @@ class firewall:
 
         self.iptables('-N PUB_OUT')
 
+        self.iptables('-A FORWARD -m set --match-set blacklist src,dst -j DROP')
         self.iptables('-A FORWARD -m state --state INVALID -g LOG_DROP')
         self.iptables('-A FORWARD -m state --state ESTABLISHED,RELATED '
                 '-j ACCEPT')
         self.iptables('-A FORWARD -p icmp --icmp-type echo-request '
                 '-g LOG_ACC')
-        if not self.IPV6:
-            self.iptables('-A FORWARD -j r_pub_sIP -o pub')
+
+        self.iptables('-A INPUT -m set --match-set blacklist src -j DROP')
         self.iptables('-A INPUT -m state --state INVALID -g LOG_DROP')
         self.iptables('-A INPUT -i lo -j ACCEPT')
         self.iptables('-A INPUT -m state --state ESTABLISHED,RELATED '
@@ -260,6 +263,7 @@ class firewall:
     def __init__(self, IPV6=False):
         self.RULES=[]
         self.RULES_NAT=[]
+        self.IPSET = []
         self.IPV6 = IPV6
         self.vlans = models.Vlan.objects.all()
         self.hosts = models.Host.objects.all()
@@ -269,6 +273,7 @@ class firewall:
         self.ipt_filter()
         if not self.IPV6:
             self.ipt_nat()
+            self.IPSET=self.ipset()
 
     def reload(self):
         if self.IPV6:
@@ -287,7 +292,7 @@ class firewall:
         if self.IPV6:
             return { 'filter': self.RULES, }
         else:
-            return { 'filter': self.RULES, 'nat':self.RULES_NAT }
+            return { 'filter': self.RULES, 'nat': self.RULES_NAT, 'ipset': self.IPSET }
 
     def show(self):
         if self.IPV6:
@@ -295,6 +300,10 @@ class firewall:
         else:
             return ('\n'.join(self.RULES) + '\n' +
                 '\n'.join(self.RULES_NAT) + '\n')
+
+    def ipset(self):
+        week = datetime.now()-timedelta(days=7)
+        return models.Blacklist.objects.filter(modified_at__gte=week).values_list('ipv4', flat=True)
 
 
 def ipv6_to_octal(ipv6):

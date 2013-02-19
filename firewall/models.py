@@ -318,6 +318,11 @@ class Record(models.Model):
             return None
         return retval
 
+class Blacklist(models.Model):
+    ipv4 = models.GenericIPAddressField(protocol='ipv4', unique=True)
+    reason = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
 
 def send_task(sender, instance, created, **kwargs):
     from firewall.tasks import ReloadTask
@@ -332,3 +337,4 @@ post_save.connect(send_task, sender=Vlan)
 post_save.connect(send_task, sender=Firewall)
 post_save.connect(send_task, sender=Group)
 post_save.connect(send_task, sender=Host)
+post_save.connect(send_task, sender=Blacklist)
