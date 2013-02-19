@@ -3,17 +3,23 @@
 {% get_current_language as LANGUAGE_CODE %}
 
 {% block content %}
-<li class="entry">
-    {{ block.super }}
+<li class="entry small-row" id="member-{{member.code}}">
+    {{block.super}}
 </li>
 {% endblock content %}
 
 {% block summary %}
 <div class="summary">
-    <div class="name">{{ group.name }}</div>
+    <div class="name">
+        {% if not member.user %}
+        {{member.code}}
+        {% else %}
+        {{member}} ({{member.code}})
+        {% endif %}
+    </div>
     <div class="actions">
-        <a href="#" class="delete" data-id="{{group.id}}" data-name="{{group.name}}">
-            <img src="/static/icons/minus-circle.png" alt="{% trans "Delete" %}" />
+        <a href="#" class="remove" data-gid="{{group.id}}" data-neptun="{{member.code}}">
+            <img src="/static/icons/minus-circle.png" alt="{% trans 'Remove' %}" />
         </a>
     </div>
     <div class="clear"></div>
@@ -21,34 +27,19 @@
 {% endblock summary %}
 
 {% block details %}
-<ul>
-    <li>
-        {% trans "Course" %}:
-        <span class="value">
-            {% if group.course %}
-            {{group.course.name}}
-            {% else %}
-            {% trans "Not assigned" %}
-            {% endif %}
-        </span>
-    </li>
-    <li>
-        {% trans "Semester" %}:
-        <span class="value">{{group.semester.name}}</span>
-    </li>
-    <li>
-        {% trans "Owner(s)" %}:
-        <span class="value">{{group.owner_list}}</span>
-    </li>
-    <li>
-        {% trans "Member count" %}:
-        <span class="value">{{group.member_count}}</span>
-    </li>
-    <li>
-        &nbsp;
-        <span class="value">
-            <a href="/group/show/{{group.id}}">{% trans "More details" %}</a>
-        </span>
-    </li>
-</ul>
+{% if not member.user %}
+    {% trans "This user never logged in, no data available" %}
+    {% else %}
+    <ul>
+        <li>
+            {% trans "Name" %}<span class="value">{{member}}</span>
+        </li>
+        <li>
+            {% trans "NEPTUN" %}<span class="value">{{member.code}}</span>
+        </li>
+        <li>
+            E-mail:<span class="value"><a href="mailto:{{member.user.email}}">{{member.user.email}}</a></span>
+        </li>
+    </ul>
+    {% endif %}
 {% endblock details %}
