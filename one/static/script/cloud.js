@@ -241,7 +241,7 @@ $(function() {
     function new_vm(template_id) {
         $.ajax({
             type: 'POST',
-            url: 'ajax/vm/new/' + template_id + '/',
+            url: '/ajax/vm/new/' + template_id + '/',
             success: function(data, b, xhrRequest) {
                 window.location.href = '/'; //xhrRequest.getResponseHeader("Location");
                 //alert(xhrRequest.getResponseHeader("Location"));
