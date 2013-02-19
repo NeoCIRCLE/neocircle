@@ -49,6 +49,7 @@ def home(request):
         'groups': request.user.person_set.all()[0].owned_groups.all(),
         'semesters': Semester.objects.all(),
         'userdetails': UserCloudDetails.objects.get(user=request.user),
+        'keys': request.user.sshkey_set.all()
         }))
 
 @login_required
