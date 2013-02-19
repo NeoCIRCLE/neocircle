@@ -344,7 +344,7 @@ class Template(models.Model):
         else:
             return "linux"
 
-    @transaction.commit_on_success
+    @transaction.autocommit
     def safe_delete(self):
         if not self.instance_set.exclude(state='DONE').exists():
             self.delete()
@@ -547,6 +547,9 @@ class Instance(models.Model):
             host.save()
         except:
             for i in Host.objects.filter(ipv4=host.ipv4).all():
+                logger.warning('Delete orphan fw host (%s) of %s.' % (i, inst))
+                i.delete()
+            for i in Host.objects.filter(mac=host.mac).all():
                 logger.warning('Delete orphan fw host (%s) of %s.' % (i, inst))
                 i.delete()
             host.save()

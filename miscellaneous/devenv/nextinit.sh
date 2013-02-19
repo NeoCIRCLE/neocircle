@@ -57,3 +57,11 @@ git config --global color.ui true
 git config --global core.editor vim
 
 true
+
+
+sudo apt-get install rabbitmq-server
+sudo rabbitmqctl delete_user guest
+sudo rabbitmqctl add_user nyuszi teszt
+sudo rabbitmqctl add_vhost django
+sudo rabbitmqctl set_permissions -p django nyuszi '.*' '.*' '.*'
+
