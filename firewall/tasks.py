@@ -15,6 +15,9 @@ def reload_firewall_task(data4, data6):
 @celery.task
 def reload_dhcp_task(data):
     pass
+@celery.task
+def reload_blacklist_task(data):
+    pass
 
 class ReloadTask(Task):
     def run(self, type='Host'):
@@ -46,6 +49,14 @@ class ReloadTask(Task):
                 ipv4 = firewall().get()
                 ipv6 = firewall(True).get()
                 reload_firewall_task.delay(ipv4, ipv6)
+
+        if type == "Blacklist":
+            lock = lambda: cache.add("blacklist_lock", "true", 9)
+            if lock():
+                if not sleep:
+                    sleep = True
+                    time.sleep(10)
+                reload_blacklist_task(ipset())
 
         print type
 

@@ -319,8 +319,11 @@ class Record(models.Model):
         return retval
 
 class Blacklist(models.Model):
+    CHOICES_type = (('permban', 'permanent ban'), ('tempban', 'temporary ban'), ('whitelist', 'whitelist'))
     ipv4 = models.GenericIPAddressField(protocol='ipv4', unique=True)
     reason = models.TextField(blank=True)
+    snort_message = models.TextField(blank=True)
+    type = models.CharField(max_length=10, choices=CHOICES_type, default='tempban')
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 
