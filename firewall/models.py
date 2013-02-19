@@ -309,6 +309,7 @@ class Record(models.Model):
                 retval['name'] = self.host.get_fqdn()
             elif self.type == 'CNAME':
                 retval['address'] = self.host.get_fqdn()
+                retval['name'] = self.name + u'.' + unicode(self.domain)
         else:
             if not self.name:
                 retval['name'] = unicode(self.domain)
