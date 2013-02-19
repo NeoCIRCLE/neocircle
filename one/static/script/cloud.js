@@ -420,7 +420,7 @@ $(function() {
                 url: '/ajax/group/delete/',
                 data: 'gid=' + gid,
                 success: function() {
-                    window.location.reload();
+                    $('#group-' + gid).slideUp(700);
                 }
             }).error(function() {
                 window.location.reload();
