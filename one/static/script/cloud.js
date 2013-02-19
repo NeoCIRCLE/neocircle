@@ -397,12 +397,13 @@ $(function() {
     $('#group-members .remove').click(function(e) {
         e.preventDefault();
         e.stopPropagation();
+        var neptun = $(this).data('neptun');
         $.ajax({
             type: 'POST',
             url: '/ajax/group/' + $(this).data('gid') + '/remove/',
-            data: 'neptun=' + $(this).data('neptun'),
+            data: 'neptun=' + neptun,
             success: function(data) {
-                window.location.reload();
+                $('#member-' + neptun).slideUp(700);
             }
         });
     });
