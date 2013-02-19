@@ -15,11 +15,14 @@
     <li class="entry small-row">
         <div class="summary" id="new-key">
             <div class="name">{% trans "Add public key" %}</div>
-            <div id="new-key-form">
-                <input type="text" placeholder="{% trans "Public key in OpenSSH format" %}" />
-                <input type="submit" value="{% trans "Add key" %}" />
-            </div>
             <div class="clear"></div>
+        </div>
+        <div class="details">
+            <form style="padding-bottom: 10px" action="/key/add/">
+                {% csrf_token %}
+                <textarea style="margin-bottom: 5px" name="key" placeholder="{% trans "Public key in OpenSSH format" %}"></textarea><br />
+                <input type="submit" style="margin-left: 10px;" value="{% trans "Save" %}" />
+            </form>
         </div>
     </li>
 </ul>
