@@ -476,6 +476,7 @@ class Instance(models.Model):
         out = ""
         inst = Instance(pw=pwgen(), template=template, owner=owner, share=share)
         inst.save()
+        hostname = u"cloud-%d" % (inst.id, )
         with tempfile.NamedTemporaryFile(delete=False) as f:
             os.chmod(f.name, stat.S_IRUSR|stat.S_IWUSR|stat.S_IRGRP|stat.S_IROTH)
             token = signing.dumps(inst.id, salt='activate')
@@ -497,7 +498,7 @@ class Instance(models.Model):
                     </NIC>
                     <CONTEXT>
                         <SOURCE>web</SOURCE>
-                        <HOSTNAME>cloud-$VMID</HOSTNAME>
+                        <HOSTNAME>%(hostname)s</HOSTNAME>
                         <NEPTUN>%(neptun)s</NEPTUN>
                         <USERPW>%(pw)s</USERPW>
                         <SMBPW>%(smbpw)s</SMBPW>
@@ -511,6 +512,7 @@ class Instance(models.Model):
                                  "disk": template.disk.id,
                                  "net": template.network.id,
                                  "pw": escape(inst.pw),
+                                 "hostname": escape(hostname),
                                  "smbpw": escape(details.smb_password),
                                  "sshkey": escape(details.ssh_private_key),
                                  "neptun": escape(owner.username),
@@ -527,6 +529,7 @@ class Instance(models.Model):
         try:
             x = parseString(out)
         except:
+            inst.delete()
             raise Exception("Unable to create VM instance.")
         inst.one_id = int(x.getElementsByTagName("ID")[0].childNodes[0]
                 .nodeValue)
@@ -538,7 +541,7 @@ class Instance(models.Model):
         inst.update_state()
         host = Host(vlan=Vlan.objects.get(name=template.network.name),
                 owner=owner, shared_ip=True)
-        host.hostname = u"id-%d_user-%s" % (inst.id, owner.username)
+        host.hostname = hostname
         host.mac = x.getElementsByTagName("MAC")[0].childNodes[0].nodeValue
         host.ipv4 = inst.ip
         host.pub_ipv4 = Vlan.objects.get(name=template.network.name).snat_ip
