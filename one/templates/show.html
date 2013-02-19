@@ -61,13 +61,13 @@
         <div class="content">
             {% if state == "PENDING" or state == "ACTIVE" and booting %}
             <p style="font-size:25px; line-height:2em;text-align:center;">
-                <img src="/static/load.gif" />
+                <img src="/static/image/load.gif" />
                 {% trans "Starting..." %}
             </p>
             {% elif state == "ACTIVE" and not booting %}
             <p id="connect" style="display:block; font-size:25px; line-height:2em;text-align:center;">
                 <a href="{{uri}}" class="button" onclick="return connectbutton();">
-                    <img src="/static/load.gif" id="connecting" style="display:none;" />
+                    <img src="/static/image/load.gif" id="connecting" style="display:none;" />
                     {% trans "Running" %}
                 </a>
             </p>
