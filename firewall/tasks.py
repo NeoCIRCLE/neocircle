@@ -56,7 +56,7 @@ class ReloadTask(Task):
                 if not sleep:
                     sleep = True
                     time.sleep(10)
-                reload_blacklist_task(ipset())
+                reload_blacklist_task.delay(list(ipset()))
 
         print type
 
