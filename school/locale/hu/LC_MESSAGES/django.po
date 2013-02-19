@@ -6,10 +6,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-02-12 22:07+0100\n"
-"PO-Revision-Date: 2013-02-12 20:26+0100\n"
-"Last-Translator: Mate Ory <orymate@iit.bme.hu>\n"
-"Language-Team: American English <kde-i18n-doc@kde.org>\n"
+"POT-Creation-Date: 2013-02-19 18:42+0100\n"
+"PO-Revision-Date: 2013-02-19 18:47+0100\n"
+"Last-Translator: \n"
+"Language-Team: American English <kde-l10n-hu@kde.org>\n"
 "Language: en_US\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -159,54 +159,128 @@ msgstr "Érvénytelen Neptun-kód."
 msgid "Invalid NEPTUN code"
 msgstr "Érvénytelen Neptun-kód"
 
-#: templates/show-group.html:7
-msgid "Members of"
-msgstr "Tagok"
-
-#: templates/show-group.html:21 templates/show-group.html.py:74
-msgid "Remove"
-msgstr "Eltávolítás"
-
-#: templates/show-group.html:29 templates/show-group.html.py:82
-msgid "This user never logged in, no data available"
-msgstr "Ez a felhasználó még nem lépett be, nincs adat róla"
-
-#: templates/show-group.html:33 templates/show-group.html.py:86
-msgid "Name"
-msgstr "Név"
-
-#: templates/show-group.html:36 templates/show-group.html.py:89
-msgid "NEPTUN"
-msgstr "NEPTUN"
-
-#: templates/show-group.html:49 templates/show-group.html.py:52
-msgid "Add user"
-msgstr "Felhasználó hozzáadása"
-
-#: templates/show-group.html:51
-msgid "User NEPTUN code"
-msgstr "Felhasználó Neptun-kódja"
-
-#: templates/show-group.html:60
+#: templates/show-group.html:8
 msgid "Owners of"
 msgstr "Tulajdonosok"
 
-#: templates/show-group.html:102 templates/show-group.html.py:105
+#: templates/show-group.html:22 templates/box/person/box.html:24
+msgid "Remove"
+msgstr "Eltávolítás"
+
+#: templates/show-group.html:30 templates/box/person/box.html:32
+msgid "This user never logged in, no data available"
+msgstr "Ez a felhasználó még nem lépett be, nincs adat róla"
+
+#: templates/show-group.html:34 templates/box/person/box.html:36
+msgid "Name"
+msgstr "Név"
+
+#: templates/show-group.html:37 templates/box/person/box.html:39
+msgid "NEPTUN"
+msgstr "NEPTUN"
+
+#: templates/show-group.html:50 templates/show-group.html.py:53
 msgid "Add owner"
 msgstr "Tulajdonos hozzáadása"
 
-#: templates/show-group.html:104
+#: templates/show-group.html:52
 msgid "Owner name/NEPTUN"
 msgstr "Tulajdonos neve/NEPTUN-kódja"
 
-#: templates/show-group.html:118
+#: templates/show-group.html:66
 msgid "This group has no shared templates."
 msgstr "Ennek a csoportnak egy sablon sincs megosztva."
 
-#: templates/show-group.html:121
+#: templates/show-group.html:69
 msgid "Share one, and the group members can start their own virtual machine."
 msgstr ""
 "Osszon meg egyet, hogy a csoport tagjai is elindíthassák egy példányát."
+
+#: templates/box/group/box.html:7
+msgid "My Groups"
+msgstr "Saját csoportok"
+
+#: templates/box/group/box.html:19
+msgid "You have no groups."
+msgstr "Nincs még csoportja."
+
+#: templates/box/group/box.html:21
+msgid "Create a new one, and add your students to the new group."
+msgstr "Hozzon létre egyet, és vegy fel hallgatóit."
+
+#: templates/box/group/box.html:29
+msgid "Show hidden groups"
+msgstr "Elrejtett csoportok megjelenítése"
+
+#: templates/box/group/box.html:35 templates/box/group/box.html.py:41
+msgid "Create new group"
+msgstr "Új csoport létrehozása"
+
+#: templates/box/group/box.html:44
+msgid "Group name"
+msgstr "Csoport neve"
+
+#: templates/box/group/box.html:48 templates/box/group/entry.html:42
+#: templates/box/person/entry.html:36
+msgid "Semester"
+msgstr "Félév"
+
+#: templates/box/group/box.html:56
+msgid "Members"
+msgstr "Tagok"
+
+#: templates/box/group/box.html:57
+msgid "Student NEPTUN codes, one per line"
+msgstr "Hallgatók NEPTUN-kódja, soronként egy"
+
+#: templates/box/group/box.html:62
+msgid "Cancel"
+msgstr "Mégsem"
+
+#: templates/box/group/box.html:63
+msgid "Done"
+msgstr "Kész"
+
+#: templates/box/group/entry.html:15 templates/box/group/entry.html.py:56
+#: templates/box/person/entry.html:50
+msgid "More details"
+msgstr "Részletek"
+
+#: templates/box/group/entry.html:19 templates/box/person/entry.html:16
+msgid "Delete"
+msgstr "Törlés"
+
+#: templates/box/group/entry.html:22
+msgid "Hide"
+msgstr "Elrejtés"
+
+#: templates/box/group/entry.html:32 templates/box/person/entry.html:26
+msgid "Course"
+msgstr "Tárgy"
+
+#: templates/box/group/entry.html:37 templates/box/person/entry.html:31
+msgid "Not assigned"
+msgstr "Nincs hozzárendelve"
+
+#: templates/box/group/entry.html:46 templates/box/person/entry.html:40
+msgid "Owner(s)"
+msgstr "Tulajdonosok"
+
+#: templates/box/group/entry.html:50 templates/box/person/entry.html:44
+msgid "Member count"
+msgstr "Tagok száma"
+
+#: templates/box/person/box.html:7
+msgid "Members of"
+msgstr "Tagok"
+
+#: templates/box/person/box.html:52 templates/box/person/box.html.py:55
+msgid "Add user"
+msgstr "Felhasználó hozzáadása"
+
+#: templates/box/person/box.html:54
+msgid "User NEPTUN code"
+msgstr "Felhasználó Neptun-kódja"
 
 #~ msgid "Templates"
 #~ msgstr "Sablonok"
