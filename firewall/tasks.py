@@ -17,21 +17,32 @@ def reload_dhcp_task(data):
     pass
 
 class ReloadTask(Task):
-    def run(self, type):
+    def run(self, type='Host'):
+
+        sleep=False
 
         if type in ["Host", "Records", "Domain", "Vlan"]:
             lock = lambda: cache.add("dns_lock", "true", 9)
             if lock():
+                if not sleep:
+                    sleep = True
+                    time.sleep(10)
                 reload_dns_task.delay(dns())
 
         if type == "Host":
             lock = lambda: cache.add("dhcp_lock", "true", 9)
             if lock():
+                if not sleep:
+                    sleep = True
+                    time.sleep(10)
                 reload_dhcp_task.delay(dhcp())
 
         if type in ["Host", "Rule", "Firewall"]:
             lock = lambda: cache.add("firewall_lock", "true", 9)
             if lock():
+                if not sleep:
+                    sleep = True
+                    time.sleep(10)
                 ipv4 = firewall().get()
                 ipv6 = firewall(True).get()
                 reload_firewall_task.delay(ipv4, ipv6)

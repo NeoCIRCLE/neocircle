@@ -402,6 +402,8 @@ def dns():
             DNS.append("@%(fqdn)s::%(mx)s:%(dist)s:%(ttl)s" %
                     {'fqdn': d['name'], 'mx': mx[1], 'dist': mx[0],
                      'ttl': d['ttl']})
+        elif d['type'] == 'PTR':
+            DNS.append("^%s:%s:%s" % (d['name'], d['address'], d['ttl']))
 
     return DNS
     process = subprocess.Popen(['/usr/bin/ssh', 'tinydns@%s' %
