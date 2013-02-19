@@ -131,38 +131,7 @@ class firewall:
                 '--log-prefix "[ipt][isok]"')
         self.iptables('-A LOG_ACC -j ACCEPT')
 
-        if not self.IPV6:
-            # The chain which test is a packet has a valid public destination IP
-            # (RFC-3330) packages passing this chain has valid destination IP addressed
-            self.iptables('-N r_pub_dIP')
-            self.iptables('-A r_pub_dIP -d 0.0.0.0/8 -g LOG_DROP')
-            self.iptables('-A r_pub_dIP -d 169.254.0.0/16 -g LOG_DROP')
-            self.iptables('-A r_pub_dIP -d 172.16.0.0/12 -g LOG_DROP')
-            self.iptables('-A r_pub_dIP -d 192.0.2.0/24 -g LOG_DROP')
-            self.iptables('-A r_pub_dIP -d 192.168.0.0/16 -g LOG_DROP')
-            self.iptables('-A r_pub_dIP -d 127.0.0.0/8 -g LOG_DROP')
-            # self.iptables('-A r_pub_dIP -d 10.0.0.0/8 -g LOG_DROP')
-
-            # The chain which test is a packet has a valid public source IP
-            # (RFC-3330) packages passing this chain has valid destination IP addressed
-            self.iptables('-N r_pub_sIP')
-            self.iptables('-A r_pub_sIP -s 0.0.0.0/8 -g LOG_DROP')
-            self.iptables('-A r_pub_sIP -s 169.254.0.0/16 -g LOG_DROP')
-            self.iptables('-A r_pub_sIP -s 172.16.0.0/12 -g LOG_DROP')
-            self.iptables('-A r_pub_sIP -s 192.0.2.0/24 -g LOG_DROP')
-            self.iptables('-A r_pub_sIP -s 192.168.0.0/16 -g LOG_DROP')
-            self.iptables('-A r_pub_sIP -s 127.0.0.0/8 -g LOG_DROP')
-            # self.iptables('-A r_pub_sIP -s 10.0.0.0/8 -g LOG_DROP')
-
-            # Chain which tests whether the destination specified by the
-            # DMZ host is valid
-            self.iptables('-N r_DMZ_dIP')
-            self.iptables('-A r_DMZ_dIP -d 10.2.0.0/16 -j RETURN')
-            self.iptables('-A r_DMZ_dIP -j r_pub_dIP')
-
         self.iptables('-N PUB_OUT')
-        if not self.IPV6:
-            self.iptables('-A PUB_OUT -j r_pub_dIP')
 
         self.iptables('-A FORWARD -m state --state INVALID -g LOG_DROP')
         self.iptables('-A FORWARD -m state --state ESTABLISHED,RELATED '
@@ -173,8 +142,6 @@ class firewall:
             self.iptables('-A FORWARD -j r_pub_sIP -o pub')
         self.iptables('-A INPUT -m state --state INVALID -g LOG_DROP')
         self.iptables('-A INPUT -i lo -j ACCEPT')
-        if not self.IPV6:
-            self.iptables('-A INPUT -j r_pub_sIP')
         self.iptables('-A INPUT -m state --state ESTABLISHED,RELATED '
                 '-j ACCEPT')
 
