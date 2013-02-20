@@ -14,17 +14,17 @@ $(function() {
         e.stopPropagation();
         delete_template_confirm($(this).data('id'), $(this).data('name'));
     });
-    $('.delete-key-button').click(function(e){
-        var id=$(this).data('id');
+    $('.delete-key-button').click(function(e) {
+        var id = $(this).data('id');
         e.preventDefault();
         e.stopPropagation();
-        vm_confirm_popup(gettext('Are you sure deleting key?'), gettext('Delete'), function(){
+        vm_confirm_popup(gettext('Are you sure deleting key?'), gettext('Delete'), function() {
             $.ajax({
                 'type': 'POST',
-                'data': 'id='+id,
+                'data': 'id=' + id,
                 'url': '/ajax/key/delete/',
-                'success': function(){
-                    $('#key-'+id).slideUp(700);
+                'success': function() {
+                    $('#key-' + id).slideUp(700);
                 }
             });
         });
@@ -41,19 +41,19 @@ $(function() {
             e.stopPropagation();
         });
     }
-    $('.rename-vm').click(function(e){
+    $('.rename-vm').click(function(e) {
         e.preventDefault();
         e.stopPropagation();
-        var id=$(this).data('id');
-        var oldName=$(this).data('name');
-        $('#vm-'+id+'-name-details').hide();
-        $('#vm-'+id+'-name').html('<input type="text" value="'+name+'" />\
-<input type="submit" value="'+gettext('Rename')+'" />');
-        $('#vm-'+id+'-name').find('input[type="text"]').click(function(f){
+        var id = $(this).data('id');
+        var oldName = $(this).data('name');
+        $('#vm-' + id + '-name-details').hide();
+        $('#vm-' + id + '-name').html('<input type="text" value="' + name + '" />\
+<input type="submit" value="' + gettext('Rename') + '" />');
+        $('#vm-' + id + '-name').find('input[type="text"]').click(function(f) {
             f.preventDefault();
             f.stopPropagation();
         }).focus();
-        $('#vm-'+id+'-name').find('input[type=submit]').click(function(f){
+        $('#vm-' + id + '-name').find('input[type=submit]').click(function(f) {
             f.preventDefault();
             f.stopPropagation();
             alert($(this).prev().val());
