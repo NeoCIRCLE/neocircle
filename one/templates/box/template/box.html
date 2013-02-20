@@ -64,7 +64,7 @@
                                 <span title="{{i.name}}">{{i.name|truncatechars:20}}</span>
                                 ({{i.get_running}}/{{i.instance_limit}})
                                     {% csrf_token %}
-                                <input type="submit" value="{% trans "Delete" %}" style="float: right"/>
+                                <input type="submit" class="template-unshare" value="{% trans "Delete" %}" style="float: right"/>
                             </form>
                             <div class="clear"></div>
                         </li>

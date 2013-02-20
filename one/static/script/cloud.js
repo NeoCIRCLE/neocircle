@@ -138,6 +138,9 @@ $(function() {
         })
         $('#modal').show();
     });
+    $('.template-unshare').click(function(e){
+        e.stopPropagation();
+    });
     $('#old-upload').click(function(e) {
         e.preventDefault();
         $(this).parent().parent().hide().parent().find('#old-upload-form').show();
