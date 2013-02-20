@@ -56,7 +56,17 @@ $(function() {
         $('#vm-' + id + '-name').find('input[type=submit]').click(function(f) {
             f.preventDefault();
             f.stopPropagation();
-            alert($(this).prev().val());
+            var newName = $(this).prev().val();
+            $.ajax({
+                type: 'POST',
+                data: 'name=' + newName,
+                dataType: 'json',
+                url: '/ajax/vm/rename/' + id + '/',
+                success: function(data) {
+                    $('#vm-' + id + '-name-details').show();
+                    $('#vm-' + id + '-name').html(data.name);
+                }
+            });
         })
     });
     $('.try-template-button').click(function(e) {

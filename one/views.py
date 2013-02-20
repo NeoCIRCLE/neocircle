@@ -295,6 +295,13 @@ def vm_ajax_instance_status(request, iid):
     inst.update_state()
     return HttpResponse(json.dumps({'booting': not inst.active_since, 'state': inst.state}))
 
+@login_required
+def vm_ajax_rename(request, iid):
+    inst = get_object_or_404(Instance, id=iid, owner=request.user)
+    inst.name = request.POST['name']
+    inst.save()
+    return HttpResponse(json.dumps({'name': inst.name}))
+
 def boot_token(request, token):
     try:
         id = signing.loads(token, salt='activate')
