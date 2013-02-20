@@ -31,13 +31,13 @@ $(function() {
     });
     $('.entry .summary').unbind('click').click(toggleDetails);
     if(window.navigator.userAgent.indexOf('cloud-gui') > -1) {
-        $('.connect-vm-button').click(function(e) {
+        $('.connect-vm').click(function(e) {
             e.preventDefault();
             e.stopPropagation();
             get_vm_details($(this).data('id'));
         });
     } else {
-        $('.connect-vm-button').click(function(e) {
+        $('.connect-vm').click(function(e) {
             e.stopPropagation();
         });
     }
@@ -46,32 +46,32 @@ $(function() {
         e.stopPropagation();
         new_vm($(this).data('id'));
     });
-    $('.stop-vm-button').click(function(e) {
+    $('.stop-vm').click(function(e) {
         e.preventDefault();
         e.stopPropagation();
         stop_vm($(this).data('id'), $(this).data('name'));
     });
-    $('.resume-vm-button').click(function(e) {
+    $('.resume-vm').click(function(e) {
         e.preventDefault();
         e.stopPropagation();
         manage_vm($(this).data('id'), "resume");
     });
-    $('.delete-vm-button').click(function(e) {
+    $('.delete-vm').click(function(e) {
         e.preventDefault();
         e.stopPropagation();
         delete_vm($(this).data('id'), $(this).data('name'));
     });
-    $('.restart-vm-button').click(function(e) {
+    $('.restart-vm').click(function(e) {
         e.preventDefault();
         e.stopPropagation();
         restart_vm($(this).data('id'), $(this).data('name'));
     });
-    $('.renew-suspend-vm-button').click(function(e) {
+    $('.renew-suspend-vm').click(function(e) {
         e.preventDefault();
         e.stopPropagation();
         renew_suspend_vm($(this).data('id'))
     });
-    $('.renew-delete-vm-button').click(function(e) {
+    $('.renew-delete-vm').click(function(e) {
         e.preventDefault();
         e.stopPropagation();
         renew_delete_vm($(this).data('id'))
