@@ -457,8 +457,7 @@ def key_add(request):
 @require_POST
 def key_ajax_delete(request):
     try:
-        #TODO: permission check
-        key=get_object_or_404(SshKey, id=request.POST['id'])
+        key=get_object_or_404(SshKey, id=request.POST['id'], user=request.user)
         key.delete()
     except:
         messages.error(request, _('Failed to delete public key'))
