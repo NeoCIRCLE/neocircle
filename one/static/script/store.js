@@ -301,7 +301,7 @@ var cloud = (function(cloud) {
             })
             //$(e.target).parent().parent().parent().unbind('click');
             $(e.target).parent().parent().parent().find('.name').html('<input type="text" value="' + item.originalName + '" />\
-<input type="submit" value="Átnevezés" />');
+<input type="submit" value="' + gettext('Rename') + '" />');
             $(e.target).parent().parent().parent().find('.name input').click(function(f) {
                 f.stopPropagation();
             })
