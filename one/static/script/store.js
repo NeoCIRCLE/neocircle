@@ -217,7 +217,12 @@ var cloud = (function(cloud) {
          * After 'addFile', this function animates the new item
          */
         self.fadeIn = function(e) {
-            $(e).hide().slideDown(500);
+            //firefox sucks :S
+            try{
+                $(e).hide().slideDown(500);
+            }catch(ex){
+
+            }
         }
 
         self.fadeOutFile = function(e) {
