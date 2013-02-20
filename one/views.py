@@ -443,11 +443,13 @@ def vm_restart(request, iid, *args, **kwargs):
 def key_add(request):
     try:
         key=SshKey()
-        #TODO: validate key
         key.key=request.POST['key']
         key.user=request.user
+        key.full_clean()
         key.save()
-    except:
+    except ValidationError as e:
+        messages.error(request, unicode(e))
+    except e:
         messages.error(request, _('Failed to add public key'))
     return redirect('/')
 
