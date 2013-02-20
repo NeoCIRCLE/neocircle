@@ -20,7 +20,9 @@
 
 {% block actions %}
     {% if vm.waiting %}
-        <img src="/static/image/load.gif" />
+        <a href="#">
+            <img src="/static/image/load.gif" />
+        </a>
     {% elif vm.state == 'ACTIVE' %}
         <a href="{{vm.get_connect_uri}}" data-id="{{ vm.id  }}" class="connect-vm-button" title="{% trans "Connect" %}">
             <img src="/static/icons/plug.png" alt="{% trans "Connect" %}" />
