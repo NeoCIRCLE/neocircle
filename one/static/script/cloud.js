@@ -41,6 +41,24 @@ $(function() {
             e.stopPropagation();
         });
     }
+    $('.rename-vm').click(function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        var id=$(this).data('id');
+        var oldName=$(this).data('name');
+        $('#vm-'+id+'-name-details').hide();
+        $('#vm-'+id+'-name').html('<input type="text" value="'+name+'" />\
+<input type="submit" value="'+gettext('Rename')+'" />');
+        $('#vm-'+id+'-name').find('input[type="text"]').click(function(f){
+            f.preventDefault();
+            f.stopPropagation();
+        }).focus();
+        $('#vm-'+id+'-name').find('input[type=submit]').click(function(f){
+            f.preventDefault();
+            f.stopPropagation();
+            alert($(this).prev().val());
+        })
+    });
     $('.try-template-button').click(function(e) {
         e.preventDefault();
         e.stopPropagation();
