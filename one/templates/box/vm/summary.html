@@ -19,6 +19,9 @@
 {% endblock status %}
 
 {% block actions %}
+        <a href="#" class="rename-vm" data-name="{{ vm.name }}" data-id="{{ vm.id }}" title="{% trans "Edit name" %}">
+            <img src="/static/icons/pencil.png" alt="{% trans "Edit name" %}" />
+        </a>
     {% if vm.waiting %}
         <a href="#">
             <img src="/static/image/load.gif" />
