@@ -64,7 +64,7 @@ $(function() {
                 url: '/ajax/vm/rename/' + id + '/',
                 success: function(data) {
                     $('#vm-' + id + '-name-details').removeAttr('style');
-                    $('#vm-' + id + '-name').html(data.name);
+                    $('#vm-' + id + '-name').text(data.name);
                 }
             });
         })
