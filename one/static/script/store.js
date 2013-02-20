@@ -472,7 +472,7 @@ var cloud = (function(cloud) {
         loadFolder(self.currentPath());
     }
     var model = new Model();
-    $(function(){
+    $(function() {
         ko.applyBindings(model);
     });
     document.addEventListener('dragenter', function(e) {
