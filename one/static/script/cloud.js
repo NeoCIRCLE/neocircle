@@ -47,7 +47,7 @@ $(function() {
         var id = $(this).data('id');
         var oldName = $(this).data('name');
         $('#vm-' + id + '-name-details').hide();
-        $('#vm-' + id + '-name').html('<input type="text" value="' + name + '" />\
+        $('#vm-' + id + '-name').html('<input type="text" value="' + oldName + '" />\
 <input type="submit" value="' + gettext('Rename') + '" />');
         $('#vm-' + id + '-name').find('input[type="text"]').click(function(f) {
             f.preventDefault();
