@@ -101,4 +101,6 @@ urlpatterns = patterns('',
     url(r'^key/add/$', 'one.views.key_add', name='key_add'),
     url(r'^ajax/key/delete/$', 'one.views.key_ajax_delete',
             name='key_ajax_delete'),
+    url(r'^ajax/key/reset/$', 'one.views.key_ajax_reset',
+            name='key_ajax_reset'),
 )

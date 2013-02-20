@@ -29,7 +29,18 @@ $(function() {
             });
         });
     });
-    $('.entry .summary').unbind('click').click(toggleDetails);
+    $('#reset-key').click(function(e){
+        vm_confirm_popup(gettext('Are you sure about reseting store credentials'), gettext('Reset'), function(){
+            $.ajax({
+                type: 'POST',
+                url: '/ajax/key/reset/',
+                success: function(){
+                    window.location.reload();
+                }
+            })
+        });
+    });
+    $('.entry .summary').click(toggleDetails);
     if(window.navigator.userAgent.indexOf('cloud-gui') > -1) {
         $('.connect-vm').click(function(e) {
             e.preventDefault();

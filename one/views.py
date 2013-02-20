@@ -460,6 +460,17 @@ def key_ajax_delete(request):
         key.delete()
     except:
         messages.error(request, _('Failed to delete public key'))
-    return 'OK'
+    return HttpResponse('OK')
+
+@login_required
+@require_POST
+def key_ajax_reset(request):
+    try:
+        det=UserCloudDetails.objects.get(user=request.user)
+        det.reset_smb()
+        det.reset_keys()
+    except:
+        messages.error(request, _('Failed to reset keys'))
+    return HttpResponse('OK')
 
 # vim: et sw=4 ai fenc=utf8 smarttab :
