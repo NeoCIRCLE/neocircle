@@ -50,4 +50,7 @@
     <a href="#" class="delete-template" data-id="{{ t.id }}" data-name="{{ t.name }}" title="{% trans "Remove" %}">
         <img src="/static/icons/minus-circle.png" alt="{% trans "Remove" %}" />
     </a>
+    <a href="#" class="edit-template" data-id="{{ t.id }}" title="{% trans "Edit" %}">
+        <img src="/static/icons/pencil.png" alt="{% trans "Edit" %}" />
+    </a>
 {% endblock actions %}
