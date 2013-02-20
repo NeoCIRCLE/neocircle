@@ -9,12 +9,12 @@ $(function() {
             $(this).next('.details').slideDown(700);
         }
     })
-    $('.delete-template-button').click(function(e) {
+    $('.delete-template').click(function(e) {
         e.preventDefault();
         e.stopPropagation();
         delete_template_confirm($(this).data('id'), $(this).data('name'));
     });
-    $('.delete-key-button').click(function(e) {
+    $('.delete-key').click(function(e) {
         var id = $(this).data('id');
         e.preventDefault();
         e.stopPropagation();
@@ -69,7 +69,7 @@ $(function() {
             });
         })
     });
-    $('.try-template-button').click(function(e) {
+    $('.try-template').click(function(e) {
         e.preventDefault();
         e.stopPropagation();
         new_vm($(this).data('id'));

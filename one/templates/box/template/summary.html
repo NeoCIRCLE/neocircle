@@ -37,7 +37,7 @@
 
 {% block actions %}
     {% if t.state == 'READY' %}
-    <a href="#" class="try-template-button" data-id="{{t.id}}" title="{% trans "Try"  %}">
+    <a href="#" class="try-template" data-id="{{t.id}}" title="{% trans "Try"  %}">
         <img src="/static/icons/control.png" alt="{% trans "Start" %}"/>
     </a>
     <a href="#" title="{% trans "Edit" %}">
@@ -47,7 +47,7 @@
         <img src="/static/icons/user-share.png" alt="{% trans "Share" %}" />
     </a>
     {% endif %}
-    <a href="#" class="delete-template-button" data-id="{{ t.id }}" data-name="{{ t.name }}" title="{% trans "Remove" %}">
+    <a href="#" class="delete-template" data-id="{{ t.id }}" data-name="{{ t.name }}" title="{% trans "Remove" %}">
         <img src="/static/icons/minus-circle.png" alt="{% trans "Remove" %}" />
     </a>
 {% endblock actions %}
