@@ -63,7 +63,7 @@ $(function() {
                 dataType: 'json',
                 url: '/ajax/vm/rename/' + id + '/',
                 success: function(data) {
-                    $('#vm-' + id + '-name-details').show();
+                    $('#vm-' + id + '-name-details').removeAttr('style');
                     $('#vm-' + id + '-name').html(data.name);
                 }
             });
