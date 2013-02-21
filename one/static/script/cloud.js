@@ -30,7 +30,7 @@ $(function() {
         });
     });
     $('#reset-key').click(function(e){
-        vm_confirm_popup(gettext('Are you sure about reseting store credentials'), gettext('Reset'), function(){
+        vm_confirm_popup(gettext('Are you sure about reseting store credentials?<br /> You will lose your access to your store account on your existing virtual machines!'), gettext('Reset'), function(){
             $.ajax({
                 type: 'POST',
                 url: '/ajax/key/reset/',
