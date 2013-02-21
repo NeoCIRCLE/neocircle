@@ -456,9 +456,10 @@ def key_add(request):
         key.user=request.user
         key.full_clean()
         key.save()
+        _update_keys(request.user)
     except ValidationError as e:
         messages.error(request, ''.join(e.messages))
-    except e:
+    except:
         messages.error(request, _('Failed to add public key'))
     return redirect('/')
 
@@ -468,6 +469,7 @@ def key_ajax_delete(request):
     try:
         key=get_object_or_404(SshKey, id=request.POST['id'], user=request.user)
         key.delete()
+        _update_keys(request.user)
     except:
         messages.error(request, _('Failed to delete public key'))
     return HttpResponse('OK')
@@ -479,8 +481,19 @@ def key_ajax_reset(request):
         det=UserCloudDetails.objects.get(user=request.user)
         det.reset_smb()
         det.reset_keys()
+        _update_keys(request.user)
     except:
         messages.error(request, _('Failed to reset keys'))
     return HttpResponse('OK')
+
+def _update_keys(user):
+    details = user.cloud_details
+    password = details.smb_password
+    key_list = []
+    for key in user.sshkey_set.all():
+        key_list.append(key.key)
+    user = user.username
+    StoreApi.updateauthorizationinfo(user, password, key_list)
+
 
 # vim: et sw=4 ai fenc=utf8 smarttab :
