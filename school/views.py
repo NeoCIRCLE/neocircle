@@ -239,6 +239,7 @@ def group_ajax_delete(request):
 
 @login_required
 def group_ajax_owner_autocomplete(request):
+
     results = map(lambda u: {
         'name': u.get_full_name(),
         'neptun': u.username }, User.objects.filter(last_name__startswith=request.POST['q'])[:5])
@@ -252,6 +253,8 @@ def group_ajax_owner_autocomplete(request):
 
 @login_required
 def group_ajax_add_new_owner(request, gid):
+    if request.user.cloud_details.share_quota == 0:
+        return HttpResponse({'status': 'denied'})
     group = get_object_or_404(Group, id=gid)
     member = request.POST['neptun']
     if re.match('^[a-zA-Z][a-zA-Z0-9]{5}$', member.strip()) == None:
