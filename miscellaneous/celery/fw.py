@@ -1,9 +1,18 @@
 from celery import Celery, task
 import subprocess
 import time, re
+import socket
+
+BROKER_URL = 'amqp://nyuszi:teszt@localhost:5672/django'
+IRC_CHANNEL = '/home/cloud/irc/irc.atw.hu/#ik/in'
+try:
+        from local_settings import *
+except:
+        pass
 
 CELERY_CREATE_MISSING_QUEUES=True
-celery = Celery('tasks', broker='amqp://nyuszi:teszt@localhost:5672/django')
+celery = Celery('tasks', broker=BROKER_URL)
+
 
 @task(name="firewall.tasks.reload_firewall_task")
 def t(data4, data6):
@@ -28,7 +37,7 @@ def t(data):
     print "blacklist"
     r = re.compile(r'^add blacklist ([0-9.]+)$')
 
-    data_new = data
+    data_new = [ x['ipv4'] for x in data]
     data_old = []
 
     p = subprocess.Popen(['/usr/bin/sudo', '/usr/sbin/ipset', 'save', 'blacklist'], shell=False, stdout=subprocess.PIPE)
@@ -37,8 +46,8 @@ def t(data):
         if x:
             data_old.append(x.group(1))
 
-    l_add = list(set(data).difference(set(data_old)))
-    l_del = list(set(data_old).difference(set(data)))
+    l_add = list(set(data_new).difference(set(data_old)))
+    l_del = list(set(data_old).difference(set(data_new)))
 
     ipset = []
     ipset.append('create blacklist hash:ip family inet hashsize 4096 maxelem 65536')
@@ -50,4 +59,12 @@ def t(data):
     p = subprocess.Popen(['/usr/bin/sudo', '/usr/sbin/ipset', 'restore', '-exist'], shell=False, stdin=subprocess.PIPE)
     p.communicate("\n".join(ipset) + "\n")
 
+    try:
+        with open(IRC_CHANNEL, 'w') as f:
+            for x in data:
+                if x['ipv4'] in l_add:
+                    f.write('%(ip)s(%(hostname)s) kibachva %(reason)s miatt\n' % { 'ip': x['ipv4'], 'reason': x['reason'], 'hostname': socket.gethostbyaddr(x['ipv4'])[0]})
+    except:
+        print "nem sikerult mircre irni"
+        raise
 

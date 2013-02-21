@@ -300,8 +300,8 @@ class firewall:
                 '\n'.join(self.RULES_NAT) + '\n')
 
 def ipset():
-    week = datetime.now()-timedelta(days=7)
-    return models.Blacklist.objects.filter(Q(type='tempban', modified_at__gte=week) | Q(type='permban')).values_list('ipv4', flat=True)
+    week = datetime.now()-timedelta(days=2)
+    return models.Blacklist.objects.filter(Q(type='tempban', modified_at__gte=week) | Q(type='permban')).values('ipv4', 'reason')
 
 
 def ipv6_to_octal(ipv6):
