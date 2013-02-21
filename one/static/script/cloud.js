@@ -9,6 +9,9 @@ $(function() {
             $(this).next('.details').slideDown(700);
         }
     })
+    $('a').click(function(e){
+        e.stopPropagation();
+    });
     $('.delete-template').click(function(e) {
         e.preventDefault();
         e.stopPropagation();
