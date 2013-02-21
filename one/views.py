@@ -47,7 +47,10 @@ def home(request):
     except UserCloudDetails.DoesNotExist:
         details = UserCloudDetails(user=request.user)
         details.save()
-    generated_public_key = details.ssh_key
+    try:
+        generated_public_key = details.ssh_key.id
+    except:
+        generated_public_key = -1
     return render_to_response("home.html", RequestContext(request, {
         'shares': shares,
         'templates': Template.objects.filter(state='READY'),
@@ -56,7 +59,7 @@ def home(request):
         'groups': request.user.person_set.all()[0].owned_groups.all(),
         'semesters': Semester.objects.all(),
         'userdetails': details,
-        'keys': request.user.sshkey_set.exclude(id=generated_public_key.id).all(),
+        'keys': request.user.sshkey_set.exclude(id=generated_public_key).all(),
         'storeserv': store_settings['store_public'],
         }))
 

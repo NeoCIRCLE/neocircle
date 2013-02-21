@@ -450,8 +450,8 @@ def dhcp():
                     'router': i_vlan.ipv4,
                     'ntp': i_vlan.ipv4,
                     'dnsserver': settings['rdns_ip'],
-                    'extra': "range %s" % (i_vlan.dhcp_pool
-                        if m else "deny unknown clients"),
+                    'extra': ("range %s" % i_vlan.dhcp_pool
+                        if m else "deny unknown-clients"),
                     'interface': i_vlan.interface,
                     'name': i_vlan.name,
                     'tftp': i_vlan.ipv4
