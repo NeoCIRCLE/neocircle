@@ -218,9 +218,9 @@ var cloud = (function(cloud) {
          */
         self.fadeIn = function(e) {
             //firefox sucks :S
-            try{
+            try {
                 $(e).hide().slideDown(500);
-            }catch(ex){
+            } catch(ex) {
 
             }
         }
