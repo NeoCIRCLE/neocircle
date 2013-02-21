@@ -27,6 +27,7 @@ class RDP:
       #  window.set_title("Message dialogs")
         md = gtk.MessageDialog(parent=None, type=gtk.MESSAGE_INFO, buttons=gtk.BUTTONS_CLOSE, message_format=text)
         md.run()
+        print "After run"
         md.destroy()
 
     def connect(self):
@@ -45,6 +46,7 @@ class RDP:
                 #p.terminate()
                 if self.global_vars.pid > 0:
                     os.kill(self.global_vars.pid, signal.SIGKILL)
+            #print "Join"
             p.join()
         elif self.scheme == "nx":
             self.connect_nx()
@@ -72,19 +74,11 @@ class RDP:
 
     def connect_rdp(self,global_vars):
         rdp_command = ["rdesktop", "-khu", "-E", "-P", "-0", "-f", "-u", self.username, "-p", self.password, self.host+":"+self.port]
-        try:
-            proc = subprocess.Popen(rdp_command, stdout = subprocess.PIPE)
-            global_vars.pid = proc.pid
-            proc.wait()
-        except subprocess.CalledProcessError as e:
-            if e.returncode != 1:
-                print e
-                self.dialog_box("Unable to connect to host: "+self.host+" at port "+self.port)
-        finally:
-            #print "Finally: "
-            #print self.box
-            global_vars.pid = 0
-            self.box.response(-5)
+        proc = subprocess.Popen(rdp_command, stdout = subprocess.PIPE)
+        global_vars.pid = proc.pid
+        proc.wait()
+        self.box.response(-5)
+        global_vars.pid = 0
 
     def connect_nx(self):
         #Generate temproary config
