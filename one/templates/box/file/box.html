@@ -67,7 +67,7 @@
     </li>
     <!-- /ko -->
 </ul>
-<ul class="file-list">
+<ul class="entry-list">
     <li class="entry small-row">
         <div class="summary" id="new-folder">
             <div class="name filetype-new-folder">{% trans "Create folder" %}</div>
@@ -99,11 +99,13 @@
             <div class="clear"></div>
         </div>
         <div class="details">
-            <form style="padding-bottom: 10px" action="/key/add/" method="POST">
-                {% csrf_token %}
-                <textarea style="margin-bottom: 5px" name="key" placeholder="{% trans "Public key in OpenSSH format" %}"></textarea><br />
-                <input type="submit" style="margin-left: 10px;" value="{% trans "Save" %}" />
-            </form>
+            <div class="container">
+                <form style="padding-bottom: 10px" action="/key/add/" method="POST">
+                    {% csrf_token %}
+                    <textarea style="margin-bottom: 5px" name="key" placeholder="{% trans "Public key in OpenSSH format" %}"></textarea><br />
+                    <input type="submit" style="margin-left: 10px;" value="{% trans "Save" %}" />
+                </form>
+            </div>
         </div>
     </li>
     <li class="entry small-row key" style="display: none">
