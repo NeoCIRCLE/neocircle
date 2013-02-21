@@ -41,6 +41,12 @@ def home(request):
     for i, s in enumerate(shares):
         s.running_shared = s.instance_set.all().exclude(state="DONE").filter(owner=request.user).count()
         shares[i] = s
+    try:
+        details = UserCloudDetails.objects.get(user=request.user)
+    except UserCloudDetails.DoesNotExist:
+        details = UserCloudDetails(user=request.user)
+        details.save()
+    generated_public_key = details.ssh_key
     return render_to_response("home.html", RequestContext(request, {
         'shares': shares,
         'templates': Template.objects.filter(state='READY'),
@@ -48,8 +54,8 @@ def home(request):
         'instances': _list_instances(request),
         'groups': request.user.person_set.all()[0].owned_groups.all(),
         'semesters': Semester.objects.all(),
-        'userdetails': UserCloudDetails.objects.get(user=request.user),
-        'keys': request.user.sshkey_set.all()
+        'userdetails': details,
+        'keys': request.user.sshkey_set.exclude(id=generated_public_key.id).all()
         }))
 
 @login_required
