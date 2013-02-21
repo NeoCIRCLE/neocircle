@@ -20,6 +20,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.http import *
 from django.views.generic import *
 from firewall.tasks import *
+from cloud.settings import store_settings
 from one.models import *
 from school.models import *
 import django.contrib.auth as auth
@@ -55,7 +56,8 @@ def home(request):
         'groups': request.user.person_set.all()[0].owned_groups.all(),
         'semesters': Semester.objects.all(),
         'userdetails': details,
-        'keys': request.user.sshkey_set.exclude(id=generated_public_key.id).all()
+        'keys': request.user.sshkey_set.exclude(id=generated_public_key.id).all(),
+        'storeserv': store_settings['store_public'],
         }))
 
 @login_required

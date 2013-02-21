@@ -197,6 +197,7 @@ store_settings = {
         "store_client_key": "/opt/webadmin/cloud/client.key",
         "store_client_cert": "/opt/webadmin/cloud/client.crt",
         "store_url": "http://localhost:9000",
+        "store_public": "store.ik.bme.hu",
 }
 
 
