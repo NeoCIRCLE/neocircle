@@ -101,6 +101,21 @@
             float: none;
         }
     }
+    &.key {
+        .name {
+            background-image: url(/static/icons/key.png);
+        }
+        textarea {
+            margin: 10px;
+            width: 93%;
+        }
+        #new-key .name {
+            background-image: url(/static/icons/key--plus.png);
+        }
+        #reset-key .name {
+            background-image: url(/static/icons/key--exclamation.png);
+        }
+    }
     .quota{
         left: 0;
         top: 0;
@@ -445,10 +460,10 @@
     background-image: url(/static/icons/computer-off.png);
 }
 
-#template .wm .summary .name{
+#template .entry .summary .name{
   background-image: url(/static/icons/document-template.png)
 }
-#template .wm .public-template .name{
+#template .entry .public-template .name{
   background-image: url(/static/icons/blue-document-share.png)
 }
 #new-template-button .name{
@@ -599,18 +614,35 @@ table {
     }
 }
 
-#keys {
-    .name {
-        background-image: url(/static/icons/key.png);
+
+
+.boxhelp {
+    position: relative;
+    .boxhelp-box {
+        color:#000;
+        position: absolute;
+        left: -100px;
+        width: 500px;
+        z-index: 1000000;
+        font-size: .7em;
+        background-color: #ffc;
+        border-radius:4px;
+        border:1px solid #aaa;
+        box-shadow:0 0 30px rgba(0,0,0,0.3);
+        margin:20px;
+        display: none;
     }
-    textarea {
-        margin: 10px;
-        width: 93%;
+    &:hover .boxhelp-box {
+        display: block;
     }
-    #new-key .name {
-        background-image: url(/static/icons/key--plus.png);
+    .icon {
+        display: block;
+        float: right;
     }
-    #reset-key .name {
-        background-image: url(/static/icons/key--exclamation.png);
+}
+
+#new-owner-autocomplete {
+    input[type=button] {
+        float: right;
     }
 }

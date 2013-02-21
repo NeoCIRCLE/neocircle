@@ -183,7 +183,7 @@ def group_new(request):
     members_list = re.split('\r?\n', request.POST['members'])
     members = []
     for member in members_list:
-        if re.match('^[a-zA-Z][a-zA-Z0-9]{5}$', member) == None:
+        if re.match('^[a-zA-Z][a-zA-Z0-9]{5}$', member.strip()) == None:
             messages.error(request, _('Invalid NEPTUN code found.'))
             return redirect('/')
         person, created = Person.objects.get_or_create(code=member)
@@ -203,7 +203,7 @@ def group_new(request):
 def group_ajax_add_new_member(request, gid):
     group = get_object_or_404(Group, id=gid)
     member = request.POST['neptun']
-    if re.match('^[a-zA-Z][a-zA-Z0-9]{5}$', member) == None:
+    if re.match('^[a-zA-Z][a-zA-Z0-9]{5}$', member.strip()) == None:
         status = json.dumps({'status': 'Error'})
         messages.error(request, _('Invalid NEPTUN code'))
         return HttpResponse(status)
@@ -233,6 +233,37 @@ def group_ajax_remove_member(request, gid):
 def group_ajax_delete(request):
     group = get_object_or_404(Group, id=request.POST['gid'])
     group.delete()
+    return HttpResponse(json.dumps({
+        'status': 'OK'
+        }))
+
+@login_required
+def group_ajax_owner_autocomplete(request):
+
+    results = map(lambda u: {
+        'name': u.get_full_name(),
+        'neptun': u.username }, User.objects.filter(last_name__istartswith=request.POST['q'])[:5])
+    results += map(lambda u: {
+        'name': u.get_full_name(),
+        'neptun': u.username }, User.objects.filter(first_name__istartswith=request.POST['q'])[:5])
+    results += map(lambda u: {
+        'name': u.get_full_name(),
+        'neptun': u.username }, User.objects.filter(username__istartswith=request.POST['q'])[:5])
+    return HttpResponse(json.dumps(results, ensure_ascii=False))
+
+@login_required
+def group_ajax_add_new_owner(request, gid):
+    if request.user.cloud_details.share_quota == 0:
+        return HttpResponse({'status': 'denied'})
+    group = get_object_or_404(Group, id=gid)
+    member = request.POST['neptun']
+    if re.match('^[a-zA-Z][a-zA-Z0-9]{5}$', member.strip()) == None:
+        status = json.dumps({'status': 'Error'})
+        messages.error(request, _('Invalid NEPTUN code'))
+        return HttpResponse(status)
+    person, created = Person.objects.get_or_create(code=member)
+    group.owners.add(person)
+    group.save()
     return HttpResponse(json.dumps({
         'status': 'OK'
         }))

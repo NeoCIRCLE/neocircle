@@ -3,7 +3,7 @@
 {% get_current_language as LANGUAGE_CODE %}
 
 {% block content %}
-<li class="entry" id="key-{{key.id}}">
+<li class="entry key" id="key-{{key.id}}" style="display: none">
     {{block.super}}
 </li>
 {% endblock content %}

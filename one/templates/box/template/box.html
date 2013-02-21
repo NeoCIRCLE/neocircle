@@ -7,8 +7,23 @@
     {% trans "Templates" %}
 {% endblock title %}
 
+{% block boxhelp %}
+<div class="boxhelp">
+    <div class="icon">
+        <img src="/static/icons/information-frame.png" alt="{% trans "Help" %}" />
+    </div>
+    <div class="boxhelp-box">
+        <p>{% blocktrans %}This is the list of your own templates.{% endblocktrans %}</p>
+        <p>{% blocktrans %}Templates are customized versions of the base images.{% endblocktrans %}</p>
+        <p>{% blocktrans %}You can install all the needed software on a master
+        machine, and it will be ready to run by your students in minutes.
+        {% endblocktrans %}</p>
+    </div>
+</div>
+{% endblock %}
+
 {% block content %}
-<ul class="vm-list entry-list">
+<ul class="vm-list entry-list" id="template">
     {% for t in mytemplates %}
         {% include "box/template/entry.html" %}
     {% endfor %}

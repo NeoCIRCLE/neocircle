@@ -45,7 +45,7 @@ def firewall_api(request):
                 obj.reason=data["reason"]
                 obj.snort_message=data["snort_message"]
             obj.save()
-            return HttpResponse(_("OK"));
+            return HttpResponse(unicode(_("OK")));
 
         if not (data["vlan"] == "vm-net" or data["vlan"] == "war"):
             raise Exception(_("Only vm-net and war can be used."))
@@ -88,4 +88,4 @@ def firewall_api(request):
     except:
         return HttpResponse(_("Something went wrong!\n"));
  
-    return HttpResponse(_("OK"));
+    return HttpResponse(unicode(_("OK")));

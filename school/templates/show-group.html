@@ -17,11 +17,11 @@
                         {{owner}} ({{owner.code}})
                         {% endif %}
                     </div>
-                    <div class="actions">
+                    <!--<div class="actions">
                         <a href="#" class="remove" data-gid="{{group.id}}" data-neptun="{{owner.code}}">
                             <img src="/static/icons/minus-circle.png" alt="{% trans 'Remove' %}" />
                         </a>
-                    </div>
+                    </div>-->
                     <div class="clear"></div>
                 </div>
                 <div class="details">
@@ -46,13 +46,15 @@
             </li>
             {% endfor %}
             <li class="entry small-row">
-                <div class="summary" id="new-owner">
+                <div class="summary" id="new-owner" data-gid="{{group.id}}">
                     <div class="name">{% trans "Add owner" %}</div>
-                    <div id="new-owner-form">
-                        <input type="text" placeholder="{% trans "Owner name/NEPTUN" %}" disabled="disabled" />
-                        <input type="submit" value="{% trans "Add owner" %}" data-id="{{group.id}}" disabled="disabled" />
-                    </div>
                     <div class="clear"></div>
+                </div>
+                <div class="details" id="new-owner-form">
+                    <div class="container">
+                        <input type="text" placeholder="{% trans "Owner name/NEPTUN" %}" />
+                        <div id="new-owner-autocomplete"></div>
+                    </div>
                 </div>
             </li>
         </ul>

@@ -20,6 +20,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.http import *
 from django.views.generic import *
 from firewall.tasks import *
+from cloud.settings import store_settings
 from one.models import *
 from school.models import *
 import django.contrib.auth as auth
@@ -41,6 +42,15 @@ def home(request):
     for i, s in enumerate(shares):
         s.running_shared = s.instance_set.all().exclude(state="DONE").filter(owner=request.user).count()
         shares[i] = s
+    try:
+        details = UserCloudDetails.objects.get(user=request.user)
+    except UserCloudDetails.DoesNotExist:
+        details = UserCloudDetails(user=request.user)
+        details.save()
+    try:
+        generated_public_key = details.ssh_key.id
+    except:
+        generated_public_key = -1
     return render_to_response("home.html", RequestContext(request, {
         'shares': shares,
         'templates': Template.objects.filter(state='READY'),
@@ -48,8 +58,9 @@ def home(request):
         'instances': _list_instances(request),
         'groups': request.user.person_set.all()[0].owned_groups.all(),
         'semesters': Semester.objects.all(),
-        'userdetails': UserCloudDetails.objects.get(user=request.user),
-        'keys': request.user.sshkey_set.all()
+        'userdetails': details,
+        'keys': request.user.sshkey_set.exclude(id=generated_public_key).all(),
+        'storeserv': store_settings['store_public'],
         }))
 
 @login_required
@@ -324,7 +335,6 @@ class VmPortAddView(View):
                 raise ValidationError(_("Port number is in a restricted domain (22000 to 24000)."))
             inst = get_object_or_404(Instance, id=iid, owner=request.user)
             inst.firewall_host.add_port(proto=request.POST['proto'], public=public, private=int(request.POST['private']))
-            reload_firewall_lock()
             messages.success(request, _(u"Port %d successfully added.") % public)
         except:
             messages.error(request, _(u"Adding port failed."))
@@ -343,7 +353,6 @@ def vm_port_del(request, iid, proto, public):
     inst = get_object_or_404(Instance, id=iid, owner=request.user)
     try:
         inst.firewall_host.del_port(proto=proto, public=public)
-        reload_firewall_lock()
         messages.success(request, _(u"Port %d successfully removed.") % public)
     except:
         messages.error(request, _(u"Removing port failed."))
@@ -447,9 +456,10 @@ def key_add(request):
         key.user=request.user
         key.full_clean()
         key.save()
+        _update_keys(request.user)
     except ValidationError as e:
-        messages.error(request, unicode(e))
-    except e:
+        messages.error(request, ''.join(e.messages))
+    except:
         messages.error(request, _('Failed to add public key'))
     return redirect('/')
 
@@ -459,6 +469,7 @@ def key_ajax_delete(request):
     try:
         key=get_object_or_404(SshKey, id=request.POST['id'], user=request.user)
         key.delete()
+        _update_keys(request.user)
     except:
         messages.error(request, _('Failed to delete public key'))
     return HttpResponse('OK')
@@ -470,8 +481,19 @@ def key_ajax_reset(request):
         det=UserCloudDetails.objects.get(user=request.user)
         det.reset_smb()
         det.reset_keys()
+        _update_keys(request.user)
     except:
         messages.error(request, _('Failed to reset keys'))
     return HttpResponse('OK')
+
+def _update_keys(user):
+    details = user.cloud_details
+    password = details.smb_password
+    key_list = []
+    for key in user.sshkey_set.all():
+        key_list.append(key.key)
+    user = user.username
+    StoreApi.updateauthorizationinfo(user, password, key_list)
+
 
 # vim: et sw=4 ai fenc=utf8 smarttab :

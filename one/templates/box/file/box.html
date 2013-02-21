@@ -6,6 +6,26 @@
 {% block title %}
     {% trans "Data store" %}
 {% endblock title %}
+{% block boxhelp %}
+<div class="boxhelp">
+    <div class="icon">
+        <img src="/static/icons/information-frame.png" alt="{% trans "Help" %}" />
+    </div>
+    <div class="boxhelp-box">
+        <p>{% blocktrans %}This is your global data store.{% endblocktrans %}</p>
+        <p>{% blocktrans %}You can access it from all your own virtual machines,
+        the lab client, this web interface, or through SFTP protocol.
+        {% endblocktrans %}</p>
+        <p>{% blocktrans %}This directory is mounted on Windows machines as Z:
+        drive, and on Linux ones as ~/sshfs.{% endblocktrans %}</p>
+        <p>{% blocktrans %}If you log in on lab machines (currently Ubuntu only),
+        you can see this folder also as ~/sshfs.{% endblocktrans %}</p>
+        <p>{% blocktrans with serv=storeserv %}You can also use an SFTP client (eg.
+        WinSCP) to access your files at {{serv}}. You will need to register a
+        public key bellow.{% endblocktrans %}</p>
+    </div>
+</div>
+{% endblock %}
 
 {% block content %}
 <ul class="file-list">
@@ -47,7 +67,7 @@
     </li>
     <!-- /ko -->
 </ul>
-<ul class="file-list">
+<ul class="entry-list">
     <li class="entry small-row">
         <div class="summary" id="new-folder">
             <div class="name filetype-new-folder">{% trans "Create folder" %}</div>
@@ -61,6 +81,36 @@
     <li class="entry small-row">
         <div class="summary" id="new-folder">
             <div class="name toplist" data-bind="click: loadTopList">{% trans "Toplist" %}</div>
+            <div class="clear"></div>
+        </div>
+    </li>
+    <li class="entry small-row key">
+        <div class="summary" id="keys">
+            <div class="name keys">{% trans "Manage keys" %}</div>
+            <div class="clear"></div>
+        </div>
+    </li>
+    {% for key in keys %}
+        {% include "box/key/entry.html" %}
+    {% endfor %}
+    <li class="entry small-row key" style="display: none">
+        <div class="summary" id="new-key">
+            <div class="name">{% trans "Add public key" %}</div>
+            <div class="clear"></div>
+        </div>
+        <div class="details">
+            <div class="container">
+                <form style="padding-bottom: 10px" action="/key/add/" method="POST">
+                    {% csrf_token %}
+                    <textarea style="margin-bottom: 5px" name="key" placeholder="{% trans "Public key in OpenSSH format" %}"></textarea><br />
+                    <input type="submit" style="margin-left: 10px;" value="{% trans "Save" %}" />
+                </form>
+            </div>
+        </div>
+    </li>
+    <li class="entry small-row key" style="display: none">
+        <div class="summary" id="reset-key">
+            <div class="name">{% trans "Reset key" %}</div>
             <div class="clear"></div>
         </div>
     </li>
