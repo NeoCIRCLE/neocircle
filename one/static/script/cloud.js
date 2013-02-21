@@ -44,7 +44,7 @@ $(function() {
         });
     });
     $('.entry .summary').click(toggleDetails);
-    if(window.navigator.userAgent.indexOf('cloud-gui') > -1) {
+    if(window.navigator.userAgent.indexOf('cloud-gui') < 0) {
         $('.connect-vm').click(function(e) {
             e.preventDefault();
             e.stopPropagation();
