@@ -183,7 +183,7 @@ def group_new(request):
     members_list = re.split('\r?\n', request.POST['members'])
     members = []
     for member in members_list:
-        if re.match('^[a-zA-Z][a-zA-Z0-9]{5}$', member) == None:
+        if re.match('^[a-zA-Z][a-zA-Z0-9]{5}$', member.strip()) == None:
             messages.error(request, _('Invalid NEPTUN code found.'))
             return redirect('/')
         person, created = Person.objects.get_or_create(code=member)
@@ -203,7 +203,7 @@ def group_new(request):
 def group_ajax_add_new_member(request, gid):
     group = get_object_or_404(Group, id=gid)
     member = request.POST['neptun']
-    if re.match('^[a-zA-Z][a-zA-Z0-9]{5}$', member) == None:
+    if re.match('^[a-zA-Z][a-zA-Z0-9]{5}$', member.strip()) == None:
         status = json.dumps({'status': 'Error'})
         messages.error(request, _('Invalid NEPTUN code'))
         return HttpResponse(status)
