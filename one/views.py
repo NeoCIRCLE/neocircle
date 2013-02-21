@@ -332,7 +332,6 @@ class VmPortAddView(View):
                 raise ValidationError(_("Port number is in a restricted domain (22000 to 24000)."))
             inst = get_object_or_404(Instance, id=iid, owner=request.user)
             inst.firewall_host.add_port(proto=request.POST['proto'], public=public, private=int(request.POST['private']))
-            reload_firewall_lock()
             messages.success(request, _(u"Port %d successfully added.") % public)
         except:
             messages.error(request, _(u"Adding port failed."))
@@ -351,7 +350,6 @@ def vm_port_del(request, iid, proto, public):
     inst = get_object_or_404(Instance, id=iid, owner=request.user)
     try:
         inst.firewall_host.del_port(proto=proto, public=public)
-        reload_firewall_lock()
         messages.success(request, _(u"Port %d successfully removed.") % public)
     except:
         messages.error(request, _(u"Removing port failed."))
