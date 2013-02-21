@@ -185,8 +185,10 @@ $(function() {
     $('.hidden-password').click(function() {
         if($(this).attr('type') == 'password'){
             $(this).attr('type', 'text');
+            $(this).addClass('shown');
         } else {
             $(this).attr('type', 'password');
+            $(this).removeClass('shown');
         }
     });
     $('.selected-summary').next().show();
@@ -197,15 +199,12 @@ $(function() {
     function get_vm_details(id) {
         $.get('/vm/credentials/' + id, function(data) {
             $('#modal-container').html(data);
-            $('.hidden-password').each(function() {
-                $(this).val('******');
-            });
-            $('.hidden-password').click(function() {
-                if(!$(this).hasClass('shown')) {
-                    $(this).val($(this).data('value'));
+            $('#modal-container .hidden-password').click(function() {
+                if($(this).attr('type') == 'password'){
+                    $(this).attr('type', 'text');
                     $(this).addClass('shown');
                 } else {
-                    $(this).val('******');
+                    $(this).attr('type', 'password');
                     $(this).removeClass('shown');
                 }
             })

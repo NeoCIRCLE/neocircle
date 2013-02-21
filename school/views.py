@@ -242,13 +242,13 @@ def group_ajax_owner_autocomplete(request):
 
     results = map(lambda u: {
         'name': u.get_full_name(),
-        'neptun': u.username }, User.objects.filter(last_name__startswith=request.POST['q'])[:5])
+        'neptun': u.username }, User.objects.filter(last_name__istartswith=request.POST['q'])[:5])
     results += map(lambda u: {
         'name': u.get_full_name(),
-        'neptun': u.username }, User.objects.filter(first_name__startswith=request.POST['q'])[:5])
+        'neptun': u.username }, User.objects.filter(first_name__istartswith=request.POST['q'])[:5])
     results += map(lambda u: {
         'name': u.get_full_name(),
-        'neptun': u.username }, User.objects.filter(username__startswith=request.POST['q'])[:5])
+        'neptun': u.username }, User.objects.filter(username__istartswith=request.POST['q'])[:5])
     return HttpResponse(json.dumps(results, ensure_ascii=False))
 
 @login_required
