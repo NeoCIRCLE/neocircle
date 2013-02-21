@@ -84,6 +84,15 @@
             <div class="clear"></div>
         </div>
     </li>
+    <li class="entry small-row">
+        <div class="summary" id="keys">
+            <div class="name keys">{% trans "Manage keys" %}</div>
+            <div class="clear"></div>
+        </div>
+    </li>
+    {% for key in keys %}
+        {% include "box/key/entry.html" %}
+    {% endfor %}
     <li class="file-upload entry small-row">
         <div class="summary" data-bind="click: getUploadURL">
             <div class="quota">
