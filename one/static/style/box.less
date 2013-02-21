@@ -101,6 +101,21 @@
             float: none;
         }
     }
+    &.key {
+        .name {
+            background-image: url(/static/icons/key.png);
+        }
+        textarea {
+            margin: 10px;
+            width: 93%;
+        }
+        #new-key .name {
+            background-image: url(/static/icons/key--plus.png);
+        }
+        #reset-key .name {
+            background-image: url(/static/icons/key--exclamation.png);
+        }
+    }
     .quota{
         left: 0;
         top: 0;
@@ -599,21 +614,7 @@ table {
     }
 }
 
-#keys {
-    .name {
-        background-image: url(/static/icons/key.png);
-    }
-    textarea {
-        margin: 10px;
-        width: 93%;
-    }
-    #new-key .name {
-        background-image: url(/static/icons/key--plus.png);
-    }
-    #reset-key .name {
-        background-image: url(/static/icons/key--exclamation.png);
-    }
-}
+
 
 .boxhelp {
     position: relative;

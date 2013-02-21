@@ -479,6 +479,10 @@ var cloud = (function(cloud) {
     var model = new Model();
     $(function() {
         ko.applyBindings(model);
+        $('#keys').click(function(e) {
+            $('.key').slideDown(700);
+            $('#keys').slideUp(700);
+        });
     });
     document.addEventListener('dragenter', function(e) {
         e.stopPropagation();
