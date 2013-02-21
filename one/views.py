@@ -456,7 +456,7 @@ def key_add(request):
         key.full_clean()
         key.save()
     except ValidationError as e:
-        messages.error(request, unicode(e))
+        messages.error(request, ''.join(e.messages))
     except e:
         messages.error(request, _('Failed to add public key'))
     return redirect('/')
