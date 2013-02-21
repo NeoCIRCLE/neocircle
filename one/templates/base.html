@@ -11,7 +11,7 @@
     <script src="/static/script/jquery.min.js"></script>
     <script type="text/javascript" src="{% url django.views.i18n.javascript_catalog %}"></script>
     <script type="text/javascript">
-        //window.localStorage.clear();
+        window.localStorage.removeItem('https://cloud.ik.bme.hu/static/style/style.less:timestamp');
         var current_user={{user.id}};
     </script>
     <script src="/static/script/less.min.js"></script>
