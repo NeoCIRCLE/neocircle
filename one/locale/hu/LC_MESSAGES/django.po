@@ -7,10 +7,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-02-19 18:42+0100\n"
-"PO-Revision-Date: 2013-02-19 18:46+0100\n"
+"POT-Creation-Date: 2013-02-21 18:06+0100\n"
+"PO-Revision-Date: 2013-02-21 18:07+0100\n"
 "Last-Translator: \n"
-"Language-Team: Hungarian <kde-l10n-hu@kde.org>\n"
+"Language-Team: Hungarian <cloud@ik.bme.hu>\n"
 "Language: hu\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -46,7 +46,7 @@ msgstr "VM folytatása"
 msgid "user"
 msgstr "felhasználó"
 
-#: models.py:39 templates/home.html:17
+#: models.py:39
 msgid "Samba password"
 msgstr "Samba jelszó"
 
@@ -331,63 +331,63 @@ msgstr "példány"
 msgid "instances"
 msgstr "példányok"
 
-#: views.py:59
+#: views.py:68
 msgid "Invalid template ID."
 msgstr "Nincs ilyen sablon."
 
-#: views.py:62
+#: views.py:71
 msgid "There are running instances of this template."
 msgstr "A sablonnak még vannak futó példányai."
 
-#: views.py:64
+#: views.py:73
 msgid "Template is still shared."
 msgstr "A sablon még meg van osztva."
 
-#: views.py:66
+#: views.py:75
 msgid "You don't have permission to delete this template."
 msgstr "Nincs joga törölni a sablont."
 
-#: views.py:69
+#: views.py:78
 msgid "Template successfully deleted."
 msgstr "A sablon törlése sikeres."
 
-#: views.py:71
+#: views.py:80
 msgid "Unexpected error happened."
 msgstr "Váratlan hiba történt."
 
-#: views.py:85
+#: views.py:94
 msgid "Could not get Virtual Machine credentials."
 msgstr "Nem találhatóak a virutális gép adatai."
 
-#: views.py:86 views.py:420
+#: views.py:95 views.py:434
 msgid "Failed to power off virtual machine."
 msgstr "A virtuális gép kikapcsolása sikertelen."
 
-#: views.py:114
+#: views.py:123
 msgid "You do not have any free share quota."
 msgstr "Nincs szabad kvótája."
 
-#: views.py:148
+#: views.py:157
 msgid "You do not have enough free share quota."
 msgstr "Nincs elég szabad kvótája."
 
-#: views.py:153
+#: views.py:162
 #, python-format
 msgid "Successfully shared %s."
 msgstr "„%s” megosztása sikeres."
 
-#: views.py:167
+#: views.py:176
 msgid "Template is being saved..."
 msgstr "A sablon mentése folyamatban van…"
 
-#: views.py:198
+#: views.py:207
 msgid ""
 "You do not have any free quota. You can not launch this until you stop an "
 "other instance."
 msgstr ""
 "Nincs szabad kvótája. Addig nem tud gépet indítani, amíg le nem állít egyet."
 
-#: views.py:202
+#: views.py:211
 msgid ""
 "The share does not have any free quota. You can not launch this until "
 "someone stops an instance."
@@ -395,7 +395,7 @@ msgstr ""
 "Ennek a megosztásnak elfogyott a kvótája. Nem tudja addig elindítani, amíg "
 "valaki le nem állít egy példányt."
 
-#: views.py:205
+#: views.py:214
 msgid ""
 "You do not have any free quota for this share. You can not launch this until "
 "you stop an other instance."
@@ -403,15 +403,15 @@ msgstr ""
 "Nincs szabad kvótája ehhez a megosztáshoz. Nem tudja addig elindítani, amíg "
 "nem állít le egy másik példányt."
 
-#: views.py:208
+#: views.py:217
 msgid "You are not a member of the share group."
 msgstr "Nem tagja a megosztás csoportjának."
 
-#: views.py:229
+#: views.py:238
 msgid "Can not create template."
 msgstr "Sablon létrehozása sikertelen."
 
-#: views.py:234
+#: views.py:243
 msgid ""
 "You have no permission to try this instance without a share. Launch a new "
 "instance through a share."
@@ -419,99 +419,103 @@ msgstr ""
 "Nincs joga a sablon kipróbálására megosztás nélkül. Próbálja egy megosztáson "
 "keresztül."
 
-#: views.py:247
+#: views.py:256
 msgid "Failed to create virtual machine."
 msgstr "A virtuális gép indítása sikertelen."
 
-#: views.py:316
+#: views.py:332
 msgid "Port number is in a restricted domain (22000 to 24000)."
 msgstr "A megadott port foglalt tartományba esik (22000-től 24000-ig)."
 
-#: views.py:320
+#: views.py:335
 #, python-format
 msgid "Port %d successfully added."
 msgstr "%d számú port hozzáadása sikeres."
 
-#: views.py:322
+#: views.py:337
 msgid "Adding port failed."
 msgstr "Port hozzáadása sikertelen."
 
-#: views.py:339
+#: views.py:353
 #, python-format
 msgid "Port %d successfully removed."
 msgstr "%d számú port eltávolítása sikeres."
 
-#: views.py:341
+#: views.py:355
 msgid "Removing port failed."
 msgstr "Port eltávolítása sikertelen."
 
-#: views.py:351
+#: views.py:365
 msgid "Virtual machine is successfully deleted."
 msgstr "A virtuális gép törlése sikeres."
 
-#: views.py:353
+#: views.py:367
 msgid "Failed to delete virtual machine."
 msgstr "A virtuális gép törlése sikertelen."
 
-#: views.py:375
+#: views.py:389
 msgid "There are machines running of this share."
 msgstr "A sablonnak még vannak futó példányai."
 
-#: views.py:378
+#: views.py:392
 msgid "Share is successfully removed."
 msgstr "Megosztás eltávolítása sikeres."
 
-#: views.py:380
+#: views.py:394
 msgid "Failed to remove share."
 msgstr "Megosztás törlése sikertelen."
 
-#: views.py:388
+#: views.py:402
 msgid "Virtual machine is successfully stopped."
 msgstr "A virtuális gép sikeresen leállt."
 
-#: views.py:390
+#: views.py:404
 msgid "Failed to stop virtual machine."
 msgstr "A virtuális gép leállítása sikertelen."
 
-#: views.py:398
+#: views.py:412
 msgid "Virtual machine is successfully resumed."
 msgstr "A virtuális gép sikeresen folytatva."
 
-#: views.py:400
+#: views.py:414
 msgid "Failed to resume virtual machine."
 msgstr "A virtuális gép visszatöltése sikertelen."
 
-#: views.py:408
+#: views.py:422
 msgid "Virtual machine is successfully renewed."
 msgstr "A virtuális gép sikeresen meghosszabbítva."
 
-#: views.py:410
+#: views.py:424
 msgid "Failed to renew virtual machine."
 msgstr "A virtuális gép meghosszabbítása sikertelen."
 
-#: views.py:418
+#: views.py:432
 msgid "Virtual machine is successfully powered off."
 msgstr "A virtuális gép kikapcsolása sikeres."
 
-#: views.py:428
+#: views.py:442
 msgid "Virtual machine is successfully restarted."
 msgstr "A virtuális gép újraindítása sikeres."
 
-#: views.py:430
+#: views.py:444
 msgid "Failed to restart virtual machine."
 msgstr "A virtuális gép újraindítása sikertelen."
+
+#: views.py:459
+msgid "Failed to add public key"
+msgstr "Nyilvános kulcs hozzáadása sikertelen."
+
+#: views.py:469
+msgid "Failed to delete public key"
+msgstr "Nyilvános kulcs törlése sikertelen."
+
+#: views.py:480
+msgid "Failed to reset keys"
+msgstr "Kulcsok újragenerálása"
 
 #: templates/404.html:7 templates/404.html.py:10
 msgid ":("
 msgstr ":("
-
-#: templates/home.html:8
-msgid "User details"
-msgstr "Felhasználói adatok"
-
-#: templates/home.html:12
-msgid "Public key"
-msgstr "Nyilvános kulcs"
 
 #: templates/new-share.html:7
 #, python-format
@@ -539,16 +543,16 @@ msgid "Name of share"
 msgstr "Megosztás neve"
 
 #: templates/new-share.html:40 templates/box/file/entry.html:31
-#: templates/box/vm/box.html:72 templates/box/vm/entry.html:28
+#: templates/box/vm/box.html:87 templates/box/vm/entry.html:28
 msgid "Type"
 msgstr "Típus"
 
-#: templates/new-share.html:58 templates/box/vm/box.html:76
+#: templates/new-share.html:58 templates/box/vm/box.html:91
 #, python-format
 msgid "Suspend after %(time)s."
 msgstr "Felfüggesztés %(time)s után."
 
-#: templates/new-share.html:61 templates/box/vm/box.html:80
+#: templates/new-share.html:61 templates/box/vm/box.html:95
 #, python-format
 msgid "Delete after %(time)s."
 msgstr "Törlés %(time)s után."
@@ -562,8 +566,8 @@ msgid "Maximal count of instaces/user"
 msgstr "Példányok max. száma/felhasználó"
 
 #: templates/new-share.html:79 templates/new-template-flow.html:49
-#: templates/box/template/box.html:92 templates/box/template/entry.html:32
-#: templates/box/vm/box.html:84
+#: templates/box/template/box.html:107 templates/box/template/entry.html:32
+#: templates/box/vm/box.html:99
 msgid "Description"
 msgstr "Leírás"
 
@@ -572,8 +576,8 @@ msgstr "Leírás"
 msgid "Cancel"
 msgstr "Mégsem"
 
-#: templates/new-share.html:86 templates/box/template/box.html:50
-#: templates/box/template/box.html.py:51
+#: templates/new-share.html:86 templates/box/template/box.html:65
+#: templates/box/template/box.html.py:66
 #: templates/box/template/summary.html:46
 #: templates/box/template/summary.html:47 templates/box/vm/entry.html:33
 msgid "Share"
@@ -597,11 +601,11 @@ msgstr "Válasszon egy alaprendszert, amelyet testre kíván szabni."
 msgid "There are no available templates."
 msgstr "Nincs elérhető sablon."
 
-#: templates/new-template-flow-1.html:31 templates/box/template/box.html:41
+#: templates/new-template-flow-1.html:31 templates/box/template/box.html:56
 msgid "locked"
 msgstr "zárolt"
 
-#: templates/new-template-flow-1.html:32 templates/box/template/box.html:42
+#: templates/new-template-flow-1.html:32 templates/box/template/box.html:57
 msgid "This is a shared template."
 msgstr "Ez egy megosztott sablon."
 
@@ -613,8 +617,8 @@ msgstr "Tovább &raquo;"
 msgid "Name"
 msgstr "Név"
 
-#: templates/new-template-flow.html:24 templates/box/template/box.html:83
-#: templates/box/template/entry.html:23 templates/box/vm/box.html:63
+#: templates/new-template-flow.html:24 templates/box/template/box.html:98
+#: templates/box/template/entry.html:23 templates/box/vm/box.html:78
 #: templates/box/vm/entry.html:43
 msgid "Size"
 msgstr "Méret"
@@ -634,7 +638,7 @@ msgstr "Mesterpéldány indítása"
 msgid "This is a master image for your new template."
 msgstr "Ez egy mestergép az új sablonhoz."
 
-#: templates/show.html:34
+#: templates/show.html:34 templates/box/file/box.html:106
 msgid "Save"
 msgstr "Mentés"
 
@@ -686,47 +690,115 @@ msgstr "Váratlan hiba történt"
 msgid "Login credentials"
 msgstr "Belépési adatok"
 
-#: templates/show.html:91
+#: templates/show.html:94 templates/vm-credentials.html:11
+#: templates/box/file/box.html:12 templates/box/template/box.html:13
+#: templates/box/vm/box.html:13
+msgid "Help"
+msgstr "Súgó"
+
+#: templates/show.html:97
+msgid ""
+"This is a list about the network ports\n"
+"                    forwarded to the public internet."
+msgstr "Ez a nyilvános internet felé továbbított hálózati portok listája."
+
+#: templates/show.html:99
+msgid ""
+"You can access the given private port of\n"
+"                    the VM trough the public address of the network.\n"
+"                    "
+msgstr "A VM megadott belső portját elérheti a hálózat külső címén keresztül."
+
+#: templates/show.html:102
+msgid ""
+"On the IPV6 network you can access the\n"
+"                    listed private ports direcly using the VM's global IPV6\n"
+"                    address (connections to other ports are dropped).\n"
+"                    "
+msgstr ""
+"Az IPV6 hálózaton a megadott belső portokat közvetlenül érheti el a VM "
+"globális IPV6 címén (a többi portra érkező kapcsolatokat eldobjuk)."
+
+#: templates/show.html:108
 msgid "Port administration"
 msgstr "Portok kezelése"
 
-#: templates/show.html:97 templates/vm-credentials.html:6
+#: templates/show.html:114 templates/vm-credentials.html:6
 msgid "Protocol"
 msgstr "Protokoll"
 
-#: templates/show.html:98
+#: templates/show.html:115
 msgid "Public port"
 msgstr "Külső port"
 
-#: templates/show.html:99
+#: templates/show.html:116
 msgid "Private port"
 msgstr "Belső port"
 
-#: templates/show.html:107 templates/box/template/box.html:67
-#: templates/box/template/summary.html:20 templates/box/vm/summary.html:31
-#: templates/box/vm/summary.html.py:32 templates/box/vm/summary.html:44
-#: templates/box/vm/summary.html.py:45 templates/box/vm/summary.html:48
-#: templates/box/vm/summary.html.py:49
+#: templates/show.html:124 templates/box/template/box.html:82
+#: templates/box/template/summary.html:20 templates/box/vm/summary.html:39
+#: templates/box/vm/summary.html.py:40 templates/box/vm/summary.html:49
+#: templates/box/vm/summary.html.py:50 templates/box/vm/summary.html:56
+#: templates/box/vm/summary.html.py:57 templates/box/vm/summary.html:60
+#: templates/box/vm/summary.html.py:61
 msgid "Delete"
 msgstr "Törlés"
 
-#: templates/show.html:125
+#: templates/show.html:142
 msgid "Add"
 msgstr "Hozzáadás"
 
-#: templates/vm-credentials.html:10
+#: templates/vm-credentials.html:15
+msgid ""
+"You can access Linux machines through\n"
+"                        the SSH protocol (we recommend\n"
+"                        <a href=\"http://www.chiark.greenend.org.uk/"
+"~sgtatham/putty/\">\n"
+"                            PuTTY</a> for Windows and OpenSSH for all other "
+"systems).\n"
+"                        "
+msgstr ""
+"A Linux gépeket az SSH protokollon érheti el. Windowshoz a <a href=\"http://"
+"www.chiark.greenend.org.uk/~sgtatham/putty/\">PuTTY</a>-ot, minden más "
+"rendszerhez az OpenSSH klienst ajánljuk."
+
+#: templates/vm-credentials.html:21
+msgid ""
+"Graphical log in is also supported with\n"
+"                        the <a href=\"http://www.nomachine.com/download.php"
+"\">\n"
+"                        NoMachine NX Client</a> application."
+msgstr ""
+"Grafikus bejelentkezés a <a href=\"http://www.nomachine.com/download.php\"> "
+"NoMachine NX Client</a> alkalmazással lehetséges."
+
+#: templates/vm-credentials.html:26
+msgid ""
+"You can access Windows machines through\n"
+"                        the remote desktop protocol."
+msgstr "A Windows gépeket a távoli asztal protokollon érheti el."
+
+#: templates/vm-credentials.html:28
+msgid ""
+"We recommend the built-in remote desktop\n"
+"                        client for Windows and Remmina for Linux."
+msgstr ""
+"Windowshoz a beépített távoli asztali kapcsolat alkalmazást, Linuxhoz a "
+"Remminát ajánljuk."
+
+#: templates/vm-credentials.html:37
 msgid "IP"
 msgstr "IP"
 
-#: templates/vm-credentials.html:14
+#: templates/vm-credentials.html:41
 msgid "Port"
 msgstr "Port"
 
-#: templates/vm-credentials.html:18
+#: templates/vm-credentials.html:45
 msgid "Username"
 msgstr "Felhasználónév"
 
-#: templates/vm-credentials.html:22
+#: templates/vm-credentials.html:49
 msgid "Password"
 msgstr "Jelszó"
 
@@ -734,31 +806,87 @@ msgstr "Jelszó"
 msgid "Data store"
 msgstr "Adattár"
 
-#: templates/box/file/box.html:40
+#: templates/box/file/box.html:15
+msgid "This is your global data store."
+msgstr "Ez az ön központi adattárja."
+
+#: templates/box/file/box.html:16
+msgid ""
+"You can access it from all your own virtual machines,\n"
+"        the lab client, this web interface, or through SFTP protocol.\n"
+"        "
+msgstr ""
+"A fájlokat elérheti az összes virtuális gépéről, a laborkliensről, erről a "
+"webes felületről, vagy SFTP protokollon."
+
+#: templates/box/file/box.html:19
+msgid ""
+"This directory is mounted on Windows machines as Z:\n"
+"        drive, and on Linux ones as ~/sshfs."
+msgstr ""
+"A windowsos gépeken a Z: meghajtóra, Linuxon a ~/sshfs katalógusba van "
+"csatolva."
+
+#: templates/box/file/box.html:21
+msgid ""
+"If you log in on lab machines (currently Ubuntu only),\n"
+"        you can see this folder also as ~/sshfs."
+msgstr ""
+"Ha a laborgépekre bejelentkezik (jelenleg csak Ubuntu alatt), akkor a "
+"fájlokat szintén a ~/sshfs katalógusban találja."
+
+#: templates/box/file/box.html:23
+#, python-format
+msgid ""
+"You can also use an SFTP client (eg.\n"
+"        WinSCP) to access your files at %(serv)s. You will need to register "
+"a\n"
+"        public key bellow."
+msgstr ""
+"SFTP klienst (pl. WinSCP) is használhat a %(serv)s címre csatlakozva. Ehhez "
+"alább tudja nyilvános kulcsát regisztrálni."
+
+#: templates/box/file/box.html:60
 msgid "No files."
 msgstr "Nincs megjeleníthető fájl."
 
-#: templates/box/file/box.html:53
+#: templates/box/file/box.html:73
 msgid "Create folder"
 msgstr "Mappa létrehozása"
 
-#: templates/box/file/box.html:55
+#: templates/box/file/box.html:75
 msgid "Name of new folder"
 msgstr "Új mappa neve"
 
-#: templates/box/file/box.html:63
+#: templates/box/file/box.html:83
 msgid "Toplist"
 msgstr "Legújabb fájlok"
 
-#: templates/box/file/box.html:72
+#: templates/box/file/box.html:89
+msgid "Manage keys"
+msgstr "Kulcsok kezelése"
+
+#: templates/box/file/box.html:98
+msgid "Add public key"
+msgstr "Nyilvános kulcs hozzáadása"
+
+#: templates/box/file/box.html:105
+msgid "Public key in OpenSSH format"
+msgstr "Nyilvános kulcs OpenSSH formátumban"
+
+#: templates/box/file/box.html:113
+msgid "Reset key"
+msgstr "Kulcsok újragenerálása"
+
+#: templates/box/file/box.html:122
 msgid "File upload"
 msgstr "Fájlfeltöltés"
 
-#: templates/box/file/box.html:78
+#: templates/box/file/box.html:128
 msgid "Drag and drop files here to start uploading."
 msgstr "Húzza ide a fájlt a feltöltés megkezdéséhez."
 
-#: templates/box/file/box.html:80
+#: templates/box/file/box.html:130
 msgid ""
 "You can also use the <a href=\"#\" id=\"old-upload\">the traditional upload "
 "form</a>."
@@ -766,35 +894,35 @@ msgstr ""
 "Használhatja a <a href=\"#\" id=\"old-upload\">hagyományos feltöltő űrlapot</"
 "a> is."
 
-#: templates/box/file/box.html:82
+#: templates/box/file/box.html:132
 msgid "Upload limit is 1GB per file!"
 msgstr "A feltöltési limit 1GiB fájlonként!"
 
-#: templates/box/file/box.html:86
+#: templates/box/file/box.html:136
 msgid "Error: File is bigger than 1GB!"
 msgstr "Hiba: a fájl nagyobb 1 GiB-nál."
 
-#: templates/box/file/box.html:87
+#: templates/box/file/box.html:137
 msgid "Error: Upload server is not available!"
 msgstr "Hiba: a feltöltő kiszolgáló nem érhető el."
 
-#: templates/box/file/box.html:88
+#: templates/box/file/box.html:138
 msgid "Error: File already exists!"
 msgstr "Hiba: a fájl már létezik."
 
-#: templates/box/file/box.html:107
+#: templates/box/file/box.html:157
 msgid "File quota"
 msgstr "Fájlkvóta"
 
-#: templates/box/file/box.html:107
+#: templates/box/file/box.html:157
 msgid "Used space"
 msgstr "Használt terület"
 
-#: templates/box/file/box.html:108
+#: templates/box/file/box.html:158
 msgid "soft limit"
 msgstr "puha limit"
 
-#: templates/box/file/box.html:110
+#: templates/box/file/box.html:160
 msgid "hard limit"
 msgstr "kemény limit"
 
@@ -814,91 +942,130 @@ msgstr "letöltés"
 msgid "Last modification"
 msgstr "Utolsó módosítás"
 
+#: templates/box/key/entry.html:18 templates/box/template/summary.html:50
+#: templates/box/template/summary.html:51
+msgid "Remove"
+msgstr "Törlés"
+
 #: templates/box/template/box.html:7
 msgid "Templates"
 msgstr "Sablonok"
 
-#: templates/box/template/box.html:19
+#: templates/box/template/box.html:16
+msgid "This is the list of your own templates."
+msgstr "Ez a saját sablonjainak listája."
+
+#: templates/box/template/box.html:17
+msgid "Templates are customized versions of the base images."
+msgstr "A sablonok alaprendszerek testre szabott változatai."
+
+#: templates/box/template/box.html:18
+msgid ""
+"You can install all the needed software on a master\n"
+"        machine, and it will be ready to run by your students in minutes.\n"
+"        "
+msgstr ""
+"Telepítheti az összes szükséges szoftvert egy mestergépen, és az így készült "
+"sablon pár perc múltán készen is állhat a hallgatók számára."
+
+#: templates/box/template/box.html:34
 msgid "You have no own templates."
 msgstr "Még nincs egy sablonja sem."
 
-#: templates/box/template/box.html:21
+#: templates/box/template/box.html:36
 msgid ""
 "Create a new one, and share it with your students. Or you can also use a "
 "common one."
 msgstr ""
 "Hozzon létre egyet, és ossza meg hallgatóival. Vagy használjon egy közöset."
 
-#: templates/box/template/box.html:47 templates/box/template/summary.html:40
+#: templates/box/template/box.html:62 templates/box/template/summary.html:40
 msgid "Try"
 msgstr "Kipróbálás"
 
-#: templates/box/template/box.html:48 templates/box/template/summary.html:41
+#: templates/box/template/box.html:63 templates/box/template/summary.html:41
 msgid "Start"
 msgstr "Indítás"
 
-#: templates/box/template/box.html:78 templates/box/template/entry.html:18
-#: templates/box/vm/box.html:58 templates/box/vm/entry.html:23
+#: templates/box/template/box.html:93 templates/box/template/entry.html:18
+#: templates/box/vm/box.html:73 templates/box/vm/entry.html:23
 msgid "System"
 msgstr "Rendszer"
 
-#: templates/box/template/box.html:97 templates/box/template/entry.html:37
+#: templates/box/template/box.html:112 templates/box/template/entry.html:37
 #: templates/box/vm/entry.html:52
 msgid "Created at"
 msgstr "Létrehozás ideje"
 
-#: templates/box/template/box.html:102 templates/box/template/entry.html:42
+#: templates/box/template/box.html:117 templates/box/template/entry.html:42
 msgid "Running instances"
 msgstr "Futó példányok"
 
-#: templates/box/template/box.html:116
+#: templates/box/template/box.html:131
 #, python-format
 msgid "Share quota: %(used)s/%(all)s"
 msgstr "Megosztó kvóta: %(used)s/%(all)s"
 
 #: templates/box/template/summary.html:43
 #: templates/box/template/summary.html:44
+#: templates/box/template/summary.html:53
+#: templates/box/template/summary.html:54
 msgid "Edit"
 msgstr "Szerkesztés"
-
-#: templates/box/template/summary.html:50
-#: templates/box/template/summary.html:51
-msgid "Remove"
-msgstr "Törlés"
 
 #: templates/box/vm/box.html:7
 msgid "Virtual machines"
 msgstr "Virtuális gépek"
 
+#: templates/box/vm/box.html:16
+msgid "This is the list of your running virtual machines."
+msgstr "Ez az ön futó virtuális gépeinek listája."
+
+#: templates/box/vm/box.html:17
+msgid ""
+"You can launch a new VM instance if it is shared by\n"
+"        a teacher for one of your groups."
+msgstr ""
+"Egy VM példányt akkor tud elindítani, ha egy oktató megosztotta egy olyan "
+"csoporttal, amelynek tagja."
+
 #: templates/box/vm/box.html:19
+msgid ""
+"Please note, that users and shares both have a limit\n"
+"        of launchable instances."
+msgstr ""
+"Vegye figyelembe, hogy a felhasználóknak és az egyes megosztásoknak is "
+"korlátozva van a futtatható példányszám."
+
+#: templates/box/vm/box.html:34
 msgid "You have not started any machines yet."
 msgstr "Még nem indított egy gépet sem."
 
-#: templates/box/vm/box.html:21
+#: templates/box/vm/box.html:36
 msgid "Choose a template, and you can use the system in a minute."
 msgstr "Válasszon egy sablont, és egy percen belül használhatja a rendszert."
 
-#: templates/box/vm/box.html:30
+#: templates/box/vm/box.html:45
 msgid "Start new machine"
 msgstr "Új gép indítása"
 
-#: templates/box/vm/box.html:35
+#: templates/box/vm/box.html:50
 msgid "Available shares"
 msgstr "Elérhető megosztások"
 
-#: templates/box/vm/box.html:37
+#: templates/box/vm/box.html:52
 msgid "Choose one of the following shared templates to launch."
 msgstr "Válasszon egyet az alábbi megosztott sablonok közül."
 
-#: templates/box/vm/box.html:93
+#: templates/box/vm/box.html:108
 msgid "Quota reached"
 msgstr "Kvóta betelt"
 
-#: templates/box/vm/box.html:93
+#: templates/box/vm/box.html:108
 msgid "Launch"
 msgstr "Indítás"
 
-#: templates/box/vm/box.html:113
+#: templates/box/vm/box.html:128
 #, python-format
 msgid "Personal quota: %(used)s/%(all)s"
 msgstr "Személyes kvóta: %(used)s/%(all)s"
@@ -919,29 +1086,38 @@ msgstr "Felfüggesztési idő meghosszabbítása"
 msgid "Renew deletion time"
 msgstr "Törlési idő meghosszabbítása"
 
-#: templates/box/vm/entry.html:78 templates/box/vm/summary.html:13
+#: templates/box/vm/entry.html:78 templates/box/vm/summary.html:15
 msgid "More details"
 msgstr "További részletek"
 
 #: templates/box/vm/summary.html:25 templates/box/vm/summary.html.py:26
+msgid "Edit name"
+msgstr "Név szerkesztése"
+
+#: templates/box/vm/summary.html:33 templates/box/vm/summary.html.py:34
 msgid "Connect"
 msgstr "Csatlakozás"
 
-#: templates/box/vm/summary.html:28 templates/box/vm/summary.html.py:29
+#: templates/box/vm/summary.html:36 templates/box/vm/summary.html.py:37
 msgid "Pause"
 msgstr "Felfüggesztés"
 
-#: templates/box/vm/summary.html:34
+#: templates/box/vm/summary.html:42
 msgid "Restart"
 msgstr "Újraindítás"
 
-#: templates/box/vm/summary.html:39
-msgid "starting…"
-msgstr "indítás…"
-
-#: templates/box/vm/summary.html:41 templates/box/vm/summary.html.py:42
+#: templates/box/vm/summary.html:53 templates/box/vm/summary.html.py:54
 msgid "Resume"
 msgstr "Folytatás"
+
+#~ msgid "Public keys"
+#~ msgstr "Nyilvános kulcsok"
+
+#~ msgid "User details"
+#~ msgstr "Felhasználói adatok"
+
+#~ msgid "starting…"
+#~ msgstr "indítás…"
 
 #~ msgid "My Groups"
 #~ msgstr "Saját csoportok"
