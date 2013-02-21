@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
+{% block js %}
+<script type="text/javascript" src="/static/script/store.js"></script>
+{% endblock %}
 {% block content %}
 <div class="boxes">
     {% include "box/vm/box.html" %}
