@@ -423,11 +423,64 @@ $(function() {
     });
 
     $('#new-owner').click(function() {
-        $('#new-owner-form').toggle();
+        $('#new-owner-form input[type=text]').focus();
     });
     $('#new-owner-form input').click(function(e) {
         e.stopPropagation();
     });
+    $('#new-owner-form input').keyup(function() {
+        var timer;
+        return function(e){
+            var val=$(this).val().split(' ')[0];
+            clearTimeout(timer);
+            timer=setTimeout(function(){
+                if(val.length<1) return;
+                $.ajax({
+                    type: 'POST',
+                    data: 'q='+val,
+                    url: '/ajax/group/autocomplete/',
+                    dataType: 'json',
+                    success: function(data){
+                        console.log(data);
+                        $('#new-owner-autocomplete')[0].innerHTML='<ul>';
+                        var el=$('#new-owner-autocomplete')[0];
+                        for(var i in data){
+                            var d=data[i];
+                            el.innerHTML+='<li>'
+                                +d.name+': '
+                                +d.neptun
+                                +' <input type="button" value="'+gettext('Add owner')+'" data-neptun="'+d.neptun+'" />'
+                                +'<div class="clear"></div></li>';
+                        }
+                        if(data.length == 0){
+                            el.innerHTML+='<li>'
+                                +gettext('Unknown')+': '
+                                +val
+                                +' <input type="button" value="'+gettext('Add owner')+'" data-neptun="'+val+'" />'
+                                +'<div class="clear"></div></li>';
+                        }
+                        el.innerHTML+='</ul>';
+                        $(el).find('input').each(function(){
+                            var self=this;
+                            $(this).click(function(e){
+                                e.stopPropagation();
+                                $.ajax({
+                                    type: 'POST',
+                                    data: 'neptun='+$(self).data('neptun'),
+                                    url: '/ajax/group/'+$('#new-owner').data('gid')+'/addOwner/',
+                                    dataType: 'json',
+                                    success: function(data){
+                                        window.location.reload();
+                                    }
+                                })
+                            })
+                        })
+                    }
+                });
+            },1000);
+            e.stopPropagation();
+        }
+    }());
     $('#new-owner-form input[type=submit]').click(function() {
         var neptun = $(this).prev().val();
         $.ajax({
@@ -457,6 +510,19 @@ $(function() {
             }
         });
     });
+    /*$('#group-owners .remove').click(function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var neptun = $(this).data('neptun');
+        $.ajax({
+            type: 'POST',
+            url: '/ajax/group/' + $(this).data('gid') + '/remove/',
+            data: 'neptun=' + neptun,
+            success: function(data) {
+                $('#member-' + neptun).slideUp(700);
+            }
+        });
+    });*/
     $('#groups .delete').click(function(e) {
         e.preventDefault();
         e.stopPropagation();
