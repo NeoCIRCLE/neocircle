@@ -5,15 +5,13 @@ for i in cloudstore toplist django
 do
     sudo stop $i || true
 done
-set -x
-cd /opt/webadmin/cloud
-./manage.py syncdb --noinput
-./manage.py migrate
-./manage.py loaddata miscellaneous/dump.json
-./manage.py loaddata miscellaneous/devenv/dev.json
-./manage.py update
-./manage.py loaddata miscellaneous/devenv/dev.json
-set +x
+
+sudo apt-get install rabbitmq-server
+sudo rabbitmqctl delete_user guest || true
+sudo rabbitmqctl add_user nyuszi teszt || true
+sudo rabbitmqctl add_vhost django || true
+sudo rabbitmqctl set_permissions -p django nyuszi '.*' '.*' '.*' || true
+
 
 #Set up store server
 rm -rf /var/www/*
@@ -44,6 +42,18 @@ do
     sudo start $i
 done
 
+set -x
+cd /opt/webadmin/cloud
+./manage.py syncdb --noinput
+./manage.py migrate
+./manage.py loaddata miscellaneous/dump.json
+./manage.py loaddata miscellaneous/devenv/dev.json
+./manage.py update
+./manage.py loaddata miscellaneous/devenv/dev.json
+set +x
+
+
+
 cd /opt/webadmin/cloud/miscellaneous/devenv
 
 sudo cp vimrc.local /etc/vim/vimrc.local
@@ -58,10 +68,4 @@ git config --global core.editor vim
 
 true
 
-
-sudo apt-get install rabbitmq-server
-sudo rabbitmqctl delete_user guest
-sudo rabbitmqctl add_user nyuszi teszt
-sudo rabbitmqctl add_vhost django
-sudo rabbitmqctl set_permissions -p django nyuszi '.*' '.*' '.*'
 

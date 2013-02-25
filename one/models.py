@@ -262,7 +262,7 @@ class Network(models.Model):
         return self.name
 
     @staticmethod
-    def update():
+    def update(delete=True):
         """Get and register virtual networks from OpenNebula."""
         import subprocess
         proc = subprocess.Popen(["/opt/occi.sh", "network", "list"],
@@ -282,7 +282,8 @@ class Network(models.Model):
                 except:
                     Network(id=id, name=name).save()
                 l.append(id)
-            cls.objects.exclude(id__in=l).delete()
+            if delete:
+                Network.objects.exclude(id__in=l).delete()
 
 
 class InstanceType(models.Model):
@@ -575,7 +576,10 @@ class Instance(models.Model):
         if self.firewall_host:
             h = self.firewall_host
             self.firewall_host = None
-            self.save()
+            try:
+                self.save()
+            except:
+                pass
             h.delete()
 
     def _update_vm(self, template):
@@ -633,7 +637,7 @@ class Instance(models.Model):
     def check_if_is_save_as_done(self):
         if self.state != 'DONE':
             return False
-        Disk.update()
+        Disk.update(delete=False)
         imgname = "template-%d-%d" % (self.template.id, self.id)
         disks = Disk.objects.filter(name=imgname)
         if len(disks) != 1:
