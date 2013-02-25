@@ -33,11 +33,13 @@ def _list_instances(request):
     instances = Instance.objects.exclude(state='DONE').filter(owner=request.user)
     for i in instances:
         i.update_state()
+    instances = instances.exclude(state='DONE')
     return instances
 
 @require_GET
 @login_required
 def home(request):
+    instances = _list_instances(request)
     shares = [s for s in request.user.person_set.all()[0].get_shares()]
     for i, s in enumerate(shares):
         s.running_shared = s.instance_set.all().exclude(state="DONE").filter(owner=request.user).count()
@@ -52,10 +54,10 @@ def home(request):
     except:
         generated_public_key = -1
     return render_to_response("home.html", RequestContext(request, {
+        'instances': instances,
         'shares': shares,
         'templates': Template.objects.filter(state='READY'),
         'mytemplates': Template.objects.filter(owner=request.user),
-        'instances': _list_instances(request),
         'groups': request.user.person_set.all()[0].owned_groups.all(),
         'semesters': Semester.objects.all(),
         'userdetails': details,
