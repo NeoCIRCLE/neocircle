@@ -179,28 +179,37 @@ class Host(models.Model):
     def enable_net(self):
         self.groups.add(Group.objects.get(name="netezhet"))
 
-    def add_port(self, proto, public, private):
+    def add_port(self, proto, public, private = 0):
         proto = "tcp" if (proto == "tcp") else "udp"
-        if public < 1024:
-            raise ValidationError(_("Only ports above 1024 can be used."))
-        for host in Host.objects.filter(pub_ipv4=self.pub_ipv4):
-            if host.rules.filter(nat=True, proto=proto, dport=public):
+        if self.shared_ip:
+            if public < 1024:
+                raise ValidationError(_("Only ports above 1024 can be used."))
+            for host in Host.objects.filter(pub_ipv4=self.pub_ipv4):
+                if host.rules.filter(nat=True, proto=proto, dport=public):
+                    raise ValidationError(_("Port %s %s is already in use.") %
+                            (proto, public))
+            rule = Rule(direction='1', owner=self.owner, dport=public,
+                    proto=proto, nat=True, accept=True, r_type="host",
+                    nat_dport=private, host=self, foreign_network=VlanGroup.
+                        objects.get(name=settings["default_vlangroup"]))
+        else:
+            if self.rules.filter(proto=proto, dport=public):
                 raise ValidationError(_("Port %s %s is already in use.") %
-                        (proto, public))
-        rule = Rule(direction='1', owner=self.owner, dport=public,
-                proto=proto, nat=True, accept=True, r_type="host",
-                nat_dport=private, host=self, foreign_network=VlanGroup.
-                    objects.get(name=settings["default_vlangroup"]))
+                    (proto, public))
+            rule = Rule(direction='1', owner=self.owner, dport=public,
+                    proto=proto, nat=False, accept=True, r_type="host", host=self,
+                    foreign_network=VlanGroup.objects.get(name=settings["default_vlangroup"]))
+
         rule.full_clean()
         rule.save()
 
     def del_port(self, proto, public):
-        self.rules.filter(owner=self.owner, proto=proto, nat=True,
+        self.rules.filter(owner=self.owner, proto=proto, host=self,
                 dport=public).delete()
 
     def list_ports(self):
         retval = []
-        for rule in self.rules.filter(owner=self.owner, nat=True):
+        for rule in self.rules.filter(owner=self.owner):
             retval.append({'proto': rule.proto, 'public': rule.dport,
                 'private': rule.nat_dport})
         return retval

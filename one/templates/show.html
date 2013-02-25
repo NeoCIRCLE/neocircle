@@ -113,13 +113,13 @@
                     <tr>
                         <th>{% trans "Protocol" %}</th>
                         <th>{% trans "Public port" %}</th>
-                        <th colspan="2">{% trans "Private port" %}</th>
+                        {% if i.template.network.nat %}<th colspan="2">{% trans "Private port" %}</th>{%endif%}
                     </tr>
                     {% for port in ports %}
                     <tr>
                         <td>{{port.proto}}</td>
                         <td>{{port.public}}</td>
-                        <td>{{port.private}}</td>
+                        {% if i.template.network.nat %}<td>{{port.private}}</td>{%endif%}
                         <td>
                             <a href="/vm/port_del/{{i.id}}/{{port.proto}}/{{port.public}}/">{% trans "Delete" %}</a>
                         </td>
@@ -135,9 +135,11 @@
                         <td>
                             <input style="min-width:70px;width:70px;" type="text" name="public"/>
                         </td>
+                        {% if i.template.network.nat %}
                         <td>
                             <input style="min-width:70px;width:70px;" type="text" name="private"/>
                         </td>
+                        {% endif %}
                         <td>
                             <input type="submit" style="min-width:3em" value="{% trans "Add" %}" />
                         </td>

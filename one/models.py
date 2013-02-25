@@ -224,7 +224,7 @@ class Disk(models.Model):
         return u"%s (#%d)" % (self.name, self.id)
 
     @staticmethod
-    def update():
+    def update(delete=True):
         """Get and register virtual disks from OpenNebula."""
         import subprocess
         proc = subprocess.Popen(["/opt/occi.sh", "storage", "list"],
@@ -244,7 +244,8 @@ class Disk(models.Model):
                 except:
                     Disk(id=id, name=name).save()
                 l.append(id)
-            Disk.objects.exclude(id__in=l).delete()
+            if delete:
+                Disk.objects.exclude(id__in=l).delete()
 
 class Network(models.Model):
     """Virtual networks automatically synchronized with OpenNebula."""
@@ -262,7 +263,7 @@ class Network(models.Model):
         return self.name
 
     @staticmethod
-    def update(delete=True):
+    def update():
         """Get and register virtual networks from OpenNebula."""
         import subprocess
         proc = subprocess.Popen(["/opt/occi.sh", "network", "list"],
@@ -282,8 +283,7 @@ class Network(models.Model):
                 except:
                     Network(id=id, name=name).save()
                 l.append(id)
-            if delete:
-                Network.objects.exclude(id__in=l).delete()
+            Network.objects.exclude(id__in=l).delete()
 
 
 class InstanceType(models.Model):
@@ -413,9 +413,9 @@ class Instance(models.Model):
     def get_connect_host(self):
         """Get public hostname."""
         if self.template.network.nat:
-            return 'cloud'
+            return self.firewall_host.pub_ipv4
         else:
-            return self.ip
+            return self.firewall_host.ipv4
 
     def get_connect_uri(self):
         """Get access parameters in URI format."""
@@ -428,7 +428,7 @@ class Instance(models.Model):
             pw = self.pw
             return ("%(proto)s:cloud:%(pw)s:%(host)s:%(port)d" %
                     {"port": port, "proto": proto, "pw": pw,
-                     "host": self.firewall_host.pub_ipv4})
+                     "host": host})
         except:
             return
 
@@ -541,11 +541,13 @@ class Instance(models.Model):
         inst.save()
         inst.update_state()
         host = Host(vlan=Vlan.objects.get(name=template.network.name),
-                owner=owner, shared_ip=True)
+                owner=owner)
         host.hostname = hostname
         host.mac = x.getElementsByTagName("MAC")[0].childNodes[0].nodeValue
         host.ipv4 = inst.ip
-        host.pub_ipv4 = Vlan.objects.get(name=template.network.name).snat_ip
+        if inst.template.network.nat:
+            host.pub_ipv4 = Vlan.objects.get(name=template.network.name).snat_ip
+            host.shared_ip = True
         host.ipv6 = "auto"
         try:
             host.save()
