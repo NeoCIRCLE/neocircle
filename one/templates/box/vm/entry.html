@@ -56,7 +56,7 @@
     <li class="date">
         {% trans "time of suspend"|capfirst %}:
         <span class="value"> <abbr title="{{vm.time_of_suspend}}">{{vm.time_of_suspend|timeuntil}}</abbr>
-            <a href="#"  class="renew-vm-button renew-suspend-vm-button" data-id="{{ vm.id }}" title="{% trans "Renew suspend time" %}">
+            <a href="#"  class="renew-vm renew-suspend-vm" data-id="{{ vm.id }}" title="{% trans "Renew suspend time" %}">
                 <img src="/static/icons/control-double.png" alt="{% trans "Renew suspend time" %}" />
             </a>
         </span>
@@ -66,7 +66,7 @@
     <li class="date">
         {% trans "time of delete"|capfirst %}:
         <span class="value"> <abbr title="{{vm.time_of_delete}}">{{vm.time_of_delete|timeuntil}}</abbr>
-            <a href="#"  class="renew-vm-button renew-delete-vm-button" data-id="{{ vm.id }}" title="{% trans "Renew deletion time" %}">
+            <a href="#"  class="renew-vm renew-delete-vm" data-id="{{ vm.id }}" title="{% trans "Renew deletion time" %}">
                 <img src="/static/icons/control-double.png" alt="{% trans "Renew deletion time" %}" />
             </a>
         </span>
