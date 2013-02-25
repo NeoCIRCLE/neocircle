@@ -412,6 +412,8 @@ class Instance(models.Model):
             return {"rdp": 3389, "nx": 22, "ssh": 22}[proto]
     def get_connect_host(self):
         """Get public hostname."""
+        if self.firewall_host is None:
+            return _('None')
         if self.template.network.nat:
             return self.firewall_host.pub_ipv4
         else:
