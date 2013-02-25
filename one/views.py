@@ -289,6 +289,11 @@ def vm_show(request, iid):
         ports = inst.firewall_host.list_ports()
     except:
         ports = None
+    try:
+        details = UserCloudDetails.objects.get(user=request.user)
+    except UserCloudDetails.DoesNotExist:
+        details = UserCloudDetails(user=request.user)
+        details.save()
     return render_to_response("show.html", RequestContext(request,{
         'uri': inst.get_connect_uri(),
         'state': inst.state,
@@ -299,6 +304,7 @@ def vm_show(request, iid):
         'i': inst,
         'booting' : not inst.active_since,
         'ports': ports,
+        'userdetails': details
         }))
 
 @require_safe
