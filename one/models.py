@@ -282,7 +282,7 @@ class Network(models.Model):
                 except:
                     Network(id=id, name=name).save()
                 l.append(id)
-            cls.objects.exclude(id__in=l).delete()
+            Network.objects.exclude(id__in=l).delete()
 
 
 class InstanceType(models.Model):
