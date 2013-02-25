@@ -394,13 +394,18 @@ var cloud = (function(cloud) {
                 var start = new Date().getTime();
                 xhr.open('POST', self.uploadURL());
                 xhr.onload = xhr.onerror = function() {
-                    $('.file-upload').removeClass('opened');
-                    $('.file-upload .details').slideUp(700);
-                    $('#upload-zone').show();
-                    $('#upload-progress-text').hide();
                     self.uploadProgress('0%');
                     self.uploadURL('/');
-                    loadFolder(self.currentPath());
+                    if (next) {
+                        console.log('complete, next')
+                        next();
+                    } else {
+                        $('.file-upload').removeClass('opened');
+                        $('.file-upload .details').slideUp(700);
+                        $('#upload-zone').show();
+                        $('#upload-progress-text').hide();
+                        loadFolder(self.currentPath());
+                    }
                 }
                 if (tests.progress) {
                     $('#upload-zone').hide();
@@ -444,7 +449,26 @@ var cloud = (function(cloud) {
         document.addEventListener('drop', function(e) {
             e.stopPropagation();
             e.preventDefault();
-            readfiles(e.dataTransfer.files[0]);
+            var len=e.dataTransfer.files.length;
+            var files=e.dataTransfer.files;
+            console.log(files);
+            console.log(e.dataTransfer.files);
+            var i=1;
+            readfiles(e.dataTransfer.files[0], function() {
+                console.log('next', i);
+                next=arguments.callee;
+                return function() {
+                    console.log('readnext', i, len);
+                    if(i >= len-1) {
+                        console.log('end', i, len);
+                        self.getUploadURL();
+                        readfiles(files[i++], null);
+                        return;
+                    }
+                    self.getUploadURL();
+                    readfiles(files[i++], next());
+                }
+            }());
             return false;
         });
         document.addEventListener('dragover', function(e) {
