@@ -214,9 +214,6 @@ class Host(models.Model):
                 'private': rule.nat_dport})
         return retval
 
-    def del_rules(self):
-        self.rules.filter(owner=self.owner).delete()
-
     def get_fqdn(self):
         return self.hostname + u'.' + unicode(self.vlan.domain)
 

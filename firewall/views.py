@@ -78,7 +78,6 @@ def firewall_api(request):
             host = models.Host.objects.get(hostname=data["hostname"],
                     owner=owner)
 
-            host.del_rules()
             host.delete()
         else:
             raise Exception(_("Unknown command."))
