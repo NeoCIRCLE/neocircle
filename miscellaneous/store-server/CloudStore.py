@@ -100,23 +100,13 @@ def cmd_download(request, neptun, home_path):
     if not dl_path.startswith(home_path):
         abort(400, 'Invalid download path.')
     dl_hash = str(uuid.uuid4())
-    if( os.path.isfile(dl_path) ):
-        os.symlink(dl_path, ROOT_WWW_FOLDER+'/'+dl_hash)
-        # Debug
-        # redirect('http://store.cloud.ik.bme.hu:8080/dl/'+dl_hash)
+    dl_pub = os.path.join(ROOT_WWW_FOLDER, dl_hash)
+    if os.path.isfile(dl_path):
+        os.symlink(dl_path, dl_pub)
         return json.dumps({'LINK' : SITE_URL+'/dl/'+dl_hash})
     else:
-        try:
-            os.makedirs(TEMP_DIR+'/'+neptun, 0700)
-        except:
-            pass
-        folder_name = os.path.basename(dl_path)
-        temp_path = TEMP_DIR+'/'+neptun+'/'+folder_name+'.zip'
-        with open(os.devnull, "w") as fnull:
-            # zip -rqDj vmi.zip /home/tarokkk/vpn-ik
-            result = subprocess.call(['/usr/bin/zip', '-rqDj', temp_path, dl_path], stdout = fnull, stderr = fnull)
-        os.symlink(temp_path, ROOT_WWW_FOLDER+'/'+dl_hash)
-        return json.dumps({'LINK' : SITE_URL+'/dl/'+dl_hash})
+        shutil.make_archive(dl_pub, 'zip', dl_path)
+        return json.dumps({'LINK' : SITE_URL+'/dl/'+dl_hash+'.zip'})
 COMMANDS['DOWNLOAD'] = cmd_download
 
 # UPLOAD
