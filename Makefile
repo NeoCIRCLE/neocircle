@@ -22,4 +22,4 @@ mo:
 	for i in */; do cd $$i; ls locale &>/dev/null && ../manage.py compilemessages || true; cd ..; done
 
 restart:
-	sudo /etc/init.d/apache2 reload
+	sudo /etc/init.d/apache2 reload || sudo restart django
