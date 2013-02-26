@@ -13,7 +13,7 @@ class RecordInline(contrib.admin.TabularInline):
 
 class HostAdmin(admin.ModelAdmin):
     list_display = ('hostname', 'vlan', 'ipv4', 'ipv6', 'pub_ipv4', 'mac',
-        'shared_ip', 'owner', 'description', 'reverse', 'groups_l')
+        'shared_ip', 'owner', 'description', 'reverse', 'list_groups')
     ordering = ('hostname', )
     list_filter = ('owner', 'vlan', 'groups')
     search_fields = ('hostname', 'description', 'ipv4', 'ipv6', 'mac')
@@ -21,7 +21,7 @@ class HostAdmin(admin.ModelAdmin):
     inlines = (RuleInline, RecordInline)
 
     @staticmethod
-    def groups_l(instance):
+    def list_groups(instance):
         """Returns instance's groups' names as a comma-separated list."""
         names = [group.name for group in instance.groups.all()]
         return u', '.join(names)
@@ -43,36 +43,39 @@ class RuleAdmin(admin.ModelAdmin):
     list_filter = ('r_type', 'vlan', 'owner', 'direction', 'accept',
         'proto', 'nat')
 
-    def color_desc(self, instance):
+    @staticmethod
+    def color_desc(instance):
         """Returns a colorful description of the instance."""
-        para = '</span>'
-        if instance.dport:
-            para = 'dport=%s %s' % (instance.dport, para)
-        if instance.sport:
-            para = 'sport=%s %s' % (instance.sport, para)
-        if instance.proto:
-            para = 'proto=%s %s' % (instance.proto, para)
-        para = u'<span style="color: #00FF00;">' + para
-        return (
-            u'<span style="color: #FF0000;">[%s]</span> ' % instance.r_type +
-            (u'%s<span style="color: #0000FF;"> ▸ </span>%s' %
-                ((instance.foreign_network.name, instance.r_type)
-                 if instance.direction == '1' else
-                 (instance.r_type, instance.foreign_network.name))) +
-            ' ' + para + ' ' + instance.description)
+        return (u'<span style="color: #FF0000;">[%(type)s]</span> '
+                u'%(src)s<span style="color: #0000FF;"> ▸ </span>%(dst)s '
+                u'%(para)s %(desc)s') % {
+                     'type': instance.r_type,
+                     'src': (instance.foreign_network.name
+                         if instance.direction == '1' else instance.r_type),
+                     'dst': (instance.r_type if instance.direction == '1'
+                         else instance.foreign_network.name),
+                     'para': (u'<span style="color: #00FF00;">' +
+                             (('proto=%s ' % instance.proto)
+                                 if instance.proto else '') +
+                             (('sport=%s ' % instance.sport)
+                                 if instance.sport else '') +
+                             (('dport=%s ' % instance.dport)
+                                 if instance.dport else '') +
+                               '</span>'),
+                     'desc': instance.description}
     color_desc.allow_tags = True
 
-    def vlan_l(self, instance):
+    @staticmethod
+    def vlan_l(instance):
         """Returns instance's VLANs' names as a comma-separated list."""
-        retval = []
-        for vlan in instance.foreign_network.vlans.all():
-            retval.append(vlan.name)
-        return u', '.join(retval)
+        names = [vlan.name for vlan in instance.foreign_network.vlans.all()]
+        return u', '.join(names)
 
-    def used_in(self, instance):
+    @staticmethod
+    def used_in(instance):
         for field in [instance.vlan, instance.vlangroup, instance.host,
                 instance.hostgroup, instance.firewall]:
-            if field is not None:
+            if field:
                 return unicode(field) + ' ' + field._meta.object_name
 
 
@@ -92,15 +95,15 @@ class DomainAdmin(admin.ModelAdmin):
 class RecordAdmin(admin.ModelAdmin):
     list_display = ('name_', 'type', 'address_', 'ttl', 'host', 'owner')
 
-    def address_(self, instance):
+    @staticmethod
+    def address_(instance):
         a = instance.get_data()
-        if a:
-            return a['address']
+        return a['address'] if a else None
 
-    def name_(self, instance):
+    @staticmethod
+    def name_(instance):
         a = instance.get_data()
-        if a:
-            return a['name']
+        return a['name'] if a else None
 
 class BlacklistAdmin(admin.ModelAdmin):
     list_display = ('ipv4', 'reason', 'created_at', 'modified_at')

@@ -36,10 +36,11 @@ class firewall:
 
 
     def iptables(self, s):
-        """Append rule."""
+        """Append rule to filter table."""
         self.RULES.append(s)
 
     def iptablesnat(self, s):
+        """Append rule to NAT table."""
         self.RULES_NAT.append(s)
 
     def host2vlan(self, host, rule):

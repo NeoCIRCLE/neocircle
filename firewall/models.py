@@ -8,7 +8,6 @@ from firewall.fields import *
 from south.modelsinspector import add_introspection_rules
 from django.core.validators import MinValueValidator, MaxValueValidator
 from cloud.settings import firewall_settings as settings
-from django.utils.ipv6 import is_valid_ipv6_address
 from django.db.models.signals import post_save
 import re
 
@@ -54,27 +53,23 @@ class Rule(models.Model):
         return self.desc()
 
     def clean(self):
-        count = 0
-        for field in [self.vlan, self.vlangroup, self.host, self.hostgroup,
-                self.firewall]:
-             if field is None:
-                 count = count + 1
-        if count != 4:
-            raise ValidationError('jaj')
+        fields = [self.vlan, self.vlangroup, self.host, self.hostgroup,
+                self.firewall]
+        selected_fields = [field for field in fields if field]
+        if len(selected_fields) > 1:
+            raise ValidationError(_('Only one field can be selected.'))
 
     def desc(self):
-        para = u""
-        if(self.dport):
-            para = "dport=%s %s" % (self.dport, para)
-        if(self.sport):
-            para = "sport=%s %s" % (self.sport, para)
-        if(self.proto):
-            para = "proto=%s %s" % (self.proto, para)
-        return (u'[' + self.r_type + u'] ' +
-                (unicode(self.foreign_network) + u' ▸ ' + self.r_type
-                    if self.direction == '1' else self.r_type + u' ▸ ' +
-                    unicode(self.foreign_network)) + u' ' + para + u' ' +
-                self.description)
+        return u'[%(type)s] %(src)s ▸ %(dst)s %(para)s %(desc)s' % {
+            'type': self.r_type,
+            'src': (unicode(self.foreign_network) if self.direction == '1'
+                else self.r_type),
+            'dst': (self.r_type if self.direction == '1'
+                else unicode(self.foreign_network)),
+            'para': ((("proto=%s " % self.proto) if self.proto else '') +
+                     (("sport=%s " % self.sport) if self.sport else '') +
+                     (("dport=%s " % self.dport) if self.dport else '')),
+            'desc': self.description}
 
 class Vlan(models.Model):
     vid = models.IntegerField(unique=True)
@@ -170,17 +165,15 @@ class Host(models.Model):
         self.full_clean()
         super(Host, self).save(*args, **kwargs)
         if id is None:
-            Record(domain=self.vlan.domain, host=self, type='A',
+            t = 'A' if self.ipv6 else 'AAAA'
+            Record(domain=self.vlan.domain, host=self, type=t,
                     owner=self.owner).save()
-            if self.ipv6:
-                Record(domain=self.vlan.domain, host=self, type='AAAA',
-                        owner=self.owner).save()
 
     def enable_net(self):
         self.groups.add(Group.objects.get(name="netezhet"))
 
     def add_port(self, proto, public, private = 0):
-        proto = "tcp" if (proto == "tcp") else "udp"
+        proto = "tcp" if proto == "tcp" else "udp"
         if self.shared_ip:
             if public < 1024:
                 raise ValidationError(_("Only ports above 1024 can be used."))
@@ -197,8 +190,9 @@ class Host(models.Model):
                 raise ValidationError(_("Port %s %s is already in use.") %
                     (proto, public))
             rule = Rule(direction='1', owner=self.owner, dport=public,
-                    proto=proto, nat=False, accept=True, r_type="host", host=self,
-                    foreign_network=VlanGroup.objects.get(name=settings["default_vlangroup"]))
+                    proto=proto, nat=False, accept=True, r_type="host",
+                    host=self, foreign_network=VlanGroup.objects
+                        .get(name=settings["default_vlangroup"]))
 
         rule.full_clean()
         rule.save()
@@ -208,11 +202,10 @@ class Host(models.Model):
                 dport=public).delete()
 
     def list_ports(self):
-        retval = []
-        for rule in self.rules.filter(owner=self.owner):
-            retval.append({'proto': rule.proto, 'public': rule.dport,
-                'private': rule.nat_dport})
-        return retval
+        return [{'proto': rule.proto,
+                 'public': rule.dport,
+                 'private': rule.nat_dport} for rule in
+                self.rules.filter(owner=self.owner)]
 
     def get_fqdn(self):
         return self.hostname + u'.' + unicode(self.vlan.domain)
@@ -255,75 +248,90 @@ class Record(models.Model):
 
     def desc(self):
         a = self.get_data()
-        if a:
-            return a['name'] + u' ' + a['type'] + u' ' + a['address']
-        return '(empty)'
+        return (u' '.join([a['name'], a['type'], a['address']])
+                if a else _('(empty)'))
 
     def save(self, *args, **kwargs):
         self.full_clean()
         super(Record, self).save(*args, **kwargs)
 
     def clean(self):
-        if self.name and self.name.endswith(u'.'):
-            raise ValidationError(_("Domain can't be terminated with a dot."))
+        if self.name:
+            self.name = self.name.rstrip(".")    # remove trailing dots
 
-        if self.host and self.type in ['CNAME', 'A', 'AAAA']:
-            if self.type == 'CNAME':
-                if not self.name or self.address:
-                    raise ValidationError(_("Only the 'name' field should "
-                            "be filled with a CNAME record if a host is "
-                            "set."))
-            elif self.name or self.address:
-                raise ValidationError(_("'name' and 'address' can't be "
-                        "specified with an A or AAAA record if a host is "
-                        "set."))
-        else:
-            if not self.address:
-                raise ValidationError(_("'address' field must be filled."))
+        if self.host:
+            if self.type in ['A', 'AAAA']:
+                if self.address:
+                    raise ValidationError(_("Can't specify address for "
+                        "A or AAAA records if host is set!"))
+                if self.name:
+                    raise ValidationError(_("Can't specify name for "
+                        "A or AAAA records if host is set!"))
+            elif self.type == 'CNAME':
+                if self.name is None:
+                    raise ValidationError(_("Name must be specified for "
+                        "CNAME records if host is set!"))
+                if self.address:
+                    raise ValidationError(_("Can't specify address for "
+                        "CNAME records if host is set!"))
+        else:    # if self.host is None
+            if self.address is None:
+                raise ValidationError(_("Address must be specified!"))
 
             if self.type == 'A':
-                if not ipv4_re.match(self.address):
-                    raise ValidationError(_("Not a valid IPv4 address."))
-            elif self.type in ['CNAME', 'NS', 'PTR', 'TXT']:
-                if not domain_re.match(self.address):
-                    raise ValidationError(_("Not a valid domain."))
+                val_ipv4(self.address)
             elif self.type == 'AAAA':
-                if not is_valid_ipv6_address(self.address):
-                    raise ValidationError(_("Not a valid IPv6 address."))
+                val_ipv6(self.address)
+            elif self.type in ['CNAME', 'NS', 'PTR', 'TXT']:
+                val_domain(self.address)
             elif self.type == 'MX':
                 mx = self.address.split(':', 1)
                 if not (len(mx) == 2 and mx[0].isdigit() and
                         domain_re.match(mx[1])):
-                    raise ValidationError(_("Invalid address. "
-                        "Valid format: <priority>:<hostname>"))
+                    raise ValidationError(_("Bad address format. "
+                        "Should be: <priority>:<hostname>"))
             else:
-                raise ValidationError(_("Unknown record."))
+                raise ValidationError(_("Unknown record type."))
 
-    def get_data(self):
-        retval = { 'name': self.name, 'type': self.type, 'ttl': self.ttl,
-                'address': self.address }
-        if self.host and self.type in ['CNAME', 'A', 'AAAA']:
+    def __get_name(self):
+        if self.host:
+            if self.type in ['A', 'AAAA']:
+                return self.host.get_fqdn()
+            elif self.type == 'CNAME':
+                return self.name + '.' + unicode(self.domain)
+            else:
+                return self.name
+        else:    # if self.host is None
+            if self.name is None:
+                return unicode(self.domain)
+            else:
+                return self.name + '.' + unicode(self.domain)
+
+    def __get_address(self):
+        if self.host:
             if self.type == 'A':
-                retval['address'] = (self.host.pub_ipv4
+                return (self.host.pub_ipv4
                         if self.host.pub_ipv4 and not self.host.shared_ip
                         else self.host.ipv4)
-                retval['name'] = self.host.get_fqdn()
             elif self.type == 'AAAA':
-                if not self.host.ipv6:
-                    return None
-                retval['address'] = self.host.ipv6
-                retval['name'] = self.host.get_fqdn()
+                return self.host.ipv6
             elif self.type == 'CNAME':
-                retval['address'] = self.host.get_fqdn()
-                retval['name'] = self.name + u'.' + unicode(self.domain)
-        else:
-            if not self.name:
-                retval['name'] = unicode(self.domain)
-            else:
-                retval['name'] = self.name + u'.' + unicode(self.domain)
-        if not (retval['address'] and retval['name']):
+                return self.host.get_fqdn()
+        # otherwise:
+        return self.address
+
+    def get_data(self):
+        name = __get_name()
+        address = __get_address()
+        if self.host and self.type == 'AAAA' and not self.host.ipv6:
             return None
-        return retval
+        elif address is None or name is None:
+            return None
+        else:
+            return {'name': name,
+                    'type': self.type,
+                    'ttl': self.ttl,
+                    'address': address}
 
 class Blacklist(models.Model):
     CHOICES_type = (('permban', 'permanent ban'), ('tempban', 'temporary ban'), ('whitelist', 'whitelist'))

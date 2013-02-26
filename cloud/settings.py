@@ -189,17 +189,16 @@ CELERY_ROUTES = {
 }
 
 store_settings = {
-        "basic_auth": "True",
-        "verify_ssl": "False",
-        "ssl_auth": "False",
-        "store_client_pass":  "IQu8Eice",
-        "store_client_user":  "admin",
-        "store_client_key": "/opt/webadmin/cloud/client.key",
-        "store_client_cert": "/opt/webadmin/cloud/client.crt",
-        "store_url": "http://localhost:9000",
-        "store_public": "store.ik.bme.hu",
+    "basic_auth": "True",
+    "verify_ssl": "False",
+    "ssl_auth": "False",
+    "store_client_pass":  "IQu8Eice",
+    "store_client_user":  "admin",
+    "store_client_key": "/opt/webadmin/cloud/client.key",
+    "store_client_cert": "/opt/webadmin/cloud/client.crt",
+    "store_url": "http://localhost:9000",
+    "store_public": "store.ik.bme.hu",
 }
-
 
 firewall_settings = {
     "default_vlangroup": "publikus",
