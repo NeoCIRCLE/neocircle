@@ -165,9 +165,11 @@ class Host(models.Model):
         self.full_clean()
         super(Host, self).save(*args, **kwargs)
         if id is None:
-            t = 'A' if self.ipv6 else 'AAAA'
-            Record(domain=self.vlan.domain, host=self, type=t,
+            Record(domain=self.vlan.domain, host=self, type='A',
                     owner=self.owner).save()
+            if self.ipv6:
+                Record(domain=self.vlan.domain, host=self, type='AAAA',
+                        owner=self.owner).save()
 
     def enable_net(self):
         self.groups.add(Group.objects.get(name="netezhet"))
