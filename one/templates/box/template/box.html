@@ -83,7 +83,13 @@
                             </form>
                             <div class="clear"></div>
                         </li>
-                        <li class="description">{{i.description}}</li>
+                        <li class="description">
+                            {% if i.description %}
+                                {{i.description}}
+                            {% else %}
+                                {% trans "No description available" %}
+                            {% endif %}
+                        </li>
                         {% endfor %}
                     </ul>
                     {% endif %}

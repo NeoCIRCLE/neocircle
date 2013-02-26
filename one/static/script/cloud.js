@@ -195,7 +195,7 @@ $(function() {
         e.preventDefault(); e.stopPropagation();
         e=$(this);
         if(!e.hasClass('description')){
-            if(e.next().is(':hidden') && e.next().html() != ''){
+            if(e.next().is(':hidden')){
                 e.next().slideDown(700);
             } else {
                 e.next().slideUp(700);
