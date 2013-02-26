@@ -6,7 +6,7 @@ do
     sudo stop $i || true
 done
 
-sudo apt-get install rabbitmq-server
+sudo apt-get install rabbitmq-server gettext
 sudo rabbitmqctl delete_user guest || true
 sudo rabbitmqctl add_user nyuszi teszt || true
 sudo rabbitmqctl add_vhost django || true
