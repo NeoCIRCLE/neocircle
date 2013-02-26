@@ -248,8 +248,10 @@ def vm_new(request, template=None, share=None, redir=True):
     type = share.type if share else 'LAB'
     TYPES[type]['suspend']
     time_of_suspend = TYPES[type]['suspend']+datetime.now()
-    TYPES[type]['delete']
-    time_of_delete = TYPES[type]['delete']+datetime.now()
+    if TYPES[type]['delete']:
+        time_of_delete = TYPES[type]['delete']+datetime.now()
+    else:
+        time_of_delete = None
     inst = None
     if go:
         try:
