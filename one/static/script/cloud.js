@@ -191,6 +191,19 @@ $(function() {
             $(this).removeClass('shown');
         }
     });
+    $('.shares li').click(function(e){
+        e.preventDefault(); e.stopPropagation();
+        e=$(this);
+        if(!e.hasClass('description')){
+            if(e.next().is(':hidden') && e.next().html() != ''){
+                e.next().slideDown(700);
+            } else {
+                e.next().slideUp(700);
+            }
+        } else {
+            e.slideUp(700);
+        }
+    })
     $('.selected-summary').next().show();
     /**
      * Connect button new window
