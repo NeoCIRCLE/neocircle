@@ -26,13 +26,13 @@
         {% block login %}
         <div id="loginblock"><p>
             {% if user.is_authenticated %}
-            Bejelentkezve: {{ user.username }}.
-            <a href="/logout/">Kijelentkezés</a>.
+            {% trans "Logged in:" %} {{ user.username }}.
+            <a href="/logout/">{% trans "Logout" %}</a>.
             {% if user.is_staff %}
-            <a href="/admin/">Admin</a>.
+            <a href="/admin/">{% trans "Admin" %}</a>.
             {% endif %}
             {% else %}
-            <a href="/login/">Bejelentkezés</a>.
+            <a href="/login/">{% trans "Login" %}</a>.
             {% endif %}
             {% if lang == 'hu' %}
             <a href="/language/en/">In English</a>.
