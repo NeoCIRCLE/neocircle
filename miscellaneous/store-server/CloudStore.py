@@ -8,6 +8,9 @@ import uuid
 import subprocess
 import ConfigParser
 from pwd import getpwnam
+import thread
+
+setuid_lock = thread.allocate_lock()
 
 # Get configuration file
 config = ConfigParser.ConfigParser()
@@ -117,7 +120,10 @@ def cmd_upload(request, neptun, home_path):
         abort(400, 'Invalid upload path.')
     if os.path.exists(up_path) == True and os.path.isdir(up_path):
         up_hash = str(uuid.uuid4())
-        os.symlink(up_path, ROOT_WWW_FOLDER+'/'+up_hash)
+        link = ROOT_WWW_FOLDER + '/' + up_hash
+        os.symlink(up_path, link)
+        passwd = getpwnam(neptun)
+        os.lchown(link, passwd.pw_uid, passwd.pw_gid)
         return json.dumps({ 'LINK' : SITE_URL+'/ul/'+up_hash})
     else:
         abort(400, 'Upload directory not exists!')
@@ -277,58 +283,54 @@ def upload_allow(hash_num):
 
 @route('/ul/<hash_num>', method='POST')
 def upload(hash_num):
-    if not os.path.exists(ROOT_WWW_FOLDER+'/'+hash_num):
+    link = ROOT_WWW_FOLDER+'/'+hash_num
+    if not os.path.exists(link):
         abort (404, 'Token not found!')
     try:
         file_data = request.files.data
         file_name = file_data.filename
     except:
-        if os.path.exists(ROOT_WWW_FOLDER+'/'+hash_num):
-            os.remove(ROOT_WWW_FOLDER+'/'+hash_num)
+        if os.path.exists(link):
+            os.remove(link)
         abort(400, 'No file was specified!')
-    up_path = os.path.realpath(ROOT_WWW_FOLDER+'/'+hash_num+'/'+file_name)
+    up_path = os.path.realpath(link + '/' + file_name)
     if os.path.exists(up_path):
         abort(400, 'File already exists')
-    # Check if upload path valid
     if not up_path.startswith('/home'):
         abort(400, 'Invalid path.')
+    linkstat = os.stat(link)
+    os.remove(link)
 
-    os.remove(ROOT_WWW_FOLDER+'/'+hash_num)
-    # Get the real upload path
-    # Delete the hash link
-    # Get the username from path for proper ownership
-    username=up_path.split('/', 3)[2]
-    # os.setegid(getpwnam(username).pw_gid)
-    # os.seteuid(getpwnam(username).pw_uid)
-    # TODO setuid subcommand
-    # Check if file exist (root can overwrite anything not safe)
-    with open(up_path , 'wb') as f:
-        datalength = 0
-        for chunk in fbuffer(file_data.file, chunk_size=1048576):
-            f.write(chunk)
-            datalength += len(chunk)
-    os.chown(up_path, getpwnam(username).pw_uid, getpwnam(username).pw_gid)
-    os.chmod(up_path, 0644)
+    try:
+        with setuid_lock:
+            try:
+                os.setegid(linkstat.st_gid)
+                os.seteuid(linkstat.st_uid)
+                file = open(up_path, 'wb', 0600)
+            finally:
+                os.seteuid(0)
+                os.setegid(0)
+        while True:
+            chunk = file_data.file.read(256*1024)
+            if not chunk:
+                break
+            file.write(chunk)
+    except:
+        abort(400, 'Write failed.')
+    finally:
+        file.close()
     try:
         redirect_address = request.headers.get('Referer')
     except:
-	    redirect_address = REDIRECT_URL
+        redirect_address = REDIRECT_URL
     response.set_header('Access-Control-Allow-Origin', '*')
     response.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
     response.set_header('Access-Control-Allow-Headers', 'Content-Type, Content-Range, Content-Disposition, Content-Description')
     redirect(redirect_address)
-    #return 'Upload finished: '+file_name+' - '+str(datalength)+' Byte'
 
 # Return hard quota from quota
 def hard_quota(quota):
     return str(int(int(quota)*1.25))
-
-# Define filebuffer for big uploads
-def fbuffer(f, chunk_size=4096):
-   while True:
-      chunk = f.read(chunk_size)
-      if not chunk: break
-      yield chunk
 
 # Update users .ssh/authorized_keys
 def updateSSHAuthorizedKeys(username, key_list):
