@@ -43,8 +43,7 @@ class RuleAdmin(admin.ModelAdmin):
     list_filter = ('r_type', 'vlan', 'owner', 'direction', 'accept',
         'proto', 'nat')
 
-    @staticmethod
-    def color_desc(instance):
+    def color_desc(self, instance):
         """Returns a colorful description of the instance."""
         return (u'<span style="color: #FF0000;">[%(type)s]</span> '
                 u'%(src)s<span style="color: #0000FF;"> ▸ </span>%(dst)s '
