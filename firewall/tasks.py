@@ -46,8 +46,8 @@ class ReloadTask(Task):
                 if not sleep:
                     sleep = True
                     time.sleep(10)
-                ipv4 = firewall().get()
-                ipv6 = firewall(True).get()
+                ipv4 = Firewall().get()
+                ipv6 = Firewall(True).get()
                 reload_firewall_task.delay(ipv4, ipv6)
 
         if type == "Blacklist":

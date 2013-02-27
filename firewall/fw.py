@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 from django.db.models import Q
 
 
-class firewall:
+class Firewall:
     IPV6=False
     RULES = None
     RULES_NAT = []
