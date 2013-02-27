@@ -14,7 +14,7 @@ from django.db.models.signals import post_save
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
-from firewall.models import Host, Rule, Vlan
+from firewall.models import Host, Rule, Vlan, Record
 from school.models import Person, Group
 from store.api import StoreApi
 from .util import keygen
@@ -403,30 +403,41 @@ class Instance(models.Model):
     def get_absolute_url(self):
             return ('vm_show', None, {'iid':self.id})
 
-    def get_port(self):
+    def get_port(self, use_ipv6=False):
         """Get public port number for default access method."""
         proto = self.template.access_type
-        if self.template.network.nat:
+        if self.template.network.nat and not use_ipv6:
             return {"rdp": 23000, "nx": 22000, "ssh": 22000}[proto] + int(self.ip.split('.')[2]) * 256 + int(self.ip.split('.')[3])
         else:
             return {"rdp": 3389, "nx": 22, "ssh": 22}[proto]
-    def get_connect_host(self):
+    def get_connect_host(self, use_ipv6=False):
         """Get public hostname."""
         if self.firewall_host is None:
             return _('None')
-        if self.template.network.nat:
-            return self.firewall_host.pub_ipv4
-        else:
-            return self.firewall_host.ipv4
+        try:
+            if use_ipv6:
+                return self.firewall_host.record_set.filter(type='AAAA')[0].get_data()['name']
+            else:
+                if self.template.network.nat:
+                    ip = self.firewall_host.pub_ipv4
+                    return Record.objects.get(type='A', address=ip).get_data()['name']
+                else:
+                    return self.firewall_host.record_set.filter(type='A')[0].get_data()['name']
+        except:
+            raise
+            if self.template.network.nat:
+                return self.firewall_host.pub_ipv4
+            else:
+                return self.firewall_host.ipv4
 
-    def get_connect_uri(self):
+    def get_connect_uri(self, use_ipv6=False):
         """Get access parameters in URI format."""
         try:
             proto = self.template.access_type
             if proto == 'ssh':
                 proto = 'sshterm'
-            port = self.get_port()
-            host = self.get_connect_host()
+            port = self.get_port(use_ipv6=use_ipv6)
+            host = self.get_connect_host(use_ipv6=use_ipv6)
             pw = self.pw
             return ("%(proto)s:cloud:%(pw)s:%(host)s:%(port)d" %
                     {"port": port, "proto": proto, "pw": pw,

@@ -304,7 +304,7 @@ class Record(models.Model):
             else:
                 return self.name
         else:    # if self.host is None
-            if self.name is None:
+            if not self.name:
                 return unicode(self.domain)
             else:
                 return self.name + '.' + unicode(self.domain)
