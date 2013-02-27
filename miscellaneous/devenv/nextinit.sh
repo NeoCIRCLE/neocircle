@@ -13,6 +13,8 @@ sudo rabbitmqctl add_vhost django || true
 sudo rabbitmqctl set_permissions -p django nyuszi '.*' '.*' '.*' || true
 
 
+sudo cp /opt/webadmin/cloud/miscellaneous/devenv/boot_url.py /opt/
+
 #Set up store server
 rm -rf /var/www/*
 mkdir -p /var/www

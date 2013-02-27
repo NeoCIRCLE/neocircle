@@ -94,6 +94,9 @@ def ajax_template_name_unique(request, name):
 def vm_credentials(request, iid):
     try:
         vm = get_object_or_404(Instance, pk=iid, owner=request.user)
+        proto = len(request.META["REMOTE_ADDR"].split('.')) == 1
+        vm.hostname = vm.get_connect_host(use_ipv6=proto)
+        vm.port = vm.get_port(use_ipv6=proto)
         return render_to_response('vm-credentials.html', RequestContext(request, { 'i' : vm }))
     except:
         return HttpResponse(_("Could not get Virtual Machine credentials."), status=404)
@@ -296,6 +299,9 @@ def vm_show(request, iid):
     except UserCloudDetails.DoesNotExist:
         details = UserCloudDetails(user=request.user)
         details.save()
+    proto = len(request.META["REMOTE_ADDR"].split('.')) == 1
+    inst.hostname = inst.get_connect_host(use_ipv6=proto)
+    inst.port = inst.get_port(use_ipv6=proto)
     return render_to_response("show.html", RequestContext(request,{
         'uri': inst.get_connect_uri(),
         'state': inst.state,
