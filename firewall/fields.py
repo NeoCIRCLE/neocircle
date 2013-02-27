@@ -37,7 +37,7 @@ add_introspection_rules([], ["firewall\.fields\.MACAddressField"])
 
 def val_alfanum(value):
     """Validate whether the parameter is a valid alphanumeric value."""
-    if alfanum_re.match(value) is None:
+    if not alfanum_re.match(value):
         raise ValidationError(_(u'%s - only letters, numbers, underscores '
             'and hyphens are allowed!') % value)
 

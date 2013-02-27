@@ -44,7 +44,7 @@ class Firewall:
         self.RULES_NAT.append(s)
 
     def host2vlan(self, host, rule):
-        if rule.foreign_network is None:
+        if not rule.foreign_network:
             return
 
         if self.IPV6 and host.ipv6:
@@ -77,7 +77,7 @@ class Firewall:
 
 
     def fw2vlan(self, rule):
-        if rule.foreign_network is None:
+        if not rule.foreign_network:
             return
 
         dport_sport = self.dportsport(rule)
@@ -93,7 +93,7 @@ class Firewall:
                         'LOG_ACC' if rule.accept else 'LOG_DROP'))
 
     def vlan2vlan(self, l_vlan, rule):
-        if rule.foreign_network is None:
+        if not rule.foreign_network:
             return
 
         dport_sport = self.dportsport(rule)

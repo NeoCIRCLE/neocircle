@@ -164,7 +164,7 @@ class Host(models.Model):
                 "address as your own IPv4."))
         self.full_clean()
         super(Host, self).save(*args, **kwargs)
-        if id is None:
+        if not id:
             Record(domain=self.vlan.domain, host=self, type='A',
                     owner=self.owner).save()
             if self.ipv6:
@@ -270,14 +270,14 @@ class Record(models.Model):
                     raise ValidationError(_("Can't specify name for "
                         "A or AAAA records if host is set!"))
             elif self.type == 'CNAME':
-                if self.name is None:
+                if not self.name:
                     raise ValidationError(_("Name must be specified for "
                         "CNAME records if host is set!"))
                 if self.address:
                     raise ValidationError(_("Can't specify address for "
                         "CNAME records if host is set!"))
         else:    # if self.host is None
-            if self.address is None:
+            if not self.address:
                 raise ValidationError(_("Address must be specified!"))
 
             if self.type == 'A':
@@ -304,10 +304,10 @@ class Record(models.Model):
             else:
                 return self.name
         else:    # if self.host is None
-            if not self.name:
-                return unicode(self.domain)
-            else:
+            if self.name:
                 return self.name + '.' + unicode(self.domain)
+            else:
+                return unicode(self.domain)
 
     def __get_address(self):
         if self.host:
@@ -327,7 +327,7 @@ class Record(models.Model):
         address = self.__get_address()
         if self.host and self.type == 'AAAA' and not self.host.ipv6:
             return None
-        elif address is None or name is None:
+        elif not address or not name:
             return None
         else:
             return {'name': name,
