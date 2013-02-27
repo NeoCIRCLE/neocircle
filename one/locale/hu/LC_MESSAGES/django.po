@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-02-27 08:45+0100\n"
-"PO-Revision-Date: 2013-02-21 18:07+0100\n"
+"PO-Revision-Date: 2013-02-27 08:47+0100\n"
 "Last-Translator: \n"
 "Language-Team: Hungarian <cloud@ik.bme.hu>\n"
 "Language: hu\n"
@@ -333,7 +333,7 @@ msgstr "példányok"
 
 #: models.py:416
 msgid "None"
-msgstr ""
+msgstr "Nincs"
 
 #: views.py:73
 msgid "Invalid template ID."
@@ -441,9 +441,9 @@ msgid "Adding port failed."
 msgstr "Port hozzáadása sikertelen."
 
 #: views.py:370
-#, fuzzy, python-format
+#, python-format
 msgid "Port %s successfully removed."
-msgstr "%d számú port eltávolítása sikeres."
+msgstr "%s számú port eltávolítása sikeres."
 
 #: views.py:372
 msgid "Removing port failed."
@@ -523,19 +523,19 @@ msgstr ":("
 
 #: templates/base.html:29
 msgid "Logged in:"
-msgstr ""
+msgstr "Bejelentkezve:"
 
 #: templates/base.html:30
 msgid "Logout"
-msgstr ""
+msgstr "Kijelentkezés"
 
 #: templates/base.html:32
 msgid "Admin"
-msgstr ""
+msgstr "Admin"
 
 #: templates/base.html:35
 msgid "Login"
-msgstr ""
+msgstr "Bejelentkezés"
 
 #: templates/new-share.html:7
 #, python-format
@@ -1008,9 +1008,8 @@ msgid "Start"
 msgstr "Indítás"
 
 #: templates/box/template/box.html:90 templates/box/template/summary.html:28
-#, fuzzy
 msgid "No description available"
-msgstr "leírás"
+msgstr "Nincs leírás"
 
 #: templates/box/template/box.html:100 templates/box/template/entry.html:18
 #: templates/box/vm/box.html:73 templates/box/vm/entry.html:23
