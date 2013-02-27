@@ -8,9 +8,7 @@ import uuid
 import subprocess
 import ConfigParser
 from pwd import getpwnam
-import thread
-
-setuid_lock = thread.allocate_lock()
+import multiprocessing
 
 # Get configuration file
 config = ConfigParser.ConfigParser()
@@ -281,6 +279,20 @@ def upload_allow(hash_num):
     response.set_header('Access-Control-Allow-Headers', 'Content-Type, Content-Range, Content-Disposition, Content-Description')
     return 'ok'
 
+
+def _upload_save(uid, gid, input, path):
+    os.setegid(gid)
+    os.seteuid(uid)
+    try:
+        with open(path, 'wb', 0600) as output:
+            while True:
+                chunk = input.read(256*1024)
+                if not chunk:
+                    break
+                output.write(chunk)
+    finally:
+        input.close()
+
 @route('/ul/<hash_num>', method='POST')
 def upload(hash_num):
     link = ROOT_WWW_FOLDER+'/'+hash_num
@@ -300,25 +312,15 @@ def upload(hash_num):
         abort(400, 'Invalid path.')
     linkstat = os.stat(link)
     os.remove(link)
-
+    p = multiprocessing.Process(target=_upload_save,
+            args=(linkstat.st_uid, linkstat.st_gid, file_data.file, up_path, ))
     try:
-        with setuid_lock:
-            try:
-                os.setegid(linkstat.st_gid)
-                os.seteuid(linkstat.st_uid)
-                file = open(up_path, 'wb', 0600)
-            finally:
-                os.seteuid(0)
-                os.setegid(0)
-        while True:
-            chunk = file_data.file.read(256*1024)
-            if not chunk:
-                break
-            file.write(chunk)
-    except:
-        abort(400, 'Write failed.')
+        p.start()
+        p.join()
     finally:
-        file.close()
+        p.terminate()
+    if p.exitcode:
+        abort(400, 'Write failed.')
     try:
         redirect_address = request.headers.get('Referer')
     except:
