@@ -323,8 +323,8 @@ class Record(models.Model):
         return self.address
 
     def get_data(self):
-        name = __get_name()
-        address = __get_address()
+        name = self.__get_name()
+        address = self.__get_address()
         if self.host and self.type == 'AAAA' and not self.host.ipv6:
             return None
         elif address is None or name is None:
