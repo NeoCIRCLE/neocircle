@@ -171,7 +171,43 @@ class AjaxShareWizard(View):
         return redirect(group)
 ajax_share_wizard = login_required(AjaxShareWizard.as_view())
 
-
+class AjaxShareEditWizard(View):
+    def get(self, request, id, *args, **kwargs):
+        det = UserCloudDetails.objects.get(user=request.user)
+        if det.get_weighted_share_count() >= det.share_quota:
+            return HttpResponse(unicode(_('You do not have any free share quota.')))
+        types = TYPES_L
+        for i, t in enumerate(types):
+            t['deletex'] = datetime.now() + td(seconds=1) + t['delete'] if t['delete'] else None
+            t['suspendx'] = datetime.now() + td(seconds=1) + t['suspend'] if t['suspend'] else None
+            types[i] = t
+        share = get_object_or_404(Share, id=id)
+        return render_to_response('edit-share.html', RequestContext(request, {
+            'share': share,
+            'types': types,
+            }))
+    def post(self, request, id, *args, **kwargs):
+        det = UserCloudDetails.objects.get(user=request.user)
+        share = get_object_or_404(Share, id=id)
+        if share.owner != request.user and not request.user.is_superuser:
+            raise PermissionDenied()
+        stype = request.POST['type']
+        if not stype in TYPES.keys():
+            raise PermissionDenied()
+        il = request.POST['instance_limit']
+        if det.get_weighted_share_count() + int(il)*share.template.instance_type.credit > det.share_quota:
+            messages.error(request, _('You do not have enough free share quota.'))
+            return redirect('/')
+        share.name=request.POST['name']
+        share.description=request.POST['description']
+        share.type=stype
+        share.instance_limit=il
+        share.per_user_limit=request.POST['per_user_limit']
+        share.owner=request.user
+        share.save()
+        messages.success(request, _('Successfully edited share %s.') % share)
+        return redirect(share.group)
+ajax_share_edit_wizard = login_required(AjaxShareEditWizard.as_view())
 
 
 @require_POST
