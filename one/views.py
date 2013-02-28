@@ -478,9 +478,13 @@ def key_add(request):
         key.save()
         _update_keys(request.user)
     except ValidationError as e:
-        messages.error(request, ''.join(e.messages))
+        for m in e.messages:
+            messages.error(request, m)
+
     except:
-        messages.error(request, _('Failed to add public key'))
+        messages.error(request, _('Failed to add public key.'))
+    else:
+        messages.successfully(request, _('Public key successfully added.'))
     return redirect('/')
 
 @login_required
