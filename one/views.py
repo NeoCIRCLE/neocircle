@@ -84,7 +84,8 @@ def ajax_template_delete(request):
         else:
             return HttpResponse(unicode(_("Unexpected error happened.")), status=404)
 
-def ajax_template_name_unique(request, name):
+def ajax_template_name_unique(request):
+    name = request.GET['name']
     s = "True"
     if Template.objects.filter(name=name).exists():
         s = "False"

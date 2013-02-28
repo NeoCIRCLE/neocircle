@@ -75,7 +75,7 @@
                             var s = $(self).val();
                             $.ajax({
                                 'type': 'GET',
-                                'url': '/ajax/template_name_unique/' + s,
+                                'url': '{% one.views.ajax_template_name_unique %}?name=' + s,
                                 'success': function(data, b, c) {
                                     if (s != $("#new-template-name").val()) {
                                         return true;
@@ -99,7 +99,7 @@
                     e.preventDefault();
                     $.ajax({
                         'type': 'GET',
-                        'url': '/ajax/template_name_unique/' + $("#new-template-name").val(),
+                        'url': '{% one.views.ajax_template_name_unique %}?name=' + $("#new-template-name").val(),
                         'success': function(data, b, c) {
                             if (data == "True") {
                                 $("#template-wizard").unbind('submit').submit()

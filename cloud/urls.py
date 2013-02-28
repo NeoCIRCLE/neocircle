@@ -51,7 +51,7 @@ urlpatterns = patterns('',
     url(r'^ajax/key/delete/$', 'one.views.key_ajax_delete', ),
     url(r'^ajax/key/reset/$', 'one.views.key_ajax_reset', ),
     url(r'^ajax/template/delete/$', 'one.views.ajax_template_delete', ),
-    url(r'^ajax/template_name_unique/(?P<name>.*)$',
+    url(r'^ajax/template_name_unique/$',
         'one.views.ajax_template_name_unique', ),
 
     url(r'^reload/$', 'firewall.views.reload_firewall', ),
