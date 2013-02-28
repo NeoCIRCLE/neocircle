@@ -5,8 +5,14 @@ echo "En vagyok a $0 !"
 mkdir -p "$HOME/.ssh"
 echo "$SSHPRIV" > $HOME/.ssh/id_rsa
 chmod 600 "$HOME/.ssh/id_rsa"
+echo "$SSHPUB" >> "$HOME/.ssh/authorized_keys"
 mkdir "$HOME/sshfs"
 chown "$USER:$USER" -R "$HOME"
 
-sed -i 's/^<volume user=.*//' /etc/security/pam_mount.conf.xml
-sed -i "s/^\(<\/pam_mount>.*\)/<volume user=\"$USER\" fstype=\"fuse\" path=\"sshfs#${NEPTUN}@${SERVER}:home\" mountpoint=\"~\/sshfs\" options=\"nonempty,reconnect,StrictHostKeyChecking=no\" \/>\n\1/" /etc/security/pam_mount.conf.xml
+sed -i 's/^sshfs.*//' /etc/fstab
+cat >> /etc/fstab <<END
+sshfs#${NEPTUN}@${SERVER}:home $HOME/sshfs fuse defaults,idmap=user,reconnect,_netdev,uid=1000,gid=1000,allow_other,StrictHostKeyChecking=no,IdentityFile=$HOME/.ssh/id_rsa 0 0
+END
+
+mount "$HOME/sshfs"
+

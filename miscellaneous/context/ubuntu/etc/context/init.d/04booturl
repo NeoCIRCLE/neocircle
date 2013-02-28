@@ -2,6 +2,7 @@
 
 echo "En vagyok a $0 !"
 
-wget -q -O /dev/null "$BOOTURL"
+( while ! wget -T 2 -t 1 -q -O /dev/null "$BOOTURL" ; do sleep 5; done ) &
+disown $!
 
 
