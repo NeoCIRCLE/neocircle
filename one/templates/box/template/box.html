@@ -78,12 +78,15 @@
                             <form action="/vm/unshare/{{i.id}}/" method="post">
                                 <span title="{{i.name}}">{{i.name|truncatechars:20}}</span>
                                 ({{i.get_running}}/{{i.instance_limit}}) {{i.type}}
-                                    {% csrf_token %}
+                                <a href="#" class="edit" data-id="{{i.id}}">
+                                    <img src="/static/icons/pencil.png" alt="{% trans "Edit" %}" title="{% trans "Edit" %}" />
+                                </a>
+                                {% csrf_token %}
                                 <input type="submit" class="template-unshare" value="{% trans "Delete" %}" style="float: right"/>
                             </form>
                             <div class="clear"></div>
                         </li>
-                        <li class="description">
+                        <li class="description{% if not i.description %} empty{% endif %}">
                             {% if i.description %}
                                 {{i.description}}
                             {% else %}
