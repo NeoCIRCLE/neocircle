@@ -203,6 +203,17 @@ $(function() {
         } else {
             e.slideUp(700);
         }
+    });
+    $('.shares .edit').click(function(e){
+        e.preventDefault(); e.stopPropagation();
+        $.ajax({
+            type: 'GET',
+            url: '/ajax/shareEdit/'+$(this).data('id')+'/',
+            success: function(data){
+                $('#modal').show();
+                $('#modal-container').html(data);
+            }
+        })
     })
     $('.selected-summary').next().show();
     /**
