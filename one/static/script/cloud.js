@@ -186,7 +186,8 @@ $(function() {
         if($(this).attr('type') == 'password'){
             $(this).attr('type', 'text');
             $(this).addClass('shown');
-        } else {
+        } else if(this.selectionStart-this.selectionEnd == 0) {
+
             $(this).attr('type', 'password');
             $(this).removeClass('shown');
         }
