@@ -484,7 +484,7 @@ def key_add(request):
     except:
         messages.error(request, _('Failed to add public key.'))
     else:
-        messages.successfully(request, _('Public key successfully added.'))
+        messages.success(request, _('Public key successfully added.'))
     return redirect('/')
 
 @login_required
