@@ -36,6 +36,10 @@ def _list_instances(request):
     instances = instances.exclude(state='DONE')
     return instances
 
+def index(request):
+    return render_to_response("index.html", RequestContext(request, {}))
+
+
 @require_GET
 @login_required
 def home(request):

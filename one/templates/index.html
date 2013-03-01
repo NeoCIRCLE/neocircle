@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load staticfiles %}
+{% get_current_language as LANGUAGE_CODE %}
+{% block js %}
+<script type="text/javascript" src="{% static "script/store.js" %}"></script>
+{% endblock %}
+{% block content %}
+<div class="boxes">
+    <div class="contentblock" id="state">
+        <h2>A projektről</h2>
+        <div>
+            <p>Az <strong>IK Cloud</strong> a BME IK és IIT együttműködésében, a VIK
+            támogatásával hosszabb ideje folyó munka során jött létre.
+            A kutatás célja <strong>a cloud oktatási-kutatási célú felhasználásának</strong>
+            vonzóvá tétele.
+            </p>
+            <p>
+            A nagy kapacitású virtuális infrastruktúra azonban új lehetőséget is nyújt.
+            <strong>Igény szerint</strong> indíthatóak virtuális gépek:
+            gördülékennyé válik a tantermi és otthoni <strong>hallgatói munka,</strong>
+            a kutatási <strong>projektek dinamikus IT támogatása.</strong>
+            </p>
+            <p><img src="{% static "info/cloud-migration.png" %}" /></p>
+            <p>A rendszerünk segítségével <strong>kiváltható</strong> a tanszéken
+            működő öregedő szerverpark jelentős része.</p>
+        </div>
+    </div>
+</div>
+<div class="boxes">
+    <div class="contentblock" id="state">
+        <h2>Virtuális labor</h2>
+        <div>
+            <p><img src="{% static "info/cloud-lab.png" %}" /></p>
+            <p>Lehetőség van <strong>tantárgyra szabott környezet</strong> biztosítására
+            a tantermi mérések vagy az otthoni feladatok elvégzéséhez, vagy az
+            önkiszolgáló felületen pillanatok alatt indítható <strong>projektek, önálló
+            labor, szakdolgozat, diplomaterv, vagy TDK-munka</strong> segítéséhez
+            virtuális gép.</p>
+            <p style="text-align:center;"><a
+                href="{% url one.views.home %}">Próbálja ki a rendszert
+                most!</a></p>
+        </div>
+    </div>
+    <div class="contentblock" id="state" lang="en">
+        <h2>About the project</h2>
+        <div>
+            <p>The project aims to harness the power of cloud computing in
+            education and research. Our self service portal helps migrating
+            old servers, and on-demand launching appliances prepared by the
+            teacher.</p>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

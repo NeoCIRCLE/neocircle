@@ -12,14 +12,15 @@ js_info_dict = {
 }
 
 urlpatterns = patterns('',
-    url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/doc/', include('django.contrib.admindocs.urls'), ),
+    url(r'^admin/', include(admin.site.urls), ),
 
 
-    url(r'^login/$', 'school.views.login', ),
-    url(r'^logout/$', 'school.views.logout', ),
+    url(r'^login/$', 'school.views.login', name='login', ),
+    url(r'^logout/$', 'school.views.logout', name='logout', ),
 
-    url(r'^$', 'one.views.home', ),
+    url(r'^$', 'one.views.index', ),
+    url(r'^home/$', 'one.views.home', ),
     url(r'^vm/new/(?P<template>\d+)/$', 'one.views.vm_new', ),
     url(r'^ajax/vm/new/(?P<template>\d+)/$', 'one.views.vm_new_ajax', ),
     url(r'^vm/new/s(?P<share>\d+)/$', 'one.views.vm_new', ),
