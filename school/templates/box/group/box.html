@@ -36,7 +36,7 @@
             <div class="clear"></div>
         </div>
         <div id="new-group-wizard" style="display: none">
-            <form action="/group/new/" method="POST" class="wizard">
+            <form action="{% url school.views.group_new %}" method="POST" class="wizard">
                 {% csrf_token %}
                 <h3>{% trans "Create new group" %}</h3>
                 <ul>
