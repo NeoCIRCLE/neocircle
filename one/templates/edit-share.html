@@ -1,6 +1,6 @@
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
-<form action="/ajax/shareEdit/{{share.id}}/" method="post" id="template-wizard">
+<form action="{% url one.views.ajax_share_edit_wizard share.id %}" method="post" id="template-wizard">
     {% csrf_token %}
     <div id="new-share" class="wizard">
         <h2>

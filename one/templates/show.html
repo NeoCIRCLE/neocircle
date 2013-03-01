@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% load staticfiles %}
 
 {% block js %}
 <script type="text/javascript">
@@ -8,14 +9,14 @@
         $.ajax({
             type: 'GET',
             dataType: 'json',
-            url: '/ajax/vm/status/{{ id }}',
+            url: '{% url one.views.vm_ajax_instance_status id %}',
             success: function(data){
-                if( !data.booting  && data.state == 'ACTIVE'){
+                if (!data.booting  && data.state == 'ACTIVE'){
                     window.location.reload();
                 }
             }
         })
-    },2000);
+    }, 1000);
     {% endif %}
 </script>
 {% endblock %}
@@ -61,13 +62,13 @@
         <div class="content">
             {% if state == "PENDING" or state == "ACTIVE" and booting %}
             <p style="font-size:25px; line-height:2em;text-align:center;">
-                <img src="/static/image/load.gif" />
+            <img src="{% static "image/load.gif" %}" />
                 {% trans "Starting..." %}
             </p>
             {% elif state == "ACTIVE" and not booting %}
             <p id="connect" style="display:block; font-size:25px; line-height:2em;text-align:center;">
                 <a href="{{uri}}" class="button" onclick="return connectbutton();">
-                    <img src="/static/image/load.gif" id="connecting" style="display:none;" />
+                    <img src="{% static "image/load.gif" %}" id="connecting" style="display:none;" />
                     {% trans "Running" %}
                 </a>
             </p>
@@ -91,7 +92,7 @@
         <h2>
             <div class="boxhelp">
                 <div class="icon">
-                    <img src="/static/icons/information-frame.png" alt="{% trans "Help" %}" />
+                    <img src="{% static "icons/information-frame.png" %}" alt="{% trans "Help" %}" />
                 </div>
                 <div class="boxhelp-box">
                     <p>{% blocktrans %}This is a list about the network ports
@@ -107,7 +108,7 @@
             </div>
             {% trans "Port administration" %}</h2>
         <div class="content">
-            <form action="{% url vm_port_add i.id %}" method="post">
+            <form action="{% url one.views.vm_port_add i.id %}" method="post">
                 {% csrf_token %}
                 <table>
                     <tr>
@@ -121,7 +122,7 @@
                         <td>{{port.public}}</td>
                         {% if i.template.network.nat %}<td>{{port.private}}</td>{%endif%}
                         <td>
-                            <a href="/vm/port_del/{{i.id}}/{{port.proto}}/{{port.public}}/">{% trans "Delete" %}</a>
+                            <a href="{% url one.views.vm_port_del i.id port.proto port.public %}">{% trans "Delete" %}</a>
                         </td>
                     </tr>
                     {% endfor %}

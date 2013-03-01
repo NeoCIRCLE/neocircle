@@ -1,6 +1,7 @@
 {% load i18n %}
+{% load staticfiles %}
 {% get_current_language as LANGUAGE_CODE %}
-<form action="/ajax/templateWizard" method="post" id="template-wizard">
+<form action="{% url one.views.ajax_template_wizard %}" method="post" id="template-wizard">
     {% csrf_token %}
     <div id="new-template-step-1" class="wizard">
         <div class="progress">
@@ -28,7 +29,7 @@
                                 <input type="radio" name="base" value="{{m.id}}" />
                                 {{m.name}}
                                 {% if m.public %}
-                                    <img src="/static/icons/lock-small.png" alt="{% trans "locked" %}"
+                                    <img src="{% static "icons/lock-small.png" %}" alt="{% trans "locked" %}"
                                      title="{% trans "This is a shared template." %}" />
                                  {% endif %}
                             </label>
@@ -56,7 +57,7 @@
                     else {
                         $.ajax({
                             'type': 'POST',
-                            'url': '/ajax/templateWizard',
+                            'url': '{% url one.views.ajax_template_wizard %}',
                             'data': $('#template-wizard').serialize(),
                             'success': function(data) {
                               $('#modal-container').html(data);

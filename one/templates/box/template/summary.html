@@ -1,6 +1,7 @@
 {% extends "box/base/summary.html" %}
 {% load i18n %}
 {% load l10n %}
+{% load staticfiles %}
 {% get_current_language as LANGUAGE_CODE %}
 
 {% block content %}
@@ -13,11 +14,11 @@
             <div class="quota">
                 <div class="used" style="width: {{ i.get_instance_pc|unlocalize }}%"></div>
             </div>
-            <form action="/vm/unshare/{{i.id}}/" method="post">
+            <form action="{% url one.views.vm_unshare i.id %}" method="post">
                 <span title="{{i.name}}">{{i.name|truncatechars:20}}</span>
                     ({{i.get_running}}/{{i.instance_limit}}) {{i.type}}
                     <a href="#" class="edit" data-id="{{i.id}}">
-                        <img src="/static/icons/pencil.png" alt="{% trans "Edit" %}" title="{% trans "Edit" %}" />
+                        <img src="{% static "icons/pencil.png" %}" alt="{% trans "Edit" %}" title="{% trans "Edit" %}" />
                     </a>
                     {% csrf_token %}
                 <input class="template-unshare" type="submit" value="{% trans "Delete" %}" style="float: right"/>
@@ -48,19 +49,19 @@
 {% block actions %}
     {% if t.state == 'READY' %}
     <a href="#" class="try-template" data-id="{{t.id}}" title="{% trans "Try"  %}">
-        <img src="/static/icons/control.png" alt="{% trans "Start" %}"/>
+        <img src="{% static "icons/control.png" %}" alt="{% trans "Start" %}"/>
     </a>
     <!--<a href="#" title="{% trans "Edit" %}">
-        <img src="/static/icons/pencil.png" alt="{% trans "Edit" %}" />
+        <img src="{% static "icons/pencil.png" %}" alt="{% trans "Edit" %}" />
     </a>-->
     <a href="#" class="template-share" data-id="{{t.id}}" data-gid="{{group.id}}" title="{% trans "Share" %}">
-        <img src="/static/icons/user-share.png" alt="{% trans "Share" %}" />
+        <img src="{% static "icons/user-share.png" %}" alt="{% trans "Share" %}" />
     </a>
     {% endif %}
     <a href="#" class="delete-template" data-id="{{ t.id }}" data-name="{{ t.name }}" title="{% trans "Remove" %}">
-        <img src="/static/icons/minus-circle.png" alt="{% trans "Remove" %}" />
+        <img src="{% static "icons/minus-circle.png" %}" alt="{% trans "Remove" %}" />
     </a>
     <!--<a href="#" class="edit-template" data-id="{{ t.id }}" title="{% trans "Edit" %}">
-        <img src="/static/icons/pencil.png" alt="{% trans "Edit" %}" />
+        <img src="{% static "icons/pencil.png" %}" alt="{% trans "Edit" %}" />
     </a>-->
 {% endblock actions %}

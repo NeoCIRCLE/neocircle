@@ -1,6 +1,7 @@
 {% extends "box/base/box.html" %}
 {% load i18n %}
 {% load l10n %}
+{% load staticfiles %}
 {% get_current_language as LANGUAGE_CODE %}
 
 {% block title %}
@@ -9,7 +10,7 @@
 {% block boxhelp %}
 <div class="boxhelp">
     <div class="icon">
-        <img src="/static/icons/information-frame.png" alt="{% trans "Help" %}" />
+        <img src="{% static "icons/information-frame.png" %}" alt="{% trans "Help" %}" />
     </div>
     <div class="boxhelp-box">
         <p>{% blocktrans %}This is your global data store.{% endblocktrans %}</p>
@@ -100,7 +101,7 @@
         </div>
         <div class="details">
             <div class="container">
-                <form style="padding-bottom: 10px" action="/key/add/" method="POST">
+                <form style="padding-bottom: 10px" action="{% url one.views.key_add %}" method="POST">
                     {% csrf_token %}
                     <textarea style="margin-bottom: 5px" name="key" placeholder="{% trans "Public key in OpenSSH format" %}"></textarea><br />
                     <input type="submit" style="margin-left: 10px;" value="{% trans "Save" %}" />
@@ -139,7 +140,7 @@
                     <p id="upload-error-unknown" style="display: none"></p>
                 </div>
                 <div style="display: none" class="upload-zone" id="old-upload-form">
-                    <form action="/" method="POST" data-bind="attr: {action: uploadURL}" enctype="multipart/form-data">
+                    <form action="{% url one.views.home %}" method="POST" data-bind="attr: {action: uploadURL}" enctype="multipart/form-data">
                         <input type="file" name="data" />
                         <input type="submit" value="Feltöltés" />
                     </form>

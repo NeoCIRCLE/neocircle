@@ -401,7 +401,7 @@ class Instance(models.Model):
 
     @models.permalink
     def get_absolute_url(self):
-            return ('vm_show', None, {'iid':self.id})
+            return ('one.views.vm_show', None, {'iid':self.id})
 
     def get_port(self, use_ipv6=False):
         """Get public port number for default access method."""

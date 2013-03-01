@@ -1,23 +1,24 @@
 <!DOCTYPE html>
 {% load i18n %}
+{% load staticfiles %}
 {% get_current_language as lang %}
 <html lang="{{lang}}">
 <head>
     <title>{% block title %}IK Cloud{% endblock %}</title>
     <link href="https://fonts.googleapis.com/css?family=Titillium+Web&amp;subset=latin,latin-ext" rel="stylesheet" type="text/css">
-    <link rel="icon" type="image/png" href="/static/favicon.png" />
-    <link rel="stylesheet/less" href="/static/style/style.less" />
+    <link rel="icon" type="image/png" href="{% static "favicon.png" %}" />
+    <link rel="stylesheet/less" href="{% static "style/style.less" %}" />
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <script src="/static/script/jquery.min.js"></script>
+    <script src="{% static "script/jquery.min.js" %}"></script>
     <script type="text/javascript" src="{% url django.views.i18n.javascript_catalog %}"></script>
     <script type="text/javascript">
         window.localStorage.removeItem('https://cloud.ik.bme.hu/static/style/style.less:timestamp');
         var current_user={{user.id}};
     </script>
-    <script src="/static/script/less.min.js"></script>
-    <script src="/static/script/knockout.min.js"></script>
-    <script type="text/javascript" src="/static/script/util.js"></script>
-    <script type="text/javascript" src="/static/script/cloud.js"></script>
+    <script src="{% static "script/less.min.js" %}"></script>
+    <script src="{% static "script/knockout.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "script/util.js" %}"></script>
+    <script type="text/javascript" src="{% static "script/cloud.js" %}"></script>
     {{ form.media }}
     {% block js %}{% endblock %}
 </head>
@@ -27,24 +28,24 @@
         <div id="loginblock"><p>
             {% if user.is_authenticated %}
             {% trans "Logged in:" %} {{ user.username }}.
-            <a href="/logout/">{% trans "Logout" %}</a>.
+            <a href="{% url logout %}">{% trans "Logout" %}</a>.
             {% if user.is_staff %}
-            <a href="/admin/">{% trans "Admin" %}</a>.
+            <a href="{% url admin:index %}">{% trans "Admin" %}</a>.
             {% endif %}
             {% else %}
-            <a href="/login/">{% trans "Login" %}</a>.
+            <a href="{% url login %}">{% trans "Login" %}</a>.
             {% endif %}
             {% if lang == 'hu' %}
-            <a href="/language/en/">In English</a>.
+            <a href="{% url school.views.language "en" %}">In English</a>.
             {% else %}
-            <a href="/language/hu/">Magyarul</a>.
+            <a href="{% url school.views.language "hu" %}">Magyarul</a>.
             {% endif %}
             </p>
         </div>
         {% endblock %}
         {% block header %}
         {% block header_title %}
-        <h1><a href="/">IK Cloud</a></h1>
+        <h1><a href="{% url one.views.index %}">IK Cloud</a></h1>
         {% endblock %}
         {% endblock %}
     </div>

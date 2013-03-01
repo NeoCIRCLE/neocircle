@@ -1,6 +1,7 @@
 {% extends "box/base/box.html" %}
 {% load i18n %}
 {% load l10n %}
+{% load staticfiles %}
 {% get_current_language as LANGUAGE_CODE %}
 
 {% block title %}
@@ -10,7 +11,7 @@
 {% block boxhelp %}
 <div class="boxhelp">
     <div class="icon">
-        <img src="/static/icons/information-frame.png" alt="{% trans "Help" %}" />
+        <img src="{% static "icons/information-frame.png" %}" alt="{% trans "Help" %}" />
     </div>
     <div class="boxhelp-box">
         <p>{% blocktrans %}This is the list of your running virtual machines.{% endblocktrans %}</p>
@@ -103,7 +104,7 @@
                                 <li>
                                     &nbsp;
                                     <span class="value">
-                                        <form method="POST" action="/vm/new/s{{s.pk}}/">
+                                        <form method="POST" action="{% url one.views.vm_new share=s.id %}">
                                             {% csrf_token %}
                                             <input {% if  s.running_shared >= s.per_user_limit  or s.get_running >= s.instance_limit%}disabled="disabled" value="{% trans "Quota reached" %}" {%else%}value="{% trans "Launch" %}"{% endif %} type="submit" />
                                         </form>
