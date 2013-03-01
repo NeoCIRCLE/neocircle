@@ -16,40 +16,5 @@
       "email": "",
       "date_joined": "2013-01-16T12:36:01Z"
     }
-  },
-  {
-    "pk": 9,
-    "model": "one.template",
-    "fields": {
-      "name": "Ubuntu 12.04 desktop",
-      "created_at": "2013-01-31T10:11:08Z",
-      "access_type": "nx",
-      "instance_type": 3,
-      "owner": 1,
-      "disk": 1,
-      "network": 2
-    }
-  },
-  {
-    "pk": 10,
-    "model": "one.template",
-    "fields": {
-      "name": "Windows 7",
-      "created_at": "2013-01-31T10:11:21Z",
-      "access_type": "rdp",
-      "instance_type": 2,
-      "owner": 1,
-      "disk": 1,
-      "network": 2
-    }
-  },
-  {
-    "pk": 2,
-    "model": "one.network",
-    "fields": {
-      "name": "VM-NET",
-      "nat": true,
-      "public": false
-    }
   }
 ]
