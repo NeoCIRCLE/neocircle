@@ -20,6 +20,7 @@ urlpatterns = patterns('',
     url(r'^logout/$', 'school.views.logout', name='logout', ),
 
     url(r'^$', 'one.views.index', ),
+    url(r'^info/$', 'one.views.info', ),
     url(r'^home/$', 'one.views.home', ),
     url(r'^vm/new/(?P<template>\d+)/$', 'one.views.vm_new', ),
     url(r'^ajax/vm/new/(?P<template>\d+)/$', 'one.views.vm_new_ajax', ),

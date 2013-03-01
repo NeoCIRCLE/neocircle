@@ -36,8 +36,14 @@ def _list_instances(request):
     instances = instances.exclude(state='DONE')
     return instances
 
+def info(request):
+    return render_to_response("info.html", RequestContext(request, {}))
+
 def index(request):
-    return render_to_response("index.html", RequestContext(request, {}))
+    if request.user.is_authenticated():
+        return redirect(home)
+    else:
+        return redirect(info)
 
 
 @require_GET
