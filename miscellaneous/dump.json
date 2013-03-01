@@ -143,7 +143,7 @@
       "is_active": true,
       "is_superuser": true,
       "is_staff": true,
-      "last_login": "2013-01-30T23:33:32Z",
+      "last_login": "2013-03-01T18:37:22Z",
       "groups": [],
       "user_permissions": [],
       "email": "",
@@ -337,6 +337,227 @@
       "user_permissions": [],
       "email": "orymate@gmail.com",
       "date_joined": "2013-02-05T08:47:48Z"
+    }
+  },
+  {
+    "pk": 1,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 0,
+      "ssh_key": 1,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 1
+    }
+  },
+  {
+    "pk": 2,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 0,
+      "ssh_key": 2,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 2
+    }
+  },
+  {
+    "pk": 3,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 0,
+      "ssh_key": 3,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 3
+    }
+  },
+  {
+    "pk": 4,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 0,
+      "ssh_key": 4,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 4
+    }
+  },
+  {
+    "pk": 5,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 0,
+      "ssh_key": 5,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 5
+    }
+  },
+  {
+    "pk": 6,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 0,
+      "ssh_key": 6,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 6
+    }
+  },
+  {
+    "pk": 7,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 100,
+      "ssh_key": 7,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 7
+    }
+  },
+  {
+    "pk": 8,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 0,
+      "ssh_key": 8,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 12
+    }
+  },
+  {
+    "pk": 9,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 0,
+      "ssh_key": 9,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 13
+    }
+  },
+  {
+    "pk": 10,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 0,
+      "ssh_key": 10,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 14
+    }
+  },
+  {
+    "pk": 11,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 0,
+      "ssh_key": 11,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 15
+    }
+  },
+  {
+    "pk": 12,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 0,
+      "ssh_key": 12,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 16
+    }
+  },
+  {
+    "pk": 13,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 0,
+      "ssh_key": 13,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 17
+    }
+  },
+  {
+    "pk": 14,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 0,
+      "ssh_key": 14,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 18
+    }
+  },
+  {
+    "pk": 15,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 0,
+      "ssh_key": 15,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 20
+    }
+  },
+  {
+    "pk": 16,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 0,
+      "ssh_key": 16,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 21
+    }
+  },
+  {
+    "pk": 17,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 0,
+      "ssh_key": 17,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 22
     }
   },
   {
