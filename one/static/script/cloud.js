@@ -400,9 +400,57 @@ $(function() {
 
     function hidden_group_count() {
         var hidden_groups = JSON.parse(window.localStorage.getItem('hidden_groups')) || {};
-        return(hidden_groups[current_user] || []).length;
+        return (hidden_groups[current_user] || []).length;
     }
-    if(hidden_group_count() == 0) {
+
+    function toggle_box(id) {
+        var boxes = JSON.parse(window.localStorage.getItem('hidden_boxes')) || {};
+        var user_boxes = boxes[current_user] || [];
+        for (var i in user_boxes) {
+            var box = user_boxes[i];
+            if (box == id) {
+                user_boxes.splice(i, 1);
+                boxes[current_user] = user_boxes;
+                window.localStorage.setItem('hidden_boxes', JSON.stringify(boxes));
+                $('#toggle-box-'+id).attr('src', '/static/icons/eye-half.png');
+                $('#toggle-box-'+id).parent().parent().parent().next().slideDown(700);
+                return;
+            }
+        }
+        user_boxes.push(id);
+        boxes[current_user] = user_boxes;
+        $('#toggle-box-'+id).attr('src', '/static/icons/eye.png');
+        $('#toggle-box-'+id).parent().parent().parent().next().slideUp(700);
+        console.log($('#toggle-box-'+id).parent().parent().parent().next()[0])
+        window.localStorage.setItem('hidden_boxes', JSON.stringify(boxes));
+    }
+
+    function box_hidden(id) {
+        var boxes = JSON.parse(window.localStorage.getItem('hidden_boxes')) || {};
+        var user_boxes = boxes[current_user] || [];
+        for (var i in user_boxes) {
+            var box = user_boxes[i];
+            if (box == id) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    $('.toggle-box').each(function(){
+        var id=$(this).data('id');
+        $(this).click(function(){
+            toggle_box(id);
+        });
+        if(box_hidden(id)){
+            $(this).attr('src','/static/icons/eye.png');
+            $(this).parent().parent().parent().next().hide();
+        } else {
+            $(this).attr('src','/static/icons/eye-half.png');
+        }
+    })
+
+    if (hidden_group_count() == 0) {
         $('#show-hidden-groups').hide();
     }
 
