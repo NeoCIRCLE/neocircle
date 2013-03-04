@@ -3,6 +3,26 @@
 {% load l10n %}
 {% get_current_language as LANGUAGE_CODE %}
 
+{% block boxhelp %}
+<div class="boxhelp">
+    <div class="help">
+        <div class="icon">
+            <img src="/static/icons/information-frame.png" alt="{% trans "Help" %}" />
+        </div>
+        <div class="boxhelp-box">
+            <p>{% blocktrans %}This is the list of your own templates.{% endblocktrans %}</p>
+            <p>{% blocktrans %}Templates are customized versions of the base images.{% endblocktrans %}</p>
+            <p>{% blocktrans %}You can install all the needed software on a master
+            machine, and it will be ready to run by your students in minutes.
+            {% endblocktrans %}</p>
+        </div>
+    </div>
+    <div class="icon">
+        <img src="" alt="toggle" title="{% trans "Show/hide box" %}" class="toggle-box" data-id="groups" id="toggle-box-groups"/>
+    </div>
+</div>
+{% endblock %}
+
 {% block title %}
     {% trans "My Groups" %}
 {% endblock title %}

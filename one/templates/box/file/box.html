@@ -9,21 +9,26 @@
 {% endblock title %}
 {% block boxhelp %}
 <div class="boxhelp">
-    <div class="icon">
-        <img src="{% static "icons/information-frame.png" %}" alt="{% trans "Help" %}" />
+    <div class="help">
+        <div class="icon">
+            <img src="{% static "icons/information-frame.png" %}" alt="{% trans "Help" %}" />
+        </div>
+        <div class="boxhelp-box">
+            <p>{% blocktrans %}This is your global data store.{% endblocktrans %}</p>
+            <p>{% blocktrans %}You can access it from all your own virtual machines,
+            the lab client, this web interface, or through SFTP protocol.
+            {% endblocktrans %}</p>
+            <p>{% blocktrans %}This directory is mounted on Windows machines as Z:
+            drive, and on Linux ones as ~/sshfs.{% endblocktrans %}</p>
+            <p>{% blocktrans %}If you log in on lab machines (currently Ubuntu only),
+            you can see this folder also as ~/sshfs.{% endblocktrans %}</p>
+            <p>{% blocktrans with serv=storeserv %}You can also use an SFTP client (eg.
+            WinSCP) to access your files at {{serv}}. You will need to register a
+            public key bellow.{% endblocktrans %}</p>
+        </div>
     </div>
-    <div class="boxhelp-box">
-        <p>{% blocktrans %}This is your global data store.{% endblocktrans %}</p>
-        <p>{% blocktrans %}You can access it from all your own virtual machines,
-        the lab client, this web interface, or through SFTP protocol.
-        {% endblocktrans %}</p>
-        <p>{% blocktrans %}This directory is mounted on Windows machines as Z:
-        drive, and on Linux ones as ~/sshfs.{% endblocktrans %}</p>
-        <p>{% blocktrans %}If you log in on lab machines (currently Ubuntu only),
-        you can see this folder also as ~/sshfs.{% endblocktrans %}</p>
-        <p>{% blocktrans with serv=storeserv %}You can also use an SFTP client (eg.
-        WinSCP) to access your files at {{serv}}. You will need to register a
-        public key bellow.{% endblocktrans %}</p>
+    <div class="icon">
+        <img src="" alt="toggle" title="{% trans "Show/hide box" %}" class="toggle-box" data-id="files" id="toggle-box-files"/>
     </div>
 </div>
 {% endblock %}
