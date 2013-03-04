@@ -14,4 +14,4 @@ export USER='www-data'
 #export ONE_LOCATION='/var/lib/opennebula'
 export PATH="$PATH:$ONE_LOCATION/bin"
 
-sudo -u oneadmin -i onehost list -x 
+sudo -u oneadmin -i onehost list -x | /opt/webadmin/cloud/miscellaneous/stat/stat_dom.py

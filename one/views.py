@@ -26,6 +26,7 @@ from school.models import *
 import django.contrib.auth as auth
 import json
 import logging
+import subprocess
 
 logger = logging.getLogger(__name__)
 
@@ -566,5 +567,17 @@ def _update_keys(user):
     user = user.username
     StoreApi.updateauthorizationinfo(user, password, key_list)
 
+def stat(request):
+    values = subprocess.check_output(['/opt/webadmin/cloud/miscellaneous/stat/stat_wrap.sh'])
+  #  values = '''
+  #  {"CPU": {"USED_CPU": 2, "ALLOC_CPU": 0,
+  #  "FREE_CPU": 98}, "MEM": {"FREE_MEM": 1685432, "ALLOC_MEM":0,
+  #  "USED_MEM": 366284}}'''
+    stat_dict = json.loads(values)
+    return  HttpResponse(render_to_response("stat.html", RequestContext(
+                request, {
+                    'STAT' : stat_dict,
+                }
+            )))
 
 # vim: et sw=4 ai fenc=utf8 smarttab :
