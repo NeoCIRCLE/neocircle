@@ -1,12 +1,13 @@
+{% extends "base.html" %}
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
-<!doctype html>
-<html lang="{{LANGUAGE_CODE}}">
-<head>
-    <meta charset="UTF-8">
-    <title>404 - {% trans ":(" %}</title>
-</head>
-<body>
+
+
+{% block content %}
+<div id="http-error">
     <h1>404 - {% trans ":(" %}</h1>
-</body>
-</html>
+    <p>
+        {% trans "The requested page does not exists... Please go away..." %}
+    </p>
+</div>
+{% endblock %}
