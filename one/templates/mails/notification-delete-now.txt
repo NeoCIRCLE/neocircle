@@ -1,9 +1,9 @@
-{% base base.txt %}
+{% extends "mails/base.txt" %}
 {% load i18n %}
 
 {% block body %}
 
-{% blocktrans with vm=instance.name state=instance.state date=exp %}
+{% blocktrans with vm=instance.name state=instance.state date=instance.time_of_delete %}
 Your {{state}} virtual machine "{{vm}}" has been DELETED
 at {{date}}.
 {% endblocktrans %}

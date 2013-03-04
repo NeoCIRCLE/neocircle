@@ -1,0 +1,10 @@
+{% extends "mails/base.txt" %}
+{% load i18n %}
+
+{% block body %}
+
+{% blocktrans with reason=bl.reason snort_message=bl.snort_message %}
+{{reason}} {{snort_message}}
+{% endblocktrans %}
+
+{% endblock %}

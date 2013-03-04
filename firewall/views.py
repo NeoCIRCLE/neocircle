@@ -1,6 +1,5 @@
 from django.shortcuts import render_to_response
 from django.http import HttpResponse
-from django.shortcuts import render_to_response
 from firewall.models import *
 from firewall.fw import *
 from django.views.decorators.csrf import csrf_exempt
@@ -9,12 +8,15 @@ from django.db import IntegrityError
 from tasks import *
 from celery.task.control import inspect
 from django.utils.translation import ugettext_lazy as _
+from django.template.loader import render_to_string
 
 import re
 import base64
 import json
 import sys
 
+import datetime
+from django.utils.timezone import utc
 
 def reload_firewall(request):
     if request.user.is_authenticated():
@@ -41,11 +43,27 @@ def firewall_api(request):
 
         if command == "blacklist":
             obj, created = Blacklist.objects.get_or_create(ipv4=data["ip"])
+            obj.reason=data["reason"]
+            obj.snort_message=data["snort_message"]
             if created:
-                obj.reason=data["reason"]
-                obj.snort_message=data["snort_message"]
+                try:
+                    obj.host = models.Host.objects.get(ipv4=data["ip"])
+                    user = obj.host.owner
+                    lang = user.person_set.all()[0].language
+                    s = render_to_string('mails/notification-ban-now.txt', { 'user': user, 'bl': obj } )
+                    print s
+#                    send_mail(settings.EMAIL_SUBJECT_PREFIX + (_('New project: %s') % p.identifier), s, settings.SERVER_EMAIL, [])
+                except Host.DoesNotExist, ValidationError, IntegrityError, AttributeError as e:
+                    pass
+                except:
+                    raise
+                    print "ok"
+            print obj.modified_at + datetime.timedelta(minutes=5)
+            print datetime.datetime.utcnow().replace(tzinfo=utc)
+            if obj.type == 'tempwhite' and obj.modified_at + datetime.timedelta(minutes=1) < datetime.datetime.utcnow().replace(tzinfo=utc):
+                obj.type = 'tempban'
             obj.save()
-            return HttpResponse(unicode(_("OK")));
+            return HttpResponse(unicode(_("OK")))
 
         if not (data["vlan"] == "vm-net" or data["vlan"] == "war"):
             raise Exception(_("Only vm-net and war can be used."))

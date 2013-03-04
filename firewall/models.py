@@ -336,8 +336,9 @@ class Record(models.Model):
                     'address': address}
 
 class Blacklist(models.Model):
-    CHOICES_type = (('permban', 'permanent ban'), ('tempban', 'temporary ban'), ('whitelist', 'whitelist'))
+    CHOICES_type = (('permban', 'permanent ban'), ('tempban', 'temporary ban'), ('whitelist', 'whitelist'), ('tempwhite', 'tempwhite'))
     ipv4 = models.GenericIPAddressField(protocol='ipv4', unique=True)
+    host = models.ForeignKey('Host', blank=True, null=True)
     reason = models.TextField(blank=True)
     snort_message = models.TextField(blank=True)
     type = models.CharField(max_length=10, choices=CHOICES_type, default='tempban')
