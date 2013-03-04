@@ -1,0 +1,19 @@
+{% base base.txt %}
+{% load i18n %}
+
+{% block body %}
+
+{% blocktrans with vm=instance.name state=instance.state date=exp %}
+Your {{state}} virtual machine "{{vm}}" has been DELETED
+at {{date}}.
+{% endblocktrans %}
+
+{% blocktrans %}
+The disk image is IRRECOVERABLY REMOVED.
+{% endblocktrans %}
+
+{% blocktrans with url=url %}
+You can start a new instance of the template on the cloud portal:
+{{url}}
+{% endblocktrans %}
+{% endblock %}

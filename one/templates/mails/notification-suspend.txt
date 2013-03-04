@@ -1,0 +1,20 @@
+{% base base.txt %}
+{% load i18n %}
+
+{% block body %}
+
+{% blocktrans with vm=instance.name state=instance.state date=exp time=exp|timeuntil url=url %}
+Your {{state}} virtual machine "{{vm}}" is going to be STOPPED
+at {{date}} (in {{time}}).
+{% endblocktrans %}
+
+{% blocktrans with deldate=exp2 %}
+The disk and memory image will be stored, and you can resume it
+until the final expiration time ({{deldate}}).
+{% endblocktrans %}
+
+{% blocktrans with url=url %}
+You can also renew or delete the instance on the cloud portal:
+{{url}}
+{% endblocktrans %}
+{% endblock %}
