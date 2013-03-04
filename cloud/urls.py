@@ -84,5 +84,5 @@ urlpatterns = patterns('',
             'school.views.group_ajax_remove_member', ),
     url(r'^ajax/group/delete/$', 'school.views.group_ajax_delete', ),
     url(r'^ajax/group/autocomplete/$', 'school.views.group_ajax_owner_autocomplete', ),
-    url(r'stat', 'one.views.stat'),
+    url(r'^stat/$', 'one.views.stat'),
 )
