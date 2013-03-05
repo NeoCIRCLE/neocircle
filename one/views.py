@@ -368,7 +368,12 @@ def vm_show(request, iid):
 def vm_ajax_instance_status(request, iid):
     inst = get_object_or_404(Instance, id=iid, owner=request.user)
     inst.update_state()
-    return HttpResponse(json.dumps({'booting': not inst.active_since, 'state': inst.state}))
+    return HttpResponse(json.dumps({
+        'booting': not inst.active_since,
+        'state': inst.state,
+        'template': {
+            'state': inst.template.state
+        }}))
 
 @login_required
 def vm_ajax_rename(request, iid):
