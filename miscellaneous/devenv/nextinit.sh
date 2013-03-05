@@ -64,7 +64,7 @@ sudo cp vimrc.local /etc/vim/vimrc.local
 cd /opt/webadmin/cloud
 ./manage.py changepassword test
 
-git config --global alias.prettylog 'log --graph --all --decorate --date-order --pretty="%C(yellow)%h%Cred%d%Creset - %C(cyan)%an %Creset: %s %Cgreen(%cr)"'
+git config --global alias.prettylog 'log --graph --all --decorate --date-order --pretty="%C(yellow)%h%Cred%d%Creset - %C(cyan)%an %Creset: %s %Cgreen(%ar)"'
 git config --global color.ui true
 git config --global core.editor vim
 
