@@ -423,16 +423,16 @@ $(function() {
                 user_boxes.splice(i, 1);
                 boxes[current_user] = user_boxes;
                 window.localStorage.setItem('hidden_boxes', JSON.stringify(boxes));
-                $('#toggle-box-'+id).attr('src', '/static/icons/eye-half.png');
-                $('#toggle-box-'+id).parent().parent().parent().next().slideDown(700);
+                $('#toggle-box-' + id).attr('src', '/static/icons/eye-half.png');
+                $('#toggle-box-' + id).parent().parent().parent().next().slideDown(700);
                 return;
             }
         }
         user_boxes.push(id);
         boxes[current_user] = user_boxes;
-        $('#toggle-box-'+id).attr('src', '/static/icons/eye.png');
-        $('#toggle-box-'+id).parent().parent().parent().next().slideUp(700);
-        console.log($('#toggle-box-'+id).parent().parent().parent().next()[0])
+        $('#toggle-box-' + id).attr('src', '/static/icons/eye.png');
+        $('#toggle-box-' + id).parent().parent().parent().next().slideUp(700);
+        console.log($('#toggle-box-' + id).parent().parent().parent().next()[0])
         window.localStorage.setItem('hidden_boxes', JSON.stringify(boxes));
     }
 
@@ -448,16 +448,16 @@ $(function() {
         return false;
     }
 
-    $('.toggle-box').each(function(){
-        var id=$(this).data('id');
-        $(this).click(function(){
+    $('.toggle-box').each(function() {
+        var id = $(this).data('id');
+        $(this).click(function() {
             toggle_box(id);
         });
-        if(box_hidden(id)){
-            $(this).attr('src','/static/icons/eye.png');
+        if (box_hidden(id)) {
+            $(this).attr('src', '/static/icons/eye.png');
             $(this).parent().parent().parent().next().hide();
         } else {
-            $(this).attr('src','/static/icons/eye-half.png');
+            $(this).attr('src', '/static/icons/eye-half.png');
         }
     })
 
