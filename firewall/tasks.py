@@ -20,7 +20,7 @@ def reload_blacklist_task(data):
     pass
 
 class Periodic(PeriodicTask):
-    run_every = timedelta(seconds=60)
+    run_every = timedelta(seconds=10)
 
     def run(self, **kwargs):
 

@@ -1,14 +1,14 @@
-{% base base.txt %}
+{% extends "mails/base.txt" %}
 {% load i18n %}
 
 {% block body %}
 
-{% blocktrans with vm=instance.name state=instance.state date=exp deldate=exp2 %}
+{% blocktrans with vm=instance.name state=instance.state date=instance.time_of_suspend %}
 Your {{state}} virtual machine "{{vm}}" has been STOPPED
 at {{date}}.
 {% endblocktrans %}
 
-{% blocktrans with deldate=exp2 %}
+{% blocktrans with deldate=instance.time_of_delete %}
 The disk and memory image is stored, and you can resume it
 until the final expiration time ({{deldate}}).
 {% endblocktrans %}

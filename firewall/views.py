@@ -53,11 +53,8 @@ def firewall_api(request):
                     s = render_to_string('mails/notification-ban-now.txt', { 'user': user, 'bl': obj } )
                     print s
 #                    send_mail(settings.EMAIL_SUBJECT_PREFIX + (_('New project: %s') % p.identifier), s, settings.SERVER_EMAIL, [])
-                except Host.DoesNotExist, ValidationError, IntegrityError, AttributeError as e:
+                except (Host.DoesNotExist, ValidationError, IntegrityError, AttributeError):
                     pass
-                except:
-                    raise
-                    print "ok"
             print obj.modified_at + datetime.timedelta(minutes=5)
             print datetime.datetime.utcnow().replace(tzinfo=utc)
             if obj.type == 'tempwhite' and obj.modified_at + datetime.timedelta(minutes=1) < datetime.datetime.utcnow().replace(tzinfo=utc):
