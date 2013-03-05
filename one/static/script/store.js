@@ -113,7 +113,27 @@ var cloud = (function(cloud) {
             })
         });
 
-        self.loadTopList = cloud.throttle(function() {
+        var showToplist = ko.observable(false);
+        self.toggleToplist = cloud.throttle(function() {
+            if (!showToplist()) {
+                showToplist(true);
+                loadToplist();
+            } else {
+                showToplist(false);
+                self.currentPath('/');
+                loadFolder('/');
+            }
+        });
+
+        self.getToplistText = ko.computed(function() {
+            if (!showToplist()) {
+                return gettext('Toplist');
+            } else {
+                return gettext('Back to the root folder')
+            }
+        })
+
+        function loadToplist() {
             self.currentPath('/');
             $.ajax({
                 type: 'POST',
@@ -136,7 +156,7 @@ var cloud = (function(cloud) {
                     });
                 }
             })
-        });
+        }
 
         /**
          * After loadFolder completes, this function updates the UI
