@@ -19,7 +19,7 @@
 {% endblock %}
 
 {% block status %}
-    {{vm.state}}
+    {% if vm.template.state != "DONE" %} {{vm.template.state}} {% else %} {{vm.state}} {% endif %}
 {% endblock status %}
 
 {% block actions %}
