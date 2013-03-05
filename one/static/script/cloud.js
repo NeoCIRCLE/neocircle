@@ -59,7 +59,17 @@ $(function() {
         e.preventDefault();
         e.stopPropagation();
         var id = $(this).data('id');
+        var handler = arguments.callee;
         var oldName = $(this).data('name');
+        var content = $('#vm-' + id + '-name').html();
+        var self=this;
+        $(this).unbind('click').click(function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            $(this).unbind('click').click(handler);
+            $('#vm-' + id + '-name-details').show();
+            $('#vm-' + id + '-name').html(content);
+        })
         $('#vm-' + id + '-name-details').hide();
         $('#vm-' + id + '-name').html('<input type="text" value="' + oldName + '" />\
 <input type="submit" value="' + gettext('Rename') + '" />');
@@ -79,6 +89,7 @@ $(function() {
                 success: function(data) {
                     $('#vm-' + id + '-name-details').removeAttr('style');
                     $('#vm-' + id + '-name').text(data.name);
+                    $(self).click(handler);
                 }
             });
         })
