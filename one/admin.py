@@ -32,8 +32,8 @@ class MyUserAdmin(contrib.auth.admin.UserAdmin):
         inlines = (PersonInline, SshKeyInline, DetailsInline)
 
     def instance_count(self, obj):
-        return _("%d (%d active)") % (obj.instance_set.count(),
-                obj.instance_set.filter(state='ACTIVE').count(), )
+        return _("%(sum)d (%(active)d active)") % { 'sum': obj.instance_set.count(),
+                'active' :obj.instance_set.filter(state='ACTIVE').count(), }
 
     def course_groups(self, obj):
         try:
