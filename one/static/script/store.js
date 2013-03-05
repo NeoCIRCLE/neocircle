@@ -393,7 +393,7 @@ var cloud = (function(cloud) {
          * Uploads the specified file(s)
          */
         var readfiles = cloud.delayUntil(function(file, next) {
-            console.log('read', next)
+            console.log('read', file, next)
             //1 GB file limit
             if (file.size > 1024 * 1024 * 1024) {
                 $('#upload-zone').hide();
@@ -469,17 +469,17 @@ var cloud = (function(cloud) {
         document.addEventListener('drop', function(e) {
             e.stopPropagation();
             e.preventDefault();
-            var len=e.dataTransfer.files.length;
-            var files=e.dataTransfer.files;
+            var len = e.dataTransfer.files.length;
+            var files = e.dataTransfer.files;
             console.log(files);
             console.log(e.dataTransfer.files);
-            var i=1;
+            var i = 1;
             readfiles(e.dataTransfer.files[0], function() {
                 console.log('next', i);
-                next=arguments.callee;
+                next = arguments.callee;
                 return function() {
                     console.log('readnext', i, len);
-                    if(i >= len-1) {
+                    if (i >= len - 2) {
                         console.log('end', i, len);
                         self.getUploadURL();
                         readfiles(files[i++], null);
