@@ -187,6 +187,7 @@ CELERY_ROUTES = {
     'firewall.tasks.reload_firewall_task': {'queue': 'firewall'},
     'firewall.tasks.reload_dhcp_task': {'queue': 'dhcp'},
     'firewall.tasks.reload_blacklist_task': {'queue': 'firewall'},
+    'firewall.tasks.Periodic': {'queue': 'local'},
 }
 
 store_settings = {
