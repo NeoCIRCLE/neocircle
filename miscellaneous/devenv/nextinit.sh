@@ -65,6 +65,7 @@ cd /opt/webadmin/cloud
 ./manage.py changepassword test
 
 git config --global alias.prettylog 'log --graph --all --decorate --date-order --pretty="%C(yellow)%h%Cred%d%Creset - %C(cyan)%an %Creset: %s %Cgreen(%ar)"'
+git config --global alias.civ 'commit --interactive --verbose'
 git config --global color.ui true
 git config --global core.editor vim
 
