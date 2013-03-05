@@ -15,8 +15,22 @@
                     window.location.reload();
                 }
             }
-        })
-    }, 1000);
+        });
+    }, 5000);
+    {% endif %}
+    {% if i.template.state == 'SAVING' %}
+    var savingTimer=setInterval(function(){
+        $.ajax({
+            type: 'GET',
+            dataType: 'json',
+            url: '{% url one.views.vm_ajax_instance_status id %}',
+            success: function(data){
+                if(data.template.state == 'READY'){
+                    window.location.href='{% url one.views.home %}';
+                }
+            }
+        });
+    }, 10000);
     {% endif %}
 </script>
 {% endblock %}
@@ -64,6 +78,11 @@
             <p style="font-size:25px; line-height:2em;text-align:center;">
             <img src="{% static "image/load.gif" %}" />
                 {% trans "Starting..." %}
+            </p>
+            {% elif i.template.state == "SAVING" %}
+            <p style="font-size:25px; line-height:2em;text-align:center;">
+            <img src="{% static "image/load.gif" %}" />
+                {% trans "Saving..." %}
             </p>
             {% elif state == "ACTIVE" and not booting %}
             <p id="connect" style="display:block; font-size:25px; line-height:2em;text-align:center;">
