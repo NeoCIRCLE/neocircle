@@ -16,21 +16,19 @@ class MockGroups:
     def all(self):
         return self.groups
 
-class HostAdminNoGroupTestCase(TestCase):
-    def runTest(self):
+class HostAdminTestCase(TestCase):
+    def test_no_groups(self):
         instance = MockInstance([])
-        l = HostAdmin.groups_l(instance)
+        l = HostAdmin.list_groups(instance)
         self.assertEqual(l, "")
 
-class HostAdminSingleGroupTestCase(TestCase):
-    def runTest(self):
+    def test_sigle_group(self):
         instance = MockInstance([MockGroup("alma")])
-        l = HostAdmin.groups_l(instance)
+        l = HostAdmin.list_groups(instance)
         self.assertEqual(l, "alma")
 
-class HostAdminMultipleGroupsTestCase(TestCase):
-    def runTest(self):
+    def test_multiple_groups(self):
         instance = MockInstance([MockGroup("alma"),
             MockGroup("korte"), MockGroup("szilva")])
-        l = HostAdmin.groups_l(instance)
+        l = HostAdmin.list_groups(instance)
         self.assertEqual(l, "alma, korte, szilva")
