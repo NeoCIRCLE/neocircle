@@ -1,0 +1,112 @@
+{% load i18n %}
+{% load staticfiles %}
+{% get_current_language as LANGUAGE_CODE %}
+<form action="{% url one.views.ajax_template_edit_wizard template.id %}" method="post" id="template-wizard">
+    {% csrf_token %}
+    <div id="new-template-step-2" class="wizard">
+        <h2>{% blocktrans with step=2 %}Step {{step}}{% endblocktrans %}</h2>
+        <p>{% trans "Change the parameters as needed." %}</p>
+        <ul>
+            <li>
+                <label for="new-template-name">{% trans "Name" %}</label>
+                <input type="text" name="name" id="new-template-name" value="{{template.name}}"
+                class="validated" />
+                <div class="clear"></div>
+            </li>
+            <li class="new-tpl-size">
+                <label for="new-template-size">{% trans "Size" %}</label>
+                <ul class="radio">
+                    {% for s in sizes %}
+                    <li>
+                        <label>
+                            <input type="radio" name="size" value="{{s.id}}" id="new-template-size-{{s.id}}"
+                            {% if s == template.instance_type %}checked="checked"{% endif %} />
+                            {{s.name}}
+                        </label>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% for s in sizes %}
+                <p id="new-template-size-summary-{{s.id}}" class="size-summary clear"
+                {% if s != template.instance_type %}style="display:none"{% endif %}>
+                    <span class="cpu">
+                        {% blocktrans count n=s.CPU %}{{n}} core{% plural %}{{n}} cores{% endblocktrans %}
+                    </span>
+                    <span class="memory">{{s.RAM}} MiB</span>
+                    <span class="credit">{{s.credit}}</span>
+                </p>
+                {% endfor %}
+                <div class="clear"></div>
+            </li>
+            <li style="border: none">
+                <label for="new-template-description">{% trans "Description" %}</label>
+                <textarea name="description" id="new-template-description" style="text-align: left">{{template.description}}</textarea>
+                <div class="clear"></div>
+            </li>
+        </ul>
+        <nav>
+            <input type="reset" class="prev" value="{% trans "Cancel" %}" />
+            <input type="submit" class="next" value="{% trans "Save" %}" />
+            <div class="clear"></div>
+        </nav>
+        <script type="text/javascript">
+            $(function(){
+                var original = '{{template.name}}';
+                $('#new-template-step-2 nav .prev').click(function(){
+                    $('#modal').hide();
+                })
+                $(".new-tpl-size input[name='size']").click(function(e){
+                    var v = $(".new-tpl-size input[name='size']:checked").val();
+                    $("p.size-summary").hide();
+                    $("#new-template-size-summary-" + v).show();
+                });
+                $("#new-template-name").keyup(function(){
+                    var timer;
+                    return function(e){
+                        var self = this;
+                        clearTimeout(timer);
+                        timer=setTimeout(function(){
+                            var s = $(self).val();
+                            $.ajax({
+                                'type': 'GET',
+                                'url': '{% url one.views.ajax_template_name_unique %}?name=' + s,
+                                'success': function(data, b, c) {
+                                    if (s != $("#new-template-name").val()) {
+                                        return true;
+                                    }
+                                    if (data == "True" || s == original) {
+                                        $('#new-template-name').removeClass("error");
+                                        $('#new-template-step-2 nav .next').removeAttr("disabled");
+                                        $('#new-template-name').removeProp("title");
+                                    }
+                                    else {
+                                        $('#new-template-name').addClass("error");
+                                        $('#new-template-step-2 nav .next').attr("disabled", "disabled");
+                                        $('#new-template-name').prop("title", gettext('Please choose a different name.'));
+                                    }
+                                }
+                            });
+                        }, 1000)
+                    }
+                }());
+                $("#template-wizard").submit(function(e){
+                    e.preventDefault();
+                    $.ajax({
+                        'type': 'GET',
+                        'url': '{% url one.views.ajax_template_name_unique %}?name=' + $("#new-template-name").val(),
+                        'success': function(data, b, c) {
+                            if (data == "True" || s == original) {
+                                $("#template-wizard").unbind('submit').submit()
+                            }
+                            else {
+                                $('#new-template-name').addClass("error");
+                                $('#new-template-step-2 nav .next').attr("disabled", "disabled");
+                                $('#new-template-name').prop("title", gettext('Please choose a different name.'));
+                            }
+                        }
+                    });
+                });
+            })
+        </script>
+    </div>
+</form>

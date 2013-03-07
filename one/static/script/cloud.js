@@ -152,7 +152,7 @@ $(function() {
                 $('#modal-container').html(data);
             }
         });
-    })
+    });
     $('#shadow').click(function() {
         $('#modal').hide();
         $('#modal-container').html('');

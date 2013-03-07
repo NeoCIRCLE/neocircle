@@ -135,6 +135,27 @@ class AjaxTemplateWizard(View):
             }))
 ajax_template_wizard = login_required(AjaxTemplateWizard.as_view())
 
+class AjaxTemplateEditWizard(View):
+    def get(self, request, id, *args, **kwargs):
+        template = get_object_or_404(Template, id=id)
+        if template.owner != request.user and not template.public and not request.user.is_superuser:
+            raise PermissionDenied()
+        return render_to_response('edit-template-flow.html', RequestContext(request, {
+            'sizes': InstanceType.objects.all(),
+            'template': template,
+            }))
+    def post(self, request, id, *args, **kwargs):
+        template = get_object_or_404(Template, id=id)
+        if template.owner != request.user and not template.public and not request.user.is_superuser:
+            raise PermissionDenied()
+        template.instance_type_id = request.POST['size']
+        template.description = request.POST['description']
+        template.name = request.POST['name']
+        template.save()
+        return redirect(home)
+
+ajax_template_edit_wizard = login_required(AjaxTemplateEditWizard.as_view())
+
 
 class AjaxShareWizard(View):
     def get(self, request, id, gid=None, *args, **kwargs):
