@@ -213,6 +213,7 @@ firewall_settings = {
 }
 
 EMAIL_HOST='cronos.ik.bme.hu'
+CLOUD_URL='https://cloud.ik.bme.hu/'
 
 try:
     from cloud.local_settings import *
