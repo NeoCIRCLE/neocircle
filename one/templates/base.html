@@ -35,10 +35,12 @@
             {% else %}
             <a href="{% url login %}">{% trans "Login" %}</a>.
             {% endif %}
+            {% if user.is_authenticated %}
             {% if lang == 'hu' %}
             <a href="{% url school.views.language "en" %}">In English</a>.
             {% else %}
             <a href="{% url school.views.language "hu" %}">Magyarul</a>.
+            {% endif %}
             {% endif %}
             </p>
         </div>
