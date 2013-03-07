@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-03-07 17:43+0100\n"
+"POT-Creation-Date: 2013-03-07 18:16+0100\n"
 "PO-Revision-Date: 2013-03-07 17:40+0100\n"
 "Last-Translator: \n"
 "Language-Team: Hungarian <cloud@ik.bme.hu>\n"
@@ -560,7 +560,7 @@ msgid "Login"
 msgstr "Bejelentkezés"
 
 #: templates/base.html:73
-msgid "Impressum"
+msgid "Legal notice"
 msgstr "Impresszum"
 
 #: templates/base.html:74
@@ -1357,6 +1357,9 @@ msgstr ""
 "\n"
 "A lemez- és memóriaképet tárolni fogjuk, így a végleges lejárati\n"
 "időig (%(deldate)s) folytathatja a futtatását.\n"
+
+#~ msgid "Impressum"
+#~ msgstr "Impresszum"
 
 #~ msgid "Delete notification"
 #~ msgstr "Figyelmeztetés törlésről"
