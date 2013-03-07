@@ -3,7 +3,7 @@
 
 {% block body %}
 
-{% blocktrans with vm=instance.name state=instance.state date=instance.time_of_suspend %}
+{% blocktrans with vm=instance.name state=instance.state|lower date=instance.time_of_suspend %}
 Your {{state}} virtual machine "{{vm}}" has been STOPPED
 at {{date}}.
 {% endblocktrans %}

@@ -3,8 +3,21 @@
 
 {% block body %}
 
-{% blocktrans with reason=bl.reason snort_message=bl.snort_message %}
-{{reason}} {{snort_message}}
+{% blocktrans  with reason=bl.reason snort_message=bl.snort_message vm=instance.name %}
+Our network intrusion detection system showed that your machine
+"{{vm}}" pursues the following forbidden network activity: {{reason}}.
+
+"{{vm}}" has been BANNED from all network activity
+including remote desktop and shell connection.
+
+Details:
+{{snort_message}}
+{% endblocktrans %}
+
+
+{% blocktrans with url=url %}
+Please, reply to this notification, or delete the instance on the
+cloud portal: {{url}}
 {% endblocktrans %}
 
 {% endblock %}
