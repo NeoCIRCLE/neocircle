@@ -110,19 +110,21 @@
     <div class="contentblock" id="ports">
         <h2>
             <div class="boxhelp">
-                <div class="icon">
-                    <img src="{% static "icons/information-frame.png" %}" alt="{% trans "Help" %}" />
-                </div>
-                <div class="boxhelp-box">
-                    <p>{% blocktrans %}This is a list about the network ports
-                    forwarded to the public internet.{% endblocktrans %}</p>
-                    <p>{% blocktrans %}You can access the given private port of
-                    the VM trough the public address of the network.
-                    {% endblocktrans %}</p>
-                    <p>{% blocktrans %}On the IPV6 network you can access the
-                    listed private ports direcly using the VM's global IPV6
-                    address (connections to other ports are dropped).
-                    {% endblocktrans %}</p>
+                <div class="help">
+                    <div class="icon">
+                        <img src="{% static "icons/information-frame.png" %}" alt="{% trans "Help" %}" />
+                    </div>
+                    <div class="boxhelp-box">
+                        <p>{% blocktrans %}This is a list about the network ports
+                        forwarded to the public internet.{% endblocktrans %}</p>
+                        <p>{% blocktrans %}You can access the given private port of
+                        the VM trough the public address of the network.
+                        {% endblocktrans %}</p>
+                        <p>{% blocktrans %}On the IPV6 network you can access the
+                        listed private ports direcly using the VM's global IPV6
+                        address (connections to other ports are dropped).
+                        {% endblocktrans %}</p>
+                    </div>
                 </div>
             </div>
             {% trans "Port administration" %}</h2>
