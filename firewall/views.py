@@ -21,13 +21,11 @@ from django.utils.timezone import utc
 def reload_firewall(request):
     if request.user.is_authenticated():
         if request.user.is_superuser:
-            html = ((_("Dear %s, you've signed in as administrator!") %
-                    request.user.username) + "<br />" +
-                    _("Reloading in 10 seconds..."))
+            html = (_("Dear %s, you've signed in as administrator!<br />"
+                      "Reloading in 10 seconds...") % request.user.username)
             ReloadTask.delay()
         else:
-            html = (_("Dear %s, you've signed in!")
-                    % request.user.username)
+            html = (_("Dear %s, you've signed in!") % request.user.username)
     else:
         html = _("Dear anonymous, you've not signed in yet!")
     return HttpResponse(html)
