@@ -3,7 +3,9 @@
 {% load staticfiles %}
 {% get_current_language as LANGUAGE_CODE %}
 {% block js %}
-<script type="text/javascript" src="{% static "script/store.js" %}"></script>
+{% if DEBUG %}<script type="text/javascript" src="{% static "script/store.js" %}"></script>
+{% else %}<script type="text/javascript" src="{% static "script/store.min.js" %}"></script>
+{% endif %}
 {% endblock %}
 {% block content %}
 <div class="boxes">

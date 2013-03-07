@@ -5,9 +5,10 @@
 <html lang="{{lang}}">
 <head>
     <title>{% block title %}IK Cloud{% endblock %}</title>
-    <link href="https://fonts.googleapis.com/css?family=Titillium+Web&amp;subset=latin,latin-ext" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Titillium+Web&amp;subset=latin,latin-ext" rel="stylesheet" type="text/css" />
     <link rel="icon" type="image/png" href="{% static "favicon.png" %}" />
-    <link rel="stylesheet/less" href="{% static "style/style.less" %}" />
+    {% if DEBUG %}<link rel="stylesheet/less" href="{% static "style/style.less" %}" />{% else %}
+    <link href="{% static "style/style.css" %}" rel="stylesheet" type="text/css" />{% endif %}
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <script src="{% static "script/jquery.min.js" %}"></script>
     <script type="text/javascript" src="{% url django.views.i18n.javascript_catalog %}"></script>
@@ -15,10 +16,14 @@
         window.localStorage.removeItem('https://cloud.ik.bme.hu/static/style/style.less:timestamp');
         var current_user={{user.id}};
     </script>
-    <script src="{% static "script/less.min.js" %}"></script>
+    {% if DEBUG %}<script src="{% static "script/less.min.js" %}"></script>{% endif %}
     <script src="{% static "script/knockout.min.js" %}"></script>
-    <script type="text/javascript" src="{% static "script/util.js" %}"></script>
-    <script type="text/javascript" src="{% static "script/cloud.js" %}"></script>
+    {% if DEBUG %}<script type="text/javascript" src="{% static "script/util.js" %}"></script>
+    {% else %}<script type="text/javascript" src="{% static "script/util.min.js" %}"></script>
+    {% endif %}
+    {% if DEBUG %}<script type="text/javascript" src="{% static "script/cloud.js" %}"></script>
+    {% else %}<script type="text/javascript" src="{% static "script/cloud.min.js" %}"></script>
+    {% endif %}
     {{ form.media }}
     {% block js %}{% endblock %}
 </head>
