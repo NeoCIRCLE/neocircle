@@ -4,7 +4,7 @@
 <form action="{% url one.views.ajax_template_edit_wizard template.id %}" method="post" id="template-wizard">
     {% csrf_token %}
     <div id="new-template-step-2" class="wizard">
-        <h2>{% blocktrans with step=2 %}Step {{step}}{% endblocktrans %}</h2>
+        <h2>{% trans "Edit template" %}</h2>
         <p>{% trans "Change the parameters as needed." %}</p>
         <ul>
             <li>
