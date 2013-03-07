@@ -31,12 +31,12 @@ class Job(HourlyJob):
             delete = i.time_of_delete.replace(minute=0, second=0, microsecond=0)
             if delete < now:
                 msg = render_to_string('mails/notification-delete-now.txt', { 'user': i.owner, 'instance': i } )
-                SendMailTask.delay(to=i.owner.email, subject=_('Delete notification'), msg=msg)
+                SendMailTask.delay(to=i.owner.email, subject='[IK Cloud] %s' % i.name, msg=msg)
             else:
                 for t in d:
                     if delete == d[t]:
                         msg = render_to_string('mails/notification-delete.txt', { 'user': i.owner, 'instance': i } )
-                        SendMailTask.delay(to=i.owner.email, subject=_('Delete notification'), msg=msg)
+                        SendMailTask.delay(to=i.owner.email, subject='[IK Cloud] %s' % i.name, msg=msg)
 
         # suspend
         for i in Instance.objects.filter(state='ACTIVE', time_of_suspend__isnull=False):
@@ -45,10 +45,10 @@ class Job(HourlyJob):
 
             if suspend < now:
                 msg = render_to_string('mails/notification-suspend-now.txt', { 'user': i.owner, 'instance': i } )
-                SendMailTask.delay(to=i.owner.email, subject=_('Stop notification'), msg=msg)
+                SendMailTask.delay(to=i.owner.email, subject='[IK Cloud] %s' % i.name, msg=msg)
                 i.stop()
             else:
                 for t in d:
                     if suspend == d[t]:
                         msg = render_to_string('mails/notification-suspend.txt', { 'user': i.owner, 'instance': i } )
-                        SendMailTask.delay(to=i.owner.email, subject=_('Stop notification'), msg=msg)
+                        SendMailTask.delay(to=i.owner.email, subject='[IK Cloud] %s' % i.name, msg=msg)

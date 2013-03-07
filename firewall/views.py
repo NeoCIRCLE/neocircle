@@ -17,6 +17,7 @@ import sys
 
 import datetime
 from django.utils.timezone import utc
+from one.tasks import SendMailTask
 
 def reload_firewall(request):
     if request.user.is_authenticated():
@@ -48,9 +49,8 @@ def firewall_api(request):
                     obj.host = models.Host.objects.get(ipv4=data["ip"])
                     user = obj.host.owner
                     lang = user.person_set.all()[0].language
-                    s = render_to_string('mails/notification-ban-now.txt', { 'user': user, 'bl': obj } )
-                    print s
-#                    send_mail(settings.EMAIL_SUBJECT_PREFIX + (_('New project: %s') % p.identifier), s, settings.SERVER_EMAIL, [])
+                    msg = render_to_string('mails/notification-ban-now.txt', { 'user': user, 'bl': obj, 'instance:': obj.host.instance_set.get() } )
+                    SendMailTask.delay(to=obj.host.owner.email, subject='[IK Cloud] %s' % obj.host.instance_set.get().name, msg=msg)
                 except (Host.DoesNotExist, ValidationError, IntegrityError, AttributeError):
                     pass
             print obj.modified_at + datetime.timedelta(minutes=5)

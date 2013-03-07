@@ -212,6 +212,8 @@ firewall_settings = {
     "dns_ttl": "300",
 }
 
+EMAIL_HOST='cronos.ik.bme.hu'
+
 try:
     from cloud.local_settings import *
 except:
