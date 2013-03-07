@@ -1,11 +1,9 @@
-.boxes
-{
+.boxes {
     width:480px;
     float:left;
 }
 
-.box
-{
+.box {
     background-color:#000;
     background-image:url(/static/image/hexa.png);
     background-position:center 30%;
@@ -18,43 +16,41 @@
     border-top-width:30px;
     margin:10px 420px 10px 10px;
     padding:2px;
-    h3
-    {
+    h3 {
         color:#fff;
         text-align:center;
         margin:0;
         padding:3px;
     }
-    .content
-    {
+    .content {
         min-height:100px;
         margin:0;
         padding:5px;
     }
 }
 
-.tooltip{
+.tooltip {
     position: relative;
     z-index: 1;
-    .container{
+    .container {
         margin: 10px 10px 5px 150px;
         border-radius: 4px;
         border: 1px solid #888;
         background: #FFFF66;
         box-shadow: 0 0 20px rgba(0,0,0,0.2);
-        p{
+        p {
             text-align: left;
             font-size: 0.8em;
             word-spacing: 2px;
             padding: 5px;
         }
-        .tail{
+        .tail {
             position: absolute;
             left: 350px;
             border-width: 17px;
             border-style: solid;
             border-color: #888 transparent transparent transparent;
-            &:after{
+            &:after {
                 content: "";
                 position: absolute;
                 left: -17px;
@@ -70,9 +66,9 @@
 .entry-list {
     list-style-type: none;
 }
-.entry{
+.entry {
     &.opened {
-        .actions{
+        .actions {
             display: block !important;
         }
         .summary .name .details {
@@ -80,13 +76,13 @@
             border: none;
         }
     }
-    &.small .summary{
+    &.small .summary {
         padding: 5px;
         cursor: default;
-        &:hover{
+        &:hover {
             background-color: #c1c1c1;
         }
-        .name{
+        .name {
             background: none !important;
             text-align: center;
             float: none;
@@ -116,24 +112,24 @@
             background-image: url(/static/icons/key--exclamation.png);
         }
     }
-    .quota{
+    .quota {
         left: 0;
         top: 0;
         z-index: 0;
         position: absolute;
         width: 100%;
         height: 100%;
-        .used{
+        .used {
             height: 100%;
             position: absolute;
         }
-        .softLimit{
+        .softLimit {
             height: 100%;
             position: absolute;
             border-left: 1px solid red;
         }
     }
-    .summary{
+    .summary {
         padding: 15px 5px;
         line-height: 1.7em;
         border-top: 1px solid #888;
@@ -144,32 +140,32 @@
         -moz-transition: background-color 0.3s;
         -o-transition: background-color 0.3s;
         transition: background-color 0.3s;
-        &.unfinished{
+        &.unfinished {
             background-color: rgb(252, 252, 108);
             background-image: url(/static/image/constr.png);
             background-position: right top;
             background-repeat: no-repeat;
-            &:hover{
+            &:hover {
                 background-color: rgb(236, 236, 106);
                 background-image: url(/static/image/constr.png);
             }
         }
-        &.selected-summary{
+        &.selected-summary {
             background-color: rgb(124, 236, 103);
-            &:hover{
+            &:hover {
                 background-color: rgb(135, 211, 120);
             }
         }
-        &.public-template{
+        &.public-template {
             background-color: rgb(167, 179, 195);
-            &:hover{
+            &:hover {
                 background-color: rgb(157, 169, 185);
             }
         }
-        &:hover{
+        &:hover {
             background-color: #b1b1b1;
             background-image: none;
-            .actions{
+            .actions {
                 display: block;
             }
             .name .details {
@@ -178,11 +174,11 @@
             }
         }
 
-        .id{
+        .id {
             float: right;
             width: 30px;
         }
-        .name{
+        .name {
             float: left;
             padding-left: 25px;
             background-repeat: no-repeat;
@@ -197,27 +193,27 @@
                 display: none;
             }
         }
-        .status{
+        .status {
             text-align: right;
             float: right;
             width: 60px;
             z-index: 2;
             position: relative;
         }
-        .actions{
+        .actions {
             float: right;
             margin-left: 5px;
             display: none;
             z-index: 2;
             position: relative;
-            a{
+            a {
                 margin: 2px 0;
                 height: 16px;
                 width: 16px;
                 display: block;
                 float: left;
                 margin-left: 2px;
-                &:hover{
+                &:hover {
                     box-shadow: 0 0 10px rgba(0,0,0,0.4);
                     background-color: rgba(0,0,0,0.4);
                 }
@@ -234,12 +230,12 @@
     &.opened #new-folder-form {
         display: block;
     }
-    .details{
+    .details {
         border-top: 1px solid #888;
         display: none;
-        .container{
+        .container {
             padding: 5px 5px;
-            .upload-zone{
+            .upload-zone {
                 margin: 10px;
                 border-radius: 10px;
                 border: 2px dashed #666;
@@ -251,73 +247,73 @@
                 }
             }
         }
-        h3{
+        h3 {
             font-weight: normal;
         }
-        ul{
+        ul {
             list-style: none;
             margin: 0px 5px;
         }
-        li{
+        li {
             margin: 8px 0px;
             padding: 3px 0px 3px 20px;
             border-bottom: 1px dotted #aaa;
             background-repeat: no-repeat;
             background-position: 0px 4px;
-            &:last-child{
+            &:last-child {
                 border-bottom: none;
             };
         }
-        a{
+        a {
             text-decoration: underline;
         }
-        .name{
+        .name {
             float: none;
             background-image: url(/static/icons/computer.png);
         }
-        .os-win{
-            background-image: url(/static/icons/windows.png)
+        .os-win {
+            background-image: url(/static/icons/windows.png);
         }
-        .os-linux{
-            background-image: url(/static/icons/animal-penguin.png)
+        .os-linux {
+            background-image: url(/static/icons/animal-penguin.png);
         }
-        .template{
-            background-image: url(/static/icons/document-template.png)
+        .template {
+            background-image: url(/static/icons/document-template.png);
         }
-        .type{
-            background-image: url(/static/icons/box-share.png)
+        .type {
+            background-image: url(/static/icons/box-share.png);
         }
-        .date{
-            background-image: url(/static/icons/calendar-day.png)
+        .date {
+            background-image: url(/static/icons/calendar-day.png);
         }
-        .cpu{
-            background-image: url(/static/icons/processor.png)
+        .cpu {
+            background-image: url(/static/icons/processor.png);
         }
-        .memory{
-            background-image: url(/static/icons/memory.png)
+        .memory {
+            background-image: url(/static/icons/memory.png);
         }
-        .count{
-            background-image: url(/static/icons/documents-stack.png)
+        .count {
+            background-image: url(/static/icons/documents-stack.png);
         }
-        .share-type{
-            background-image: url(/static/icons/calendar-day.png)
+        .share-type {
+            background-image: url(/static/icons/calendar-day.png);
         }
-        .value{
+        .value {
             float: right;
             width: 200px;
             text-align: right;
         }
-        .description{
+        .description {
             font-size: inherit;
             background-image: url(/static/icons/document-snippet.png);
-            .value{
+            .value {
                 font-size: 0.8em;
                 word-spacing: 3px;
                 width: 350px;
             }
         }
     }
-    &.new .name{
+    &.new .name {
         background-image: url(/static/icons/computer--plus.png);
     }
 }
@@ -330,11 +326,11 @@
         background-position: left center;
         background-repeat: no-repeat;
         padding-left: 18px;
-            &.suspend{
-                background-image: url(/static/icons/control-pause.png)
+            &.suspend {
+                background-image: url(/static/icons/control-pause.png);
             }
-            &.delete{
-                background-image: url(/static/icons/minus-circle.png)
+            &.delete {
+                background-image: url(/static/icons/minus-circle.png);
             }
     }
 }
@@ -347,25 +343,25 @@
         background-position: left center;
         background-repeat: no-repeat;
         padding-left: 18px;
-            &.cpu{
-                background-image: url(/static/icons/processor.png)
+            &.cpu {
+                background-image: url(/static/icons/processor.png);
             }
-            &.memory{
-                background-image: url(/static/icons/memory.png)
+            &.memory {
+                background-image: url(/static/icons/memory.png);
             }
-            &.credit{
-                background-image: url(/static/icons/point.png)
+            &.credit {
+                background-image: url(/static/icons/point.png);
             }
     }
 }
 
-.file-list{
+.file-list {
     list-style: none;
     max-height: 400px;
-    .name{
+    .name {
         float: left;
     }
-    .info{
+    .info {
         float: right;
         width: 65px;
         text-align: right;
@@ -380,19 +376,19 @@
 }
 #file-list {
     overflow-y: scroll;
-    li:nth-child(3) .summary{
+    li:nth-child(3) .summary {
         border-top: none;
     }
-    li:nth-child(2) .summary{
+    li:nth-child(2) .summary {
         border-top: none;
     }
-    li:nth-child(1) .summary{
+    li:nth-child(1) .summary {
         border-top: none;
         border-bottom: 1px solid #888
     }
 }
-#current-location{
-    .summary{
+#current-location {
+    .summary {
         border-bottom: 1px solid #888;
         height: 25px;
         .name {
@@ -456,55 +452,55 @@
 .filetype-jump-out {
     background-image: url(/static/icons/arrow-curve-090.png);
 }
-.vm-on{
+.vm-on {
     background-image: url(/static/icons/computer-cloud.png);
 }
-.vm-off{
+.vm-off {
     background-image: url(/static/icons/computer-off.png);
 }
 
-#template .entry .summary .name{
-  background-image: url(/static/icons/document-template.png)
+#template .entry .summary .name {
+  background-image: url(/static/icons/document-template.png);
 }
-#template .entry .public-template .name{
-  background-image: url(/static/icons/blue-document-share.png)
+#template .entry .public-template .name {
+  background-image: url(/static/icons/blue-document-share.png);
 }
-#new-template-button .name{
-  background-image: url(/static/icons/document--plus.png) !important
+#new-template-button .name {
+  background-image: url(/static/icons/document--plus.png) !important;
 }
-.wm-list.modal{
+.wm-list.modal {
   border-radius: 4px;
   border: 1px solid #666;
 }
-.wm-list.modal input{
+.wm-list.modal input {
   padding: 2px 10px;
 }
-.wm-list.modal .wm:nth-child(1) .summary{
+.wm-list.modal .wm:nth-child(1) .summary {
   border-top: none;
 }
 
-#template{
+#template {
     .entry {
-        .template-details{
+        .template-details {
             margin: 0;
             padding: 0;
             border-top: 1px solid #888;
             display: none;
-            ul{
+            ul {
                 list-style-type: none;
             }
-            li{
+            li {
                 padding-left: 10px;
                 border-top: 1px solid #aaa;
                 position: relative;
-                &:first-child{
+                &:first-child {
                     border-top: none;
                 };
-                .status{
+                .status {
                     float: right;
                     padding: 0 5px;
                 }
-                .group-name{
+                .group-name {
                     float: left;
                     line-height: 1.5em;
                     z-index: 2;
@@ -528,7 +524,7 @@ table {
         &:hover {
             background-color: rgba(0,0,0,0.1);
         };
-        td,th {
+        td, th {
             padding: 5px;
         }
         td {
@@ -594,7 +590,7 @@ table {
         -moz-transition: background-color 0.3s;
         -o-transition: background-color 0.3s;
         transition: background-color 0.3s;
-        &:hover{
+        &:hover {
             background-color: rgba(0,0,0,0.1);
             border: 1px solid #666;
             input {
