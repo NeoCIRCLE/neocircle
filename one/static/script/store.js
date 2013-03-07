@@ -124,7 +124,7 @@ var cloud = (function(cloud) {
             if (!showToplist()) {
                 return gettext('Toplist');
             } else {
-                return gettext('Back to the root folder')
+                return gettext('Back to the root folder');
             }
         })
 
@@ -150,7 +150,7 @@ var cloud = (function(cloud) {
                         }, 500);
                     });
                 }
-            })
+            });
         }
 
         /**
@@ -268,7 +268,7 @@ var cloud = (function(cloud) {
                 success: function(data) {
                     window.location.href = data.url;
                 }
-            })
+            });
         }
 
         /**
@@ -318,8 +318,7 @@ var cloud = (function(cloud) {
                     g.stopPropagation();
                     self.rename(item, g);
                 });
-            })
-            //$(e.target).parent().parent().parent().unbind('click');
+            });
             $(e.target).parent().parent().parent().find('.name').html('<input type="text" value="' + item.originalName + '" />\
 <input type="submit" value="' + gettext('Rename') + '" />');
             $(e.target).parent().parent().parent().find('.name input').click(function(f) {
@@ -403,7 +402,6 @@ var cloud = (function(cloud) {
             }
             var formData = tests.formdata ? new FormData() : null;
             formData.append('data', file);
-            // now post a new XHR request
             if (tests.formdata) {
                 var xhr = new XMLHttpRequest();
                 var start = new Date().getTime();
