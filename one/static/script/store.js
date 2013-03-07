@@ -35,11 +35,6 @@ var cloud = (function(cloud) {
         }, self);
         self.sortBy = ko.observable('name');
 
-        $('#current-location select').on('change', function() {
-            self.sortBy($('#current-location select').val());
-            sortFiles();
-        })
-
         /**
          * Loads the parent folder
          */
@@ -48,7 +43,7 @@ var cloud = (function(cloud) {
             loadFolder(s.substr(0, s.substr(0, s.length - 1).lastIndexOf('/') + 1));
         };
 
-        var sortFiles = (function() {
+        self.sortFiles = (function() {
             self.files.sort({
                 name: function(a, b) {
                     if (a.type === b.type) {
@@ -170,7 +165,7 @@ var cloud = (function(cloud) {
             for (var i in data) {
                 addFile(data[i]);
             }
-            sortFiles();
+            self.sortFiles();
         }
 
         /**
@@ -528,6 +523,10 @@ var cloud = (function(cloud) {
             $('.key').slideDown(700);
             $('#keys').slideUp(700);
         });
+        $('#current-location select').on('change', function() {
+            model.sortBy($('#current-location select').val());
+            model.sortFiles();
+        })
     });
     document.addEventListener('dragenter', function(e) {
         e.stopPropagation();
