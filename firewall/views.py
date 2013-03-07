@@ -65,7 +65,7 @@ def firewall_api(request):
         if not (data["vlan"] == "vm-net" or data["vlan"] == "war"):
             raise Exception(_("Only vm-net and war can be used."))
 
-        data["hostname"] = re.sub(r' ','_', data["hostname"])
+        data["hostname"] = re.sub(r' ', '_', data["hostname"])
 
         if command == "create":
             data["owner"] = "opennebula"
@@ -98,8 +98,8 @@ def firewall_api(request):
             raise Exception(_("Unknown command."))
 
     except (ValidationError, IntegrityError, AttributeError, Exception) as e:
-        return HttpResponse(_("Something went wrong!\n%s\n") % e);
+        return HttpResponse(_("Something went wrong!\n%s\n") % e)
     except:
-        return HttpResponse(_("Something went wrong!\n"));
- 
-    return HttpResponse(unicode(_("OK")));
+        return HttpResponse(_("Something went wrong!\n"))
+
+    return HttpResponse(unicode(_("OK")))
