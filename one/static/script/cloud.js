@@ -140,6 +140,19 @@ $(function() {
         })
         $('#modal').show();
     });
+    $('.edit-template').click(function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        var id=$(this).data('id');
+        $.ajax({
+            type: 'GET',
+            url: '/ajax/templateEditWizard/'+id+'/',
+            success: function(data){
+                $('#modal').show();
+                $('#modal-container').html(data);
+            }
+        });
+    })
     $('#shadow').click(function() {
         $('#modal').hide();
         $('#modal-container').html('');
