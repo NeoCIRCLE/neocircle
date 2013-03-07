@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 
 
-default: migrate collectstatic mo less uglifyjs restart
+default: migrate less uglifyjs collectstatic mo restart
 
 pulldef: pull default
 pull:
