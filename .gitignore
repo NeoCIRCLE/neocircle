@@ -35,8 +35,8 @@ nosetests.xml
 .pydevproject
 
 # Compiled CSS/JS resources
-one/static/style/*.css
-one/static/style/*.min.js
+*.css
+*.min.js
 
 # Other
 *.swp
