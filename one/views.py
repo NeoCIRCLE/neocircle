@@ -606,4 +606,10 @@ def stat(request):
                 }
             )))
 
+def sites(request, site):
+    if site in [ "legal", "policy", "help", "support" ]:
+        return render_to_response("sites/%s.html" % site, RequestContext(request, {}))
+    else:
+        return redirect(home)
+
 # vim: et sw=4 ai fenc=utf8 smarttab :

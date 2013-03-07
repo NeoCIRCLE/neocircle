@@ -90,4 +90,5 @@ urlpatterns = patterns('',
     url(r'^ajax/group/autocomplete/$',
         'school.views.group_ajax_owner_autocomplete', ),
     url(r'^stat/$', 'one.views.stat'),
+    url(r'^sites/(?P<site>[a-zA-Z0-9]+)/$', 'one.views.sites'),
 )

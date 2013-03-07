@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+
+{% block content %}
+<div class="irasmu">
+    <p>Az IK Cloud a BME IK és IIT együttműködésében, a VIK támogatásával létrejött rendszer, amelyben az IIT oktatói és hallgatói szükség szerint vehetnek igénybe <b>virtuális erőforrásokat</b>.</p>
+
+    <p>Az IIT géptermeiben telepített kliensszoftver segítségével az oktató által előkészített és kiajánlott <b>virtuális környezetet a hallgató</b> a számára megszabott <b>kvóta keretein belül</b> igény szerint indíthatja.</p>
+
+    <p>Lehetőség van a gépteremben elkezdett munka otthoni folytatására is a korábban elindított környezetben. A rendszer segítségével az otthoni feladatot végző hallgató is elkerülheti az összetett szoftverkörnyezet telepítésével járó kellemetlenségeket, figyelmét a szakmai munkára irányíthatja.</p>
+
+    <p>A rendszer segítséget nyújt önálló labor, szakdolgozat, diplomaterv vagy tdk-munka készítésénél is: a munkához szükséges virtuális gépeket az önkiszolgáló rendszeren keresztül azonnal használatba lehet venni.</p>
+
+    <p>Az elindított virtuális gépekre az adott operációs rendszeren szokásos módon lehet távolról csatlakozni: Windows esetén RDP (távoli asztal), Linux esetén SSH, vagy grafikusan NoMachine? NX segítségével. A kapcsolódást a géptermekben telepített kliensszoftver még kényelmesebbé teszi.</p>
+
+    <p>Az elindított gépeken a <b>felhasználói adattár</b> automatikusan csatolásra kerül. Minden munkát itt érdemes végezni, mivel az a gép leállítása után is elérhető marad.</p>
+
+    <p>A felhasználók a rendszert jelen önkiszolgáló felületen keresztül érhetik el, amelybe az egyetemi címtárszolgáltatás (eduID) segítségével léphetnek be. A továbblépéssel elfogadják a következőekben összefoglalt <b>felhasználási feltételeket</b>.</p>
+    <ul>
+        <li>A rendszer nem használható semmilyen jogszabályba, vagy egyetemi <b>szabályzatba ütköző tevékenységre</b>. <a href="http://net.bme.hu/regula/">http://net.bme.hu/regula/</a></li>
+        <li><b>Kizárólag tanulmányi</b> vagy <b>kutatási tevékenységhez</b> használható erőforrás.</li>
+        <li>Bár a rendszer használata térítésmentes, a <b>felesleges gépek leállítása</b> a felhasználó kötelessége.</li>
+        <li>Minden gép indítása <b>határidő kijelölésével</b> történik. A határidő lejártával <b>a gépet figyelmeztetés nélkül megállítjuk</b>. Amennyiben a felhasználó a megállítást követően sem kéri meghosszabbítását, a gépet és <b>minden rajta lévő adatot törlünk!</b></li>
+        <li>A felhasználó felelőssége a futtatott rendszer biztonságos üzemeltetése, a hosszabb időn át futó gépek frissítése.</li>
+        <li>A rendszert üzemeltető BME IK lehetőségeihez mérten mindent megtesz a szolgáltatásbiztos üzemért, az egyetemi infrastruktúra sajátosságai miatt előforduló üzemszünetekre azonban számítani kell. A BME IK az üzemeltetés kapcsán a folyamatos üzem sérüléséért vagy adatvesztésért <b>minden felelősséget kizár</b>. Ezeknek megfelelően szükség esetén a biztonsági mentés és a magas rendelkezésre állású környezet kialakítása a felhasználóra hárul.</li>
+    </ul>
+    <p>Reméljük, hogy a rendszerünk használata megkönnyíti munkájukat, melyhez sok sikert kívánunk!</p>
+
+</div>
+{% endblock %}
