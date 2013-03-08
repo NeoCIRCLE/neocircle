@@ -296,7 +296,7 @@ class Record(models.Model):
                 raise ValidationError(_("Unknown record type."))
 
     def __get_name(self):
-        if self.host:
+        if self.host and self.type != 'MX':
             if self.type in ['A', 'AAAA']:
                 return self.host.get_fqdn()
             elif self.type == 'CNAME':
