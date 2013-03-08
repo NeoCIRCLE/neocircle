@@ -420,11 +420,10 @@ class Instance(models.Model):
             else:
                 if self.template.network.nat:
                     ip = self.firewall_host.pub_ipv4
-                    return Record.objects.get(type='A', address=ip).get_data()['name']
+                    return Record.objects.filter(type='A', address=ip)[0].get_data()['name']
                 else:
                     return self.firewall_host.record_set.filter(type='A')[0].get_data()['name']
         except:
-            raise
             if self.template.network.nat:
                 return self.firewall_host.pub_ipv4
             else:

@@ -4,6 +4,27 @@
 {% get_current_language as LANGUAGE_CODE %}
 {% block js %}
 <script type="text/javascript" src="{% static "script/store.js" %}"></script>
+<style>
+.contentblock p{
+    margin: 15px;
+    text-align: justify;
+}
+.contentblock img{
+    margin: 0px auto;
+    display: block;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+    text-align: center;
+    vertical-align: middle;
+}
+.boxes a:link,
+a:visited {
+    color: black;
+}
+.boxes strong {
+    font-size: .9em;
+}
+</style>
 {% endblock %}
 {% block content %}
 <div class="boxes">

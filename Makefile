@@ -1,7 +1,11 @@
 SHELL := /bin/bash
 
+jsfiles += one/static/script/cloud.min.js
+jsfiles += one/static/script/util.min.js
+jsfiles += one/static/script/store.min.js
+cssfiles += one/static/style/style.css
 
-default: migrate less uglifyjs collectstatic mo restart
+default: migrate generatestatic collectstatic mo restart
 
 pulldef: pull default
 pull:
@@ -14,6 +18,8 @@ po:
 migrate:
 	./manage.py migrate
 
+generatestatic: $(jsfiles) $(cssfiles)
+
 collectstatic:
 	./manage.py collectstatic --noinput
 
@@ -24,10 +30,8 @@ mo:
 restart:
 	sudo /etc/init.d/apache2 reload || sudo restart django
 
-less:
-	lessc one/static/style/style.less > one/static/style/style.css
+%.min.js: %.js
+	uglifyjs $< > $@
 
-uglifyjs:
-	uglifyjs one/static/script/cloud.js > one/static/script/cloud.min.js
-	uglifyjs one/static/script/util.js > one/static/script/util.min.js
-	uglifyjs one/static/script/store.js > one/static/script/store.min.js
+%.css: %.less
+	lessc one/static/style/style.less > one/static/style/style.css
