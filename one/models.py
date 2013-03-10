@@ -629,12 +629,12 @@ class Instance(models.Model):
         self._change_state("POWEROFF")
     def restart(self):
         self._change_state("RESET")
-    def renew(self, which):
-        if which == 'suspend':
+    def renew(self, which='both'):
+        if which in ['suspend', 'both']:
             self.time_of_suspend = self.share.get_type()['suspendx']
-        elif which == 'delete':
+        if which in ['delete', 'both']:
             self.time_of_delete = self.share.get_type()['deletex']
-        else:
+        if not (which in ['suspend', 'delete', 'both']):
             raise ValueError('No such expiration type.')
         self.save()
     def save_as(self):
