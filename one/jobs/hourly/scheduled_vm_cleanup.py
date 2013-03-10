@@ -7,6 +7,7 @@ from django.template.loader import render_to_string
 from one.tasks import SendMailTask
 from django.utils.translation import ugettext_lazy as _
 from cloud.settings import CLOUD_URL as url
+from django.utils import translation
 
 
 class Job(HourlyJob):
@@ -29,6 +30,10 @@ class Job(HourlyJob):
 
         # delete
         for i in Instance.objects.filter(state__in=['ACTIVE', 'STOPPED'], time_of_delete__isnull=False):
+            try:
+                translation.activate(i.owner.person_set.get().language)
+            except:
+                pass
             print "%s delete: %s" % (i.name, i.time_of_delete)
             delete = i.time_of_delete.replace(minute=0, second=0, microsecond=0)
             if i.time_of_delete < now:
@@ -43,6 +48,10 @@ class Job(HourlyJob):
 
         # suspend
         for i in Instance.objects.filter(state='ACTIVE', time_of_suspend__isnull=False):
+            try:
+                translation.activate(i.owner.person_set.get().language)
+            except:
+                pass
             print "%s suspend: %s" % (i.name, i.time_of_suspend)
             suspend = i.time_of_suspend.replace(minute=0, second=0, microsecond=0)
 
