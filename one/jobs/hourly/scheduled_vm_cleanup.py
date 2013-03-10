@@ -32,8 +32,9 @@ class Job(HourlyJob):
             print "%s delete: %s" % (i.name, i.time_of_delete)
             delete = i.time_of_delete.replace(minute=0, second=0, microsecond=0)
             if i.time_of_delete < now:
-                msg = render_to_string('mails/notification-delete-now.txt', { 'user': i.owner, 'instance': i, 'url': url } )
-                SendMailTask.delay(to=i.owner.email, subject='[IK Cloud] %s' % i.name, msg=msg)
+                # msg = render_to_string('mails/notification-delete-now.txt', { 'user': i.owner, 'instance': i, 'url': url } )
+                # SendMailTask.delay(to=i.owner.email, subject='[IK Cloud] %s' % i.name, msg=msg)
+                pass
             else:
                 for t in d:
                     if delete == d[t]:
