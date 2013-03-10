@@ -9,6 +9,8 @@ from tasks import *
 from celery.task.control import inspect
 from django.utils.translation import ugettext_lazy as _
 from django.template.loader import render_to_string
+from cloud.settings import CLOUD_URL as url
+from django.utils import translation
 
 import re
 import base64
@@ -49,8 +51,9 @@ def firewall_api(request):
                     obj.host = models.Host.objects.get(ipv4=data["ip"])
                     user = obj.host.owner
                     lang = user.person_set.all()[0].language
-                    msg = render_to_string('mails/notification-ban-now.txt', { 'user': user, 'bl': obj, 'instance:': obj.host.instance_set.get() } )
-                    SendMailTask.delay(to=obj.host.owner.email, subject='[IK Cloud] %s' % obj.host.instance_set.get().name, msg=msg)
+                    translation.activate(lang)
+                    msg = render_to_string('mails/notification-ban-now.txt', { 'user': user, 'bl': obj, 'instance:': obj.host.instance_set.get(), 'url': url} )
+                    SendMailTask.delay(to=obj.host.owner.email, subject='[IK Cloud] %s' % obj.host.instance_set.get().name, msg=msg, sender=u'cloud@ik.bme.hu')
                 except (Host.DoesNotExist, ValidationError, IntegrityError, AttributeError):
                     pass
             print obj.modified_at + datetime.timedelta(minutes=5)
