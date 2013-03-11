@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 {% load i18n %}
+{% load l10n %}
 {% load staticfiles %}
 {% get_current_language as lang %}
 <html lang="{{lang}}">
@@ -12,9 +13,11 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <script src="{% static "script/jquery.min.js" %}"></script>
     <script type="text/javascript" src="{% url django.views.i18n.javascript_catalog %}"></script>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script type="text/javascript">
         {% if DEBUG %}window.localStorage.removeItem('https://cloud.ik.bme.hu/static/style/style.less:timestamp');{% endif %}
         var current_user={{user.id}};
+        google.load('visualization', '1.0', {'packages':['corechart']});
     </script>
     {% if DEBUG %}<script src="{% static "script/less.min.js" %}"></script>{% endif %}
     <script src="{% static "script/knockout.min.js" %}"></script>
@@ -70,10 +73,57 @@
         <div class="clear"></div>
     </div>
     <footer>
-        <a href="/sites/legal/">{% trans "Legal notice" %}</a> |
-        <a href="/sites/policy/">{% trans "Policy" %}</a> |
-        <a href="/sites/help/">{% trans "Help" %}</a> |
-        <a href="/sites/support/">{% trans "Support" %}</a>
+        <p>
+            <a href="/sites/legal/">{% trans "Legal notice" %}</a> |
+            <a href="/sites/policy/">{% trans "Policy" %}</a> |
+            <a href="/sites/help/">{% trans "Help" %}</a> |
+            <a href="/sites/support/">{% trans "Support" %}</a>
+        </p>
+        {% if cloud_stat %}
+            <style type="text/css">#content{padding-bottom: 150px;}</style>
+            <script type="text/javascript">
+                google.setOnLoadCallback(drawChart);
+                function drawChart() {
+                    var data_cpu = new google.visualization.DataTable();
+                    data_cpu.addColumn('string', 'Topping');
+                    data_cpu.addColumn('number', 'Free');
+                    data_cpu.addColumn('number', 'Allocated');
+                    data_cpu.addColumn('number', 'Used');
+                    data_cpu.addRows([
+                        ['CPU %', {{cloud_stat.CPU.FREE_CPU}},{{cloud_stat.CPU.ALLOC_CPU}},{{cloud_stat.CPU.USED_CPU}}],
+                    ]);
+                    var cpu_options = {
+                        'title':'Cloud CPU usage percent (100/CPU)',
+                        'width':900,
+                        'height':50,
+                        isStacked: true
+                    };
+                    var data_mem = new google.visualization.DataTable();
+                    data_mem.addColumn('string', 'Topping');
+                    data_mem.addColumn('number', 'Free');
+                    data_mem.addColumn('number', 'Allocated');
+                    data_mem.addColumn('number', 'Used');
+                    data_mem.addRows([
+                        ['Memory in {{cloud_stat.DIMENSION}}',
+                        {{cloud_stat.MEM.FREE_MEM|unlocalize}},
+                        {{cloud_stat.MEM.ALLOC_MEM|unlocalize}},
+                        {{cloud_stat.MEM.USED_MEM|unlocalize}}],
+                    ]);
+                    var mem_options = {
+                        'title':'Memory in {{cloud_stat.DIMENSION}}',
+                        'width':900,
+                        'height':50,
+                        isStacked: true
+                    };
+                    var chart = new google.visualization.BarChart(document.getElementById('chart_cpu_div'));
+                    chart.draw(data_cpu, cpu_options);
+                    var chart = new google.visualization.BarChart(document.getElementById('chart_mem_div'));
+                    chart.draw(data_mem, mem_options);
+                }
+            </script>
+        {% endif %}
+        <div class="stat" id="chart_cpu_div"></div>
+        <div class="stat" id="chart_mem_div"></div>
     </footer>
     <div id="modal" style="display: none">
         <div id="shadow"></div>
