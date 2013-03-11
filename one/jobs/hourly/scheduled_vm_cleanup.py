@@ -9,7 +9,6 @@ from django.utils.translation import ugettext_lazy as _
 from cloud.settings import CLOUD_URL as url
 from django.utils import translation
 
-
 class Job(HourlyJob):
     help = "Suspend/delete expired Instances."
 
@@ -34,8 +33,9 @@ class Job(HourlyJob):
                 translation.activate(i.owner.person_set.get().language)
             except:
                 pass
-            print "%s delete: %s" % (i.name, i.time_of_delete)
+            print u'%s delete: %s' % (i.name, i.time_of_delete)
             delete = i.time_of_delete.replace(minute=0, second=0, microsecond=0)
+            continue
             if i.time_of_delete < now:
                 # msg = render_to_string('mails/notification-delete-now.txt', { 'user': i.owner, 'instance': i, 'url': url } )
                 # SendMailTask.delay(to=i.owner.email, subject='[IK Cloud] %s' % i.name, msg=msg)
@@ -52,7 +52,7 @@ class Job(HourlyJob):
                 translation.activate(i.owner.person_set.get().language)
             except:
                 pass
-            print "%s suspend: %s" % (i.name, i.time_of_suspend)
+            print u'%s suspend: %s' % (i.name, i.time_of_suspend)
             suspend = i.time_of_suspend.replace(minute=0, second=0, microsecond=0)
 
             if i.time_of_suspend < now:
