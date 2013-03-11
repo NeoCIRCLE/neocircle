@@ -3,6 +3,7 @@
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
+STAT_DEBUG = True
 
 ADMINS = (
     ('IK', 'cloud@ik.bme.hu'),
@@ -119,6 +120,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.tz',
     'django.contrib.messages.context_processors.messages',
     'cloud.context_processors.process_debug',
+    'cloud.context_processors.process_stat',
 )
 
 TEMPLATE_DIRS = (
