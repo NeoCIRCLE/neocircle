@@ -6,7 +6,7 @@ TEMPLATE_DEBUG = DEBUG
 STAT_DEBUG = True
 
 ADMINS = (
-    ('IK', 'cloud@ik.bme.hu'),
+    ('IK', 'cloud@cloud.ik.bme.hu'),
 )
 
 MANAGERS = ADMINS
