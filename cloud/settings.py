@@ -121,6 +121,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.messages.context_processors.messages',
     'cloud.context_processors.process_debug',
     'cloud.context_processors.process_stat',
+    'cloud.context_processors.process_release',
 )
 
 TEMPLATE_DIRS = (
@@ -227,6 +228,7 @@ firewall_settings = {
 
 EMAIL_HOST='152.66.243.92' # giccero ipv4
 CLOUD_URL='https://cloud.ik.bme.hu/'
+RELEASE='master'
 
 try:
     from cloud.local_settings import *

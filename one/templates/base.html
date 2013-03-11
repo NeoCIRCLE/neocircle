@@ -78,7 +78,9 @@
             <a href="/sites/legal/">{% trans "Legal notice" %}</a> |
             <a href="/sites/policy/">{% trans "Policy" %}</a> |
             <a href="/sites/help/">{% trans "Help" %}</a> |
-            <a href="/sites/support/">{% trans "Support" %}</a>
+            <a href="/sites/support/">{% trans "Support" %}</a> |
+            <a href="/sites/changelog/#{{release}}" title="{% trans "Change log" %}">{{release}}</a>
+
             <div style="float: right" id="chart_mem_div"></div>
         </div>
         {% if cloud_stat %}

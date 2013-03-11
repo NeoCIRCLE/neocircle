@@ -1,4 +1,4 @@
-from cloud.settings import DEBUG, STAT_DEBUG
+from cloud.settings import DEBUG, STAT_DEBUG, RELEASE
 from django.core.cache import cache
 import subprocess
 import json
@@ -14,3 +14,7 @@ def process_stat(req):
         'cloud_stat': stat,
     }
 
+def process_release(req):
+    return {
+        'release': RELEASE,
+    }

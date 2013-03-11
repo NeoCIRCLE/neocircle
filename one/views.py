@@ -609,7 +609,7 @@ def stat(request):
             )))
 
 def sites(request, site):
-    if site in [ "legal", "policy", "help", "support" ]:
+    if site in [ "legal", "policy", "help", "support", "changelog", ]:
         return render_to_response("sites/%s.html" % site, RequestContext(request, {}))
     else:
         return redirect(home)
