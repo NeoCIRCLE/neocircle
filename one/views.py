@@ -505,17 +505,19 @@ def vm_stop(request, iid, *args, **kwargs):
 @require_POST
 def vm_resume(request, iid, *args, **kwargs):
     try:
-        get_object_or_404(Instance, id=iid, owner=request.user).resume()
+        obj = get_object_or_404(Instance, id=iid, owner=request.user)
+        obj.resume()
         messages.success(request, _('Virtual machine is successfully resumed.'))
     except:
         messages.error(request, _('Failed to resume virtual machine.'))
+    obj.renew()
     return redirect('/')
 
 @login_required
 @require_POST
 def vm_renew(request, which, iid, *args, **kwargs):
     try:
-        get_object_or_404(Instance, id=iid, owner=request.user).renew(which)
+        get_object_or_404(Instance, id=iid, owner=request.user).renew()
         messages.success(request, _('Virtual machine is successfully renewed.'))
     except:
         messages.error(request, _('Failed to renew virtual machine.'))

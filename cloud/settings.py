@@ -5,7 +5,7 @@ DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
-    ('IK', 'cloud@iit.bme.hu'),
+    ('IK', 'cloud@ik.bme.hu'),
 )
 
 MANAGERS = ADMINS
@@ -223,7 +223,7 @@ firewall_settings = {
     "dns_ttl": "300",
 }
 
-EMAIL_HOST='cronos.ik.bme.hu'
+EMAIL_HOST='152.66.243.92' # giccero ipv4
 CLOUD_URL='https://cloud.ik.bme.hu/'
 
 try:
