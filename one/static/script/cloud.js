@@ -25,7 +25,7 @@ $(function() {
             $.ajax({
                 'type': 'POST',
                 'data': 'id=' + id,
-                'url': '/ajax/key/delete/',
+                'url': $(this).data('url'),
                 'success': function() {
                     $('#key-' + id).slideUp(700);
                 }
@@ -36,7 +36,7 @@ $(function() {
         vm_confirm_popup(gettext('Are you sure about reseting store credentials?<br /> You will lose your access to your store account on your existing virtual machines!'), gettext('Reset'), function() {
             $.ajax({
                 type: 'POST',
-                url: '/ajax/key/reset/',
+                url: $(this).data('url'),
                 success: function() {
                     window.location.reload();
                 }
@@ -85,7 +85,7 @@ $(function() {
                 type: 'POST',
                 data: 'name=' + newName,
                 dataType: 'json',
-                url: '/ajax/vm/rename/' + id + '/',
+                url: $(this).data('url'),
                 success: function(data) {
                     $('#vm-' + id + '-name-details').removeAttr('style');
                     $('#vm-' + id + '-name').text(data.name);
