@@ -194,7 +194,6 @@ $(function() {
             $('#new-group-wizard').html(content);
         });
         $('#modal .prev').click(function() {
-            $('#shadow').hide();
             $('#modal').hide();
             $('#new-group-wizard').html(content);
         });
