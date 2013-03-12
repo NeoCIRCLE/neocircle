@@ -27,7 +27,7 @@
     </li>
     <li class="template">
         {% trans "Type" %}:
-        <span class="value">{{vm.share.type}}</span>
+        <span class="value">{% if vm.share %}{{vm.share.type}}{% else %}{% trans "Try" %}{% endif %}</span>
         <div class="clear"></div>
     </li>
     <li class="template">
@@ -57,9 +57,9 @@
     <li class="date">
         {% trans "time of suspend"|capfirst %}:
         <span class="value"> <abbr title="{{vm.time_of_suspend}}">{{vm.time_of_suspend|timeuntil}}</abbr>
-            <a href="#"  class="renew-vm renew-suspend-vm" data-id="{{ vm.id }}" title="{% trans "Renew suspend time" %}">
+            {% if vm.share %}<a href="#"  class="renew-vm renew-suspend-vm" data-id="{{ vm.id }}" title="{% trans "Renew suspend time" %}">
                 <img src="{% static "icons/control-double.png" %}" alt="{% trans "Renew suspend time" %}" />
-            </a>
+            </a>{% endif %}
         </span>
     </li>
     {% endif %}
@@ -67,9 +67,9 @@
     <li class="date">
         {% trans "time of delete"|capfirst %}:
         <span class="value"> <abbr title="{{vm.time_of_delete}}">{{vm.time_of_delete|timeuntil}}</abbr>
-            <a href="#"  class="renew-vm renew-delete-vm" data-id="{{ vm.id }}" title="{% trans "Renew deletion time" %}">
+            {% if vm.share %}<a href="#"  class="renew-vm renew-delete-vm" data-id="{{ vm.id }}" title="{% trans "Renew deletion time" %}">
                 <img src="{% static "icons/control-double.png" %}" alt="{% trans "Renew deletion time" %}" />
-            </a>
+            </a>{% endif %}
         </span>
     </li>
     {% endif %}
