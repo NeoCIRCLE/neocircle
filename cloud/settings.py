@@ -205,6 +205,14 @@ CELERY_ROUTES = {
     'one.tasks.SendMailTask': {'queue': 'local'},
 }
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:11211',
+    }
+}
+
+
 store_settings = {
     "basic_auth": "True",
     "verify_ssl": "False",
