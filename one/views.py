@@ -510,7 +510,10 @@ def vm_resume(request, iid, *args, **kwargs):
         messages.success(request, _('Virtual machine is successfully resumed.'))
     except:
         messages.error(request, _('Failed to resume virtual machine.'))
-    obj.renew()
+    try:
+        obj.renew()
+    except:
+        pass
     return redirect('/')
 
 @login_required
