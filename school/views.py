@@ -98,8 +98,10 @@ def login(request):
         co.save()
         g.save()
 
-
-    affiliation = request.META['affiliation']
+    try:
+        affiliation = request.META['affiliation']
+    except KeyError:
+        affiliation = ''
     if affiliation == '':
         affiliation = []
     else:
