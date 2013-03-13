@@ -4,7 +4,7 @@
 
 {% block js %}
 <script type="text/javascript">
-    {% if booting or state != 'ACTIVE' %}
+    {% if booting or state != 'ACTIVE' or i.waiting == True %}
     var timer=setInterval(function(){
         $.ajax({
             type: 'GET',
