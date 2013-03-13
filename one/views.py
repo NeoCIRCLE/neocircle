@@ -32,8 +32,6 @@ logger = logging.getLogger(__name__)
 
 def _list_instances(request):
     instances = Instance.objects.exclude(state='DONE').filter(owner=request.user)
-    for i in instances:
-        i.update_state()
     instances = instances.exclude(state='DONE')
     return instances
 
@@ -356,9 +354,6 @@ vm_list = login_required(VmListView.as_view())
 @login_required
 def vm_show(request, iid):
     inst = get_object_or_404(Instance, id=iid, owner=request.user)
-    inst.update_state()
-    if inst.template.state == "SAVING":
-        inst.check_if_is_save_as_done()
     try:
         ports = inst.firewall_host.list_ports()
     except:
@@ -388,7 +383,6 @@ def vm_show(request, iid):
 @login_required
 def vm_ajax_instance_status(request, iid):
     inst = get_object_or_404(Instance, id=iid, owner=request.user)
-    inst.update_state()
     return HttpResponse(json.dumps({
         'booting': not inst.active_since,
         'state': inst.state,

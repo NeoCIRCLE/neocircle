@@ -203,6 +203,7 @@ CELERY_ROUTES = {
     'firewall.tasks.reload_blacklist_task': {'queue': 'firewall'},
     'firewall.tasks.Periodic': {'queue': 'local'},
     'one.tasks.SendMailTask': {'queue': 'local'},
+    'one.tasks.UpdateInstanceStateTask': {'queue': 'local'}
 }
 
 CACHES = {
