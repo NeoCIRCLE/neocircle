@@ -317,7 +317,7 @@ body > footer {
         padding: 20px;
         border-left-width: 3px;
         border-left-style: solid;
-        border-left-color: #ff6;
+        border-left-color: #0b4599;
     }
     h4 {
         margin: 0;
@@ -326,7 +326,7 @@ body > footer {
         float: left;
     }
     h4:after {
-        content: " ⬩ ";
+        content: " ♦ ";
     }
     h4 + p {
         margin-top: 0;
@@ -334,7 +334,7 @@ body > footer {
     h2 {
         background-color:#000;
         background-image:url(/static/image/hexabar.png);
-        background-position:right center;
+        background-position: right center;
         background-repeat:no-repeat;
         color:#eee;
         font-size:1.5em;
@@ -355,16 +355,30 @@ body > footer {
         text-align: center;
         &.figure-small img {
             height: 200px;
+            transition: 1s 300ms;
+            -webkit-transition: 1s 300ms;
+            -moz-transition: 1s 300ms;
             &:hover {
                 height: 400px;
-                transition: 1s 300ms;
-                -webkit-transition: 1s 300ms;
-                -moz-transition: 1s 300ms;
             }
         }
     }
     ol, ul {
         margin-left: 1em;
+    }
+    nav {
+        background: #ddd;
+        padding: 10px;
+        border-left-width: 3px;
+        border-left-style: solid;
+        border-left-color: #ff6;
+        li {
+            list-style-type: none;
+            ul li {
+                list-style-type: square;
+                margin-left: 1em;
+            }
+        }
     }
 }
 
