@@ -4,14 +4,16 @@
 
 {% block js %}
 <script type="text/javascript">
-    {% if booting or state != 'ACTIVE' or i.waiting == True %}
+    {% if booting or state != 'ACTIVE' or i.waiting %}
     var timer=setInterval(function(){
         $.ajax({
             type: 'GET',
             dataType: 'json',
             url: '{% url one.views.vm_ajax_instance_status id %}',
             success: function(data){
-                if (!data.booting  && data.state == 'ACTIVE'){
+                if (!data.waiting && !data.booting  && data.state == 'ACTIVE'){
+                    window.location.reload();
+                } else if (!data.waiting) {
                     window.location.reload();
                 }
             }
