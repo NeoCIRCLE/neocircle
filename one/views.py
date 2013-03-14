@@ -386,6 +386,7 @@ def vm_ajax_instance_status(request, iid):
     return HttpResponse(json.dumps({
         'booting': not inst.active_since,
         'state': inst.state,
+        'waiting': inst.waiting,
         'template': {
             'state': inst.template.state
         }}))
