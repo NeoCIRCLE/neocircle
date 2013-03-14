@@ -121,7 +121,14 @@
                         'height':20,
                         isStacked: true,
                         enableInteractivity: false,
-                        colors: ['red', 'orange', 'blue']
+                        colors: ['red', 'orange', 'blue'],
+                        hAxis : {
+                            viewWindowMode: 'explicit',
+                            viewWindow: {
+                                min: 0,
+                                max: {{cloud_stat.MEM.USED_MEM|unlocalize}}+{{cloud_stat.MEM.ALLOC_MEM|unlocalize}}+{{cloud_stat.MEM.FREE_MEM|unlocalize}}
+                            }
+                        },
                     };
                     var chart = new google.visualization.BarChart(document.getElementById('chart_cpu_div'));
                     chart.draw(data_cpu, cpu_options);
