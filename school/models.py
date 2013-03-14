@@ -6,27 +6,45 @@ from django.core.exceptions import ValidationError
 from datetime import datetime
 from django.conf import settings
 import one.models
+import logging
 
 
 LANGUAGE_CODE = settings.LANGUAGE_CODE
 LANGUAGE_CHOICES = (('hu', _('Hungarian')), ('en', _('English')))
 
+logger = logging.getLogger(__name__)
+
 def create_user_profile(sender, instance, created, **kwargs):
+    """
+    User creation hook.
+
+    Ensure that the specified user has an associated profile.
+
+    @param sender: The model class.
+    @type  instance: User
+    @param instance: The instance being saved.
+    @type  created: Boolean
+    @param created: True if a new record was created.
+    """
     if created:
         try:
             p = Person.objects.get(code=instance.username)
-        except Exception:
+        except Person.DoesNotExist:
             p = Person.objects.create(code=instance.username)
-        except:
+        except Exception as e:
+            logger.warning("Couldn't create profile for user: %(username)s"
+                    "\nReason: %(exception)s",
+                    {"username": instance.username,
+                     "exception": e})
             return
-        p.code = instance.username
+        p.clean()
         p.save()
 post_save.connect(create_user_profile, sender=User)
 
 class Person(models.Model):
     user = models.ForeignKey(User, null=True, blank=True, unique=True)
-    language = models.CharField(verbose_name=_('language'), blank=False, max_length=10,
-            choices=LANGUAGE_CHOICES, default=LANGUAGE_CODE)
+    language = models.CharField(verbose_name=_('language'), blank=False,
+            max_length=10, choices=LANGUAGE_CHOICES, default=LANGUAGE_CODE)
     code = models.CharField(_('code'), max_length=30, unique=True)
 
     def get_owned_shares(self):
@@ -51,7 +69,7 @@ class Person(models.Model):
         if u.last_name and u.first_name:
             # TRANSLATORS: full name format used in enumerations
             return _("%(first)s %(last)s") % {'first': u.first_name,
-                                             'last': u.last_name}
+                                              'last': u.last_name}
         else:
             return u.username
 
