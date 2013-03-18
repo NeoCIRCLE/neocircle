@@ -46,7 +46,7 @@
     </div>
     {% endif %}
     {% if not group %}
-    <li id="new-template-button" class="entry new small-row">
+    <li id="new-template-button" class="entry new small-row" data-url="{% url one.views.ajax_template_wizard %}">
         <div class="summary">
             <div class="name">Új Sablon</div>
             <div class="clear"></div>
@@ -65,7 +65,7 @@
                     <div class="status">{{t.state}}</div>
                     <div class="actions">
                         {% if t.state == 'READY' %}
-                        <a href="#" class="try-template-button" data-id="{{t.id}}" title="{% trans "Try"  %}">
+                        <a href="#" class="try-template-button" data-url="{% url new_vm_from_template template=t.id %}" title="{% trans "Try"  %}">
                             <img src="{% static "icons/control.png" %}" alt="{% trans "Start" %}"/>
                         </a>
                         <a href="#" class="template-share" data-id="{{t.id}}" data-gid="{{group.id}}" title="{% trans "Share" %}">
