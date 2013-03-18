@@ -5,8 +5,16 @@ echo "En vagyok a $0 !"
 arr=( $((echo 'ibase=16' ; ifconfig eth0 | awk '/HWaddr/ {print $5}' | tr ':a-z' '\nA-Z') | bc ) )
 ipv4="${arr[2]}.${arr[3]}.${arr[4]}.${arr[5]}"
 gw4="${arr[2]}.${arr[3]}.255.254"
+net4="255.255.0.0"
 ipv6="2001:738:2001:4031:${arr[3]}:${arr[4]}:${arr[5]}:0"
 gw6="2001:738:2001:4031:${arr[3]}:255:254:0"
+net6="80"
+
+if [ "${arr[2]}" == "152" ]; then
+    gw4="${arr[2]}.${arr[3]}.243.126"
+    net4="255.255.255.192"
+    gw6="2001:738:2001:4031:66:243:126:0"
+fi
 
 echo ok "$ipv4 $ipv6 $gw4 $gw6"
 
@@ -20,12 +28,12 @@ iface lo inet loopback
 auto eth0
 iface eth0 inet static
     address $ipv4
-    netmask 255.255.0.0
+    netmask $net4
     gateway $gw4
     dns-nameservers 152.66.243.60
 iface eth0 inet6 static
     address $ipv6
-    netmask 80
+    netmask $net6
     gateway $gw6
 EOF
 
@@ -46,10 +54,10 @@ DNS1="152.66.243.60"
 PEERDNS="yes"
 
 IPADDR="$ipv4"
-NETMASK="255.255.0.0"
+NETMASK="$net4"
 GATEWAY=$gw4
 
-IPV6ADDR="$ipv6/80"
+IPV6ADDR="$ipv6/$net6"
 IPV6_DEFAULTGW="$gw6"
 EOF
 
