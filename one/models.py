@@ -18,6 +18,7 @@ from firewall.models import Host, Rule, Vlan, Record
 from school.models import Person, Group
 from store.api import StoreApi
 from .util import keygen
+from cloud.settings import CLOUD_URL
 
 logger = logging.getLogger(__name__)
 pwgen = User.objects.make_random_password
@@ -530,7 +531,7 @@ class Instance(models.Model):
                                  "smbpw": escape(details.smb_password),
                                  "sshkey": escape(details.ssh_private_key),
                                  "neptun": escape(owner.username),
-                                 "booturl": "https://cloud.ik.bme.hu/b/%s/" % token,
+                                 "booturl": "%sb/%s/" % ( CLOUD_URL, token ),
                                  "extra": extra}
             f.write(tpl)
             f.close()
