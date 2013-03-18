@@ -4,17 +4,17 @@
 
 {% block js %}
 <script type="text/javascript">
-    {% if booting or state != 'ACTIVE' or i.waiting %}
+    {% if booting or state == 'PENDING' or i.waiting %}
     var timer=setInterval(function(){
         $.ajax({
             type: 'GET',
             dataType: 'json',
             url: '{% url one.views.vm_ajax_instance_status id %}',
             success: function(data){
-                if (!data.waiting && !data.booting  && data.state == 'ACTIVE'){
+                if (!data.waiting && !data.booting  && data.state != 'PENDING'){
                     window.location.reload();
                 } else if (!data.waiting) {
-                    window.location.reload();
+                   // window.location.reload();
                 }
             }
         });
@@ -86,14 +86,20 @@
             <img src="{% static "image/load.gif" %}" />
                 {% trans "Saving..." %}
             </p>
-            {% elif state == "ACTIVE" and not booting %}
+            {% elif state == "ACTIVE" and not booting and not i.waiting %}
             <p id="connect" style="display:block; font-size:25px; line-height:2em;text-align:center;">
                 <a href="{{uri}}" class="button" onclick="return connectbutton();">
                     <img src="{% static "image/load.gif" %}" id="connecting" style="display:none;" />
                     {% trans "Running" %}
                 </a>
             </p>
-            {% elif state == "STOPPED" %}
+            {% elif state == "ACTIVE" and not booting and i.waiting %}
+            <p style="display:block; font-size:25px; line-height:2em;text-align:center;">
+                {% trans "Stopping..." %}
+            </p>
+            {% elif state == "STOPPED" and i.waiting %}
+            <p style="font-size:25px; line-height:2em;text-align:center;">{% trans "Starting..." %}</p>
+            {% elif state == "STOPPED"%}
             <p style="font-size:25px; line-height:2em;text-align:center;">{% trans "Stopped" %}</p>
             {% endif %}
         {% if state == "DONE" %}
