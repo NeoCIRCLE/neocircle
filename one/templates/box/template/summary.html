@@ -54,9 +54,6 @@
     <a href="#" class="try-template" data-url="{% url new_vm_from_template template=t.id %}"  title="{% trans "Try"  %}">
         <img src="{% static "icons/control.png" %}" alt="{% trans "Start" %}"/>
     </a>
-    <!--<a href="#" title="{% trans "Edit" %}">
-        <img src="{% static "icons/pencil.png" %}" alt="{% trans "Edit" %}" />
-    </a>-->
     <a href="#" class="template-share" data-id="{{t.id}}" data-gid="{{group.id}}" title="{% trans "Share" %}">
         <img src="{% static "icons/user-share.png" %}" alt="{% trans "Share" %}" />
     </a>

@@ -574,21 +574,6 @@ $(function() {
             e.stopPropagation();
         }
     }());
-    $('#new-owner-form input[type=submit]').click(function() {
-        var neptun = $(this).prev().val();
-        $.ajax({
-            type: 'POST',
-            url: '/ajax/group/' + $(this).data('id') + '/add/',
-            data: 'neptun=' + neptun,
-            dataType: 'json',
-            success: function(data) {
-                window.location.reload();
-            }
-        }).error(function(data) {
-            //TODO: fancy modal alert
-            alert(JSON.parse(data.responseText).status);
-        })
-    });
 
     $('#group-members .remove').click(function(e) {
         e.preventDefault();
