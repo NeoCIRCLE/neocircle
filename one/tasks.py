@@ -24,4 +24,6 @@ class UpdateInstanceStateTask(Task):
             print 'nincs ilyen'
             return
         inst.update_state()
+        inst.waiting = False
+        inst.save()
         print inst.state

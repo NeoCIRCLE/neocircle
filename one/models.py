@@ -632,6 +632,8 @@ class Instance(models.Model):
 
     def restart(self):
         self._change_state("RESET")
+        self.waiting = False
+        self.save()
 
     def renew(self, which='both'):
         if which in ['suspend', 'both']:
