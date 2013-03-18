@@ -333,6 +333,7 @@ def vm_new(request, template=None, share=None, redir=True):
             messages.error(request, _('Failed to create virtual machine.'))
             inst = None
         if inst:
+            inst.waiting = True
             inst.time_of_suspend = time_of_suspend
             inst.time_of_delete = time_of_delete
             inst.save()
