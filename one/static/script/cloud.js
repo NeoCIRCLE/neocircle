@@ -63,6 +63,7 @@ $(function() {
         var oldName = $(this).data('name');
         var content = $('#vm-' + id + '-name').html();
         var self=this;
+        var url = $(this).data('url');
         $(this).unbind('click').click(function(e){
             e.preventDefault();
             e.stopPropagation();
@@ -72,7 +73,7 @@ $(function() {
         })
         $('#vm-' + id + '-name-details').hide();
         $('#vm-' + id + '-name').html('<input type="text" value="' + oldName + '" />\
-<input type="submit" value="' + gettext('Rename') + '" />');
+<input type="submit" value="' + gettext('Rename') + '" data-url="'+url+'"/>');
         $('#vm-' + id + '-name').find('input[type="text"]').click(function(f) {
             f.preventDefault();
             f.stopPropagation();
