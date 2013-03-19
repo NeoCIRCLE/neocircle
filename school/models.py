@@ -22,7 +22,7 @@ def create_user_profile(sender, instance, created, **kwargs):
 
     @param sender: The model class.
     @type  instance: User
-    @param instance: The instance being saved.
+    @param instance: The user to create a profile for (if necessary).
     @type  created: Boolean
     @param created: True if a new record was created.
     """
@@ -48,10 +48,14 @@ class Person(models.Model):
     code = models.CharField(_('code'), max_length=30, unique=True)
 
     def get_owned_shares(self):
-        return one.models.Share.objects.filter(group__in=self.owned_groups.all())
+        """Get the shares of the groups which the person owns."""
+        return one.models.Share.objects.filter(
+                group__in=self.owned_groups.all())
 
     def get_shares(self):
-        return one.models.Share.objects.filter(group__in=self.course_groups.all())
+        """Get the shares of the groups which the person is a member of."""
+        return one.models.Share.objects.filter(
+                group__in=self.course_groups.all())
 
     def short_name(self):
         if self.user:
@@ -63,15 +67,16 @@ class Person(models.Model):
             return self.code
 
     def __unicode__(self):
-        u = self.user
-        if not u:
-            return self.code
-        if u.last_name and u.first_name:
-            # TRANSLATORS: full name format used in enumerations
-            return _("%(first)s %(last)s") % {'first': u.first_name,
-                                              'last': u.last_name}
+        if self.user:
+            if self.user.last_name and self.user.first_name:
+                # TRANSLATORS: full name format used in enumerations
+                return _("%(first)s %(last)s") % {
+                        'first': self.user.first_name,
+                        'last': self.user.last_name}
+            else:
+                return self.user.username
         else:
-            return u.username
+            return self.code
 
     class Meta:
         verbose_name = _('person')
@@ -86,7 +91,7 @@ class Course(models.Model):
             verbose_name=_('name'))
     default_group = models.ForeignKey('Group', null=True, blank=True,
             related_name='default_group_of', verbose_name=_('default group'),
-            help_text=_('New users will automatically get to this group.'))
+            help_text=_('New users will be automatically assigned to this group.'))
     owners = models.ManyToManyField(Person, blank=True, null=True,
             verbose_name=_('owners'))
 
@@ -162,10 +167,14 @@ class Semester(models.Model):
 
 class Group(models.Model):
     name = models.CharField(max_length=80, verbose_name=_('name'))
-    course = models.ForeignKey('Course', null=True, blank=True, verbose_name=_('course'))
-    semester = models.ForeignKey('Semester', null=False, blank=False, verbose_name=_('semester'))
-    owners = models.ManyToManyField(Person, blank=True, null=True, related_name='owned_groups', verbose_name=_('owners'))
-    members = models.ManyToManyField(Person, blank=True, null=True, related_name='course_groups', verbose_name=_('members'))
+    course = models.ForeignKey('Course', null=True, blank=True,
+            verbose_name=_('course'))
+    semester = models.ForeignKey('Semester', null=False, blank=False,
+            verbose_name=_('semester'))
+    owners = models.ManyToManyField(Person, blank=True, null=True,
+            related_name='owned_groups', verbose_name=_('owners'))
+    members = models.ManyToManyField(Person, blank=True, null=True,
+            related_name='course_groups', verbose_name=_('members'))
 
     class Meta:
         unique_together = (('name', 'course', 'semester', ), )
@@ -173,10 +182,10 @@ class Group(models.Model):
         verbose_name_plural = _('groups')
 
     def owner_list(self):
-        if self.owners:
+        if self.owners and self.owners.count() > 0:
             return ", ".join([p.short_name() for p in self.owners.all()])
         else:
-            return _("n/a")
+            return _("(none)")
     owner_list.verbose_name = _('owners')
 
     def member_count(self):
@@ -190,4 +199,4 @@ class Group(models.Model):
 
     @models.permalink
     def get_absolute_url(self):
-            return ('group_show', None, {'gid':self.id})
+        return ('group_show', None, {'gid': self.id})

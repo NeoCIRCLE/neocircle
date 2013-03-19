@@ -59,7 +59,7 @@ msgid "default group"
 msgstr "alapértelmezett csoport"
 
 #: models.py:71
-msgid "New users will automatically get to this group."
+msgid "New users will be automatically assigned to this group."
 msgstr "Az új hallgatók automatikusan ebbe a csoportba kerülnek."
 
 #: models.py:73 models.py:115 models.py:149 models.py:162
