@@ -25,7 +25,7 @@ $(function() {
             $(this).parent().next().find('.host').hide();
             $(this).parent().next().find('.ipv4host').show();
         }
-    })
+    });
     $('.delete-template').click(function(e) {
         e.preventDefault();
         e.stopPropagation();
@@ -269,6 +269,20 @@ $(function() {
     function get_vm_details(id) {
         $.get('/vm/credentials/' + id, function(data) {
             $('#modal-container').html(data);
+            $('#modal-container .host-toggle').click(function(e){
+                e.preventDefault();
+                if($(this).find('.v4').is(':hidden')){
+                    $(this).find('.v4').show();
+                    $(this).find('.v6').hide();
+                    $(this).parent().next().find('.host').show();
+                    $(this).parent().next().find('.ipv4host').hide();
+                } else {
+                    $(this).find('.v6').show();
+                    $(this).find('.v4').hide();
+                    $(this).parent().next().find('.host').hide();
+                    $(this).parent().next().find('.ipv4host').show();
+                }
+            });
             $('#modal-container .hidden-password').click(function() {
                 if ($(this).attr('type') == 'password') {
                     $(this).attr('type', 'text');

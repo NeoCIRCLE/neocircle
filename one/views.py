@@ -358,11 +358,6 @@ vm_list = login_required(VmListView.as_view())
 @login_required
 def vm_show(request, iid):
     inst = get_object_or_404(Instance, id=iid, owner=request.user)
-    is_ipv6 = True #len(request.META["REMOTE_ADDR"].split('.')) == 1
-    inst.is_ipv6 = is_ipv6
-    inst.hostname_v4 = inst.get_connect_host(use_ipv6=False)
-    inst.nat = inst.template.network.nat
-    inst.port = inst.get_port(use_ipv6=is_ipv6)
     try:
         ports = inst.firewall_host.list_ports()
     except:
@@ -372,9 +367,13 @@ def vm_show(request, iid):
     except UserCloudDetails.DoesNotExist:
         details = UserCloudDetails(user=request.user)
         details.save()
-    proto = len(request.META["REMOTE_ADDR"].split('.')) == 1
-    inst.hostname = inst.get_connect_host(use_ipv6=proto)
-    inst.port = inst.get_port(use_ipv6=proto)
+    is_ipv6 = len(request.META["REMOTE_ADDR"].split('.')) == 1
+    inst.is_ipv6 = is_ipv6
+    inst.hostname_v4 = inst.get_connect_host(use_ipv6=False)
+    inst.nat = inst.template.network.nat
+    inst.port = inst.get_port(use_ipv6=is_ipv6)
+    inst.hostname = inst.get_connect_host(use_ipv6=is_ipv6)
+    inst.port = inst.get_port(use_ipv6=is_ipv6)
     return render_to_response("show.html", RequestContext(request,{
         'uri': inst.get_connect_uri(),
         'state': inst.state,
