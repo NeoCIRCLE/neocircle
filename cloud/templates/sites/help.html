@@ -2,8 +2,6 @@
 {% load i18n %}
 {% load staticfiles %}
 {% get_current_language as LANGUAGE_CODE %}
-
-
 {% block content %}
 <div class="irasmu">
     <h2>Bevezető</h2>
@@ -40,6 +38,7 @@
         <p>
             Amennyiben kérdése maradt, örömmel segítünk a <a href="/sites/support/">támogatás</a> oldalon leírt elérhetőségeinken.
         </p>
+        <div class="clear"></div>
     </section>
     <section id="s-1-1">
         <h3>A webes felület elérése</h3>
@@ -133,51 +132,51 @@
         </p>
     </section>
     <h2 id="s-3">Sablonok</h2>
-    <section>
-        <p class="teacher">
+    <section class="teacher">
+        <p>
             A megfelelő jogosultsággal rendelkező felhasználóknak lehetősége van sablonok létrehozására.
             Így csoportjaival olyan előkészített rendszert oszthat meg, amelyen már minden szükséges szoftver telepítve és konfigurálva van.
             Ezzel időt és fáradságot takaríthat meg a projektmunka vagy a laborfoglalkozás, házi feladat készítése során.
         </p>
     </section>
-    <section id="s-3-1">
+    <section id="s-3-1" class="teacher">
         <h3>Sablonok létrehozása</h3>
-        <p class="teacher">
+        <p>
             Sablon létrehozásához az összefoglaló oldalon lévő <em>sablonok</em> doboz <em>
                 <img src="{% static "icons/document--plus.png" %}" alt="{% trans "New template" %}" />
                 új sablon</em> gombjára kattintva megnyílik egy varázsló.
         </p>
-        <p class="teacher figure figure-small">
+        <p class="figure figure-small">
             <img src="{% static "help/template-wizard-1.png" %}" alt="Az új sablon varázsló 1." />
             <img src="{% static "help/template-wizard-2.png" %}" alt="Az új sablon varázsló 2." />
         </p>
-        <p class="teacher">
+        <p>
             A varázsló első lépéseként válassza ki a kiindulási sablont, amelyet személyre kíván szabni, majd kattintson a <em>tovább</em> gombra.
             Ezután válassszon nevet, méretet és leírást az új sablonnak.
             Végül a <em>mesterpéldány indítása</em> gombra kattintva elindul egy példánya a kiválasztott kiindulási rendszernek, amelyen elvégezheti a beállításokat.
         </p>
-        <p class="teacher figure figure-small">
+        <p class="figure figure-small">
             <img src="{% static "help/template-wizard-3.png" %}" alt="Az új sablon varázsló 3." />
         </p>
-        <p class="teacher">
+        <p>
             Az elindult géphez a <a href="#s-2-2">többi géphez hasonló módon</a> lehet kapcsolódni.
             Végezze el a szükséges módosításokat, majd kattintson a <em>mentés</em> gombra.
             A rendszer leállítja a gépet, majd elmenti a lemezképet.
         </p>
     </section>
-    <section id="s-3-2">
+    <section id="s-3-2" class="teacher">
         <p class="figure figure-small" style="float: right">
             <img src="{% static "help/share-wizard.png" %}" alt="Az új megosztás varázsló" />
         </p>
         <h3>Sablonok megosztása</h3>
-        <p class="teacher">
+        <p>
             A sablonokat csoportok tagjaival lehet megosztani.
         </p>
-        <p class="teacher">
+        <p>
             A megosztás megszabja a sablon példányainak <a href="#TODO">lejárati idejét</a>, valamint a <a href="#TODO">futtatható példányok számát</a> is.
         </p>
-        <p class="teacher">Egy sablon megosztásához:
-        <div class="teacher"><ol>
+        <p>Egy sablon megosztásához:
+        <div><ol>
             <li>Navigáljon egy csoport részletező oldalára a <em>saját csoportok</em> dobozról.</li>
             <li>A részletező oldalon válasszon egy sablont.</li>
             <li>Kattintson a <em>
@@ -188,25 +187,25 @@
     </section>
 
     <h2 id="s-4">Csoportok</h2>
-    <section>
-        <p class="teacher">
+    <section class="teacher">
+        <p>
             A csoportok hallgatók halmazai, melyek segítségével együtt lehet kezelni a sablonok megosztását és a kvóták kezelését.
         </p>
-        <p class="teacher">
+        <p>
             Sablonokat hozhat létre kézzel, tetszés szerint (például önállólabor-csoportok vagy kutatási munkák számára), vagy használhatja a Neptun tanulmányi rendszerben rögzített tárgyfelvételek és oktatók alapján automatikusan alakuló csoportokat.
         </p>
     </section>
-    <section id="s-4-1">
+    <section id="s-4-1" class="teacher">
         <h3>Csoportok létrehozása</h3>
-        <p class="teacher">
+        <p>
             Új csoport létrehozásához kattintson az összefoglaló oldal <em>saját csoportok</em> dobozában az <em>
                 <img src="{% static "icons/user--plus.png" %}" alt="{% trans "Create new group" %}" />
             új csoport létrehozása</em> gombra.
         </p>
-        <p class="teacher">
+        <p>
             A megjelenő varázsló értelemszerű kitöltésével a csoport létrejön, és a részletező oldalára kerül.
         </p>
-        <p class="teacher">
+        <p>
             A csoport részletező oldalán lehetősége van tagok és tulajdonosok fölvételére, tagok törlésére, valamint <a href="#s-3-2">sablonok megosztására</a>.
         </p>
     </section>
@@ -232,7 +231,7 @@
         <h4>SFTP-n</h4>
         <p>
             Az adattár távolról is elérhető SFTP protokollon.
-            Ezt számos kliensprogram támogatja, ilyen a 
+            Ezt számos kliensprogram támogatja, ilyen a
             <a href="http://winscp.net/eng/index.php">WinSCP</a> és a
             <a href="http://code.google.com/p/win-sshfs/">win-sshfs</a>.
             Az SFTP kapcsolódáshoz privát kulcs használata szükséges.
