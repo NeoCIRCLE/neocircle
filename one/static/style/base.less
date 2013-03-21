@@ -62,6 +62,9 @@ body
             color: #aaa;
         }
     }
+    img {
+        max-width: 100%;
+    }
 }
 .big {
     font-size: 2em;
@@ -301,6 +304,7 @@ body > footer {
 }
 
 .irasmu {
+    line-height: 1.8em;
     section {
         border-radius: 4px;
         border: 1px solid #888;
@@ -379,6 +383,7 @@ body > footer {
         border-left-width: 3px;
         border-left-style: solid;
         border-left-color: #ff6;
+        line-height: 1.2em;
         li {
             list-style-type: none;
             ul li {
@@ -386,6 +391,17 @@ body > footer {
                 margin-left: 1em;
             }
         }
+    }
+    em {
+        white-space: nowrap;
+    }
+    strong {
+        background-image: url(/static/image/hilite.png);
+        background-repeat: repeat;
+        font-style: normal;
+        font-weight: normal;
+        padding: 0 .4em;
+        margin-bottom: 2px;
     }
 }
 
@@ -400,5 +416,11 @@ body > footer {
         width: 90%;
         left: 0 !important;
         margin-left: 2% !important;
+    }
+    .contentblock {
+        margin:5px;
+    }
+    body {
+        font-size: 1.1em;
     }
 }

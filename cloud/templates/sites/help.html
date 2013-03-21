@@ -19,6 +19,16 @@
                     <li><a href="#s-2-2">Csatlakozás a géphez</a></li>
                     <li><a href="#s-2-3">Hálózati beállítások</a></li>
                 </ul></li>
+                <li><a href="#s-3">Sablonok</a><ul>
+                    <li><a href="#s-3-1">Sablonok létrehozása</a></li>
+                    <li><a href="#s-3-2">Sablonok megosztása</a></li>
+                </ul></li>
+                <li><a href="#s-4">Csoportok</a><ul>
+                    <li><a href="#s-4-1">Csoportok létrehozása</a></li>
+                </ul></li>
+                <li><a href="#s-5">Adattár</a><ul>
+                    <li><a href="#s-5-1">Kulcsok kezelése</a></li>
+                </ul></li>
             </ul>
         </nav>
         <p>
@@ -123,53 +133,129 @@
         </p>
     </section>
     <h2 id="s-3">Sablonok</h2>
-    <section id="s-3-1">
-        <h3>Sablonok létrehozása</h3>
+    <section>
         <p class="teacher">
             A megfelelő jogosultsággal rendelkező felhasználóknak lehetősége van sablonok létrehozására.
             Így csoportjaival olyan előkészített rendszert oszthat meg, amelyen már minden szükséges szoftver telepítve és konfigurálva van.
             Ezzel időt és fáradságot takaríthat meg a projektmunka vagy a laborfoglalkozás, házi feladat készítése során.
         </p>
-        <p>
+    </section>
+    <section id="s-3-1">
+        <h3>Sablonok létrehozása</h3>
+        <p class="teacher">
             Sablon létrehozásához az összefoglaló oldalon lévő <em>sablonok</em> doboz <em>
                 <img src="{% static "icons/document--plus.png" %}" alt="{% trans "New template" %}" />
                 új sablon</em> gombjára kattintva megnyílik egy varázsló.
         </p>
-        <p class="figure figure-small">
+        <p class="teacher figure figure-small">
             <img src="{% static "help/template-wizard-1.png" %}" alt="Az új sablon varázsló 1." />
             <img src="{% static "help/template-wizard-2.png" %}" alt="Az új sablon varázsló 2." />
         </p>
-        <p>
+        <p class="teacher">
             A varázsló első lépéseként válassza ki a kiindulási sablont, amelyet személyre kíván szabni, majd kattintson a <em>tovább</em> gombra.
             Ezután válassszon nevet, méretet és leírást az új sablonnak.
             Végül a <em>mesterpéldány indítása</em> gombra kattintva elindul egy példánya a kiválasztott kiindulási rendszernek, amelyen elvégezheti a beállításokat.
         </p>
-        <p class="figure figure-small">
+        <p class="teacher figure figure-small">
             <img src="{% static "help/template-wizard-3.png" %}" alt="Az új sablon varázsló 3." />
-            <img src="{% static "help/template-wizard-4.png" %}" alt="Az új sablon varázsló 4." />
         </p>
-        <p>
+        <p class="teacher">
             Az elindult géphez a <a href="#s-2-2">többi géphez hasonló módon</a> lehet kapcsolódni.
             Végezze el a szükséges módosításokat, majd kattintson a <em>mentés</em> gombra.
             A rendszer leállítja a gépet, majd elmenti a lemezképet.
         </p>
     </section>
     <section id="s-3-2">
+        <p class="figure figure-small" style="float: right">
+            <img src="{% static "help/share-wizard.png" %}" alt="Az új megosztás varázsló" />
+        </p>
         <h3>Sablonok megosztása</h3>
-        <p>
+        <p class="teacher">
             A sablonokat csoportok tagjaival lehet megosztani.
         </p>
-        <p>
-        <ol>
+        <p class="teacher">
+            A megosztás megszabja a sablon példányainak <a href="#TODO">lejárati idejét</a>, valamint a <a href="#TODO">futtatható példányok számát</a> is.
+        </p>
+        <p class="teacher">Egy sablon megosztásához:
+        <div class="teacher"><ol>
             <li>Navigáljon egy csoport részletező oldalára a <em>saját csoportok</em> dobozról.</li>
             <li>A részletező oldalon válasszon egy sablont.</li>
             <li>Kattintson a <em>
-                    <img src="{% static "icons/user-share.png" %}" alt="{% trans "Share" %}" />
+                <img src="{% static "icons/user-share.png" %}" alt="{% trans "Share" %}" />
                     megosztás</em> gombra.</li>
-            <li></li>
-        </ol>
+            <li>Változtassa meg szükség szerint a beállításokat.</li>
+        </ol></div>
+    </section>
+
+    <h2 id="s-4">Csoportok</h2>
+    <section>
+        <p class="teacher">
+            A csoportok hallgatók halmazai, melyek segítségével együtt lehet kezelni a sablonok megosztását és a kvóták kezelését.
+        </p>
+        <p class="teacher">
+            Sablonokat hozhat létre kézzel, tetszés szerint (például önállólabor-csoportok vagy kutatási munkák számára), vagy használhatja a Neptun tanulmányi rendszerben rögzített tárgyfelvételek és oktatók alapján automatikusan alakuló csoportokat.
         </p>
     </section>
+    <section id="s-4-1">
+        <h3>Csoportok létrehozása</h3>
+        <p class="teacher">
+            Új csoport létrehozásához kattintson az összefoglaló oldal <em>saját csoportok</em> dobozában az <em>
+                <img src="{% static "icons/user--plus.png" %}" alt="{% trans "Create new group" %}" />
+            új csoport létrehozása</em> gombra.
+        </p>
+        <p class="teacher">
+            A megjelenő varázsló értelemszerű kitöltésével a csoport létrejön, és a részletező oldalára kerül.
+        </p>
+        <p class="teacher">
+            A csoport részletező oldalán lehetősége van tagok és tulajdonosok fölvételére, tagok törlésére, valamint <a href="#s-3-2">sablonok megosztására</a>.
+        </p>
+    </section>
+
+    <h2 id="s-5">Adattár</h2>
+    <section>
+        <p>
+            Az adattár segítségével kényelmessé válik a fájlok tárolása és mozgatása.
+            Személyes adattárját számos módon elérheti.
+        </p>
+        <h4>A portálról</h4>
+        <p>
+            A saját gépén lévő fájlok feltöltésére, valamint a munka során készített fájlok letöltésére a legegyszerűbb módszer a webes felület használata.
+            Az összefoglaló oldalon megjelenő <em>adattár</em> dobozban megtalálja az összes fájlját, valamint az oldalra drag and drop módszerrel húzott fájlok automatikusan feltöltődnek, a <em>
+                <img src="{% static "icons/download-cloud.png" %}" alt="{% trans "Download" %}" />
+            letöltés</em> gombra kattintva pedig tetszőleges fájlokat vagy mappákat tölthet le – utóbbit ZIP archívumban.
+        </p>
+        <h4>A virtuális gépekről</h4>
+        <p>
+            Minden virtuális gépen automatikusan csatolásra kerül a személyes adattár. Windowsos gépeken a Z: meghajtón, Linux alatt pedig a <em>~/sshfs/</em> katalógusban érhetőek el a fájlok.
+            Ugyanez igaz a tanszéki gépteremben telepített Ubuntu rendszerre.
+        </p>
+        <h4>SFTP-n</h4>
+        <p>
+            Az adattár távolról is elérhető SFTP protokollon.
+            Ezt számos kliensprogram támogatja, ilyen a 
+            <a href="http://winscp.net/eng/index.php">WinSCP</a> és a
+            <a href="http://code.google.com/p/win-sshfs/">win-sshfs</a>.
+            Az SFTP kapcsolódáshoz privát kulcs használata szükséges.
+        </p>
+    </section>
+    <section id="s-5-1">
+        <h3>Kulcsok kezelése</h3>
+        <p>
+            A SFTP protokollon való eléréshez publikus kulcsát regisztrálni kell a portálon.
+            Ehhez kattintson az <em>adattár</em> doboz <em>kulcsok kezelése</em> gombjára.
+            Az így megnyíló kezelőfelületen a <em>nyilvános kulcs hozzáadása</em> pontot választva másolja be a publikus kulcsot OpenSSH formátumban, majd kattintson a <em>mentés</em> gombra. (Az OpenSSH kulcsformátum utolsó része egy megjegyzés, amely alapján a kulcsot a későbbiekben azonosítani tudja.)
+        </p>
+        <p>
+            Amennyiben privát kulcsa kompromittálódott, vagy nem kívánja a továbbiakban használni, a <em>kulcsok kezelése</em> gombra kattintva megjelenő listában törölheti az érvényes kulcsok közül.
+        </p>
+        <p>
+            Amennyiben egy virtuális gépe került idegen kézbe, az adattárhoz való hozzáférése is kitudódhatott.
+            Ebben az esetben használhatja a <em>kulcsok újragenerálása</em> lehetőséget, amely a virtuális gépeken korábban használt kulcsot érvényteleníti.
+            A már elindított virtuális gépek ezután nem érhetik el az adattárat.
+        </p>
+    </section>
+
+
 
 <!--
     <section id="s-">
