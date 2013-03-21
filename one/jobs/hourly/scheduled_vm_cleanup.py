@@ -33,7 +33,7 @@ class Job(HourlyJob):
                 translation.activate(i.owner.person_set.get().language)
             except:
                 pass
-            print u'%s delete: %s' % (i.name, i.time_of_delete)
+#            print u'%s delete: %s' % (i.name, i.time_of_delete)
             delete = i.time_of_delete.replace(minute=0, second=0, microsecond=0)
             continue
             if i.time_of_delete < now:
@@ -52,7 +52,7 @@ class Job(HourlyJob):
                 translation.activate(i.owner.person_set.get().language)
             except:
                 pass
-            print u'%s suspend: %s' % (i.name, i.time_of_suspend)
+#            print u'%s suspend: %s' % (i.name, i.time_of_suspend)
             suspend = i.time_of_suspend.replace(minute=0, second=0, microsecond=0)
 
             if i.time_of_suspend < now:
