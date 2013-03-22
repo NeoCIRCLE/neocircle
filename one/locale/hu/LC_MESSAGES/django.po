@@ -913,7 +913,7 @@ msgid ""
 "            drive, and on Linux ones as ~/sshfs."
 msgstr ""
 "A windowsos gépeken a Z: meghajtóra, Linuxon a ~/sshfs katalógusba\n"
-"vancsatolva."
+"van csatolva."
 
 #: templates/box/file/box.html:23
 msgid ""
@@ -921,7 +921,7 @@ msgid ""
 "            you can see this folder also as ~/sshfs."
 msgstr ""
 "Ha a laborgépekre bejelentkezik (jelenleg csak Ubuntu alatt), akkor\n"
-"afájlokat szintén a ~/sshfs katalógusban találja."
+"a fájlokat szintén a ~/sshfs katalógusban találja."
 
 #: templates/box/file/box.html:25
 #, python-format
@@ -932,7 +932,7 @@ msgid ""
 "            public key bellow."
 msgstr ""
 "SFTP klienst (pl. WinSCP) is használhat a %(serv)s címre csatlakozva.\n"
-"Ehhezalább tudja nyilvános kulcsát regisztrálni."
+"Ehhez alább tudja nyilvános kulcsát regisztrálni."
 
 #: templates/box/file/box.html:31 templates/box/template/box.html:26
 #: templates/box/vm/box.html:26
