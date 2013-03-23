@@ -32,13 +32,10 @@ Scientific Computing}
 
 \begin{abstract}
 
-Nowadays more and more general purpose workstations installed in a student laboratory have a built in multi-core CPU and graphics card providing significant computing power. In most cases the utilization of these resources is low, and limited to lecture hours. The concept of utility computing plays nowadays an important role in technological development. As part of utility computing, cloud computing offers greater flexibility and responsiveness to ICT users at lower cost.
-
-In  this paper, we introduce a cloud management system which enables the simultaneous use of both dedicated resources and opportunistic environment. All the free workstations (powered or not) are automatically added to a resource pool, and can be used like ordinary cloud resources. Researchers can launch various virtualized software appliances on them. Our solution leverages the advantages of HTCondor and OpenNebula systems.
-
-Modern graphics processing units (GPUs) with many-core architectures have emerged as general-purpose parallel computing platforms that can dramatically accelerate  scientific applications used for various simulations. Our business model harnesses the computing power of GPUs as well, using the needed amount of unused machines. This makes the infrastructure flexible and power efficient.
-
-Our pilot infrastructure consists of a high performance cluster and 28 workstations with dual-core CPUs and dedicated graphics cards. Altogether we can use 10,752 CUDA cores through the network.
+Nowadays more and more general purpose workstations installed in a student laboratory have a built in multi-core CPU and graphics card providing significant computing power. In most cases the utilization of these resources is low, and limited to lecture hours. The concept of utility computing plays an important role in technological development. 
+In  this paper, we introduce a cloud management system which enables the simultaneous use of both dedicated resources and opportunistic environment. All the free workstations are to a resource pool, and can be used like ordinary cloud resources. Our solution leverages the advantages of HTCondor and OpenNebula systems.
+Modern graphics processing units (GPUs) with many-core architectures have emerged as general-purpose parallel computing platforms that can dramatically accelerate scientific applications used for various simulations. Our business model harnesses the computing power of GPUs as well, using the needed amount of unused machines.
+Our pilot infrastructure consists of a high performance cluster of 7 servers with sum of 60 physical cores width 150 Gb memory and 28 workstations with dual-core CPUs and dedicated graphics cards. Altogether we can use 10,752 CUDA cores through the network.
 
 
 \keywords{Cloud, GPGPU, Grid, HTC, Utility computing}
@@ -76,42 +73,31 @@ Physically accessible computers are normally used with directly attached devices
 We use remote desktop protocol for accessing Windows hosts, and secure shell (SSH) for text-based Linux machines. Remote graphical login to X11 servers has always been available, but this is not reliable even on local network connections because it is stateless. We use instead NoMachine NX\cite{pinzari2003introduction}.
    
 \section{Networking}
-Most virtual machines in a cloud must have a network connection for obvious reasons.  When designing complex networks, the general approach is decomposition by (OSI) layers. That is what we follow here.
+Most virtual machines in a cloud must have a network connection. When designing complex networks, the general approach is decomposition by (OSI) layers. That is what we follow here. On the physical layer, our KVM hypervisor gives us a virtual network interface controller, which is an emulated or paravirtualized NIC on the side of the guest operating system, and a virtual NIC on the host side.
 
-On the physical layer, our KVM hypervisor gives us a virtual network interface controller, which is an emulated or paravirtualized NIC on the side of the guest operating system, and a virtual NIC on the host side.
+Virtual machines are connected to virtual networks provided by manageable virtual switches (Figure~\ref{fig:figure1}). The Open vSwitch.\cite{pfaff2009extending}, what we are using, is a high performance multi-layer virtual switch with VLAN, QoS and OpenFlow support, merged into the mainline Linux kernel.
 
-Emulated network controllers are a good choice only for unsupported operating systems, as the solution is based on emulating a widespread real world network controller (i.e. the PCI signalling itself), and using a standard device driver in the guest operating system. This has a very significant overhead, limiting the available bandwidth to the 100Mbps order of magnitude even on the most powerful systems. On the other hand, virtio---the paravirtualized network interface of KVM---is able to transmit more Gbps without a significant CPU usage (our test measurements showed virtio 30 times faster than an emulated Realtek card).
+Virtual networks do not necessarily differ from physical ones in the upper layers. The most important different condition is the frequency of changes. Our system in traditional physical networks' point of view is like if someone changed the cabling hundred times in the middle of the day. The developed CIRCLE networking module consists of an iptables gateway, a tinydns name server and an ISC DHCP server. All of these are configured through remote procedure calls, and managed by a relational database backed object model. 
 
-Once we get a network connection between the host and the guest operating system, we have to connect the VM to the external world. The most common solution to this is building a software based L2 (data-link layer, Ethernet in this case) bridge of the virtual NICs and the uplink interface on the host machine. This is not a flexible solution, and provides poor management options like an unmanageable network switch does. Another option is using some trickery with ebtables, a not too widely known or documented Linux kernel service for Ethernet filtering. It has some serious drawbacks, for example it can not use the same IP ranges on different virtual networks.
-
-Manageable network switches are standard in operation of dynamically changing and secure network infrastructures. Fortunately there exists an increasingly popular smart virtual switch implementation called Open vSwitch.\cite{pfaff2009extending} It is a high performance multi-layer virtual switch with VLAN, QoS and OpenFlow support, merged into the mainline Linux kernel.
-
-Our host systems are connected to manageable gigabit network switches' VLAN tagged ports. This renders it possible to connect virtual machines to isolated L2 networks on demand.
-
+Our solution is grouping the VMs to two main groups. The public vm-net is for machines which provide public services to more people, the private vm-net is for those which are used only by one or two persons. Public vm-net machines have public IPv4 and IPv6 addresses, and are protected with a simple ipset-based input filter. On the private vm-net, machines have private IPv4 and public IPv6 addresses. The primary remote connection is reached by automatically configured IPv4 port forward, or directly on the IPv6 address. As connecting to the standard port is a more comfortable solution, users who load our web portal from an IPv6 connection, get a hostname with public AAAA and private A records. If the user has no IPv6 connection, we display a common hostname with a single A record, and a custom port number. As IPv6 is widely available in the central infrastructure of our university, IPv6-capable clients are in majority. Users can open more ports, which means enabling incoming connections, and setting up IPv4 port forwarding in the background.
 
   \begin{figure}[ht]
+    \begin{minipage}[b]{0.5\linewidth}
       \centering
-      \includegraphics[width=10cm]{netarch}
-      \caption{The physical structure of the network}
+      \includegraphics[width=\textwidth]{netarch}
+      \caption{The structure of the network}
+      \label{fig:figure1}
+    \end{minipage}
+    \hspace{0.5cm}
+    \begin{minipage}[b]{0.4\linewidth}
+      \centering
+      \includegraphics[width=\textwidth]{swarch}
+      \caption{Technologies used for CIRCLE}
+      \label{fig:figure2}
+    \end{minipage}
+      
   \end{figure}
 
-
-
-Open VSwitch is also configured to control network traffic according to the involved VM's QoS settings. Basic protection is achieved as well using access control lists by prohibiting virtual machines to use each other's allocated MAC or IP address.
-
-Virtual networks do not necessarily differ from physical ones in the upper layers. The most important different condition is the frequency of changes. Our system in traditional physical networks' point of view is like if someone changed the cabling hundred times in the middle of the day.
-
-We have not found any friendly firewall and network gateway solution that supports this, or only a single one of our requirements: changing the network settings via remote procedure call, simultaneously changing the gateway, the name server and the DHCP servers' configuration, or supporting dynamically changing virtual networks (VLANs).
-
-That is why we developed an integrated networking solution for all these requirements. Our system consists of an iptables gateway, a tinydns name server and an ISC DHCP server. All of these are configured through remote procedure calls, and managed by a relational database backed object model. This network management system also has a web interface, and can be used independently without a cloud. We also use the same system for managing our physical infrastructure, i.e. office and laboratory networks, traditional servers, and telephony.
-
-We have a limited set of available public IPv4 addresses, less than the number of currently running virtual machines. On the other hand, our IPv6 address space is more than enough for this.
-
-Our solution is grouping the VMs to two main groups. The public vm-net is for machines which provide public services to more people, the private vm-net is for those which are used only by one or two persons.
-
-Public vm-net machines have public IPv4 and IPv6 addresses, and are protected with a simple ipset-based input filter. On the private vm-net, machines have private IPv4 and public IPv6 addresses. The primary remote connection is reached by automatically configured IPv4 port forward, or directly on the IPv6 address. As connecting to the standard port is a more comfortable solution, users who load our web portal from an IPv6 connection, get a hostname with public AAAA and private A records. If the user has no IPv6 connection, we display a common hostname with a single A record, and a custom port number. As IPv6 is widely available in the central infrastructure of our university, IPv6-capable clients are in majority. Users can open more ports, which means enabling incoming connections, and setting up IPv4 port forwarding in the background.
-
-As current implementations of DHCPv6 are not proper, we chose static configuration on the virtual machines. The allocated IP addresses are specified in the contextualization configuration, and we anyway have to configure hostname, password, storage access, etc., so this was the simplest way. This method has also some performance advantages. We configure DHCP as well, which is the preferred solution for non-virtualized workstations, or VoIP phones.
 \section{Storage}
 Virtual machines' hard drives are provided to the hypervisors as read-write NFS shares managed by OpenNebula. Our cluster has a legacy InfiniBand SDR network, which is despite its age much faster than the gigabit Ethernet network. InfiniBand has its own data-link protocol, and Linux has mainline support for remote direct memory access (RDMA) over it , which provides near-local access times and no CPU load.\cite{callaghan2002nfs} Unfortunately this kernel module causes random cluster-wide kernel panics, which is unacceptable in a production system. We decided to use NFS4 over IP over InfiniBand, which also provided near-local timing. One problem remained: intensive random writes made the local file access on the NFS server slow (both with RDMA and IP over IB). Switching to the deadline scheduler solved this.
 
@@ -127,18 +113,10 @@ Linux guests mount the remote files with SSHFS\cite{hoskins2006sshfs}, a userspa
 It is also possible to manage files on the cloud portal with an AJAX based web interface. Its backend consists of a Celery worker and an Nginx httpd.
 
 \section{Putting it together}
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=8cm]{swarch}
-    \caption{Technologies used for CIRCLE}
-\end{figure}
-
-
-
 The main goal was to give a self-service interface to our researchers, lecturers, and students.
 Cloud management frameworks like OpenNebula and OpenStack promise this, but after learning and deploying OpenNebula, we found even its Self-Service portal's abstraction level too low.
 
-Our solution is a new cloud management system, called CIRCLE. It provides an attractive web interface where users can do themselves all the common tasks including launching and managing/controlling virtual machines, creating templates based on other ones, and sharing templates with groups of users.
+Our solution is a new cloud management system, called CIRCLE, built up from various open source software components(figure~\ref{fig:figure2}). It provides an attractive web interface where users can do themselves all the common tasks including launching and managing/controlling virtual machines, creating templates based on other ones, and sharing templates with groups of users.
 
 This cloud management system is based on Django\cite{holovaty2009definitive}. This popular Python framework gives us among other things a flexible object-relational mapping system. Although the Django framework is originally designed for web applications, the business logic is not at all web specific. That's why it is easy to provide command line or remote procedure call interfaces to the model.
 
@@ -171,7 +149,7 @@ The other option is using directly the host machine to execute GPGPU jobs. This 
 
 
 
-\section*{Conclusions and future plans}
+\section{Conclusions and future plans}
 Our cloud system is built up in a modular manner. We have implemented all the main modules which enabled us to set up a production system. The system is now used as an integral part of our teaching activity, and also hosts several server functions for our department to use. At the time of writing this paper, there are 70 running and 54 suspended machines, using 109GiB of memory and producing not more than 3{\%} cummulated host cpu load on the cluster. In the first two months' production run, more than 1500 virtual machines have been launched by 125 users.
 
 The students have found the system useful and lecturers use it with pleasure because they can really set up a new lab exercise in minutes. The feedback from the users is absolutely positive, which encourages us to proceed and extend our system with the GPGPU module. We are working on making it fully functional, and releasing the whole system in an easily deployable and highly modular open source package. We are planning to finish the current development phase until the end of August. 
