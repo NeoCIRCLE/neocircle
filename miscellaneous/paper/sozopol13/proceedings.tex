@@ -35,7 +35,7 @@ Scientific Computing}
 Nowadays more and more general purpose workstations installed in a student laboratory have a built in multi-core CPU and graphics card providing significant computing power. In most cases the utilization of these resources is low, and limited to lecture hours. The concept of utility computing plays an important role in technological development. 
 In  this paper, we introduce a cloud management system which enables the simultaneous use of both dedicated resources and opportunistic environment. All the free workstations are to a resource pool, and can be used like ordinary cloud resources. Our solution leverages the advantages of HTCondor and OpenNebula systems.
 Modern graphics processing units (GPUs) with many-core architectures have emerged as general-purpose parallel computing platforms that can dramatically accelerate scientific applications used for various simulations. Our business model harnesses the computing power of GPUs as well, using the needed amount of unused machines.
-Our pilot infrastructure consists of a high performance cluster of 7 servers with sum of 60 physical cores width 150 Gb memory and 28 workstations with dual-core CPUs and dedicated graphics cards. Altogether we can use 10,752 CUDA cores through the network.
+Our pilot infrastructure consists of a high performance cluster and 28 workstations with dual-core CPUs and dedicated graphics cards. Altogether we can use 10,752 CUDA cores through the network.
 
 
 \keywords{Cloud, GPGPU, Grid, HTC, Utility computing}
@@ -73,13 +73,13 @@ Physically accessible computers are normally used with directly attached devices
 We use remote desktop protocol for accessing Windows hosts, and secure shell (SSH) for text-based Linux machines. Remote graphical login to X11 servers has always been available, but this is not reliable even on local network connections because it is stateless. We use instead NoMachine NX\cite{pinzari2003introduction}.
    
 \section{Networking}
-Most virtual machines in a cloud must have a network connection. When designing complex networks, the general approach is decomposition by (OSI) layers. That is what we follow here. On the physical layer, our KVM hypervisor gives us a virtual network interface controller, which is an emulated or paravirtualized NIC on the side of the guest operating system, and a virtual NIC on the host side.
+Most virtual machines in a cloud must have a network connection.  On the physical layer, our KVM hypervisor gives us a virtual network interface controller, which is an emulated or paravirtualized NIC on the side of the guest operating system, and a virtual NIC on the host side.
 
 Virtual machines are connected to virtual networks provided by manageable virtual switches (Figure~\ref{fig:figure1}). The Open vSwitch.\cite{pfaff2009extending}, what we are using, is a high performance multi-layer virtual switch with VLAN, QoS and OpenFlow support, merged into the mainline Linux kernel.
 
 Virtual networks do not necessarily differ from physical ones in the upper layers. The most important different condition is the frequency of changes. Our system in traditional physical networks' point of view is like if someone changed the cabling hundred times in the middle of the day. The developed CIRCLE networking module consists of an iptables gateway, a tinydns name server and an ISC DHCP server. All of these are configured through remote procedure calls, and managed by a relational database backed object model. 
 
-Our solution is grouping the VMs to two main groups. The public vm-net is for machines which provide public services to more people, the private vm-net is for those which are used only by one or two persons. Public vm-net machines have public IPv4 and IPv6 addresses, and are protected with a simple ipset-based input filter. On the private vm-net, machines have private IPv4 and public IPv6 addresses. The primary remote connection is reached by automatically configured IPv4 port forward, or directly on the IPv6 address. As connecting to the standard port is a more comfortable solution, users who load our web portal from an IPv6 connection, get a hostname with public AAAA and private A records. If the user has no IPv6 connection, we display a common hostname with a single A record, and a custom port number. As IPv6 is widely available in the central infrastructure of our university, IPv6-capable clients are in majority. Users can open more ports, which means enabling incoming connections, and setting up IPv4 port forwarding in the background.
+Our solution groups the VMs to two main groups. The public vm-net is for machines which provide public services to more people, the private vm-net is for those which are used only by one or two persons. Public vm-net machines have public IPv4 and IPv6 addresses, and are protected with a simple ipset-based input filter. On the private vm-net, machines have private IPv4 and public IPv6 addresses. The primary remote connection is reached by automatically configured IPv4 port forward, or directly on the IPv6 address. As connecting to the standard port is a more comfortable solution, users who load our web portal from an IPv6 connection, get a hostname with public AAAA and private A records. If the user has no IPv6 connection, we display a common hostname with a single A record, and a custom port number. As IPv6 is widely available in the central infrastructure of our university, IPv6-capable clients are in majority. Users can open more ports, which means enabling incoming connections, and setting up IPv4 port forwarding in the background.
 
   \begin{figure}[ht]
     \begin{minipage}[b]{0.5\linewidth}
@@ -127,6 +127,7 @@ Celery workers set up the netfilter firewall, the domain name and DHCP services,
 In the opposite direction, some subsystems notify others of their state transitions through Celery. Based on this information further Celery tasks are submitted, and the models are updated.
 
 CIRCLE manages the full state space of the resources. Some of it is also stored by the underlying OpenNebula, but most of this redundant information is bound to its initial value as OpenNebula does not handle changes in meta information. This behavior arises of design decisions, and is not expected to be improved. The thin slice of OpenNebula used by our system is continuously shrinking, and we intend dropping OpenNebula in favor of direct bindings to libvirt and the also considerably customized storage and network hooks.
+
 \section{Execution on workstations}
 The cloud system at our institute takes a big role in education and in general R{\&}D infrastructure, but there is a significant demand for high-throughput scientific computing. This  kind of requirement usually appears in form of many long-running, independent jobs. On most parts of the world there is no fund to build dedicated HPC clusters with enough resources for these jobs.
 
@@ -152,8 +153,9 @@ The other option is using directly the host machine to execute GPGPU jobs. This 
 \section{Conclusions and future plans}
 Our cloud system is built up in a modular manner. We have implemented all the main modules which enabled us to set up a production system. The system is now used as an integral part of our teaching activity, and also hosts several server functions for our department to use. At the time of writing this paper, there are 70 running and 54 suspended machines, using 109GiB of memory and producing not more than 3{\%} cummulated host cpu load on the cluster. In the first two months' production run, more than 1500 virtual machines have been launched by 125 users.
 
-The students have found the system useful and lecturers use it with pleasure because they can really set up a new lab exercise in minutes. The feedback from the users is absolutely positive, which encourages us to proceed and extend our system with the GPGPU module. We are working on making it fully functional, and releasing the whole system in an easily deployable and highly modular open source package. We are planning to finish the current development phase until the end of August. 
+The students found the system useful and lecturers use it with pleasure because they can really set up a new lab exercise in minutes. The feedback from the users is absolutely positive, which encourages us to proceed and extend our system with the GPGPU module. We are working on making it fully functional, and releasing the whole system in an easily deployable and highly modular open source package. We are planning to finish the current development phase until the end of August. 
 
+\emph{We thank to the other members of the developer team: D\'aniel Bach, Bence D\'anyi, and \'Ad\'am Dud\'as. }
 
 
 \bibliographystyle{splncs}
