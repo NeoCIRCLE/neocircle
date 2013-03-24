@@ -10,12 +10,12 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="421.12885"
-   height="240.5"
+   width="321"
+   height="272.13196"
    id="svg7426"
    version="1.1"
    inkscape:version="0.48.3.1 r9886"
-   sodipodi:docname="Új dokumentum 12">
+   sodipodi:docname="netarch.svg">
   <defs
      id="defs7428">
     <pattern
@@ -194,9 +194,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.98994949"
-     inkscape:cx="192.14923"
-     inkscape:cy="80.616434"
+     inkscape:zoom="1.979899"
+     inkscape:cx="146.48789"
+     inkscape:cy="152.44658"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -204,10 +204,10 @@
      fit-margin-left="2"
      fit-margin-right="2"
      fit-margin-bottom="2"
-     inkscape:window-width="638"
-     inkscape:window-height="1006"
+     inkscape:window-width="1364"
+     inkscape:window-height="749"
      inkscape:window-x="0"
-     inkscape:window-y="16"
+     inkscape:window-y="17"
      inkscape:window-maximized="0" />
   <metadata
      id="metadata7431">
@@ -217,7 +217,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -847,90 +847,82 @@
          x="376.58521"
          y="583.80273"
          style="font-size:16px;font-style:normal;font-variant:normal;font-weight:600;font-stretch:normal;fill:#ffffff;fill-opacity:1;font-family:TitilliumText25L;-inkscape-font-specification:TitilliumText25L Semi-Bold">Head node</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#012264;fill-opacity:1;stroke:none;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"
-       x="527.04688"
-       y="761.20886"
-       id="text6911"
-       sodipodi:linespacing="125%"
-       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
-       inkscape:export-xdpi="160"
-       inkscape:export-ydpi="160"><tspan
-         sodipodi:role="line"
-         id="tspan6913"
-         x="527.04688"
-         y="761.20886"
-         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#012264;fill-opacity:1;font-family:TitilliumText25L;-inkscape-font-specification:TitilliumText25L">internet uplink</tspan></text>
-    <path
-       sodipodi:nodetypes="cc"
-       inkscape:connector-curvature="0"
-       id="path6959"
-       d="m 522.23687,758.72886 -19.75,0"
-       style="fill:none;stroke:#013397;stroke-width:6;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
-       inkscape:export-xdpi="160"
-       inkscape:export-ydpi="160" />
-    <text
-       sodipodi:linespacing="125%"
-       id="text6971"
-       y="724.9939"
-       x="526.98688"
-       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#339900;fill-opacity:1;stroke:none;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"
-       xml:space="preserve"><tspan
-         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#339900;font-family:TitilliumText25L;-inkscape-font-specification:TitilliumText25L"
+    <g
+       id="g3112"
+       transform="translate(-100.12884,60.708106)">
+      <text
+         xml:space="preserve"
+         style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#339900;fill-opacity:1;stroke:none;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"
+         x="526.98688"
          y="724.9939"
-         x="526.98688"
-         id="tspan6973"
-         sodipodi:role="line">private vm-net</tspan></text>
-    <path
-       style="fill:#98fc66;stroke:#eec73e;stroke-width:6;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-       d="m 522.23687,722.60386 -19.75,0"
-       id="path6975"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="cc" />
-    <text
-       xml:space="preserve"
-       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#015a01;fill-opacity:1;stroke:none;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"
-       x="526.98688"
-       y="707.02136"
-       id="text6985"
-       sodipodi:linespacing="125%"><tspan
-         sodipodi:role="line"
-         id="tspan6987"
-         x="526.98688"
-         y="707.02136"
-         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#015a01;font-family:TitilliumText25L;-inkscape-font-specification:TitilliumText25L">public vm-net</tspan></text>
-    <path
-       sodipodi:nodetypes="cc"
-       inkscape:connector-curvature="0"
-       id="path6989"
-       d="m 522.23687,704.54136 -19.75,0"
-       style="fill:#339900;stroke:#339900;stroke-width:6;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
-    <path
-       sodipodi:nodetypes="cc"
-       inkscape:connector-curvature="0"
-       id="path6977"
-       d="m 522.23687,686.47886 -19.75,0"
-       style="fill:none;stroke:url(#pattern7424);stroke-width:6;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
-       inkscape:export-xdpi="160"
-       inkscape:export-ydpi="160" />
-    <text
-       sodipodi:linespacing="125%"
-       id="text6991"
-       y="688.95886"
-       x="526.98688"
-       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#980101;fill-opacity:1;stroke:none;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"
-       xml:space="preserve"
-       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
-       inkscape:export-xdpi="160"
-       inkscape:export-ydpi="160"><tspan
-         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#980101;fill-opacity:1;font-family:TitilliumText25L;-inkscape-font-specification:TitilliumText25L"
-         y="688.95886"
-         x="526.98688"
-         id="tspan6993"
-         sodipodi:role="line">multiple vlans</tspan></text>
+         id="text6971"
+         sodipodi:linespacing="125%"><tspan
+           sodipodi:role="line"
+           id="tspan6973"
+           x="526.98688"
+           y="724.9939"
+           style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#339900;font-family:TitilliumText25L;-inkscape-font-specification:TitilliumText25L">private vm-net</tspan></text>
+      <path
+         sodipodi:nodetypes="cc"
+         inkscape:connector-curvature="0"
+         id="path6975"
+         d="m 522.23687,722.60386 -19.75,0"
+         style="fill:#98fc66;stroke:#eec73e;stroke-width:6;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+    </g>
+    <g
+       id="g3137"
+       transform="translate(-19.911224,-8)">
+      <g
+         transform="translate(-195.66496,46.815274)"
+         id="g3122">
+        <text
+           xml:space="preserve"
+           style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#012264;fill-opacity:1;stroke:none;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"
+           x="527.04688"
+           y="761.20886"
+           id="text6911"
+           sodipodi:linespacing="125%"
+           inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+           inkscape:export-xdpi="160"
+           inkscape:export-ydpi="160"><tspan
+             sodipodi:role="line"
+             id="tspan6913"
+             x="527.04688"
+             y="761.20886"
+             style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#012264;fill-opacity:1;font-family:TitilliumText25L;-inkscape-font-specification:TitilliumText25L">internet uplink</tspan></text>
+        <path
+           sodipodi:nodetypes="cc"
+           inkscape:connector-curvature="0"
+           id="path6959"
+           d="m 522.23687,758.72886 -19.75,0"
+           style="fill:none;stroke:#013397;stroke-width:6;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+           inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+           inkscape:export-xdpi="160"
+           inkscape:export-ydpi="160" />
+      </g>
+      <g
+         transform="translate(-195.66496,85.850489)"
+         id="g3107">
+        <text
+           xml:space="preserve"
+           style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#015a01;fill-opacity:1;stroke:none;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"
+           x="526.98688"
+           y="707.02136"
+           id="text6985"
+           sodipodi:linespacing="125%"><tspan
+             sodipodi:role="line"
+             id="tspan6987"
+             x="526.98688"
+             y="707.02136"
+             style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#015a01;font-family:TitilliumText25L;-inkscape-font-specification:TitilliumText25L">public vm-net</tspan></text>
+        <path
+           sodipodi:nodetypes="cc"
+           inkscape:connector-curvature="0"
+           id="path6989"
+           d="m 522.23687,704.54136 -19.75,0"
+           style="fill:#339900;stroke:#339900;stroke-width:6;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+      </g>
+    </g>
     <text
        xml:space="preserve"
        style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:end;line-height:100%;letter-spacing:0px;word-spacing:0px;text-anchor:end;fill:#980101;fill-opacity:1;stroke:none;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"
@@ -951,23 +943,59 @@
          x="484.95343"
          y="630.5802"
          style="font-size:8px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:end;line-height:100%;text-anchor:end;fill:#980101;fill-opacity:1;font-family:TitilliumText25L;-inkscape-font-specification:TitilliumText25L">network</tspan></text>
-    <path
-       style="fill:none;stroke:#fdca01;stroke-width:6;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
-       d="m 522.23687,740.66636 -19.75,0"
-       id="path6957"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="cc" />
-    <text
-       xml:space="preserve"
-       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#fb8b00;fill-opacity:1;stroke:none;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"
-       x="526.98688"
-       y="742.9939"
-       id="text7077"
-       sodipodi:linespacing="125%"><tspan
-         sodipodi:role="line"
-         id="tspan7079"
-         x="526.98688"
-         y="742.9939"
-         style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#fb8b00;fill-opacity:1;font-family:TitilliumText25L;-inkscape-font-specification:TitilliumText25L">management</tspan></text>
+    <g
+       id="g3127"
+       transform="translate(3.1053246,-8)">
+      <g
+         transform="translate(-328.29947,103.91298)"
+         id="g3102">
+        <path
+           sodipodi:nodetypes="cc"
+           inkscape:connector-curvature="0"
+           id="path6977"
+           d="m 522.23687,686.47886 -19.75,0"
+           style="fill:none;stroke:url(#pattern7424);stroke-width:6;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+           inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+           inkscape:export-xdpi="160"
+           inkscape:export-ydpi="160" />
+        <text
+           sodipodi:linespacing="125%"
+           id="text6991"
+           y="688.95886"
+           x="526.98688"
+           style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#980101;fill-opacity:1;stroke:none;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"
+           xml:space="preserve"
+           inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+           inkscape:export-xdpi="160"
+           inkscape:export-ydpi="160"><tspan
+             style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#980101;fill-opacity:1;font-family:TitilliumText25L;-inkscape-font-specification:TitilliumText25L"
+             y="688.95886"
+             x="526.98688"
+             id="tspan6993"
+             sodipodi:role="line">multiple vlans</tspan></text>
+      </g>
+      <g
+         transform="translate(-328.29947,64.38024)"
+         id="g3117">
+        <path
+           style="fill:none;stroke:#fdca01;stroke-width:6;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+           d="m 522.23687,740.66636 -19.75,0"
+           id="path6957"
+           inkscape:connector-curvature="0"
+           sodipodi:nodetypes="cc" />
+        <text
+           xml:space="preserve"
+           style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#fb8b00;fill-opacity:1;stroke:none;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"
+           x="526.98688"
+           y="742.9939"
+           id="text7077"
+           sodipodi:linespacing="125%"><tspan
+             sodipodi:role="line"
+             id="tspan7079"
+             x="526.98688"
+             y="742.9939"
+             style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#fb8b00;fill-opacity:1;font-family:TitilliumText25L;-inkscape-font-specification:TitilliumText25L">management</tspan></text>
+      </g>
+    </g>
   </g>
 </svg>
