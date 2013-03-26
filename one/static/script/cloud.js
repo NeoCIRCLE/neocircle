@@ -9,8 +9,8 @@ $(function() {
             $(this).next('.details').slideDown(700);
         }
     })
-    $('a').click(function(e) {
-        e.stopPropagation();
+    $('a[href=#]').click(function(e) {
+        e.preventDefault();
     });
     $('.host-toggle').click(function(e){
         e.preventDefault();
