@@ -343,7 +343,7 @@ var cloud = (function(cloud) {
         /**
          * Requests a new upload link from the store server
          */
-        self.getUploadURL = function() {
+        self.getUploadURL = function(f) {
             uploadURLRequestInProgress = true;
             $.ajax({
                 type: 'POST',
@@ -353,6 +353,7 @@ var cloud = (function(cloud) {
                 success: function(data) {
                     self.uploadURL(data.url);
                     uploadURLRequestInProgress = false;
+                    if (typeof f == 'function') f();
                 }
             })
         }
@@ -387,8 +388,19 @@ var cloud = (function(cloud) {
          * Uploads the specified file(s)
          */
         var readfiles = cloud.delayUntil(function(file, next) {
-            console.log('read', file, next)
-            //1 GB file limit
+            for (var i in self.files()) {
+                var f = self.files()[i];
+                if (file.name == f.originalName) {
+                    if (!confirm('Van már ilyen fájl! ' + file.name)) {
+                        return next();
+                    }
+                }
+            }
+            if (file.name.indexOf('.') == -1 && file.size % 4096 == 0) {
+                if (!confirm('A "' + file.name + '" mappának tűnik. Mappák feltöltése a weboldalon keresztül nem támogatott. Ha ez mégis egy fájl, az OK gombra kattintva a rendszer megpróbálja azt feltölteni.')) {
+                    return next();
+                }
+            }
             if (file.size > 1024 * 1024 * 1024) {
                 $('#upload-zone').hide();
                 $('#upload-error').show();
@@ -407,18 +419,11 @@ var cloud = (function(cloud) {
                 var start = new Date().getTime();
                 xhr.open('POST', self.uploadURL());
                 xhr.onload = xhr.onerror = function() {
+                    console.log('onload');
                     self.uploadProgress('0%');
                     self.uploadURL('/');
-                    if (next) {
-                        console.log('complete, next')
-                        next();
-                    } else {
-                        $('.file-upload').removeClass('opened');
-                        $('.file-upload .details').slideUp(700);
-                        $('#upload-zone').show();
-                        $('#upload-progress-text').hide();
-                        loadFolder(self.currentPath());
-                    }
+                    console.log('complete, next');
+                    next();
                 }
                 if (tests.progress) {
                     $('#upload-zone').hide();
@@ -466,22 +471,25 @@ var cloud = (function(cloud) {
             var files = e.dataTransfer.files;
             console.log(files);
             console.log(e.dataTransfer.files);
-            var i = 1;
-            readfiles(e.dataTransfer.files[0], function() {
-                console.log('next', i);
-                next = arguments.callee;
-                return function() {
-                    console.log('readnext', i, len);
-                    if (i >= len - 2) {
-                        console.log('end', i, len);
-                        self.getUploadURL();
-                        readfiles(files[i++], null);
-                        return;
-                    }
-                    self.getUploadURL();
-                    readfiles(files[i++], next());
+            var i = 0;
+            (function next() {
+                if (i >= files.length) {
+                    $('.file-upload').removeClass('opened');
+                    $('.file-upload .details').slideUp(700);
+                    $('#upload-zone').show();
+                    $('#upload-progress-text').hide();
+                    loadFolder(self.currentPath());
+                    return;
                 }
-            }());
+                console.log('reading file ' + i);
+                if (self.uploadURL() == '/') {
+                    self.getUploadURL(function() {
+                        readfiles(files[i++], next);
+                    });
+                } else {
+                    readfiles(files[i++], next);
+                }
+            })();
             return false;
         });
         document.addEventListener('dragover', function(e) {
