@@ -134,7 +134,7 @@ $(function() {
         e.stopPropagation();
         restart_vm($(this).data('id'), $(this).data('name'));
     });
-    $('.renew-suspend-vm').click(function(e) {
+    $('.entry').on('click', '.renew-suspend-vm', function(e) {
         e.preventDefault();
         e.stopPropagation();
         renew_suspend_vm($(this).data('id'))
@@ -352,7 +352,11 @@ $(function() {
      */
 
     function renew_suspend_vm(id) {
-        manage_vm(id, "renew/suspend")
+        manage_vm(id, "renew/suspend", function(data) {
+            //workaround for some strange jquery parse error :o
+            var foo=$('<div />').append(data);
+            $('#vm-'+id+' .details-container').replaceWith(foo.find('.details-container'));
+        });
     }
     /**
      * Renew vm deletion time.
@@ -365,12 +369,14 @@ $(function() {
      * Manage VM State generic
      */
 
-    function manage_vm(id, state) {
+    function manage_vm(id, state, f) {
         $.ajax({
             type: 'POST',
             url: '/vm/' + state + '/' + id + '/',
             success: function(data, b, c) {
-                if (state == "resume") {
+                if(f) {
+                    f(data);
+                } else if (state == "resume") {
                     window.location.href = '/vm/show/' + id + "/";
                 } else {
                     window.location.reload();
