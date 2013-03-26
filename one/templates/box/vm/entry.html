@@ -4,7 +4,7 @@
 {% get_current_language as LANGUAGE_CODE %}
 
 {% block content %}
-<li class="entry {% if id == vm.id %}opened{% endif %}">
+<li class="entry {% if id == vm.id %}opened{% endif %}" id="vm-{{vm.id}}">
     {{block.super }}
 </li>
 {% endblock content %}
