@@ -523,11 +523,15 @@ def vm_resume(request, iid, *args, **kwargs):
 @require_POST
 def vm_renew(request, which, iid, *args, **kwargs):
     try:
-        get_object_or_404(Instance, id=iid, owner=request.user).renew()
+        vm = get_object_or_404(Instance, id=iid, owner=request.user)
+        vm.renew()
         messages.success(request, _('Virtual machine is successfully renewed.'))
     except:
         messages.error(request, _('Failed to renew virtual machine.'))
-    return redirect('/')
+        return redirect('/')
+    return render_to_response('box/vm/entry.html', RequestContext(request, {
+            'vm': vm
+        }))
 
 @login_required
 @require_POST
