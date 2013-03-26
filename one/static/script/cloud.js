@@ -26,6 +26,9 @@ $(function() {
             $(this).parent().next().find('.ipv4host').show();
         }
     });
+    $('a[href!=#]').click(function(e) {
+        e.stopPropagation();
+    });
     $('.delete-template').click(function(e) {
         e.preventDefault();
         e.stopPropagation();
