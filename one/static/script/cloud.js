@@ -313,6 +313,8 @@ $(function() {
             $('#modal').hide();
         });
     }
+
+    cloud.confirm=vm_confirm_popup;
     /**
      * Manage VM State (STOP)
      */
