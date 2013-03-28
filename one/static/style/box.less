@@ -168,9 +168,16 @@
             .actions {
                 display: block;
             }
-            .name .details {
-                display: inline;
-                border: none;
+            .name {
+                width: calc(~"100% - 200px");
+                span {
+                    width: calc(~"60% + 95px");
+                    max-width: calc(~"100% - 95px");
+                }
+                .details {
+                    display: block;
+                    border: none;
+                }
             }
         }
 
@@ -186,11 +193,20 @@
             z-index: 2;
             position: relative;
             height: 24px;
+            width: calc(~"100% - 90px");
+            span {
+                float: left;
+                text-overflow: ellipsis;
+                display: block;
+                white-space: nowrap;
+                overflow: hidden;
+            }
             &.filetype-new-folder {
                 float: left;
             }
             .details {
                 display: none;
+                float: right;
             }
         }
         .status {
