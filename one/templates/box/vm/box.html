@@ -84,9 +84,9 @@
                                     {% trans "Size" %}:
                                     <span class="value">
                                         {{s.template.instance_type.name}}
-                                        <span class="cpu">{{s.template.instance_type.CPU}}</span>
-                                        <span class="memory">{{s.template.instance_type.RAM}}</span>
-                                        <span class="credit">{{s.template.instance_type.credit}}</span>
+                                        <span title="{% trans 'CPU cores' %}" class="cpu">{{s.template.instance_type.CPU}}</span>
+                                        <span title="{% trans 'RAM' %}" class="memory">{{s.template.instance_type.RAM}}</span>
+                                        <span title="{% trans 'Credit' %}" class="credit">{{s.template.instance_type.credit}}</span>
                                     </span>
                                 </li>
                                 <li class="share-type">
