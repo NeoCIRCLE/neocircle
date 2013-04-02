@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-import xmltodict
 import xml.dom.minidom as minidom
 import sys
 import json
@@ -23,14 +22,15 @@ mem_max = 0
 running_vms = 0
 
 for host in hosts:
-    share = host.getElementsByTagName("HOST_SHARE")[0]
-    cpu_max += int(share.getElementsByTagName("MAX_CPU")[0].childNodes[0].data)
-    used_cpu += int(share.getElementsByTagName("USED_CPU")[0].childNodes[0].data)
-    cpu_usage += int(share.getElementsByTagName("CPU_USAGE")[0].childNodes[0].data)
-    mem_usage += int(share.getElementsByTagName("MEM_USAGE")[0].childNodes[0].data)
-    used_mem += int(share.getElementsByTagName("USED_MEM")[0].childNodes[0].data)
-    mem_max += int(share.getElementsByTagName("MAX_MEM")[0].childNodes[0].data)
-    running_vms += int(share.getElementsByTagName("RUNNING_VMS")[0].childNodes[0].data)
+    if host.getElementsByTagName("STATE")[0].childNodes[0].data == "2":
+        share = host.getElementsByTagName("HOST_SHARE")[0]
+        cpu_max += int(share.getElementsByTagName("MAX_CPU")[0].childNodes[0].data)
+        used_cpu += int(share.getElementsByTagName("USED_CPU")[0].childNodes[0].data)
+        cpu_usage += int(share.getElementsByTagName("CPU_USAGE")[0].childNodes[0].data)
+        mem_usage += int(share.getElementsByTagName("MEM_USAGE")[0].childNodes[0].data)
+        used_mem += int(share.getElementsByTagName("USED_MEM")[0].childNodes[0].data)
+        mem_max += int(share.getElementsByTagName("MAX_MEM")[0].childNodes[0].data)
+        running_vms += int(share.getElementsByTagName("RUNNING_VMS")[0].childNodes[0].data)
 
 if cpu_usage < used_cpu:
     alloc_cpu = 0
