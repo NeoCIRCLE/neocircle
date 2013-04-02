@@ -37,6 +37,10 @@
 </script>
 {% endblock %}
 
+{% block title %}
+{% blocktrans with name=i.name %}Details of {{name}}{% endblocktrans %}
+- {{block.super}}
+{% endblock %}
 {% block content %}
 
 {% if i.template.state != "READY" %}
