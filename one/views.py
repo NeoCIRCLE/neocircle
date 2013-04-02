@@ -281,7 +281,7 @@ def _check_quota(request, template, share):
     Returns if the given request is permitted to run the new vm.
     """
     det = UserCloudDetails.objects.get(user=request.user)
-    if det.get_weighted_instance_count() + template.instance_type.credit >= det.instance_quota:
+    if det.get_weighted_instance_count() + template.instance_type.credit > det.instance_quota:
         messages.error(request, _('You do not have any free quota. You can not launch this until you stop an other instance.'))
         return False
     if share:
