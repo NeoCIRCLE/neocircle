@@ -29,7 +29,7 @@
 
 {% block details %}
 <ul>
-    <li>
+    <li class="course">
         {% trans "Course" %}:
         <span class="value">
             {% if group.course %}
@@ -39,15 +39,15 @@
             {% endif %}
         </span>
     </li>
-    <li>
+    <li class="date">
         {% trans "Semester" %}:
         <span class="value">{{group.semester.name}}</span>
     </li>
-    <li>
+    <li class="owner">
         {% trans "Owner(s)" %}:
         <span class="value">{{group.owner_list}}</span>
     </li>
-    <li>
+    <li class="members">
         {% trans "Member count" %}:
         <span class="value">{{group.member_count}}</span>
     </li>
