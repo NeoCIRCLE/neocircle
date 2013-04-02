@@ -71,6 +71,13 @@
         .actions {
             display: block !important;
         }
+        .summary .name {
+            width: calc(~"100% - 200px");
+            span {
+                width: calc(~"60% + 95px");
+                max-width: calc(~"100% - 95px");
+            }
+        }
         .summary .name .details {
             display: inline;
             border: none;
@@ -553,7 +560,17 @@ table {
         .summary {
             .name {
                 background-image: url(/static/icons/users.png);
+                width: calc(~"100% - 70px");
             }
+        }
+        li.owner {
+            background-image: url(/static/icons/user-worker-boss.png);
+        }
+        li.course {
+            background-image: url(/static/icons/book-open.png);
+        }
+        li.members {
+            background-image: url(/static/icons/users.png);
         }
     }
     #new-group {
