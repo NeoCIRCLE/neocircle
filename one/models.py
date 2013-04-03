@@ -188,6 +188,11 @@ class Share(models.Model):
                 'user.'))
     owner = models.ForeignKey(User, null=True, blank=True, related_name='share_set')
 
+    class Meta:
+        ordering = ['group', 'template', 'owner', ]
+        verbose_name = _('share')
+        verbose_name_plural = _('shares')
+
     def get_type(self):
         t = TYPES[self.type]
         t['deletex'] = (datetime.now() + td(seconds=1) + t['delete']
@@ -210,8 +215,13 @@ class Share(models.Model):
             return running.filter(owner=user).count()
         else:
             return running.count()
+
     def get_instance_pc(self):
         return float(self.get_running()) / self.instance_limit * 100
+
+    def __unicode__(self):
+        return u"%(group)s: %(tpl)s %(owner)s" % {
+                'group': self.group, 'tpl': self.template, 'owner': self.owner}
 
 class Disk(models.Model):
     """Virtual disks automatically synchronized with OpenNebula."""
@@ -220,6 +230,8 @@ class Disk(models.Model):
 
     class Meta:
         ordering = ['name']
+        verbose_name = _('disk')
+        verbose_name_plural = _('disks')
 
     def __unicode__(self):
         return u"%s (#%d)" % (self.name, self.id)
@@ -259,6 +271,9 @@ class Network(models.Model):
 
     class Meta:
         ordering = ['name']
+        verbose_name = _('network')
+        verbose_name_plural = _('networks')
+
 
     def __unicode__(self):
         return self.name
@@ -298,6 +313,8 @@ class InstanceType(models.Model):
 
     class Meta:
         ordering = ['credit']
+        verbose_name  = _('instance type')
+        verbose_name_plural = _('instance types')
 
     def __unicode__(self):
         return u"%s" % self.name
@@ -332,6 +349,8 @@ class Template(models.Model):
     class Meta:
         verbose_name = _('template')
         verbose_name_plural = _('templates')
+        ordering = ['name', ]
+
 
     def __unicode__(self):
         return self.name
@@ -357,7 +376,7 @@ class Template(models.Model):
 
 class Instance(models.Model):
     """Virtual machine instance."""
-    name = models.CharField(max_length=100, 
+    name = models.CharField(max_length=100,
             verbose_name=_('name'), blank=True)
     ip = models.IPAddressField(blank=True, null=True,
             verbose_name=_('IP address'))
@@ -396,6 +415,7 @@ class Instance(models.Model):
     class Meta:
         verbose_name = _('instance')
         verbose_name_plural = _('instances')
+        ordering = ['pk', ]
 
     def __unicode__(self):
         return self.name
