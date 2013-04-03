@@ -174,15 +174,30 @@ class Host(models.Model):
     def enable_net(self):
         self.groups.add(Group.objects.get(name="netezhet"))
 
-    def add_port(self, proto, public, private = 0):
+    def add_port(self, proto, public=None, private=None):
         proto = "tcp" if proto == "tcp" else "udp"
         if self.shared_ip:
-            if public < 1024:
-                raise ValidationError(_("Only ports above 1024 can be used."))
-            for host in Host.objects.filter(pub_ipv4=self.pub_ipv4):
-                if host.rules.filter(nat=True, proto=proto, dport=public):
+            used_ports = Rule.objects.filter(host__pub_ipv4=self.pub_ipv4,
+                    nat=True, proto=proto).values_list('dport', flat=True)
+
+            if public is None:
+                public = random.randint(1024, 21000)
+                if public in used_ports:
+                    for i in range(1024, 21000) + range(24000, 65535):
+                        if i not in used_ports:
+                            public = i
+                            break
+                    else:
+                        raise ValidationError(_("Port %s %s is already in use.") %
+                                (proto, public))
+
+            else:
+                if public < 1024:
+                    raise ValidationError(_("Only ports above 1024 can be used."))
+                if public in used_ports:
                     raise ValidationError(_("Port %s %s is already in use.") %
                             (proto, public))
+
             rule = Rule(direction='1', owner=self.owner, dport=public,
                     proto=proto, nat=True, accept=True, r_type="host",
                     nat_dport=private, host=self, foreign_network=VlanGroup.
@@ -199,15 +214,58 @@ class Host(models.Model):
         rule.full_clean()
         rule.save()
 
-    def del_port(self, proto, public):
-        self.rules.filter(owner=self.owner, proto=proto, host=self,
-                dport=public).delete()
+    def del_port(self, proto, private):
+        if self.shared_ip:
+            self.rules.filter(owner=self.owner, proto=proto, host=self,
+                nat_dport=private).delete()
+        else:
+            self.rules.filter(owner=self.owner, proto=proto, host=self,
+                dport=private).delete()
+
+    def get_hostname(self, proto):
+        try:
+            if proto == 'ipv6':
+                res = self.record_set.filter(type='AAAA')
+            elif proto == 'ipv4':
+                if self.shared_ip:
+                    res = Record.objects.filter(type='A',
+                            address=self.pub_ipv4)
+                else:
+                    res = self.record_set.filter(type='A')
+            return unicode(res[0].get_data()['name'])
+        except:
+            raise
+            if self.shared_ip:
+                return self.pub_ipv4
+            else:
+                return self.ipv4
 
     def list_ports(self):
-        return [{'proto': rule.proto,
-                 'public': rule.dport,
-                 'private': rule.nat_dport} for rule in
-                self.rules.filter(owner=self.owner)]
+        retval = []
+        for rule in self.rules.filter(owner=self.owner):
+            private = rule.nat_dport if self.shared_ip else rule.dport
+            forward = {
+                'proto': rule.proto,
+                'private': private,
+            }
+            if self.shared_ip:
+                public4 = rule.dport
+                public6 = rule.nat_dport
+            else:
+                public4 = public6 = rule.dport
+
+            if True:      # ipv4
+                forward['ipv4'] = {
+                    'host': self.get_hostname(proto='ipv4'),
+                    'port': public4,
+                }
+            if self.ipv6: # ipv6
+                forward['ipv6'] = {
+                    'host': self.get_hostname(proto='ipv6'),
+                    'port': public6,
+                }
+            retval.append(forward)
+        return retval
 
     def get_fqdn(self):
         return self.hostname + u'.' + unicode(self.vlan.domain)

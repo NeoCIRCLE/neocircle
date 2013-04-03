@@ -423,20 +423,20 @@ def boot_token(request, token):
 class VmPortAddView(View):
     def post(self, request, iid, *args, **kwargs):
         try:
-            public = int(request.POST['public'])
-
-            if public >= 22000 and public < 24000:
-                raise ValidationError(_("Port number is in a restricted domain (22000 to 24000)."))
+            port = int(request.POST['port'])
             inst = get_object_or_404(Instance, id=iid, owner=request.user)
-            if inst.template.network.nat:
-                private = private=int(request.POST['private'])
+            if inst.firewall_host.shared_ip:
+                inst.firewall_host.add_port(proto=request.POST['proto'],
+                        public=None, private=port)
             else:
-                private = 0
-            inst.firewall_host.add_port(proto=request.POST['proto'], public=public, private=private)
-            messages.success(request, _(u"Port %d successfully added.") % public)
+                inst.firewall_host.add_port(proto=request.POST['proto'],
+                        public=private, private=None)
+
         except:
             messages.error(request, _(u"Adding port failed."))
-#            raise
+            raise
+        else:
+            messages.success(request, _(u"Port %d successfully added.") % port)
         return redirect('/vm/show/%d/' % int(iid))
 
     def get(self, request, iid, *args, **kwargs):
@@ -447,11 +447,12 @@ vm_port_add = login_required(VmPortAddView.as_view())
 @require_safe
 @login_required
 @require_GET
-def vm_port_del(request, iid, proto, public):
+def vm_port_del(request, iid, proto, private):
     inst = get_object_or_404(Instance, id=iid, owner=request.user)
     try:
-        inst.firewall_host.del_port(proto=proto, public=public)
-        messages.success(request, _(u"Port %s successfully removed.") % public)
+        inst.firewall_host.del_port(proto=proto, private=private)
+        messages.success(request, _(u"Port %s successfully removed.") %
+                private)
     except:
         messages.error(request, _(u"Removing port failed."))
     return redirect('/vm/show/%d/' % int(iid))

@@ -163,7 +163,7 @@
                             {% endif %}
                         </td>
                         <td>
-                            <a href="{% url one.views.vm_port_del i.id port.proto port.public %}">{% trans "Delete" %}</a>
+                            <a href="{% url one.views.vm_port_del i.id port.proto port.private %}">{% trans "Delete" %}</a>
                         </td>
                     </tr>
                     <tr>
@@ -182,7 +182,7 @@
                             {% endif %}
                         </td>
                         <td>
-                            <a href="{% url one.views.vm_port_del i.id port.proto port.public %}">{% trans "Delete" %}</a>
+                            <a href="{% url one.views.vm_port_del i.id port.proto port.private %}">{% trans "Delete" %}</a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -198,7 +198,7 @@
                             </select>
                         </td>
                         <td>
-                            <input style="min-width:70px;width:70px;" type="text" name="public"/>
+                            <input style="min-width:70px;width:70px;" type="text" name="port"/>
                         </td>
                         <td>
                             <input type="submit" style="min-width:3em" value="{% trans "Add" %}" />

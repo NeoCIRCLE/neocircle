@@ -433,24 +433,13 @@ class Instance(models.Model):
             return {"rdp": 23000, "nx": 22000, "ssh": 22000}[proto] + int(self.ip.split('.')[2]) * 256 + int(self.ip.split('.')[3])
         else:
             return {"rdp": 3389, "nx": 22, "ssh": 22}[proto]
+
     def get_connect_host(self, use_ipv6=False):
         """Get public hostname."""
         if self.firewall_host is None:
             return _('None')
-        try:
-            if use_ipv6:
-                return self.firewall_host.record_set.filter(type='AAAA')[0].get_data()['name']
-            else:
-                if self.template.network.nat:
-                    ip = self.firewall_host.pub_ipv4
-                    return Record.objects.filter(type='A', address=ip)[0].get_data()['name']
-                else:
-                    return self.firewall_host.record_set.filter(type='A')[0].get_data()['name']
-        except:
-            if self.template.network.nat:
-                return self.firewall_host.pub_ipv4
-            else:
-                return self.firewall_host.ipv4
+        proto = 'ipv6' if use_ipv6 else 'ipv4'
+        return self.firewall_host.get_hostname(proto=proto)
 
     def get_connect_uri(self, use_ipv6=False):
         """Get access parameters in URI format."""
