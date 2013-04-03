@@ -410,7 +410,7 @@ $(function() {
     function delete_template_confirm(url, id, name) {
         confirm_message = interpolate(gettext("Are you sure deleting this %s template?"), ["<strong>" + name + "</strong>"])
         vm_confirm_popup(confirm_message, gettext("Delete"), function() {
-            delete_template(id)
+            delete_template(url, id)
         })
     }
     /**
@@ -428,7 +428,8 @@ $(function() {
                     alert(data['responseText']);
                 },
                 200: function(data) {
-                    $("#t" + id).remove()
+                    $("#t" + id).remove();
+                    alert(gettext('Template deletion successful!'));
                 },
 
             }
