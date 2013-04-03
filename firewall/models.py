@@ -10,6 +10,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from cloud.settings import firewall_settings as settings
 from django.db.models.signals import post_save
 import re
+import random
 
 class Rule(models.Model):
     CHOICES_type = (('host', 'host'), ('firewall', 'firewall'),

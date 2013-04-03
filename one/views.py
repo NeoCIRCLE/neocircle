@@ -430,7 +430,7 @@ class VmPortAddView(View):
                         public=None, private=port)
             else:
                 inst.firewall_host.add_port(proto=request.POST['proto'],
-                        public=private, private=None)
+                        public=port, private=None)
 
         except:
             messages.error(request, _(u"Adding port failed."))
