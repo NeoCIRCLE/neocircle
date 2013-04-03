@@ -105,11 +105,12 @@ def vm_credentials(request, iid):
     try:
         vm = get_object_or_404(Instance, pk=iid, owner=request.user)
         is_ipv6 = len(request.META["REMOTE_ADDR"].split('.')) == 1
-        vm.hostname = vm.get_connect_host(use_ipv6=is_ipv6)
-        vm.is_ipv6 = is_ipv6
         vm.hostname_v4 = vm.get_connect_host(use_ipv6=False)
+        vm.hostname_v6 = vm.get_connect_host(use_ipv6=True)
+        vm.is_ipv6 = is_ipv6
         vm.nat = vm.template.network.nat
-        vm.port = vm.get_port(use_ipv6=is_ipv6)
+        vm.port_v4 = vm.get_port(use_ipv6=False)
+        vm.port_v6 = vm.get_port(use_ipv6=True)
         return render_to_response('vm-credentials.html', RequestContext(request, { 'i' : vm }))
     except:
         return HttpResponse(_("Could not get Virtual Machine credentials."), status=404)
@@ -370,10 +371,10 @@ def vm_show(request, iid):
     is_ipv6 = len(request.META["REMOTE_ADDR"].split('.')) == 1
     inst.is_ipv6 = is_ipv6
     inst.hostname_v4 = inst.get_connect_host(use_ipv6=False)
+    inst.hostname_v6 = inst.get_connect_host(use_ipv6=True)
     inst.nat = inst.template.network.nat
-    inst.port = inst.get_port(use_ipv6=is_ipv6)
-    inst.hostname = inst.get_connect_host(use_ipv6=is_ipv6)
-    inst.port = inst.get_port(use_ipv6=is_ipv6)
+    inst.port_v4 = inst.get_port(use_ipv6=False)
+    inst.port_v6 = inst.get_port(use_ipv6=True)
     return render_to_response("show.html", RequestContext(request,{
         'uri': inst.get_connect_uri(),
         'state': inst.state,
