@@ -391,13 +391,25 @@ var cloud = (function(cloud) {
             for (var i in self.files()) {
                 var f = self.files()[i];
                 if (file.name == f.originalName) {
-                    if (!confirm('Van már ilyen fájl! ' + file.name)) {
+                    if (!confirm(
+                            interpolate(
+                                gettext('File %s is already present! Click OK to override it.'),
+                                [file.name]
+                                )
+                            )
+                        ) {
                         return next();
                     }
                 }
             }
             if (file.name.indexOf('.') == -1 && file.size % 4096 == 0) {
-                if (!confirm('A "' + file.name + '" mappának tűnik. Mappák feltöltése a weboldalon keresztül nem támogatott. Ha ez mégis egy fájl, az OK gombra kattintva a rendszer megpróbálja azt feltölteni.')) {
+                if (!confirm(
+                        interpolate(
+                            gettext('%s seems to be a directory. Uploading directories is currently not supported. If you\'re sure that %s is a file, click OK to upload it.'),
+                            [file.name, file.name]
+                            )
+                        )
+                    ) {
                     return next();
                 }
             }
