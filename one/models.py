@@ -357,7 +357,7 @@ class Template(models.Model):
 
 class Instance(models.Model):
     """Virtual machine instance."""
-    name = models.CharField(max_length=100, unique=True,
+    name = models.CharField(max_length=100, 
             verbose_name=_('name'), blank=True)
     ip = models.IPAddressField(blank=True, null=True,
             verbose_name=_('IP address'))
