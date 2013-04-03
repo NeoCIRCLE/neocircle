@@ -98,8 +98,19 @@ class InstanceAdmin(contrib.admin.ModelAdmin):
 
 class DiskAdmin(contrib.admin.ModelAdmin):
     model=models.Disk
+    list_display = ('name', 'used_by')
+
+    def used_by(self, obj):
+        try:
+            return ", ".join(obj.template_set.all())
+        except:
+            return None
+    used_by.verbose_name = _('used by')
+
 class NetworkAdmin(contrib.admin.ModelAdmin):
     model=models.Network
+    list_display = ('name', 'nat', 'public', 'get_vlan')
+
 class ShareAdmin(contrib.admin.ModelAdmin):
     model=models.Network
     list_filter = ('group', 'template', )

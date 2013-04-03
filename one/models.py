@@ -300,6 +300,8 @@ class Network(models.Model):
                     Network(id=id, name=name).save()
                 l.append(id)
             Network.objects.exclude(id__in=l).delete()
+    def get_vlan(self):
+        return Vlan.objects.get(vid=self.id)
 
 
 class InstanceType(models.Model):
