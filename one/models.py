@@ -511,7 +511,7 @@ class Instance(models.Model):
         inst = Instance(pw=pwgen(), template=template, owner=owner,
                 share=share, state='PENDING')
         inst.save()
-        hostname = u"cloud-%d" % (inst.id, )
+        hostname = u"%d" % (inst.id, )
         with tempfile.NamedTemporaryFile(delete=False) as f:
             os.chmod(f.name, stat.S_IRUSR|stat.S_IWUSR|stat.S_IRGRP|stat.S_IROTH)
             token = signing.dumps(inst.id, salt='activate')
