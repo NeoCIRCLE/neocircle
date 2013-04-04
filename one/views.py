@@ -16,7 +16,7 @@ from django.template import RequestContext
 from django.template.loader import render_to_string
 from django.utils.decorators import method_decorator
 from django.utils.translation import get_language as lang
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _, ungettext_lazy
 from django.views.decorators.http import *
 from django.views.generic import *
 from firewall.tasks import *
@@ -487,8 +487,14 @@ def vm_unshare(request, id, *args, **kwargs):
     if not g.owners.filter(user=request.user).exists():
         raise PermissionDenied()
     try:
-        if s.get_running_or_stopped() > 0:
-            messages.error(request, _('There are machines running of this share.'))
+        n = s.get_running()
+        m = s.get_running_or_stopped()
+        if n > 0:
+            messages.error(request, ungettext_lazy('There is a machine running of this share.',
+                    'There are %d machines running of this share.', n) % n)
+        elif m > 0:
+            messages.error(request, ungettext_lazy('There is a suspended machines of this share.', 
+                'There are %d suspended machines of this share.', m) % m)
         else:
             s.delete()
             messages.success(request, _('Share is successfully removed.'))
