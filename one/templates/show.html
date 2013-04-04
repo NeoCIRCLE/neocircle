@@ -163,12 +163,12 @@
                             {% endif %}
                         </td>
                         {% if not i.is_ipv6 %}
-                        <td rowspan="2">
+                        <td>
                             <a href="{% url one.views.vm_port_del i.id port.proto port.private %}">{% trans "Delete" %}</a>
                         </td>
                         {% endif %}
                     </tr>
-                    <tr{% if not i.is_ipv6 %} class="faded"{% endif %}>
+                    <tr{% if not i.is_ipv6 %} style="display: none"{% endif %}>
                         <td>{{port.private}}/{{port.proto}}6</td>
                         <td style="white-space: nowrap;">
                             {% if port.private == 80 or port.private == 8080 or port.private == 8000 %}
