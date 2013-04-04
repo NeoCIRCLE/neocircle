@@ -72,10 +72,10 @@
             display: block !important;
         }
         .summary .name {
-            width: calc(~"100% - 200px");
+            .vendorVal(width, calc, "100% - 200px");
             span {
-                width: calc(~"60% + 95px");
-                max-width: calc(~"100% - 95px");
+                .vendorVal(width, calc, "60% + 95px");
+                .vendorVal(max-width, calc, "100% - 95px");
             }
         }
         .summary .name .details {
@@ -180,10 +180,10 @@
                 display: block;
             }
             .name {
-                width: calc(~"100% - 200px");
+                .vendorVal(width, calc, "100% - 200px");
                 span {
-                    width: calc(~"60% + 95px");
-                    max-width: calc(~"100% - 95px");
+                    .vendorVal(width, calc, "60% + 95px");
+                    .vendorVal(max-width, calc, "100% - 95px");
                 }
                 .details {
                     display: block;
@@ -204,7 +204,7 @@
             z-index: 2;
             position: relative;
             height: 24px;
-            width: calc(~"100% - 90px");
+            .vendorVal(width, calc, "100% - 90px");
             span {
                 float: left;
                 text-overflow: ellipsis;
@@ -564,7 +564,7 @@ table {
         .summary {
             .name {
                 background-image: url(/static/icons/users.png);
-                width: calc(~"100% - 70px");
+                .vendorVal(width, calc, "100% - 70px");
             }
         }
         li.owner {
