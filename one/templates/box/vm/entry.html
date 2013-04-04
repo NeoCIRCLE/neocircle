@@ -27,7 +27,17 @@
     </li>
     <li class="template">
         {% trans "Type" %}:
-        <span class="value">{% if vm.share %}{{vm.share.type}}{% else %}{% trans "Try" %}{% endif %}</span>
+        <span class="value">
+            {% if vm.share %}
+                {{vm.get_type}}
+            {% else %}
+                {% if vm.template.state != "READY" %}
+                    {% trans "Master instance" %}
+                {% else %}
+                    {% trans "Try" %}
+                {% endif %}
+            {% endif %}
+        </span>
         <div class="clear"></div>
     </li>
     <li class="template">
