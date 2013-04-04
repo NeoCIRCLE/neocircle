@@ -149,7 +149,7 @@
                         <th colspan="2">{% trans "Access" %}</th>
                     </tr>
                     {% for port in ports %}
-                    <tr>
+                    <tr{% if i.is_ipv6 %} class="faded"{% endif %}>
                         <td>{{port.private}}/{{port.proto}}</td>
                         <td style="white-space: nowrap;">
                             {% if port.private == 80 or port.private == 8080 or port.private == 8000 %}
@@ -162,11 +162,13 @@
                             {{port.ipv4.host}}:{{port.ipv4.port}}
                             {% endif %}
                         </td>
-                        <td>
+                        {% if not i.is_ipv6 %}
+                        <td rowspan="2">
                             <a href="{% url one.views.vm_port_del i.id port.proto port.private %}">{% trans "Delete" %}</a>
                         </td>
+                        {% endif %}
                     </tr>
-                    <tr>
+                    <tr{% if not i.is_ipv6 %} class="faded"{% endif %}>
                         <td>{{port.private}}/{{port.proto}}6</td>
                         <td style="white-space: nowrap;">
                             {% if port.private == 80 or port.private == 8080 or port.private == 8000 %}
@@ -181,9 +183,11 @@
                             {{port.ipv6.host}}:{{port.ipv6.port}}
                             {% endif %}
                         </td>
+                        {% if i.is_ipv6 %}
                         <td>
                             <a href="{% url one.views.vm_port_del i.id port.proto port.private %}">{% trans "Delete" %}</a>
                         </td>
+                        {% endif %}
                     </tr>
                     {% endfor %}
                     <tr>
