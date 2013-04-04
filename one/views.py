@@ -491,14 +491,17 @@ def vm_unshare(request, id, *args, **kwargs):
         m = s.get_running_or_stopped()
         if n > 0:
             messages.error(request, ungettext_lazy('There is a machine running of this share.',
-                    'There are %d machines running of this share.', n) % n)
+                    'There are %(n)d machines running of this share.', n) %
+                    {'n' : n})
         elif m > 0:
-            messages.error(request, ungettext_lazy('There is a suspended machines of this share.', 
-                'There are %d suspended machines of this share.', m) % m)
+            messages.error(request, ungettext_lazy('There is a suspended machine of this share.', 
+                'There are %(m)d suspended machines of this share.', m) % 
+                {'m' : m})
         else:
             s.delete()
             messages.success(request, _('Share is successfully removed.'))
-    except:
+    except Exception as e:
+        print e
         messages.error(request, _('Failed to remove share.'))
     return redirect(g)
 
