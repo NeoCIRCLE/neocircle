@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-04-04 17:52+0200\n"
-"PO-Revision-Date: 2013-03-07 17:02+0100\n"
+"PO-Revision-Date: 2013-04-04 18:03+0200\n"
 "Last-Translator: \n"
 "Language-Team: Hungarian <cloud@ik.bme.hu>\n"
 "Language: hu\n"
@@ -80,7 +80,7 @@ msgstr "Biztosan törli a következő sablont: %s?"
 
 #: static/script/cloud.js:436 static/script/cloud.min.js:1
 msgid "Template deletion successful!"
-msgstr ""
+msgstr "Sablon törlése sikeres."
 
 #: static/script/cloud.js:595 static/script/cloud.js.c:598
 #: static/script/cloud.min.js:1
@@ -127,7 +127,7 @@ msgstr "Biztos benne?"
 #: static/script/store.js:396 static/script/store.min.js:1
 #, c-format
 msgid "File %s is already present! Click OK to override it."
-msgstr ""
+msgstr "%s már létezik. Felülírja?"
 
 #: static/script/store.js:408 static/script/store.min.js:1
 #, c-format
@@ -135,6 +135,8 @@ msgid ""
 "%s seems to be a directory. Uploading directories is currently not "
 "supported. If you're sure that %s is a file, click OK to upload it."
 msgstr ""
+"%s egy mappának tűnik. Mappák feltöltésére nincs lehetőség. "
+"Ha biztos benne, hogy %s egy fájl, kattintson az OK-ra a feltöltéshez."
 
 #: static/script/store.js:463 static/script/store.js.c:465
 #: static/script/store.min.js:1
