@@ -84,7 +84,7 @@
                             <form action="{% url one.views.vm_unshare i.id %}" method="post">
                                 <span title="{{i.name}}">{{i.name|truncatechars:20}}</span>
                                 ({{i.get_running}}/{{i.instance_limit}}) {{i.type}}
-                                <a href="#" class="edit" data-id="{{i.id}}">
+                                <a href="#" class="edit" data-url="{% url ajax_share_edit_wizard id=i.id %}">
                                     <img src="{% static "icons/pencil.png" %}" alt="{% trans "Edit" %}" title="{% trans "Edit" %}" />
                                 </a>
                                 {% csrf_token %}
