@@ -22,7 +22,7 @@
     </li>
     <li class="os-{{vm.template.os_type}}">
         {% trans "System" %}:
-        <span class="value">{{vm.template.system}}</span>
+        <span class="value">{{vm.template.system|default:"n/a"}}</span>
         <div class="clear"></div>
     </li>
     <li class="template">
@@ -32,7 +32,7 @@
     </li>
     <li class="template">
         {% trans "Share" %}:
-        <span class="value">{{vm.share.name}}</span>
+        <span class="value">{{vm.share.name|default:"n/a"}}</span>
         <div class="clear"></div>
     </li>
     <li class="template">
