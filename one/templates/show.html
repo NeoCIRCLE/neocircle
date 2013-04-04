@@ -145,7 +145,7 @@
                 {% csrf_token %}
                 <table>
                     <tr>
-                        <th>{% trans "Protocol" %}</th>
+                        <th>{% trans "Port" %}</th>
                         <th colspan="2">{% trans "Access" %}</th>
                     </tr>
                     {% for port in ports %}
@@ -191,7 +191,7 @@
                     </tr>
                     {% endfor %}
                     <tr>
-                        <th>Protokoll</th>
+                        <th>{% trans "Protokoll" %}</th>
                         <th colspan="2">Port</th>
                     </tr>
                     <tr>
