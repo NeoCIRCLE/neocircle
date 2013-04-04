@@ -67,7 +67,27 @@
     list-style-type: none;
 }
 .entry {
+    &.editing {
+        .summary {
+            &:hover .name > span {
+                width: 100%;
+                max-width: 100%;
+            }
+            .name > span {
+                width: 100%;
+                max-width: 100%;
+            }
+        }
+    }
     &.opened {
+        &.editing {
+            .summary {
+                .name > span {
+                    width: 100%;
+                    max-width: 100%;
+                }
+            }
+        }
         .actions {
             display: block !important;
         }

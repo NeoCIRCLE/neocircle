@@ -81,12 +81,14 @@ $(function() {
         var content = $('#vm-' + id + '-name').html();
         var self=this;
         var url = $(this).data('url');
+        $('#vm-'+id).addClass('editing');
         $(this).unbind('click').click(function(e){
             e.preventDefault();
             e.stopPropagation();
             $(this).unbind('click').click(handler);
             $('#vm-' + id + '-name-details').show();
             $('#vm-' + id + '-name').html(content);
+            $('#vm-'+id).removeClass('editing');
         })
         $('#vm-' + id + '-name-details').hide();
         $('#vm-' + id + '-name').html('<input type="text" value="' + oldName + '" />\
@@ -108,6 +110,8 @@ $(function() {
                     $('#vm-' + id + '-name-details').removeAttr('style');
                     $('#vm-' + id + '-name').text(data.name);
                     $(self).click(handler);
+                    $(self).data('name', newName);
+                    $('#vm-'+id).removeClass('editing');
                 }
             });
         })
