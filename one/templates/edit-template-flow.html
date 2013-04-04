@@ -95,7 +95,7 @@
                         'type': 'GET',
                         'url': '{% url one.views.ajax_template_name_unique %}?name=' + $("#new-template-name").val(),
                         'success': function(data, b, c) {
-                            if (data == "True" || s == original) {
+                            if (data == "True" || $("#new-template-name").val() == original) {
                                 $("#template-wizard").unbind('submit').submit()
                             }
                             else {
