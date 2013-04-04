@@ -158,7 +158,6 @@ class SshKey(models.Model):
 
 TEMPLATE_STATES = (("INIT", _('init')), ("PREP", _('perparing')),
         ("SAVE", _('saving')), ("READY", _('ready')))
-
 TYPES = {"LAB": {"verbose_name": _('lab'), "id": "LAB",
                  "suspend": td(hours=5), "delete": td(days=15),
                  "help_text": _('For lab or homework with short lifetime.')},
@@ -169,6 +168,7 @@ TYPES = {"LAB": {"verbose_name": _('lab'), "id": "LAB",
                     "suspend": td(days=365), "delete": None,
                     "help_text": _('For long-term server use.')},
          }
+DEFAULT_TYPE = TYPES['LAB']
 TYPES_L = sorted(TYPES.values(), key=lambda m: m["suspend"])
 TYPES_C = tuple([(i[0], i[1]["verbose_name"]) for i in TYPES.items()])
 
@@ -193,13 +193,18 @@ class Share(models.Model):
         verbose_name = _('share')
         verbose_name_plural = _('shares')
 
-    def get_type(self):
-        t = TYPES[self.type]
+    @classmethod
+    def extend_type(cls, t):
         t['deletex'] = (datetime.now() + td(seconds=1) + t['delete']
                 if t['delete'] else None)
         t['suspendx'] = (datetime.now() + td(seconds=1) + t['suspend']
                 if t['suspend'] else None)
         return t
+
+    def get_type(self):
+        t = TYPES[self.type]
+        return self.extend_type(t)
+
     def get_running_or_stopped(self, user=None):
         running = (Instance.objects.all().exclude(state='DONE')
             .filter(share=self))
@@ -658,12 +663,19 @@ class Instance(models.Model):
 
     def renew(self, which='both'):
         if which in ['suspend', 'both']:
-            self.time_of_suspend = self.share.get_type()['suspendx']
+            self.time_of_suspend = self.share_type['suspendx']
         if which in ['delete', 'both']:
-            self.time_of_delete = self.share.get_type()['deletex']
+            self.time_of_delete = self.share_type['deletex']
         if not (which in ['suspend', 'delete', 'both']):
             raise ValueError('No such expiration type.')
         self.save()
+
+    @property
+    def share_type(self):
+        if self.share:
+            return self.share.get_type()
+        else:
+            return Share.extend_type(DEFAULT_TYPE)
 
     def save_as(self):
         """Save image and shut down."""
