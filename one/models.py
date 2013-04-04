@@ -429,7 +429,7 @@ class Instance(models.Model):
     def get_port(self, use_ipv6=False):
         """Get public port number for default access method."""
         proto = self.template.access_type
-        if self.template.network.nat and not use_ipv6:
+        if self.nat and not use_ipv6:
             return {"rdp": 23000, "nx": 22000, "ssh": 22000}[proto] + int(self.ip.split('.')[2]) * 256 + int(self.ip.split('.')[3])
         else:
             return {"rdp": 3389, "nx": 22, "ssh": 22}[proto]
@@ -482,6 +482,15 @@ class Instance(models.Model):
         if self.template.state == 'SAVING':
             self.check_if_is_save_as_done()
         return x
+
+    @property
+    def nat(self):
+        if self.firewall_host is not None:
+            return self.firewall_host.shared_ip
+        elif self.template is not None:
+            return self.template.network.nat
+        else:
+            return False
 
     def get_age(self):
         """Get age of VM in seconds."""

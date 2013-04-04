@@ -108,7 +108,6 @@ def vm_credentials(request, iid):
         vm.hostname_v4 = vm.get_connect_host(use_ipv6=False)
         vm.hostname_v6 = vm.get_connect_host(use_ipv6=True)
         vm.is_ipv6 = is_ipv6
-        vm.nat = vm.template.network.nat
         vm.port_v4 = vm.get_port(use_ipv6=False)
         vm.port_v6 = vm.get_port(use_ipv6=True)
         return render_to_response('vm-credentials.html', RequestContext(request, { 'i' : vm }))
@@ -372,7 +371,6 @@ def vm_show(request, iid):
     inst.is_ipv6 = is_ipv6
     inst.hostname_v4 = inst.get_connect_host(use_ipv6=False)
     inst.hostname_v6 = inst.get_connect_host(use_ipv6=True)
-    inst.nat = inst.template.network.nat
     inst.port_v4 = inst.get_port(use_ipv6=False)
     inst.port_v6 = inst.get_port(use_ipv6=True)
     return render_to_response("show.html", RequestContext(request,{
@@ -425,7 +423,7 @@ class VmPortAddView(View):
         try:
             port = int(request.POST['port'])
             inst = get_object_or_404(Instance, id=iid, owner=request.user)
-            if inst.firewall_host.shared_ip:
+            if inst.nat:
                 inst.firewall_host.add_port(proto=request.POST['proto'],
                         public=None, private=port)
             else:
@@ -434,7 +432,6 @@ class VmPortAddView(View):
 
         except:
             messages.error(request, _(u"Adding port failed."))
-            raise
         else:
             messages.success(request, _(u"Port %d successfully added.") % port)
         return redirect('/vm/show/%d/' % int(iid))
