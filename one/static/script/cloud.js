@@ -15,7 +15,7 @@ $(function() {
     $('.delete-template').click(function(e) {
         e.preventDefault();
         e.stopPropagation();
-        delete_template_confirm($(this).data('id'), $(this).data('name'));
+        delete_template_confirm($(this).data('url'), $(this).data('id'), $(this).data('name'));
     });
     $('.delete-key').click(function(e) {
         var id = $(this).data('id');
@@ -25,7 +25,7 @@ $(function() {
             $.ajax({
                 'type': 'POST',
                 'data': 'id=' + id,
-                'url': '/ajax/key/delete/',
+                'url': $(this).data('url'),
                 'success': function() {
                     $('#key-' + id).slideUp(700);
                 }
@@ -36,7 +36,7 @@ $(function() {
         vm_confirm_popup(gettext('Are you sure about reseting store credentials?<br /> You will lose your access to your store account on your existing virtual machines!'), gettext('Reset'), function() {
             $.ajax({
                 type: 'POST',
-                url: '/ajax/key/reset/',
+                url: $(this).data('url'),
                 success: function() {
                     window.location.reload();
                 }
@@ -63,6 +63,7 @@ $(function() {
         var oldName = $(this).data('name');
         var content = $('#vm-' + id + '-name').html();
         var self=this;
+        var url = $(this).data('url');
         $(this).unbind('click').click(function(e){
             e.preventDefault();
             e.stopPropagation();
@@ -72,7 +73,7 @@ $(function() {
         })
         $('#vm-' + id + '-name-details').hide();
         $('#vm-' + id + '-name').html('<input type="text" value="' + oldName + '" />\
-<input type="submit" value="' + gettext('Rename') + '" />');
+<input type="submit" value="' + gettext('Rename') + '" data-url="'+url+'"/>');
         $('#vm-' + id + '-name').find('input[type="text"]').click(function(f) {
             f.preventDefault();
             f.stopPropagation();
@@ -85,7 +86,7 @@ $(function() {
                 type: 'POST',
                 data: 'name=' + newName,
                 dataType: 'json',
-                url: '/ajax/vm/rename/' + id + '/',
+                url: $(this).data('url'),
                 success: function(data) {
                     $('#vm-' + id + '-name-details').removeAttr('style');
                     $('#vm-' + id + '-name').text(data.name);
@@ -97,7 +98,7 @@ $(function() {
     $('.try-template').click(function(e) {
         e.preventDefault();
         e.stopPropagation();
-        new_vm($(this).data('id'));
+        new_vm($(this).data('url'));
     });
     $('.stop-vm').click(function(e) {
         e.preventDefault();
@@ -135,7 +136,7 @@ $(function() {
         $('#modal-container .entry .summary').click(toggleDetails);
     });
     $('#new-template-button').click(function() {
-        $.get('/ajax/templateWizard', function(data) {
+        $.get($(this).data('url'), function(data) {
             $('#modal-container').html(data);
         })
         $('#modal').show();
@@ -146,7 +147,7 @@ $(function() {
         var id=$(this).data('id');
         $.ajax({
             type: 'GET',
-            url: '/ajax/templateEditWizard/'+id+'/',
+            url: $(this).data('url'),
             success: function(data){
                 $('#modal').show();
                 $('#modal-container').html(data);
@@ -192,7 +193,11 @@ $(function() {
         $('#modal-container').html(content);
         $('#shadow').click(function() {
             $('#new-group-wizard').html(content);
-        })
+        });
+        $('#modal .prev').click(function() {
+            $('#modal').hide();
+            $('#new-group-wizard').html(content);
+        });
 
         function updateSummary() {
             $('#new-group-summary-name').html($('#new-group-name').val());
@@ -210,8 +215,8 @@ $(function() {
         if ($(this).attr('type') == 'password') {
             $(this).attr('type', 'text');
             $(this).addClass('shown');
+            this.select();
         } else if (this.selectionStart - this.selectionEnd == 0) {
-
             $(this).attr('type', 'password');
             $(this).removeClass('shown');
         }
@@ -235,7 +240,7 @@ $(function() {
         e.stopPropagation();
         $.ajax({
             type: 'GET',
-            url: '/ajax/shareEdit/' + $(this).data('id') + '/',
+            url: $(this).data('url'),
             success: function(data) {
                 $('#modal').show();
                 $('#modal-container').html(data);
@@ -349,13 +354,11 @@ $(function() {
      * New VM
      */
 
-    function new_vm(template_id) {
+    function new_vm(url) {
         $.ajax({
             type: 'POST',
-            url: '/ajax/vm/new/' + template_id + '/',
+            url: url,
             success: function(data, b, xhrRequest) {
-                window.location.href = '/'; //xhrRequest.getResponseHeader("Location");
-                //alert(xhrRequest.getResponseHeader("Location"));
                 window.location.href = xhrRequest.getResponseHeader("Location");
             }
         })
@@ -365,7 +368,7 @@ $(function() {
      * Template delete
      */
 
-    function delete_template_confirm(id, name) {
+    function delete_template_confirm(url, id, name) {
         confirm_message = interpolate(gettext("Are you sure deleting this %s template?"), ["<strong>" + name + "</strong>"])
         vm_confirm_popup(confirm_message, gettext("Delete"), function() {
             delete_template(id)
@@ -375,10 +378,10 @@ $(function() {
      * Template delete
      */
 
-    function delete_template(id) {
+    function delete_template(url, id) {
         $.ajax({
             type: 'POST',
-            url: '/ajax/template/delete/',
+            url: url,
             data: 'id=' + id,
             dataType: 'json',
             statusCode: {
@@ -508,7 +511,7 @@ $(function() {
         var neptun = $(this).prev().val();
         $.ajax({
             type: 'POST',
-            url: '/ajax/group/' + $(this).data('id') + '/add/',
+            url: $(this).data('url'),
             data: 'neptun=' + neptun,
             dataType: 'json',
             success: function(data) {
@@ -530,13 +533,14 @@ $(function() {
         var timer;
         return function(e) {
             var val = $(this).val().split(' ')[0];
+            var that = this;
             clearTimeout(timer);
             timer = setTimeout(function() {
                 if (val.length < 1) return;
                 $.ajax({
                     type: 'POST',
                     data: 'q=' + val,
-                    url: '/ajax/group/autocomplete/',
+                    url: $(that).data('url'),
                     dataType: 'json',
                     success: function(data) {
                         console.log(data);
@@ -571,21 +575,6 @@ $(function() {
             e.stopPropagation();
         }
     }());
-    $('#new-owner-form input[type=submit]').click(function() {
-        var neptun = $(this).prev().val();
-        $.ajax({
-            type: 'POST',
-            url: '/ajax/group/' + $(this).data('id') + '/add/',
-            data: 'neptun=' + neptun,
-            dataType: 'json',
-            success: function(data) {
-                window.location.reload();
-            }
-        }).error(function(data) {
-            //TODO: fancy modal alert
-            alert(JSON.parse(data.responseText).status);
-        })
-    });
 
     $('#group-members .remove').click(function(e) {
         e.preventDefault();
@@ -593,37 +582,25 @@ $(function() {
         var neptun = $(this).data('neptun');
         $.ajax({
             type: 'POST',
-            url: '/ajax/group/' + $(this).data('gid') + '/remove/',
+            url: $(this).data('url'),
             data: 'neptun=' + neptun,
             success: function(data) {
                 $('#member-' + neptun).slideUp(700);
             }
         });
     });
-    /*$('#group-owners .remove').click(function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        var neptun = $(this).data('neptun');
-        $.ajax({
-            type: 'POST',
-            url: '/ajax/group/' + $(this).data('gid') + '/remove/',
-            data: 'neptun=' + neptun,
-            success: function(data) {
-                $('#member-' + neptun).slideUp(700);
-            }
-        });
-    });*/
     $('#groups .delete').click(function(e) {
         e.preventDefault();
         e.stopPropagation();
         var gid = $(this).data('id');
         var name = $(this).data('name');
+        var url = $(this).data('url');
         vm_confirm_popup(
         interpolate(
         gettext('Are you sure deleting <strong>%s</strong>'), [name]), gettext('Delete'), function() {
             $.ajax({
                 type: 'POST',
-                url: '/ajax/group/delete/',
+                url: url,
                 data: 'gid=' + gid,
                 success: function() {
                     $('#group-' + gid).slideUp(700);

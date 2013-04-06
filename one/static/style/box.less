@@ -1,5 +1,5 @@
 .boxes {
-    width:480px;
+    width:50%;
     float:left;
 }
 
@@ -300,7 +300,6 @@
         }
         .value {
             float: right;
-            width: 200px;
             text-align: right;
         }
         .description {
@@ -309,7 +308,7 @@
             .value {
                 font-size: 0.8em;
                 word-spacing: 3px;
-                width: 350px;
+                max-width: 200px;
             }
         }
     }
@@ -317,7 +316,7 @@
         background-image: url(/static/icons/computer--plus.png);
     }
 }
-#new-share .type-summary, .share-type .value {
+#modal, #new-share .type-summary, .share-type .value {
     &.type-summary {
         font-size: .8em;
         text-align: right;
@@ -630,11 +629,12 @@ table {
 
 .boxhelp {
     position: relative;
+    font-weight: normal;
     .boxhelp-box {
         color:#000;
         position: absolute;
-        left: -100px;
         width: 500px;
+        max-width: 100%;
         z-index: 1000000;
         font-size: .7em;
         background-color: #ffc;
@@ -643,6 +643,7 @@ table {
         box-shadow:0 0 30px rgba(0,0,0,0.3);
         margin:20px;
         display: none;
+        font-size: 14px;
     }
     .help:hover .boxhelp-box {
         display: block;

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 {% load i18n %}
+{% load l10n %}
 {% load staticfiles %}
 {% get_current_language as lang %}
 <html lang="{{lang}}">
@@ -12,9 +13,11 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <script src="{% static "script/jquery.min.js" %}"></script>
     <script type="text/javascript" src="{% url django.views.i18n.javascript_catalog %}"></script>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script type="text/javascript">
         {% if DEBUG %}window.localStorage.removeItem('https://cloud.ik.bme.hu/static/style/style.less:timestamp');{% endif %}
         var current_user={{user.id}};
+        google.load('visualization', '1.0', {'packages':['corechart']});
     </script>
     {% if DEBUG %}<script src="{% static "script/less.min.js" %}"></script>{% endif %}
     <script src="{% static "script/knockout.min.js" %}"></script>
@@ -26,6 +29,7 @@
     {% endif %}
     {{ form.media }}
     {% block js %}{% endblock %}
+    <meta name="viewport" content="target-densitydpi=device-dpi, initial-scale=1.0" />
 </head>
 <body>
     <div id="header">
@@ -70,16 +74,74 @@
         <div class="clear"></div>
     </div>
     <footer>
-        <a href="/sites/legal/">{% trans "Legal notice" %}</a> |
-        <a href="/sites/policy/">{% trans "Policy" %}</a> |
-        <a href="/sites/help/">{% trans "Help" %}</a> |
-        <a href="/sites/support/">{% trans "Support" %}</a>
+        <div>
+            <div style="float: left" id="chart_cpu_div"></div>
+            <a href="/sites/legal/">{% trans "Legal notice" %}</a> |
+            <a href="/sites/policy/">{% trans "Policy" %}</a> |
+            <a href="/sites/help/">{% trans "Help" %}</a> |
+            <a href="/sites/support/">{% trans "Support" %}</a> |
+            <a href="/sites/changelog/#{{release}}" title="{% trans "Change log" %}">{{release}}</a>
+
+            <div style="float: right" id="chart_mem_div"></div>
+        </div>
+        {% if cloud_stat %}
+            <script type="text/javascript">
+                google.setOnLoadCallback(drawChart);
+                function drawChart() {
+                    var data_cpu = new google.visualization.DataTable();
+                    data_cpu.addColumn('string', 'Topping');
+                    data_cpu.addColumn('number', 'Used');
+                    data_cpu.addColumn('number', 'Allocated');
+                    data_cpu.addColumn('number', 'Free');
+                    data_cpu.addRows([
+                        ['CPU',
+                        {{cloud_stat.CPU.USED_CPU}},
+                        {{cloud_stat.CPU.ALLOC_CPU}},
+                        {{cloud_stat.CPU.FREE_CPU}},]
+                    ]);
+                    var cpu_options = {
+                        'width':400,
+                        'height':20,
+                        isStacked: true,
+                        enableInteractivity: false,
+                        colors: ['red', 'orange', 'blue']
+                    };
+                    var data_mem = new google.visualization.DataTable();
+                    data_mem.addColumn('string', 'Topping');
+                    data_mem.addColumn('number', 'Used');
+                    data_mem.addColumn('number', 'Allocated');
+                    data_mem.addColumn('number', 'Free');
+                    data_mem.addRows([
+                        ['RAM',
+                        {{cloud_stat.MEM.USED_MEM|unlocalize}},
+                        {{cloud_stat.MEM.ALLOC_MEM|unlocalize}},
+                        {{cloud_stat.MEM.FREE_MEM|unlocalize}},]
+                    ]);
+                    var mem_options = {
+                        'width':400,
+                        'height':20,
+                        isStacked: true,
+                        enableInteractivity: false,
+                        colors: ['red', 'orange', 'blue'],
+                        hAxis : {
+                            viewWindowMode: 'explicit',
+                            viewWindow: {
+                                min: 0,
+                                max: {{cloud_stat.MEM.USED_MEM|unlocalize}}+{{cloud_stat.MEM.ALLOC_MEM|unlocalize}}+{{cloud_stat.MEM.FREE_MEM|unlocalize}}
+                            }
+                        },
+                    };
+                    var chart = new google.visualization.BarChart(document.getElementById('chart_cpu_div'));
+                    chart.draw(data_cpu, cpu_options);
+                    var chart = new google.visualization.BarChart(document.getElementById('chart_mem_div'));
+                    chart.draw(data_mem, mem_options);
+                }
+            </script>
+        {% endif %}
     </footer>
     <div id="modal" style="display: none">
         <div id="shadow"></div>
-        <div id="modal-container">
-
-        </div>
+        <div id="modal-container"></div>
     </div>
     <script type="text/javascript">
         var _gaq = _gaq || [];

@@ -53,7 +53,7 @@
                 </div>
                 <div class="details" id="new-owner-form">
                     <div class="container">
-                        <input type="text" placeholder="{% trans "Owner name/NEPTUN" %}" />
+                        <input type="text" placeholder="{% trans "Owner name/NEPTUN" %}" data-url="{% url school.views.group_ajax_owner_autocomplete %}"/>
                         <div id="new-owner-autocomplete"></div>
                     </div>
                 </div>

@@ -18,6 +18,7 @@ from firewall.models import Host, Rule, Vlan, Record
 from school.models import Person, Group
 from store.api import StoreApi
 from .util import keygen
+from cloud.settings import CLOUD_URL
 
 logger = logging.getLogger(__name__)
 pwgen = User.objects.make_random_password
@@ -487,7 +488,8 @@ class Instance(models.Model):
         """Submit a new instance to OpenNebula."""
         from django.template.defaultfilters import escape
         out = ""
-        inst = Instance(pw=pwgen(), template=template, owner=owner, share=share)
+        inst = Instance(pw=pwgen(), template=template, owner=owner,
+                share=share, state='PENDING')
         inst.save()
         hostname = u"cloud-%d" % (inst.id, )
         with tempfile.NamedTemporaryFile(delete=False) as f:
@@ -529,7 +531,7 @@ class Instance(models.Model):
                                  "smbpw": escape(details.smb_password),
                                  "sshkey": escape(details.ssh_private_key),
                                  "neptun": escape(owner.username),
-                                 "booturl": "https://cloud.ik.bme.hu/b/%s/" % token,
+                                 "booturl": "%sb/%s/" % ( CLOUD_URL, token ),
                                  "extra": extra}
             f.write(tpl)
             f.close()
@@ -551,7 +553,6 @@ class Instance(models.Model):
                 {'neptun': owner.username, 'template': template.name,
                  'id': inst.one_id})
         inst.save()
-        inst.update_state()
         host = Host(vlan=Vlan.objects.get(name=template.network.name),
                 owner=owner)
         host.hostname = hostname
@@ -618,17 +619,23 @@ class Instance(models.Model):
     def _change_state(self, new_state):
         """Change host state in OpenNebula."""
         self._update_vm("<STATE>" + new_state + "</STATE>")
+        self.waiting = True
+        self.save()
 
     def stop(self):
         self._change_state("STOPPED")
-        self.waiting = True
-        self.save()
+
     def resume(self):
         self._change_state("RESUME")
+
     def poweroff(self):
         self._change_state("POWEROFF")
+
     def restart(self):
         self._change_state("RESET")
+        self.waiting = False
+        self.save()
+
     def renew(self, which='both'):
         if which in ['suspend', 'both']:
             self.time_of_suspend = self.share.get_type()['suspendx']
@@ -637,12 +644,12 @@ class Instance(models.Model):
         if not (which in ['suspend', 'delete', 'both']):
             raise ValueError('No such expiration type.')
         self.save()
+
     def save_as(self):
         """Save image and shut down."""
         imgname = "template-%d-%d" % (self.template.id, self.id)
         self._update_vm('<DISK id="0"><SAVE_AS name="%s"/></DISK>' % imgname)
         self._change_state("SHUTDOWN")
-        self.waiting = True
         self.save()
         t = self.template
         t.state = 'SAVING'

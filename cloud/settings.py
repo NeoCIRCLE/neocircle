@@ -3,6 +3,7 @@
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
+STAT_DEBUG = True
 
 ADMINS = (
     ('IK', 'cloud@cloud.ik.bme.hu'),
@@ -119,6 +120,8 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.tz',
     'django.contrib.messages.context_processors.messages',
     'cloud.context_processors.process_debug',
+    'cloud.context_processors.process_stat',
+    'cloud.context_processors.process_release',
 )
 
 TEMPLATE_DIRS = (
@@ -200,7 +203,16 @@ CELERY_ROUTES = {
     'firewall.tasks.reload_blacklist_task': {'queue': 'firewall'},
     'firewall.tasks.Periodic': {'queue': 'local'},
     'one.tasks.SendMailTask': {'queue': 'local'},
+    'one.tasks.UpdateInstanceStateTask': {'queue': 'local'}
 }
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:11211',
+    }
+}
+
 
 store_settings = {
     "basic_auth": "True",
@@ -225,6 +237,7 @@ firewall_settings = {
 
 EMAIL_HOST='152.66.243.92' # giccero ipv4
 CLOUD_URL='https://cloud.ik.bme.hu/'
+RELEASE='master'
 
 try:
     from cloud.local_settings import *

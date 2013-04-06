@@ -6,12 +6,13 @@ do
     sudo stop $i || true
 done
 
-sudo apt-get install rabbitmq-server gettext
+sudo apt-get install rabbitmq-server gettext memcached
 sudo rabbitmqctl delete_user guest || true
 sudo rabbitmqctl add_user nyuszi teszt || true
 sudo rabbitmqctl add_vhost django || true
 sudo rabbitmqctl set_permissions -p django nyuszi '.*' '.*' '.*' || true
 
+sudo pip install python-memcached
 
 sudo cp /opt/webadmin/cloud/miscellaneous/devenv/boot_url.py /opt/
 

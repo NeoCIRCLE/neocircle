@@ -32,8 +32,6 @@ logger = logging.getLogger(__name__)
 
 def _list_instances(request):
     instances = Instance.objects.exclude(state='DONE').filter(owner=request.user)
-    for i in instances:
-        i.update_state()
     instances = instances.exclude(state='DONE')
     return instances
 
@@ -335,6 +333,7 @@ def vm_new(request, template=None, share=None, redir=True):
             messages.error(request, _('Failed to create virtual machine.'))
             inst = None
         if inst:
+            inst.waiting = True
             inst.time_of_suspend = time_of_suspend
             inst.time_of_delete = time_of_delete
             inst.save()
@@ -356,9 +355,6 @@ vm_list = login_required(VmListView.as_view())
 @login_required
 def vm_show(request, iid):
     inst = get_object_or_404(Instance, id=iid, owner=request.user)
-    inst.update_state()
-    if inst.template.state == "SAVING":
-        inst.check_if_is_save_as_done()
     try:
         ports = inst.firewall_host.list_ports()
     except:
@@ -388,10 +384,10 @@ def vm_show(request, iid):
 @login_required
 def vm_ajax_instance_status(request, iid):
     inst = get_object_or_404(Instance, id=iid, owner=request.user)
-    inst.update_state()
     return HttpResponse(json.dumps({
         'booting': not inst.active_since,
         'state': inst.state,
+        'waiting': inst.waiting,
         'template': {
             'state': inst.template.state
         }}))
@@ -612,7 +608,7 @@ def stat(request):
             )))
 
 def sites(request, site):
-    if site in [ "legal", "policy", "help", "support" ]:
+    if site in [ "legal", "policy", "help", "support", "changelog", ]:
         return render_to_response("sites/%s.html" % site, RequestContext(request, {}))
     else:
         return redirect(home)

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+
+
+{% block content %}
+<div class="irasmu">
+    <h2>Változtatások listája</h2>
+    <section>
+        <p>Az IK Cloud fejlesztése kéthetes ciklusokban történik, az rendes kiadások élesítése
+        páros heteken csütörtök este zajlik. Alább foglaljuk össze az egyes
+        kiadások főbb, a felhasználók által is látható változtatásait.</p>
+    </section>
+    <a id="master"></a>
+    
+    <section>
+    <h3 id="release-13.03.2"><a href="#13.03.2">13.03.2 (2013. március 21.)</a></h3>
+    <ul>
+        <li>Súgó.</li>
+        <li>Változáslista.</li>
+        <li>Reszponzív és folyékony elrendezés.</li>
+        <li>Statikus oldalak új külalakja.</li>
+        <li>Gyorsabb oldalbetöltés.</li>
+        <li>Statisztika a cluster állapotáról.</li>
+    </ul>
+    </section>
+
+    <section>
+    <h3 id="release-13.03.1"><a href="#13.03.1">13.03.1 (2013. március 7.)</a></h3>
+    <ul>
+        <li>Határidős felfüggesztés élesítve.</li>
+        <li>Csatlakozási adatoknál IP cím helyett DNS név jelenik meg.</li>
+        <li>Ha a portált IPV6-on érik el, a csatlakozási adatoknál egyedi DNS név és publikus port jelenik meg.</li>
+        <li>Legújabb fájloktól vissza lehet lépni az összeshez.</li>
+        <li>Bemutató képernyő elérhető bejelentkezve is.</li>
+        <li>Megosztás adatai szerkeszthetőek.</li>
+        <li>Sablon adatai szerkeszthetőek.</li>
+        <li>Lábléc; impresszum, szabályzat, támogatás oldalak.</li>
+        <li>Megosztásnál is látszik a géptípus.</li>
+        <li>Dobozok rejthetőek.</li>
+        <li>Sablon mentésének menete gördülékenyebb.</li>
+        <li>Jelszómegjelenítés javítva.</li>
+        <li>Fájlok rendezése működik.</li>
+        <li>Segítség-dobozok bővítve.</li>
+        <li>Szebb HTTP hibaüzenetek.</li>
+        <li>Kulcs hozzáadásának visszaigazolása.</li>
+        <li>Sablonok állapotának helyes kijelzése.</li>
+        <li>Minimalizált js és css kód.</li>
+    </ul>
+    </section>
+
+    <section>
+    <h3 id="release-13.02.2"><a href="#13.02.2">13.02.2 (2013. február 21.)</a></h3>
+    <ul>
+        <li>Felhasználói kvóták megvalósítása.</li>
+        <li>Publikus kulcsok kezelése.</li>
+        <li>További részletek gombok.</li>
+        <li>Saját csoportok rejthetőek.</li>
+        <li>Segítség-dobozok a legtöbb helyre.</li>
+        <li>Csoporttulajdonosok kezelése, több adat megjelenítése.</li>
+        <li>VM átnevezhető.</li>
+    </ul>
+    </section>
+</div>
+{% endblock %}

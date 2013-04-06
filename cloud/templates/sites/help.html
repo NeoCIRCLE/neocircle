@@ -2,12 +2,268 @@
 {% load i18n %}
 {% load staticfiles %}
 {% get_current_language as LANGUAGE_CODE %}
-
-
 {% block content %}
 <div class="irasmu">
-    <p>A súgó elkészültéig kérjük szíves türelmüket.</p>
-    <p>Addig is ajánljuk figyelmükbe a rendszer <a href="/info/">rövid ismertetőjét</a>, a használat módját részletező <a href="/sites/policy/">szabályzatot</a>, valamint a felület számos pontján megjelenő <img src="{% static "icons/information-frame.png" %}" alt="Súgó" /> ikonnal jelölt információdobozokat.</p>
-    <p>Amennyiben kérdése maradt, örömmel segítünk a <a href="/sites/support/">támogatás</a> oldalon leírt elérhetőségeinken.</p>
+    <h2>Bevezető</h2>
+    <section id="s-1">
+        <nav style="float: right; padding: 1em;">
+            <ul>
+                <li><a href="#s-1">Bevezető</a><ul>
+                    <li><a href="#s-1-1">A webes felület elérése</a></li>
+                    <li><a href="#s-1-2">Összefoglaló oldal</a></li>
+                </ul></li>
+                <li><a href="#s-2">Virtuális gépek</a><ul>
+                    <li><a href="#s-2-1">Virtuális gép indítása</a></li>
+                    <li><a href="#s-2-2">Csatlakozás a géphez</a></li>
+                    <li><a href="#s-2-3">Hálózati beállítások</a></li>
+                </ul></li>
+                <li><a href="#s-3">Sablonok</a><ul>
+                    <li><a href="#s-3-1">Sablonok létrehozása</a></li>
+                    <li><a href="#s-3-2">Sablonok megosztása</a></li>
+                </ul></li>
+                <li><a href="#s-4">Csoportok</a><ul>
+                    <li><a href="#s-4-1">Csoportok létrehozása</a></li>
+                </ul></li>
+                <li><a href="#s-5">Adattár</a><ul>
+                    <li><a href="#s-5-1">Kulcsok kezelése</a></li>
+                </ul></li>
+            </ul>
+        </nav>
+        <p>
+            Az IK Cloud a BME IK és IIT együttműködésében, a VIK támogatásával létrejött rendszer, amelyben az IIT oktatói és hallgatói szükség szerint vehetnek igénybe virtuális erőforrásokat.
+        </p>
+        <p>
+            A súgón kívül ajánljuk figyelmükbe a rendszer <a href="/info/">rövid ismertetőjét</a>, a használat feltételeit részletező <a href="/sites/policy/">szabályzatot</a>, valamint a felület számos pontján megjelenő <img src="{% static "icons/information-frame.png" %}" alt="Súgó" /> ikonnal jelölt információdobozokat.
+        </p>
+        <p>
+            Amennyiben kérdése maradt, örömmel segítünk a <a href="/sites/support/">támogatás</a> oldalon leírt elérhetőségeinken.
+        </p>
+        <div class="clear"></div>
+    </section>
+    <section id="s-1-1">
+        <h3>A webes felület elérése</h3>
+        <p>
+            A rendszer a <a href="https://cloud.ik.bme.hu/"><tt>https://cloud.ik.bme.hu/</tt></a> címen érhető el.
+            Az új látogatót egy ismertető felület fogadja, ahol a <em>Próbálja ki most!</em> vagy a <em>Bejelentkezés</em> hivatkozásra kattintva a BME EduID bejelentkezőoldalára jut.
+        </p>
+        <p>
+            Az EduID belépéshez egy számazonosítót és az ehhez tartozó jelszót kell használni.
+            Amennyiben nem rendelkezik ilyennel, az <a href="https://login.bme.hu/admin/"><em>ezen az oldalon</em></a> hivatkozásra kattintva a neptunos azonosítókkal belépve állíthatja be EduID azonosítóját.
+            A sikeres bejelentkezés után az összefoglaló oldalra jut.
+        </p>
+    </section>
+    <section id="s-1-2">
+        <h3>Összefoglaló oldal</h3>
+        <p>
+            Az összefoglaló oldalon gyors áttekintést kaphat a cloudban található erőforrásairól.
+            A <em>virtuális gépek</em> dobozban a futó és felfüggesztett virtuális gépek,
+            az <em>adattár</em> dobozban a központi adattárban található fájlok találhatóak.
+        </p>
+        <p class="teacher">
+            A megfelelő jogosultsággal rendelkező felhasználók számára a <em>sablonok</em> dobozban jelennek meg a saját sablonok,
+            a <em>saját csoportok</em> dobozban pedig azok a csoportok, melyeknek tulajdonosa.
+        </p>
+
+        <p>
+            Az egyes dobozokban megjelennek az aktív elemek, amelyekre az egeret húzva láthatóvá válnak a legfontosabb vezérlőgombok is.
+            A csíkra kattintva lenyílik egy összefoglaló az erőforrás legfontosabb adatairól.
+            A <em>további részletek</em>re kattintva az adott erőforrás oldalára juthat.
+        </p>
+    </section>
+    <h2 id="s-2">Virtuális gépek</h2>
+    <section id="s-2-1">
+        <h3>Virtuális gép indítása</h3>
+        <p>
+            Virtuális gépek indításához kattintson az <em>
+            <img src="{% static "icons/computer--plus.png" %}" alt="{% trans "Launch new machine" %}" />
+            új gép indítása</em> gombra.
+            A megjelenő ablakban válasszon ki egy megosztott sablont, és kattintson az indítás gombra.
+        </p>
+        <p>
+            A gép indítása azonnal megkezdődik, a folyamat az operációs rendszer teljes betöltéséig jellemzően egy percig tart.
+            Ezidő alatt a gép oldalán figyelheti az állapotát, amely automatikusan frissül.
+        </p>
+    </section>
+    <section id="s-2-2">
+        <h3>Csatlakozás a géphez</h3>
+        <p>
+            A virtuális gépekhez az adott operációs rendszerben szokásos módon lehet csatlakozni:
+            Windowshoz távoli asztal protokollon (RDP), Linuxhoz SSH-n.
+            Linux rendszerekhez is van lehetőség a grafikus bejelentkezésre, ehhez a NoMachine megoldását választottuk.
+        </p>
+        <p>
+            A gépek használatba vételét a tanszéki géptermekben telepített laborkliens kényelmessé teszi, itt a <em>
+            <img src="{% static "icons/plug.png" %}" alt="{% trans "Connect" %}" />
+            csatlakozás</em> gombra kattintva elindul a megfelelő kliensprogram.
+        </p>
+        <p>
+            A rendszer távoli használata esetén a megfelelő kliensprogram használata és beállítása a felhasználóra hárul.
+        </p>
+        <h4>Windowsról</h4>
+        <p>
+            Windows kliens használata esetén windowsos gépekhez való csatlakozásra a beépített <em>távoli asztal (mstsc)</em> alkalmazást,
+            parancssoros Linux géphez a <a href="http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html">PuTTY</a>-ot,
+            grafikus linuxos bejelentkezéshez pedig az <a href="http://www.nomachine.com/download.php">NX Client for Windows</a> alkalmazást ajánljuk.
+        </p>
+        <h4>Más rendszerekről</h4>
+        <p>
+            Linux vagy OSX kliens használata esetén windowsos gépekhez való csatlakozásra a <a href="http://remmina.sourceforge.net/">Remmina</a>,
+            parancssoros Linux géphez a beépített OpenSSH kliens,
+            grafikus linuxos bejelentkezéshez pedig az <a href="http://www.nomachine.com/download.php">NX Client for Linux/Mac</a> alkalmazást ajánljuk.
+        </p>
+        <p>
+            Távoli bejelentkezés esetén a gép indításakor megjelenő oldalon a <em>belépési adatok</em> dobozban, vagy a <em>virtuális gépek</em> listán a <img src="{% static "icons/plug.png" %}" alt="{% trans "Connect" %}" /> gombra kattintva megjelennek a kapcsolódáshoz szükséges adatok.
+        </p>
+    </section>
+    <section id="s-2-3">
+        <h3>Hálózati beállítások</h3>
+        <p>
+            A rendszerben futó gépek a sablontól függő hálózatba kerülnek.
+            Ez általában azt jelenti, hogy publikus IPv6-os és privát IPv4-es címet kapnak.
+            Mivel a privát címeket közvetlenül csak a belső hálózatból lehet elérni, ezért hálózati címfordítással lehetővé tesszük TCP és UDP portok elérését.
+            A tűzfalat a gép oldalán a <em>portok kezelése</em> dobozban lehet beállítani.
+        </p>
+        <p>
+            IPv6-on közvetlenül, az eredeti portszámra kapcsolódva lehet elérni az így beállított portokat, azonban csak azokat, amelyekre fordítási szabály van beállítva.
+        </p>
+        <p>
+            A gépek távoli elérését is így oldjuk meg: a gép indításakor a szükséges portokat (Windows: 3389/tcp, Linux: 22/tcp) automatikusan kiforgatjuk.
+            Ennek megfelelően a portál IPv6-ról való elérése esetén a gép saját DNS nevét és az eredeti portszámot, míg IPv4-es megtekintése esetén a tűzfal erre szolgáló címét és a kiosztott külső portot jelenítjük meg a <em>belépési adatok</em> dobozban.
+        </p>
+    </section>
+    <h2 id="s-3">Sablonok</h2>
+    <section class="teacher">
+        <p>
+            A megfelelő jogosultsággal rendelkező felhasználóknak lehetősége van sablonok létrehozására.
+            Így csoportjaival olyan előkészített rendszert oszthat meg, amelyen már minden szükséges szoftver telepítve és konfigurálva van.
+            Ezzel időt és fáradságot takaríthat meg a projektmunka vagy a laborfoglalkozás, házi feladat készítése során.
+        </p>
+    </section>
+    <section id="s-3-1" class="teacher">
+        <h3>Sablonok létrehozása</h3>
+        <p>
+            Sablon létrehozásához az összefoglaló oldalon lévő <em>sablonok</em> doboz <em>
+                <img src="{% static "icons/document--plus.png" %}" alt="{% trans "New template" %}" />
+                új sablon</em> gombjára kattintva megnyílik egy varázsló.
+        </p>
+        <p class="figure figure-small">
+            <img src="{% static "help/template-wizard-1.png" %}" alt="Az új sablon varázsló 1." />
+            <img src="{% static "help/template-wizard-2.png" %}" alt="Az új sablon varázsló 2." />
+        </p>
+        <p>
+            A varázsló első lépéseként válassza ki a kiindulási sablont, amelyet személyre kíván szabni, majd kattintson a <em>tovább</em> gombra.
+            Ezután válassszon nevet, méretet és leírást az új sablonnak.
+            Végül a <em>mesterpéldány indítása</em> gombra kattintva elindul egy példánya a kiválasztott kiindulási rendszernek, amelyen elvégezheti a beállításokat.
+        </p>
+        <p class="figure figure-small">
+            <img src="{% static "help/template-wizard-3.png" %}" alt="Az új sablon varázsló 3." />
+        </p>
+        <p>
+            Az elindult géphez a <a href="#s-2-2">többi géphez hasonló módon</a> lehet kapcsolódni.
+            Végezze el a szükséges módosításokat, majd kattintson a <em>mentés</em> gombra.
+            A rendszer leállítja a gépet, majd elmenti a lemezképet.
+        </p>
+    </section>
+    <section id="s-3-2" class="teacher">
+        <p class="figure figure-small" style="float: right">
+            <img src="{% static "help/share-wizard.png" %}" alt="Az új megosztás varázsló" />
+        </p>
+        <h3>Sablonok megosztása</h3>
+        <p>
+            A sablonokat csoportok tagjaival lehet megosztani.
+        </p>
+        <p>
+            A megosztás megszabja a sablon példányainak <a href="#TODO">lejárati idejét</a>, valamint a <a href="#TODO">futtatható példányok számát</a> is.
+        </p>
+        <p>Egy sablon megosztásához:
+        <div><ol>
+            <li>Navigáljon egy csoport részletező oldalára a <em>saját csoportok</em> dobozról.</li>
+            <li>A részletező oldalon válasszon egy sablont.</li>
+            <li>Kattintson a <em>
+                <img src="{% static "icons/user-share.png" %}" alt="{% trans "Share" %}" />
+                    megosztás</em> gombra.</li>
+            <li>Változtassa meg szükség szerint a beállításokat.</li>
+        </ol></div>
+        <div class="clear"></div>
+    </section>
+
+    <h2 id="s-4">Csoportok</h2>
+    <section class="teacher">
+        <p>
+            A csoportok hallgatók halmazai, melyek segítségével együtt lehet kezelni a sablonok megosztását és a kvóták kezelését.
+        </p>
+        <p>
+            Sablonokat hozhat létre kézzel, tetszés szerint (például önállólabor-csoportok vagy kutatási munkák számára), vagy használhatja a Neptun tanulmányi rendszerben rögzített tárgyfelvételek és oktatók alapján automatikusan alakuló csoportokat.
+        </p>
+    </section>
+    <section id="s-4-1" class="teacher">
+        <h3>Csoportok létrehozása</h3>
+        <p>
+            Új csoport létrehozásához kattintson az összefoglaló oldal <em>saját csoportok</em> dobozában az <em>
+                <img src="{% static "icons/user--plus.png" %}" alt="{% trans "Create new group" %}" />
+            új csoport létrehozása</em> gombra.
+        </p>
+        <p>
+            A megjelenő varázsló értelemszerű kitöltésével a csoport létrejön, és a részletező oldalára kerül.
+        </p>
+        <p>
+            A csoport részletező oldalán lehetősége van tagok és tulajdonosok fölvételére, tagok törlésére, valamint <a href="#s-3-2">sablonok megosztására</a>.
+        </p>
+    </section>
+
+    <h2 id="s-5">Adattár</h2>
+    <section>
+        <p>
+            Az adattár segítségével kényelmessé válik a fájlok tárolása és mozgatása.
+            Személyes adattárját számos módon elérheti.
+        </p>
+        <h4>A portálról</h4>
+        <p class="desc">
+            A saját gépén lévő fájlok feltöltésére, valamint a munka során készített fájlok letöltésére a legegyszerűbb módszer a webes felület használata.
+            Az összefoglaló oldalon megjelenő <em>adattár</em> dobozban megtalálja az összes fájlját, valamint az oldalra drag and drop módszerrel húzott fájlok automatikusan feltöltődnek, a <em>
+                <img src="{% static "icons/download-cloud.png" %}" alt="{% trans "Download" %}" />
+            letöltés</em> gombra kattintva pedig tetszőleges fájlokat vagy mappákat tölthet le – utóbbit ZIP archívumban.
+        </p>
+        <h4>A virtuális gépekről</h4>
+        <p class="desc">
+            Minden virtuális gépen automatikusan csatolásra kerül a személyes adattár. Windowsos gépeken a Z: meghajtón, Linux alatt pedig a <em>~/sshfs/</em> katalógusban érhetőek el a fájlok.
+            Ugyanez igaz a tanszéki gépteremben telepített Ubuntu rendszerre.
+        </p>
+        <h4>SFTP-n</h4>
+        <p class="desc">
+            Az adattár távolról is elérhető SFTP protokollon.
+            Ezt számos kliensprogram támogatja, ilyen a
+            <a href="http://winscp.net/eng/index.php">WinSCP</a> és a
+            <a href="http://code.google.com/p/win-sshfs/">win-sshfs</a>.
+            Az SFTP kapcsolódáshoz privát kulcs használata szükséges.
+        </p>
+    </section>
+    <section id="s-5-1">
+        <h3>Kulcsok kezelése</h3>
+        <p>
+            A SFTP protokollon való eléréshez publikus kulcsát regisztrálni kell a portálon.
+            Ehhez kattintson az <em>adattár</em> doboz <em>kulcsok kezelése</em> gombjára.
+            Az így megnyíló kezelőfelületen a <em>nyilvános kulcs hozzáadása</em> pontot választva másolja be a publikus kulcsot OpenSSH formátumban, majd kattintson a <em>mentés</em> gombra. (Az OpenSSH kulcsformátum utolsó része egy megjegyzés, amely alapján a kulcsot a későbbiekben azonosítani tudja.)
+        </p>
+        <p>
+            Amennyiben privát kulcsa kompromittálódott, vagy nem kívánja a továbbiakban használni, a <em>kulcsok kezelése</em> gombra kattintva megjelenő listában törölheti az érvényes kulcsok közül.
+        </p>
+        <p>
+            Amennyiben egy virtuális gépe került idegen kézbe, az adattárhoz való hozzáférése is kitudódhatott.
+            Ebben az esetben használhatja a <em>kulcsok újragenerálása</em> lehetőséget, amely a virtuális gépeken korábban használt kulcsot érvényteleníti.
+            A már elindított virtuális gépek ezután nem érhetik el az adattárat.
+        </p>
+    </section>
+
+
+
+<!--
+    <section id="s-">
+        <h3></h3>
+        <p>
+        </p>
+    </section>
+-->
+
 </div>
 {% endblock %}

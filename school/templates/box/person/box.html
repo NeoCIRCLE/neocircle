@@ -37,7 +37,7 @@
             <div class="name">{% trans "Add user" %}</div>
             <div id="new-member-form">
                 <input type="text" placeholder="{% trans "User NEPTUN code" %}" />
-                <input type="submit" value="{% trans "Add user" %}" data-id="{{group.id}}"/>
+                <input type="submit" value="{% trans "Add user" %}" data-url="{% url school.views.group_ajax_add_new_member gid=group.id %}"/>
             </div>
             <div class="clear"></div>
         </div>
