@@ -1,7 +1,7 @@
 var toggleDetails;
 $(function() {
     toggleDetails = cloud.throttle(function() {
-        if($(this).parent('.entry').hasClass('opened')) {
+        if ($(this).parent('.entry').hasClass('opened')) {
             $(this).parent('.entry').removeClass('opened');
             $(this).next('.details').slideUp(700);
         } else {
@@ -9,7 +9,7 @@ $(function() {
             $(this).next('.details').slideDown(700);
         }
     })
-    $('a').click(function(e){
+    $('a').click(function(e) {
         e.stopPropagation();
     });
     $('.delete-template').click(function(e) {
@@ -32,19 +32,19 @@ $(function() {
             });
         });
     });
-    $('#reset-key').click(function(e){
-        vm_confirm_popup(gettext('Are you sure about reseting store credentials?<br /> You will lose your access to your store account on your existing virtual machines!'), gettext('Reset'), function(){
+    $('#reset-key').click(function(e) {
+        vm_confirm_popup(gettext('Are you sure about reseting store credentials?<br /> You will lose your access to your store account on your existing virtual machines!'), gettext('Reset'), function() {
             $.ajax({
                 type: 'POST',
                 url: '/ajax/key/reset/',
-                success: function(){
+                success: function() {
                     window.location.reload();
                 }
             })
         });
     });
     $('.entry .summary').click(toggleDetails);
-    if(window.navigator.userAgent.indexOf('cloud-gui') < 0) {
+    if (window.navigator.userAgent.indexOf('cloud-gui') < 0) {
         $('.connect-vm').click(function(e) {
             e.preventDefault();
             e.stopPropagation();
@@ -59,7 +59,17 @@ $(function() {
         e.preventDefault();
         e.stopPropagation();
         var id = $(this).data('id');
+        var handler = arguments.callee;
         var oldName = $(this).data('name');
+        var content = $('#vm-' + id + '-name').html();
+        var self=this;
+        $(this).unbind('click').click(function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            $(this).unbind('click').click(handler);
+            $('#vm-' + id + '-name-details').show();
+            $('#vm-' + id + '-name').html(content);
+        })
         $('#vm-' + id + '-name-details').hide();
         $('#vm-' + id + '-name').html('<input type="text" value="' + oldName + '" />\
 <input type="submit" value="' + gettext('Rename') + '" />');
@@ -79,6 +89,7 @@ $(function() {
                 success: function(data) {
                     $('#vm-' + id + '-name-details').removeAttr('style');
                     $('#vm-' + id + '-name').text(data.name);
+                    $(self).click(handler);
                 }
             });
         })
@@ -129,6 +140,19 @@ $(function() {
         })
         $('#modal').show();
     });
+    $('.edit-template').click(function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        var id=$(this).data('id');
+        $.ajax({
+            type: 'GET',
+            url: '/ajax/templateEditWizard/'+id+'/',
+            success: function(data){
+                $('#modal').show();
+                $('#modal-container').html(data);
+            }
+        });
+    });
     $('#shadow').click(function() {
         $('#modal').hide();
         $('#modal-container').html('');
@@ -141,7 +165,7 @@ $(function() {
         })
         $('#modal').show();
     });
-    $('.template-unshare').click(function(e){
+    $('.template-unshare').click(function(e) {
         e.stopPropagation();
     });
     $('#old-upload').click(function(e) {
@@ -154,7 +178,7 @@ $(function() {
         $(this).css('backgroundColor', function(w) {
             return 'hsla(' + (120 - parseFloat(w) / 100 * 120).toFixed(0) + ', 100%, 50%, 0.2)';
         }($(this)[0].style.width));
-        if(parseInt($(this).css('width')) > 0) $(this).css('borderRight', function(w) {
+        if (parseInt($(this).css('width')) > 0) $(this).css('borderRight', function(w) {
             return '1px solid hsla(' + (120 - parseFloat(w) / 100 * 120).toFixed(0) + ', 100%, 30%, 0.4)';
         }($(this)[0].style.width));
     });
@@ -183,14 +207,41 @@ $(function() {
         $('#new-group-members').change(updateSummary);
     });
     $('.hidden-password').click(function() {
-        if($(this).attr('type') == 'password'){
+        if ($(this).attr('type') == 'password') {
             $(this).attr('type', 'text');
             $(this).addClass('shown');
-        } else {
+        } else if (this.selectionStart - this.selectionEnd == 0) {
+
             $(this).attr('type', 'password');
             $(this).removeClass('shown');
         }
     });
+    $('.shares li').click(function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        e = $(this);
+        if (!e.hasClass('description')) {
+            if (e.next().is(':hidden')) {
+                e.next().slideDown(700);
+            } else {
+                e.next().slideUp(700);
+            }
+        } else {
+            e.slideUp(700);
+        }
+    });
+    $('.shares .edit').click(function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $.ajax({
+            type: 'GET',
+            url: '/ajax/shareEdit/' + $(this).data('id') + '/',
+            success: function(data) {
+                $('#modal').show();
+                $('#modal-container').html(data);
+            }
+        })
+    })
     $('.selected-summary').next().show();
     /**
      * Connect button new window
@@ -200,7 +251,7 @@ $(function() {
         $.get('/vm/credentials/' + id, function(data) {
             $('#modal-container').html(data);
             $('#modal-container .hidden-password').click(function() {
-                if($(this).attr('type') == 'password'){
+                if ($(this).attr('type') == 'password') {
                     $(this).attr('type', 'text');
                     $(this).addClass('shown');
                 } else {
@@ -286,7 +337,7 @@ $(function() {
             type: 'POST',
             url: '/vm/' + state + '/' + id + '/',
             success: function(data, b, c) {
-                if(state == "resume") {
+                if (state == "resume") {
                     window.location.href = '/vm/show/' + id + "/";
                 } else {
                     window.location.reload();
@@ -345,9 +396,9 @@ $(function() {
     function hide_group(id) {
         var hidden_groups = JSON.parse(window.localStorage.getItem('hidden_groups')) || {};
         var hidden_groups_for_user = hidden_groups[current_user] || [];
-        for(var i in hidden_groups_for_user) {
+        for (var i in hidden_groups_for_user) {
             var hide = hidden_groups_for_user[i];
-            if(hide == id) return false;
+            if (hide == id) return false;
         }
         hidden_groups_for_user.push(id);
         hidden_groups[current_user] = hidden_groups_for_user;
@@ -358,7 +409,7 @@ $(function() {
     function hide_groups() {
         var hidden_groups = JSON.parse(window.localStorage.getItem('hidden_groups')) || {};
         var hidden_groups_for_user = hidden_groups[current_user] || [];
-        for(var i in hidden_groups_for_user) {
+        for (var i in hidden_groups_for_user) {
             var hide = hidden_groups_for_user[i];
             $('#group-' + hide).hide();
         }
@@ -373,9 +424,57 @@ $(function() {
 
     function hidden_group_count() {
         var hidden_groups = JSON.parse(window.localStorage.getItem('hidden_groups')) || {};
-        return(hidden_groups[current_user] || []).length;
+        return (hidden_groups[current_user] || []).length;
     }
-    if(hidden_group_count() == 0) {
+
+    function toggle_box(id) {
+        var boxes = JSON.parse(window.localStorage.getItem('hidden_boxes')) || {};
+        var user_boxes = boxes[current_user] || [];
+        for (var i in user_boxes) {
+            var box = user_boxes[i];
+            if (box == id) {
+                user_boxes.splice(i, 1);
+                boxes[current_user] = user_boxes;
+                window.localStorage.setItem('hidden_boxes', JSON.stringify(boxes));
+                $('#toggle-box-' + id).attr('src', '/static/icons/eye-half.png');
+                $('#toggle-box-' + id).parent().parent().parent().next().slideDown(700);
+                return;
+            }
+        }
+        user_boxes.push(id);
+        boxes[current_user] = user_boxes;
+        $('#toggle-box-' + id).attr('src', '/static/icons/eye.png');
+        $('#toggle-box-' + id).parent().parent().parent().next().slideUp(700);
+        console.log($('#toggle-box-' + id).parent().parent().parent().next()[0])
+        window.localStorage.setItem('hidden_boxes', JSON.stringify(boxes));
+    }
+
+    function box_hidden(id) {
+        var boxes = JSON.parse(window.localStorage.getItem('hidden_boxes')) || {};
+        var user_boxes = boxes[current_user] || [];
+        for (var i in user_boxes) {
+            var box = user_boxes[i];
+            if (box == id) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    $('.toggle-box').each(function() {
+        var id = $(this).data('id');
+        $(this).click(function() {
+            toggle_box(id);
+        });
+        if (box_hidden(id)) {
+            $(this).attr('src', '/static/icons/eye.png');
+            $(this).parent().parent().parent().next().hide();
+        } else {
+            $(this).attr('src', '/static/icons/eye-half.png');
+        }
+    })
+
+    if (hidden_group_count() == 0) {
         $('#show-hidden-groups').hide();
     }
 
@@ -383,7 +482,7 @@ $(function() {
         e.preventDefault();
         e.stopPropagation();
         hide_group($(this).data('id'));
-        if($('#show-hidden-groups').is(':hidden')) {
+        if ($('#show-hidden-groups').is(':hidden')) {
             $('#show-hidden-groups').slideDown(700);
         }
         return false;
@@ -394,7 +493,7 @@ $(function() {
         show_hidden_groups();
         $('#show-hidden-groups').slideUp(700);
         $('#groups > li').each(function() {
-            if($(this).is(':hidden')) {
+            if ($(this).is(':hidden')) {
                 $(this).slideDown(700);
             }
         })
@@ -429,46 +528,38 @@ $(function() {
     });
     $('#new-owner-form input').keyup(function() {
         var timer;
-        return function(e){
-            var val=$(this).val().split(' ')[0];
+        return function(e) {
+            var val = $(this).val().split(' ')[0];
             clearTimeout(timer);
-            timer=setTimeout(function(){
-                if(val.length<1) return;
+            timer = setTimeout(function() {
+                if (val.length < 1) return;
                 $.ajax({
                     type: 'POST',
-                    data: 'q='+val,
+                    data: 'q=' + val,
                     url: '/ajax/group/autocomplete/',
                     dataType: 'json',
-                    success: function(data){
+                    success: function(data) {
                         console.log(data);
-                        $('#new-owner-autocomplete')[0].innerHTML='<ul>';
-                        var el=$('#new-owner-autocomplete')[0];
-                        for(var i in data){
-                            var d=data[i];
-                            el.innerHTML+='<li>'
-                                +d.name+': '
-                                +d.neptun
-                                +' <input type="button" value="'+gettext('Add owner')+'" data-neptun="'+d.neptun+'" />'
-                                +'<div class="clear"></div></li>';
+                        $('#new-owner-autocomplete')[0].innerHTML = '<ul>';
+                        var el = $('#new-owner-autocomplete')[0];
+                        for (var i in data) {
+                            var d = data[i];
+                            el.innerHTML += '<li>' + d.name + ': ' + d.neptun + ' <input type="button" value="' + gettext('Add owner') + '" data-neptun="' + d.neptun + '" />' + '<div class="clear"></div></li>';
                         }
-                        if(data.length == 0){
-                            el.innerHTML+='<li>'
-                                +gettext('Unknown')+': '
-                                +val
-                                +' <input type="button" value="'+gettext('Add owner')+'" data-neptun="'+val+'" />'
-                                +'<div class="clear"></div></li>';
+                        if (data.length == 0) {
+                            el.innerHTML += '<li>' + gettext('Unknown') + ': ' + val + ' <input type="button" value="' + gettext('Add owner') + '" data-neptun="' + val + '" />' + '<div class="clear"></div></li>';
                         }
-                        el.innerHTML+='</ul>';
-                        $(el).find('input').each(function(){
-                            var self=this;
-                            $(this).click(function(e){
+                        el.innerHTML += '</ul>';
+                        $(el).find('input').each(function() {
+                            var self = this;
+                            $(this).click(function(e) {
                                 e.stopPropagation();
                                 $.ajax({
                                     type: 'POST',
-                                    data: 'neptun='+$(self).data('neptun'),
-                                    url: '/ajax/group/'+$('#new-owner').data('gid')+'/addOwner/',
+                                    data: 'neptun=' + $(self).data('neptun'),
+                                    url: '/ajax/group/' + $('#new-owner').data('gid') + '/addOwner/',
                                     dataType: 'json',
-                                    success: function(data){
+                                    success: function(data) {
                                         window.location.reload();
                                     }
                                 })
@@ -476,7 +567,7 @@ $(function() {
                         })
                     }
                 });
-            },1000);
+            }, 1000);
             e.stopPropagation();
         }
     }());

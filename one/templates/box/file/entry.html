@@ -1,5 +1,6 @@
 {% extends "box/base/entry.html" %}
 {% load i18n %}
+{% load staticfiles %}
 {% get_current_language as LANGUAGE_CODE %}
 
 {% block summary %}
@@ -8,13 +9,13 @@
     <div class="info" data-bind="text: size"></div>
     <div class="actions">
         <a href="#" data-bind="click: $parent.rename, clickBubble: false">
-            <img src="/static/icons/pencil.png" alt="{% trans "rename" %}" />
+            <img src="{% static "icons/pencil.png" %}" alt="{% trans "rename" %}" />
         </a>
         <a href="#" data-bind="click: $parent.delete, clickBubble: false">
-            <img src="/static/icons/minus-circle.png" alt="{% trans "remove" %}" />
+            <img src="{% static "icons/minus-circle.png" %}" alt="{% trans "remove" %}" />
         </a>
         <a href="#" data-bind="click: $parent.download, clickBubble: false">
-            <img src="/static/icons/download-cloud.png" alt="{% trans "download" %}" />
+            <img src="{% static "icons/download-cloud.png" %}" alt="{% trans "download" %}" />
         </a>
     </div>
     <div class="clear"></div>

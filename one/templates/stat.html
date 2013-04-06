@@ -1,0 +1,70 @@
+{% load l10n %}
+<html>
+  <head>
+    <!--Load the AJAX API-->
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+
+      // Load the Visualization API and the piechart package.
+      google.load('visualization', '1.0', {'packages':['corechart']});
+
+      // Set a callback to run when the Google Visualization API is loaded.
+      google.setOnLoadCallback(drawChart);
+
+      // Callback that creates and populates a data table,
+      // instantiates the pie chart, passes in the data and
+      // draws it.
+      function drawChart() {
+
+        // Create the data table.
+        var data_cpu = new google.visualization.DataTable();
+        data_cpu.addColumn('string', 'Topping');
+        data_cpu.addColumn('number', 'Slices');
+        data_cpu.addRows([
+          ['Free CPU', {{STAT.CPU.FREE_CPU}}],
+          ['Allocated CPU', {{STAT.CPU.ALLOC_CPU}}],
+          ['Used CPU', {{STAT.CPU.USED_CPU}}],
+        ]);
+
+        // Set chart options
+        var cpu_options = {'title':'Cloud CPU usage percent (100/CPU)',
+                       'width':400,
+                       'height':300,
+                       slices: {0: {color: 'blue'}, 1:{color: 'orange'},
+                           2:{color: 'red'}}
+                        };
+
+        var data_mem = new google.visualization.DataTable();
+        data_mem.addColumn('string', 'Topping');
+        data_mem.addColumn('number', 'Slices');
+        data_mem.addRows([
+          ['Free Memory', {{STAT.MEM.FREE_MEM|unlocalize}}],
+          ['Allocated Memory', {{STAT.MEM.ALLOC_MEM|unlocalize}}],
+          ['Used Memory', {{STAT.MEM.USED_MEM|unlocalize}}],
+        ]);
+
+        // Set chart options
+        var mem_options = {'title':'Cloud Memory usage in {{STAT.DIMENSION}}',
+                       'width':400,
+                       'height':300,
+                       slices: {0: {color: 'blue'}, 1:{color: 'orange'},
+                           2:{color: 'red'}}
+        };
+        // Instantiate and draw our chart, passing in some options.
+        var chart = new
+            google.visualization.PieChart(document.getElementById('chart_cpu_div'));
+        chart.draw(data_cpu, cpu_options);
+        var chart = new
+            google.visualization.PieChart(document.getElementById('chart_mem_div'));
+        chart.draw(data_mem, mem_options);
+      }
+    </script>
+  </head>
+
+  <body>
+      <!--Div that will hold the pie chart-->
+    <div>Running VMs: {{STAT.VMS}}</div>
+    <div id="chart_cpu_div"></div>
+    <div id="chart_mem_div"></div>
+  </body>
+</html>

@@ -28,17 +28,12 @@ var cloud = (function(cloud) {
             return cloud.convert(self.quota.rawSoft(), 1);
         });
         self.quota.usedBar = ko.computed(function() {
-            return(self.quota.rawUsed() / self.quota.rawHard() * 100).toFixed(0) + '%';
+            return (self.quota.rawUsed() / self.quota.rawHard() * 100).toFixed(0) + '%';
         }, self);
         self.quota.softPos = ko.computed(function() {
-            return(self.quota.rawSoft() / self.quota.rawHard() * 100).toFixed(0) + '%';
+            return (self.quota.rawSoft() / self.quota.rawHard() * 100).toFixed(0) + '%';
         }, self);
         self.sortBy = ko.observable('name');
-
-        $('#current-location select').on('change', function() {
-            self.sortBy($('#current-location select').val());
-            sortFiles();
-        })
 
         /**
          * Loads the parent folder
@@ -48,31 +43,31 @@ var cloud = (function(cloud) {
             loadFolder(s.substr(0, s.substr(0, s.length - 1).lastIndexOf('/') + 1));
         };
 
-        var sortFiles = (function() {
+        self.sortFiles = (function() {
             self.files.sort({
                 name: function(a, b) {
-                    if(a.type === b.type) {
+                    if (a.type === b.type) {
                         return a.originalName.localeCompare(b.originalName);
                     }
-                    if(a.type === gettext('file')) {
+                    if (a.type === gettext('file')) {
                         return 1;
                     }
                     return -1;
                 },
                 date: function(a, b) {
-                    if(a.type === b.type) {
+                    if (a.type === b.type) {
                         return new Date(b.mTime).getTime() - new Date(a.mTime).getTime();
                     }
-                    if(a.type === gettext('file')) {
+                    if (a.type === gettext('file')) {
                         return 1;
                     }
                     return -1;
                 },
                 size: function(a, b) {
-                    if(a.type === b.type) {
+                    if (a.type === b.type) {
                         return b.originalSize - a.originalSize;
                     }
-                    if(a.type === gettext('file')) {
+                    if (a.type === gettext('file')) {
                         return 1;
                     }
                     return -1;
@@ -91,7 +86,7 @@ var cloud = (function(cloud) {
                 url: '/ajax/store/list',
                 dataType: 'json',
                 success: function(data) {
-                    if(!fast) {
+                    if (!fast) {
                         $('.file-list .real').css({
                             left: 0,
                             position: 'relative'
@@ -113,7 +108,27 @@ var cloud = (function(cloud) {
             })
         });
 
-        self.loadTopList = cloud.throttle(function() {
+        var showToplist = ko.observable(false);
+        self.toggleToplist = cloud.throttle(function() {
+            if (!showToplist()) {
+                showToplist(true);
+                loadToplist();
+            } else {
+                showToplist(false);
+                self.currentPath('/');
+                loadFolder('/');
+            }
+        });
+
+        self.getToplistText = ko.computed(function() {
+            if (!showToplist()) {
+                return gettext('Toplist');
+            } else {
+                return gettext('Back to the root folder');
+            }
+        })
+
+        function loadToplist() {
             self.currentPath('/');
             $.ajax({
                 type: 'POST',
@@ -135,8 +150,8 @@ var cloud = (function(cloud) {
                         }, 500);
                     });
                 }
-            })
-        });
+            });
+        }
 
         /**
          * After loadFolder completes, this function updates the UI
@@ -147,10 +162,10 @@ var cloud = (function(cloud) {
             var added = 0;
             self.notInRoot(self.currentPath().lastIndexOf('/') !== 0);
             self.files([]);
-            for(var i in data) {
+            for (var i in data) {
                 addFile(data[i]);
             }
-            sortFiles();
+            self.sortFiles();
         }
 
         /**
@@ -159,7 +174,7 @@ var cloud = (function(cloud) {
 
         function addFile(d) {
             var viewData;
-            if(d.TYPE === 'D') {
+            if (d.TYPE === 'D') {
                 viewData = {
                     originalName: d.NAME,
                     originalSize: 0,
@@ -185,8 +200,8 @@ var cloud = (function(cloud) {
                     ppt: /\.pptx?/,
                     music: /\.(wav|mp3)$/
                 };
-                for(var i in ext) {
-                    if(d.NAME.match(ext[i])) {
+                for (var i in ext) {
+                    if (d.NAME.match(ext[i])) {
                         type = i;
                         break;
                     }
@@ -194,7 +209,7 @@ var cloud = (function(cloud) {
                 var extension;
                 try {
                     extension = d.NAME.match(/\.\w+$/)[0].substr(1);
-                } catch(ex) {
+                } catch (ex) {
                     extension = 'N/A';
                 }
                 viewData = {
@@ -220,7 +235,7 @@ var cloud = (function(cloud) {
             //firefox sucks :S
             try {
                 $(e).hide().slideDown(500);
-            } catch(ex) {
+            } catch (ex) {
 
             }
         }
@@ -230,7 +245,7 @@ var cloud = (function(cloud) {
                 $(e).slideUp(500, function() {
                     e.parentNode.removeChild(e);
                 });
-            } catch(ex) {
+            } catch (ex) {
                 e.parentNode.removeChild(e);
             }
         }
@@ -241,7 +256,7 @@ var cloud = (function(cloud) {
         self.download = function(item, ev) {
             ev.stopPropagation();
             ev.preventDefault();
-            if(window.navigator.userAgent.indexOf('cloud-gui') > -1) {
+            if (window.navigator.userAgent.indexOf('cloud-gui') > -1) {
                 window.location.href = 'cloudfile:' + self.currentPath() + item.originalName;
                 return;
             }
@@ -253,7 +268,7 @@ var cloud = (function(cloud) {
                 success: function(data) {
                     window.location.href = data.url;
                 }
-            })
+            });
         }
 
         /**
@@ -264,7 +279,7 @@ var cloud = (function(cloud) {
             ev.preventDefault();
             $('#modal').show();
             s = "";
-            if(item.type == gettext('file')) {
+            if (item.type == gettext('file')) {
                 s = gettext("You are removing the file <strong>%s</strong>.");
             } else {
                 s = gettext("You are removing the folder <strong>%s</strong> (and its content).");
@@ -303,8 +318,7 @@ var cloud = (function(cloud) {
                     g.stopPropagation();
                     self.rename(item, g);
                 });
-            })
-            //$(e.target).parent().parent().parent().unbind('click');
+            });
             $(e.target).parent().parent().parent().find('.name').html('<input type="text" value="' + item.originalName + '" />\
 <input type="submit" value="' + gettext('Rename') + '" />');
             $(e.target).parent().parent().parent().find('.name input').click(function(f) {
@@ -372,9 +386,10 @@ var cloud = (function(cloud) {
         /**
          * Uploads the specified file(s)
          */
-        var readfiles = cloud.delayUntil(function(file) {
+        var readfiles = cloud.delayUntil(function(file, next) {
+            console.log('read', file, next)
             //1 GB file limit
-            if(file.size > 1024 * 1024 * 1024) {
+            if (file.size > 1024 * 1024 * 1024) {
                 $('#upload-zone').hide();
                 $('#upload-error').show();
                 $('#upload-error-size').show();
@@ -387,26 +402,30 @@ var cloud = (function(cloud) {
             }
             var formData = tests.formdata ? new FormData() : null;
             formData.append('data', file);
-            // now post a new XHR request
-            if(tests.formdata) {
+            if (tests.formdata) {
                 var xhr = new XMLHttpRequest();
                 var start = new Date().getTime();
                 xhr.open('POST', self.uploadURL());
                 xhr.onload = xhr.onerror = function() {
-                    $('.file-upload').removeClass('opened');
-                    $('.file-upload .details').slideUp(700);
-                    $('#upload-zone').show();
-                    $('#upload-progress-text').hide();
                     self.uploadProgress('0%');
                     self.uploadURL('/');
-                    loadFolder(self.currentPath());
+                    if (next) {
+                        console.log('complete, next')
+                        next();
+                    } else {
+                        $('.file-upload').removeClass('opened');
+                        $('.file-upload .details').slideUp(700);
+                        $('#upload-zone').show();
+                        $('#upload-progress-text').hide();
+                        loadFolder(self.currentPath());
+                    }
                 }
-                if(tests.progress) {
+                if (tests.progress) {
                     $('#upload-zone').hide();
                     $('#upload-progress-text').show();
                     var originalUsedQuota = self.quota.rawUsed();
                     xhr.upload.onprogress = function(event) {
-                        if(event.lengthComputable) {
+                        if (event.lengthComputable) {
                             self.quota.rawUsed(originalUsedQuota + parseInt(event.loaded / 1024));
                             var complete = (event.loaded / event.total * 100 | 0);
                             //progress.value = progress.innerHTML = complete;
@@ -414,16 +433,16 @@ var cloud = (function(cloud) {
                             var suffix = 'B KB MB GB'.split(' ');
                             var l = event.loaded;
                             var t = event.total;
-                            for(var i = 0; l > 1024; i++) {
+                            for (var i = 0; l > 1024; i++) {
                                 l /= 1024;
                             }
                             l = l.toFixed(1) + ' ' + suffix[i];
-                            for(var i = 0; t > 1024; i++) {
+                            for (var i = 0; t > 1024; i++) {
                                 t /= 1024;
                             }
                             t = t.toFixed(1) + ' ' + suffix[i];
                             var diff = new Date().getTime() - start;
-                            if(complete < 100) {
+                            if (complete < 100) {
                                 $('#upload-progress-text').html(gettext('Upload') + ': ' + cloud.convert(event.loaded / diff * 1000) + '/s (' + (event.loaded / event.total * 100).toFixed(2) + '%)');
                             } else {
                                 $('#upload-progress-text').html(gettext('Upload') + ': ' + gettext('done, processing...'));
@@ -443,11 +462,30 @@ var cloud = (function(cloud) {
         document.addEventListener('drop', function(e) {
             e.stopPropagation();
             e.preventDefault();
-            readfiles(e.dataTransfer.files[0]);
+            var len = e.dataTransfer.files.length;
+            var files = e.dataTransfer.files;
+            console.log(files);
+            console.log(e.dataTransfer.files);
+            var i = 1;
+            readfiles(e.dataTransfer.files[0], function() {
+                console.log('next', i);
+                next = arguments.callee;
+                return function() {
+                    console.log('readnext', i, len);
+                    if (i >= len - 2) {
+                        console.log('end', i, len);
+                        self.getUploadURL();
+                        readfiles(files[i++], null);
+                        return;
+                    }
+                    self.getUploadURL();
+                    readfiles(files[i++], next());
+                }
+            }());
             return false;
         });
         document.addEventListener('dragover', function(e) {
-            if(!uploadURLRequestInProgress && self.uploadURL() == '/') {
+            if (!uploadURLRequestInProgress && self.uploadURL() == '/') {
                 $('.file-upload .summary').click();
             }
             e.stopPropagation();
@@ -483,6 +521,10 @@ var cloud = (function(cloud) {
             $('.key').slideDown(700);
             $('#keys').slideUp(700);
         });
+        $('#current-location select').on('change', function() {
+            model.sortBy($('#current-location select').val());
+            model.sortFiles();
+        })
     });
     document.addEventListener('dragenter', function(e) {
         e.stopPropagation();

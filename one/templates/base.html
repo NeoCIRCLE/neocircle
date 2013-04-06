@@ -1,23 +1,29 @@
 <!DOCTYPE html>
 {% load i18n %}
+{% load staticfiles %}
 {% get_current_language as lang %}
 <html lang="{{lang}}">
 <head>
     <title>{% block title %}IK Cloud{% endblock %}</title>
-    <link href="https://fonts.googleapis.com/css?family=Titillium+Web&amp;subset=latin,latin-ext" rel="stylesheet" type="text/css">
-    <link rel="icon" type="image/png" href="/static/favicon.png" />
-    <link rel="stylesheet/less" href="/static/style/style.less" />
+    <link href="https://fonts.googleapis.com/css?family=Titillium+Web&amp;subset=latin,latin-ext" rel="stylesheet" type="text/css" />
+    <link rel="icon" type="image/png" href="{% static "favicon.png" %}" />
+    {% if DEBUG %}<link rel="stylesheet/less" href="{% static "style/style.less" %}" />{% else %}
+    <link href="{% static "style/style.css" %}" rel="stylesheet" type="text/css" />{% endif %}
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <script src="/static/script/jquery.min.js"></script>
+    <script src="{% static "script/jquery.min.js" %}"></script>
     <script type="text/javascript" src="{% url django.views.i18n.javascript_catalog %}"></script>
     <script type="text/javascript">
-        window.localStorage.removeItem('https://cloud.ik.bme.hu/static/style/style.less:timestamp');
+        {% if DEBUG %}window.localStorage.removeItem('https://cloud.ik.bme.hu/static/style/style.less:timestamp');{% endif %}
         var current_user={{user.id}};
     </script>
-    <script src="/static/script/less.min.js"></script>
-    <script src="/static/script/knockout.min.js"></script>
-    <script type="text/javascript" src="/static/script/util.js"></script>
-    <script type="text/javascript" src="/static/script/cloud.js"></script>
+    {% if DEBUG %}<script src="{% static "script/less.min.js" %}"></script>{% endif %}
+    <script src="{% static "script/knockout.min.js" %}"></script>
+    {% if DEBUG %}<script type="text/javascript" src="{% static "script/util.js" %}"></script>
+    {% else %}<script type="text/javascript" src="{% static "script/util.min.js" %}"></script>
+    {% endif %}
+    {% if DEBUG %}<script type="text/javascript" src="{% static "script/cloud.js" %}"></script>
+    {% else %}<script type="text/javascript" src="{% static "script/cloud.min.js" %}"></script>
+    {% endif %}
     {{ form.media }}
     {% block js %}{% endblock %}
 </head>
@@ -26,25 +32,27 @@
         {% block login %}
         <div id="loginblock"><p>
             {% if user.is_authenticated %}
-            Bejelentkezve: {{ user.username }}.
-            <a href="/logout/">Kijelentkezés</a>.
+            {% trans "Logged in:" %} {{ user.username }}.
+            <a href="{% url logout %}">{% trans "Logout" %}</a>.
             {% if user.is_staff %}
-            <a href="/admin/">Admin</a>.
+            <a href="{% url admin:index %}">{% trans "Admin" %}</a>.
             {% endif %}
             {% else %}
-            <a href="/login/">Bejelentkezés</a>.
+            <a href="{% url login %}">{% trans "Login" %}</a>.
             {% endif %}
+            {% if user.is_authenticated %}
             {% if lang == 'hu' %}
-            <a href="/language/en/">In English</a>.
+            <a href="{% url school.views.language "en" %}">In English</a>.
             {% else %}
-            <a href="/language/hu/">Magyarul</a>.
+            <a href="{% url school.views.language "hu" %}">Magyarul</a>.
+            {% endif %}
             {% endif %}
             </p>
         </div>
         {% endblock %}
         {% block header %}
         {% block header_title %}
-        <h1><a href="/">IK Cloud</a></h1>
+        <h1><a href="{% url one.views.index %}">IK Cloud</a></h1>
         {% endblock %}
         {% endblock %}
     </div>
@@ -61,11 +69,27 @@
         {% block content %}{% endblock %}
         <div class="clear"></div>
     </div>
+    <footer>
+        <a href="/sites/legal/">{% trans "Legal notice" %}</a> |
+        <a href="/sites/policy/">{% trans "Policy" %}</a> |
+        <a href="/sites/help/">{% trans "Help" %}</a> |
+        <a href="/sites/support/">{% trans "Support" %}</a>
+    </footer>
     <div id="modal" style="display: none">
         <div id="shadow"></div>
         <div id="modal-container">
 
         </div>
     </div>
+    <script type="text/javascript">
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-39125666-1']);
+        _gaq.push(['_trackPageview']);
+        (function() {
+         var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+         ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+         var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+         })();
+    </script>
 </body>
 </html>

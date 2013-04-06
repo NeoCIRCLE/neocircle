@@ -23,16 +23,29 @@ class DetailsInline(contrib.admin.StackedInline):
     can_delete = False
 
 class MyUserAdmin(contrib.auth.admin.UserAdmin):
-    list_display = ('username', 'full_name', 'email', 'date_joined', 'instance_count')
+    list_display = ('username', 'full_name', 'email', 'date_joined', 'instance_count', 'course_groups')
+    list_filter = ('is_superuser', 'is_active', 'groups', 'person__course_groups', )
+
     try:
         inlines = inlines + (PersonInline, SshKeyInline, DetailsInline)
     except NameError:
         inlines = (PersonInline, SshKeyInline, DetailsInline)
+
     def instance_count(self, obj):
-        return obj.instance_set.count()
+        return _("%(sum)d (%(active)d active)") % { 'sum': obj.instance_set.count(),
+                'active' :obj.instance_set.filter(state='ACTIVE').count(), }
+
+    def course_groups(self, obj):
+        try:
+            return ", ".join(obj.person_set.all()[0].course_groups.all())
+        except:
+            return None
+
     def full_name(self, obj):
         return u"%s %s" % (obj.last_name, obj.first_name)
     full_name.admin_order_field = 'last_name'
+
+    ordering = ["-date_joined"]
 
 
 

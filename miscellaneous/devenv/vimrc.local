@@ -7,4 +7,6 @@ set et
 set sw=4
 set ai
 set smarttab
+set textwidth=76
+set colorcolumn=76
 

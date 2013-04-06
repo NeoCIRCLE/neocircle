@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% load staticfiles %}
 
 {% block js %}
 <script type="text/javascript">
@@ -8,14 +9,28 @@
         $.ajax({
             type: 'GET',
             dataType: 'json',
-            url: '/ajax/vm/status/{{ id }}',
+            url: '{% url one.views.vm_ajax_instance_status id %}',
             success: function(data){
-                if( !data.booting  && data.state == 'ACTIVE'){
+                if (!data.booting  && data.state == 'ACTIVE'){
                     window.location.reload();
                 }
             }
-        })
-    },2000);
+        });
+    }, 5000);
+    {% endif %}
+    {% if i.template.state == 'SAVING' %}
+    var savingTimer=setInterval(function(){
+        $.ajax({
+            type: 'GET',
+            dataType: 'json',
+            url: '{% url one.views.vm_ajax_instance_status id %}',
+            success: function(data){
+                if(data.template.state == 'READY'){
+                    window.location.href='{% url one.views.home %}';
+                }
+            }
+        });
+    }, 10000);
     {% endif %}
 </script>
 {% endblock %}
@@ -61,13 +76,18 @@
         <div class="content">
             {% if state == "PENDING" or state == "ACTIVE" and booting %}
             <p style="font-size:25px; line-height:2em;text-align:center;">
-                <img src="/static/image/load.gif" />
+            <img src="{% static "image/load.gif" %}" />
                 {% trans "Starting..." %}
+            </p>
+            {% elif i.template.state == "SAVING" %}
+            <p style="font-size:25px; line-height:2em;text-align:center;">
+            <img src="{% static "image/load.gif" %}" />
+                {% trans "Saving..." %}
             </p>
             {% elif state == "ACTIVE" and not booting %}
             <p id="connect" style="display:block; font-size:25px; line-height:2em;text-align:center;">
                 <a href="{{uri}}" class="button" onclick="return connectbutton();">
-                    <img src="/static/image/load.gif" id="connecting" style="display:none;" />
+                    <img src="{% static "image/load.gif" %}" id="connecting" style="display:none;" />
                     {% trans "Running" %}
                 </a>
             </p>
@@ -90,38 +110,40 @@
     <div class="contentblock" id="ports">
         <h2>
             <div class="boxhelp">
-                <div class="icon">
-                    <img src="/static/icons/information-frame.png" alt="{% trans "Help" %}" />
-                </div>
-                <div class="boxhelp-box">
-                    <p>{% blocktrans %}This is a list about the network ports
-                    forwarded to the public internet.{% endblocktrans %}</p>
-                    <p>{% blocktrans %}You can access the given private port of
-                    the VM trough the public address of the network.
-                    {% endblocktrans %}</p>
-                    <p>{% blocktrans %}On the IPV6 network you can access the
-                    listed private ports direcly using the VM's global IPV6
-                    address (connections to other ports are dropped).
-                    {% endblocktrans %}</p>
+                <div class="help">
+                    <div class="icon">
+                        <img src="{% static "icons/information-frame.png" %}" alt="{% trans "Help" %}" />
+                    </div>
+                    <div class="boxhelp-box">
+                        <p>{% blocktrans %}This is a list about the network ports
+                        forwarded to the public internet.{% endblocktrans %}</p>
+                        <p>{% blocktrans %}You can access the given private port of
+                        the VM trough the public address of the network.
+                        {% endblocktrans %}</p>
+                        <p>{% blocktrans %}On the IPV6 network you can access the
+                        listed private ports direcly using the VM's global IPV6
+                        address (connections to other ports are dropped).
+                        {% endblocktrans %}</p>
+                    </div>
                 </div>
             </div>
             {% trans "Port administration" %}</h2>
         <div class="content">
-            <form action="{% url vm_port_add i.id %}" method="post">
+            <form action="{% url one.views.vm_port_add i.id %}" method="post">
                 {% csrf_token %}
                 <table>
                     <tr>
                         <th>{% trans "Protocol" %}</th>
                         <th>{% trans "Public port" %}</th>
-                        <th colspan="2">{% trans "Private port" %}</th>
+                        {% if i.template.network.nat %}<th colspan="2">{% trans "Private port" %}</th>{%endif%}
                     </tr>
                     {% for port in ports %}
                     <tr>
                         <td>{{port.proto}}</td>
                         <td>{{port.public}}</td>
-                        <td>{{port.private}}</td>
+                        {% if i.template.network.nat %}<td>{{port.private}}</td>{%endif%}
                         <td>
-                            <a href="/vm/port_del/{{i.id}}/{{port.proto}}/{{port.public}}/">{% trans "Delete" %}</a>
+                            <a href="{% url one.views.vm_port_del i.id port.proto port.public %}">{% trans "Delete" %}</a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -135,9 +157,11 @@
                         <td>
                             <input style="min-width:70px;width:70px;" type="text" name="public"/>
                         </td>
+                        {% if i.template.network.nat %}
                         <td>
                             <input style="min-width:70px;width:70px;" type="text" name="private"/>
                         </td>
+                        {% endif %}
                         <td>
                             <input type="submit" style="min-width:3em" value="{% trans "Add" %}" />
                         </td>

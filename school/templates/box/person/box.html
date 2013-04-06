@@ -1,7 +1,27 @@
 {% extends "box/base/box.html" %}
 {% load i18n %}
 {% load l10n %}
+{% load staticfiles %}
 {% get_current_language as LANGUAGE_CODE %}
+
+{% block boxhelp %}
+<div class="boxhelp">
+    <div class="help">
+        <div class="icon">
+            <img src="{% static "icons/information-frame.png" %}" alt="{% trans "Help" %}" />
+        </div>
+        <div class="boxhelp-box">
+            <p>{% blocktrans %}This is the list of this group's members.{% endblocktrans %}</p>
+            <p>{% blocktrans %}Members are the people who can start new
+            instances of templates shared with the group.
+            {% endblocktrans %}</p>
+        </div>
+    </div>
+    <div class="icon">
+        <img src="" alt="eye" title="{% trans "Show/hide box" %}" class="toggle-box" data-id="members" id="toggle-box-members"/>
+    </div>
+</div>
+{% endblock %}
 
 {% block title %}
     {% trans "Members of" %}: {{group.name}}

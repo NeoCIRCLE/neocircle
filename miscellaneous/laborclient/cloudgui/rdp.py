@@ -6,11 +6,19 @@ import os
 import sys
 import gtk
 import gobject
+from multiprocessing import Manager, Process
+import threading
+import signal
+import time
 
 class RDP:
     def __init__(self, uri):
         gobject.threads_init()
         self.scheme, self.username, self.password, self.host, self.port = uri.split(':',4)
+        self.manager = Manager()
+        self.global_vars = self.manager.Namespace()
+        self.global_vars.pid = 0
+        self.box = gtk.MessageDialog(parent=None, flags=gtk.DIALOG_MODAL, type=gtk.MESSAGE_INFO, buttons=gtk.BUTTONS_CANCEL, message_format="Connecting to RDP...")
     def dialog_box(self,text):
       #  Window = gtk.Window()
       #  Window.set_size_request(250, 100)
@@ -19,12 +27,27 @@ class RDP:
       #  window.set_title("Message dialogs")
         md = gtk.MessageDialog(parent=None, type=gtk.MESSAGE_INFO, buttons=gtk.BUTTONS_CLOSE, message_format=text)
         md.run()
+        print "After run"
         md.destroy()
 
     def connect(self):
         #rdp:cloud:qYSv3eQJYY:152.66.243.62:23037
         if self.scheme == "rdp":
-            self.connect_rdp()
+            #print self.global_vars.pid
+            p = threading.Thread(target=self.connect_rdp, args=[self.global_vars])
+            p.start()
+            while self.global_vars.pid == 0:
+                time.sleep(1)
+            #print "Rdesktop pid: "+str(self.global_vars.pid)
+            #print self.box
+            return_value = self.box.run()
+            #print "Box return value: "+str(return_value)
+            if return_value != -5:
+                #p.terminate()
+                if self.global_vars.pid > 0:
+                    os.kill(self.global_vars.pid, signal.SIGKILL)
+            #print "Join"
+            p.join()
         elif self.scheme == "nx":
             self.connect_nx()
         elif self.scheme == "sshterm":
@@ -49,15 +72,13 @@ class RDP:
         except:
             self.dialog_box("Unable to connect to host: "+self.host+" at port "+self.port)
 
-    def connect_rdp(self):
+    def connect_rdp(self,global_vars):
         rdp_command = ["rdesktop", "-khu", "-E", "-P", "-0", "-f", "-u", self.username, "-p", self.password, self.host+":"+self.port]
-        try:
-            proc = subprocess.check_call(rdp_command, stdout = subprocess.PIPE)
-        except subprocess.CalledProcessError as e:
-            if e.returncode != 1:
-                print e
-                print e.returncode
-                self.dialog_box("Unable to connect to host: "+self.host+" at port "+self.port)
+        proc = subprocess.Popen(rdp_command, stdout = subprocess.PIPE)
+        global_vars.pid = proc.pid
+        proc.wait()
+        self.box.response(-5)
+        global_vars.pid = 0
 
     def connect_nx(self):
         #Generate temproary config

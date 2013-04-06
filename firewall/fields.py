@@ -2,6 +2,7 @@ from django.core.exceptions import ValidationError
 from django.forms import fields
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
+from django.utils.ipv6 import is_valid_ipv6_address
 from south.modelsinspector import add_introspection_rules
 import re
 
@@ -35,26 +36,46 @@ class MACAddressField(models.Field):
 add_introspection_rules([], ["firewall\.fields\.MACAddressField"])
 
 def val_alfanum(value):
-    """Check whether the parameter is a valid alphanumeric value."""
-    if alfanum_re.search(value) is None:
-        raise ValidationError(
-            _(u'%s - only letters, numbers, underscores and hyphens are '
-               'allowed!') % value)
+    """Validate whether the parameter is a valid alphanumeric value."""
+    if not alfanum_re.match(value):
+        raise ValidationError(_(u'%s - only letters, numbers, underscores '
+            'and hyphens are allowed!') % value)
+
+def is_valid_domain(value):
+    """Check whether the parameter is a valid domain name."""
+    return domain_re.match(value) is not None
 
 def val_domain(value):
-    """Check wheter the parameter is a valid domin."""
-    if domain_re.search(value) is None:
-        raise ValidationError(_(u'%s - invalid domain') % value)
+    """Validate whether the parameter is a valid domin name."""
+    if not is_valid_domain(value):
+        raise ValidationError(_(u'%s - invalid domain name') % value)
+
+def is_valid_reverse_domain(value):
+    """Check whether the parameter is a valid reverse domain name."""
+    return reverse_domain_re.match(value) is not None
 
 def val_reverse_domain(value):
-    """Check whether the parameter is a valid reverse domain."""
-    if not reverse_domain_re.search(value):
-        raise ValidationError(u'%s - reverse domain' % value)
+    """Validate whether the parameter is a valid reverse domain name."""
+    if not is_valid_reverse_domain(value):
+        raise ValidationError(u'%s - invalid reverse domain name' % value)
+
+def is_valid_ipv4_address(value):
+    """Check whether the parameter is a valid IPv4 address."""
+    return ipv4_re.match(value) is not None
+
+def val_ipv4(value):
+    """Validate whether the parameter is a valid IPv4 address."""
+    if not is_valid_ipv4_address(value):
+        raise ValidationError(_(u'%s - not an IPv4 address') % value)
+
+def val_ipv6(value):
+    """Validate whether the parameter is a valid IPv6 address."""
+    if not is_valid_ipv6_address(value):
+        raise ValidationError(_(u'%s - not an IPv6 address') % value)
 
 def ipv4_2_ipv6(ipv4):
     """Convert IPv4 address string to IPv6 address string."""
+    val_ipv4(ipv4)
     m = ipv4_re.match(ipv4)
-    if m is None:
-        raise ValidationError(_(u'%s - not an IPv4 address') % ipv4)
     return ("2001:738:2001:4031:%s:%s:%s:0" %
         (m.group(1), m.group(2), m.group(3)))

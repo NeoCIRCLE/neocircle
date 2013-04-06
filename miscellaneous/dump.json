@@ -138,12 +138,12 @@
     "model": "auth.user",
     "fields": {
       "username": "test",
-      "first_name": "Teszt",
-      "last_name": "Elek",
+      "first_name": "",
+      "last_name": "",
       "is_active": true,
       "is_superuser": true,
       "is_staff": true,
-      "last_login": "2013-02-15T23:25:57Z",
+      "last_login": "2013-03-01T18:37:22Z",
       "groups": [],
       "user_permissions": [],
       "email": "",
@@ -337,6 +337,227 @@
       "user_permissions": [],
       "email": "orymate@gmail.com",
       "date_joined": "2013-02-05T08:47:48Z"
+    }
+  },
+  {
+    "pk": 1,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 0,
+      "ssh_key": 1,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 1
+    }
+  },
+  {
+    "pk": 2,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 0,
+      "ssh_key": 2,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 2
+    }
+  },
+  {
+    "pk": 3,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 0,
+      "ssh_key": 3,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 3
+    }
+  },
+  {
+    "pk": 4,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 0,
+      "ssh_key": 4,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 4
+    }
+  },
+  {
+    "pk": 5,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 0,
+      "ssh_key": 5,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 5
+    }
+  },
+  {
+    "pk": 6,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 0,
+      "ssh_key": 6,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 6
+    }
+  },
+  {
+    "pk": 7,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 100,
+      "ssh_key": 7,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 7
+    }
+  },
+  {
+    "pk": 8,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 0,
+      "ssh_key": 8,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 12
+    }
+  },
+  {
+    "pk": 9,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 0,
+      "ssh_key": 9,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 13
+    }
+  },
+  {
+    "pk": 10,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 0,
+      "ssh_key": 10,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 14
+    }
+  },
+  {
+    "pk": 11,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 0,
+      "ssh_key": 11,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 15
+    }
+  },
+  {
+    "pk": 12,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 0,
+      "ssh_key": 12,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 16
+    }
+  },
+  {
+    "pk": 13,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 0,
+      "ssh_key": 13,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 17
+    }
+  },
+  {
+    "pk": 14,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 0,
+      "ssh_key": 14,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 18
+    }
+  },
+  {
+    "pk": 15,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 0,
+      "ssh_key": 15,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 20
+    }
+  },
+  {
+    "pk": 16,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 0,
+      "ssh_key": 16,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 21
+    }
+  },
+  {
+    "pk": 17,
+    "model": "one.userclouddetails",
+    "fields": {
+      "share_quota": 0,
+      "ssh_key": 17,
+      "disk_quota": 2048,
+      "instance_quota": 20,
+      "ssh_private_key": "-----xxx PRIVATE KEY-----",
+"smb_password": "kamu",
+      "user": 22
     }
   },
   {
@@ -556,193 +777,47 @@
     }
   },
   {
-    "pk": 11,
-    "model": "one.share",
-    "fields": {
-      "group": 1,
-      "name": "Ubuntu 12s.04 desktop",
-      "created_at": "2013-02-11T14:35:46Z",
-      "instance_limit": 10,
-      "template": 17,
-      "owner": 7,
-      "per_user_limit": 1,
-      "type": "LAB",
-      "description": ""
-    }
-  },
-  {
-    "pk": 13,
-    "model": "one.share",
-    "fields": {
-      "group": 1,
-      "name": "Ubuntu 12s.04 desktop",
-      "created_at": "2013-02-12T10:05:08Z",
-      "instance_limit": 2,
-      "template": 17,
-      "owner": 7,
-      "per_user_limit": 4,
-      "type": "LAB",
-      "description": ""
-    }
-  },
-  {
-    "pk": 15,
-    "model": "one.share",
-    "fields": {
-      "group": 2,
-      "name": "Ubuntu 12s.04 desktop",
-      "created_at": "2013-02-12T20:36:46Z",
-      "instance_limit": 10,
-      "template": 17,
-      "owner": 7,
-      "per_user_limit": 1,
-      "type": "LAB",
-      "description": ""
-    }
-  },
-  {
-    "pk": 16,
-    "model": "one.share",
-    "fields": {
-      "group": 2,
-      "name": "Windows 7",
-      "created_at": "2013-02-12T20:38:33Z",
-      "instance_limit": 10,
-      "template": 10,
-      "owner": 7,
-      "per_user_limit": 1,
-      "type": "LAB",
-      "description": "Ez j\u00f3 cuccos"
-    }
-  },
-  {
-    "pk": 17,
-    "model": "one.share",
-    "fields": {
-      "group": 2,
-      "name": "Windows 7",
-      "created_at": "2013-02-12T20:38:36Z",
-      "instance_limit": 10,
-      "template": 10,
-      "owner": 7,
-      "per_user_limit": 1,
-      "type": "LAB",
-      "description": "Ez j\u00f3 cuccos"
-    }
-  },
-  {
-    "pk": 1,
-    "model": "one.disk",
-    "fields": {
-      "name": "Copy of ttylinux - kvm"
-    }
-  },
-  {
     "pk": 2,
-    "model": "one.disk",
+    "model": "one.share",
     "fields": {
-      "name": "template-10"
-    }
-  },
-  {
-    "pk": 3,
-    "model": "one.disk",
-    "fields": {
-      "name": "template-11-298"
+      "group": 2,
+      "name": "Ubuntu 12.04 Min",
+      "created_at": "2013-03-01T17:03:01Z",
+      "instance_limit": 10,
+      "template": 11,
+      "owner": 7,
+      "per_user_limit": 10,
+      "type": "LAB",
+      "description": "This is the basic test image for the developer environment."
     }
   },
   {
     "pk": 4,
     "model": "one.disk",
     "fields": {
-      "name": "template-12-300"
+      "name": "MinimalISO-Ubuntu"
     }
   },
   {
-    "pk": 5,
+    "pk": 3,
     "model": "one.disk",
     "fields": {
-      "name": "template-13-301"
+      "name": "ttylinux-iperf"
     }
   },
   {
     "pk": 6,
     "model": "one.disk",
     "fields": {
-      "name": "template-14-303"
+      "name": "Ubuntu install"
     }
   },
   {
-    "pk": 7,
-    "model": "one.disk",
-    "fields": {
-      "name": "template-15-308"
-    }
-  },
-  {
-    "pk": 8,
-    "model": "one.disk",
-    "fields": {
-      "name": "template-16-309"
-    }
-  },
-  {
-    "pk": 9,
-    "model": "one.disk",
-    "fields": {
-      "name": "template-17-310"
-    }
-  },
-  {
-    "pk": 10,
-    "model": "one.disk",
-    "fields": {
-      "name": "template-19-318"
-    }
-  },
-  {
-    "pk": 11,
-    "model": "one.disk",
-    "fields": {
-      "name": "template-21-321"
-    }
-  },
-  {
-    "pk": 12,
-    "model": "one.disk",
-    "fields": {
-      "name": "template-29-326"
-    }
-  },
-  {
-    "pk": 13,
-    "model": "one.disk",
-    "fields": {
-      "name": "template-31-330"
-    }
-  },
-  {
-    "pk": 14,
-    "model": "one.disk",
-    "fields": {
-      "name": "template-32-331"
-    }
-  },
-  {
-    "pk": 2,
+    "pk": 3,
     "model": "one.network",
     "fields": {
-      "name": "VM-NET",
-      "nat": true,
-      "public": false
-    }
-  },
-  {
-    "pk": 1,
-    "model": "one.network",
-    "fields": {
-      "name": "wifi",
-      "nat": true,
+      "name": "vm-net",
+      "nat": false,
       "public": false
     }
   },
@@ -777,522 +852,304 @@
     }
   },
   {
-    "pk": 9,
+    "pk": 11,
     "model": "one.template",
     "fields": {
-      "name": "Ubuntu 12.04 desktop",
-      "created_at": "2013-01-31T10:11:08Z",
-      "description": "",
-      "system": "",
-      "access_type": "nx",
+      "name": "Ubuntu 12.04 Min",
+      "created_at": "2013-03-01T16:24:14Z",
+      "description": "This is the basic test image for the developer environment.",
+      "system": "Ubuntu 12.04",
+      "access_type": "ssh",
       "instance_type": 3,
-      "state": "NEW",
-      "owner": 1,
-      "disk": 1,
+      "state": "READY",
+      "owner": 7,
+      "disk": 6,
       "public": true,
-      "network": 2
+      "network": 3
+    }
+  },
+  {
+    "pk": 1,
+    "model": "one.instance",
+    "fields": {
+      "name": "test Ubuntu 12.04 Min (43)",
+      "time_of_suspend": "2013-03-01T21:24:43Z",
+      "ip": "192.168.1.11",
+      "created_at": "2013-03-01T16:25:31Z",
+      "share": null,
+      "waiting": false,
+      "firewall_host": null,
+      "active_since": "2013-03-01T16:24:53Z",
+      "state": "DONE",
+      "template": 11,
+      "owner": 7,
+      "time_of_delete": "2013-03-16T16:24:43Z",
+      "one_id": 43,
+      "pw": "CbD7ExQZQz"
+    }
+  },
+  {
+    "pk": 2,
+    "model": "one.instance",
+    "fields": {
+      "name": "test Ubuntu 12.04 Min (44)",
+      "time_of_suspend": "2013-03-01T21:28:39Z",
+      "ip": "192.168.1.10",
+      "created_at": "2013-03-01T16:28:39Z",
+      "share": null,
+      "waiting": false,
+      "firewall_host": 872,
+      "active_since": null,
+      "state": "DONE",
+      "template": 11,
+      "owner": 7,
+      "time_of_delete": "2013-03-16T16:28:39Z",
+      "one_id": 44,
+      "pw": "b2GdusYand"
+    }
+  },
+  {
+    "pk": 5,
+    "model": "one.instance",
+    "fields": {
+      "name": "test Ubuntu 12.04 Min (47)",
+      "time_of_suspend": "2013-03-01T21:44:30Z",
+      "ip": "192.168.1.11",
+      "created_at": "2013-03-01T16:54:49Z",
+      "share": null,
+      "waiting": false,
+      "firewall_host": null,
+      "active_since": "2013-03-01T16:44:53Z",
+      "state": "DONE",
+      "template": 11,
+      "owner": 7,
+      "time_of_delete": "2013-03-16T16:44:30Z",
+      "one_id": 47,
+      "pw": "rpRaZwaQDD"
+    }
+  },
+  {
+    "pk": 6,
+    "model": "one.instance",
+    "fields": {
+      "name": "test Ubuntu 12.04 Min (48)",
+      "time_of_suspend": "2013-03-01T21:45:48Z",
+      "ip": "192.168.1.12",
+      "created_at": "2013-03-01T16:54:52Z",
+      "share": null,
+      "waiting": false,
+      "firewall_host": null,
+      "active_since": "2013-03-01T16:45:52Z",
+      "state": "DONE",
+      "template": 11,
+      "owner": 7,
+      "time_of_delete": "2013-03-16T16:45:48Z",
+      "one_id": 48,
+      "pw": "VuWps4bkuW"
+    }
+  },
+  {
+    "pk": 1,
+    "model": "school.person",
+    "fields": {
+      "code": "root",
+      "user": null,
+      "language": "hu"
+    }
+  },
+  {
+    "pk": 2,
+    "model": "school.person",
+    "fields": {
+      "code": "bd",
+      "user": null,
+      "language": "hu"
+    }
+  },
+  {
+    "pk": 3,
+    "model": "school.person",
+    "fields": {
+      "code": "mate",
+      "user": null,
+      "language": "hu"
+    }
+  },
+  {
+    "pk": 4,
+    "model": "school.person",
+    "fields": {
+      "code": "tarokkk",
+      "user": null,
+      "language": "hu"
+    }
+  },
+  {
+    "pk": 5,
+    "model": "school.person",
+    "fields": {
+      "code": "opennebula",
+      "user": null,
+      "language": "hu"
+    }
+  },
+  {
+    "pk": 6,
+    "model": "school.person",
+    "fields": {
+      "code": "lennon",
+      "user": null,
+      "language": "hu"
+    }
+  },
+  {
+    "pk": 7,
+    "model": "school.person",
+    "fields": {
+      "code": "test",
+      "user": 7,
+      "language": "hu"
+    }
+  },
+  {
+    "pk": 8,
+    "model": "school.person",
+    "fields": {
+      "code": "JI1M92",
+      "user": null,
+      "language": "hu"
+    }
+  },
+  {
+    "pk": 9,
+    "model": "school.person",
+    "fields": {
+      "code": "TFDAZ6",
+      "user": null,
+      "language": "hu"
     }
   },
   {
     "pk": 10,
-    "model": "one.template",
+    "model": "school.person",
     "fields": {
-      "name": "Windows 7",
-      "created_at": "2013-01-31T10:11:21Z",
-      "description": "Ez j\u00f3 cuccos",
-      "system": "Windows 7 Entersp\u00e1jzi 64 bites",
-      "access_type": "rdp",
-      "instance_type": 2,
-      "state": "READY",
-      "owner": 1,
-      "disk": 1,
-      "public": true,
-      "network": 2
+      "code": "K7YLW5",
+      "user": null,
+      "language": "hu"
+    }
+  },
+  {
+    "pk": 11,
+    "model": "school.person",
+    "fields": {
+      "code": "UYD1S5",
+      "user": null,
+      "language": "hu"
+    }
+  },
+  {
+    "pk": 12,
+    "model": "school.person",
+    "fields": {
+      "code": "FFRUNU",
+      "user": null,
+      "language": "hu"
+    }
+  },
+  {
+    "pk": 13,
+    "model": "school.person",
+    "fields": {
+      "code": "HUT3L3",
+      "user": null,
+      "language": "hu"
+    }
+  },
+  {
+    "pk": 14,
+    "model": "school.person",
+    "fields": {
+      "code": "ORL3EA",
+      "user": null,
+      "language": "hu"
+    }
+  },
+  {
+    "pk": 15,
+    "model": "school.person",
+    "fields": {
+      "code": "B6AFNQ",
+      "user": null,
+      "language": "hu"
+    }
+  },
+  {
+    "pk": 16,
+    "model": "school.person",
+    "fields": {
+      "code": "UKWBFI",
+      "user": null,
+      "language": "hu"
     }
   },
   {
     "pk": 17,
-    "model": "one.template",
+    "model": "school.person",
     "fields": {
-      "name": "Ubuntu 12s.04 desktop",
-      "created_at": "2013-02-10T21:45:05Z",
-      "description": "",
-      "system": "",
-      "access_type": "nx",
-      "instance_type": 2,
-      "state": "READY",
-      "owner": 7,
-      "disk": 9,
-      "public": false,
-      "network": 2
+      "code": "K2JL24",
+      "user": null,
+      "language": "hu"
     }
   },
   {
-    "pk": 19,
-    "model": "one.template",
+    "pk": 1,
+    "model": "school.semester",
     "fields": {
-      "name": "Ubuntu 12.04 desktop a",
-      "created_at": "2013-02-12T14:45:50Z",
-      "description": "h",
-      "system": "",
-      "access_type": "nx",
-      "instance_type": 2,
-      "state": "READY",
-      "owner": 7,
-      "disk": 10,
-      "public": false,
-      "network": 2
+      "start": "2013-02-01",
+      "end": "2013-06-01",
+      "name": "asd"
     }
   },
   {
-    "pk": 21,
-    "model": "one.template",
+    "pk": 1,
+    "model": "school.group",
     "fields": {
-      "name": "Windows 7asdasd",
-      "created_at": "2013-02-12T20:31:13Z",
-      "description": "Ez j\u00f3 cuccos \u00e9s nagy l\u00f3fasz",
-      "system": "Windows 7 Entersp\u00e1jzi 64 bites",
-      "access_type": "rdp",
-      "instance_type": 1,
-      "state": "READY",
-      "owner": 7,
-      "disk": 11,
-      "public": false,
-      "network": 2
+      "course": null,
+      "semester": 1,
+      "owners": [],
+      "name": "asd",
+      "members": []
     }
   },
   {
-    "pk": 29,
-    "model": "one.template",
+    "pk": 2,
+    "model": "school.group",
     "fields": {
-      "name": "Ubuntu 12.04 desktop 22",
-      "created_at": "2013-02-12T23:59:54Z",
-      "description": "",
-      "system": "",
-      "access_type": "nx",
-      "instance_type": 3,
-      "state": "READY",
-      "owner": 7,
-      "disk": 12,
-      "public": false,
-      "network": 2
-    }
-  },
-  {
-    "pk": 32,
-    "model": "one.template",
-    "fields": {
-      "name": "Windows 7asdasd 30",
-      "created_at": "2013-02-13T00:40:52Z",
-      "description": "Ez j\u00f3 cuccos \u00e9s nagy l\u00f3fasz",
-      "system": "Windows 7 Entersp\u00e1jzi 64 bites",
-      "access_type": "rdp",
-      "instance_type": 1,
-      "state": "READY",
-      "owner": 7,
-      "disk": 14,
-      "public": false,
-      "network": 2
-    }
-  },
-  {
-    "pk": 307,
-    "model": "one.instance",
-    "fields": {
-      "name": "test Windows 7 (50)",
-      "time_of_suspend": null,
-      "ip": "10.9.1.14",
-      "created_at": "2013-02-10T21:31:53Z",
-      "share": null,
-      "waiting": false,
-      "firewall_host": null,
-      "active_since": null,
-      "state": "DONE",
-      "template": 10,
-      "owner": 7,
-      "time_of_delete": null,
-      "one_id": 50,
-      "pw": "VqKJq3hFLV"
-    }
-  },
-  {
-    "pk": 310,
-    "model": "one.instance",
-    "fields": {
-      "name": "test Ubuntu 12s.04 desktop (53)",
-      "time_of_suspend": null,
-      "ip": "10.9.1.15",
-      "created_at": "2013-02-10T21:45:05Z",
-      "share": null,
-      "waiting": false,
-      "firewall_host": null,
-      "active_since": null,
-      "state": "DONE",
-      "template": 17,
-      "owner": 7,
-      "time_of_delete": null,
-      "one_id": 53,
-      "pw": "WdwrHAxtPj"
-    }
-  },
-  {
-    "pk": 312,
-    "model": "one.instance",
-    "fields": {
-      "name": "test Windows 7 (55)",
-      "time_of_suspend": null,
-      "ip": "10.9.1.15",
-      "created_at": "2013-02-11T13:06:54Z",
-      "share": null,
-      "waiting": false,
-      "firewall_host": null,
-      "active_since": null,
-      "state": "DONE",
-      "template": 10,
-      "owner": 7,
-      "time_of_delete": null,
-      "one_id": 55,
-      "pw": "2cDZdDjkP8"
-    }
-  },
-  {
-    "pk": 314,
-    "model": "one.instance",
-    "fields": {
-      "name": "test Ubuntu 12s.04 desktop (57)",
-      "time_of_suspend": "2013-02-12T15:00:35Z",
-      "ip": "10.9.1.16",
-      "created_at": "2013-02-12T19:36:54Z",
-      "share": 11,
-      "waiting": false,
-      "firewall_host": null,
-      "active_since": null,
-      "state": "DONE",
-      "template": 17,
-      "owner": 7,
-      "time_of_delete": "2013-02-27T10:00:35Z",
-      "one_id": 57,
-      "pw": "YLNvyFBMNa"
-    }
-  },
-  {
-    "pk": 315,
-    "model": "one.instance",
-    "fields": {
-      "name": "test Ubuntu 12s.04 desktop (58)",
-      "time_of_suspend": "2013-02-12T15:01:35Z",
-      "ip": "10.9.1.17",
-      "created_at": "2013-02-12T21:57:50Z",
-      "share": 11,
-      "waiting": false,
-      "firewall_host": null,
-      "active_since": null,
-      "state": "DONE",
-      "template": 17,
-      "owner": 7,
-      "time_of_delete": "2013-02-27T10:01:35Z",
-      "one_id": 58,
-      "pw": "mfQk6wxMJB"
-    }
-  },
-  {
-    "pk": 316,
-    "model": "one.instance",
-    "fields": {
-      "name": "test Ubuntu 12s.04 desktop (59)",
-      "time_of_suspend": "2013-02-12T15:05:22Z",
-      "ip": "10.9.1.18",
-      "created_at": "2013-02-12T22:33:18Z",
-      "share": 13,
-      "waiting": false,
-      "firewall_host": null,
-      "active_since": null,
-      "state": "DONE",
-      "template": 17,
-      "owner": 7,
-      "time_of_delete": "2013-02-27T10:05:22Z",
-      "one_id": 59,
-      "pw": "fdrrRxm33W"
-    }
-  },
-  {
-    "pk": 317,
-    "model": "one.instance",
-    "fields": {
-      "name": "test Ubuntu 12s.04 desktop (60)",
-      "time_of_suspend": "2013-02-13T01:14:28Z",
-      "ip": "10.9.1.19",
-      "created_at": "2013-02-12T20:43:59Z",
-      "share": 13,
-      "waiting": false,
-      "firewall_host": null,
-      "active_since": null,
-      "state": "DONE",
-      "template": 17,
-      "owner": 7,
-      "time_of_delete": "2013-02-27T20:14:42Z",
-      "one_id": 60,
-      "pw": "WZ6pQatURa"
-    }
-  },
-  {
-    "pk": 318,
-    "model": "one.instance",
-    "fields": {
-      "name": "test Ubuntu 12.04 desktop a (61)",
-      "time_of_suspend": "2013-02-12T19:45:50Z",
-      "ip": "10.9.1.20",
-      "created_at": "2013-02-12T23:25:17Z",
-      "share": null,
-      "waiting": false,
-      "firewall_host": null,
-      "active_since": null,
-      "state": "DONE",
-      "template": 19,
-      "owner": 7,
-      "time_of_delete": "2013-02-27T14:45:50Z",
-      "one_id": 61,
-      "pw": "zpYJBjErtQ"
-    }
-  },
-  {
-    "pk": 320,
-    "model": "one.instance",
-    "fields": {
-      "name": "test Ubuntu 12s.04 desktop (63)",
-      "time_of_suspend": "2013-02-13T01:30:46Z",
-      "ip": "10.9.1.22",
-      "created_at": "2013-02-12T23:36:02Z",
-      "share": null,
-      "waiting": false,
-      "firewall_host": null,
-      "active_since": null,
-      "state": "DONE",
-      "template": 17,
-      "owner": 7,
-      "time_of_delete": "2013-02-27T20:30:46Z",
-      "one_id": 63,
-      "pw": "wZRvZZXbxd"
-    }
-  },
-  {
-    "pk": 321,
-    "model": "one.instance",
-    "fields": {
-      "name": "test Windows 7asdasd (64)",
-      "time_of_suspend": "2013-02-13T01:31:13Z",
-      "ip": "10.9.1.23",
-      "created_at": "2013-02-12T23:33:09Z",
-      "share": null,
-      "waiting": false,
-      "firewall_host": null,
-      "active_since": null,
-      "state": "DONE",
-      "template": 21,
-      "owner": 7,
-      "time_of_delete": "2013-02-27T20:31:13Z",
-      "one_id": 64,
-      "pw": "6y6Mbh779P"
-    }
-  },
-  {
-    "pk": 324,
-    "model": "one.instance",
-    "fields": {
-      "name": "test Windows 7 (67)",
-      "time_of_suspend": "2013-02-13T01:44:44Z",
-      "ip": "10.9.1.26",
-      "created_at": "2013-02-12T22:33:49Z",
-      "share": null,
-      "waiting": false,
-      "firewall_host": null,
-      "active_since": null,
-      "state": "DONE",
-      "template": 10,
-      "owner": 7,
-      "time_of_delete": "2013-02-27T20:44:44Z",
-      "one_id": 67,
-      "pw": "YjQxeHaNkh"
-    }
-  },
-  {
-    "pk": 326,
-    "model": "one.instance",
-    "fields": {
-      "name": "test Ubuntu 12.04 desktop 22 (69)",
-      "time_of_suspend": "2013-02-13T04:59:54Z",
-      "ip": "10.9.1.27",
-      "created_at": "2013-02-12T23:59:54Z",
-      "share": null,
-      "waiting": false,
-      "firewall_host": null,
-      "active_since": null,
-      "state": "DONE",
-      "template": 29,
-      "owner": 7,
-      "time_of_delete": "2013-02-27T23:59:54Z",
-      "one_id": 69,
-      "pw": "yXuM8pSNCZ"
-    }
-  },
-  {
-    "pk": 328,
-    "model": "one.instance",
-    "fields": {
-      "name": "test Ubuntu 12s.04 desktop (71)",
-      "time_of_suspend": "2013-02-13T05:14:35Z",
-      "ip": "10.9.1.27",
-      "created_at": "2013-02-13T00:15:24Z",
-      "share": 11,
-      "waiting": false,
-      "firewall_host": null,
-      "active_since": null,
-      "state": "DONE",
-      "template": 17,
-      "owner": 7,
-      "time_of_delete": "2013-02-28T00:14:35Z",
-      "one_id": 71,
-      "pw": "KmP82kfFp6"
-    }
-  },
-  {
-    "pk": 329,
-    "model": "one.instance",
-    "fields": {
-      "name": "test Ubuntu 12.04 desktop a (72)",
-      "time_of_suspend": "2013-02-13T05:18:34Z",
-      "ip": "10.9.1.27",
-      "created_at": "2013-02-13T00:18:59Z",
-      "share": null,
-      "waiting": false,
-      "firewall_host": null,
-      "active_since": null,
-      "state": "DONE",
-      "template": 19,
-      "owner": 7,
-      "time_of_delete": "2013-02-28T00:18:34Z",
-      "one_id": 72,
-      "pw": "99czHqQFp6"
-    }
-  },
-  {
-    "pk": 331,
-    "model": "one.instance",
-    "fields": {
-      "name": "test Windows 7asdasd 30 (74)",
-      "time_of_suspend": "2013-02-13T05:40:52Z",
-      "ip": "10.9.1.27",
-      "created_at": "2013-02-13T00:40:52Z",
-      "share": null,
-      "waiting": false,
-      "firewall_host": null,
-      "active_since": "2013-02-13T00:42:18Z",
-      "state": "DONE",
-      "template": 32,
-      "owner": 7,
-      "time_of_delete": "2013-02-28T00:40:52Z",
-      "one_id": 74,
-      "pw": "2YPTmTzHsR"
-    }
-  },
-  {
-    "pk": 332,
-    "model": "one.instance",
-    "fields": {
-      "name": "test Ubuntu 12s.04 desktop (75)",
-      "time_of_suspend": "2013-02-13T05:42:34Z",
-      "ip": "10.9.1.27",
-      "created_at": "2013-02-13T00:42:34Z",
-      "share": 11,
-      "waiting": false,
-      "firewall_host": null,
-      "active_since": null,
-      "state": "DONE",
-      "template": 17,
-      "owner": 7,
-      "time_of_delete": "2013-02-28T00:42:34Z",
-      "one_id": 75,
-      "pw": "RZfD72Jgmn"
-    }
-  },
-  {
-    "pk": 333,
-    "model": "one.instance",
-    "fields": {
-      "name": "test Ubuntu 12s.04 desktop (76)",
-      "time_of_suspend": "2013-02-13T05:54:47Z",
-      "ip": "10.9.1.28",
-      "created_at": "2013-02-13T00:54:47Z",
-      "share": null,
-      "waiting": false,
-      "firewall_host": 843,
-      "active_since": null,
-      "state": "DONE",
-      "template": 17,
-      "owner": 7,
-      "time_of_delete": "2013-02-28T00:54:47Z",
-      "one_id": 76,
-      "pw": "HnYSzsMxZX"
-    }
-  },
-  {
-    "pk": 347,
-    "model": "one.instance",
-    "fields": {
-      "name": "test Ubuntu 12s.04 desktop (79)",
-      "time_of_suspend": null,
-      "ip": "10.9.1.31",
-      "created_at": "2013-02-15T23:35:45Z",
-      "share": 11,
-      "waiting": false,
-      "firewall_host": null,
-      "active_since": null,
-      "state": "DONE",
-      "template": 17,
-      "owner": 7,
-      "time_of_delete": null,
-      "one_id": 79,
-      "pw": "6CaERLLwLg"
-    }
-  },
-  {
-    "pk": 372,
-    "model": "one.instance",
-    "fields": {
-      "name": "test Ubuntu 12s.04 desktop (104)",
-      "time_of_suspend": "2013-02-19T23:34:19Z",
-      "ip": "10.9.1.14",
-      "created_at": "2013-02-19T18:34:19Z",
-      "share": 11,
-      "waiting": false,
-      "firewall_host": 877,
-      "active_since": null,
-      "state": "ACTIVE",
-      "template": 17,
-      "owner": 7,
-      "time_of_delete": "2013-03-06T18:34:19Z",
-      "one_id": 104,
-      "pw": "U4XAAEhDRT"
-    }
-  },
-  {
-    "pk": 374,
-    "model": "one.instance",
-    "fields": {
-      "name": "test Ubuntu 12s.04 desktop (105)",
-      "time_of_suspend": "2013-02-19T23:43:17Z",
-      "ip": "10.9.1.15",
-      "created_at": "2013-02-19T18:43:17Z",
-      "share": 13,
-      "waiting": false,
-      "firewall_host": 878,
-      "active_since": null,
-      "state": "PENDING",
-      "template": 17,
-      "owner": 7,
-      "time_of_delete": "2013-03-06T18:43:17Z",
-      "one_id": 105,
-      "pw": "55W5neEvpx"
+      "course": null,
+      "semester": 1,
+      "owners": [
+        7
+      ],
+      "name": "asd",
+      "members": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ]
     }
   },
   {
@@ -2371,7 +2228,7 @@
     }
   },
   {
-    "pk": 1262,
+    "pk": 1217,
     "model": "firewall.rule",
     "fields": {
       "r_type": "host",
@@ -2380,66 +2237,16 @@
       "description": "",
       "proto": "tcp",
       "firewall": null,
-      "created_at": "2013-02-13T00:54:47Z",
+      "created_at": "2013-03-01T16:28:39Z",
       "extra": "",
-      "modified_at": "2013-02-13T00:54:47Z",
+      "modified_at": "2013-03-01T16:28:39Z",
       "owner": 7,
       "accept": true,
-      "dport": 22284,
-      "host": 843,
-      "nat_dport": 22,
+      "dport": 22,
+      "host": 872,
+      "nat_dport": null,
       "hostgroup": null,
-      "nat": true,
-      "foreign_network": 2,
-      "sport": null,
-      "vlangroup": null
-    }
-  },
-  {
-    "pk": 1263,
-    "model": "firewall.rule",
-    "fields": {
-      "r_type": "host",
-      "direction": "1",
-      "vlan": null,
-      "description": "",
-      "proto": "tcp",
-      "firewall": null,
-      "created_at": "2013-02-19T18:40:00Z",
-      "extra": "",
-      "modified_at": "2013-02-19T18:40:00Z",
-      "owner": 7,
-      "accept": true,
-      "dport": 22270,
-      "host": 877,
-      "nat_dport": 22,
-      "hostgroup": null,
-      "nat": true,
-      "foreign_network": 2,
-      "sport": null,
-      "vlangroup": null
-    }
-  },
-  {
-    "pk": 1264,
-    "model": "firewall.rule",
-    "fields": {
-      "r_type": "host",
-      "direction": "1",
-      "vlan": null,
-      "description": "",
-      "proto": "tcp",
-      "firewall": null,
-      "created_at": "2013-02-19T18:43:17Z",
-      "extra": "",
-      "modified_at": "2013-02-19T18:43:17Z",
-      "owner": 7,
-      "accept": true,
-      "dport": 22271,
-      "host": 878,
-      "nat_dport": 22,
-      "hostgroup": null,
-      "nat": true,
+      "nat": false,
       "foreign_network": 2,
       "sport": null,
       "vlangroup": null
@@ -4703,29 +4510,6 @@
     }
   },
   {
-    "pk": 843,
-    "model": "firewall.host",
-    "fields": {
-      "comment": "",
-      "vlan": 10,
-      "reverse": null,
-      "created_at": "2013-02-13T00:54:47Z",
-      "hostname": "id-333_user-test",
-      "modified_at": "2013-02-13T00:54:47Z",
-      "location": "",
-      "pub_ipv4": "152.66.243.62",
-      "mac": "02:00:0a:09:01:1c",
-      "shared_ip": true,
-      "ipv4": "10.9.1.28",
-      "groups": [
-        4
-      ],
-      "ipv6": "2001:738:2001:4031:9:1:28:0",
-      "owner": 7,
-      "description": ""
-    }
-  },
-  {
     "pk": 846,
     "model": "firewall.host",
     "fields": {
@@ -4909,7 +4693,7 @@
       "shared_ip": true,
       "ipv4": "10.9.1.111",
       "groups": [],
-      "ipv6": "21001:738:2001:4031:9:1:11:0",
+      "ipv6": "2001:738:2001:4031:9:1:111:0",
       "owner": 7,
       "description": ""
     }
@@ -4936,47 +4720,24 @@
     }
   },
   {
-    "pk": 877,
+    "pk": 872,
     "model": "firewall.host",
     "fields": {
       "comment": "",
       "vlan": 10,
       "reverse": null,
-      "created_at": "2013-02-19T18:34:19Z",
-      "hostname": "id-372_user-test",
-      "modified_at": "2013-02-19T18:34:19Z",
+      "created_at": "2013-03-01T16:28:39Z",
+      "hostname": "cloud-2",
+      "modified_at": "2013-03-01T16:28:39Z",
       "location": "",
-      "pub_ipv4": "152.66.243.62",
-      "mac": "02:00:0a:09:01:0e",
-      "shared_ip": true,
-      "ipv4": "10.9.1.14",
+      "pub_ipv4": null,
+      "mac": "02:00:c0:a8:01:0a",
+      "shared_ip": false,
+      "ipv4": "192.168.1.10",
       "groups": [
         4
       ],
-      "ipv6": "2001:738:2001:4031:9:1:14:0",
-      "owner": 7,
-      "description": ""
-    }
-  },
-  {
-    "pk": 878,
-    "model": "firewall.host",
-    "fields": {
-      "comment": "",
-      "vlan": 10,
-      "reverse": null,
-      "created_at": "2013-02-19T18:43:17Z",
-      "hostname": "id-374_user-test",
-      "modified_at": "2013-02-19T18:43:17Z",
-      "location": "",
-      "pub_ipv4": "152.66.243.62",
-      "mac": "02:00:0a:09:01:0f",
-      "shared_ip": true,
-      "ipv4": "10.9.1.15",
-      "groups": [
-        4
-      ],
-      "ipv6": "2001:738:2001:4031:9:1:15:0",
+      "ipv6": "2001:738:2001:4031:168:1:10:0",
       "owner": 7,
       "description": ""
     }
@@ -6357,15 +6118,15 @@
     }
   },
   {
-    "pk": 175,
+    "pk": 105,
     "model": "firewall.record",
     "fields": {
       "domain": 8,
       "name": null,
-      "created_at": "2013-02-13T00:54:47Z",
+      "created_at": "2013-03-01T16:28:39Z",
       "address": null,
-      "modified_at": "2013-02-13T00:54:47Z",
-      "host": 843,
+      "modified_at": "2013-03-01T16:28:39Z",
+      "host": 872,
       "ttl": 600,
       "owner": 7,
       "type": "A",
@@ -6373,79 +6134,15 @@
     }
   },
   {
-    "pk": 176,
+    "pk": 106,
     "model": "firewall.record",
     "fields": {
       "domain": 8,
       "name": null,
-      "created_at": "2013-02-13T00:54:47Z",
+      "created_at": "2013-03-01T16:28:39Z",
       "address": null,
-      "modified_at": "2013-02-13T00:54:47Z",
-      "host": 843,
-      "ttl": 600,
-      "owner": 7,
-      "type": "AAAA",
-      "description": ""
-    }
-  },
-  {
-    "pk": 177,
-    "model": "firewall.record",
-    "fields": {
-      "domain": 8,
-      "name": null,
-      "created_at": "2013-02-19T18:40:00Z",
-      "address": null,
-      "modified_at": "2013-02-19T18:40:00Z",
-      "host": 877,
-      "ttl": 600,
-      "owner": 7,
-      "type": "A",
-      "description": ""
-    }
-  },
-  {
-    "pk": 178,
-    "model": "firewall.record",
-    "fields": {
-      "domain": 8,
-      "name": null,
-      "created_at": "2013-02-19T18:40:00Z",
-      "address": null,
-      "modified_at": "2013-02-19T18:40:00Z",
-      "host": 877,
-      "ttl": 600,
-      "owner": 7,
-      "type": "AAAA",
-      "description": ""
-    }
-  },
-  {
-    "pk": 179,
-    "model": "firewall.record",
-    "fields": {
-      "domain": 8,
-      "name": null,
-      "created_at": "2013-02-19T18:43:17Z",
-      "address": null,
-      "modified_at": "2013-02-19T18:43:17Z",
-      "host": 878,
-      "ttl": 600,
-      "owner": 7,
-      "type": "A",
-      "description": ""
-    }
-  },
-  {
-    "pk": 180,
-    "model": "firewall.record",
-    "fields": {
-      "domain": 8,
-      "name": null,
-      "created_at": "2013-02-19T18:43:17Z",
-      "address": null,
-      "modified_at": "2013-02-19T18:43:17Z",
-      "host": 878,
+      "modified_at": "2013-03-01T16:28:39Z",
+      "host": 872,
       "ttl": 600,
       "owner": 7,
       "type": "AAAA",
@@ -6939,6 +6636,15 @@
     }
   },
   {
+    "pk": 55,
+    "model": "south.migrationhistory",
+    "fields": {
+      "applied": "2013-02-25T18:31:52Z",
+      "app_name": "firewall",
+      "migration": "0028_auto__del_field_vlan_domain"
+    }
+  },
+  {
     "pk": 56,
     "model": "south.migrationhistory",
     "fields": {
@@ -7008,6 +6714,15 @@
       "applied": "2013-02-19T17:40:56Z",
       "app_name": "firewall",
       "migration": "0030_auto__del_setting__del_alias__add_blacklist"
+    }
+  },
+  {
+    "pk": 64,
+    "model": "south.migrationhistory",
+    "fields": {
+      "applied": "2013-03-01T16:20:57Z",
+      "app_name": "firewall",
+      "migration": "0031_auto__add_field_blacklist_snort_message__add_field_blacklist_type"
     }
   },
   {

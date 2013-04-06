@@ -1,4 +1,5 @@
 {% extends "box/base/summary.html" %}
+{% load staticfiles %}
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
 
@@ -12,53 +13,53 @@
 <div class="name {% if vm.state == 'ACTIVE' %}vm-on{% else %}vm-off{% endif %}">
     <span id="vm-{{vm.id}}-name">{{vm.name|truncatechars:20}}</span>
     <small id="vm-{{vm.id}}-name-details" class="details">
-        (<a href="/vm/show/{{vm.id}}/" title="{{vm.name}}">{% trans "More details" %}</a>)
+        (<a href="{{ vm.get_absolute_url }}" title="{{vm.name}}">{% trans "More details" %}</a>)
     </small>
 </div>
 {% endblock %}
 
 {% block status %}
-    {{vm.state}}
+    {% if vm.template.state != "READY" %} {{vm.template.state}} {% else %} {{vm.state}} {% endif %}
 {% endblock status %}
 
 {% block actions %}
         <a href="#" class="rename-vm" data-name="{{ vm.name }}" data-id="{{ vm.id }}" title="{% trans "Edit name" %}">
-            <img src="/static/icons/pencil.png" alt="{% trans "Edit name" %}" />
+            <img src="{% static "icons/pencil.png" %}" alt="{% trans "Edit name" %}" />
         </a>
     {% if vm.waiting %}
         <a href="#">
-            <img src="/static/image/load.gif" />
+            <img src="{% static "image/load.gif" %}" />
         </a>
     {% elif vm.state == 'ACTIVE' %}
         <a href="{{vm.get_connect_uri}}" data-id="{{ vm.id  }}" class="connect-vm" title="{% trans "Connect" %}">
-            <img src="/static/icons/plug.png" alt="{% trans "Connect" %}" />
+            <img src="{% static "icons/plug.png" %}" alt="{% trans "Connect" %}" />
         </a>
         <a href="#" class="stop-vm" data-name="{{ vm.name }}" data-id="{{ vm.id }}" title="{% trans "Pause" %}">
-            <img src="/static/icons/control-pause.png" alt="{% trans "Pause" %}" />
+            <img src="{% static "icons/control-pause.png" %}" alt="{% trans "Pause" %}" />
         </a>
         <a href="#" class="delete-vm" data-name="{{ vm.name }}" data-id="{{ vm.id }}" title="{% trans "Delete" %}">
-            <img src="/static/icons/minus-circle.png" alt="{% trans "Delete" %}" />
+            <img src="{% static "icons/minus-circle.png" %}" alt="{% trans "Delete" %}" />
         </a>
         <a href="#"  class="restart-vm" data-name="{{ vm.name }}" data-id="{{ vm.id }}" title="{% trans "Restart" %}">
-            <img src="/static/icons/arrow-circle-double.png" alt="↺" />
+            <img src="{% static "icons/arrow-circle-double.png" %}" alt="↺" />
         </a>
     {% elif vm.state == 'PENDING' %}
         <a href="#">
-            <img src="/static/image/load.gif" />
+            <img src="{% static "image/load.gif" %}" />
         </a>
         <a style="float: right" href="#" class="delete-vm" data-name="{{ vm.name }}" data-id="{{ vm.id }}" title="{% trans "Delete" %}">
-            <img src="/static/icons/minus-circle.png" alt="{% trans "Delete" %}" />
+            <img src="{% static "icons/minus-circle.png" %}" alt="{% trans "Delete" %}" />
         </a>
     {% elif vm.state == 'STOPPED' %}
         <a href="#" class="resume-vm" data-name="{{ vm.name }}" data-id="{{ vm.id }}" title="{% trans "Resume" %}">
-            <img src="/static/icons/control.png" alt="{% trans "Resume" %}" />
+            <img src="{% static "icons/control.png" %}" alt="{% trans "Resume" %}" />
         </a>
         <a href="#" class="delete-vm" data-name="{{ vm.name }}" data-id="{{ vm.id }}" title="{% trans "Delete" %}">
-            <img src="/static/icons/minus-circle.png" alt="{% trans "Delete" %}" />
+            <img src="{% static "icons/minus-circle.png" %}" alt="{% trans "Delete" %}" />
         </a>
     {% elif vm.state == 'FAILED' %}
         <a href="#" class="delete-vm" data-name="{{ vm.name }}" data-id="{{ vm.id }}" title="{% trans "Delete" %}">
-            <img src="/static/icons/minus-circle.png" alt="{% trans "Delete" %}" />
+            <img src="{% static "icons/minus-circle.png" %}" alt="{% trans "Delete" %}" />
         </a>
     {% endif %}
 {% endblock actions %}

@@ -1,0 +1,10 @@
+{% load i18n %}
+{% blocktrans with name=user.get_full_name %}
+Dear {{name}},
+
+{% endblocktrans %}
+{% block body %}
+{% endblock %}
+
+-- 
+{{site}}

@@ -1,7 +1,11 @@
 SHELL := /bin/bash
 
+jsfiles += one/static/script/cloud.min.js
+jsfiles += one/static/script/util.min.js
+jsfiles += one/static/script/store.min.js
+cssfiles += one/static/style/style.css
 
-default: migrate collectstatic mo restart
+default: migrate generatestatic collectstatic mo restart
 
 pulldef: pull default
 pull:
@@ -14,6 +18,8 @@ po:
 migrate:
 	./manage.py migrate
 
+generatestatic: $(jsfiles) $(cssfiles)
+
 collectstatic:
 	./manage.py collectstatic --noinput
 
@@ -22,4 +28,10 @@ mo:
 	for i in */; do cd $$i; ls locale &>/dev/null && ../manage.py compilemessages || true; cd ..; done
 
 restart:
-	sudo /etc/init.d/apache2 reload
+	sudo /etc/init.d/apache2 reload || sudo restart django
+
+%.min.js: %.js
+	uglifyjs $< > $@
+
+%.css: %.less
+	lessc one/static/style/style.less > one/static/style/style.css

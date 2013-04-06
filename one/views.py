@@ -26,6 +26,7 @@ from school.models import *
 import django.contrib.auth as auth
 import json
 import logging
+import subprocess
 
 logger = logging.getLogger(__name__)
 
@@ -33,11 +34,23 @@ def _list_instances(request):
     instances = Instance.objects.exclude(state='DONE').filter(owner=request.user)
     for i in instances:
         i.update_state()
+    instances = instances.exclude(state='DONE')
     return instances
+
+def info(request):
+    return render_to_response("info.html", RequestContext(request, {}))
+
+def index(request):
+    if request.user.is_authenticated():
+        return redirect(home)
+    else:
+        return redirect(info)
+
 
 @require_GET
 @login_required
 def home(request):
+    instances = _list_instances(request)
     shares = [s for s in request.user.person_set.all()[0].get_shares()]
     for i, s in enumerate(shares):
         s.running_shared = s.instance_set.all().exclude(state="DONE").filter(owner=request.user).count()
@@ -52,10 +65,10 @@ def home(request):
     except:
         generated_public_key = -1
     return render_to_response("home.html", RequestContext(request, {
+        'instances': instances,
         'shares': shares,
         'templates': Template.objects.filter(state='READY'),
         'mytemplates': Template.objects.filter(owner=request.user),
-        'instances': _list_instances(request),
         'groups': request.user.person_set.all()[0].owned_groups.all(),
         'semesters': Semester.objects.all(),
         'userdetails': details,
@@ -82,7 +95,8 @@ def ajax_template_delete(request):
         else:
             return HttpResponse(unicode(_("Unexpected error happened.")), status=404)
 
-def ajax_template_name_unique(request, name):
+def ajax_template_name_unique(request):
+    name = request.GET['name']
     s = "True"
     if Template.objects.filter(name=name).exists():
         s = "False"
@@ -92,6 +106,9 @@ def ajax_template_name_unique(request, name):
 def vm_credentials(request, iid):
     try:
         vm = get_object_or_404(Instance, pk=iid, owner=request.user)
+        proto = len(request.META["REMOTE_ADDR"].split('.')) == 1
+        vm.hostname = vm.get_connect_host(use_ipv6=proto)
+        vm.port = vm.get_port(use_ipv6=proto)
         return render_to_response('vm-credentials.html', RequestContext(request, { 'i' : vm }))
     except:
         return HttpResponse(_("Could not get Virtual Machine credentials."), status=404)
@@ -117,6 +134,27 @@ class AjaxTemplateWizard(View):
             'maxshare': maxshare,
             }))
 ajax_template_wizard = login_required(AjaxTemplateWizard.as_view())
+
+class AjaxTemplateEditWizard(View):
+    def get(self, request, id, *args, **kwargs):
+        template = get_object_or_404(Template, id=id)
+        if template.owner != request.user and not template.public and not request.user.is_superuser:
+            raise PermissionDenied()
+        return render_to_response('edit-template-flow.html', RequestContext(request, {
+            'sizes': InstanceType.objects.all(),
+            'template': template,
+            }))
+    def post(self, request, id, *args, **kwargs):
+        template = get_object_or_404(Template, id=id)
+        if template.owner != request.user and not template.public and not request.user.is_superuser:
+            raise PermissionDenied()
+        template.instance_type_id = request.POST['size']
+        template.description = request.POST['description']
+        template.name = request.POST['name']
+        template.save()
+        return redirect(home)
+
+ajax_template_edit_wizard = login_required(AjaxTemplateEditWizard.as_view())
 
 
 class AjaxShareWizard(View):
@@ -166,7 +204,43 @@ class AjaxShareWizard(View):
         return redirect(group)
 ajax_share_wizard = login_required(AjaxShareWizard.as_view())
 
-
+class AjaxShareEditWizard(View):
+    def get(self, request, id, *args, **kwargs):
+        det = UserCloudDetails.objects.get(user=request.user)
+        if det.get_weighted_share_count() >= det.share_quota:
+            return HttpResponse(unicode(_('You do not have any free share quota.')))
+        types = TYPES_L
+        for i, t in enumerate(types):
+            t['deletex'] = datetime.now() + td(seconds=1) + t['delete'] if t['delete'] else None
+            t['suspendx'] = datetime.now() + td(seconds=1) + t['suspend'] if t['suspend'] else None
+            types[i] = t
+        share = get_object_or_404(Share, id=id)
+        return render_to_response('edit-share.html', RequestContext(request, {
+            'share': share,
+            'types': types,
+            }))
+    def post(self, request, id, *args, **kwargs):
+        det = UserCloudDetails.objects.get(user=request.user)
+        share = get_object_or_404(Share, id=id)
+        if share.owner != request.user and not request.user.is_superuser:
+            raise PermissionDenied()
+        stype = request.POST['type']
+        if not stype in TYPES.keys():
+            raise PermissionDenied()
+        il = request.POST['instance_limit']
+        if det.get_weighted_share_count() + int(il)*share.template.instance_type.credit > det.share_quota:
+            messages.error(request, _('You do not have enough free share quota.'))
+            return redirect('/')
+        share.name=request.POST['name']
+        share.description=request.POST['description']
+        share.type=stype
+        share.instance_limit=il
+        share.per_user_limit=request.POST['per_user_limit']
+        share.owner=request.user
+        share.save()
+        messages.success(request, _('Successfully edited share %s.') % share)
+        return redirect(share.group)
+ajax_share_edit_wizard = login_required(AjaxShareEditWizard.as_view())
 
 
 @require_POST
@@ -289,6 +363,14 @@ def vm_show(request, iid):
         ports = inst.firewall_host.list_ports()
     except:
         ports = None
+    try:
+        details = UserCloudDetails.objects.get(user=request.user)
+    except UserCloudDetails.DoesNotExist:
+        details = UserCloudDetails(user=request.user)
+        details.save()
+    proto = len(request.META["REMOTE_ADDR"].split('.')) == 1
+    inst.hostname = inst.get_connect_host(use_ipv6=proto)
+    inst.port = inst.get_port(use_ipv6=proto)
     return render_to_response("show.html", RequestContext(request,{
         'uri': inst.get_connect_uri(),
         'state': inst.state,
@@ -299,6 +381,7 @@ def vm_show(request, iid):
         'i': inst,
         'booting' : not inst.active_since,
         'ports': ports,
+        'userdetails': details
         }))
 
 @require_safe
@@ -306,7 +389,12 @@ def vm_show(request, iid):
 def vm_ajax_instance_status(request, iid):
     inst = get_object_or_404(Instance, id=iid, owner=request.user)
     inst.update_state()
-    return HttpResponse(json.dumps({'booting': not inst.active_since, 'state': inst.state}))
+    return HttpResponse(json.dumps({
+        'booting': not inst.active_since,
+        'state': inst.state,
+        'template': {
+            'state': inst.template.state
+        }}))
 
 @login_required
 def vm_ajax_rename(request, iid):
@@ -336,7 +424,11 @@ class VmPortAddView(View):
             if public >= 22000 and public < 24000:
                 raise ValidationError(_("Port number is in a restricted domain (22000 to 24000)."))
             inst = get_object_or_404(Instance, id=iid, owner=request.user)
-            inst.firewall_host.add_port(proto=request.POST['proto'], public=public, private=int(request.POST['private']))
+            if inst.template.network.nat:
+                private = private=int(request.POST['private'])
+            else:
+                private = 0
+            inst.firewall_host.add_port(proto=request.POST['proto'], public=public, private=private)
             messages.success(request, _(u"Port %d successfully added.") % public)
         except:
             messages.error(request, _(u"Adding port failed."))
@@ -355,7 +447,7 @@ def vm_port_del(request, iid, proto, public):
     inst = get_object_or_404(Instance, id=iid, owner=request.user)
     try:
         inst.firewall_host.del_port(proto=proto, public=public)
-        messages.success(request, _(u"Port %d successfully removed.") % public)
+        messages.success(request, _(u"Port %s successfully removed.") % public)
     except:
         messages.error(request, _(u"Removing port failed."))
     return redirect('/vm/show/%d/' % int(iid))
@@ -413,17 +505,22 @@ def vm_stop(request, iid, *args, **kwargs):
 @require_POST
 def vm_resume(request, iid, *args, **kwargs):
     try:
-        get_object_or_404(Instance, id=iid, owner=request.user).resume()
+        obj = get_object_or_404(Instance, id=iid, owner=request.user)
+        obj.resume()
         messages.success(request, _('Virtual machine is successfully resumed.'))
     except:
         messages.error(request, _('Failed to resume virtual machine.'))
+    try:
+        obj.renew()
+    except:
+        pass
     return redirect('/')
 
 @login_required
 @require_POST
 def vm_renew(request, which, iid, *args, **kwargs):
     try:
-        get_object_or_404(Instance, id=iid, owner=request.user).renew(which)
+        get_object_or_404(Instance, id=iid, owner=request.user).renew()
         messages.success(request, _('Virtual machine is successfully renewed.'))
     except:
         messages.error(request, _('Failed to renew virtual machine.'))
@@ -460,9 +557,13 @@ def key_add(request):
         key.save()
         _update_keys(request.user)
     except ValidationError as e:
-        messages.error(request, ''.join(e.messages))
+        for m in e.messages:
+            messages.error(request, m)
+
     except:
-        messages.error(request, _('Failed to add public key'))
+        messages.error(request, _('Failed to add public key.'))
+    else:
+        messages.success(request, _('Public key successfully added.'))
     return redirect('/')
 
 @login_required
@@ -497,5 +598,23 @@ def _update_keys(user):
     user = user.username
     StoreApi.updateauthorizationinfo(user, password, key_list)
 
+def stat(request):
+    values = subprocess.check_output(['/opt/webadmin/cloud/miscellaneous/stat/stat_wrap.sh'])
+  #  values = '''
+  #  {"CPU": {"USED_CPU": 2, "ALLOC_CPU": 0,
+  #  "FREE_CPU": 98}, "MEM": {"FREE_MEM": 1685432, "ALLOC_MEM":0,
+  #  "USED_MEM": 366284}}'''
+    stat_dict = json.loads(values)
+    return  HttpResponse(render_to_response("stat.html", RequestContext(
+                request, {
+                    'STAT' : stat_dict,
+                }
+            )))
+
+def sites(request, site):
+    if site in [ "legal", "policy", "help", "support" ]:
+        return render_to_response("sites/%s.html" % site, RequestContext(request, {}))
+    else:
+        return redirect(home)
 
 # vim: et sw=4 ai fenc=utf8 smarttab :

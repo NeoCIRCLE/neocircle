@@ -8,6 +8,7 @@ import uuid
 import subprocess
 import ConfigParser
 from pwd import getpwnam
+import multiprocessing
 
 # Get configuration file
 config = ConfigParser.ConfigParser()
@@ -100,23 +101,13 @@ def cmd_download(request, neptun, home_path):
     if not dl_path.startswith(home_path):
         abort(400, 'Invalid download path.')
     dl_hash = str(uuid.uuid4())
-    if( os.path.isfile(dl_path) ):
-        os.symlink(dl_path, ROOT_WWW_FOLDER+'/'+dl_hash)
-        # Debug
-        # redirect('http://store.cloud.ik.bme.hu:8080/dl/'+dl_hash)
+    dl_pub = os.path.join(ROOT_WWW_FOLDER, dl_hash)
+    if os.path.isfile(dl_path):
+        os.symlink(dl_path, dl_pub)
         return json.dumps({'LINK' : SITE_URL+'/dl/'+dl_hash})
     else:
-        try:
-            os.makedirs(TEMP_DIR+'/'+neptun, 0700)
-        except:
-            pass
-        folder_name = os.path.basename(dl_path)
-        temp_path = TEMP_DIR+'/'+neptun+'/'+folder_name+'.zip'
-        with open(os.devnull, "w") as fnull:
-            # zip -rqDj vmi.zip /home/tarokkk/vpn-ik
-            result = subprocess.call(['/usr/bin/zip', '-rqDj', temp_path, dl_path], stdout = fnull, stderr = fnull)
-        os.symlink(temp_path, ROOT_WWW_FOLDER+'/'+dl_hash)
-        return json.dumps({'LINK' : SITE_URL+'/dl/'+dl_hash})
+        shutil.make_archive(dl_pub, 'zip', dl_path)
+        return json.dumps({'LINK' : SITE_URL+'/dl/'+dl_hash+'.zip'})
 COMMANDS['DOWNLOAD'] = cmd_download
 
 # UPLOAD
@@ -127,7 +118,10 @@ def cmd_upload(request, neptun, home_path):
         abort(400, 'Invalid upload path.')
     if os.path.exists(up_path) == True and os.path.isdir(up_path):
         up_hash = str(uuid.uuid4())
-        os.symlink(up_path, ROOT_WWW_FOLDER+'/'+up_hash)
+        link = ROOT_WWW_FOLDER + '/' + up_hash
+        os.symlink(up_path, link)
+        passwd = getpwnam(neptun)
+        os.lchown(link, passwd.pw_uid, passwd.pw_gid)
         return json.dumps({ 'LINK' : SITE_URL+'/ul/'+up_hash})
     else:
         abort(400, 'Upload directory not exists!')
@@ -285,60 +279,60 @@ def upload_allow(hash_num):
     response.set_header('Access-Control-Allow-Headers', 'Content-Type, Content-Range, Content-Disposition, Content-Description')
     return 'ok'
 
+
+def _upload_save(uid, gid, input, path):
+    os.setegid(gid)
+    os.seteuid(uid)
+    try:
+        with open(path, 'wb', 0600) as output:
+            while True:
+                chunk = input.read(256*1024)
+                if not chunk:
+                    break
+                output.write(chunk)
+    finally:
+        input.close()
+
 @route('/ul/<hash_num>', method='POST')
 def upload(hash_num):
-    if not os.path.exists(ROOT_WWW_FOLDER+'/'+hash_num):
+    link = ROOT_WWW_FOLDER+'/'+hash_num
+    if not os.path.exists(link):
         abort (404, 'Token not found!')
     try:
         file_data = request.files.data
         file_name = file_data.filename
     except:
-        if os.path.exists(ROOT_WWW_FOLDER+'/'+hash_num):
-            os.remove(ROOT_WWW_FOLDER+'/'+hash_num)
+        if os.path.exists(link):
+            os.remove(link)
         abort(400, 'No file was specified!')
-    up_path = os.path.realpath(ROOT_WWW_FOLDER+'/'+hash_num+'/'+file_name)
+    up_path = os.path.realpath(link + '/' + file_name)
     if os.path.exists(up_path):
         abort(400, 'File already exists')
-    # Check if upload path valid
     if not up_path.startswith('/home'):
         abort(400, 'Invalid path.')
-
-    os.remove(ROOT_WWW_FOLDER+'/'+hash_num)
-    # Get the real upload path
-    # Delete the hash link
-    # Get the username from path for proper ownership
-    username=up_path.split('/', 3)[2]
-    # os.setegid(getpwnam(username).pw_gid)
-    # os.seteuid(getpwnam(username).pw_uid)
-    # TODO setuid subcommand
-    # Check if file exist (root can overwrite anything not safe)
-    with open(up_path , 'wb') as f:
-        datalength = 0
-        for chunk in fbuffer(file_data.file, chunk_size=1048576):
-            f.write(chunk)
-            datalength += len(chunk)
-    os.chown(up_path, getpwnam(username).pw_uid, getpwnam(username).pw_gid)
-    os.chmod(up_path, 0644)
+    linkstat = os.stat(link)
+    os.remove(link)
+    p = multiprocessing.Process(target=_upload_save,
+            args=(linkstat.st_uid, linkstat.st_gid, file_data.file, up_path, ))
+    try:
+        p.start()
+        p.join()
+    finally:
+        p.terminate()
+    if p.exitcode:
+        abort(400, 'Write failed.')
     try:
         redirect_address = request.headers.get('Referer')
     except:
-	    redirect_address = REDIRECT_URL
+        redirect_address = REDIRECT_URL
     response.set_header('Access-Control-Allow-Origin', '*')
     response.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
     response.set_header('Access-Control-Allow-Headers', 'Content-Type, Content-Range, Content-Disposition, Content-Description')
     redirect(redirect_address)
-    #return 'Upload finished: '+file_name+' - '+str(datalength)+' Byte'
 
 # Return hard quota from quota
 def hard_quota(quota):
     return str(int(int(quota)*1.25))
-
-# Define filebuffer for big uploads
-def fbuffer(f, chunk_size=4096):
-   while True:
-      chunk = f.read(chunk_size)
-      if not chunk: break
-      yield chunk
 
 # Update users .ssh/authorized_keys
 def updateSSHAuthorizedKeys(username, key_list):

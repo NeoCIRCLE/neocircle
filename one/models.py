@@ -14,7 +14,7 @@ from django.db.models.signals import post_save
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
-from firewall.models import Host, Rule, Vlan
+from firewall.models import Host, Rule, Vlan, Record
 from school.models import Person, Group
 from store.api import StoreApi
 from .util import keygen
@@ -224,7 +224,7 @@ class Disk(models.Model):
         return u"%s (#%d)" % (self.name, self.id)
 
     @staticmethod
-    def update():
+    def update(delete=True):
         """Get and register virtual disks from OpenNebula."""
         import subprocess
         proc = subprocess.Popen(["/opt/occi.sh", "storage", "list"],
@@ -244,7 +244,8 @@ class Disk(models.Model):
                 except:
                     Disk(id=id, name=name).save()
                 l.append(id)
-            Disk.objects.exclude(id__in=l).delete()
+            if delete:
+                Disk.objects.exclude(id__in=l).delete()
 
 class Network(models.Model):
     """Virtual networks automatically synchronized with OpenNebula."""
@@ -400,34 +401,46 @@ class Instance(models.Model):
 
     @models.permalink
     def get_absolute_url(self):
-            return ('vm_show', None, {'iid':self.id})
+            return ('one.views.vm_show', None, {'iid':self.id})
 
-    def get_port(self):
+    def get_port(self, use_ipv6=False):
         """Get public port number for default access method."""
         proto = self.template.access_type
-        if self.template.network.nat:
+        if self.template.network.nat and not use_ipv6:
             return {"rdp": 23000, "nx": 22000, "ssh": 22000}[proto] + int(self.ip.split('.')[2]) * 256 + int(self.ip.split('.')[3])
         else:
             return {"rdp": 3389, "nx": 22, "ssh": 22}[proto]
-    def get_connect_host(self):
+    def get_connect_host(self, use_ipv6=False):
         """Get public hostname."""
-        if self.template.network.nat:
-            return 'cloud'
-        else:
-            return self.ip
+        if self.firewall_host is None:
+            return _('None')
+        try:
+            if use_ipv6:
+                return self.firewall_host.record_set.filter(type='AAAA')[0].get_data()['name']
+            else:
+                if self.template.network.nat:
+                    ip = self.firewall_host.pub_ipv4
+                    return Record.objects.filter(type='A', address=ip)[0].get_data()['name']
+                else:
+                    return self.firewall_host.record_set.filter(type='A')[0].get_data()['name']
+        except:
+            if self.template.network.nat:
+                return self.firewall_host.pub_ipv4
+            else:
+                return self.firewall_host.ipv4
 
-    def get_connect_uri(self):
+    def get_connect_uri(self, use_ipv6=False):
         """Get access parameters in URI format."""
         try:
             proto = self.template.access_type
             if proto == 'ssh':
                 proto = 'sshterm'
-            port = self.get_port()
-            host = self.get_connect_host()
+            port = self.get_port(use_ipv6=use_ipv6)
+            host = self.get_connect_host(use_ipv6=use_ipv6)
             pw = self.pw
             return ("%(proto)s:cloud:%(pw)s:%(host)s:%(port)d" %
                     {"port": port, "proto": proto, "pw": pw,
-                     "host": self.firewall_host.pub_ipv4})
+                     "host": host})
         except:
             return
 
@@ -540,11 +553,13 @@ class Instance(models.Model):
         inst.save()
         inst.update_state()
         host = Host(vlan=Vlan.objects.get(name=template.network.name),
-                owner=owner, shared_ip=True)
+                owner=owner)
         host.hostname = hostname
         host.mac = x.getElementsByTagName("MAC")[0].childNodes[0].nodeValue
         host.ipv4 = inst.ip
-        host.pub_ipv4 = Vlan.objects.get(name=template.network.name).snat_ip
+        if inst.template.network.nat:
+            host.pub_ipv4 = Vlan.objects.get(name=template.network.name).snat_ip
+            host.shared_ip = True
         host.ipv6 = "auto"
         try:
             host.save()
@@ -575,7 +590,10 @@ class Instance(models.Model):
         if self.firewall_host:
             h = self.firewall_host
             self.firewall_host = None
-            self.save()
+            try:
+                self.save()
+            except:
+                pass
             h.delete()
 
     def _update_vm(self, template):
@@ -611,12 +629,12 @@ class Instance(models.Model):
         self._change_state("POWEROFF")
     def restart(self):
         self._change_state("RESET")
-    def renew(self, which):
-        if which == 'suspend':
+    def renew(self, which='both'):
+        if which in ['suspend', 'both']:
             self.time_of_suspend = self.share.get_type()['suspendx']
-        elif which == 'delete':
+        if which in ['delete', 'both']:
             self.time_of_delete = self.share.get_type()['deletex']
-        else:
+        if not (which in ['suspend', 'delete', 'both']):
             raise ValueError('No such expiration type.')
         self.save()
     def save_as(self):
@@ -633,7 +651,7 @@ class Instance(models.Model):
     def check_if_is_save_as_done(self):
         if self.state != 'DONE':
             return False
-        Disk.update()
+        Disk.update(delete=False)
         imgname = "template-%d-%d" % (self.template.id, self.id)
         disks = Disk.objects.filter(name=imgname)
         if len(disks) != 1:

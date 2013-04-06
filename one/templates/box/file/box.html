@@ -1,6 +1,7 @@
 {% extends "box/base/box.html" %}
 {% load i18n %}
 {% load l10n %}
+{% load staticfiles %}
 {% get_current_language as LANGUAGE_CODE %}
 
 {% block title %}
@@ -8,21 +9,26 @@
 {% endblock title %}
 {% block boxhelp %}
 <div class="boxhelp">
-    <div class="icon">
-        <img src="/static/icons/information-frame.png" alt="{% trans "Help" %}" />
+    <div class="help">
+        <div class="icon">
+            <img src="{% static "icons/information-frame.png" %}" alt="{% trans "Help" %}" />
+        </div>
+        <div class="boxhelp-box">
+            <p>{% blocktrans %}This is your global data store.{% endblocktrans %}</p>
+            <p>{% blocktrans %}You can access it from all your own virtual machines,
+            the lab client, this web interface, or through SFTP protocol.
+            {% endblocktrans %}</p>
+            <p>{% blocktrans %}This directory is mounted on Windows machines as Z:
+            drive, and on Linux ones as ~/sshfs.{% endblocktrans %}</p>
+            <p>{% blocktrans %}If you log in on lab machines (currently Ubuntu only),
+            you can see this folder also as ~/sshfs.{% endblocktrans %}</p>
+            <p>{% blocktrans with serv=storeserv %}You can also use an SFTP client (eg.
+            WinSCP) to access your files at {{serv}}. You will need to register a
+            public key bellow.{% endblocktrans %}</p>
+        </div>
     </div>
-    <div class="boxhelp-box">
-        <p>{% blocktrans %}This is your global data store.{% endblocktrans %}</p>
-        <p>{% blocktrans %}You can access it from all your own virtual machines,
-        the lab client, this web interface, or through SFTP protocol.
-        {% endblocktrans %}</p>
-        <p>{% blocktrans %}This directory is mounted on Windows machines as Z:
-        drive, and on Linux ones as ~/sshfs.{% endblocktrans %}</p>
-        <p>{% blocktrans %}If you log in on lab machines (currently Ubuntu only),
-        you can see this folder also as ~/sshfs.{% endblocktrans %}</p>
-        <p>{% blocktrans with serv=storeserv %}You can also use an SFTP client (eg.
-        WinSCP) to access your files at {{serv}}. You will need to register a
-        public key bellow.{% endblocktrans %}</p>
+    <div class="icon">
+        <img src="" alt="toggle" title="{% trans "Show/hide box" %}" class="toggle-box" data-id="files" id="toggle-box-files"/>
     </div>
 </div>
 {% endblock %}
@@ -80,7 +86,7 @@
     </li>
     <li class="entry small-row">
         <div class="summary" id="new-folder">
-            <div class="name toplist" data-bind="click: loadTopList">{% trans "Toplist" %}</div>
+            <div class="name toplist" data-bind="click: toggleToplist, text: getToplistText"></div>
             <div class="clear"></div>
         </div>
     </li>
@@ -100,7 +106,7 @@
         </div>
         <div class="details">
             <div class="container">
-                <form style="padding-bottom: 10px" action="/key/add/" method="POST">
+                <form style="padding-bottom: 10px" action="{% url one.views.key_add %}" method="POST">
                     {% csrf_token %}
                     <textarea style="margin-bottom: 5px" name="key" placeholder="{% trans "Public key in OpenSSH format" %}"></textarea><br />
                     <input type="submit" style="margin-left: 10px;" value="{% trans "Save" %}" />
@@ -139,7 +145,7 @@
                     <p id="upload-error-unknown" style="display: none"></p>
                 </div>
                 <div style="display: none" class="upload-zone" id="old-upload-form">
-                    <form action="/" method="POST" data-bind="attr: {action: uploadURL}" enctype="multipart/form-data">
+                    <form action="{% url one.views.home %}" method="POST" data-bind="attr: {action: uploadURL}" enctype="multipart/form-data">
                         <input type="file" name="data" />
                         <input type="submit" value="Feltöltés" />
                     </form>

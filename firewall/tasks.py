@@ -19,44 +19,47 @@ def reload_dhcp_task(data):
 def reload_blacklist_task(data):
     pass
 
+class Periodic(PeriodicTask):
+    run_every = timedelta(seconds=10)
+
+    def run(self, **kwargs):
+
+        if cache.get('dns_lock'):
+            cache.delete("dns_lock")
+            reload_dns_task.delay(dns())
+            print "dns ujratoltese kesz"
+
+        if cache.get('dhcp_lock'):
+            cache.delete("dhcp_lock")
+            reload_dhcp_task.delay(dhcp())
+            print "dhcp ujratoltese kesz"
+
+        if cache.get('firewall_lock'):
+            cache.delete("firewall_lock")
+            ipv4 = Firewall().get()
+            ipv6 = Firewall(True).get()
+            reload_firewall_task.delay(ipv4, ipv6)
+            print "firewall ujratoltese kesz"
+
+        if cache.get('blacklist_lock'):
+            cache.delete("blacklist_lock")
+            reload_blacklist_task.delay(list(ipset()))
+            print "blacklist ujratoltese kesz"
+
 class ReloadTask(Task):
     def run(self, type='Host'):
 
-        sleep=False
-
         if type in ["Host", "Records", "Domain", "Vlan"]:
-            lock = lambda: cache.add("dns_lock", "true", 9)
-            if lock():
-                if not sleep:
-                    sleep = True
-                    time.sleep(10)
-                reload_dns_task.delay(dns())
+            cache.add("dns_lock", "true", 30)
 
         if type == "Host":
-            lock = lambda: cache.add("dhcp_lock", "true", 9)
-            if lock():
-                if not sleep:
-                    sleep = True
-                    time.sleep(10)
-                reload_dhcp_task.delay(dhcp())
+            cache.add("dhcp_lock", "true", 30)
 
         if type in ["Host", "Rule", "Firewall"]:
-            lock = lambda: cache.add("firewall_lock", "true", 9)
-            if lock():
-                if not sleep:
-                    sleep = True
-                    time.sleep(10)
-                ipv4 = firewall().get()
-                ipv6 = firewall(True).get()
-                reload_firewall_task.delay(ipv4, ipv6)
+            cache.add("firewall_lock", "true", 30)
 
         if type == "Blacklist":
-            lock = lambda: cache.add("blacklist_lock", "true", 9)
-            if lock():
-                if not sleep:
-                    sleep = True
-                    time.sleep(10)
-                reload_blacklist_task.delay(list(ipset()))
+            cache.add("blacklist_lock", "true", 30)
 
         print type
 

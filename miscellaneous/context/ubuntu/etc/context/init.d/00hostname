@@ -3,6 +3,12 @@
 echo "En vagyok a $0 !"
 
 hostname "$HOSTNAME"
-echo "$HOSTNAME" > /etc/hostname
+
+if [ "$DISTRO" == "ubuntu" ]; then
+    echo "$HOSTNAME" > /etc/hostname
+fi
+if [ "$DISTRO" == "redhat" ]; then
+    echo -e -n "NETWORKING=yes\nHOSTNAME=$HOSTNAME\n" > /etc/sysconfig/network
+fi
 sed "s/\(127\.0\.1\.1\).*/\1\t$HOSTNAME/" -i /etc/hosts
 

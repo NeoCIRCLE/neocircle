@@ -4,6 +4,15 @@ export BASEDIR=$(dirname $0)
 export USER="cloud"
 export HOME=$(awk -F: -v u=$USER '$1==u{print $6}' /etc/passwd)
 
+if [ -f /etc/lsb-release ]; then
+    export DISTRO=ubuntu
+fi
+
+if [ -f /etc/redhat-release ]; then
+    export DISTRO=redhat
+fi
+
+echo $DISTRO
 mkdir -p "$BASEDIR/mnt"
 cd "$BASEDIR"
 

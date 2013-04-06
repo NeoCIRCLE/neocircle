@@ -1,6 +1,5 @@
 from django.shortcuts import render_to_response
 from django.http import HttpResponse
-from django.shortcuts import render_to_response
 from firewall.models import *
 from firewall.fw import *
 from django.views.decorators.csrf import csrf_exempt
@@ -9,23 +8,27 @@ from django.db import IntegrityError
 from tasks import *
 from celery.task.control import inspect
 from django.utils.translation import ugettext_lazy as _
+from django.template.loader import render_to_string
+from cloud.settings import CLOUD_URL as url
+from django.utils import translation
 
 import re
 import base64
 import json
 import sys
 
+import datetime
+from django.utils.timezone import utc
+from one.tasks import SendMailTask
 
 def reload_firewall(request):
     if request.user.is_authenticated():
         if request.user.is_superuser:
-            html = ((_("Dear %s, you've signed in as administrator!") %
-                    request.user.username) + "<br />" +
-                    _("Reloading in 10 seconds..."))
+            html = (_("Dear %s, you've signed in as administrator!<br />"
+                      "Reloading in 10 seconds...") % request.user.username)
             ReloadTask.delay()
         else:
-            html = (_("Dear %s, you've signed in!")
-                    % request.user.username)
+            html = (_("Dear %s, you've signed in!") % request.user.username)
     else:
         html = _("Dear anonymous, you've not signed in yet!")
     return HttpResponse(html)
@@ -41,16 +44,29 @@ def firewall_api(request):
 
         if command == "blacklist":
             obj, created = Blacklist.objects.get_or_create(ipv4=data["ip"])
+            obj.reason=data["reason"]
+            obj.snort_message=data["snort_message"]
             if created:
-                obj.reason=data["reason"]
-                obj.snort_message=data["snort_message"]
+                try:
+                    obj.host = models.Host.objects.get(ipv4=data["ip"])
+                    user = obj.host.owner
+                    lang = user.person_set.all()[0].language
+                    translation.activate(lang)
+                    msg = render_to_string('mails/notification-ban-now.txt', { 'user': user, 'bl': obj, 'instance:': obj.host.instance_set.get(), 'url': url} )
+                    SendMailTask.delay(to=obj.host.owner.email, subject='[IK Cloud] %s' % obj.host.instance_set.get().name, msg=msg, sender=u'cloud@ik.bme.hu')
+                except (Host.DoesNotExist, ValidationError, IntegrityError, AttributeError):
+                    pass
+            print obj.modified_at + datetime.timedelta(minutes=5)
+            print datetime.datetime.utcnow().replace(tzinfo=utc)
+            if obj.type == 'tempwhite' and obj.modified_at + datetime.timedelta(minutes=1) < datetime.datetime.utcnow().replace(tzinfo=utc):
+                obj.type = 'tempban'
             obj.save()
-            return HttpResponse(unicode(_("OK")));
+            return HttpResponse(unicode(_("OK")))
 
         if not (data["vlan"] == "vm-net" or data["vlan"] == "war"):
             raise Exception(_("Only vm-net and war can be used."))
 
-        data["hostname"] = re.sub(r' ','_', data["hostname"])
+        data["hostname"] = re.sub(r' ', '_', data["hostname"])
 
         if command == "create":
             data["owner"] = "opennebula"
@@ -78,14 +94,13 @@ def firewall_api(request):
             host = models.Host.objects.get(hostname=data["hostname"],
                     owner=owner)
 
-            host.del_rules()
             host.delete()
         else:
             raise Exception(_("Unknown command."))
 
     except (ValidationError, IntegrityError, AttributeError, Exception) as e:
-        return HttpResponse(_("Something went wrong!\n%s\n") % e);
+        return HttpResponse(_("Something went wrong!\n%s\n") % e)
     except:
-        return HttpResponse(_("Something went wrong!\n"));
- 
-    return HttpResponse(unicode(_("OK")));
+        return HttpResponse(_("Something went wrong!\n"))
+
+    return HttpResponse(unicode(_("OK")))

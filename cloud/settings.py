@@ -5,7 +5,7 @@ DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
-    ('IK', 'cloud@iit.bme.hu'),
+    ('IK', 'cloud@cloud.ik.bme.hu'),
 )
 
 MANAGERS = ADMINS
@@ -73,6 +73,7 @@ STATICFILES_DIRS = (
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
 	'/opt/webadmin/cloud/one/static',
+	'/opt/webadmin/cloud/cloud/static',
 )
 
 # List of finder classes that know how to find static files in
@@ -108,6 +109,17 @@ ROOT_URLCONF = 'cloud.urls'
 
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'cloud.wsgi.application'
+
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.contrib.auth.context_processors.auth',
+    'django.core.context_processors.debug',
+    'django.core.context_processors.i18n',
+    'django.core.context_processors.media',
+    'django.core.context_processors.static',
+    'django.core.context_processors.tz',
+    'django.contrib.messages.context_processors.messages',
+    'cloud.context_processors.process_debug',
+)
 
 TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
@@ -186,20 +198,21 @@ CELERY_ROUTES = {
     'firewall.tasks.reload_firewall_task': {'queue': 'firewall'},
     'firewall.tasks.reload_dhcp_task': {'queue': 'dhcp'},
     'firewall.tasks.reload_blacklist_task': {'queue': 'firewall'},
+    'firewall.tasks.Periodic': {'queue': 'local'},
+    'one.tasks.SendMailTask': {'queue': 'local'},
 }
 
 store_settings = {
-        "basic_auth": "True",
-        "verify_ssl": "False",
-        "ssl_auth": "False",
-        "store_client_pass":  "IQu8Eice",
-        "store_client_user":  "admin",
-        "store_client_key": "/opt/webadmin/cloud/client.key",
-        "store_client_cert": "/opt/webadmin/cloud/client.crt",
-        "store_url": "http://localhost:9000",
-        "store_public": "store.ik.bme.hu",
+    "basic_auth": "True",
+    "verify_ssl": "False",
+    "ssl_auth": "False",
+    "store_client_pass":  "IQu8Eice",
+    "store_client_user":  "admin",
+    "store_client_key": "/opt/webadmin/cloud/client.key",
+    "store_client_cert": "/opt/webadmin/cloud/client.crt",
+    "store_url": "http://localhost:9000",
+    "store_public": "store.ik.bme.hu",
 }
-
 
 firewall_settings = {
     "default_vlangroup": "publikus",
@@ -209,6 +222,9 @@ firewall_settings = {
     "dns_ip": "152.66.243.60",
     "dns_ttl": "300",
 }
+
+EMAIL_HOST='152.66.243.92' # giccero ipv4
+CLOUD_URL='https://cloud.ik.bme.hu/'
 
 try:
     from cloud.local_settings import *

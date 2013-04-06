@@ -1,5 +1,6 @@
 {% extends "box/base/entry.html" %}
 {% load i18n %}
+{% load staticfiles %}
 {% get_current_language as LANGUAGE_CODE %}
 
 {% block content %}
@@ -19,7 +20,7 @@
     </div>
     <div class="actions">
         <a href="#" class="remove" data-gid="{{group.id}}" data-neptun="{{member.code}}">
-            <img src="/static/icons/minus-circle.png" alt="{% trans 'Remove' %}" />
+            <img src="{% static "icons/minus-circle.png" %}" alt="{% trans 'Remove' %}" />
         </a>
     </div>
     <div class="clear"></div>

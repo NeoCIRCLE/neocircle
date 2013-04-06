@@ -1,6 +1,7 @@
 {% load i18n %}
+{% load staticfiles %}
 {% get_current_language as LANGUAGE_CODE %}
-<form action="/vm/new/{{base.id}}/" method="post" id="template-wizard">
+<form action="{% url new_vm_from_template base.id %}" method="post" id="template-wizard">
     {% csrf_token %}
     <div id="new-template-step-2" class="wizard">
         <div class="progress">
@@ -75,7 +76,7 @@
                             var s = $(self).val();
                             $.ajax({
                                 'type': 'GET',
-                                'url': '/ajax/template_name_unique/' + s,
+                                'url': '{% url one.views.ajax_template_name_unique %}?name=' + s,
                                 'success': function(data, b, c) {
                                     if (s != $("#new-template-name").val()) {
                                         return true;
@@ -99,7 +100,7 @@
                     e.preventDefault();
                     $.ajax({
                         'type': 'GET',
-                        'url': '/ajax/template_name_unique/' + $("#new-template-name").val(),
+                        'url': '{% url one.views.ajax_template_name_unique %}?name=' + $("#new-template-name").val(),
                         'success': function(data, b, c) {
                             if (data == "True") {
                                 $("#template-wizard").unbind('submit').submit()

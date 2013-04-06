@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load staticfiles %}
+{% get_current_language as LANGUAGE_CODE %}
+
+
+{% block content %}
+<div class="irasmu">
+    <p>A súgó elkészültéig kérjük szíves türelmüket.</p>
+    <p>Addig is ajánljuk figyelmükbe a rendszer <a href="/info/">rövid ismertetőjét</a>, a használat módját részletező <a href="/sites/policy/">szabályzatot</a>, valamint a felület számos pontján megjelenő <img src="{% static "icons/information-frame.png" %}" alt="Súgó" /> ikonnal jelölt információdobozokat.</p>
+    <p>Amennyiben kérdése maradt, örömmel segítünk a <a href="/sites/support/">támogatás</a> oldalon leírt elérhetőségeinken.</p>
+</div>
+{% endblock %}

@@ -1,5 +1,6 @@
 {% extends "box/base/entry.html" %}
 {% load i18n %}
+{% load staticfiles %}
 {% get_current_language as LANGUAGE_CODE %}
 
 {% block content %}
@@ -26,7 +27,7 @@
     </li>
     <li class="template">
         {% trans "Type" %}:
-        <span class="value">{{vm.share.type}}</span>
+        <span class="value">{% if vm.share %}{{vm.share.type}}{% else %}{% trans "Try" %}{% endif %}</span>
         <div class="clear"></div>
     </li>
     <li class="template">
@@ -56,9 +57,9 @@
     <li class="date">
         {% trans "time of suspend"|capfirst %}:
         <span class="value"> <abbr title="{{vm.time_of_suspend}}">{{vm.time_of_suspend|timeuntil}}</abbr>
-            <a href="#"  class="renew-vm-button renew-suspend-vm-button" data-id="{{ vm.id }}" title="{% trans "Renew suspend time" %}">
-                <img src="/static/icons/control-double.png" alt="{% trans "Renew suspend time" %}" />
-            </a>
+            {% if vm.share %}<a href="#"  class="renew-vm renew-suspend-vm" data-id="{{ vm.id }}" title="{% trans "Renew suspend time" %}">
+                <img src="{% static "icons/control-double.png" %}" alt="{% trans "Renew suspend time" %}" />
+            </a>{% endif %}
         </span>
     </li>
     {% endif %}
@@ -66,16 +67,16 @@
     <li class="date">
         {% trans "time of delete"|capfirst %}:
         <span class="value"> <abbr title="{{vm.time_of_delete}}">{{vm.time_of_delete|timeuntil}}</abbr>
-            <a href="#"  class="renew-vm-button renew-delete-vm-button" data-id="{{ vm.id }}" title="{% trans "Renew deletion time" %}">
-                <img src="/static/icons/control-double.png" alt="{% trans "Renew deletion time" %}" />
-            </a>
+            {% if vm.share %}<a href="#"  class="renew-vm renew-delete-vm" data-id="{{ vm.id }}" title="{% trans "Renew deletion time" %}">
+                <img src="{% static "icons/control-double.png" %}" alt="{% trans "Renew deletion time" %}" />
+            </a>{% endif %}
         </span>
     </li>
     {% endif %}
     <li>
         &nbsp;
         <span class="value">
-            <a href="/vm/show/{{vm.id}}/" title="{{vm.name}}">{% trans "More details" %}</a>
+            <a href="{{ vm.get_absolute_url }}" title="{{vm.name}}">{% trans "More details" %}</a>
         </span>
     </li>
 </ul>

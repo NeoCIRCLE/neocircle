@@ -1,7 +1,28 @@
 {% extends "box/base/box.html" %}
 {% load i18n %}
 {% load l10n %}
+{% load staticfiles %}
 {% get_current_language as LANGUAGE_CODE %}
+
+{% block boxhelp %}
+<div class="boxhelp">
+    <div class="help">
+        <div class="icon">
+            <img src="{% static "icons/information-frame.png" %}" alt="{% trans "Help" %}" />
+        </div>
+        <div class="boxhelp-box">
+            <p>{% blocktrans %}This is the list of groups you own.{% endblocktrans %}</p>
+            <p>{% blocktrans %}Groups are collections of users.{% endblocktrans %}</p>
+            <p>{% blocktrans %}You can share templates with your groups, so
+            that they can run instances of those templates.
+            {% endblocktrans %}</p>
+        </div>
+    </div>
+    <div class="icon">
+        <img src="" alt="toggle" title="{% trans "Show/hide box" %}" class="toggle-box" data-id="groups" id="toggle-box-groups"/>
+    </div>
+</div>
+{% endblock %}
 
 {% block title %}
     {% trans "My Groups" %}
@@ -36,7 +57,7 @@
             <div class="clear"></div>
         </div>
         <div id="new-group-wizard" style="display: none">
-            <form action="/group/new/" method="POST" class="wizard">
+            <form action="{% url school.views.group_new %}" method="POST" class="wizard">
                 {% csrf_token %}
                 <h3>{% trans "Create new group" %}</h3>
                 <ul>

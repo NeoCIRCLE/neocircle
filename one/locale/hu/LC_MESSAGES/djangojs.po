@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-02-21 18:06+0100\n"
-"PO-Revision-Date: 2013-02-21 18:09+0100\n"
+"POT-Creation-Date: 2013-03-07 18:16+0100\n"
+"PO-Revision-Date: 2013-03-07 17:02+0100\n"
 "Last-Translator: \n"
 "Language-Team: Hungarian <cloud@ik.bme.hu>\n"
 "Language: hu\n"
@@ -17,108 +17,117 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "X-Generator: Lokalize 1.4\n"
 
-#: static/script/cloud.js:24
+#: static/script/cloud.js:24 static/script/cloud.min.js:1
 msgid "Are you sure deleting key?"
 msgstr "Biztosan törli a kulcsot?"
 
-#: static/script/cloud.js:24 static/script/cloud.js.c:246
-#: static/script/cloud.js:320 static/script/cloud.js.c:533
-#: static/script/store.js:273
+#: static/script/cloud.js:24 static/script/cloud.js.c:296
+#: static/script/cloud.js:370 static/script/cloud.js.c:623
+#: static/script/cloud.min.js:1 static/script/store.js:288
+#: static/script/store.min.js:1
 msgid "Delete"
 msgstr "Törlés"
 
-#: static/script/cloud.js:36
+#: static/script/cloud.js:36 static/script/cloud.min.js:1
 msgid ""
 "Are you sure about reseting store credentials?<br /> You will lose your "
 "access to your store account on your existing virtual machines!"
 msgstr ""
-"Biztosan újragenerálja az adattár-kulcsait?<br /> "
-"El fogja veszteni az adattár-hozzáférést a már futó virtuális gépekből!"
+"Biztosan újragenerálja az adattár-kulcsait?<br /> El fogja veszteni az "
+"adattár-hozzáférést a már futó virtuális gépekből!"
 
-#: static/script/cloud.js:36
+#: static/script/cloud.js:36 static/script/cloud.min.js:1
 msgid "Reset"
 msgstr "Újragenerálás"
 
-#: static/script/cloud.js:65 static/script/store.js:309
+#: static/script/cloud.js:75 static/script/cloud.min.js:1
+#: static/script/store.js:323 static/script/store.min.js:1
 msgid "Rename"
 msgstr "Átnevezés"
 
-#: static/script/cloud.js:221 static/script/store.js:273
+#: static/script/cloud.js:271 static/script/cloud.min.js:1
+#: static/script/store.js:288 static/script/store.min.js:1
 msgid "Cancel"
 msgstr "Mégsem"
 
-#: static/script/cloud.js:235
+#: static/script/cloud.js:285 static/script/cloud.min.js:1
 #, c-format
 msgid "Are you sure stopping %s?"
 msgstr "Biztosan felfüggeszti a következőt: %s?"
 
-#: static/script/cloud.js:236
+#: static/script/cloud.js:286 static/script/cloud.min.js:1
 msgid "Stop"
 msgstr "Felfüggesztés"
 
-#: static/script/cloud.js:245
+#: static/script/cloud.js:295 static/script/cloud.min.js:1
 #, c-format
 msgid "Are you sure deleting %s?"
 msgstr "Biztosan törli a következőt: %s?"
 
-#: static/script/cloud.js:255
+#: static/script/cloud.js:305 static/script/cloud.min.js:1
 #, c-format
 msgid "Are you sure restarting %s?"
 msgstr "Biztosan újraindítja a következőt: %s?"
 
-#: static/script/cloud.js:256
+#: static/script/cloud.js:306 static/script/cloud.min.js:1
 msgid "Restart"
 msgstr "Újraindítás"
 
-#: static/script/cloud.js:319
+#: static/script/cloud.js:369 static/script/cloud.min.js:1
 #, c-format
 msgid "Are you sure deleting this %s template?"
 msgstr "Biztosan törli a következő sablont: %s?"
 
-#: static/script/cloud.js:452 static/script/cloud.js.c:459
+#: static/script/cloud.js:547 static/script/cloud.js.c:550
+#: static/script/cloud.min.js:1
 msgid "Add owner"
 msgstr "Tulajdonos hozzáadása"
 
-#: static/script/cloud.js:457
+#: static/script/cloud.js:550 static/script/cloud.min.js:1
 msgid "Unknown"
 msgstr "Ismeretlen"
 
-#: static/script/cloud.js:533
+#: static/script/cloud.js:623 static/script/cloud.min.js:1
 #, c-format
 msgid "Are you sure deleting <strong>%s</strong>"
 msgstr "Törli a következő fájlt: <strong>%s</strong>"
 
-#: static/script/store.js:57 static/script/store.js.c:66
-#: static/script/store.js:75 static/script/store.js.c:205
-#: static/script/store.js:267
+#: static/script/store.js:52 static/script/store.js.c:61
+#: static/script/store.js:70 static/script/store.js.c:220
+#: static/script/store.js:282 static/script/store.min.js:1
 msgid "file"
 msgstr "fájl"
 
-#: static/script/store.js:268
+#: static/script/store.js:125 static/script/store.min.js:1
+msgid "Toplist"
+msgstr "Legújabb fájlok"
+
+#: static/script/store.js:127 static/script/store.min.js:1
+msgid "Back to the root folder"
+msgstr "Vissza a gyökérmappába"
+
+#: static/script/store.js:283 static/script/store.min.js:1
 #, c-format
 msgid "You are removing the file <strong>%s</strong>."
 msgstr "Törli a következő fájlt: <strong>%s</strong>."
 
-#: static/script/store.js:270
+#: static/script/store.js:285 static/script/store.min.js:1
 #, c-format
 msgid "You are removing the folder <strong>%s</strong> (and its content)."
 msgstr "Törli a következő könyvtárat és tartalmát: <strong>%s</strong>."
 
-#: static/script/store.js:273
+#: static/script/store.js:288 static/script/store.min.js:1
 msgid "Are you sure?"
 msgstr "Biztos benne?"
 
-#: static/script/store.js:427 static/script/store.js.c:429
+#: static/script/store.js:446 static/script/store.js.c:448
+#: static/script/store.min.js:1
 msgid "Upload"
 msgstr "Feltöltés"
 
-#: static/script/store.js:429
+#: static/script/store.js:448 static/script/store.min.js:1
 msgid "done, processing..."
 msgstr "kész, feldolgozás..."
-
-#, fuzzy
-#~ msgid "Are you sure about reseting store credentials"
-#~ msgstr "Biztosan újraindítja a következőt: %s?"
 
 #~ msgid "Please choose a different name."
 #~ msgstr "Kérem, válasszon eltérő nevet."
