@@ -158,7 +158,6 @@ class SshKey(models.Model):
 
 TEMPLATE_STATES = (("INIT", _('init')), ("PREP", _('perparing')),
         ("SAVE", _('saving')), ("READY", _('ready')))
-
 TYPES = {"LAB": {"verbose_name": _('lab'), "id": "LAB",
                  "suspend": td(hours=5), "delete": td(days=15),
                  "help_text": _('For lab or homework with short lifetime.')},
@@ -169,6 +168,7 @@ TYPES = {"LAB": {"verbose_name": _('lab'), "id": "LAB",
                     "suspend": td(days=365), "delete": None,
                     "help_text": _('For long-term server use.')},
          }
+DEFAULT_TYPE = TYPES['LAB']
 TYPES_L = sorted(TYPES.values(), key=lambda m: m["suspend"])
 TYPES_C = tuple([(i[0], i[1]["verbose_name"]) for i in TYPES.items()])
 
@@ -188,13 +188,23 @@ class Share(models.Model):
                 'user.'))
     owner = models.ForeignKey(User, null=True, blank=True, related_name='share_set')
 
-    def get_type(self):
-        t = TYPES[self.type]
+    class Meta:
+        ordering = ['group', 'template', 'owner', ]
+        verbose_name = _('share')
+        verbose_name_plural = _('shares')
+
+    @classmethod
+    def extend_type(cls, t):
         t['deletex'] = (datetime.now() + td(seconds=1) + t['delete']
                 if t['delete'] else None)
         t['suspendx'] = (datetime.now() + td(seconds=1) + t['suspend']
                 if t['suspend'] else None)
         return t
+
+    def get_type(self):
+        t = TYPES[self.type]
+        return self.extend_type(t)
+
     def get_running_or_stopped(self, user=None):
         running = (Instance.objects.all().exclude(state='DONE')
             .filter(share=self))
@@ -210,8 +220,13 @@ class Share(models.Model):
             return running.filter(owner=user).count()
         else:
             return running.count()
+
     def get_instance_pc(self):
         return float(self.get_running()) / self.instance_limit * 100
+
+    def __unicode__(self):
+        return u"%(group)s: %(tpl)s %(owner)s" % {
+                'group': self.group, 'tpl': self.template, 'owner': self.owner}
 
 class Disk(models.Model):
     """Virtual disks automatically synchronized with OpenNebula."""
@@ -220,6 +235,8 @@ class Disk(models.Model):
 
     class Meta:
         ordering = ['name']
+        verbose_name = _('disk')
+        verbose_name_plural = _('disks')
 
     def __unicode__(self):
         return u"%s (#%d)" % (self.name, self.id)
@@ -259,6 +276,9 @@ class Network(models.Model):
 
     class Meta:
         ordering = ['name']
+        verbose_name = _('network')
+        verbose_name_plural = _('networks')
+
 
     def __unicode__(self):
         return self.name
@@ -285,6 +305,8 @@ class Network(models.Model):
                     Network(id=id, name=name).save()
                 l.append(id)
             Network.objects.exclude(id__in=l).delete()
+    def get_vlan(self):
+        return Vlan.objects.get(vid=self.id)
 
 
 class InstanceType(models.Model):
@@ -298,6 +320,8 @@ class InstanceType(models.Model):
 
     class Meta:
         ordering = ['credit']
+        verbose_name  = _('instance type')
+        verbose_name_plural = _('instance types')
 
     def __unicode__(self):
         return u"%s" % self.name
@@ -332,6 +356,8 @@ class Template(models.Model):
     class Meta:
         verbose_name = _('template')
         verbose_name_plural = _('templates')
+        ordering = ['name', ]
+
 
     def __unicode__(self):
         return self.name
@@ -357,7 +383,7 @@ class Template(models.Model):
 
 class Instance(models.Model):
     """Virtual machine instance."""
-    name = models.CharField(max_length=100, unique=True,
+    name = models.CharField(max_length=100,
             verbose_name=_('name'), blank=True)
     ip = models.IPAddressField(blank=True, null=True,
             verbose_name=_('IP address'))
@@ -396,6 +422,7 @@ class Instance(models.Model):
     class Meta:
         verbose_name = _('instance')
         verbose_name_plural = _('instances')
+        ordering = ['pk', ]
 
     def __unicode__(self):
         return self.name
@@ -407,28 +434,17 @@ class Instance(models.Model):
     def get_port(self, use_ipv6=False):
         """Get public port number for default access method."""
         proto = self.template.access_type
-        if self.template.network.nat and not use_ipv6:
+        if self.nat and not use_ipv6:
             return {"rdp": 23000, "nx": 22000, "ssh": 22000}[proto] + int(self.ip.split('.')[2]) * 256 + int(self.ip.split('.')[3])
         else:
             return {"rdp": 3389, "nx": 22, "ssh": 22}[proto]
+
     def get_connect_host(self, use_ipv6=False):
         """Get public hostname."""
         if self.firewall_host is None:
             return _('None')
-        try:
-            if use_ipv6:
-                return self.firewall_host.record_set.filter(type='AAAA')[0].get_data()['name']
-            else:
-                if self.template.network.nat:
-                    ip = self.firewall_host.pub_ipv4
-                    return Record.objects.filter(type='A', address=ip)[0].get_data()['name']
-                else:
-                    return self.firewall_host.record_set.filter(type='A')[0].get_data()['name']
-        except:
-            if self.template.network.nat:
-                return self.firewall_host.pub_ipv4
-            else:
-                return self.firewall_host.ipv4
+        proto = 'ipv6' if use_ipv6 else 'ipv4'
+        return self.firewall_host.get_hostname(proto=proto)
 
     def get_connect_uri(self, use_ipv6=False):
         """Get access parameters in URI format."""
@@ -472,6 +488,15 @@ class Instance(models.Model):
             self.check_if_is_save_as_done()
         return x
 
+    @property
+    def nat(self):
+        if self.firewall_host is not None:
+            return self.firewall_host.shared_ip
+        elif self.template is not None:
+            return self.template.network.nat
+        else:
+            return False
+
     def get_age(self):
         """Get age of VM in seconds."""
         from datetime import datetime
@@ -491,7 +516,7 @@ class Instance(models.Model):
         inst = Instance(pw=pwgen(), template=template, owner=owner,
                 share=share, state='PENDING')
         inst.save()
-        hostname = u"cloud-%d" % (inst.id, )
+        hostname = u"%d" % (inst.id, )
         with tempfile.NamedTemporaryFile(delete=False) as f:
             os.chmod(f.name, stat.S_IRUSR|stat.S_IWUSR|stat.S_IRGRP|stat.S_IROTH)
             token = signing.dumps(inst.id, salt='activate')
@@ -638,12 +663,19 @@ class Instance(models.Model):
 
     def renew(self, which='both'):
         if which in ['suspend', 'both']:
-            self.time_of_suspend = self.share.get_type()['suspendx']
+            self.time_of_suspend = self.share_type['suspendx']
         if which in ['delete', 'both']:
-            self.time_of_delete = self.share.get_type()['deletex']
+            self.time_of_delete = self.share_type['deletex']
         if not (which in ['suspend', 'delete', 'both']):
             raise ValueError('No such expiration type.')
         self.save()
+
+    @property
+    def share_type(self):
+        if self.share:
+            return self.share.get_type()
+        else:
+            return Share.extend_type(DEFAULT_TYPE)
 
     def save_as(self):
         """Save image and shut down."""

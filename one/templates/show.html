@@ -37,6 +37,10 @@
 </script>
 {% endblock %}
 
+{% block title %}
+{% blocktrans with name=i.name %}Details of {{name}}{% endblocktrans %}
+- {{block.super}}
+{% endblock %}
 {% block content %}
 
 {% if i.template.state != "READY" %}
@@ -141,35 +145,62 @@
                 {% csrf_token %}
                 <table>
                     <tr>
-                        <th>{% trans "Protocol" %}</th>
-                        <th>{% trans "Public port" %}</th>
-                        {% if i.template.network.nat %}<th colspan="2">{% trans "Private port" %}</th>{%endif%}
+                        <th>{% trans "Port" %}</th>
+                        <th colspan="2">{% trans "Access" %}</th>
                     </tr>
                     {% for port in ports %}
-                    <tr>
-                        <td>{{port.proto}}</td>
-                        <td>{{port.public}}</td>
-                        {% if i.template.network.nat %}<td>{{port.private}}</td>{%endif%}
-                        <td>
-                            <a href="{% url one.views.vm_port_del i.id port.proto port.public %}">{% trans "Delete" %}</a>
+                    <tr{% if i.is_ipv6 %} class="faded"{% endif %}>
+                        <td>{{port.private}}/{{port.proto}}</td>
+                        <td style="white-space: nowrap;">
+                            {% if port.private == 80 or port.private == 8080 or port.private == 8000 %}
+                            <a href="http://{{port.ipv4.host}}:{{port.ipv4.port}}">
+                                {{port.ipv4.host}}:{{port.ipv4.port}}
+                            </a>
+                            {% elif port.private == 443 %}
+                            <a href="https://{{port.ipv4.host}}:{{port.ipv4.port}}">{{port.ipv4.host}}:{{port.ipv4.port}}</a>
+                            {% else %}
+                            {{port.ipv4.host}}:{{port.ipv4.port}}
+                            {% endif %}
                         </td>
+                        {% if not i.is_ipv6 %}
+                        <td>
+                            <a href="{% url one.views.vm_port_del i.id port.proto port.private %}">{% trans "Delete" %}</a>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    <tr{% if not i.is_ipv6 %} style="display: none"{% endif %}>
+                        <td>{{port.private}}/{{port.proto}}6</td>
+                        <td style="white-space: nowrap;">
+                            {% if port.private == 80 or port.private == 8080 or port.private == 8000 %}
+                            <a href="http://{{port.ipv6.host}}:{{port.ipv6.port}}">
+                                {{port.ipv6.host}}:{{port.ipv6.port}}
+                            </a>
+                            {% elif port.private == 443 %}
+                            <a href="https://{{port.ipv6.host}}:{{port.ipv6.port}}">
+                                {{port.ipv6.host}}:{{port.ipv6.port}}
+                            </a>
+                            {% else %}
+                            {{port.ipv6.host}}:{{port.ipv6.port}}
+                            {% endif %}
+                        </td>
+                        {% if i.is_ipv6 %}
+                        <td>
+                            <a href="{% url one.views.vm_port_del i.id port.proto port.private %}">{% trans "Delete" %}</a>
+                        </td>
+                        {% endif %}
                     </tr>
                     {% endfor %}
                     <tr>
-                        <td>
-                            <select style="min-width:50px;" name=proto>
+                        <th colspan="3">{% trans "Port/Protocol" %}</th>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <input style="min-width:50px;width:50px;" type="text" name="port"/>/
+                            <select style="min-width:50px;" name="proto">
                                 <option value="tcp">tcp</option>
                                 <option value="udp">udp</option>
                             </select>
                         </td>
-                        <td>
-                            <input style="min-width:70px;width:70px;" type="text" name="public"/>
-                        </td>
-                        {% if i.template.network.nat %}
-                        <td>
-                            <input style="min-width:70px;width:70px;" type="text" name="private"/>
-                        </td>
-                        {% endif %}
                         <td>
                             <input type="submit" style="min-width:3em" value="{% trans "Add" %}" />
                         </td>

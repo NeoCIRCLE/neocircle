@@ -37,11 +37,11 @@
                 {% for s in sizes %}
                 <p id="new-template-size-summary-{{s.id}}" class="size-summary clear"
                 {% if s != base.instance_type %}style="display:none"{% endif %}>
-                    <span class="cpu">
+                    <span title="{% trans 'CPU cores' %}" class="cpu">
                         {% blocktrans count n=s.CPU %}{{n}} core{% plural %}{{n}} cores{% endblocktrans %}
                     </span>
-                    <span class="memory">{{s.RAM}} MiB</span>
-                    <span class="credit">{{s.credit}}</span>
+                    <span title="{% trans 'RAM' %}" class="memory">{{s.RAM}} MiB</span>
+                    <span title="{% trans 'Credit' %}" class="credit">{{s.credit}}</span>
                 </p>
                 {% endfor %}
                 <div class="clear"></div>

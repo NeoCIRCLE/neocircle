@@ -419,6 +419,15 @@ body > footer {
     }
 }
 
+.host-toggle {
+    .v6 {
+        display: none;
+    }
+}
+.ipv4host {
+    display: none;
+}
+
 @media (max-width: 900px) {
     #content {
         width: 100%;
@@ -437,4 +446,11 @@ body > footer {
     body {
         font-size: 1.1em;
     }
+}
+
+.vendor (@prop, @val) {
+    -foo: ~"bar; -webkit-@{prop}: @{val}; -moz-@{prop}: @{val}; -ms-@{prop}: @{val}; -o-@{prop}: @{val}; @{prop}: @{val};";
+}
+.vendorVal (@prop, @val, @arg) {
+    -foo: ~"bar; @{prop}: -webkit-@{val}(@{arg}); @{prop}: -moz-@{val}(@{arg}); @{prop}: -ms-@{val}(@{arg}); @{prop}: -o-@{val}(@{arg}); @{prop}: @{val}(@{arg});";
 }

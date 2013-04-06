@@ -9,7 +9,24 @@ $(function() {
             $(this).next('.details').slideDown(700);
         }
     })
-    $('a').click(function(e) {
+    $('a[href=#]').click(function(e) {
+        e.preventDefault();
+    });
+    $('.host-toggle').click(function(e){
+        e.preventDefault();
+        if($(this).find('.v4').is(':hidden')){
+            $(this).find('.v4').show();
+            $(this).find('.v6').hide();
+            $(this).parent().next().find('.host').show();
+            $(this).parent().next().find('.ipv4host').hide();
+        } else {
+            $(this).find('.v6').show();
+            $(this).find('.v4').hide();
+            $(this).parent().next().find('.host').hide();
+            $(this).parent().next().find('.ipv4host').show();
+        }
+    });
+    $('a[href!=#]').click(function(e) {
         e.stopPropagation();
     });
     $('.delete-template').click(function(e) {
@@ -64,12 +81,14 @@ $(function() {
         var content = $('#vm-' + id + '-name').html();
         var self=this;
         var url = $(this).data('url');
+        $('#vm-'+id).addClass('editing');
         $(this).unbind('click').click(function(e){
             e.preventDefault();
             e.stopPropagation();
             $(this).unbind('click').click(handler);
             $('#vm-' + id + '-name-details').show();
             $('#vm-' + id + '-name').html(content);
+            $('#vm-'+id).removeClass('editing');
         })
         $('#vm-' + id + '-name-details').hide();
         $('#vm-' + id + '-name').html('<input type="text" value="' + oldName + '" />\
@@ -91,6 +110,8 @@ $(function() {
                     $('#vm-' + id + '-name-details').removeAttr('style');
                     $('#vm-' + id + '-name').text(data.name);
                     $(self).click(handler);
+                    $(self).data('name', newName);
+                    $('#vm-'+id).removeClass('editing');
                 }
             });
         })
@@ -120,7 +141,7 @@ $(function() {
         e.stopPropagation();
         restart_vm($(this).data('id'), $(this).data('name'));
     });
-    $('.renew-suspend-vm').click(function(e) {
+    $('.entry').on('click', '.renew-suspend-vm', function(e) {
         e.preventDefault();
         e.stopPropagation();
         renew_suspend_vm($(this).data('id'))
@@ -255,6 +276,20 @@ $(function() {
     function get_vm_details(id) {
         $.get('/vm/credentials/' + id, function(data) {
             $('#modal-container').html(data);
+            $('#modal-container .host-toggle').click(function(e){
+                e.preventDefault();
+                if($(this).find('.v4').is(':hidden')){
+                    $(this).find('.v4').show();
+                    $(this).find('.v6').hide();
+                    $(this).parent().next().find('.host').show();
+                    $(this).parent().next().find('.ipv4host').hide();
+                } else {
+                    $(this).find('.v6').show();
+                    $(this).find('.v4').hide();
+                    $(this).parent().next().find('.host').hide();
+                    $(this).parent().next().find('.ipv4host').show();
+                }
+            });
             $('#modal-container .hidden-password').click(function() {
                 if ($(this).attr('type') == 'password') {
                     $(this).attr('type', 'text');
@@ -282,6 +317,8 @@ $(function() {
             $('#modal').hide();
         });
     }
+
+    cloud.confirm=vm_confirm_popup;
     /**
      * Manage VM State (STOP)
      */
@@ -324,7 +361,11 @@ $(function() {
      */
 
     function renew_suspend_vm(id) {
-        manage_vm(id, "renew/suspend")
+        manage_vm(id, "renew/suspend", function(data) {
+            //workaround for some strange jquery parse error :o
+            var foo=$('<div />').append(data);
+            $('#vm-'+id+' .details-container').replaceWith(foo.find('.details-container'));
+        });
     }
     /**
      * Renew vm deletion time.
@@ -337,12 +378,14 @@ $(function() {
      * Manage VM State generic
      */
 
-    function manage_vm(id, state) {
+    function manage_vm(id, state, f) {
         $.ajax({
             type: 'POST',
             url: '/vm/' + state + '/' + id + '/',
             success: function(data, b, c) {
-                if (state == "resume") {
+                if(f) {
+                    f(data);
+                } else if (state == "resume") {
                     window.location.href = '/vm/show/' + id + "/";
                 } else {
                     window.location.reload();
@@ -371,7 +414,7 @@ $(function() {
     function delete_template_confirm(url, id, name) {
         confirm_message = interpolate(gettext("Are you sure deleting this %s template?"), ["<strong>" + name + "</strong>"])
         vm_confirm_popup(confirm_message, gettext("Delete"), function() {
-            delete_template(id)
+            delete_template(url, id)
         })
     }
     /**
@@ -389,7 +432,8 @@ $(function() {
                     alert(data['responseText']);
                 },
                 200: function(data) {
-                    $("#t" + id).remove()
+                    $("#t" + id).remove();
+                    alert(gettext('Template deletion successful!'));
                 },
 
             }

@@ -11,7 +11,7 @@
 
 {% block name %}
 <div class="name {% if vm.state == 'ACTIVE' %}vm-on{% else %}vm-off{% endif %}">
-    <span id="vm-{{vm.id}}-name">{{vm.name|truncatechars:20}}</span>
+    <span id="vm-{{vm.id}}-name">{{vm.name}}</span>
     <small id="vm-{{vm.id}}-name-details" class="details">
         (<a href="{{ vm.get_absolute_url }}" title="{{vm.name}}">{% trans "More details" %}</a>)
     </small>

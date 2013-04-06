@@ -198,7 +198,7 @@ def gui(request):
             else:
                 return HttpResponse('Can not update authorization information!')
         if StoreApi.updateauthorizationinfo(user, password, key_list):
-            return HttpResponse('https://cloud.ik.bme.hu/?neptun='+user+"&"+"host="+StoreApi.get_host())
+            return HttpResponse('https://cloud.ik.bme.hu/home/'+'?neptun='+user+'&'+'host='+StoreApi.get_host())
         else:
             return HttpResponse('Can not update authorization information!')
     else:

@@ -2,6 +2,12 @@
 {% load i18n %}
 {% load staticfiles %}
 {% get_current_language as LANGUAGE_CODE %}
+
+{% block title %}
+{% blocktrans with name=group.name %}Details of {{name}}{% endblocktrans %}
+- {{block.super}}
+{% endblock %}
+
 {% block content %}
 <div class="boxes">
     {% include "box/person/box.html" %}

@@ -183,6 +183,7 @@ class Browser:
         
     def load_committed_cb(self,web_view, frame):
         uri = frame.get_uri()
+        print uri
         try:
             self.webview.execute_script('document.getElementsByTagName("a")[0].target="";')
         except:
@@ -193,7 +194,7 @@ class Browser:
             ### JS
             self.post_key(self.public_key_b64)
             ### Parse values and do mounting ###
-        elif uri.startswith("https://cloud.ik.bme.hu/?"):
+        elif uri.startswith("https://cloud.ik.bme.hu/home/?"):
             if self.mounted != True:
                 try:
                     uri, params = uri.split('?', 1)

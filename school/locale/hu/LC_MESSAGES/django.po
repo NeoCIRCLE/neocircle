@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-03-22 10:43+0100\n"
-"PO-Revision-Date: 2013-03-07 17:48+0100\n"
+"POT-Creation-Date: 2013-04-04 18:33+0200\n"
+"PO-Revision-Date: 2013-04-04 18:03+0200\n"
 "Last-Translator: \n"
 "Language-Team: American English <cloud@ik.bme.hu>\n"
 "Language: en_US\n"
@@ -155,39 +155,44 @@ msgstr "Érvénytelen Neptun-kód."
 msgid "Invalid NEPTUN code"
 msgstr "Érvénytelen Neptun-kód"
 
-#: templates/show-group.html:9
+#: templates/show-group.html:7
+#, python-format
+msgid "Details of %(name)s"
+msgstr "%(name)s részletei"
+
+#: templates/show-group.html:15
 msgid "Owners of"
 msgstr "Tulajdonosok"
 
-#: templates/show-group.html:23 templates/box/person/entry.html:23
+#: templates/show-group.html:29 templates/box/person/entry.html:23
 msgid "Remove"
 msgstr "Eltávolítás"
 
-#: templates/show-group.html:31 templates/box/person/entry.html:32
+#: templates/show-group.html:37 templates/box/person/entry.html:32
 msgid "This user never logged in, no data available"
 msgstr "Ez a felhasználó még nem lépett be, nincs adat róla"
 
-#: templates/show-group.html:35 templates/box/person/entry.html:36
+#: templates/show-group.html:41 templates/box/person/entry.html:36
 msgid "Name"
 msgstr "Név"
 
-#: templates/show-group.html:38 templates/box/person/entry.html:39
+#: templates/show-group.html:44 templates/box/person/entry.html:39
 msgid "NEPTUN"
 msgstr "NEPTUN"
 
-#: templates/show-group.html:51
+#: templates/show-group.html:57
 msgid "Add owner"
 msgstr "Tulajdonos hozzáadása"
 
-#: templates/show-group.html:56
+#: templates/show-group.html:62
 msgid "Owner name/NEPTUN"
 msgstr "Tulajdonos neve/NEPTUN-kódja"
 
-#: templates/show-group.html:69
+#: templates/show-group.html:75
 msgid "This group has no shared templates."
 msgstr "Ennek a csoportnak egy sablon sincs megosztva."
 
-#: templates/show-group.html:72
+#: templates/show-group.html:78
 msgid "Share one, and the group members can start their own virtual machine."
 msgstr ""
 "Osszon meg egyet, hogy a csoport tagjai is elindíthassák egy példányát."

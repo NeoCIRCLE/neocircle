@@ -1,0 +1,1001 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="321"
+   height="272.13196"
+   id="svg7426"
+   version="1.1"
+   inkscape:version="0.48.3.1 r9886"
+   sodipodi:docname="netarch.svg">
+  <defs
+     id="defs7428">
+    <pattern
+       patternTransform="translate(289.13949,427.25293)"
+       id="pattern7424"
+       xlink:href="#pattern7199"
+       inkscape:collect="always" />
+    <pattern
+       patternTransform="translate(289.13949,427.25293)"
+       id="pattern7422"
+       xlink:href="#pattern7199"
+       inkscape:collect="always" />
+    <pattern
+       patternTransform="translate(289.13949,427.25293)"
+       id="pattern7420"
+       xlink:href="#pattern7199"
+       inkscape:collect="always" />
+    <pattern
+       patternTransform="translate(289.13949,427.25293)"
+       id="pattern7418"
+       xlink:href="#pattern7199"
+       inkscape:collect="always" />
+    <pattern
+       patternTransform="translate(289.13949,427.25293)"
+       id="pattern7416"
+       xlink:href="#pattern7199"
+       inkscape:collect="always" />
+    <pattern
+       patternUnits="userSpaceOnUse"
+       width="51.503632"
+       height="51.502907"
+       patternTransform="translate(135.90262,558.90625)"
+       id="pattern7199">
+      <g
+         id="g7195"
+         transform="translate(-135.90262,-558.90625)">
+        <rect
+           style="fill:#980101;fill-opacity:1;stroke:none"
+           id="rect7101"
+           width="51.502602"
+           height="51.502602"
+           x="135.90262"
+           y="558.90656" />
+        <path
+           style="fill:#000000;fill-opacity:1;stroke:none"
+           d="m 135.90625,558.90625 0,8.4375 8.4375,-8.4375 -8.4375,0 z m 17.15625,0 -17.15625,17.125 0,8.5 25.625,-25.625 -8.46875,0 z m 17.15625,0 -34.3125,34.3125 0,8.5 42.8125,-42.8125 -8.5,0 z m 17.1875,0 -51.5,51.5 8.5,0 43,-43 0,-8.5 z m 0,17.1875 -34.3125,34.3125 8.5,0 25.8125,-25.8125 0,-8.5 z m 0,17.1875 -17.125,17.125 8.46875,0 8.65625,-8.65625 0,-8.46875 z"
+           id="rect7169"
+           inkscape:connector-curvature="0" />
+      </g>
+    </pattern>
+    <pattern
+       patternUnits="userSpaceOnUse"
+       width="51.503632"
+       height="51.502907"
+       patternTransform="translate(135.90262,558.90625)"
+       id="pattern7285">
+      <g
+         id="g7287"
+         transform="translate(-135.90262,-558.90625)">
+        <rect
+           style="fill:#980101;fill-opacity:1;stroke:none"
+           id="rect7289"
+           width="51.502602"
+           height="51.502602"
+           x="135.90262"
+           y="558.90656" />
+        <path
+           style="fill:#000000;fill-opacity:1;stroke:none"
+           d="m 135.90625,558.90625 0,8.4375 8.4375,-8.4375 -8.4375,0 z m 17.15625,0 -17.15625,17.125 0,8.5 25.625,-25.625 -8.46875,0 z m 17.15625,0 -34.3125,34.3125 0,8.5 42.8125,-42.8125 -8.5,0 z m 17.1875,0 -51.5,51.5 8.5,0 43,-43 0,-8.5 z m 0,17.1875 -34.3125,34.3125 8.5,0 25.8125,-25.8125 0,-8.5 z m 0,17.1875 -17.125,17.125 8.46875,0 8.65625,-8.65625 0,-8.46875 z"
+           id="path7291"
+           inkscape:connector-curvature="0" />
+      </g>
+    </pattern>
+    <pattern
+       patternUnits="userSpaceOnUse"
+       width="51.503632"
+       height="51.502907"
+       patternTransform="translate(135.90262,558.90625)"
+       id="pattern7293">
+      <g
+         id="g7295"
+         transform="translate(-135.90262,-558.90625)">
+        <rect
+           style="fill:#980101;fill-opacity:1;stroke:none"
+           id="rect7297"
+           width="51.502602"
+           height="51.502602"
+           x="135.90262"
+           y="558.90656" />
+        <path
+           style="fill:#000000;fill-opacity:1;stroke:none"
+           d="m 135.90625,558.90625 0,8.4375 8.4375,-8.4375 -8.4375,0 z m 17.15625,0 -17.15625,17.125 0,8.5 25.625,-25.625 -8.46875,0 z m 17.15625,0 -34.3125,34.3125 0,8.5 42.8125,-42.8125 -8.5,0 z m 17.1875,0 -51.5,51.5 8.5,0 43,-43 0,-8.5 z m 0,17.1875 -34.3125,34.3125 8.5,0 25.8125,-25.8125 0,-8.5 z m 0,17.1875 -17.125,17.125 8.46875,0 8.65625,-8.65625 0,-8.46875 z"
+           id="path7299"
+           inkscape:connector-curvature="0" />
+      </g>
+    </pattern>
+    <pattern
+       patternUnits="userSpaceOnUse"
+       width="51.503632"
+       height="51.502907"
+       patternTransform="translate(135.90262,558.90625)"
+       id="pattern7301">
+      <g
+         id="g7303"
+         transform="translate(-135.90262,-558.90625)">
+        <rect
+           style="fill:#980101;fill-opacity:1;stroke:none"
+           id="rect7305"
+           width="51.502602"
+           height="51.502602"
+           x="135.90262"
+           y="558.90656" />
+        <path
+           style="fill:#000000;fill-opacity:1;stroke:none"
+           d="m 135.90625,558.90625 0,8.4375 8.4375,-8.4375 -8.4375,0 z m 17.15625,0 -17.15625,17.125 0,8.5 25.625,-25.625 -8.46875,0 z m 17.15625,0 -34.3125,34.3125 0,8.5 42.8125,-42.8125 -8.5,0 z m 17.1875,0 -51.5,51.5 8.5,0 43,-43 0,-8.5 z m 0,17.1875 -34.3125,34.3125 8.5,0 25.8125,-25.8125 0,-8.5 z m 0,17.1875 -17.125,17.125 8.46875,0 8.65625,-8.65625 0,-8.46875 z"
+           id="path7307"
+           inkscape:connector-curvature="0" />
+      </g>
+    </pattern>
+    <pattern
+       inkscape:collect="always"
+       xlink:href="#pattern7199"
+       id="pattern7215"
+       patternTransform="translate(289.13949,423.25293)" />
+    <pattern
+       patternUnits="userSpaceOnUse"
+       width="51.503632"
+       height="51.502907"
+       patternTransform="translate(135.90262,558.90625)"
+       id="pattern7310">
+      <g
+         id="g7312"
+         transform="translate(-135.90262,-558.90625)">
+        <rect
+           style="fill:#980101;fill-opacity:1;stroke:none"
+           id="rect7314"
+           width="51.502602"
+           height="51.502602"
+           x="135.90262"
+           y="558.90656" />
+        <path
+           style="fill:#000000;fill-opacity:1;stroke:none"
+           d="m 135.90625,558.90625 0,8.4375 8.4375,-8.4375 -8.4375,0 z m 17.15625,0 -17.15625,17.125 0,8.5 25.625,-25.625 -8.46875,0 z m 17.15625,0 -34.3125,34.3125 0,8.5 42.8125,-42.8125 -8.5,0 z m 17.1875,0 -51.5,51.5 8.5,0 43,-43 0,-8.5 z m 0,17.1875 -34.3125,34.3125 8.5,0 25.8125,-25.8125 0,-8.5 z m 0,17.1875 -17.125,17.125 8.46875,0 8.65625,-8.65625 0,-8.46875 z"
+           id="path7316"
+           inkscape:connector-curvature="0" />
+      </g>
+    </pattern>
+    <pattern
+       patternUnits="userSpaceOnUse"
+       width="51.503632"
+       height="51.502907"
+       patternTransform="translate(135.90262,558.90625)"
+       id="pattern7318">
+      <g
+         id="g7320"
+         transform="translate(-135.90262,-558.90625)">
+        <rect
+           style="fill:#980101;fill-opacity:1;stroke:none"
+           id="rect7322"
+           width="51.502602"
+           height="51.502602"
+           x="135.90262"
+           y="558.90656" />
+        <path
+           style="fill:#000000;fill-opacity:1;stroke:none"
+           d="m 135.90625,558.90625 0,8.4375 8.4375,-8.4375 -8.4375,0 z m 17.15625,0 -17.15625,17.125 0,8.5 25.625,-25.625 -8.46875,0 z m 17.15625,0 -34.3125,34.3125 0,8.5 42.8125,-42.8125 -8.5,0 z m 17.1875,0 -51.5,51.5 8.5,0 43,-43 0,-8.5 z m 0,17.1875 -34.3125,34.3125 8.5,0 25.8125,-25.8125 0,-8.5 z m 0,17.1875 -17.125,17.125 8.46875,0 8.65625,-8.65625 0,-8.46875 z"
+           id="path7324"
+           inkscape:connector-curvature="0" />
+      </g>
+    </pattern>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.979899"
+     inkscape:cx="146.48789"
+     inkscape:cy="152.44658"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     fit-margin-top="2"
+     fit-margin-left="2"
+     fit-margin-right="2"
+     fit-margin-bottom="2"
+     inkscape:window-width="1364"
+     inkscape:window-height="749"
+     inkscape:window-x="0"
+     inkscape:window-y="17"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata7431">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="1. réteg"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-172.29272,-532.11218)">
+    <rect
+       rx="10"
+       ry="10"
+       y="534.11218"
+       x="174.29272"
+       height="236.5"
+       width="317"
+       id="rect3277"
+       style="fill:#aaccee;fill-opacity:1;stroke:none"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <path
+       style="fill:none;stroke:#fdca01;stroke-width:4;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       d="m 422.23687,681.13348 0,-27.92462 -42.75,0 0,-13.25"
+       id="path6921"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cccc"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <path
+       style="fill:none;stroke:#013397;stroke-width:6;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       d="m 302.31845,631.20886 0,-24.5 -59.63172,0 0,-15.5"
+       id="path6965"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cccc"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <path
+       id="path6933"
+       style="fill:none;stroke:#339900;stroke-width:4;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       d="m 355.464,633.70886 0,-24.5 54.27996,0 0,-35.5"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cccc"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <path
+       inkscape:connector-curvature="0"
+       id="path6931"
+       d="m 422.23687,596.95886 0,20.5 -54.06371,0 0,13.25"
+       style="fill:none;stroke:#fdca01;stroke-width:4;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       sodipodi:nodetypes="cccc"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <path
+       sodipodi:nodetypes="cccc"
+       inkscape:connector-curvature="0"
+       id="path6915"
+       d="m 290.29763,631.20886 0,-14.5 -59.27816,0 0,-25.5"
+       style="fill:none;stroke:url(#pattern7416);stroke-width:6;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <g
+       transform="translate(153.23688,-131.65332)"
+       id="g6901"
+       style="fill:#013397"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160">
+      <path
+         style="font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;baseline-shift:baseline;color:#000000;fill:#013397;fill-opacity:1;stroke:none;stroke-width:3.99999976;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Sans;-inkscape-font-specification:Sans"
+         d="m 178.46875,671.4375 -4.8125,13.09375 c 0.87048,-0.62476 1.22466,-1.03015 2.21875,-1.28125 l 0,79.125 0,2 5.1875,0 0,-2 0,-79.15625 c 0.98809,0.25008 1.39557,0.68376 2.25,1.3125 z"
+         id="path5703"
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="cccccccccc" />
+    </g>
+    <path
+       inkscape:connector-curvature="0"
+       id="path6923"
+       d="m 238.98688,677.24439 0,-24.03553 46.24999,0 0,-13.25"
+       style="fill:none;stroke:#fdca01;stroke-width:4;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+       sodipodi:nodetypes="cccc"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <rect
+       ry="10"
+       rx="10"
+       y="673.47992"
+       x="366.42722"
+       height="82.257217"
+       width="111.56497"
+       id="rect3427"
+       style="fill:#003366;fill-opacity:1;stroke:none" />
+    <rect
+       style="fill:#003366;fill-opacity:1;stroke:none"
+       id="rect3279"
+       width="111.56497"
+       height="82.257217"
+       x="184.92722"
+       y="673.47992"
+       rx="10"
+       ry="10" />
+    <path
+       id="path6939"
+       style="fill:none;stroke:#339900;stroke-width:4;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       d="m 282.00069,723.70886 0,-24.5"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <path
+       id="path6937"
+       style="fill:none;stroke:#eec73e;stroke-width:4;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       d="m 463.00069,723.70886 0,-24.5"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <path
+       sodipodi:nodetypes="cc"
+       inkscape:connector-curvature="0"
+       d="m 407.47631,723.70886 0,-24.5"
+       style="fill:none;stroke:#339900;stroke-width:4;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="path6935"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <path
+       sodipodi:nodetypes="cc"
+       inkscape:connector-curvature="0"
+       id="path5699"
+       d="m 381.45969,713.20886 0,-15.5"
+       style="fill:none;stroke:url(#pattern7215);stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <path
+       style="fill:none;stroke:url(#pattern7418);stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       d="m 349.80715,639.20886 0,24.5 36.65254,0 0,35.5"
+       id="path5695"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cccc"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <path
+       sodipodi:nodetypes="cccc"
+       inkscape:connector-curvature="0"
+       id="path3391"
+       d="m 310.5767,639.20886 0,24.5 -31.11701,0 0,35.5"
+       style="fill:none;stroke:url(#pattern7420);stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <path
+       sodipodi:nodetypes="cc"
+       inkscape:connector-curvature="0"
+       d="m 226.47632,723.70886 0,-24.5"
+       style="fill:none;stroke:#eec73e;stroke-width:4;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="path6941"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <path
+       id="path6943"
+       style="fill:none;stroke:#339900;stroke-width:4;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       d="m 199.97632,723.70886 0,-24.5"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#003366"
+       id="rect3145"
+       width="20"
+       height="40"
+       x="189.97632"
+       y="711.31952"
+       rx="9.0380001"
+       ry="10"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <rect
+       ry="10"
+       rx="9.0380001"
+       y="711.31952"
+       x="216.47632"
+       height="40"
+       width="20"
+       id="rect3283"
+       style="fill:#ffffff;fill-opacity:1;stroke:#003366"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#003366"
+       id="rect3285"
+       width="20"
+       height="40"
+       x="272.0007"
+       y="711.31952"
+       rx="9.0380001"
+       ry="10"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <rect
+       ry="7.9791846"
+       rx="9.0380001"
+       y="689.39923"
+       x="189.97632"
+       height="16.311922"
+       width="102.02439"
+       id="rect3287"
+       style="fill:#ffff99;fill-opacity:1;stroke:#003366"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"
+       x="199.22838"
+       y="701.50574"
+       id="text3289"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160"><tspan
+         sodipodi:role="line"
+         id="tspan3291"
+         x="199.22838"
+         y="701.50574"
+         style="font-size:14px;font-style:normal;font-variant:normal;font-weight:600;font-stretch:normal;font-family:TitilliumText25L;-inkscape-font-specification:TitilliumText25L Semi-Bold">Open vSwitch</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TitilliumText25L;-inkscape-font-specification:TitilliumText25L"
+       x="-744.05505"
+       y="204.84831"
+       id="text3293"
+       sodipodi:linespacing="125%"
+       transform="matrix(0,-1,1,0,0,0)"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160"><tspan
+         sodipodi:role="line"
+         id="tspan3295"
+         x="-744.05505"
+         y="204.84831"
+         style="font-size:14px">VM1</tspan></text>
+    <text
+       transform="matrix(0,-1,1,0,0,0)"
+       sodipodi:linespacing="125%"
+       id="text3297"
+       y="231.34831"
+       x="-744.97906"
+       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TitilliumText25L;-inkscape-font-specification:TitilliumText25L"
+       xml:space="preserve"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160"><tspan
+         style="font-size:14px"
+         y="231.34831"
+         x="-744.97906"
+         id="tspan3299"
+         sodipodi:role="line">VM2</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TitilliumText25L;-inkscape-font-specification:TitilliumText25L"
+       x="-746.35803"
+       y="286.87268"
+       id="text3301"
+       sodipodi:linespacing="125%"
+       transform="matrix(0,-1,1,0,0,0)"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160"><tspan
+         sodipodi:role="line"
+         id="tspan3303"
+         x="-746.35803"
+         y="286.87268"
+         style="font-size:14px"><tspan
+           style="font-style:italic"
+           id="tspan3445"><tspan
+   style="font-style:normal"
+   id="tspan3451">VM</tspan>n</tspan></tspan></text>
+    <rect
+       style="fill:#003366;fill-opacity:1;stroke:#003366"
+       id="rect3331"
+       width="125"
+       height="38.23027"
+       x="185.53172"
+       y="559.1756"
+       rx="10"
+       ry="10"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <text
+       sodipodi:linespacing="125%"
+       id="text3337"
+       y="583.89874"
+       x="220.46809"
+       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"
+       xml:space="preserve"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160"><tspan
+         style="font-size:16px;font-style:normal;font-variant:normal;font-weight:600;font-stretch:normal;fill:#ffffff;fill-opacity:1;font-family:TitilliumText25L;-inkscape-font-specification:TitilliumText25L Semi-Bold"
+         y="583.89874"
+         x="220.46809"
+         id="tspan3339"
+         sodipodi:role="line">Firewall</tspan></text>
+    <rect
+       ry="5"
+       rx="5"
+       y="727.19452"
+       x="261.3696"
+       height="8.2499437"
+       width="7.0000029"
+       id="rect3341"
+       style="fill:#ffffff;fill-opacity:1;stroke:#003366"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#003366"
+       id="rect3343"
+       width="7.0000029"
+       height="8.2499437"
+       x="250.73851"
+       y="727.19452"
+       rx="5"
+       ry="5"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <rect
+       ry="5"
+       rx="5"
+       y="727.19452"
+       x="240.10741"
+       height="8.2499437"
+       width="7.0000029"
+       id="rect3345"
+       style="fill:#ffffff;fill-opacity:1;stroke:#003366"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <rect
+       ry="10"
+       rx="9.0380001"
+       y="711.31952"
+       x="370.97632"
+       height="40"
+       width="20"
+       id="rect3349"
+       style="fill:#ffffff;fill-opacity:1;stroke:#003366"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#003366"
+       id="rect3429"
+       width="7.0000029"
+       height="8.2499437"
+       x="442.8696"
+       y="727.19452"
+       rx="5"
+       ry="5"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#003366"
+       id="rect3351"
+       width="20"
+       height="40"
+       x="397.47632"
+       y="711.31952"
+       rx="9.0380001"
+       ry="10"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <rect
+       ry="5"
+       rx="5"
+       y="727.19452"
+       x="432.23853"
+       height="8.2499437"
+       width="7.0000029"
+       id="rect3431"
+       style="fill:#ffffff;fill-opacity:1;stroke:#003366"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <rect
+       ry="10"
+       rx="9.0380001"
+       y="711.31952"
+       x="453.0007"
+       height="40"
+       width="20"
+       id="rect3353"
+       style="fill:#ffffff;fill-opacity:1;stroke:#003366"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#003366"
+       id="rect3433"
+       width="7.0000029"
+       height="8.2499437"
+       x="421.60742"
+       y="727.19452"
+       rx="5"
+       ry="5"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <rect
+       style="fill:#ffff99;fill-opacity:1;stroke:#003366"
+       id="rect3355"
+       width="102.02439"
+       height="16.311922"
+       x="370.97632"
+       y="689.39923"
+       rx="9.0380001"
+       ry="7.9791846"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <text
+       y="686.95886"
+       x="390.32208"
+       inkscape:export-ydpi="160.46001"
+       inkscape:export-xdpi="160.46001"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       sodipodi:linespacing="125%"
+       id="text3435"
+       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"
+       xml:space="preserve"><tspan
+         style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#ffffff;fill-opacity:1;font-family:TitilliumText25L;-inkscape-font-specification:TitilliumText25L"
+         id="tspan3437">Worker <tspan
+   style="font-style:italic"
+   id="tspan7038">k</tspan></tspan></text>
+    <text
+       sodipodi:linespacing="125%"
+       id="text3357"
+       y="701.50574"
+       x="380.22836"
+       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"
+       xml:space="preserve"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160"><tspan
+         style="font-size:14px;font-style:normal;font-variant:normal;font-weight:600;font-stretch:normal;font-family:TitilliumText25L;-inkscape-font-specification:TitilliumText25L Semi-Bold"
+         y="701.50574"
+         x="380.22836"
+         id="tspan3359"
+         sodipodi:role="line">Open vSwitch</tspan></text>
+    <text
+       transform="matrix(0,-1,1,0,0,0)"
+       sodipodi:linespacing="125%"
+       id="text3361"
+       y="384.81491"
+       x="-742.48309"
+       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#003366;fill-opacity:1;stroke:none;font-family:TitilliumText25L;-inkscape-font-specification:TitilliumText25L"
+       xml:space="preserve"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160"><tspan
+         style="font-size:14px;font-weight:600;fill:#003366;fill-opacity:1;-inkscape-font-specification:TitilliumText25L Semi-Bold"
+         y="384.81491"
+         x="-742.48309"
+         id="tspan3363"
+         sodipodi:role="line">fw2</tspan></text>
+    <text
+       transform="matrix(0,-1,1,0,0,0)"
+       sodipodi:linespacing="125%"
+       id="text3369"
+       y="467.87271"
+       x="-748.45105"
+       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TitilliumText25L;-inkscape-font-specification:TitilliumText25L"
+       xml:space="preserve"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160"><tspan
+         style="font-size:14px"
+         y="467.87271"
+         x="-748.45105"
+         id="tspan3371"
+         sodipodi:role="line"><tspan
+           style="font-style:italic"
+           id="tspan3447"><tspan
+   style="font-style:normal"
+   id="tspan3449">VM</tspan>m</tspan></tspan></text>
+    <rect
+       style="fill:#003366;fill-opacity:1;stroke:none"
+       id="rect3383"
+       width="7.0000029"
+       height="8.2499437"
+       x="308.60095"
+       y="716.23358"
+       rx="5"
+       ry="5"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <rect
+       ry="5"
+       rx="5"
+       y="716.23358"
+       x="327.70972"
+       height="8.2499437"
+       width="7.0000029"
+       id="rect3385"
+       style="fill:#003366;fill-opacity:1;stroke:none"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <rect
+       style="fill:#003366;fill-opacity:1;stroke:none"
+       id="rect3387"
+       width="7.0000029"
+       height="8.2499437"
+       x="346.81848"
+       y="716.23358"
+       rx="5"
+       ry="5"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"
+       id="text3393"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160.46001"
+       inkscape:export-ydpi="160.46001"
+       x="210.62207"
+       y="686.95886"><tspan
+         id="tspan3397"
+         style="font-size:16px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#ffffff;fill-opacity:1;font-family:TitilliumText25L;-inkscape-font-specification:TitilliumText25L">Worker 1</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:TitilliumText25L;-inkscape-font-specification:TitilliumText25L"
+       x="-744.97906"
+       y="412.34833"
+       id="text3453"
+       sodipodi:linespacing="125%"
+       transform="matrix(0,-1,1,0,0,0)"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160"><tspan
+         sodipodi:role="line"
+         id="tspan3455"
+         x="-744.97906"
+         y="412.34833"
+         style="font-size:14px">VM2</tspan></text>
+    <path
+       inkscape:connector-curvature="0"
+       id="path7043"
+       style="font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;baseline-shift:baseline;color:#000000;fill:url(#pattern7422);fill-opacity:1;stroke:none;stroke-width:4;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate;font-family:Sans;-inkscape-font-specification:Sans"
+       d="m 388.14312,634.12793 a 2.0021961,2.0021961 0 1 0 0.1875,4 l 87.875,0 a 2.0002,2.0002 0 1 0 0,-4 l -87.875,0 a 2.0002,2.0002 0 0 0 -0.1875,0 z m 96.06785,1.9604 -13.09375,-4.8125 c 0.62476,0.87048 1.03015,1.84338 1.28125,2.83747 -103.01969,-0.38797 -102.9282,3.99426 0.0313,3.99426 -0.25008,0.98809 -0.68376,1.97009 -1.3125,2.82452 z"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <g
+       transform="translate(153.23688,-131.65332)"
+       id="g7245">
+      <rect
+         ry="7.9791846"
+         rx="9.0380001"
+         y="759.60956"
+         x="120.49311"
+         height="16.311922"
+         width="115.45942"
+         id="rect3307"
+         style="fill:#ffff99;fill-opacity:1;stroke:#003366" />
+      <text
+         xml:space="preserve"
+         style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"
+         x="130.63956"
+         y="772.67255"
+         id="text3309"
+         sodipodi:linespacing="125%"><tspan
+           sodipodi:role="line"
+           id="tspan3311"
+           x="130.63956"
+           y="772.67255"
+           style="font-size:14px;font-style:normal;font-variant:normal;font-weight:600;font-stretch:normal;font-family:TitilliumText25L;-inkscape-font-specification:TitilliumText25L Semi-Bold">Network switch</tspan></text>
+    </g>
+    <rect
+       ry="10"
+       rx="10"
+       y="559.1756"
+       x="351.53171"
+       height="38.23027"
+       width="125"
+       id="rect6925"
+       style="fill:#003366;fill-opacity:1;stroke:#003366"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160" />
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"
+       x="376.58521"
+       y="583.80273"
+       id="text6927"
+       sodipodi:linespacing="125%"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160"><tspan
+         sodipodi:role="line"
+         id="tspan6929"
+         x="376.58521"
+         y="583.80273"
+         style="font-size:16px;font-style:normal;font-variant:normal;font-weight:600;font-stretch:normal;fill:#ffffff;fill-opacity:1;font-family:TitilliumText25L;-inkscape-font-specification:TitilliumText25L Semi-Bold">Head node</tspan></text>
+    <g
+       id="g3112"
+       transform="translate(-100.12884,60.708106)">
+      <text
+         xml:space="preserve"
+         style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#339900;fill-opacity:1;stroke:none;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"
+         x="526.98688"
+         y="724.9939"
+         id="text6971"
+         sodipodi:linespacing="125%"><tspan
+           sodipodi:role="line"
+           id="tspan6973"
+           x="526.98688"
+           y="724.9939"
+           style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#339900;font-family:TitilliumText25L;-inkscape-font-specification:TitilliumText25L">private vm-net</tspan></text>
+      <path
+         sodipodi:nodetypes="cc"
+         inkscape:connector-curvature="0"
+         id="path6975"
+         d="m 522.23687,722.60386 -19.75,0"
+         style="fill:#98fc66;stroke:#eec73e;stroke-width:6;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+    </g>
+    <g
+       id="g3137"
+       transform="translate(-19.911224,-8)">
+      <g
+         transform="translate(-195.66496,46.815274)"
+         id="g3122">
+        <text
+           xml:space="preserve"
+           style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#012264;fill-opacity:1;stroke:none;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"
+           x="527.04688"
+           y="761.20886"
+           id="text6911"
+           sodipodi:linespacing="125%"
+           inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+           inkscape:export-xdpi="160"
+           inkscape:export-ydpi="160"><tspan
+             sodipodi:role="line"
+             id="tspan6913"
+             x="527.04688"
+             y="761.20886"
+             style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#012264;fill-opacity:1;font-family:TitilliumText25L;-inkscape-font-specification:TitilliumText25L">internet uplink</tspan></text>
+        <path
+           sodipodi:nodetypes="cc"
+           inkscape:connector-curvature="0"
+           id="path6959"
+           d="m 522.23687,758.72886 -19.75,0"
+           style="fill:none;stroke:#013397;stroke-width:6;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+           inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+           inkscape:export-xdpi="160"
+           inkscape:export-ydpi="160" />
+      </g>
+      <g
+         transform="translate(-195.66496,85.850489)"
+         id="g3107">
+        <text
+           xml:space="preserve"
+           style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#015a01;fill-opacity:1;stroke:none;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"
+           x="526.98688"
+           y="707.02136"
+           id="text6985"
+           sodipodi:linespacing="125%"><tspan
+             sodipodi:role="line"
+             id="tspan6987"
+             x="526.98688"
+             y="707.02136"
+             style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#015a01;font-family:TitilliumText25L;-inkscape-font-specification:TitilliumText25L">public vm-net</tspan></text>
+        <path
+           sodipodi:nodetypes="cc"
+           inkscape:connector-curvature="0"
+           id="path6989"
+           d="m 522.23687,704.54136 -19.75,0"
+           style="fill:#339900;stroke:#339900;stroke-width:6;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
+      </g>
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:end;line-height:100%;letter-spacing:0px;word-spacing:0px;text-anchor:end;fill:#980101;fill-opacity:1;stroke:none;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"
+       x="484.95343"
+       y="622.5802"
+       id="text7055"
+       sodipodi:linespacing="100%"
+       inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+       inkscape:export-xdpi="160"
+       inkscape:export-ydpi="160"><tspan
+         id="tspan7059"
+         sodipodi:role="line"
+         x="484.95343"
+         y="622.5802"
+         style="font-size:8px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:end;line-height:100%;text-anchor:end;fill:#980101;fill-opacity:1;font-family:TitilliumText25L;-inkscape-font-specification:TitilliumText25L">rest of the</tspan><tspan
+         id="tspan7063"
+         sodipodi:role="line"
+         x="484.95343"
+         y="630.5802"
+         style="font-size:8px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:end;line-height:100%;text-anchor:end;fill:#980101;fill-opacity:1;font-family:TitilliumText25L;-inkscape-font-specification:TitilliumText25L">network</tspan></text>
+    <g
+       id="g3127"
+       transform="translate(3.1053246,-8)">
+      <g
+         transform="translate(-328.29947,103.91298)"
+         id="g3102">
+        <path
+           sodipodi:nodetypes="cc"
+           inkscape:connector-curvature="0"
+           id="path6977"
+           d="m 522.23687,686.47886 -19.75,0"
+           style="fill:none;stroke:url(#pattern7424);stroke-width:6;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+           inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+           inkscape:export-xdpi="160"
+           inkscape:export-ydpi="160" />
+        <text
+           sodipodi:linespacing="125%"
+           id="text6991"
+           y="688.95886"
+           x="526.98688"
+           style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#980101;fill-opacity:1;stroke:none;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"
+           xml:space="preserve"
+           inkscape:export-filename="/home/maat/Munka/cloud/miscellaneous/paper/sozopol13/netarch.png"
+           inkscape:export-xdpi="160"
+           inkscape:export-ydpi="160"><tspan
+             style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#980101;fill-opacity:1;font-family:TitilliumText25L;-inkscape-font-specification:TitilliumText25L"
+             y="688.95886"
+             x="526.98688"
+             id="tspan6993"
+             sodipodi:role="line">multiple vlans</tspan></text>
+      </g>
+      <g
+         transform="translate(-328.29947,64.38024)"
+         id="g3117">
+        <path
+           style="fill:none;stroke:#fdca01;stroke-width:6;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
+           d="m 522.23687,740.66636 -19.75,0"
+           id="path6957"
+           inkscape:connector-curvature="0"
+           sodipodi:nodetypes="cc" />
+        <text
+           xml:space="preserve"
+           style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#fb8b00;fill-opacity:1;stroke:none;font-family:Ubuntu;-inkscape-font-specification:Ubuntu"
+           x="526.98688"
+           y="742.9939"
+           id="text7077"
+           sodipodi:linespacing="125%"><tspan
+             sodipodi:role="line"
+             id="tspan7079"
+             x="526.98688"
+             y="742.9939"
+             style="font-size:10px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;fill:#fb8b00;fill-opacity:1;font-family:TitilliumText25L;-inkscape-font-specification:TitilliumText25L">management</tspan></text>
+      </g>
+    </g>
+  </g>
+</svg>

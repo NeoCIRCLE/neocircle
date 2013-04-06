@@ -16,7 +16,7 @@ from django.template import RequestContext
 from django.template.loader import render_to_string
 from django.utils.decorators import method_decorator
 from django.utils.translation import get_language as lang
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _, ungettext_lazy
 from django.views.decorators.http import *
 from django.views.generic import *
 from firewall.tasks import *
@@ -104,9 +104,12 @@ def ajax_template_name_unique(request):
 def vm_credentials(request, iid):
     try:
         vm = get_object_or_404(Instance, pk=iid, owner=request.user)
-        proto = len(request.META["REMOTE_ADDR"].split('.')) == 1
-        vm.hostname = vm.get_connect_host(use_ipv6=proto)
-        vm.port = vm.get_port(use_ipv6=proto)
+        is_ipv6 = len(request.META["REMOTE_ADDR"].split('.')) == 1
+        vm.hostname_v4 = vm.get_connect_host(use_ipv6=False)
+        vm.hostname_v6 = vm.get_connect_host(use_ipv6=True)
+        vm.is_ipv6 = is_ipv6
+        vm.port_v4 = vm.get_port(use_ipv6=False)
+        vm.port_v6 = vm.get_port(use_ipv6=True)
         return render_to_response('vm-credentials.html', RequestContext(request, { 'i' : vm }))
     except:
         return HttpResponse(_("Could not get Virtual Machine credentials."), status=404)
@@ -278,7 +281,7 @@ def _check_quota(request, template, share):
     Returns if the given request is permitted to run the new vm.
     """
     det = UserCloudDetails.objects.get(user=request.user)
-    if det.get_weighted_instance_count() + template.instance_type.credit >= det.instance_quota:
+    if det.get_weighted_instance_count() + template.instance_type.credit > det.instance_quota:
         messages.error(request, _('You do not have any free quota. You can not launch this until you stop an other instance.'))
         return False
     if share:
@@ -364,9 +367,12 @@ def vm_show(request, iid):
     except UserCloudDetails.DoesNotExist:
         details = UserCloudDetails(user=request.user)
         details.save()
-    proto = len(request.META["REMOTE_ADDR"].split('.')) == 1
-    inst.hostname = inst.get_connect_host(use_ipv6=proto)
-    inst.port = inst.get_port(use_ipv6=proto)
+    is_ipv6 = len(request.META["REMOTE_ADDR"].split('.')) == 1
+    inst.is_ipv6 = is_ipv6
+    inst.hostname_v4 = inst.get_connect_host(use_ipv6=False)
+    inst.hostname_v6 = inst.get_connect_host(use_ipv6=True)
+    inst.port_v4 = inst.get_port(use_ipv6=False)
+    inst.port_v6 = inst.get_port(use_ipv6=True)
     return render_to_response("show.html", RequestContext(request,{
         'uri': inst.get_connect_uri(),
         'state': inst.state,
@@ -415,20 +421,19 @@ def boot_token(request, token):
 class VmPortAddView(View):
     def post(self, request, iid, *args, **kwargs):
         try:
-            public = int(request.POST['public'])
-
-            if public >= 22000 and public < 24000:
-                raise ValidationError(_("Port number is in a restricted domain (22000 to 24000)."))
+            port = int(request.POST['port'])
             inst = get_object_or_404(Instance, id=iid, owner=request.user)
-            if inst.template.network.nat:
-                private = private=int(request.POST['private'])
+            if inst.nat:
+                inst.firewall_host.add_port(proto=request.POST['proto'],
+                        public=None, private=port)
             else:
-                private = 0
-            inst.firewall_host.add_port(proto=request.POST['proto'], public=public, private=private)
-            messages.success(request, _(u"Port %d successfully added.") % public)
+                inst.firewall_host.add_port(proto=request.POST['proto'],
+                        public=port, private=None)
+
         except:
             messages.error(request, _(u"Adding port failed."))
-#            raise
+        else:
+            messages.success(request, _(u"Port %d successfully added.") % port)
         return redirect('/vm/show/%d/' % int(iid))
 
     def get(self, request, iid, *args, **kwargs):
@@ -439,11 +444,12 @@ vm_port_add = login_required(VmPortAddView.as_view())
 @require_safe
 @login_required
 @require_GET
-def vm_port_del(request, iid, proto, public):
+def vm_port_del(request, iid, proto, private):
     inst = get_object_or_404(Instance, id=iid, owner=request.user)
     try:
-        inst.firewall_host.del_port(proto=proto, public=public)
-        messages.success(request, _(u"Port %s successfully removed.") % public)
+        inst.firewall_host.del_port(proto=proto, private=private)
+        messages.success(request, _(u"Port %s successfully removed.") %
+                private)
     except:
         messages.error(request, _(u"Removing port failed."))
     return redirect('/vm/show/%d/' % int(iid))
@@ -478,12 +484,21 @@ def vm_unshare(request, id, *args, **kwargs):
     if not g.owners.filter(user=request.user).exists():
         raise PermissionDenied()
     try:
-        if s.get_running_or_stopped() > 0:
-            messages.error(request, _('There are machines running of this share.'))
+        n = s.get_running()
+        m = s.get_running_or_stopped()
+        if n > 0:
+            messages.error(request, ungettext_lazy('There is a machine running of this share.',
+                    'There are %(n)d machines running of this share.', n) %
+                    {'n' : n})
+        elif m > 0:
+            messages.error(request, ungettext_lazy('There is a suspended machine of this share.', 
+                'There are %(m)d suspended machines of this share.', m) % 
+                {'m' : m})
         else:
             s.delete()
             messages.success(request, _('Share is successfully removed.'))
-    except:
+    except Exception as e:
+        print e
         messages.error(request, _('Failed to remove share.'))
     return redirect(g)
 
@@ -516,11 +531,15 @@ def vm_resume(request, iid, *args, **kwargs):
 @require_POST
 def vm_renew(request, which, iid, *args, **kwargs):
     try:
-        get_object_or_404(Instance, id=iid, owner=request.user).renew()
+        vm = get_object_or_404(Instance, id=iid, owner=request.user)
+        vm.renew()
         messages.success(request, _('Virtual machine is successfully renewed.'))
     except:
         messages.error(request, _('Failed to renew virtual machine.'))
-    return redirect('/')
+        return redirect('/')
+    return render_to_response('box/vm/entry.html', RequestContext(request, {
+            'vm': vm
+        }))
 
 @login_required
 @require_POST

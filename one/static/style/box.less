@@ -67,9 +67,36 @@
     list-style-type: none;
 }
 .entry {
+    &.editing {
+        .summary {
+            &:hover .name > span {
+                width: 100%;
+                max-width: 100%;
+            }
+            .name > span {
+                width: 100%;
+                max-width: 100%;
+            }
+        }
+    }
     &.opened {
+        &.editing {
+            .summary {
+                .name > span {
+                    width: 100%;
+                    max-width: 100%;
+                }
+            }
+        }
         .actions {
             display: block !important;
+        }
+        .summary .name {
+            .vendorVal(width, calc, "100% - 200px");
+            span {
+                .vendorVal(width, calc, "100% - 110px");
+                .vendorVal(max-width, calc, "100% - 95px");
+            }
         }
         .summary .name .details {
             display: inline;
@@ -81,11 +108,15 @@
         cursor: default;
         &:hover {
             background-color: #c1c1c1;
+            .name {
+                width: 90%;
+            }
         }
         .name {
             background: none !important;
             text-align: center;
             float: none;
+            width: 90%;
         }
     }
     &.small-row .summary{
@@ -168,9 +199,16 @@
             .actions {
                 display: block;
             }
-            .name .details {
-                display: inline;
-                border: none;
+            .name {
+                .vendorVal(width, calc, "100% - 200px");
+                span {
+                    .vendorVal(width, calc, "100% - 110px");
+                    .vendorVal(max-width, calc, "100% - 95px");
+                }
+                .details {
+                    display: block;
+                    border: none;
+                }
             }
         }
 
@@ -186,11 +224,20 @@
             z-index: 2;
             position: relative;
             height: 24px;
+            .vendorVal(width, calc, "100% - 90px");
+            span {
+                float: left;
+                text-overflow: ellipsis;
+                display: block;
+                white-space: nowrap;
+                overflow: hidden;
+            }
             &.filetype-new-folder {
                 float: left;
             }
             .details {
                 display: none;
+                float: right;
             }
         }
         .status {
@@ -321,7 +368,7 @@
         font-size: .8em;
         text-align: right;
     }
-    span {
+    .entry span {
         background-position: left center;
         background-repeat: no-repeat;
         padding-left: 18px;
@@ -513,6 +560,10 @@
     .content {
         padding: 15px;
     }
+    .faded {
+        color: #666;
+        font-size: 0.8em;
+    }
 }
 
 table {
@@ -537,7 +588,17 @@ table {
         .summary {
             .name {
                 background-image: url(/static/icons/users.png);
+                .vendorVal(width, calc, "100% - 70px");
             }
+        }
+        li.owner {
+            background-image: url(/static/icons/user-worker-boss.png);
+        }
+        li.course {
+            background-image: url(/static/icons/book-open.png);
+        }
+        li.members {
+            background-image: url(/static/icons/users.png);
         }
     }
     #new-group {

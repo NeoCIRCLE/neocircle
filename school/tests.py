@@ -1,5 +1,6 @@
 from django.test import TestCase
-from models import create_user_profile, Person
+from models import create_user_profile, Person, Course, Semester
+from datetime import datetime, timedelta
 
 class MockUser:
     username = "testuser"
@@ -50,3 +51,24 @@ class PersonTestCase(TestCase):
     def test_unicode(self):
         # TODO
         self.testperson.__unicode__()
+
+class CourseTestCase(TestCase):
+    def setUp(self):
+        now = datetime.now()
+        delta = timedelta(weeks=7)
+        self.testperson1 = Person.objects.create(code="testperson1")
+        self.testperson2 = Person.objects.create(code="testperson2")
+        self.testsemester = Semester.objects.create(name="testsemester",
+                start=now-delta, end=now+delta)
+        self.testcourse = Course.objects.create(code="testcode",
+                name="testname", short_name="tn")
+        self.testcourse.owners.add(self.testperson1, self.testperson2)
+
+    def test_get_or_create_default_group(self):
+        default_group = self.testcourse.get_or_create_default_group()
+        self.assertIsNotNone(default_group)
+        self.assertEquals(default_group, self.testcourse.default_group)
+
+    def test_owner_list(self):
+        owner_list = self.testcourse.owner_list()
+        self.assertIsNotNone(owner_list)
