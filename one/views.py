@@ -16,7 +16,7 @@ from django.template import RequestContext
 from django.template.loader import render_to_string
 from django.utils.decorators import method_decorator
 from django.utils.translation import get_language as lang
-from django.utils.translation import ugettext_lazy as _, ungettext_lazy
+from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.http import *
 from django.views.generic import *
 from firewall.tasks import *
@@ -300,7 +300,7 @@ def _check_quota(request, template, share):
 @login_required
 def vm_new(request, template=None, share=None, redir=True):
     base = None
-    extra = None
+    extra = ''
     if template:
         base = get_object_or_404(Template, pk=template)
     else:
@@ -460,7 +460,7 @@ class VmDeleteView(View):
             inst = get_object_or_404(Instance, id=iid, owner=request.user)
             if inst.template.state != 'READY' and inst.template.owner == request.user:
                 inst.template.delete()
-            inst.delete()
+            inst.one_delete()
             messages.success(request, _('Virtual machine is successfully deleted.'))
         except:
             messages.error(request, _('Failed to delete virtual machine.'))
@@ -484,21 +484,12 @@ def vm_unshare(request, id, *args, **kwargs):
     if not g.owners.filter(user=request.user).exists():
         raise PermissionDenied()
     try:
-        n = s.get_running()
-        m = s.get_running_or_stopped()
-        if n > 0:
-            messages.error(request, ungettext_lazy('There is a machine running of this share.',
-                    'There are %(n)d machines running of this share.', n) %
-                    {'n' : n})
-        elif m > 0:
-            messages.error(request, ungettext_lazy('There is a suspended machine of this share.', 
-                'There are %(m)d suspended machines of this share.', m) % 
-                {'m' : m})
+        if s.get_running_or_stopped() > 0:
+            messages.error(request, _('There are machines running of this share.'))
         else:
             s.delete()
             messages.success(request, _('Share is successfully removed.'))
-    except Exception as e:
-        print e
+    except:
         messages.error(request, _('Failed to remove share.'))
     return redirect(g)
 

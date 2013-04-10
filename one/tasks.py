@@ -16,14 +16,44 @@ class SendMailTask(Task):
 
 
 class UpdateInstanceStateTask(Task):
-    def run(self, one_id):
+    def run(self, one_id, new_state):
         print one_id
         try:
             inst = Instance.objects.get(one_id=one_id)
         except:
             print 'nincs ilyen'
             return
-        inst.update_state()
+        inst.state = new_state
         inst.waiting = False
         inst.save()
+        if inst.template.state == 'SAVING':
+            inst.check_if_is_save_as_done()
         print inst.state
+
+# ezek csak azert vannak felveve, hogy szepen meg lehessen hivni oket
+# ezeket a fejgepen futo celery futtatja
+
+class CreateInstanceTask(Task):
+    def run(self, name, instance_type, disk_id, network_id, ctx):
+        pass
+
+class DeleteInstanceTask(Task):
+    def run(self, one_id):
+        pass
+
+class ChangeInstanceStateTask(Task):
+    def run(self, one_id, new_state):
+        pass
+
+class SaveAsTask(Task):
+    def run(self, one_id, new_img):
+        pass
+
+class UpdateDiskTask(Task):
+    def run(self):
+        pass
+
+class UpdateNetworkTask(Task):
+    def run(self):
+        pass
+

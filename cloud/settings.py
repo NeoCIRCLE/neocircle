@@ -194,6 +194,11 @@ AUTH_PROFILE_MODULE = 'school.Person'
 
 import djcelery
 djcelery.setup_loader()
+
+CELERY_CACHE_BACKEND = "default"
+CELERY_RESULT_BACKEND = "amqp"
+CELERY_TASK_RESULT_EXPIRES = 3600
+
 BROKER_URL = 'amqp://nyuszi:teszt@localhost:5672/django'
 CELERY_ROUTES = {
     'firewall.tasks.ReloadTask': {'queue': 'local'},
@@ -203,7 +208,14 @@ CELERY_ROUTES = {
     'firewall.tasks.reload_blacklist_task': {'queue': 'firewall'},
     'firewall.tasks.Periodic': {'queue': 'local'},
     'one.tasks.SendMailTask': {'queue': 'local'},
-    'one.tasks.UpdateInstanceStateTask': {'queue': 'local'}
+    'one.tasks.UpdateInstanceStateTask': {'queue': 'local'},
+    'one.tasks.UpdateDiskTask': {'queue': 'opennebula'},
+    'one.tasks.UpdateNetworkTask': {'queue': 'opennebula'},
+    'one.tasks.ChangeInstanceStateTask': {'queue': 'opennebula'},
+    'one.tasks.SaveAsTask': {'queue': 'opennebula'},
+    'one.tasks.CreateInstanceTask': {'queue': 'opennebula'},
+    'one.tasks.DeleteInstanceTask': {'queue': 'opennebula'},
+
 }
 
 CACHES = {
