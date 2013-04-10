@@ -571,6 +571,8 @@ class Instance(models.Model):
         if self.template.state != "DONE":
             self.check_if_is_save_as_done()
         if self.one_id and self.state != 'DONE':
+            self.waiting = True
+            self.save()
             from .tasks import DeleteInstanceTask
             DeleteInstanceTask.delay(one_id=self.one_id)
         self.firewall_host_delete()

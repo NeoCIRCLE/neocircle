@@ -28,7 +28,8 @@ class Job(HourlyJob):
         #    print i+':'+unicode(d[i])
 
         # delete
-        for i in Instance.objects.filter(state__in=['ACTIVE', 'STOPPED'], time_of_delete__isnull=False):
+        for i in Instance.objects.filter(state__in=['ACTIVE', 'STOPPED'],
+                time_of_delete__isnull=False, waiting=False):
             try:
                 translation.activate(i.owner.person_set.get().language)
             except:
@@ -47,7 +48,8 @@ class Job(HourlyJob):
                         SendMailTask.delay(to=i.owner.email, subject='[IK Cloud] %s' % i.name, msg=msg)
 
         # suspend
-        for i in Instance.objects.filter(state='ACTIVE', time_of_suspend__isnull=False):
+        for i in Instance.objects.filter(state='ACTIVE',
+                time_of_suspend__isnull=False, waiting=False):
             try:
                 translation.activate(i.owner.person_set.get().language)
             except:

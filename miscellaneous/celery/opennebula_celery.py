@@ -171,6 +171,8 @@ def update_state(one_id):
     (out, err) = proc.communicate()
     state = 'UNKNOWN'
     try:
+        if(len(sys.argv) == 3 and sys.argv[2] == 'UNKNOWN'):
+            raise Exception(':(')
         from xml.dom.minidom import parse, parseString
         x = parseString(out)
         state = x.getElementsByTagName("STATE")[0].childNodes[0].nodeValue
