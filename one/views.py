@@ -250,7 +250,7 @@ class AjaxShareEditWizard(View):
         allow_stype_modify = True if new_used_share_quota <= det.share_quota else False
         if not allow_stype_modify:
             messages.error(request, _('You do not have enough free share quota.'))
-            return redirect('/')
+            return redirect(share.group)
         share.name = request.POST['name']
         share.description = request.POST['description']
         share.type = stype
