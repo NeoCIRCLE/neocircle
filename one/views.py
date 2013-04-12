@@ -228,16 +228,21 @@ class AjaxShareEditWizard(View):
         stype = request.POST['type']
         if not stype in TYPES.keys():
             raise PermissionDenied()
-        il = request.POST['instance_limit']
-        if det.get_weighted_share_count() + int(il)*share.template.instance_type.credit > det.share_quota:
+        instance_limit = int(request.POST['instance_limit'])
+        current_used_share_quota = det.get_weighted_share_count()
+        current_used_share_quota_without_current_share = current_used_share_quota - share.get_used_quota()
+        new_quota_for_current_share = instance_limit * share.template.get_credits_per_instance()
+        new_used_share_quota = current_used_share_quota_without_current_share + new_quota_for_current_share
+        allow_stype_modify = True if new_used_share_quota <= det.share_quota else False
+        if not allow_stype_modify:
             messages.error(request, _('You do not have enough free share quota.'))
             return redirect('/')
-        share.name=request.POST['name']
-        share.description=request.POST['description']
-        share.type=stype
-        share.instance_limit=il
-        share.per_user_limit=request.POST['per_user_limit']
-        share.owner=request.user
+        share.name = request.POST['name']
+        share.description = request.POST['description']
+        share.type = stype
+        share.instance_limit = instance_limit
+        share.per_user_limit = request.POST['per_user_limit']
+        share.owner = request.user
         share.save()
         messages.success(request, _('Successfully edited share %s.') % share)
         return redirect(share.group)

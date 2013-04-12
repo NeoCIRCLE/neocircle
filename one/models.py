@@ -228,6 +228,9 @@ class Share(models.Model):
         return u"%(group)s: %(tpl)s %(owner)s" % {
                 'group': self.group, 'tpl': self.template, 'owner': self.owner}
 
+    def get_used_quota(self):
+        return self.template.get_credits_per_instance() * self.instance_limit
+
 class Disk(models.Model):
     """Virtual disks automatically synchronized with OpenNebula."""
     name = models.CharField(max_length=100, unique=True,
@@ -380,6 +383,9 @@ class Template(models.Model):
         else:
             logger.info("Could not delete template. Instances still running!")
             return False
+
+    def get_credits_per_instance(self):
+        return self.instance_type.credit
 
 class Instance(models.Model):
     """Virtual machine instance."""
