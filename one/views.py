@@ -209,6 +209,10 @@ class AjaxShareEditWizard(View):
     def get(self, request, id, *args, **kwargs):
         det = UserCloudDetails.objects.get(user=request.user)
         if det.get_weighted_share_count() > det.share_quota:
+            logger.warning('[one] User %s ha more used share quota, than its limit, how is that possible? (%d > %d)',
+                str(request.user),
+                det.get_weighted_share_count(),
+                det.share_quota)
             return HttpResponse(unicode(_('You do not have any free share quota.')))
         types = TYPES_L
         for i, t in enumerate(types):
