@@ -387,6 +387,27 @@ class Template(models.Model):
     def get_credits_per_instance(self):
         return self.instance_type.credit
 
+    def get_shares_for(self, user=None):
+        shares = Share.objects.all().filter(template=self)
+        if user:
+            return shares.filter(owner=user)
+        else:
+            return shares
+
+    def get_share_quota_usage_for(self, user=None):
+        shares = self.get_shares_for(user)
+        usage = 0
+        for share in shares:
+            usage += share.instance_limit * self.get_credits_per_instance()
+        return usage
+
+    def get_share_quota_usage_for_user_with_type(self, type, user=None):
+        shares = self.get_shares_for(user)
+        usage = 0
+        for share in shares:
+            usage += share.instance_limit * type.credit
+        return usage
+
 class Instance(models.Model):
     """Virtual machine instance."""
     name = models.CharField(max_length=100,

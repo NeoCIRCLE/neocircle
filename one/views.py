@@ -147,9 +147,19 @@ class AjaxTemplateEditWizard(View):
             }))
     def post(self, request, id, *args, **kwargs):
         template = get_object_or_404(Template, id=id)
+        user_details = UserCloudDetails.objects.get(user=request.user)
         if template.owner != request.user and not template.public and not request.user.is_superuser:
             raise PermissionDenied()
-        template.instance_type_id = request.POST['size']
+        instance_type = get_object_or_404(InstanceType, id=request.POST['size'])
+        current_used_share_quota = user_details.get_weighted_share_count()
+        current_used_share_quota_without_template = current_used_share_quota - template.get_share_quota_usage_for(request.user)
+        new_quota_for_current_template = template.get_share_quota_usage_for_user_with_type(instance_type, request.user)
+        new_used_share_quota = current_used_share_quota_without_template + new_quota_for_current_template
+        allow_type_modify = True if new_used_share_quota <= user_details.share_quota else False
+        if not allow_type_modify:
+            messages.error(request, _('You do not have enough free share quota.'))
+            return redirect(home)
+        template.instance_type = instance_type
         template.description = request.POST['description']
         template.name = request.POST['name']
         template.save()
