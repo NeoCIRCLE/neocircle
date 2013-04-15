@@ -1,7 +1,7 @@
 from django.db import models
 from django.http import Http404
 import json, requests, time
-from cloud.settings import store_settings as settings
+from django.conf.settings import store_settings as settings
 
 # Create your models here.
 #TODO Handle exceptions locally

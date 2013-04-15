@@ -1,7 +1,7 @@
 from django.contrib import auth
 from firewall import models
 import os
-from cloud.settings import firewall_settings as settings
+from django.conf.settings import firewall_settings as settings
 
 import subprocess
 import re

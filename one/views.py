@@ -20,7 +20,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.http import *
 from django.views.generic import *
 from firewall.tasks import *
-from cloud.settings import store_settings
+from django.conf.settings import store_settings
 from one.models import *
 from school.models import *
 import django.contrib.auth as auth

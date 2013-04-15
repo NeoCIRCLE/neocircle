@@ -7,7 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 from firewall.fields import *
 from south.modelsinspector import add_introspection_rules
 from django.core.validators import MinValueValidator, MaxValueValidator
-from cloud.settings import firewall_settings as settings
+from django.conf.settings import firewall_settings as settings
 from django.db.models.signals import post_save
 import re
 import random
