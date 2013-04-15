@@ -1,10 +1,18 @@
 #!/bin/bash
 
 sudo pip install django_extensions
+sudo pip install django-debug-toolbar
 for i in cloudstore toplist django
 do
     sudo stop $i || true
 done
+
+sudo tee /etc/sudoers.d/djangokeep <<A
+Defaults        env_keep += DJANGO_DB_PASSWORD
+Defaults        env_keep += DJANGO_SECRET_KEY
+Defaults        env_keep += DJANGO_SETTINGS_MODULE
+A
+sudo chmod 0440 /etc/sudoers.d/djangokeep
 
 sudo apt-get install rabbitmq-server gettext memcached
 sudo rabbitmqctl delete_user guest || true
