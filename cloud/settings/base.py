@@ -1,6 +1,10 @@
 # coding=utf8
 # Django base settings for cloud project.
 
+from os.path import join, abspath, dirname
+import subprocess
+
+from django.core.exceptions import ImproperlyConfigured
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -250,7 +254,7 @@ firewall_settings = {
 
 EMAIL_HOST='152.66.243.92' # giccero ipv4
 CLOUD_URL='https://cloud.ik.bme.hu/'
-RELEASE='master'
+RELEASE = subprocess.check_output(['git', 'rev-parse', '--symbolic-full-name', '--abbrev-ref', 'HEAD'])
 
 try:
     from cloud.local_settings import *
