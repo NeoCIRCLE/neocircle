@@ -20,7 +20,6 @@ from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.http import *
 from django.views.generic import *
 from firewall.tasks import *
-from django.conf.settings import store_settings
 from one.models import *
 from school.models import *
 import django.contrib.auth as auth
@@ -28,6 +27,7 @@ import json
 import logging
 import subprocess
 
+store_settings = settings.STORE_SETTINGS
 logger = logging.getLogger(__name__)
 
 def _list_instances(request):

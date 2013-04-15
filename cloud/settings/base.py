@@ -239,7 +239,7 @@ CACHES = {
 }
 
 
-store_settings = {
+STORE_SETTINGS = {
     "basic_auth": "True",
     "verify_ssl": "False",
     "ssl_auth": "False",
@@ -251,7 +251,7 @@ store_settings = {
     "store_public": "store.ik.bme.hu",
 }
 
-firewall_settings = {
+FIREWALL_SETTINGS = {
     "default_vlangroup": "publikus",
     "reload_sleep": "10",
     "dns_hostname": "dns1.ik.bme.hu",

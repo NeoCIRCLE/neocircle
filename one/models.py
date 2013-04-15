@@ -18,7 +18,9 @@ from firewall.models import Host, Rule, Vlan, Record
 from school.models import Person, Group
 from store.api import StoreApi
 from .util import keygen
-from django.conf.settings import CLOUD_URL
+import django.conf
+
+CLOUD_URL = django.conf.settings.CLOUD_URL
 
 logger = logging.getLogger(__name__)
 pwgen = User.objects.make_random_password

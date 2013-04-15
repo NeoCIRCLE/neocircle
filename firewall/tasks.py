@@ -4,7 +4,9 @@ from django.core.cache import cache
 import os
 import time
 from firewall.fw import *
-from django.conf.settings import firewall_settings as settings
+import django.conf
+
+settings = django.conf.settings.FIREWALL_SETTINGS
 
 @celery.task
 def reload_dns_task(data):

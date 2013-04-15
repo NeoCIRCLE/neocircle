@@ -7,11 +7,12 @@ from django.utils.translation import ugettext_lazy as _
 from firewall.fields import *
 from south.modelsinspector import add_introspection_rules
 from django.core.validators import MinValueValidator, MaxValueValidator
-from django.conf.settings import firewall_settings as settings
+import django.conf
 from django.db.models.signals import post_save
 import re
 import random
 
+settings = django.conf.settings.FIREWALL_SETTINGS
 class Rule(models.Model):
     CHOICES_type = (('host', 'host'), ('firewall', 'firewall'),
             ('vlan', 'vlan'))
