@@ -6,9 +6,9 @@ import subprocess
 
 from django.core.exceptions import ImproperlyConfigured
 
-DEBUG = True
-TEMPLATE_DEBUG = DEBUG
-STAT_DEBUG = True
+DEBUG = False
+TEMPLATE_DEBUG = False
+STAT_DEBUG = False
 
 ADMINS = (
     ('IK', 'cloud@cloud.ik.bme.hu'),
@@ -78,8 +78,8 @@ STATICFILES_DIRS = (
     # Put strings here, like "/home/html/static" or "C:/www/django/static".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-	'/opt/webadmin/cloud/one/static',
-	'/opt/webadmin/cloud/cloud/static',
+    '/opt/webadmin/cloud/one/static',
+    '/opt/webadmin/cloud/cloud/static',
 )
 
 # List of finder classes that know how to find static files in
@@ -255,10 +255,5 @@ firewall_settings = {
 EMAIL_HOST='152.66.243.92' # giccero ipv4
 CLOUD_URL='https://cloud.ik.bme.hu/'
 RELEASE = subprocess.check_output(['git', 'rev-parse', '--symbolic-full-name', '--abbrev-ref', 'HEAD'])
-
-try:
-    from cloud.local_settings import *
-except:
-    pass
 
 # vim: et sw=4 ai fenc=utf8 smarttab :
