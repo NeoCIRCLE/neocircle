@@ -1,4 +1,5 @@
-# Django settings for cloud project.
+# coding=utf8
+# Django base settings for cloud project.
 
 
 DEBUG = True
