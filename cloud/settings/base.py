@@ -2,9 +2,21 @@
 # Django base settings for cloud project.
 
 from os.path import join, abspath, dirname
+import os
 import subprocess
 
 from django.core.exceptions import ImproperlyConfigured
+
+def get_env_variable(var_name, default=None):
+    """ Get the environment variable or return exception/default """
+    try:
+        return os.environ[var_name]
+    except KeyError:
+        if default is None:
+            error_msg = "Set the %s environment variable" % var_name
+            raise ImproperlyConfigured(error_msg)
+        else:
+            return default
 
 DEBUG = False
 TEMPLATE_DEBUG = False
@@ -18,16 +30,12 @@ MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2',
-                                              # 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'webadmin',                   # Or path to database file if
-                                              # using sqlite3.
-        'USER': 'webadmin',                   # Not used with sqlite3.
-        'PASSWORD': 'asjklddfjklqjf',         # Not used with sqlite3.
-        'HOST': '',                           # Set to empty string for localhost.
-                                              # Not used with sqlite3.
-        'PORT': '',                           # Set to empty string for default.
-                                              # Not used with sqlite3.
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': get_env_variable('DJANGO_DB_NAME', 'webadmin'),
+        'USER': get_env_variable('DJANGO_DB_USER', 'webadmin'),
+        'PASSWORD': get_env_variable('DJANGO_DB_PASSWORD'),
+        'HOST': get_env_variable('DJANGO_DB_HOST', ''),
+        'PORT': get_env_variable('DJANGO_DB_PORT', ''),
     }
 }
 
@@ -91,7 +99,7 @@ STATICFILES_FINDERS = (
 )
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = 'sx%4b1oa2)mn%##6+e1+25g@r8ht(cqk(nko^fr66w&amp;26f22ba'
+SECRET_KEY = get_env_variable('DJANGO_SECRET_KEY')
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -204,7 +212,7 @@ CELERY_CACHE_BACKEND = "default"
 CELERY_RESULT_BACKEND = "amqp"
 CELERY_TASK_RESULT_EXPIRES = 3600
 
-BROKER_URL = 'amqp://nyuszi:teszt@localhost:5672/django'
+BROKER_URL = get_env_variable('DJANGO_BROKER_URL', 'amqp://nyuszi:teszt@localhost:5672/django')
 CELERY_ROUTES = {
     'firewall.tasks.ReloadTask': {'queue': 'local'},
     'firewall.tasks.reload_dns_task': {'queue': 'dns'},
