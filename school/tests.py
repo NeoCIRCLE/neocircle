@@ -55,11 +55,12 @@ class PersonTestCase(TestCase):
 class CourseTestCase(TestCase):
     def setUp(self):
         now = datetime.now()
+        date = now.date()
         delta = timedelta(weeks=7)
         self.testperson1 = Person.objects.create(code="testperson1")
         self.testperson2 = Person.objects.create(code="testperson2")
         self.testsemester = Semester.objects.create(name="testsemester",
-                start=now-delta, end=now+delta)
+                start=date-delta, end=date+delta)
         self.testcourse = Course.objects.create(code="testcode",
                 name="testname", short_name="tn")
         self.testcourse.owners.add(self.testperson1, self.testperson2)
@@ -72,3 +73,24 @@ class CourseTestCase(TestCase):
     def test_owner_list(self):
         owner_list = self.testcourse.owner_list()
         self.assertIsNotNone(owner_list)
+
+class SemesterTestCase(TestCase):
+    def setUp(self):
+        now = datetime.now()
+        date = now.date()
+        self.now = now
+        delta = timedelta(weeks=7)
+        self.last_semester = Semester.objects.create(name="testsem1",
+                start=date-3*delta, end=date-delta)
+        self.current_semester = Semester.objects.create(name="testsem2",
+                start=date-delta, end=date+delta)
+        self.next_semester = Semester.objects.create(name="testsem3",
+                start=date+delta, end=date+3*delta)
+
+    def test_is_on(self):
+        self.assertFalse(self.last_semester.is_on(self.now))
+        self.assertTrue(self.current_semester.is_on(self.now))
+        self.assertFalse(self.next_semester.is_on(self.now))
+
+    def test_get_current(self):
+        self.assertEqual(self.current_semester, Semester.get_current())
