@@ -1,5 +1,5 @@
 from django.test import TestCase
-from models import create_user_profile, Person, Course, Semester
+from models import create_user_profile, Person, Course, Semester, Group
 from datetime import datetime, timedelta
 
 class MockUser:
@@ -94,3 +94,34 @@ class SemesterTestCase(TestCase):
 
     def test_get_current(self):
         self.assertEqual(self.current_semester, Semester.get_current())
+
+    def test_unicode(self):
+        self.current_semester.__unicode__()
+
+class GroupTestCase(TestCase):
+    def setUp(self):
+        date = datetime.now().date()
+        delta = timedelta(weeks=7)
+        semester = Semester.objects.create(name="testsem",
+                start=date-delta, end=date+delta)
+        self.testgroup = Group.objects.create(name="testgrp",
+                semester=semester)
+
+    def test_owner_list(self):
+        self.assertIsNotNone(self.testgroup.owner_list())
+        testowner1 = Person.objects.create(code="testprsn1")
+        self.testgroup.owners.add(testowner1)
+        self.assertIsNotNone(self.testgroup.owner_list())
+        testowner2 = Person.objects.create(code="testprsn2")
+        self.testgroup.owners.add(testowner2)
+        self.assertIsNotNone(self.testgroup.owner_list())
+        self.assertIn(", ", self.testgroup.owner_list())
+
+    def test_member_count(self):
+        self.assertEqual(0, self.testgroup.member_count())
+        testmember1 = Person.objects.create(code="testprsn3")
+        self.testgroup.members.add(testmember1)
+        self.assertEqual(1, self.testgroup.member_count())
+        testmember2 = Person.objects.create(code="testprsn4")
+        self.testgroup.members.add(testmember2)
+        self.assertEqual(2, self.testgroup.member_count())
