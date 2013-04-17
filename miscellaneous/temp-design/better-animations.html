@@ -6,8 +6,8 @@
     <style>
         .container {
             width: 400px;
-            -webkit-transition: max-height 700ms;
-            max-height: 0px;
+            -webkit-transition: height 700ms;
+            height: 0px;
             overflow: hidden;
             background-color: red;
         }
@@ -20,9 +20,9 @@
         document.getElementById('toggle-css-btn').onclick=function(){
             var el=$('#toggle-css');
             if(!el.hasClass('opened')) {
-                el.css('max-height', el.find('.details')[0].offsetHeight||'1000px');
+                el.css('height', el.find('.details')[0].offsetHeight||'1000px');
             } else {
-                el.css('max-height', '0px');
+                el.css('height', '0px');
             }
             $('#toggle-css').toggleClass('opened');
         }
