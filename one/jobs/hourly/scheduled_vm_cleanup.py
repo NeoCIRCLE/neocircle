@@ -6,7 +6,7 @@ from one.models import Instance
 from django.template.loader import render_to_string
 from one.tasks import SendMailTask
 from django.utils.translation import ugettext_lazy as _
-from cloud.settings import CLOUD_URL as url
+from django.conf import settings
 from django.utils import translation
 
 class Job(HourlyJob):
@@ -16,6 +16,8 @@ class Job(HourlyJob):
         return (orig + datetime.timedelta(days=days, hours=hours)).replace(minute=0, second=0, microsecond=0)
 
     def execute(self):
+        url = settings.CLOUD_URL
+        site = settings.SITE_NAME
         now = datetime.datetime.utcnow().replace(tzinfo=utc)
         d = {
             '1m': self.calc(orig=now, days=30),
@@ -38,14 +40,18 @@ class Job(HourlyJob):
             delete = i.time_of_delete.replace(minute=0, second=0, microsecond=0)
             continue
             if i.time_of_delete < now:
-                # msg = render_to_string('mails/notification-delete-now.txt', { 'user': i.owner, 'instance': i, 'url': url } )
-                # SendMailTask.delay(to=i.owner.email, subject='[IK Cloud] %s' % i.name, msg=msg)
-                pass
+                msg = render_to_string('mails/notification-delete-now.txt',
+                        { 'user': i.owner, 'instance': i, 'url': url, 'site': site } )
+                SendMailTask.delay(to=i.owner.email, subject='[%s] %s' %
+                        (site, i.name), msg=msg)
+                i.one_delete()
             else:
                 for t in d:
                     if delete == d[t]:
-                        msg = render_to_string('mails/notification-delete.txt', { 'user': i.owner, 'instance': i, 'url': url } )
-                        SendMailTask.delay(to=i.owner.email, subject='[IK Cloud] %s' % i.name, msg=msg)
+                        msg = render_to_string('mails/notification-delete.txt',
+                                { 'user': i.owner, 'instance': i, 'url': url, 'site': site } )
+                        SendMailTask.delay(to=i.owner.email, subject='[%s] %s' %
+                                (site, i.name), msg=msg)
 
         # suspend
         for i in Instance.objects.filter(state='ACTIVE',
@@ -58,11 +64,15 @@ class Job(HourlyJob):
             suspend = i.time_of_suspend.replace(minute=0, second=0, microsecond=0)
 
             if i.time_of_suspend < now:
-                msg = render_to_string('mails/notification-suspend-now.txt', { 'user': i.owner, 'instance': i, 'url': url } )
-                SendMailTask.delay(to=i.owner.email, subject='[IK Cloud] %s' % i.name, msg=msg)
+                msg = render_to_string('mails/notification-suspend-now.txt',
+                        { 'user': i.owner, 'instance': i, 'url': url, 'site': site } )
+                SendMailTask.delay(to=i.owner.email, subject='[%s] %s' %
+                        (site, i.name), msg=msg)
                 i.stop()
             else:
                 for t in d:
                     if suspend == d[t]:
-                        msg = render_to_string('mails/notification-suspend.txt', { 'user': i.owner, 'instance': i, 'url': url } )
-                        SendMailTask.delay(to=i.owner.email, subject='[IK Cloud] %s' % i.name, msg=msg)
+                        msg = render_to_string('mails/notification-suspend.txt',
+                                { 'user': i.owner, 'instance': i, 'url': url, 'site': site } )
+                        SendMailTask.delay(to=i.owner.email, subject='[%s] %s' %
+                                (site, i.name), msg=msg)
