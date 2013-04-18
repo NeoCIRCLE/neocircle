@@ -5,7 +5,7 @@ jsfiles += one/static/script/util.min.js
 jsfiles += one/static/script/store.min.js
 cssfiles += one/static/style/style.css
 
-default: migrate generatestatic collectstatic mo setbranch restart
+default: migrate generatestatic collectstatic mo restart
 
 pulldef: pull default
 pull:
@@ -22,10 +22,6 @@ generatestatic: $(jsfiles) $(cssfiles)
 
 collectstatic:
 	./manage.py collectstatic --noinput
-
-setbranch:
-	sed -i cloud/local_settings.py -e '/RELEASE=/d' || true
-	echo "RELEASE='`git rev-parse --abbrev-ref HEAD`'" >>cloud/local_settings.py
 
 mo:
 	for i in */locale/*/*/*.po;    do echo -ne "$$i:\t"; msgfmt --statistics $$i;done
