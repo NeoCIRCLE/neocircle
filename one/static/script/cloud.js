@@ -6,8 +6,12 @@ $(function() {
             $(this).next('.details').css('height', '0px');
         } else {
             $(this).parent('.entry').addClass('opened');
-            $(this).next('.details').css('height',
-                $(this).next('.details').find('.details-container')[0].offsetHeight+15+'px');
+            if ($(this).data('fallback') == 'slide') {
+                $(this).next('.details').css('height', 'auto');
+            } else {
+                $(this).next('.details').css('height',
+                $(this).next('.details').find('.details-container')[0].offsetHeight + 15 + 'px');
+            }
         }
     }
     $('a[href=#]').click(function(e) {
