@@ -1,18 +1,29 @@
 #!/bin/bash
 
 sudo pip install django_extensions
+sudo pip install django-debug-toolbar
 for i in cloudstore toplist django
 do
     sudo stop $i || true
 done
 
-sudo apt-get install rabbitmq-server gettext memcached
+sudo tee /etc/sudoers.d/djangokeep <<A
+Defaults        env_keep += DJANGO_DB_PASSWORD
+Defaults        env_keep += DJANGO_SECRET_KEY
+Defaults        env_keep += DJANGO_SETTINGS_MODULE
+A
+sudo chmod 0440 /etc/sudoers.d/djangokeep
+
+sudo apt-get install rabbitmq-server gettext memcached nodejs
 sudo rabbitmqctl delete_user guest || true
 sudo rabbitmqctl add_user nyuszi teszt || true
 sudo rabbitmqctl add_vhost django || true
 sudo rabbitmqctl set_permissions -p django nyuszi '.*' '.*' '.*' || true
 
 sudo pip install python-memcached
+
+sudo npm install -g less
+sudo npm install -g uglify-js@1
 
 sudo cp /opt/webadmin/cloud/miscellaneous/devenv/boot_url.py /opt/
 

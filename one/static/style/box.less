@@ -273,13 +273,17 @@
             z-index: 2;
             position: relative;
         }
+        .details {
+            height: auto;
+        }
     }
     &.opened #new-folder-form {
         display: block;
     }
     .details {
-        border-top: 1px solid #888;
-        display: none;
+        height: 0px;
+        .vendor(transition, height 700ms);
+        overflow: hidden;
         .container {
             padding: 5px 5px;
             .upload-zone {
@@ -313,6 +317,9 @@
         }
         a {
             text-decoration: underline;
+        }
+        .details-container {
+            border-top: 1px solid #888;
         }
         .name {
             float: none;

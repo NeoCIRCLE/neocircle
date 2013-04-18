@@ -18,7 +18,9 @@ from firewall.models import Host, Rule, Vlan, Record
 from school.models import Person, Group
 from store.api import StoreApi
 from .util import keygen
-from cloud.settings import CLOUD_URL
+import django.conf
+
+CLOUD_URL = django.conf.settings.CLOUD_URL
 
 logger = logging.getLogger(__name__)
 pwgen = User.objects.make_random_password
@@ -228,6 +230,9 @@ class Share(models.Model):
         return u"%(group)s: %(tpl)s %(owner)s" % {
                 'group': self.group, 'tpl': self.template, 'owner': self.owner}
 
+    def get_used_quota(self):
+        return self.template.get_credits_per_instance() * self.instance_limit
+
 class Disk(models.Model):
     """Virtual disks automatically synchronized with OpenNebula."""
     name = models.CharField(max_length=100, unique=True,
@@ -244,23 +249,23 @@ class Disk(models.Model):
     @staticmethod
     def update(delete=True):
         """Get and register virtual disks from OpenNebula."""
-        import subprocess
-        proc = subprocess.Popen(["/opt/occi.sh", "storage", "list"],
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        (out, err) = proc.communicate()
-        from xml.dom.minidom import parse, parseString
-        x = parseString(out)
+        try:
+            from .tasks import UpdateDiskTask
+            x = UpdateDiskTask.delay().get(timeout=10)
+            x[0]
+        except:
+            return
         with transaction.commit_on_success():
             l = []
-            for d in x.getElementsByTagName("STORAGE"):
-                id = int(d.getAttributeNode('href').nodeValue.split('/')[-1])
-                name=d.getAttributeNode('name').nodeValue
+            for d in x:
+                id = int(d['id'])
+                name = d['name']
                 try:
-                    d = Disk.objects.get(id=id)
-                    d.name=name
+                    d, created = Disk.objects.get_or_create(id=id)
+                    d.name = name
                     d.save()
                 except:
-                    Disk(id=id, name=name).save()
+                    pass
                 l.append(id)
             if delete:
                 Disk.objects.exclude(id__in=l).delete()
@@ -286,23 +291,23 @@ class Network(models.Model):
     @staticmethod
     def update():
         """Get and register virtual networks from OpenNebula."""
-        import subprocess
-        proc = subprocess.Popen(["/opt/occi.sh", "network", "list"],
-                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        (out, err) = proc.communicate()
-        from xml.dom.minidom import parse, parseString
-        x = parseString(out)
+        try:
+            from .tasks import UpdateNetworkTask
+            x = UpdateNetworkTask.delay().get(timeout=10)
+            x[0]
+        except:
+            return
         with transaction.commit_on_success():
             l = []
-            for d in x.getElementsByTagName("NETWORK"):
-                id = int(d.getAttributeNode('href').nodeValue.split('/')[-1])
-                name=d.getAttributeNode('name').nodeValue
+            for n in x:
+                id = int(n['id'])
+                name = n['name']
                 try:
-                    n = Network.objects.get(id=id)
+                    n, created = Network.objects.get_or_create(id=id)
                     n.name = name
                     n.save()
                 except:
-                    Network(id=id, name=name).save()
+                    pass
                 l.append(id)
             Network.objects.exclude(id__in=l).delete()
     def get_vlan(self):
@@ -380,6 +385,30 @@ class Template(models.Model):
         else:
             logger.info("Could not delete template. Instances still running!")
             return False
+
+    def get_credits_per_instance(self):
+        return self.instance_type.credit
+
+    def get_shares_for(self, user=None):
+        shares = Share.objects.all().filter(template=self)
+        if user:
+            return shares.filter(owner=user)
+        else:
+            return shares
+
+    def get_share_quota_usage_for(self, user=None):
+        shares = self.get_shares_for(user)
+        usage = 0
+        for share in shares:
+            usage += share.instance_limit * self.get_credits_per_instance()
+        return usage
+
+    def get_share_quota_usage_for_user_with_type(self, type, user=None):
+        shares = self.get_shares_for(user)
+        usage = 0
+        for share in shares:
+            usage += share.instance_limit * type.credit
+        return usage
 
 class Instance(models.Model):
     """Virtual machine instance."""
@@ -461,33 +490,6 @@ class Instance(models.Model):
         except:
             return
 
-    def update_state(self):
-        """Get and update VM state from OpenNebula."""
-        import subprocess
-
-        if not self.one_id:
-            return
-        proc = subprocess.Popen(["/opt/occi.sh", "compute", "show",
-            "%d" % self.one_id], stdout=subprocess.PIPE)
-        (out, err) = proc.communicate()
-        x = None
-        old_state = self.state
-        try:
-            from xml.dom.minidom import parse, parseString
-            x = parseString(out)
-            self.vnet_ip = (x.getElementsByTagName("IP")[0].childNodes[0]
-                    .nodeValue.split('.')[3])
-            state = x.getElementsByTagName("STATE")[0].childNodes[0].nodeValue
-            self.state = state
-        except:
-            self.state = 'UNKNOWN'
-        if self.state != old_state:
-            self.waiting = False
-        self.save()
-        if self.template.state == 'SAVING':
-            self.check_if_is_save_as_done()
-        return x
-
     @property
     def nat(self):
         if self.firewall_host is not None:
@@ -512,81 +514,69 @@ class Instance(models.Model):
     def submit(cls, template, owner, extra="", share=None):
         """Submit a new instance to OpenNebula."""
         from django.template.defaultfilters import escape
-        out = ""
         inst = Instance(pw=pwgen(), template=template, owner=owner,
                 share=share, state='PENDING')
         inst.save()
         hostname = u"%d" % (inst.id, )
-        with tempfile.NamedTemporaryFile(delete=False) as f:
-            os.chmod(f.name, stat.S_IRUSR|stat.S_IWUSR|stat.S_IRGRP|stat.S_IROTH)
-            token = signing.dumps(inst.id, salt='activate')
-            try:
-                details = owner.cloud_details
-            except:
-                details = UserCloudDetails(user=owner)
-                details.save()
-
-            tpl = u"""
-                <COMPUTE>
-                    <NAME>%(name)s</NAME>
-                    <INSTANCE_TYPE href="http://www.opennebula.org/instance_type/%(instance)s"/>
-                    <DISK>
-                        <STORAGE href="http://www.opennebula.org/storage/%(disk)d"/>
-                    </DISK>
-                    <NIC>
-                        <NETWORK href="http://www.opennebula.org/network/%(net)d"/>
-                    </NIC>
-                    <CONTEXT>
-                        <SOURCE>web</SOURCE>
-                        <HOSTNAME>%(hostname)s</HOSTNAME>
-                        <NEPTUN>%(neptun)s</NEPTUN>
-                        <USERPW>%(pw)s</USERPW>
-                        <SMBPW>%(smbpw)s</SMBPW>
-                        <SSHPRIV>%(sshkey)s</SSHPRIV>
-                        <BOOTURL>%(booturl)s</BOOTURL>
-                        <SERVER>store.cloud.ik.bme.hu</SERVER>
-                        %(extra)s
-                    </CONTEXT>
-                </COMPUTE>""" % {"name": u"%s %d" % (owner.username, inst.id),
-                                 "instance": template.instance_type,
-                                 "disk": template.disk.id,
-                                 "net": template.network.id,
-                                 "pw": escape(inst.pw),
-                                 "hostname": escape(hostname),
-                                 "smbpw": escape(details.smb_password),
-                                 "sshkey": escape(details.ssh_private_key),
-                                 "neptun": escape(owner.username),
-                                 "booturl": "%sb/%s/" % ( CLOUD_URL, token ),
-                                 "extra": extra}
-            f.write(tpl)
-            f.close()
-            import subprocess
-            proc = subprocess.Popen(["/opt/occi.sh", "compute", "create",
-                f.name], stdout=subprocess.PIPE)
-            (out, err) = proc.communicate()
-            os.unlink(f.name)
-        from xml.dom.minidom import parse, parseString
+        token = signing.dumps(inst.id, salt='activate')
         try:
-            x = parseString(out)
+            details = owner.cloud_details
+        except:
+            details = UserCloudDetails(user=owner)
+            details.save()
+
+        ctx = u'''
+                <SOURCE>web</SOURCE>
+                <HOSTNAME>%(hostname)s</HOSTNAME>
+                <NEPTUN>%(neptun)s</NEPTUN>
+                <USERPW>%(pw)s</USERPW>
+                <SMBPW>%(smbpw)s</SMBPW>
+                <SSHPRIV>%(sshkey)s</SSHPRIV>
+                <BOOTURL>%(booturl)s</BOOTURL>
+                <SERVER>store.cloud.ik.bme.hu</SERVER>
+                %(extra)s
+        ''' % {
+                "pw": escape(inst.pw),
+                "hostname": escape(hostname),
+                "smbpw": escape(details.smb_password),
+                "sshkey": escape(details.ssh_private_key),
+                "neptun": escape(owner.username),
+                "booturl": "%sb/%s/" % ( CLOUD_URL, token ),
+                "extra": extra
+                }
+        try:
+            from .tasks import CreateInstanceTask
+            x = CreateInstanceTask.delay(
+                    name=u"%s %d" % (owner.username, inst.id),
+                    instance_type=template.instance_type.name,
+                    disk_id=int(template.disk.id),
+                    network_id=int(template.network.id),
+                    ctx=ctx,
+            )
+            res = x.get(timeout=10)
+            res['one_id']
         except:
             inst.delete()
             raise Exception("Unable to create VM instance.")
-        inst.one_id = int(x.getElementsByTagName("ID")[0].childNodes[0]
-                .nodeValue)
-        inst.ip = x.getElementsByTagName("IP")[0].childNodes[0].nodeValue
+
+        inst.one_id = res['one_id']
+        inst.ip = res['interfaces'][0]['ip']
         inst.name = ("%(neptun)s %(template)s (%(id)d)" %
                 {'neptun': owner.username, 'template': template.name,
                  'id': inst.one_id})
         inst.save()
-        host = Host(vlan=Vlan.objects.get(name=template.network.name),
-                owner=owner)
-        host.hostname = hostname
-        host.mac = x.getElementsByTagName("MAC")[0].childNodes[0].nodeValue
-        host.ipv4 = inst.ip
+
+        host = Host(
+                vlan=Vlan.objects.get(name=template.network.name),
+                owner=owner, hostname=hostname,
+                mac=res['interfaces'][0]['mac'],
+                ipv4=res['interfaces'][0]['ip'], ipv6='auto',
+        )
+
         if inst.template.network.nat:
             host.pub_ipv4 = Vlan.objects.get(name=template.network.name).snat_ip
             host.shared_ip = True
-        host.ipv6 = "auto"
+
         try:
             host.save()
         except:
@@ -597,6 +587,7 @@ class Instance(models.Model):
                 logger.warning('Delete orphan fw host (%s) of %s.' % (i, inst))
                 i.delete()
             host.save()
+
         host.enable_net()
         host.add_port("tcp", inst.get_port(), {"rdp": 3389, "nx": 22,
             "ssh": 22}[inst.template.access_type])
@@ -606,10 +597,13 @@ class Instance(models.Model):
 
     def one_delete(self):
         """Delete host in OpenNebula."""
+        if self.template.state != "DONE":
+            self.check_if_is_save_as_done()
         if self.one_id and self.state != 'DONE':
-            proc = subprocess.Popen(["/opt/occi.sh", "compute", "delete",
-                    "%d" % self.one_id], stdout=subprocess.PIPE)
-            (out, err) = proc.communicate()
+            self.waiting = True
+            self.save()
+            from .tasks import DeleteInstanceTask
+            DeleteInstanceTask.delay(one_id=self.one_id)
         self.firewall_host_delete()
 
     def firewall_host_delete(self):
@@ -622,28 +616,10 @@ class Instance(models.Model):
                 pass
             h.delete()
 
-    def _update_vm(self, template):
-        out = ""
-        with tempfile.NamedTemporaryFile(delete=False) as f:
-            os.chmod(f.name, stat.S_IRUSR|stat.S_IWUSR|stat.S_IRGRP|stat.S_IROTH)
-            tpl = u"""
-                <COMPUTE>
-                    <ID>%(id)d</ID>
-                    %(template)s
-                </COMPUTE>""" % {"id": self.one_id,
-                                 "template": template}
-            f.write(tpl)
-            f.close()
-            import subprocess
-            proc = subprocess.Popen(["/opt/occi.sh", "compute", "update",
-                       f.name], stdout=subprocess.PIPE)
-            (out, err) = proc.communicate()
-            os.unlink(f.name)
-            print "out: " + out
-
     def _change_state(self, new_state):
         """Change host state in OpenNebula."""
-        self._update_vm("<STATE>" + new_state + "</STATE>")
+        from .tasks import ChangeInstanceStateTask
+        ChangeInstanceStateTask.delay(one_id=self.one_id, new_state=new_state)
         self.waiting = True
         self.save()
 
@@ -680,7 +656,8 @@ class Instance(models.Model):
     def save_as(self):
         """Save image and shut down."""
         imgname = "template-%d-%d" % (self.template.id, self.id)
-        self._update_vm('<DISK id="0"><SAVE_AS name="%s"/></DISK>' % imgname)
+        from .tasks import SaveAsTask
+        SaveAsTask.delay(one_id=self.one_id, new_img=imgname)
         self._change_state("SHUTDOWN")
         self.save()
         t = self.template
@@ -701,22 +678,9 @@ class Instance(models.Model):
         self.firewall_host_delete()
         return True
 
-def delete_instance(sender, instance, using, **kwargs):
-    if instance.state != "DONE":
-        instance.one_delete()
-    try:
-        instance.firewall_host_delete()
-    except:
-        pass
-post_delete.connect(delete_instance, sender=Instance,
-        dispatch_uid="delete_instance")
-
 def delete_instance_pre(sender, instance, using, **kwargs):
-    try:
-        if instance.template.state != "DONE":
-            instance.check_if_is_save_as_done()
-    except:
-        pass
+    if instance.state != 'DONE':
+        instance.one_delete()
+
 pre_delete.connect(delete_instance_pre, sender=Instance,
         dispatch_uid="delete_instance_pre")
-

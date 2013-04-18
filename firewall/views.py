@@ -1,24 +1,25 @@
-from django.shortcuts import render_to_response
-from django.http import HttpResponse
-from firewall.models import *
-from firewall.fw import *
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
-from django.db import IntegrityError
-from tasks import *
-from celery.task.control import inspect
-from django.utils.translation import ugettext_lazy as _
-from django.template.loader import render_to_string
-from cloud.settings import CLOUD_URL as url
-from django.utils import translation
-
-import re
 import base64
+import datetime
 import json
+import re
 import sys
 
-import datetime
+from django.conf import settings
+from django.db import IntegrityError
+from django.http import HttpResponse
+from django.shortcuts import render_to_response
+from django.template.loader import render_to_string
+from django.utils import translation
 from django.utils.timezone import utc
+from django.utils.translation import ugettext_lazy as _
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+
+from celery.task.control import inspect
+from tasks import *
+
+from firewall.fw import *
+from firewall.models import *
 from one.tasks import SendMailTask
 
 def reload_firewall(request):
@@ -52,7 +53,11 @@ def firewall_api(request):
                     user = obj.host.owner
                     lang = user.person_set.all()[0].language
                     translation.activate(lang)
-                    msg = render_to_string('mails/notification-ban-now.txt', { 'user': user, 'bl': obj, 'instance:': obj.host.instance_set.get(), 'url': url} )
+                    msg = render_to_string('mails/notification-ban-now.txt',
+                            { 'user': user,
+                              'bl': obj,
+                              'instance:': obj.host.instance_set.get(),
+                              'url': settings.CLOUD_URL} )
                     SendMailTask.delay(to=obj.host.owner.email, subject='[IK Cloud] %s' % obj.host.instance_set.get().name, msg=msg, sender=u'cloud@ik.bme.hu')
                 except (Host.DoesNotExist, ValidationError, IntegrityError, AttributeError):
                     pass

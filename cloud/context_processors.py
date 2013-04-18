@@ -1,13 +1,14 @@
-from cloud.settings import DEBUG, STAT_DEBUG, RELEASE
-from django.core.cache import cache
-import subprocess
 import json
+import subprocess
+
+from django.conf import settings
+from django.core.cache import cache
 
 def process_debug(req):
-    return {'DEBUG': DEBUG}
+    return {'DEBUG': settings.DEBUG}
 
 def process_stat(req):
-    if STAT_DEBUG:
+    if settings.STAT_DEBUG:
         stat = {
             'CPU': {
                 'USED_CPU': 10,
@@ -23,11 +24,11 @@ def process_stat(req):
     else:
         stat = cache.get('cloud_stat')
     return {
-        'STAT_DEBUG': STAT_DEBUG,
+        'STAT_DEBUG': settings.STAT_DEBUG,
         'cloud_stat': stat,
     }
 
 def process_release(req):
     return {
-        'release': RELEASE,
+        'release': settings.RELEASE,
     }

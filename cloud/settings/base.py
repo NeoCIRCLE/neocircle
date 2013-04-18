@@ -1,9 +1,26 @@
-# Django settings for cloud project.
+# coding=utf8
+# Django base settings for cloud project.
+
+import os
+import subprocess
+
+from django.core.exceptions import ImproperlyConfigured
 
 
-DEBUG = True
-TEMPLATE_DEBUG = DEBUG
-STAT_DEBUG = True
+def get_env_variable(var_name, default=None):
+    """ Get the environment variable or return exception/default """
+    try:
+        return os.environ[var_name]
+    except KeyError:
+        if default is None:
+            error_msg = "Set the %s environment variable" % var_name
+            raise ImproperlyConfigured(error_msg)
+        else:
+            return default
+
+DEBUG = False
+TEMPLATE_DEBUG = False
+STAT_DEBUG = False
 
 ADMINS = (
     ('IK', 'cloud@cloud.ik.bme.hu'),
@@ -13,16 +30,12 @@ MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql', # Add 'postgresql_psycopg2',
-                                              # 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'webadmin',                   # Or path to database file if
-                                              # using sqlite3.
-        'USER': 'webadmin',                   # Not used with sqlite3.
-        'PASSWORD': 'asjklddfjklqjf',         # Not used with sqlite3.
-        'HOST': '',                           # Set to empty string for localhost.
-                                              # Not used with sqlite3.
-        'PORT': '',                           # Set to empty string for default.
-                                              # Not used with sqlite3.
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': get_env_variable('DJANGO_DB_NAME', 'webadmin'),
+        'USER': get_env_variable('DJANGO_DB_USER', 'webadmin'),
+        'PASSWORD': get_env_variable('DJANGO_DB_PASSWORD'),
+        'HOST': get_env_variable('DJANGO_DB_HOST', ''),
+        'PORT': get_env_variable('DJANGO_DB_PORT', ''),
     }
 }
 
@@ -73,8 +86,8 @@ STATICFILES_DIRS = (
     # Put strings here, like "/home/html/static" or "C:/www/django/static".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-	'/opt/webadmin/cloud/one/static',
-	'/opt/webadmin/cloud/cloud/static',
+    '/opt/webadmin/cloud/one/static',
+    '/opt/webadmin/cloud/cloud/static',
 )
 
 # List of finder classes that know how to find static files in
@@ -82,17 +95,17 @@ STATICFILES_DIRS = (
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-#    'django.contrib.staticfiles.finders.DefaultStorageFinder',
+    #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = 'sx%4b1oa2)mn%##6+e1+25g@r8ht(cqk(nko^fr66w&amp;26f22ba'
+SECRET_KEY = get_env_variable('DJANGO_SECRET_KEY')
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
-#     'django.template.loaders.eggs.Loader',
+    #     'django.template.loaders.eggs.Loader',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -125,8 +138,8 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 
 TEMPLATE_DIRS = (
-    # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
-    # Always use forward slashes, even on Windows.
+    # Put strings here, like "/home/html/django_templates" or
+    # "C:/www/django/templates".  Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
 )
 
@@ -154,7 +167,7 @@ INSTALLED_APPS = (
 # the site admins on every HTTP 500 error when DEBUG=False.
 # See http://docs.djangoproject.com/en/dev/topics/logging for
 # more details on how to customize your logging configuration.
-from logging.handlers import SysLogHandler
+# from logging.handlers import SysLogHandler
 
 LOGGING = {
     'version': 1,
@@ -170,8 +183,8 @@ LOGGING = {
             'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler'
         },
-        'syslog':{
-            'level':'WARNING',
+        'syslog': {
+            'level': 'WARNING',
             'class': 'logging.handlers.SysLogHandler',
             'address': '/dev/log',
         },
@@ -189,12 +202,18 @@ LOGGING = {
         },
     }
 }
-LOGIN_URL="/login"
+LOGIN_URL = "/login"
 AUTH_PROFILE_MODULE = 'school.Person'
 
 import djcelery
 djcelery.setup_loader()
-BROKER_URL = 'amqp://nyuszi:teszt@localhost:5672/django'
+
+CELERY_CACHE_BACKEND = "default"
+CELERY_RESULT_BACKEND = "amqp"
+CELERY_TASK_RESULT_EXPIRES = 3600
+
+BROKER_URL = get_env_variable(
+    'DJANGO_BROKER_URL', 'amqp://nyuszi:teszt@localhost:5672/django')
 CELERY_ROUTES = {
     'firewall.tasks.ReloadTask': {'queue': 'local'},
     'firewall.tasks.reload_dns_task': {'queue': 'dns'},
@@ -203,7 +222,14 @@ CELERY_ROUTES = {
     'firewall.tasks.reload_blacklist_task': {'queue': 'firewall'},
     'firewall.tasks.Periodic': {'queue': 'local'},
     'one.tasks.SendMailTask': {'queue': 'local'},
-    'one.tasks.UpdateInstanceStateTask': {'queue': 'local'}
+    'one.tasks.UpdateInstanceStateTask': {'queue': 'local'},
+    'one.tasks.UpdateDiskTask': {'queue': 'opennebula'},
+    'one.tasks.UpdateNetworkTask': {'queue': 'opennebula'},
+    'one.tasks.ChangeInstanceStateTask': {'queue': 'opennebula'},
+    'one.tasks.SaveAsTask': {'queue': 'opennebula'},
+    'one.tasks.CreateInstanceTask': {'queue': 'opennebula'},
+    'one.tasks.DeleteInstanceTask': {'queue': 'opennebula'},
+
 }
 
 CACHES = {
@@ -214,7 +240,7 @@ CACHES = {
 }
 
 
-store_settings = {
+STORE_SETTINGS = {
     "basic_auth": "True",
     "verify_ssl": "False",
     "ssl_auth": "False",
@@ -226,7 +252,7 @@ store_settings = {
     "store_public": "store.ik.bme.hu",
 }
 
-firewall_settings = {
+FIREWALL_SETTINGS = {
     "default_vlangroup": "publikus",
     "reload_sleep": "10",
     "dns_hostname": "dns1.ik.bme.hu",
@@ -234,14 +260,12 @@ firewall_settings = {
     "dns_ip": "152.66.243.60",
     "dns_ttl": "300",
 }
-
-EMAIL_HOST='152.66.243.92' # giccero ipv4
-CLOUD_URL='https://cloud.ik.bme.hu/'
-RELEASE='master'
-
-try:
-    from cloud.local_settings import *
-except:
-    pass
+SITE_NAME = "IK Cloud"
+DEFAULT_FROM_EMAIL = "noreply@cloud.ik.bme.hu"
+DELETE_VM = False
+EMAIL_HOST = '152.66.243.92'  # giccero ipv4
+CLOUD_URL = 'https://cloud.ik.bme.hu/'
+RELEASE = subprocess.check_output(
+    ['git', 'rev-parse', '--symbolic-full-name', '--abbrev-ref', 'HEAD'])
 
 # vim: et sw=4 ai fenc=utf8 smarttab :

@@ -1,5 +1,5 @@
 from django.test import TestCase
-from models import create_user_profile, Person, Course, Semester
+from models import create_user_profile, Person, Course, Semester, Group
 from datetime import datetime, timedelta
 
 class MockUser:
@@ -55,11 +55,12 @@ class PersonTestCase(TestCase):
 class CourseTestCase(TestCase):
     def setUp(self):
         now = datetime.now()
+        date = now.date()
         delta = timedelta(weeks=7)
         self.testperson1 = Person.objects.create(code="testperson1")
         self.testperson2 = Person.objects.create(code="testperson2")
         self.testsemester = Semester.objects.create(name="testsemester",
-                start=now-delta, end=now+delta)
+                start=date-delta, end=date+delta)
         self.testcourse = Course.objects.create(code="testcode",
                 name="testname", short_name="tn")
         self.testcourse.owners.add(self.testperson1, self.testperson2)
@@ -72,3 +73,55 @@ class CourseTestCase(TestCase):
     def test_owner_list(self):
         owner_list = self.testcourse.owner_list()
         self.assertIsNotNone(owner_list)
+
+class SemesterTestCase(TestCase):
+    def setUp(self):
+        now = datetime.now()
+        date = now.date()
+        self.now = now
+        delta = timedelta(weeks=7)
+        self.last_semester = Semester.objects.create(name="testsem1",
+                start=date-3*delta, end=date-delta)
+        self.current_semester = Semester.objects.create(name="testsem2",
+                start=date-delta, end=date+delta)
+        self.next_semester = Semester.objects.create(name="testsem3",
+                start=date+delta, end=date+3*delta)
+
+    def test_is_on(self):
+        self.assertFalse(self.last_semester.is_on(self.now))
+        self.assertTrue(self.current_semester.is_on(self.now))
+        self.assertFalse(self.next_semester.is_on(self.now))
+
+    def test_get_current(self):
+        self.assertEqual(self.current_semester, Semester.get_current())
+
+    def test_unicode(self):
+        self.current_semester.__unicode__()
+
+class GroupTestCase(TestCase):
+    def setUp(self):
+        date = datetime.now().date()
+        delta = timedelta(weeks=7)
+        semester = Semester.objects.create(name="testsem",
+                start=date-delta, end=date+delta)
+        self.testgroup = Group.objects.create(name="testgrp",
+                semester=semester)
+
+    def test_owner_list(self):
+        self.assertIsNotNone(self.testgroup.owner_list())
+        testowner1 = Person.objects.create(code="testprsn1")
+        self.testgroup.owners.add(testowner1)
+        self.assertIsNotNone(self.testgroup.owner_list())
+        testowner2 = Person.objects.create(code="testprsn2")
+        self.testgroup.owners.add(testowner2)
+        self.assertIsNotNone(self.testgroup.owner_list())
+        self.assertIn(", ", self.testgroup.owner_list())
+
+    def test_member_count(self):
+        self.assertEqual(0, self.testgroup.member_count())
+        testmember1 = Person.objects.create(code="testprsn3")
+        self.testgroup.members.add(testmember1)
+        self.assertEqual(1, self.testgroup.member_count())
+        testmember2 = Person.objects.create(code="testprsn4")
+        self.testgroup.members.add(testmember2)
+        self.assertEqual(2, self.testgroup.member_count())

@@ -1,14 +1,15 @@
 var toggleDetails;
 $(function() {
-    toggleDetails = cloud.throttle(function() {
+    toggleDetails = function() {
         if ($(this).parent('.entry').hasClass('opened')) {
             $(this).parent('.entry').removeClass('opened');
-            $(this).next('.details').slideUp(700);
+            $(this).next('.details').css('height', '0px');
         } else {
             $(this).parent('.entry').addClass('opened');
-            $(this).next('.details').slideDown(700);
+            $(this).next('.details').css('height',
+                $(this).next('.details').find('.details-container')[0].offsetHeight+15+'px');
         }
-    })
+    }
     $('a[href=#]').click(function(e) {
         e.preventDefault();
     });

@@ -16,11 +16,10 @@ from django.template import RequestContext
 from django.template.loader import render_to_string
 from django.utils.decorators import method_decorator
 from django.utils.translation import get_language as lang
-from django.utils.translation import ugettext_lazy as _, ungettext_lazy
+from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.http import *
 from django.views.generic import *
 from firewall.tasks import *
-from cloud.settings import store_settings
 from one.models import *
 from school.models import *
 import django.contrib.auth as auth
@@ -28,6 +27,7 @@ import json
 import logging
 import subprocess
 
+store_settings = settings.STORE_SETTINGS
 logger = logging.getLogger(__name__)
 
 def _list_instances(request):
@@ -147,9 +147,19 @@ class AjaxTemplateEditWizard(View):
             }))
     def post(self, request, id, *args, **kwargs):
         template = get_object_or_404(Template, id=id)
+        user_details = UserCloudDetails.objects.get(user=request.user)
         if template.owner != request.user and not template.public and not request.user.is_superuser:
             raise PermissionDenied()
-        template.instance_type_id = request.POST['size']
+        instance_type = get_object_or_404(InstanceType, id=request.POST['size'])
+        current_used_share_quota = user_details.get_weighted_share_count()
+        current_used_share_quota_without_template = current_used_share_quota - template.get_share_quota_usage_for(request.user)
+        new_quota_for_current_template = template.get_share_quota_usage_for_user_with_type(instance_type, request.user)
+        new_used_share_quota = current_used_share_quota_without_template + new_quota_for_current_template
+        allow_type_modify = True if new_used_share_quota <= user_details.share_quota else False
+        if not allow_type_modify:
+            messages.error(request, _('You do not have enough free share quota.'))
+            return redirect(home)
+        template.instance_type = instance_type
         template.description = request.POST['description']
         template.name = request.POST['name']
         template.save()
@@ -208,7 +218,11 @@ ajax_share_wizard = login_required(AjaxShareWizard.as_view())
 class AjaxShareEditWizard(View):
     def get(self, request, id, *args, **kwargs):
         det = UserCloudDetails.objects.get(user=request.user)
-        if det.get_weighted_share_count() >= det.share_quota:
+        if det.get_weighted_share_count() > det.share_quota:
+            logger.warning('[one] User %s ha more used share quota, than its limit, how is that possible? (%d > %d)',
+                str(request.user),
+                det.get_weighted_share_count(),
+                det.share_quota)
             return HttpResponse(unicode(_('You do not have any free share quota.')))
         types = TYPES_L
         for i, t in enumerate(types):
@@ -228,16 +242,21 @@ class AjaxShareEditWizard(View):
         stype = request.POST['type']
         if not stype in TYPES.keys():
             raise PermissionDenied()
-        il = request.POST['instance_limit']
-        if det.get_weighted_share_count() + int(il)*share.template.instance_type.credit > det.share_quota:
+        instance_limit = int(request.POST['instance_limit'])
+        current_used_share_quota = det.get_weighted_share_count()
+        current_used_share_quota_without_current_share = current_used_share_quota - share.get_used_quota()
+        new_quota_for_current_share = instance_limit * share.template.get_credits_per_instance()
+        new_used_share_quota = current_used_share_quota_without_current_share + new_quota_for_current_share
+        allow_stype_modify = True if new_used_share_quota <= det.share_quota else False
+        if not allow_stype_modify:
             messages.error(request, _('You do not have enough free share quota.'))
-            return redirect('/')
-        share.name=request.POST['name']
-        share.description=request.POST['description']
-        share.type=stype
-        share.instance_limit=il
-        share.per_user_limit=request.POST['per_user_limit']
-        share.owner=request.user
+            return redirect(share.group)
+        share.name = request.POST['name']
+        share.description = request.POST['description']
+        share.type = stype
+        share.instance_limit = instance_limit
+        share.per_user_limit = request.POST['per_user_limit']
+        share.owner = request.user
         share.save()
         messages.success(request, _('Successfully edited share %s.') % share)
         return redirect(share.group)
@@ -300,7 +319,7 @@ def _check_quota(request, template, share):
 @login_required
 def vm_new(request, template=None, share=None, redir=True):
     base = None
-    extra = None
+    extra = ''
     if template:
         base = get_object_or_404(Template, pk=template)
     else:
@@ -460,7 +479,7 @@ class VmDeleteView(View):
             inst = get_object_or_404(Instance, id=iid, owner=request.user)
             if inst.template.state != 'READY' and inst.template.owner == request.user:
                 inst.template.delete()
-            inst.delete()
+            inst.one_delete()
             messages.success(request, _('Virtual machine is successfully deleted.'))
         except:
             messages.error(request, _('Failed to delete virtual machine.'))
@@ -484,21 +503,12 @@ def vm_unshare(request, id, *args, **kwargs):
     if not g.owners.filter(user=request.user).exists():
         raise PermissionDenied()
     try:
-        n = s.get_running()
-        m = s.get_running_or_stopped()
-        if n > 0:
-            messages.error(request, ungettext_lazy('There is a machine running of this share.',
-                    'There are %(n)d machines running of this share.', n) %
-                    {'n' : n})
-        elif m > 0:
-            messages.error(request, ungettext_lazy('There is a suspended machine of this share.', 
-                'There are %(m)d suspended machines of this share.', m) % 
-                {'m' : m})
+        if s.get_running_or_stopped() > 0:
+            messages.error(request, _('There are machines running of this share.'))
         else:
             s.delete()
             messages.success(request, _('Share is successfully removed.'))
-    except Exception as e:
-        print e
+    except:
         messages.error(request, _('Failed to remove share.'))
     return redirect(g)
 
@@ -533,7 +543,6 @@ def vm_renew(request, which, iid, *args, **kwargs):
     try:
         vm = get_object_or_404(Instance, id=iid, owner=request.user)
         vm.renew()
-        messages.success(request, _('Virtual machine is successfully renewed.'))
     except:
         messages.error(request, _('Failed to renew virtual machine.'))
         return redirect('/')

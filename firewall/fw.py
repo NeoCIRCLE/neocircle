@@ -1,7 +1,8 @@
 from django.contrib import auth
 from firewall import models
 import os
-from cloud.settings import firewall_settings as settings
+import django.conf
+
 
 import subprocess
 import re
@@ -10,6 +11,7 @@ from datetime import datetime, timedelta
 from django.db.models import Q
 
 
+settings = django.conf.settings.FIREWALL_SETTINGS
 class Firewall:
     IPV6=False
     RULES = None

@@ -43,7 +43,7 @@ cd /opt/webadmin/
 mv cloud cloud.$(date +%s) || true
 
 
-git clone 'ssh://git@giccero.cloud.ik.bme.hu/cloud'
+git clone 'git@git.cloud.ik.bme.hu:circle/cloud.git'
 
 cd cloud
 source miscellaneous/devenv/nextinit.sh

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Better animations</title>
+    <style>
+        .container {
+            width: 400px;
+            -webkit-transition: height 700ms;
+            height: 0px;
+            overflow: hidden;
+            background-color: red;
+        }
+        .container.opened {
+        }
+    </style>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript">
+    window.onload=function(){
+        document.getElementById('toggle-css-btn').onclick=function(){
+            var el=$('#toggle-css');
+            if(!el.hasClass('opened')) {
+                el.css('height', el.find('.details')[0].offsetHeight||'1000px');
+            } else {
+                el.css('height', '0px');
+            }
+            $('#toggle-css').toggleClass('opened');
+        }
+    }
+    </script>
+</head>
+<body>
+    <div class="container" id="toggle-css">
+        <div class="details">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec et consectetur augue. Nulla eu egestas massa. Sed convallis odio justo, ac vehicula sem. Nunc diam leo, consequat nec vulputate volutpat, vulputate quis enim. Praesent mattis egestas neque, at aliquam neque scelerisque non. Ut convallis ligula quis mi tincidunt id accumsan turpis tincidunt. Praesent quis lacus dolor, a varius magna. Aliquam tellus enim, convallis at varius a, pharetra eget dolor.
+
+Aliquam sed leo quis ante fermentum viverra non at ante. Aliquam ante ligula, posuere in dictum egestas, commodo vel mi. Praesent dui nulla, accumsan euismod eleifend non, suscipit dapibus erat. Aliquam consequat felis ut sapien sodales ultricies non nec tellus. In ac odio ante. Nunc lectus urna, bibendum vitae sodales vel, volutpat id libero. Phasellus id turpis ligula, et tincidunt ante.
+        </div>
+    </div>
+    <button id="toggle-css-btn">Toggle, CSS3</button>
+</body>
+</html>
