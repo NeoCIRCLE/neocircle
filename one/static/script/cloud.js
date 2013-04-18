@@ -1,17 +1,21 @@
 var toggleDetails;
 $(function() {
     toggleDetails = function() {
-        if ($(this).parent('.entry').hasClass('opened')) {
-            $(this).parent('.entry').removeClass('opened');
-            $(this).next('.details').css('height', '0px');
-        } else {
-            $(this).parent('.entry').addClass('opened');
-            if ($(this).data('fallback') == 'slide') {
-                $(this).next('.details').css('height', 'auto');
+        try {
+            if ($(this).parent('.entry').hasClass('opened')) {
+                $(this).parent('.entry').removeClass('opened');
+                $(this).next('.details').css('height', '0px');
             } else {
-                $(this).next('.details').css('height',
-                $(this).next('.details').find('.details-container')[0].offsetHeight + 15 + 'px');
+                $(this).parent('.entry').addClass('opened');
+                if ($(this).data('fallback') == 'slide') {
+                    $(this).next('.details').css('height', 'auto');
+                } else {
+                    $(this).next('.details').css('height',
+                        $(this).next('.details').find('.details-container')[0].offsetHeight + 15 + 'px');
+                }
             }
+        } catch(ex) {
+            //make sure we never fail :-)
         }
     }
     $('a[href=#]').click(function(e) {
