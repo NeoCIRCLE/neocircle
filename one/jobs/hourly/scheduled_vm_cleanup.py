@@ -38,7 +38,8 @@ class Job(HourlyJob):
                 pass
 #            print u'%s delete: %s' % (i.name, i.time_of_delete)
             delete = i.time_of_delete.replace(minute=0, second=0, microsecond=0)
-            continue
+            if not settings.DELETE_VM:
+                continue
             if i.time_of_delete < now:
                 msg = render_to_string('mails/notification-delete-now.txt',
                         { 'user': i.owner, 'instance': i, 'url': url, 'site': site } )

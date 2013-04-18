@@ -3,7 +3,7 @@
 
 {% block body %}
 
-{% blocktrans with vm=instance.name state=instance.state|lower date=instance.time_of_delete time=exp|timeuntil %}
+{% blocktrans with vm=instance.name state=instance.state|lower date=instance.time_of_delete time=instance.time_of_delete|timeuntil %}
 Your {{state}} virtual machine "{{vm}}" is going to be DELETED
 at {{date}} (in {{time}}).
 {% endblocktrans %}
