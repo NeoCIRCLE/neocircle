@@ -32,7 +32,7 @@
                     <div class="clear"></div>
                 </div>
                 <div class="details">
-                    <div class="container">
+                    <div class="details-container">
                         {% if not owner.user %}
                         {% trans "This user never logged in, no data available" %}
                         {% else %}
@@ -53,14 +53,16 @@
             </li>
             {% endfor %}
             <li class="entry small-row">
-                <div class="summary" id="new-owner" data-gid="{{group.id}}">
+                <div class="summary" id="new-owner" data-gid="{{group.id}}" data-fallback="slide">
                     <div class="name">{% trans "Add owner" %}</div>
                     <div class="clear"></div>
                 </div>
                 <div class="details" id="new-owner-form">
-                    <div class="container">
-                        <input type="text" placeholder="{% trans "Owner name/NEPTUN" %}" data-url="{% url school.views.group_ajax_owner_autocomplete %}"/>
-                        <div id="new-owner-autocomplete"></div>
+                    <div class="details-container">
+                        <div class="container">
+                            <input type="text" placeholder="{% trans "Owner name/NEPTUN" %}" data-url="{% url school.views.group_ajax_owner_autocomplete %}"/>
+                            <div id="new-owner-autocomplete"></div>
+                        </div>
                     </div>
                 </div>
             </li>

@@ -105,7 +105,7 @@
             <div class="clear"></div>
         </div>
         <div class="details">
-            <div class="container">
+            <div class="details-container">
                 <form style="padding-bottom: 10px" action="{% url one.views.key_add %}" method="POST">
                     {% csrf_token %}
                     <textarea style="margin-bottom: 5px" name="key" placeholder="{% trans "Public key in OpenSSH format" %}"></textarea><br />
@@ -129,26 +129,28 @@
             <div class="clear"></div>
         </div>
         <div class="details">
-            <div class="container">
-                <div id="upload-zone" class="upload-zone">
-                    <p>{% trans "Drag and drop files here to start uploading." %}</p>
-                    <p>
-                        {% trans 'You can also use the <a href="#" id="old-upload">the traditional upload form</a>.' %}
-                    </p>
-                    <p>{% trans 'Upload limit is 1GB per file!' %}</p>
-                </div>
-                <div style="display: none" id="upload-progress-text" class="upload-zone"></div>
-                <div style="display: none" id="upload-error" class="upload-zone">
-                    <p id="upload-error-size" style="display: none">{% trans "Error: File is bigger than 1GB!" %}</p>
-                    <p id="upload-error-server" style="display: none">{% trans "Error: Upload server is not available!" %}</p>
-                    <p id="upload-error-overwrite" style="display: none">{% trans "Error: File already exists!" %}</p>
-                    <p id="upload-error-unknown" style="display: none"></p>
-                </div>
-                <div style="display: none" class="upload-zone" id="old-upload-form">
-                    <form action="{% url one.views.home %}" method="POST" data-bind="attr: {action: uploadURL}" enctype="multipart/form-data">
-                        <input type="file" name="data" />
-                        <input type="submit" value="Feltöltés" />
-                    </form>
+            <div class="details-container">
+                <div class="container">
+                    <div id="upload-zone" class="upload-zone">
+                        <p>{% trans "Drag and drop files here to start uploading." %}</p>
+                        <p>
+                            {% trans 'You can also use the <a href="#" id="old-upload">the traditional upload form</a>.' %}
+                        </p>
+                        <p>{% trans 'Upload limit is 1GB per file!' %}</p>
+                    </div>
+                    <div style="display: none" id="upload-progress-text" class="upload-zone"></div>
+                    <div style="display: none" id="upload-error" class="upload-zone">
+                        <p id="upload-error-size" style="display: none">{% trans "Error: File is bigger than 1GB!" %}</p>
+                        <p id="upload-error-server" style="display: none">{% trans "Error: Upload server is not available!" %}</p>
+                        <p id="upload-error-overwrite" style="display: none">{% trans "Error: File already exists!" %}</p>
+                        <p id="upload-error-unknown" style="display: none"></p>
+                    </div>
+                    <div style="display: none" class="upload-zone" id="old-upload-form">
+                        <form action="{% url one.views.home %}" method="POST" data-bind="attr: {action: uploadURL}" enctype="multipart/form-data">
+                            <input type="file" name="data" />
+                            <input type="submit" value="Feltöltés" />
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
