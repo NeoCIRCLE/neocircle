@@ -1,18 +1,22 @@
-from celery.task import Task, PeriodicTask
+from celery.task import Task
 import logging
-import celery
-import os
-import sys
-import time
 from django.core.mail import send_mail
+from django.conf import settings
 from one.models import Instance
 
 logger = logging.getLogger(__name__)
 
+
 class SendMailTask(Task):
-    def run(self, to, subject, msg, sender=u'noreply@cloud.ik.bme.hu'):
-        send_mail(subject, msg, sender, [ to ], fail_silently=False)
-        logger.info("[django][one][tasks.py] %s->%s [%s]" % (sender, to, subject) )
+    def run(self, to, subject, msg, sender=None):
+        if sender is None:
+            if settings.SITE_NAME:
+                sender = '"%s" <%s>' % (settings.SITE_NAME.replace('"', ''),
+                                        settings.DEFAULT_FROM_EMAIL)
+            else:
+                sender = settings.DEFAULT_FROM_EMAIL
+        send_mail(subject, msg, sender, [to, ], fail_silently=False)
+        logger.info("[django][one][tasks] %s->%s %s" % (sender, to, subject))
 
 
 class UpdateInstanceStateTask(Task):

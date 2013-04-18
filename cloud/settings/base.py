@@ -259,7 +259,8 @@ FIREWALL_SETTINGS = {
     "dns_ip": "152.66.243.60",
     "dns_ttl": "300",
 }
-
+SITE_NAME = "IK Cloud"
+DEFAULT_FROM_EMAIL = "noreply@cloud.ik.bme.hu"
 EMAIL_HOST='152.66.243.92' # giccero ipv4
 CLOUD_URL='https://cloud.ik.bme.hu/'
 RELEASE = subprocess.check_output(['git', 'rev-parse', '--symbolic-full-name', '--abbrev-ref', 'HEAD'])
