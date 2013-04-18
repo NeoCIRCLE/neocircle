@@ -1,11 +1,11 @@
 # coding=utf8
 # Django base settings for cloud project.
 
-from os.path import join, abspath, dirname
 import os
 import subprocess
 
 from django.core.exceptions import ImproperlyConfigured
+
 
 def get_env_variable(var_name, default=None):
     """ Get the environment variable or return exception/default """
@@ -95,7 +95,7 @@ STATICFILES_DIRS = (
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-#    'django.contrib.staticfiles.finders.DefaultStorageFinder',
+    #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
 # Make this unique, and don't share it with anybody.
@@ -105,7 +105,7 @@ SECRET_KEY = get_env_variable('DJANGO_SECRET_KEY')
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
-#     'django.template.loaders.eggs.Loader',
+    #     'django.template.loaders.eggs.Loader',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -138,8 +138,8 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 
 TEMPLATE_DIRS = (
-    # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
-    # Always use forward slashes, even on Windows.
+    # Put strings here, like "/home/html/django_templates" or
+    # "C:/www/django/templates".  Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
 )
 
@@ -167,7 +167,7 @@ INSTALLED_APPS = (
 # the site admins on every HTTP 500 error when DEBUG=False.
 # See http://docs.djangoproject.com/en/dev/topics/logging for
 # more details on how to customize your logging configuration.
-from logging.handlers import SysLogHandler
+# from logging.handlers import SysLogHandler
 
 LOGGING = {
     'version': 1,
@@ -183,8 +183,8 @@ LOGGING = {
             'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler'
         },
-        'syslog':{
-            'level':'WARNING',
+        'syslog': {
+            'level': 'WARNING',
             'class': 'logging.handlers.SysLogHandler',
             'address': '/dev/log',
         },
@@ -202,7 +202,7 @@ LOGGING = {
         },
     }
 }
-LOGIN_URL="/login"
+LOGIN_URL = "/login"
 AUTH_PROFILE_MODULE = 'school.Person'
 
 import djcelery
@@ -212,7 +212,8 @@ CELERY_CACHE_BACKEND = "default"
 CELERY_RESULT_BACKEND = "amqp"
 CELERY_TASK_RESULT_EXPIRES = 3600
 
-BROKER_URL = get_env_variable('DJANGO_BROKER_URL', 'amqp://nyuszi:teszt@localhost:5672/django')
+BROKER_URL = get_env_variable(
+    'DJANGO_BROKER_URL', 'amqp://nyuszi:teszt@localhost:5672/django')
 CELERY_ROUTES = {
     'firewall.tasks.ReloadTask': {'queue': 'local'},
     'firewall.tasks.reload_dns_task': {'queue': 'dns'},
@@ -262,8 +263,9 @@ FIREWALL_SETTINGS = {
 SITE_NAME = "IK Cloud"
 DEFAULT_FROM_EMAIL = "noreply@cloud.ik.bme.hu"
 DELETE_VM = False
-EMAIL_HOST='152.66.243.92' # giccero ipv4
-CLOUD_URL='https://cloud.ik.bme.hu/'
-RELEASE = subprocess.check_output(['git', 'rev-parse', '--symbolic-full-name', '--abbrev-ref', 'HEAD'])
+EMAIL_HOST = '152.66.243.92'  # giccero ipv4
+CLOUD_URL = 'https://cloud.ik.bme.hu/'
+RELEASE = subprocess.check_output(
+    ['git', 'rev-parse', '--symbolic-full-name', '--abbrev-ref', 'HEAD'])
 
 # vim: et sw=4 ai fenc=utf8 smarttab :
