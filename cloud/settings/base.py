@@ -265,7 +265,11 @@ DEFAULT_FROM_EMAIL = "noreply@cloud.ik.bme.hu"
 DELETE_VM = False
 EMAIL_HOST = '152.66.243.92'  # giccero ipv4
 CLOUD_URL = 'https://cloud.ik.bme.hu/'
-RELEASE = subprocess.check_output(
-    ['git', 'rev-parse', '--symbolic-full-name', '--abbrev-ref', 'HEAD'])
+try:
+    os.chdir('/opt/webadmin/cloud/')
+    RELEASE = subprocess.check_output(
+        ['/usr/bin/git', 'rev-parse', '--symbolic-full-name', '--abbrev-ref', 'HEAD'])
+except:
+    RELEASE = 'n/a'
 
 # vim: et sw=4 ai fenc=utf8 smarttab :
