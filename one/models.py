@@ -2,20 +2,21 @@
 
 from datetime import datetime
 from datetime import timedelta as td
-import subprocess, tempfile, os, stat, re, base64, struct, logging
+import base64
+import struct
+import logging
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core import signing
 from django.db import models
 from django.db import transaction
-from django.db.models.signals import post_delete, pre_delete
-from django.db.models.signals import post_save
-from django import forms
+from django.db.models.signals import post_save, pre_delete
+from django.template.defaultfilters import escape
 from django.utils.translation import ugettext_lazy as _
 
-from firewall.models import Host, Rule, Vlan, Record
-from school.models import Person, Group
+from firewall.models import Host, Vlan
+from school.models import Group
 from store.api import StoreApi
 from .util import keygen
 import django.conf
@@ -24,6 +25,7 @@ CLOUD_URL = django.conf.settings.CLOUD_URL
 
 logger = logging.getLogger(__name__)
 pwgen = User.objects.make_random_password
+
 
 def create_user_profile(sender, instance, created, **kwargs):
     """User creation hook: create cloud details object"""
@@ -34,27 +36,33 @@ def create_user_profile(sender, instance, created, **kwargs):
 
 post_save.connect(create_user_profile, sender=User)
 
+
 class UserCloudDetails(models.Model):
     """Cloud related details of a user."""
     user = models.OneToOneField(User, verbose_name=_('user'),
-            related_name='cloud_details')
+                                related_name='cloud_details')
     smb_password = models.CharField(max_length=20,
-            verbose_name=_('Samba password'),
-            help_text=_('Generated password for accessing store from '
-                'Windows.'))
+                                    verbose_name=_('Samba password'),
+                                    help_text=_('Generated password for '
+                                                'accessing store from '
+                                                'Windows.'))
     ssh_key = models.ForeignKey('SshKey', verbose_name=_('SSH key (public)'),
-            null=True, blank=True, related_name='userclouddetails_set',
-            help_text=_('Generated SSH public key for accessing store from '
-                    'Linux.'))
+                                null=True, blank=True,
+                                related_name='userclouddetails_set',
+                                help_text=_('Generated SSH public key for '
+                                            'accessing store from Linux.'))
     ssh_private_key = models.TextField(verbose_name=_('SSH key (private)'),
-            blank=True, help_text=_('Generated SSH private key for '
-                    'accessing store from Linux.'))
+                                       blank=True,
+                                       help_text=_('Generated SSH private key '
+                                                   'for accessing store from '
+                                                   'Linux.'))
     share_quota = models.IntegerField(verbose_name=_('share quota'),
-            default=0)
+                                      default=0)
     instance_quota = models.IntegerField(verbose_name=_('instance quota'),
-            default=20)
+                                         default=20)
     disk_quota = models.IntegerField(verbose_name=_('disk quota'),
-            default=2048, help_text=_('Disk quota in mebibytes.'))
+                                     default=2048,
+                                     help_text=_('Disk quota in mebibytes.'))
 
     def reset_keys(self):
         """Delete old SSH key pair and generate new one."""
@@ -79,15 +87,19 @@ class UserCloudDetails(models.Model):
             if i.state in ('ACTIVE', 'PENDING', ):
                 c = c + i.template.instance_type.credit
         return c
+
     def get_instance_pc(self):
         return 100 * self.get_weighted_instance_count() / self.instance_quota
+
     def get_weighted_share_count(self):
         c = 0
         for i in Share.objects.filter(owner=self.user).all():
             c = c + i.template.instance_type.credit * i.instance_limit
         return c
+
     def get_share_pc(self):
         return 100 * self.get_weighted_share_count() / self.share_quota
+
 
 def set_quota(sender, instance, created, **kwargs):
     if not StoreApi.userexist(instance.user.username):
@@ -101,12 +113,13 @@ def set_quota(sender, instance, created, **kwargs):
             pass
         # Create user
         if not StoreApi.createuser(instance.user.username, password,
-                key_list, quota):
+                                   key_list, quota):
             pass
     else:
         StoreApi.set_quota(instance.user.username,
-                instance.disk_quota * 1024)
+                           instance.disk_quota * 1024)
 post_save.connect(set_quota, sender=UserCloudDetails)
+
 
 def reset_keys(sender, instance, created, **kwargs):
     if created:
@@ -114,6 +127,7 @@ def reset_keys(sender, instance, created, **kwargs):
         instance.reset_keys()
 
 post_save.connect(reset_keys, sender=UserCloudDetails)
+
 
 class OpenSshKeyValidator(object):
     """Validate OpenSSH keys (length and type)."""
@@ -129,26 +143,28 @@ class OpenSshKeyValidator(object):
             type, key_string, comment = value.split(None, 2)
             if type not in self.valid_types:
                 raise ValidationError(_('OpenSSH key type %s is not '
-                    'supported.') % type)
+                                        'supported.') % type)
             data = base64.decodestring(key_string)
             int_len = 4
             str_len = struct.unpack('>I', data[:int_len])[0]
-            if not data[int_len:int_len+str_len] == type:
+            if not data[int_len:(int_len + str_len)] == type:
                 raise
         except ValidationError:
             raise
         except:
             raise ValidationError(_('Invalid OpenSSH public key.'))
 
+
 class SshKey(models.Model):
     """SSH public key (in OpenSSH format)."""
     user = models.ForeignKey(User, related_name='sshkey_set')
     key = models.TextField(verbose_name=_('SSH key'),
-            help_text=_('<a href="/info/ssh/">SSH public key in OpenSSH '
-                    'format</a> used for shell and store login '
-                    '(2048+ bit RSA preferred). Example: '
-                    '<code>ssh-rsa AAAAB...QtQ== john</code>.'),
-            validators=[OpenSshKeyValidator()])
+                           help_text=_('<a href="/info/ssh/">SSH public key '
+                                       'in OpenSSH format</a> used for shell '
+                                       'and store login (2048+ bit RSA '
+                                       'preferred). Example: <code>ssh-rsa '
+                                       'AAAAB...QtQ== john</code>.'),
+                           validators=[OpenSshKeyValidator()])
 
     def __unicode__(self):
         try:
@@ -159,12 +175,12 @@ class SshKey(models.Model):
         return u"%s (%s)" % (keycomment, self.user)
 
 TEMPLATE_STATES = (("INIT", _('init')), ("PREP", _('perparing')),
-        ("SAVE", _('saving')), ("READY", _('ready')))
+                  ("SAVE", _('saving')), ("READY", _('ready')))
 TYPES = {"LAB": {"verbose_name": _('lab'), "id": "LAB",
                  "suspend": td(hours=5), "delete": td(days=15),
                  "help_text": _('For lab or homework with short lifetime.')},
          "PROJECT": {"verbose_name": _('project'), "id": "PROJECT",
-                     "suspend": td(weeks=5), "delete": td(days=366/2),
+                     "suspend": td(weeks=5), "delete": td(days=366 / 2),
                      "help_text": _('For project work.')},
          "SERVER": {"verbose_name": _('server'), "id": "SERVER",
                     "suspend": td(days=365), "delete": None,
@@ -174,21 +190,25 @@ DEFAULT_TYPE = TYPES['LAB']
 TYPES_L = sorted(TYPES.values(), key=lambda m: m["suspend"])
 TYPES_C = tuple([(i[0], i[1]["verbose_name"]) for i in TYPES.items()])
 
+
 class Share(models.Model):
     name = models.CharField(max_length=100, verbose_name=_('name'))
     description = models.TextField(verbose_name=_('description'))
     template = models.ForeignKey('Template', related_name='share_set')
     group = models.ForeignKey(Group, related_name='share_set')
     created_at = models.DateTimeField(auto_now_add=True,
-            verbose_name=_('created at'))
+                                      verbose_name=_('created at'))
     type = models.CharField(choices=TYPES_C, max_length=10)
     instance_limit = models.IntegerField(verbose_name=_('instance limit'),
-            help_text=_('Maximal count of instances launchable for this '
-                'share.'))
+                                         help_text=_('Maximal count of '
+                                                     'instances launchable '
+                                                     'for this share.'))
     per_user_limit = models.IntegerField(verbose_name=_('per user limit'),
-            help_text=_('Maximal count of instances launchable by a single '
-                'user.'))
-    owner = models.ForeignKey(User, null=True, blank=True, related_name='share_set')
+                                         help_text=_('Maximal count of '
+                                                     'instances launchable by '
+                                                     'a single user.'))
+    owner = models.ForeignKey(
+        User, null=True, blank=True, related_name='share_set')
 
     class Meta:
         ordering = ['group', 'template', 'owner', ]
@@ -198,9 +218,9 @@ class Share(models.Model):
     @classmethod
     def extend_type(cls, t):
         t['deletex'] = (datetime.now() + td(seconds=1) + t['delete']
-                if t['delete'] else None)
+                        if t['delete'] else None)
         t['suspendx'] = (datetime.now() + td(seconds=1) + t['suspend']
-                if t['suspend'] else None)
+                         if t['suspend'] else None)
         return t
 
     def get_type(self):
@@ -209,7 +229,7 @@ class Share(models.Model):
 
     def get_running_or_stopped(self, user=None):
         running = (Instance.objects.all().exclude(state='DONE')
-            .filter(share=self))
+                   .filter(share=self))
         if user:
             return running.filter(owner=user).count()
         else:
@@ -217,7 +237,7 @@ class Share(models.Model):
 
     def get_running(self, user=None):
         running = (Instance.objects.all().exclude(state='DONE')
-            .exclude(state='STOPPED').filter(share=self))
+                   .exclude(state='STOPPED').filter(share=self))
         if user:
             return running.filter(owner=user).count()
         else:
@@ -228,15 +248,16 @@ class Share(models.Model):
 
     def __unicode__(self):
         return u"%(group)s: %(tpl)s %(owner)s" % {
-                'group': self.group, 'tpl': self.template, 'owner': self.owner}
+            'group': self.group, 'tpl': self.template, 'owner': self.owner}
 
     def get_used_quota(self):
         return self.template.get_credits_per_instance() * self.instance_limit
 
+
 class Disk(models.Model):
     """Virtual disks automatically synchronized with OpenNebula."""
     name = models.CharField(max_length=100, unique=True,
-            verbose_name=_('name'))
+                            verbose_name=_('name'))
 
     class Meta:
         ordering = ['name']
@@ -270,20 +291,22 @@ class Disk(models.Model):
             if delete:
                 Disk.objects.exclude(id__in=l).delete()
 
+
 class Network(models.Model):
     """Virtual networks automatically synchronized with OpenNebula."""
     name = models.CharField(max_length=100, unique=True,
-            verbose_name=_('name'))
+                            verbose_name=_('name'))
     nat = models.BooleanField(verbose_name=_('NAT'),
-            help_text=_('If network address translation is done.'))
+                              help_text=_('If network address translation is '
+                                          'done.'))
     public = models.BooleanField(verbose_name=_('public'),
-            help_text=_('If internet gateway is available.'))
+                                 help_text=_('If internet gateway is '
+                                             'available.'))
 
     class Meta:
         ordering = ['name']
         verbose_name = _('network')
         verbose_name_plural = _('networks')
-
 
     def __unicode__(self):
         return self.name
@@ -310,6 +333,7 @@ class Network(models.Model):
                     pass
                 l.append(id)
             Network.objects.exclude(id__in=l).delete()
+
     def get_vlan(self):
         return Vlan.objects.get(vid=self.id)
 
@@ -317,15 +341,15 @@ class Network(models.Model):
 class InstanceType(models.Model):
     """Instance types in OCCI configuration (manually synchronized)."""
     name = models.CharField(max_length=100, unique=True,
-            verbose_name=_('name'))
+                            verbose_name=_('name'))
     CPU = models.IntegerField(help_text=_('CPU cores.'))
     RAM = models.IntegerField(help_text=_('Mebibytes of memory.'))
     credit = models.IntegerField(verbose_name=_('credits'),
-            help_text=_('Price of instance.'))
+                                 help_text=_('Price of instance.'))
 
     class Meta:
         ordering = ['credit']
-        verbose_name  = _('instance type')
+        verbose_name = _('instance type')
         verbose_name_plural = _('instance types')
 
     def __unicode__(self):
@@ -333,36 +357,42 @@ class InstanceType(models.Model):
 
 TEMPLATE_STATES = (('NEW', _('new')), ('SAVING', _('saving')),
                    ('READY', _('ready')), )
+
+
 class Template(models.Model):
     """Virtual machine template specifying OS, disk, type and network."""
     name = models.CharField(max_length=100, unique=True,
-            verbose_name=_('name'))
+                            verbose_name=_('name'))
     access_type = models.CharField(max_length=10,
-            choices=[('rdp', 'rdp'), ('nx', 'nx'), ('ssh', 'ssh')],
-            verbose_name=_('access method'))
-    disk = models.ForeignKey(Disk, verbose_name=_('disk'), related_name='template_set')
-    instance_type = models.ForeignKey(InstanceType, related_name='template_set',
-            verbose_name=_('instance type'))
+                                   choices=[('rdp', 'rdp'), (
+                                            'nx', 'nx'), ('ssh', 'ssh')],
+                                   verbose_name=_('access method'))
+    disk = models.ForeignKey(Disk, verbose_name=_(
+        'disk'), related_name='template_set')
+    instance_type = models.ForeignKey(
+        InstanceType, related_name='template_set',
+        verbose_name=_('instance type'))
     network = models.ForeignKey(Network, verbose_name=_('network'),
-            related_name='template_set')
+                                related_name='template_set')
     owner = models.ForeignKey(User, verbose_name=_('owner'),
-            related_name='template_set')
+                              related_name='template_set')
     created_at = models.DateTimeField(auto_now_add=True,
-            verbose_name=_('created at'))
+                                      verbose_name=_('created at'))
     state = models.CharField(max_length=10, choices=TEMPLATE_STATES,
-            default='NEW')
+                             default='NEW')
     public = models.BooleanField(verbose_name=_('public'), default=False,
-            help_text=_('If other users can derive templates of this one.'))
+                                 help_text=_('If other users can derive '
+                                             'templates of this one.'))
     description = models.TextField(verbose_name=_('description'), blank=True)
     system = models.TextField(verbose_name=_('operating system'), blank=True,
-            help_text=(_('Name of operating system in format like "%s".') %
-            "Ubuntu 12.04 LTS Desktop amd64"))
+                              help_text=(_('Name of operating system in '
+                                           'format like "%s".') %
+                                         "Ubuntu 12.04 LTS Desktop amd64"))
 
     class Meta:
         verbose_name = _('template')
         verbose_name_plural = _('templates')
         ordering = ['name', ]
-
 
     def __unicode__(self):
         return self.name
@@ -396,56 +426,60 @@ class Template(models.Model):
         else:
             return shares
 
-    def get_share_quota_usage_for(self, user=None):
+    def get_share_quota_usage_for(self, user=None, type=None):
+        if type is None:
+            c = self.get_credits_per_instance()
+        else:
+            c = type.credit
+
         shares = self.get_shares_for(user)
         usage = 0
         for share in shares:
-            usage += share.instance_limit * self.get_credits_per_instance()
+            usage += share.instance_limit * c
         return usage
 
-    def get_share_quota_usage_for_user_with_type(self, type, user=None):
-        shares = self.get_shares_for(user)
-        usage = 0
-        for share in shares:
-            usage += share.instance_limit * type.credit
-        return usage
 
 class Instance(models.Model):
     """Virtual machine instance."""
     name = models.CharField(max_length=100,
-            verbose_name=_('name'), blank=True)
+                            verbose_name=_('name'), blank=True)
     ip = models.IPAddressField(blank=True, null=True,
-            verbose_name=_('IP address'))
+                               verbose_name=_('IP address'))
     template = models.ForeignKey(Template, verbose_name=_('template'),
-            related_name='instance_set')
+                                 related_name='instance_set')
     owner = models.ForeignKey(User, verbose_name=_('owner'),
-            related_name='instance_set')
+                              related_name='instance_set')
     created_at = models.DateTimeField(auto_now_add=True,
-            verbose_name=_('created at'))
+                                      verbose_name=_('created at'))
     state = models.CharField(max_length=20,
-            choices=[('DEPLOYABLE', _('deployable')),
-                     ('PENDING', _('pending')),
-                     ('DONE', _('done')),
-                     ('ACTIVE', _('active')),
-                     ('UNKNOWN', _('unknown')),
-                     ('STOPPED', _('suspended')),
-                     ('FAILED', _('failed'))],
-            default='DEPLOYABLE')
+                             choices=[('DEPLOYABLE', _('deployable')),
+                            ('PENDING', _('pending')),
+                                 ('DONE', _('done')),
+                                 ('ACTIVE', _('active')),
+                                 ('UNKNOWN', _('unknown')),
+                                 ('STOPPED', _('suspended')),
+                                 ('FAILED', _('failed'))],
+                             default='DEPLOYABLE')
     active_since = models.DateTimeField(null=True, blank=True,
-            verbose_name=_('active since'),
-            help_text=_('Time stamp of successful boot report.'))
+                                        verbose_name=_('active since'),
+                                        help_text=_('Time stamp of successful '
+                                                    'boot report.'))
     firewall_host = models.ForeignKey(Host, blank=True, null=True,
-            verbose_name=_('host in firewall'), related_name='instance_set')
+                                      verbose_name=_('host in firewall'),
+                                      related_name='instance_set')
     pw = models.CharField(max_length=20, verbose_name=_('password'),
-            help_text=_('Original password of instance'))
+                          help_text=_('Original password of instance'))
     one_id = models.IntegerField(unique=True, blank=True, null=True,
-            verbose_name=_('OpenNebula ID'))
+                                 verbose_name=_('OpenNebula ID'))
     share = models.ForeignKey('Share', blank=True, null=True,
-            verbose_name=_('share'), related_name='instance_set')
+                              verbose_name=_('share'),
+                              related_name='instance_set')
     time_of_suspend = models.DateTimeField(default=None,
-            verbose_name=_('time of suspend'), null=True, blank=True)
+                                           verbose_name=_('time of suspend'),
+                                           null=True, blank=True)
     time_of_delete = models.DateTimeField(default=None,
-            verbose_name=_('time of delete'), null=True, blank=True)
+                                          verbose_name=_('time of delete'),
+                                          null=True, blank=True)
     waiting = models.BooleanField(default=False)
 
     class Meta:
@@ -458,13 +492,15 @@ class Instance(models.Model):
 
     @models.permalink
     def get_absolute_url(self):
-            return ('one.views.vm_show', None, {'iid':self.id})
+            return ('one.views.vm_show', None, {'iid': self.id})
 
     def get_port(self, use_ipv6=False):
         """Get public port number for default access method."""
         proto = self.template.access_type
         if self.nat and not use_ipv6:
-            return {"rdp": 23000, "nx": 22000, "ssh": 22000}[proto] + int(self.ip.split('.')[2]) * 256 + int(self.ip.split('.')[3])
+            return ({"rdp": 23000, "nx": 22000, "ssh": 22000}[proto] +
+                    int(self.ip.split('.')[2]) * 256 +
+                    int(self.ip.split('.')[3]))
         else:
             return {"rdp": 3389, "nx": 22, "ssh": 22}[proto]
 
@@ -505,26 +541,15 @@ class Instance(models.Model):
         age = 0
         try:
             age = (datetime.now().replace(tzinfo=None)
-                - self.active_since.replace(tzinfo=None)).seconds
+                   - self.active_since.replace(tzinfo=None)).seconds
         except:
             pass
         return age
 
-    @classmethod
-    def submit(cls, template, owner, extra="", share=None):
-        """Submit a new instance to OpenNebula."""
-        from django.template.defaultfilters import escape
-        inst = Instance(pw=pwgen(), template=template, owner=owner,
-                share=share, state='PENDING')
-        inst.save()
-        hostname = u"%d" % (inst.id, )
-        token = signing.dumps(inst.id, salt='activate')
-        try:
-            details = owner.cloud_details
-        except:
-            details = UserCloudDetails(user=owner)
-            details.save()
-
+    @staticmethod
+    def _create_context(pw, hostname, smb_password, ssh_private_key, owner,
+                        token, extra):
+        """Return XML context configuration with given parameters."""
         ctx = u'''
                 <SOURCE>web</SOURCE>
                 <HOSTNAME>%(hostname)s</HOSTNAME>
@@ -536,22 +561,72 @@ class Instance(models.Model):
                 <SERVER>store.cloud.ik.bme.hu</SERVER>
                 %(extra)s
         ''' % {
-                "pw": escape(inst.pw),
-                "hostname": escape(hostname),
-                "smbpw": escape(details.smb_password),
-                "sshkey": escape(details.ssh_private_key),
-                "neptun": escape(owner.username),
-                "booturl": "%sb/%s/" % ( CLOUD_URL, token ),
-                "extra": extra
-                }
+            "pw": escape(pw),
+            "hostname": escape(hostname),
+            "smbpw": escape(smb_password),
+            "sshkey": escape(ssh_private_key),
+            "neptun": escape(owner),
+            "booturl": "%sb/%s/" % (CLOUD_URL, token),
+            "extra": extra
+        }
+        return ctx
+
+    def _create_host(self, hostname, occi_result):
+        """Create firewall host for recently submitted Instance."""
+        host = Host(
+            vlan=Vlan.objects.get(name=self.template.network.name),
+            owner=self.owner, hostname=hostname,
+            mac=occi_result['interfaces'][0]['mac'],
+            ipv4=occi_result['interfaces'][0]['ip'], ipv6='auto',
+        )
+
+        if self.template.network.nat:
+            host.pub_ipv4 = Vlan.objects.get(
+                name=self.template.network.name).snat_ip
+            host.shared_ip = True
+
+        try:
+            host.save()
+        except:
+            for i in Host.objects.filter(ipv4=host.ipv4).all():
+                logger.warning('Delete orphan fw host (%s) of %s.' % (i, self))
+                i.delete()
+            for i in Host.objects.filter(mac=host.mac).all():
+                logger.warning('Delete orphan fw host (%s) of %s.' % (i, self))
+                i.delete()
+            host.save()
+
+        host.enable_net()
+        port = {"rdp": 3389, "nx": 22, "ssh": 22}[self.template.access_type]
+        host.add_port("tcp", self.get_port(), port)
+        self.firewall_host = host
+        self.save()
+
+    @classmethod
+    def submit(cls, template, owner, extra="", share=None):
+        """Submit a new instance to OpenNebula."""
+        inst = Instance(pw=pwgen(), template=template, owner=owner,
+                        share=share, state='PENDING', waiting=True)
+        inst.save()
+        hostname = u"%d" % (inst.id, )
+        token = signing.dumps(inst.id, salt='activate')
+        try:
+            details = owner.cloud_details
+        except:
+            details = UserCloudDetails(user=owner)
+            details.save()
+
+        ctx = cls._create_context(inst.pw, hostname, details.smb_password,
+                                  details.ssh_private_key, owner.username,
+                                  token, extra)
         try:
             from .tasks import CreateInstanceTask
             x = CreateInstanceTask.delay(
-                    name=u"%s %d" % (owner.username, inst.id),
-                    instance_type=template.instance_type.name,
-                    disk_id=int(template.disk.id),
-                    network_id=int(template.network.id),
-                    ctx=ctx,
+                name=u"%s %d" % (owner.username, inst.id),
+                instance_type=template.instance_type.name,
+                disk_id=int(template.disk.id),
+                network_id=int(template.network.id),
+                ctx=ctx,
             )
             res = x.get(timeout=10)
             res['one_id']
@@ -562,37 +637,11 @@ class Instance(models.Model):
         inst.one_id = res['one_id']
         inst.ip = res['interfaces'][0]['ip']
         inst.name = ("%(neptun)s %(template)s (%(id)d)" %
-                {'neptun': owner.username, 'template': template.name,
-                 'id': inst.one_id})
+                     {'neptun': owner.username, 'template': template.name,
+                      'id': inst.one_id})
         inst.save()
 
-        host = Host(
-                vlan=Vlan.objects.get(name=template.network.name),
-                owner=owner, hostname=hostname,
-                mac=res['interfaces'][0]['mac'],
-                ipv4=res['interfaces'][0]['ip'], ipv6='auto',
-        )
-
-        if inst.template.network.nat:
-            host.pub_ipv4 = Vlan.objects.get(name=template.network.name).snat_ip
-            host.shared_ip = True
-
-        try:
-            host.save()
-        except:
-            for i in Host.objects.filter(ipv4=host.ipv4).all():
-                logger.warning('Delete orphan fw host (%s) of %s.' % (i, inst))
-                i.delete()
-            for i in Host.objects.filter(mac=host.mac).all():
-                logger.warning('Delete orphan fw host (%s) of %s.' % (i, inst))
-                i.delete()
-            host.save()
-
-        host.enable_net()
-        host.add_port("tcp", inst.get_port(), {"rdp": 3389, "nx": 22,
-            "ssh": 22}[inst.template.access_type])
-        inst.firewall_host=host
-        inst.save()
+        inst._create_host(hostname)
         return inst
 
     def one_delete(self):
@@ -678,9 +727,10 @@ class Instance(models.Model):
         self.firewall_host_delete()
         return True
 
+
 def delete_instance_pre(sender, instance, using, **kwargs):
     if instance.state != 'DONE':
         instance.one_delete()
 
 pre_delete.connect(delete_instance_pre, sender=Instance,
-        dispatch_uid="delete_instance_pre")
+                   dispatch_uid="delete_instance_pre")

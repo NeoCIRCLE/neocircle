@@ -1,5 +1,6 @@
 def keygen(length=1024):
-    import os, base64
+    import os
+    import base64
     from datetime import date
     from Crypto.PublicKey import RSA
 

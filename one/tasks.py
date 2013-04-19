@@ -37,27 +37,32 @@ class UpdateInstanceStateTask(Task):
 # ezek csak azert vannak felveve, hogy szepen meg lehessen hivni oket
 # ezeket a fejgepen futo celery futtatja
 
+
 class CreateInstanceTask(Task):
     def run(self, name, instance_type, disk_id, network_id, ctx):
         pass
+
 
 class DeleteInstanceTask(Task):
     def run(self, one_id):
         pass
 
+
 class ChangeInstanceStateTask(Task):
     def run(self, one_id, new_state):
         pass
+
 
 class SaveAsTask(Task):
     def run(self, one_id, new_img):
         pass
 
+
 class UpdateDiskTask(Task):
     def run(self):
         pass
 
+
 class UpdateNetworkTask(Task):
     def run(self):
         pass
-
