@@ -268,7 +268,7 @@ CLOUD_URL = 'https://cloud.ik.bme.hu/'
 try:
     os.chdir('/opt/webadmin/cloud/')
     RELEASE = subprocess.check_output(
-        ['/usr/bin/git', 'rev-parse', '--symbolic-full-name', '--abbrev-ref', 'HEAD'])
+        ['/usr/bin/git', 'describe', '--tags', '--abbrev=4'])
 except:
     RELEASE = 'n/a'
 
