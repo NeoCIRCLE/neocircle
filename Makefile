@@ -3,7 +3,6 @@ SHELL := /bin/bash
 jsfiles += one/static/script/cloud.min.js
 jsfiles += one/static/script/util.min.js
 jsfiles += one/static/script/store.min.js
-cssfiles += one/static/style/style.css
 
 default: migrate generatestatic collectstatic mo restart
 
@@ -18,7 +17,7 @@ po:
 migrate:
 	./manage.py migrate
 
-generatestatic: $(jsfiles) $(cssfiles)
+generatestatic: $(jsfiles) one/static/style/style.css
 
 collectstatic:
 	./manage.py collectstatic --noinput
@@ -33,5 +32,7 @@ restart:
 %.min.js: %.js
 	uglifyjs $< > $@
 
-%.css: %.less
+one/static/style/style.css:
 	lessc one/static/style/style.less > one/static/style/style.css
+
+.PHONY: default pulldef pull po migrate generatestatic collectstatic mo restart one/static/style/style.css
