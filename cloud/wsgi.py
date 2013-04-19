@@ -15,13 +15,21 @@ framework.
 """
 import os
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "cloud.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "cloud.settings.prod")
 
 # This application object is used by any WSGI server configured to use this
 # file. This includes Django's development server, if the WSGI_APPLICATION
 # setting points here.
 from django.core.wsgi import get_wsgi_application
-application = get_wsgi_application()
+_application = get_wsgi_application()
+
+def application(environ, start_response):
+    # copy DJANGO_* wsgi-env vars to process-env
+    for i in environ.keys():
+        if i.startswith('DJANGO_'):
+            os.environ[i] = environ[i]
+
+    return _application(environ, start_response)
 
 # Apply WSGI middleware here.
 # from helloworld.wsgi import HelloWorldApplication
