@@ -9,7 +9,7 @@ import tempfile, os, stat, re, base64, struct, logging
 from celery.contrib import rdb
 
 
-BROKER_URL = 'amqp://nyuszi:teszt@localhost:5672/django'
+BROKER_URL = os.environ['DJANGO_BROKER_URL']
 try:
     from local_settings import *
 except:
