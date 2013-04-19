@@ -236,7 +236,7 @@ class Host(models.Model):
                     res = self.record_set.filter(type='A')
             return unicode(res[0].get_data()['name'])
         except:
-            raise
+#            raise
             if self.shared_ip:
                 return self.pub_ipv4
             else:

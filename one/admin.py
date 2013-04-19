@@ -66,19 +66,16 @@ submit_vm.short_description = _('Submit VM')
 def delete_vm(modeladmin, request, queryset):
     for i in queryset.exclude(state='DONE').all():
         i.one_delete()
-        i.update_state()
 delete_vm.short_description = _('Delete VM')
 
 def suspend_vm(modeladmin, request, queryset):
     for i in queryset.filter(state='ACTIVE').all():
         i.stop()
-        i.update_state()
 suspend_vm.short_description = _('Suspend VM')
 
 def resume_vm(modeladmin, request, queryset):
     for i in queryset.filter(state__in=('STOPPED', 'SUSPENDED')).all():
         i.resume()
-        i.update_state()
 resume_vm.short_description = _('Resume VM')
 
 
