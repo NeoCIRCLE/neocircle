@@ -81,6 +81,29 @@ git config --global alias.civ 'commit --interactive --verbose'
 git config --global color.ui true
 git config --global core.editor vim
 
+echo Python-mode? [N/y]
+read 
+if [ "$REPLY" = y ]
+then
+    mkdir -p ~/.vim/autoload ~/.vim/bundle
+    curl -Sso ~/.vim/autoload/pathogen.vim \
+        https://raw.github.com/tpope/vim-pathogen/master/autoload/pathogen.vim
+    cd ~/.vim; mkdir -p bundle; cd bundle && git clone \
+        git://github.com/klen/python-mode.git
+    cat >>~/.vimrc <<A
+    " Pathogen load
+    filetype off
+
+    call pathogen#infect()
+    call pathogen#helptags()
+
+    filetype plugin indent on
+    syntax on
+A
+    sudo pip install pyflakes rope pep8 mccabe     
+fi
+
+
 true
 
 
