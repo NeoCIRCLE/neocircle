@@ -277,7 +277,10 @@ $(function() {
             }
         })
     })
-    $('.selected-summary').next().show();
+
+    // manually open details of the selected vm
+    $('.selected-summary').click();
+
     /**
      * Connect button new window
      */
