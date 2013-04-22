@@ -29,7 +29,7 @@
         {% trans "Type" %}:
         <span class="value">
             {% if vm.share %}
-                {{vm.get_type}}
+                {{vm.share.get_type.verbose_name}}
             {% else %}
                 {% if vm.template.state != "READY" %}
                     {% trans "Master instance" %}
