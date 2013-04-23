@@ -5,7 +5,7 @@ from firewall.fw import *
 from firewall.models import *
 
 def index(request):
-    return render(request, 'base2.html')
+    return render(request, 'firewall/index.html')
 
 def list_rules(request):
     rules = [{
