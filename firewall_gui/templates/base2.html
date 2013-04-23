@@ -72,8 +72,16 @@
     <script src="{% templatetag openvariable %} STATIC_URL {% templatetag closevariable %}js/bootstrap.min.js"></script>
 
     <!-- place project specific Javascript in this file -->
-    <script src="{% static "js/project.js" %}"></script>
+    <script src="{% static "js/project.js" %}">
 
-    {% block extra_js %} {% endblock %}
+    {% block extra_js %}
+$(function() {
+  console.log('foo);')
+  $.get('/firewall/rules/list',function(data) {
+    console.log(data);
+  });
+})
+    {% endblock %}
+    </script>
   </body>
 </html>
