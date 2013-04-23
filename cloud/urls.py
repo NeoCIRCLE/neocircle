@@ -92,4 +92,6 @@ urlpatterns = patterns('',
     url(r'^stat/$', 'one.views.stat'),
     url(r'^sites/(?P<site>[a-zA-Z0-9]+)/$', 'one.views.sites'),
     url(r'^accounts/(?P<site>profile)/$', 'one.views.sites'),
+
+    url(r'^firewall/$', 'firewall_gui.views.index'),
 )
