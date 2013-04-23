@@ -38,6 +38,9 @@ nosetests.xml
 *.css
 *.min.js
 
+!bootstrap.min.js
+!firewall_gui/static/css/*
+
 # Other
 *.swp
 *~
