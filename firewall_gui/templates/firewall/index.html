@@ -69,16 +69,17 @@
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="http://code.jquery.com/jquery-latest.js"></script>
-    <script src="{% templatetag openvariable %} STATIC_URL {% templatetag closevariable %}js/bootstrap.min.js"></script>
+    <script src="{% static "js/bootstrap.min.js" %}"></script>
 
     <!-- place project specific Javascript in this file -->
-    <script src="{% static "js/project.js" %}">
-
+    <script src="{% static "js/project.js" %}"></script>
+    <script>
     {% block extra_js %}
 $(function() {
-  console.log('foo);')
-  $.get('/firewall/rules/list',function(data) {
-    console.log(data);
+  $.get('/firewall/rules/',function(data) {
+    for(var i in data) {
+      console.log(data[i]);
+    }
   });
 })
     {% endblock %}
