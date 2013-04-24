@@ -48,5 +48,5 @@ def list_rules(request):
         'accept': rule.accept,
         'description': rule.description,
     } for rule in Rule.objects.all()]
-    return HttpResponse(json.dumps(rules, indent=2), content_type="application/json")
+    return HttpResponse(json.dumps(rules), content_type="application/json")
 
