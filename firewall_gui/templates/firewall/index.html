@@ -3,7 +3,7 @@
 {% load staticfiles %}
 {% get_current_language as lang %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" ng-app="firewall">
   <head>
     <meta charset="utf-8">
     <title>{% block title %}Firewall GUI{% endblock %}</title>
@@ -26,6 +26,7 @@
     <![endif]-->
 
     <!-- This file store project specific CSS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.6/angular.min.js"></script>
     <link href="{% static "css/project.css" %}" rel="stylesheet">
 
     <!-- Use this to quickly test CSS changes in a template,
@@ -57,11 +58,9 @@
 
     <div class="container">
 
-      <h1>{% block page_title %}Example Base Template{% endblock %}</h1>
+      <h1>{% block page_title %}Szia bd, ez itt a tűzfaladmin!{% endblock %}</h1>
 
-      {% block content %}
-        <p>Use this document as a way to quick start any new project.</p>
-      {% endblock %}
+      <div ng-view></div>
 
     </div> <!-- /container -->
 
@@ -75,13 +74,6 @@
     <script src="{% static "js/project.js" %}"></script>
     <script>
     {% block extra_js %}
-$(function() {
-  $.get('/firewall/rules/',function(data) {
-    for(var i in data) {
-      console.log(data[i]);
-    }
-  });
-})
     {% endblock %}
     </script>
   </body>
