@@ -10,32 +10,37 @@ def index(request):
 def list_rules(request):
     rules = [{
         'id': rule.id,
-        'vlan': {
+        'target': {
             'name': rule.vlan.name,
             'id': rule.vlan.id,
-        } if rule.vlan else None,
-        'vlangroup': {
+            'type': 'vlan',
+        } if rule.vlan else {
             'name': rule.vlangroup.name,
             'id': rule.vlangroup.id,
-        } if rule.vlangroup else None,
-        'hostgroup': {
+            'type': 'vlangroup',
+        } if rule.vlangroup else {
             'name': rule.hostgroup.name,
             'id': rule.hostgroup.id,
-        } if rule.hostgroup else None,
-        'firewall': {
+            'type': 'hostgroup',
+        } if rule.hostgroup else {
             'name': rule.firewall.name,
             'id': rule.firewall.id,
-        } if rule.firewall else None,
-        'host': {
+            'type': 'firewall',
+        } if rule.firewall else {
             'name': rule.host.hostname,
             'id': rule.host.id,
-        } if rule.host else None,
+            'type': 'host',
+        },
         'type': rule.r_type,
         'direction': rule.get_direction_display(),
         'proto': rule.proto,
         'owner': {
             'name': str(rule.owner),
             'id': rule.owner.id
+        },
+        'foreignNetwork': {
+            'name': rule.foreign_network.name,
+            'id': rule.foreign_network.id,
         },
         'created_at': rule.created_at.isoformat(),
         'modified_at': rule.modified_at.isoformat(),
