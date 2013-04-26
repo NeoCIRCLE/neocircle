@@ -23,7 +23,7 @@
         <th>Tulajdonos</th>
         <th colspan="2">Megjegyzés</th>
     </tr>
-    <tr ng-repeat="rule in rules">
+    <tr ng-repeat="rule in getPage()">
         <td>{{rule.direction}}</td>
         <td>{{rule.proto}}</td>
         <td><a href="#/{{rule.target.type}}s/{{rule.target.id}}">{{rule.target.name}}</a></td>
