@@ -30,7 +30,7 @@ function matchAnything(obj, query) {
     return false;
 }
 
-function RuleListCtrl($scope, $http, $routeParams) {
+function RuleListCtrl($scope, $http) {
     $scope.page = 1;
     var rules = [];
     var pageSize = 10;
