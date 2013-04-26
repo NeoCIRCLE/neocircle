@@ -16,14 +16,14 @@ function range(a, b) {
     return res;
 }
 
-function ruleMatch(rule, query) {
-    return rule.description.match(query) ||
-    rule.proto && rule.proto.match(query) ||
-    rule.target.name.match(query) ||
-    rule.direction.match(query) ||
-    rule.owner.name.match(query) ||
-    rule.type.match(query) ||
-    rule.foreignNetwork.name.match(query);
+function matchAnything(obj, query) {
+    for(var i in obj) {
+        var prop = obj[i];
+        if(typeof prop === 'number' && prop == query) return true;
+        if(typeof prop === 'string' && prop.match(query)) return true;
+        if(typeof prop === 'object' && matchAnything(prop, query)) return true;
+    }
+    return false;
 }
 
 function RuleListCtrl($scope, $http, $routeParams) {
@@ -36,7 +36,7 @@ function RuleListCtrl($scope, $http, $routeParams) {
         if ($scope.query) {
             for (var i in rules) {
                 var rule = rules[i];
-                if (ruleMatch(rule, $scope.query)) {
+                if (matchAnything(rule, $scope.query)) {
                     res.push(rule);
                 }
             }
