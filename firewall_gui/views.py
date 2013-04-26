@@ -50,3 +50,30 @@ def list_rules(request):
     } for rule in Rule.objects.all()]
     return HttpResponse(json.dumps(rules), content_type="application/json")
 
+def list_hosts(request):
+    hosts = [{
+        "id": host.id,
+        "reverse": host.reverse,
+        "name": host.hostname,
+        "ipv4": host.ipv4,
+        "pub" : "foo", #ide kell valami!
+        "shared_ip": host.shared_ip,
+        "description": host.description,
+        "comment": host.comment,
+        "location": host.location,
+        "vlan": {
+            "name": host.vlan.name,
+            "id": host.vlan.id
+        },
+        "owner": {
+            "name": str(host.owner),
+            "id": host.owner.id
+        },
+        "created_at": host.created_at.isoformat(),
+        "modified_at": host.modified_at.isoformat(),
+        "groups": [{
+            "name": group.name,
+            "id": group.id,
+        } for group in host.groups.all()]
+    } for host in Host.objects.all()]
+    return HttpResponse(json.dumps(hosts), content_type="application/json")
