@@ -95,4 +95,5 @@ urlpatterns = patterns('',
 
     url(r'^firewall/$', 'firewall_gui.views.index'),
     url(r'^firewall/rules/$', 'firewall_gui.views.list_rules'),
+    url(r'^firewall/hosts/$', 'firewall_gui.views.list_hosts'),
 )
