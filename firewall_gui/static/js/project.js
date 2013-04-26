@@ -1,4 +1,4 @@
-angular.module('firewall', []).config(
+var module = angular.module('firewall', []).config(
 ['$routeProvider', function($routeProvider) {
     $routeProvider.when('/rules/', {
         templateUrl: '/static/partials/rule-list.html',
@@ -9,8 +9,58 @@ angular.module('firewall', []).config(
     });
 }]);
 
-function RuleListCtrl($scope, $http) {
+function range(a, b) {
+    var res = [];
+    do res.push(a++);
+    while (a < b)
+    return res;
+}
+
+function ruleMatch(rule, query) {
+    return rule.description.match(query) ||
+    rule.proto && rule.proto.match(query) ||
+    rule.target.name.match(query) ||
+    rule.direction.match(query) ||
+    rule.owner.name.match(query) ||
+    rule.type.match(query) ||
+    rule.foreignNetwork.name.match(query);
+}
+
+function RuleListCtrl($scope, $http, $routeParams) {
+    $scope.page = 1;
+    var rules = [];
+    var pageSize = 10;
+    var itemCount = 0;
+    $scope.getPage = function() {
+        var res = [];
+        if ($scope.query) {
+            for (var i in rules) {
+                var rule = rules[i];
+                if (ruleMatch(rule, $scope.query)) {
+                    res.push(rule);
+                }
+            }
+
+        } else {
+            res = rules;
+        }
+        $scope.pages = range(1, Math.ceil(res.length / pageSize));
+        $scope.page = Math.min($scope.page, $scope.pages.length);
+        return res.slice(($scope.page - 1) * pageSize, $scope.page * pageSize);
+    };
+    $scope.setPage = function(page) {
+        $scope.page = page;
+    };
+    $scope.nextPage = function() {
+        $scope.page = Math.min($scope.page + 1, $scope.pages.length);
+    };
+    $scope.prevPage = function() {
+        $scope.page = Math.max($scope.page - 1, 1);
+    };
     $http.get('/firewall/rules/').success(function success(data) {
-        $scope.rules = data;
+        console.log('foo');
+        rules = data;
+        $scope.pages = range(1, Math.ceil(data.length / pageSize));
+        console.log($scope.pages);
     });
 }
