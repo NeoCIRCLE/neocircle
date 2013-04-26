@@ -3,6 +3,9 @@ var module = angular.module('firewall', []).config(
     $routeProvider.when('/rules/', {
         templateUrl: '/static/partials/rule-list.html',
         controller: RuleListCtrl
+    }).when('/hosts/', {
+        templateUrl: '/static/partials/host-list.html',
+        controller: HostListCtrl
     }).
     otherwise({
         redirectTo: '/rules/'
