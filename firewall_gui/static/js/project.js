@@ -2,10 +2,10 @@ var module = angular.module('firewall', []).config(
 ['$routeProvider', function($routeProvider) {
     $routeProvider.when('/rules/', {
         templateUrl: '/static/partials/rule-list.html',
-        controller: RuleListCtrl
+        controller: ListController('/firewall/rules/')
     }).when('/hosts/', {
         templateUrl: '/static/partials/host-list.html',
-        controller: HostListCtrl
+        controller: ListController('/firewall/hosts/')
     }).
     otherwise({
         redirectTo: '/rules/'
@@ -30,80 +30,41 @@ function matchAnything(obj, query) {
     return false;
 }
 
-function RuleListCtrl($scope, $http) {
-    $scope.page = 1;
-    var rules = [];
-    var pageSize = 10;
-    var itemCount = 0;
-    $scope.getPage = function() {
-        var res = [];
-        if ($scope.query) {
-            for (var i in rules) {
-                var rule = rules[i];
-                if (matchAnything(rule, $scope.query)) {
-                    res.push(rule);
+function ListController(url) {
+    return function($scope, $http) {
+        $scope.page = 1;
+        var rules = [];
+        var pageSize = 10;
+        var itemCount = 0;
+        $scope.getPage = function() {
+            var res = [];
+            if ($scope.query) {
+                for (var i in rules) {
+                    var rule = rules[i];
+                    if (matchAnything(rule, $scope.query)) {
+                        res.push(rule);
+                    }
                 }
+
+            } else {
+                res = rules;
             }
-
-        } else {
-            res = rules;
-        }
-        $scope.pages = range(1, Math.ceil(res.length / pageSize));
-        $scope.page = Math.min($scope.page, $scope.pages.length);
-        return res.slice(($scope.page - 1) * pageSize, $scope.page * pageSize);
-    };
-    $scope.setPage = function(page) {
-        $scope.page = page;
-    };
-    $scope.nextPage = function() {
-        $scope.page = Math.min($scope.page + 1, $scope.pages.length);
-    };
-    $scope.prevPage = function() {
-        $scope.page = Math.max($scope.page - 1, 1);
-    };
-    $http.get('/firewall/rules/').success(function success(data) {
-        console.log('foo');
-        rules = data;
-        $scope.pages = range(1, Math.ceil(data.length / pageSize));
-        console.log($scope.pages);
-    });
-}
-
-function HostListCtrl($scope, $http) {
-    $scope.page = 1;
-    var rules = [];
-    var pageSize = 10;
-    var itemCount = 0;
-    $scope.getPage = function() {
-        var res = [];
-        if ($scope.query) {
-            for (var i in rules) {
-                var rule = rules[i];
-                if (matchAnything(rule, $scope.query)) {
-                    res.push(rule);
-                }
-            }
-
-        } else {
-            res = rules;
-        }
-        $scope.pages = range(1, Math.ceil(res.length / pageSize));
-        $scope.page = Math.min($scope.page, $scope.pages.length);
-        return res.slice(($scope.page - 1) * pageSize, $scope.page * pageSize);
-    };
-    $scope.setPage = function(page) {
-        $scope.page = page;
-    };
-    $scope.nextPage = function() {
-        $scope.page = Math.min($scope.page + 1, $scope.pages.length);
-    };
-    $scope.prevPage = function() {
-        $scope.page = Math.max($scope.page - 1, 1);
-    };
-    $http.get('/firewall/hosts/').success(function success(data) {
-        console.log('foo');
-        rules = data;
-        $scope.pages = range(1, Math.ceil(data.length / pageSize));
-        console.log($scope.pages);
-    });
+            $scope.pages = range(1, Math.ceil(res.length / pageSize));
+            $scope.page = Math.min($scope.page, $scope.pages.length);
+            return res.slice(($scope.page - 1) * pageSize, $scope.page * pageSize);
+        };
+        $scope.setPage = function(page) {
+            $scope.page = page;
+        };
+        $scope.nextPage = function() {
+            $scope.page = Math.min($scope.page + 1, $scope.pages.length);
+        };
+        $scope.prevPage = function() {
+            $scope.page = Math.max($scope.page - 1, 1);
+        };
+        $http.get(url).success(function success(data) {
+            rules = data;
+            $scope.pages = range(1, Math.ceil(data.length / pageSize));
+        });
+    }
 }
