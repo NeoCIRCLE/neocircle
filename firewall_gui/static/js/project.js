@@ -20,10 +20,11 @@ function range(a, b) {
 }
 
 function matchAnything(obj, query) {
+    var expr = new RegExp(query, 'i')
     for(var i in obj) {
         var prop = obj[i];
         if(typeof prop === 'number' && prop == query) return true;
-        if(typeof prop === 'string' && prop.match(query)) return true;
+        if(typeof prop === 'string' && prop.match(expr)) return true;
         if(typeof prop === 'object' && matchAnything(prop, query)) return true;
     }
     return false;
