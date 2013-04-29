@@ -112,3 +112,17 @@ def list_vlangroups(request):
     } for group in VlanGroup.objects.all()]
     return HttpResponse(json.dumps(vlangroups), content_type="application/json")
 
+def list_hostgroups(request):
+    groups = [{
+        "id": group.id,
+        "name": group.name,
+        "description": group.description,
+        "owner": {
+            "id": group.owner.id,
+            "name": str(group.owner),
+        },
+        "created_at": group.created_at.isoformat(),
+        "modified_at": group.modified_at.isoformat()
+    } for group in Group.objects.all()]
+    return HttpResponse(json.dumps(groups), content_type="application/json")
+
