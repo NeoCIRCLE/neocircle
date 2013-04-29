@@ -101,4 +101,5 @@ urlpatterns = patterns('',
     url(r'^firewall/hostgroups/$', 'firewall_gui.views.list_hostgroups'),
     url(r'^firewall/firewalls/$', 'firewall_gui.views.list_firewalls'),
     url(r'^firewall/domains/$', 'firewall_gui.views.list_domains'),
+    url(r'^firewall/records/$', 'firewall_gui.views.list_records'),
 )

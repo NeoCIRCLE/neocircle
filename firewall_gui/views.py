@@ -147,3 +147,28 @@ def list_domains(request):
         }
     } for domain in Domain.objects.all()]
     return HttpResponse(json.dumps(domains), content_type="application/json")
+
+def list_records(request):
+    records = [{
+        "id": record.id,
+        "name": record.name,
+        "domain": {
+            "id": record.domain.id,
+            "name": record.domain.name,
+        },
+        "host": {
+            "id": record.host.id,
+            "name": record.host.hostname,
+        } if record.host else None,
+        "type": record.type,
+        "address": record.address,
+        "ttl": record.ttl,
+        "owner": {
+            "id": record.owner.id,
+            "name": str(record.owner)
+        },
+        "description": record.description,
+        "created_at": record.created_at.isoformat(),
+        "modified_at": record.modified_at.isoformat()
+    } for record in Record.objects.all()]
+    return HttpResponse(json.dumps(records), content_type="application/json")
