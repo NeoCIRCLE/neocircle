@@ -1,9 +1,15 @@
+/**
+ * List of firewall collections, keys are RESTful url suffixes,
+ * values are templates.
+ * @type {Object}
+ */
 var listControllers = {
     rules: 'rule-list',
     hosts: 'host-list',
     vlans: 'vlan-list',
     vlangroups: 'vlangroup-list',
     hostgroups: 'hostgroup-list',
+    firewalls: 'firewall-list',
 };
 
 var module = angular.module('firewall', []).config(
