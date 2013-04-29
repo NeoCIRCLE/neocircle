@@ -25,7 +25,7 @@
     </tr>
     <tr ng-repeat="host in getPage()">
         <td>{{host.name}}</td>
-        <td><a href="#/vlans/{{host.vlan.id}}">{{host.vlan.name}}</a></td>
+        <td><a href="#/hosts/{{host.vlan.id}}">{{host.vlan.name}}</a></td>
         <td>{{host.owner.name}}</td>
         <td>
             <ul>
@@ -38,7 +38,7 @@
         <td>{{host.ipv4}}</td>
         <td>
             <a class="btn" href="#/hosts/{{host.id}}/">Szekesztés</a>
-            <a class="btn btn-danger" href="#/rules/{{host.id}}/delete/">Törlés</a>
+            <a class="btn btn-danger" href="#/hosts/{{host.id}}/delete/">Törlés</a>
         </td>
     </tr>
 </table>
