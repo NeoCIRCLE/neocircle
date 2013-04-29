@@ -9,6 +9,9 @@ var module = angular.module('firewall', []).config(
     }).when('/vlans/', {
         templateUrl: '/static/partials/vlan-list.html',
         controller: ListController('/firewall/vlans/')
+    }).when('/vlangroups/', {
+        templateUrl: '/static/partials/vlangroup-list.html',
+        controller: ListController('/firewall/vlangroups/')
     }).
     otherwise({
         redirectTo: '/rules/'

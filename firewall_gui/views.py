@@ -94,3 +94,21 @@ def list_vlans(request):
     } for vlan in Vlan.objects.all()]
     return HttpResponse(json.dumps(vlans), content_type="application/json")
 
+def list_vlangroups(request):
+    vlangroups = [{
+        "id": group.id,
+        "name": group.name,
+        "vlans": [{
+            "id": vlan.id,
+            "name": vlan.name
+        } for vlan in group.vlans.all()],
+        "description": group.description,
+        "owner": {
+            "id": group.owner.id,
+            "name": str(group.owner)
+        },
+        "created_at": group.created_at.isoformat(),
+        "modified_at": group.modified_at.isoformat(),
+    } for group in VlanGroup.objects.all()]
+    return HttpResponse(json.dumps(vlangroups), content_type="application/json")
+
