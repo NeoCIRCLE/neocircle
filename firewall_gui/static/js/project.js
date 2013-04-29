@@ -1,23 +1,19 @@
 /**
- * List of firewall collections, keys are RESTful url suffixes,
- * values are templates.
- * @type {Object}
+ * List of firewall collections, controllers/routes will be dynamically created from them.
+ *
+ * E.g., from the `rule` controller, the RESTful url `/rules/` will be generated,
+ * and the `/static/partials/rule-list.html` template will be used.
+ * @type {Array}
  */
-var listControllers = {
-    rules: 'rule-list',
-    hosts: 'host-list',
-    vlans: 'vlan-list',
-    vlangroups: 'vlangroup-list',
-    hostgroups: 'hostgroup-list',
-    firewalls: 'firewall-list',
-};
+var listControllers = ['rule', 'host', 'vlan', 'vlangroup', 'hostgroup', 'firewall'];
 
 var module = angular.module('firewall', []).config(
 ['$routeProvider', function($routeProvider) {
-    for(var i in listControllers) {
-        $routeProvider.when('/'+i+'/', {
-            templateUrl: '/static/partials/'+listControllers[i]+'.html',
-            controller: ListController('/firewall/'+i+'/')
+    for (var i in listControllers) {
+        var c = listControllers[i];
+        $routeProvider.when('/' + c + 's/', {
+            templateUrl: '/static/partials/' + c + '-list.html',
+            controller: ListController('/firewall/' + c + 's/')
         });
     }
     $routeProvider.otherwise({
@@ -34,11 +30,11 @@ function range(a, b) {
 
 function matchAnything(obj, query) {
     var expr = new RegExp(query, 'i')
-    for(var i in obj) {
+    for (var i in obj) {
         var prop = obj[i];
-        if(typeof prop === 'number' && prop == query) return true;
-        if(typeof prop === 'string' && prop.match(expr)) return true;
-        if(typeof prop === 'object' && matchAnything(prop, query)) return true;
+        if (typeof prop === 'number' && prop == query) return true;
+        if (typeof prop === 'string' && prop.match(expr)) return true;
+        if (typeof prop === 'object' && matchAnything(prop, query)) return true;
     }
     return false;
 }
