@@ -126,3 +126,9 @@ def list_hostgroups(request):
     } for group in Group.objects.all()]
     return HttpResponse(json.dumps(groups), content_type="application/json")
 
+def list_firewalls(request):
+    firewalls = [{
+        "id": firewall.id,
+        "name": firewall.name,
+    } for firewall in Firewall.objects.all()]
+    return HttpResponse(json.dumps(firewalls), content_type="application/json")
