@@ -1,22 +1,20 @@
+var listControllers = {
+    rules: 'rule-list',
+    hosts: 'host-list',
+    vlans: 'vlan-list',
+    vlangroups: 'vlangroup-list',
+    hostgroups: 'hostgroup-list',
+};
+
 var module = angular.module('firewall', []).config(
 ['$routeProvider', function($routeProvider) {
-    $routeProvider.when('/rules/', {
-        templateUrl: '/static/partials/rule-list.html',
-        controller: ListController('/firewall/rules/')
-    }).when('/hosts/', {
-        templateUrl: '/static/partials/host-list.html',
-        controller: ListController('/firewall/hosts/')
-    }).when('/vlans/', {
-        templateUrl: '/static/partials/vlan-list.html',
-        controller: ListController('/firewall/vlans/')
-    }).when('/vlangroups/', {
-        templateUrl: '/static/partials/vlangroup-list.html',
-        controller: ListController('/firewall/vlangroups/')
-    }).when('/hostgroups/', {
-        templateUrl: '/static/partials/hostgroup-list.html',
-        controller: ListController('/firewall/hostgroups/')
-    }).
-    otherwise({
+    for(var i in listControllers) {
+        $routeProvider.when('/'+i+'/', {
+            templateUrl: '/static/partials/'+listControllers[i]+'.html',
+            controller: ListController('/firewall/'+i+'/')
+        });
+    }
+    $routeProvider.otherwise({
         redirectTo: '/rules/'
     });
 }]);
