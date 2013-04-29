@@ -77,3 +77,20 @@ def list_hosts(request):
         } for group in host.groups.all()]
     } for host in Host.objects.all()]
     return HttpResponse(json.dumps(hosts), content_type="application/json")
+
+def list_vlans(request):
+    vlans = [{
+        "id": vlan.id,
+        "vid": vlan.vid,
+        "name": vlan.name,
+        "ipv4": vlan.ipv4+"/"+str(vlan.prefix4),
+        "ipv6": vlan.ipv6+"/"+str(vlan.prefix6),
+        "nat": vlan.snat_ip,
+        "description": vlan.description,
+        "domain": {
+            "id": vlan.domain.id,
+            "name": vlan.domain.name,
+        }
+    } for vlan in Vlan.objects.all()]
+    return HttpResponse(json.dumps(vlans), content_type="application/json")
+
