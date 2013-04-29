@@ -132,3 +132,18 @@ def list_firewalls(request):
         "name": firewall.name,
     } for firewall in Firewall.objects.all()]
     return HttpResponse(json.dumps(firewalls), content_type="application/json")
+
+def list_domains(request):
+    domains = [{
+        "id": domain.id,
+        "name": domain.name,
+        "created_at": domain.created_at.isoformat(),
+        "modified_at": domain.modified_at.isoformat(),
+        "ttl": domain.ttl,
+        "description": domain.description,
+        "owner": {
+            "id": domain.owner.id,
+            "name": str(domain.owner)
+        }
+    } for domain in Domain.objects.all()]
+    return HttpResponse(json.dumps(domains), content_type="application/json")

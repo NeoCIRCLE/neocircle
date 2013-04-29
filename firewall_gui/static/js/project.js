@@ -5,7 +5,7 @@
  * and the `/static/partials/rule-list.html` template will be used.
  * @type {Array}
  */
-var listControllers = ['rule', 'host', 'vlan', 'vlangroup', 'hostgroup', 'firewall'];
+var listControllers = ['rule', 'host', 'vlan', 'vlangroup', 'hostgroup', 'firewall', 'domain'];
 
 var module = angular.module('firewall', []).config(
 ['$routeProvider', function($routeProvider) {
