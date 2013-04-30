@@ -172,3 +172,19 @@ def list_records(request):
         "modified_at": record.modified_at.isoformat()
     } for record in Record.objects.all()]
     return HttpResponse(json.dumps(records), content_type="application/json")
+
+def list_blacklists(request):
+    blacklists = [{
+        "id": blacklist.id,
+        "host": {
+            "id": blacklist.host.id,
+            "name": blacklist.host.hostname,
+        } if blacklist.host else None,
+        "reason": blacklist.reason,
+        "snort_message": blacklist.snort_message,
+        "type": blacklist.type,
+        "created_at": blacklist.created_at.isoformat(),
+        "modified_at": blacklist.modified_at.isoformat(),
+        "ipv4": blacklist.ipv4
+    } for blacklist in Blacklist.objects.all()]
+    return HttpResponse(json.dumps(blacklists), content_type="application/json")
