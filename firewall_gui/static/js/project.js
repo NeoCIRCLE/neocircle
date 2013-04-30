@@ -6,7 +6,7 @@
  * @type {Array}
  */
 var listControllers = ['rule', 'host', 'vlan', 'vlangroup', 'hostgroup', 'firewall', 'domain', 'record', 'blacklist'];
-
+var entityControllers = ['rule'];
 var module = angular.module('firewall', []).config(
 ['$routeProvider', function($routeProvider) {
     for (var i in listControllers) {
@@ -14,6 +14,13 @@ var module = angular.module('firewall', []).config(
         $routeProvider.when('/' + c + 's/', {
             templateUrl: '/static/partials/' + c + '-list.html',
             controller: ListController('/firewall/' + c + 's/')
+        });
+    }
+    for (var i in entityControllers) {
+        var c = entityControllers[i];
+        $routeProvider.when('/' + c + 's/:id/', {
+            templateUrl: '/static/partials/' + c + '-edit.html',
+            controller: EntityController('/firewall/' + c + 's/')
         });
     }
     $routeProvider.otherwise({
@@ -74,6 +81,18 @@ function ListController(url) {
         $http.get(url).success(function success(data) {
             rules = data;
             $scope.pages = range(1, Math.ceil(data.length / pageSize));
+        });
+    }
+}
+
+function EntityController(url) {
+    console.log('creatin...', url);
+    return function($scope, $http, $routeParams) {
+        var id = $routeParams.id;
+        console.log('foooooo');
+        $http.get(url + id + '/').success(function success(data) {
+            console.log(data);
+            $scope.rule = data;
         });
     }
 }

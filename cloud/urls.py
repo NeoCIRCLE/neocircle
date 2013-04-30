@@ -103,4 +103,6 @@ urlpatterns = patterns('',
     url(r'^firewall/domains/$', 'firewall_gui.views.list_domains'),
     url(r'^firewall/records/$', 'firewall_gui.views.list_records'),
     url(r'^firewall/blacklists/$', 'firewall_gui.views.list_blacklists'),
+
+    url(r'^firewall/rules/(?P<id>\d+)/$', 'firewall_gui.views.show_rule'),
 )
