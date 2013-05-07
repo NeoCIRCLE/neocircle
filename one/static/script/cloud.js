@@ -241,16 +241,6 @@ $(function() {
         $('#new-group-semester').change(updateSummary);
         $('#new-group-members').change(updateSummary);
     });
-    $('.hidden-password').click(function() {
-        if ($(this).attr('type') == 'password') {
-            $(this).attr('type', 'text');
-            $(this).addClass('shown');
-            this.select();
-        } else if (this.selectionStart - this.selectionEnd == 0) {
-            $(this).attr('type', 'password');
-            $(this).removeClass('shown');
-        }
-    });
     $('.shares li').click(function(e) {
         e.preventDefault();
         e.stopPropagation();
@@ -302,15 +292,6 @@ $(function() {
                     $(this).parent().next().find('.ipv4host').show();
                 }
             });
-            $('#modal-container .hidden-password').click(function() {
-                if ($(this).attr('type') == 'password') {
-                    $(this).attr('type', 'text');
-                    $(this).addClass('shown');
-                } else {
-                    $(this).attr('type', 'password');
-                    $(this).removeClass('shown');
-                }
-            })
         })
         $('#modal').show();
     };
