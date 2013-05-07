@@ -31,6 +31,20 @@
     </div>
   </div>
   <div class="control-group">
+    <label class="control-label" for="proto">Protocol</label>
+    <div class="controls">
+      <select id="proto" ng-options="choice[0] as choice[1] for choice in rule.proto.choices" ng-model="rule.proto.value">
+        <option value="">None</option>
+      </select>
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label" for="owner">Owner</label>
+    <div class="controls">
+      <input type="text" autocomplete="off" id="owner" value="{{rule.owner.name}}" />
+    </div>
+  </div>
+  <div class="control-group">
     <div class="controls">
       <label class="checkbox">
         <input type="checkbox"> Remember me
