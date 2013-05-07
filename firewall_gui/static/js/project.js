@@ -86,10 +86,8 @@ function ListController(url) {
 }
 
 function EntityController(url) {
-    console.log('creatin...', url);
     return function($scope, $http, $routeParams) {
         var id = $routeParams.id;
-        console.log('foooooo');
         $http.get(url + id + '/').success(function success(data) {
             console.log(data);
             $scope.rule = data;
