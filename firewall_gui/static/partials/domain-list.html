@@ -1,34 +1,39 @@
 <div class="navbar">
-    <div class="navbar-inner">
-        <div class="pagination pull-left">
-            <ul>
-                <li ng-click="prevPage()" ng-class="{disabled: page == 1}"><a href>Előző</a></li>
-                <li ng-repeat="_page in pages" ng-click="setPage(_page)" ng-class="{active: _page == page}">
-                <a href>{{_page}}</a>
-                </li>
-                <li ng-click="nextPage()" ng-class="{disabled: page == pages.length}"><a href>Next</a></li>
-            </ul>
-        </div>
-        <form class="navbar-search" style="margin: 20px">
-            <input type="text" class="search-query" placeholder="Search" ng-model="query">
-        </form>
+  <div class="navbar-inner">
+    <div class="pagination pull-left">
+      <ul>
+        <li ng-click="prevPage()" ng-class="{disabled: page == 1}">
+          <a href>Előző</a>
+        </li>
+        <li ng-repeat="_page in pages" ng-click="setPage(_page)" ng-class="{active: _page == page}">
+          <a href>{{_page}}</a>
+        </li>
+        <li ng-click="nextPage()" ng-class="{disabled: page == pages.length}">
+          <a href>Next</a>
+        </li>
+      </ul>
     </div>
+    <form class="navbar-search" style="margin: 20px">
+      <input type="text" class="search-query" placeholder="Search" ng-model="query"></form>
+  </div>
 </div>
 <table class="table table-striped">
-    <tr>
-        <th>Név</th>
-        <th>TTL</th>
-        <th>Leírás</th>
-        <th colspan="2">Tulajdonos</th>
-    </tr>
-    <tr ng-repeat="domain in getPage()">
-        <td><a href="#/domains/{{domain.id}}">{{domain.name}}</a></td>
-        <td>{{domain.ttl}}</td>
-        <td>{{domain.description}}</td>
-        <td>{{domain.owner.name}}</td>
-        <td>
-            <a class="btn" href="#/domains/{{domain.id}}/">Szerkesztés</a>
-            <a class="btn btn-danger" href="#/domains/{{domain.id}}/delete/">Törlés</a>
-        </td>
-    </tr>
+  <tr>
+    <th>Név</th>
+    <th>TTL</th>
+    <th>Leírás</th>
+    <th colspan="2">Tulajdonos</th>
+  </tr>
+  <tr ng-repeat="domain in getPage()">
+    <td>
+      <a href="#/domains/{{domain.id}}">{{domain.name}}</a>
+    </td>
+    <td>{{domain.ttl}}</td>
+    <td>{{domain.description}}</td>
+    <td>{{domain.owner.name}}</td>
+    <td>
+      <a class="btn" href="#/domains/{{domain.id}}/">Szerkesztés</a>
+      <a class="btn btn-danger" href="#/domains/{{domain.id}}/delete/">Törlés</a>
+    </td>
+  </tr>
 </table>
