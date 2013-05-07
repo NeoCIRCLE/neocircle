@@ -32,7 +32,7 @@
   <div class="control-group">
     <label class="control-label" for="targetName">Target</label>
     <div class="controls">
-      <input type="text" data-provide="typeahead" autocomplete="off" id="targetName" value="{{rule.target.name}}" />
+      <input type="text" data-provide="typeahead" autocomplete="off" id="targetName" ng-model="rule.target.name" />
     </div>
   </div>
   <div class="control-group">
@@ -53,7 +53,7 @@
   <div class="control-group">
     <label class="control-label" for="owner">Owner</label>
     <div class="controls">
-      <input type="text" autocomplete="off" id="owner" value="{{rule.owner.name}}" />
+      <input type="text" autocomplete="off" id="owner" ng-model="rule.owner.name" />
     </div>
   </div>
   <div class="control-group">
@@ -65,9 +65,9 @@
   <div class="control-group">
     <div class="controls">
       <label class="checkbox">
-        <input type="checkbox"> Remember me
+        <input type="checkbox" ng-model="rule.accept"> Accept
       </label>
-      <button type="submit" class="btn">Sign in</button>
     </div>
   </div>
+  <button type="submit" class="btn">Sign in</button>
 </form>
