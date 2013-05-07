@@ -153,6 +153,25 @@ function EntityController(url) {
                     return true;
                 }
             });
+            ['vlan', 'host', 'firewall'].forEach(function(t) {
+                $('#' + t).typeahead({
+                    source: function(query, process) {
+                        $.ajax({
+                            url: '/firewall/autocomplete/' + t + '/',
+                            type: 'post',
+                            data: 'name=' + query,
+                            success: function autocompleteSuccess(data) {
+                                process(data.map(function(obj) {
+                                    return obj.name;
+                                }));
+                            }
+                        });
+                    },
+                    matcher: function() {
+                        return true;
+                    }
+                });
+            })
         });
     }
 }
