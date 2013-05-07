@@ -105,6 +105,7 @@ urlpatterns = patterns('',
     url(r'^firewall/blacklists/$', 'firewall_gui.views.list_blacklists'),
 
     url(r'^firewall/rules/(?P<id>\d+)/$', 'firewall_gui.views.show_rule'),
+    url(r'^firewall/hosts/(?P<id>\d+)/$', 'firewall_gui.views.show_host'),
 
     url(r'^firewall/autocomplete/vlan/$', 'firewall_gui.views.autocomplete_vlan'),
     url(r'^firewall/autocomplete/vlangroup/$', 'firewall_gui.views.autocomplete_vlangroup'),

@@ -243,6 +243,49 @@ def show_rule(request, id):
     }
     return HttpResponse(json.dumps(rule), content_type='application/json')
 
+def show_host(request, id):
+    host = get_object_or_404(Host, id=id)
+    host = {
+        'id': host.id,
+        'reverse': host.reverse,
+        'name': host.hostname,
+        'mac': host.mac,
+        'ipv4': host.ipv4,
+        'ipv6': host.ipv6,
+        'pub_ipv4' : host.pub_ipv4,
+        'shared_ip': host.shared_ip,
+        'description': host.description,
+        'comment': host.comment,
+        'location': host.location,
+        'vlan': {
+            'name': host.vlan.name,
+            'id': host.vlan.id
+        },
+        'owner': {
+            'name': str(host.owner),
+            'id': host.owner.id
+        },
+        'created_at': host.created_at.isoformat(),
+        'modified_at': host.modified_at.isoformat(),
+        'groups': [{
+            'name': group.name,
+            'id': group.id,
+        } for group in host.groups.all()],
+        'rules': [{
+            'id': rule.id,
+            'direction': rule.get_direction_display(),
+            'proto': rule.proto,
+            'owner': {
+                'id': rule.owner.id,
+                'name': str(rule.owner),
+            },
+            'accept': rule.accept,
+            'nat': rule.nat
+        } for rule in host.rules.all()]
+    }
+    return HttpResponse(json.dumps(host), content_type='application/json')
+
+
 def autocomplete_vlan(request):
     return HttpResponse(json.dumps([{
         'id': vlan.id,
