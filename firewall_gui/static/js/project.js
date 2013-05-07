@@ -118,7 +118,7 @@ function EntityController(url) {
         var id = $routeParams.id;
         $http.get(url + id + '/').success(function success(data) {
             console.log(data);
-            $scope.rule = data;
+            $scope.entity = data;
             $('#targetName').typeahead({
                 source: function(query, process) {
                     $.ajax({

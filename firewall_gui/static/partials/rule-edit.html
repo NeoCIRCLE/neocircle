@@ -3,25 +3,25 @@
     <div class="control-group">
       <label class="control-label" for="ID">ID</label>
       <div class="controls">
-        <input class="input-mini" type="text" id="ID" placeholder="ID" value="{{rule.id}}" disabled="disabled">
+        <input class="input-mini" type="text" id="ID" placeholder="ID" value="{{entity.id}}" disabled="disabled">
       </div>
     </div>
     <div class="control-group">
       <label class="control-label" for="created_at">Created at</label>
       <div class="controls">
-        <input class="input" type="text" id="created_at" ng-model="rule.created_at" disabled="disabled">
+        <input class="input" type="text" id="created_at" ng-model="entity.created_at" disabled="disabled">
       </div>
     </div>
     <div class="control-group">
       <label class="control-label" for="modified_at">Modified at</label>
       <div class="controls">
-        <input class="input" type="text" id="modified_at" ng-model="rule.modified_at" disabled="disabled">
+        <input class="input" type="text" id="modified_at" ng-model="entity.modified_at" disabled="disabled">
       </div>
     </div>
     <div class="control-group">
       <label class="control-label" for="targetType">Target type</label>
       <div class="controls">
-        <select id="targetType" ng-model="rule.target.type">
+        <select id="targetType" ng-model="entity.target.type">
           <option value="vlan">Vlan</option>
           <option value="vlangroup">VlanGroup</option>
           <option value="host">Host</option>
@@ -33,20 +33,20 @@
     <div class="control-group">
       <label class="control-label" for="targetName">Target</label>
       <div class="controls">
-        <input type="text" data-provide="typeahead" autocomplete="off" id="targetName" ng-model="rule.target.name" />
+        <input type="text" data-provide="typeahead" autocomplete="off" id="targetName" ng-model="entity.target.name" />
       </div>
     </div>
     <div class="control-group">
       <label class="control-label" for="direction">Direction</label>
       <div class="controls">
-        <select id="direction" ng-options="choice[0] as choice[1] for choice in rule.direction.choices" ng-model="rule.direction.value">
+        <select id="direction" ng-options="choice[0] as choice[1] for choice in entity.direction.choices" ng-model="entity.direction.value">
         </select>
       </div>
     </div>
     <div class="control-group">
       <label class="control-label" for="proto">Protocol</label>
       <div class="controls">
-        <select id="proto" ng-options="choice[0] as choice[1] for choice in rule.proto.choices" ng-model="rule.proto.value">
+        <select id="proto" ng-options="choice[0] as choice[1] for choice in entity.proto.choices" ng-model="entity.proto.value">
           <option value="">None</option>
         </select>
       </div>
@@ -54,13 +54,13 @@
     <div class="control-group">
       <label class="control-label" for="owner">Owner</label>
       <div class="controls">
-        <input type="text" autocomplete="off" id="owner" ng-model="rule.owner.name" />
+        <input type="text" autocomplete="off" id="owner" ng-model="entity.owner.name" />
       </div>
     </div>
     <div class="control-group">
       <label class="control-label" for="foreignNetwork">Foreign network</label>
       <div class="controls">
-        <input type="text" data-provide="typeahead" autocomplete="off" id="foreignNetwork" ng-model="rule.foreignNetwork.name" />
+        <input type="text" data-provide="typeahead" autocomplete="off" id="foreignNetwork" ng-model="entity.foreignNetwork.name" />
       </div>
     </div>
   </div>
@@ -68,46 +68,46 @@
     <div class="control-group">
       <label class="control-label" for="description">Description</label>
       <div class="controls">
-        <textarea rows="2" id="description" ng-model="rule.description">
+        <textarea rows="2" id="description" ng-model="entity.description">
         </textarea>
       </div>
     </div>
     <div class="control-group">
       <div class="controls">
         <label class="checkbox">
-          <input type="checkbox" ng-model="rule.nat"> NAT
+          <input type="checkbox" ng-model="entity.nat"> NAT
         </label>
       </div>
     </div>
     <div class="control-group">
       <div class="controls">
         <label class="checkbox">
-          <input type="checkbox" ng-model="rule.accept"> Accept
+          <input type="checkbox" ng-model="entity.accept"> Accept
         </label>
       </div>
     </div>
     <div class="control-group">
       <label class="control-label" for="dport">Destination port</label>
       <div class="controls">
-        <input class="input-mini" type="number" id="dport" ng-model="rule.dport">
+        <input class="input-mini" type="number" id="dport" ng-model="entity.dport">
       </div>
     </div>
     <div class="control-group">
       <label class="control-label" for="nat_dport">NAT Destination port</label>
       <div class="controls">
-        <input class="input-mini" type="number" id="nat_dport" ng-model="rule.nat_dport">
+        <input class="input-mini" type="number" id="nat_dport" ng-model="entity.nat_dport">
       </div>
     </div>
     <div class="control-group">
       <label class="control-label" for="sport">Source port</label>
       <div class="controls">
-        <input class="input-mini" type="number" id="sport" ng-model="rule.sport">
+        <input class="input-mini" type="number" id="sport" ng-model="entity.sport">
       </div>
     </div>
     <div class="control-group">
       <label class="control-label" for="extra">Extra</label>
       <div class="controls">
-        <textarea rows="2" id="extra" ng-model="rule.extra">
+        <textarea rows="2" id="extra" ng-model="entity.extra">
         </textarea>
       </div>
     </div>
