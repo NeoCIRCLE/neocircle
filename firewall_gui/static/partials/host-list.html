@@ -33,11 +33,11 @@
     </td>
     <td>{{host.ipv4}}</td>
     <td>
-      <ul>
-        <li ng-repeat="group in host.groups">
+      <div class="well well-small">
+        <span class="label label-info" ng-repeat="group in host.groups">
           <a href="#/hostgroups/{{group.id}}">{{group.name}}</a>
-        </li>
-      </ul>
+        </span>
+      </div>
     </td>
     <td>{{host.owner.name}}</td>
     <td style="width: 200px;">{{host.description}}</td>
