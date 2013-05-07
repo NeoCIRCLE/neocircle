@@ -24,7 +24,7 @@
     <tr ng-repeat="group in getPage()">
         <td><a href="#/vlangroups/{{group.id}}">{{group.name}}</a></td>
         <td>
-            <span ng-repeat="vlan in group.vlans">
+            <span class="label label-info" ng-repeat="vlan in group.vlans">
                 <a href="#/vlans/{{vlan.id}}">{{vlan.name}}</a>
             </span>
         </td>
