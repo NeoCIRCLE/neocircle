@@ -86,7 +86,7 @@ class Browser:
         self.webview.open("https://cloud.ik.bme.hu/store/gui/")
         self.webview.connect("navigation-requested", self.on_navigation_requested)
         settings = webkit.WebSettings()
-        settings.set_property('user-agent', 'cloud-gui '+self.version)
+        settings.set_property('user-agent', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.22 (KHTML, like Gecko) Ubuntu Chromium/25.0.1364.160 Chrome/25.0.1364.160 Safari/537.22 '+'cloud-gui '+self.version)
         settings.set_property('enable-accelerated-compositing', True)
         settings.set_property("enable-default-context-menu", False)
         self.webview.set_settings(settings)
@@ -183,7 +183,7 @@ class Browser:
         
     def load_committed_cb(self,web_view, frame):
         uri = frame.get_uri()
-        print uri
+        #print uri
         try:
             self.webview.execute_script('document.getElementsByTagName("a")[0].target="";')
         except:
