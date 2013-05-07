@@ -18,15 +18,15 @@
     <tr>
         <th>Név</th>
         <th>Vlan</th>
-        <th>Tulajdonos</th>
+        <th>IPv4</th>
         <th>Csoportok</th>
-        <th>Leírás</th>
-        <th colspan="2">IPv4</th>
+        <th>Tulajdonos</th>
+        <th colspan="2">Leírás</th>
     </tr>
     <tr ng-repeat="host in getPage()">
         <td>{{host.name}}</td>
         <td><a href="#/hosts/{{host.vlan.id}}">{{host.vlan.name}}</a></td>
-        <td>{{host.owner.name}}</td>
+        <td>{{host.ipv4}}</td>
         <td>
             <ul>
                 <li ng-repeat="group in host.groups">
@@ -34,8 +34,8 @@
                 </li>
             </ul>
         </td>
+        <td>{{host.owner.name}}</td>
         <td style="width: 200px;">{{host.description}}</td>
-        <td>{{host.ipv4}}</td>
         <td>
             <a class="btn" href="#/hosts/{{host.id}}/">Szerkesztés</a>
             <a class="btn btn-danger" href="#/hosts/{{host.id}}/delete/">Törlés</a>
