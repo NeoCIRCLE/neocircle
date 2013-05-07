@@ -48,8 +48,6 @@
         <input type="text" class="input-xlarge" id="ipv6" ng-model="entity.ipv6" />
       </div>
     </div>
-  </div>
-  <div class="span5">
     <div class="control-group">
       <label class="control-label" for="owner">Owner</label>
       <div class="controls">
@@ -62,6 +60,8 @@
         <input type="text" data-provide="typeahead" autocomplete="off" id="vlan" ng-model="entity.vlan.name" />
       </div>
     </div>
+  </div>
+  <div class="span5">
     <div class="control-group">
       <label class="control-label" for="description">Description</label>
       <div class="controls">
@@ -81,6 +81,21 @@
       <div class="controls">
         <textarea rows="2" id="comment" ng-model="entity.comment">
         </textarea>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="hostgroups">Host groups</label>
+      <div class="controls">
+        <div class="well well-small">
+          <span class="label label-info" ng-repeat="group in entity.groups">
+            <a href="#/hostgroups/{{group.id}}">{{group.name}}</a>
+            <a href><i class="icon-remove"></i></a>
+          </span>
+        </div>
+        <div class="input-append">
+          <input class="span2" id="hostgroup" type="text">
+          <button class="btn" type="button">Add</button>
+        </div>
       </div>
     </div>
     <div class="control-group">

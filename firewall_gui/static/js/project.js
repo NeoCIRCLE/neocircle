@@ -153,7 +153,7 @@ function EntityController(url) {
                     return true;
                 }
             });
-            ['vlan', 'vlangroup', 'host', 'firewall'].forEach(function(t) {
+            ['vlan', 'vlangroup', 'host', 'hostgroup', 'firewall'].forEach(function(t) {
                 $('#' + t).typeahead({
                     source: function(query, process) {
                         $.ajax({
