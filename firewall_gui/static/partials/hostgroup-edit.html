@@ -1,0 +1,75 @@
+<form class="form-horizontal">
+  <div class="span5">
+    <div class="control-group">
+      <label class="control-label" for="ID">ID</label>
+      <div class="controls">
+        <input class="input-mini" type="text" id="ID" placeholder="ID" value="{{entity.id}}" disabled="disabled">
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="created_at">Created at</label>
+      <div class="controls">
+        <input class="input" type="text" id="created_at" ng-model="entity.created_at" disabled="disabled">
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="modified_at">Modified at</label>
+      <div class="controls">
+        <input class="input" type="text" id="modified_at" ng-model="entity.modified_at" disabled="disabled">
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="name">Name</label>
+      <div class="controls">
+        <input type="text" id="name" ng-model="entity.name" />
+      </div>
+    </div>
+  </div>
+  <div class="span5">
+    <div class="control-group">
+      <label class="control-label" for="owner">Owner</label>
+      <div class="controls">
+        <input type="text" autocomplete="off" id="owner" ng-model="entity.owner.name" />
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="description">Description</label>
+      <div class="controls">
+        <textarea rows="4" id="description" ng-model="entity.description">
+        </textarea>
+      </div>
+    </div>
+    <div class="control-group">
+      <div class="controls">
+        <button type="submit" class="btn">Save (nem működik!)</button>
+      </div>
+    </div>
+  </div>
+</form>
+<div class="span12">
+  <h3>Rules belonging to this hostgroup</h3>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Direction</th>
+        <th>Protocol</th>
+        <th>Accept</th>
+        <th>NAT</th>
+        <th colspan="2">Owner</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="rule in entity.rules">
+        <td>{{rule.direction}}</td>
+        <td>{{rule.proto}}</td>
+        <td>{{rule.accept}}</td>
+        <td>{{rule.nat}}</td>
+        <td>{{rule.owner.name}}</td>
+        <td>
+          <a class="btn" href="#/rules/{{rule.id}}/">Edit</a>
+          <a class="btn btn-danger" href="#/rules/{{rule.id}}/delete/">Delete</a>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

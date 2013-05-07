@@ -108,6 +108,7 @@ urlpatterns = patterns('',
     url(r'^firewall/hosts/(?P<id>\d+)/$', 'firewall_gui.views.show_host'),
     url(r'^firewall/vlans/(?P<id>\d+)/$', 'firewall_gui.views.show_vlan'),
     url(r'^firewall/vlangroups/(?P<id>\d+)/$', 'firewall_gui.views.show_vlangroup'),
+    url(r'^firewall/hostgroups/(?P<id>\d+)/$', 'firewall_gui.views.show_hostgroup'),
 
     url(r'^firewall/autocomplete/vlan/$', 'firewall_gui.views.autocomplete_vlan'),
     url(r'^firewall/autocomplete/vlangroup/$', 'firewall_gui.views.autocomplete_vlangroup'),
