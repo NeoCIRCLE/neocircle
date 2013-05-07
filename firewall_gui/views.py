@@ -365,6 +365,10 @@ def show_hostgroup(request, id):
         },
         'created_at': group.created_at.isoformat(),
         'modified_at': group.modified_at.isoformat(),
+        'hosts': [{
+            'id': host.id,
+            'name': host.hostname
+        } for host in group.host_set.all()],
         'rules': [{
             'id': rule.id,
             'direction': rule.get_direction_display(),

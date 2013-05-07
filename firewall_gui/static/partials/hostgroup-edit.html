@@ -73,3 +73,11 @@
     </tbody>
   </table>
 </div>
+<div class="span12">
+  <h3>Hosts belonging to this hostgroup</h3>
+  <div class="well well-small">
+    <span class="label label-info" ng-repeat="host in entity.hosts">
+      <a href="#/hosts/{{host.id}}">{{host.name}}</a>
+    </span>
+  </div>
+</div>
