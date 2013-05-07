@@ -34,7 +34,7 @@ $.ajaxSetup({
  * @type {Array}
  */
 var listControllers = ['rule', 'host', 'vlan', 'vlangroup', 'hostgroup', 'firewall', 'domain', 'record', 'blacklist'];
-var entityControllers = ['rule', 'host', 'vlan'];
+var entityControllers = ['rule', 'host', 'vlan', 'vlangroup'];
 var module = angular.module('firewall', []).config(
 ['$routeProvider', function($routeProvider) {
     for (var i in listControllers) {
@@ -153,7 +153,7 @@ function EntityController(url) {
                     return true;
                 }
             });
-            ['vlan', 'host', 'firewall'].forEach(function(t) {
+            ['vlan', 'vlangroup', 'host', 'firewall'].forEach(function(t) {
                 $('#' + t).typeahead({
                     source: function(query, process) {
                         $.ajax({

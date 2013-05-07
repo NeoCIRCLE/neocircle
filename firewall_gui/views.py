@@ -323,6 +323,36 @@ def show_vlan(request, id):
     }
     return HttpResponse(json.dumps(vlan), content_type='application/json')
 
+def show_vlangroup(request, id):
+    group = get_object_or_404(VlanGroup, id=id)
+    group = {
+        'id': group.id,
+        'name': group.name,
+        'vlans': [{
+            'id': vlan.id,
+            'name': vlan.name
+        } for vlan in group.vlans.all()],
+        'description': group.description,
+        'owner': {
+            'id': group.owner.id,
+            'name': str(group.owner)
+        },
+        'created_at': group.created_at.isoformat(),
+        'modified_at': group.modified_at.isoformat(),
+        'rules': [{
+            'id': rule.id,
+            'direction': rule.get_direction_display(),
+            'proto': rule.proto,
+            'owner': {
+                'id': rule.owner.id,
+                'name': str(rule.owner),
+            },
+            'accept': rule.accept,
+            'nat': rule.nat
+        } for rule in group.rules.all()]
+    }
+    return HttpResponse(json.dumps(group), content_type='application/json')
+
 
 def autocomplete_vlan(request):
     return HttpResponse(json.dumps([{
