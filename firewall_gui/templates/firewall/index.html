@@ -10,12 +10,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
-
-    <!-- Le styles -->
     <link href="{% static "css/bootstrap.min.css" %}" rel="stylesheet">
     <style>
       body {
-        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+        padding-top: 60px;
       }
     </style>
     <link href="{% static "css/bootstrap-responsive.min.css" %}" rel="stylesheet">
@@ -24,18 +22,11 @@
     <!--[if lt IE 9]>
       <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
-
-    <!-- This file store project specific CSS -->
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.6/angular.min.js"></script>
     <link href="{% static "css/project.css" %}" rel="stylesheet">
-
-    <!-- Use this to quickly test CSS changes in a template,
-        then move to project.css -->
     {% block extra_css %}{% endblock %}
   </head>
-
   <body>
-
     <div class="navbar navbar-inverse navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">
@@ -53,7 +44,7 @@
           <a class="brand" href="#">Firewall GUI</a>
           <div class="nav-collapse collapse">
             <ul class="nav">
-              <li class="active"><a href="#/rules/">{% trans "Firewall rules" %}</a></li>
+              <li><a href="#/rules/">{% trans "Firewall rules" %}</a></li>
               <li><a href="#/vlans/">{% trans "Vlans" %}</a></li>
               <li><a href="#/vlangroups/">{% trans "Vlan groups" %}</a></li>
               <li><a href="#/hostgroups/">{% trans "Host groups" %}</a></li>
@@ -63,26 +54,16 @@
               <li><a href="#/records/">{% trans "DNS records" %}</a></li>
               <li><a href="#/blacklists/">{% trans "Blacklists" %}</a></li>
             </ul>
-          </div><!--/.nav-collapse -->
+          </div>
         </div>
       </div>
     </div>
-
     <div class="container">
-
       <h1>{% block page_title %}Szia bd, ez itt a tűzfaladmin!{% endblock %}</h1>
-
       <div ng-view></div>
-
-    </div> <!-- /container -->
-
-    <!-- Le javascript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
+    </div>
     <script src="http://code.jquery.com/jquery-latest.js"></script>
     <script src="{% static "js/bootstrap.min.js" %}"></script>
-
-    <!-- place project specific Javascript in this file -->
     <script src="{% static "js/project.js" %}"></script>
     <script>
     {% block extra_js %}
