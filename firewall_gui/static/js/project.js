@@ -119,6 +119,23 @@ function EntityController(url) {
         $http.get(url + id + '/').success(function success(data) {
             console.log(data);
             $scope.rule = data;
+            $('#targetName').typeahead({
+                source: function(query, process) {
+                    $.ajax({
+                        url: '/firewall/autocomplete/' + data.target.type + '/',
+                        type: 'post',
+                        data: 'name=' + query,
+                        success: function autocompleteSuccess(data) {
+                            process(data.map(function(obj) {
+                                return obj.name;
+                            }));
+                        }
+                    });
+                },
+                matcher: function() {
+                    return true;
+                }
+            });
         });
     }
 }

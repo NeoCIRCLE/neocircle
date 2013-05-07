@@ -6,9 +6,28 @@
     </div>
   </div>
   <div class="control-group">
-    <label class="control-label" for="inputPassword">Password</label>
+    <label class="control-label" for="targetType">Target type</label>
     <div class="controls">
-      <input type="password" id="inputPassword" placeholder="Password">
+      <select id="targetType">
+        <option value="vlan">Vlan</option>
+        <option value="vlangroup">VlanGroup</option>
+        <option value="host">Host</option>
+        <option value="hostgroup">HostGroup</option>
+        <option value="firewall">Firewall</option>
+      </select>
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label" for="targetName">Target</label>
+    <div class="controls">
+      <input type="text" data-provide="typeahead" autocomplete="off" id="targetName" value="{{rule.target.name}}" />
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label" for="direction">Direction</label>
+    <div class="controls">
+      <select id="direction" ng-options="choice[0] as choice[1] for choice in rule.direction.choices" ng-model="rule.direction.value">
+      </select>
     </div>
   </div>
   <div class="control-group">

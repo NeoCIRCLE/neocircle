@@ -264,7 +264,7 @@ def autocomplete_hostgroup(request):
 def autocomplete_host(request):
     return HttpResponse(json.dumps([{
         'id': host.id,
-        'name': host.name
+        'name': host.hostname
         } for host in Host.objects.filter(hostname__icontains=request.POST['name'])[:5]]), content_type='application/json')
 
 def autocomplete_firewall(request):
