@@ -136,6 +136,23 @@ function EntityController(url) {
                     return true;
                 }
             });
+            $('#foreignNetwork').typeahead({
+                source: function(query, process) {
+                    $.ajax({
+                        url: '/firewall/autocomplete/vlangroup/',
+                        type: 'post',
+                        data: 'name=' + query,
+                        success: function autocompleteSuccess(data) {
+                            process(data.map(function(obj) {
+                                return obj.name;
+                            }));
+                        }
+                    });
+                },
+                matcher: function() {
+                    return true;
+                }
+            });
         });
     }
 }
