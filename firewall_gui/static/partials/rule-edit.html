@@ -1,87 +1,103 @@
 <form class="form-horizontal">
-  <div class="control-group">
-    <label class="control-label" for="ID">ID</label>
-    <div class="controls">
-      <input class="input-mini" type="text" id="ID" placeholder="ID" value="{{rule.id}}" disabled="disabled">
+  <div class="span5">
+    <div class="control-group">
+      <label class="control-label" for="ID">ID</label>
+      <div class="controls">
+        <input class="input-mini" type="text" id="ID" placeholder="ID" value="{{rule.id}}" disabled="disabled">
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="created_at">Created at</label>
+      <div class="controls">
+        <input class="input" type="text" id="created_at" ng-model="rule.created_at" disabled="disabled">
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="modified_at">Modified at</label>
+      <div class="controls">
+        <input class="input" type="text" id="modified_at" ng-model="rule.modified_at" disabled="disabled">
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="targetType">Target type</label>
+      <div class="controls">
+        <select id="targetType" ng-model="rule.target.type">
+          <option value="vlan">Vlan</option>
+          <option value="vlangroup">VlanGroup</option>
+          <option value="host">Host</option>
+          <option value="hostgroup">HostGroup</option>
+          <option value="firewall">Firewall</option>
+        </select>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="targetName">Target</label>
+      <div class="controls">
+        <input type="text" data-provide="typeahead" autocomplete="off" id="targetName" ng-model="rule.target.name" />
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="direction">Direction</label>
+      <div class="controls">
+        <select id="direction" ng-options="choice[0] as choice[1] for choice in rule.direction.choices" ng-model="rule.direction.value">
+        </select>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="proto">Protocol</label>
+      <div class="controls">
+        <select id="proto" ng-options="choice[0] as choice[1] for choice in rule.proto.choices" ng-model="rule.proto.value">
+          <option value="">None</option>
+        </select>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="owner">Owner</label>
+      <div class="controls">
+        <input type="text" autocomplete="off" id="owner" ng-model="rule.owner.name" />
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="foreignNetwork">Foreign network</label>
+      <div class="controls">
+        <input type="text" data-provide="typeahead" autocomplete="off" id="foreignNetwork" ng-model="rule.foreignNetwork.name" />
+      </div>
     </div>
   </div>
-  <div class="control-group">
-    <label class="control-label" for="created_at">Created at</label>
-    <div class="controls">
-      <input class="input" type="text" id="created_at" ng-model="rule.created_at" disabled="disabled">
+  <div class="span5">
+    <div class="control-group">
+      <label class="control-label" for="description">Description</label>
+      <div class="controls">
+        <textarea rows="4" id="description" ng-model="rule.description">
+        </textarea>
+      </div>
     </div>
-  </div>
-  <div class="control-group">
-    <label class="control-label" for="modified_at">Modified at</label>
-    <div class="controls">
-      <input class="input" type="text" id="modified_at" ng-model="rule.modified_at" disabled="disabled">
+    <div class="control-group">
+      <div class="controls">
+        <label class="checkbox">
+          <input type="checkbox" ng-model="rule.nat"> NAT
+        </label>
+      </div>
     </div>
-  </div>
-  <div class="control-group">
-    <label class="control-label" for="targetType">Target type</label>
-    <div class="controls">
-      <select id="targetType" ng-model="rule.target.type">
-        <option value="vlan">Vlan</option>
-        <option value="vlangroup">VlanGroup</option>
-        <option value="host">Host</option>
-        <option value="hostgroup">HostGroup</option>
-        <option value="firewall">Firewall</option>
-      </select>
+    <div class="control-group">
+      <div class="controls">
+        <label class="checkbox">
+          <input type="checkbox" ng-model="rule.accept"> Accept
+        </label>
+      </div>
     </div>
-  </div>
-  <div class="control-group">
-    <label class="control-label" for="targetName">Target</label>
-    <div class="controls">
-      <input type="text" data-provide="typeahead" autocomplete="off" id="targetName" ng-model="rule.target.name" />
+    <div class="control-group">
+      <label class="control-label" for="dport">Destination port</label>
+      <div class="controls">
+        <input class="input-mini" type="number" id="dport" ng-model="rule.dport">
+      </div>
     </div>
-  </div>
-  <div class="control-group">
-    <label class="control-label" for="direction">Direction</label>
-    <div class="controls">
-      <select id="direction" ng-options="choice[0] as choice[1] for choice in rule.direction.choices" ng-model="rule.direction.value">
-      </select>
+    <div class="control-group">
+      <label class="control-label" for="sport">Source port</label>
+      <div class="controls">
+        <input class="input-mini" type="number" id="sport" ng-model="rule.sport">
+      </div>
     </div>
+    <button type="submit" class="btn">Sign in</button>
   </div>
-  <div class="control-group">
-    <label class="control-label" for="proto">Protocol</label>
-    <div class="controls">
-      <select id="proto" ng-options="choice[0] as choice[1] for choice in rule.proto.choices" ng-model="rule.proto.value">
-        <option value="">None</option>
-      </select>
-    </div>
-  </div>
-  <div class="control-group">
-    <label class="control-label" for="owner">Owner</label>
-    <div class="controls">
-      <input type="text" autocomplete="off" id="owner" ng-model="rule.owner.name" />
-    </div>
-  </div>
-  <div class="control-group">
-    <label class="control-label" for="foreignNetwork">Foreign network</label>
-    <div class="controls">
-      <input type="text" data-provide="typeahead" autocomplete="off" id="foreignNetwork" ng-model="rule.foreignNetwork.name" />
-    </div>
-  </div>
-  <div class="control-group">
-    <label class="control-label" for="description">Description</label>
-    <div class="controls">
-      <textarea rows="4" id="description" ng-model="rule.description">
-      </textarea>
-    </div>
-  </div>
-  <div class="control-group">
-    <div class="controls">
-      <label class="checkbox">
-        <input type="checkbox" ng-model="rule.nat"> NAT
-      </label>
-    </div>
-  </div>
-  <div class="control-group">
-    <div class="controls">
-      <label class="checkbox">
-        <input type="checkbox" ng-model="rule.accept"> Accept
-      </label>
-    </div>
-  </div>
-  <button type="submit" class="btn">Sign in</button>
 </form>
