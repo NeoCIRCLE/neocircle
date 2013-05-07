@@ -68,7 +68,7 @@
     <div class="control-group">
       <label class="control-label" for="description">Description</label>
       <div class="controls">
-        <textarea rows="4" id="description" ng-model="rule.description">
+        <textarea rows="2" id="description" ng-model="rule.description">
         </textarea>
       </div>
     </div>
@@ -93,11 +93,28 @@
       </div>
     </div>
     <div class="control-group">
+      <label class="control-label" for="nat_dport">NAT Destination port</label>
+      <div class="controls">
+        <input class="input-mini" type="number" id="nat_dport" ng-model="rule.nat_dport">
+      </div>
+    </div>
+    <div class="control-group">
       <label class="control-label" for="sport">Source port</label>
       <div class="controls">
         <input class="input-mini" type="number" id="sport" ng-model="rule.sport">
       </div>
     </div>
-    <button type="submit" class="btn">Sign in</button>
+    <div class="control-group">
+      <label class="control-label" for="extra">Extra</label>
+      <div class="controls">
+        <textarea rows="2" id="extra" ng-model="rule.extra">
+        </textarea>
+      </div>
+    </div>
+    <div class="control-group">
+      <div class="controls">
+        <button type="submit" class="btn">Save (nem működik!)</button>
+      </div>
+    </div>
   </div>
 </form>
