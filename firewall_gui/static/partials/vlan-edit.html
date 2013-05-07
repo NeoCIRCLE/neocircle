@@ -1,0 +1,131 @@
+<form class="form-horizontal">
+  <div class="span5">
+    <div class="control-group">
+      <label class="control-label" for="ID">ID</label>
+      <div class="controls">
+        <input class="input-mini" type="text" id="ID" placeholder="ID" value="{{entity.id}}" disabled="disabled">
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="VID">VID</label>
+      <div class="controls">
+        <input class="input-mini" type="text" id="VID" placeholder="ID" ng-model="entity.vid">
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="created_at">Created at</label>
+      <div class="controls">
+        <input class="input" type="text" id="created_at" ng-model="entity.created_at" disabled="disabled">
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="modified_at">Modified at</label>
+      <div class="controls">
+        <input class="input" type="text" id="modified_at" ng-model="entity.modified_at" disabled="disabled">
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="name">Name</label>
+      <div class="controls">
+        <input type="text" id="name" ng-model="entity.name" />
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="ipv4">IPv4</label>
+      <div class="controls">
+        <input type="text" id="ipv4" ng-model="entity.ipv4" />
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="ipv6">IPv6</label>
+      <div class="controls">
+        <input type="text" class="input-xlarge" id="ipv6" ng-model="entity.ipv6" />
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="nat">NAT</label>
+      <div class="controls">
+        <input type="text" id="nat" ng-model="entity.nat" />
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="owner">Owner</label>
+      <div class="controls">
+        <input type="text" autocomplete="off" id="owner" ng-model="entity.owner.name" />
+      </div>
+    </div>
+  </div>
+  <div class="span5">
+    <div class="control-group">
+      <label class="control-label" for="interface">Interface</label>
+      <div class="controls">
+        <input type="text" autocomplete="off" id="interface" ng-model="entity.interface.name" />
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="domain">Domain</label>
+      <div class="controls">
+        <input type="text" autocomplete="off" id="domain" ng-model="entity.domain.name" />
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="reverse_domain">Reverse domain</label>
+      <div class="controls">
+        <input type="text" autocomplete="off" id="reverse_domain" ng-model="entity.reverse_domain.name" />
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="description">Description</label>
+      <div class="controls">
+        <textarea rows="2" id="description" ng-model="entity.description">
+        </textarea>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="comment">Comment</label>
+      <div class="controls">
+        <textarea rows="2" id="comment" ng-model="entity.comment">
+        </textarea>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="dhcp_pool">DHCP Pool</label>
+      <div class="controls">
+        <textarea rows="2" id="dhcp_pool" ng-model="entity.dhcp_pool">
+        </textarea>
+      </div>
+    </div>
+    <div class="control-group">
+      <div class="controls">
+        <button type="submit" class="btn">Save (nem működik!)</button>
+      </div>
+    </div>
+  </div>
+</form>
+<div class="span12">
+  <h3>Rules belonging to this vlan</h3>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Direction</th>
+        <th>Protocol</th>
+        <th>Accept</th>
+        <th>NAT</th>
+        <th colspan="2">Owner</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="rule in entity.rules">
+        <td>{{rule.direction}}</td>
+        <td>{{rule.proto}}</td>
+        <td>{{rule.accept}}</td>
+        <td>{{rule.nat}}</td>
+        <td>{{rule.owner.name}}</td>
+        <td>
+          <a class="btn" href="#/rules/{{rule.id}}/">Edit</a>
+          <a class="btn btn-danger" href="#/rules/{{rule.id}}/delete/">Delete</a>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

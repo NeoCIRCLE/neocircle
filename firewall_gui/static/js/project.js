@@ -34,7 +34,7 @@ $.ajaxSetup({
  * @type {Array}
  */
 var listControllers = ['rule', 'host', 'vlan', 'vlangroup', 'hostgroup', 'firewall', 'domain', 'record', 'blacklist'];
-var entityControllers = ['rule', 'host'];
+var entityControllers = ['rule', 'host', 'vlan'];
 var module = angular.module('firewall', []).config(
 ['$routeProvider', function($routeProvider) {
     for (var i in listControllers) {
