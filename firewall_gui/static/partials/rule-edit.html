@@ -6,6 +6,18 @@
     </div>
   </div>
   <div class="control-group">
+    <label class="control-label" for="created_at">Created at</label>
+    <div class="controls">
+      <input class="input" type="text" id="created_at" ng-model="rule.created_at" disabled="disabled">
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label" for="modified_at">Modified at</label>
+    <div class="controls">
+      <input class="input" type="text" id="modified_at" ng-model="rule.modified_at" disabled="disabled">
+    </div>
+  </div>
+  <div class="control-group">
     <label class="control-label" for="targetType">Target type</label>
     <div class="controls">
       <select id="targetType" ng-model="rule.target.type">
