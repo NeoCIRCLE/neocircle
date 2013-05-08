@@ -3,6 +3,7 @@
  * @param  {String} name Cookie name
  * @return {String}      Cookie value
  */
+
 function getCookie(name) {
     var cookieValue = null;
     if (document.cookie && document.cookie != '') {
@@ -73,14 +74,12 @@ var controllers = {
                     return;
                 }
             }
-            console.log('2foooo');
             $scope.entity.groups.push({
                 name: group,
                 __created: true,
             })
         }
         $scope.removeHostGroup = function(group) {
-            console.log(group);
             for (var i in $scope.entity.groups) {
                 var group_ = $scope.entity.groups[i];
                 if (group_.name == group.name) {
@@ -124,6 +123,7 @@ var module = angular.module('firewall', []).config(
  * @param  {Number} b Upper limit
  * @return {Array}   Number from a to b
  */
+
 function range(a, b) {
     var res = [];
     do res.push(a++);
@@ -137,6 +137,7 @@ function range(a, b) {
  * @param  {String} query  Regexp to be checked against
  * @return {Boolean}       True, if object matches (somehow) with query
  */
+
 function matchAnything(obj, query) {
     var expr = new RegExp(query, 'i')
     for (var i in obj) {
@@ -153,6 +154,7 @@ function matchAnything(obj, query) {
  * @param  {String} url REST endpoint for collection
  * @return {Function}   ListController for the given REST endpoint
  */
+
 function ListController(url) {
     /**
      * ListController for the given REST endpoint
@@ -216,6 +218,7 @@ function ListController(url) {
  * @param {Object} url  REST endpoint of the model
  * @param {Object} init Init function for model-specic behaviour
  */
+
 function EntityController(url, init) {
     /**
      * Entity Controller for the given model URL
