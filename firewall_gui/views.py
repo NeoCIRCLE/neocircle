@@ -1,5 +1,6 @@
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.models import User
 
 from firewall.fw import *
 from firewall.models import *
@@ -425,3 +426,28 @@ def autocomplete_record(request):
         'id': record.id,
         'name': record.name
         } for record in Record.objects.filter(name__icontains=request.POST['name'])[:5]]), content_type='application/json')
+
+def save_rule(request):
+    data = json.loads(request.body)
+    if data['id']:
+        rule = get_object_or_404(Rule, id=data['id'])
+    else:
+        rule = Rule.objects.create()
+    rule.direction = data['direction']['value']
+    rule.description = data['description']
+    rule.dport = data['dport']
+    rule.sport = data['sport']
+    rule.proto = data['proto']['value']
+    rule.extra = data['extra']
+    rule.accept = data['accept']
+    rule.owner = get_object_or_404(User, username=data['owner']['name'])
+    rule.nat = data['nat']
+    rule.nat_dport = data['nat_dport']
+    rule.host = get_object_or_404(Host, hostname=data['target']['name']) if data['target']['type'] == 'host' else None
+    rule.hostgroup = get_object_or_404(Group, name=data['target']['name']) if data['target']['type'] == 'hostgroup' else None
+    rule.vlan = get_object_or_404(Vlan, name=data['target']['name']) if data['target']['type'] == 'vlan' else None
+    rule.vlangroup = get_object_or_404(VlanGroup, name=data['target']['name']) if data['target']['type'] == 'vlangroup' else None
+    rule.firewall = get_object_or_404(Firewall, name=data['target']['name']) if data['target']['type'] == 'firewall' else None
+    rule.foreign_network = get_object_or_404(VlanGroup, name=data['foreignNetwork']['name'])
+    rule.save()
+    return HttpResponse(str(json.loads(request.body)))

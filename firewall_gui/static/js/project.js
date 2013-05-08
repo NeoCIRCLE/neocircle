@@ -236,6 +236,18 @@ function EntityController(url, init) {
         $scope.destroyed = function(item) {
             return !item.__destroyed;
         }
+        $scope.save = function() {
+            console.log($scope.entity);
+            console.log(JSON.stringify($scope.entity));
+            $.ajax({
+                url: url + 'save/',
+                type: 'post',
+                data: JSON.stringify($scope.entity),
+                success: function(data) {
+                    console.log(data);
+                }
+            })
+        }
         $http.get(url + id + '/').success(function success(data) {
             $scope.entity = data;
             ['vlan', 'vlangroup', 'host', 'hostgroup', 'firewall'].forEach(function(t) {
