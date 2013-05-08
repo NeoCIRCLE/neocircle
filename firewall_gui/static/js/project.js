@@ -189,6 +189,13 @@ function EntityController(url, init) {
                     },
                     matcher: function() {
                         return true;
+                    },
+                    updater: function(item) {
+                        var self = this;
+                        $scope.$apply(function() {
+                            $scope[self.$element[0].getAttribute('ng-model')] = item;
+                        })
+                        return item;
                     }
                 });
             })
