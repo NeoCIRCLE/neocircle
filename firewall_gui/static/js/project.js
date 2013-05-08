@@ -1,3 +1,8 @@
+/**
+ * Getter for user cookies
+ * @param  {String} name Cookie name
+ * @return {String}      Cookie value
+ */
 function getCookie(name) {
     var cookieValue = null;
     if (document.cookie && document.cookie != '') {
@@ -12,6 +17,9 @@ function getCookie(name) {
     }
     return cookieValue;
 }
+/**
+ * Extract CSRF token for AJAX calls
+ */
 var csrftoken = getCookie('csrftoken');
 
 function csrfSafeMethod(method) {
@@ -20,6 +28,7 @@ function csrfSafeMethod(method) {
 $.ajaxSetup({
     crossDomain: false,
     beforeSend: function(xhr, settings) {
+        //attach CSRF token to every AJAX call
         if (!csrfSafeMethod(settings.type)) {
             xhr.setRequestHeader("X-CSRFToken", csrftoken);
         }
@@ -89,6 +98,9 @@ var controllers = {
     record: function() {},
     blacklist: function() {},
 }
+/**
+ * Configures AngularJS with the defined controllers
+ */
 var module = angular.module('firewall', []).config(
 ['$routeProvider', function($routeProvider) {
     for (var controller in controllers) {
@@ -106,6 +118,12 @@ var module = angular.module('firewall', []).config(
     });
 }]);
 
+/**
+ * Generate range [a, b)
+ * @param  {Number} a Lower limit
+ * @param  {Number} b Upper limit
+ * @return {Array}   Number from a to b
+ */
 function range(a, b) {
     var res = [];
     do res.push(a++);
@@ -113,6 +131,12 @@ function range(a, b) {
     return res;
 }
 
+/**
+ * Smart (recursive) match function for any object
+ * @param  {Object} obj    Object to be checked
+ * @param  {String} query  Regexp to be checked against
+ * @return {Boolean}       True, if object matches (somehow) with query
+ */
 function matchAnything(obj, query) {
     var expr = new RegExp(query, 'i')
     for (var i in obj) {
@@ -124,12 +148,26 @@ function matchAnything(obj, query) {
     return false;
 }
 
+/**
+ * Factory for the given collection URL
+ * @param  {String} url REST endpoint for collection
+ * @return {Function}   ListController for the given REST endpoint
+ */
 function ListController(url) {
+    /**
+     * ListController for the given REST endpoint
+     * @param  {Object} $scope Current controllers scope
+     * @param  {Object} $http  Helper for AJAX calls
+     */
     return function($scope, $http) {
         $scope.page = 1;
         var rules = [];
         var pageSize = 10;
         var itemCount = 0;
+        /**
+         * Does filtering&paging
+         * @return {Array} Items to be displayed
+         */
         $scope.getPage = function() {
             var res = [];
             if ($scope.query) {
@@ -147,12 +185,22 @@ function ListController(url) {
             $scope.page = Math.min($scope.page, $scope.pages.length);
             return res.slice(($scope.page - 1) * pageSize, $scope.page * pageSize);
         };
+        /**
+         * Setter for current page
+         * @param {Number} page Page to navigate to
+         */
         $scope.setPage = function(page) {
             $scope.page = page;
         };
+        /**
+         * Jumps to the next page (if available)
+         */
         $scope.nextPage = function() {
             $scope.page = Math.min($scope.page + 1, $scope.pages.length);
         };
+        /**
+         * Jumps to the previous page (if available)
+         */
         $scope.prevPage = function() {
             $scope.page = Math.max($scope.page - 1, 1);
         };
@@ -163,11 +211,28 @@ function ListController(url) {
     }
 }
 
+/**
+ * Factory for the given URL
+ * @param {Object} url  REST endpoint of the model
+ * @param {Object} init Init function for model-specic behaviour
+ */
 function EntityController(url, init) {
+    /**
+     * Entity Controller for the given model URL
+     * @param  {Object} $scope       Current controllers scope
+     * @param  {Object} $http        Helper for AJAX calls
+     * @param  {Object} $routeParams Helper for route parameter parsing
+     */
     return function($scope, $http, $routeParams) {
         init($scope);
         var id = $routeParams.id;
-
+        /**
+         * Generic filter for collections
+         *
+         * Hides destroyed items
+         * @param  {Object} item Current item in collection
+         * @return {Boolean}     Item should be displayed, or not
+         */
         $scope.destroyed = function(item) {
             return !item.__destroyed;
         }
@@ -175,6 +240,11 @@ function EntityController(url, init) {
             $scope.entity = data;
             ['vlan', 'vlangroup', 'host', 'hostgroup', 'firewall'].forEach(function(t) {
                 $('.' + t).typeahead({
+                    /**
+                     * Typeahead does AJAX queries
+                     * @param  {String}   query   Partial name of the entity
+                     * @param  {Function} process Callback function after AJAX returned result
+                     */
                     source: function(query, process) {
                         $.ajax({
                             url: '/firewall/autocomplete/' + t + '/',
@@ -187,9 +257,19 @@ function EntityController(url, init) {
                             }
                         });
                     },
+                    /**
+                     * Filtering is done on server-side, show all results
+                     * @return {Boolean} Always true, so all result are visible
+                     */
                     matcher: function() {
                         return true;
                     },
+                    /**
+                     * Typeahead does not trigger proper DOM events, so we have to refresh
+                     * the model manually.
+                     * @param  {String} item Selected entity name
+                     * @return {String}      Same as `item`, the input value is set to this
+                     */
                     updater: function(item) {
                         var self = this;
                         $scope.$apply(function() {
