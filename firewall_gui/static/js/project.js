@@ -48,7 +48,7 @@ var controllers = {
         $('#targetName').typeahead({
             source: function(query, process) {
                 $.ajax({
-                    url: '/firewall/autocomplete/' + data.target.type + '/',
+                    url: '/firewall/autocomplete/' + $scope.entity.target.type + '/',
                     type: 'post',
                     data: 'name=' + query,
                     success: function autocompleteSuccess(data) {
@@ -60,6 +60,13 @@ var controllers = {
             },
             matcher: function() {
                 return true;
+            },
+            updater: function(item) {
+                var self = this;
+                $scope.$apply(function() {
+                    $scope.entity.target.name = item;
+                })
+                return item;
             }
         });
     },
@@ -287,8 +294,10 @@ function EntityController(url, init) {
                      */
                     updater: function(item) {
                         var self = this;
+                        console.log(this);
                         $scope.$apply(function() {
-                            $scope[self.$element[0].getAttribute('ng-model')] = item;
+                            var model = self.$element[0].getAttribute('ng-model').split('.');
+                            $scope.entity[model].name = item;
                         })
                         return item;
                     }
