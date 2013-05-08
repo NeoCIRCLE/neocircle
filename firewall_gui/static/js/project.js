@@ -33,22 +33,72 @@ $.ajaxSetup({
  * and the `/static/partials/rule-list.html` template will be used.
  * @type {Array}
  */
-var listControllers = ['rule', 'host', 'vlan', 'vlangroup', 'hostgroup', 'firewall', 'domain', 'record', 'blacklist'];
-var entityControllers = ['rule', 'host', 'vlan', 'vlangroup', 'hostgroup'];
+var controllers = {
+    rule: function($scope) {
+        $('#targetName').typeahead({
+            source: function(query, process) {
+                $.ajax({
+                    url: '/firewall/autocomplete/' + data.target.type + '/',
+                    type: 'post',
+                    data: 'name=' + query,
+                    success: function autocompleteSuccess(data) {
+                        process(data.map(function(obj) {
+                            return obj.name;
+                        }));
+                    }
+                });
+            },
+            matcher: function() {
+                return true;
+            }
+        });
+    },
+    host: function($scope) {
+        $scope.addHostGroup = function(group) {
+            for (var i in $scope.entity.groups) {
+                var group_ = $scope.entity.groups[i];
+                if (group_.name == group && group_.__destroyed) {
+                    group_.__destroyed = false;
+                    return;
+                } else if (group_.name == group) {
+                    return;
+                }
+            }
+            console.log('2foooo');
+            $scope.entity.groups.push({
+                name: group,
+                __created: true,
+            })
+        }
+        $scope.removeHostGroup = function(group) {
+            console.log(group);
+            for (var i in $scope.entity.groups) {
+                var group_ = $scope.entity.groups[i];
+                if (group_.name == group.name) {
+                    group_.__destroyed = true;
+                    return;
+                }
+            }
+        }
+    },
+    vlan: function() {},
+    vlangroup: function() {},
+    hostgroup: function() {},
+    firewall: function() {},
+    domain: function() {},
+    record: function() {},
+    blacklist: function() {},
+}
 var module = angular.module('firewall', []).config(
 ['$routeProvider', function($routeProvider) {
-    for (var i in listControllers) {
-        var c = listControllers[i];
-        $routeProvider.when('/' + c + 's/', {
-            templateUrl: '/static/partials/' + c + '-list.html',
-            controller: ListController('/firewall/' + c + 's/')
-        });
-    }
-    for (var i in entityControllers) {
-        var c = entityControllers[i];
-        $routeProvider.when('/' + c + 's/:id/', {
-            templateUrl: '/static/partials/' + c + '-edit.html',
-            controller: EntityController('/firewall/' + c + 's/')
+    for (var controller in controllers) {
+        var init = controllers[controller];
+        $routeProvider.when('/' + controller + 's/', {
+            templateUrl: '/static/partials/' + controller + '-list.html',
+            controller: ListController('/firewall/' + controller + 's/')
+        }).when('/' + controller + 's/:id/', {
+            templateUrl: '/static/partials/' + controller + '-edit.html',
+            controller: EntityController('/firewall/' + controller + 's/', init)
         });
     }
     $routeProvider.otherwise({
@@ -113,48 +163,18 @@ function ListController(url) {
     }
 }
 
-function EntityController(url) {
+function EntityController(url, init) {
     return function($scope, $http, $routeParams) {
+        init($scope);
         var id = $routeParams.id;
+
+        $scope.destroyed = function(item) {
+            return !item.__destroyed;
+        }
         $http.get(url + id + '/').success(function success(data) {
-            console.log(data);
             $scope.entity = data;
-            $('#targetName').typeahead({
-                source: function(query, process) {
-                    $.ajax({
-                        url: '/firewall/autocomplete/' + data.target.type + '/',
-                        type: 'post',
-                        data: 'name=' + query,
-                        success: function autocompleteSuccess(data) {
-                            process(data.map(function(obj) {
-                                return obj.name;
-                            }));
-                        }
-                    });
-                },
-                matcher: function() {
-                    return true;
-                }
-            });
-            $('#foreignNetwork').typeahead({
-                source: function(query, process) {
-                    $.ajax({
-                        url: '/firewall/autocomplete/vlangroup/',
-                        type: 'post',
-                        data: 'name=' + query,
-                        success: function autocompleteSuccess(data) {
-                            process(data.map(function(obj) {
-                                return obj.name;
-                            }));
-                        }
-                    });
-                },
-                matcher: function() {
-                    return true;
-                }
-            });
             ['vlan', 'vlangroup', 'host', 'hostgroup', 'firewall'].forEach(function(t) {
-                $('#' + t).typeahead({
+                $('.' + t).typeahead({
                     source: function(query, process) {
                         $.ajax({
                             url: '/firewall/autocomplete/' + t + '/',
