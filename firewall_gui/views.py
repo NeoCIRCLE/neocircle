@@ -452,17 +452,21 @@ def save_rule(request):
     rule.proto = data['proto']['value']
     rule.extra = data['extra']
     rule.accept = data['accept']
-    rule.owner = get_object_or_error(User, errors, username=data['owner']['name'])
     rule.nat = data['nat']
     rule.nat_dport = data['nat_dport']
-    rule.host = get_object_or_error(Host, errors, hostname=data['target']['name']) if data['target']['type'] == 'host' else None
-    rule.hostgroup = get_object_or_error(Group, errors, name=data['target']['name']) if data['target']['type'] == 'hostgroup' else None
-    rule.vlan = get_object_or_error(Vlan, errors, name=data['target']['name']) if data['target']['type'] == 'vlan' else None
-    rule.vlangroup = get_object_or_error(VlanGroup, errors, name=data['target'][
-                                       'name']) if data['target']['type'] == 'vlangroup' else None
-    rule.firewall = get_object_or_error(Firewall, errors, name=data['target']['name']) if data['target']['type'] == 'firewall' else None
-    rule.foreign_network = get_object_or_error(VlanGroup, errors, name=data['foreignNetwork']['name'])
+    set_field(rule, 'owner', errors, username=data['owner']['name'])
+    for attr in ['host', 'hostgroup', 'vlan', 'vlangroup', 'firewall']:
+        searchBy = 'name' if attr != 'host' else 'hostname'
+        if data['target']['type'] == attr:
+            set_field(rule, attr, errors, **{searchBy: data['target']['name']})
+        else:
+            setattr(rule, attr, None)
+    set_field(rule, 'foreign_network', errors, name=data['foreignNetwork']['name'])
     if len(errors) > 0:
         return HttpResponse(json.dumps(errors), content_type='application/json', status=404)
+    try:
+        rule.full_clean()
+    except Exception as e:
+        return HttpResponse(json.dumps(e.message_dict), content_type='application/json', status=409)
     rule.save()
     return HttpResponse('KTHXBYE')
