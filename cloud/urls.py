@@ -110,13 +110,7 @@ urlpatterns = patterns('',
     url(r'^firewall/vlangroups/(?P<id>\d+)/$', 'firewall_gui.views.show_vlangroup'),
     url(r'^firewall/hostgroups/(?P<id>\d+)/$', 'firewall_gui.views.show_hostgroup'),
 
-    url(r'^firewall/autocomplete/vlan/$', 'firewall_gui.views.autocomplete_vlan'),
-    url(r'^firewall/autocomplete/vlangroup/$', 'firewall_gui.views.autocomplete_vlangroup'),
-    url(r'^firewall/autocomplete/host/$', 'firewall_gui.views.autocomplete_host'),
-    url(r'^firewall/autocomplete/hostgroup/$', 'firewall_gui.views.autocomplete_hostgroup'),
-    url(r'^firewall/autocomplete/firewall/$', 'firewall_gui.views.autocomplete_firewall'),
-    url(r'^firewall/autocomplete/domain/$', 'firewall_gui.views.autocomplete_domain'),
-    url(r'^firewall/autocomplete/record/$', 'firewall_gui.views.autocomplete_record'),
+    url(r'^firewall/autocomplete/(?P<entity>\w+)/$', 'firewall_gui.views.autocomplete'),
 
     url(r'^firewall/rules/save/$', 'firewall_gui.views.save_rule'),
 )

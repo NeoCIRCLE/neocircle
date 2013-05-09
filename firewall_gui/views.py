@@ -400,47 +400,31 @@ def show_hostgroup(request, id):
     return HttpResponse(json.dumps(group), content_type='application/json')
 
 
-def autocomplete_vlan(request):
-    return HttpResponse(json.dumps([{
-        'id': vlan.id,
-        'name': vlan.name
-        } for vlan in Vlan.objects.filter(name__icontains=request.POST['name'])[:5]]), content_type='application/json')
+def make_autocomplete(entity, name='name'):
+    def autocomplete(request):
+        return HttpResponse(json.dumps([{
+            'id': object.id,
+            'name': getattr(object, name)
+        } for object in entity.objects.filter(**{
+            name+'__icontains': request.POST['name']
+        })[:5]]), content_type='application/json')
+    return autocomplete
 
-def autocomplete_vlangroup(request):
-    return HttpResponse(json.dumps([{
-        'id': vlangroup.id,
-        'name': vlangroup.name
-        } for vlangroup in VlanGroup.objects.filter(name__icontains=request.POST['name'])[:5]]), content_type='application/json')
 
-def autocomplete_hostgroup(request):
-    return HttpResponse(json.dumps([{
-        'id': hostgroup.id,
-        'name': hostgroup.name
-        } for hostgroup in Group.objects.filter(name__icontains=request.POST['name'])[:5]]), content_type='application/json')
+def autocomplete(request, entity):
+    try:
+        return {
+            'vlan': make_autocomplete(Vlan),
+            'vlangroup': make_autocomplete(VlanGroup),
+            'host': make_autocomplete(Host, 'hostname'),
+            'hostgroup': make_autocomplete(Group),
+            'firewall': make_autocomplete(Firewall),
+            'domain': make_autocomplete(Domain),
+            'record': make_autocomplete(Record),
+        }[entity](request)
+    except Exception as e:
+        return HttpResponse('>:-3', status=500)
 
-def autocomplete_host(request):
-    return HttpResponse(json.dumps([{
-        'id': host.id,
-        'name': host.hostname
-        } for host in Host.objects.filter(hostname__icontains=request.POST['name'])[:5]]), content_type='application/json')
-
-def autocomplete_firewall(request):
-    return HttpResponse(json.dumps([{
-        'id': firewall.id,
-        'name': firewall.name
-        } for firewall in Firewall.objects.filter(name__icontains=request.POST['name'])[:5]]), content_type='application/json')
-
-def autocomplete_domain(request):
-    return HttpResponse(json.dumps([{
-        'id': domain.id,
-        'name': domain.name
-        } for domain in Domain.objects.filter(name__icontains=request.POST['name'])[:5]]), content_type='application/json')
-
-def autocomplete_record(request):
-    return HttpResponse(json.dumps([{
-        'id': record.id,
-        'name': record.name
-        } for record in Record.objects.filter(name__icontains=request.POST['name'])[:5]]), content_type='application/json')
 
 def save_rule(request):
     data = json.loads(request.body)
