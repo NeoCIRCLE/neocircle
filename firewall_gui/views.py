@@ -425,6 +425,13 @@ def autocomplete(request, entity):
     except Exception as e:
         return HttpResponse('>:-3', status=500)
 
+def get_object_or_error(entity, errors, **kwargs):
+    try:
+        return entity.objects.get(**kwargs)
+    except:
+        errors.append(('%(entity)s with the name "%(name)s" does not exists!') % {'entity': getattr(entity, '__name__'), 'name': kwargs.values()[0]})
+        return None
+
 
 def save_rule(request):
     data = json.loads(request.body)
@@ -432,6 +439,7 @@ def save_rule(request):
         rule = get_object_or_404(Rule, id=data['id'])
     else:
         rule = Rule.objects.create()
+    errors = []
     rule.direction = data['direction']['value']
     rule.description = data['description']
     rule.dport = data['dport']
@@ -439,15 +447,17 @@ def save_rule(request):
     rule.proto = data['proto']['value']
     rule.extra = data['extra']
     rule.accept = data['accept']
-    rule.owner = get_object_or_404(User, username=data['owner']['name'])
+    rule.owner = get_object_or_error(User, errors, username=data['owner']['name'])
     rule.nat = data['nat']
     rule.nat_dport = data['nat_dport']
-    rule.host = get_object_or_404(Host, hostname=data['target']['name']) if data['target']['type'] == 'host' else None
-    rule.hostgroup = get_object_or_404(Group, name=data['target']['name']) if data['target']['type'] == 'hostgroup' else None
-    rule.vlan = get_object_or_404(Vlan, name=data['target']['name']) if data['target']['type'] == 'vlan' else None
-    rule.vlangroup = get_object_or_404(VlanGroup, name=data['target'][
+    rule.host = get_object_or_error(Host, errors, hostname=data['target']['name']) if data['target']['type'] == 'host' else None
+    rule.hostgroup = get_object_or_error(Group, errors, name=data['target']['name']) if data['target']['type'] == 'hostgroup' else None
+    rule.vlan = get_object_or_error(Vlan, errors, name=data['target']['name']) if data['target']['type'] == 'vlan' else None
+    rule.vlangroup = get_object_or_error(VlanGroup, errors, name=data['target'][
                                        'name']) if data['target']['type'] == 'vlangroup' else None
-    rule.firewall = get_object_or_404(Firewall, name=data['target']['name']) if data['target']['type'] == 'firewall' else None
-    rule.foreign_network = get_object_or_404(VlanGroup, name=data['foreignNetwork']['name'])
+    rule.firewall = get_object_or_error(Firewall, errors, name=data['target']['name']) if data['target']['type'] == 'firewall' else None
+    rule.foreign_network = get_object_or_error(VlanGroup, errors, name=data['foreignNetwork']['name'])
+    if len(errors) > 0:
+        return HttpResponse(json.dumps(errors), content_type='application/json', status=404)
     rule.save()
-    return HttpResponse(str(json.loads(request.body)))
+    return HttpResponse('KTHXBYE')
