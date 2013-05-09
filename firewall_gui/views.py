@@ -5,8 +5,10 @@ from django.contrib.auth.models import User
 from firewall.fw import *
 from firewall.models import *
 
+
 def index(request):
     return render(request, 'firewall/index.html')
+
 
 def list_rules(request):
     rules = [{
@@ -51,13 +53,14 @@ def list_rules(request):
     } for rule in Rule.objects.all()]
     return HttpResponse(json.dumps(rules), content_type='application/json')
 
+
 def list_hosts(request):
     hosts = [{
         'id': host.id,
         'reverse': host.reverse,
         'name': host.hostname,
         'ipv4': host.ipv4,
-        'pub' : 'foo', #ide kell valami!
+        'pub': 'foo',  # ide kell valami!
         'shared_ip': host.shared_ip,
         'description': host.description,
         'comment': host.comment,
@@ -79,6 +82,7 @@ def list_hosts(request):
     } for host in Host.objects.all()]
     return HttpResponse(json.dumps(hosts), content_type='application/json')
 
+
 def list_vlans(request):
     vlans = [{
         'id': vlan.id,
@@ -94,6 +98,7 @@ def list_vlans(request):
         }
     } for vlan in Vlan.objects.all()]
     return HttpResponse(json.dumps(vlans), content_type='application/json')
+
 
 def list_vlangroups(request):
     vlangroups = [{
@@ -113,6 +118,7 @@ def list_vlangroups(request):
     } for group in VlanGroup.objects.all()]
     return HttpResponse(json.dumps(vlangroups), content_type='application/json')
 
+
 def list_hostgroups(request):
     groups = [{
         'id': group.id,
@@ -127,12 +133,14 @@ def list_hostgroups(request):
     } for group in Group.objects.all()]
     return HttpResponse(json.dumps(groups), content_type='application/json')
 
+
 def list_firewalls(request):
     firewalls = [{
         'id': firewall.id,
         'name': firewall.name,
     } for firewall in Firewall.objects.all()]
     return HttpResponse(json.dumps(firewalls), content_type='application/json')
+
 
 def list_domains(request):
     domains = [{
@@ -148,6 +156,7 @@ def list_domains(request):
         }
     } for domain in Domain.objects.all()]
     return HttpResponse(json.dumps(domains), content_type='application/json')
+
 
 def list_records(request):
     records = [{
@@ -174,6 +183,7 @@ def list_records(request):
     } for record in Record.objects.all()]
     return HttpResponse(json.dumps(records), content_type='application/json')
 
+
 def list_blacklists(request):
     blacklists = [{
         'id': blacklist.id,
@@ -189,6 +199,7 @@ def list_blacklists(request):
         'ipv4': blacklist.ipv4
     } for blacklist in Blacklist.objects.all()]
     return HttpResponse(json.dumps(blacklists), content_type='application/json')
+
 
 def show_rule(request, id):
     rule = get_object_or_404(Rule, id=id)
@@ -244,6 +255,7 @@ def show_rule(request, id):
     }
     return HttpResponse(json.dumps(rule), content_type='application/json')
 
+
 def show_host(request, id):
     host = get_object_or_404(Host, id=id)
     host = {
@@ -253,7 +265,7 @@ def show_host(request, id):
         'mac': host.mac,
         'ipv4': host.ipv4,
         'ipv6': host.ipv6,
-        'pub_ipv4' : host.pub_ipv4,
+        'pub_ipv4': host.pub_ipv4,
         'shared_ip': host.shared_ip,
         'description': host.description,
         'comment': host.comment,
@@ -285,6 +297,7 @@ def show_host(request, id):
         } for rule in host.rules.all()]
     }
     return HttpResponse(json.dumps(host), content_type='application/json')
+
 
 def show_vlan(request, id):
     vlan = get_object_or_404(Vlan, id=id)
@@ -324,6 +337,7 @@ def show_vlan(request, id):
     }
     return HttpResponse(json.dumps(vlan), content_type='application/json')
 
+
 def show_vlangroup(request, id):
     group = get_object_or_404(VlanGroup, id=id)
     group = {
@@ -353,6 +367,7 @@ def show_vlangroup(request, id):
         } for rule in group.rules.all()]
     }
     return HttpResponse(json.dumps(group), content_type='application/json')
+
 
 def show_hostgroup(request, id):
     group = get_object_or_404(Group, id=id)
@@ -446,7 +461,8 @@ def save_rule(request):
     rule.host = get_object_or_404(Host, hostname=data['target']['name']) if data['target']['type'] == 'host' else None
     rule.hostgroup = get_object_or_404(Group, name=data['target']['name']) if data['target']['type'] == 'hostgroup' else None
     rule.vlan = get_object_or_404(Vlan, name=data['target']['name']) if data['target']['type'] == 'vlan' else None
-    rule.vlangroup = get_object_or_404(VlanGroup, name=data['target']['name']) if data['target']['type'] == 'vlangroup' else None
+    rule.vlangroup = get_object_or_404(VlanGroup, name=data['target'][
+                                       'name']) if data['target']['type'] == 'vlangroup' else None
     rule.firewall = get_object_or_404(Firewall, name=data['target']['name']) if data['target']['type'] == 'firewall' else None
     rule.foreign_network = get_object_or_404(VlanGroup, name=data['foreignNetwork']['name'])
     rule.save()
