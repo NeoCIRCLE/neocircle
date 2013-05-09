@@ -236,6 +236,7 @@ function EntityController(url, init) {
     return function($scope, $http, $routeParams) {
         init($scope);
         var id = $routeParams.id;
+        $scope.errors = {};
         /**
          * Generic filter for collections
          *
@@ -246,15 +247,37 @@ function EntityController(url, init) {
         $scope.destroyed = function(item) {
             return !item.__destroyed;
         }
+        $scope.hasError = function(name) {
+            return $scope.errors[name] ? 'error' : null;
+        }
+        $scope.getError = function(name) {
+            return $scope.errors[name] ? $scope.errors[name] : '';
+        }
         $scope.save = function() {
-            console.log($scope.entity);
-            console.log(JSON.stringify($scope.entity));
+            $scope.errors = {};
             $.ajax({
                 url: url + 'save/',
                 type: 'post',
                 data: JSON.stringify($scope.entity),
                 success: function(data) {
                     console.log(data);
+                    $scope.$apply(function(){
+                        $scope.errors = {};
+                    })
+                }
+            }).error(function(data){
+                try {
+                    data = JSON.parse(data.responseText);
+                    var newErrors = {};
+                    for (var i in data) {
+                        var id = $('#'+i).length ? i : 'targetName';
+                        newErrors[id]=data[i];
+                    }
+                    $scope.$apply(function(){
+                        $scope.errors = newErrors;
+                    })
+                } catch (ex) {
+
                 }
             })
         }

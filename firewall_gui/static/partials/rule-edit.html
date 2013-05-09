@@ -30,10 +30,11 @@
         </select>
       </div>
     </div>
-    <div class="control-group">
+    <div class="control-group" ng-class="hasError('targetName')">
       <label class="control-label" for="targetName">Target</label>
       <div class="controls">
         <input type="text" data-provide="typeahead" autocomplete="off" id="targetName" ng-model="entity.target.name" />
+        <span class="help-inline" ng-bind="getError('targetName')"></span>
       </div>
     </div>
     <div class="control-group">
@@ -51,16 +52,18 @@
         </select>
       </div>
     </div>
-    <div class="control-group">
+    <div class="control-group" ng-class="hasError('owner')">
       <label class="control-label" for="owner">Owner</label>
       <div class="controls">
         <input type="text" autocomplete="off" id="owner" ng-model="entity.owner.name" />
+        <span class="help-inline" ng-bind="getError('owner')"></span>
       </div>
     </div>
-    <div class="control-group">
-      <label class="control-label" for="foreignNetwork">Foreign network</label>
+    <div class="control-group" ng-class="hasError('foreign_network')">
+      <label class="control-label" for="foreign_network">Foreign network</label>
       <div class="controls">
-        <input type="text" data-provide="typeahead" autocomplete="off" id="foreignNetwork" class="vlangroup" ng-model="entity.foreignNetwork.name" />
+        <input type="text" data-provide="typeahead" autocomplete="off" id="foreign_network" class="vlangroup" ng-model="entity.foreignNetwork.name" />
+        <span class="help-inline" ng-bind="getError('foreign_network')"></span>
       </div>
     </div>
   </div>
@@ -86,22 +89,25 @@
         </label>
       </div>
     </div>
-    <div class="control-group">
+    <div class="control-group" ng-class="hasError('dport')">
       <label class="control-label" for="dport">Destination port</label>
       <div class="controls">
         <input class="input-mini" type="number" id="dport" ng-model="entity.dport">
+        <span class="help-inline" ng-bind="getError('dport')"></span>
       </div>
     </div>
-    <div class="control-group">
+    <div class="control-group" ng-class="hasError('nat_dport')">
       <label class="control-label" for="nat_dport">NAT Destination port</label>
       <div class="controls">
         <input class="input-mini" type="number" id="nat_dport" ng-model="entity.nat_dport">
+        <span class="help-inline" ng-bind="getError('nat_dport')"></span>
       </div>
     </div>
-    <div class="control-group">
+    <div class="control-group" ng-class="hasError('sport')">
       <label class="control-label" for="sport">Source port</label>
       <div class="controls">
         <input class="input-mini" type="number" id="sport" ng-model="entity.sport">
+        <span class="help-inline" ng-bind="getError('sport')"></span>
       </div>
     </div>
     <div class="control-group">
