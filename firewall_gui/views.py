@@ -431,12 +431,10 @@ def set_field(object, attr, errors, **kwargs):
         model = getattr(object.__class__, attr).field.rel.to
         setattr(object, attr, model.objects.get(**kwargs))
     except Exception as e:
-        errors.append({
-            attr: ('%(model)s with the name "%(name)s" does not exists!') % {
+        errors[attr] = ('%(model)s with the name "%(name)s" does not exists!') % {
                 'model': model.__name__,
                 'name': kwargs.values()[0]
             }
-        })
 
 def save_rule(request):
     data = json.loads(request.body)
@@ -444,7 +442,7 @@ def save_rule(request):
         rule = get_object_or_404(Rule, id=data['id'])
     else:
         rule = Rule.objects.create()
-    errors = []
+    errors = {}
     rule.direction = data['direction']['value']
     rule.description = data['description']
     rule.dport = data['dport']
@@ -462,11 +460,11 @@ def save_rule(request):
         else:
             setattr(rule, attr, None)
     set_field(rule, 'foreign_network', errors, name=data['foreignNetwork']['name'])
-    if len(errors) > 0:
-        return HttpResponse(json.dumps(errors), content_type='application/json', status=404)
     try:
         rule.full_clean()
     except Exception as e:
-        return HttpResponse(json.dumps(e.message_dict), content_type='application/json', status=409)
+        errors = dict(errors.items() + e.message_dict.items())
+    if len(errors) > 0:
+        return HttpResponse(json.dumps(errors), content_type='application/json', status=400)
     rule.save()
     return HttpResponse('KTHXBYE')
