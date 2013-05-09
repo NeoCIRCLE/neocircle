@@ -432,7 +432,7 @@ def set_field(object, attr, errors, **kwargs):
         setattr(object, attr, model.objects.get(**kwargs))
     except Exception as e:
         errors.append({
-            'name': ('%(model)s with the name "%(name)s" does not exists!') % {
+            attr: ('%(model)s with the name "%(name)s" does not exists!') % {
                 'model': model.__name__,
                 'name': kwargs.values()[0]
             }
