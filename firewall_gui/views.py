@@ -425,13 +425,18 @@ def autocomplete(request, entity):
     except Exception as e:
         return HttpResponse('>:-3', status=500)
 
-def get_object_or_error(entity, errors, **kwargs):
-    try:
-        return entity.objects.get(**kwargs)
-    except:
-        errors.append(('%(entity)s with the name "%(name)s" does not exists!') % {'entity': getattr(entity, '__name__'), 'name': kwargs.values()[0]})
-        return None
 
+def set_field(object, attr, errors, **kwargs):
+    try:
+        model = getattr(object.__class__, attr).field.rel.to
+        setattr(object, attr, model.objects.get(**kwargs))
+    except Exception as e:
+        errors.append({
+            'name': ('%(model)s with the name "%(name)s" does not exists!') % {
+                'model': model.__name__,
+                'name': kwargs.values()[0]
+            }
+        })
 
 def save_rule(request):
     data = json.loads(request.body)
