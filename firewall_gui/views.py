@@ -9,6 +9,76 @@ from firewall.models import *
 def index(request):
     return render(request, 'firewall/index.html')
 
+def map_rule_target(rule):
+    return {
+        'name': rule.vlan.name,
+        'id': rule.vlan.id,
+        'type': 'vlan',
+    } if rule.vlan else {
+        'name': rule.vlangroup.name,
+        'id': rule.vlangroup.id,
+        'type': 'vlangroup',
+    } if rule.vlangroup else {
+        'name': rule.hostgroup.name,
+        'id': rule.hostgroup.id,
+        'type': 'hostgroup',
+    } if rule.hostgroup else {
+        'name': rule.firewall.name,
+        'id': rule.firewall.id,
+        'type': 'firewall',
+    } if rule.firewall else {
+        'name': rule.host.hostname,
+        'id': rule.host.id,
+        'type': 'host',
+    }
+
+def json_attr(entity, attr):
+    common_names = {
+        'host': 'hostname',
+        'owner': 'username',
+    }
+    try:
+        return {
+            'ForeignKey': lambda entity: {
+                'id': entity.id,
+                'name': getattr(entity, common_names[attr] if attr in common_names.keys() else 'name')
+            } if entity else None,
+            'DateTimeField': lambda entity: entity.isoformat()
+        }[entity._meta.get_field_by_name(attr)[0].__class__.__name__](getattr(entity, attr))
+    except:
+        return getattr(entity, attr)
+    return getattr(entity, attr)
+
+def make_entity_lister(entity_type, mapping):
+    def jsonify(entity):
+        result = {}
+        for attr in mapping:
+            if type(attr) is tuple:
+                result[attr[0]] = attr[1](entity)
+            else:
+                result[attr] = json_attr(entity, attr)
+        return result
+
+    def entity_lister(request):
+        return [jsonify(entity) for entity in entity_type.objects.all()]
+    return entity_lister
+
+def list_entities(request, name):
+    return HttpResponse(json.dumps({
+        'rules': make_entity_lister(Rule, [
+            'id',
+            ('target',map_rule_target),
+            'r_type',
+            ('direction',lambda rule:rule.get_direction_display()),
+            'proto',
+            'owner',
+            'foreign_network',
+            'created_at',
+            'modified_at',
+            'nat',
+            'accept',
+            'description']),
+        }[name](request)), content_type='application/json')
 
 def list_rules(request):
     rules = [{
