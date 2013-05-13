@@ -18,28 +18,31 @@
         <input class="input" type="text" id="modified_at" ng-model="entity.modified_at" disabled="disabled">
       </div>
     </div>
-    <div class="control-group">
+    <div class="control-group" ng-class="hasError('name')">
       <label class="control-label" for="name">Name</label>
       <div class="controls">
         <input type="text" id="name" ng-model="entity.name" />
+        <span class="help-inline" ng-bind="getError('name')"></span>
       </div>
     </div>
-    <div class="control-group">
+    <div class="control-group" ng-class="hasError('owner')">
       <label class="control-label" for="owner">Owner</label>
       <div class="controls">
         <input type="text" autocomplete="off" id="owner" ng-model="entity.owner.name" />
+        <span class="help-inline" ng-bind="getError('owner')"></span>
       </div>
     </div>
   </div>
   <div class="span5">
-    <div class="control-group">
+    <div class="control-group" ng-class="hasError('description')">
       <label class="control-label" for="description">Description</label>
       <div class="controls">
         <textarea rows="2" id="description" ng-model="entity.description">
         </textarea>
+        <span class="help-inline" ng-bind="getError('description')"></span>
       </div>
     </div>
-    <div class="control-group">
+    <div class="control-group" ng-class="hasError('vlangroups')">
       <label class="control-label" for="vlangroups">Vlans</label>
       <div class="controls">
         <div class="well well-small">
@@ -51,12 +54,13 @@
         <div class="input-append">
           <input class="span2 vlan" id="vlan" type="text" data-provide="typeahead">
           <button class="btn" type="button">Add</button>
+          <span class="help-inline" ng-bind="getError('vlangroups')"></span>
         </div>
       </div>
     </div>
     <div class="control-group">
       <div class="controls">
-        <button type="submit" class="btn">Save (nem működik!)</button>
+        <button type="submit" class="btn" ng-click="save()">Save</button>
       </div>
     </div>
   </div>

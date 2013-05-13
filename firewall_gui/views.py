@@ -459,6 +459,7 @@ def save_host(request):
     host.save()
     return HttpResponse('KTHXBYE')
 
+@user_passes_test(req_staff)
 def save_vlan(request):
     data = json.loads(request.body)
     if data['id']:
@@ -487,4 +488,46 @@ def save_vlan(request):
     if len(errors) > 0:
         return HttpResponse(json.dumps(errors), content_type='application/json', status=400)
     vlan.save()
+    return HttpResponse('KTHXBYE')
+
+@user_passes_test(req_staff)
+def save_vlangroup(request):
+    data = json.loads(request.body)
+    if data['id']:
+        vlangroup = get_object_or_404(VlanGroup, id=data['id'])
+    else:
+        vlangroup = VlanGroup.objects.create()
+    errors = {}
+    vlangroup.name = data['name']
+    vlangroup.description = data['description']
+    # TODO: save vlans
+    set_field(vlangroup, 'owner', errors, username=data['owner']['name'])
+    try:
+        vlangroup.full_clean()
+    except Exception as e:
+        errors = dict(errors.items() + e.message_dict.items())
+    if len(errors) > 0:
+        return HttpResponse(json.dumps(errors), content_type='application/json', status=400)
+    vlangroup.save()
+    return HttpResponse('KTHXBYE')
+
+@user_passes_test(req_staff)
+def save_hostgroup(request):
+    data = json.loads(request.body)
+    if data['id']:
+        hostgroup = get_object_or_404(Group, id=data['id'])
+    else:
+        hostgroup = Group.objects.create()
+    errors = {}
+    hostgroup.name = data['name']
+    hostgroup.description = data['description']
+    # TODO: save hosts
+    set_field(hostgroup, 'owner', errors, username=data['owner']['name'])
+    try:
+        hostgroup.full_clean()
+    except Exception as e:
+        errors = dict(errors.items() + e.message_dict.items())
+    if len(errors) > 0:
+        return HttpResponse(json.dumps(errors), content_type='application/json', status=400)
+    hostgroup.save()
     return HttpResponse('KTHXBYE')
