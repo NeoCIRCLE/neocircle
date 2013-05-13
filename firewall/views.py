@@ -49,7 +49,7 @@ def firewall_api(request):
             obj.snort_message=data["snort_message"]
             if created:
                 try:
-                    obj.host = models.Host.objects.get(ipv4=data["ip"])
+                    obj.host = Host.objects.get(ipv4=data["ip"])
                     user = obj.host.owner
                     lang = user.person_set.all()[0].language
                     translation.activate(lang)
@@ -61,8 +61,6 @@ def firewall_api(request):
                     SendMailTask.delay(to=obj.host.owner.email, subject='[IK Cloud] %s' % obj.host.instance_set.get().name, msg=msg, sender=u'cloud@ik.bme.hu')
                 except (Host.DoesNotExist, ValidationError, IntegrityError, AttributeError):
                     pass
-            print obj.modified_at + datetime.timedelta(minutes=5)
-            print datetime.datetime.utcnow().replace(tzinfo=utc)
             if obj.type == 'tempwhite' and obj.modified_at + datetime.timedelta(minutes=1) < datetime.datetime.utcnow().replace(tzinfo=utc):
                 obj.type = 'tempban'
             obj.save()
@@ -76,10 +74,10 @@ def firewall_api(request):
         if command == "create":
             data["owner"] = "opennebula"
             owner = auth.models.User.objects.get(username=data["owner"])
-            host = models.Host(hostname=data["hostname"],
-                    vlan=models.Vlan.objects.get(name=data["vlan"]),
+            host = Host(hostname=data["hostname"],
+                    vlan=Vlan.objects.get(name=data["vlan"]),
                     mac=data["mac"], ipv4=data["ip"], owner=owner,
-                    description=data["description"], pub_ipv4=models.
+                    description=data["description"], pub_ipv4=
                         Vlan.objects.get(name=data["vlan"]).snat_ip,
                     shared_ip=True)
             host.full_clean()
@@ -96,7 +94,7 @@ def firewall_api(request):
             data["owner"] = "opennebula"
             print data["hostname"]
             owner = auth.models.User.objects.get(username=data["owner"])
-            host = models.Host.objects.get(hostname=data["hostname"],
+            host = Host.objects.get(hostname=data["hostname"],
                     owner=owner)
 
             host.delete()

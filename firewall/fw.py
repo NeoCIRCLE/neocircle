@@ -212,10 +212,10 @@ class Firewall:
         # hard-wired rules
         self.iptablesnat('-A POSTROUTING -s 10.5.0.0/16 -o vlan0003 -j SNAT '
                 '--to-source 10.3.255.254') # man elerheto legyen
-        self.iptablesnat('-A POSTROUTING -s 10.5.0.0/16 -o vlan0008 -j SNAT '
+        self.iptablesnat('-A POSTROUTING -o vlan0008 -j SNAT '
                 '--to-source 10.0.0.247') # wolf network for printing
-        self.iptablesnat('-A POSTROUTING -s 10.3.0.0/16 -o vlan0002 -j SNAT '
-                '--to-source %s' % self.pub.ipv4) # kulonben nemmegy a du
+        self.iptablesnat('-A POSTROUTING -s 10.3.0.0/16 -p udp --dport 53 -o vlan0002 -j SNAT '
+                '--to-source %s' % self.pub.ipv4) # kulonben nem megy a dns man-ban
 
         self.iptablesnat('COMMIT')
 
