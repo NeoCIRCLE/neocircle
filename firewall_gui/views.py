@@ -76,7 +76,7 @@ def list_entities(request, name):
             'id',
             ('target',map_rule_target),
             'r_type',
-            ('direction',lambda rule:rule.get_direction_display()),
+            ('direction',lambda rule: rule.get_direction_display()),
             'proto',
             'owner',
             'foreign_network',
