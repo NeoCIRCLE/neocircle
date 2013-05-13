@@ -8,5 +8,5 @@ class Job(QuarterHourlyJob):
 
     def execute(self):
         stat = json.loads(subprocess.check_output(['/opt/webadmin/cloud/miscellaneous/stat/stat_wrap.sh']))
-        cache.set('cloud_stat', stat)
+        cache.set('cloud_stat', stat, 20*60)
 
