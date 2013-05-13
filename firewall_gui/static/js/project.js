@@ -96,7 +96,33 @@ var controllers = {
             }
         }
     },
-    vlan: function() {},
+    vlan: function($scope) {
+        $scope.newVlan = '';
+        $scope.addVlan = function(vlan) {
+            for (var i in $scope.entity.vlans) {
+                var vlan_ = $scope.entity.vlans[i];
+                if (vlan_.name == vlan && vlan_.__destroyed) {
+                    vlan_.__destroyed = false;
+                    return;
+                } else if (vlan_.name == vlan) {
+                    return;
+                }
+            }
+            $scope.entity.vlans.push({
+                name: vlan,
+                __created: true,
+            })
+        }
+        $scope.removeVlan = function(vlan) {
+            for (var i in $scope.entity.vlans) {
+                var vlan_ = $scope.entity.vlans[i];
+                if (vlan_.name == vlan.name) {
+                    vlan_.__destroyed = true;
+                    return;
+                }
+            }
+        }
+    },
     vlangroup: function() {},
     hostgroup: function() {},
     firewall: function() {},
