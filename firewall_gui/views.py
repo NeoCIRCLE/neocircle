@@ -288,7 +288,11 @@ def show_vlan(request, id):
             },
             'accept': rule.accept,
             'nat': rule.nat
-        } for rule in vlan.rules.all()]
+        } for rule in vlan.rules.all()],
+        'vlans': [{
+            'id': vlan.id,
+            'name': vlan.name,
+        } for vlan in vlan.snat_to.all()]
     }
     return HttpResponse(json.dumps(vlan), content_type='application/json')
 
