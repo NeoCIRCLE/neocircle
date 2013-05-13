@@ -1,10 +1,13 @@
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
 
 from firewall.fw import *
 from firewall.models import *
 
+def req_staff(user):
+    return user.is_staff
 
 def index(request):
     return render(request, 'firewall/index.html')
@@ -387,6 +390,7 @@ def set_field(object, attr, errors, **kwargs):
                 'name': kwargs.values()[0]
             }
 
+@user_passes_test(req_staff)
 def save_rule(request):
     data = json.loads(request.body)
     if data['id']:
