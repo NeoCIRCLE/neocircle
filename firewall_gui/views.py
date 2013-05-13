@@ -70,6 +70,7 @@ def make_entity_lister(entity_type, mapping):
         return [jsonify(entity) for entity in entity_type.objects.all()]
     return entity_lister
 
+@user_passes_test(req_staff)
 def list_entities(request, name):
     return HttpResponse(json.dumps({
         'rules': make_entity_lister(Rule, [
@@ -422,4 +423,34 @@ def save_rule(request):
     if len(errors) > 0:
         return HttpResponse(json.dumps(errors), content_type='application/json', status=400)
     rule.save()
+    return HttpResponse('KTHXBYE')
+
+@user_passes_test(req_staff)
+def save_host(request):
+    data = json.loads(request.body)
+    if data['id']:
+        host = get_object_or_404(Host, id=data['id'])
+    else:
+        host = Host.objects.create()
+    errors = {}
+    host.reverse = data['reverse']
+    host.hostname = data['name']
+    host.mac = data['mac']
+    host.ipv4 = data['ipv4']
+    host.ipv6 = data['ipv6']
+    host.pub_ipv4 = data['pub_ipv4']
+    host.shared_ip = data['shared_ip']
+    host.description = data['description']
+    host.comment = data['comment']
+    host.location = data['location']
+    set_field(host, 'vlan', errors, name=data['vlan']['name'])
+    set_field(host, 'owner', errors, username=data['owner']['name'])
+    # todo: group save
+    try:
+        host.full_clean()
+    except Exception as e:
+        errors = dict(errors.items() + e.message_dict.items())
+    if len(errors) > 0:
+        return HttpResponse(json.dumps(errors), content_type='application/json', status=400)
+    host.save()
     return HttpResponse('KTHXBYE')

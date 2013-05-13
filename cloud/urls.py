@@ -106,4 +106,5 @@ urlpatterns = patterns('',
     url(r'^firewall/autocomplete/(?P<entity>\w+)/$', 'firewall_gui.views.autocomplete'),
 
     url(r'^firewall/rules/save/$', 'firewall_gui.views.save_rule'),
+    url(r'^firewall/hosts/save/$', 'firewall_gui.views.save_host'),
 )

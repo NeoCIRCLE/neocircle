@@ -18,55 +18,63 @@
         <input class="input" type="text" id="modified_at" ng-model="entity.modified_at" disabled="disabled">
       </div>
     </div>
-    <div class="control-group">
+    <div class="control-group" ng-class="hasError('name')">
       <label class="control-label" for="name">Name</label>
       <div class="controls">
         <input type="text" id="name" ng-model="entity.name" />
+        <span class="help-inline" ng-bind="getError('name')"></span>
       </div>
     </div>
-    <div class="control-group">
+    <div class="control-group" ng-class="hasError('mac')">
       <label class="control-label" for="mac">MAC</label>
       <div class="controls">
         <input type="text" id="mac" ng-model="entity.mac" />
+        <span class="help-inline" ng-bind="getError('mac')"></span>
       </div>
     </div>
-    <div class="control-group">
+    <div class="control-group" ng-class="hasError('ipv4')">
       <label class="control-label" for="ipv4">IPv4</label>
       <div class="controls">
         <input type="text" id="ipv4" ng-model="entity.ipv4" />
+        <span class="help-inline" ng-bind="getError('ipv4')"></span>
       </div>
     </div>
-    <div class="control-group">
+    <div class="control-group" ng-class="hasError('pub_ipv4')">
       <label class="control-label" for="pub_ipv4">Public IPv4</label>
       <div class="controls">
         <input type="text" id="pub_ipv4" ng-model="entity.pub_ipv4" />
+        <span class="help-inline" ng-bind="getError('pub_ipv4')"></span>
       </div>
     </div>
-    <div class="control-group">
+    <div class="control-group" ng-class="hasError('ipv6')">
       <label class="control-label" for="ipv6">IPv6</label>
       <div class="controls">
         <input type="text" class="input-xlarge" id="ipv6" ng-model="entity.ipv6" />
+        <span class="help-inline" ng-bind="getError('ipv6')"></span>
       </div>
     </div>
-    <div class="control-group">
+    <div class="control-group" ng-class="hasError('owner')">
       <label class="control-label" for="owner">Owner</label>
       <div class="controls">
         <input type="text" autocomplete="off" id="owner" ng-model="entity.owner.name" />
+        <span class="help-inline" ng-bind="getError('owner')"></span>
       </div>
     </div>
-    <div class="control-group">
+    <div class="control-group" ng-class="hasError('vlan')">
       <label class="control-label" for="vlan">Vlan</label>
       <div class="controls">
         <input type="text" data-provide="typeahead" autocomplete="off" class="vlan" id="vlan" ng-model="entity.vlan.name" />
+        <span class="help-inline" ng-bind="getError('vlan')"></span>
       </div>
     </div>
   </div>
   <div class="span5">
-    <div class="control-group">
+    <div class="control-group" ng-class="hasError('description')">
       <label class="control-label" for="description">Description</label>
       <div class="controls">
         <textarea rows="4" id="description" ng-model="entity.description">
         </textarea>
+        <span class="help-inline" ng-bind="getError('description')"></span>
       </div>
     </div>
     <div class="control-group">
@@ -76,14 +84,15 @@
         </label>
       </div>
     </div>
-    <div class="control-group">
+    <div class="control-group" ng-class="hasError('comment')">
       <label class="control-label" for="comment">Comment</label>
       <div class="controls">
         <textarea rows="2" id="comment" ng-model="entity.comment">
         </textarea>
+        <span class="help-inline" ng-bind="getError('comment')"></span>
       </div>
     </div>
-    <div class="control-group">
+    <div class="control-group" ng-class="hasError('groups')">
       <label class="control-label" for="hostgroups">Host groups</label>
       <div class="controls">
         <div class="well well-small">
@@ -95,12 +104,13 @@
         <div class="input-append">
           <input class="span2 hostgroup" id="hostgroup" type="text" ng-model="newGroup">
           <button class="btn" type="button" ng-click="addHostGroup(newGroup)">Add</button>
+          <span class="help-inline" ng-bind="getError('groups')"></span>
         </div>
       </div>
     </div>
     <div class="control-group">
       <div class="controls">
-        <button type="submit" class="btn">Save (nem működik!)</button>
+        <button type="submit" class="btn" ng-click="save()">Save</button>
       </div>
     </div>
   </div>
