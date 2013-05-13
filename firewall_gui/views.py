@@ -43,9 +43,13 @@ def json_attr(entity, attr):
                 'id': entity.id,
                 'name': getattr(entity, common_names[attr] if attr in common_names.keys() else 'name')
             } if entity else None,
-            'DateTimeField': lambda entity: entity.isoformat()
+            'DateTimeField': lambda entity: entity.isoformat(),
+            'ManyToManyField': lambda field: [{
+                'id': entity.id,
+                'name': getattr(entity, common_names[attr] if attr in common_names.keys() else 'name')
+            } for entity in field.all()]
         }[entity._meta.get_field_by_name(attr)[0].__class__.__name__](getattr(entity, attr))
-    except:
+    except Exception as e:
         return getattr(entity, attr)
     return getattr(entity, attr)
 
