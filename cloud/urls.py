@@ -94,21 +94,14 @@ urlpatterns = patterns('',
     url(r'^accounts/(?P<site>profile)/$', 'one.views.sites'),
 
     url(r'^firewall/$', 'firewall_gui.views.index'),
-    url(r'^firewall/rules/$', 'firewall_gui.views.list_rules'),
-    url(r'^firewall/hosts/$', 'firewall_gui.views.list_hosts'),
-    url(r'^firewall/vlans/$', 'firewall_gui.views.list_vlans'),
-    url(r'^firewall/vlangroups/$', 'firewall_gui.views.list_vlangroups'),
-    url(r'^firewall/hostgroups/$', 'firewall_gui.views.list_hostgroups'),
-    url(r'^firewall/firewalls/$', 'firewall_gui.views.list_firewalls'),
-    url(r'^firewall/domains/$', 'firewall_gui.views.list_domains'),
-    url(r'^firewall/records/$', 'firewall_gui.views.list_records'),
-    url(r'^firewall/blacklists/$', 'firewall_gui.views.list_blacklists'),
 
     url(r'^firewall/rules/(?P<id>\d+)/$', 'firewall_gui.views.show_rule'),
     url(r'^firewall/hosts/(?P<id>\d+)/$', 'firewall_gui.views.show_host'),
     url(r'^firewall/vlans/(?P<id>\d+)/$', 'firewall_gui.views.show_vlan'),
     url(r'^firewall/vlangroups/(?P<id>\d+)/$', 'firewall_gui.views.show_vlangroup'),
     url(r'^firewall/hostgroups/(?P<id>\d+)/$', 'firewall_gui.views.show_hostgroup'),
+
+    url(r'^firewall/(?P<name>\w+)/$', 'firewall_gui.views.list_entities'),
 
     url(r'^firewall/autocomplete/(?P<entity>\w+)/$', 'firewall_gui.views.autocomplete'),
 
