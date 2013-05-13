@@ -5,7 +5,7 @@ from celery import Celery, task
 import time, re
 import socket
 import sys
-import tempfile, os, stat, re, base64, struct, logging          
+import tempfile, os, stat, re, base64, struct, logging
 from celery.contrib import rdb
 
 
@@ -85,7 +85,7 @@ def t(name, instance_type, disk_id, network_id, ctx):
     from xml.dom.minidom import parse, parseString
     try:
         x = parseString(out)
-        return { 
+        return {
             'one_id': int(x.getElementsByTagName("ID")[0].childNodes[0].nodeValue),
             'interfaces': [
                 {
@@ -107,7 +107,7 @@ def t(one_id, new_img):
 
 @task(name="one.tasks.UpdateDiskTask")
 def t():
-    f = tempfile.NamedTemporaryFile(delete=False)                          
+    f = tempfile.NamedTemporaryFile(delete=False)
     f.close()
     out=''
     proc = subprocess.Popen(["/opt/occi.sh storage list > %s" % f.name],
@@ -132,7 +132,7 @@ def t():
 
 @task(name="one.tasks.UpdateNetworkTask")
 def t():
-    f = tempfile.NamedTemporaryFile(delete=False)                          
+    f = tempfile.NamedTemporaryFile(delete=False)
     f.close()
     out=''
     proc = subprocess.Popen(["/opt/occi.sh network list > %s" % f.name],
