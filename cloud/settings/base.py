@@ -229,6 +229,7 @@ CELERY_ROUTES = {
     'one.tasks.SaveAsTask': {'queue': 'opennebula'},
     'one.tasks.CreateInstanceTask': {'queue': 'opennebula'},
     'one.tasks.DeleteInstanceTask': {'queue': 'opennebula'},
+    'one.tasks.GetInstanceStateTask': {'queue': 'opennebula'},
 
 }
 

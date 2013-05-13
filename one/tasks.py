@@ -66,3 +66,7 @@ class UpdateDiskTask(Task):
 class UpdateNetworkTask(Task):
     def run(self):
         pass
+
+class GetInstanceStateTask(Task):
+    def run(self, one_id):
+        pass
