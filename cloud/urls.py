@@ -107,4 +107,5 @@ urlpatterns = patterns('',
 
     url(r'^firewall/rules/save/$', 'firewall_gui.views.save_rule'),
     url(r'^firewall/hosts/save/$', 'firewall_gui.views.save_host'),
+    url(r'^firewall/vlans/save/$', 'firewall_gui.views.save_vlan'),
 )

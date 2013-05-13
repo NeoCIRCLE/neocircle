@@ -454,3 +454,33 @@ def save_host(request):
         return HttpResponse(json.dumps(errors), content_type='application/json', status=400)
     host.save()
     return HttpResponse('KTHXBYE')
+
+def save_vlan(request):
+    data = json.loads(request.body)
+    if data['id']:
+        vlan = get_object_or_404(Vlan, id=data['id'])
+    else:
+        vlan = Vlan.objects.create()
+    errors = {}
+    vlan.vid = data['vid']
+    vlan.name = data['name']
+    vlan.ipv4 = data['ipv4'].split('/')[0]
+    vlan.prefix4 = data['ipv4'].split('/')[1]
+    vlan.ipv6 = data['ipv6'].split('/')[0]
+    vlan.prefix6 = data['ipv6'].split('/')[1]
+    vlan.snat_ip = data['nat']
+    vlan.description = data['description']
+    vlan.comment = data['comment']
+    vlan.reverse_domain = data['reverse_domain']
+    vlan.dhcp_pool = data['dhcp_pool']
+    vlan.interface = data['interface']
+    set_field(vlan, 'owner', errors, username=data['owner']['name'])
+    set_field(vlan, 'domain', errors, name=data['domain']['name'])
+    try:
+        vlan.full_clean()
+    except Exception as e:
+        errors = dict(errors.items() + e.message_dict.items())
+    if len(errors) > 0:
+        return HttpResponse(json.dumps(errors), content_type='application/json', status=400)
+    vlan.save()
+    return HttpResponse('KTHXBYE')

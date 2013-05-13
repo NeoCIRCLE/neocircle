@@ -6,10 +6,11 @@
         <input class="input-mini" type="text" id="ID" placeholder="ID" value="{{entity.id}}" disabled="disabled">
       </div>
     </div>
-    <div class="control-group">
+    <div class="control-group" ng-class="hasError('vid')">
       <label class="control-label" for="VID">VID</label>
       <div class="controls">
         <input class="input-mini" type="text" id="VID" placeholder="ID" ng-model="entity.vid">
+        <span class="help-inline" ng-bind="getError('vid')"></span>
       </div>
     </div>
     <div class="control-group">
@@ -24,80 +25,91 @@
         <input class="input" type="text" id="modified_at" ng-model="entity.modified_at" disabled="disabled">
       </div>
     </div>
-    <div class="control-group">
+    <div class="control-group" ng-class="hasError('name')">
       <label class="control-label" for="name">Name</label>
       <div class="controls">
         <input type="text" id="name" ng-model="entity.name" />
+        <span class="help-inline" ng-bind="getError('name')"></span>
       </div>
     </div>
-    <div class="control-group">
+    <div class="control-group" ng-class="hasError('ipv4')">
       <label class="control-label" for="ipv4">IPv4</label>
       <div class="controls">
         <input type="text" id="ipv4" ng-model="entity.ipv4" />
+        <span class="help-inline" ng-bind="getError('ipv4')"></span>
       </div>
     </div>
-    <div class="control-group">
+    <div class="control-group" ng-class="hasError('ipv6')">
       <label class="control-label" for="ipv6">IPv6</label>
       <div class="controls">
         <input type="text" class="input-xlarge" id="ipv6" ng-model="entity.ipv6" />
+        <span class="help-inline" ng-bind="getError('ipv6')"></span>
       </div>
     </div>
-    <div class="control-group">
-      <label class="control-label" for="nat">NAT</label>
+    <div class="control-group" ng-class="hasError('snat_ip')">
+      <label class="control-label" for="snat_ip">NAT</label>
       <div class="controls">
-        <input type="text" id="nat" ng-model="entity.nat" />
+        <input type="text" id="snat_ip" ng-model="entity.nat" />
+        <span class="help-inline" ng-bind="getError('snat_ip')"></span>
       </div>
     </div>
-    <div class="control-group">
+    <div class="control-group" ng-class="hasError('owner')">
       <label class="control-label" for="owner">Owner</label>
       <div class="controls">
         <input type="text" autocomplete="off" id="owner" ng-model="entity.owner.name" />
+        <span class="help-inline" ng-bind="getError('owner')"></span>
       </div>
     </div>
   </div>
   <div class="span5">
-    <div class="control-group">
+    <div class="control-group" ng-class="hasError('interface')">
       <label class="control-label" for="interface">Interface</label>
       <div class="controls">
-        <input type="text" autocomplete="off" id="interface" ng-model="entity.interface.name" />
+        <input type="text" autocomplete="off" id="interface" ng-model="entity.interface" />
+        <span class="help-inline" ng-bind="getError('interface')"></span>
       </div>
     </div>
-    <div class="control-group">
+    <div class="control-group" ng-class="hasError('domain')">
       <label class="control-label" for="domain">Domain</label>
       <div class="controls">
         <input type="text" class="domain" data-provide="typeahead" autocomplete="off" id="domain" ng-model="entity.domain.name" />
+        <span class="help-inline" ng-bind="getError('domain')"></span>
       </div>
     </div>
-    <div class="control-group">
+    <div class="control-group" ng-class="hasError('reverse_domain')">
       <label class="control-label" for="reverse_domain">Reverse domain</label>
       <div class="controls">
-        <input type="text" autocomplete="off" id="reverse_domain" ng-model="entity.reverse_domain.name" />
+        <input type="text" autocomplete="off" id="reverse_domain" ng-model="entity.reverse_domain" />
+        <span class="help-inline" ng-bind="getError('reverse_domain')"></span>
       </div>
     </div>
-    <div class="control-group">
+    <div class="control-group" ng-class="hasError('description')">
       <label class="control-label" for="description">Description</label>
       <div class="controls">
         <textarea rows="2" id="description" ng-model="entity.description">
         </textarea>
+        <span class="help-inline" ng-bind="getError('description')"></span>
       </div>
     </div>
-    <div class="control-group">
+    <div class="control-group" ng-class="hasError('comment')">
       <label class="control-label" for="comment">Comment</label>
       <div class="controls">
         <textarea rows="2" id="comment" ng-model="entity.comment">
         </textarea>
+        <span class="help-inline" ng-bind="getError('comment')"></span>
       </div>
     </div>
-    <div class="control-group">
+    <div class="control-group" ng-class="hasError('dhcp_pool')">
       <label class="control-label" for="dhcp_pool">DHCP Pool</label>
       <div class="controls">
         <textarea rows="2" id="dhcp_pool" ng-model="entity.dhcp_pool">
         </textarea>
+        <span class="help-inline" ng-bind="getError('dhcp_pool')"></span>
       </div>
     </div>
     <div class="control-group">
       <div class="controls">
-        <button type="submit" class="btn">Save (nem működik!)</button>
+        <button type="submit" class="btn" ng-click="save()">Save</button>
       </div>
     </div>
   </div>
