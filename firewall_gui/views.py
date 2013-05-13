@@ -95,153 +95,61 @@ def list_entities(request, name):
             'created_at',
             'modified_at',
             'groups']),
+        'vlans': make_entity_lister(Vlan, [
+            'id',
+            'vid',
+            'name',
+            ('ipv4', lambda vlan: vlan.ipv4+'/'+str(vlan.prefix4)),
+            ('ipv6', lambda vlan: vlan.ipv6+'/'+str(vlan.prefix6)),
+            ('nat', lambda vlan: vlan.snat_ip),
+            'description',
+            'domain']),
+        'vlangroups': make_entity_lister(VlanGroup, [
+            'id',
+            'name',
+            'vlans',
+            'description',
+            'owner',
+            'created_at',
+            'modified_at']),
+        'hostgroups': make_entity_lister(Group, [
+            'id',
+            'name',
+            'description',
+            'owner',
+            'created_at',
+            'modified_at']),
+        'firewalls': make_entity_lister(Firewall, ['id', 'name']),
+        'domains': make_entity_lister(Domain, [
+            'id',
+            'name',
+            'created_at',
+            'modified_at',
+            'ttl',
+            'description',
+            'owner']),
+        'records': make_entity_lister(Record, [
+            'id',
+            'name',
+            'domain',
+            'host',
+            'type',
+            'address',
+            'ttl',
+            'owner',
+            'description',
+            'modified_at',
+            'created_at']),
+        'blacklists': make_entity_lister(Blacklist, [
+            'id',
+            'host',
+            'reason',
+            'snort_message',
+            'type',
+            'created_at',
+            'modified_at',
+            'ipv4']),
         }[name](request)), content_type='application/json')
-
-def list_hosts(request):
-    hosts = [{
-        'id': host.id,
-        'reverse': host.reverse,
-        'name': host.hostname,
-        'ipv4': host.ipv4,
-        'pub': 'foo',  # ide kell valami!
-        'shared_ip': host.shared_ip,
-        'description': host.description,
-        'comment': host.comment,
-        'location': host.location,
-        'vlan': {
-            'name': host.vlan.name,
-            'id': host.vlan.id
-        },
-        'owner': {
-            'name': str(host.owner),
-            'id': host.owner.id
-        },
-        'created_at': host.created_at.isoformat(),
-        'modified_at': host.modified_at.isoformat(),
-        'groups': [{
-            'name': group.name,
-            'id': group.id,
-        } for group in host.groups.all()]
-    } for host in Host.objects.all()]
-    return HttpResponse(json.dumps(hosts), content_type='application/json')
-
-
-def list_vlans(request):
-    vlans = [{
-        'id': vlan.id,
-        'vid': vlan.vid,
-        'name': vlan.name,
-        'ipv4': vlan.ipv4+'/'+str(vlan.prefix4),
-        'ipv6': vlan.ipv6+'/'+str(vlan.prefix6),
-        'nat': vlan.snat_ip,
-        'description': vlan.description,
-        'domain': {
-            'id': vlan.domain.id,
-            'name': vlan.domain.name,
-        }
-    } for vlan in Vlan.objects.all()]
-    return HttpResponse(json.dumps(vlans), content_type='application/json')
-
-
-def list_vlangroups(request):
-    vlangroups = [{
-        'id': group.id,
-        'name': group.name,
-        'vlans': [{
-            'id': vlan.id,
-            'name': vlan.name
-        } for vlan in group.vlans.all()],
-        'description': group.description,
-        'owner': {
-            'id': group.owner.id,
-            'name': str(group.owner)
-        },
-        'created_at': group.created_at.isoformat(),
-        'modified_at': group.modified_at.isoformat(),
-    } for group in VlanGroup.objects.all()]
-    return HttpResponse(json.dumps(vlangroups), content_type='application/json')
-
-
-def list_hostgroups(request):
-    groups = [{
-        'id': group.id,
-        'name': group.name,
-        'description': group.description,
-        'owner': {
-            'id': group.owner.id,
-            'name': str(group.owner),
-        },
-        'created_at': group.created_at.isoformat(),
-        'modified_at': group.modified_at.isoformat()
-    } for group in Group.objects.all()]
-    return HttpResponse(json.dumps(groups), content_type='application/json')
-
-
-def list_firewalls(request):
-    firewalls = [{
-        'id': firewall.id,
-        'name': firewall.name,
-    } for firewall in Firewall.objects.all()]
-    return HttpResponse(json.dumps(firewalls), content_type='application/json')
-
-
-def list_domains(request):
-    domains = [{
-        'id': domain.id,
-        'name': domain.name,
-        'created_at': domain.created_at.isoformat(),
-        'modified_at': domain.modified_at.isoformat(),
-        'ttl': domain.ttl,
-        'description': domain.description,
-        'owner': {
-            'id': domain.owner.id,
-            'name': str(domain.owner)
-        }
-    } for domain in Domain.objects.all()]
-    return HttpResponse(json.dumps(domains), content_type='application/json')
-
-
-def list_records(request):
-    records = [{
-        'id': record.id,
-        'name': record.name,
-        'domain': {
-            'id': record.domain.id,
-            'name': record.domain.name,
-        },
-        'host': {
-            'id': record.host.id,
-            'name': record.host.hostname,
-        } if record.host else None,
-        'type': record.type,
-        'address': record.address,
-        'ttl': record.ttl,
-        'owner': {
-            'id': record.owner.id,
-            'name': str(record.owner)
-        },
-        'description': record.description,
-        'created_at': record.created_at.isoformat(),
-        'modified_at': record.modified_at.isoformat()
-    } for record in Record.objects.all()]
-    return HttpResponse(json.dumps(records), content_type='application/json')
-
-
-def list_blacklists(request):
-    blacklists = [{
-        'id': blacklist.id,
-        'host': {
-            'id': blacklist.host.id,
-            'name': blacklist.host.hostname,
-        } if blacklist.host else None,
-        'reason': blacklist.reason,
-        'snort_message': blacklist.snort_message,
-        'type': blacklist.type,
-        'created_at': blacklist.created_at.isoformat(),
-        'modified_at': blacklist.modified_at.isoformat(),
-        'ipv4': blacklist.ipv4
-    } for blacklist in Blacklist.objects.all()]
-    return HttpResponse(json.dumps(blacklists), content_type='application/json')
 
 
 def show_rule(request, id):
