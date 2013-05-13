@@ -164,6 +164,10 @@ def t(one_id):
     except:
         pass
 
+@task(name="one.tasks.GetInstanceStateTask")
+def t(one_id):
+    update_state(one_id)
+
 def update_state(one_id):
     """Get and update VM state from OpenNebula."""
     proc = subprocess.Popen(["/opt/occi.sh", "compute", "show",
