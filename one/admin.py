@@ -88,7 +88,7 @@ class InstanceAdmin(contrib.admin.ModelAdmin):
     model=models.Instance
     actions = [update_state, submit_vm, delete_vm, suspend_vm, resume_vm]
     list_display = ('id', 'name', owner_person, 'state')
-    readonly_fields = ('ip', 'active_since', 'pw', 'template')
+    readonly_fields = ('ip', 'active_since', 'pw', )
     list_filter = ('owner', 'template', 'state')
     def queryset(self, request):
         return super(InstanceAdmin, self).queryset(request)
