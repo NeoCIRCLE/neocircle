@@ -7,12 +7,14 @@ from firewall.fw import *
 from firewall.models import *
 
 def req_staff(user):
+    ''' decorator function for user permission checking '''
     return user.is_staff
 
 def index(request):
     return render(request, 'firewall/index.html')
 
 def map_rule_target(rule):
+    ''' get the actual target from rule field (vlan|vlangroup|host|hostgroup|firewall) '''
     return {
         'name': rule.vlan.name,
         'id': rule.vlan.id,
@@ -36,37 +38,46 @@ def map_rule_target(rule):
     }
 
 def json_attr(entity, attr):
+    ''' jsonify the `attr` attribute of `entity` '''
+    # an objects name usually is in the `name` attribute, but not always, so put here the exceptions
     common_names = {
         'host': 'hostname',
-        'owner': 'username',
-    }
+        'owner': 'username',}
     try:
         return {
+            # if `attr` is an entity, parse its name&id
             'ForeignKey': lambda entity: {
                 'id': entity.id,
                 'name': getattr(entity, common_names[attr] if attr in common_names.keys() else 'name')
             } if entity else None,
+            # if `attr` is a date, format it with isoformat
             'DateTimeField': lambda entity: entity.isoformat(),
+            # if `attr` is a Crazy ManyToMany field, fetch all objects, and get their name&id
             'ManyToManyField': lambda field: [{
                 'id': entity.id,
                 'name': getattr(entity, common_names[attr] if attr in common_names.keys() else 'name')
             } for entity in field.all()]
         }[entity._meta.get_field_by_name(attr)[0].__class__.__name__](getattr(entity, attr))
     except Exception as e:
+        # if `attr` is something else, we hope it can be converted to JSON
         return getattr(entity, attr)
-    return getattr(entity, attr)
 
 def make_entity_lister(entity_type, mapping):
+    ''' makes a function that lists the given entities '''
     def jsonify(entity):
+        ''' jsonify one entity '''
         result = {}
         for attr in mapping:
+            # if `attr` is a tuple, the first element is the key in the JSON, the second is a lambda function that calculates the value
             if type(attr) is tuple:
                 result[attr[0]] = attr[1](entity)
             else:
+                # if `attr` is just a string, the try to jsonify it
                 result[attr] = json_attr(entity, attr)
         return result
 
     def entity_lister(request):
+        ''' jsonify all objects of the given model type '''
         return [jsonify(entity) for entity in entity_type.objects.all()]
     return entity_lister
 
