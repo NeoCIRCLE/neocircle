@@ -350,12 +350,12 @@ function EntityController(url, init) {
                         console.log(this);
                         $scope.$apply(function() {
                             var model = self.$element[0].getAttribute('ng-model').split('.')[1];
-                            console.log(model);
+                            console.log(self.$element[0].getAttribute('ng-model'), model);
                             try {
                                 $scope.entity[model].name = item;
                             } catch (ex) {
                                 try {
-                                    $scope[model] = item;
+                                    $scope[self.$element[0].getAttribute('ng-model')] = item;
                                 } catch(ex) {
 
                                 }
