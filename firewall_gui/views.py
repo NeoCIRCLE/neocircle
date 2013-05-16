@@ -39,11 +39,12 @@ def map_rule_target(rule):
 
 def json_attr(entity, attr):
     ''' jsonify the `attr` attribute of `entity` '''
-    # an objects name usually is in the `name` attribute, but not always, so put here the exceptions
+    # an objects name usually is in the `name` attribute, but not always (thanks bd!), so put here the exceptions
     common_names = {
         'host': 'hostname',
         'owner': 'username',}
     try:
+        # return something that can be converted to JSON, based on the `attr` field type
         return {
             # if `attr` is an entity, parse its name&id
             'ForeignKey': lambda entity: {
@@ -72,7 +73,7 @@ def make_entity_lister(entity_type, mapping):
             if type(attr) is tuple:
                 result[attr[0]] = attr[1](entity)
             else:
-                # if `attr` is just a string, the try to jsonify it
+                # if `attr` is just a string, the try to jsonify the corresponding model attribute
                 result[attr] = json_attr(entity, attr)
         return result
 
