@@ -69,7 +69,7 @@ def make_entity_lister(entity_type, mapping):
         ''' jsonify one entity '''
         result = {}
         for attr in mapping:
-            # if `attr` is a tuple, the first element is the key in the JSON, the second is a lambda function that calculates the value
+            # if `attr` is a tuple, the first element is the key in the JSON, the second is a function that calculates the value
             if type(attr) is tuple:
                 result[attr[0]] = attr[1](entity)
             else:
@@ -369,6 +369,32 @@ def show_hostgroup(request, id):
         } for rule in group.rules.all()]
     }
     return HttpResponse(json.dumps(group), content_type='application/json')
+
+def show_record(request, id):
+    record = get_object_or_404(Record, id=id)
+    record = {
+        'id': record.id,
+        'name': record.name,
+        'domain': {
+            'id': record.domain.id,
+            'name': record.domain.name
+        },
+        'host': {
+            'id': record.host.id,
+            'name': record.host.hostname
+        } if record.host else None,
+        'type': record.type,
+        'address': record.address,
+        'ttl': record.ttl,
+        'owner': {
+            'id': record.owner.id,
+            'name': record.owner.username
+        },
+        'description': record.description,
+        'created_at': record.created_at.isoformat(),
+        'modified_at': record.modified_at.isoformat(),
+    }
+    return HttpResponse(json.dumps(record), content_type='application/json')
 
 
 def make_autocomplete(entity, name='name'):
