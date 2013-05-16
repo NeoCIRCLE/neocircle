@@ -89,7 +89,9 @@ var controllers = {
         $scope.removeHostGroup = function(group) {
             for (var i in $scope.entity.groups) {
                 var group_ = $scope.entity.groups[i];
-                if (group_.name == group.name) {
+                if (group_.name == group.name && group_.__created) {
+                    $scope.entity.groups.splice(i, 1);
+                } else if (group_.name == group.name) {
                     group_.__destroyed = true;
                     return;
                 }
@@ -116,7 +118,9 @@ var controllers = {
         $scope.removeVlan = function(vlan) {
             for (var i in $scope.entity.vlans) {
                 var vlan_ = $scope.entity.vlans[i];
-                if (vlan_.name == vlan.name) {
+                if (vlan_.name == vlan.name && vlan_.__created) {
+                    $scope.entity.vlans.splice(i, 1);
+                } else if (vlan_.name == vlan.name) {
                     vlan_.__destroyed = true;
                     return;
                 }
