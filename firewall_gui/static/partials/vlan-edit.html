@@ -108,7 +108,7 @@
       </div>
     </div>
     <div class="control-group" ng-class="hasError('vlans')">
-      <label class="control-label" for="hostgroups">NAT to (?)</label>
+      <label class="control-label" for="vlans">NAT to (?)</label>
       <div class="controls">
         <div class="well well-small">
           <span class="label label-info" ng-repeat="vlan in entity.vlans | filter: destroyed">
@@ -117,10 +117,10 @@
           </span>
         </div>
         <div class="input-append">
-          <input class="span2 vlan" id="vlan" type="text" ng-model="newVlan">
+          <input class="span2 vlan" id="vlans" type="text" ng-model="newVlan">
           <button class="btn" type="button" ng-click="addVlan(newVlan)">Add</button>
-          <span class="help-inline" ng-bind="getError('vlans')"></span>
         </div>
+        <span class="help-inline" ng-bind="getError('vlans')"></span>
       </div>
     </div>
     <div class="control-group">
