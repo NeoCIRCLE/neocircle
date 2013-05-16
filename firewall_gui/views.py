@@ -489,9 +489,8 @@ def save_vlan(request):
                 nat_to = Vlan.objects.get(name = group['name'])
                 vlan.snat_to.add(nat_to)
         except Exception as e:
-            print(e, group)
             errors['vlans'] = ('Vlan with the name "%(name)s" does not exists!') % {
-                'name': e.message #group['name']
+                'name': group['name']
             }
     try:
         vlan.full_clean()
@@ -512,7 +511,18 @@ def save_vlangroup(request):
     errors = {}
     vlangroup.name = data['name']
     vlangroup.description = data['description']
-    # TODO: save vlans
+    for vlan in data['vlans']:
+        try:
+            if '__destroyed' in vlan and vlan['__destroyed']:
+                vlan_obj = Vlan.objects.get(name = vlan['name'])
+                vlangroup.vlans.remove(vlan_obj)
+            elif '__created' in vlan and vlan['__created']:
+                vlan_obj = Vlan.objects.get(name = vlan['name'])
+                vlangroup.vlans.add(vlan_obj)
+        except Exception as e:
+            errors['vlans'] = ('Vlan with the name "%(name)s" does not exists!') % {
+                'name': vlan['name']
+            }
     set_field(vlangroup, 'owner', errors, username=data['owner']['name'])
     try:
         vlangroup.full_clean()
