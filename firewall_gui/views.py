@@ -433,9 +433,10 @@ def autocomplete(request, entity):
             'firewall': make_autocomplete(Firewall),
             'domain': make_autocomplete(Domain),
             'record': make_autocomplete(Record),
+            'owner': make_autocomplete(User, 'username')
         }[entity](request)
     except Exception as e:
-        return HttpResponse('>:-3', status=500)
+        return HttpResponse('>:-3'+str(e), status=500)
 
 
 def set_field(object, attr, errors, **kwargs):

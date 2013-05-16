@@ -293,7 +293,7 @@ function EntityController(url, init) {
         }
         $http.get(url + id + '/').success(function success(data) {
             $scope.entity = data;
-            ['vlan', 'vlangroup', 'host', 'hostgroup', 'firewall'].forEach(function(t) {
+            ['vlan', 'vlangroup', 'host', 'hostgroup', 'firewall', 'owner', 'domain', 'record'].forEach(function(t) {
                 $('.' + t).typeahead({
                     /**
                      * Typeahead does AJAX queries
