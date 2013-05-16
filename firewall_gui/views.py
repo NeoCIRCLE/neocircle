@@ -460,6 +460,18 @@ def save_host(request):
     host.location = data['location']
     set_field(host, 'vlan', errors, name=data['vlan']['name'])
     set_field(host, 'owner', errors, username=data['owner']['name'])
+    for host in data['vlans']:
+        try:
+            if '__destroyed' in host and host['__destroyed']:
+                host_object = Vlan.objects.get(name = host['name'])
+                vlan.snat_to.remove(host_object)
+            elif '__created' in host and host['__created']:
+                host_object = Vlan.objects.get(name = host['name'])
+                vlan.snat_to.add(host_object)
+        except Exception as e:
+            errors['vlans'] = ('Host with the name "%(name)s" does not exists!') % {
+                'name': host['name']
+            }
     try:
         host.full_clean()
     except Exception as e:
@@ -554,7 +566,6 @@ def save_hostgroup(request):
     errors = {}
     hostgroup.name = data['name']
     hostgroup.description = data['description']
-    # TODO: save hosts
     set_field(hostgroup, 'owner', errors, username=data['owner']['name'])
     try:
         hostgroup.full_clean()
