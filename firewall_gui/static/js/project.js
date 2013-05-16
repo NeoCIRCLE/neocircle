@@ -36,6 +36,35 @@ $.ajaxSetup({
     }
 });
 
+function makeAddRemove($scope, name, model) {
+    $scope['add'+name] = function(entity) {
+        for (var i in $scope.entity[model]) {
+            var item = $scope.entity[model][i];
+            if (item.name == entity && item.__destroyed) {
+                item.__destroyed = false;
+                return;
+            } else if (item.name == entity) {
+                return;
+            }
+        }
+        $scope.entity[model].push({
+            name: entity,
+            __created: true,
+        });
+    }
+    $scope['remove'+name] = function(entity) {
+        for (var i in $scope.entity[model]) {
+            var item = $scope.entity[model][i];
+            if (item.name == entity.name && item.__created) {
+                $scope.entity[model].splice(i, 1);
+            } else if (item.name == entity.name) {
+                item.__destroyed = true;
+                return;
+            }
+        }
+    }
+}
+
 /**
  * List of firewall collections, controllers/routes will be dynamically created from them.
  *
@@ -71,63 +100,14 @@ var controllers = {
         });
     },
     host: function($scope) {
-        $scope.addHostGroup = function(group) {
-            for (var i in $scope.entity.groups) {
-                var group_ = $scope.entity.groups[i];
-                if (group_.name == group && group_.__destroyed) {
-                    group_.__destroyed = false;
-                    return;
-                } else if (group_.name == group) {
-                    return;
-                }
-            }
-            $scope.entity.groups.push({
-                name: group,
-                __created: true,
-            })
-        }
-        $scope.removeHostGroup = function(group) {
-            for (var i in $scope.entity.groups) {
-                var group_ = $scope.entity.groups[i];
-                if (group_.name == group.name && group_.__created) {
-                    $scope.entity.groups.splice(i, 1);
-                } else if (group_.name == group.name) {
-                    group_.__destroyed = true;
-                    return;
-                }
-            }
-        }
+        makeAddRemove($scope, 'HostGroup', 'groups');
     },
     vlan: function($scope) {
-        $scope.newVlan = '';
-        $scope.addVlan = function(vlan) {
-            for (var i in $scope.entity.vlans) {
-                var vlan_ = $scope.entity.vlans[i];
-                if (vlan_.name == vlan && vlan_.__destroyed) {
-                    vlan_.__destroyed = false;
-                    return;
-                } else if (vlan_.name == vlan) {
-                    return;
-                }
-            }
-            $scope.entity.vlans.push({
-                name: vlan,
-                __created: true,
-            })
-        }
-        $scope.removeVlan = function(vlan) {
-            for (var i in $scope.entity.vlans) {
-                var vlan_ = $scope.entity.vlans[i];
-                if (vlan_.name == vlan.name && vlan_.__created) {
-                    $scope.entity.vlans.splice(i, 1);
-                } else if (vlan_.name == vlan.name) {
-                    vlan_.__destroyed = true;
-                    return;
-                }
-            }
-        }
+        makeAddRemove($scope, 'Vlan', 'vlans');
     },
-    vlangroup: function() {},
+    vlangroup: function($scope) {
+        makeAddRemove($scope, 'Vlan', 'vlans');
+    },
     hostgroup: function() {},
     firewall: function() {},
     domain: function() {},
