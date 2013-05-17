@@ -618,3 +618,46 @@ def save_hostgroup(request):
         return HttpResponse(json.dumps(errors), content_type='application/json', status=400)
     hostgroup.save()
     return HttpResponse('KTHXBYE')
+
+@user_passes_test(req_staff)
+def save_domain(request):
+    data = json.loads(request.body)
+    if data['id']:
+        domain = get_object_or_404(Domain, id=data['id'])
+    else:
+        domain = Domain.objects.create()
+    errors = {}
+    domain.name = data['name']
+    domain.ttl = data['ttl']
+    domain.description = data['description']
+    set_field(domain, 'owner', errors, username=data['owner']['name'])
+    try:
+        domain.full_clean()
+    except Exception as e:
+        errors = dict(errors.items() + e.message_dict.items())
+    if len(errors) > 0:
+        return HttpResponse(json.dumps(errors), content_type='application/json', status=400)
+    domain.save()
+    return HttpResponse('KTHXBYE')
+
+@user_passes_test(req_staff)
+def save_record(request):
+    data = json.loads(request.body)
+    if data['id']:
+        record = get_object_or_404(Record, id=data['id'])
+    else:
+        record = Record.objects.create()
+    errors = {}
+    record.name = data['name']
+    record.ttl = data['ttl']
+    record.description = data['description']
+    set_field(record, 'owner', errors, username=data['owner']['name'])
+    set_field(record, 'domain', errors, name=data['domain']['name'])
+    try:
+        record.full_clean()
+    except Exception as e:
+        errors = dict(errors.items() + e.message_dict.items())
+    if len(errors) > 0:
+        return HttpResponse(json.dumps(errors), content_type='application/json', status=400)
+    record.save()
+    return HttpResponse('KTHXBYE')

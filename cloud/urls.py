@@ -112,4 +112,6 @@ urlpatterns = patterns('',
     url(r'^firewall/vlans/save/$', 'firewall_gui.views.save_vlan'),
     url(r'^firewall/vlangroups/save/$', 'firewall_gui.views.save_vlangroup'),
     url(r'^firewall/hostgroups/save/$', 'firewall_gui.views.save_hostgroup'),
+    url(r'^firewall/domains/save/$', 'firewall_gui.views.save_domain'),
+    url(r'^firewall/records/save/$', 'firewall_gui.views.save_record'),
 )
