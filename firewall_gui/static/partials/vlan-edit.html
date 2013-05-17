@@ -3,67 +3,123 @@
     <div class="control-group">
       <label class="control-label" for="ID">ID</label>
       <div class="controls">
-        <input class="input-mini" type="text" id="ID" placeholder="ID" value="{{entity.id}}" disabled="disabled">
+        <span class="has-tooltip" title="Built in ID, do not change this">
+          <input
+            class="input-mini"
+            type="text"
+            id="ID"
+            placeholder="ID"
+            value="{{entity.id}}"
+            disabled="disabled" />
+        </span>
       </div>
     </div>
     <div class="control-group" ng-class="hasError('vid')">
       <label class="control-label" for="VID">VID</label>
       <div class="controls">
-        <input class="input-mini" type="text" id="VID" placeholder="ID" ng-model="entity.vid">
+        <input
+          class="input-mini"
+          type="text"
+          id="VID"
+          placeholder="ID"
+          ng-model="entity.vid"
+          title="Vlan ID, you can change this" />
         <span class="help-inline" ng-bind="getError('vid')"></span>
       </div>
     </div>
     <div class="control-group">
       <label class="control-label" for="created_at">Created at</label>
       <div class="controls">
-        <input class="input" type="text" id="created_at" ng-model="entity.created_at" disabled="disabled">
+        <span class="has-tooltip" title="The entity was created at this date">
+          <input
+            class="input"
+            type="text"
+            id="created_at"
+            ng-model="entity.created_at"
+            disabled="disabled" />
+        </span>
       </div>
     </div>
     <div class="control-group">
       <label class="control-label" for="modified_at">Modified at</label>
       <div class="controls">
-        <input class="input" type="text" id="modified_at" ng-model="entity.modified_at" disabled="disabled">
+        <span class="has-tooltip" title="The entity was last modified at this date">
+          <input
+            class="input"
+            type="text"
+            id="modified_at"
+            ng-model="entity.modified_at"
+            disabled="disabled" />
+        </span>
       </div>
     </div>
     <div class="control-group" ng-class="hasError('name')">
       <label class="control-label" for="name">Name</label>
       <div class="controls">
-        <input type="text" id="name" ng-model="entity.name" />
+        <input
+          type="text"
+          id="name"
+          ng-model="entity.name"
+          title="Name of this Vlan" />
         <span class="help-inline" ng-bind="getError('name')"></span>
       </div>
     </div>
     <div class="control-group" ng-class="hasError('ipv4')">
       <label class="control-label" for="ipv4">IPv4</label>
       <div class="controls">
-        <input type="text" id="ipv4" ng-model="entity.ipv4" />
+        <input
+          type="text"
+          id="ipv4"
+          ng-model="entity.ipv4"
+          title="IPv4 address of this Vlan (with subnet mask)" />
         <span class="help-inline" ng-bind="getError('ipv4')"></span>
       </div>
     </div>
     <div class="control-group" ng-class="hasError('ipv6')">
       <label class="control-label" for="ipv6">IPv6</label>
       <div class="controls">
-        <input type="text" class="input-xlarge" id="ipv6" ng-model="entity.ipv6" />
+        <input
+          type="text"
+          class="input-xlarge"
+          id="ipv6"
+          ng-model="entity.ipv6"
+          title="IPv6 address of this Vlan (with subnet mask)" />
         <span class="help-inline" ng-bind="getError('ipv6')"></span>
       </div>
     </div>
     <div class="control-group" ng-class="hasError('snat_ip')">
       <label class="control-label" for="snat_ip">NAT</label>
       <div class="controls">
-        <input type="text" id="snat_ip" ng-model="entity.nat" />
+        <input
+          type="text"
+          id="snat_ip"
+          ng-model="entity.nat"
+          title="NAT IP for this Vlan" />
         <span class="help-inline" ng-bind="getError('snat_ip')"></span>
       </div>
     </div>
     <div class="control-group" ng-class="hasError('owner')">
       <label class="control-label" for="owner">Owner</label>
       <div class="controls">
-        <input type="text" class="owner" autocomplete="off" id="owner" ng-model="entity.owner.name" />
+        <input
+          type="text"
+          class="owner"
+          autocomplete="off"
+          id="owner"
+          ng-model="entity.owner.name"
+          title="Owners name" />
         <span class="help-inline" ng-bind="getError('owner')"></span>
       </div>
     </div>
     <div class="control-group" ng-class="hasError('interface')">
       <label class="control-label" for="interface">Interface</label>
       <div class="controls">
-        <input type="text" autocomplete="off" id="interface" ng-model="entity.interface" />
+        <input
+          type="text"
+          autocomplete="off"
+          id="interface"
+          ng-model="entity.interface"
+          title="#TODO" />
         <span class="help-inline" ng-bind="getError('interface')"></span>
       </div>
     </div>
@@ -72,21 +128,36 @@
     <div class="control-group" ng-class="hasError('domain')">
       <label class="control-label" for="domain">Domain</label>
       <div class="controls">
-        <input type="text" class="domain" data-provide="typeahead" autocomplete="off" id="domain" ng-model="entity.domain.name" />
+        <input
+          type="text"
+          class="domain"
+          data-provide="typeahead"
+          autocomplete="off"
+          id="domain"
+          ng-model="entity.domain.name"
+          title="Domain name" />
         <span class="help-inline" ng-bind="getError('domain')"></span>
       </div>
     </div>
     <div class="control-group" ng-class="hasError('reverse_domain')">
       <label class="control-label" for="reverse_domain">Reverse domain</label>
       <div class="controls">
-        <input type="text" autocomplete="off" id="reverse_domain" ng-model="entity.reverse_domain" />
+        <input
+          type="text"
+          autocomplete="off"
+          id="reverse_domain"
+          ng-model="entity.reverse_domain"
+          title="Reverse domain name" />
         <span class="help-inline" ng-bind="getError('reverse_domain')"></span>
       </div>
     </div>
     <div class="control-group" ng-class="hasError('description')">
       <label class="control-label" for="description">Description</label>
       <div class="controls">
-        <textarea rows="2" id="description" ng-model="entity.description">
+        <textarea id="description"
+          rows="2"
+          ng-model="entity.description"
+          title="Short description">
         </textarea>
         <span class="help-inline" ng-bind="getError('description')"></span>
       </div>
@@ -94,7 +165,10 @@
     <div class="control-group" ng-class="hasError('comment')">
       <label class="control-label" for="comment">Comment</label>
       <div class="controls">
-        <textarea rows="2" id="comment" ng-model="entity.comment">
+        <textarea id="comment"
+          rows="2"
+          ng-model="entity.comment"
+          title="Some comments... #TODO">
         </textarea>
         <span class="help-inline" ng-bind="getError('comment')"></span>
       </div>
@@ -102,7 +176,10 @@
     <div class="control-group" ng-class="hasError('dhcp_pool')">
       <label class="control-label" for="dhcp_pool">DHCP Pool</label>
       <div class="controls">
-        <textarea rows="2" id="dhcp_pool" ng-model="entity.dhcp_pool">
+        <textarea id="dhcp_pool"
+          rows="2"
+          ng-model="entity.dhcp_pool"
+          title="Some DHCP Pool related thing... #TODO">
         </textarea>
         <span class="help-inline" ng-bind="getError('dhcp_pool')"></span>
       </div>
@@ -116,7 +193,7 @@
             <a href ng-click="removeVlan(vlan)"><i class="icon-remove"></i></a>
           </span>
         </div>
-        <div class="input-append">
+        <div class="input-append has-tooltip" title="#TODO">
           <input class="span2 vlan" id="vlans" type="text" ng-model="newVlan">
           <button class="btn" type="button" ng-click="addVlan(newVlan)">Add</button>
         </div>

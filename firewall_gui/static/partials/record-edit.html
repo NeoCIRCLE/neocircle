@@ -3,39 +3,75 @@
     <div class="control-group">
       <label class="control-label" for="ID">ID</label>
       <div class="controls">
-        <input class="input-mini" type="text" id="ID" placeholder="ID" value="{{entity.id}}" disabled="disabled">
+        <span class="has-tooltip" title="Built in ID, do not change this">
+          <input
+            class="input-mini"
+            type="text"
+            id="ID"
+            placeholder="ID"
+            value="{{entity.id}}"
+            disabled="disabled" />
+        </span>
       </div>
     </div>
     <div class="control-group">
       <label class="control-label" for="created_at">Created at</label>
       <div class="controls">
-        <input class="input" type="text" id="created_at" ng-model="entity.created_at" disabled="disabled">
+        <span class="has-tooltip" title="Entity was created at this date">
+          <input
+            class="input"
+            type="text"
+            id="created_at"
+            ng-model="entity.created_at"
+            disabled="disabled" />
+        </span>
       </div>
     </div>
     <div class="control-group">
       <label class="control-label" for="modified_at">Modified at</label>
       <div class="controls">
-        <input class="input" type="text" id="modified_at" ng-model="entity.modified_at" disabled="disabled">
+        <span class="has-tooltip" title="Entity was last modified at this date">
+          <input
+            class="input"
+            type="text"
+            id="modified_at"
+            ng-model="entity.modified_at"
+            disabled="disabled" />
+        </span>
       </div>
     </div>
     <div class="control-group" ng-class="hasError('name')">
       <label class="control-label" for="name">Name</label>
       <div class="controls">
-        <input type="text" id="name" ng-model="entity.name" />
+        <input
+          type="text"
+          id="name"
+          ng-model="entity.name"
+          title="Name of the DNS record" />
         <span class="help-inline" ng-bind="getError('name')"></span>
       </div>
     </div>
     <div class="control-group" ng-class="hasError('domain')">
       <label class="control-label" for="domain">Domain</label>
       <div class="controls">
-        <input type="text" id="domain" class="domain" ng-model="entity.domain.name" />
+        <input
+          type="text"
+          id="domain"
+          class="domain"
+          ng-model="entity.domain.name"
+          title="Domain belonging to this record" />
         <span class="help-inline" ng-bind="getError('domain')"></span>
       </div>
     </div>
     <div class="control-group" ng-class="hasError('host')">
       <label class="control-label" for="host">Host</label>
       <div class="controls">
-        <input type="text" class="host" id="host" ng-model="entity.host.name" />
+        <input
+          type="text"
+          class="host"
+          id="host"
+          ng-model="entity.host.name"
+          title="Host belonging to this record" />
         <span class="help-inline" ng-bind="getError('host')"></span>
       </div>
     </div>
@@ -44,7 +80,7 @@
     <div class="control-group" ng-class="hasError('type')">
       <label class="control-label" for="type">Type</label>
       <div class="controls">
-        <select id="type" ng-model="entity.type">
+        <select id="type" ng-model="entity.type" title="Record type">
           <option value="A">A</option>
           <option value="CNAME">CNAME</option>
           <option value="AAAA">AAAA</option>
@@ -58,21 +94,35 @@
     <div class="control-group" ng-class="hasError('owner')">
       <label class="control-label" for="owner">Owner</label>
       <div class="controls">
-        <input type="text" class="owner" autocomplete="off" id="owner" ng-model="entity.owner.name" />
+        <input
+          type="text"
+          class="owner"
+          autocomplete="off"
+          id="owner"
+          ng-model="entity.owner.name"
+          title="Owners name" />
         <span class="help-inline" ng-bind="getError('owner')"></span>
       </div>
     </div>
     <div class="control-group" ng-class="hasError('address')">
       <label class="control-label" for="address">Address</label>
       <div class="controls">
-        <input type="text" autocomplete="off" id="address" ng-model="entity.address" />
+        <input
+          type="text"
+          autocomplete="off"
+          id="address"
+          ng-model="entity.address"
+          title="Address #TODO" />
         <span class="help-inline" ng-bind="getError('address')"></span>
       </div>
     </div>
     <div class="control-group" ng-class="hasError('description')">
       <label class="control-label" for="description">Description</label>
       <div class="controls">
-        <textarea rows="2" id="description" ng-model="entity.description">
+        <textarea rows="2"
+          id="description"
+          ng-model="entity.description"
+          title="Short description">
         </textarea>
         <span class="help-inline" ng-bind="getError('description')"></span>
       </div>
