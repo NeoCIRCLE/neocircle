@@ -293,6 +293,7 @@ function EntityController(url, init) {
         }
         $http.get(url + id + '/').success(function success(data) {
             $scope.entity = data;
+            $('input[type=text], input[type=number], select, textarea, .has-tooltip').tooltip({placement:'right'});
             ['vlan', 'vlangroup', 'host', 'hostgroup', 'firewall', 'owner', 'domain', 'record'].forEach(function(t) {
                 $('.' + t).typeahead({
                     /**
