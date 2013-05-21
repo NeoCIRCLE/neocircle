@@ -452,10 +452,10 @@ def set_field(object, attr, errors, **kwargs):
 @user_passes_test(req_staff)
 def save_rule(request):
     data = json.loads(request.body)
-    if data['id']:
+    if 'id' in data:
         rule = get_object_or_404(Rule, id=data['id'])
     else:
-        rule = Rule.objects.create()
+        rule = Rule()
     errors = {}
     rule.direction = data['direction']['value']
     rule.description = data['description']
