@@ -31,7 +31,7 @@ def create_user_profile(sender, instance, created, **kwargs):
             p = Person.objects.get(code=instance.username)
         except Person.DoesNotExist:
             p = Person.objects.create(code=instance.username)
-        except Exception as e:
+        except Exception as e:  # pragma: no cover
             logger.warning("Couldn't create profile for user: %(username)s"
                     "\nReason: %(exception)s",
                     {"username": instance.username,
@@ -42,6 +42,9 @@ def create_user_profile(sender, instance, created, **kwargs):
 post_save.connect(create_user_profile, sender=User)
 
 class Person(models.Model):
+    """
+    Personal settings and attributes of a user.
+    """
     user = models.ForeignKey(User, null=True, blank=True, unique=True)
     language = models.CharField(verbose_name=_('language'), blank=False,
             max_length=10, choices=LANGUAGE_CHOICES, default=LANGUAGE_CODE)
@@ -59,9 +62,9 @@ class Person(models.Model):
 
     def short_name(self):
         if self.user:
-            if self.user.last_name:
+            if self.user.last_name:  # pragma: no cover
                 return self.user.last_name
-            else:
+            else:  # pragma: no cover
                 return self.user.username
         else:
             return self.code

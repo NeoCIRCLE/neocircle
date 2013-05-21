@@ -1,56 +1,77 @@
-from django.test import TestCase
-from models import create_user_profile, Person, Course, Semester, Group
 from datetime import datetime, timedelta
-
-class MockUser:
-    username = "testuser"
+from django.test import TestCase
+from django.contrib.auth.models import User
+from models import create_user_profile, Person, Course, Semester, Group
 
 class CreateUserProfileTestCase(TestCase):
     def setUp(self):
-        self.user = MockUser()
-        for p in Person.objects.all():
-            p.delete()
+        self.user = User(username="testuser", password="testpass",
+                email="test@mail.com", first_name="Test", last_name="User")
+        Person.objects.all().delete()
+        with self.assertRaises(Person.DoesNotExist):
+            Person.objects.get(code=self.user.username)
 
     def test_new_profile(self):
         """Test profile creation functionality for new user."""
         create_user_profile(self.user.__class__, self.user, True)
-        self.assertEqual(Person.objects.filter(
-            code=self.user.username).count(), 1)
+        self.assertIsNotNone(Person.objects.get(code=self.user.username))
 
     def test_existing_profile(self):
         """Test profile creation functionality when it already exists."""
         Person.objects.create(code=self.user.username)
         create_user_profile(self.user.__class__, self.user, True)
-        self.assertEqual(Person.objects.filter(
-            code=self.user.username).count(), 1)
-
+        self.assertIsNotNone(Person.objects.get(code=self.user.username))
 
 class PersonTestCase(TestCase):
-    def setUp(self):
-        self.testperson = Person.objects.create(code='testperson')
-
+    """Test 'static' Person facts."""
     def test_language_code_in_choices(self):
         """Test whether the default value for language is a valid choice."""
-        # TODO
-        language_field = self.testperson._meta.get_field('language')
+        person = Person(code="test")
+        language_field = person._meta.get_field('language')
         choice_codes = [code for (code, _) in language_field.choices]
         self.assertIn(language_field.default, choice_codes)
 
+class PersonWithUserTestCase(TestCase):
+    """Test Person entities which have their user attribute set."""
+    def setUp(self):
+        self.user = User(username="testuser", password="testpass",
+                email="test@mail.com", first_name="Test", last_name="User")
+        Person.objects.all().delete()
+        self.person = Person.objects.create(code='testcode', user=self.user)
+
     def test_get_owned_shares(self):
-        # TODO
-        self.testperson.get_owned_shares()
+        self.assertIsNotNone(self.person.get_owned_shares())
 
     def test_get_shares(self):
-        # TODO
-        self.testperson.get_shares()
+        self.assertIsNotNone(self.person.get_shares())
 
     def test_short_name(self):
-        # TODO
-        self.testperson.short_name()
+        self.assertIsNotNone(self.person.short_name())
+        # without first or last name
+        self.person.user.first_name = None
+        self.person.user.last_name = None
+        self.assertIsNotNone(self.person.short_name())
 
     def test_unicode(self):
-        # TODO
-        self.testperson.__unicode__()
+        self.assertIsNotNone(self.person.__unicode__())
+
+class PersonWithoutUserTestCase(TestCase):
+    """Test Person entities which doesn't have their user attribute set."""
+    def setUp(self):
+        Person.objects.all().delete()
+        self.person = Person.objects.create(code='testcode')
+
+    def test_get_owned_shares(self):
+        self.assertIsNotNone(self.person.get_owned_shares())
+
+    def test_get_shares(self):
+        self.assertIsNotNone(self.person.get_shares())
+
+    def test_short_name(self):
+        self.assertIsNotNone(self.person.short_name())
+
+    def test_unicode(self):
+        self.assertIsNotNone(self.person.__unicode__())
 
 class CourseTestCase(TestCase):
     def setUp(self):
