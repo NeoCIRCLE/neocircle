@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from django.test import TestCase
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from models import create_user_profile, Person, Course, Semester, Group
 
 class CreateUserProfileTestCase(TestCase):
@@ -54,6 +55,10 @@ class PersonWithUserTestCase(TestCase):
 
     def test_unicode(self):
         self.assertIsNotNone(self.person.__unicode__())
+        # without first or last name
+        self.person.user.first_name = None
+        self.person.user.last_name = None
+        self.assertIsNotNone(self.person.__unicode__())
 
 class PersonWithoutUserTestCase(TestCase):
     """Test Person entities which doesn't have their user attribute set."""
@@ -89,11 +94,29 @@ class CourseTestCase(TestCase):
     def test_get_or_create_default_group(self):
         default_group = self.testcourse.get_or_create_default_group()
         self.assertIsNotNone(default_group)
-        self.assertEquals(default_group, self.testcourse.default_group)
+        self.assertEqual(default_group, self.testcourse.default_group)
+        # now it already has a group, so this'll be a get
+        default_group1 = self.testcourse.get_or_create_default_group()
+        self.assertIsNotNone(default_group1)
+        self.assertEqual(default_group, default_group1)
 
     def test_owner_list(self):
-        owner_list = self.testcourse.owner_list()
-        self.assertIsNotNone(owner_list)
+        self.assertIsNotNone(self.testcourse.owner_list())
+        # if the course has no owners:
+        self.testcourse.owners.all().delete()
+        self.assertIsNotNone(self.testcourse.owner_list())
+
+    def test_unicode(self):
+        self.assertIsNotNone(self.testcourse.__unicode__())
+        # if the course doesn't have a name:
+        self.testcourse.name = None
+        self.assertIsNotNone(self.testcourse.__unicode__())
+
+    def test_short(self):
+        self.assertIsNotNone(self.testcourse.short())
+        # if the course doesn't have a short name:
+        self.testcourse.short_name = None
+        self.assertIsNotNone(self.testcourse.short())
 
 class SemesterTestCase(TestCase):
     def setUp(self):
@@ -115,6 +138,10 @@ class SemesterTestCase(TestCase):
 
     def test_get_current(self):
         self.assertEqual(self.current_semester, Semester.get_current())
+        # if there's no current semester:
+        self.current_semester.delete()
+        with self.assertRaises(ValidationError):
+            Semester.get_current()
 
     def test_unicode(self):
         self.current_semester.__unicode__()
@@ -125,8 +152,10 @@ class GroupTestCase(TestCase):
         delta = timedelta(weeks=7)
         semester = Semester.objects.create(name="testsem",
                 start=date-delta, end=date+delta)
+        self.testcourse = Course.objects.create(code="testcode",
+                name="testname", short_name="tn")
         self.testgroup = Group.objects.create(name="testgrp",
-                semester=semester)
+                semester=semester, course=self.testcourse)
 
     def test_owner_list(self):
         self.assertIsNotNone(self.testgroup.owner_list())
@@ -146,3 +175,12 @@ class GroupTestCase(TestCase):
         testmember2 = Person.objects.create(code="testprsn4")
         self.testgroup.members.add(testmember2)
         self.assertEqual(2, self.testgroup.member_count())
+
+    def test_unicode(self):
+        self.assertIsNotNone(self.testgroup.__unicode__())
+        # if the group has no course associated:
+        self.testgroup.course = None
+        self.assertIsNotNone(self.testgroup.__unicode__())
+
+    def test_get_absolute_url(self):
+        self.assertIsNotNone(self.testgroup.get_absolute_url())
