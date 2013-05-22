@@ -225,10 +225,23 @@ function ListController(url) {
         $scope.prevPage = function() {
             $scope.page = Math.max($scope.page - 1, 1);
         };
-        $http.get(url).success(function success(data) {
-            rules = data;
-            $scope.pages = range(1, Math.ceil(data.length / pageSize));
-        });
+
+        $scope.deleteEntity = function(id) {
+            $.ajax({
+                url: url.split('/')[2]+'/'+id+'/delete/',
+                type: 'post',
+                success: reloadList
+            });
+        };
+
+        function reloadList() {
+            $http.get(url).success(function success(data) {
+                rules = data;
+                $scope.pages = range(1, Math.ceil(data.length / pageSize));
+            });
+        }
+
+        reloadList();
     }
 }
 
@@ -275,7 +288,8 @@ function EntityController(url, init) {
                     console.log(data);
                     $scope.$apply(function() {
                         $scope.errors = {};
-                    })
+                    });
+                    window.location.hash = '/' + url.split('/')[2] + '/' + data + '/';
                 }
             }).error(function(data) {
                 try {
@@ -293,61 +307,66 @@ function EntityController(url, init) {
                 }
             })
         }
-        $http.get(url + id + '/').success(function success(data) {
-            $scope.entity = data;
-            $('input[type=text], input[type=number], select, textarea, .has-tooltip').tooltip({placement:'right'});
-            ['vlan', 'vlangroup', 'host', 'hostgroup', 'firewall', 'owner', 'domain', 'record'].forEach(function(t) {
-                $('.' + t).typeahead({
-                    /**
-                     * Typeahead does AJAX queries
-                     * @param  {String}   query   Partial name of the entity
-                     * @param  {Function} process Callback function after AJAX returned result
-                     */
-                    source: function(query, process) {
-                        $.ajax({
-                            url: '/firewall/autocomplete/' + t + '/',
-                            type: 'post',
-                            data: 'name=' + query,
-                            success: function autocompleteSuccess(data) {
-                                process(data.map(function(obj) {
-                                    return obj.name;
-                                }));
-                            }
-                        });
-                    },
-                    /**
-                     * Filtering is done on server-side, show all results
-                     * @return {Boolean} Always true, so all result are visible
-                     */
-                    matcher: function() {
-                        return true;
-                    },
-                    /**
-                     * Typeahead does not trigger proper DOM events, so we have to refresh
-                     * the model manually.
-                     * @param  {String} item Selected entity name
-                     * @return {String}      Same as `item`, the input value is set to this
-                     */
-                    updater: function(item) {
-                        var self = this;
-                        console.log(this);
-                        $scope.$apply(function() {
-                            var model = self.$element[0].getAttribute('ng-model').split('.')[1];
-                            console.log(self.$element[0].getAttribute('ng-model'), model);
-                            try {
-                                $scope.entity[model].name = item;
-                            } catch (ex) {
-                                try {
-                                    $scope[self.$element[0].getAttribute('ng-model')] = item;
-                                } catch(ex) {
-
-                                }
-                            }
-                        })
-                        return item;
-                    }
+        function reloadEntity() {
+            $http.get(url + id + '/').success(function success(data) {
+                $scope.entity = data;
+                $('input[type=text], input[type=number], select, textarea, .has-tooltip').tooltip({
+                    placement: 'right'
                 });
-            })
-        });
+                ['vlan', 'vlangroup', 'host', 'hostgroup', 'firewall', 'owner', 'domain', 'record'].forEach(function(t) {
+                    $('.' + t).typeahead({
+                        /**
+                         * Typeahead does AJAX queries
+                         * @param  {String}   query   Partial name of the entity
+                         * @param  {Function} process Callback function after AJAX returned result
+                         */
+                        source: function(query, process) {
+                            $.ajax({
+                                url: '/firewall/autocomplete/' + t + '/',
+                                type: 'post',
+                                data: 'name=' + query,
+                                success: function autocompleteSuccess(data) {
+                                    process(data.map(function(obj) {
+                                        return obj.name;
+                                    }));
+                                }
+                            });
+                        },
+                        /**
+                         * Filtering is done on server-side, show all results
+                         * @return {Boolean} Always true, so all result are visible
+                         */
+                        matcher: function() {
+                            return true;
+                        },
+                        /**
+                         * Typeahead does not trigger proper DOM events, so we have to refresh
+                         * the model manually.
+                         * @param  {String} item Selected entity name
+                         * @return {String}      Same as `item`, the input value is set to this
+                         */
+                        updater: function(item) {
+                            var self = this;
+                            console.log(this);
+                            $scope.$apply(function() {
+                                var model = self.$element[0].getAttribute('ng-model').split('.')[1];
+                                console.log(self.$element[0].getAttribute('ng-model'), model);
+                                try {
+                                    $scope.entity[model].name = item;
+                                } catch (ex) {
+                                    try {
+                                        $scope[self.$element[0].getAttribute('ng-model')] = item;
+                                    } catch (ex) {
+
+                                    }
+                                }
+                            })
+                            return item;
+                        }
+                    });
+                })
+            });
+        }
+        reloadEntity();
     }
 }
