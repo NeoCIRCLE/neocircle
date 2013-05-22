@@ -37,7 +37,7 @@ $.ajaxSetup({
 });
 
 function makeAddRemove($scope, name, model) {
-    $scope['add'+name] = function(entity) {
+    $scope['add' + name] = function(entity) {
         for (var i in $scope.entity[model]) {
             var item = $scope.entity[model][i];
             if (item.name == entity && item.__destroyed) {
@@ -52,7 +52,7 @@ function makeAddRemove($scope, name, model) {
             __created: true,
         });
     }
-    $scope['remove'+name] = function(entity) {
+    $scope['remove' + name] = function(entity) {
         for (var i in $scope.entity[model]) {
             var item = $scope.entity[model][i];
             if (item.name == entity.name && item.__created) {
@@ -118,21 +118,23 @@ var controllers = {
  * Configures AngularJS with the defined controllers
  */
 var module = angular.module('firewall', []).config(
-['$routeProvider', function($routeProvider) {
-    for (var controller in controllers) {
-        var init = controllers[controller];
-        $routeProvider.when('/' + controller + 's/', {
-            templateUrl: '/static/partials/' + controller + '-list.html',
-            controller: ListController('/firewall/' + controller + 's/')
-        }).when('/' + controller + 's/:id/', {
-            templateUrl: '/static/partials/' + controller + '-edit.html',
-            controller: EntityController('/firewall/' + controller + 's/', init)
+['$routeProvider',
+    function($routeProvider) {
+        for (var controller in controllers) {
+            var init = controllers[controller];
+            $routeProvider.when('/' + controller + 's/', {
+                templateUrl: '/static/partials/' + controller + '-list.html',
+                controller: ListController('/firewall/' + controller + 's/')
+            }).when('/' + controller + 's/:id/', {
+                templateUrl: '/static/partials/' + controller + '-edit.html',
+                controller: EntityController('/firewall/' + controller + 's/', init)
+            });
+        }
+        $routeProvider.otherwise({
+            redirectTo: '/rules/'
         });
     }
-    $routeProvider.otherwise({
-        redirectTo: '/rules/'
-    });
-}]);
+]);
 
 /**
  * Generate range [a, b)
@@ -271,19 +273,19 @@ function EntityController(url, init) {
                 data: JSON.stringify($scope.entity),
                 success: function(data) {
                     console.log(data);
-                    $scope.$apply(function(){
+                    $scope.$apply(function() {
                         $scope.errors = {};
                     })
                 }
-            }).error(function(data){
+            }).error(function(data) {
                 try {
                     data = JSON.parse(data.responseText);
                     var newErrors = {};
                     for (var i in data) {
-                        var id = $('#'+i).length ? i : 'targetName';
-                        newErrors[id]=data[i];
+                        var id = $('#' + i).length ? i : 'targetName';
+                        newErrors[id] = data[i];
                     }
-                    $scope.$apply(function(){
+                    $scope.$apply(function() {
                         $scope.errors = newErrors;
                     })
                 } catch (ex) {
