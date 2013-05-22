@@ -168,58 +168,87 @@ def list_entities(request, name):
         }[name](request)), content_type='application/json')
 
 
-def show_rule(request, id):
-    rule = get_object_or_404(Rule, id=id)
-    rule = {
-        'id': rule.id,
-        'target': {
-            'name': rule.vlan.name,
-            'id': rule.vlan.id,
-            'type': 'vlan',
-        } if rule.vlan else {
-            'name': rule.vlangroup.name,
-            'id': rule.vlangroup.id,
-            'type': 'vlangroup',
-        } if rule.vlangroup else {
-            'name': rule.hostgroup.name,
-            'id': rule.hostgroup.id,
-            'type': 'hostgroup',
-        } if rule.hostgroup else {
-            'name': rule.firewall.name,
-            'id': rule.firewall.id,
-            'type': 'firewall',
-        } if rule.firewall else {
-            'name': rule.host.hostname,
-            'id': rule.host.id,
-            'type': 'host',
-        },
-        'type': rule.r_type,
-        'direction': {
-            'value': rule.direction,
-            'choices': Rule._meta.get_field_by_name('direction')[0].choices,
-        },
-        'proto': {
-            'value': rule.proto,
-            'choices': Rule._meta.get_field_by_name('proto')[0].choices,
-        },
-        'owner': {
-            'name': str(rule.owner),
-            'id': rule.owner.id
-        },
-        'foreignNetwork': {
-            'name': rule.foreign_network.name,
-            'id': rule.foreign_network.id,
-        },
-        'created_at': rule.created_at.isoformat(),
-        'modified_at': rule.modified_at.isoformat(),
-        'nat': rule.nat,
-        'accept': rule.accept,
-        'description': rule.description,
-        'dport': rule.dport,
-        'sport': rule.sport,
-        'extra': rule.extra,
-        'nat_dport': rule.nat_dport
-    }
+def show_rule(request, id=None):
+    try:
+        rule = Rule.objects.get(id=id)
+        rule = {
+            'id': rule.id,
+            'target': {
+                'name': rule.vlan.name,
+                'id': rule.vlan.id,
+                'type': 'vlan',
+            } if rule.vlan else {
+                'name': rule.vlangroup.name,
+                'id': rule.vlangroup.id,
+                'type': 'vlangroup',
+            } if rule.vlangroup else {
+                'name': rule.hostgroup.name,
+                'id': rule.hostgroup.id,
+                'type': 'hostgroup',
+            } if rule.hostgroup else {
+                'name': rule.firewall.name,
+                'id': rule.firewall.id,
+                'type': 'firewall',
+            } if rule.firewall else {
+                'name': rule.host.hostname,
+                'id': rule.host.id,
+                'type': 'host',
+            },
+            'type': rule.r_type,
+            'direction': {
+                'value': rule.direction,
+                'choices': Rule._meta.get_field_by_name('direction')[0].choices,
+            },
+            'proto': {
+                'value': rule.proto,
+                'choices': Rule._meta.get_field_by_name('proto')[0].choices,
+            },
+            'owner': {
+                'name': str(rule.owner),
+                'id': rule.owner.id
+            },
+            'foreignNetwork': {
+                'name': rule.foreign_network.name,
+                'id': rule.foreign_network.id,
+            },
+            'created_at': rule.created_at.isoformat(),
+            'modified_at': rule.modified_at.isoformat(),
+            'nat': rule.nat,
+            'accept': rule.accept,
+            'description': rule.description,
+            'dport': rule.dport,
+            'sport': rule.sport,
+            'extra': rule.extra,
+            'nat_dport': rule.nat_dport
+        }
+    except:
+        rule = {
+            'id': None,
+            'target': { 'id': None, 'name': None, 'type': None },
+            'type': None,
+            'direction': {
+                'value': None,
+                'choices': Rule._meta.get_field_by_name('direction')[0].choices,
+            },
+            'proto': {
+                'value': None,
+                'choices': Rule._meta.get_field_by_name('proto')[0].choices,
+            },
+            'owner': {
+                'id': None,
+                'name': None,
+            },
+            'foreignNetwork': { 'name': None, 'id': None },
+            'created_at': None,
+            'modified_at': None,
+            'nat': False,
+            'accept': False,
+            'description': '',
+            'dport': None,
+            'sport': None,
+            'extra': '',
+            'nat_dport': None,
+        }
     return HttpResponse(json.dumps(rule), content_type='application/json')
 
 
