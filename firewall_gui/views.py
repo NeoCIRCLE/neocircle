@@ -661,3 +661,19 @@ def save_record(request):
         return HttpResponse(json.dumps(errors), content_type='application/json', status=400)
     record.save()
     return HttpResponse('KTHXBYE')
+
+@user_passes_test(req_staff)
+def delete_entity(request, name, id):
+    model = {
+        'rules': Rule,
+        'hosts': Host,
+        'hostgroups': Group,
+        'vlans': Vlan,
+        'vlangroups': VlanGroup,
+        'firewalls': Firewall,
+        'domains': Domain,
+        'records': Record,
+        'blacklists': Blacklist
+    }[name]
+    model.objects.get(id=id).delete()
+    return HttpResponse('KTHXBYE')
