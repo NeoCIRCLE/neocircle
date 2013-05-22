@@ -53,9 +53,9 @@ class UserCloudDetails(models.Model):
                                             'accessing store from Linux.'))
     ssh_private_key = models.TextField(verbose_name=_('SSH key (private)'),
                                        blank=True,
-                                       help_text=_('Generated SSH private key '
-                                                   'for accessing store from '
-                                                   'Linux.'))
+                                       help_text=_('Generated SSH private '
+                                                   'key for accessing '
+                                                   'store from Linux.'))
     share_quota = models.IntegerField(verbose_name=_('share quota'),
                                       default=0)
     instance_quota = models.IntegerField(verbose_name=_('instance quota'),
@@ -82,11 +82,10 @@ class UserCloudDetails(models.Model):
         self.smb_password = pwgen()
 
     def get_weighted_instance_count(self):
-        c = 0
-        for i in self.user.instance_set.all():
-            if i.state in ('ACTIVE', 'PENDING', ):
-                c = c + i.template.instance_type.credit
-        return c
+        credits = [i.template.instance_type.credit
+                   for i in self.user.instance_set.all()
+                   if i.state in ('ACTIVE', 'PENDING', )]
+        return sum(credits)
 
     def get_instance_pc(self):
         return 100 * self.get_weighted_instance_count() / self.instance_quota
@@ -106,9 +105,7 @@ def set_quota(sender, instance, created, **kwargs):
         try:
             password = instance.smb_password
             quota = instance.disk_quota * 1024
-            key_list = []
-            for key in instance.user.sshkey_set.all():
-                key_list.append(key.key)
+            key_list = [key.key for key in instance.user.sshkey_set.all()]
         except:
             pass
         # Create user
