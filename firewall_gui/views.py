@@ -481,7 +481,7 @@ def set_field(object, attr, errors, **kwargs):
 @user_passes_test(req_staff)
 def save_rule(request):
     data = json.loads(request.body)
-    if 'id' in data:
+    if 'id' in data and data['id']:
         rule = get_object_or_404(Rule, id=data['id'])
     else:
         rule = Rule()
@@ -495,6 +495,7 @@ def save_rule(request):
     rule.accept = data['accept']
     rule.nat = data['nat']
     rule.nat_dport = data['nat_dport']
+    rule.r_type = data['target']['type']
     set_field(rule, 'owner', errors, username=data['owner']['name'])
     for attr in ['host', 'hostgroup', 'vlan', 'vlangroup', 'firewall']:
         searchBy = 'name' if attr != 'host' else 'hostname'
@@ -510,7 +511,7 @@ def save_rule(request):
     if len(errors) > 0:
         return HttpResponse(json.dumps(errors), content_type='application/json', status=400)
     rule.save()
-    return HttpResponse('KTHXBYE')
+    return HttpResponse(rule.id)
 
 @user_passes_test(req_staff)
 def save_host(request):

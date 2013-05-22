@@ -41,7 +41,7 @@
     <td>{{rule.description}}</td>
     <td>
       <a class="btn" href="#/rules/{{rule.id}}/">Szerkesztés</a>
-      <a class="btn btn-danger" href="#/rules/{{rule.id}}/delete/">Törlés</a>
+      <button class="btn btn-danger" ng-click="deleteEntity(rule.id)">Törlés</button>
     </td>
   </tr>
 </table>
