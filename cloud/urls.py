@@ -119,7 +119,7 @@ urlpatterns = patterns('',
 
     url(r'^firewall/rules/new/$', 'firewall_gui.views.show_rule'),
     url(r'^firewall/hosts/new/$', 'firewall_gui.views.show_host'),
-    # url(r'^firewall/vlans/save/$', 'firewall_gui.views.save_vlan'),
+    url(r'^firewall/vlans/new/$', 'firewall_gui.views.show_vlan'),
     # url(r'^firewall/vlangroups/save/$', 'firewall_gui.views.save_vlangroup'),
     # url(r'^firewall/hostgroups/save/$', 'firewall_gui.views.save_hostgroup'),
     # url(r'^firewall/domains/save/$', 'firewall_gui.views.save_domain'),
