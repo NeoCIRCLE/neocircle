@@ -582,10 +582,10 @@ def save_host(request):
 @user_passes_test(req_staff)
 def save_vlan(request):
     data = json.loads(request.body)
-    if data['id']:
+    if 'id' in data and data['id']:
         vlan = get_object_or_404(Vlan, id=data['id'])
     else:
-        vlan = Vlan.objects.create()
+        vlan = Vlan()
     errors = {}
     vlan.vid = data['vid']
     vlan.name = data['name']
@@ -620,15 +620,15 @@ def save_vlan(request):
     if len(errors) > 0:
         return HttpResponse(json.dumps(errors), content_type='application/json', status=400)
     vlan.save()
-    return HttpResponse('KTHXBYE')
+    return HttpResponse(vlan.id)
 
 @user_passes_test(req_staff)
 def save_vlangroup(request):
     data = json.loads(request.body)
-    if data['id']:
+    if 'id' in data and data['id']:
         vlangroup = get_object_or_404(VlanGroup, id=data['id'])
     else:
-        vlangroup = VlanGroup.objects.create()
+        vlangroup = VlanGroup()
     errors = {}
     vlangroup.name = data['name']
     vlangroup.description = data['description']
@@ -652,15 +652,15 @@ def save_vlangroup(request):
     if len(errors) > 0:
         return HttpResponse(json.dumps(errors), content_type='application/json', status=400)
     vlangroup.save()
-    return HttpResponse('KTHXBYE')
+    return HttpResponse(vlangroup.id)
 
 @user_passes_test(req_staff)
 def save_hostgroup(request):
     data = json.loads(request.body)
-    if data['id']:
+    if 'id' in data and data['id']:
         hostgroup = get_object_or_404(Group, id=data['id'])
     else:
-        hostgroup = Group.objects.create()
+        hostgroup = Group()
     errors = {}
     hostgroup.name = data['name']
     hostgroup.description = data['description']
@@ -672,15 +672,15 @@ def save_hostgroup(request):
     if len(errors) > 0:
         return HttpResponse(json.dumps(errors), content_type='application/json', status=400)
     hostgroup.save()
-    return HttpResponse('KTHXBYE')
+    return HttpResponse(hostgroup.id)
 
 @user_passes_test(req_staff)
 def save_domain(request):
     data = json.loads(request.body)
-    if data['id']:
+    if 'id' in data and data['id']:
         domain = get_object_or_404(Domain, id=data['id'])
     else:
-        domain = Domain.objects.create()
+        domain = Domain()
     errors = {}
     domain.name = data['name']
     domain.ttl = data['ttl']
@@ -693,12 +693,12 @@ def save_domain(request):
     if len(errors) > 0:
         return HttpResponse(json.dumps(errors), content_type='application/json', status=400)
     domain.save()
-    return HttpResponse('KTHXBYE')
+    return HttpResponse(domain.id)
 
 @user_passes_test(req_staff)
 def save_record(request):
     data = json.loads(request.body)
-    if data['id']:
+    if 'id' in data and data['id']:
         record = get_object_or_404(Record, id=data['id'])
     else:
         record = Record.objects.create()
@@ -715,7 +715,7 @@ def save_record(request):
     if len(errors) > 0:
         return HttpResponse(json.dumps(errors), content_type='application/json', status=400)
     record.save()
-    return HttpResponse('KTHXBYE')
+    return HttpResponse(record.id)
 
 @user_passes_test(req_staff)
 def delete_entity(request, name, id):
