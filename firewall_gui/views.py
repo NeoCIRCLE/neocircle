@@ -477,30 +477,51 @@ def show_hostgroup(request, id=None):
         }
     return HttpResponse(json.dumps(group), content_type='application/json')
 
-def show_record(request, id):
-    record = get_object_or_404(Record, id=id)
-    record = {
-        'id': record.id,
-        'name': record.name,
-        'domain': {
-            'id': record.domain.id,
-            'name': record.domain.name
-        },
-        'host': {
-            'id': record.host.id,
-            'name': record.host.hostname
-        } if record.host else None,
-        'type': record.type,
-        'address': record.address,
-        'ttl': record.ttl,
-        'owner': {
-            'id': record.owner.id,
-            'name': record.owner.username
-        },
-        'description': record.description,
-        'created_at': record.created_at.isoformat(),
-        'modified_at': record.modified_at.isoformat(),
-    }
+def show_record(request, id=None):
+    try:
+        record = get_object_or_404(Record, id=id)
+        record = {
+            'id': record.id,
+            'name': record.name,
+            'domain': {
+                'id': record.domain.id,
+                'name': record.domain.name
+            },
+            'host': {
+                'id': record.host.id,
+                'name': record.host.hostname
+            } if record.host else None,
+            'type': record.type,
+            'address': record.address,
+            'ttl': record.ttl,
+            'owner': {
+                'id': record.owner.id,
+                'name': record.owner.username
+            },
+            'description': record.description,
+            'created_at': record.created_at.isoformat(),
+            'modified_at': record.modified_at.isoformat(),
+        }
+    except:
+        record = {
+            'id': None,
+            'name': None,
+            'domain': {
+                'name': None
+            },
+            'host': {
+                'name': None
+            },
+            'type': None,
+            'address': None,
+            'ttl': None,
+            'owner': {
+                'name': None
+            },
+            'description': '',
+            'created_at': None,
+            'modified_at': None,
+        }
     return HttpResponse(json.dumps(record), content_type='application/json')
 
 def show_domain(request, id):
