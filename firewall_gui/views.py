@@ -642,9 +642,9 @@ def save_vlan(request):
     errors = {}
     vlan.vid = data['vid']
     vlan.name = data['name']
-    vlan.ipv4 = vlan.net4 = data['ipv4'].split('/')[0]
+    vlan.ipv4 = vlan.net4 = data['ipv4'].split('/')[0] #TODO ez így nem jó!
     vlan.prefix4 = data['ipv4'].split('/')[1]
-    vlan.ipv6 = vlan.net6 = data['ipv6'].split('/')[0]
+    vlan.ipv6 = vlan.net6 = data['ipv6'].split('/')[0] #TODO ez így nem jó!
     vlan.prefix6 = data['ipv6'].split('/')[1]
     vlan.snat_ip = data['nat']
     vlan.description = data['description']
