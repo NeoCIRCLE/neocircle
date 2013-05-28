@@ -788,7 +788,7 @@ def save_record(request):
     if 'id' in data and data['id']:
         record = get_object_or_404(Record, id=data['id'])
     else:
-        record = Record.objects.create()
+        record = Record()
     errors = {}
     record.name = data['name']
     record.ttl = data['ttl']
