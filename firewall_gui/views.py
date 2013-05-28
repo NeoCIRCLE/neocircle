@@ -524,20 +524,33 @@ def show_record(request, id=None):
         }
     return HttpResponse(json.dumps(record), content_type='application/json')
 
-def show_domain(request, id):
-    domain = get_object_or_404(Domain, id=id)
-    domain = {
-        'id': domain.id,
-        'name': domain.name,
-        'owner': {
-            'id': domain.owner.id,
-            'name': domain.owner.username,
-        },
-        'created_at': domain.created_at.isoformat(),
-        'modified_at': domain.modified_at.isoformat(),
-        'ttl': domain.ttl,
-        'description': domain.description
-    }
+def show_domain(request, id=None):
+    try:
+        domain = Domain.objects.get(id=id)
+        domain = {
+            'id': domain.id,
+            'name': domain.name,
+            'owner': {
+                'id': domain.owner.id,
+                'name': domain.owner.username,
+            },
+            'created_at': domain.created_at.isoformat(),
+            'modified_at': domain.modified_at.isoformat(),
+            'ttl': domain.ttl,
+            'description': domain.description
+        }
+    except:
+        domain = {
+            'id': None,
+            'name': None,
+            'owner': {
+                'name': None,
+            },
+            'created_at': None,
+            'modified_at': None,
+            'ttl': None,
+            'description': ''
+        }
     return HttpResponse(json.dumps(domain), content_type='application/json')
 
 def make_autocomplete(entity, name='name'):
