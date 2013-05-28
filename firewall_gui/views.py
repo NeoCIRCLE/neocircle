@@ -252,46 +252,71 @@ def show_rule(request, id=None):
     return HttpResponse(json.dumps(rule), content_type='application/json')
 
 
-def show_host(request, id):
-    host = get_object_or_404(Host, id=id)
-    host = {
-        'id': host.id,
-        'reverse': host.reverse,
-        'name': host.hostname,
-        'mac': host.mac,
-        'ipv4': host.ipv4,
-        'ipv6': host.ipv6,
-        'pub_ipv4': host.pub_ipv4,
-        'shared_ip': host.shared_ip,
-        'description': host.description,
-        'comment': host.comment,
-        'location': host.location,
-        'vlan': {
-            'name': host.vlan.name,
-            'id': host.vlan.id
-        },
-        'owner': {
-            'name': str(host.owner),
-            'id': host.owner.id
-        },
-        'created_at': host.created_at.isoformat(),
-        'modified_at': host.modified_at.isoformat(),
-        'groups': [{
-            'name': group.name,
-            'id': group.id,
-        } for group in host.groups.all()],
-        'rules': [{
-            'id': rule.id,
-            'direction': rule.get_direction_display(),
-            'proto': rule.proto,
-            'owner': {
-                'id': rule.owner.id,
-                'name': str(rule.owner),
+def show_host(request, id=None):
+    try:
+        host = Host.objects.get(id=id)
+        host = {
+            'id': host.id,
+            'reverse': host.reverse,
+            'name': host.hostname,
+            'mac': host.mac,
+            'ipv4': host.ipv4,
+            'ipv6': host.ipv6,
+            'pub_ipv4': host.pub_ipv4,
+            'shared_ip': host.shared_ip,
+            'description': host.description,
+            'comment': host.comment,
+            'location': host.location,
+            'vlan': {
+                'name': host.vlan.name,
+                'id': host.vlan.id
             },
-            'accept': rule.accept,
-            'nat': rule.nat
-        } for rule in host.rules.all()]
-    }
+            'owner': {
+                'name': str(host.owner),
+                'id': host.owner.id
+            },
+            'created_at': host.created_at.isoformat(),
+            'modified_at': host.modified_at.isoformat(),
+            'groups': [{
+                'name': group.name,
+                'id': group.id,
+            } for group in host.groups.all()],
+            'rules': [{
+                'id': rule.id,
+                'direction': rule.get_direction_display(),
+                'proto': rule.proto,
+                'owner': {
+                    'id': rule.owner.id,
+                    'name': str(rule.owner),
+                },
+                'accept': rule.accept,
+                'nat': rule.nat
+            } for rule in host.rules.all()]
+        }
+    except:
+        host = {
+            'id': None,
+            'reverse': None,
+            'name': None,
+            'mac': None,
+            'ipv4': None,
+            'ipv6': None,
+            'pub_ipv4': None,
+            'shared_ip': False,
+            'description': '',
+            'comment': '',
+            'location': '',
+            'vlan': {
+                'name': None,
+            },
+            'owner': {
+                'name': None,
+            },
+            'created_at': None,
+            'modified_at': None,
+            'groups': [],
+            'rules': []
+        }
     return HttpResponse(json.dumps(host), content_type='application/json')
 
 
@@ -516,10 +541,10 @@ def save_rule(request):
 @user_passes_test(req_staff)
 def save_host(request):
     data = json.loads(request.body)
-    if data['id']:
+    if 'id' in data and data['id']:
         host = get_object_or_404(Host, id=data['id'])
     else:
-        host = Host.objects.create()
+        host = Host()
     errors = {}
     host.reverse = data['reverse']
     host.hostname = data['name']
@@ -533,17 +558,17 @@ def save_host(request):
     host.location = data['location']
     set_field(host, 'vlan', errors, name=data['vlan']['name'])
     set_field(host, 'owner', errors, username=data['owner']['name'])
-    for host in data['vlans']:
+    for group in data['groups']:
         try:
-            if '__destroyed' in host and host['__destroyed']:
-                host_object = Vlan.objects.get(name = host['name'])
-                vlan.snat_to.remove(host_object)
-            elif '__created' in host and host['__created']:
-                host_object = Vlan.objects.get(name = host['name'])
-                vlan.snat_to.add(host_object)
+            if '__destroyed' in group and group['__destroyed']:
+                group_object = Group.objects.get(name = group['name'])
+                host.groups.remove(group_object)
+            elif '__created' in group and group['__created']:
+                group_object = Group.objects.get(name = group['name'])
+                host.groups.add(group_object)
         except Exception as e:
-            errors['vlans'] = ('Host with the name "%(name)s" does not exists!') % {
-                'name': host['name']
+            errors['groups'] = ('Group with the name "%(name)s" does not exists!') % {
+                'name': group['name']
             }
     try:
         host.full_clean()
@@ -552,7 +577,7 @@ def save_host(request):
     if len(errors) > 0:
         return HttpResponse(json.dumps(errors), content_type='application/json', status=400)
     host.save()
-    return HttpResponse('KTHXBYE')
+    return HttpResponse(host.id)
 
 @user_passes_test(req_staff)
 def save_vlan(request):

@@ -118,7 +118,7 @@ urlpatterns = patterns('',
     url(r'^firewall/(?P<name>\w+)/(?P<id>\d+)/delete/', 'firewall_gui.views.delete_entity'),
 
     url(r'^firewall/rules/new/$', 'firewall_gui.views.show_rule'),
-    # url(r'^firewall/hosts/save/$', 'firewall_gui.views.save_host'),
+    url(r'^firewall/hosts/new/$', 'firewall_gui.views.show_host'),
     # url(r'^firewall/vlans/save/$', 'firewall_gui.views.save_vlan'),
     # url(r'^firewall/vlangroups/save/$', 'firewall_gui.views.save_vlangroup'),
     # url(r'^firewall/hostgroups/save/$', 'firewall_gui.views.save_hostgroup'),
