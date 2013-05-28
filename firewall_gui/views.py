@@ -435,7 +435,7 @@ def show_vlangroup(request, id=None):
 
 def show_hostgroup(request, id=None):
     try:
-        group = get_object_or_404(Group, id=id)
+        group = Group.objects.get(id=id)
         group = {
             'id': group.id,
             'name': group.name,
@@ -479,7 +479,7 @@ def show_hostgroup(request, id=None):
 
 def show_record(request, id=None):
     try:
-        record = get_object_or_404(Record, id=id)
+        record = Record.objects.get(id=id)
         record = {
             'id': record.id,
             'name': record.name,
