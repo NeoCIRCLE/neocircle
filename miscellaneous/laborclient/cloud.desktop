@@ -1,9 +1,0 @@
-[Desktop Entry]
-Version=0.1
-Name=Cloud GUI
-Comment=Tool to use IK Cloud
-Exec=cloud
-Icon=/usr/share/icons/cloud.svg
-Terminal=false
-Type=Application
-Categories=Utility;Application;
