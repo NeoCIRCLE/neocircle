@@ -36,28 +36,51 @@ $.ajaxSetup({
   }
 });
 
+/**
+ * Collection handling boilerplate code
+ *
+ * New entity gets __created flag, deleted entity gets __destoryed flag,
+ * so on the server-side we know what changed
+ * @param  Object $scope AngularJS scope
+ * @param  String name   Object name, add{name} and remove{name} methods will be generated
+ * @param  Object model  Model name (the collections name) in the entity
+ */
 function makeAddRemove($scope, name, model) {
+  /**
+   * Add entity to collection
+   * @param  String entity Name of the entity
+   */
   $scope['add' + name] = function(entity) {
+    //check if already exists
     for (var i in $scope.entity[model]) {
       var item = $scope.entity[model][i];
+      //if it was removed previously, just remove the destroyed flag
       if (item.name == entity && item.__destroyed) {
         item.__destroyed = false;
         return;
       } else if (item.name == entity) {
+        //if it is already in the collection, do nothing
         return;
       }
     }
+    //add the new entity, with the proper created flag
     $scope.entity[model].push({
       name: entity,
       __created: true,
     });
   }
+  /**
+   * Remove entity from collection
+   * @param  Object entity
+   */
   $scope['remove' + name] = function(entity) {
     for (var i in $scope.entity[model]) {
       var item = $scope.entity[model][i];
+      //if it was not saved on the server before, just remove it
       if (item.name == entity.name && item.__created) {
         $scope.entity[model].splice(i, 1);
       } else if (item.name == entity.name) {
+        //else just set the destoryed flag
         item.__destroyed = true;
         return;
       }
@@ -226,6 +249,10 @@ function ListController(url) {
       $scope.page = Math.max($scope.page - 1, 1);
     };
 
+    /**
+     * Delete the given entity, then reload the list
+     * @param  Number id
+     */
     $scope.deleteEntity = function(id) {
       $.ajax({
         url: url.split('/')[2] + '/' + id + '/delete/',
@@ -234,6 +261,9 @@ function ListController(url) {
       });
     };
 
+    /**
+     * Reloads the entities
+     */
     function reloadList() {
       $http.get(url).success(function success(data) {
         rules = data;
@@ -241,6 +271,7 @@ function ListController(url) {
       });
     }
 
+    // Initial load...
     reloadList();
   }
 }
