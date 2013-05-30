@@ -10,6 +10,7 @@ def req_staff(user):
     ''' decorator function for user permission checking '''
     return user.is_staff
 
+@user_passes_test(req_staff)
 def index(request):
     return render(request, 'firewall/index.html')
 
@@ -167,7 +168,7 @@ def list_entities(request, name):
             'ipv4']),
         }[name](request)), content_type='application/json')
 
-
+@user_passes_test(req_staff)
 def show_rule(request, id=None):
     try:
         rule = Rule.objects.get(id=id)
@@ -251,7 +252,7 @@ def show_rule(request, id=None):
         }
     return HttpResponse(json.dumps(rule), content_type='application/json')
 
-
+@user_passes_test(req_staff)
 def show_host(request, id=None):
     try:
         host = Host.objects.get(id=id)
@@ -319,7 +320,7 @@ def show_host(request, id=None):
         }
     return HttpResponse(json.dumps(host), content_type='application/json')
 
-
+@user_passes_test(req_staff)
 def show_vlan(request, id=None):
     try:
         vlan = Vlan.objects.get(id=id)
@@ -389,7 +390,7 @@ def show_vlan(request, id=None):
         }
     return HttpResponse(json.dumps(vlan), content_type='application/json')
 
-
+@user_passes_test(req_staff)
 def show_vlangroup(request, id=None):
     try:
         group = VlanGroup.objects.get(id=id)
@@ -434,7 +435,7 @@ def show_vlangroup(request, id=None):
         }
     return HttpResponse(json.dumps(group), content_type='application/json')
 
-
+@user_passes_test(req_staff)
 def show_hostgroup(request, id=None):
     try:
         group = Group.objects.get(id=id)
@@ -479,6 +480,8 @@ def show_hostgroup(request, id=None):
         }
     return HttpResponse(json.dumps(group), content_type='application/json')
 
+
+@user_passes_test(req_staff)
 def show_record(request, id=None):
     try:
         record = Record.objects.get(id=id)
@@ -526,6 +529,8 @@ def show_record(request, id=None):
         }
     return HttpResponse(json.dumps(record), content_type='application/json')
 
+
+@user_passes_test(req_staff)
 def show_domain(request, id=None):
     try:
         domain = Domain.objects.get(id=id)
@@ -566,6 +571,7 @@ def make_autocomplete(entity, name='name'):
     return autocomplete
 
 
+@user_passes_test(req_staff)
 def autocomplete(request, entity):
     try:
         return {
