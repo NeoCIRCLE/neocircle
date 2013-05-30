@@ -116,6 +116,18 @@
         <span class="help-inline" ng-bind="getError('address')"></span>
       </div>
     </div>
+    <div class="control-group" ng-class="hasError('ttl')">
+      <label class="control-label" for="ttl">TTL</label>
+      <div class="controls">
+        <input
+          type="text"
+          autocomplete="off"
+          id="ttl"
+          ng-model="entity.ttl"
+          title="Time To Live" />
+        <span class="help-inline" ng-bind="getError('ttl')"></span>
+      </div>
+    </div>
     <div class="control-group" ng-class="hasError('description')">
       <label class="control-label" for="description">Description</label>
       <div class="controls">

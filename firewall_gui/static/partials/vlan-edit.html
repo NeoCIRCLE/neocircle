@@ -87,6 +87,29 @@
         <span class="help-inline" ng-bind="getError('ipv6')"></span>
       </div>
     </div>
+    <div class="control-group" ng-class="hasError('net4')">
+      <label class="control-label" for="net4">Net4</label>
+      <div class="controls">
+        <input
+          type="text"
+          id="net4"
+          ng-model="entity.net4"
+          title="Net4 address of this Vlan (with subnet mask)" />
+        <span class="help-inline" ng-bind="getError('net4')"></span>
+      </div>
+    </div>
+    <div class="control-group" ng-class="hasError('net6')">
+      <label class="control-label" for="net6">Net6</label>
+      <div class="controls">
+        <input
+          type="text"
+          class="input-xlarge"
+          id="net6"
+          ng-model="entity.net6"
+          title="Net6 address of this Vlan (with subnet mask)" />
+        <span class="help-inline" ng-bind="getError('net6')"></span>
+      </div>
+    </div>
     <div class="control-group" ng-class="hasError('snat_ip')">
       <label class="control-label" for="snat_ip">NAT</label>
       <div class="controls">

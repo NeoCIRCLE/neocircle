@@ -329,6 +329,8 @@ def show_vlan(request, id=None):
             'name': vlan.name,
             'ipv4': vlan.ipv4+'/'+str(vlan.prefix4),
             'ipv6': vlan.ipv6+'/'+str(vlan.prefix6),
+            'net4': vlan.net4+'/'+str(vlan.prefix4),
+            'net6': vlan.net6+'/'+str(vlan.prefix6),
             'nat': vlan.snat_ip,
             'description': vlan.description,
             'comment': vlan.comment,
@@ -676,9 +678,11 @@ def save_vlan(request):
     errors = {}
     vlan.vid = data['vid']
     vlan.name = data['name']
-    vlan.ipv4 = vlan.net4 = data['ipv4'].split('/')[0] #TODO ez így nem jó!
+    vlan.ipv4 = data['ipv4'].split('/')[0]
+    vlan.net4 = data['net4'].split('/')[0]
     vlan.prefix4 = data['ipv4'].split('/')[1]
-    vlan.ipv6 = vlan.net6 = data['ipv6'].split('/')[0] #TODO ez így nem jó!
+    vlan.ipv6 = data['ipv6'].split('/')[0]
+    vlan.net6 = data['net6'].split('/')[0]
     vlan.prefix6 = data['ipv6'].split('/')[1]
     vlan.snat_ip = data['nat']
     vlan.description = data['description']
@@ -793,6 +797,8 @@ def save_record(request):
     record.name = data['name']
     record.ttl = data['ttl']
     record.description = data['description']
+    record.type = data['type']
+    record.address = data['address']
     set_field(record, 'owner', errors, username=data['owner']['name'])
     set_field(record, 'domain', errors, name=data['domain']['name'])
     try:
