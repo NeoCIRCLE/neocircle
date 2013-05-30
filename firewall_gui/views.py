@@ -807,6 +807,7 @@ def save_record(request):
     record.address = data['address']
     set_field(record, 'owner', errors, username=data['owner']['name'])
     set_field(record, 'domain', errors, name=data['domain']['name'])
+    set_field(record, 'host', errors, hostname=data['host']['name'])
     try:
         record.full_clean()
     except Exception as e:
