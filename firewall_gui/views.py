@@ -684,6 +684,12 @@ def save_vlan(request):
     vlan.ipv6 = data['ipv6'].split('/')[0]
     vlan.net6 = data['net6'].split('/')[0]
     vlan.prefix6 = data['ipv6'].split('/')[1]
+    if data['ipv4'].split('/')[1] != data['net4'].split('/')[1]:
+        errors['ipv4'] = 'Netmask legth should be equal!'
+        errors['net4'] = 'Netmask legth should be equal!'
+    if data['ipv6'].split('/')[1] != data['net6'].split('/')[1]:
+        errors['ipv6'] = 'Netmask legth should be equal!'
+        errors['net6'] = 'Netmask legth should be equal!'
     vlan.snat_ip = data['nat']
     vlan.description = data['description']
     vlan.comment = data['comment']
