@@ -1,0 +1,205 @@
+<form class="form-horizontal">
+  <div class="span5">
+    <div class="control-group">
+      <label class="control-label" for="ID">ID</label>
+      <div class="controls">
+        <span class="has-tooltip" title="Built in ID, do not change this">
+          <input
+            class="input-mini"
+            type="text"
+            id="ID"
+            placeholder="ID"
+            value="{{entity.id}}"
+            disabled="disabled" />
+        </span>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="created_at">Created at</label>
+      <div class="controls">
+        <span class="has-tooltip" title="Entity was created at this date">
+          <input
+            class="input"
+            type="text"
+            id="created_at"
+            ng-model="entity.created_at"
+            disabled="disabled">
+        </span>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="modified_at">Modified at</label>
+      <div class="controls">
+        <span class="has-tooltip" title="Entity was last modified at this date">
+          <input
+            class="input"
+            type="text"
+            id="modified_at"
+            ng-model="entity.modified_at"
+            disabled="disabled" />
+        </span>
+      </div>
+    </div>
+    <div class="control-group" ng-class="hasError('name')">
+      <label class="control-label" for="name">Name</label>
+      <div class="controls">
+        <input
+          type="text"
+          id="name"
+          ng-model="entity.name"
+          title="Name of the host" />
+        <span class="help-inline" ng-bind="getError('name')"></span>
+      </div>
+    </div>
+    <div class="control-group" ng-class="hasError('mac')">
+      <label class="control-label" for="mac">MAC</label>
+      <div class="controls">
+        <input
+          type="text"
+          id="mac"
+          ng-model="entity.mac"
+          title="MAC address" />
+        <span class="help-inline" ng-bind="getError('mac')"></span>
+      </div>
+    </div>
+    <div class="control-group" ng-class="hasError('ipv4')">
+      <label class="control-label" for="ipv4">IPv4</label>
+      <div class="controls">
+        <input
+          type="text"
+          id="ipv4"
+          ng-model="entity.ipv4"
+          title="IPv4 address" />
+        <span class="help-inline" ng-bind="getError('ipv4')"></span>
+      </div>
+    </div>
+    <div class="control-group" ng-class="hasError('pub_ipv4')">
+      <label class="control-label" for="pub_ipv4">Public IPv4</label>
+      <div class="controls">
+        <input
+          type="text"
+          id="pub_ipv4"
+          ng-model="entity.pub_ipv4"
+          title="Public IPv4 address" />
+        <span class="help-inline" ng-bind="getError('pub_ipv4')"></span>
+      </div>
+    </div>
+    <div class="control-group" ng-class="hasError('ipv6')">
+      <label class="control-label" for="ipv6">IPv6</label>
+      <div class="controls">
+        <input
+          type="text"
+          class="input-xlarge"
+          id="ipv6"
+          ng-model="entity.ipv6"
+          title="IPv6 address" />
+        <span class="help-inline" ng-bind="getError('ipv6')"></span>
+      </div>
+    </div>
+    <div class="control-group" ng-class="hasError('owner')">
+      <label class="control-label" for="owner">Owner</label>
+      <div class="controls">
+        <input
+          type="text"
+          class="owner"
+          autocomplete="off"
+          id="owner"
+          ng-model="entity.owner.name"
+          title="Owners name" />
+        <span class="help-inline" ng-bind="getError('owner')"></span>
+      </div>
+    </div>
+    <div class="control-group" ng-class="hasError('vlan')">
+      <label class="control-label" for="vlan">Vlan</label>
+      <div class="controls">
+        <input
+          type="text"
+          autocomplete="off"
+          class="vlan"
+          id="vlan"
+          ng-model="entity.vlan.name"
+          title="Vlan of this host #TODO" />
+        <span class="help-inline" ng-bind="getError('vlan')"></span>
+      </div>
+    </div>
+  </div>
+  <div class="span5">
+    <div class="control-group" ng-class="hasError('description')">
+      <label class="control-label" for="description">Description</label>
+      <div class="controls">
+        <textarea rows="4"
+          id="description"
+          ng-model="entity.description"
+          title="Short description">
+        </textarea>
+        <span class="help-inline" ng-bind="getError('description')"></span>
+      </div>
+    </div>
+    <div class="control-group">
+      <div class="controls">
+        <label class="checkbox">
+          <input type="checkbox" ng-model="entity.shared_ip"> Shared IP
+        </label>
+      </div>
+    </div>
+    <div class="control-group" ng-class="hasError('comment')">
+      <label class="control-label" for="comment">Comment</label>
+      <div class="controls">
+        <textarea rows="2"
+          id="comment"
+          ng-model="entity.comment"
+          title="Some comments... or something like that #TODO">
+        </textarea>
+        <span class="help-inline" ng-bind="getError('comment')"></span>
+      </div>
+    </div>
+    <div class="control-group" ng-class="hasError('groups')">
+      <label class="control-label" for="hostgroups">Host groups</label>
+      <div class="controls">
+        <div class="well well-small">
+          <span class="label label-info" ng-repeat="group in entity.groups | filter: destroyed">
+            <a href="#/hostgroups/{{group.id}}">{{group.name}}</a>
+            <a href ng-click="removeHostGroup(group)"><i class="icon-remove"></i></a>
+          </span>
+        </div>
+        <div class="input-append has-tooltip" title="Hostgroups of this host">
+          <input class="span2 hostgroup" id="groups" type="text" ng-model="newGroup">
+          <button class="btn" type="button" ng-click="addHostGroup(newGroup)">Add</button>
+          <span class="help-inline" ng-bind="getError('groups')"></span>
+        </div>
+      </div>
+    </div>
+    <div class="control-group">
+      <div class="controls">
+        <button type="submit" class="btn" ng-click="save()">Save</button>
+      </div>
+    </div>
+  </div>
+</form>
+<div class="span12">
+  <h3>Rules belonging to this host</h3>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Direction</th>
+        <th>Protocol</th>
+        <th>Accept</th>
+        <th>NAT</th>
+        <th colspan="2">Owner</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="rule in entity.rules">
+        <td>{{rule.direction}}</td>
+        <td>{{rule.proto}}</td>
+        <td>{{rule.accept}}</td>
+        <td>{{rule.nat}}</td>
+        <td>{{rule.owner.name}}</td>
+        <td>
+          <a class="btn" href="#/rules/{{rule.id}}/">Edit</a>
+          <a class="btn btn-danger" href="#/rules/{{rule.id}}/delete/">Delete</a>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

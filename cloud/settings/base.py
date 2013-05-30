@@ -88,6 +88,7 @@ STATICFILES_DIRS = (
     # Don't forget to use absolute paths, not relative paths.
     '/opt/webadmin/cloud/one/static',
     '/opt/webadmin/cloud/cloud/static',
+    '/opt/webadmin/cloud/firewall_gui/static',
 )
 
 # List of finder classes that know how to find static files in
@@ -156,6 +157,7 @@ INSTALLED_APPS = (
     'cloud',
     'store',
     'firewall',
+    'firewall_gui',
     'south',
     'djcelery',
     'kombu.transport.django',

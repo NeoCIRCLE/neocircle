@@ -1,0 +1,52 @@
+<div class="navbar">
+  <div class="navbar-inner">
+    <div class="pagination pull-left">
+      <ul>
+        <li ng-click="prevPage()" ng-class="{disabled: page == 1}">
+          <a href>Előző</a>
+        </li>
+        <li ng-repeat="_page in pages" ng-click="setPage(_page)" ng-class="{active: _page == page}">
+          <a href>{{_page}}</a>
+        </li>
+        <li ng-click="nextPage()" ng-class="{disabled: page == pages.length}">
+          <a href>Next</a>
+        </li>
+      </ul>
+    </div>
+    <form class="navbar-search" style="margin: 20px">
+      <input type="text" class="search-query" placeholder="Search" ng-model="query">
+    </form>
+    <a style="margin-top: 19px" href="#/records/new" class="btn">New record</a>
+  </div>
+</div>
+<table class="table table-striped">
+  <tr>
+    <th>Név</th>
+    <th>Típus</th>
+    <th>Domain</th>
+    <th>Hoszt</th>
+    <th>Cím</th>
+    <th>TTL</th>
+    <th>Leírás</th>
+    <th colspan="2">Tulajdonos</th>
+  </tr>
+  <tr ng-repeat="record in getPage()">
+    <td>
+      <a href="#/records/{{record.id}}">{{record.name}}</a>
+    </td>
+    <td>{{record.type}}</td>
+    <td>
+      <a href="#/domains/{{record.domain.id}}">{{record.domain.name}}</a>
+    </td>
+    <td>
+      <a href="#/hosts/{{record.host.id}}">{{record.host.name}}</a>
+    </td>
+    <td>{{record.address}}</td>
+    <td>{{record.ttl}}</td>
+    <td>{{record.owner.name}}</td>
+    <td>
+      <a class="btn" href="#/records/{{record.id}}/">Szerkesztés</a>
+      <a class="btn btn-danger" href="#/records/{{record.id}}/delete/">Törlés</a>
+    </td>
+  </tr>
+</table>

@@ -92,4 +92,40 @@ urlpatterns = patterns('',
     url(r'^stat/$', 'one.views.stat'),
     url(r'^sites/(?P<site>[a-zA-Z0-9]+)/$', 'one.views.sites'),
     url(r'^accounts/(?P<site>profile)/$', 'one.views.sites'),
+
+    url(r'^firewall/$', 'firewall_gui.views.index'),
+
+    url(r'^firewall/rules/(?P<id>\d+)/$', 'firewall_gui.views.show_rule'),
+    url(r'^firewall/hosts/(?P<id>\d+)/$', 'firewall_gui.views.show_host'),
+    url(r'^firewall/vlans/(?P<id>\d+)/$', 'firewall_gui.views.show_vlan'),
+    url(r'^firewall/vlangroups/(?P<id>\d+)/$', 'firewall_gui.views.show_vlangroup'),
+    url(r'^firewall/hostgroups/(?P<id>\d+)/$', 'firewall_gui.views.show_hostgroup'),
+    url(r'^firewall/records/(?P<id>\d+)/$', 'firewall_gui.views.show_record'),
+    url(r'^firewall/domains/(?P<id>\d+)/$', 'firewall_gui.views.show_domain'),
+
+    url(r'^firewall/(?P<name>\w+)/$', 'firewall_gui.views.list_entities'),
+
+    url(r'^firewall/autocomplete/(?P<entity>\w+)/$', 'firewall_gui.views.autocomplete'),
+
+    url(r'^firewall/rules/save/$', 'firewall_gui.views.save_rule'),
+    url(r'^firewall/hosts/save/$', 'firewall_gui.views.save_host'),
+    url(r'^firewall/vlans/save/$', 'firewall_gui.views.save_vlan'),
+    url(r'^firewall/vlangroups/save/$', 'firewall_gui.views.save_vlangroup'),
+    url(r'^firewall/hostgroups/save/$', 'firewall_gui.views.save_hostgroup'),
+    url(r'^firewall/domains/save/$', 'firewall_gui.views.save_domain'),
+    url(r'^firewall/records/save/$', 'firewall_gui.views.save_record'),
+
+    url(r'^firewall/(?P<name>\w+)/(?P<id>\d+)/delete/', 'firewall_gui.views.delete_entity'),
+
+    url(r'^firewall/rules/new/$', 'firewall_gui.views.show_rule'),
+    url(r'^firewall/hosts/new/$', 'firewall_gui.views.show_host'),
+    url(r'^firewall/vlans/new/$', 'firewall_gui.views.show_vlan'),
+    url(r'^firewall/vlangroups/new/$', 'firewall_gui.views.show_vlangroup'),
+    url(r'^firewall/hostgroups/new/$', 'firewall_gui.views.show_hostgroup'),
+    url(r'^firewall/domains/new/$', 'firewall_gui.views.show_domain'),
+    url(r'^firewall/records/new/$', 'firewall_gui.views.show_record'),
+    # url(r'^firewall/vlangroups/save/$', 'firewall_gui.views.save_vlangroup'),
+    # url(r'^firewall/hostgroups/save/$', 'firewall_gui.views.save_hostgroup'),
+    # url(r'^firewall/domains/save/$', 'firewall_gui.views.save_domain'),
+    # url(r'^firewall/records/save/$', 'firewall_gui.views.save_record'),
 )

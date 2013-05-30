@@ -1,0 +1,195 @@
+<form class="form-horizontal">
+  <div class="span5">
+    <div class="control-group">
+      <label class="control-label" for="ID">ID</label>
+      <div class="controls">
+        <span class="has-tooltip" title="Built in ID, do not change this">
+          <input
+            class="input-mini"
+            type="text"
+            id="ID"
+            placeholder="ID"
+            value="{{entity.id}}"
+            disabled="disabled">
+        </span>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="created_at">Created at</label>
+      <div class="controls">
+        <span class="has-tooltip" title="The entity was created at this date">
+          <input
+            class="input"
+            type="text"
+            id="created_at"
+            ng-model="entity.created_at"
+            disabled="disabled" />
+        </span>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="modified_at">Modified at</label>
+      <div class="controls">
+        <span class="has-tooltip" title="The entity was last modified at this date">
+          <input
+          class="input"
+          type="text"
+          id="modified_at"
+          ng-model="entity.modified_at"
+          disabled="disabled" />
+        </span>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="targetType">Target type</label>
+      <div class="controls">
+        <select id="targetType"
+          ng-model="entity.target.type"
+          title="Entity type of the rules target">
+          <option value="vlan">Vlan</option>
+          <option value="vlangroup">VlanGroup</option>
+          <option value="host">Host</option>
+          <option value="hostgroup">HostGroup</option>
+          <option value="firewall">Firewall</option>
+        </select>
+      </div>
+    </div>
+    <div class="control-group" ng-class="hasError('targetName')">
+      <label class="control-label" for="targetName">Target</label>
+      <div class="controls">
+        <input
+          title="Target of the rule, can be a Vlan, Vlangroup, Host, Hostgroup or a Firewall"
+          type="text"
+          autocomplete="off"
+          id="targetName"
+          ng-model="entity.target.name" />
+        <span class="help-inline" ng-bind="getError('targetName')"></span>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="direction">Direction</label>
+      <div class="controls">
+        <select id="direction"
+          ng-options="choice[0] as choice[1] for choice in entity.direction.choices"
+          ng-model="entity.direction.value"
+          title="Traffic direction">
+        </select>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="proto">Protocol</label>
+      <div class="controls">
+        <select id="proto"
+          ng-options="choice[0] as choice[1] for choice in entity.proto.choices"
+          ng-model="entity.proto.value"
+          title="Protocol filter">
+          <option value="">all</option>
+        </select>
+      </div>
+    </div>
+    <div class="control-group" ng-class="hasError('owner')">
+      <label class="control-label" for="owner">Owner</label>
+      <div class="controls">
+        <input
+          title="Owner of this rule"
+          type="text"
+          class="owner"
+          autocomplete="off"
+          id="owner"
+          ng-model="entity.owner.name" />
+        <span class="help-inline" ng-bind="getError('owner')"></span>
+      </div>
+    </div>
+    <div class="control-group" ng-class="hasError('foreign_network')">
+      <label class="control-label" for="foreign_network">Foreign network</label>
+      <div class="controls">
+        <input
+          title="Foreign Network"
+          type="text"
+          data-provide="typeahead"
+          autocomplete="off"
+          id="foreign_network"
+          class="vlangroup"
+          ng-model="entity.foreignNetwork.name" />
+        <span class="help-inline" ng-bind="getError('foreign_network')"></span>
+      </div>
+    </div>
+  </div>
+  <div class="span5">
+    <div class="control-group">
+      <label class="control-label" for="description">Description</label>
+      <div class="controls">
+        <textarea id="description"
+          ng-model="entity.description"
+          rows="2"
+          title="Short description of the rule">
+        </textarea>
+      </div>
+    </div>
+    <div class="control-group">
+      <div class="controls">
+        <label class="checkbox">
+          <input type="checkbox" ng-model="entity.nat"> NAT
+        </label>
+      </div>
+    </div>
+    <div class="control-group">
+      <div class="controls">
+        <label class="checkbox">
+          <input type="checkbox" ng-model="entity.accept"> Accept
+        </label>
+      </div>
+    </div>
+    <div class="control-group" ng-class="hasError('dport')">
+      <label class="control-label" for="dport">Destination port</label>
+      <div class="controls">
+        <input
+          class="input-mini"
+          type="number"
+          id="dport"
+          ng-model="entity.dport"
+          title="Destination port">
+        <span class="help-inline" ng-bind="getError('dport')"></span>
+      </div>
+    </div>
+    <div class="control-group" ng-class="hasError('nat_dport')">
+      <label class="control-label" for="nat_dport">NAT Destination port</label>
+      <div class="controls">
+        <input
+          class="input-mini"
+          type="number"
+          id="nat_dport"
+          ng-model="entity.nat_dport"
+          title="NAT Destination port">
+        <span class="help-inline" ng-bind="getError('nat_dport')"></span>
+      </div>
+    </div>
+    <div class="control-group" ng-class="hasError('sport')">
+      <label class="control-label" for="sport">Source port</label>
+      <div class="controls">
+        <input
+          class="input-mini"
+          type="number"
+          id="sport"
+          ng-model="entity.sport"
+          title="Source port">
+        <span class="help-inline" ng-bind="getError('sport')"></span>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="extra">Extra</label>
+      <div class="controls">
+        <textarea id="extra"
+          ng-model="entity.extra"
+          rows="2"
+          title="I have no idea what is this... #TODO">
+        </textarea>
+      </div>
+    </div>
+    <div class="control-group">
+      <div class="controls">
+        <button type="submit" class="btn" ng-click="save()">Save</button>
+      </div>
+    </div>
+  </div>
+</form>

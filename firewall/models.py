@@ -14,6 +14,12 @@ import random
 
 settings = django.conf.settings.FIREWALL_SETTINGS
 class Rule(models.Model):
+    """
+    Common firewall rule
+
+    Rule can be applied to: Host, Firewall, Vlan
+
+    """
     CHOICES_type = (('host', 'host'), ('firewall', 'firewall'),
             ('vlan', 'vlan'))
     CHOICES_proto = (('tcp', 'tcp'), ('udp', 'udp'), ('icmp', 'icmp'))
