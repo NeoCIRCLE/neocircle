@@ -146,7 +146,7 @@ var module = angular.module('firewall', []).config(
 function range(a, b) {
   var res = [];
   do res.push(a++);
-  while (a < b)
+  while (a <= b)
   return res;
 }
 
