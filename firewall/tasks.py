@@ -51,7 +51,7 @@ class Periodic(PeriodicTask):
 class ReloadTask(Task):
     def run(self, type='Host'):
 
-        if type in ["Host", "Records", "Domain", "Vlan"]:
+        if type in ["Host", "Record", "Domain", "Vlan"]:
             cache.add("dns_lock", "true", 30)
 
         if type == "Host":
