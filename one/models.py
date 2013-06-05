@@ -638,7 +638,7 @@ class Instance(models.Model):
                       'id': inst.one_id})
         inst.save()
 
-        inst._create_host(hostname)
+        inst._create_host(hostname, res)
         return inst
 
     def one_delete(self):
