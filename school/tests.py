@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from django.test import TestCase
+from django.test.client import Client
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from models import create_user_profile, Person, Course, Semester, Group
@@ -184,3 +185,34 @@ class GroupTestCase(TestCase):
 
     def test_get_absolute_url(self):
         self.assertIsNotNone(self.testgroup.get_absolute_url())
+
+class ViewTestCase(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.http_headers = {
+            'niifPersonOrgID': 'ABUZER',
+            'niifEduPersonHeldCourse': '',
+            'niifEduPersonAttendedCourse': '',
+            'givenName': 'User',
+            'sn': 'Test',
+            'email': 'test.user@testsite.hu'}
+
+    def test_logout(self):
+        resp = self.client.get('/logout/', follow=False)
+        self.assertEqual(302, resp.status_code)
+
+    def test_login(self):
+        resp = self.client.get('/login/', follow=True, **self.http_headers)
+        self.assertEqual(200, resp.status_code)
+
+    def test_login_without_id(self):
+        del self.http_headers['niifPersonOrgID']
+        resp = self.client.get('/login/', follow=True, **self.http_headers)
+        self.assertEqual(200, resp.status_code)
+        for (url, _) in resp.redirect_chain:
+            self.assertIn('/admin', url)
+
+    def test_login_without_email(self):
+        del self.http_headers['email']
+        resp = self.client.get('/login/', follow=True, **self.http_headers)
+        print resp.status_code
