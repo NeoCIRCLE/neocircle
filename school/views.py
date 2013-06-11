@@ -54,7 +54,7 @@ def login(request):
     try:
         sem = Semester.get_current()
 
-        attended = request.META['HTTP_NIIFEDUPERSONATTENDEDCOURSE']
+        attended = request.META['niifEduPersonAttendedCourse']
         if attended == '':
             attended = []
         else:
@@ -78,7 +78,7 @@ def login(request):
     except ValidationError as e:
         logger.warning("Django ex4 %s" % e)
 
-    held = request.META['HTTP_NIIFEDUPERSONHELDCOURSE']
+    held = request.META['niifEduPersonHeldCourse']
     if held == '':
         held = []
     else:
@@ -168,7 +168,7 @@ def group_show(request, gid):
         if t.myshares.exists():
             noshare = False
         publictemplates[i] = t
-    return render_to_response("show-group.html", RequestContext(request,{
+    return render_to_response("show-group.html", RequestContext(request, {
         'group': group,
         'members': group.members.all(),
         'mytemplates': mytemplates,
