@@ -206,7 +206,7 @@ function ListController(url) {
   return function($scope, $http) {
     $scope.page = 1;
     var rules = [];
-    var pageSize = 10;
+    var pageSize = 100;
     var itemCount = 0;
     /**
      * Does filtering&paging
