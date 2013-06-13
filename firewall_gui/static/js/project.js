@@ -343,7 +343,6 @@ function EntityController(url, init) {
             $scope.errors = newErrors;
           })
         } catch (ex) {
-
         }
       })
     }
@@ -357,7 +356,9 @@ function EntityController(url, init) {
         ['vlan', 'vlangroup', 'host', 'hostgroup', 'firewall', 'owner', 'domain', 'record'].forEach(function(t) {
           $('.' + t).typeahead({
             /**
-             * Typeahead does AJAX queries
+             * Typeahead does AJAX queries.
+             *
+             * Pretty messy
              * @param  {String}   query   Partial name of the entity
              * @param  {Function} process Callback function after AJAX returned result
              */
@@ -381,8 +382,9 @@ function EntityController(url, init) {
               return true;
             },
             /**
-             * Typeahead does not trigger proper DOM events, so we have to refresh
-             * the model manually.
+             * The DOM is correctly updated, but it doesnt triggers the proper events,
+             * so the model should be updated manually.
+             *
              * @param  {String} item Selected entity name
              * @return {String}      Same as `item`, the input value is set to this
              */
