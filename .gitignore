@@ -51,3 +51,6 @@ client.crt
 client.key
 miscellaneous/store-server/store.config
 
+
+celerybeat-schedule
+celerybeat.pid

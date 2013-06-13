@@ -15,6 +15,7 @@ po:
 	for i in */; do cd $$i; ../manage.py makemessages --all -d djangojs || true; cd ..; done
 
 migrate:
+	./manage.py syncdb || true
 	./manage.py migrate
 
 generatestatic: $(jsfiles) one/static/style/style.css

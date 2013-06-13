@@ -17,7 +17,6 @@ class Firewall:
     RULES = None
     RULES_NAT = []
     vlans = None
-    dmz = None
     pub = None
     hosts = None
     fw = None
@@ -269,7 +268,6 @@ class Firewall:
         self.IPV6 = IPV6
         self.vlans = models.Vlan.objects.all()
         self.hosts = models.Host.objects.all()
-        self.dmz = models.Vlan.objects.get(name='DMZ')
         self.pub = models.Vlan.objects.get(name='PUB')
         self.fw = models.Firewall.objects.all()
         self.ipt_filter()

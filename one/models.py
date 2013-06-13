@@ -101,20 +101,23 @@ class UserCloudDetails(models.Model):
 
 
 def set_quota(sender, instance, created, **kwargs):
-    if not StoreApi.userexist(instance.user.username):
-        try:
-            password = instance.smb_password
-            quota = instance.disk_quota * 1024
-            key_list = [key.key for key in instance.user.sshkey_set.all()]
-        except:
-            pass
-        # Create user
-        if not StoreApi.createuser(instance.user.username, password,
-                                   key_list, quota):
-            pass
-    else:
-        StoreApi.set_quota(instance.user.username,
-                           instance.disk_quota * 1024)
+    try:
+        if not StoreApi.userexist(instance.user.username):
+            try:
+                password = instance.smb_password
+                quota = instance.disk_quota * 1024
+                key_list = [key.key for key in instance.user.sshkey_set.all()]
+            except:
+                pass
+            # Create user
+            if not StoreApi.createuser(instance.user.username, password,
+                                       key_list, quota):
+                pass
+        else:
+            StoreApi.set_quota(instance.user.username,
+                               instance.disk_quota * 1024)
+    except:
+        pass
 post_save.connect(set_quota, sender=UserCloudDetails)
 
 
