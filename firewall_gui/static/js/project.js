@@ -333,7 +333,14 @@ function EntityController(url, init) {
         }
       }).error(function(data) {
         try {
+          var audio = new Audio();
+          audio.src = '/static/img/trombone.ogg';
+          audio.play();
           data = JSON.parse(data.responseText);
+          $('button[type=submit]').addClass('btn-danger');
+          setTimeout(function(){
+            $('button[type=submit]').removeClass('btn-danger');
+          }, 4000);
           var newErrors = {};
           for (var i in data) {
             var id = $('#' + i).length ? i : 'targetName';
