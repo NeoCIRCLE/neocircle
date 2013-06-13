@@ -145,7 +145,7 @@ def list_entities(request, name):
             'modified_at',
             'ttl',
             'description',
-            ('record_set', lambda entity: [{'id':entity.id, 'name':entity.name} for entity in entity.record_set.all()]),
+            ('records', lambda entity: [{'id':entity.id, 'name':entity.name} for entity in entity.record_set.all()]),
             'owner']),
         'records': make_entity_lister(Record, [
             'id',

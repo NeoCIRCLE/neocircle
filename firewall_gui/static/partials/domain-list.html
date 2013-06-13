@@ -22,6 +22,7 @@
 <table class="table table-striped">
   <tr>
     <th>Név</th>
+    <th>Rekordok</th>
     <th>TTL</th>
     <th>Leírás</th>
     <th colspan="2">Tulajdonos</th>
@@ -29,6 +30,13 @@
   <tr ng-repeat="domain in getPage()">
     <td>
       <a href="#/domains/{{domain.id}}">{{domain.name}}</a>
+    </td>
+    <td>
+      <div class="well well-small">
+        <span class="label label-info" ng-repeat="record in domain.records">
+          <a href="#/records/{{record.id}}">{{record.name}}(#{{record.id}})</a>
+        </span>
+      </div>
     </td>
     <td>{{domain.ttl}}</td>
     <td>{{domain.description}}</td>
