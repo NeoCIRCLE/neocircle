@@ -45,6 +45,7 @@ $.ajaxSetup({
  * @param  String name   Object name, add{name} and remove{name} methods will be generated
  * @param  Object model  Model name (the collections name) in the entity
  */
+
 function makeAddRemove($scope, name, model) {
   /**
    * Add entity to collection
@@ -264,6 +265,7 @@ function ListController(url) {
     /**
      * Reloads the entities
      */
+
     function reloadList() {
       $http.get(url).success(function success(data) {
         rules = data;
@@ -318,8 +320,12 @@ function EntityController(url, init) {
         success: function(data) {
           console.log(data);
           var audio = new Audio();
-          audio.src='/static/img/yeah.mp3';
+          audio.src = '/static/img/yeah.mp3';
           audio.play();
+          $('button[type=submit]').addClass('btn-success');
+          setTimeout(function(){
+            $('button[type=submit]').removeClass('btn-success');
+          }, 4000);
           $scope.$apply(function() {
             $scope.errors = {};
           });
