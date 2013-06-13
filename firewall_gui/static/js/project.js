@@ -317,6 +317,9 @@ function EntityController(url, init) {
         data: JSON.stringify($scope.entity),
         success: function(data) {
           console.log(data);
+          var audio = new Audio();
+          audio.src='/static/img/yeah.mp3';
+          audio.play();
           $scope.$apply(function() {
             $scope.errors = {};
           });
