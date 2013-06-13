@@ -145,11 +145,11 @@ def list_entities(request, name):
             'modified_at',
             'ttl',
             'description',
-            ('records', lambda entity: [{'id':entity.id, 'name':entity.name} for entity in entity.record_set.all()]),
+            ('records', lambda entity: [{'id':entity.id, 'name':entity.get_name()} for entity in entity.record_set.all()]),
             'owner']),
         'records': make_entity_lister(Record, [
             'id',
-            'name',
+            ('name', lambda entity: entity.get_name()),
             'domain',
             'host',
             'type',
@@ -546,7 +546,8 @@ def show_domain(request, id=None):
             'created_at': domain.created_at.isoformat(),
             'modified_at': domain.modified_at.isoformat(),
             'ttl': domain.ttl,
-            'description': domain.description
+            'description': domain.description,
+
         }
     except:
         domain = {

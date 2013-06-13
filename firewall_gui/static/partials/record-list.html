@@ -31,7 +31,7 @@
     <th colspan="2">Tulajdonos</th>
   </tr>
   <tr ng-repeat="record in getPage()">
-    <td>
+    <td style="max-width: 250px; overflow-x: auto;">
       <a href="#/records/{{record.id}}">{{record.name}}</a>
     </td>
     <td>{{record.type}}</td>
