@@ -360,7 +360,8 @@ class Record(models.Model):
                         "Should be: <priority>:<hostname>"))
             else:
                 raise ValidationError(_("Unknown record type."))
-
+    def get_name(self):
+        return self.__get_name()
     def __get_name(self):
         if self.host and self.type != 'MX':
             if self.type in ['A', 'AAAA']:
