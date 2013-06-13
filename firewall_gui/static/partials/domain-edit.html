@@ -96,3 +96,11 @@
     </div>
   </div>
 </form>
+<div class="span12">
+  <h3>Records belonging to this domain</h3>
+  <div class="well well-small">
+    <span class="label label-info" ng-repeat="record in entity.records">
+      <a href="#/records/{{record.id}}">{{record.name}}</a>
+    </span>
+  </div>
+</div>

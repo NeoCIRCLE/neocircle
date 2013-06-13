@@ -547,7 +547,10 @@ def show_domain(request, id=None):
             'modified_at': domain.modified_at.isoformat(),
             'ttl': domain.ttl,
             'description': domain.description,
-
+            'records': [{
+                'id': record.id,
+                'name': record.get_name()
+            } for record in domain.record_set.all()]
         }
     except:
         domain = {
