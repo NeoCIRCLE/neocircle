@@ -73,6 +73,17 @@ def val_ipv6(value):
     if not is_valid_ipv6_address(value):
         raise ValidationError(_(u'%s - not an IPv6 address') % value)
 
+def val_mx(value):
+    """Validate whether the parameter is a valid MX address definition.
+
+    Expected form is <priority>:<hostname>.
+    """
+    mx = self.address.split(':', 1)
+    if not (len(mx) == 2 and mx[0].isdigit() and
+            domain_re.match(mx[1])):
+        raise ValidationError(_("Bad MX address format. "
+                                "Should be: <priority>:<hostname>"))
+
 def ipv4_2_ipv6(ipv4):
     """Convert IPv4 address string to IPv6 address string."""
     val_ipv4(ipv4)
