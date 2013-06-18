@@ -62,9 +62,9 @@ class Person(models.Model):
 
     def short_name(self):
         if self.user:
-            if self.user.last_name:  # pragma: no cover
+            if self.user.last_name:
                 return self.user.last_name
-            else:  # pragma: no cover
+            else:
                 return self.user.username
         else:
             return self.code
