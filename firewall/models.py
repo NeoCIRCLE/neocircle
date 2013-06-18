@@ -13,12 +13,13 @@ import re
 import random
 
 settings = django.conf.settings.FIREWALL_SETTINGS
+
 class Rule(models.Model):
     """
-    Common firewall rule
+    A rule of a packet filter, changing the behavior of a host, vlan or firewall.
 
-    Rule can be applied to: Host, Firewall, Vlan
-
+    Some rules accept or deny packets matching some criteria.
+    Others set address translation or other free-form iptables parameters.
     """
     CHOICES_type = (('host', 'host'), ('firewall', 'firewall'),
             ('vlan', 'vlan'))
@@ -26,35 +27,53 @@ class Rule(models.Model):
     CHOICES_dir = (('0', 'out'), ('1', 'in'))
 
     direction = models.CharField(max_length=1, choices=CHOICES_dir,
-            blank=False)
-    description = models.TextField(blank=True)
-    foreign_network = models.ForeignKey('VlanGroup',
-            related_name="ForeignRules")
-    dport = models.IntegerField(blank=True, null=True,
-            validators=[MinValueValidator(1), MaxValueValidator(65535)])
-    sport = models.IntegerField(blank=True, null=True,
-            validators=[MinValueValidator(1), MaxValueValidator(65535)])
+            blank=False, verbose_name=_("direction"),
+            help_text=_("If the rule matches egress or ingress packets."))
+    description = models.TextField(blank=True,
+                                   help_text=_("Why is the rule needed, or how does it work."))
+    foreign_network = models.ForeignKey('VlanGroup', verbose_name=_("foreign network"),
+                                        help_text=_("The group of vlans the matching packet goes to (direction out) or from (in)."),
+                                        related_name="ForeignRules")
+    dport = models.IntegerField(blank=True, null=True, verbose_name=_("dest. port"),
+            validators=[MinValueValidator(1), MaxValueValidator(65535)],
+            help_text=_("Destination port number of packets that match."))
+    sport = models.IntegerField(blank=True, null=True, verbose_name=_("source port"),
+            validators=[MinValueValidator(1), MaxValueValidator(65535)],
+            help_text=_("Source port number of packets that match."))
     proto = models.CharField(max_length=10, choices=CHOICES_proto,
-            blank=True, null=True)
-    extra = models.TextField(blank=True)
-    accept = models.BooleanField(default=False)
-    owner = models.ForeignKey(User, blank=True, null=True)
-    r_type = models.CharField(max_length=10, choices=CHOICES_type)
-    nat = models.BooleanField(default=False)
+            blank=True, null=True, verbose_name=_("protocol"),
+            help_text=_("Protocol of packets that match."))
+    extra = models.TextField(blank=True, verbose_name=_("extra arguments"),
+                             help_text=_("Additional arguments passed literally to the iptables-rule."))
+    accept = models.BooleanField(default=False, verbose_name=_("accept"),
+                                 help_text=_("Accept the matching packets (or deny if not checked)."))
+    owner = models.ForeignKey(User, blank=True, null=True,
+                              verbose_name=_("owner"),
+                              help_text=_("The user responsible for this rule."))
+    r_type = models.CharField(max_length=10, verbose_name=_("Rule type"),
+                              choices=CHOICES_type,
+                              help_text=_("The type of entity the rule belongs to."))
+    nat = models.BooleanField(default=False, verbose_name=_("NAT"),
+                              help_text=_("If network address translation shoud be done."))
     nat_dport = models.IntegerField(blank=True, null=True,
-            validators=[MinValueValidator(1), MaxValueValidator(65535)])
-    created_at = models.DateTimeField(auto_now_add=True)
-    modified_at = models.DateTimeField(auto_now=True)
+                                    help_text=_("Rewrite destination port number to."),
+                                    validators=[MinValueValidator(1),
+                                                MaxValueValidator(65535)])
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("created at"))
+    modified_at = models.DateTimeField(auto_now=True, verbose_name=_("modified at"))
 
     vlan = models.ForeignKey('Vlan', related_name="rules", blank=True,
-            null=True)
+            null=True, verbose_name=_("vlan"),
+                             help_text=_("Vlan the rule applies to (if type is vlan)."))
     vlangroup = models.ForeignKey('VlanGroup', related_name="rules",
-            blank=True, null=True)
+            blank=True, null=True, verbose_name=_("vlan group"),
+                             help_text=_("Group of vlans the rule applies to (if type is vlan)."))
     host = models.ForeignKey('Host', related_name="rules", blank=True,
-            null=True)
-    hostgroup = models.ForeignKey('Group', related_name="rules",
-            blank=True, null=True)
-    firewall = models.ForeignKey('Firewall', related_name="rules",
+            verbose_name=_('host'), null=True, help_text=_("Host the rule applies to (if type is host)."))
+    hostgroup = models.ForeignKey('Group', related_name="rules", verbose_name=_("host group"),
+            blank=True, null=True, help_text=_("Group of hosts the rule applies to (if type is host)."))
+    firewall = models.ForeignKey('Firewall', related_name="rules", verbose_name=_("firewall"),
+                                 help_text=_("Firewall the rule applies to (if type is firewall)."),
             blank=True, null=True)
 
     def __unicode__(self):
@@ -78,6 +97,11 @@ class Rule(models.Model):
                      (("sport=%s " % self.sport) if self.sport else '') +
                      (("dport=%s " % self.dport) if self.dport else '')),
             'desc': self.description}
+
+    class Meta:
+        verbose_name = _("rule")
+        verbose_name_plural = _("rules")
+        ordering = ('r_type', 'direction', 'proto', 'sport', 'dport', 'nat_dport', 'host', )
 
 class Vlan(models.Model):
     vid = models.IntegerField(unique=True)
