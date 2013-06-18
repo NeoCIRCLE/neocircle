@@ -29,9 +29,11 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 
 logger = logging.getLogger(__name__)
 
+
 def logout(request):
     auth.logout(request)
     return redirect('/Shibboleth.sso/Logout?return=https%3a%2f%2fcloud.ik.bme.hu%2f')
+
 
 @ensure_csrf_cookie
 def login(request):
@@ -55,49 +57,44 @@ def login(request):
     p.user_id = user.id
     p.save()
 
-    try:
-        sem = Semester.get_current()
+    sem = Semester.get_current()
 
-        attended = request.META['niifEduPersonAttendedCourse']
-        if attended == '':
-            attended = []
-        else:
-            attended = attended.split(';')
-        for c in attended:
+    attended = request.META['niifEduPersonAttendedCourse']
+    attended = [c for c in attended.split(';') if c != '']
+    for c in attended:
+        try:
+            co = Course.objects.get(code=c)
+        except Course.DoesNotExist as e:
+            logger.warning("Django could not get Course %s: %s" % (c, e))
+            continue
+        g = co.get_or_create_default_group()
+        if p.course_groups.filter(semester=sem, course=co).count() == 0:
             try:
-                co = Course.objects.get(code=c)
+                g.members.add(p)
+                g.save()
+                messages.info(request,
+                        _('Course "%s" added.') % g.course)
+                logger.info('Django Course "%s" added.' % g.course)
             except Exception as e:
-                logger.warning("Django could not get Course %s: %s" % (c, e))
-                continue
-            g = co.get_or_create_default_group()
-            if p.course_groups.filter(semester=sem, course=co).count() == 0:
-                try:
-                    g.members.add(p)
-                    g.save()
-                    messages.info(request, _('Course "%s" added.') % g.course)
-                    logger.warning('Django Course "%s" added.' % g.course)
-                except Exception as e:
-                    messages.error(request, _('Failed to add course "%s".') % g.course)
-                    logger.warning("Django ex %s" % e)
-    except ValidationError as e:
-        logger.warning("Django ex4 %s" % e)
+                messages.error(request,
+                        _('Failed to add course "%s".') % g.course)
+                logger.warning("Django ex %s" % e)
 
     held = request.META['niifEduPersonHeldCourse']
-    if held == '':
-        held = []
-    else:
-        held = held.split(';')
+    held = [c for c in held.split(';') if c != '']
     for c in held:
         co, created = Course.objects.get_or_create(code=c)
         if created:
-            logger.warning("Django Course %s created" % c)
+            logger.info("Django Course %s created" % c)
         g = co.get_or_create_default_group()
         try:
             co.owners.add(p)
             g.owners.add(p)
-            messages.info(request, _('Course "%s" ownership added.') % g.course)
+            messages.info(request,
+                    _('Course "%s" ownership added.') % g.course)
         except Exception as e:
-            messages.error(request, _('Failed to add course "%s" ownership.') % g.course)
+            messages.error(request,
+                    _('Failed to add course "%s" ownership.') % g.course)
             logger.warning("Django ex %s" % e)
         co.save()
         g.save()
@@ -106,20 +103,19 @@ def login(request):
         affiliation = request.META['affiliation']
     except KeyError:
         affiliation = ''
-    if affiliation == '':
-        affiliation = []
-    else:
-        affiliation = affiliation.split(';')
+
+    affiliation = [a for a in affiliation.split(';') if a != '']
     for a in affiliation:
         g, created = AGroup.objects.get_or_create(name=a)
         user.groups.add(g)
         try:
-            g = Group.objects.filter(name=a)[0]
+            g = Group.objects.get(name=a)
             g.members.add(p)
             g.save()
-            logger.warning("Django affiliation group %s added to %s" % (a, p))
+            logger.info("Django affiliation group %s added to %s" % (a, p))
         except Exception as e:
-            logger.warning("Django FAIL affiliation group %s added to %s %s" % (a, p, e))
+            logger.warning("Django FAILed to add affiliation group %s to %s."
+                    " Reason: %s" % (a, p, e))
     user.save()
 
     p.save()
@@ -127,46 +123,46 @@ def login(request):
     auth.login(request, user)
     logger.warning("Shib login with %s" % request.META)
 
-
     redirect_to = request.REQUEST.get(auth.REDIRECT_FIELD_NAME, '')
     if not is_safe_url(url=redirect_to, host=request.get_host()):
         redirect_to = settings.LOGIN_REDIRECT_URL
     response = redirect(redirect_to)
-    response.set_cookie(settings.LANGUAGE_COOKIE_NAME, p.language, 10*365*24*3600)
+    response.set_cookie(
+        settings.LANGUAGE_COOKIE_NAME, p.language, 10 * 365 * 24 * 3600)
     return response
 
-def language(request, lang):
-    cname = settings.LANGUAGE_COOKIE_NAME
-    if not cname:
-        cname = 'django_language'
-    redirect_to = request.META['HTTP_REFERER']
-    r = redirect(redirect_to)
-    if not redirect_to:
-        redirect_to = "/"
 
+def language(request, lang):
     try:
         p = Person.objects.get(user=request.user)
         p.language = lang
         p.save()
-    except ValidationError as e:
-        messages.error(e)
-    except:
-        messages.error(_("Could not found Person object."))
-    r.set_cookie(cname, lang, 10*365*24*3600)
+    except ValidationError as e:  # couldn't test this case
+        messages.error(request, e)
+    except Person.DoesNotExist:
+        messages.error(request, _("Could not find Person object."))
+
+    cname = settings.LANGUAGE_COOKIE_NAME or 'django_language'
+    redirect_to = request.META['HTTP_REFERER']
+    r = redirect(redirect_to)
+    r.set_cookie(cname, lang, 10 * 365 * 24 * 3600)
     return r
+
 
 @login_required
 def group_show(request, gid):
     user = request.user
     group = get_object_or_404(Group, id=gid)
-    mytemplates = [t for t in Template.objects.filter(owner=request.user).all()]
+    mytemplates = [
+        t for t in Template.objects.filter(owner=request.user).all()]
     noshare = True
     for i, t in enumerate(mytemplates):
         t.myshares = t.share_set.filter(group=group)
         if t.myshares.exists():
             noshare = False
         mytemplates[i] = t
-    publictemplates = [t for t in Template.objects.filter(public=True, state='READY').all()]
+    publictemplates = [
+        t for t in Template.objects.filter(public=True, state='READY').all()]
     for i, t in enumerate(publictemplates):
         t.myshares = t.share_set.filter(group=group)
         if t.myshares.exists():
@@ -180,7 +176,8 @@ def group_show(request, gid):
         'noshare': noshare,
         'userdetails': UserCloudDetails.objects.get(user=request.user),
         'owners': group.owners.all(),
-        }))
+    }))
+
 
 @login_required
 def group_new(request):
@@ -189,7 +186,7 @@ def group_new(request):
     members_list = re.split('\r?\n', request.POST['members'])
     members = []
     for member in members_list:
-        if re.match('^[a-zA-Z][a-zA-Z0-9]{5}$', member.strip()) == None:
+        if re.match('^[a-zA-Z][a-zA-Z0-9]{5}$', member.strip()) is None:
             messages.error(request, _('Invalid NEPTUN code found.'))
             return redirect('/')
         person, created = Person.objects.get_or_create(code=member)
@@ -205,11 +202,12 @@ def group_new(request):
     group.save()
     return redirect('/group/show/%s' % group.id)
 
+
 @login_required
 def group_ajax_add_new_member(request, gid):
     group = get_object_or_404(Group, id=gid)
     member = request.POST['neptun']
-    if re.match('^[a-zA-Z][a-zA-Z0-9]{5}$', member.strip()) == None:
+    if re.match('^[a-zA-Z][a-zA-Z0-9]{5}$', member.strip()) is None:
         status = json.dumps({'status': 'Error'})
         messages.error(request, _('Invalid NEPTUN code'))
         return HttpResponse(status)
@@ -218,13 +216,14 @@ def group_ajax_add_new_member(request, gid):
     group.save()
     return HttpResponse(json.dumps({
         'status': 'OK'
-        }))
+    }))
+
 
 @login_required
 def group_ajax_remove_member(request, gid):
     group = get_object_or_404(Group, id=gid)
     member = request.POST['neptun']
-    if re.match('^[a-zA-Z][a-zA-Z0-9]{5}$', member) == None:
+    if re.match('^[a-zA-Z][a-zA-Z0-9]{5}$', member) is None:
         status = json.dumps({'status': 'Error'})
         messages.error(request, _('Invalid NEPTUN code'))
         return HttpResponse(status)
@@ -233,7 +232,8 @@ def group_ajax_remove_member(request, gid):
     group.save()
     return HttpResponse(json.dumps({
         'status': 'OK'
-        }))
+    }))
+
 
 @login_required
 def group_ajax_delete(request):
@@ -241,21 +241,21 @@ def group_ajax_delete(request):
     group.delete()
     return HttpResponse(json.dumps({
         'status': 'OK'
-        }))
+    }))
+
 
 @login_required
 def group_ajax_owner_autocomplete(request):
 
+    users = (
+        User.objects.filter(last_name__istartswith=request.POST['q'])[:5] +
+        User.objects.filter(first_name__istartswith=request.POST['q'])[:5] +
+        User.objects.filter(username__istartswith=request.POST['q'])[:5])
     results = map(lambda u: {
         'name': u.get_full_name(),
-        'neptun': u.username }, User.objects.filter(last_name__istartswith=request.POST['q'])[:5])
-    results += map(lambda u: {
-        'name': u.get_full_name(),
-        'neptun': u.username }, User.objects.filter(first_name__istartswith=request.POST['q'])[:5])
-    results += map(lambda u: {
-        'name': u.get_full_name(),
-        'neptun': u.username }, User.objects.filter(username__istartswith=request.POST['q'])[:5])
+        'neptun': u.username}, users)
     return HttpResponse(json.dumps(results, ensure_ascii=False))
+
 
 @login_required
 def group_ajax_add_new_owner(request, gid):
@@ -263,7 +263,7 @@ def group_ajax_add_new_owner(request, gid):
         return HttpResponse({'status': 'denied'})
     group = get_object_or_404(Group, id=gid)
     member = request.POST['neptun']
-    if re.match('^[a-zA-Z][a-zA-Z0-9]{5}$', member.strip()) == None:
+    if re.match('^[a-zA-Z][a-zA-Z0-9]{5}$', member.strip()) is None:
         status = json.dumps({'status': 'Error'})
         messages.error(request, _('Invalid NEPTUN code'))
         return HttpResponse(status)
@@ -272,4 +272,4 @@ def group_ajax_add_new_owner(request, gid):
     group.save()
     return HttpResponse(json.dumps({
         'status': 'OK'
-        }))
+    }))
