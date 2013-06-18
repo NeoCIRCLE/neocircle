@@ -215,4 +215,4 @@ class ViewTestCase(TestCase):
     def test_login_without_email(self):
         del self.http_headers['email']
         resp = self.client.get('/login/', follow=True, **self.http_headers)
-        print resp.status_code
+        self.assertEqual(403, resp.status_code)

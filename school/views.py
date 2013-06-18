@@ -1,5 +1,5 @@
 from datetime import datetime
-from django.core.exceptions import ValidationError
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User, Group as AGroup
@@ -45,7 +45,11 @@ def login(request):
         user.set_unusable_password()
     user.first_name = request.META['givenName']
     user.last_name = request.META['sn']
-    user.email = request.META['email']
+    try:
+        user.email = request.META['email']
+    except KeyError:
+        messages.error(request, _("The identity provider did not pass the mandatory e-mail data."))
+        raise PermissionDenied()
     user.save()
     p, created = Person.objects.get_or_create(code=user.username)
     p.user_id = user.id
