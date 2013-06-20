@@ -201,7 +201,7 @@ class Vlan(models.Model):
                                                'Common IPv4 address used for '
                                                'address translation of '
                                                'connections to the networks '
-                                               'selected bellow '
+                                               'selected below '
                                                '(typically to the internet).'))
     snat_to = models.ManyToManyField('self', symmetrical=False, blank=True,
                                      null=True, verbose_name=_('NAT to'),
@@ -259,24 +259,43 @@ class Vlan(models.Model):
 
 
 class VlanGroup(models.Model):
-    name = models.CharField(max_length=20, unique=True)
+    """
+    A group of Vlans.
+    """
+
+    name = models.CharField(max_length=20, unique=True, verbose_name=_('name'),
+                            help_text=_('The name of the group.'))
     vlans = models.ManyToManyField('Vlan', symmetrical=False, blank=True,
-                                   null=True)
-    description = models.TextField(blank=True)
-    owner = models.ForeignKey(User, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    modified_at = models.DateTimeField(auto_now=True)
+                                   null=True, verbose_name=_('vlans'),
+                                   help_text=_('The vlans which are members '
+                                               'of the group.'))
+    description = models.TextField(blank=True, verbose_name=_('description'),
+                                   help_text=_('The description of the group.'))
+    owner = models.ForeignKey(User, blank=True, null=True,
+                              verbose_name=_('owner'))
+    created_at = models.DateTimeField(auto_now_add=True,
+                                      verbose_name=_('created at'))
+    modified_at = models.DateTimeField(auto_now=True,
+                                       verbose_name=_('modified at'))
 
     def __unicode__(self):
         return self.name
 
 
 class Group(models.Model):
-    name = models.CharField(max_length=20, unique=True)
-    description = models.TextField(blank=True)
-    owner = models.ForeignKey(User, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    modified_at = models.DateTimeField(auto_now=True)
+    """
+    A group of hosts.
+    """
+    name = models.CharField(max_length=20, unique=True, verbose_name=_('name'),
+                            help_text=_('The name of the group.'))
+    description = models.TextField(blank=True, verbose_name=_('description'),
+                                   help_text=_('The description of the group.'))
+    owner = models.ForeignKey(User, blank=True, null=True,
+                              verbose_name=_('owner'))
+    created_at = models.DateTimeField(auto_now_add=True,
+                                      verbose_name=_('created at'))
+    modified_at = models.DateTimeField(auto_now=True,
+                                       verbose_name=_('modified at'))
 
     def __unicode__(self):
         return self.name
