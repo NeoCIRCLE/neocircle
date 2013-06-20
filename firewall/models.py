@@ -270,7 +270,7 @@ class VlanGroup(models.Model):
                                    help_text=_('The vlans which are members '
                                                'of the group.'))
     description = models.TextField(blank=True, verbose_name=_('description'),
-                                   help_text=_('The description of the group.'))
+                                   help_text=_('Description of the group.'))
     owner = models.ForeignKey(User, blank=True, null=True,
                               verbose_name=_('owner'))
     created_at = models.DateTimeField(auto_now_add=True,
@@ -289,7 +289,7 @@ class Group(models.Model):
     name = models.CharField(max_length=20, unique=True, verbose_name=_('name'),
                             help_text=_('The name of the group.'))
     description = models.TextField(blank=True, verbose_name=_('description'),
-                                   help_text=_('The description of the group.'))
+                                   help_text=_('Description of the group.'))
     owner = models.ForeignKey(User, blank=True, null=True,
                               verbose_name=_('owner'))
     created_at = models.DateTimeField(auto_now_add=True,
@@ -302,26 +302,69 @@ class Group(models.Model):
 
 
 class Host(models.Model):
+    """
+    A host of the network.
+    """
+
     hostname = models.CharField(max_length=40, unique=True,
+                                verbose_name=_('hostname'),
+                                help_text=_('The alphanumeric hostname of '
+                                            'the host, the first part of '
+                                            'the FQDN.'),
                                 validators=[val_alfanum])
     reverse = models.CharField(max_length=40, validators=[val_domain],
+                               verbose_name=_('reverse'),
+                               help_text=_('The fully qualified reverse '
+                                           'hostname of the host, if '
+                                           'different than hostname.domain.'),
                                blank=True, null=True)
-    mac = MACAddressField(unique=True)
-    ipv4 = models.GenericIPAddressField(protocol='ipv4', unique=True)
-    pub_ipv4 = models.GenericIPAddressField(protocol='ipv4', blank=True,
-                                            null=True)
+    mac = MACAddressField(unique=True, verbose_name=_('MAC address'),
+                          help_text=_('The MAC (Ethernet) address of the '
+                                      'network interface. For example: '
+                                      '99:AA:BB:CC:DD:EE.'))
+    ipv4 = models.GenericIPAddressField(protocol='ipv4', unique=True,
+                                        verbose_name=_('IPv4 address'),
+                                        help_text=_(
+                                            'The real IPv4 address of the '
+                                            'host, for example 10.5.1.34.'))
+    pub_ipv4 = models.GenericIPAddressField(
+        protocol='ipv4', blank=True, null=True,
+        verbose_name=_('WAN IPv4 address'),
+        help_text=_('The public IPv4 address of the host on the wide '
+                    'area network, if different.'))
     ipv6 = models.GenericIPAddressField(protocol='ipv6', unique=True,
-                                        blank=True, null=True)
-    shared_ip = models.BooleanField(default=False)
-    description = models.TextField(blank=True)
-    comment = models.TextField(blank=True)
-    location = models.TextField(blank=True)
-    vlan = models.ForeignKey('Vlan')
-    owner = models.ForeignKey(User)
+                                        blank=True, null=True,
+                                        verbose_name=_('IPv6 address'),
+                                        help_text=_(
+                                            'The global IPv6 address of the '
+                                            'host, for example '
+                                            '2001:500:88:200::10.'))
+    shared_ip = models.BooleanField(default=False, verbose_name=_('shared IP'),
+                                    help_text=_(
+                                        'If the given WAN IPv4 address is '
+                                        'used by multiple hosts.'))
+    description = models.TextField(blank=True, verbose_name=_('description'),
+                                   help_text=_('What is this host for, what '
+                                               'kind of machine is it.'))
+    comment = models.TextField(blank=True,
+                               verbose_name=_('Notes'))
+    location = models.TextField(blank=True, verbose_name=_('location'),
+                                help_text=_(
+                                    'The physical location of the machine.'))
+    vlan = models.ForeignKey('Vlan', verbose_name=_('vlan'),
+                             help_text=_(
+                                 'Vlan network that the host is part of.'))
+    owner = models.ForeignKey(User, verbose_name=_('owner'),
+                              help_text=_(
+                                  'The person responsible for this host.'))
     groups = models.ManyToManyField('Group', symmetrical=False, blank=True,
-                                    null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    modified_at = models.DateTimeField(auto_now=True)
+                                    null=True, verbose_name=_('groups'),
+                                    help_text=_(
+                                        'Host groups the machine is part of.'))
+    created_at = models.DateTimeField(auto_now_add=True,
+                                      verbose_name=_('created at'))
+    modified_at = models.DateTimeField(auto_now=True,
+                                       verbose_name=_('modified at'))
 
     def __unicode__(self):
         return self.hostname
@@ -391,6 +434,16 @@ class Host(models.Model):
                     _("All %s ports are already in use.") % proto)
 
     def add_port(self, proto, public=None, private=None):
+        """
+        Allow inbound traffic to a port.
+
+        If the host uses a shared IP address, also set up port forwarding.
+
+        :param proto: The transport protocol (tcp|udp).
+        :type proto: str.
+        :param public: Preferred public port number for forwarding (optional).
+        :param private: Port number of host in subject.
+        """
         assert proto in ('tcp', 'udp', )
         if public:
             if public in self._get_ports_used(proto):
@@ -415,6 +468,16 @@ class Host(models.Model):
         rule.save()
 
     def del_port(self, proto, private):
+        """
+        Remove rules about inbound traffic to a given port.
+
+        If the host uses a shared IP address, also set up port forwarding.
+
+        :param proto: The transport protocol (tcp|udp).
+        :type proto: str.
+        :param private: Port number of host in subject.
+        """
+
         if self.shared_ip:
             self.rules.filter(owner=self.owner, proto=proto, host=self,
                               nat_dport=private).delete()
@@ -423,6 +486,13 @@ class Host(models.Model):
                               dport=private).delete()
 
     def get_hostname(self, proto):
+        """
+        Get a hostname for public ip address.
+
+        :param proto: The IP version (ipv4|ipv6).
+        :type proto: str.
+        """
+        assert proto in ('ipv6', 'ipv4', )
         try:
             if proto == 'ipv6':
                 res = self.record_set.filter(type='AAAA')
@@ -434,13 +504,15 @@ class Host(models.Model):
                     res = self.record_set.filter(type='A')
             return unicode(res[0].get_data()['name'])
         except:
-#            raise
             if self.shared_ip:
                 return self.pub_ipv4
             else:
                 return self.ipv4
 
     def list_ports(self):
+        """
+        Return a list of ports with forwarding rules set.
+        """
         retval = []
         for rule in self.rules.filter(owner=self.owner):
             private = rule.nat_dport if self.shared_ip else rule.dport
@@ -468,6 +540,9 @@ class Host(models.Model):
         return retval
 
     def get_fqdn(self):
+        """
+        Get fully qualified host name of host.
+        """
         return self.hostname + u'.' + unicode(self.vlan.domain)
 
 
