@@ -113,6 +113,8 @@ class Rule(models.Model):
             raise ValidationError(_('Only one field can be selected.'))
 
     def desc(self):
+        """Return a short string representation of the current rule.
+        """
         return u'[%(type)s] %(src)s ▸ %(dst)s %(para)s %(desc)s' % {
             'type': self.r_type,
             'src': (unicode(self.foreign_network) if self.direction == '1'
@@ -139,36 +141,120 @@ class Rule(models.Model):
 
 
 class Vlan(models.Model):
-    vid = models.IntegerField(unique=True)
-    name = models.CharField(max_length=20, unique=True,
+
+    """
+    A vlan of the network,
+
+    Networks controlled by this framework are split into separated subnets.
+    These networks are izolated by the vlan (virtual lan) technology, which is
+    commonly used by managed network switches to partition the network.
+
+    Each vlan network has a unique identifier, a name, a unique IPv4 and IPv6
+    range. The gateway also has an IP address in each range.
+    """
+
+    vid = models.IntegerField(unique=True,
+                              verbose_name=_('VID'),
+                              help_text=_('The vlan ID of the subnet.'),
+                              validators=[MinValueValidator(1),
+                                          MaxValueValidator(4095)])
+    name = models.CharField(max_length=20,
+                            unique=True,
+                            verbose_name=_('Name'),
+                            help_text=_('The short name of the subnet.'),
                             validators=[val_alfanum])
-    prefix4 = models.IntegerField(default=16)
-    prefix6 = models.IntegerField(default=80)
-    interface = models.CharField(max_length=20, unique=True)
-    net4 = models.GenericIPAddressField(protocol='ipv4', unique=True)
-    net6 = models.GenericIPAddressField(protocol='ipv6', unique=True)
-    ipv4 = models.GenericIPAddressField(protocol='ipv4', unique=True)
-    ipv6 = models.GenericIPAddressField(protocol='ipv6', unique=True)
+    prefix4 = models.IntegerField(
+        default=16, verbose_name=_('IPv4 prefix length'),
+        help_text=_('The prefix length of the IPv4 subnet.'))
+    prefix6 = models.IntegerField(
+        default=80, verbose_name=_('IPv6 prefix length'),
+        help_text=_('The prefix length of the IPv6 subnet.'))
+    interface = models.CharField(max_length=20, unique=True,
+                                 verbose_name=_('interface'), help_text=_(
+                                     'The name of network interface the '
+                                     'gateway should serve this network on. '
+                                     'For example vlan0004 or eth2.'))
+    net4 = models.GenericIPAddressField(protocol='ipv4', unique=True,
+                                        verbose_name=_('IPv4 network'),
+                                        help_text=_('The network address of '
+                                                    'the IPv4 subnet.'))
+    net6 = models.GenericIPAddressField(protocol='ipv6', unique=True,
+                                        verbose_name=_('IPv6 network'),
+                                        help_text=_('The network address of '
+                                                    'the IPv6 subnet.'))
+    ipv4 = models.GenericIPAddressField(protocol='ipv4', unique=True,
+                                        verbose_name=_('IPv4 address'),
+                                        help_text=_(
+                                        'The IPv4 address of the gateway. '
+                                        'Recommended value is the last valid '
+                                        'address of the subnet, for example '
+                                        '10.4.255.254 for 10.4.0.0/16.'))
+    ipv6 = models.GenericIPAddressField(protocol='ipv6',
+                                        unique=True,
+                                        verbose_name=_('IPv6 address'),
+                                        help_text=_(
+                                        'The IPv6 address of the gateway.'))
     snat_ip = models.GenericIPAddressField(protocol='ipv4', blank=True,
-                                           null=True)
+                                           null=True,
+                                           verbose_name=_('NAT IP address'),
+                                           help_text=_(
+                                               'Common IPv4 address used for '
+                                               'address translation of '
+                                               'connections to the networks '
+                                               'selected bellow '
+                                               '(typically to the internet).'))
     snat_to = models.ManyToManyField('self', symmetrical=False, blank=True,
-                                     null=True)
-    description = models.TextField(blank=True)
-    comment = models.TextField(blank=True)
-    domain = models.ForeignKey('Domain')
-    reverse_domain = models.TextField(validators=[val_reverse_domain])
-    dhcp_pool = models.TextField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    owner = models.ForeignKey(User, blank=True, null=True)
-    modified_at = models.DateTimeField(auto_now=True)
+                                     null=True, verbose_name=_('NAT to'),
+                                     help_text=_(
+                                         'Connections to these networks '
+                                         'should be network address '
+                                         'translated, i.e. their source '
+                                         'address is rewritten to the value '
+                                         'of NAT IP address.'))
+    description = models.TextField(blank=True, verbose_name=_('description'),
+                                   help_text=_(
+                                       'Description of the goals and elements '
+                                       'of the vlan network.'))
+    comment = models.TextField(blank=True, verbose_name=_('comment'),
+                               help_text=_(
+                                   'Notes, comments about the network'))
+    domain = models.ForeignKey('Domain', verbose_name=_('domain name'),
+                               help_text=_('Domain name of the members of '
+                                           'this network.'))
+    reverse_domain = models.TextField(
+        validators=[val_reverse_domain],
+        verbose_name=_('reverse domain'),
+        help_text=_('Template of the IPv4 reverse domain name that '
+                    'should be generated for each host. The template '
+                    'should contain four tokens: "%(a)d", "%(b)d", '
+                    '"%(c)d", and "%(d)d", representing the four bytes '
+                    'of the address, respectively, in decimal notation. '
+                    'For example, the template for the standard reverse '
+                    'address is: "%(d)d.%(c)d.%(b)d.%(a)d.in-addr.arpa".'),
+        default="%(d)d.%(c)d.%(b)d.%(a)d.in-addr.arpa")
+    dhcp_pool = models.TextField(blank=True, verbose_name=_('DHCP pool'),
+                                 help_text=_(
+                                     'The address range of the DHCP pool: '
+                                     'empty for no DHCP service, "manual" for '
+                                     'no DHCP pool, or the first and last '
+                                     'address of the range separated by a '
+                                     'space.'))
+    created_at = models.DateTimeField(auto_now_add=True,
+                                      verbose_name=_('created at'))
+    owner = models.ForeignKey(User, blank=True, null=True,
+                              verbose_name=_('owner'))
+    modified_at = models.DateTimeField(auto_now=True,
+                                       verbose_name=_('modified at'))
 
     def __unicode__(self):
         return self.name
 
     def net_ipv6(self):
+        """String representation of selected IPv6 network."""
         return self.net6 + "/" + unicode(self.prefix6)
 
     def net_ipv4(self):
+        """String representation of selected IPv4 network."""
         return self.net4 + "/" + unicode(self.prefix4)
 
 
