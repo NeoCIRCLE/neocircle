@@ -97,6 +97,7 @@ class UserCloudDetails(models.Model):
         return c
 
     def get_share_pc(self):
+        assert self.share_quota > 0
         return 100 * self.get_weighted_share_count() / self.share_quota
 
 
