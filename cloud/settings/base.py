@@ -162,6 +162,7 @@ INSTALLED_APPS = (
     'djcelery',
     'kombu.transport.django',
     'django_extensions',
+    'django_nose',
 )
 
 # A sample logging configuration. The only tangible logging
@@ -274,5 +275,7 @@ try:
         ['/usr/bin/git', 'describe', '--tags', '--abbrev=4'])
 except:
     RELEASE = 'n/a'
+
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 # vim: et sw=4 ai fenc=utf8 smarttab :

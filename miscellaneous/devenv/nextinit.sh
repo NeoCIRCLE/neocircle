@@ -1,6 +1,7 @@
 #!/bin/bash
 
 sudo pip install django_extensions
+sudo pip install django-nose
 sudo pip install django-debug-toolbar
 for i in cloudstore toplist django
 do
