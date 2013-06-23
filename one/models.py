@@ -16,7 +16,6 @@ from django.template.defaultfilters import escape
 from django.utils.translation import ugettext_lazy as _
 
 from firewall.models import Host, Vlan
-from school.models import Group
 from store.api import StoreApi
 from .util import keygen
 import django.conf
@@ -196,7 +195,7 @@ class Share(models.Model):
     name = models.CharField(max_length=100, verbose_name=_('name'))
     description = models.TextField(verbose_name=_('description'))
     template = models.ForeignKey('Template', related_name='share_set')
-    group = models.ForeignKey(Group, related_name='share_set')
+    group = models.ForeignKey('school.Group', related_name='share_set')
     created_at = models.DateTimeField(auto_now_add=True,
                                       verbose_name=_('created at'))
     type = models.CharField(choices=TYPES_C, max_length=10)
