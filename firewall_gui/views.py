@@ -100,6 +100,7 @@ def list_entities(request, name):
             'description']),
         'hosts': make_entity_lister(Host, [
             'id',
+            'hostname',
             'reverse',
             'ipv4',
             'shared_ip',
