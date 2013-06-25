@@ -154,6 +154,7 @@ INSTALLED_APPS = (
     'django.contrib.admindocs',
     'one',
     'school',
+    'network',
     'cloud',
     'store',
     'firewall',

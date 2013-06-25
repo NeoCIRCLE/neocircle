@@ -6,6 +6,7 @@ admin.autodiscover()
 import one.views
 import firewall_gui.urls
 # import store.views
+import network.urls
 
 js_info_dict = {
     'packages': ('one', ),
@@ -14,6 +15,8 @@ js_info_dict = {
 urlpatterns = patterns('',
     url(r'^admin/doc/', include('django.contrib.admindocs.urls'), ),
     url(r'^admin/', include(admin.site.urls), ),
+
+    url(r'^network/', include(network.urls), ),
 
 
     url(r'^login/$', 'school.views.login', name='login', ),
