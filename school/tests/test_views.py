@@ -137,3 +137,20 @@ class ViewTestCase(TestCase):
         resp = self.client.get(url)
         self.assertEqual(404, resp.status_code)
 
+
+    def test_group_new(self):
+        self.login()
+        url = reverse('school.views.group_new')
+        member1 = Person.objects.create(code="A1B2C3")
+        members = [member1]
+        data = {
+                'name': 'myNewGrp',
+                'semester': Semester.get_current().id,
+                'members': '\n'.join([m.code for m in members]),
+            }
+        resp = self.client.post(url, data)
+        group = Group.objects.get(name=data['name'])
+        self.assertEqual(Semester.get_current(), group.semester)
+        for member in members:
+            self.assertIn(member, group.members.all())
+
