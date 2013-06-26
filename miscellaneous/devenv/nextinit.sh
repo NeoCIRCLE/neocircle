@@ -55,6 +55,12 @@ do
     sudo start $i
 done
 
+cat <<A >>~/.profile
+export DJANGO_SETTINGS_MODULE=cloud.settings.dev
+export DJANGO_DB_PASSWORD=asjklddfjklqjf
+export DJANGO_SECRET_KEY=asjklddfjklqjfasjklddfjklqjfasjklddfjklqjf
+A
+. ~/.profile
 set -x
 cd /opt/webadmin/cloud
 ./manage.py syncdb --noinput
