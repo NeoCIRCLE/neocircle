@@ -14,15 +14,14 @@ Defaults        env_keep += DJANGO_SETTINGS_MODULE
 A
 sudo chmod 0440 /etc/sudoers.d/djangokeep
 
-sudo apt-get install rabbitmq-server gettext memcached nodejs npm
+sudo apt-get install rabbitmq-server gettext memcached npm nodejs
 sudo rabbitmqctl delete_user guest || true
 sudo rabbitmqctl add_user nyuszi teszt || true
 sudo rabbitmqctl add_vhost django || true
 sudo rabbitmqctl set_permissions -p django nyuszi '.*' '.*' '.*' || true
 
 sudo pip install python-memcached
-
-sudo npm install -g less
+sudo npm install -g less@1.3.3
 sudo npm install -g uglify-js@1
 
 sudo cp /opt/webadmin/cloud/miscellaneous/devenv/boot_url.py /opt/
