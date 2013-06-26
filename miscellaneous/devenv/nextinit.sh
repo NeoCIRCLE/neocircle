@@ -14,7 +14,7 @@ Defaults        env_keep += DJANGO_SETTINGS_MODULE
 A
 sudo chmod 0440 /etc/sudoers.d/djangokeep
 
-sudo apt-get install rabbitmq-server gettext memcached nodejs
+sudo apt-get install rabbitmq-server gettext memcached nodejs npm
 sudo rabbitmqctl delete_user guest || true
 sudo rabbitmqctl add_user nyuszi teszt || true
 sudo rabbitmqctl add_vhost django || true
