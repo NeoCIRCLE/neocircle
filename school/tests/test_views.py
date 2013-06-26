@@ -4,6 +4,7 @@ from django.test.client import Client
 from django.contrib.auth.models import User, Group as AuthGroup
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
+from django.utils.datastructures import MultiValueDictKeyError
 from ..models import create_user_profile, Person, Course, Semester, Group
 from one.models import UserCloudDetails
 
@@ -180,3 +181,103 @@ class ViewTestCase(TestCase):
         resp = self.client.post(url, data)
         group = Group.objects.get(id=group.id)
         self.assertIn(new_member, group.members.all())
+
+
+    def test_group_ajax_add_new_member_with_nonexistent_groupid(self):
+        self.login()
+        gid = 1337  # this should be the ID of a non-existent group,
+        Group.objects.filter(id=gid).delete()  # so if it exists, delete it!
+        url = reverse('school.views.group_ajax_add_new_member',
+                kwargs={'gid': gid})
+        new_member = Person.objects.get(user=self.user)
+        data = {'neptun': new_member.code}
+        resp = self.client.post(url, data)
+        self.assertEqual(404, resp.status_code)
+
+    def test_group_ajax_add_new_member_without_neptun(self):
+        self.login()
+        group = Group.objects.create(name="mytestgroup",
+                semester=Semester.get_current())
+        url = reverse('school.views.group_ajax_add_new_member',
+                kwargs={'gid': group.id})
+        new_member = Person.objects.get(user=self.user)
+        data = {}
+        with self.assertRaises(MultiValueDictKeyError):
+            self.client.post(url, data)
+        group = Group.objects.get(id=group.id)
+        self.assertNotIn(new_member, group.members.all())
+
+
+    def test_group_ajax_add_new_member_with_nonexistent_member(self):
+        self.login()
+        group = Group.objects.create(name="mytestgroup",
+                semester=Semester.get_current())
+        url = reverse('school.views.group_ajax_add_new_member',
+                kwargs={'gid': group.id})
+        new_member_code = 'ZXY012'  # this should be the ID of a
+                                    # non-existent person, so if it exists,
+        Person.objects.filter(code=new_member_code).delete()  # delete it!
+        data = {'neptun': new_member_code}
+        resp = self.client.post(url, data)
+        self.assertEqual(200, resp.status_code)
+        self.assertTrue(Person.objects.filter(code=new_member_code))
+        new_member = Person.objects.get(code=new_member_code)
+        group = Group.objects.get(id=group.id)
+        self.assertIn(new_member, group.members.all())
+
+
+    def test_group_ajax_remove_member(self):
+        self.login()
+        group = Group.objects.create(name="mytestgroup",
+                semester=Semester.get_current())
+        member = Person.objects.get(user=self.user)
+        group.members.add(member)
+        group.save()
+        url = reverse('school.views.group_ajax_remove_member',
+                kwargs={'gid': group.id})
+        data = {'neptun': member.code}
+        resp = self.client.post(url, data)
+        group = Group.objects.get(id=group.id)
+        self.assertNotIn(member, group.members.all())
+
+
+    def test_group_ajax_remove_member_with_nonexistent_groupid(self):
+        self.login()
+        gid = 1337  # this should be the ID of a non-existent group,
+        Group.objects.filter(id=gid).delete()  # so if it exists, delete it!
+        member = Person.objects.get(user=self.user)
+        url = reverse('school.views.group_ajax_remove_member',
+                kwargs={'gid': gid})
+        data = {'neptun': member.code}
+        resp = self.client.post(url, data)
+        self.assertEqual(404, resp.status_code)
+
+    def test_group_ajax_remove_member_without_neptun(self):
+        self.login()
+        group = Group.objects.create(name="mytestgroup",
+                semester=Semester.get_current())
+        member = Person.objects.get(user=self.user)
+        group.members.add(member)
+        group.save()
+        url = reverse('school.views.group_ajax_remove_member',
+                kwargs={'gid': group.id})
+        data = {}
+        with self.assertRaises(MultiValueDictKeyError):
+            self.client.post(url, data)
+        group = Group.objects.get(id=group.id)
+        self.assertIn(member, group.members.all())
+
+
+    def test_group_ajax_remove_member_with_nonexistent_member(self):
+        self.login()
+        group = Group.objects.create(name="mytestgroup",
+                semester=Semester.get_current())
+        member_code = 'ZXY012'  # this should be the ID of a non-existent
+                                # person, so if it exists,
+        Person.objects.filter(code=member_code).delete()  # delete it!
+        url = reverse('school.views.group_ajax_remove_member',
+                kwargs={'gid': group.id})
+        data = {'neptun': member_code}
+        with self.assertRaises(Person.DoesNotExist):
+            self.client.post(url, data)
+        self.assertFalse(Person.objects.filter(code=member_code).exists())
