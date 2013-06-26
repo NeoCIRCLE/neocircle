@@ -154,3 +154,29 @@ class ViewTestCase(TestCase):
         for member in members:
             self.assertIn(member, group.members.all())
 
+
+    def test_group_new_without_members(self):
+        self.login()
+        url = reverse('school.views.group_new')
+        data = {
+                'name': 'myNewGrp',
+                'semester': Semester.get_current().id,
+                'members': '',
+            }
+        resp = self.client.post(url, data)
+        group = Group.objects.get(name=data['name'])
+        self.assertEqual(Semester.get_current(), group.semester)
+        self.assertFalse(group.members.exists())
+
+
+    def test_group_ajax_add_new_member(self):
+        self.login()
+        group = Group.objects.create(name="mytestgroup",
+                semester=Semester.get_current())
+        url = reverse('school.views.group_ajax_add_new_member',
+                kwargs={'gid': group.id})
+        new_member = Person.objects.get(user=self.user)
+        data = {'neptun': new_member.code}
+        resp = self.client.post(url, data)
+        group = Group.objects.get(id=group.id)
+        self.assertIn(new_member, group.members.all())
