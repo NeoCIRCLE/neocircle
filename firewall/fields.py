@@ -6,7 +6,7 @@ from django.utils.ipv6 import is_valid_ipv6_address
 from south.modelsinspector import add_introspection_rules
 import re
 
-mac_re = re.compile(r'^([0-9a-fA-F]{2}([:-]?|$)){6}$')
+mac_re = re.compile(r'^([0-9a-fA-F]{2}(:|$)){6}$')
 alfanum_re = re.compile(r'^[A-Za-z0-9_-]+$')
 domain_re = re.compile(r'^([A-Za-z0-9_-]\.?)+$')
 ipv4_re = re.compile('^[0-9]+\.([0-9]+)\.([0-9]+)\.([0-9]+)$')
