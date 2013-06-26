@@ -227,7 +227,7 @@ def group_ajax_remove_member(request, gid):
         status = json.dumps({'status': 'Error'})
         messages.error(request, _('Invalid NEPTUN code'))
         return HttpResponse(status)
-    person, created = Person.objects.get_or_create(code=member)
+    person = Person.objects.get(code=member)
     group.members.remove(person)
     group.save()
     return HttpResponse(json.dumps({
