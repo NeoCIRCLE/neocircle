@@ -1,13 +1,13 @@
 from datetime import datetime
 from itertools import chain
-from django.core.exceptions import PermissionDenied, ValidationError
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User, Group as AGroup
 from django.contrib import messages
-from django.core.exceptions import PermissionDenied
 from django.core import signing
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.mail import mail_managers, send_mail
+from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.forms import ModelForm, Textarea
 from django.http import Http404
@@ -18,6 +18,7 @@ from django.utils.decorators import method_decorator
 from django.utils.http import is_safe_url
 from django.utils.translation import get_language as lang
 from django.utils.translation import ugettext_lazy as _
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import *
 from django.views.generic import *
 from one.models import *
@@ -26,7 +27,6 @@ import django.contrib.auth as auth
 import logging
 import json
 import re
-from django.views.decorators.csrf import ensure_csrf_cookie
 
 logger = logging.getLogger(__name__)
 
@@ -122,7 +122,7 @@ def login(request):
     p.save()
     user.backend = 'django.contrib.auth.backends.ModelBackend'
     auth.login(request, user)
-    logger.warning("Shib login with %s" % request.META)
+    logger.info("Shibboleth login with %s" % request.META)
 
     redirect_to = request.REQUEST.get(auth.REDIRECT_FIELD_NAME, '')
     if not is_safe_url(url=redirect_to, host=request.get_host()):
@@ -182,6 +182,7 @@ def group_new(request):
     name = request.POST['name']
     semester = Semester.objects.get(id=request.POST['semester'])
     members_list = re.split('\r?\n', request.POST['members'])
+    members_list = [m for m in members_list if m != '']
     members = []
     for member in members_list:
         if re.match('^[a-zA-Z][a-zA-Z0-9]{5}$', member.strip()) is None:
@@ -198,7 +199,8 @@ def group_new(request):
         group.members.add(member)
     group.owners.add(owner)
     group.save()
-    return redirect('/group/show/%s' % group.id)
+    url = reverse('school.views.group_show', kwargs={'gid': group.id})
+    return redirect(url)
 
 
 @login_required
