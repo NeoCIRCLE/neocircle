@@ -233,7 +233,7 @@ msgstr "Nincs még csoportja."
 
 #: templates/box/group/box.html:42
 msgid "Create a new one, and add your students to the new group."
-msgstr "Hozzon létre egyet, és vegy fel hallgatóit."
+msgstr "Hozzon létre egyet, és vegye fel hallgatóit."
 
 #: templates/box/group/box.html:50
 msgid "Show hidden groups"
