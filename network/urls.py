@@ -1,4 +1,9 @@
-from django.conf.urls import patterns, include, url
+from django.conf.urls import patterns, url
 
-urlpatterns = patterns('',
+from .views import IndexView, HostList, HostDetail
+
+
+urlpatterns = patterns(
+    '',
+    url('^$', IndexView.as_view(), name='network.index'),
 )
