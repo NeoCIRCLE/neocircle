@@ -132,6 +132,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.media',
     'django.core.context_processors.static',
     'django.core.context_processors.tz',
+    'django.core.context_processors.request',
     'django.contrib.messages.context_processors.messages',
     'cloud.context_processors.process_debug',
     'cloud.context_processors.process_stat',
@@ -164,6 +165,8 @@ INSTALLED_APPS = (
     'kombu.transport.django',
     'django_extensions',
     'django_nose',
+    'django_tables2',
+    'crispy_forms',
 )
 
 # A sample logging configuration. The only tangible logging
