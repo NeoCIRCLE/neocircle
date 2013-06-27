@@ -54,3 +54,4 @@ miscellaneous/store-server/store.config
 
 celerybeat-schedule
 celerybeat.pid
+.ropeproject
