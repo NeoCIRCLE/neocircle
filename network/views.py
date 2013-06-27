@@ -5,6 +5,7 @@ from django_tables2 import SingleTableView
 
 from firewall.models import Host
 from .tables import HostTable
+from .forms import HostForm
 
 
 class IndexView(TemplateView):
@@ -20,3 +21,4 @@ class HostList(SingleTableView):
 class HostDetail(UpdateView):
     model = Host
     template_name = "network/host-edit.html"
+    form_class = HostForm
