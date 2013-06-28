@@ -3,7 +3,6 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 admin.autodiscover()
 
-import firewall_gui.urls
 js_info_dict = {
     'packages': ('one', ),
 }
@@ -93,6 +92,4 @@ urlpatterns = patterns(
     url(r'^stat/$', 'one.views.stat'),
     url(r'^sites/(?P<site>[a-zA-Z0-9]+)/$', 'one.views.sites'),
     url(r'^accounts/(?P<site>profile)/$', 'one.views.sites'),
-
-    url(r'^firewall/', include(firewall_gui.urls), ),
 )
