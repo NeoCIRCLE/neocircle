@@ -3,20 +3,17 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 admin.autodiscover()
 
-import one.views
 import firewall_gui.urls
-# import store.views
-import network.urls
-
 js_info_dict = {
     'packages': ('one', ),
 }
 
-urlpatterns = patterns('',
+urlpatterns = patterns(
+    '',
     url(r'^admin/doc/', include('django.contrib.admindocs.urls'), ),
     url(r'^admin/', include(admin.site.urls), ),
 
-    url(r'^network/', include(network.urls), ),
+    url(r'^network/', include('network.urls'), ),
 
 
     url(r'^login/$', 'school.views.login', name='login', ),
@@ -47,7 +44,8 @@ urlpatterns = patterns('',
     url(r'^vm/saveas/(?P<vmid>\d+)$', 'one.views.vm_saveas', ),
     url(r'^vm/credentials/(?P<iid>\d+)$', 'one.views.vm_credentials', ),
     url(r'^ajax/templateWizard/$', 'one.views.ajax_template_wizard', ),
-    url(r'^ajax/templateEditWizard/(?P<id>\d+)/$', 'one.views.ajax_template_edit_wizard', ),
+    url(r'^ajax/templateEditWizard/(?P<id>\d+)/$',
+        'one.views.ajax_template_edit_wizard', ),
     url(r'^ajax/share/(?P<id>\d+)/$', 'one.views.ajax_share_wizard', ),
     url(r'^ajax/share/(?P<id>\d+)/(?P<gid>\d+)$',
         'one.views.ajax_share_wizard', ),
