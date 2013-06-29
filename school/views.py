@@ -237,7 +237,8 @@ def group_ajax_remove_member(request, gid):
 
 @login_required
 def group_ajax_delete(request):
-    group = get_object_or_404(Group, id=request.POST['gid'])
+    gid = request.POST['gid']
+    group = get_object_or_404(Group, id=gid)
     group.delete()
     return HttpResponse(json.dumps({
         'status': 'OK'
