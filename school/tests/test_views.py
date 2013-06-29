@@ -208,6 +208,11 @@ class ViewTestCase(TestCase):
         self.assertNotIn(new_member, group.members.all())
 
 
+    def test_group_ajax_add_new_member_with_invalid_neptun(self):
+        # TODO
+        pass
+
+
     def test_group_ajax_add_new_member_with_nonexistent_member(self):
         self.login()
         group = Group.objects.create(name="mytestgroup",
@@ -268,6 +273,11 @@ class ViewTestCase(TestCase):
         self.assertIn(member, group.members.all())
 
 
+    def test_group_ajax_remove_member_with_invalid_neptun(self):
+        # TODO
+        pass
+
+
     def test_group_ajax_remove_member_with_nonexistent_member(self):
         self.login()
         group = Group.objects.create(name="mytestgroup",
@@ -312,3 +322,94 @@ class ViewTestCase(TestCase):
         self.assertEqual(404, resp.status_code)
 
 
+    def test_group_ajax_owner_autocomplete(self):
+        self.login()
+        query = self.user.last_name[:2]
+        url = reverse('school.views.group_ajax_owner_autocomplete')
+        data = {'q': query}
+        resp = self.client.post(url, data)
+        self.assertEqual(200, resp.status_code)
+        # TODO parse json in response and verify user is found
+
+
+    def test_group_ajax_owner_autocomplete_without_query(self):
+        self.login()
+        url = reverse('school.views.group_ajax_owner_autocomplete')
+        data = {}
+        with self.assertRaises(MultiValueDictKeyError):
+            self.client.post(url, data)
+
+
+    def test_group_ajax_add_new_owner(self):
+        self.login()
+        user_details = UserCloudDetails.objects.get(user=self.user)
+        user_details.share_quota = 10
+        user_details.save()
+        group = Group.objects.create(name="mytestgroup",
+                semester=Semester.get_current())
+        new_owner = Person.objects.get(code=self.user.username)
+        self.assertNotIn(new_owner, group.owners.all())
+        url = reverse('school.views.group_ajax_add_new_owner',
+                kwargs={'gid': group.id})
+        data = {'neptun': new_owner.code}
+        resp = self.client.post(url, data)
+        self.assertEqual(200, resp.status_code)
+        # TODO parse json in response and verify status is OK
+        group = Group.objects.get(id=group.id)
+        self.assertIn(new_owner, group.owners.all())
+
+
+    def test_group_ajax_add_new_owner_without_enough_share_quota(self):
+        self.login()
+        user_details = UserCloudDetails.objects.get(user=self.user)
+        user_details.share_quota = 0
+        user_details.save()
+        group = Group.objects.create(name="mytestgroup",
+                semester=Semester.get_current())
+        new_owner = Person.objects.get(code=self.user.username)
+        self.assertNotIn(new_owner, group.owners.all())
+        url = reverse('school.views.group_ajax_add_new_owner',
+                kwargs={'gid': group.id})
+        data = {'neptun': new_owner.code}
+        resp = self.client.post(url, data)
+        self.assertEqual(200, resp.status_code)
+        # TODO parse json in response and verify status is 'denied'
+        group = Group.objects.get(id=group.id)
+        self.assertNotIn(new_owner, group.owners.all())
+
+
+    def test_group_ajax_add_new_owner_with_nonexistent_group_id(self):
+        self.login()
+        user_details = UserCloudDetails.objects.get(user=self.user)
+        user_details.share_quota = 10
+        user_details.save()
+        gid = 1337  # this should be the ID of a non-existent group,
+        Group.objects.filter(id=gid).delete()  # so if it exists, delete it!
+        new_owner = Person.objects.get(code=self.user.username)
+        url = reverse('school.views.group_ajax_add_new_owner',
+                kwargs={'gid': gid})
+        data = {'neptun': new_owner.code}
+        resp = self.client.post(url, data)
+        self.assertEqual(404, resp.status_code)
+
+    def test_group_ajax_add_new_owner_without_neptun(self):
+        self.login()
+        user_details = UserCloudDetails.objects.get(user=self.user)
+        user_details.share_quota = 10
+        user_details.save()
+        group = Group.objects.create(name="mytestgroup",
+                semester=Semester.get_current())
+        new_owner = Person.objects.get(code=self.user.username)
+        self.assertNotIn(new_owner, group.owners.all())
+        url = reverse('school.views.group_ajax_add_new_owner',
+                kwargs={'gid': group.id})
+        data = {}
+        with self.assertRaises(MultiValueDictKeyError):
+            self.client.post(url, data)
+        group = Group.objects.get(id=group.id)
+        self.assertNotIn(new_owner, group.owners.all())
+
+
+    def test_group_ajax_add_new_owner_with_invalid_neptun(self):
+        # TODO
+        pass
