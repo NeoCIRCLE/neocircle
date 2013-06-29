@@ -130,7 +130,7 @@ class ViewTestCase(TestCase):
         self.assertEqual(200, resp.status_code)
 
 
-    def test_group_show_with_nonexistent_groupid(self):
+    def test_group_show_with_nonexistent_group_id(self):
         self.login()
         gid = 1337  # this should be the ID of a non-existent group,
         Group.objects.filter(id=gid).delete()  # so if it exists, delete it!
@@ -183,7 +183,7 @@ class ViewTestCase(TestCase):
         self.assertIn(new_member, group.members.all())
 
 
-    def test_group_ajax_add_new_member_with_nonexistent_groupid(self):
+    def test_group_ajax_add_new_member_with_nonexistent_group_id(self):
         self.login()
         gid = 1337  # this should be the ID of a non-existent group,
         Group.objects.filter(id=gid).delete()  # so if it exists, delete it!
@@ -241,7 +241,7 @@ class ViewTestCase(TestCase):
         self.assertNotIn(member, group.members.all())
 
 
-    def test_group_ajax_remove_member_with_nonexistent_groupid(self):
+    def test_group_ajax_remove_member_with_nonexistent_group_id(self):
         self.login()
         gid = 1337  # this should be the ID of a non-existent group,
         Group.objects.filter(id=gid).delete()  # so if it exists, delete it!
@@ -281,3 +281,34 @@ class ViewTestCase(TestCase):
         with self.assertRaises(Person.DoesNotExist):
             self.client.post(url, data)
         self.assertFalse(Person.objects.filter(code=member_code).exists())
+
+
+    def test_group_ajax_delete(self):
+        self.login()
+        group = Group.objects.create(name="mytestgroup",
+                semester=Semester.get_current())
+        url = reverse('school.views.group_ajax_delete')
+        data = {'gid': group.id}
+        resp = self.client.post(url, data)
+        self.assertEqual(200, resp.status_code)
+        self.assertFalse(Group.objects.filter(id=group.id).exists())
+
+
+    def test_group_ajax_delete_without_gid(self):
+        self.login()
+        url = reverse('school.views.group_ajax_delete')
+        data = {}
+        with self.assertRaises(MultiValueDictKeyError):
+            self.client.post(url, data)
+
+
+    def test_group_ajax_delete_with_nonexistent_group_id(self):
+        self.login()
+        gid = 1337  # this should be the ID of a non-existent group,
+        Group.objects.filter(id=gid).delete()  # so if it exists, delete it!
+        url = reverse('school.views.group_ajax_delete')
+        data = {'gid': gid}
+        resp = self.client.post(url, data)
+        self.assertEqual(404, resp.status_code)
+
+
