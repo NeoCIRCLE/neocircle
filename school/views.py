@@ -31,6 +31,8 @@ import re
 logger = logging.getLogger(__name__)
 
 
+neptun_re = re.compile('^[a-zA-Z][a-zA-Z0-9]{5}$')
+
 def logout(request):
     auth.logout(request)
     return redirect('/Shibboleth.sso/Logout?return=https%3a%2f%2fcloud.ik.bme.hu%2f')
@@ -185,7 +187,7 @@ def group_new(request):
     members_list = [m for m in members_list if m != '']
     members = []
     for member in members_list:
-        if re.match('^[a-zA-Z][a-zA-Z0-9]{5}$', member.strip()) is None:
+        if neptun_re.match(member.strip()) is None:
             messages.error(request, _('Invalid NEPTUN code found.'))
             return redirect('/')
         person, created = Person.objects.get_or_create(code=member)
@@ -207,7 +209,7 @@ def group_new(request):
 def group_ajax_add_new_member(request, gid):
     group = get_object_or_404(Group, id=gid)
     member = request.POST['neptun']
-    if re.match('^[a-zA-Z][a-zA-Z0-9]{5}$', member.strip()) is None:
+    if neptun_re.match(member.strip()) is None:
         status = json.dumps({'status': 'Error'})
         messages.error(request, _('Invalid NEPTUN code'))
         return HttpResponse(status)
@@ -223,7 +225,7 @@ def group_ajax_add_new_member(request, gid):
 def group_ajax_remove_member(request, gid):
     group = get_object_or_404(Group, id=gid)
     member = request.POST['neptun']
-    if re.match('^[a-zA-Z][a-zA-Z0-9]{5}$', member) is None:
+    if neptun_re.match(member.strip()) is None:
         status = json.dumps({'status': 'Error'})
         messages.error(request, _('Invalid NEPTUN code'))
         return HttpResponse(status)
@@ -237,6 +239,7 @@ def group_ajax_remove_member(request, gid):
 
 @login_required
 def group_ajax_delete(request):
+    # TODO should take parameter in URL using DELETE command
     gid = request.POST['gid']
     group = get_object_or_404(Group, id=gid)
     group.delete()
@@ -247,30 +250,27 @@ def group_ajax_delete(request):
 
 @login_required
 def group_ajax_owner_autocomplete(request):
-
-    users = (
-        User.objects.filter(last_name__istartswith=request.POST['q'])[:5] +
-        User.objects.filter(first_name__istartswith=request.POST['q'])[:5] +
-        User.objects.filter(username__istartswith=request.POST['q'])[:5])
-    results = map(lambda u: {
-        'name': u.get_full_name(),
-        'neptun': u.username}, users)
+    # TODO should be renamed to something like 'user_ajax_autocomplete'
+    query = request.POST['q']
+    users = chain(User.objects.filter(last_name__istartswith=query)[:5],
+                  User.objects.filter(first_name__istartswith=query)[:5],
+                  User.objects.filter(username__istartswith=query)[:5])
+    results = [{'name': user.get_full_name(),
+                'neptun': user.username} for user in users]
     return HttpResponse(json.dumps(results, ensure_ascii=False))
 
 
 @login_required
 def group_ajax_add_new_owner(request, gid):
-    if request.user.cloud_details.share_quota == 0:
-        return HttpResponse({'status': 'denied'})
+    if request.user.cloud_details.share_quota <= 0:
+        return HttpResponse(json.dumps({'status': 'denied'}))
     group = get_object_or_404(Group, id=gid)
     member = request.POST['neptun']
-    if re.match('^[a-zA-Z][a-zA-Z0-9]{5}$', member.strip()) is None:
+    if neptun_re.match(member.strip()) is None:
         status = json.dumps({'status': 'Error'})
         messages.error(request, _('Invalid NEPTUN code'))
         return HttpResponse(status)
     person, created = Person.objects.get_or_create(code=member)
     group.owners.add(person)
     group.save()
-    return HttpResponse(json.dumps({
-        'status': 'OK'
-    }))
+    return HttpResponse(json.dumps({'status': 'OK'}))
