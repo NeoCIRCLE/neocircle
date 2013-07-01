@@ -6,15 +6,17 @@ from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.utils.datastructures import MultiValueDictKeyError
 from ..models import create_user_profile, Person, Course, Semester, Group
-from one.models import UserCloudDetails
+from one.models import (UserCloudDetails, Disk, InstanceType, Network,
+        Template)
+import json
 
 class ViewTestCase(TestCase):
     def setUp(self):
         self.client = Client()
         date = datetime.now().date()
         delta = timedelta(weeks=7)
-        semester= Semester.objects.create(name="testsem", start=date-delta,
-                    end=date+delta)
+        self.semester = Semester.objects.create(name="testsem",
+                start=date-delta, end=date+delta)
         course1 = Course.objects.create(code='tccode1',
                 name='testcourse1', short_name='tc1')
         course2 = Course.objects.create(code='tccode2',
@@ -23,15 +25,15 @@ class ViewTestCase(TestCase):
         nonexistent_course_code2 = 'caringforunicorns'
         affiliation1 = AuthGroup.objects.create(name='chalktrademanager')
         self.group1 = Group.objects.create(name=affiliation1.name,
-                semester=semester, course=course1)
+                semester=self.semester, course=course1)
         self.http_headers = {
             'niifPersonOrgID': 'ABUZER',
             'niifEduPersonHeldCourse': ';'.join(
                 [course1.code, nonexistent_course_code1]),
             'niifEduPersonAttendedCourse': ';'.join(
                 [course2.code, nonexistent_course_code2]),
-            'givenName': 'User',
-            'sn': 'Test',
+            'givenName': 'Test',
+            'sn': 'User',
             'email': 'test.user@testsite.hu',
             'affiliation': ';'.join([affiliation1.name])}
 
@@ -49,11 +51,17 @@ class ViewTestCase(TestCase):
         return resp
 
 
+    #
+    # school.views.logout
+    #
     def test_logout(self):
         resp = self.client.get(reverse('logout'), follow=False)
         self.assertEqual(302, resp.status_code)
 
 
+    #
+    # school.views.login
+    #
     def test_login(self):
         resp = self.login(follow=True)
         self.assertEqual(200, resp.status_code)
@@ -85,6 +93,9 @@ class ViewTestCase(TestCase):
         self.assertEqual(200, resp.status_code)
 
 
+    #
+    # school.views.language
+    #
     def test_language(self):
         self.login()
         p = Person.objects.get(user=self.user)
@@ -100,8 +111,8 @@ class ViewTestCase(TestCase):
     def test_language_with_invalid_parameter(self):
         self.login()
         lang_before = Person.objects.get(user=self.user).language
-        new_lang = u'nemvanez' # invalid language
-        url = reverse('school.views.language', kwargs={'lang': new_lang})
+        invalid_lang = u'nemvanez'
+        url = reverse('school.views.language', kwargs={'lang': invalid_lang})
         self.http_headers['HTTP_REFERER'] = '/'
         resp = self.client.get(url, follow=False, **self.http_headers)
         self.assertEqual(302, resp.status_code)
@@ -119,11 +130,22 @@ class ViewTestCase(TestCase):
         self.assertEqual(302, resp.status_code)
 
 
+    #
+    # school.views.group_show
+    #
     def test_group_show(self):
         self.login()
         ucd = UserCloudDetails.objects.get(user=self.user)
         ucd.share_quota = 10
         ucd.save()
+        disk = Disk.objects.create(name="testdsk1")
+        insttype = InstanceType.objects.create(name="testtype", CPU=4,
+                RAM=4096, credit=4)
+        ntwrk = Network.objects.create(name="testntwrk", nat=False,
+                public=True)
+        tmplt = Template.objects.create(name="testtmplt1", disk=disk,
+                instance_type=insttype, network=ntwrk, owner=self.user,
+                state='READY')
         gid = self.group1.id
         url = reverse('school.views.group_show', kwargs={'gid': gid})
         resp = self.client.get(url)
@@ -139,6 +161,9 @@ class ViewTestCase(TestCase):
         self.assertEqual(404, resp.status_code)
 
 
+    #
+    # school.views.group_new
+    #
     def test_group_new(self):
         self.login()
         url = reverse('school.views.group_new')
@@ -148,7 +173,7 @@ class ViewTestCase(TestCase):
                 'name': 'myNewGrp',
                 'semester': Semester.get_current().id,
                 'members': '\n'.join([m.code for m in members]),
-            }
+                }
         resp = self.client.post(url, data)
         group = Group.objects.get(name=data['name'])
         self.assertEqual(Semester.get_current(), group.semester)
@@ -163,13 +188,28 @@ class ViewTestCase(TestCase):
                 'name': 'myNewGrp',
                 'semester': Semester.get_current().id,
                 'members': '',
-            }
+                }
         resp = self.client.post(url, data)
         group = Group.objects.get(name=data['name'])
         self.assertEqual(Semester.get_current(), group.semester)
         self.assertFalse(group.members.exists())
 
 
+    def test_group_new_with_invalid_neptun(self):
+        self.login()
+        url = reverse('school.views.group_new')
+        data = {
+                'name': 'myNewGrp',
+                'semester': Semester.get_current().id,
+                'members': '1ABC123',  # invalid neptun
+                }
+        resp = self.client.post(url, data)
+        self.assertFalse(Group.objects.filter(name=data['name']).exists())
+
+
+    #
+    # school.views.group_ajax_add_new_member
+    #
     def test_group_ajax_add_new_member(self):
         self.login()
         group = Group.objects.create(name="mytestgroup",
@@ -179,6 +219,7 @@ class ViewTestCase(TestCase):
         new_member = Person.objects.get(user=self.user)
         data = {'neptun': new_member.code}
         resp = self.client.post(url, data)
+        self.assertEqual(200, resp.status_code)
         group = Group.objects.get(id=group.id)
         self.assertIn(new_member, group.members.all())
 
@@ -193,6 +234,7 @@ class ViewTestCase(TestCase):
         data = {'neptun': new_member.code}
         resp = self.client.post(url, data)
         self.assertEqual(404, resp.status_code)
+
 
     def test_group_ajax_add_new_member_without_neptun(self):
         self.login()
@@ -209,8 +251,20 @@ class ViewTestCase(TestCase):
 
 
     def test_group_ajax_add_new_member_with_invalid_neptun(self):
-        # TODO
-        pass
+        self.login()
+        group = Group.objects.create(name="mytestgroup",
+                semester=Semester.get_current())
+        url = reverse('school.views.group_ajax_add_new_member',
+                kwargs={'gid': group.id})
+        new_member = Person.objects.get(user=self.user)
+        self.assertNotIn(new_member, group.members.all())
+        data = {'neptun': '1' + new_member.code}
+        resp = self.client.post(url, data)
+        self.assertEqual(200, resp.status_code)
+        content = json.loads(resp.content)
+        self.assertEqual('Error', content['status'])
+        group = Group.objects.get(id=group.id)
+        self.assertNotIn(new_member, group.members.all())
 
 
     def test_group_ajax_add_new_member_with_nonexistent_member(self):
@@ -231,6 +285,9 @@ class ViewTestCase(TestCase):
         self.assertIn(new_member, group.members.all())
 
 
+    #
+    # school.views.group_ajax_remove_member
+    #
     def test_group_ajax_remove_member(self):
         self.login()
         group = Group.objects.create(name="mytestgroup",
@@ -242,6 +299,7 @@ class ViewTestCase(TestCase):
                 kwargs={'gid': group.id})
         data = {'neptun': member.code}
         resp = self.client.post(url, data)
+        self.assertEqual(200, resp.status_code)
         group = Group.objects.get(id=group.id)
         self.assertNotIn(member, group.members.all())
 
@@ -256,6 +314,7 @@ class ViewTestCase(TestCase):
         data = {'neptun': member.code}
         resp = self.client.post(url, data)
         self.assertEqual(404, resp.status_code)
+
 
     def test_group_ajax_remove_member_without_neptun(self):
         self.login()
@@ -274,8 +333,21 @@ class ViewTestCase(TestCase):
 
 
     def test_group_ajax_remove_member_with_invalid_neptun(self):
-        # TODO
-        pass
+        self.login()
+        group = Group.objects.create(name="mytestgroup",
+                semester=Semester.get_current())
+        member = Person.objects.get(user=self.user)
+        group.members.add(member)
+        group.save()
+        url = reverse('school.views.group_ajax_remove_member',
+                kwargs={'gid': group.id})
+        data = {'neptun': '1' + member.code}  # invalid Neptun code
+        resp = self.client.post(url, data)
+        self.assertEqual(200, resp.status_code)
+        content = json.loads(resp.content)
+        self.assertEqual('Error', content['status'])
+        group = Group.objects.get(id=group.id)
+        self.assertIn(member, group.members.all())
 
 
     def test_group_ajax_remove_member_with_nonexistent_member(self):
@@ -293,6 +365,9 @@ class ViewTestCase(TestCase):
         self.assertFalse(Person.objects.filter(code=member_code).exists())
 
 
+    #
+    # school.views.group_ajax_delete
+    #
     def test_group_ajax_delete(self):
         self.login()
         group = Group.objects.create(name="mytestgroup",
@@ -322,6 +397,9 @@ class ViewTestCase(TestCase):
         self.assertEqual(404, resp.status_code)
 
 
+    #
+    # school.views.group_ajax_owner_autocomplete
+    #
     def test_group_ajax_owner_autocomplete(self):
         self.login()
         query = self.user.last_name[:2]
@@ -329,7 +407,10 @@ class ViewTestCase(TestCase):
         data = {'q': query}
         resp = self.client.post(url, data)
         self.assertEqual(200, resp.status_code)
-        # TODO parse json in response and verify user is found
+        content = json.loads(resp.content)
+        user_data = {'name': self.user.get_full_name(),
+                     'neptun': self.user.username}
+        self.assertIn(user_data, content)
 
 
     def test_group_ajax_owner_autocomplete_without_query(self):
@@ -340,6 +421,9 @@ class ViewTestCase(TestCase):
             self.client.post(url, data)
 
 
+    #
+    # school.views.group_ajax_add_new_owner
+    #
     def test_group_ajax_add_new_owner(self):
         self.login()
         user_details = UserCloudDetails.objects.get(user=self.user)
@@ -354,7 +438,8 @@ class ViewTestCase(TestCase):
         data = {'neptun': new_owner.code}
         resp = self.client.post(url, data)
         self.assertEqual(200, resp.status_code)
-        # TODO parse json in response and verify status is OK
+        content = json.loads(resp.content)
+        self.assertEqual('OK', content['status'])
         group = Group.objects.get(id=group.id)
         self.assertIn(new_owner, group.owners.all())
 
@@ -373,7 +458,8 @@ class ViewTestCase(TestCase):
         data = {'neptun': new_owner.code}
         resp = self.client.post(url, data)
         self.assertEqual(200, resp.status_code)
-        # TODO parse json in response and verify status is 'denied'
+        content = json.loads(resp.content)
+        self.assertEqual('denied', content['status'])
         group = Group.objects.get(id=group.id)
         self.assertNotIn(new_owner, group.owners.all())
 
@@ -411,5 +497,20 @@ class ViewTestCase(TestCase):
 
 
     def test_group_ajax_add_new_owner_with_invalid_neptun(self):
-        # TODO
-        pass
+        self.login()
+        user_details = UserCloudDetails.objects.get(user=self.user)
+        user_details.share_quota = 10
+        user_details.save()
+        group = Group.objects.create(name="mytestgroup",
+                semester=Semester.get_current())
+        new_owner = Person.objects.get(code=self.user.username)
+        self.assertNotIn(new_owner, group.owners.all())
+        url = reverse('school.views.group_ajax_add_new_owner',
+                kwargs={'gid': group.id})
+        data = {'neptun': '1' + new_owner.code}
+        resp = self.client.post(url, data)
+        self.assertEqual(200, resp.status_code)
+        content = json.loads(resp.content)
+        self.assertEqual('Error', content['status'])
+        group = Group.objects.get(id=group.id)
+        self.assertNotIn(new_owner, group.owners.all())
