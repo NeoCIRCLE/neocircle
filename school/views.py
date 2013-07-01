@@ -11,7 +11,8 @@ from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.forms import ModelForm, Textarea
 from django.http import Http404
-from django.shortcuts import render, render_to_response, get_object_or_404, redirect
+from django.shortcuts import (render, render_to_response, get_object_or_404,
+        redirect)
 from django.template import RequestContext
 from django.template.loader import render_to_string
 from django.utils.decorators import method_decorator
