@@ -2,11 +2,6 @@ from django.test import TestCase
 from django.contrib.auth.models import User
 from models import Disk, Instance, InstanceType, Network, Template, UserCloudDetails
 
-class ViewsTestCase(TestCase):
-    def test_index(self):
-        '''Test whether index is reachable.'''
-        resp = self.client.get('/', follow=True)
-        self.assertEqual(resp.status_code, 200)
 
 class UserCloudDetailsTestCase(TestCase):
     def setUp(self):
