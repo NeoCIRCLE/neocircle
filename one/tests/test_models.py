@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
-from models import Disk, Instance, InstanceType, Network, Template, UserCloudDetails
+from ..models import Disk, Instance, InstanceType, Network, Template, UserCloudDetails
 
 
 class UserCloudDetailsTestCase(TestCase):
