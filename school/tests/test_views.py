@@ -12,7 +12,6 @@ import json
 
 class ViewTestCase(TestCase):
     def setUp(self):
-        self.client = Client()
         date = datetime.now().date()
         delta = timedelta(weeks=7)
         self.semester = Semester.objects.create(
