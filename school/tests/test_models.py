@@ -1,13 +1,15 @@
 from datetime import datetime, timedelta
 from django.test import TestCase
-from django.contrib.auth.models import User, Group as AuthGroup
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from ..models import create_user_profile, Person, Course, Semester, Group
+
 
 class CreateUserProfileTestCase(TestCase):
     def setUp(self):
         self.user = User(username="testuser", password="testpass",
-                email="test@mail.com", first_name="Test", last_name="User")
+                         email="test@mail.com", first_name="Test",
+                         last_name="User")
         Person.objects.all().delete()
         with self.assertRaises(Person.DoesNotExist):
             Person.objects.get(code=self.user.username)
@@ -23,6 +25,7 @@ class CreateUserProfileTestCase(TestCase):
         create_user_profile(self.user.__class__, self.user, True)
         self.assertIsNotNone(Person.objects.get(code=self.user.username))
 
+
 class PersonTestCase(TestCase):
     """Test 'static' Person facts."""
     def test_language_code_in_choices(self):
@@ -32,11 +35,13 @@ class PersonTestCase(TestCase):
         choice_codes = [code for (code, _) in language_field.choices]
         self.assertIn(language_field.default, choice_codes)
 
+
 class PersonWithUserTestCase(TestCase):
     """Test Person entities which have their user attribute set."""
     def setUp(self):
         self.user = User(username="testuser", password="testpass",
-                email="test@mail.com", first_name="Test", last_name="User")
+                         email="test@mail.com", first_name="Test",
+                         last_name="User")
         Person.objects.all().delete()
         self.person = Person.objects.create(code='testcode', user=self.user)
 
@@ -60,6 +65,7 @@ class PersonWithUserTestCase(TestCase):
         self.person.user.last_name = None
         self.assertIsNotNone(self.person.__unicode__())
 
+
 class PersonWithoutUserTestCase(TestCase):
     """Test Person entities which doesn't have their user attribute set."""
     def setUp(self):
@@ -78,6 +84,7 @@ class PersonWithoutUserTestCase(TestCase):
     def test_unicode(self):
         self.assertIsNotNone(self.person.__unicode__())
 
+
 class CourseTestCase(TestCase):
     def setUp(self):
         now = datetime.now()
@@ -85,10 +92,10 @@ class CourseTestCase(TestCase):
         delta = timedelta(weeks=7)
         self.testperson1 = Person.objects.create(code="testperson1")
         self.testperson2 = Person.objects.create(code="testperson2")
-        self.testsemester = Semester.objects.create(name="testsemester",
-                start=date-delta, end=date+delta)
-        self.testcourse = Course.objects.create(code="testcode",
-                name="testname", short_name="tn")
+        self.testsemester = Semester.objects.create(
+            name="testsemester", start=date-delta, end=date+delta)
+        self.testcourse = Course.objects.create(
+            code="testcode", name="testname", short_name="tn")
         self.testcourse.owners.add(self.testperson1, self.testperson2)
 
     def test_get_or_create_default_group(self):
@@ -118,18 +125,19 @@ class CourseTestCase(TestCase):
         self.testcourse.short_name = None
         self.assertIsNotNone(self.testcourse.short())
 
+
 class SemesterTestCase(TestCase):
     def setUp(self):
         now = datetime.now()
         date = now.date()
         self.now = now
         delta = timedelta(weeks=7)
-        self.last_semester = Semester.objects.create(name="testsem1",
-                start=date-3*delta, end=date-delta)
-        self.current_semester = Semester.objects.create(name="testsem2",
-                start=date-delta, end=date+delta)
-        self.next_semester = Semester.objects.create(name="testsem3",
-                start=date+delta, end=date+3*delta)
+        self.last_semester = Semester.objects.create(
+            name="testsem1", start=date-3*delta, end=date-delta)
+        self.current_semester = Semester.objects.create(
+            name="testsem2", start=date-delta, end=date+delta)
+        self.next_semester = Semester.objects.create(
+            name="testsem3", start=date+delta, end=date+3*delta)
 
     def test_is_on(self):
         self.assertFalse(self.last_semester.is_on(self.now))
@@ -146,16 +154,17 @@ class SemesterTestCase(TestCase):
     def test_unicode(self):
         self.current_semester.__unicode__()
 
+
 class GroupTestCase(TestCase):
     def setUp(self):
         date = datetime.now().date()
         delta = timedelta(weeks=7)
-        semester = Semester.objects.create(name="testsem",
-                start=date-delta, end=date+delta)
-        self.testcourse = Course.objects.create(code="testcode",
-                name="testname", short_name="tn")
-        self.testgroup = Group.objects.create(name="testgrp",
-                semester=semester, course=self.testcourse)
+        semester = Semester.objects.create(
+            name="testsem", start=date-delta, end=date+delta)
+        self.testcourse = Course.objects.create(
+            code="testcode", name="testname", short_name="tn")
+        self.testgroup = Group.objects.create(
+            name="testgrp", semester=semester, course=self.testcourse)
 
     def test_owner_list(self):
         self.assertIsNotNone(self.testgroup.owner_list())
@@ -184,4 +193,3 @@ class GroupTestCase(TestCase):
 
     def test_get_absolute_url(self):
         self.assertIsNotNone(self.testgroup.get_absolute_url())
-
