@@ -4,6 +4,8 @@ nev=dev-$(hostname)
 sudo sed -i /etc/hosts -e "/127.0.1.1/ s/.*/127.0.1.1 $nev.cloud.ik.bme.hu $nev/"
 sudo tee /etc/hostname <<<$nev
 sudo hostname $nev
+sudo /etc/init.d/rabbitmq-server stop || true
+sudo /etc/init.d/rabbitmq-server start
 
 sudo pip install django_extensions
 sudo pip install django-nose
