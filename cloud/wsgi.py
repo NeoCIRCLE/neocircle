@@ -23,6 +23,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "cloud.settings.prod")
 from django.core.wsgi import get_wsgi_application
 _application = get_wsgi_application()
 
+
 def application(environ, start_response):
     # copy DJANGO_* wsgi-env vars to process-env
     for i in environ.keys():

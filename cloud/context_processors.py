@@ -1,11 +1,10 @@
-import json
-import subprocess
-
 from django.conf import settings
 from django.core.cache import cache
 
+
 def process_debug(req):
     return {'DEBUG': settings.DEBUG}
+
 
 def process_stat(req):
     if settings.STAT_DEBUG:
@@ -27,6 +26,7 @@ def process_stat(req):
         'STAT_DEBUG': settings.STAT_DEBUG,
         'cloud_stat': stat,
     }
+
 
 def process_release(req):
     return {

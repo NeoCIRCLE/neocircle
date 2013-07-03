@@ -1,6 +1,6 @@
 # coding=utf8
 # Django production settings for cloud project.
-from .base import *
+from .base import *  # NOQA
 
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG
