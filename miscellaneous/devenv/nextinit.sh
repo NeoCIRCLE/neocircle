@@ -1,5 +1,10 @@
 #!/bin/bash
 
+nev=dev-$(hostname)
+sudo sed -i /etc/hosts -e "/127.0.1.1/ s/.*/127.0.1.1/$nev.cloud.ik.bme.hu $nev/"
+sudo tee /etc/hostname <<<$nev
+sudo hostname $nev
+
 sudo pip install django_extensions
 sudo pip install django-nose
 sudo pip install django-debug-toolbar
