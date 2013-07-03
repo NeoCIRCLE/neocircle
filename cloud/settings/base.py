@@ -270,11 +270,14 @@ DELETE_VM = True
 EMAIL_HOST = '152.66.243.92'  # giccero ipv4
 CLOUD_URL = 'https://cloud.ik.bme.hu/'
 try:
+    current_dir = os.getcwd()
     os.chdir('/opt/webadmin/cloud/')
     RELEASE = subprocess.check_output(
         ['/usr/bin/git', 'describe', '--tags', '--abbrev=4'])
 except:
     RELEASE = 'n/a'
+finally:
+    os.chdir(current_dir)
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
