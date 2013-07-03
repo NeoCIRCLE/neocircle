@@ -57,7 +57,12 @@ user_manager = FAKEUserManager.sh
 temp_dir = /tmp/dl
 EOF
 
-for i in cloudstore toplist django
+#Refresh oned config
+cp /opt/webadmin/cloud/miscellaneous/devenv/oned.conf /etc/one/oned.conf
+ln -s /opt/webadmin/cloud/miscellaneous/celery/opennebula_celery.py /opt/update_state
+sudo /etc/init.d/opennebula restart
+
+for i in cloudstore toplist django celeryone celery
 do
     sudo cp /opt/webadmin/cloud/miscellaneous/devenv/$i.conf /etc/init/
     sudo start $i
