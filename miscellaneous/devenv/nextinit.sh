@@ -1,7 +1,7 @@
 #!/bin/bash
 
 nev=dev-$(hostname)
-sudo sed -i /etc/hosts -e "/127.0.1.1/ s/.*/127.0.1.1/$nev.cloud.ik.bme.hu $nev/"
+sudo sed -i /etc/hosts -e "/127.0.1.1/ s/.*/127.0.1.1 $nev.cloud.ik.bme.hu $nev/"
 sudo tee /etc/hostname <<<$nev
 sudo hostname $nev
 
