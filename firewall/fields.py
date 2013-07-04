@@ -78,7 +78,7 @@ def val_mx(value):
 
     Expected form is <priority>:<hostname>.
     """
-    mx = self.address.split(':', 1)
+    mx = value.split(':', 1)
     if not (len(mx) == 2 and mx[0].isdigit() and
             domain_re.match(mx[1])):
         raise ValidationError(_("Bad MX address format. "
