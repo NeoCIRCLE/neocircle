@@ -54,10 +54,12 @@ def firewall_api(request):
                     translation.activate(lang)
                     msg = render_to_string(
                         'mails/notification-ban-now.txt',
-                        {'user': user,
-                        'bl': obj,
-                        'instance:': obj.host.instance_set.get(),
-                        'url': settings.CLOUD_URL})
+                        {
+                            'user': user,
+                            'bl': obj,
+                            'instance:': obj.host.instance_set.get(),
+                            'url': settings.CLOUD_URL
+                        })
                     SendMailTask.delay(
                         to=obj.host.owner.email,
                         subject='[IK Cloud] %s' %
