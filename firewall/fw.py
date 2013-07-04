@@ -136,7 +136,7 @@ class Firewall:
 
         self.iptables('-N PUB_OUT')
 
-        self.iptables('-A FORWARD -m set --match-set blacklist src,dst'
+        self.iptables('-A FORWARD -m set --match-set blacklist src,dst '
                       '-j DROP')
         self.iptables('-A FORWARD -m state --state INVALID -g LOG_DROP')
         self.iptables('-A FORWARD -m state --state ESTABLISHED,RELATED '
@@ -211,7 +211,7 @@ class Firewall:
                          '--to-source 10.3.255.254')  # man elerheto legyen
         self.iptablesnat('-A POSTROUTING -o vlan0008 -j SNAT '
                          '--to-source 10.0.0.247')  # wolf network for printing
-        self.iptablesnat('-A POSTROUTING -s 10.3.0.0/16 -p udp --dport 53'
+        self.iptablesnat('-A POSTROUTING -s 10.3.0.0/16 -p udp --dport 53 '
                          '-o vlan0002 -j SNAT ''--to-source %s' %
                          self.pub.ipv4)  # kulonben nem megy a dns man-ban
 
