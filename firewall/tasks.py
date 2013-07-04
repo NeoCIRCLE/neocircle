@@ -1,25 +1,31 @@
 from celery.task import Task, PeriodicTask
 import celery
 from django.core.cache import cache
-import os
-import time
 from firewall.fw import *
 import django.conf
 
 settings = django.conf.settings.FIREWALL_SETTINGS
 
+
 @celery.task
 def reload_dns_task(data):
     pass
+
+
 @celery.task
 def reload_firewall_task(data4, data6):
     pass
+
+
 @celery.task
 def reload_dhcp_task(data):
     pass
+
+
 @celery.task
 def reload_blacklist_task(data):
     pass
+
 
 class Periodic(PeriodicTask):
     run_every = timedelta(seconds=10)
@@ -48,6 +54,7 @@ class Periodic(PeriodicTask):
             reload_blacklist_task.delay(list(ipset()))
             print "blacklist ujratoltese kesz"
 
+
 class ReloadTask(Task):
     def run(self, type='Host'):
 
@@ -64,4 +71,3 @@ class ReloadTask(Task):
             cache.add("blacklist_lock", "true", 30)
 
         print type
-
