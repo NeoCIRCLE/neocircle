@@ -83,6 +83,10 @@ class Person(models.Model):
         else:
             return self.code
 
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super(Person, self).save(*args, **kwargs)
+
     class Meta:
         verbose_name = _('person')
         verbose_name_plural = _('persons')
