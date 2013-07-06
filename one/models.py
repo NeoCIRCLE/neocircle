@@ -70,7 +70,7 @@ class UserCloudDetails(models.Model):
 
         try:
             self.ssh_key.key = pub
-        except:
+        except AttributeError:
             self.ssh_key = SshKey(user=self.user, key=pub)
         self.ssh_key.save()
         self.ssh_key_id = self.ssh_key.id
@@ -79,25 +79,34 @@ class UserCloudDetails(models.Model):
     def reset_smb(self):
         """Generate new Samba password."""
         self.smb_password = pwgen()
+        self.save()
 
     def get_weighted_instance_count(self):
+        states = ['ACTIVE', 'PENDING']
         credits = [i.template.instance_type.credit
-                   for i in self.user.instance_set.all()
-                   if i.state in ('ACTIVE', 'PENDING', )]
+                   for i in self.user.instance_set.filter(state__in=states)]
         return sum(credits)
 
     def get_instance_pc(self):
-        return 100 * self.get_weighted_instance_count() / self.instance_quota
+        """Get what percent of the user's instance quota is in use."""
+        inst_quota = self.instance_quota
+        if inst_quota <= 0:
+            return 100
+        else:
+            return 100 * self.get_weighted_instance_count() / inst_quota
 
     def get_weighted_share_count(self):
-        c = 0
-        for i in Share.objects.filter(owner=self.user).all():
-            c = c + i.template.instance_type.credit * i.instance_limit
-        return c
+        credits = [i.template.instance_type.credit * i.instance_limit
+                   for i in Share.objects.filter(owner=self.user)]
+        return sum(credits)
 
     def get_share_pc(self):
-        assert self.share_quota > 0
-        return 100 * self.get_weighted_share_count() / self.share_quota
+        """Get what percent of the user's share quota is in use."""
+        share_quota = self.share_quota
+        if share_quota <= 0:
+            return 100
+        else:
+            return 100 * self.get_weighted_share_count() / share_quota
 
 
 def set_quota(sender, instance, created, **kwargs):
