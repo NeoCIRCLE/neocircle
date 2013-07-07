@@ -1,6 +1,7 @@
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
+
 class ViewsTestCase(TestCase):
     def test_index(self):
         '''Test whether index is reachable.'''

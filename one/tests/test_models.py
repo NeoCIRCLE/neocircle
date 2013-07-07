@@ -1,8 +1,7 @@
 from datetime import datetime, timedelta
 from django.test import TestCase
 from django.contrib.auth.models import User
-from ..models import (Disk, Instance, InstanceType, Network, Share,
-                      Template, UserCloudDetails)
+from ..models import Disk, Instance, InstanceType, Network, Share, Template
 from school.models import Course, Group, Semester
 
 
@@ -36,8 +35,9 @@ class UserCloudDetailsTestCase(TestCase):
         grp1 = Group.objects.create(name="testgroup1", semester=sem,
                                     course=course1)
         self.share1 = Share.objects.create(name="testshare1", group=grp1,
-                                     template=tmplt1, owner=user,
-                                     instance_limit=2, per_user_limit=1)
+                                           template=tmplt1, owner=user,
+                                           instance_limit=2,
+                                           per_user_limit=1)
 
     def test_reset_keys(self):
         private_key = self.userdetails.ssh_private_key

@@ -96,8 +96,8 @@ class UserCloudDetails(models.Model):
             return 100 * self.get_weighted_instance_count() / inst_quota
 
     def get_weighted_share_count(self):
-        credits = [i.template.instance_type.credit * i.instance_limit
-                   for i in Share.objects.filter(owner=self.user)]
+        credits = [s.template.instance_type.credit * s.instance_limit
+                   for s in Share.objects.filter(owner=self.user)]
         return sum(credits)
 
     def get_share_pc(self):
@@ -214,10 +214,10 @@ class Share(models.Model):
                                                      'for this share.'))
     per_user_limit = models.IntegerField(verbose_name=_('per user limit'),
                                          help_text=_('Maximal count of '
-                                                     'instances launchable by '
-                                                     'a single user.'))
-    owner = models.ForeignKey(
-        User, null=True, blank=True, related_name='share_set')
+                                                     'instances launchable '
+                                                     'by a single user.'))
+    owner = models.ForeignKey(User, null=True, blank=True,
+                              related_name='share_set')
 
     class Meta:
         ordering = ['group', 'template', 'owner', ]
