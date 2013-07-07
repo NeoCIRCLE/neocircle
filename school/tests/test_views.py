@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 from django.test import TestCase
-from django.test.client import Client
 from django.contrib.auth.models import User, Group as AuthGroup
 from django.core.urlresolvers import reverse
 from django.utils.datastructures import MultiValueDictKeyError
