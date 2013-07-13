@@ -1,8 +1,15 @@
 from datetime import datetime, timedelta
-from django.test import TestCase
+from mock import Mock
+from nose import with_setup
+from nose.tools import raises
 from django.contrib.auth.models import User
-from ..models import Disk, Instance, InstanceType, Network, Share, Template
+from django.core.exceptions import ValidationError
+from django.test import TestCase
+from ..models import (Disk, Instance, InstanceType, Network, Share,
+                      Template, set_quota, reset_keys, OpenSshKeyValidator)
+from ..util import keygen
 from school.models import Course, Group, Semester
+from store.api import StoreApi
 
 
 class UserCloudDetailsTestCase(TestCase):
@@ -99,3 +106,80 @@ class UserCloudDetailsTestCase(TestCase):
         self.userdetails.share_quota = 0
         self.userdetails.save()
         self.assertEqual(100, self.userdetails.get_share_pc())
+
+
+def create_user():
+    return User.objects.create(username="testuser", password="testpass",
+                               email="test@mail.com", first_name="Test",
+                               last_name="User")
+
+
+def delete_user():
+    User.objects.filter(username="testuser").delete()
+
+
+@with_setup(create_user, delete_user)
+def test_set_quota():
+    user = User.objects.get(username="testuser")
+    details = user.cloud_details
+    set_quota(None, details, None)
+    assert StoreApi.userexist(user.username)
+    # TODO check quota value
+
+
+@with_setup(create_user, delete_user)
+def test_reset_keys_when_created():
+    mock_details = Mock()
+    mock_details.reset_smb = Mock(return_value=None)
+    mock_details.reset_ssh_keys = Mock(return_value=None)
+    reset_keys(None, mock_details, True)
+    mock_details.reset_smb.assert_called_once_with()
+    mock_details.reset_ssh_keys.assert_called_once_with()
+
+
+@with_setup(create_user, delete_user)
+def test_reset_keys_when_not_created():
+    mock_details = Mock()
+    mock_details.reset_smb = Mock(return_value=None)
+    mock_details.reset_ssh_keys = Mock(return_value=None)
+    reset_keys(None, mock_details, False)
+    assert not mock_details.reset_smb.called
+    assert not mock_details.reset_ssh_keys.called
+
+
+def test_OpenSshKeyValidator_init_with_types():
+    key_types = ['my-key-type']
+    validator = OpenSshKeyValidator(types=key_types)
+    assert validator.valid_types == key_types
+
+
+def test_OpenSshKeyValidator_with_valid_key():
+    validator = OpenSshKeyValidator()
+    _, public_key = keygen()
+    validator(public_key)
+
+
+@raises(ValidationError)
+def test_OpenSshKeyValidator_with_empty_string_as_key():
+    validator = OpenSshKeyValidator()
+    public_key = ""
+    validator(public_key)
+
+
+@raises(ValidationError)
+def test_OpenSshKeyValidator_with_invalid_key_type():
+    validator = OpenSshKeyValidator()
+    _, public_key = keygen()
+    _key_type, rest = public_key.split(None, 1)
+    public_key = 'my-key-type ' + rest
+    validator(public_key)
+
+
+@raises(ValidationError)
+def test_OpenSshKeyValidator_with_invalid_key_data():
+    validator = OpenSshKeyValidator()
+    _, public_key = keygen()
+    key_parts = public_key.split(None, 2)
+    key_parts[1] = key_parts[1][1:]
+    public_key = ' '.join(key_parts)
+    validator(public_key)
