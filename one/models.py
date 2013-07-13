@@ -64,6 +64,10 @@ class UserCloudDetails(models.Model):
                                      help_text=_('Disk quota in mebibytes.'))
 
     def reset_keys(self):
+        """Deprecated. Use reset_ssh_keys instead."""
+        self.reset_ssh_keys()
+
+    def reset_ssh_keys(self):
         """Delete old SSH key pair and generate new one."""
         pri, pub = keygen()
         self.ssh_private_key = pri
@@ -112,16 +116,12 @@ class UserCloudDetails(models.Model):
 def set_quota(sender, instance, created, **kwargs):
     try:
         if not StoreApi.userexist(instance.user.username):
-            try:
-                password = instance.smb_password
-                quota = instance.disk_quota * 1024
-                key_list = [key.key for key in instance.user.sshkey_set.all()]
-            except:
-                pass
+            password = instance.smb_password
+            quota = instance.disk_quota * 1024
+            key_list = [k.key for k in instance.user.sshkey_set.all()]
             # Create user
-            if not StoreApi.createuser(instance.user.username, password,
-                                       key_list, quota):
-                pass
+            StoreApi.createuser(instance.user.username, password, key_list,
+                                quota)
         else:
             StoreApi.set_quota(instance.user.username,
                                instance.disk_quota * 1024)
@@ -133,7 +133,7 @@ post_save.connect(set_quota, sender=UserCloudDetails)
 def reset_keys(sender, instance, created, **kwargs):
     if created:
         instance.reset_smb()
-        instance.reset_keys()
+        instance.reset_ssh_keys()
 
 post_save.connect(reset_keys, sender=UserCloudDetails)
 
@@ -148,7 +148,7 @@ class OpenSshKeyValidator(object):
 
     def __call__(self, value):
         try:
-            value = "%s comment" % value
+            value = value + ' comment'
             type, key_string, comment = value.split(None, 2)
             if type not in self.valid_types:
                 raise ValidationError(_('OpenSSH key type %s is not '
