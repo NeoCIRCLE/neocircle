@@ -226,6 +226,9 @@ class Share(models.Model):
 
     @classmethod
     def extend_type(cls, t):
+        """Extend the share's type descriptor with absolute deletion and
+           suspension time values based on the current time and intervals
+           already set."""
         t['deletex'] = (datetime.now() + td(seconds=1) + t['delete']
                         if t['delete'] else None)
         t['suspendx'] = (datetime.now() + td(seconds=1) + t['suspend']

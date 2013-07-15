@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from mock import Mock
+from mock import Mock, patch
 from nose import with_setup
 from nose.tools import raises
 from django.contrib.auth.models import User
@@ -128,6 +128,19 @@ def test_set_quota():
 
 
 @with_setup(create_user, delete_user)
+@patch('one.models.StoreApi')
+def test_set_quota_without_store_user(MockStoreApi):
+    MockStoreApi.userexist = Mock(return_value=False)
+    MockStoreApi.createuser = Mock()
+    user = User.objects.get(username="testuser")
+    details = user.cloud_details
+    set_quota(None, details, None)
+    MockStoreApi.userexist.assert_called_once_with(user.username)
+    assert MockStoreApi.createuser.called
+    assert MockStoreApi.createuser.call_count == 1
+
+
+@with_setup(create_user, delete_user)
 def test_reset_keys_when_created():
     mock_details = Mock()
     mock_details.reset_smb = Mock(return_value=None)
@@ -183,3 +196,30 @@ def test_OpenSshKeyValidator_with_invalid_key_data():
     key_parts[1] = key_parts[1][1:]
     public_key = ' '.join(key_parts)
     validator(public_key)
+
+
+def test_Share_extend_type():
+    t = {'delete': timedelta(weeks=2), 'suspend': timedelta(weeks=1)}
+    Share.extend_type(t)
+    assert 'deletex' in t
+    assert 'suspendx' in t
+    assert t['deletex'] is not None
+    assert t['suspendx'] is not None
+
+
+def test_Share_extend_type_with_no_deletion_interval():
+    t = {'delete': None, 'suspend': timedelta(weeks=1)}
+    Share.extend_type(t)
+    assert 'deletex' in t
+    assert 'suspendx' in t
+    assert t['deletex'] is None
+    assert t['suspendx'] is not None
+
+
+def test_Share_extend_type_with_no_suspension_interval():
+    t = {'delete': timedelta(weeks=2), 'suspend': None}
+    Share.extend_type(t)
+    assert 'deletex' in t
+    assert 'suspendx' in t
+    assert t['deletex'] is not None
+    assert t['suspendx'] is None
