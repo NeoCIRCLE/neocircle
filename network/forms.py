@@ -5,7 +5,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, Row, HTML
 from crispy_forms.layout import Div, ButtonHolder, Submit, BaseInput
 
-from firewall.models import Host
+from firewall.models import Host, Vlan
 
 
 class LinkButton(BaseInput):
@@ -68,3 +68,58 @@ class HostForm(ModelForm):
 
     class Meta:
         model = Host
+
+
+class VlanForm(ModelForm):
+    helper = FormHelper()
+    helper.layout = Layout(
+        Div(
+            Row(
+                Div(
+                    Fieldset(
+                        'Identity',
+                        'name',
+                        'vid',
+                        'interface',
+                    ),
+                    Fieldset(
+                        'IPv4',
+                        'net4',
+                        'prefix4',
+                        'ipv4',
+                        'snat_to',
+                        'snat_ip',
+                        'dhcp_pool',
+                    ),
+                    Fieldset(
+                        'IPv6',
+                        'net6',
+                        'prefix6',
+                        'ipv6',
+                    ),
+                    Fieldset(
+                        'Domain name service',
+                        'domain',
+                        'reverse_domain',
+                    ),
+                    Fieldset(
+                        'Info',
+                        'description',
+                        'comment',
+                        # 'created_at',
+                        # 'modified_at',
+                    ),
+                    css_class='span8'),
+                Div(
+                    HTML('<p>hello</p>'),
+                    css_class='span4'),
+            ),
+            ButtonHolder(
+                Submit('submit', 'Save'),
+                LinkButton('back', 'Back', reverse_lazy(
+                    'network.host_list'))
+            ),
+            css_class="form-horizontal"))
+
+    class Meta:
+        model = Vlan
