@@ -1,8 +1,10 @@
 {% load i18n %}
 {% load l10n %}
 
-{% url network.index as u %}
-{% include "network/menu-item.html" with href=u text="Firewall rules" %}
+{% url network.host_list as u %}
+{% include "network/menu-item.html" with href=u text="Hosts" %}
+{% url network.vlan_list as u %}
+{% include "network/menu-item.html" with href=u text="Vlans" %}
 
 
 {# <li><a href="/vlans/">{% trans "Vlans" %}</a></li> #}
