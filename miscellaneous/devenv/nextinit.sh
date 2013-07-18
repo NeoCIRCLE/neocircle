@@ -58,8 +58,8 @@ temp_dir = /tmp/dl
 EOF
 
 #Refresh oned config
-cp /opt/webadmin/cloud/miscellaneous/devenv/oned.conf /etc/one/oned.conf
-ln -s /opt/webadmin/cloud/miscellaneous/celery/opennebula_celery.py /opt/update_state
+sudo cp /opt/webadmin/cloud/miscellaneous/devenv/oned.conf /etc/one/oned.conf
+sudo ln -s /opt/webadmin/cloud/miscellaneous/celery/opennebula_celery.py /opt/update_state
 sudo /etc/init.d/opennebula restart
 
 for i in cloudstore toplist django celeryone celery
