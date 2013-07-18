@@ -12,6 +12,7 @@ class HostTable(Table):
         attrs = {'class': 'table table-striped table-condensed'}
         fields = ('hostname', 'vlan', 'mac', 'ipv4', 'ipv6',
                   'pub_ipv4', 'created_at', 'owner', )
+        order_by = ('vlan', 'hostname', )
 
 
 class VlanTable(Table):
