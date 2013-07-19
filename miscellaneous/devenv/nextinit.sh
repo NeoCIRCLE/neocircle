@@ -59,6 +59,7 @@ EOF
 
 #Refresh oned config
 sudo cp /opt/webadmin/cloud/miscellaneous/devenv/oned.conf /etc/one/oned.conf
+sudo rm -f /opt/update_state
 sudo ln -s /opt/webadmin/cloud/miscellaneous/celery/opennebula_celery.py /opt/update_state
 sudo /etc/init.d/opennebula restart
 
