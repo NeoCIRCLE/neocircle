@@ -1,7 +1,17 @@
 from django_tables2 import Table, A
 from django_tables2.columns import LinkColumn
 
-from firewall.models import Host, Vlan
+from firewall.models import Host, Vlan, Domain
+
+
+class DomainTable(Table):
+    name = LinkColumn('network.domain', args=[A('pk')])
+
+    class Meta:
+        model = Domain
+        attrs = {'class': 'table table-striped table-condensed'}
+        fields = ('name', 'owner', 'ttl', )
+        order_by = ('name', )
 
 
 class HostTable(Table):

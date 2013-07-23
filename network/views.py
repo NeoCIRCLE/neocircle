@@ -4,13 +4,29 @@ from django.core.urlresolvers import reverse_lazy
 
 from django_tables2 import SingleTableView
 
-from firewall.models import Host, Vlan
-from .tables import HostTable, VlanTable, SmallHostTable
-from .forms import HostForm, VlanForm
+from firewall.models import Host, Vlan, Domain
+from .tables import HostTable, VlanTable, SmallHostTable, DomainTable
+from .forms import HostForm, VlanForm, DomainForm
 
 
 class IndexView(TemplateView):
     template_name = "network/index.html"
+
+
+class DomainList(SingleTableView):
+    model = Domain
+    table_class = DomainTable
+    template_name = "network/domain-list.html"
+
+
+class DomainDetail(UpdateView):
+    model = Domain
+    template_name = "network/domain-edit.html"
+    form_class = DomainForm
+
+    def get_success_url(self):
+        if 'pk' in self.kwargs:
+            return reverse_lazy('network.domain', kwargs=self.kwargs)
 
 
 class HostList(SingleTableView):

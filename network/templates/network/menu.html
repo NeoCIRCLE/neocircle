@@ -5,7 +5,8 @@
 {% include "network/menu-item.html" with href=u text="Hosts" %}
 {% url network.vlan_list as u %}
 {% include "network/menu-item.html" with href=u text="Vlans" %}
-
+{% url network.domain_list as u %}
+{% include "network/menu-item.html" with href=u text="Domains" %}
 
 {# <li><a href="/vlans/">{% trans "Vlans" %}</a></li> #}
 {# <li><a href="/vlangroups/">{% trans "Vlan groups" %}</a></li> #}
