@@ -15,6 +15,17 @@ class HostTable(Table):
         order_by = ('vlan', 'hostname', )
 
 
+# inheritance by copy-paste
+class SmallHostTable(Table):
+    hostname = LinkColumn('network.host', args=[A('pk')])
+
+    class Meta:
+        model = Host
+        attrs = {'class': 'table table-striped table-condensed'}
+        fields = ('hostname', 'ipv4')
+        order_by = ('vlan', 'hostname', )
+
+
 class VlanTable(Table):
     name = LinkColumn('network.vlan', args=[A('pk')])
 

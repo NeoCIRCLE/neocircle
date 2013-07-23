@@ -4,7 +4,7 @@ from django.views.generic import UpdateView
 from django_tables2 import SingleTableView
 
 from firewall.models import Host, Vlan
-from .tables import HostTable, VlanTable
+from .tables import HostTable, VlanTable, SmallHostTable
 from .forms import HostForm, VlanForm
 
 
@@ -34,3 +34,9 @@ class VlanDetail(UpdateView):
     model = Vlan
     template_name = "network/vlan-edit.html"
     form_class = VlanForm
+
+    def get_context_data(self, **kwargs):
+        context = super(VlanDetail, self).get_context_data(**kwargs)
+        q = Host.objects.filter(vlan=self.object).all()
+        context['host_list'] = SmallHostTable(q)
+        return context

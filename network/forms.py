@@ -75,44 +75,39 @@ class VlanForm(ModelForm):
     helper.layout = Layout(
         Div(
             Row(
-                Div(
-                    Fieldset(
-                        'Identity',
-                        'name',
-                        'vid',
-                        'interface',
-                    ),
-                    Fieldset(
-                        'IPv4',
-                        'net4',
-                        'prefix4',
-                        'ipv4',
-                        'snat_to',
-                        'snat_ip',
-                        'dhcp_pool',
-                    ),
-                    Fieldset(
-                        'IPv6',
-                        'net6',
-                        'prefix6',
-                        'ipv6',
-                    ),
-                    Fieldset(
-                        'Domain name service',
-                        'domain',
-                        'reverse_domain',
-                    ),
-                    Fieldset(
-                        'Info',
-                        'description',
-                        'comment',
-                        # 'created_at',
-                        # 'modified_at',
-                    ),
-                    css_class='span8'),
-                Div(
-                    HTML('<p>hello</p>'),
-                    css_class='span4'),
+                Fieldset(
+                    'Identity',
+                    'name',
+                    'vid',
+                    'interface',
+                ),
+                Fieldset(
+                    'IPv4',
+                    'net4',
+                    'prefix4',
+                    'ipv4',
+                    'snat_to',
+                    'snat_ip',
+                    'dhcp_pool',
+                ),
+                Fieldset(
+                    'IPv6',
+                    'net6',
+                    'prefix6',
+                    'ipv6',
+                ),
+                Fieldset(
+                    'Domain name service',
+                    'domain',
+                    'reverse_domain',
+                ),
+                Fieldset(
+                    'Info',
+                    'description',
+                    'comment',
+                    # 'created_at',
+                    # 'modified_at',
+                ),
             ),
             ButtonHolder(
                 Submit('submit', 'Save'),
