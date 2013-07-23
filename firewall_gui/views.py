@@ -6,6 +6,8 @@ from django.contrib.auth.models import User
 from firewall.fw import *
 from firewall.models import *
 
+import json
+
 def req_staff(user):
     ''' decorator function for user permission checking '''
     return user.is_staff
