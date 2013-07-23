@@ -50,6 +50,7 @@ class HostForm(ModelForm):
                         'description',
                         'location',
                         'comment',
+                        'owner',
                         # 'created_at',
                         # 'modified_at',
                         # 'id'

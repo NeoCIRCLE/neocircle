@@ -1,5 +1,6 @@
 from django.views.generic import TemplateView
 from django.views.generic import UpdateView
+from django.core.urlresolvers import reverse_lazy
 
 from django_tables2 import SingleTableView
 
@@ -23,6 +24,10 @@ class HostDetail(UpdateView):
     template_name = "network/host-edit.html"
     form_class = HostForm
 
+    def get_success_url(self):
+        if 'pk' in self.kwargs:
+            return reverse_lazy('network.host', kwargs=self.kwargs)
+
 
 class VlanList(SingleTableView):
     model = Vlan
@@ -40,3 +45,5 @@ class VlanDetail(UpdateView):
         q = Host.objects.filter(vlan=self.object).all()
         context['host_list'] = SmallHostTable(q)
         return context
+
+    success_url = reverse_lazy('network.vlan_list')
