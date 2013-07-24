@@ -71,6 +71,8 @@ class VlanDetail(UpdateView):
     model = Vlan
     template_name = "network/vlan-edit.html"
     form_class = VlanForm
+    slug_field = 'vid'
+    slug_url_kwarg = 'vid'
 
     def get_context_data(self, **kwargs):
         context = super(VlanDetail, self).get_context_data(**kwargs)

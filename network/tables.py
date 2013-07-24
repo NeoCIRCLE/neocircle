@@ -37,7 +37,7 @@ class SmallHostTable(Table):
 
 
 class VlanTable(Table):
-    name = LinkColumn('network.vlan', args=[A('pk')])
+    name = LinkColumn('network.vlan', args=[A('vid')])
 
     class Meta:
         model = Vlan

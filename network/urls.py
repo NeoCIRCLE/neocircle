@@ -13,5 +13,5 @@ urlpatterns = patterns(
     url('^hosts/$', HostList.as_view(), name='network.host_list'),
     url('^hosts/(?P<pk>\d+)/$', HostDetail.as_view(), name='network.host'),
     url('^vlans/$', VlanList.as_view(), name='network.vlan_list'),
-    url('^vlans/(?P<pk>\d+)/$', VlanDetail.as_view(), name='network.vlan'),
+    url('^vlans/(?P<vid>\d+)/$', VlanDetail.as_view(), name='network.vlan'),
 )
