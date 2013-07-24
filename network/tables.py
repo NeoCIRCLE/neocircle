@@ -1,7 +1,7 @@
 from django_tables2 import Table, A
 from django_tables2.columns import LinkColumn
 
-from firewall.models import Host, Vlan, Domain
+from firewall.models import Host, Vlan, Domain, Group
 
 
 class DomainTable(Table):
@@ -11,6 +11,16 @@ class DomainTable(Table):
         model = Domain
         attrs = {'class': 'table table-striped table-condensed'}
         fields = ('name', 'owner', 'ttl', )
+        order_by = ('name', )
+
+
+class GroupTable(Table):
+    name = LinkColumn('network.group', args=[A('pk')])
+
+    class Meta:
+        model = Group
+        attrs = {'class': 'table table-striped table-condensed'}
+        fields = ('name', 'description', 'owner', )
         order_by = ('name', )
 
 
