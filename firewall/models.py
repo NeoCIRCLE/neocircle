@@ -642,7 +642,8 @@ class Record(models.Model):
         else:
             self._validate_wo_host()
 
-    def __get_name(self):
+    @property
+    def fqdn(self):
         if self.host and self.type != 'MX':
             if self.type in ['A', 'AAAA']:
                 return self.host.get_fqdn()
@@ -670,7 +671,7 @@ class Record(models.Model):
         return self.address
 
     def get_data(self):
-        name = self.__get_name()
+        name = self.fqdn
         address = self.__get_address()
         if self.host and self.type == 'AAAA' and not self.host.ipv6:
             return None
