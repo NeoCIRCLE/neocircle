@@ -34,6 +34,22 @@ class HostList(SingleTableView):
     table_class = HostTable
     template_name = "network/host-list.html"
 
+    def get_context_data(self, **kwargs):
+        context = super(HostList, self).get_context_data(**kwargs)
+        q = Vlan.objects.all().order_by("name")
+        context['vlans'] = q
+        return context
+
+    def get_table_data(self):
+        vlan_id = self.request.GET.get('vlan')
+        print vlan_id
+        if vlan_id:
+            data = Host.objects.filter(vlan=vlan_id).all()
+        else:
+            data = Host.objects.all()
+
+        return data
+
 
 class HostDetail(UpdateView):
     model = Host

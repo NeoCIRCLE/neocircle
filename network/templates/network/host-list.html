@@ -9,5 +9,13 @@
   <h1>Hosts <small>list of all hosts</small></h1>
 </div>
 
+<ul class="nav nav-pills">
+    <li class="disabled"><a href="#">Filter by vlans</a></li>
+    <li {% if not request.GET.vlan %} class="active"{% endif %}><a href="{{ request.path }}">ALL</a></li>
+    {% for vlan in vlans %}
+    <li{% if request.GET.vlan|add:"0" == vlan.id %} class="active"{% endif %}><a href="?vlan={{ vlan.id }}">{{ vlan.name }}</a></li>
+    {% endfor %}
+</ul>
+
 {% render_table table %}
 {% endblock %}
