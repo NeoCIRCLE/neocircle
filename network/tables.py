@@ -57,12 +57,12 @@ class SmallHostTable(Table):
 
 
 class RecordTable(Table):
-    fqdn = LinkColumn('network.record', args=[A('pk')])
+    fqdn = LinkColumn('network.record', args=[A('pk')], orderable=False)
 
     class Meta:
         model = Record
         attrs = {'class': 'table table-striped table-condensed'}
-        fields = ('type', 'fqdn', 'address', 'ttl', 'host',
+        fields = ('type', 'fqdn', 'host', 'address', 'ttl', 'host',
                   'owner', )
         sequence = ('type', 'fqdn', )
         order_by = 'name'
