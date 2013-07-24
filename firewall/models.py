@@ -155,7 +155,7 @@ class Vlan(models.Model):
     range. The gateway also has an IP address in each range.
     """
 
-    vid = models.IntegerField(unique=True,
+    vid = models.IntegerField(unique=True,  # NOT pk, so can be changed
                               verbose_name=_('VID'),
                               help_text=_('The vlan ID of the subnet.'),
                               validators=[MinValueValidator(1),
