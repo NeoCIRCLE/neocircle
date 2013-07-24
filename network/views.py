@@ -19,6 +19,7 @@ class BlacklistList(SingleTableView):
     model = Blacklist
     table_class = BlacklistTable
     template_name = "network/blacklist-list.html"
+    table_pagination = False
 
 
 class BlacklistDetail(UpdateView):
@@ -35,6 +36,7 @@ class DomainList(SingleTableView):
     model = Domain
     table_class = DomainTable
     template_name = "network/domain-list.html"
+    table_pagination = False
 
 
 class DomainDetail(UpdateView):
@@ -51,6 +53,7 @@ class GroupList(SingleTableView):
     model = Group
     table_class = GroupTable
     template_name = "network/group-list.html"
+    table_pagination = False
 
 
 class GroupDetail(UpdateView):
@@ -67,6 +70,7 @@ class HostList(SingleTableView):
     model = Host
     table_class = HostTable
     template_name = "network/host-list.html"
+    table_pagination = False
 
     def get_context_data(self, **kwargs):
         context = super(HostList, self).get_context_data(**kwargs)
@@ -99,6 +103,7 @@ class RecordList(SingleTableView):
     model = Record
     table_class = RecordTable
     template_name = "network/record-list.html"
+    table_pagination = False
 
 
 class RecordDetail(UpdateView):
@@ -121,6 +126,7 @@ class VlanList(SingleTableView):
     model = Vlan
     table_class = VlanTable
     template_name = "network/vlan-list.html"
+    table_pagination = False
 
 
 class VlanDetail(UpdateView):
