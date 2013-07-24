@@ -1,5 +1,12 @@
 #!/bin/bash
 
+nev=dev-$(hostname|tr -dc 0-9)
+sudo sed -i /etc/hosts -e "/127.0.1.1/ s/.*/127.0.1.1 $nev.cloud.ik.bme.hu $nev/"
+sudo tee /etc/hostname <<<$nev
+sudo hostname $nev
+sudo /etc/init.d/rabbitmq-server stop || true
+sudo /etc/init.d/rabbitmq-server start
+
 sudo pip install django_extensions
 sudo pip install django-nose
 sudo pip install django-debug-toolbar
@@ -50,7 +57,13 @@ user_manager = FAKEUserManager.sh
 temp_dir = /tmp/dl
 EOF
 
-for i in cloudstore toplist django
+#Refresh oned config
+sudo cp /opt/webadmin/cloud/miscellaneous/devenv/oned.conf /etc/one/oned.conf
+sudo rm -f /opt/update_state
+sudo ln -s /opt/webadmin/cloud/miscellaneous/celery/opennebula_celery.py /opt/update_state
+sudo /etc/init.d/opennebula restart
+
+for i in cloudstore toplist django celeryone celery
 do
     sudo cp /opt/webadmin/cloud/miscellaneous/devenv/$i.conf /etc/init/
     sudo start $i

@@ -4,7 +4,9 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.forms import ValidationError
 from django.utils.translation import ugettext_lazy as _
-from firewall.fields import *
+from firewall.fields import (MACAddressField, val_alfanum, val_reverse_domain,
+                             val_domain, val_ipv4, val_ipv6, val_mx,
+                             ipv4_2_ipv6)
 from django.core.validators import MinValueValidator, MaxValueValidator
 import django.conf
 from django.db.models.signals import post_save
@@ -85,7 +87,7 @@ class Rule(models.Model):
                                          "(if type is vlan)."))
     vlangroup = models.ForeignKey('VlanGroup', related_name="rules",
                                   blank=True, null=True, verbose_name=_(
-                                  "vlan group"),
+                                      "vlan group"),
                                   help_text=_("Group of vlans the rule "
                                               "applies to (if type is vlan)."))
     host = models.ForeignKey('Host', related_name="rules", blank=True,
@@ -185,15 +187,17 @@ class Vlan(models.Model):
     ipv4 = models.GenericIPAddressField(protocol='ipv4', unique=True,
                                         verbose_name=_('IPv4 address'),
                                         help_text=_(
-                                        'The IPv4 address of the gateway. '
-                                        'Recommended value is the last valid '
-                                        'address of the subnet, for example '
-                                        '10.4.255.254 for 10.4.0.0/16.'))
+                                            'The IPv4 address of the gateway. '
+                                            'Recommended value is the last '
+                                            'valid address of the subnet, '
+                                            'for example '
+                                            '10.4.255.254 for 10.4.0.0/16.'))
     ipv6 = models.GenericIPAddressField(protocol='ipv6',
                                         unique=True,
                                         verbose_name=_('IPv6 address'),
                                         help_text=_(
-                                        'The IPv6 address of the gateway.'))
+                                            'The IPv6 address of the '
+                                            'gateway.'))
     snat_ip = models.GenericIPAddressField(protocol='ipv4', blank=True,
                                            null=True,
                                            verbose_name=_('NAT IP address'),

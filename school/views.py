@@ -1,39 +1,35 @@
-from datetime import datetime
 from itertools import chain
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User, Group as AGroup
 from django.contrib import messages
-from django.core import signing
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.core.mail import mail_managers, send_mail
 from django.core.urlresolvers import reverse
-from django.db import transaction
-from django.forms import ModelForm, Textarea
-from django.http import Http404
-from django.shortcuts import render, render_to_response, get_object_or_404, redirect
+from django.http import HttpResponse
+from django.shortcuts import (render_to_response, get_object_or_404,
+                              redirect)
 from django.template import RequestContext
-from django.template.loader import render_to_string
-from django.utils.decorators import method_decorator
 from django.utils.http import is_safe_url
-from django.utils.translation import get_language as lang
 from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.csrf import ensure_csrf_cookie
-from django.views.decorators.http import *
-from django.views.generic import *
-from one.models import *
-from school.models import *
+from one.models import Template, UserCloudDetails
+from school.models import Person, Semester, Course, Group
 import django.contrib.auth as auth
 import logging
 import json
 import re
 
+
 logger = logging.getLogger(__name__)
+
+
+neptun_re = re.compile('^[a-zA-Z][a-zA-Z0-9]{5}$')
 
 
 def logout(request):
     auth.logout(request)
-    return redirect('/Shibboleth.sso/Logout?return=https%3a%2f%2fcloud.ik.bme.hu%2f')
+    url = '/Shibboleth.sso/Logout?return=https%3a%2f%2fcloud.ik.bme.hu%2f'
+    return redirect(url)
 
 
 @ensure_csrf_cookie
@@ -51,7 +47,9 @@ def login(request):
     try:
         user.email = request.META['email']
     except KeyError:
-        messages.error(request, _("The identity provider did not pass the mandatory e-mail data."))
+        messages.error(request,
+                       _("The identity provider did not pass the mandatory "
+                       "e-mail data."))
         raise PermissionDenied()
     user.save()
     p, created = Person.objects.get_or_create(code=user.username)
@@ -73,12 +71,11 @@ def login(request):
             try:
                 g.members.add(p)
                 g.save()
-                messages.info(request,
-                        _('Course "%s" added.') % g.course)
+                messages.info(request, _('Course "%s" added.') % g.course)
                 logger.info('Django Course "%s" added.' % g.course)
             except Exception as e:
                 messages.error(request,
-                        _('Failed to add course "%s".') % g.course)
+                               _('Failed to add course "%s".') % g.course)
                 logger.warning("Django ex %s" % e)
 
     held = request.META['niifEduPersonHeldCourse']
@@ -92,10 +89,11 @@ def login(request):
             co.owners.add(p)
             g.owners.add(p)
             messages.info(request,
-                    _('Course "%s" ownership added.') % g.course)
+                          _('Course "%s" ownership added.') % g.course)
         except Exception as e:
             messages.error(request,
-                    _('Failed to add course "%s" ownership.') % g.course)
+                           _('Failed to add course "%s" ownership.')
+                           % g.course)
             logger.warning("Django ex %s" % e)
         co.save()
         g.save()
@@ -116,7 +114,7 @@ def login(request):
             logger.info("Django affiliation group %s added to %s" % (a, p))
         except Exception as e:
             logger.warning("Django FAILed to add affiliation group %s to %s."
-                    " Reason: %s" % (a, p, e))
+                           " Reason: %s" % (a, p, e))
     user.save()
 
     p.save()
@@ -155,7 +153,7 @@ def group_show(request, gid):
     user = request.user
     group = get_object_or_404(Group, id=gid)
 
-    mytemplates = Template.objects.filter(owner=request.user, state='READY')
+    mytemplates = Template.objects.filter(owner=user, state='READY')
     for t in mytemplates:
         t.myshares = t.share_set.filter(group=group)
 
@@ -172,7 +170,7 @@ def group_show(request, gid):
         'mytemplates': mytemplates,
         'publictemplates': publictemplates,
         'noshare': not has_share,
-        'userdetails': UserCloudDetails.objects.get(user=request.user),
+        'userdetails': UserCloudDetails.objects.get(user=user),
         'owners': group.owners.all(),
     }))
 
@@ -185,7 +183,7 @@ def group_new(request):
     members_list = [m for m in members_list if m != '']
     members = []
     for member in members_list:
-        if re.match('^[a-zA-Z][a-zA-Z0-9]{5}$', member.strip()) is None:
+        if neptun_re.match(member.strip()) is None:
             messages.error(request, _('Invalid NEPTUN code found.'))
             return redirect('/')
         person, created = Person.objects.get_or_create(code=member)
@@ -207,7 +205,7 @@ def group_new(request):
 def group_ajax_add_new_member(request, gid):
     group = get_object_or_404(Group, id=gid)
     member = request.POST['neptun']
-    if re.match('^[a-zA-Z][a-zA-Z0-9]{5}$', member.strip()) is None:
+    if neptun_re.match(member.strip()) is None:
         status = json.dumps({'status': 'Error'})
         messages.error(request, _('Invalid NEPTUN code'))
         return HttpResponse(status)
@@ -223,7 +221,7 @@ def group_ajax_add_new_member(request, gid):
 def group_ajax_remove_member(request, gid):
     group = get_object_or_404(Group, id=gid)
     member = request.POST['neptun']
-    if re.match('^[a-zA-Z][a-zA-Z0-9]{5}$', member) is None:
+    if neptun_re.match(member.strip()) is None:
         status = json.dumps({'status': 'Error'})
         messages.error(request, _('Invalid NEPTUN code'))
         return HttpResponse(status)
@@ -237,7 +235,9 @@ def group_ajax_remove_member(request, gid):
 
 @login_required
 def group_ajax_delete(request):
-    group = get_object_or_404(Group, id=request.POST['gid'])
+    # TODO should take parameter in URL using DELETE command
+    gid = request.POST['gid']
+    group = get_object_or_404(Group, id=gid)
     group.delete()
     return HttpResponse(json.dumps({
         'status': 'OK'
@@ -246,30 +246,27 @@ def group_ajax_delete(request):
 
 @login_required
 def group_ajax_owner_autocomplete(request):
-
-    users = (
-        User.objects.filter(last_name__istartswith=request.POST['q'])[:5] +
-        User.objects.filter(first_name__istartswith=request.POST['q'])[:5] +
-        User.objects.filter(username__istartswith=request.POST['q'])[:5])
-    results = map(lambda u: {
-        'name': u.get_full_name(),
-        'neptun': u.username}, users)
+    # TODO should be renamed to something like 'user_ajax_autocomplete'
+    query = request.POST['q']
+    users = chain(User.objects.filter(last_name__istartswith=query)[:5],
+                  User.objects.filter(first_name__istartswith=query)[:5],
+                  User.objects.filter(username__istartswith=query)[:5])
+    results = [{'name': user.get_full_name(),
+                'neptun': user.username} for user in users]
     return HttpResponse(json.dumps(results, ensure_ascii=False))
 
 
 @login_required
 def group_ajax_add_new_owner(request, gid):
-    if request.user.cloud_details.share_quota == 0:
-        return HttpResponse({'status': 'denied'})
+    if request.user.cloud_details.share_quota <= 0:
+        return HttpResponse(json.dumps({'status': 'denied'}))
     group = get_object_or_404(Group, id=gid)
     member = request.POST['neptun']
-    if re.match('^[a-zA-Z][a-zA-Z0-9]{5}$', member.strip()) is None:
+    if neptun_re.match(member.strip()) is None:
         status = json.dumps({'status': 'Error'})
         messages.error(request, _('Invalid NEPTUN code'))
         return HttpResponse(status)
     person, created = Person.objects.get_or_create(code=member)
     group.owners.add(person)
     group.save()
-    return HttpResponse(json.dumps({
-        'status': 'OK'
-    }))
+    return HttpResponse(json.dumps({'status': 'OK'}))

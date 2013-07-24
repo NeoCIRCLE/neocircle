@@ -3,6 +3,7 @@ from django.conf.urls import patterns, include, url
 from django.contrib import admin
 admin.autodiscover()
 
+
 js_info_dict = {
     'packages': ('one', ),
 }

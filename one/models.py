@@ -64,13 +64,17 @@ class UserCloudDetails(models.Model):
                                      help_text=_('Disk quota in mebibytes.'))
 
     def reset_keys(self):
+        """Deprecated. Use reset_ssh_keys instead."""
+        self.reset_ssh_keys()
+
+    def reset_ssh_keys(self):
         """Delete old SSH key pair and generate new one."""
         pri, pub = keygen()
         self.ssh_private_key = pri
 
         try:
             self.ssh_key.key = pub
-        except:
+        except AttributeError:
             self.ssh_key = SshKey(user=self.user, key=pub)
         self.ssh_key.save()
         self.ssh_key_id = self.ssh_key.id
@@ -79,40 +83,45 @@ class UserCloudDetails(models.Model):
     def reset_smb(self):
         """Generate new Samba password."""
         self.smb_password = pwgen()
+        self.save()
 
     def get_weighted_instance_count(self):
+        states = ['ACTIVE', 'PENDING']
         credits = [i.template.instance_type.credit
-                   for i in self.user.instance_set.all()
-                   if i.state in ('ACTIVE', 'PENDING', )]
+                   for i in self.user.instance_set.filter(state__in=states)]
         return sum(credits)
 
     def get_instance_pc(self):
-        return 100 * self.get_weighted_instance_count() / self.instance_quota
+        """Get what percent of the user's instance quota is in use."""
+        inst_quota = self.instance_quota
+        if inst_quota <= 0:
+            return 100
+        else:
+            return 100 * self.get_weighted_instance_count() / inst_quota
 
     def get_weighted_share_count(self):
-        c = 0
-        for i in Share.objects.filter(owner=self.user).all():
-            c = c + i.template.instance_type.credit * i.instance_limit
-        return c
+        credits = [s.template.instance_type.credit * s.instance_limit
+                   for s in Share.objects.filter(owner=self.user)]
+        return sum(credits)
 
     def get_share_pc(self):
-        assert self.share_quota > 0
-        return 100 * self.get_weighted_share_count() / self.share_quota
+        """Get what percent of the user's share quota is in use."""
+        share_quota = self.share_quota
+        if share_quota <= 0:
+            return 100
+        else:
+            return 100 * self.get_weighted_share_count() / share_quota
 
 
 def set_quota(sender, instance, created, **kwargs):
     try:
         if not StoreApi.userexist(instance.user.username):
-            try:
-                password = instance.smb_password
-                quota = instance.disk_quota * 1024
-                key_list = [key.key for key in instance.user.sshkey_set.all()]
-            except:
-                pass
+            password = instance.smb_password
+            quota = instance.disk_quota * 1024
+            key_list = [k.key for k in instance.user.sshkey_set.all()]
             # Create user
-            if not StoreApi.createuser(instance.user.username, password,
-                                       key_list, quota):
-                pass
+            StoreApi.createuser(instance.user.username, password, key_list,
+                                quota)
         else:
             StoreApi.set_quota(instance.user.username,
                                instance.disk_quota * 1024)
@@ -124,7 +133,7 @@ post_save.connect(set_quota, sender=UserCloudDetails)
 def reset_keys(sender, instance, created, **kwargs):
     if created:
         instance.reset_smb()
-        instance.reset_keys()
+        instance.reset_ssh_keys()
 
 post_save.connect(reset_keys, sender=UserCloudDetails)
 
@@ -139,7 +148,7 @@ class OpenSshKeyValidator(object):
 
     def __call__(self, value):
         try:
-            value = "%s comment" % value
+            value = value + ' comment'
             type, key_string, comment = value.split(None, 2)
             if type not in self.valid_types:
                 raise ValidationError(_('OpenSSH key type %s is not '
@@ -205,10 +214,10 @@ class Share(models.Model):
                                                      'for this share.'))
     per_user_limit = models.IntegerField(verbose_name=_('per user limit'),
                                          help_text=_('Maximal count of '
-                                                     'instances launchable by '
-                                                     'a single user.'))
-    owner = models.ForeignKey(
-        User, null=True, blank=True, related_name='share_set')
+                                                     'instances launchable '
+                                                     'by a single user.'))
+    owner = models.ForeignKey(User, null=True, blank=True,
+                              related_name='share_set')
 
     class Meta:
         ordering = ['group', 'template', 'owner', ]
@@ -217,6 +226,9 @@ class Share(models.Model):
 
     @classmethod
     def extend_type(cls, t):
+        """Extend the share's type descriptor with absolute deletion and
+           suspension time values based on the current time and intervals
+           already set."""
         t['deletex'] = (datetime.now() + td(seconds=1) + t['delete']
                         if t['delete'] else None)
         t['suspendx'] = (datetime.now() + td(seconds=1) + t['suspend']
