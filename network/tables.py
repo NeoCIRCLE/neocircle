@@ -4,6 +4,16 @@ from django_tables2.columns import LinkColumn
 from firewall.models import Host, Vlan, Domain, Group, Record
 
 
+class BlacklistTable(Table):
+    ipv4 = LinkColumn('network.blacklist', args=[A('pk')])
+
+    class Meta:
+        model = Domain
+        attrs = {'class': 'table table-striped table-condensed'}
+        fields = ('ipv4', 'host', 'reason', 'type')
+        order_by = ('ipv4', )
+
+
 class DomainTable(Table):
     name = LinkColumn('network.domain', args=[A('pk')])
 

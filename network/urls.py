@@ -2,12 +2,16 @@ from django.conf.urls import patterns, url
 
 from .views import (IndexView, HostList, HostDetail, VlanList, VlanDetail,
                     DomainList, DomainDetail, GroupList, GroupDetail,
-                    RecordList, RecordDetail)
+                    RecordList, RecordDetail, BlacklistList, BlacklistDetail)
 
 
 urlpatterns = patterns(
     '',
     url('^$', IndexView.as_view(), name='network.index'),
+    url('^blacklists/$', BlacklistList.as_view(),
+        name='network.blacklist_list'),
+    url('^blacklists/(?P<pk>\d+)/$', BlacklistDetail.as_view(),
+        name='network.blacklist'),
     url('^domains/$', DomainList.as_view(), name='network.domain_list'),
     url('^domains/(?P<pk>\d+)/$', DomainDetail.as_view(),
         name='network.domain'),

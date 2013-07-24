@@ -5,7 +5,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, Row, HTML
 from crispy_forms.layout import Div, ButtonHolder, Submit, BaseInput
 
-from firewall.models import Host, Vlan, Domain, Group, Record
+from firewall.models import Host, Vlan, Domain, Group, Record, Blacklist
 
 
 class LinkButton(BaseInput):
@@ -23,6 +23,35 @@ class LinkButton(BaseInput):
     def __init__(self, name, text, url, *args, **kwargs):
         self.href = url
         super(LinkButton, self).__init__(name, text, *args, **kwargs)
+
+
+class BlacklistForm(ModelForm):
+    helper = FormHelper()
+    helper.layout = Layout(
+        Div(
+            Row(
+                Div(
+                    Fieldset(
+                        'Blacklist detail',
+                        'ipv4',
+                        'host',
+                        'reason',
+                        'type',
+                    ),
+                    css_class='span8'),
+                Div(
+                    HTML('<p>hello</p>'),
+                    css_class='span4'),
+            ),
+            ButtonHolder(
+                Submit('submit', 'Save'),
+                LinkButton('back', 'Back', reverse_lazy(
+                    'network.domain_list'))
+            ),
+            css_class="form-horizontal"))
+
+    class Meta:
+        model = Blacklist
 
 
 class DomainForm(ModelForm):

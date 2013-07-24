@@ -4,14 +4,31 @@ from django.core.urlresolvers import reverse_lazy
 
 from django_tables2 import SingleTableView
 
-from firewall.models import Host, Vlan, Domain, Group, Record
+from firewall.models import Host, Vlan, Domain, Group, Record, Blacklist
 from .tables import (HostTable, VlanTable, SmallHostTable, DomainTable,
-                     GroupTable, RecordTable)
-from .forms import HostForm, VlanForm, DomainForm, GroupForm, RecordForm
+                     GroupTable, RecordTable, BlacklistTable)
+from .forms import (HostForm, VlanForm, DomainForm, GroupForm, RecordForm,
+                    BlacklistForm)
 
 
 class IndexView(TemplateView):
     template_name = "network/index.html"
+
+
+class BlacklistList(SingleTableView):
+    model = Blacklist
+    table_class = BlacklistTable
+    template_name = "network/blacklist-list.html"
+
+
+class BlacklistDetail(UpdateView):
+    model = Blacklist
+    template_name = "network/blacklist-edit.html"
+    form_class = BlacklistForm
+
+    def get_success_url(self):
+        if 'pk' in self.kwargs:
+            return reverse_lazy('network.blacklist', kwargs=self.kwargs)
 
 
 class DomainList(SingleTableView):
