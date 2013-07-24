@@ -4,10 +4,10 @@ from django.core.urlresolvers import reverse_lazy
 
 from django_tables2 import SingleTableView
 
-from firewall.models import Host, Vlan, Domain, Group
+from firewall.models import Host, Vlan, Domain, Group, Record
 from .tables import (HostTable, VlanTable, SmallHostTable, DomainTable,
-                     GroupTable)
-from .forms import HostForm, VlanForm, DomainForm, GroupForm
+                     GroupTable, RecordTable)
+from .forms import HostForm, VlanForm, DomainForm, GroupForm, RecordForm
 
 
 class IndexView(TemplateView):
@@ -76,6 +76,28 @@ class HostDetail(UpdateView):
     def get_success_url(self):
         if 'pk' in self.kwargs:
             return reverse_lazy('network.host', kwargs=self.kwargs)
+
+
+class RecordList(SingleTableView):
+    model = Record
+    table_class = RecordTable
+    template_name = "network/record-list.html"
+
+
+class RecordDetail(UpdateView):
+    model = Record
+    template_name = "network/record-edit.html"
+    form_class = RecordForm
+
+    def get_context_data(self, **kwargs):
+        context = super(RecordDetail, self).get_context_data(**kwargs)
+        q = Record.objects.get(pk=self.object.pk).fqdn
+        context['fqdn'] = q
+        return context
+
+    def get_success_url(self):
+        if 'pk' in self.kwargs:
+            return reverse_lazy('network.record', kwargs=self.kwargs)
 
 
 class VlanList(SingleTableView):

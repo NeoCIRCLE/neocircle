@@ -1,7 +1,7 @@
 from django_tables2 import Table, A
 from django_tables2.columns import LinkColumn
 
-from firewall.models import Host, Vlan, Domain, Group
+from firewall.models import Host, Vlan, Domain, Group, Record
 
 
 class DomainTable(Table):
@@ -44,6 +44,18 @@ class SmallHostTable(Table):
         attrs = {'class': 'table table-striped table-condensed'}
         fields = ('hostname', 'ipv4')
         order_by = ('vlan', 'hostname', )
+
+
+class RecordTable(Table):
+    fqdn = LinkColumn('network.record', args=[A('pk')])
+
+    class Meta:
+        model = Record
+        attrs = {'class': 'table table-striped table-condensed'}
+        fields = ('type', 'fqdn', 'address', 'ttl', 'host',
+                  'owner', )
+        sequence = ('type', 'fqdn', )
+        order_by = 'name'
 
 
 class VlanTable(Table):
