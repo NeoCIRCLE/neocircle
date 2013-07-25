@@ -10,9 +10,38 @@ from .tables import (HostTable, VlanTable, SmallHostTable, DomainTable,
 from .forms import (HostForm, VlanForm, DomainForm, GroupForm, RecordForm,
                     BlacklistForm)
 
+from itertools import chain
+
 
 class IndexView(TemplateView):
     template_name = "network/index.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(IndexView, self).get_context_data(**kwargs)
+
+        size = 13
+        blacklists = Blacklist.objects.all().order_by('-modified_at')[:size]
+        domains = Domain.objects.all().order_by('-modified_at')[:size]
+        groups = Group.objects.all().order_by('-modified_at')[:size]
+        hosts = Host.objects.all().order_by('-modified_at')[:size]
+        records = Record.objects.all().order_by('-modified_at')[:size]
+        vlans = Vlan.objects.all().order_by('-modified_at')[:size]
+
+        result_list = []
+        for i in (sorted(chain(blacklists, domains, groups, hosts,
+                               records, vlans),
+                         key=lambda x: x.modified_at, reverse=True)[:size]):
+            result_list.append(
+                {
+                    'class_name': unicode(i.__class__.__name__),
+                    'modified_at': i.modified_at,
+                    'created_at': i.created_at,
+                    'name': unicode(i),
+                    'link': i.get_absolute_url()
+                })
+
+        context['latest'] = result_list
+        return context
 
 
 class BlacklistList(SingleTableView):
