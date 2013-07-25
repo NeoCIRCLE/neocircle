@@ -13,8 +13,11 @@
 {% include "network/menu-item.html" with href=u text="Records" %}
 {% url network.blacklist_list as u %}
 {% include "network/menu-item.html" with href=u text="Blacklists" %}
-{# <li><a href="/vlans/">{% trans "Vlans" %}</a></li> #}
+{% url network.rule_list as u %}
+{% include "network/menu-item.html" with href=u text="Rules" %}
 
+
+{# <li><a href="/vlans/">{% trans "Vlans" %}</a></li> #}
 {# <li><a href="/vlangroups/">{% trans "Vlan groups" %}</a></li> #}
 {# <li><a href="/hostgroups/">{% trans "Host groups" %}</a></li> #}
 {# <li><a href="/hosts/">{% trans "Hosts" %}</a></li> #}

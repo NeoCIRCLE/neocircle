@@ -1,7 +1,7 @@
 from django_tables2 import Table, A
-from django_tables2.columns import LinkColumn
+from django_tables2.columns import LinkColumn, TemplateColumn
 
-from firewall.models import Host, Vlan, Domain, Group, Record
+from firewall.models import Host, Vlan, Domain, Group, Record, Rule
 
 
 class BlacklistTable(Table):
@@ -66,6 +66,18 @@ class RecordTable(Table):
                   'owner', )
         sequence = ('type', 'fqdn', )
         order_by = 'name'
+
+
+class RuleTable(Table):
+    r_type = LinkColumn('network.rule', args=[A('pk')])
+    color_desc = TemplateColumn(template_name="network/color_desc.html")
+
+    class Meta:
+        model = Rule
+        attrs = {'class': 'table table-striped table-hover table-condensed'}
+        fields = ('r_type', 'color_desc', 'owner', 'extra', 'direction',
+                  'accept', 'proto', 'sport', 'dport', 'nat', 'nat_dport', )
+        order_by = 'direction'
 
 
 class VlanTable(Table):

@@ -4,11 +4,12 @@ from django.core.urlresolvers import reverse_lazy
 
 from django_tables2 import SingleTableView
 
-from firewall.models import Host, Vlan, Domain, Group, Record, Blacklist
+from firewall.models import (Host, Vlan, Domain, Group, Record, Blacklist,
+                             Rule)
 from .tables import (HostTable, VlanTable, SmallHostTable, DomainTable,
-                     GroupTable, RecordTable, BlacklistTable)
+                     GroupTable, RecordTable, BlacklistTable, RuleTable)
 from .forms import (HostForm, VlanForm, DomainForm, GroupForm, RecordForm,
-                    BlacklistForm)
+                    BlacklistForm, RuleForm)
 
 from itertools import chain
 
@@ -26,10 +27,11 @@ class IndexView(TemplateView):
         hosts = Host.objects.all().order_by('-modified_at')[:size]
         records = Record.objects.all().order_by('-modified_at')[:size]
         vlans = Vlan.objects.all().order_by('-modified_at')[:size]
+        rules = Rule.objects.all().order_by('-modified_at')[:size]
 
         result_list = []
         for i in (sorted(chain(blacklists, domains, groups, hosts,
-                               records, vlans),
+                               records, vlans, rules),
                          key=lambda x: x.modified_at, reverse=True)[:size]):
             result_list.append(
                 {
@@ -149,6 +151,23 @@ class RecordDetail(UpdateView):
     def get_success_url(self):
         if 'pk' in self.kwargs:
             return reverse_lazy('network.record', kwargs=self.kwargs)
+
+
+class RuleList(SingleTableView):
+    model = Rule
+    table_class = RuleTable
+    template_name = "network/rule-list.html"
+    table_pagination = False
+
+
+class RuleDetail(UpdateView):
+    model = Rule
+    template_name = "network/rule-edit.html"
+    form_class = RuleForm
+
+    def get_success_url(self):
+        if 'pk' in self.kwargs:
+            return reverse_lazy('network.rule', kwargs=self.kwargs)
 
 
 class VlanList(SingleTableView):

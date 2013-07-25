@@ -2,7 +2,8 @@ from django.conf.urls import patterns, url
 
 from .views import (IndexView, HostList, HostDetail, VlanList, VlanDetail,
                     DomainList, DomainDetail, GroupList, GroupDetail,
-                    RecordList, RecordDetail, BlacklistList, BlacklistDetail)
+                    RecordList, RecordDetail, BlacklistList, BlacklistDetail,
+                    RuleList, RuleDetail)
 
 
 urlpatterns = patterns(
@@ -22,6 +23,9 @@ urlpatterns = patterns(
     url('^records/$', RecordList.as_view(), name='network.record_list'),
     url('^records/(?P<pk>\d+)/$', RecordDetail.as_view(),
         name='network.record'),
+    url('^rules/$', RuleList.as_view(), name='network.rule_list'),
+    url('^rules/(?P<pk>\d+)/$', RuleDetail.as_view(),
+        name='network.rule'),
     url('^vlans/$', VlanList.as_view(), name='network.vlan_list'),
     url('^vlans/(?P<vid>\d+)/$', VlanDetail.as_view(), name='network.vlan'),
 )

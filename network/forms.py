@@ -5,7 +5,8 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, Row, HTML
 from crispy_forms.layout import Div, ButtonHolder, Submit, BaseInput
 
-from firewall.models import Host, Vlan, Domain, Group, Record, Blacklist
+from firewall.models import (Host, Vlan, Domain, Group, Record, Blacklist,
+                             Rule)
 
 
 class LinkButton(BaseInput):
@@ -187,6 +188,51 @@ class RecordForm(ModelForm):
 
     class Meta:
         model = Record
+
+
+class RuleForm(ModelForm):
+    helper = FormHelper()
+    helper.layout = Layout(
+        Div(
+            Row(
+                Div(
+                    Fieldset(
+                        'Identity',
+                        'direction',
+                        'description',
+                        'foreign_network',
+                        'dport',
+                        'sport',
+                        'proto',
+                        'extra',
+                        'accept',
+                        'owner',
+                        'r_type',
+                        'nat',
+                        'nat_dport',
+                    ),
+                    Fieldset(
+                        'External',
+                        'vlan',
+                        'vlangroup',
+                        'host',
+                        'hostgroup',
+                        'firewall'
+                    ),
+                    css_class='span8'),
+                Div(
+                    HTML('<p>hello</p>'),
+                    css_class='span4'),
+            ),
+            ButtonHolder(
+                Submit('submit', 'Save'),
+                LinkButton('back', 'Back', reverse_lazy(
+                    'network.rule_list'))
+            ),
+            css_class="form-horizontal"))
+
+    class Meta:
+        model = Rule
 
 
 class VlanForm(ModelForm):
