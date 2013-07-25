@@ -128,6 +128,10 @@ class Rule(models.Model):
                      (("dport=%s " % self.dport) if self.dport else '')),
             'desc': self.description}
 
+    @models.permalink
+    def get_absolute_url(self):
+        return ('network.rule', None, {'pk': self.pk})
+
     class Meta:
         verbose_name = _("rule")
         verbose_name_plural = _("rules")
@@ -261,6 +265,10 @@ class Vlan(models.Model):
         """String representation of selected IPv4 network."""
         return self.net4 + "/" + unicode(self.prefix4)
 
+    @models.permalink
+    def get_absolute_url(self):
+        return ('network.vlan', None, {'vid': self.vid})
+
 
 class VlanGroup(models.Model):
     """
@@ -285,6 +293,10 @@ class VlanGroup(models.Model):
     def __unicode__(self):
         return self.name
 
+    @models.permalink
+    def get_absolute_url(self):
+        return ('network.vlangroup', None, {'pk': self.pk})
+
 
 class Group(models.Model):
     """
@@ -303,6 +315,10 @@ class Group(models.Model):
 
     def __unicode__(self):
         return self.name
+
+    @models.permalink
+    def get_absolute_url(self):
+        return ('network.group', None, {'pk': self.pk})
 
 
 class Host(models.Model):
@@ -549,6 +565,10 @@ class Host(models.Model):
         """
         return self.hostname + u'.' + unicode(self.vlan.domain)
 
+    @models.permalink
+    def get_absolute_url(self):
+        return ('network.host', None, {'pk': self.pk})
+
 
 class Firewall(models.Model):
     name = models.CharField(max_length=20, unique=True)
@@ -567,6 +587,10 @@ class Domain(models.Model):
 
     def __unicode__(self):
         return self.name
+
+    @models.permalink
+    def get_absolute_url(self):
+        return ('network.domain', None, {'pk': self.pk})
 
 
 class Record(models.Model):
@@ -683,6 +707,10 @@ class Record(models.Model):
                     'ttl': self.ttl,
                     'address': address}
 
+    @models.permalink
+    def get_absolute_url(self):
+        return ('network.record', None, {'pk': self.pk})
+
 
 class Blacklist(models.Model):
     CHOICES_type = (('permban', 'permanent ban'), ('tempban', 'temporary ban'),
@@ -704,6 +732,10 @@ class Blacklist(models.Model):
 
     def __unicode__(self):
         return self.ipv4
+
+    @models.permalink
+    def get_absolute_url(self):
+        return ('network.blacklist', None, {'pk': self.pk})
 
 
 def send_task(sender, instance, created, **kwargs):
