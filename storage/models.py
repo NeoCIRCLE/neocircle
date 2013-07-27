@@ -6,6 +6,7 @@ import json
 from django.db import models, transaction
 from django.utils.translation import ugettext_lazy as _
 from django.db.models.signals import post_save, post_delete
+from model_utils.models import TimeStampedModel
 
 from .tasks import StorageDriver
 
@@ -27,20 +28,18 @@ class DataStore(models.Model):
         return u'%s (%s)' % (self.name, self.path)
 
 
-class Disk(models.Model):
-    """Virtual disks automatically synchronized with OpenNebula."""
+class Disk(models.Model, TimeStampedModel):
+    """Virtual disks."""
+    FORMATS = [('qcow2', 'qcow2'), ('raw', 'raw'), ('iso', 'iso')]
+    TYPES = [('snapshot', 'snapshot'), ('normal', 'normal')]
     name = models.CharField(max_length=100, unique=True,
                             verbose_name=_('name'))
     datastore = models.ForeignKey('DataStore')
-    format = models.CharField(max_length=10,
-                              choices=(('qcow2', 'qcow2'), ('raw', 'raw')))
+    format = models.CharField(max_length=10, choices=FORMAT)
     size = models.IntegerField()
-    type = models.CharField(max_length=10,
-                            choices=(('snapshot', 'snapshot'),
-                                     ('normal', 'normal')))
+    type = models.CharField(max_length=10, choices=TYPES)
     base = models.ForeignKey('Disk', related_name='snapshots',
                              null=True, blank=True)
-    original_parent = models.ForeignKey('Disk', null=True, blank=True)
     created = models.BooleanField(default=False)
 
     class Meta:
@@ -97,7 +96,7 @@ class Disk(models.Model):
 
     @classmethod
     def update_disks(cls, delete=True):
-        """Get and register virtual disks from OpenNebula."""
+        """Get and register virtual disks from storage driver."""
         try:
             json_data = StorageDriver.list_disks.delay().get(timeout=10)
             disks = json.loads(json_data)

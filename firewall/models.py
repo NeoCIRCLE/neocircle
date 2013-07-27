@@ -67,11 +67,12 @@ class Rule(models.Model):
                               help_text=_("The type of entity the rule "
                                           "belongs to."))
     nat = models.BooleanField(default=False, verbose_name=_("NAT"),
-                              help_text=_("If network address translation "
-                                          "shoud be done."))
+                              help_text=_("Indicates that network address "
+                                          "translation should be done."))
     nat_dport = models.IntegerField(blank=True, null=True,
-                                    help_text=_(
-                                        "Rewrite destination port number to."),
+                                    help_text=_("Rewrite destination port "
+                                                "number to this if NAT is "
+                                                "needed."),
                                     validators=[MinValueValidator(1),
                                                 MaxValueValidator(65535)])
     created_at = models.DateTimeField(
@@ -373,6 +374,14 @@ class Host(models.Model):
     def __unicode__(self):
         return self.hostname
 
+    @property
+    def incoming_rules(self):
+        return self.rules.filter(direction='1')
+
+    @property
+    def outgoing_rules(self):
+        return self.rules.filter(direction='0')
+
     def save(self, *args, **kwargs):
         id = self.id
         if not self.id and self.ipv6 == "auto":
@@ -549,6 +558,30 @@ class Host(models.Model):
         """
         return self.hostname + u'.' + unicode(self.vlan.domain)
 
+    def get_public_endpoints(self, port, protocol='tcp'):
+        """Get public IPv4 and IPv6 endpoints for local port.
+
+        Optionally the required protocol (e.g. TCP, UDP) can be specified.
+        """
+        # IPv4
+        public_ipv4 = self.pub_ipv4 if self.pub_ipv4 else self.ipv4
+        # try get matching port(s) without NAT
+        ports = self.incoming_rules.filter(accept=True, dport=port,
+                                           nat=False, proto=protocol)
+        if ports.exists():
+            public_port = ports[0].dport
+        else:
+            # try get matching port(s) with NAT
+            ports = self.incoming_rules.filter(accept=True, nat_dport=port,
+                                               nat=True, proto=protocol)
+            public_port = ports[0].dport if ports.exists() else None
+        endpoints['ipv4'] = ((public_ipv4, public_port) if public_port else
+                             None)
+        # IPv6
+        blocked = self.incoming_rules.filter(accept=False, dport=port,
+                                             proto=protocol).exists()
+        endpoints['ipv6'] = (self.ipv6, port) if not blocked else None
+        return endpoints
 
 class Firewall(models.Model):
     name = models.CharField(max_length=20, unique=True)
