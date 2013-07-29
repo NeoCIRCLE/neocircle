@@ -3,11 +3,12 @@
 {% load i18n %}
 {% load l10n %}
 {% load staticfiles %}
+{% load crispy_forms_tags %}
 
 {% block content %}
 <div class="page-heading">
-  <h1>Host groups <small>list of all host groups</small></h1>
+  <h1>{{ form.name.value }} <small>details of vlan group</small></h1>
 </div>
 
-{% render_table table %}
+{% crispy form %}
 {% endblock %}

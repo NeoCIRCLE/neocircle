@@ -5,11 +5,12 @@ from django.core.urlresolvers import reverse_lazy
 from django_tables2 import SingleTableView
 
 from firewall.models import (Host, Vlan, Domain, Group, Record, Blacklist,
-                             Rule)
+                             Rule, VlanGroup)
 from .tables import (HostTable, VlanTable, SmallHostTable, DomainTable,
-                     GroupTable, RecordTable, BlacklistTable, RuleTable)
+                     GroupTable, RecordTable, BlacklistTable, RuleTable,
+                     VlanGroupTable)
 from .forms import (HostForm, VlanForm, DomainForm, GroupForm, RecordForm,
-                    BlacklistForm, RuleForm)
+                    BlacklistForm, RuleForm, VlanGroupForm)
 
 from itertools import chain
 
@@ -191,3 +192,18 @@ class VlanDetail(UpdateView):
         return context
 
     success_url = reverse_lazy('network.vlan_list')
+
+
+class VlanGroupList(SingleTableView):
+    model = VlanGroup
+    table_class = VlanGroupTable
+    template_name = "network/vlan-group-list.html"
+    table_pagination = False
+
+
+class VlanGroupDetail(UpdateView):
+    model = VlanGroup
+    template_name = "network/vlan-group-edit.html"
+    form_class = VlanGroupForm
+
+    success_url = reverse_lazy('network.vlan_group_list')

@@ -6,7 +6,7 @@ from crispy_forms.layout import Layout, Fieldset, Row, HTML
 from crispy_forms.layout import Div, ButtonHolder, Submit, BaseInput
 
 from firewall.models import (Host, Vlan, Domain, Group, Record, Blacklist,
-                             Rule)
+                             Rule, VlanGroup)
 
 
 class LinkButton(BaseInput):
@@ -283,3 +283,27 @@ class VlanForm(ModelForm):
 
     class Meta:
         model = Vlan
+
+
+class VlanGroupForm(ModelForm):
+    helper = FormHelper()
+    helper.layout = Layout(
+        Div(
+            Row(
+                Fieldset(
+                    'Identity',
+                    'name',
+                    'vlans',
+                    'description',
+                    'owner',
+                ),
+            ),
+            ButtonHolder(
+                Submit('submit', 'Save'),
+                LinkButton('back', 'Back', reverse_lazy(
+                    'network.vlan_group_list'))
+            ),
+            css_class="form-horizontal"))
+
+    class Meta:
+        model = VlanGroup

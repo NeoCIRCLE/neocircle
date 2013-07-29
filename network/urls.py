@@ -3,7 +3,7 @@ from django.conf.urls import patterns, url
 from .views import (IndexView, HostList, HostDetail, VlanList, VlanDetail,
                     DomainList, DomainDetail, GroupList, GroupDetail,
                     RecordList, RecordDetail, BlacklistList, BlacklistDetail,
-                    RuleList, RuleDetail)
+                    RuleList, RuleDetail, VlanGroupList, VlanGroupDetail)
 
 
 urlpatterns = patterns(
@@ -28,4 +28,8 @@ urlpatterns = patterns(
         name='network.rule'),
     url('^vlans/$', VlanList.as_view(), name='network.vlan_list'),
     url('^vlans/(?P<vid>\d+)/$', VlanDetail.as_view(), name='network.vlan'),
+    url('^vlangroups/$', VlanGroupList.as_view(),
+        name='network.vlan_group_list'),
+    url('^vlangroups/(?P<pk>\d+)/$', VlanGroupDetail.as_view(),
+        name='network.vlan_group'),
 )

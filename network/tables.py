@@ -70,7 +70,9 @@ class RecordTable(Table):
 
 class RuleTable(Table):
     r_type = LinkColumn('network.rule', args=[A('pk')])
-    color_desc = TemplateColumn(template_name="network/color_desc.html")
+    color_desc = TemplateColumn(
+        template_name="network/columns/color-desc.html"
+    )
 
     class Meta:
         model = Rule
@@ -88,3 +90,14 @@ class VlanTable(Table):
         attrs = {'class': 'table table-striped table-condensed'}
         fields = ('vid', 'name', 'interface', 'ipv4', 'ipv6', 'domain', )
         order_by = 'vid'
+
+
+class VlanGroupTable(Table):
+    name = LinkColumn('network.vlan_group', args=[A('pk')])
+    vlans = TemplateColumn(template_name="network/columns/vlan-list.html")
+
+    class Meta:
+        model = Vlan
+        attrs = {'class': 'table table-striped table-condensed'}
+        fields = ('name', 'vlans', 'description', 'owner', )
+        order_by = 'name'
