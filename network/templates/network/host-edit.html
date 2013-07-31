@@ -23,11 +23,9 @@
     {% for group in group_rule_list %}
         <h4>{{ group.name }} 
             <a href="{% url network.remove_host_group pk=host_pk group_pk=group.pk %}?from={{ request.path }}">
-                <i class="icon-remove" style="vertical-align: middle;"></i>
-            </a>
+                <i class="icon-remove" style="vertical-align: middle;"></i></a>
         <a href="{% url network.group group.pk %}">
-            <i class="icon-pencil" style="vertical-align: middle;"></i>
-        </a>
+            <i class="icon-pencil" style="vertical-align: middle;"></i></a>
         </h4>
       {% render_table group.table %}
     {% endfor %}
