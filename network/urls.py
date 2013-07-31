@@ -3,7 +3,8 @@ from django.conf.urls import patterns, url
 from .views import (IndexView, HostList, HostDetail, VlanList, VlanDetail,
                     DomainList, DomainDetail, GroupList, GroupDetail,
                     RecordList, RecordDetail, BlacklistList, BlacklistDetail,
-                    RuleList, RuleDetail, VlanGroupList, VlanGroupDetail)
+                    RuleList, RuleDetail, VlanGroupList, VlanGroupDetail,
+                    RuleDelete, remove_host_group, add_host_group)
 
 
 urlpatterns = patterns(
@@ -32,4 +33,10 @@ urlpatterns = patterns(
         name='network.vlan_group_list'),
     url('^vlangroups/(?P<pk>\d+)/$', VlanGroupDetail.as_view(),
         name='network.vlan_group'),
+    url('^rules/delete/(?P<pk>\d+)/$', RuleDelete.as_view(),
+        name="network.rule_delete"),
+    url('^hosts/(?P<pk>\d+)/remove/(?P<group_pk>\d+)/$', remove_host_group,
+        name='network.remove_host_group'),
+    url('^hosts/(?P<pk>\d+)/add/$', add_host_group,
+        name='network.add_host_group')
 )

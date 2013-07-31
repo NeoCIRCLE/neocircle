@@ -1,6 +1,6 @@
-from django.views.generic import TemplateView
-from django.views.generic import UpdateView
+from django.views.generic import TemplateView, UpdateView, DeleteView
 from django.core.urlresolvers import reverse_lazy
+from django.shortcuts import render, redirect
 
 from django_tables2 import SingleTableView
 
@@ -8,7 +8,7 @@ from firewall.models import (Host, Vlan, Domain, Group, Record, Blacklist,
                              Rule, VlanGroup)
 from .tables import (HostTable, VlanTable, SmallHostTable, DomainTable,
                      GroupTable, RecordTable, BlacklistTable, RuleTable,
-                     VlanGroupTable)
+                     VlanGroupTable, SmallRuleTable, SmallGroupRuleTable)
 from .forms import (HostForm, VlanForm, DomainForm, GroupForm, RecordForm,
                     BlacklistForm, RuleForm, VlanGroupForm)
 
@@ -126,6 +126,32 @@ class HostDetail(UpdateView):
     template_name = "network/host-edit.html"
     form_class = HostForm
 
+    def get_context_data(self, **kwargs):
+        context = super(HostDetail, self).get_context_data(**kwargs)
+        # own rules
+        q = Rule.objects.filter(host=self.object).all()
+        context['rule_list'] = SmallRuleTable(q)
+
+        # rules from host groups
+        group_rule_list = []
+        for group in self.object.groups.all():
+            q = Rule.objects.filter(hostgroup=group).all()
+            group_rule_list.append({
+                'table': SmallGroupRuleTable(q),
+                'name': unicode(group),
+                'pk': group.pk
+            })
+        context['group_rule_list'] = group_rule_list
+
+        # available groups
+        rest = Group.objects.exclude(pk__in=self.object.groups.all()).all()
+        context['not_used_groups'] = rest
+
+        # set host pk (we need this for URL-s)
+        context['host_pk'] = self.kwargs['pk']
+
+        return context
+
     def get_success_url(self):
         if 'pk' in self.kwargs:
             return reverse_lazy('network.host', kwargs=self.kwargs)
@@ -171,6 +197,17 @@ class RuleDetail(UpdateView):
             return reverse_lazy('network.rule', kwargs=self.kwargs)
 
 
+class RuleDelete(DeleteView):
+    model = Rule
+    template_name = "network/confirm/rule_delete.html"
+
+    def get_success_url(self):
+        if 'next' in self.request.POST:
+            return self.request.POST['next']
+        else:
+            return reverse_lazy('network.rule_list')
+
+
 class VlanList(SingleTableView):
     model = Vlan
     table_class = VlanTable
@@ -207,3 +244,32 @@ class VlanGroupDetail(UpdateView):
     form_class = VlanGroupForm
 
     success_url = reverse_lazy('network.vlan_group_list')
+
+
+def remove_host_group(request, **kwargs):
+    host = Host.objects.get(pk=kwargs['pk'])
+    group = Group.objects.get(pk=kwargs['group_pk'])
+
+    # for get we show the confirmation page
+    if request.method == "GET":
+        return render(request,
+                      'network/confirm/remove_host_group.html',
+                      {
+                          'group': group.name,
+                          'host': host.hostname
+                      })
+
+    # for post we actually remove the group from the host
+    elif request.method == "POST":
+        host.groups.remove(group)
+        return redirect(reverse_lazy('network.host',
+                                     kwargs={'pk': kwargs['pk']}))
+
+
+def add_host_group(request, **kwargs):
+    group_pk = request.POST.get('group')
+    if request.method == "POST" and group_pk:
+        host = Host.objects.get(pk=kwargs['pk'])
+        group = Group.objects.get(pk=group_pk)
+        host.groups.add(group)
+        return redirect(reverse_lazy('network.host', kwargs=kwargs))

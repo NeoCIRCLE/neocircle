@@ -1,0 +1,15 @@
+{% extends "network/base.html" %}                                           
+{% load i18n %}                                                             
+{% load l10n %}                                                             
+{% block content %}
+
+<div class="page-heading">                                                  
+    <h1>Delete <small>delete this rule</small></h1>                           
+</div> 
+<form action="" method="post">{% csrf_token %}
+    <p>Are you sure you want to delete <strong>"{{ object }}"</strong>?</p>
+    <input type="hidden" value="{{ request.GET.from }}" name="next" />
+    <input type="submit" value="Confirm" />
+</form>
+
+{% endblock %}

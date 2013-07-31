@@ -45,6 +45,38 @@ class HostTable(Table):
         order_by = ('vlan', 'hostname', )
 
 
+class SmallRuleTable(Table):
+    rule = TemplateColumn(
+        template_name="network/columns/host-rule.html",
+        attrs={"th": {"style": "display: none;"}}
+    )
+
+    action = TemplateColumn(
+        template_name="network/columns/host-rule-action.html",
+        attrs={
+            "th": {"style": "display: none;"},
+            "cell": {"style": "text-align: center; vertical-align: middle;"}
+        }
+    )
+
+    class Meta:
+        model = Rule
+        attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        fields = ('rule', 'action', )
+
+
+class SmallGroupRuleTable(Table):
+    rule = TemplateColumn(
+        template_name="network/columns/host-rule.html",
+        attrs={"th": {"style": "display: none;"}}
+    )
+
+    class Meta:
+        model = Rule
+        attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        fields = ('rule', )
+
+
 # inheritance by copy-paste
 class SmallHostTable(Table):
     hostname = LinkColumn('network.host', args=[A('pk')])
