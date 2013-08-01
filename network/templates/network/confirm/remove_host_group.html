@@ -10,7 +10,7 @@
     <p>Are you sure you want to remove hostgroup <strong>"{{ group }}"</strong> 
     from <strong>"{{ host }}"</strong>?</p>
     <input type="hidden" value="{{ request.GET.from }}" name="next" />
-    <input type="submit" value="Confirm" />
+    <a href="{{ request.GET.from }}" class="btn btn-info">Back</a>         
+    <input type="submit" class="btn btn-danger" value="Confirm" />
 </form>
-
 {% endblock %}
