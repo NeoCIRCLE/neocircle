@@ -141,10 +141,7 @@ class HostForm(ModelForm):
                         # 'modified_at',
                         # 'id'
                     ),
-                    css_class='span8'),
-                Div(
-                    HTML('<p>hello</p>'),
-                    css_class='span4'),
+                    css_class='span12'),
             ),
             ButtonHolder(
                 Submit('submit', 'Save'),

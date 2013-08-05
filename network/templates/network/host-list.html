@@ -5,8 +5,17 @@
 {% load staticfiles %}
 
 {% block content %}
+<style>
+
+</style>
 <div class="page-heading">
-  <h1>Hosts <small>list of all hosts</small></h1>
+    <h1>
+        Hosts 
+        <small>
+            list of all hosts
+            <a href="{% url network.host_create %}"><i class="icon-plus"></i></a>
+        </small>
+    </h1>
 </div>
 
 <ul class="nav nav-pills">
@@ -18,4 +27,5 @@
 </ul>
 
 {% render_table table %}
+
 {% endblock %}

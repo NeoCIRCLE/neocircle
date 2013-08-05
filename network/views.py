@@ -1,4 +1,5 @@
-from django.views.generic import TemplateView, UpdateView, DeleteView
+from django.views.generic import (TemplateView, UpdateView, DeleteView,
+                                  CreateView)
 from django.core.urlresolvers import reverse_lazy
 from django.shortcuts import render, redirect
 
@@ -155,6 +156,12 @@ class HostDetail(UpdateView):
     def get_success_url(self):
         if 'pk' in self.kwargs:
             return reverse_lazy('network.host', kwargs=self.kwargs)
+
+
+class HostCreate(CreateView):
+    model = Host
+    template_name = "network/host-create.html"
+    form_class = HostForm
 
 
 class RecordList(SingleTableView):

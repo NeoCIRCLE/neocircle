@@ -1,6 +1,7 @@
 from django.conf.urls import patterns, url
 
-from .views import (IndexView, HostList, HostDetail, VlanList, VlanDetail,
+from .views import (IndexView, HostList, HostDetail, HostCreate, VlanList,
+                    VlanDetail,
                     DomainList, DomainDetail, GroupList, GroupDetail,
                     RecordList, RecordDetail, BlacklistList, BlacklistDetail,
                     RuleList, RuleDetail, VlanGroupList, VlanGroupDetail,
@@ -20,6 +21,7 @@ urlpatterns = patterns(
     url('^groups/$', GroupList.as_view(), name='network.group_list'),
     url('^groups/(?P<pk>\d+)/$', GroupDetail.as_view(), name='network.group'),
     url('^hosts/$', HostList.as_view(), name='network.host_list'),
+    url('^hosts/create$', HostCreate.as_view(), name='network.host_create'),
     url('^hosts/(?P<pk>\d+)/$', HostDetail.as_view(), name='network.host'),
     url('^records/$', RecordList.as_view(), name='network.record_list'),
     url('^records/(?P<pk>\d+)/$', RecordDetail.as_view(),
