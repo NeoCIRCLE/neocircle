@@ -15,5 +15,6 @@
 {% endif %}
 
 {% if record.nat %}
-    <span class="label label-success">NAT [{{ record.dport }}:{{record.nat_dport}}]</span>
+    <span class="label">NAT
+        [ {{ record.dport }} <i class="icon-arrow-right"></i> {{record.nat_dport}} ]</span>
 {% endif %}

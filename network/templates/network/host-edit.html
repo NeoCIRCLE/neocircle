@@ -21,13 +21,15 @@
     
     <h3>Groups</h3>
     {% for group in group_rule_list %}
-        <h4>{{ group.name }} 
-            <a href="{% url network.remove_host_group pk=host_pk group_pk=group.pk %}?from={{ request.path }}">
-                <i class="icon-remove" style="vertical-align: middle;"></i></a>
-        <a href="{% url network.group group.pk %}">
-            <i class="icon-pencil" style="vertical-align: middle;"></i></a>
-        </h4>
-      {% render_table group.table %}
+        <div>
+            <h4 id="{{ group.pk }}_group_pk">{{ group.name }} 
+                <a href="{% url network.remove_host_group pk=host_pk group_pk=group.pk %}?from={{ request.path }}">
+                    <i class="icon-remove" style="vertical-align: middle;"></i></a>
+            <a href="{% url network.group group.pk %}">
+                <i class="icon-pencil" style="vertical-align: middle;"></i></a>
+            </h4>
+            {% render_table group.table %}
+        </div>
     {% endfor %}
     
     <h3>Add host group</h3>
@@ -37,7 +39,7 @@
       <form action="{% url network.add_host_group pk=host_pk %}" method="POST">
         {% csrf_token %}
         <div class="input-append">
-          <select name="group">
+          <select name="group" id="add_group">
             {% for rest in not_used_groups %}
               <option value="{{ rest.pk }}">{{ rest }}</option>
             {% endfor %}
