@@ -6,7 +6,13 @@
 
 {% block content %}
 <div class="page-heading">
-  <h1>Records <small>list of all records</small></h1>
+    <h1>
+        Records
+        <small>
+            list of all records
+            <a href="{% url network.record_create %}"><i class="icon-plus"></i></a>
+        </small>
+    </h1>
 </div>
 
 {% render_table table %}

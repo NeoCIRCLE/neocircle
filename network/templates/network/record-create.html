@@ -7,8 +7,9 @@
 
 {% block content %}
 <div class="page-heading">
-  <h2>Create a new host</h2>
+  <h2>Create a new record</h2>
 </div>
+
 
 <div class="row">
   <div class="span8">
@@ -17,5 +18,8 @@
   <div class="span4">
   </div><!-- span4 -->
 </div><!-- row -->
-
 {% endblock %}
+{% block extra_etc %}                                                       
+<script src="{% static "js/record-create.js" %}"></script>                   
+{% endblock %}                                                              
+~                       

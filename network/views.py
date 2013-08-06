@@ -2,6 +2,7 @@ from django.views.generic import (TemplateView, UpdateView, DeleteView,
                                   CreateView)
 from django.core.urlresolvers import reverse_lazy
 from django.shortcuts import render, redirect
+from django.http import HttpResponse
 
 from django_tables2 import SingleTableView
 
@@ -14,6 +15,7 @@ from .forms import (HostForm, VlanForm, DomainForm, GroupForm, RecordForm,
                     BlacklistForm, RuleForm, VlanGroupForm)
 
 from itertools import chain
+import json
 
 
 class IndexView(TemplateView):
@@ -113,7 +115,6 @@ class HostList(SingleTableView):
 
     def get_table_data(self):
         vlan_id = self.request.GET.get('vlan')
-        print vlan_id
         if vlan_id:
             data = Host.objects.filter(vlan=vlan_id).all()
         else:
@@ -126,6 +127,21 @@ class HostDetail(UpdateView):
     model = Host
     template_name = "network/host-edit.html"
     form_class = HostForm
+
+    def get(self, request, *args, **kwargs):
+        if request.is_ajax():
+            host = Host.objects.get(pk=kwargs['pk'])
+            host = {
+                'hostname': host.hostname,
+                'ipv4': host.ipv4,
+                'ipv6': host.ipv6,
+                'fqdn': host.get_fqdn()
+            }
+            return HttpResponse(json.dumps(host),
+                                content_type="application/json")
+        else:
+            self.object = self.get_object()
+            return super(HostDetail, self).get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super(HostDetail, self).get_context_data(**kwargs)
@@ -185,6 +201,12 @@ class RecordDetail(UpdateView):
     def get_success_url(self):
         if 'pk' in self.kwargs:
             return reverse_lazy('network.record', kwargs=self.kwargs)
+
+
+class RecordCreate(CreateView):
+    model = Record
+    template_name = "network/record-create.html"
+    form_class = RecordForm
 
 
 class RuleList(SingleTableView):
@@ -280,3 +302,7 @@ def add_host_group(request, **kwargs):
         group = Group.objects.get(pk=group_pk)
         host.groups.add(group)
         return redirect(reverse_lazy('network.host', kwargs=kwargs))
+
+
+def get_host_as_json(request, **kwargs):
+    pass

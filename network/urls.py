@@ -1,11 +1,15 @@
 from django.conf.urls import patterns, url
 
-from .views import (IndexView, HostList, HostDetail, HostCreate, VlanList,
-                    VlanDetail,
-                    DomainList, DomainDetail, GroupList, GroupDetail,
-                    RecordList, RecordDetail, BlacklistList, BlacklistDetail,
-                    RuleList, RuleDetail, VlanGroupList, VlanGroupDetail,
-                    RuleDelete, remove_host_group, add_host_group)
+from .views import (IndexView,
+                    HostList, HostDetail, HostCreate,
+                    VlanList, VlanDetail,
+                    DomainList, DomainDetail,
+                    GroupList, GroupDetail,
+                    RecordList, RecordDetail, RecordCreate,
+                    BlacklistList, BlacklistDetail,
+                    RuleList, RuleDetail, RuleDelete,
+                    VlanGroupList, VlanGroupDetail,
+                    remove_host_group, add_host_group)
 
 
 urlpatterns = patterns(
@@ -24,6 +28,8 @@ urlpatterns = patterns(
     url('^hosts/create$', HostCreate.as_view(), name='network.host_create'),
     url('^hosts/(?P<pk>\d+)/$', HostDetail.as_view(), name='network.host'),
     url('^records/$', RecordList.as_view(), name='network.record_list'),
+    url('^records/create$', RecordCreate.as_view(),
+        name='network.record_create'),
     url('^records/(?P<pk>\d+)/$', RecordDetail.as_view(),
         name='network.record'),
     url('^rules/$', RuleList.as_view(), name='network.rule_list'),
@@ -40,5 +46,5 @@ urlpatterns = patterns(
     url('^hosts/(?P<pk>\d+)/remove/(?P<group_pk>\d+)/$', remove_host_group,
         name='network.remove_host_group'),
     url('^hosts/(?P<pk>\d+)/add/$', add_host_group,
-        name='network.add_host_group')
+        name='network.add_host_group'),
 )

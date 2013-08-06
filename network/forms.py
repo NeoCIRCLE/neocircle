@@ -161,20 +161,17 @@ class RecordForm(ModelForm):
             Row(
                 Div(
                     Fieldset(
-                        'Identity',
+                        'Record properties',
+                        'type',
+                        'host',
                         'name',
                         'domain',
-                        'type',
                         'address',
                         'ttl',
-                        'host',
                         'description',
                         'owner',
                     ),
-                    css_class='span8'),
-                Div(
-                    HTML('<p>hello</p>'),
-                    css_class='span4'),
+                    css_class='span12'),
             ),
             ButtonHolder(
                 Submit('submit', 'Save'),
