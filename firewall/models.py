@@ -1,4 +1,4 @@
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 
 from django.contrib.auth.models import User
 from django.db import models
@@ -467,8 +467,9 @@ class Host(models.Model):
         assert proto in ('tcp', 'udp', )
         if public:
             if public in self._get_ports_used(proto):
-                raise ValidationError(_("Port %s %s is already in use.") %
-                                     (proto, public))
+                raise ValidationError(
+                    _("Port %(proto)s %(public)s is already in use.") %
+                    {'proto': proto, 'public': public})
         else:
             public = self._get_random_port(proto)
 
