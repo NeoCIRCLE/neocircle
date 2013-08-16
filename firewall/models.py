@@ -33,7 +33,7 @@ class Rule(models.Model):
                                  blank=False, verbose_name=_("direction"),
                                  help_text=_("If the rule matches egress "
                                              "or ingress packets."))
-    description = models.TextField(blank=True,
+    description = models.TextField(blank=True, verbose_name=_('description'),
                                    help_text=_("Why is the rule needed, "
                                                "or how does it work."))
     foreign_network = models.ForeignKey(
@@ -572,19 +572,23 @@ class Host(models.Model):
 
 
 class Firewall(models.Model):
-    name = models.CharField(max_length=20, unique=True)
+    name = models.CharField(max_length=20, unique=True,
+                            verbose_name=_('name'))
 
     def __unicode__(self):
         return self.name
 
 
 class Domain(models.Model):
-    name = models.CharField(max_length=40, validators=[val_domain])
-    owner = models.ForeignKey(User)
-    created_at = models.DateTimeField(auto_now_add=True)
-    modified_at = models.DateTimeField(auto_now=True)
-    ttl = models.IntegerField(default=600)
-    description = models.TextField(blank=True)
+    name = models.CharField(max_length=40, validators=[val_domain],
+                            verbose_name=_('name'))
+    owner = models.ForeignKey(User, verbose_name=_('owner'))
+    created_at = models.DateTimeField(auto_now_add=True,
+                                      verbose_name=_('created_at'))
+    modified_at = models.DateTimeField(auto_now=True,
+                                       verbose_name=_('modified_at'))
+    ttl = models.IntegerField(default=600, verbose_name=_('ttl'))
+    description = models.TextField(blank=True, verbose_name=_('description'))
 
     def __unicode__(self):
         return self.name
@@ -598,16 +602,21 @@ class Record(models.Model):
     CHOICES_type = (('A', 'A'), ('CNAME', 'CNAME'), ('AAAA', 'AAAA'),
                    ('MX', 'MX'), ('NS', 'NS'), ('PTR', 'PTR'), ('TXT', 'TXT'))
     name = models.CharField(max_length=40, validators=[val_domain],
-                            blank=True, null=True)
-    domain = models.ForeignKey('Domain')
-    host = models.ForeignKey('Host', blank=True, null=True)
-    type = models.CharField(max_length=6, choices=CHOICES_type)
-    address = models.CharField(max_length=40, blank=True, null=True)
-    ttl = models.IntegerField(default=600)
-    owner = models.ForeignKey(User)
-    description = models.TextField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    modified_at = models.DateTimeField(auto_now=True)
+                            blank=True, null=True, verbose_name=_('name'))
+    domain = models.ForeignKey('Domain', verbose_name=_('domain'))
+    host = models.ForeignKey('Host', blank=True, null=True,
+                             verbose_name=_('host'))
+    type = models.CharField(max_length=6, choices=CHOICES_type,
+                            verbose_name=_('type'))
+    address = models.CharField(max_length=40, blank=True, null=True,
+                               verbose_name=_('address'))
+    ttl = models.IntegerField(default=600, verbose_name=_('ttl'))
+    owner = models.ForeignKey(User, verbose_name=_('owner'))
+    description = models.TextField(blank=True, verbose_name=_('description'))
+    created_at = models.DateTimeField(auto_now_add=True,
+                                      verbose_name=_('created_at'))
+    modified_at = models.DateTimeField(auto_now=True,
+                                       verbose_name=_('modified_at'))
 
     def __unicode__(self):
         return self.desc()
@@ -717,15 +726,21 @@ class Blacklist(models.Model):
     CHOICES_type = (('permban', 'permanent ban'), ('tempban', 'temporary ban'),
                     ('whitelist', 'whitelist'), ('tempwhite', 'tempwhite'))
     ipv4 = models.GenericIPAddressField(protocol='ipv4', unique=True)
-    host = models.ForeignKey('Host', blank=True, null=True)
-    reason = models.TextField(blank=True)
-    snort_message = models.TextField(blank=True)
+    host = models.ForeignKey('Host', blank=True, null=True,
+                             verbose_name=_('host'))
+    reason = models.TextField(blank=True, verbose_name=_('reason'))
+    snort_message = models.TextField(blank=True,
+                                     verbose_name=_('short message'))
     type = models.CharField(
         max_length=10,
         choices=CHOICES_type,
-        default='tempban')
-    created_at = models.DateTimeField(auto_now_add=True)
-    modified_at = models.DateTimeField(auto_now=True)
+        default='tempban',
+        verbose_name=_('type')
+    )
+    created_at = models.DateTimeField(auto_now_add=True,
+                                      verbose_name=_('created_at'))
+    modified_at = models.DateTimeField(auto_now=True,
+                                       verbose_name=_('modified_at'))
 
     def save(self, *args, **kwargs):
         self.full_clean()
