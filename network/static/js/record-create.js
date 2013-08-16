@@ -1,13 +1,16 @@
 // regexes
-mac_re = '^([0-9a-fA-F]{2}(:|$)){6}$';
+mac_re = /^([0-9a-fA-F]{2}(:|$)){6}$/;
 alfanum_re = '^[A-Za-z0-9_-]+$';
-domain_re = '^([A-Za-z0-9_-]\.?)+$';
-ipv4_re = '^[0-9]+\.([0-9]+)\.([0-9]+)\.([0-9]+)$';
-ipv6_re = '/^((?=.*::)(?!.*::.+::)(::)?([\dA-F]{1,4}:(:|\b)|){5}|([\dA-F]{1,4}:){6})((([\dA-F]{1,4}((?!\3)::|:\b|$))|(?!\2\3)){2}|(((2[0-4]|1\d|[1-9])?\d|25[0-5])\.?\b){4})$/i'
-reverse_domain_re = '^(%\([abcd]\)d|[a-z0-9.-])+$';
+domain_re = /^([A-Za-z0-9_-]\.?)+$/;
+ipv4_re = /^[0-9]+\.([0-9]+)\.([0-9]+)\.([0-9]+)$/;
+ipv6_re = /^((?=.*::)(?!.*::.+::)(::)?([\dA-F]{1,4}:(:|\b)|){5}|([\dA-F]{1,4}:){6})((([\dA-F]{1,4}((?!\3)::|:\b|$))|(?!\2\3)){2}|(((2[0-4]|1\d|[1-9])?\d|25[0-5])\.?\b){4})$/i
+reverse_domain_re = /^(%\([abcd]\)d|[a-z0-9.-])+$/;
 
+// is this a new record?
 var new_record = false;
 
+// handles type change
+// if we are currently creating a new one, call type_next()
 $('#id_type').change(function() {
     type = $(":selected", this).text();
     resetForm();
@@ -18,6 +21,8 @@ $('#id_type').change(function() {
     }
 });
 
+
+// handles hostname change
 $('#id_host').change(function() {    
     host_id = $("#id_host :selected").val();
 
@@ -26,9 +31,11 @@ $('#id_host').change(function() {
         resetForm();
     } else {
         setNameAndAddress();
+        resetErrors();
     }
 });
 
+// sets the name and address if necessary
 function setNameAndAddress() {
     var type = $("#id_type :selected").text();
     host_id = $("#id_host :selected").val();
@@ -69,15 +76,16 @@ function setNameAndAddress() {
                 addr.value = "10:" + data.fqdn;
             });
         }
-
     }
 }
 
-
+// if we submit the form validate the form
 $('#submit-id-submit').click(function() {
     return validateForm();
 });
 
+// validates the form
+// validation is like the one in firewall/model.py
 function validateForm() {
     type = $("#id_type :selected").text();
     host = $('#id_host :selected').val();
@@ -88,7 +96,7 @@ function validateForm() {
         if(type === "CNAME") {
             if(!$('#id_name').val()) {
                     messages.push({
-                    'message': 'Name not set!',
+                    'message': 'Name cannot be empty!',
                     'id': 'name'
                 });
             }
@@ -97,7 +105,7 @@ function validateForm() {
     } else if(!host && type[0] != "-") {
         if(!$('#id_address').val()) {
             messages.push({
-                'message': 'No address set',
+                'message': gettext('Address must be specified!'),
                 'id': 'address'
             });
         } 
@@ -107,8 +115,9 @@ function validateForm() {
             // ipv4
             if(type === "A") {
                 if(!addr.match(ipv4_re)) {
+                    text = gettext('%s - not an IPv4 address');
                     messages.push({
-                        'message': 'ipv4',
+                        'message': interpolate(text, [addr]),
                         'id': 'address'
                     })
                 }
@@ -116,55 +125,74 @@ function validateForm() {
             // ipv6
             else if(type[0] === "A") {
                 if(!addr.match(ipv6_re)) {
+                    text = gettext('%s - not an IPv6 address');
                     messages.push({
-                        'message': 'ivp6',
+                        'message': interpolate(text, [addr]),
                         'id': 'address'
                     });
                 }
             }
+            // MX
             else if(type === "MX") {
                 mx = addr.split(':');
-                if(!(mx.length === 2 && mx[0].match("^[0-9]+$") && mx[1].match(domain_re))) {
+                if(!(mx.length === 2 && mx[0].match("^[0-9]+$") && domain_re.test(mx[1]))) {
+                    text = gettext('Bad MX address format. ' + 
+                                   'Should be: <priority>:<hostname>')
                     messages.push({
-                        'message': 'mx',
+                        'message': text,
                         'id': 'address'
                     });
                 }
             }
+            // CNAME / NS / PTR / TXT
             else if(['CNAME', 'NS', 'PTR', 'TXT'].indexOf(type) != -1) {
-                if(!addr.match(domain_re)) {
+                if(!domain_re.test(addr)) {
+                    text = gettext('%s - invalid domain name');
                     messages.push({
-                        'message': 'address',
+                        'message': interpolate(text, [addr]),
                         'id': 'address'
                     });
                 }
             }
+            // we doesn't really need this, but better safe than sorry
             else {
                 messages.push({
-                    'message': 'u wot m8'
+                    'message': gettext('Unknown record type.'),
+                    'id': 'type'
                 });
             }
         }
+    // we didn't choose a type
     } else {
         messages.push({
-            'message': 'no type set',
+            'message': gettext('You must choose a type'),
             'id': 'type'
         });
     }
 
     // check other inputs
     
+    // name
+    record_name = $('#id_name').val()
+    if(!domain_re.test(record_name)) {
+        text = gettext('%s - invalid domain name'),
+        messages.push({
+            'message': interpolate(text, [record_name]),
+            'id': 'name'
+        });
+    }
+
     // domain
     if(!$('#id_domain :selected').val()) {
         messages.push({
-            'message': 'No domain set',
+            'message': gettext('You must choose a domain'),
             'id': 'domain'
         });
     }
     // owner
     if(!$('#id_owner :selected').val()) {
         messages.push({
-            'message': 'No owner set',
+            'message': gettext('You must specify an owner!'),
             'id': 'owner'
         });
     }
@@ -177,7 +205,7 @@ function validateForm() {
     }
 }
 
-// 
+// makes the ajax call
 function getHostData(pk) {
     return $.ajax({                                                            
         type: "GET",                                                    
@@ -185,13 +213,7 @@ function getHostData(pk) {
     });        
 }
 
-/*
- * reset the form
- *
- * enable hostname and address
- * and set the value to nothing
- *
- */
+// enables fields, resets them and removes error messages
 function resetForm() {
     hostname = document.getElementById('id_name');
     addr = document.getElementById('id_address');
@@ -202,6 +224,11 @@ function resetForm() {
     hostname.value = "";
     addr.value = "";
 
+    resetErrors();
+}
+
+// removes all error messages / classes
+function resetErrors() {
     // reset invalid inputs too
     $('div[id^="div_id_"][class*="error"]').each(function() {
         $(this).removeClass('error');
@@ -209,7 +236,6 @@ function resetForm() {
 
     // remove the error messages
     $("#js_error").fadeOut();
-
 }
 
 // reset the hostname select
@@ -220,12 +246,11 @@ function resetName() {
 
 }
 
-/*
- * hides all of the inputs except the first
- *
- * this supposed to be a wizard thingy
- *
- */
+
+// on page load
+// if we are upadting
+//      - set the name and address
+// else it's a new rule so we "create" the wizard thingy
 $(function() {
     // type is set, so it's an existing record
     if($('#id_type :selected').val()) {
@@ -241,31 +266,41 @@ $(function() {
         // hide the save button
         $('#submit-id-submit').hide();
         $('#div_id_type .controls').append(
-        //    ' <a id="type_next" onclick="type_next()" class="btn btn-info">Next</a>'
-            '<span id="type_next" class="help-inline"><strong>Specify a type!</strong></span>'    
+            //' <a id="type_next" onclick="type_next()" class="btn btn-info">Next</a>'
+            '<span id="type_next" class="help-inline"><strong>' + 
+            gettext('Specify a type!') + 
+            '</strong></span>'    
         );
         $('#div_id_type').fadeIn();
     }
 });
 
-// if user clicked the "Next" button, this function will be called
+// if the user choose a type 
 function type_next() {
     if($('#div_id_type :selected').val()) {
         $('#type_next').remove();
         $('div[id^="div_id_"]').fadeIn();
         $('#submit-id-submit').fadeIn();
+    // this shouldn't be called ...
     } else {
         message = [{
-            'message': 'type pls',
+            'message': gettext('You must choose a type'),
             'id': 'type'
-        }];
+    }];
         appendMessage('error', message);
     }
     return false;
 }
 
+/*
+ * error creating function
+ *
+ * first it removes the current error message, then it iterates through
+ * all the given messages
+ */
 function appendMessage(type, messages, id) {
     $('#js_error').remove();
+    resetErrors();
     message = '<div id="js_error" style="display: none;" class="alert alert-' + type + ' alert-block"><ul>'
     for(var i = 0;i < messages.length; i++) {
         message += "<li>" +messages[i].message+ "</li>";
@@ -281,9 +316,13 @@ function appendMessage(type, messages, id) {
     });
 }
 
+
+// remove error class from forms if we click on them
+// it also removes the help-inline span that shouldn't really appear
 $('* [id^="id_"]').focus(function() {
     id = "#div_" + $(this).prop('id');
     if($(id).hasClass('error')) {
         $(id).removeClass('error');
+        $('span[id="error_1_' + $(this).attr('id') + '"]').remove();
     }
 });

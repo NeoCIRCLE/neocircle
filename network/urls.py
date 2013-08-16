@@ -11,6 +11,9 @@ from .views import (IndexView,
                     VlanGroupList, VlanGroupDetail,
                     remove_host_group, add_host_group)
 
+js_info_dict = {
+    'packages': ('network', ),
+}
 
 urlpatterns = patterns(
     '',
@@ -47,4 +50,6 @@ urlpatterns = patterns(
         name='network.remove_host_group'),
     url('^hosts/(?P<pk>\d+)/add/$', add_host_group,
         name='network.add_host_group'),
+    url(r'^jsi18n/$', 'django.views.i18n.javascript_catalog', js_info_dict,
+        name="network.js_catalog"),
 )
