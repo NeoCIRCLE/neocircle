@@ -6,10 +6,16 @@ ipv4_re = '^[0-9]+\.([0-9]+)\.([0-9]+)\.([0-9]+)$';
 ipv6_re = '/^((?=.*::)(?!.*::.+::)(::)?([\dA-F]{1,4}:(:|\b)|){5}|([\dA-F]{1,4}:){6})((([\dA-F]{1,4}((?!\3)::|:\b|$))|(?!\2\3)){2}|(((2[0-4]|1\d|[1-9])?\d|25[0-5])\.?\b){4})$/i'
 reverse_domain_re = '^(%\([abcd]\)d|[a-z0-9.-])+$';
 
+var new_record = false;
+
 $('#id_type').change(function() {
     type = $(":selected", this).text();
     resetForm();
     resetName();
+    if(new_record) {
+        type_next();
+        new_record = false;
+    }
 });
 
 $('#id_host').change(function() {    
@@ -229,13 +235,15 @@ $(function() {
     }
     // else we are creaing a new
     else {
+        new_record = true;
         // hide all input containers
         $('div[id^="div_id_"]').hide();
         // hide the save button
         $('#submit-id-submit').hide();
         $('#div_id_type .controls').append(
-            ' <a id="type_next" onclick="type_next()" class="btn btn-info">Next</a>'
-            );
+        //    ' <a id="type_next" onclick="type_next()" class="btn btn-info">Next</a>'
+            '<span id="type_next" class="help-inline"><strong>Specify a type!</strong></span>'    
+        );
         $('#div_id_type').fadeIn();
     }
 });
