@@ -9,7 +9,6 @@ from ..models import (Disk, Instance, InstanceType, Network, Share,
                       Template, set_quota, reset_keys, OpenSshKeyValidator)
 from ..util import keygen
 from school.models import Course, Group, Semester
-from store.api import StoreApi
 
 
 class UserCloudDetailsTestCase(TestCase):
@@ -35,8 +34,8 @@ class UserCloudDetailsTestCase(TestCase):
         self.userdetails = user.cloud_details
         date = datetime.now().date()
         delta = timedelta(weeks=7)
-        sem = Semester.objects.create(name="testsem", start=date-delta,
-                                      end=date+delta)
+        sem = Semester.objects.create(name="testsem", start=date - delta,
+                                      end=date + delta)
         course1 = Course.objects.create(code='tccode1', name='testcourse1',
                                         short_name='tc1')
         grp1 = Group.objects.create(name="testgroup1", semester=sem,
@@ -119,12 +118,16 @@ def delete_user():
 
 
 @with_setup(create_user, delete_user)
-def test_set_quota():
+@patch('one.models.StoreApi')
+def test_set_quota(MockStoreApi):
+    MockStoreApi.userexist = Mock(return_value=True)
+    MockStoreApi.set_quota = Mock()
     user = User.objects.get(username="testuser")
     details = user.cloud_details
     set_quota(None, details, None)
-    assert StoreApi.userexist(user.username)
-    # TODO check quota value
+    MockStoreApi.userexist.assert_called_once_with(user.username)
+    MockStoreApi.set_quota.assert_called_once_with(user.username,
+                                                   details.disk_quota * 1024)
 
 
 @with_setup(create_user, delete_user)
