@@ -1,0 +1,572 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2013-08-21 12:29+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
+#: fields.py:19
+msgid "Enter a valid MAC address."
+msgstr ""
+
+#: fields.py:46
+#, python-format
+msgid "%s - only letters, numbers, underscores and hyphens are allowed!"
+msgstr ""
+
+#: fields.py:58
+#, python-format
+msgid "%s - invalid domain name"
+msgstr ""
+
+#: fields.py:80
+#, python-format
+msgid "%s - not an IPv4 address"
+msgstr "%s - nem egy IPv4 cím"
+
+#: fields.py:86
+#, python-format
+msgid "%s - not an IPv6 address"
+msgstr ""
+
+#: fields.py:97
+msgid "Bad MX address format. Should be: <priority>:<hostname>"
+msgstr ""
+
+#: models.py:33
+msgid "direction"
+msgstr ""
+
+#: models.py:34
+msgid "If the rule matches egress or ingress packets."
+msgstr ""
+
+#: models.py:36 models.py:222 models.py:284 models.py:307 models.py:366
+#: models.py:591 models.py:615
+msgid "description"
+msgstr ""
+
+#: models.py:37
+msgid "Why is the rule needed, or how does it work."
+msgstr ""
+
+#: models.py:40
+msgid "foreign network"
+msgstr ""
+
+#: models.py:41
+msgid ""
+"The group of vlans the matching packet goes to (direction out) or from (in)."
+msgstr ""
+
+#: models.py:45
+msgid "dest. port"
+msgstr ""
+
+#: models.py:47
+msgid "Destination port number of packets that match."
+msgstr ""
+
+#: models.py:49
+msgid "source port"
+msgstr ""
+
+#: models.py:51
+msgid "Source port number of packets that match."
+msgstr ""
+
+#: models.py:53
+msgid "protocol"
+msgstr ""
+
+#: models.py:54
+msgid "Protocol of packets that match."
+msgstr ""
+
+#: models.py:55
+msgid "extra arguments"
+msgstr ""
+
+#: models.py:56
+msgid "Additional arguments passed literally to the iptables-rule."
+msgstr ""
+
+#: models.py:58
+msgid "accept"
+msgstr ""
+
+#: models.py:59
+msgid "Accept the matching packets (or deny if not checked)."
+msgstr ""
+
+#: models.py:62 models.py:253 models.py:287 models.py:310 models.py:377
+#: models.py:585 models.py:614
+msgid "owner"
+msgstr ""
+
+#: models.py:63
+msgid "The user responsible for this rule."
+msgstr ""
+
+#: models.py:65
+msgid "Rule type"
+msgstr ""
+
+#: models.py:67
+msgid "The type of entity the rule belongs to."
+msgstr ""
+
+#: models.py:69
+msgid "NAT"
+msgstr ""
+
+#: models.py:70
+msgid "If network address translation shoud be done."
+msgstr ""
+
+#: models.py:74
+msgid "Rewrite destination port number to."
+msgstr ""
+
+#: models.py:79 models.py:251 models.py:289 models.py:312 models.py:385
+msgid "created at"
+msgstr ""
+
+#: models.py:82 models.py:255 models.py:291 models.py:314 models.py:387
+msgid "modified at"
+msgstr ""
+
+#: models.py:85 models.py:374
+msgid "vlan"
+msgstr ""
+
+#: models.py:86
+msgid "Vlan the rule applies to (if type is vlan)."
+msgstr ""
+
+#: models.py:90
+msgid "vlan group"
+msgstr ""
+
+#: models.py:91
+msgid "Group of vlans the rule applies to (if type is vlan)."
+msgstr ""
+
+#: models.py:94 models.py:608 models.py:730
+msgid "host"
+msgstr ""
+
+#: models.py:95
+msgid "Host the rule applies to (if type is host)."
+msgstr ""
+
+#: models.py:98
+msgid "host group"
+msgstr ""
+
+#: models.py:99
+msgid "Group of hosts the rule applies to (if type is host)."
+msgstr ""
+
+#: models.py:102
+msgid "firewall"
+msgstr ""
+
+#: models.py:103
+msgid "Firewall the rule applies to (if type is firewall)."
+msgstr ""
+
+#: models.py:115
+msgid "Only one field can be selected."
+msgstr ""
+
+#: models.py:136
+msgid "rule"
+msgstr ""
+
+#: models.py:137
+msgid "rules"
+msgstr ""
+
+#: models.py:163
+msgid "VID"
+msgstr ""
+
+#: models.py:164
+msgid "The vlan ID of the subnet."
+msgstr ""
+
+#: models.py:169
+msgid "Name"
+msgstr ""
+
+#: models.py:170
+msgid "The short name of the subnet."
+msgstr ""
+
+#: models.py:173
+msgid "IPv4 prefix length"
+msgstr ""
+
+#: models.py:174
+msgid "The prefix length of the IPv4 subnet."
+msgstr ""
+
+#: models.py:176
+msgid "IPv6 prefix length"
+msgstr ""
+
+#: models.py:177
+msgid "The prefix length of the IPv6 subnet."
+msgstr ""
+
+#: models.py:179
+msgid "interface"
+msgstr ""
+
+#: models.py:180
+msgid ""
+"The name of network interface the gateway should serve this network on. For "
+"example vlan0004 or eth2."
+msgstr ""
+
+#: models.py:184
+msgid "IPv4 network"
+msgstr ""
+
+#: models.py:185
+msgid "The network address of the IPv4 subnet."
+msgstr ""
+
+#: models.py:188
+msgid "IPv6 network"
+msgstr ""
+
+#: models.py:189
+msgid "The network address of the IPv6 subnet."
+msgstr ""
+
+#: models.py:192 models.py:346
+msgid "IPv4 address"
+msgstr ""
+
+#: models.py:194
+msgid ""
+"The IPv4 address of the gateway. Recommended value is the last valid address "
+"of the subnet, for example 10.4.255.254 for 10.4.0.0/16."
+msgstr ""
+
+#: models.py:201 models.py:357
+msgid "IPv6 address"
+msgstr ""
+
+#: models.py:203
+msgid "The IPv6 address of the gateway."
+msgstr ""
+
+#: models.py:207
+msgid "NAT IP address"
+msgstr ""
+
+#: models.py:209
+msgid ""
+"Common IPv4 address used for address translation of connections to the "
+"networks selected below (typically to the internet)."
+msgstr ""
+
+#: models.py:215
+msgid "NAT to"
+msgstr ""
+
+#: models.py:217
+msgid ""
+"Connections to these networks should be network address translated, i.e. "
+"their source address is rewritten to the value of NAT IP address."
+msgstr ""
+
+#: models.py:224
+msgid "Description of the goals and elements of the vlan network."
+msgstr ""
+
+#: models.py:226
+msgid "comment"
+msgstr ""
+
+#: models.py:228
+msgid "Notes, comments about the network"
+msgstr ""
+
+#: models.py:229
+msgid "domain name"
+msgstr ""
+
+#: models.py:230
+msgid "Domain name of the members of this network."
+msgstr ""
+
+#: models.py:234
+msgid "reverse domain"
+msgstr ""
+
+#: models.py:235
+#, python-format
+msgid ""
+"Template of the IPv4 reverse domain name that should be generated for each "
+"host. The template should contain four tokens: \"%(a)d\", \"%(b)d\", \"%(c)d"
+"\", and \"%(d)d\", representing the four bytes of the address, respectively, "
+"in decimal notation. For example, the template for the standard reverse "
+"address is: \"%(d)d.%(c)d.%(b)d.%(a)d.in-addr.arpa\"."
+msgstr ""
+
+#: models.py:243
+msgid "DHCP pool"
+msgstr ""
+
+#: models.py:245
+msgid ""
+"The address range of the DHCP pool: empty for no DHCP service, \"manual\" "
+"for no DHCP pool, or the first and last address of the range separated by a "
+"space."
+msgstr ""
+
+#: models.py:278 models.py:305 models.py:576 models.py:584 models.py:605
+msgid "name"
+msgstr ""
+
+#: models.py:279 models.py:306
+msgid "The name of the group."
+msgstr ""
+
+#: models.py:281
+msgid "vlans"
+msgstr ""
+
+#: models.py:282
+msgid "The vlans which are members of the group."
+msgstr ""
+
+#: models.py:285 models.py:308
+msgid "Description of the group."
+msgstr ""
+
+#: models.py:330
+msgid "hostname"
+msgstr ""
+
+#: models.py:331
+msgid "The alphanumeric hostname of the host, the first part of the FQDN."
+msgstr ""
+
+#: models.py:336
+msgid "reverse"
+msgstr ""
+
+#: models.py:337
+msgid ""
+"The fully qualified reverse hostname of the host, if different than hostname."
+"domain."
+msgstr ""
+
+#: models.py:341
+msgid "MAC address"
+msgstr ""
+
+#: models.py:342
+msgid ""
+"The MAC (Ethernet) address of the network interface. For example: 99:AA:BB:"
+"CC:DD:EE."
+msgstr ""
+
+#: models.py:348
+msgid "The real IPv4 address of the host, for example 10.5.1.34."
+msgstr ""
+
+#: models.py:352
+msgid "WAN IPv4 address"
+msgstr ""
+
+#: models.py:353
+msgid ""
+"The public IPv4 address of the host on the wide area network, if different."
+msgstr ""
+
+#: models.py:359
+msgid "The global IPv6 address of the host, for example 2001:500:88:200::10."
+msgstr ""
+
+#: models.py:362
+msgid "shared IP"
+msgstr ""
+
+#: models.py:364
+msgid "If the given WAN IPv4 address is used by multiple hosts."
+msgstr ""
+
+#: models.py:367
+msgid "What is this host for, what kind of machine is it."
+msgstr ""
+
+#: models.py:370
+msgid "Notes"
+msgstr ""
+
+#: models.py:371
+msgid "location"
+msgstr ""
+
+#: models.py:373
+msgid "The physical location of the machine."
+msgstr ""
+
+#: models.py:376
+msgid "Vlan network that the host is part of."
+msgstr ""
+
+#: models.py:379
+msgid "The person responsible for this host."
+msgstr ""
+
+#: models.py:381
+msgid "groups"
+msgstr ""
+
+#: models.py:383
+msgid "Host groups the machine is part of."
+msgstr ""
+
+#: models.py:398
+msgid "If shared_ip has been checked, pub_ipv4 has to be unique."
+msgstr ""
+
+#: models.py:401
+msgid "You can't use another host's NAT'd address as your own IPv4."
+msgstr ""
+
+#: models.py:454
+#, python-format
+msgid "All %s ports are already in use."
+msgstr ""
+
+#: models.py:471
+#, python-format
+msgid "Port %(proto)s %(public)s is already in use."
+msgstr ""
+
+#: models.py:479
+msgid "Only ports above 1024 can be used."
+msgstr ""
+
+#: models.py:587 models.py:617 models.py:741
+msgid "created_at"
+msgstr ""
+
+#: models.py:589 models.py:619 models.py:743
+msgid "modified_at"
+msgstr ""
+
+#: models.py:590 models.py:613
+msgid "ttl"
+msgstr ""
+
+#: models.py:606
+msgid "domain"
+msgstr ""
+
+#: models.py:610 models.py:738
+msgid "type"
+msgstr ""
+
+#: models.py:612
+msgid "address"
+msgstr ""
+
+#: models.py:627
+msgid "(empty)"
+msgstr ""
+
+#: models.py:638
+msgid "Can't specify address for A or AAAA records if host is set!"
+msgstr ""
+
+#: models.py:641
+msgid "Can't specify name for A or AAAA records if host is set!"
+msgstr ""
+
+#: models.py:645
+msgid "Name must be specified for CNAME records if host is set!"
+msgstr ""
+
+#: models.py:648
+msgid "Can't specify address for CNAME records if host is set!"
+msgstr ""
+
+#: models.py:656
+msgid "Address must be specified!"
+msgstr ""
+
+#: models.py:666
+msgid "Unknown record type."
+msgstr ""
+
+#: models.py:731
+msgid "reason"
+msgstr ""
+
+#: models.py:733
+msgid "short message"
+msgstr ""
+
+#: views.py:26
+#, python-format
+msgid ""
+"Dear %s, you've signed in as administrator!<br />Reloading in 10 seconds..."
+msgstr ""
+
+#: views.py:30
+#, python-format
+msgid "Dear %s, you've signed in!"
+msgstr ""
+
+#: views.py:32
+msgid "Dear anonymous, you've not signed in yet!"
+msgstr ""
+
+#: views.py:43
+msgid "Wrong password."
+msgstr ""
+
+#: views.py:77 views.py:118
+msgid "OK"
+msgstr ""
+
+#: views.py:80
+msgid "Only vm-net and war can be used."
+msgstr ""
+
+#: views.py:111
+msgid "Unknown command."
+msgstr ""
+
+#: views.py:114
+#, python-format
+msgid ""
+"Something went wrong!\n"
+"%s\n"
+msgstr ""
+
+#: views.py:116
+msgid "Something went wrong!\n"
+msgstr ""

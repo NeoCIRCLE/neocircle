@@ -1,0 +1,62 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2013-08-21 12:29+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
+#: static/js/record-create.js:108
+msgid "Address must be specified!"
+msgstr ""
+
+#: static/js/record-create.js:118
+#, c-format
+msgid "%s - not an IPv4 address"
+msgstr "%s - nem egy IPv4 cím"
+
+#: static/js/record-create.js:128
+#, c-format
+msgid "%s - not an IPv6 address"
+msgstr ""
+
+#: static/js/record-create.js:139
+msgid "Bad MX address format. "
+msgstr ""
+
+#: static/js/record-create.js:150 static/js/record-create.js.c:178
+#, c-format
+msgid "%s - invalid domain name"
+msgstr ""
+
+#: static/js/record-create.js:160
+msgid "Unknown record type."
+msgstr ""
+
+#: static/js/record-create.js:168 static/js/record-create.js.c:287
+msgid "You must choose a type"
+msgstr ""
+
+#: static/js/record-create.js:188
+msgid "You must choose a domain"
+msgstr ""
+
+#: static/js/record-create.js:195
+msgid "You must specify an owner!"
+msgstr ""
+
+#: static/js/record-create.js:271
+msgid "Specify a type!"
+msgstr ""

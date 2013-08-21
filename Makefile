@@ -13,6 +13,8 @@ pull:
 po:
 	for i in */; do cd $$i; ../manage.py makemessages --all || true; cd ..; done
 	for i in */; do cd $$i; ../manage.py makemessages --all -d djangojs || true; cd ..; done
+	msgmerge firewall/locale/hu/LC_MESSAGES/django.po network/locale/hu/LC_MESSAGES/djangojs.po -o tmp.po
+	mv tmp.po network/locale/hu/LC_MESSAGES/djangojs.po
 
 migrate:
 	./manage.py syncdb || true
