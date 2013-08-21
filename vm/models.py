@@ -1,10 +1,15 @@
+from django.contrib.auth.models import User
 from django.db import models
+from django.db.models.signals import pre_delete
+from django.utils.translation import ugettext_lazy as _
+
 from model_utils.models import TimeStampedModel
-from firewall.models import Vlan
-from storage.models import Disk, Image
+
+from firewall.models import Vlan, Host
+from storage.models import Disk
 
 
-class BaseResourceConfigModel():
+class BaseResourceConfigModel(models.Model):
     """Abstract base class for models with base resource configuration
        parameters.
     """
@@ -19,7 +24,7 @@ class BaseResourceConfigModel():
         abstract = True
 
 
-class NamedBaseResourceConfig(models.Model, BaseResourceConfigModel):
+class NamedBaseResourceConfig(BaseResourceConfigModel):
     """Pre-created, named base resource configurations.
     """
     name = models.CharField(max_length=50, unique=True,
@@ -34,7 +39,7 @@ class Interface(models.Model):
     """
     vlan = models.ForeignKey(Vlan)
     host = models.ForeignKey(Host)
-    instance = models.ForeignKey(Instance)
+    instance = models.ForeignKey('Instance')
 
 
 class InterfaceTemplate(models.Model):
@@ -42,7 +47,7 @@ class InterfaceTemplate(models.Model):
     """
     vlan = models.ForeignKey(Vlan)
     managed = models.BooleanField()
-    template = models.ForeignKey(Template)
+    template = models.ForeignKey('Template')
 
 
 class Node(models.Model):
@@ -55,8 +60,7 @@ class Node(models.Model):
     online = models.BooleanField(default=False)
 
 
-class InstanceTemplate(models.Model, TimeStampedModel,
-                       BaseResourceConfigModel):
+class InstanceTemplate(TimeStampedModel, BaseResourceConfigModel):
     """Virtual machine template.
 
     Every template has:
@@ -88,9 +92,9 @@ class InstanceTemplate(models.Model, TimeStampedModel,
                                          'Ubuntu 12.04 LTS Desktop amd64'))
     access_method = models.CharField(max_length=10, choices=ACCESS_METHODS,
                                      verbose_name=_('access method'))
-    state = models.CharField(max_length=10, choices=TEMPLATE_STATES,
+    state = models.CharField(max_length=10, choices=STATES,
                              default='NEW')
-    images = models.ManyToManyField(Image, verbose_name=_('images'),
+    disks = models.ManyToManyField(Disk, verbose_name=_('disks'),
                                     related_name='template_set')
     # TODO review
     owner = models.ForeignKey(User, verbose_name=_('owner'),
@@ -119,7 +123,7 @@ class InstanceTemplate(models.Model, TimeStampedModel,
             return "linux"
 
 
-class Instance(models.Model, TimeStampedModel, BaseResourceConfigModel):
+class Instance(TimeStampedModel, BaseResourceConfigModel):
     """Virtual machine instance.
 
     Every instance has:
@@ -147,7 +151,7 @@ class Instance(models.Model, TimeStampedModel, BaseResourceConfigModel):
                             blank=True)
     description = models.TextField(verbose_name=_('description'),
                                    blank=True)
-    template = models.ForeignKey(Template, verbose_name=_('template'),
+    template = models.ForeignKey('Template', verbose_name=_('template'),
                                  related_name='instance_set',
                                  null=True, blank=True)
     pw = models.CharField(max_length=20, verbose_name=_('password'),
@@ -170,7 +174,7 @@ class Instance(models.Model, TimeStampedModel, BaseResourceConfigModel):
                              related_name='instance_set')
     state = models.CharField(max_length=20, choices=STATES,
                              default='NOSTATE')
-    operation = models.CharField(max_length=100, null=True, blank=True
+    operation = models.CharField(max_length=100, null=True, blank=True,
                                  verbose_name=_('operation'))
     # TODO review fields below
     owner = models.ForeignKey(User, verbose_name=_('owner'),
@@ -187,7 +191,7 @@ class Instance(models.Model, TimeStampedModel, BaseResourceConfigModel):
     @models.permalink
     def get_absolute_url(self):
         return ('one.views.vm_show', None, {'iid': self.id})
-    
+
     @property
     def primary_host(self):
         if not hosts.exists():
@@ -227,7 +231,7 @@ class Instance(models.Model, TimeStampedModel, BaseResourceConfigModel):
 
     def get_age(self):
         """Deprecated. Use uptime instead.
-        
+
         Get age of VM in seconds.
         """
         return self.uptime.seconds

@@ -152,7 +152,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.admin',
     'django.contrib.admindocs',
-    'one',
+    # 'one',
     'school',
     'cloud',
     'store',

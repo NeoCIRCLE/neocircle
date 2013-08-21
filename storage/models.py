@@ -28,19 +28,18 @@ class DataStore(models.Model):
         return u'%s (%s)' % (self.name, self.path)
 
 
-class Disk(models.Model, TimeStampedModel):
+class Disk(TimeStampedModel):
     """Virtual disks."""
     FORMATS = [('qcow2', 'qcow2'), ('raw', 'raw'), ('iso', 'iso')]
     TYPES = [('snapshot', 'snapshot'), ('normal', 'normal')]
     name = models.CharField(max_length=100, unique=True,
                             verbose_name=_('name'))
     datastore = models.ForeignKey('DataStore')
-    format = models.CharField(max_length=10, choices=FORMAT)
+    format = models.CharField(max_length=10, choices=FORMATS)
     size = models.IntegerField()
     type = models.CharField(max_length=10, choices=TYPES)
     base = models.ForeignKey('Disk', related_name='snapshots',
                              null=True, blank=True)
-    created = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['name']

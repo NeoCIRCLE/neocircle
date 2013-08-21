@@ -17,7 +17,6 @@ from django.utils.translation import ugettext_lazy as _
 
 from firewall.models import Host, Vlan
 from store.api import StoreApi
-from vm.models import Template
 from .util import keygen
 import django.conf
 
