@@ -38,8 +38,8 @@ class Disk(TimeStampedModel):
     format = models.CharField(max_length=10, choices=FORMATS)
     size = models.IntegerField()
     type = models.CharField(max_length=10, choices=TYPES)
-    base = models.ForeignKey('Disk', related_name='snapshots',
-                             null=True, blank=True)
+    base = models.ForeignKey('self', blank=True null=True,
+                             related_name='derivatives')
 
     class Meta:
         ordering = ['name']
