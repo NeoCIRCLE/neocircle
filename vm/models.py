@@ -1,6 +1,14 @@
+from datetime import timedelta
+import logging
+
+from django.conf.settings import CLOUD_URL
 from django.contrib.auth.models import User
+# from django.core import signing
 from django.db import models
 from django.db.models.signals import pre_delete
+from django.dispatch import receiver
+from django.template.defaultfilters import escape
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from model_utils.models import TimeStampedModel
@@ -8,15 +16,26 @@ from model_utils.models import TimeStampedModel
 from firewall.models import Vlan, Host
 from storage.models import Disk
 
+logger = logging.getLogger(__name__)
+pwgen = User.objects.make_random_password
+# TODO get this from config
+ACCESS_PROTOCOLS = {
+    # format: id: (name, port, protocol)
+    'rdp': ('rdp', 3389, 'tcp'),
+    'nx': ('nx', 22, 'tcp'),
+    'ssh': ('ssh', 22, 'tcp'),
+}
+ACCESS_METHODS = [(k, ap[0]) for k, ap in ACCESS_PROTOCOLS.iteritems()]
+
 
 class BaseResourceConfigModel(models.Model):
     """Abstract base class for models with base resource configuration
        parameters.
     """
-    CPU = models.IntegerField(help_text=_('CPU cores.'))
-    RAM = models.IntegerField(help_text=_('Mebibytes of memory.'))
-    max_RAM = models.IntegerField(help_text=_('Upper memory size limit for '
-                                              'balloning.'))
+    num_cores = models.IntegerField(help_text=_('Number of CPU cores.'))
+    ram_size = models.IntegerField(help_text=_('Mebibytes of memory.'))
+    max_ram_size = models.IntegerField(help_text=_('Upper memory size limit '
+                                                   'for balloning.'))
     arch = models.CharField(max_length=10, verbose_name=_('architecture'))
     priority = models.IntegerField(help_text=_('instance priority'))
 
@@ -24,7 +43,7 @@ class BaseResourceConfigModel(models.Model):
         abstract = True
 
 
-class NamedBaseResourceConfig(BaseResourceConfigModel):
+class NamedBaseResourceConfig(BaseResourceConfigModel, TimeStampedModel):
     """Pre-created, named base resource configurations.
     """
     name = models.CharField(max_length=50, unique=True,
@@ -34,33 +53,56 @@ class NamedBaseResourceConfig(BaseResourceConfigModel):
         return self.name
 
 
-class Interface(models.Model):
-    """Network interface for an instance.
-    """
-    vlan = models.ForeignKey(Vlan)
-    host = models.ForeignKey(Host)
-    instance = models.ForeignKey('Instance')
-
-
-class InterfaceTemplate(models.Model):
-    """Network interface template for an instance template.
-    """
-    vlan = models.ForeignKey(Vlan)
-    managed = models.BooleanField()
-    template = models.ForeignKey('Template')
-
-
-class Node(models.Model):
+class Node(TimeStampedModel):
     name = models.CharField(max_length=50, unique=True,
                             verbose_name=_('name'))
-    CPU = models.IntegerField(help_text=_('CPU cores.'))
-    RAM = models.IntegerField(help_text=_('Mebibytes of memory.'))
+    num_cores = models.IntegerField(help_text=_('Number of CPU cores.'))
+    ram_size = models.IntegerField(help_text=_('Mebibytes of memory.'))
     priority = models.IntegerField(help_text=_('node usage priority'))
     host = models.ForeignKey(Host)
-    online = models.BooleanField(default=False)
+    enabled = models.BooleanField(default=False,
+                                  help_text=_('Indicates whether the node can '
+                                              'be used for hosting.'))
+
+    class Meta:
+        permissions = ()
+
+    @property
+    def online(self):
+        """Indicates whether the node is connected and functional.
+        """
+        pass  # TODO implement check
 
 
-class InstanceTemplate(TimeStampedModel, BaseResourceConfigModel):
+class Lease(models.Model):
+    """Lease times for VM instances.
+
+    Specifies a time duration until suspension and deletion of a VM
+    instance.
+    """
+    name = models.CharField(max_length=100, unique=True,
+                            verbose_name=_('name'))
+    suspend_interval_seconds = models.IntegerField()
+    delete_interval_seconds = models.IntegerField()
+
+    @property
+    def suspend_interval(self):
+        return timedelta(seconds=self.suspend_interval_seconds)
+
+    @suspend_interval.setter
+    def suspend_interval(self, value):
+        self.suspend_interval_seconds = value.seconds
+
+    @property
+    def delete_interval(self):
+        return timedelta(seconds=self.delete_interval_seconds)
+
+    @delete_interval.setter
+    def delete_interval(self, value):
+        self.delete_interval_seconds = value.seconds
+
+
+class InstanceTemplate(BaseResourceConfigModel, TimeStampedModel):
     """Virtual machine template.
 
     Every template has:
@@ -72,13 +114,13 @@ class InstanceTemplate(TimeStampedModel, BaseResourceConfigModel):
       * default values of base resource configuration
       * list of attached images
       * set of interfaces
+      * lease times (suspension & deletion)
       * time of creation and last modification
       * ownership information
     """
     STATES = [('NEW', _('new')),  # template has just been created
               ('SAVING', _('saving')),  # changes are being saved
               ('READY', _('ready'))]  # template is ready for instantiation
-    ACCESS_METHODS = [('rdp', 'rdp'), ('nx', 'nx'), ('ssh', 'ssh'), ]
     name = models.CharField(max_length=100, unique=True,
                             verbose_name=_('name'))
     description = models.TextField(verbose_name=_('description'),
@@ -95,15 +137,14 @@ class InstanceTemplate(TimeStampedModel, BaseResourceConfigModel):
     state = models.CharField(max_length=10, choices=STATES,
                              default='NEW')
     disks = models.ManyToManyField(Disk, verbose_name=_('disks'),
-                                    related_name='template_set')
-    # TODO review
-    owner = models.ForeignKey(User, verbose_name=_('owner'),
-                              related_name='template_set')
+                                   related_name='template_set')
+    lease = models.ForeignKey(Lease, related_name='template_set')
 
     class Meta:
+        ordering = ['name', ]
+        permissions = ()
         verbose_name = _('template')
         verbose_name_plural = _('templates')
-        ordering = ['name', ]
 
     def __unicode__(self):
         return self.name
@@ -111,7 +152,7 @@ class InstanceTemplate(TimeStampedModel, BaseResourceConfigModel):
     def running_instances(self):
         """Returns the number of running instances of the template.
         """
-        return self.instance_set.exclude(state='DONE').count()
+        return self.instance_set.filter(state='RUNNING').count()
 
     @property
     def os_type(self):
@@ -123,7 +164,48 @@ class InstanceTemplate(TimeStampedModel, BaseResourceConfigModel):
             return "linux"
 
 
-class Instance(TimeStampedModel, BaseResourceConfigModel):
+class InterfaceTemplate(models.Model):
+    """Network interface template for an instance template.
+
+    If the interface is managed, a host will be created for it.
+    """
+    vlan = models.ForeignKey(Vlan)
+    managed = models.BooleanField(default=True)
+    template = models.ForeignKey(InstanceTemplate,
+                                 related_name='interface_set')
+
+    class Meta:
+        permissions = ()
+        verbose_name = _('interface template')
+        verbose_name_plural = _('interface templates')
+
+
+def create_context(pw, hostname, smb_password, ssh_private_key, owner, token,
+                   extra):
+    """Return XML context configuration with given parameters.
+    """
+    return u'''
+            <SOURCE>web</SOURCE>
+            <HOSTNAME>%(hostname)s</HOSTNAME>
+            <NEPTUN>%(neptun)s</NEPTUN>
+            <USERPW>%(pw)s</USERPW>
+            <SMBPW>%(smbpw)s</SMBPW>
+            <SSHPRIV>%(sshkey)s</SSHPRIV>
+            <BOOTURL>%(booturl)s</BOOTURL>
+            <SERVER>store.cloud.ik.bme.hu</SERVER>
+            %(extra)s
+    ''' % {
+        "pw": escape(pw),
+        "hostname": escape(hostname),
+        "smbpw": escape(smb_password),
+        "sshkey": escape(ssh_private_key),
+        "neptun": escape(owner),
+        "booturl": "%sb/%s/" % (CLOUD_URL, token),
+        "extra": extra
+    }
+
+
+class Instance(BaseResourceConfigModel, TimeStampedModel):
     """Virtual machine instance.
 
     Every instance has:
@@ -132,6 +214,7 @@ class Instance(TimeStampedModel, BaseResourceConfigModel):
       * associated share
       * a generated password for login authentication
       * time of deletion and time of suspension
+      * lease times (suspension & deletion)
       * last boot timestamp
       * host node
       * current state (libvirt domain state) and operation (Celery job UUID)
@@ -147,62 +230,96 @@ class Instance(TimeStampedModel, BaseResourceConfigModel):
               ('SHUTOFF', _('shutoff')),
               ('CRASHED', _('crashed')),
               ('PMSUSPENDED', _('pmsuspended'))]  # libvirt domain states
-    name = models.CharField(max_length=100, verbose_name=_('name'),
-                            blank=True)
-    description = models.TextField(verbose_name=_('description'),
-                                   blank=True)
-    template = models.ForeignKey('Template', verbose_name=_('template'),
+    name = models.CharField(blank=True, max_length=100, verbose_name=_('name'))
+    description = models.TextField(blank=True, verbose_name=_('description'))
+    template = models.ForeignKey(InstanceTemplate, blank=True, null=True,
                                  related_name='instance_set',
-                                 null=True, blank=True)
-    pw = models.CharField(max_length=20, verbose_name=_('password'),
-                          help_text=_('Original password of instance'))
-    time_of_suspend = models.DateTimeField(default=None,
-                                           verbose_name=_('time of suspend'),
-                                           null=True, blank=True)
-    time_of_delete = models.DateTimeField(default=None,
-                                          verbose_name=_('time of delete'),
-                                          null=True, blank=True)
-    active_since = models.DateTimeField(null=True, blank=True,
-                                        verbose_name=_('active since'),
-                                        help_text=_('Time stamp of '
-                                                    'successful boot '
-                                                    'report.'))
-    share = models.ForeignKey('Share', blank=True, null=True,
-                              verbose_name=_('share'),
-                              related_name='instance_set')
-    node = models.ForeignKey(Node, verbose_name=_('host nose'),
-                             related_name='instance_set')
-    state = models.CharField(max_length=20, choices=STATES,
-                             default='NOSTATE')
-    operation = models.CharField(max_length=100, null=True, blank=True,
+                                 verbose_name=_('template'))
+    pw = models.CharField(help_text=_('Original password of instance'),
+                          max_length=20, verbose_name=_('password'))
+    time_of_suspend = models.DateTimeField(blank=True, default=None, null=True,
+                                           verbose_name=_('time of suspend'))
+    time_of_delete = models.DateTimeField(blank=True, default=None, null=True,
+                                          verbose_name=_('time of delete'))
+    active_since = models.DateTimeField(blank=True, null=True,
+                                        help_text=_('Time stamp of successful '
+                                                    'boot report.'),
+                                        verbose_name=_('active since'))
+    node = models.ForeignKey(Node, blank=True, null=True,
+                             related_name='instance_set',
+                             verbose_name=_('host nose'))
+    state = models.CharField(choices=STATES, default='NOSTATE', max_length=20)
+    operation = models.CharField(blank=True, max_length=100, null=True,
                                  verbose_name=_('operation'))
-    # TODO review fields below
-    owner = models.ForeignKey(User, verbose_name=_('owner'),
-                              related_name='instance_set')
+    disks = models.ManyToManyField(Disk, related_name='instance_set',
+                                   verbose_name=_('disks'))
+    lease = models.ForeignKey(Lease)
+    access_method = models.CharField(max_length=10, choices=ACCESS_METHODS,
+                                     verbose_name=_('access method'))
+    owner = models.ForeignKey(User)
 
     class Meta:
+        ordering = ['pk', ]
+        permissions = ()
         verbose_name = _('instance')
         verbose_name_plural = _('instances')
-        ordering = ['pk', ]
 
     def __unicode__(self):
         return self.name
 
+    @classmethod
+    def create_from_template(cls, template, **kwargs):
+        """Create a new instance based on an InstanceTemplate.
+
+        Can also specify parameters as keyword arguments which should override
+        template settings.
+        """
+        # prepare parameters
+        kwargs['template'] = template
+        kwargs.setdefault('name', template.name)
+        kwargs.setdefault('description', template.description)
+        kwargs.setdefault('pw', pwgen())
+        kwargs.setdefault('num_cores', template.num_cores)
+        kwargs.setdefault('ram_size', template.ram_size)
+        kwargs.setdefault('max_ram_size', template.max_ram_size)
+        kwargs.setdefault('arch', template.arch)
+        kwargs.setdefault('priority', template.priority)
+        kwargs.setdefault('lease', template.lease)
+        kwargs.setdefault('access_method', template.access_method)
+        # create instance and do additional setup
+        inst = cls(**kwargs)
+        for disk in template.disks:
+            inst.disks.add(disk.get_exculsive())
+        # save instance
+        inst.save()
+        # create related entities
+        for iftmpl in template.interface_set.all():
+            i = Interface.create_from_template(instance=inst, template=iftmpl)
+            if i.host:
+                i.host.enable_net()
+                port, proto = ACCESS_PROTOCOLS[i.access_method][1:3]
+                i.host.add_port(proto, i.get_port(), port)
+
+        return inst
+
+    # TODO is this obsolete?
     @models.permalink
     def get_absolute_url(self):
         return ('one.views.vm_show', None, {'iid': self.id})
 
     @property
     def primary_host(self):
-        if not hosts.exists():
+        interfaces = self.interface_set.select_related('host')
+        hosts = [i.host for i in interfaces if i.host]
+        if not hosts:
             return None
-        hs = hosts.filter(ipv6__is_null=False)
-        if hs.exists():
+        hs = [h for h in hosts if h.ipv6]
+        if hs:
             return hs[0]
-        hs = hosts.filter(shared_ip=False)
-        if hs.exists():
+        hs = [h for h in hosts if not h.shared_ip]
+        if hs:
             return hs[0]
-        return hosts.all()[0]
+        return hosts[0]
 
     @property
     def ipv4(self):
@@ -221,13 +338,12 @@ class Instance(TimeStampedModel, BaseResourceConfigModel):
 
     @property
     def uptime(self):
-        """Uptime of the instance."""
-        from datetime import datetime, timedelta
+        """Uptime of the instance.
+        """
         if self.active_since:
-            return (datetime.now().replace(tzinfo=None) -
-                    self.active_since.replace(tzinfo=None))
+            return timezone.now() - self.active_since
         else:
-            return timedelta()
+            return timedelta()  # zero
 
     def get_age(self):
         """Deprecated. Use uptime instead.
@@ -238,13 +354,14 @@ class Instance(TimeStampedModel, BaseResourceConfigModel):
 
     @property
     def waiting(self):
+        """Indicates whether the instance's waiting for an operation to finish.
+        """
         return self.operation is not None
 
-    def get_port(self, use_ipv6=False):
-        """Get public port number for default access method."""
-        # TODO move PROTOS to config
-        PROTOS = {"rdp": (3389,'tcp'), "nx": (22,'tcp'), "ssh": (22,'tcp')}
-        (port, proto) = PROTOS[self.template.access_method]
+    def get_connect_port(self, use_ipv6=False):
+        """Get public port number for default access method.
+        """
+        port, proto = ACCESS_PROTOCOLS[self.access_method][1:3]
         if self.primary_host:
             endpoints = self.primary_host.get_public_endpoints(port, proto)
             endpoint = endpoints['ipv6'] if use_ipv6 else endpoints['ipv4']
@@ -253,182 +370,97 @@ class Instance(TimeStampedModel, BaseResourceConfigModel):
             return None
 
     def get_connect_host(self, use_ipv6=False):
-        """Get public hostname."""
-        if self.firewall_host is None:
+        """Get public hostname.
+        """
+        if not self.firewall_host:
             return _('None')
         proto = 'ipv6' if use_ipv6 else 'ipv4'
         return self.firewall_host.get_hostname(proto=proto)
 
     def get_connect_uri(self, use_ipv6=False):
-        """Get access parameters in URI format."""
+        """Get access parameters in URI format.
+        """
         try:
-            proto = self.template.access_type
+            port = self.get_connect_port(use_ipv6=use_ipv6)
+            host = self.get_connect_host(use_ipv6=use_ipv6)
+            proto = self.access_method
             if proto == 'ssh':
                 proto = 'sshterm'
-            port = self.get_port(use_ipv6=use_ipv6)
-            host = self.get_connect_host(use_ipv6=use_ipv6)
-            pw = self.pw
             return ("%(proto)s:cloud:%(pw)s:%(host)s:%(port)d" %
-                    {"port": port, "proto": proto, "pw": pw,
+                    {"port": port, "proto": proto, "pw": self.pw,
                      "host": host})
         except:
             return
 
-    @staticmethod
-    def _create_context(pw, hostname, smb_password, ssh_private_key, owner,
-                        token, extra):
-        """Return XML context configuration with given parameters."""
-        ctx = u'''
-                <SOURCE>web</SOURCE>
-                <HOSTNAME>%(hostname)s</HOSTNAME>
-                <NEPTUN>%(neptun)s</NEPTUN>
-                <USERPW>%(pw)s</USERPW>
-                <SMBPW>%(smbpw)s</SMBPW>
-                <SSHPRIV>%(sshkey)s</SSHPRIV>
-                <BOOTURL>%(booturl)s</BOOTURL>
-                <SERVER>store.cloud.ik.bme.hu</SERVER>
-                %(extra)s
-        ''' % {
-            "pw": escape(pw),
-            "hostname": escape(hostname),
-            "smbpw": escape(smb_password),
-            "sshkey": escape(ssh_private_key),
-            "neptun": escape(owner),
-            "booturl": "%sb/%s/" % (CLOUD_URL, token),
-            "extra": extra
-        }
-        return ctx
-
-    def _create_host(self, hostname, occi_result):
-        """Create firewall host for recently submitted Instance."""
-        host = Host(
-            vlan=Vlan.objects.get(name=self.template.network.name),
-            owner=self.owner, hostname=hostname,
-            mac=occi_result['interfaces'][0]['mac'],
-            ipv4=occi_result['interfaces'][0]['ip'], ipv6='auto',
-        )
-
-        if self.template.network.nat:
-            host.pub_ipv4 = Vlan.objects.get(
-                name=self.template.network.name).snat_ip
-            host.shared_ip = True
-
-        try:
-            host.save()
-        except:
-            for i in Host.objects.filter(ipv4=host.ipv4).all():
-                logger.warning('Delete orphan fw host (%s) of %s.' % (i, self))
-                i.delete()
-            for i in Host.objects.filter(mac=host.mac).all():
-                logger.warning('Delete orphan fw host (%s) of %s.' % (i, self))
-                i.delete()
-            host.save()
-
-        host.enable_net()
-        port = {"rdp": 3389, "nx": 22, "ssh": 22}[self.template.access_type]
-        host.add_port("tcp", self.get_port(), port)
-        self.firewall_host = host
-        self.save()
-
-    @classmethod
-    def submit(cls, template, owner, extra="", share=None):
-        """Submit a new instance to OpenNebula."""
-        inst = Instance(pw=pwgen(), template=template, owner=owner,
-                        share=share, state='PENDING', waiting=True)
-        inst.save()
-        hostname = u"%d" % (inst.id, )
-        token = signing.dumps(inst.id, salt='activate')
-        try:
-            details = owner.cloud_details
-        except:
-            details = UserCloudDetails(user=owner)
-            details.save()
-
-        ctx = cls._create_context(inst.pw, hostname, details.smb_password,
-                                  details.ssh_private_key, owner.username,
-                                  token, extra)
-        try:
-            from .tasks import CreateInstanceTask
-            x = CreateInstanceTask.delay(
-                name=u"%s %d" % (owner.username, inst.id),
-                instance_type=template.instance_type.name,
-                disk_id=int(template.disk.id),
-                network_id=int(template.network.id),
-                ctx=ctx,
-            )
-            res = x.get(timeout=10)
-            res['one_id']
-        except:
-            inst.delete()
-            raise Exception("Unable to create VM instance.")
-
-        inst.one_id = res['one_id']
-        inst.ip = res['interfaces'][0]['ip']
-        inst.name = ("%(neptun)s %(template)s (%(id)d)" %
-                     {'neptun': owner.username, 'template': template.name,
-                      'id': inst.one_id})
-        inst.save()
-
-        inst._create_host(hostname, res)
-        return inst
-
-    def one_delete(self):
-        """Delete host in OpenNebula."""
-        if self.template.state != "DONE":
-            self.check_if_is_save_as_done()
-        if self.one_id and self.state != 'DONE':
-            self.waiting = True
-            self.save()
-            from .tasks import DeleteInstanceTask
-            DeleteInstanceTask.delay(one_id=self.one_id)
-        self.firewall_host_delete()
-
-    def firewall_host_delete(self):
-        if self.firewall_host:
-            h = self.firewall_host
-            self.firewall_host = None
-            try:
-                self.save()
-            except:
-                pass
-            h.delete()
-
-    def _change_state(self, new_state):
-        """Change host state in OpenNebula."""
-        from .tasks import ChangeInstanceStateTask
-        ChangeInstanceStateTask.delay(one_id=self.one_id, new_state=new_state)
-        self.waiting = True
-        self.save()
+    def deploy(self, extra=""):
+        # TODO implement
+        pass
+        #    """Submit a new instance to OpenNebula."""
+        #    inst = Instance(pw=pwgen(), template=template, owner=owner,
+        #                    share=share, state='PENDING', waiting=True)
+        #    inst.save()
+        #    hostname = u"%d" % (inst.id, )
+        #    token = signing.dumps(inst.id, salt='activate')
+        #    try:
+        #        details = owner.cloud_details
+        #    except:
+        #        details = UserCloudDetails(user=owner)
+        #        details.save()
+        #
+        #    ctx = create_context(inst.pw, hostname, details.smb_password,
+        #                              details.ssh_private_key, owner.username,
+        #                              token, extra)
+        #    try:
+        #        from .tasks import CreateInstanceTask
+        #        x = CreateInstanceTask.delay(
+        #            name=u"%s %d" % (owner.username, inst.id),
+        #            instance_type=template.instance_type.name,
+        #            disk_id=int(template.disk.id),
+        #            network_id=int(template.network.id),
+        #            ctx=ctx,
+        #        )
+        #        res = x.get(timeout=10)
+        #        res['one_id']
+        #    except:
+        #        inst.delete()
+        #        raise Exception("Unable to create VM instance.")
+        #
+        #    inst.one_id = res['one_id']
+        #    inst.ip = res['interfaces'][0]['ip']
+        #    inst.name = ("%(neptun)s %(template)s (%(id)d)" %
+        #                 {'neptun': owner.username, 'template': template.name,
+        #                  'id': inst.one_id})
+        #    inst.save()
+        #
+        #    inst._create_host(hostname, res)
+        #    return inst
 
     def stop(self):
-        self._change_state("STOPPED")
+        # TODO implement
+        pass
 
     def resume(self):
-        self._change_state("RESUME")
+        # TODO implement
+        pass
 
     def poweroff(self):
-        self._change_state("POWEROFF")
+        # TODO implement
+        pass
 
     def restart(self):
-        self._change_state("RESET")
-        self.waiting = False
-        self.save()
+        # TODO implement
+        pass
 
     def renew(self, which='both'):
-        if which in ['suspend', 'both']:
-            self.time_of_suspend = self.share_type['suspendx']
-        if which in ['delete', 'both']:
-            self.time_of_delete = self.share_type['deletex']
-        if not (which in ['suspend', 'delete', 'both']):
+        """Renew virtual machine instance leases.
+        """
+        if which not in ['suspend', 'delete', 'both']:
             raise ValueError('No such expiration type.')
+        if which in ['suspend', 'both']:
+            self.time_of_suspend = timezone.now() + self.lease.suspend_interval
+        if which in ['delete', 'both']:
+            self.time_of_delete = timezone.now() + self.lease.delete_interval
         self.save()
-
-    @property
-    def share_type(self):
-        if self.share:
-            return self.share.get_type()
-        else:
-            return Share.extend_type(DEFAULT_TYPE)
 
     def save_as(self):
         """Save image and shut down."""
@@ -456,9 +488,25 @@ class Instance(TimeStampedModel, BaseResourceConfigModel):
         return True
 
 
+@receiver(pre_delete, sender=Instance, dispatch_uid="delete_instance_pre")
 def delete_instance_pre(sender, instance, using, **kwargs):
-    if instance.state != 'DONE':
-        instance.one_delete()
+    # TODO implement
+    pass
 
-pre_delete.connect(delete_instance_pre, sender=Instance,
-                   dispatch_uid="delete_instance_pre")
+
+class Interface(models.Model):
+    """Network interface for an instance.
+    """
+    vlan = models.ForeignKey(Vlan)
+    host = models.ForeignKey(Host, blank=True, null=True)
+    instance = models.ForeignKey(Instance, related_name='interface_set')
+
+    @classmethod
+    def create_from_template(cls, instance, template):
+        """Create a new interface for an instance based on an
+           InterfaceTemplate.
+        """
+        host = Host(vlan=template.vlan) if template.managed else None
+        iface = cls(vlan=template.vlan, host=host, instance=instance)
+        iface.save()
+        return iface

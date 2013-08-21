@@ -46,6 +46,15 @@ class Disk(TimeStampedModel):
         verbose_name = _('disk')
         verbose_name_plural = _('disks')
 
+    def get_exculsive(self):
+        """Get an instance of the disk for exclusive usage.
+
+        It might mean copying the disk, creating a snapshot or creating a
+        symbolic link to a read-only image.
+        """
+        # TODO implement (or call) logic
+        return self
+
     def to_json(self):
         self.base_name = self.base.name if self.base else None
         self.dir = self.datastore.path
