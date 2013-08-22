@@ -6,9 +6,17 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-<div class="page-heading">
-  <h1>{{ form.hostname.value }} <small>details of rule</small></h1>
+<div class="page-header">
+    <h3>
+        {% with rule as record %}
+            {% include "network/columns/host-rule.html" %}
+        {% endwith %}
+    </h3>
 </div>
 
-{% crispy form %}
+<div class="row">
+    <div class="col-sm-7">
+        {% crispy form %}
+    </div>
+</div>
 {% endblock %}

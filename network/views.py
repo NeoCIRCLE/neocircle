@@ -143,6 +143,18 @@ class HostDetail(UpdateView):
             self.object = self.get_object()
             return super(HostDetail, self).get(request, *args, **kwargs)
 
+    def post(self, request, *args, **kwargs):
+        pk = self.kwargs.get('pk')
+        # this is usually not None (well, with curl and whatnot it can be)
+        if pk:
+            groups = Host.objects.get(pk=pk).groups.all()
+            groups = [i.pk for i in groups]
+            # request.POST is immutable
+            post_copy = request.POST.copy()
+            post_copy.setlist('groups', groups)
+            request.POST = post_copy
+            return super(HostDetail, self).post(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super(HostDetail, self).get_context_data(**kwargs)
         # own rules
@@ -224,6 +236,15 @@ class RuleDetail(UpdateView):
     def get_success_url(self):
         if 'pk' in self.kwargs:
             return reverse_lazy('network.rule', kwargs=self.kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(RuleDetail, self).get_context_data(**kwargs)
+
+        pk = self.kwargs.get('pk')
+        rule = Rule.objects.get(pk=pk)
+
+        context['rule'] = rule
+        return context
 
 
 class RuleDelete(DeleteView):

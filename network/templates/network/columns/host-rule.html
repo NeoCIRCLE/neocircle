@@ -11,10 +11,10 @@
 {% endif %}
 
 {% if record.extra %}
-    <span class="label label-inverse">{{ record.extra }}</span>
+    <span class="label label-default">{{ record.extra }}</span>
 {% endif %}
 
 {% if record.nat %}
-    <span class="label">NAT
+    <span class="label label-success">NAT
         [ {{ record.dport }} <i class="icon-arrow-right"></i> {{record.nat_dport}} ]</span>
 {% endif %}

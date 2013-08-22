@@ -174,7 +174,14 @@ function validateForm() {
     
     // name
     record_name = $('#id_name').val()
-    if(!domain_re.test(record_name)) {
+    
+    if(!record_name) {
+        messages.push({                                                     
+            'message': gettext("You must specify a name!"),                    
+            'id': 'name'                                                    
+        });  
+    }
+    else if(!domain_re.test(record_name)) {
         text = gettext('%s - invalid domain name'),
         messages.push({
             'message': interpolate(text, [record_name]),
@@ -230,8 +237,8 @@ function resetForm() {
 // removes all error messages / classes
 function resetErrors() {
     // reset invalid inputs too
-    $('div[id^="div_id_"][class*="error"]').each(function() {
-        $(this).removeClass('error');
+    $('div[id^="div_id_"][class*="has-error"]').each(function() {
+        $(this).removeClass('has-error');
     });
 
     // remove the error messages
@@ -267,7 +274,7 @@ $(function() {
         $('#submit-id-submit').hide();
         $('#div_id_type .controls').append(
             //' <a id="type_next" onclick="type_next()" class="btn btn-info">Next</a>'
-            '<span id="type_next" class="help-inline"><strong>' + 
+            '<span id="type_next" class="help-block"><strong>' + 
             gettext('Specify a type!') + 
             '</strong></span>'    
         );
@@ -301,16 +308,16 @@ function type_next() {
 function appendMessage(type, messages, id) {
     $('#js_error').remove();
     resetErrors();
-    message = '<div id="js_error" style="display: none;" class="alert alert-' + type + ' alert-block"><ul>'
+    message = '<div id="js_error" style="display: none;" class="alert alert-danger"><ul>'
     for(var i = 0;i < messages.length; i++) {
         message += "<li>" +messages[i].message+ "</li>";
         if(messages[i].id) {            
-            $('#id_' + messages[i].id).closest('div[class="control-group"]').addClass("error");
+            $('#id_' + messages[i].id).closest('div[class="form-group"]').addClass("has-error");
         }
     }
 
     message +='</ul></div>';
-    $('.form-horizontal').before(message);
+    $('form').before(message);
     $('html, body').animate({ scrollTop: 0}, 'slow', function() {
         $('#js_error').fadeIn();   
     });
@@ -321,8 +328,8 @@ function appendMessage(type, messages, id) {
 // it also removes the help-inline span that shouldn't really appear
 $('* [id^="id_"]').focus(function() {
     id = "#div_" + $(this).prop('id');
-    if($(id).hasClass('error')) {
-        $(id).removeClass('error');
+    if($(id).hasClass('has-error')) {
+        $(id).removeClass('has-error');
         $('span[id="error_1_' + $(this).attr('id') + '"]').remove();
     }
 });

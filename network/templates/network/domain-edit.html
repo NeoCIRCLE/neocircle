@@ -6,9 +6,13 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-<div class="page-heading">
-  <h1>{{ form.name.value }} <small>details of domain</small></h1>
+<div class="page-header">
+  <h1>{{ form.name.value }} <small></small></h1>
 </div>
 
-{% crispy form %}
+<div class="row">
+    <div class="col-sm-4">
+        {% crispy form %}
+    </div>
+</div>
 {% endblock %}

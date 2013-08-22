@@ -6,16 +6,17 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-<div class="page-heading">
+<div class="page-header">
   <h2>Create a new host</h2>
 </div>
 
 <div class="row">
-  <div class="span8">
+  <div class="col-sm-8">
     {% crispy form %}
   </div>
-  <div class="span4">
-  </div><!-- span4 -->
+  <div class="col-sm-4">
+      Maybe some help text here?
+  </div><!-- col-sm-4 -->
 </div><!-- row -->
 
 {% endblock %}

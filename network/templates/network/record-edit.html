@@ -6,12 +6,17 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-<div class="page-heading">
+<div class="page-header">
   <h1>{{ fqdn }} <small>details of record</small></h1>
 </div>
 
-{% crispy form %}
+<div class="row">
+    <div class="col-sm-6">
+        {% crispy form %}
+    </div>
+</div>
 {% endblock %}
+
 {% block extra_etc %}                                                       
-<script src="{% static "js/record-create.js" %}"></script>                  
+<script src="{% static "js/record.js" %}"></script>                  
 {% endblock %}     

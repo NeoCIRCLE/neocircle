@@ -8,7 +8,7 @@
 <style>
 
 </style>
-<div class="page-heading">
+<div class="page-header">
     <h1>
         Hosts 
         <small>
@@ -18,7 +18,7 @@
     </h1>
 </div>
 
-<ul class="nav nav-pills">
+<ul class="nav nav-pills" style="margin: 5px 0 20px 0;">
     <li class="disabled"><a href="#">Filter by vlans</a></li>
     <li {% if not request.GET.vlan %} class="active"{% endif %}><a href="{{ request.path }}">ALL</a></li>
     {% for vlan in vlans %}

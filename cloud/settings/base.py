@@ -285,4 +285,6 @@ finally:
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
+CRISPY_TEMPLATE_PACK = 'bootstrap3'
+
 # vim: et sw=4 ai fenc=utf8 smarttab :
