@@ -14,6 +14,8 @@ from .tables import (HostTable, VlanTable, SmallHostTable, DomainTable,
 from .forms import (HostForm, VlanForm, DomainForm, GroupForm, RecordForm,
                     BlacklistForm, RuleForm, VlanGroupForm)
 
+from django.contrib import messages
+from django.utils.translation import ugettext_lazy as _
 from itertools import chain
 import json
 
@@ -66,6 +68,33 @@ class BlacklistDetail(UpdateView):
         if 'pk' in self.kwargs:
             return reverse_lazy('network.blacklist', kwargs=self.kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super(BlacklistDetail, self).get_context_data(**kwargs)
+        context['blacklist_pk'] = self.object.pk
+        return context
+
+
+class BlacklistDelete(DeleteView):
+    model = Blacklist
+    template_name = "network/confirm/base_delete.html"
+
+    def get_context_data(self, **kwargs):
+        """ display more information about the object """
+        context = super(BlacklistDelete, self).get_context_data(**kwargs)
+        if 'pk' in self.kwargs:
+            to_delete = Blacklist.objects.get(pk=self.kwargs['pk'])
+            context['to_delete'] = "%s - %s - %s" % (to_delete.ipv4,
+                                                     to_delete.reason,
+                                                     to_delete.type)
+            return context
+
+    def get_success_url(self):
+        next = self.request.POST.get('next')
+        if next:
+            return self.request.POST['next']
+        else:
+            return reverse_lazy('network.blacklist_list')
+
 
 class DomainList(SingleTableView):
     model = Domain
@@ -83,6 +112,23 @@ class DomainDetail(UpdateView):
         if 'pk' in self.kwargs:
             return reverse_lazy('network.domain', kwargs=self.kwargs)
 
+    def get_context_data(self, *args, **kwargs):
+        context = super(DomainDetail, self).get_context_data(**kwargs)
+        context['domain_pk'] = self.get_object().pk
+        return context
+
+
+class DomainDelete(DeleteView):
+    model = Domain
+    template_name = "network/confirm/base_delete.html"
+
+    def get_success_url(self):
+        next = self.request.POST.get('next')
+        if next:
+            return self.request.POST['next']
+        else:
+            return reverse_lazy('network.domain_list')
+
 
 class GroupList(SingleTableView):
     model = Group
@@ -99,6 +145,23 @@ class GroupDetail(UpdateView):
     def get_success_url(self):
         if 'pk' in self.kwargs:
             return reverse_lazy('network.group', kwargs=self.kwargs)
+
+
+class GroupDelete(DeleteView):
+    model = Group
+    template_name = "network/confirm/base_delete.html"
+
+    def get_success_url(self):
+        next = self.request.POST.get('next')
+        if next:
+            return self.request.POST['next']
+        else:
+            return reverse_lazy('network.group_list')
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(GroupDelete, self).get_context_data(**kwargs)
+        context['group_pk'] = self.object.pk
+        return context
 
 
 class HostList(SingleTableView):
@@ -192,6 +255,43 @@ class HostCreate(CreateView):
     form_class = HostForm
 
 
+class HostDelete(DeleteView):
+    model = Host
+    template_name = "network/confirm/base_delete.html"
+
+    def get_success_url(self):
+        next = self.request.POST.get('next')
+        if next:
+            return self.request.POST['next']
+        else:
+            return reverse_lazy('network.host_list')
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(HostDelete, self).get_context_data(**kwargs)
+
+        deps = []
+        records = Record.objects.filter(host=self.object).all()
+        if records:
+            deps.append({
+                'name': 'Records',
+                'data': records
+            })
+
+        context['deps'] = deps
+        context['confirmation'] = True
+        return context
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if unicode(self.object) != request.POST.get('confirm'):
+            messages.error(request, _("Object name does not match!"))
+            return self.get(request, *args, **kwargs)
+
+        response = super(HostDelete, self).delete(request, *args, **kwargs)
+        messages.success(request, "Deletion successful!")
+        return response
+
+
 class RecordList(SingleTableView):
     model = Record
     table_class = RecordTable
@@ -206,8 +306,8 @@ class RecordDetail(UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super(RecordDetail, self).get_context_data(**kwargs)
-        q = Record.objects.get(pk=self.object.pk).fqdn
-        context['fqdn'] = q
+        context['fqdn'] = self.object.fqdn
+        context['record_pk'] = self.object.pk
         return context
 
     def get_success_url(self):
@@ -219,6 +319,18 @@ class RecordCreate(CreateView):
     model = Record
     template_name = "network/record-create.html"
     form_class = RecordForm
+
+
+class RecordDelete(DeleteView):
+    model = Record
+    template_name = "network/confirm/base_delete.html"
+
+    def get_success_url(self):
+        next = self.request.POST.get('next')
+        if next:
+            return self.request.POST['next']
+        else:
+            return reverse_lazy('network.record_list')
 
 
 class RuleList(SingleTableView):
@@ -240,8 +352,7 @@ class RuleDetail(UpdateView):
     def get_context_data(self, **kwargs):
         context = super(RuleDetail, self).get_context_data(**kwargs)
 
-        pk = self.kwargs.get('pk')
-        rule = Rule.objects.get(pk=pk)
+        rule = self.get_object()
 
         context['rule'] = rule
         return context
@@ -249,11 +360,12 @@ class RuleDetail(UpdateView):
 
 class RuleDelete(DeleteView):
     model = Rule
-    template_name = "network/confirm/rule_delete.html"
+    template_name = "network/confirm/base_delete.html"
 
     def get_success_url(self):
-        if 'next' in self.request.POST:
-            return self.request.POST['next']
+        next = self.request.POST.get('next')
+        if next:
+            return next
         else:
             return reverse_lazy('network.rule_list')
 
@@ -276,9 +388,60 @@ class VlanDetail(UpdateView):
         context = super(VlanDetail, self).get_context_data(**kwargs)
         q = Host.objects.filter(vlan=self.object).all()
         context['host_list'] = SmallHostTable(q)
+        context['vlan_vid'] = self.kwargs.get('vid')
         return context
 
     success_url = reverse_lazy('network.vlan_list')
+
+
+class VlanDelete(DeleteView):
+    model = Vlan
+    template_name = "network/confirm/base_delete.html"
+
+    def get_success_url(self):
+        next = self.request.POST.get('next')
+        if next:
+            return next
+        else:
+            return reverse_lazy('network.vlan_list')
+
+    def get_object(self, queryset=None):
+        """ we identify vlans by vid and not pk """
+        return Vlan.objects.get(vid=self.kwargs['vid'])
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if unicode(self.object) != request.POST.get('confirm'):
+            messages.error(request, _("Object name does not match!"))
+            return self.get(request, *args, **kwargs)
+
+        response = super(VlanDelete, self).delete(request, *args, **kwargs)
+        messages.success(request, "Deletion successful!")
+        return response
+
+    def get_context_data(self, **kwargs):
+        context = super(VlanDelete, self).get_context_data(**kwargs)
+
+        deps = []
+        # hosts
+        hosts = Host.objects.filter(vlan=self.get_object).all()
+        if len(hosts) > 0:
+            deps.append({
+                'name': 'Hosts',
+                'data': hosts
+            })
+
+            # records
+            records = Record.objects.filter(host__in=deps[0]['data'])
+            if len(records) > 0:
+                deps.append({
+                    'name': 'Records',
+                    'data':  records
+                })
+
+        context['deps'] = deps
+        context['confirmation'] = True
+        return context
 
 
 class VlanGroupList(SingleTableView):
@@ -294,6 +457,23 @@ class VlanGroupDetail(UpdateView):
     form_class = VlanGroupForm
 
     success_url = reverse_lazy('network.vlan_group_list')
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(VlanGroupDetail, self).get_context_data(**kwargs)
+        context['vlangroup_pk'] = self.object.pk
+        return context
+
+
+class VlanGroupDelete(DeleteView):
+    model = VlanGroup
+    template_name = "network/confirm/base_delete.html"
+
+    def get_success_url(self):
+        next = self.request.POST.get('next')
+        if next:
+            return next
+        else:
+            return reverse_lazy('network.vlan_group_list')
 
 
 def remove_host_group(request, **kwargs):
@@ -323,7 +503,3 @@ def add_host_group(request, **kwargs):
         group = Group.objects.get(pk=group_pk)
         host.groups.add(group)
         return redirect(reverse_lazy('network.host', kwargs=kwargs))
-
-
-def get_host_as_json(request, **kwargs):
-    pass

@@ -7,7 +7,8 @@
 
 {% block content %}
 <div class="page-header">
-  <h1>{{ form.name.value }} <small>details of vlan</small></h1>
+    <a href="{% url network.vlan_delete vid=vlan_vid %}" class="btn btn-danger pull-right"><i class="icon-remove-sign"></i> Delete this vlan</a>
+    <h1>{{ form.name.value }} <small>details of vlan</small></h1>
 </div>
 
 <div class="row">

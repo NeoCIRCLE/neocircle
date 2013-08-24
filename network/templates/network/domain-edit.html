@@ -7,7 +7,8 @@
 
 {% block content %}
 <div class="page-header">
-  <h1>{{ form.name.value }} <small></small></h1>
+    <a href="{% url network.domain_delete pk=domain_pk %}" class="btn btn-danger pull-right"><i class="icon-remove-sign"></i> Delete this domain</a>
+    <h1>{{ form.name.value }} <small></small></h1>
 </div>
 
 <div class="row">

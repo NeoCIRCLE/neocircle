@@ -7,6 +7,7 @@
 
 {% block content %}
 <div class="page-header">
+    <a href="{% url network.blacklist_delete pk=blacklist_pk %}" class="btn btn-danger pull-right"><i class="icon-remove-sign"></i> Delete this blaclist</a>
     <h1>{{ form.ipv4.value }} <small>{{ form.type.value }}</small></h1>
 </div>
 <div class="row">

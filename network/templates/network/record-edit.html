@@ -7,6 +7,7 @@
 
 {% block content %}
 <div class="page-header">
+  <a href="{% url network.record_delete pk=record_pk %}" class="btn btn-danger pull-right"><i class="icon-remove-sign"></i> Delete this record</a>
   <h1>{{ fqdn }} <small>details of record</small></h1>
 </div>
 

@@ -25,6 +25,10 @@
     footer {
         margin-top: 40px;
     }
+
+    .messagelist {
+        margin-top: 25px;
+    }
     </style>
 
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
@@ -50,16 +54,19 @@
             </ul>
         </div>
     </div>
-    {% block messages %}
-    {% if messages %}
-    <ul class="messagelist">
-    {% for message in messages %}
-        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-    {% endfor %}
-    </ul>
-    {% endif %}
-    {% endblock messages %}
     <div class="container">
+        {% block messages %}
+        {% if messages %}
+        <div class="messagelist">
+        {% for message in messages %}
+        <div class="alert
+            {% if message.tags %} alert-{% if message.tags == "error" %}danger{% else %}{{ message.tags }}{% endif %}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        </div>
+        {% endif %}
+        {% endblock messages %}
         {% block content %}
         <div class="alert-block">This is an abstract base template.</div>
         {% endblock %}

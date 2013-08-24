@@ -1,0 +1,43 @@
+{% extends "network/base.html" %}                                           
+{% load i18n %}                                                             
+{% load l10n %}                                                             
+{% block content %}
+
+<div class="page-header">                                                  
+    <h2>Are you sure you want to delete <strong>"{% if to_delete %}{{ to_delete }}{% else %}{{ object }}{% endif %}"</strong>?</h2>
+</div> 
+
+
+<form action="" method="post">{% csrf_token %}
+
+{% if deps %}
+<div class="alert alert-warning">
+    This action also <strong>removes</strong> the following
+        {% for dep in deps %}
+        <div class="alert">
+            <strong>{{ dep.name }}</strong>
+        <ul class="">
+            {{ dep.data|unordered_list }}
+        </ul>
+    </div>
+        {% endfor %}
+    </div>
+{% else %}
+<div class="alert alert-success">
+    No dependencies, safe to delete!
+</div>
+{% endif %}
+<form action="" method="post">{% csrf_token %}
+    <input type="hidden" value="{{ request.GET.from }}" name="next" />
+    
+    {% if confirmation %}
+        <label><p>
+        If you are really sure, type in the object's name!
+        <input type="text" name="confirm" class="form-control" placeholder="{{ object }}"/>
+        </p></label>    
+    {% else %}
+    {% endif %}
+    <input type="submit" class="btn btn-danger btn-lg pull-right" value="Yes delete it!" />
+</form>
+
+{% endblock %}
