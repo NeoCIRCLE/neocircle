@@ -23,7 +23,7 @@
     }
 
     footer {
-        margin-top: 40px;
+        margin-top: 45px;
     }
 
     .messagelist {
@@ -47,13 +47,13 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-        </div>
+        </div><!-- .navbar-header -->
         <div class="collapse navbar-collapse">
             <ul class="nav navbar-nav">
              {% include "network/menu.html" %}
             </ul>
-        </div>
-    </div>
+        </div><!-- .collapse .navbar-collapse -->
+    </div><!-- navbar navbar-inverse navbar-fixed-top -->
     <div class="container">
         {% block messages %}
         {% if messages %}
@@ -70,12 +70,15 @@
         {% block content %}
         <div class="alert-block">This is an abstract base template.</div>
         {% endblock %}
-            <footer>
-                <p class="pull-right"><a href="#">Vissza az oldal tetejére</a></p>
-                <p>&copy; 2013 BME Közigazgatási Informatikai Központ
-            </footer>     
     </div><!-- .container -->
-    
+
+    <div class="footer-container container">
+        <footer>
+            <p class="pull-right"><a href="#">Vissza az oldal tetejére</a></p>
+            <p>&copy; 2013 BME Közigazgatási Informatikai Központ
+        </footer>
+    </div><!-- .footer-container .container -->
+
     <script src="http://code.jquery.com/jquery-latest.js"></script>
     <script src="{% url network.js_catalog %}"></script>
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
