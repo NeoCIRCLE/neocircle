@@ -33,11 +33,12 @@ class IndexView(TemplateView):
         hosts = Host.objects.all().order_by('-modified_at')[:size]
         records = Record.objects.all().order_by('-modified_at')[:size]
         vlans = Vlan.objects.all().order_by('-modified_at')[:size]
+        vlangroups = VlanGroup.objects.all().order_by('-modified_at')[:size]
         rules = Rule.objects.all().order_by('-modified_at')[:size]
 
         result_list = []
         for i in (sorted(chain(blacklists, domains, groups, hosts,
-                               records, vlans, rules),
+                               records, vlans, vlangroups, rules),
                          key=lambda x: x.modified_at, reverse=True)[:size]):
             result_list.append(
                 {

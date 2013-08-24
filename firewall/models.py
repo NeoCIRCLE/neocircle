@@ -295,7 +295,7 @@ class VlanGroup(models.Model):
 
     @models.permalink
     def get_absolute_url(self):
-        return ('network.vlangroup', None, {'pk': self.pk})
+        return ('network.vlan_group', None, {'pk': self.pk})
 
 
 class Group(models.Model):
