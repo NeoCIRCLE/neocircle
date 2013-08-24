@@ -26,6 +26,28 @@
     {% endfor %}
 </table>
 
+
+<div class="page-header">
+  <h1>Latest blacklists</h1>
+</div>
+
+<table class="table table-striped table-bordered">
+    <tr>
+        <th>IP</th>
+        <th>Reason</th>
+        <th>Type</th>
+        <th>Time elapsed</th>
+    </tr>
+    {% for b in latest_blacklists %}
+    <tr>
+        <td><a href="{{ b.get_absolute_url }}">{{ b.ipv4 }}</a></td>
+        <td>{{ b.reason }}</td>
+        <td>{{ b.type }}</td>
+        <td>{{ b.modified_at|timesince }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
 <div class="page-header">
   <h1>Dashboard <small>foo bar baz</small></h1>
 </div>

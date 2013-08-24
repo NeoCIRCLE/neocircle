@@ -37,8 +37,8 @@ class IndexView(TemplateView):
         rules = Rule.objects.all().order_by('-modified_at')[:size]
 
         result_list = []
-        for i in (sorted(chain(blacklists, domains, groups, hosts,
-                               records, vlans, vlangroups, rules),
+        for i in (sorted(chain(domains, groups, hosts, records, vlans,
+                               vlangroups, rules),
                          key=lambda x: x.modified_at, reverse=True)[:size]):
             result_list.append(
                 {
@@ -49,6 +49,7 @@ class IndexView(TemplateView):
                     'link': i.get_absolute_url()
                 })
 
+        context['latest_blacklists'] = blacklists
         context['latest'] = result_list
         return context
 
