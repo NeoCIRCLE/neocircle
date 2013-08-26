@@ -2,26 +2,34 @@
 {% load l10n %}
 
 {% url network.host_list as u %}
-{% include "network/menu-item.html" with href=u text="Hosts" %}
+{% trans "Hosts" as t %}
+{% include "network/menu-item.html" with href=u text=t %}
 {% url network.vlan_list as u %}
-{% include "network/menu-item.html" with href=u text="Vlans" %}
+{% trans "Vlans" as t %}
+{% include "network/menu-item.html" with href=u text=t %}
 {% url network.domain_list as u %}
-{% include "network/menu-item.html" with href=u text="Domains" %}
+{% trans "Domains" as t %}
+{% include "network/menu-item.html" with href=u text=t %}
 {% url network.record_list as u %}
-{% include "network/menu-item.html" with href=u text="Records" %}
+{% trans "Records" as t %}
+{% include "network/menu-item.html" with href=u text=t %}
 {% url network.blacklist_list as u %}
-{% include "network/menu-item.html" with href=u text="Blacklists" %}
+{% trans "Blacklists" as t %}
+{% include "network/menu-item.html" with href=u text=t %}
 {% url network.rule_list as u %}
-{% include "network/menu-item.html" with href=u text="Rules" %}
+{% trans "Rules" as t %}
+{% include "network/menu-item.html" with href=u text=t %}
 
 <li class="dropdown{% if "groups" in request.path %} active{% endif %}">
     <a href="#" class="dropdown-toggle" data-toggle="dropdown">Groups <b class="caret"></b></a>
     <ul class="dropdown-menu">   
         {% url network.vlan_group_list as u %}
-        {% include "network/menu-item.html" with href=u text="Vlan groups" %}
+        {% trans "Vlan groups" as t %}
+        {% include "network/menu-item.html" with href=u text=t %}
 
         {% url network.group_list as u %}
-        {% include "network/menu-item.html" with href=u text="Host groups" %}
+        {% trans "Host groups" as t %}
+        {% include "network/menu-item.html" with href=u text=t %}
     </ul>
 </li>
 

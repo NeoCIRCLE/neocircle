@@ -308,7 +308,7 @@ class HostDelete(DeleteView):
             return self.get(request, *args, **kwargs)
 
         response = super(HostDelete, self).delete(request, *args, **kwargs)
-        messages.success(request, "Deletion successful!")
+        messages.success(request, _("Host successfully deleted!"))
         return response
 
 
@@ -448,7 +448,7 @@ class VlanDelete(DeleteView):
             return self.get(request, *args, **kwargs)
 
         response = super(VlanDelete, self).delete(request, *args, **kwargs)
-        messages.success(request, "Deletion successful!")
+        messages.success(request, _("Vlan successfully deleted!"))
         return response
 
     def get_context_data(self, **kwargs):
