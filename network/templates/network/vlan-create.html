@@ -7,13 +7,15 @@
 
 {% block content %}
 <div class="page-header">
-    <a href="{% url network.vlan_group_delete pk=vlangroup_pk %}" class="btn btn-danger pull-right"><i class="icon-remove-sign"></i> Delete this group</a>
-    <h1>{{ form.name.value }} <small>details of vlan group</small></h1>
+    <h1>Create a new Vlan</h1>
 </div>
 
 <div class="row">
-    <div class="col-sm-6">
+    <div class="col-sm-8">
         {% crispy form %}
+    </div>
+    <div class="col-sm-4">
+        Halp
     </div>
 </div>
 {% endblock %}

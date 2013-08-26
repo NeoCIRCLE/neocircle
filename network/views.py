@@ -76,6 +76,12 @@ class BlacklistDetail(UpdateView):
         return context
 
 
+class BlacklistCreate(CreateView):
+    model = Blacklist
+    template_name = "network/blacklist-create.html"
+    form_class = BlacklistForm
+
+
 class BlacklistDelete(DeleteView):
     model = Blacklist
     template_name = "network/confirm/base_delete.html"
@@ -120,6 +126,12 @@ class DomainDetail(UpdateView):
         return context
 
 
+class DomainCreate(CreateView):
+    model = Domain
+    template_name = "network/domain-create.html"
+    form_class = DomainForm
+
+
 class DomainDelete(DeleteView):
     model = Domain
     template_name = "network/confirm/base_delete.html"
@@ -137,6 +149,12 @@ class GroupList(SingleTableView):
     table_class = GroupTable
     template_name = "network/group-list.html"
     table_pagination = False
+
+
+class GroupCreate(CreateView):
+    model = Group
+    template_name = "network/group-create.html"
+    form_class = GroupForm
 
 
 class GroupDetail(UpdateView):
@@ -360,6 +378,12 @@ class RuleDetail(UpdateView):
         return context
 
 
+class RuleCreate(CreateView):
+    model = Rule
+    template_name = "network/rule-create.html"
+    form_class = RuleForm
+
+
 class RuleDelete(DeleteView):
     model = Rule
     template_name = "network/confirm/base_delete.html"
@@ -394,6 +418,12 @@ class VlanDetail(UpdateView):
         return context
 
     success_url = reverse_lazy('network.vlan_list')
+
+
+class VlanCreate(CreateView):
+    model = Vlan
+    template_name = "network/vlan-create.html"
+    form_class = VlanForm
 
 
 class VlanDelete(DeleteView):
@@ -464,6 +494,12 @@ class VlanGroupDetail(UpdateView):
         context = super(VlanGroupDetail, self).get_context_data(**kwargs)
         context['vlangroup_pk'] = self.object.pk
         return context
+
+
+class VlanGroupCreate(CreateView):
+    model = VlanGroup
+    template_name = "network/vlan-group-create.html"
+    form_class = VlanGroupForm
 
 
 class VlanGroupDelete(DeleteView):
