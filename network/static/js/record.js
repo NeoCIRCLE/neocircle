@@ -272,9 +272,12 @@ $(function() {
         $('div[id^="div_id_"]').hide();
         // hide the save button
         $('#submit-id-submit').hide();
-        $('#div_id_type .controls').append(
+        // 
+        $('#div_id_type .controls')
+        .addClass('input-group')
+        .append(
             //' <a id="type_next" onclick="type_next()" class="btn btn-info">Next</a>'
-            '<span id="type_next" class="help-block"><strong>' + 
+            '<span id="type_next" class="input-group-addon"><strong>' + 
             gettext('Specify a type!') + 
             '</strong></span>'    
         );
@@ -285,6 +288,7 @@ $(function() {
 // if the user choose a type 
 function type_next() {
     if($('#div_id_type :selected').val()) {
+        $('#div_id_type .controls').removeClass('input-group');
         $('#type_next').remove();
         $('div[id^="div_id_"]').fadeIn();
         $('#submit-id-submit').fadeIn();
