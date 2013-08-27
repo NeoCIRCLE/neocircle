@@ -100,6 +100,18 @@ class RecordTable(Table):
         order_by = 'name'
 
 
+class SmallRecordTable(Table):
+    fqdn = LinkColumn('network.record', args=[A('pk')], orderable=False)
+
+    class Meta:
+        model = Record
+        attrs = {'class': 'table table-striped table-bordered'}
+        fields = ('type', 'fqdn', 'host', 'address', )
+        sequence = ('type', 'fqdn', )
+        order_by = '-type'
+        orderable = False
+
+
 class RuleTable(Table):
     r_type = LinkColumn('network.rule', args=[A('pk')])
     color_desc = TemplateColumn(

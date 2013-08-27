@@ -10,7 +10,8 @@ from firewall.models import (Host, Vlan, Domain, Group, Record, Blacklist,
                              Rule, VlanGroup)
 from .tables import (HostTable, VlanTable, SmallHostTable, DomainTable,
                      GroupTable, RecordTable, BlacklistTable, RuleTable,
-                     VlanGroupTable, SmallRuleTable, SmallGroupRuleTable)
+                     VlanGroupTable, SmallRuleTable, SmallGroupRuleTable,
+                     SmallRecordTable)
 from .forms import (HostForm, VlanForm, DomainForm, GroupForm, RecordForm,
                     BlacklistForm, RuleForm, VlanGroupForm)
 
@@ -123,6 +124,10 @@ class DomainDetail(UpdateView):
     def get_context_data(self, *args, **kwargs):
         context = super(DomainDetail, self).get_context_data(**kwargs)
         context['domain_pk'] = self.get_object().pk
+
+        # records
+        q = Record.objects.filter(domain=self.get_object()).all()
+        context['record_list'] = SmallRecordTable(q)
         return context
 
 
