@@ -12,7 +12,7 @@
 </div>
 
 <div class="row">
-    <div class="col-sm-5">
+    <div class="col-sm-4">
         {% crispy form %}
     </div>
     <div class="col-sm-5 col-sm-offset-1">
@@ -20,7 +20,9 @@
             List of this domain's records
         </h3>
         <hr />
-        {% render_table record_list %}
+        <div class="table-responsive">
+            {% render_table record_list %}
+        </div>
     </div>
 </div>
 {% endblock %}
