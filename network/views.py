@@ -17,6 +17,7 @@ from .forms import (HostForm, VlanForm, DomainForm, GroupForm, RecordForm,
 
 from django.contrib import messages
 from django.utils.translation import ugettext_lazy as _
+from django.db.models import Q
 from itertools import chain
 import json
 
@@ -147,6 +148,50 @@ class DomainDelete(DeleteView):
             return self.request.POST['next']
         else:
             return reverse_lazy('network.domain_list')
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if unicode(self.object) != request.POST.get('confirm'):
+            messages.error(request, _("Object name does not match!"))
+            return self.get(request, *args, **kwargs)
+
+        response = super(DomainDelete, self).delete(request, *args, **kwargs)
+        messages.success(request, _("Domain successfully deleted!"))
+        return response
+
+    def get_context_data(self, **kwargs):
+        context = super(DomainDelete, self).get_context_data(**kwargs)
+
+        deps = []
+        # vlans
+        vlans = Vlan.objects.filter(domain=self.object).all()
+        if len(vlans) > 0:
+            deps.append({
+                'name': 'Vlans',
+                'data': vlans
+            })
+
+            # hosts
+            hosts = Host.objects.filter(vlan__in=deps[0]['data'])
+            if len(hosts) > 0:
+                deps.append({
+                    'name': 'Hosts',
+                    'data':  hosts
+                })
+
+                # records
+                records = Record.objects.filter(
+                    Q(domain=self.object) | Q(host__in=deps[1]['data'])
+                )
+                if len(records) > 0:
+                    deps.append({
+                        'name': 'Records',
+                        'data': records
+                    })
+
+        context['deps'] = deps
+        context['confirmation'] = True
+        return context
 
 
 class GroupList(SingleTableView):
@@ -461,7 +506,7 @@ class VlanDelete(DeleteView):
 
         deps = []
         # hosts
-        hosts = Host.objects.filter(vlan=self.get_object).all()
+        hosts = Host.objects.filter(vlan=self.object).all()
         if len(hosts) > 0:
             deps.append({
                 'name': 'Hosts',
