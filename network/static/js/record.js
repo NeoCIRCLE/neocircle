@@ -96,7 +96,8 @@ function validateForm() {
         if(type === "CNAME") {
             if(!$('#id_name').val()) {
                     messages.push({
-                    'message': 'Name cannot be empty!',
+                    'message': 'Name must be specified for ' +
+                               'CNAME records if host is set!',
                     'id': 'name'
                 });
             }
@@ -176,10 +177,10 @@ function validateForm() {
     record_name = $('#id_name').val()
     
     if(!record_name) {
-        messages.push({                                                     
-            'message': gettext("You must specify a name!"),                    
-            'id': 'name'                                                    
-        });  
+        //messages.push({ 
+        //    'message': gettext("You must specify a name!"),
+        //    'id': 'name'
+        //});
     }
     else if(!domain_re.test(record_name)) {
         text = gettext('%s - invalid domain name'),
