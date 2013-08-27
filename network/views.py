@@ -93,9 +93,9 @@ class BlacklistDelete(DeleteView):
         context = super(BlacklistDelete, self).get_context_data(**kwargs)
         if 'pk' in self.kwargs:
             to_delete = Blacklist.objects.get(pk=self.kwargs['pk'])
-            context['to_delete'] = "%s - %s - %s" % (to_delete.ipv4,
-                                                     to_delete.reason,
-                                                     to_delete.type)
+            context['object'] = "%s - %s - %s" % (to_delete.ipv4,
+                                                  to_delete.reason,
+                                                  to_delete.type)
             return context
 
     def get_success_url(self):
