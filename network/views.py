@@ -16,10 +16,29 @@ from .forms import (HostForm, VlanForm, DomainForm, GroupForm, RecordForm,
                     BlacklistForm, RuleForm, VlanGroupForm)
 
 from django.contrib import messages
+from django.views.generic.edit import FormMixin
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Q
 from itertools import chain
 import json
+
+
+class SuccessMessageMixin(FormMixin):
+    """
+    Adds a success message on successful form submission.
+    From django/contrib/messages/views.py@9a85ad89
+    """
+    success_message = ''
+
+    def form_valid(self, form):
+        response = super(SuccessMessageMixin, self).form_valid(form)
+        success_message = self.get_success_message(form.cleaned_data)
+        if success_message:
+            messages.success(self.request, success_message)
+        return response
+
+    def get_success_message(self, cleaned_data):
+        return self.success_message % cleaned_data
 
 
 class IndexView(TemplateView):
@@ -63,10 +82,12 @@ class BlacklistList(SingleTableView):
     table_pagination = False
 
 
-class BlacklistDetail(UpdateView):
+class BlacklistDetail(UpdateView, SuccessMessageMixin):
     model = Blacklist
     template_name = "network/blacklist-edit.html"
     form_class = BlacklistForm
+    success_message = _('Successfully modified blacklist '
+                        '%(ipv4)s - %(type)s!')
 
     def get_success_url(self):
         if 'pk' in self.kwargs:
@@ -78,10 +99,12 @@ class BlacklistDetail(UpdateView):
         return context
 
 
-class BlacklistCreate(CreateView):
+class BlacklistCreate(CreateView, SuccessMessageMixin):
     model = Blacklist
     template_name = "network/blacklist-create.html"
     form_class = BlacklistForm
+    success_message = _('Successfully created blacklist '
+                        '%(ipv4)s - %(type)s!')
 
 
 class BlacklistDelete(DeleteView):
@@ -113,10 +136,11 @@ class DomainList(SingleTableView):
     table_pagination = False
 
 
-class DomainDetail(UpdateView):
+class DomainDetail(UpdateView, SuccessMessageMixin):
     model = Domain
     template_name = "network/domain-edit.html"
     form_class = DomainForm
+    success_message = _('Successfully modified domain %(name)s!')
 
     def get_success_url(self):
         if 'pk' in self.kwargs:
@@ -132,10 +156,11 @@ class DomainDetail(UpdateView):
         return context
 
 
-class DomainCreate(CreateView):
+class DomainCreate(CreateView, SuccessMessageMixin):
     model = Domain
     template_name = "network/domain-create.html"
     form_class = DomainForm
+    success_message = _('Successfully created domain %(name)s!')
 
 
 class DomainDelete(DeleteView):
@@ -201,16 +226,18 @@ class GroupList(SingleTableView):
     table_pagination = False
 
 
-class GroupCreate(CreateView):
+class GroupCreate(CreateView, SuccessMessageMixin):
     model = Group
     template_name = "network/group-create.html"
     form_class = GroupForm
+    success_message = _('Successfully created host group %(name)s!')
 
 
-class GroupDetail(UpdateView):
+class GroupDetail(UpdateView, SuccessMessageMixin):
     model = Group
     template_name = "network/group-edit.html"
     form_class = GroupForm
+    success_message = _('Successfully modified host group %(name)s!')
 
     def get_success_url(self):
         if 'pk' in self.kwargs:
@@ -256,10 +283,11 @@ class HostList(SingleTableView):
         return data
 
 
-class HostDetail(UpdateView):
+class HostDetail(UpdateView, SuccessMessageMixin):
     model = Host
     template_name = "network/host-edit.html"
     form_class = HostForm
+    success_message = _('Successfully modified host %(hostname)s!')
 
     def get(self, request, *args, **kwargs):
         if request.is_ajax():
@@ -319,10 +347,11 @@ class HostDetail(UpdateView):
             return reverse_lazy('network.host', kwargs=self.kwargs)
 
 
-class HostCreate(CreateView):
+class HostCreate(CreateView, SuccessMessageMixin):
     model = Host
     template_name = "network/host-create.html"
     form_class = HostForm
+    success_message = _('Successfully created host %(hostname)s!')
 
 
 class HostDelete(DeleteView):
@@ -369,10 +398,12 @@ class RecordList(SingleTableView):
     table_pagination = False
 
 
-class RecordDetail(UpdateView):
+class RecordDetail(UpdateView, SuccessMessageMixin):
     model = Record
     template_name = "network/record-edit.html"
     form_class = RecordForm
+    # TODO fqdn
+    success_message = _('Successfully modified record!')
 
     def get_context_data(self, **kwargs):
         context = super(RecordDetail, self).get_context_data(**kwargs)
@@ -385,10 +416,12 @@ class RecordDetail(UpdateView):
             return reverse_lazy('network.record', kwargs=self.kwargs)
 
 
-class RecordCreate(CreateView):
+class RecordCreate(CreateView, SuccessMessageMixin):
     model = Record
     template_name = "network/record-create.html"
     form_class = RecordForm
+    # TODO fqdn
+    success_message = _('Successfully created record!')
 
 
 class RecordDelete(DeleteView):
@@ -410,10 +443,11 @@ class RuleList(SingleTableView):
     table_pagination = False
 
 
-class RuleDetail(UpdateView):
+class RuleDetail(UpdateView, SuccessMessageMixin):
     model = Rule
     template_name = "network/rule-edit.html"
     form_class = RuleForm
+    success_message = _('Successfully modified rule!')
 
     def get_success_url(self):
         if 'pk' in self.kwargs:
@@ -428,10 +462,11 @@ class RuleDetail(UpdateView):
         return context
 
 
-class RuleCreate(CreateView):
+class RuleCreate(CreateView, SuccessMessageMixin):
     model = Rule
     template_name = "network/rule-create.html"
     form_class = RuleForm
+    success_message = _('Successfully created rule!')
 
 
 class RuleDelete(DeleteView):
@@ -453,12 +488,13 @@ class VlanList(SingleTableView):
     table_pagination = False
 
 
-class VlanDetail(UpdateView):
+class VlanDetail(UpdateView, SuccessMessageMixin):
     model = Vlan
     template_name = "network/vlan-edit.html"
     form_class = VlanForm
     slug_field = 'vid'
     slug_url_kwarg = 'vid'
+    success_message = _('Succesfully modified vlan %(name)s!')
 
     def get_context_data(self, **kwargs):
         context = super(VlanDetail, self).get_context_data(**kwargs)
@@ -470,10 +506,11 @@ class VlanDetail(UpdateView):
     success_url = reverse_lazy('network.vlan_list')
 
 
-class VlanCreate(CreateView):
+class VlanCreate(CreateView, SuccessMessageMixin):
     model = Vlan
     template_name = "network/vlan-create.html"
     form_class = VlanForm
+    success_message = _('Successfully created vlan %(name)s!')
 
 
 class VlanDelete(DeleteView):
@@ -533,12 +570,12 @@ class VlanGroupList(SingleTableView):
     table_pagination = False
 
 
-class VlanGroupDetail(UpdateView):
+class VlanGroupDetail(UpdateView, SuccessMessageMixin):
     model = VlanGroup
     template_name = "network/vlan-group-edit.html"
     form_class = VlanGroupForm
-
     success_url = reverse_lazy('network.vlan_group_list')
+    success_message = _('Successfully modified vlan group %(name)s!')
 
     def get_context_data(self, *args, **kwargs):
         context = super(VlanGroupDetail, self).get_context_data(**kwargs)
@@ -546,10 +583,11 @@ class VlanGroupDetail(UpdateView):
         return context
 
 
-class VlanGroupCreate(CreateView):
+class VlanGroupCreate(CreateView, SuccessMessageMixin):
     model = VlanGroup
     template_name = "network/vlan-group-create.html"
     form_class = VlanGroupForm
+    success_message = _('Successfully created vlan group %(name)s!')
 
 
 class VlanGroupDelete(DeleteView):
