@@ -6,18 +6,18 @@
 
 {% block content %}
 <div class="page-header">
-    <a href="{% url network.host_create %}" class="btn btn-success pull-right"><i class="icon-plus-sign"></i> Create a new host</a>
+    <a href="{% url network.host_create %}" class="btn btn-success pull-right"><i class="icon-plus-sign"></i> {% trans "Create a new host" %}</a>
     <h1>
-        Hosts 
+        {% trans "Hosts" %} 
         <small>
-            list of all hosts
+            {% trans "list of all hosts" %}
         </small>
     </h1>
 </div>
 
 <ul class="nav nav-pills" style="margin: 5px 0 20px 0;">
-    <li class="disabled"><a href="#">Filter by vlans</a></li>
-    <li {% if not request.GET.vlan %} class="active"{% endif %}><a href="{{ request.path }}">ALL</a></li>
+    <li class="disabled"><a href="#">{% trans "Filter by vlans" %}</a></li>
+    <li {% if not request.GET.vlan %} class="active"{% endif %}><a href="{{ request.path }}">{% trans "ALL" %}</a></li>
     {% for vlan in vlans %}
     <li{% if request.GET.vlan|add:"0" == vlan.id %} class="active"{% endif %}><a href="?vlan={{ vlan.id }}">{{ vlan.name }}</a></li>
     {% endfor %}

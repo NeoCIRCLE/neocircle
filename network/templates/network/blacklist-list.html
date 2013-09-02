@@ -6,8 +6,8 @@
 
 {% block content %}
 <div class="page-header">   
-    <a href="{% url network.blacklist_create %}" class="btn btn-success pull-right"><i class="icon-plus-sign"></i> Create a new blacklist</a>
-    <h1>Blacklist <small></small></h1>
+    <a href="{% url network.blacklist_create %}" class="btn btn-success pull-right"><i class="icon-plus-sign"></i> {% trans "Create a new blacklist" %}</a>
+    <h1>{% trans "Blacklists" %} <small></small></h1>
 </div>
 
 <div class="table-responsive">

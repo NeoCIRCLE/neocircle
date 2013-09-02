@@ -7,8 +7,8 @@
 
 {% block content %}
 <div class="page-header">
-    <a href="{% url network.host_delete pk=host_pk%}" class="btn btn-danger pull-right"><i class="icon-remove-sign"></i> Delete this host</a>
-    <h1>{{ form.hostname.value }} <small>details of host</small></h1>
+    <a href="{% url network.host_delete pk=host_pk%}" class="btn btn-danger pull-right"><i class="icon-remove-sign"></i> {% trans "Delete this host" %}</a>
+    <h1>{{ form.hostname.value }}</h1>
 </div>
 
 <div class="row">
@@ -17,16 +17,16 @@
     </div>
     <div class="col-sm-4">
         <div class="page-header">
-            <h3>Rules</h3>
+            <h3>{% trans "Rules" %}</h3>
         </div>
         {% if rule_list.data.data.count > 0 %}
             {% render_table rule_list %}
         {% else %}
-            No rules associated with this host!
+            {% trans "No rules associated with this host!" %}
         {% endif %}
         
         <div class="page-header">
-            <h3>Groups</h3>
+            <h3>{% trans "Groups" %}</h3>
         </div>
         {% for group in group_rule_list %}
             <div>
@@ -55,7 +55,7 @@
                     {% endfor %}
                 </select>
                 <div class="input-group-btn">
-                    <input type="submit" value="Add group" class="btn btn-default"></input>
+                    <input type="submit" value="{% trans "Add group" %}" class="btn btn-default"></input>
                 </div>
             </div><!-- input-group -->
         </form>

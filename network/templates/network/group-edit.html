@@ -7,8 +7,8 @@
 
 {% block content %}
 <div class="page-header">
-    <a href="{% url network.group_delete pk=group.pk %}" class="btn btn-danger pull-right"><i class="icon-remove-sign"></i> Delete this group</a>
-    <h1>{{ form.name.value }} <small>details of group</small></h1>
+    <a href="{% url network.group_delete pk=group.pk %}" class="btn btn-danger pull-right"><i class="icon-remove-sign"></i> {% trans "Delete this group" %}</a>
+    <h1>{{ form.name.value }}</h1>
 </div>
 
 <div class="row">

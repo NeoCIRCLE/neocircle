@@ -6,11 +6,11 @@
 
 {% block content %}
 <div class="page-header">
- <a href="{% url network.record_create %}" class="btn btn-success pull-right"><i class="icon-plus-sign"></i> Create a new record</a>
+    <a href="{% url network.record_create %}" class="btn btn-success pull-right"><i class="icon-plus-sign"></i> {% trans "Create a new record" %}</a>
     <h1>
-        Records
+        {% trans "Records" %}
         <small>
-            list of all records
+            {% trans "list of all records" %}
         </small>
     </h1>
 </div>

@@ -6,19 +6,19 @@
 {% block content %}
 
 <div class="page-header">
-  <h1>Latest modifications</h1>
+    <h1>{% trans "Latest modifications" %}</h1>
 </div>
 
 <table class="table table-striped table-bordered">
     <tr>
-        <th>Action</th>
-        <th>Model</th>
-        <th>Name</th>
-        <th>Time elapsed</th>
+        <th>{% trans "Action" %}</th>
+        <th>{% trans "Model" %}</th>
+        <th>{% trans "Name" %}</th>
+        <th>{% trans "Time elapsed" %}</th>
     </tr>
     {% for l in latest %}
     <tr>
-        <td>{% if l.modified_at == l.created_at %}created{% else %}modified{% endif %}</td>
+        <td>{% if l.modified_at == l.created_at %}{% trans "created" %}{% else %}{% trans "modified" %}{% endif %}</td>
         <td>{{ l.class_name }}</td>
         <td><a href="{{ l.link }}">{{ l.name }}</a></td>
         <td>{{ l.modified_at|timesince }}</td>
@@ -28,15 +28,15 @@
 
 
 <div class="page-header">
-  <h1>Latest blacklists</h1>
+    <h1>{% trans "Latest blacklists" %}</h1>
 </div>
 
 <table class="table table-striped table-bordered">
     <tr>
-        <th>IP</th>
-        <th>Reason</th>
-        <th>Type</th>
-        <th>Time elapsed</th>
+        <th>{% trans "IP" %}</th>
+        <th>{% trans "Reason" %}</th>
+        <th>{% trans "Type" %}</th>
+        <th>{% trans "Time elapsed" %}</th>
     </tr>
     {% for b in latest_blacklists %}
     <tr>
@@ -49,7 +49,7 @@
 </table>
 
 <div class="page-header">
-  <h1>Dashboard <small>foo bar baz</small></h1>
+    <h1>{% trans "Dashboard" %}</h1>
 </div>
 
 <ul class="thumbnails">
