@@ -1,6 +1,7 @@
 from django.conf.urls import patterns, include, url
-
+from django.contrib.auth.decorators import user_passes_test
 from django.contrib import admin
+from decorator_include import decorator_include
 admin.autodiscover()
 
 
@@ -8,12 +9,15 @@ js_info_dict = {
     'packages': ('one', ),
 }
 
+superuser_required = user_passes_test(lambda u: u.is_superuser)
+
 urlpatterns = patterns(
     '',
     url(r'^admin/doc/', include('django.contrib.admindocs.urls'), ),
     url(r'^admin/', include(admin.site.urls), ),
 
-    url(r'^network/', include('network.urls'), ),
+    url(r'^network/', decorator_include(superuser_required,
+                                        'network.urls')),
 
 
     url(r'^login/$', 'school.views.login', name='login', ),
