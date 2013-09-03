@@ -408,20 +408,36 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         tasks.create.apply_async(instance, queue=self.node + ".vm").get()
 
     def stop(self):
-        # TODO implement
-        pass
+        ''' Suspend the machine and save it's memory onto disk
+            TODO: where to save?
+        '''
+        manager.stop.apply_async(self)
 
     def resume(self):
-        # TODO implement
-        pass
+        ''' Resume suspended/stopped machine.
+        '''
+        manager.resume.apply_async(self)
 
     def poweroff(self):
-        # TODO implement
-        pass
+        ''' Power off virtual machine
+        '''
+        manager.poweroff.apply_async(self)
+
+    def recreate(self):
+        ''' Recreate the virtual machine from scratch.
+        No reschedule.
+        '''
+        manager.recreate.apply_async(self)
+
+    def resubmit(self):
+        ''' Resubmit the virtual machine and reschedule it.
+        '''
+        manager.resubmit.apply_async(self)
 
     def restart(self):
-        # TODO implement
-        pass
+        ''' Restart virtual machine with reset signal.
+        '''
+        manager.restart.apply_async(self)
 
     def renew(self, which='both'):
         """Renew virtual machine instance leases.
