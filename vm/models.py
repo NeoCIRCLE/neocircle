@@ -1,13 +1,18 @@
+#!/usr/bin/env python
+
 from datetime import timedelta
 import logging
+import manager.manager
 
-from django.conf.settings import CLOUD_URL
+from . import tasks
+
+# from django.conf.settings import CLOUD_URL
 from django.contrib.auth.models import User
 # from django.core import signing
 from django.db import models
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
-from django.template.defaultfilters import escape
+# from django.template.defaultfilters import escape
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
@@ -29,6 +34,7 @@ ACCESS_METHODS = [(k, ap[0]) for k, ap in ACCESS_PROTOCOLS.iteritems()]
 
 
 class BaseResourceConfigModel(models.Model):
+
     """Abstract base class for models with base resource configuration
        parameters.
     """
@@ -38,12 +44,15 @@ class BaseResourceConfigModel(models.Model):
                                                    'for balloning.'))
     arch = models.CharField(max_length=10, verbose_name=_('architecture'))
     priority = models.IntegerField(help_text=_('instance priority'))
+    boot_menu = models.BooleanField()
+    raw_data = models.TextField()
 
     class Meta:
         abstract = True
 
 
 class NamedBaseResourceConfig(BaseResourceConfigModel, TimeStampedModel):
+
     """Pre-created, named base resource configurations.
     """
     name = models.CharField(max_length=50, unique=True,
@@ -75,6 +84,7 @@ class Node(TimeStampedModel):
 
 
 class Lease(models.Model):
+
     """Lease times for VM instances.
 
     Specifies a time duration until suspension and deletion of a VM
@@ -103,6 +113,7 @@ class Lease(models.Model):
 
 
 class InstanceTemplate(BaseResourceConfigModel, TimeStampedModel):
+
     """Virtual machine template.
 
     Every template has:
@@ -165,6 +176,7 @@ class InstanceTemplate(BaseResourceConfigModel, TimeStampedModel):
 
 
 class InterfaceTemplate(models.Model):
+
     """Network interface template for an instance template.
 
     If the interface is managed, a host will be created for it.
@@ -180,32 +192,8 @@ class InterfaceTemplate(models.Model):
         verbose_name_plural = _('interface templates')
 
 
-def create_context(pw, hostname, smb_password, ssh_private_key, owner, token,
-                   extra):
-    """Return XML context configuration with given parameters.
-    """
-    return u'''
-            <SOURCE>web</SOURCE>
-            <HOSTNAME>%(hostname)s</HOSTNAME>
-            <NEPTUN>%(neptun)s</NEPTUN>
-            <USERPW>%(pw)s</USERPW>
-            <SMBPW>%(smbpw)s</SMBPW>
-            <SSHPRIV>%(sshkey)s</SSHPRIV>
-            <BOOTURL>%(booturl)s</BOOTURL>
-            <SERVER>store.cloud.ik.bme.hu</SERVER>
-            %(extra)s
-    ''' % {
-        "pw": escape(pw),
-        "hostname": escape(hostname),
-        "smbpw": escape(smb_password),
-        "sshkey": escape(ssh_private_key),
-        "neptun": escape(owner),
-        "booturl": "%sb/%s/" % (CLOUD_URL, token),
-        "extra": extra
-    }
-
-
 class Instance(BaseResourceConfigModel, TimeStampedModel):
+
     """Virtual machine instance.
 
     Every instance has:
@@ -289,7 +277,7 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         # create instance and do additional setup
         inst = cls(**kwargs)
         for disk in template.disks:
-            inst.disks.add(disk.get_exculsive())
+            inst.disks.add(disk.get_exclusive())
         # save instance
         inst.save()
         # create related entities
