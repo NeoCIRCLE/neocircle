@@ -380,48 +380,32 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         except:
             return
 
-    def deploy(self, extra=""):
-        # TODO implement
-        pass
-        #    """Submit a new instance to OpenNebula."""
-        #    inst = Instance(pw=pwgen(), template=template, owner=owner,
-        #                    share=share, state='PENDING', waiting=True)
-        #    inst.save()
-        #    hostname = u"%d" % (inst.id, )
-        #    token = signing.dumps(inst.id, salt='activate')
-        #    try:
-        #        details = owner.cloud_details
-        #    except:
-        #        details = UserCloudDetails(user=owner)
-        #        details.save()
-        #
-        #    ctx = create_context(inst.pw, hostname, details.smb_password,
-        #                              details.ssh_private_key, owner.username,
-        #                              token, extra)
-        #    try:
-        #        from .tasks import CreateInstanceTask
-        #        x = CreateInstanceTask.delay(
-        #            name=u"%s %d" % (owner.username, inst.id),
-        #            instance_type=template.instance_type.name,
-        #            disk_id=int(template.disk.id),
-        #            network_id=int(template.network.id),
-        #            ctx=ctx,
-        #        )
-        #        res = x.get(timeout=10)
-        #        res['one_id']
-        #    except:
-        #        inst.delete()
-        #        raise Exception("Unable to create VM instance.")
-        #
-        #    inst.one_id = res['one_id']
-        #    inst.ip = res['interfaces'][0]['ip']
-        #    inst.name = ("%(neptun)s %(template)s (%(id)d)" %
-        #                 {'neptun': owner.username, 'template': template.name,
-        #                  'id': inst.one_id})
-        #    inst.save()
-        #
-        #    inst._create_host(hostname, res)
-        #    return inst
+    def deploy(self):
+        ''' Launch celery task to handle asyncron jobs.
+        '''
+        manager.deploy.apply_async(self)
+
+    def deploy_task(self):
+        ''' Deploy virtual machine on remote node
+        '''
+        instance = {
+            'name': 'cloud-' + self.id,
+            'vcpu': self.num_cores,
+            'memory': self.ram_size,
+            'memory_max': self.max_ram_size,
+            'cpu_share': self.priority,
+            'arch': self.arch,
+            'boot_menu': self.boot_menu,
+            'network_list': [n.get_vmnetwork_desc()
+                             for n in self.interface_set.all()],
+            'disk_list': [n.get_vmdisk_desc() for n in self.disks.all()],
+            'graphics': {'type': 'vnc',
+                    'listen': '0.0.0.0',
+                    'passwd': '',
+                    'port': self.get_vnc_port()},
+            'raw_data': self.raw_data
+        }
+        tasks.create.apply_async(instance, queue=self.node + ".vm").get()
 
     def stop(self):
         # TODO implement
