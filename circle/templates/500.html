@@ -1,0 +1,10 @@
+{% load i18n %}
+{% extends "base.html" %}
+
+{% block title %}HTTP 500{% endblock %}
+
+{% block page_title %}{% trans ":(" %}{% endblock page_title %}
+
+{% block content %}
+<p>{% trans "Internal Server Error... Please leave the server alone..." %}</p>
+{% endblock content %}
