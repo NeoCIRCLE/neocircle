@@ -467,11 +467,27 @@ def delete_instance_pre(sender, instance, using, **kwargs):
 
 
 class Interface(models.Model):
+
     """Network interface for an instance.
     """
     vlan = models.ForeignKey(Vlan)
     host = models.ForeignKey(Host, blank=True, null=True)
     instance = models.ForeignKey(Instance, related_name='interface_set')
+
+    def mac_generator(self):
+        # MAC 02:XX:XX:X:VID
+        pass
+
+    def get_vmnetwork_desc(self):
+        return {
+            'name': 'cloud-' + self.instance.id + '-' + self.vlan.vid,
+            'bridge': 'cloud',
+            'mac': self.mac_generator(),
+            'ipv4': self.host.ipv4 if self.host is not None else None,
+            'ipv6': self.host.ipv6 if self.host is not None else None,
+            'vlan': self.vlan.vid,
+            'managed': self.host is not None
+        }
 
     @classmethod
     def create_from_template(cls, instance, template):
