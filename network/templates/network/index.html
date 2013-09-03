@@ -6,6 +6,12 @@
 {% block content %}
 
 <div class="page-header">
+    <h1>{% trans "Dashboard" %}</h1>
+</div>
+
+{% include "network/dashboard.html" %}
+
+<div class="page-header">
     <h1>{% trans "Latest modifications" %}</h1>
 </div>
 
@@ -47,75 +53,4 @@
     </tr>
     {% endfor %}
 </table>
-
-<div class="page-header">
-    <h1>{% trans "Dashboard" %}</h1>
-</div>
-
-<div class="row">
-    <div class="col-sm-3">
-        <div class="thumbnail">
-            <p class="lead"><a href="{% url network.host_list %}">Hosts</a> are machines on the network.</p>
-            <p>Proin mattis enim risus. Ut eu enim quis auctor. Duis lobortis sollicitudin lacus, scelerisque dictum arcu aliquam nec.</p>  
-            <p class="text-right"><a href="#" class="btn btn-default">List</a> <a href="#" class="btn btn-success">Create</a></p>
-        </div>
-    </div>
-
-    <div class="col-sm-3">
-        <div class="thumbnail">
-            <p class="lead"><a href="{% url network.host_list %}">Hosts</a> are machines on the network.</p>
-            <p>Proin mattis enim risus. Ut eu enim quis auctor. Duis lobortis sollicitudin lacus, scelerisque dictum arcu aliquam nec.</p>  
-            <p class="text-right"><a href="#" class="btn btn-default">List</a> <a href="#" class="btn btn-success">Create</a></p>
-        </div>
-    </div>
-
-    <div class="col-sm-3">
-        <div class="thumbnail">
-            <p class="lead"><a href="{% url network.host_list %}">Hosts</a> are machines on the network.</p>
-            <p>Proin mattis enim risus. Ut eu enim quis auctor. Duis lobortis sollicitudin lacus, scelerisque dictum arcu aliquam nec.</p>  
-            <p class="text-right"><a href="#" class="btn btn-default">List</a> <a href="#" class="btn btn-success">Create</a></p>
-        </div>
-    </div>
-    
-    <div class="col-sm-3">
-        <div class="thumbnail">
-            <p class="lead"><a href="{% url network.host_list %}">Hosts</a> are machines on the network.</p>
-            <p>Proin mattis enim risus. Ut eu enim quis auctor. Duis lobortis sollicitudin lacus, scelerisque dictum arcu aliquam nec.</p>  
-            <p class="text-right"><a href="#" class="btn btn-default">List</a> <a href="#" class="btn btn-success">Create</a></p>
-        </div>
-    </div>
- 
-    <div class="col-sm-3">
-        <div class="thumbnail">
-            <p class="lead"><a href="{% url network.host_list %}">Hosts</a> are machines on the network.</p>
-            <p>Proin mattis enim risus. Ut eu enim quis auctor. Duis lobortis sollicitudin lacus, scelerisque dictum arcu aliquam nec.</p>  
-            <p class="text-right"><a href="#" class="btn btn-default">List</a> <a href="#" class="btn btn-success">Create</a></p>
-        </div>
-    </div>
-
-    <div class="col-sm-3">
-        <div class="thumbnail">
-            <p class="lead"><a href="{% url network.host_list %}">Hosts</a> are machines on the network.</p>
-            <p>Proin mattis enim risus. Ut eu enim quis auctor. Duis lobortis sollicitudin lacus, scelerisque dictum arcu aliquam nec.</p>  
-            <p class="text-right"><a href="#" class="btn btn-default">List</a> <a href="#" class="btn btn-success">Create</a></p>
-        </div>
-    </div>
-
-    <div class="col-sm-3">
-        <div class="thumbnail">
-            <p class="lead"><a href="{% url network.host_list %}">Hosts</a> are machines on the network.</p>
-            <p>Proin mattis enim risus. Ut eu enim quis auctor. Duis lobortis sollicitudin lacus, scelerisque dictum arcu aliquam nec.</p>  
-            <p class="text-right"><a href="#" class="btn btn-default">List</a> <a href="#" class="btn btn-success">Create</a></p>
-        </div>
-    </div>
-    
-    <div class="col-sm-3">
-        <div class="thumbnail">
-            <p class="lead"><a href="{% url network.host_list %}">Hosts</a> are machines on the network.</p>
-            <p>Proin mattis enim risus. Ut eu enim quis auctor. Duis lobortis sollicitudin lacus, scelerisque dictum arcu aliquam nec.</p>  
-            <p class="text-right"><a href="#" class="btn btn-default">List</a> <a href="#" class="btn btn-success">Create</a></p>
-        </div>
-    </div>
-
-</div> 
 {% endblock %}
