@@ -1,6 +1,6 @@
-from celery import task
+from manager.manager import celery
 
 
-@task
-def create_instance_task(parameters):
+@celery.task(name='vmdriver.create')
+def create(parameters):
     pass
