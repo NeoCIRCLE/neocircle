@@ -3,6 +3,7 @@
 
 from os import environ
 from os.path import abspath, basename, dirname, join, normpath
+from json import loads 
 from socket import SOCK_STREAM
 from sys import path
 
@@ -223,6 +224,9 @@ THIRD_PARTY_APPS = (
 
 # Apps specific for this project go here.
 LOCAL_APPS = (
+    'vm',
+    'storage',
+    'firewall',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -281,3 +285,5 @@ LOGGING = {
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
 WSGI_APPLICATION = '%s.wsgi.application' % SITE_NAME
 ########## END WSGI CONFIGURATION
+
+FIREWALL_SETTINGS = loads(get_env_variable('DJANGO_FIREWALL_SETTINGS'))
