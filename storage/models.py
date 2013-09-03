@@ -14,6 +14,9 @@ logger = logging.getLogger(__name__)
 
 
 class DataStore(models.Model):
+    '''
+
+    '''
     name = models.CharField(max_length=100, unique=True,
                             verbose_name=_('name'))
     path = models.CharField(max_length=200, unique=True,
@@ -40,13 +43,15 @@ class Disk(TimeStampedModel):
     type = models.CharField(max_length=10, choices=TYPES)
     base = models.ForeignKey('self', blank=True null=True,
                              related_name='derivatives')
+    ready = models.BooleanField(default=False)
+    dev_num = models.CharField(max_length=1, verbose_name="device number")
 
     class Meta:
         ordering = ['name']
         verbose_name = _('disk')
         verbose_name_plural = _('disks')
 
-    def get_exculsive(self):
+    def get_exclusive(self):
         """Get an instance of the disk for exclusive usage.
 
         It might mean copying the disk, creating a snapshot or creating a
@@ -54,6 +59,23 @@ class Disk(TimeStampedModel):
         """
         # TODO implement (or call) logic
         return self
+
+    @property
+    def device_type(self):
+        return {
+            'qcow2': 'vd',
+            'raw': 'vd',
+            'iso': 'hd',
+        }[self.format]
+
+    def get_vmdisk_desc(self):
+        return {
+            'source': self.datastore.path + '/' + self.name,
+            'driver_type': self.format,
+            'driver_cache': 'default',
+            'target_device': self.device_type + self.dev_num
+        }
+
 
     def to_json(self):
         self.base_name = self.base.name if self.base else None
