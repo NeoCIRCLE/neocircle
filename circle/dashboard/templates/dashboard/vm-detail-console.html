@@ -1,1 +1,79 @@
-CONSOLE
+<div class="btn-toolbar">
+    <div class="btn-group">
+        <button id="sendCtrlAltDelButton" class="btn btn-danger small" href="#">Send CtrlAltDel</button>
+        <button id="akkount-mate" class="btn btn-default small" href="#">Máténak akkountot adok</button>
+        <button id="akkount-bd" class="btn btn-success small" href="#">bd-nek akkountot adok</button>
+    </div>
+    <div class="btn-group">
+        <button id="blabla" class="btn btn-warning small disabled" href="#">GubaSanyinak akkountot adok</button>
+    </div>
+</div>
+<div class="alert alert-info" id="noVNC_status">
+</div>
+
+<canvas id="noVNC_canvas" width="640px" height="20px">Canvas not supported.
+</canvas>
+
+<script src="{{ STATIC_URL }}dashboard/novnc/util.js"></script>
+<script>
+    "use strict";
+
+    var INCLUDE_URI = '{{ STATIC_URL }}dashboard/novnc/';
+
+    Util.load_scripts(["webutil.js", "base64.js", "websock.js", "des.js",
+                       "input.js", "display.js", "jsunzip.js", "rfb.js"]);
+
+    var rfb;
+
+    function updateState(rfb, state, oldstate, msg) {
+        var s, sb, cad
+        s = $('#noVNC_status')[0];
+        cad = $('#sendCtrlAltDelButton')[0];
+
+        if (state === "normal") { cad.disabled = false; }
+        else                    { cad.disabled = true; }
+
+        if (typeof(msg) !== 'undefined') {
+            s.innerHTML = msg;
+        }
+    }
+
+    $('a[data-toggle$="pill"][href!="#console"]').click(function() {
+        alert('SZIA');
+        if (rfb) {
+            rfb.disconnect();
+            rfb = 0;
+        }
+        $("#vm-info-pane").fadeIn();
+        $("#vm-detail-pane").removeClass("col-md-12");
+    });
+    $('#sendCtrlAltDelButton').click(function() {
+        rfb.sendCtrlAltDel(); return false;});
+    $('#akkount-mate').click(function() {
+        alert('NEM!!!!!!444'); return false;});
+    $('#akkount-bd').click(function() {
+        alert('OK, ADOK!!!!!!444'); return false;});
+
+
+    $('a[href$="console"]').click(function() {
+        var host, port, password, path;
+
+        $("#vm-info-pane").hide();
+        $("#vm-detail-pane").addClass("col-md-12");
+        WebUtil.init_logging('warn');
+
+        host = '10.9.2.232';
+        port = '443';
+        password = 'tbdgpzhtow';
+        path = 'vnc/';
+
+        rfb = new RFB({'target': $D('noVNC_canvas'),
+                       'encrypt': true,// (window.location.protocol === "https:"),
+                       'true_color':   true,
+                       'local_cursor': true,
+                       'shared':       true,
+                       'view_only':    false,
+                       'updateState':  updateState});
+        rfb.connect(host, port, password, path);
+    });
+    </script>
