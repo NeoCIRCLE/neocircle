@@ -5,13 +5,10 @@ import logging
 
 from . import tasks
 
-# from django.conf.settings import CLOUD_URL
 from django.contrib.auth.models import User
-# from django.core import signing
 from django.db import models
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
-# from django.template.defaultfilters import escape
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
@@ -19,6 +16,7 @@ from model_utils.models import TimeStampedModel
 
 from firewall.models import Vlan, Host
 from storage.models import Disk
+import manager
 
 logger = logging.getLogger(__name__)
 pwgen = User.objects.make_random_password
@@ -33,7 +31,6 @@ ACCESS_METHODS = [(k, ap[0]) for k, ap in ACCESS_PROTOCOLS.iteritems()]
 
 
 class BaseResourceConfigModel(models.Model):
-
     """Abstract base class for models with base resource configuration
        parameters.
     """
@@ -43,15 +40,14 @@ class BaseResourceConfigModel(models.Model):
                                                    'for balloning.'))
     arch = models.CharField(max_length=10, verbose_name=_('architecture'))
     priority = models.IntegerField(help_text=_('instance priority'))
-    boot_menu = models.BooleanField()
-    raw_data = models.TextField()
+    boot_menu = models.BooleanField(default=False)
+    raw_data = models.TextField(blank=True, null=True)
 
     class Meta:
         abstract = True
 
 
 class NamedBaseResourceConfig(BaseResourceConfigModel, TimeStampedModel):
-
     """Pre-created, named base resource configurations.
     """
     name = models.CharField(max_length=50, unique=True,
@@ -62,6 +58,8 @@ class NamedBaseResourceConfig(BaseResourceConfigModel, TimeStampedModel):
 
 
 class Node(TimeStampedModel):
+    """A VM host machine.
+    """
     name = models.CharField(max_length=50, unique=True,
                             verbose_name=_('name'))
     num_cores = models.IntegerField(help_text=_('Number of CPU cores.'))
@@ -82,8 +80,18 @@ class Node(TimeStampedModel):
         pass  # TODO implement check
 
 
-class Lease(models.Model):
+class NodeActivity(TimeStampedModel):
+    activity_code = models.CharField(max_length=100)
+    task_uuid = models.CharField(max_length=50, unique=True)
+    node = models.ForeignKey(Node, related_name='activity_log')
+    user = models.ForeignKey(User, blank=True, null=True)
+    started = models.DateTimeField(blank=True, null=True)
+    finished = models.DateTimeField(blank=True, null=True)
+    result = models.TextField(blank=True, null=True)
+    status = models.CharField(default='PENDING', max_length=50)
 
+
+class Lease(models.Model):
     """Lease times for VM instances.
 
     Specifies a time duration until suspension and deletion of a VM
@@ -93,6 +101,9 @@ class Lease(models.Model):
                             verbose_name=_('name'))
     suspend_interval_seconds = models.IntegerField()
     delete_interval_seconds = models.IntegerField()
+
+    class Meta:
+        ordering = ['name', ]
 
     @property
     def suspend_interval(self):
@@ -112,7 +123,6 @@ class Lease(models.Model):
 
 
 class InstanceTemplate(BaseResourceConfigModel, TimeStampedModel):
-
     """Virtual machine template.
 
     Every template has:
@@ -126,7 +136,6 @@ class InstanceTemplate(BaseResourceConfigModel, TimeStampedModel):
       * set of interfaces
       * lease times (suspension & deletion)
       * time of creation and last modification
-      * ownership information
     """
     STATES = [('NEW', _('new')),  # template has just been created
               ('SAVING', _('saving')),  # changes are being saved
@@ -169,13 +178,12 @@ class InstanceTemplate(BaseResourceConfigModel, TimeStampedModel):
         """Get the type of the template's operating system.
         """
         if self.access_method == 'rdp':
-            return "win"
+            return 'win'
         else:
-            return "linux"
+            return 'linux'
 
 
 class InterfaceTemplate(models.Model):
-
     """Network interface template for an instance template.
 
     If the interface is managed, a host will be created for it.
@@ -192,7 +200,6 @@ class InterfaceTemplate(models.Model):
 
 
 class Instance(BaseResourceConfigModel, TimeStampedModel):
-
     """Virtual machine instance.
 
     Every instance has:
@@ -204,10 +211,10 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
       * lease times (suspension & deletion)
       * last boot timestamp
       * host node
-      * current state (libvirt domain state) and operation (Celery job UUID)
+      * current state (libvirt domain state)
       * time of creation and last modification
       * base resource configuration values
-      * ownership information
+      * owner and privilege information
     """
     STATES = [('NOSTATE', _('nostate')),
               ('RUNNING', _('running')),
@@ -236,8 +243,6 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
                              related_name='instance_set',
                              verbose_name=_('host nose'))
     state = models.CharField(choices=STATES, default='NOSTATE', max_length=20)
-    operation = models.CharField(blank=True, max_length=100, null=True,
-                                 verbose_name=_('operation'))
     disks = models.ManyToManyField(Disk, related_name='instance_set',
                                    verbose_name=_('disks'))
     lease = models.ForeignKey(Lease)
@@ -255,7 +260,7 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         return self.name
 
     @classmethod
-    def create_from_template(cls, template, **kwargs):
+    def create_from_template(cls, template, owner, **kwargs):
         """Create a new instance based on an InstanceTemplate.
 
         Can also specify parameters as keyword arguments which should override
@@ -263,6 +268,7 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         """
         # prepare parameters
         kwargs['template'] = template
+        kwargs['owner'] = owner
         kwargs.setdefault('name', template.name)
         kwargs.setdefault('description', template.description)
         kwargs.setdefault('pw', pwgen())
@@ -289,9 +295,9 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
 
         return inst
 
-    # TODO is this obsolete?
     @models.permalink
     def get_absolute_url(self):
+        # TODO is this obsolete?
         return ('one.views.vm_show', None, {'iid': self.id})
 
     @property
@@ -310,17 +316,20 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
 
     @property
     def ipv4(self):
-        """Primary IPv4 address of the instance."""
+        """Primary IPv4 address of the instance.
+        """
         return self.primary_host.ipv4 if self.primary_host else None
 
     @property
     def ipv6(self):
-        """Primary IPv6 address of the instance."""
+        """Primary IPv6 address of the instance.
+        """
         return self.primary_host.ipv6 if self.primary_host else None
 
     @property
     def mac(self):
-        """Primary MAC address of the instance."""
+        """Primary MAC address of the instance.
+        """
         return self.primary_host.mac if self.primary_host else None
 
     @property
@@ -343,7 +352,7 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
     def waiting(self):
         """Indicates whether the instance's waiting for an operation to finish.
         """
-        return self.operation is not None
+        return self.activity_log.filter(finished__isnull=True).exists()
 
     def get_connect_port(self, use_ipv6=False):
         """Get public port number for default access method.
@@ -373,9 +382,9 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
             proto = self.access_method
             if proto == 'ssh':
                 proto = 'sshterm'
-            return ("%(proto)s:cloud:%(pw)s:%(host)s:%(port)d" %
-                    {"port": port, "proto": proto, "pw": self.pw,
-                     "host": host})
+            return ('%(proto)s:cloud:%(pw)s:%(host)s:%(port)d' %
+                    {'port': port, 'proto': proto, 'pw': self.pw,
+                     'host': host})
         except:
             return
 
@@ -459,10 +468,21 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         return True
 
 
-@receiver(pre_delete, sender=Instance, dispatch_uid="delete_instance_pre")
+@receiver(pre_delete, sender=Instance, dispatch_uid='delete_instance_pre')
 def delete_instance_pre(sender, instance, using, **kwargs):
     # TODO implement
     pass
+
+
+class InstanceActivity(TimeStampedModel):
+    activity_code = models.CharField(max_length=100)
+    task_uuid = models.CharField(max_length=50, unique=True)
+    instance = models.ForeignKey(Instance, related_name='activity_log')
+    user = models.ForeignKey(User, blank=True, null=True)
+    started = models.DateTimeField(blank=True, null=True)
+    finished = models.DateTimeField(blank=True, null=True)
+    result = models.TextField(blank=True, null=True)
+    status = models.CharField(default='PENDING', max_length=50)
 
 
 class Interface(models.Model):
