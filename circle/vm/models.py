@@ -5,6 +5,8 @@ import logging
 
 from . import tasks
 
+from manager import manager, scheduler
+
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import pre_delete
@@ -16,7 +18,6 @@ from model_utils.models import TimeStampedModel
 
 from firewall.models import Vlan, Host
 from storage.models import Disk
-import manager
 
 logger = logging.getLogger(__name__)
 pwgen = User.objects.make_random_password
@@ -31,6 +32,7 @@ ACCESS_METHODS = [(k, ap[0]) for k, ap in ACCESS_PROTOCOLS.iteritems()]
 
 
 class BaseResourceConfigModel(models.Model):
+
     """Abstract base class for models with base resource configuration
        parameters.
     """
@@ -48,6 +50,7 @@ class BaseResourceConfigModel(models.Model):
 
 
 class NamedBaseResourceConfig(BaseResourceConfigModel, TimeStampedModel):
+
     """Pre-created, named base resource configurations.
     """
     name = models.CharField(max_length=50, unique=True,
@@ -58,6 +61,7 @@ class NamedBaseResourceConfig(BaseResourceConfigModel, TimeStampedModel):
 
 
 class Node(TimeStampedModel):
+
     """A VM host machine.
     """
     name = models.CharField(max_length=50, unique=True,
@@ -82,7 +86,8 @@ class Node(TimeStampedModel):
 
 class NodeActivity(TimeStampedModel):
     activity_code = models.CharField(max_length=100)
-    task_uuid = models.CharField(max_length=50, unique=True)
+    task_uuid = models.CharField(
+        max_length=50, unique=True, null=True, blank=True)
     node = models.ForeignKey(Node, related_name='activity_log')
     user = models.ForeignKey(User, blank=True, null=True)
     started = models.DateTimeField(blank=True, null=True)
@@ -92,6 +97,7 @@ class NodeActivity(TimeStampedModel):
 
 
 class Lease(models.Model):
+
     """Lease times for VM instances.
 
     Specifies a time duration until suspension and deletion of a VM
@@ -123,6 +129,7 @@ class Lease(models.Model):
 
 
 class InstanceTemplate(BaseResourceConfigModel, TimeStampedModel):
+
     """Virtual machine template.
 
     Every template has:
@@ -184,6 +191,7 @@ class InstanceTemplate(BaseResourceConfigModel, TimeStampedModel):
 
 
 class InterfaceTemplate(models.Model):
+
     """Network interface template for an instance template.
 
     If the interface is managed, a host will be created for it.
@@ -200,6 +208,7 @@ class InterfaceTemplate(models.Model):
 
 
 class Instance(BaseResourceConfigModel, TimeStampedModel):
+
     """Virtual machine instance.
 
     Every instance has:
@@ -388,15 +397,8 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         except:
             return
 
-    def deploy(self):
-        ''' Launch celery task to handle asyncron jobs.
-        '''
-        manager.deploy.apply_async(self)
-
-    def deploy_task(self):
-        ''' Deploy virtual machine on remote node
-        '''
-        instance = {
+    def get_vm_desc(self):
+        return {
             'name': 'cloud-' + self.id,
             'vcpu': self.num_cores,
             'memory': self.ram_size,
@@ -413,7 +415,42 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
                     'port': self.get_vnc_port()},
             'raw_data': self.raw_data
         }
-        tasks.create.apply_async(instance, queue=self.node + ".vm").get()
+
+    def deploy_async(self):
+        ''' Launch celery task to handle asyncron jobs.
+        '''
+        manager.deploy.apply_async(self)
+
+    def deploy(self, user, task_uuid=None):
+        ''' Deploy new virtual machine with network
+        1. Schedule
+        '''
+        act = InstanceActivity(user=user, task_uuid=task_uuid)
+        # Schedule
+        act.update_state("PENDING")
+        self.node = scheduler.get_node()
+
+        # Create virtual images
+        act.update_state("PREPARING DISKS")
+        for disk in self.disks:
+            disk.deploy()
+
+        # Deploy VM on remote machine
+        act.update_state("DEPLOYING VM")
+        tasks.create.apply_async(
+            self.get_vm_desc, queue=self.node + ".vm").get()
+
+        # Estabilish network connection (vmdriver)
+        act.update_state("DEPLOYING NET")
+        for net in self.interface_set.all():
+            net.deploy()
+
+        # Resume vm
+        act.update_state("BOOTING")
+        tasks.resume.apply_async(
+            "cloud-" + self.id, queue=self.node + ".vm").get()
+
+        act.finish()
 
     def stop(self):
         # TODO implement
@@ -476,13 +513,26 @@ def delete_instance_pre(sender, instance, using, **kwargs):
 
 class InstanceActivity(TimeStampedModel):
     activity_code = models.CharField(max_length=100)
-    task_uuid = models.CharField(max_length=50, unique=True)
+    task_uuid = models.CharField(
+        max_length=50, unique=True, null=True, blank=True)
     instance = models.ForeignKey(Instance, related_name='activity_log')
     user = models.ForeignKey(User, blank=True, null=True)
     started = models.DateTimeField(blank=True, null=True)
     finished = models.DateTimeField(blank=True, null=True)
     result = models.TextField(blank=True, null=True)
     status = models.CharField(default='PENDING', max_length=50)
+
+    def __init__(self):
+        # TODO
+        pass
+
+    def update_state(self):
+        # TODO
+        pass
+
+    def finish(self):
+        # TODO
+        pass
 
 
 class Interface(models.Model):
