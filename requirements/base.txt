@@ -1,7 +1,11 @@
 Django==1.5.2
 bpython==0.12
+celery==3.0.23
 django-braces==1.2.2
+django-celery==3.0.23
+django-crispy-forms==1.4.0
 django-model-utils==1.4.0
+django-tables2==0.14.0
 logutils==0.3.3
 South==0.8.1
 psycopg2==2.5.1
