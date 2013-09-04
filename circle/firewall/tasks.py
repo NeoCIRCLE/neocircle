@@ -27,6 +27,11 @@ def reload_blacklist_task(data):
     pass
 
 
+@celery.task
+def get_dhcp_clients_task(data):
+    pass
+
+
 class Periodic(PeriodicTask):
     run_every = timedelta(seconds=10)
 
