@@ -1,0 +1,6 @@
+<a href="{{ input.href }}"
+    id="{% if input.name|wordcount > 1 %}{{ input.name|slugify }}{% else %}{{ input.name }}{% endif %}"
+    value=""
+    class="{{ input.field_classes }}"
+    {{ input.flat_attrs|safe }}
+    >{{ input.value }}</a>

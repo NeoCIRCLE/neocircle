@@ -1,0 +1,22 @@
+{% extends "network/base.html" %}
+{% load render_table from django_tables2 %}
+{% load i18n %}
+{% load l10n %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="page-header">
+    <a href="{% url network.vlan_delete vid=vlan_vid %}" class="btn btn-danger pull-right"><i class="icon-remove-sign"></i> {% trans "Delete this vlan" %}</a>
+    <h2>{{ form.name.value }} <small>{% trans "details of vlan" %}</small></h2>
+</div>
+
+<div class="row">
+    <div class="col-sm-8">
+        {% crispy form %}
+    </div>
+    <div class="col-sm-4">
+        {% render_table host_list %}
+    </div>
+</div>
+{% endblock %}

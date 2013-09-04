@@ -1,0 +1,6 @@
+{% load i18n %}
+{% load l10n %}
+<div style="white-space: nowrap;">
+    <a href="{% url network.rule_delete pk=record.pk %}?from={{ request.path }}"><i class="icon-remove"></i></a>
+    <a href="{% url network.rule pk=record.pk %}"><i class="icon-pencil"></i></a>
+</div>

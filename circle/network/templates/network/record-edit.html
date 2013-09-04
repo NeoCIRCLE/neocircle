@@ -1,0 +1,23 @@
+{% extends "network/base.html" %}
+{% load render_table from django_tables2 %}
+{% load i18n %}
+{% load l10n %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="page-header">
+    <a href="{% url network.record_delete pk=record_pk %}" class="btn btn-danger pull-right"><i class="icon-remove-sign"></i> {% trans "Delete this record" %}</a>
+  <h2>{{ fqdn }}</h2>
+</div>
+
+<div class="row">
+    <div class="col-sm-6">
+        {% crispy form %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_etc %}                                                       
+<script src="{% static "js/record.js" %}"></script>                  
+{% endblock %}     

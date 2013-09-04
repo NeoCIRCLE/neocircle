@@ -218,8 +218,9 @@ DJANGO_APPS = (
 )
 
 THIRD_PARTY_APPS = (
-    # Database migration helpers:
     'south',
+    'django_tables2',
+    'crispy_forms',
 )
 
 # Apps specific for this project go here.
@@ -227,6 +228,7 @@ LOCAL_APPS = (
     'vm',
     'storage',
     'firewall',
+    'network',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -287,3 +289,5 @@ WSGI_APPLICATION = '%s.wsgi.application' % SITE_NAME
 ########## END WSGI CONFIGURATION
 
 FIREWALL_SETTINGS = loads(get_env_variable('DJANGO_FIREWALL_SETTINGS'))
+
+CRISPY_TEMPLATE_PACK = 'bootstrap3'

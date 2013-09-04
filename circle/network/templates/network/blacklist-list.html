@@ -1,0 +1,16 @@
+{% extends "network/base.html" %}
+{% load render_table from django_tables2 %}
+{% load i18n %}
+{% load l10n %}
+{% load staticfiles %}
+
+{% block content %}
+<div class="page-header">   
+    <a href="{% url "network.blacklist_create" %}" class="btn btn-success pull-right"><i class="icon-plus-sign"></i> {% trans "Create a new blacklist" %}</a>
+    <h1>{% trans "Blacklists" %} <small></small></h1>
+</div>
+
+<div class="table-responsive">
+    {% render_table table %}
+</div>
+{% endblock %}

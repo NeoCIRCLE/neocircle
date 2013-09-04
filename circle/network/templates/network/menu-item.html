@@ -1,0 +1,4 @@
+{% load i18n %}
+{% load l10n %}
+
+<li{% if href in request.path %} class="active"{% endif %}><a href="{{ href }}">{% trans text %}</a></li>

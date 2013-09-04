@@ -1,0 +1,14 @@
+{% extends "network/base.html" %}
+{% load render_table from django_tables2 %}
+{% load i18n %}
+{% load l10n %}
+{% load staticfiles %}
+
+{% block content %}
+<div class="page-header"> 
+    <a href="{% url "network.group_create" %}" class="btn btn-success pull-right"><i class="icon-plus-sign"></i> {% trans "Create a new host group" %}</a>
+    <h1>{% trans "Host groups" %}</h1>
+</div>
+
+{% render_table table %}
+{% endblock %}
