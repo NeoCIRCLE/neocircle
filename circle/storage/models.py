@@ -76,7 +76,6 @@ class Disk(TimeStampedModel):
             'target_device': self.device_type + self.dev_num
         }
 
-
     def to_json(self):
         self.base_name = self.base.name if self.base else None
         self.dir = self.datastore.path

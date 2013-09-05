@@ -4,12 +4,13 @@
 from os import environ
 from os.path import abspath, basename, dirname, join, normpath
 from json import loads
-from socket import SOCK_STREAM
+# from socket import SOCK_STREAM
 from sys import path
 
 # Normally you should not import ANYTHING from Django directly
 # into your settings, but ImproperlyConfigured is an exception.
 from django.core.exceptions import ImproperlyConfigured
+
 
 def get_env_variable(var_name, default=None):
     """ Get the environment variable or return exception/default """
@@ -64,7 +65,7 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.' +
-            get_env_variable('DJANG_DB_TYPE', 'postgresql_psycopg2'),
+        get_env_variable('DJANG_DB_TYPE', 'postgresql_psycopg2'),
         'NAME':  get_env_variable('DJANGO_DB_NAME', 'circle'),
         'USER':  get_env_variable('DJANGO_DB_USER', 'circle'),
         'PASSWORD':  get_env_variable('DJANGO_DB_PASSWORD'),
@@ -79,7 +80,7 @@ DATABASES = {
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#time-zone
 try:
     with open("/etc/timezone", "r") as f:
-	systz = f.readline().rstrip()
+        systz = f.readline().rstrip()
 except:
     systz = None
 
@@ -247,7 +248,7 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'formatters':{
+    'formatters': {
         'simple': {
             'format': '%(asctime)s [%(levelname)s]: %(name)s %(message)s',
             'datefmt': '%Y-%m-%d %H:%M:%S',
@@ -264,14 +265,14 @@ LOGGING = {
             'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler'
         },
-	'syslog': {
-	    'level': 'INFO',
-	    'class': 'logging.handlers.SysLogHandler',
+        'syslog': {
+            'level': 'INFO',
+            'class': 'logging.handlers.SysLogHandler',
             'formatter': 'simple',
-	    'address': '/dev/log',
-	    # 'socktype': SOCK_STREAM,
-	    # 'address': ('host', '514'),
-	}
+            'address': '/dev/log',
+            # 'socktype': SOCK_STREAM,
+            # 'address': ('host', '514'),
+        }
     },
     'loggers': {
         'django.request': {

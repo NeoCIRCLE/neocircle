@@ -1,7 +1,7 @@
 """Development settings and globals."""
 
 
-from os.path import join, normpath
+# from os.path import join, normpath
 
 from base import *
 
@@ -47,23 +47,25 @@ CACHES = {
 
 
 ########## TOOLBAR CONFIGURATION
-# See: https://github.com/django-debug-toolbar/django-debug-toolbar#installation
+# https://github.com/django-debug-toolbar/django-debug-toolbar#installation
 if get_env_variable('DJANGO_TOOLBAR', 'FALSE') == 'TRUE':
     INSTALLED_APPS += (
-	'debug_toolbar',
+        'debug_toolbar',
     )
 
-    # See: https://github.com/django-debug-toolbar/django-debug-toolbar#installation
-    INTERNAL_IPS = (get_env_variable('SSH_CLIENT', '127.0.0.1').split(' ')[0], )
+    # https://github.com/django-debug-toolbar/django-debug-toolbar#installation
+    INTERNAL_IPS = (
+        get_env_variable('SSH_CLIENT', '127.0.0.1').split(' ')[0],
+    )
 
-    # See: https://github.com/django-debug-toolbar/django-debug-toolbar#installation
+    # https://github.com/django-debug-toolbar/django-debug-toolbar#installation
     MIDDLEWARE_CLASSES += (
-	'debug_toolbar.middleware.DebugToolbarMiddleware',
+        'debug_toolbar.middleware.DebugToolbarMiddleware',
     )
 
-    # See: https://github.com/django-debug-toolbar/django-debug-toolbar#installation
+    # https://github.com/django-debug-toolbar/django-debug-toolbar#installation
     DEBUG_TOOLBAR_CONFIG = {
-	'INTERCEPT_REDIRECTS': False,
-	'SHOW_TEMPLATE_CONTEXT': True,
+        'INTERCEPT_REDIRECTS': False,
+        'SHOW_TEMPLATE_CONTEXT': True,
     }
     ########## END TOOLBAR CONFIGURATION

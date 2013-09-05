@@ -29,7 +29,7 @@ try:
 except ImproperlyConfigured:
     pass
 else:
-    # See: https://docs.djangoproject.com/en/dev/ref/settings/#email-host-password
+    # https://docs.djangoproject.com/en/dev/ref/settings/#email-host-password
     EMAIL_HOST_PASSWORD = environ.get('EMAIL_HOST_PASSWORD', '')
 
     # See: https://docs.djangoproject.com/en/dev/ref/settings/#email-host-user
@@ -49,22 +49,21 @@ SERVER_EMAIL = EMAIL_HOST_USER
 ########## END EMAIL CONFIGURATION
 
 
-
 ########## CACHE CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#caches
 try:
     CACHES = {
-	'default': {
-	    'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-	    'LOCATION': get_env_variable('DJANGO_MEMCACHED'),
-	}
+        'default': {
+            'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+            'LOCATION': get_env_variable('DJANGO_MEMCACHED'),
+        }
     }
 except ImproperlyConfigured:
     CACHES = {
-	'default': {
-	    'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-	    'LOCATION': SITE_NAME,
-	}
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': SITE_NAME,
+        }
     }
 ########## END CACHE CONFIGURATION
 
