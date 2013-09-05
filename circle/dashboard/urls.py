@@ -5,5 +5,4 @@ from .views import IndexView, VmDetailView
 urlpatterns = patterns('',
                        url(r'^$', IndexView.as_view()),
                        url(r'^vm/(?P<id>\d+)/$', VmDetailView.as_view(),
-                           name='dashboard.views.detail'),
-)
+                           name='dashboard.views.detail'),)

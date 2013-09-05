@@ -6,7 +6,7 @@ from django.forms import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from firewall.fields import (MACAddressField, val_alfanum, val_reverse_domain,
                              val_domain, val_ipv4, val_ipv6, val_mx,
-                             ipv4_2_ipv6)
+                             ipv4_2_ipv6, IPNetworkField)
 from django.core.validators import MinValueValidator, MaxValueValidator
 import django.conf
 from django.db.models.signals import post_save
@@ -70,8 +70,9 @@ class Rule(models.Model):
                               help_text=_("If network address translation "
                                           "shoud be done."))
     nat_dport = models.IntegerField(blank=True, null=True,
-                                    help_text=_(
-                                        "Rewrite destination port number to."),
+                                    help_text=_("Rewrite destination port "
+                                                "number to this if NAT is "
+                                                "needed."),
                                     validators=[MinValueValidator(1),
                                                 MaxValueValidator(65535)])
     created_at = models.DateTimeField(
@@ -169,39 +170,31 @@ class Vlan(models.Model):
                             verbose_name=_('Name'),
                             help_text=_('The short name of the subnet.'),
                             validators=[val_alfanum])
-    prefix4 = models.IntegerField(
-        default=16, verbose_name=_('IPv4 prefix length'),
-        help_text=_('The prefix length of the IPv4 subnet.'))
-    prefix6 = models.IntegerField(
-        default=80, verbose_name=_('IPv6 prefix length'),
-        help_text=_('The prefix length of the IPv6 subnet.'))
     interface = models.CharField(max_length=20, unique=True,
                                  verbose_name=_('interface'), help_text=_(
                                      'The name of network interface the '
                                      'gateway should serve this network on. '
                                      'For example vlan0004 or eth2.'))
-    net4 = models.GenericIPAddressField(protocol='ipv4', unique=True,
-                                        verbose_name=_('IPv4 network'),
-                                        help_text=_('The network address of '
-                                                    'the IPv4 subnet.'))
-    net6 = models.GenericIPAddressField(protocol='ipv6', unique=True,
-                                        verbose_name=_('IPv6 network'),
-                                        help_text=_('The network address of '
-                                                    'the IPv6 subnet.'))
-    ipv4 = models.GenericIPAddressField(protocol='ipv4', unique=True,
-                                        verbose_name=_('IPv4 address'),
-                                        help_text=_(
-                                            'The IPv4 address of the gateway. '
-                                            'Recommended value is the last '
-                                            'valid address of the subnet, '
-                                            'for example '
-                                            '10.4.255.254 for 10.4.0.0/16.'))
-    ipv6 = models.GenericIPAddressField(protocol='ipv6',
-                                        unique=True,
-                                        verbose_name=_('IPv6 address'),
-                                        help_text=_(
-                                            'The IPv6 address of the '
-                                            'gateway.'))
+    network4 = IPNetworkField(unique=False,
+                              version=4,
+                              null=True,
+                              blank=True,
+                              verbose_name=_('IPv4 address/prefix'),
+                              help_text=_(
+                                  'The IPv4 address and the prefix length '
+                                  'of the gateway.'
+                                  'Recommended value is the last '
+                                  'valid address of the subnet, '
+                                  'for example '
+                                  '10.4.255.254/16 for 10.4.0.0/16.'))
+    network6 = IPNetworkField(unique=False,
+                              version=6,
+                              null=True,
+                              blank=True,
+                              verbose_name=_('IPv6 address/prefix'),
+                              help_text=_(
+                                  'The IPv6 address and the prefix length '
+                                  'of the gateway.'))
     snat_ip = models.GenericIPAddressField(protocol='ipv4', blank=True,
                                            null=True,
                                            verbose_name=_('NAT IP address'),
@@ -257,17 +250,36 @@ class Vlan(models.Model):
     def __unicode__(self):
         return self.name
 
-    def net_ipv6(self):
-        """String representation of selected IPv6 network."""
-        return self.net6 + "/" + unicode(self.prefix6)
-
-    def net_ipv4(self):
-        """String representation of selected IPv4 network."""
-        return self.net4 + "/" + unicode(self.prefix4)
-
     @models.permalink
     def get_absolute_url(self):
         return ('network.vlan', None, {'vid': self.vid})
+
+    @property
+    def net4(self):
+        return self.network4.network
+
+    @property
+    def ipv4(self):
+        return self.network4.ip
+
+    @property
+    def prefix4(self):
+        return self.network4.prefixlen
+
+    @property
+    def net6(self):
+        return self.network6.network
+
+    @property
+    def ipv6(self):
+        return self.network6.ip
+
+    @property
+    def prefix6(self):
+        return self.network6.prefixlen
+
+    def __unicode__(self):
+        return self.name
 
 
 class VlanGroup(models.Model):
@@ -388,6 +400,14 @@ class Host(models.Model):
 
     def __unicode__(self):
         return self.hostname
+
+    @property
+    def incoming_rules(self):
+        return self.rules.filter(direction='1')
+
+    @property
+    def outgoing_rules(self):
+        return self.rules.filter(direction='0')
 
     def save(self, *args, **kwargs):
         id = self.id

@@ -10,3 +10,4 @@ logutils==0.3.3
 netaddr==0.7.10
 South==0.8.1
 psycopg2==2.5.1
+netaddr==0.7.10

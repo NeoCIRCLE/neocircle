@@ -38,8 +38,9 @@ class HostInline(contrib.admin.TabularInline):
 
 
 class VlanAdmin(admin.ModelAdmin):
-    list_display = ('vid', 'name', 'ipv4', 'net_ipv4', 'ipv6', 'net_ipv6',
+    list_display = ('vid', 'name', 'network4', 'network6',
                     'description', 'domain', 'snat_ip', )
+    search_fields = ('vid', 'name', 'network4', )
     ordering = ('vid', )
     inlines = (RuleInline, )
 

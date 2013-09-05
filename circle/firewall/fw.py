@@ -203,7 +203,7 @@ class Firewall:
                 for d_vlan in s_vlan.snat_to.all():
                     self.iptablesnat('-A POSTROUTING -s %s -o %s -j SNAT '
                                      '--to-source %s' %
-                                     (s_vlan.net_ipv4(), d_vlan.interface,
+                                     (str(s_vlan.network4), d_vlan.interface,
                                       s_vlan.snat_ip))
 
         # hard-wired rules
