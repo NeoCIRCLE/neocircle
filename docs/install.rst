@@ -1,18 +1,17 @@
-Install
-=========
+Installation of a development machine
+=====================================
 
 .. highlight:: bash
 
+Preparation
+-----------
 
 To get the project running on a development machine, create a new Ubuntu 12.04
 instance, and log in to it over SSH.
 
-(To be able to easily copy and paste the commands given, alias :kbd:`$` to nothing:
-:kbd:`alias '$='`.)
 
-
-To use git over SSH, we advise enabling SSH agent forwarding.
-On your personal computer check if ssh-agent is running (the command should
+To use *git* over *SSH*, we advise enabling SSH *agent forwarding*.
+On your personal computer check if *ssh-agent* is running (the command should
 print a process id)::
   
   $ echo $SSH_AGENT_PID
@@ -21,7 +20,7 @@ print a process id)::
 If it is not running, you should set up your login manager or some other
 solution to automatically launch it.
 
-Add your primary key to the agent (if it is not added by your desktop
+Add your private key to the agent (if it is not added by your desktop
 environment)::
 
   $ ssh-add [~/.ssh/path_to_id_rsa]
@@ -32,17 +31,21 @@ Log in to the new vm. The :kbd:`-A` switch enables agent forwarding::
 
 You can check agent forwarding on the vm::
 
-  $ if [ -e "$SSH_AUTH_SOCK" ]; than echo "Agent forwarding works!"; fi
+  $ if [ -S "$SSH_AUTH_SOCK" ]; then echo "Agent forwarding works!"; fi
   Agent forwarding works!
 
-If the hostname of the vm starts with a digit, you have to change it, because
-RabbitMQ won't work with it. ::
+.. warning::
+  If the first character of the hostname of the vm is a digit, you have to
+  change it, because RabbitMQ won't work with it. ::
+ 
+    $ old=$(hostname)
+    $ new=c-${old}
+    $ sudo tee /etc/hostname <<<$new
+    $ sudo hostname $new
+    $ sudo sed -i /etc/hosts -e "s/$old/$new/g"
 
-  $ old=$(hostname)
-  $ new=c-${old}
-  $ sudo tee /etc/hostname <<<$new
-  $ sudo hostname $new
-  $ sudo sed -i /etc/hosts -e "s/$old/$new/g"
+Setting up required software
+----------------------------
 
 Update the package lists, and install the required system software::
 
@@ -50,7 +53,7 @@ Update the package lists, and install the required system software::
   $ sudo apt-get install --yes virtualenvwrapper postgresql git \
       python-pip rabbitmq-server libpq-dev python-dev
 
-Set up PostgreSQL to listen on localhost and restart::
+Set up *PostgreSQL* to listen on localhost and restart it::
 
   $ sudo sed -i /etc/postgresql/9.1/main/postgresql.conf -e '/#listen_addresses/ s/^#//'
   $ sudo /etc/init.d/postgresql restart
@@ -66,7 +69,7 @@ Enable SSH server to accept your name and address from your environment::
   $ sudo sed -i /etc/ssh/sshd_config -e '$ a AcceptEnv GIT_*'
   $ sudo /etc/init.d/ssh reload
 
-You should set these vars in your *local* profile::
+You should set these vars in your **local** profile::
 
   $ cat >>~/.profile <<'END'
   export GIT_AUTHOR_NAME="Your Name"
@@ -76,23 +79,26 @@ You should set these vars in your *local* profile::
   END
   $ source ~/.profile
 
-Allow sending it in your *local* ssh configuration::
+Allow sending it in your **local** ssh configuration::
 
-  # ~/.ssh/config
+  # Content of ~/.ssh/config:
   Host *
     SendEnv GIT_*
   
+Setting up Circle itself
+------------------------
 
 Clone the git repository::
 
   $ git clone git@git.cloud.ik.bme.hu:circle/cloud.git circle
 
-Set up virtualenvwrapper and the virtual environment for the project::
+Set up *virtualenvwrapper* and the *virtual Python environment* for the
+project::
 
   $ source /etc/bash_completion.d/virtualenvwrapper
   $ mkvirtualenv circle
 
-Set up default settings and activate the virtual environment::
+Set up default Circle configuration and activate the virtual environment::
 
   $ cat >>/home/cloud/.virtualenvs/circle/bin/postactivate <<END
   export DJANGO_SETTINGS_MODULE=circle.settings.local
@@ -105,7 +111,7 @@ Set up default settings and activate the virtual environment::
   $ workon circle
   $ cd ~/circle
 
-Install the required python libraries to the virtual environment::
+Install the required Python libraries to the virtual environment::
 
   $ pip install -r requirements/local.txt
 
@@ -118,11 +124,38 @@ You can now start the development server::
 
   $ circle/manage.py runserver '[::]:8080'
 
-To build the docs, install make, go to the docs folder, and run the building
-process. You might also want to serve it with Python's development server::
+Building documentation
+----------------------
+
+To build the *docs*, install *make*, go to the docs folder, and run the building
+process. ::
 
   $ sudo apt-get install make
   $ cd ~/circle/docs/
   $ make html
+
+You might also want to serve the generated docs with Python's development
+server::
+
   $ cd _build/html
   $ python -m SimpleHTTPServer 8080
+
+Configuring vim
+---------------
+
+To follow the coding style of the project more easily, you might want to
+configure vim like we do::
+  
+  $ mkdir -p ~/.vim/autoload ~/.vim/bundle
+  $ curl -Sso ~/.vim/autoload/pathogen.vim \
+  $     https://raw.github.com/tpope/vim-pathogen/master/autoload/pathogen.vim
+  $ cd ~/.vim; mkdir -p bundle; cd bundle && git clone \
+  $     git://github.com/klen/python-mode.git
+  $ cat >>~/.vimrc <<END
+      filetype off
+      call pathogen#infect()
+      call pathogen#helptags()
+      filetype plugin indent on
+      syntax on
+  END
+  $ sudo pip install pyflakes rope pep8 mccabe     
