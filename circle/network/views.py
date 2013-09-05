@@ -618,11 +618,12 @@ def remove_host_group(request, **kwargs):
     # for post we actually remove the group from the host
     elif request.method == "POST":
         host.groups.remove(group)
-        messages.success(request, _("Successfully removed %(host)s from "
-                                    "%(group)s group!" % {
-                                        'host': host,
-                                        'group': group
-                                    }))
+        if not request.is_ajax():
+            messages.success(request, _("Successfully removed %(host)s from "
+                                        "%(group)s group!" % {
+                                            'host': host,
+                                            'group': group
+                                        }))
         return redirect(reverse_lazy('network.host',
                                      kwargs={'pk': kwargs['pk']}))
 
@@ -633,9 +634,10 @@ def add_host_group(request, **kwargs):
         host = Host.objects.get(pk=kwargs['pk'])
         group = Group.objects.get(pk=group_pk)
         host.groups.add(group)
-        messages.success(request, _("Successfully added %(host)s to group "
-                                    "%(group)s!" % {
-                                        'host': host,
-                                        'group': group
-                                    }))
+        if not request.is_ajax():
+            messages.success(request, _("Successfully added %(host)s to group"
+                                        " %(group)s!" % {
+                                            'host': host,
+                                            'group': group
+                                        }))
         return redirect(reverse_lazy('network.host', kwargs=kwargs))
