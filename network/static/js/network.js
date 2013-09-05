@@ -3,23 +3,30 @@
 $('i[class="icon-remove"]').click(function() {
     href = $(this).parent('a').attr('href');
     csrf = getCookie('csrftoken');
-    
     var click_this = this;
 
-    bootbox.dialog("Are you sure?", [
-        {
-            "label": "Cancel",
-            "class": "btn-info",
-            "callback": function () {}
-        },
-        {
-            "label": "Remove",
-            "class": "btn-danger",
-            "callback": function() {
-                delete_rule_or_group(click_this);
+    host = $('.page-header').children('h2').text()
+    group = $(this).closest('h4').text();
+
+    text = gettext('Are you sure you want to remove host group <strong>"%(group)s"</strong> from <strong>"%(host)s"</strong>?');
+    s = interpolate(text, {'group': group, 'host': host}, true);
+    bootbox.dialog({
+        message: s,
+        buttons: {
+            cancel: {
+                'label': "Cancel",
+                'className': "btn-info",
+                'callback': function () {}
+            },
+            remove: {
+                'label': "Remove",
+                'className': "btn-danger",
+                'callback': function() {
+                    delete_rule_or_group(click_this);
+                }
             }
         }
-    ]);
+    });
     return false;
 });
 
