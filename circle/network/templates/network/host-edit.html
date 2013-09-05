@@ -7,7 +7,7 @@
 
 {% block content %}
 <div class="page-header">
-    <a href="{% url network.host_delete pk=host_pk%}" class="btn btn-danger pull-right"><i class="icon-remove-sign"></i> {% trans "Delete this host" %}</a>
+    <a href="{% url "network.host_delete" pk=host_pk%}" class="btn btn-danger pull-right"><i class="icon-remove-sign"></i> {% trans "Delete this host" %}</a>
     <h2>{{ form.hostname.value }}</h2>
 </div>
 
@@ -31,9 +31,9 @@
         {% for group in group_rule_list %}
             <div>
                 <h4 id="{{ group.pk }}_group_pk">{{ group.name }} 
-                    <a href="{% url network.remove_host_group pk=host_pk group_pk=group.pk %}?from={{ request.path }}">
+                    <a href="{% url "network.remove_host_group" pk=host_pk group_pk=group.pk %}?from={{ request.path }}">
                         <i class="icon-remove" style="vertical-align: middle;"></i></a>
-                <a href="{% url network.group group.pk %}">
+                <a href="{% url "network.group" group.pk %}">
                     <i class="icon-pencil" style="vertical-align: middle;"></i></a>
                 </h4>
                 {% render_table group.table %}
@@ -46,7 +46,7 @@
     {% if not_used_groups|length == 0 %}
       No more groups to add!
     {% else %}
-        <form action="{% url network.add_host_group pk=host_pk %}" method="POST">
+        <form action="{% url "network.add_host_group" pk=host_pk %}" method="POST">
         {% csrf_token %}
             <div class="input-group">
                 <select name="group" id="add_group" class="form-control">

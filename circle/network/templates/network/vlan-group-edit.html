@@ -7,7 +7,7 @@
 
 {% block content %}
 <div class="page-header">
-    <a href="{% url network.vlan_group_delete pk=vlangroup_pk %}" class="btn btn-danger pull-right"><i class="icon-remove-sign"></i> {% trans "Delete this group" %}</a>
+    <a href="{% url "network.vlan_group_delete" pk=vlangroup_pk %}" class="btn btn-danger pull-right"><i class="icon-remove-sign"></i> {% trans "Delete this group" %}</a>
     <h1>{{ form.name.value }}</h1>
 </div>
 

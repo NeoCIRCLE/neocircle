@@ -7,7 +7,7 @@
 
 {% block content %}
 <div class="page-header">
-    <a href="{% url network.record_delete pk=record_pk %}" class="btn btn-danger pull-right"><i class="icon-remove-sign"></i> {% trans "Delete this record" %}</a>
+    <a href="{% url "network.record_delete" pk=record_pk %}" class="btn btn-danger pull-right"><i class="icon-remove-sign"></i> {% trans "Delete this record" %}</a>
   <h2>{{ fqdn }}</h2>
 </div>
 
