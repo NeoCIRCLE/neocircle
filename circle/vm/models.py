@@ -2,10 +2,7 @@
 
 from datetime import timedelta
 import logging
-
-from . import tasks
-
-from manager import manager, scheduler
+from netaddr import EUI
 
 from django.contrib.auth.models import User
 from django.db import models
@@ -17,7 +14,10 @@ from django.utils.translation import ugettext_lazy as _
 from model_utils.models import TimeStampedModel
 
 from firewall.models import Vlan, Host
+from manager import manager, scheduler
 from storage.models import Disk
+from . import tasks
+
 
 logger = logging.getLogger(__name__)
 pwgen = User.objects.make_random_password
@@ -310,6 +310,15 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         return ('one.views.vm_show', None, {'iid': self.id})
 
     @property
+    def vm_name(self):
+        """Name of the VM instance.
+
+        This is a unique identifier as opposed to the 'name' attribute, which
+        is just for display.
+        """
+        return 'cloud-' + str(self.id)
+
+    @property
     def primary_host(self):
         interfaces = self.interface_set.select_related('host')
         hosts = [i.host for i in interfaces if i.host]
@@ -399,7 +408,7 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
 
     def get_vm_desc(self):
         return {
-            'name': 'cloud-' + self.id,
+            'name': self.vm_name,
             'vcpu': self.num_cores,
             'memory': self.ram_size,
             'memory_max': self.max_ram_size,
@@ -408,37 +417,44 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
             'boot_menu': self.boot_menu,
             'network_list': [n.get_vmnetwork_desc()
                              for n in self.interface_set.all()],
-            'disk_list': [n.get_vmdisk_desc() for n in self.disks.all()],
-            'graphics': {'type': 'vnc',
-                    'listen': '0.0.0.0',
-                    'passwd': '',
-                    'port': self.get_vnc_port()},
+            'disk_list': [d.get_vmdisk_desc() for d in self.disks.all()],
+            'graphics': {
+                'type': 'vnc',
+                'listen': '0.0.0.0',
+                'passwd': '',
+                'port': self.get_vnc_port()
+            },
             'raw_data': self.raw_data
         }
 
-    def deploy_async(self):
-        ''' Launch celery task to handle asyncron jobs.
-        '''
-        manager.deploy.apply_async(self)
+    def deploy_async(self, user=None):
+        """ Launch celery task to handle the job asynchronously.
+        """
+        manager.deploy.apply_async(self, user)
 
-    def deploy(self, user, task_uuid=None):
-        ''' Deploy new virtual machine with network
+    def deploy(self, user=None, task_uuid=None):
+        """ Deploy new virtual machine with network
         1. Schedule
-        '''
-        act = InstanceActivity(user=user, task_uuid=task_uuid)
+        """
+        act = InstanceActivity(activity_code='vm.Instance.deploy',
+                               instance=self, user=user,
+                               started=timezone.now(), task_uuid=task_uuid)
+        act.save()
+
         # Schedule
         act.update_state("PENDING")
         self.node = scheduler.get_node()
+        self.save()
 
         # Create virtual images
         act.update_state("PREPARING DISKS")
-        for disk in self.disks:
+        for disk in self.disks.all():
             disk.deploy()
 
         # Deploy VM on remote machine
         act.update_state("DEPLOYING VM")
-        tasks.create.apply_async(
-            self.get_vm_desc, queue=self.node + ".vm").get()
+        tasks.create.apply_async(self.get_vm_desc,
+                                 queue=self.node + ".vm").get()
 
         # Estabilish network connection (vmdriver)
         act.update_state("DEPLOYING NET")
@@ -447,10 +463,9 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
 
         # Resume vm
         act.update_state("BOOTING")
-        tasks.resume.apply_async(
-            "cloud-" + self.id, queue=self.node + ".vm").get()
+        tasks.resume.apply_async(self.vm_name, queue=self.node + ".vm").get()
 
-        act.finish()
+        act.finish(result='SUCCESS')
 
     def stop(self):
         # TODO implement
@@ -513,26 +528,24 @@ def delete_instance_pre(sender, instance, using, **kwargs):
 
 class InstanceActivity(TimeStampedModel):
     activity_code = models.CharField(max_length=100)
-    task_uuid = models.CharField(
-        max_length=50, unique=True, null=True, blank=True)
+    task_uuid = models.CharField(blank=True, max_length=50, null=True,
+                                 unique=True)
     instance = models.ForeignKey(Instance, related_name='activity_log')
     user = models.ForeignKey(User, blank=True, null=True)
     started = models.DateTimeField(blank=True, null=True)
     finished = models.DateTimeField(blank=True, null=True)
     result = models.TextField(blank=True, null=True)
-    status = models.CharField(default='PENDING', max_length=50)
+    state = models.CharField(default='PENDING', max_length=50)
 
-    def __init__(self):
-        # TODO
-        pass
+    def update_state(self, new_state):
+        self.state = new_state
+        self.save()
 
-    def update_state(self):
-        # TODO
-        pass
-
-    def finish(self):
-        # TODO
-        pass
+    def finish(self, result=None):
+        if not self.finished:
+            self.finished = timezone.now()
+            self.result = result
+            self.save()
 
 
 class Interface(models.Model):
@@ -543,15 +556,30 @@ class Interface(models.Model):
     host = models.ForeignKey(Host, blank=True, null=True)
     instance = models.ForeignKey(Instance, related_name='interface_set')
 
-    def mac_generator(self):
-        # MAC 02:XX:XX:X:VID
-        pass
+    @property
+    def mac(self):
+        try:
+            return self.host.mac
+        except:
+            return Interface.generate_mac(self.instance, self.vlan)
+
+    @classmethod
+    def generate_mac(cls, instance, vlan):
+        """Generate MAC address for a VM instance on a VLAN.
+        """
+        # MAC 02:XX:XX:XX:XX:XX
+        #        \________/\__/
+        #           VM ID   VLAN ID
+        i = instance.id & 0xfffffff
+        v = vlan.vid & 0xfff
+        m = (0x02 << 40) | (i << 12) | v
+        return EUI(m)
 
     def get_vmnetwork_desc(self):
         return {
             'name': 'cloud-' + self.instance.id + '-' + self.vlan.vid,
             'bridge': 'cloud',
-            'mac': self.mac_generator(),
+            'mac': self.mac,
             'ipv4': self.host.ipv4 if self.host is not None else None,
             'ipv6': self.host.ipv6 if self.host is not None else None,
             'vlan': self.vlan.vid,
@@ -563,7 +591,9 @@ class Interface(models.Model):
         """Create a new interface for an instance based on an
            InterfaceTemplate.
         """
-        host = Host(vlan=template.vlan) if template.managed else None
+        host = (Host(vlan=template.vlan, mac=cls.generate_mac(instance,
+                                                              template.vlan))
+                if template.managed else None)
         iface = cls(vlan=template.vlan, host=host, instance=instance)
         iface.save()
         return iface

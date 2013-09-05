@@ -4,10 +4,10 @@ from mancelery import celery
 
 
 @celery.task
-def deploy(instance):
+def deploy(instance, user):
     '''Create new virtual machine from VM class.
     '''
-    instance.deploy(task_uuid=deploy.request.id)
+    instance.deploy(task_uuid=deploy.request.id, user=user)
 
 
 def delete():
