@@ -1,0 +1,46 @@
+{% load i18n %}
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <div class="pull-right toolbar">
+      <div class="btn-group">
+        <a href="#vm-graph-view" class="btn btn-default btn-xs"><i class="icon-dashboard"></i></a>
+        <a href="#vm-list-view" class="btn btn-default btn-xs"><i class="icon-list"></i></a>
+      </div>
+      <span class="btn btn-default btn-xs infobtn" title="Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui.  "><i class="icon-info-sign"></i></span>
+    </div>
+    <h3 class="no-margin">
+      <i class="icon-sitemap"></i> {% trans "Compute nodes" %}
+    </h3>
+  </div>
+  <div class="panel-body" id="vm-graph-view" style="">
+    <p class="pull-right">  <input class="knob" data-fgColor="chartreuse" data-thickness=".4" data-width="60" data-height="60" data-readOnly="true" value="68"></p>
+    <p><span class="big"><big>13</big> running </span>
+    + <big>3</big> off + <big>3</big> missing</p>
+      <ul class="list-inline">
+        <li class="label label-success"><i class="icon-play-sign"></i> szilva</li>
+        <li class="label label-success"><i class="icon-play-sign"></i> korte</li>
+        <li class="label label-success"><i class="icon-play-sign"></i> korte</li>
+        <li class="label label-success"><i class="icon-play-sign"></i> cseresznye</li>
+        <li class="label label-success"><i class="icon-play-sign"></i> szilva</li>
+        <li class="label label-success"><i class="icon-play-sign"></i> szilva</li>
+        <li class="label label-success"><i class="icon-play-sign"></i> szilva</li>
+        <li class="label label-success"><i class="icon-play-sign"></i> cseresznye</li>
+        <li class="label label-success"><i class="icon-play-sign"></i> korte</li>
+        <li class="label label-success"><i class="icon-play-sign"></i> korte</li>
+        <li class="label label-success"><i class="icon-play-sign"></i> cseresznye</li>
+        <li class="label label-success"><i class="icon-play-sign"></i> cseresznye</li>
+        <li class="label label-success"><i class="icon-play-sign"></i> szilva</li>
+        <li class="label label-warning"><i class="icon-off"></i> szilva</li>
+        <li class="label label-warning"><i class="icon-off"></i> korte</li>
+        <li class="label label-warning"><i class="icon-off"></i> korte</li>
+        <li class="label label-danger"><i class="icon-question"></i> cseresznye</li>
+        <li class="label label-danger"><i class="icon-question"></i> cseresznye</li>
+        <li class="label label-danger"><i class="icon-question"></i> szilva</li>
+      </ul>
+
+    <div class="clearfix"></div>
+    <div class="text-right">
+      <a class="btn btn-primary btn-xs"><i class="icon-chevron-sign-right"></i> <strong>13</strong>  more  </a> 
+    </div>
+  </div>
+</div>

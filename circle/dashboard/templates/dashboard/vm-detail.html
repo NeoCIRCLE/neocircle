@@ -1,0 +1,73 @@
+{% extends "dashboard/base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="body-content">
+  <div class="page-header">
+    <h1>devenv <small>550.vm.ik.bme.hu</small></h1>
+  </div>
+  <div class="row">
+    <div class="col-md-4">
+      <div class="big">
+        <span class="label label-success ">RUNNING</span>
+        <div class="btn-group">
+          <button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown">Action <i class="icon-caret-down"></i></button>
+          <ul class="dropdown-menu" role="menu">
+            <li><a href="#"><i class="icon-refresh"></i> Reboot</a></li>
+            <li><a href="#"><i class="icon-off"></i> Shutdown</a></li>
+            <li><a href="#"><i class="icon-remove"></i> Discard</a></li>
+          </ul>
+        </div>
+      </div>
+      <h3>{% trans "Connection" %}</h3>
+      <input type="text" value="ssh cloud@vm.ik.bme.hu -p22312" class="form-control" readonly />
+      <dl class="dl-horizontal">
+        <dt>Etiam at felis:</dt>
+        <dd>condimentum lig igulaulal ulaligula vel</dd>
+        <dt>Vivamus nec:</dt>
+        <dd>ac metus interdum, tincidunt</dd>
+      </dl>
+    </div>
+    <div class="col-md-8">
+      <div class="panel panel-default" id="vm-detail-panel">
+        <ul class="nav nav-pills panel-heading">
+          <li class="active">
+            <a href="#home" data-toggle="pill" class="text-center">
+              <i class="icon-compass icon-2x"></i><br>
+              {% trans "Home" %}</a></li>
+          <li>
+            <a href="#resources" data-toggle="pill" class="text-center">
+              <i class="icon-tasks icon-2x"></i><br>
+              {% trans "Resources" %}</a></li>
+          <li>
+            <a href="#console" data-toggle="pill" class="text-center">
+              <i class="icon-desktop icon-2x"></i><br>
+              {% trans "Console" %}</a></li>
+          <li>
+            <a href="#access" data-toggle="pill" class="text-center">
+              <i class="icon-group icon-2x"></i><br>
+              {% trans "Access" %}</a></li>
+          <li>
+            <a href="#network" data-toggle="pill" class="text-center">
+              <i class="icon-globe icon-2x"></i><br>
+              {% trans "Network" %}</a></li>
+          <li>
+            <a href="#activity" data-toggle="pill" class="text-center">
+              <i class="icon-time icon-2x"></i><br>
+              {% trans "Activity" %}</a></li>
+        </ul>
+
+        <div class="tab-content panel-body">
+          <div class="tab-pane active" id="home">{% include "dashboard/vm-detail-home.html" %}</div>
+          <div class="tab-pane" id="resources">{% include "dashboard/vm-detail-resources.html" %}</div>
+          <div class="tab-pane" id="console">{% include "dashboard/vm-detail-console.html" %}</div>
+          <div class="tab-pane" id="access">{% include "dashboard/vm-detail-access.html" %} </div>
+          <div class="tab-pane" id="network">{% include "dashboard/vm-detail-network.html" %}</div>
+          <div class="tab-pane" id="activity">{% include "dashboard/vm-detail-activity.html" %}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

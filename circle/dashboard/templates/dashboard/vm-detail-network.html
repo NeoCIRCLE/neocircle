@@ -1,0 +1,83 @@
+{% load i18n %}
+<h2><a href="#" class="btn btn-success pull-right"><i class="icon-plus"></i> add interface</a>
+
+Interfaces</h2>
+
+<h3 class="list-group-item-heading"><i class="icon-globe"></i> vmnet </h3>
+    <div class="row">
+      <div class="col-md-5">
+        <dl>
+        <dt>IPv4 address:</dt> <dd>10.9.8.7</dd>
+        <dt>IPv6 address:</dt> <dd> 2001:2001:2001:2001:2001:2001::</dd>
+        <dt>DNS name:</dt> <dd>550.vm.ik.bme.hu</dd>
+        </dl>
+      </div>
+      <div class="col-md-7">
+        <ul class="nav nav-pills pull-right">
+          <li class="active"><a href="#ipv4" data-toggle="pill" class="text-center">IPv4</a></li>
+          <li><a href="#ipv6" data-toggle="pill" class="text-center">IPv6</a></li>
+        </ul>
+        <h4>Port access</h4>
+        <div class="tab-content">
+          <div class="tab-pane active" id="ipv4">
+            <table class="table table-striped rule-table">
+              <thead>
+                <tr><th>
+                  <i class="icon-globe icon-2x"></i>
+                  <i class="icon-long-arrow-right icon-2x"></i>
+                  </th><th>
+                  <i class="icon-shield icon-2x"></i>
+                  </th><th colspan="2">
+                  <i class="icon-long-arrow-right icon-2x"></i>
+                  <i class="icon-desktop icon-2x"></i>
+                </th></tr>
+              </thead>
+              <tbody>
+                <tr><td>vm.ik.bme.hu:22620</td><td><i class="icon-long-arrow-right"></i></td><td><abbr title="ssh">22</abbr>/tcp</td><td><a href="#" class="btn btn-link btn-xs" title="remove"><i class="icon-remove"><span class="sr-only">{% trans "remove" %}</span></i></a></td></tr>
+                <tr><td>vm.ik.bme.hu:22620</td><td><i class="icon-long-arrow-right"></i></td><td>12344/tcp</td><td><a href="#" class="btn btn-link btn-xs" title="remove"><i class="icon-remove"><span class="sr-only">{% trans "remove" %}</span></i></a></td></tr>
+                <tr><td>vm.ik.bme.hu:22620</td><td><i class="icon-long-arrow-right"></i></td><td><abbr title="http-alt">8080</abbr>/tcp</td><td><a href="#" class="btn btn-link btn-xs" title="remove"><i class="icon-remove"><span class="sr-only">{% trans "remove" %}</span></i></a></td></tr>
+              </tbody>
+              <tfoot>
+                <tr><td><i class="icon-plus"></i> <i class="icon-long-arrow-right"></i></td><td colspan="2">
+                  <div class="input-group input-group-sm">
+                  <input type="text" class="form-control" size="5" />
+                  <span class="input-group-addon">/</span>
+                  <select class="form-control"><option>tcp</option><option>udp</option></select>
+                  </div>
+                  </td><td><button type="submit" class="btn btn-success btn-sm">Add</button></td></tr>
+              </tfoot>
+            </table>
+          </div> <!-- /ipv4 -->
+          <div class="tab-pane" id="ipv6">
+            <table class="table table-striped rule-table">
+              <thead>
+                <tr><th>
+                  <i class="icon-globe icon-2x"></i>
+                </th><th>
+                  <i class="icon-long-arrow-right icon-2x"></i>
+                </th><th colspan="2">
+                  <i class="icon-desktop icon-2x"></i>
+                </th></tr>
+              </thead>
+              <tbody>
+                <tr><td>550.vm.ik.bme.hu:22</td><td><i class="icon-long-arrow-right"></i></td><td><abbr title="ssh">22</abbr>/tcp</td><td><a href="#" class="btn btn-link btn-xs" title="remove"><i class="icon-remove"><span class="sr-only">{% trans "remove" %}</span></i></a></td></tr>
+                <tr><td>550.vm.ik.bme.hu:12344</td><td><i class="icon-long-arrow-right"></i></td><td>12344/tcp</td><td><a href="#" class="btn btn-link btn-xs" title="remove"><i class="icon-remove"><span class="sr-only">{% trans "remove" %}</span></i></a></td></tr>
+                <tr><td>550.vm.ik.bme.hu:8080</td><td><i class="icon-long-arrow-right"></i></td><td><abbr title="http-alt">8080</abbr>/tcp</td><td><a href="#" class="btn btn-link btn-xs" title="remove"><i class="icon-remove"><span class="sr-only">{% trans "remove" %}</span></i></a></td></tr>
+              </tbody>
+              <tfoot>
+                <tr><td><i class="icon-plus"></i> <i class="icon-long-arrow-right"></i></td><td colspan="2">
+                  <div class="input-group input-group-sm">
+                  <input type="text" class="form-control" size="5" />
+                  <span class="input-group-addon">/</span>
+                  <select class="form-control"><option>tcp</option><option>udp</option></select>
+                  </div>
+                  </td><td><button type="submit" class="btn btn-success btn-sm">Add</button></td></tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+<h3 class="list-group-item-heading"><i class="icon-link"></i> grid (unmanaged) <a href="#" class="btn btn-danger btn-xs">remove</a></h3>
+<h3 class="list-group-item-heading"><i class="icon-link"></i> asdasd (unmanaged) <a href="#" class="btn btn-danger btn-xs">remove</a></h3>

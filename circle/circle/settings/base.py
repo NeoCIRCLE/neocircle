@@ -229,6 +229,7 @@ LOCAL_APPS = (
     'storage',
     'firewall',
     'network',
+    'dashboard',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
