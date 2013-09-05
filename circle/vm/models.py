@@ -86,8 +86,8 @@ class Node(TimeStampedModel):
 
 class NodeActivity(TimeStampedModel):
     activity_code = models.CharField(max_length=100)
-    task_uuid = models.CharField(
-        max_length=50, unique=True, null=True, blank=True)
+    task_uuid = models.CharField(blank=True, max_length=50, null=True,
+                                 unique=True)
     node = models.ForeignKey(Node, related_name='activity_log')
     user = models.ForeignKey(User, blank=True, null=True)
     started = models.DateTimeField(blank=True, null=True)
@@ -286,6 +286,8 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         kwargs.setdefault('max_ram_size', template.max_ram_size)
         kwargs.setdefault('arch', template.arch)
         kwargs.setdefault('priority', template.priority)
+        kwargs.setdefault('boot_menu', template.boot_menu)
+        kwargs.setdefault('raw_data', template.raw_data)
         kwargs.setdefault('lease', template.lease)
         kwargs.setdefault('access_method', template.access_method)
         # create instance and do additional setup
