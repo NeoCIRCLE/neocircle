@@ -296,8 +296,6 @@ CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
 # format: id: (name, port, protocol)
 VM_ACCESS_PROTOCOLS = loads(get_env_variable('DJANGO_VM_ACCESS_PROTOCOLS',
-                                             default={
-                                                 'rdp': ('rdp', 3389, 'tcp'),
-                                                 'nx': ('nx', 22, 'tcp'),
-                                                 'ssh': ('ssh', 22, 'tcp'),
-                                             }))
+					     '''{"nx": ["nx", 22, "tcp"],
+                                                 "rdp": ["rdp", 3389, "tcp"],
+                                                 "ssh": ["ssh", 22, "tcp"]}'''))
