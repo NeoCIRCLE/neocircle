@@ -3,7 +3,7 @@
 
 from os import environ
 from os.path import abspath, basename, dirname, join, normpath
-from json import loads 
+from json import loads
 from socket import SOCK_STREAM
 from sys import path
 
@@ -292,3 +292,11 @@ WSGI_APPLICATION = '%s.wsgi.application' % SITE_NAME
 FIREWALL_SETTINGS = loads(get_env_variable('DJANGO_FIREWALL_SETTINGS'))
 
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
+
+# format: id: (name, port, protocol)
+VM_ACCESS_PROTOCOLS = loads(get_env_variable('DJANGO_VM_ACCESS_PROTOCOLS',
+                                             default={
+                                                 'rdp': ('rdp', 3389, 'tcp'),
+                                                 'nx': ('nx', 22, 'tcp'),
+                                                 'ssh': ('ssh', 22, 'tcp'),
+                                             }))

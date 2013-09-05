@@ -4,6 +4,7 @@ from datetime import timedelta
 import logging
 from netaddr import EUI
 
+import django.conf
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import pre_delete
@@ -21,13 +22,7 @@ from . import tasks
 
 logger = logging.getLogger(__name__)
 pwgen = User.objects.make_random_password
-# TODO get this from config
-ACCESS_PROTOCOLS = {
-    # format: id: (name, port, protocol)
-    'rdp': ('rdp', 3389, 'tcp'),
-    'nx': ('nx', 22, 'tcp'),
-    'ssh': ('ssh', 22, 'tcp'),
-}
+ACCESS_PROTOCOLS = django.conf.settings.VM_ACCESS_PROTOCOLS
 ACCESS_METHODS = [(k, ap[0]) for k, ap in ACCESS_PROTOCOLS.iteritems()]
 
 
