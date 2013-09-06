@@ -13,9 +13,11 @@
     </h3>
   </div>
   <div class="list-group" id="vm-list-view">
-    <a href="vm/442" class="list-group-item">
-      <i class="icon-play-sign"></i> ALMA <div class="pull-right"><i class="icon-star text-primary" title="Mark as favorite."></i></div>
-    </a>
+    {% for i in instances %}
+      <a href="{% url i %}" class="list-group-item">
+	      <i class="icon-play-sign"></i> {{ i.name }} <div class="pull-right"><i class="icon-star text-primary" title="Mark as favorite."></i></div>
+      </a>
+    {% endfor %}
     <a href="vm/443" class="list-group-item">
       <i class="icon-play-sign"></i> ALMA <div class="pull-right"><i class="icon-star text-primary" title="Mark as favorite."></i></div>
     </a>
