@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from celery import Celery
 from kombu import Queue, Exchange
 from socket import gethostname

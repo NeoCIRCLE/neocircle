@@ -1,23 +1,20 @@
-#!/usr/bin/env python
-
 from datetime import timedelta
-import logging
-from netaddr import EUI
 
 import django.conf
+import logging
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
-
 from model_utils.models import TimeStampedModel
+from netaddr import EUI
 
+from . import tasks
 from firewall.models import Vlan, Host
 from manager import manager, scheduler
 from storage.models import Disk
-from . import tasks
 
 
 logger = logging.getLogger(__name__)
