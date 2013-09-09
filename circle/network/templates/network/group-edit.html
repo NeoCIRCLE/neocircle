@@ -15,5 +15,15 @@
     <div class="col-sm-6">
         {% crispy form %}
     </div>
+    <div class="col-sm-5 col-sm-offset-1">
+        <div class="page-header">
+            <h3>{% trans "Rules" %}</h3>
+        </div>
+        {% if rule_list.data.data.count > 0 %}
+            {% render_table rule_list %}
+        {% else %}
+            {% trans "No rules associated with this host group!" %}
+        {% endif %}
+    </div>
 </div>
 {% endblock %}

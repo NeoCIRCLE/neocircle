@@ -243,6 +243,14 @@ class GroupDetail(UpdateView, SuccessMessageMixin):
         if 'pk' in self.kwargs:
             return reverse_lazy('network.group', kwargs=self.kwargs)
 
+    def get_context_data(self, *args, **kwargs):
+        context = super(GroupDetail, self).get_context_data(**kwargs)
+
+        # records
+        q = Rule.objects.filter(hostgroup=self.object)
+        context['rule_list'] = SmallRuleTable(q)
+        return context
+
 
 class GroupDelete(DeleteView):
     model = Group
