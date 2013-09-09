@@ -249,6 +249,7 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
     lease = models.ForeignKey(Lease)
     access_method = models.CharField(max_length=10, choices=ACCESS_METHODS,
                                      verbose_name=_('access method'))
+    vnc_port = models.IntegerField()
     owner = models.ForeignKey(User)
 
     class Meta:
