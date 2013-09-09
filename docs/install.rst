@@ -84,7 +84,34 @@ Allow sending it in your **local** ssh configuration::
   # Content of ~/.ssh/config:
   Host *
     SendEnv GIT_*
-  
+
+Conigure RabbitMQ
+-----------------
+Delete guest user::
+
+  $ sudo rabbitmqctl delete_user guest
+
+Make a new virtual host to the AMQP server::
+
+  $ sudo rabbitmqctl add_vhost circle
+
+Create new user with a password::
+
+  $ sudo rabbitmqctl add_user cloud password
+
+Set permission of the new user on the virtual host::
+
+  $ rabbitmqctl set_permissions -p circle cloud '.*' '.*' '.*'
+
+.. note:: 
+You can check the result with this command::
+  $  rabbitmqctl list_permissions -p django
+Sample result::
+  $  Listing permissions in vhost "circle" ...
+  $  cloud .* .* .*
+  $  ...done.
+
+
 Setting up Circle itself
 ------------------------
 
