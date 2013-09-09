@@ -86,7 +86,7 @@ class BlacklistDetail(UpdateView, SuccessMessageMixin):
     model = Blacklist
     template_name = "network/blacklist-edit.html"
     form_class = BlacklistForm
-    success_message = _('Successfully modified blacklist '
+    success_message = _(u'Successfully modified blacklist '
                         '%(ipv4)s - %(type)s!')
 
     def get_success_url(self):
@@ -103,7 +103,7 @@ class BlacklistCreate(CreateView, SuccessMessageMixin):
     model = Blacklist
     template_name = "network/blacklist-create.html"
     form_class = BlacklistForm
-    success_message = _('Successfully created blacklist '
+    success_message = _(u'Successfully created blacklist '
                         '%(ipv4)s - %(type)s!')
 
 
@@ -140,7 +140,7 @@ class DomainDetail(UpdateView, SuccessMessageMixin):
     model = Domain
     template_name = "network/domain-edit.html"
     form_class = DomainForm
-    success_message = _('Successfully modified domain %(name)s!')
+    success_message = _(u'Successfully modified domain %(name)s!')
 
     def get_success_url(self):
         if 'pk' in self.kwargs:
@@ -160,7 +160,7 @@ class DomainCreate(CreateView, SuccessMessageMixin):
     model = Domain
     template_name = "network/domain-create.html"
     form_class = DomainForm
-    success_message = _('Successfully created domain %(name)s!')
+    success_message = _(u'Successfully created domain %(name)s!')
 
 
 class DomainDelete(DeleteView):
@@ -177,11 +177,11 @@ class DomainDelete(DeleteView):
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
         if unicode(self.object) != request.POST.get('confirm'):
-            messages.error(request, _("Object name does not match!"))
+            messages.error(request, _(u"Object name does not match!"))
             return self.get(request, *args, **kwargs)
 
         response = super(DomainDelete, self).delete(request, *args, **kwargs)
-        messages.success(request, _("Domain successfully deleted!"))
+        messages.success(request, _(u"Domain successfully deleted!"))
         return response
 
     def get_context_data(self, **kwargs):
@@ -230,14 +230,14 @@ class GroupCreate(CreateView, SuccessMessageMixin):
     model = Group
     template_name = "network/group-create.html"
     form_class = GroupForm
-    success_message = _('Successfully created host group %(name)s!')
+    success_message = _(u'Successfully created host group %(name)s!')
 
 
 class GroupDetail(UpdateView, SuccessMessageMixin):
     model = Group
     template_name = "network/group-edit.html"
     form_class = GroupForm
-    success_message = _('Successfully modified host group %(name)s!')
+    success_message = _(u'Successfully modified host group %(name)s!')
 
     def get_success_url(self):
         if 'pk' in self.kwargs:
@@ -287,7 +287,7 @@ class HostDetail(UpdateView, SuccessMessageMixin):
     model = Host
     template_name = "network/host-edit.html"
     form_class = HostForm
-    success_message = _('Successfully modified host %(hostname)s!')
+    success_message = _(u'Successfully modified host %(hostname)s!')
 
     def get(self, request, *args, **kwargs):
         if request.is_ajax():
@@ -351,7 +351,7 @@ class HostCreate(CreateView, SuccessMessageMixin):
     model = Host
     template_name = "network/host-create.html"
     form_class = HostForm
-    success_message = _('Successfully created host %(hostname)s!')
+    success_message = _(u'Successfully created host %(hostname)s!')
 
 
 class HostDelete(DeleteView):
@@ -383,11 +383,11 @@ class HostDelete(DeleteView):
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
         if unicode(self.object) != request.POST.get('confirm'):
-            messages.error(request, _("Object name does not match!"))
+            messages.error(request, _(u"Object name does not match!"))
             return self.get(request, *args, **kwargs)
 
         response = super(HostDelete, self).delete(request, *args, **kwargs)
-        messages.success(request, _("Host successfully deleted!"))
+        messages.success(request, _(u"Host successfully deleted!"))
         return response
 
 
@@ -403,7 +403,7 @@ class RecordDetail(UpdateView, SuccessMessageMixin):
     template_name = "network/record-edit.html"
     form_class = RecordForm
     # TODO fqdn
-    success_message = _('Successfully modified record!')
+    success_message = _(u'Successfully modified record!')
 
     def get_context_data(self, **kwargs):
         context = super(RecordDetail, self).get_context_data(**kwargs)
@@ -421,7 +421,7 @@ class RecordCreate(CreateView, SuccessMessageMixin):
     template_name = "network/record-create.html"
     form_class = RecordForm
     # TODO fqdn
-    success_message = _('Successfully created record!')
+    success_message = _(u'Successfully created record!')
 
 
 class RecordDelete(DeleteView):
@@ -447,7 +447,7 @@ class RuleDetail(UpdateView, SuccessMessageMixin):
     model = Rule
     template_name = "network/rule-edit.html"
     form_class = RuleForm
-    success_message = _('Successfully modified rule!')
+    success_message = _(u'Successfully modified rule!')
 
     def get_success_url(self):
         if 'pk' in self.kwargs:
@@ -466,7 +466,7 @@ class RuleCreate(CreateView, SuccessMessageMixin):
     model = Rule
     template_name = "network/rule-create.html"
     form_class = RuleForm
-    success_message = _('Successfully created rule!')
+    success_message = _(u'Successfully created rule!')
 
 
 class RuleDelete(DeleteView):
@@ -494,7 +494,7 @@ class VlanDetail(UpdateView, SuccessMessageMixin):
     form_class = VlanForm
     slug_field = 'vid'
     slug_url_kwarg = 'vid'
-    success_message = _('Succesfully modified vlan %(name)s!')
+    success_message = _(u'Succesfully modified vlan %(name)s!')
 
     def get_context_data(self, **kwargs):
         context = super(VlanDetail, self).get_context_data(**kwargs)
@@ -510,7 +510,7 @@ class VlanCreate(CreateView, SuccessMessageMixin):
     model = Vlan
     template_name = "network/vlan-create.html"
     form_class = VlanForm
-    success_message = _('Successfully created vlan %(name)s!')
+    success_message = _(u'Successfully created vlan %(name)s!')
 
 
 class VlanDelete(DeleteView):
@@ -531,11 +531,11 @@ class VlanDelete(DeleteView):
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
         if unicode(self.object) != request.POST.get('confirm'):
-            messages.error(request, _("Object name does not match!"))
+            messages.error(request, _(u"Object name does not match!"))
             return self.get(request, *args, **kwargs)
 
         response = super(VlanDelete, self).delete(request, *args, **kwargs)
-        messages.success(request, _("Vlan successfully deleted!"))
+        messages.success(request, _(u"Vlan successfully deleted!"))
         return response
 
     def get_context_data(self, **kwargs):
@@ -575,7 +575,7 @@ class VlanGroupDetail(UpdateView, SuccessMessageMixin):
     template_name = "network/vlan-group-edit.html"
     form_class = VlanGroupForm
     success_url = reverse_lazy('network.vlan_group_list')
-    success_message = _('Successfully modified vlan group %(name)s!')
+    success_message = _(u'Successfully modified vlan group %(name)s!')
 
     def get_context_data(self, *args, **kwargs):
         context = super(VlanGroupDetail, self).get_context_data(**kwargs)
@@ -587,7 +587,7 @@ class VlanGroupCreate(CreateView, SuccessMessageMixin):
     model = VlanGroup
     template_name = "network/vlan-group-create.html"
     form_class = VlanGroupForm
-    success_message = _('Successfully created vlan group %(name)s!')
+    success_message = _(u'Successfully created vlan group %(name)s!')
 
 
 class VlanGroupDelete(DeleteView):
@@ -619,7 +619,7 @@ def remove_host_group(request, **kwargs):
     elif request.method == "POST":
         host.groups.remove(group)
         if not request.is_ajax():
-            messages.success(request, _("Successfully removed %(host)s from "
+            messages.success(request, _(u"Successfully removed %(host)s from "
                                         "%(group)s group!" % {
                                             'host': host,
                                             'group': group
@@ -635,7 +635,7 @@ def add_host_group(request, **kwargs):
         group = Group.objects.get(pk=group_pk)
         host.groups.add(group)
         if not request.is_ajax():
-            messages.success(request, _("Successfully added %(host)s to group"
+            messages.success(request, _(u"Successfully added %(host)s to group"
                                         " %(group)s!" % {
                                             'host': host,
                                             'group': group
