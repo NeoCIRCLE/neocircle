@@ -8,8 +8,13 @@ $('i[class="icon-remove"]').click(function() {
     host = $('.page-header').children('h2').text()
     group = $(this).closest('h4').text();
 
-    text = gettext('Are you sure you want to remove host group <strong>"%(group)s"</strong> from <strong>"%(host)s"</strong>?');
-    s = interpolate(text, {'group': group, 'host': host}, true);
+    if(group.length > 0) {
+        text = gettext('Are you sure you want to remove host group <strong>"%(group)s"</strong> from <strong>"%(host)s"</strong>?');
+        s = interpolate(text, {'group': group, 'host': host}, true);
+    } else {
+        s = gettext('Are you sure you want to delete this rule?');
+    }
+
     bootbox.dialog({
         message: s,
         buttons: {
