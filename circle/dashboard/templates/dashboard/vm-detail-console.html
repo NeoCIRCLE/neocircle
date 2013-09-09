@@ -39,7 +39,6 @@
     }
 
     $('a[data-toggle$="pill"][href!="#console"]').click(function() {
-        alert('SZIA');
         if (rfb) {
             rfb.disconnect();
             rfb = 0;
@@ -50,9 +49,9 @@
     $('#sendCtrlAltDelButton').click(function() {
         rfb.sendCtrlAltDel(); return false;});
     $('#akkount-mate').click(function() {
-        alert('NEM!!!!!!444'); return false;});
+        return false;});
     $('#akkount-bd').click(function() {
-        alert('OK, ADOK!!!!!!444'); return false;});
+        return false;});
 
 
     $('a[href$="console"]').click(function() {
