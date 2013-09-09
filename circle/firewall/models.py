@@ -278,9 +278,6 @@ class Vlan(models.Model):
     def prefix6(self):
         return self.network6.prefixlen
 
-    def __unicode__(self):
-        return self.name
-
 
 class VlanGroup(models.Model):
     """
@@ -740,6 +737,12 @@ class Record(models.Model):
     @models.permalink
     def get_absolute_url(self):
         return ('network.record', None, {'pk': self.pk})
+
+    class Meta:
+        ordering = (
+            'domain',
+            'name',
+        )
 
 
 class Blacklist(models.Model):
