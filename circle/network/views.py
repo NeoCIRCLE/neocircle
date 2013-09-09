@@ -276,10 +276,9 @@ class HostList(SingleTableView):
     def get_table_data(self):
         vlan_id = self.request.GET.get('vlan')
         if vlan_id:
-            data = Host.objects.filter(vlan=vlan_id).all()
+            data = Host.objects.filter(vlan=vlan_id).select_related()
         else:
-            data = Host.objects.all()
-
+            data = Host.objects.select_related()
         return data
 
 
