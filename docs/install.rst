@@ -104,12 +104,15 @@ Set permission of the new user on the virtual host::
   $ rabbitmqctl set_permissions -p circle cloud '.*' '.*' '.*'
 
 .. note:: 
-You can check the result with this command::
-  $  rabbitmqctl list_permissions -p django
-Sample result::
-  $  Listing permissions in vhost "circle" ...
-  $  cloud .* .* .*
-  $  ...done.
+  You can check the result with this command::
+
+    $ rabbitmqctl list_permissions -p django
+
+  Sample result::
+
+    $ Listing permissions in vhost "circle" ...
+      cloud .* .* .*
+      ...done.
 
 
 Setting up Circle itself
