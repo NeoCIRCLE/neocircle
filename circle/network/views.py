@@ -188,12 +188,13 @@ class DomainDelete(DeleteView):
     def get_context_data(self, **kwargs):
         context = super(DomainDelete, self).get_context_data(**kwargs)
 
+        records_from_hosts = _(u'Records from hosts')
         deps = []
         # vlans
         vlans = Vlan.objects.filter(domain=self.object).all()
         if len(vlans) > 0:
             deps.append({
-                'name': 'Vlans',
+                'name': _('Vlans'),
                 'data': vlans
             })
 
@@ -201,7 +202,7 @@ class DomainDelete(DeleteView):
             hosts = Host.objects.filter(vlan__in=deps[0]['data'])
             if len(hosts) > 0:
                 deps.append({
-                    'name': 'Hosts',
+                    'name': _('Hosts'),
                     'data':  hosts
                 })
 
@@ -212,7 +213,7 @@ class DomainDelete(DeleteView):
                 )
                 if len(records) > 0:
                     deps.append({
-                        'name': 'Records from hosts',
+                        'name': records_from_hosts,
                         'data': records
                     })
 
@@ -220,9 +221,9 @@ class DomainDelete(DeleteView):
         if len(records) > 0:
             # to filter out doubles (records from hosts and domains)
             indexes = map(itemgetter('name'), deps)
-            n = indexes.index('Records from hosts') if len(indexes) > 0 else 0
+            n = indexes.index(records_from_hosts) if len(indexes) > 0 else 0
             deps.append({
-                'name': 'Records only from the domain',
+                'name': u'Records only from the domain',
                 'data': records.exclude(pk__in=deps[n]['data']) if n > 0
                 else records
             })
@@ -394,7 +395,7 @@ class HostDelete(DeleteView):
         records = Record.objects.filter(host=self.object).all()
         if records:
             deps.append({
-                'name': 'Records',
+                'name': _('Records'),
                 'data': records
             })
 
@@ -575,7 +576,7 @@ class VlanDelete(DeleteView):
         hosts = Host.objects.filter(vlan=self.object).all()
         if len(hosts) > 0:
             deps.append({
-                'name': 'Hosts',
+                'name': _('Hosts'),
                 'data': hosts
             })
 
@@ -583,7 +584,7 @@ class VlanDelete(DeleteView):
             records = Record.objects.filter(host__in=deps[0]['data'])
             if len(records) > 0:
                 deps.append({
-                    'name': 'Records',
+                    'name': _('Records'),
                     'data':  records
                 })
 

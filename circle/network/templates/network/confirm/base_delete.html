@@ -18,7 +18,7 @@
     {% trans "This action also <strong>removes</strong> the following" %}
         {% for dep in deps %}
         <div class="alert">
-            <strong>{% trans dep.name %}</strong>
+            <strong>{{ dep.name }}</strong>
         <ul class="">
             {{ dep.data|unordered_list }}
         </ul>
