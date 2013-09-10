@@ -18,7 +18,8 @@ from .forms import (HostForm, VlanForm, DomainForm, GroupForm, RecordForm,
 from django.contrib import messages
 from django.views.generic.edit import FormMixin
 from django.utils.translation import ugettext_lazy as _
-from django.db.models import Q
+# from django.db.models import Q
+from operator import itemgetter
 from itertools import chain
 import json
 
@@ -206,13 +207,25 @@ class DomainDelete(DeleteView):
 
                 # records
                 records = Record.objects.filter(
-                    Q(domain=self.object) | Q(host__in=deps[1]['data'])
+                    host__in=deps[1]['data']
+                    # Q(domain=self.object) | (host__in=deps[1]['data'])
                 )
                 if len(records) > 0:
                     deps.append({
-                        'name': 'Records',
+                        'name': 'Records from hosts',
                         'data': records
                     })
+
+        records = Record.objects.filter(domain=self.object)
+        if len(records) > 0:
+            # to filter out doubles (records from hosts and domains)
+            indexes = map(itemgetter('name'), deps)
+            n = indexes.index('Records from hosts') if len(indexes) > 0 else 0
+            deps.append({
+                'name': 'Records only from the domain',
+                'data': records.exclude(pk__in=deps[n]['data']) if n > 0
+                else records
+            })
 
         context['deps'] = deps
         context['confirmation'] = True
