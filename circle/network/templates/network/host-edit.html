@@ -12,10 +12,10 @@
 </div>
 
 <div class="row">
-    <div class="col-sm-8">
+    <div class="col-sm-7">
         {% crispy form %}
     </div>
-    <div class="col-sm-4">
+    <div class="col-sm-5">
         <div class="page-header">
             <a href="{% url "network.rule_create" %}?host={{ host_pk }}" class="btn btn-success pull-right btn-xs"><i class="icon-plus-sign"></i> {% trans "Add new rule" %}</a>
             <h3>{% trans "Rules" %}</h3>
