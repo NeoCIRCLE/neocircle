@@ -246,6 +246,8 @@ class GroupDetail(UpdateView, SuccessMessageMixin):
     def get_context_data(self, *args, **kwargs):
         context = super(GroupDetail, self).get_context_data(**kwargs)
 
+        context['group_pk'] = self.object.pk
+
         # records
         q = Rule.objects.filter(hostgroup=self.object)
         context['rule_list'] = SmallRuleTable(q)
@@ -474,6 +476,13 @@ class RuleCreate(CreateView, SuccessMessageMixin):
     template_name = "network/rule-create.html"
     form_class = RuleForm
     success_message = _(u'Successfully created rule!')
+
+    def get_initial(self):
+        return {
+            # 'owner': 1,
+            'host': self.request.GET.get('host'),
+            'hostgroup': self.request.GET.get('hostgroup')
+        }
 
 
 class RuleDelete(DeleteView):
