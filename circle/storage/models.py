@@ -6,12 +6,15 @@ from django.utils.translation import ugettext_lazy as _
 from django.db.models.signals import post_delete
 from model_utils.models import TimeStampedModel
 
-from .tasks import StorageDriver
+from manager import storage
+
+from . import tasks
 
 logger = logging.getLogger(__name__)
 
 
 class DataStore(models.Model):
+
     """Collection of virtual disks.
     """
     name = models.CharField(max_length=100, unique=True,
@@ -20,6 +23,7 @@ class DataStore(models.Model):
                             verbose_name=_('path'))
     hostname = models.CharField(max_length=40, unique=True,
                                 verbose_name=_('hostname'))
+
     class Meta:
         ordering = ['name']
         verbose_name = _('datastore')
@@ -30,6 +34,7 @@ class DataStore(models.Model):
 
 
 class Disk(TimeStampedModel):
+
     """A virtual disk.
     """
     TYPES = [('qcow2-norm', 'qcow2 normal'), ('qcow2-snap', 'qcow2 snapshot'),
@@ -93,6 +98,9 @@ class Disk(TimeStampedModel):
     def __unicode__(self):
         return u"%s (#%d)" % (self.name, self.id)
 
+    def deploy_async(self):
+        storage.deploy.apply_async(self)
+
     def deploy(self):
         if self.ready:
             return
@@ -105,7 +113,7 @@ class Disk(TimeStampedModel):
             'base_name': self.base.name if self.base else None,
             'type': self.type
         }
-        StorageDriver.create_disk.delay(disk_desc).get()
+        tasks.create_disk.delay(disk_desc).get()
         self.ready = True
         self.save()
 

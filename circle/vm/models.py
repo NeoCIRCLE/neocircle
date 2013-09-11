@@ -13,7 +13,7 @@ from netaddr import EUI
 
 from . import tasks
 from firewall.models import Vlan, Host
-from manager import manager, scheduler
+from manager import vm, scheduler
 from storage.models import Disk
 
 
@@ -424,7 +424,7 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
     def deploy_async(self, user=None):
         """ Launch celery task to handle the job asynchronously.
         """
-        manager.deploy.apply_async(self, user)
+        vm.deploy.apply_async(self, user)
 
     def deploy(self, user=None, task_uuid=None):
         """ Deploy new virtual machine with network
