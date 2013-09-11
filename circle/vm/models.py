@@ -301,8 +301,7 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
 
     @models.permalink
     def get_absolute_url(self):
-        # TODO is this obsolete?
-        return ('one.views.vm_show', None, {'iid': self.id})
+        return ('dashboard.views.detail', None, {'id': self.id})
 
     @property
     def vm_name(self):
