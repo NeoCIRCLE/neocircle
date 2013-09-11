@@ -255,55 +255,6 @@ function resetName() {
 }
 
 
-// on page load
-// if we are upadting
-//      - set the name and address
-// else it's a new rule so we "create" the wizard thingy
-$(function() {
-    // type is set, so it's an existing record
-    if($('#id_type :selected').val()) {
-        if($('#id_host :selected').val()) {
-            setNameAndAddress();
-        }
-    }
-    // else we are creaing a new
-    else {
-        new_record = true;
-        // hide all input containers
-        $('div[id^="div_id_"]').hide();
-        // hide the save button
-        $('#submit-id-submit').hide();
-        // 
-        $('#div_id_type .controls')
-        .addClass('input-group')
-        .append(
-            //' <a id="type_next" onclick="type_next()" class="btn btn-info">Next</a>'
-            '<span id="type_next" class="input-group-addon"><strong>' + 
-            gettext('Specify a type!') + 
-            '</strong></span>'    
-        );
-        $('#div_id_type').fadeIn();
-    }
-});
-
-// if the user choose a type 
-function type_next() {
-    if($('#div_id_type :selected').val()) {
-        $('#div_id_type .controls').removeClass('input-group');
-        $('#type_next').remove();
-        $('div[id^="div_id_"]').fadeIn();
-        $('#submit-id-submit').fadeIn();
-    // this shouldn't be called ...
-    } else {
-        message = [{
-            'message': gettext('You must choose a type'),
-            'id': 'type'
-    }];
-        appendMessage('error', message);
-    }
-    return false;
-}
-
 /*
  * error creating function
  *
@@ -338,3 +289,57 @@ $('* [id^="id_"]').focus(function() {
         $('span[id="error_1_' + $(this).attr('id') + '"]').remove();
     }
 });
+
+// on page load
+// if we are upadting
+//      - set the name and address
+// else it's a new rule so we "create" the wizard thingy
+$(function() {
+    // type is set, so it's an existing record
+    if($('#id_type :selected').val()) {
+        if($('#id_host :selected').val()) {
+            setNameAndAddress();
+        }
+    }
+    // else we are creaing a new
+    else {
+        domain = getURLParameter('domain');
+        if(domain != 'null' && domain.length > 0) {
+            new_record = false;
+        } else {
+            new_record = true;
+            // hide all input containers
+            $('div[id^="div_id_"]').hide();
+            // hide the save button
+            $('#submit-id-submit').hide();
+            // 
+            $('#div_id_type .controls')
+            .addClass('input-group')
+            .append(
+                //' <a id="type_next" onclick="type_next()" class="btn btn-info">Next</a>'
+                '<span id="type_next" class="input-group-addon"><strong>' + 
+                gettext('Specify a type!') + 
+                '</strong></span>'    
+            );
+            $('#div_id_type').fadeIn();
+        }
+    }
+});
+
+// if the user choose a type 
+function type_next() {
+    if($('#div_id_type :selected').val()) {
+        $('#div_id_type .controls').removeClass('input-group');
+        $('#type_next').remove();
+        $('div[id^="div_id_"]').fadeIn();
+        $('#submit-id-submit').fadeIn();
+    // this shouldn't be called ...
+    } else {
+        message = [{
+            'message': gettext('You must choose a type'),
+            'id': 'type'
+    }];
+        appendMessage('error', message);
+    }
+    return false;
+}

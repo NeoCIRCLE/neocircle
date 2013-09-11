@@ -459,6 +459,12 @@ class RecordCreate(CreateView, SuccessMessageMixin):
     # TODO fqdn
     success_message = _(u'Successfully created record!')
 
+    def get_initial(self):
+        return {
+            # 'owner': 1,
+            'domain': self.request.GET.get('domain'),
+        }
+
 
 class RecordDelete(DeleteView):
     model = Record
