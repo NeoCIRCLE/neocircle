@@ -18,7 +18,8 @@ class DataStore(models.Model):
                             verbose_name=_('name'))
     path = models.CharField(max_length=200, unique=True,
                             verbose_name=_('path'))
-
+    hostname = models.CharField(max_length=40, unique=True,
+                                verbose_name=_('hostname'))
     class Meta:
         ordering = ['name']
         verbose_name = _('datastore')
