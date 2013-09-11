@@ -420,6 +420,19 @@ class RecordList(SingleTableView):
     template_name = "network/record-list.html"
     table_pagination = False
 
+    def get_context_data(self, **kwargs):
+        context = super(RecordList, self).get_context_data(**kwargs)
+        context['types'] = Record.CHOICES_type
+        return context
+
+    def get_table_data(self):
+        type_id = self.request.GET.get('type')
+        if type_id:
+            data = Record.objects.filter(type=type_id).select_related()
+        else:
+            data = Record.objects.select_related()
+        return data
+
 
 class RecordDetail(UpdateView, SuccessMessageMixin):
     model = Record
