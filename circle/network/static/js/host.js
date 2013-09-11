@@ -17,12 +17,12 @@ $('i[class="icon-remove"]').click(function() {
         message: s,
         buttons: {
             cancel: {
-                'label': "Cancel",
+                'label': gettext("Cancel"),
                 'className': "btn-info",
                 'callback': function () {}
             },
             remove: {
-                'label': "Remove",
+                'label': gettext("Remove"),
                 'className': "btn-danger",
                 'callback': function() {
                     delete_rule_or_group(click_this);
