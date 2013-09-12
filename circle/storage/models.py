@@ -102,8 +102,17 @@ class Disk(TimeStampedModel):
         manager.storage.deploy.apply_async(self)
 
     def deploy(self):
+        """Reify the disk model on the associated data store.
+
+        :param self: the disk model to reify
+        :type self: storage.models.Disk
+
+        :return: True if a new reification of the disk has been created;
+                 otherwise, False.
+        :rtype: bool
+        """
         if self.ready:
-            return
+            return False
 
         disk_desc = {
             'name': self.name,
@@ -116,6 +125,7 @@ class Disk(TimeStampedModel):
         tasks.create_disk.delay(disk_desc).get()
         self.ready = True
         self.save()
+        return True
 
     @classmethod
     def delete_signal(cls, sender, instance, using, **kwargs):
