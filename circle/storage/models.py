@@ -6,7 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.db.models.signals import post_delete
 from model_utils.models import TimeStampedModel
 
-from manager import storage
+import manager.storage
 
 from . import tasks
 
@@ -99,7 +99,7 @@ class Disk(TimeStampedModel):
         return u"%s (#%d)" % (self.name, self.id)
 
     def deploy_async(self):
-        storage.deploy.apply_async(self)
+        manager.storage.deploy.apply_async(self)
 
     def deploy(self):
         if self.ready:
