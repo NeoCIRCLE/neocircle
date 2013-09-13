@@ -101,12 +101,12 @@ Create new user with a password::
 
 Set permission of the new user on the virtual host::
 
-  $ rabbitmqctl set_permissions -p circle cloud '.*' '.*' '.*'
+  $ sudo rabbitmqctl set_permissions -p circle cloud '.*' '.*' '.*'
 
 .. note:: 
   You can check the result with this command::
 
-    $ rabbitmqctl list_permissions -p django
+    $ sudo rabbitmqctl list_permissions -p circle
 
   Sample result::
 
