@@ -3,8 +3,8 @@ def get_node(instance):
     based on requirements.
     '''
     # Return first Node or None
-    from vm.models import Node
+    models = __import__('vm.models')
     try:
-        return Node.objects.all()[0]
+        return models.models.Node.objects.all()[0]
     except:
         return None
