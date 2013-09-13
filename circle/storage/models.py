@@ -6,7 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.db.models.signals import post_delete
 from model_utils.models import TimeStampedModel
 
-import manager.storage
+from manager import storage_manager
 
 from . import tasks
 
@@ -99,7 +99,7 @@ class Disk(TimeStampedModel):
         return u"%s (#%d)" % (self.name, self.id)
 
     def deploy_async(self):
-        manager.storage.deploy.apply_async(self)
+        storage_manager.deploy.apply_async(self)
 
     def deploy(self):
         """Reify the disk model on the associated data store.
@@ -115,14 +115,15 @@ class Disk(TimeStampedModel):
             return False
 
         disk_desc = {
-            'name': self.name,
+            'name': self.filename,
             'dir': self.datastore.path,
             'format': self.format,
             'size': self.size,
             'base_name': self.base.name if self.base else None,
-            'type': self.type
+            'type': 'snapshot' if self.type == 'qcow2-snap' else 'normal'
         }
-        tasks.create_disk.delay(disk_desc).get()
+        tasks.create_disk.apply_async(
+            args=[disk_desc], queue=self.datastore.hostname + ".storage").get()
         self.ready = True
         self.save()
         return True
