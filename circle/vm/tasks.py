@@ -1,4 +1,4 @@
-from manager.manager import celery
+from manager.mancelery import celery
 
 
 @celery.task(name='vmdriver.create')
