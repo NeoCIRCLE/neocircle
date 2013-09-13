@@ -222,6 +222,7 @@ THIRD_PARTY_APPS = (
     'south',
     'django_tables2',
     'crispy_forms',
+    'djcelery',
 )
 
 # Apps specific for this project go here.
@@ -231,6 +232,7 @@ LOCAL_APPS = (
     'firewall',
     'network',
     'dashboard',
+    'manager',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
