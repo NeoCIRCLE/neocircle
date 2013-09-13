@@ -13,7 +13,7 @@ from netaddr import EUI
 
 from . import tasks
 from firewall.models import Vlan, Host
-from manager import vm, scheduler
+from manager import vm_manager, scheduler
 from storage.models import Disk
 
 
@@ -35,7 +35,7 @@ class BaseResourceConfigModel(models.Model):
     arch = models.CharField(max_length=10, verbose_name=_('architecture'))
     priority = models.IntegerField(help_text=_('instance priority'))
     boot_menu = models.BooleanField(default=False)
-    raw_data = models.TextField(blank=True, null=True)
+    raw_data = models.TextField(blank=True)
 
     class Meta:
         abstract = True
@@ -242,7 +242,7 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
                                         verbose_name=_('active since'))
     node = models.ForeignKey(Node, blank=True, null=True,
                              related_name='instance_set',
-                             verbose_name=_('host nose'))
+                             verbose_name=_('host node'))
     state = models.CharField(choices=STATES, default='NOSTATE', max_length=20)
     disks = models.ManyToManyField(Disk, related_name='instance_set',
                                    verbose_name=_('disks'))
@@ -416,15 +416,15 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
                 'type': 'vnc',
                 'listen': '0.0.0.0',
                 'passwd': '',
-                'port': self.get_vnc_port()
+                'port': self.vnc_port
             },
-            'raw_data': self.raw_data
+            'raw_data': "" if not self.raw_data else self.raw_data
         }
 
     def deploy_async(self, user=None):
         """ Launch celery task to handle the job asynchronously.
         """
-        vm.deploy.apply_async(self, user)
+        vm_manager.deploy.apply_async(self, user, queue="localhost.man")
 
     def deploy(self, user=None, task_uuid=None):
         """ Deploy new virtual machine with network
@@ -437,7 +437,7 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
 
         # Schedule
         act.update_state("PENDING")
-        self.node = scheduler.get_node()
+        self.node = scheduler.get_node(self)
         self.save()
 
         # Create virtual images
@@ -447,8 +447,8 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
 
         # Deploy VM on remote machine
         act.update_state("DEPLOYING VM")
-        tasks.create.apply_async(self.get_vm_desc,
-                                 queue=self.node + ".vm").get()
+        tasks.create.apply_async(args=[self.get_vm_desc()],
+                                 queue=self.node.host.hostname + ".vm").get()
 
         # Estabilish network connection (vmdriver)
         act.update_state("DEPLOYING NET")
@@ -457,7 +457,8 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
 
         # Resume vm
         act.update_state("BOOTING")
-        tasks.resume.apply_async(self.vm_name, queue=self.node + ".vm").get()
+        tasks.resume.apply_async(args=[self.vm_name],
+                                 queue=self.node + ".vm").get()
 
         act.finish(result='SUCCESS')
 

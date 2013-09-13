@@ -8,9 +8,11 @@ def deploy(disk, user):
     disk.deploy(task_uuid=deploy.rdiskd, user=user)
 
 
+@celery.task
 def delete():
     pass
 
 
+@celery.task
 def save_as():
     pass

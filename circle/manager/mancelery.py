@@ -1,13 +1,12 @@
 from celery import Celery
 from kombu import Queue, Exchange
-from socket import gethostname
+from os import getenv
 
-
-HOSTNAME = gethostname()
+HOSTNAME = "localhost"
 
 celery = Celery('manager', backend='amqp',
-                broker='amqp://cloud:test@10.9.1.31/vmdriver',
-                include=['vmdriver_stub'])
+                broker=getenv("AMQP_URI"),
+                include=['manager.vm_manager', 'manager.storage_manager'])
 
 celery.conf.update(
     CELERY_QUEUES=(
