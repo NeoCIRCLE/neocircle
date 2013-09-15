@@ -139,7 +139,7 @@ class Firewall:
         self.iptables('-N PUB_OUT')
 
         self.iptables('-A FORWARD -m set --match-set blacklist src,dst -j DROP')
-        self.iptables('-A FORWARD -m state --state INVALID -g LOG_DROP')
+#        self.iptables('-A FORWARD -m state --state INVALID -g LOG_DROP')
         self.iptables('-A FORWARD -m state --state ESTABLISHED,RELATED '
                 '-j ACCEPT')
         self.iptables('-A FORWARD -p icmp --icmp-type echo-request '
@@ -181,6 +181,8 @@ class Firewall:
         self.iptablesnat(':INPUT ACCEPT [0:0]')
         self.iptablesnat(':OUTPUT ACCEPT [1:708]')
         self.iptablesnat(':POSTROUTING ACCEPT [1:708]')
+        self.iptablesnat('-A POSTROUTING -o pub -s 10.12.2.128/25 -j SNAT '
+                '--to-source 152.66.243.130')
 
         # portforward
         for host in self.hosts.exclude(pub_ipv4=None):
@@ -212,10 +214,16 @@ class Firewall:
         # hard-wired rules
         self.iptablesnat('-A POSTROUTING -s 10.5.0.0/16 -o vlan0003 -j SNAT '
                 '--to-source 10.3.255.254') # man elerheto legyen
-        self.iptablesnat('-A POSTROUTING -o vlan0008 -j SNAT '
-                '--to-source 10.0.0.247') # wolf network for printing
+#        self.iptablesnat('-A POSTROUTING -o vlan0008 -j SNAT '
+#                '--to-source 10.0.0.247') # wolf network for printing
         self.iptablesnat('-A POSTROUTING -s 10.3.0.0/16 -p udp --dport 53 -o vlan0002 -j SNAT '
                 '--to-source %s' % self.pub.ipv4) # kulonben nem megy a dns man-ban
+        self.iptablesnat('-A PREROUTING -d 192.168.243.1/32 -j DNAT --to-destination 152.66.243.1')
+        self.iptablesnat('-A PREROUTING -d 152.66.243.4/32 -j DNAT --to-destination 152.66.243.102')
+        self.iptablesnat('-A PREROUTING -d 152.66.243.1/32 -p tcp --dport smtp -j DNAT --to-destination 152.66.243.102')
+        self.iptablesnat('-A PREROUTING -d 152.66.243.1/32 -p tcp --dport smtps -j DNAT --to-destination 152.66.243.102')
+        self.iptablesnat('-A PREROUTING -d 152.66.243.130/32 -p udp --dport 1194 -j DNAT --to-destination 10.12.255.253')
+
 
         self.iptablesnat('COMMIT')
 
@@ -346,6 +354,8 @@ def ipv6_to_arpa(ipv6):
             octets.insert(0, int(part[3], 16))
     return '.'.join(['%1x' % x for x in octets]) + '.ip6.arpa'
 
+def txt_to_octal(txt):
+    return '\\' + '\\'.join(['%03o' % ord(x) for x in txt])
 
 # =fqdn:ip:ttl          A, PTR
 # &fqdn:ip:x:ttl        NS
@@ -354,6 +364,7 @@ def ipv6_to_arpa(ipv6):
 # ^                     PTR
 # C                     CNAME
 # :                     generic
+# 'fqdn:s:ttl           TXT
 
 def dns():
     vlans = models.Vlan.objects.all()
@@ -405,6 +416,8 @@ def dns():
                      'ttl': d['ttl']})
         elif d['type'] == 'PTR':
             DNS.append("^%s:%s:%s" % (d['name'], d['address'], d['ttl']))
+        elif d['type'] == 'TXT':
+            DNS.append("'%s:%s:%s" % (d['name'], txt_to_octal(d['description']), d['ttl']))
 
     return DNS
     process = subprocess.Popen(['/usr/bin/ssh', 'tinydns@%s' %

@@ -393,6 +393,7 @@ class Record(models.Model):
             return {'name': name,
                     'type': self.type,
                     'ttl': self.ttl,
+                    'description': self.description,
                     'address': address}
 
 class Blacklist(models.Model):

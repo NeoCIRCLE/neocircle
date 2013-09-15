@@ -34,6 +34,7 @@ class Periodic(PeriodicTask):
         if cache.get('dhcp_lock'):
             cache.delete("dhcp_lock")
             reload_dhcp_task.delay(dhcp())
+            reload_dhcp_task.apply_async((dhcp(), ), queue='dhcp2')
             print "dhcp ujratoltese kesz"
 
         if cache.get('firewall_lock'):
@@ -41,6 +42,7 @@ class Periodic(PeriodicTask):
             ipv4 = Firewall().get()
             ipv6 = Firewall(True).get()
             reload_firewall_task.delay(ipv4, ipv6)
+            reload_firewall_task.apply_async((ipv4, ipv6), queue='firewall2')
             print "firewall ujratoltese kesz"
 
         if cache.get('blacklist_lock'):
