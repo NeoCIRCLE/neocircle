@@ -75,6 +75,9 @@ class Node(TimeStampedModel):
         """
         pass  # TODO implement check
 
+    def __unicode__(self):
+        return self.name
+
 
 class NodeActivity(TimeStampedModel):
     activity_code = models.CharField(max_length=100)
@@ -118,6 +121,9 @@ class Lease(models.Model):
     @delete_interval.setter
     def delete_interval(self, value):
         self.delete_interval_seconds = value.seconds
+
+    def __unicode__(self):
+        return self.name
 
 
 class InstanceTemplate(BaseResourceConfigModel, TimeStampedModel):
