@@ -64,6 +64,14 @@ Also, create a new database and user::
   $ sudo -u postgres psql <<<"ALTER USER circle WITH PASSWORD 'circle';"
   $ sudo -u postgres createdb circle -O circle
 
+Configure RabbitMQ: remove the guest user, add virtual host and user with
+proper permissions::
+
+  $ sudo rabbitmqctl delete_user guest
+  $ sudo rabbitmqctl add_vhost circle
+  $ sudo rabbitmqctl add_user cloud password
+  $ sudo rabbitmqctl set_permissions -p circle cloud '.*' '.*' '.*'
+
 Enable SSH server to accept your name and address from your environment::
 
   $ sudo sed -i /etc/ssh/sshd_config -e '$ a AcceptEnv GIT_*'
@@ -84,35 +92,6 @@ Allow sending it in your **local** ssh configuration::
   # Content of ~/.ssh/config:
   Host *
     SendEnv GIT_*
-
-Conigure RabbitMQ
------------------
-Delete guest user::
-
-  $ sudo rabbitmqctl delete_user guest
-
-Make a new virtual host to the AMQP server::
-
-  $ sudo rabbitmqctl add_vhost circle
-
-Create new user with a password::
-
-  $ sudo rabbitmqctl add_user cloud password
-
-Set permission of the new user on the virtual host::
-
-  $ sudo rabbitmqctl set_permissions -p circle cloud '.*' '.*' '.*'
-
-.. note:: 
-  You can check the result with this command::
-
-    $ sudo rabbitmqctl list_permissions -p circle
-
-  Sample result::
-
-    $ Listing permissions in vhost "circle" ...
-      cloud .* .* .*
-      ...done.
 
 
 Setting up Circle itself
@@ -137,6 +116,7 @@ Set up default Circle configuration and activate the virtual environment::
   export DJANGO_FIREWALL_SETTINGS='{"dns_ip": "152.66.243.60", "dns_hostname":
               "localhost", "dns_ttl": "300", "reload_sleep": "10",
               "rdns_ip": "152.66.243.60", "default_vlangroup": "publikus"}'
+  export AMQP_URI='amqp://cloud:password@localhost:5672/circle'
   END
   $ workon circle
   $ cd ~/circle
@@ -154,6 +134,16 @@ You can now start the development server::
 
   $ circle/manage.py runserver '[::]:8080'
 
+You will also need to run a local Celery worker::
+
+  $ circle/manage.py celery worker -A manager.mancelery
+
+.. note::
+  You might run the Celery worker (and also the development server) in GNU
+  Screen, or use Upstart::
+    $ sudo cp miscellaneous/mancelery.conf /etc/init/
+    $ sudo start mancelery
+
 Building documentation
 ----------------------
 
@@ -167,8 +157,7 @@ process. ::
 You might also want to serve the generated docs with Python's development
 server::
 
-  $ cd _build/html
-  $ python -m SimpleHTTPServer 8080
+  $ (cd _build/html && python -m SimpleHTTPServer 8080)
 
 Configuring vim
 ---------------
@@ -178,9 +167,9 @@ configure vim like we do::
   
   $ mkdir -p ~/.vim/autoload ~/.vim/bundle
   $ curl -Sso ~/.vim/autoload/pathogen.vim \
-  $     https://raw.github.com/tpope/vim-pathogen/master/autoload/pathogen.vim
+        https://raw.github.com/tpope/vim-pathogen/master/autoload/pathogen.vim
   $ cd ~/.vim; mkdir -p bundle; cd bundle && git clone \
-  $     git://github.com/klen/python-mode.git
+        git://github.com/klen/python-mode.git
   $ cat >>~/.vimrc <<END
       filetype off
       call pathogen#infect()
