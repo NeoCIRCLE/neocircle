@@ -55,8 +55,8 @@ class DomainForm(ModelForm):
             Fieldset(
                 '',
                 'name',
-                'owner',
                 'ttl',
+                'owner',
             ),
         ),
         FormActions(
