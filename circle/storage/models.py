@@ -86,7 +86,7 @@ class Disk(TimeStampedModel):
         if self.type in ['qcow2-snap', 'raw-rw']:
             raise self.WrongDiskTypeError(self.type)
 
-        filename = str(uuid.uuid4())
+        filename = self.filename if self.type == 'iso' else str(uuid.uuid4())
         new_type = {
             'qcow2-norm': 'qcow2-snap',
             'iso': 'iso',
