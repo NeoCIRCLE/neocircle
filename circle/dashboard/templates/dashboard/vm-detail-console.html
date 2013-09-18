@@ -61,13 +61,13 @@
         $("#vm-detail-pane").addClass("col-md-12");
         WebUtil.init_logging('warn');
 
-        host = '10.9.2.232';
-        port = '443';
-        password = 'tbdgpzhtow';
-        path = 'vnc/';
+        host = window.location.hostname;
+        port = window.location.port == ""?"443":window.location.port ;
+        password = 'autogiro';
+        path = 'vnc/?d={{ vnc_url }}';
 
         rfb = new RFB({'target': $D('noVNC_canvas'),
-                       'encrypt': true,// (window.location.protocol === "https:"),
+                       'encrypt': (window.location.protocol === "https:"),
                        'true_color':   true,
                        'local_cursor': true,
                        'shared':       true,

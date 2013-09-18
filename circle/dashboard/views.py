@@ -1,5 +1,6 @@
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, DetailView
 from vm.models import Instance
+from django.core import signing
 
 
 class IndexView(TemplateView):
@@ -18,5 +19,19 @@ class IndexView(TemplateView):
         return context
 
 
-class VmDetailView(TemplateView):
+class VmDetailView(DetailView):
     template_name = "dashboard/vm-detail.html"
+    queryset = Instance.objects.all()
+
+    def get_context_data(self, **kwargs):
+        context = super(DetailView, self).get_context_data(**kwargs)
+        instance = context['instance']
+        if instance.node:
+            port = instance.vnc_port
+            host = instance.node.host.ipv4
+            value = signing.dumps({'host': host,
+                                   'port': port}, key='asdasd')
+            context.update({
+                'vnc_url': '%s' % value
+            })
+        return context

@@ -359,7 +359,7 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
 
     @permalink
     def get_absolute_url(self):
-        return ('dashboard.views.detail', None, {'id': self.id})
+        return ('dashboard.views.detail', None, {'pk': self.id})
 
     @property
     def vm_name(self):
