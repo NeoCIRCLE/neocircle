@@ -298,8 +298,7 @@ CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
 # format: id: (name, port, protocol)
 VM_ACCESS_PROTOCOLS = loads(get_env_variable('DJANGO_VM_ACCESS_PROTOCOLS',
-                                             '''{"nx": ["nx", 22, "tcp"],
-                                                 "rdp": ["rdp", 3389, "tcp"],
-                                                 "ssh": ["ssh", 22, "tcp"]}'''))
-
+                                             '''{"nx": ["NX", 22, "tcp"],
+                                                 "rdp": ["RDP", 3389, "tcp"],
+                                                 "ssh": ["SSH", 22, "tcp"]}'''))
 VM_SCHEDULER = 'manager.scheduler'

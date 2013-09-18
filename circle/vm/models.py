@@ -4,7 +4,9 @@ import logging
 
 import django.conf
 from django.contrib.auth.models import User
-from django.db import models
+from django.db.models import (Model, ForeignKey, ManyToManyField, IntegerField,
+                              DateTimeField, BooleanField, TextField,
+                              CharField, permalink)
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
 from django.utils import timezone
@@ -22,22 +24,34 @@ logger = logging.getLogger(__name__)
 pwgen = User.objects.make_random_password
 scheduler = import_module(name=django.conf.settings.VM_SCHEDULER)
 ACCESS_PROTOCOLS = django.conf.settings.VM_ACCESS_PROTOCOLS
-ACCESS_METHODS = [(k, ap[0]) for k, ap in ACCESS_PROTOCOLS.iteritems()]
+ACCESS_METHODS = [(key, name) for key, (name, port, transport)
+                  in ACCESS_PROTOCOLS.iteritems()]
+ARCHITECTURES = (('x86_64', 'x86-64 (64 bit)'),
+                 ('i686', 'x86 (32 bit)'))
 
 
-class BaseResourceConfigModel(models.Model):
+class BaseResourceConfigModel(Model):
 
     """Abstract base class for models with base resource configuration
        parameters.
     """
-    num_cores = models.IntegerField(help_text=_('Number of CPU cores.'))
-    ram_size = models.IntegerField(help_text=_('Mebibytes of memory.'))
-    max_ram_size = models.IntegerField(help_text=_('Upper memory size limit '
-                                                   'for balloning.'))
-    arch = models.CharField(max_length=10, verbose_name=_('architecture'))
-    priority = models.IntegerField(help_text=_('instance priority'))
-    boot_menu = models.BooleanField(default=False)
-    raw_data = models.TextField(blank=True)
+    num_cores = IntegerField(verbose_name=_('number of cores'),
+                             help_text=_('Number of virtual CPU cores '
+                                         'available to the virtual machine.'))
+    ram_size = IntegerField(verbose_name=_('RAM size'),
+                            help_text=_('Mebibytes of memory.'))
+    max_ram_size = IntegerField(verbose_name=_('maximal RAM size'),
+                                help_text=_('Upper memory size limit '
+                                            'for balloning.'))
+    arch = CharField(max_length=10, verbose_name=_('architecture'),
+                     choices=ARCHITECTURES)
+    priority = IntegerField(verbose_name=_('priority'),
+                            help_text=_('CPU priority.'))
+    boot_menu = BooleanField(verbose_name=_('boot menu'), default=False,
+                             help_text=_(
+                                 'Show boot device selection menu on boot.'))
+    raw_data = TextField(verbose_name=_('raw_data'), blank=True, help_text=_(
+        'Additional libvirt domain parameters in XML format.'))
 
     class Meta:
         abstract = True
@@ -47,8 +61,9 @@ class NamedBaseResourceConfig(BaseResourceConfigModel, TimeStampedModel):
 
     """Pre-created, named base resource configurations.
     """
-    name = models.CharField(max_length=50, unique=True,
-                            verbose_name=_('name'))
+    name = CharField(max_length=50, unique=True,
+                     verbose_name=_('name'), help_text=
+                     _('Name of base resource configuration.'))
 
     def __unicode__(self):
         return self.name
@@ -56,17 +71,23 @@ class NamedBaseResourceConfig(BaseResourceConfigModel, TimeStampedModel):
 
 class Node(TimeStampedModel):
 
-    """A VM host machine.
+    """A VM host machine, a hypervisor.
     """
-    name = models.CharField(max_length=50, unique=True,
-                            verbose_name=_('name'))
-    num_cores = models.IntegerField(help_text=_('Number of CPU cores.'))
-    ram_size = models.IntegerField(help_text=_('Mebibytes of memory.'))
-    priority = models.IntegerField(help_text=_('node usage priority'))
-    host = models.ForeignKey(Host)
-    enabled = models.BooleanField(default=False,
-                                  help_text=_('Indicates whether the node can '
-                                              'be used for hosting.'))
+    name = CharField(max_length=50, unique=True,
+                     verbose_name=_('name'),
+                     help_text=_('Human readable name of node.'))
+    num_cores = IntegerField(verbose_name=_('number of cores'),
+                             help_text=_('Number of CPU threads '
+                                         'available to the virtual machines.'))
+    ram_size = IntegerField(verbose_name=_('RAM size'),
+                            help_text=_('Mebibytes of memory.'))
+    priority = IntegerField(verbose_name=_('priority'),
+                            help_text=_('Node usage priority.'))
+    host = ForeignKey(Host, verbose_name=_('host'),
+                      help_text=_('Host in firewall.'))
+    enabled = BooleanField(verbose_name=_('enabled'), default=False,
+                           help_text=_('Indicates whether the node can '
+                                       'be used for hosting.'))
 
     class Meta:
         permissions = ()
@@ -82,28 +103,39 @@ class Node(TimeStampedModel):
 
 
 class NodeActivity(TimeStampedModel):
-    activity_code = models.CharField(max_length=100)
-    task_uuid = models.CharField(blank=True, max_length=50, null=True,
-                                 unique=True)
-    node = models.ForeignKey(Node, related_name='activity_log')
-    user = models.ForeignKey(User, blank=True, null=True)
-    started = models.DateTimeField(blank=True, null=True)
-    finished = models.DateTimeField(blank=True, null=True)
-    result = models.TextField(blank=True, null=True)
-    status = models.CharField(default='PENDING', max_length=50)
+    activity_code = CharField(verbose_name=_('activity code'),
+                              max_length=100)  # TODO
+    task_uuid = CharField(verbose_name=_('task_uuid'), blank=True,
+                          max_length=50, null=True, unique=True, help_text=_(
+                              'Celery task unique identifier.'))
+    node = ForeignKey(Node, verbose_name=_('node'),
+                      related_name='activity_log',
+                      help_text=_('Node this activity works on.'))
+    user = ForeignKey(User, verbose_name=_('user'), blank=True, null=True,
+                      help_text=_('The person who started this activity.'))
+    started = DateTimeField(verbose_name=_('started at'),
+                            blank=True, null=True,
+                            help_text=_('Time of activity initiation.'))
+    finished = DateTimeField(verbose_name=_('finished at'),
+                             blank=True, null=True,
+                             help_text=_('Time of activity finalization.'))
+    result = TextField(verbose_name=_('result'), blank=True, null=True,
+                       help_text=_('Human readable result of activity.'))
+    status = CharField(verbose_name=_('status'), default='PENDING',
+                       max_length=50, help_text=_('Actual state of activity'))
 
 
-class Lease(models.Model):
+class Lease(Model):
 
     """Lease times for VM instances.
 
     Specifies a time duration until suspension and deletion of a VM
     instance.
     """
-    name = models.CharField(max_length=100, unique=True,
-                            verbose_name=_('name'))
-    suspend_interval_seconds = models.IntegerField()
-    delete_interval_seconds = models.IntegerField()
+    name = CharField(max_length=100, unique=True,
+                     verbose_name=_('name'))
+    suspend_interval_seconds = IntegerField(verbose_name=_('suspend interval'))
+    delete_interval_seconds = IntegerField(verbose_name=_('delete interval'))
 
     class Meta:
         ordering = ['name', ]
@@ -144,27 +176,31 @@ class InstanceTemplate(BaseResourceConfigModel, TimeStampedModel):
       * lease times (suspension & deletion)
       * time of creation and last modification
     """
-    STATES = [('NEW', _('new')),  # template has just been created
+    STATES = [('NEW', _('new')),        # template has just been created
               ('SAVING', _('saving')),  # changes are being saved
-              ('READY', _('ready'))]  # template is ready for instantiation
-    name = models.CharField(max_length=100, unique=True,
-                            verbose_name=_('name'))
-    description = models.TextField(verbose_name=_('description'),
-                                   blank=True)
-    parent = models.ForeignKey('self', null=True, blank=True,
-                               verbose_name=_('parent template'))
-    system = models.TextField(verbose_name=_('operating system'),
-                              blank=True,
-                              help_text=(_('Name of operating system in '
-                                           'format like "%s".') %
-                                         'Ubuntu 12.04 LTS Desktop amd64'))
-    access_method = models.CharField(max_length=10, choices=ACCESS_METHODS,
-                                     verbose_name=_('access method'))
-    state = models.CharField(max_length=10, choices=STATES,
-                             default='NEW')
-    disks = models.ManyToManyField(Disk, verbose_name=_('disks'),
-                                   related_name='template_set')
-    lease = models.ForeignKey(Lease, related_name='template_set')
+              ('READY', _('ready'))]    # template is ready for instantiation
+    name = CharField(max_length=100, unique=True,
+                     verbose_name=_('name'),
+                     help_text=_('Human readable name of template.'))
+    description = TextField(verbose_name=_('description'), blank=True)
+    parent = ForeignKey('self', null=True, blank=True,
+                        verbose_name=_('parent template'),
+                        help_text=_('Template which this one is derived of.'))
+    system = TextField(verbose_name=_('operating system'),
+                       blank=True,
+                       help_text=(_('Name of operating system in '
+                                    'format like "%s".') %
+                                  'Ubuntu 12.04 LTS Desktop amd64'))
+    access_method = CharField(max_length=10, choices=ACCESS_METHODS,
+                              verbose_name=_('access method'),
+                              help_text=_('Primary remote access method.'))
+    state = CharField(max_length=10, choices=STATES, default='NEW')
+    disks = ManyToManyField(Disk, verbose_name=_('disks'),
+                            related_name='template_set',
+                            help_text=_('Disks which are to be mounted.'))
+    lease = ForeignKey(Lease, related_name='template_set',
+                       verbose_name=_('lease'),
+                       help_text=_('Expiration times.'))
 
     class Meta:
         ordering = ['name', ]
@@ -190,16 +226,20 @@ class InstanceTemplate(BaseResourceConfigModel, TimeStampedModel):
             return 'linux'
 
 
-class InterfaceTemplate(models.Model):
+class InterfaceTemplate(Model):
 
     """Network interface template for an instance template.
 
     If the interface is managed, a host will be created for it.
     """
-    vlan = models.ForeignKey(Vlan)
-    managed = models.BooleanField(default=True)
-    template = models.ForeignKey(InstanceTemplate,
-                                 related_name='interface_set')
+    vlan = ForeignKey(Vlan, verbose_name=_('vlan'),
+                      help_text=_('Network the interface belongs to.'))
+    managed = BooleanField(verbose_name=_('managed'), default=True,
+                           help_text=_('If a firewall host (i.e. IP address '
+                                       'association) should be generated.'))
+    template = ForeignKey(InstanceTemplate, verbose_name=_('template'),
+                          related_name='interface_set',
+                          help_text=_())
 
     class Meta:
         permissions = ()
@@ -233,32 +273,42 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
               ('SHUTOFF', _('shutoff')),
               ('CRASHED', _('crashed')),
               ('PMSUSPENDED', _('pmsuspended'))]  # libvirt domain states
-    name = models.CharField(blank=True, max_length=100, verbose_name=_('name'))
-    description = models.TextField(blank=True, verbose_name=_('description'))
-    template = models.ForeignKey(InstanceTemplate, blank=True, null=True,
-                                 related_name='instance_set',
-                                 verbose_name=_('template'))
-    pw = models.CharField(help_text=_('Original password of instance'),
-                          max_length=20, verbose_name=_('password'))
-    time_of_suspend = models.DateTimeField(blank=True, default=None, null=True,
-                                           verbose_name=_('time of suspend'))
-    time_of_delete = models.DateTimeField(blank=True, default=None, null=True,
-                                          verbose_name=_('time of delete'))
-    active_since = models.DateTimeField(blank=True, null=True,
-                                        help_text=_('Time stamp of successful '
-                                                    'boot report.'),
-                                        verbose_name=_('active since'))
-    node = models.ForeignKey(Node, blank=True, null=True,
-                             related_name='instance_set',
-                             verbose_name=_('host node'))
-    state = models.CharField(choices=STATES, default='NOSTATE', max_length=20)
-    disks = models.ManyToManyField(Disk, related_name='instance_set',
-                                   verbose_name=_('disks'))
-    lease = models.ForeignKey(Lease)
-    access_method = models.CharField(max_length=10, choices=ACCESS_METHODS,
-                                     verbose_name=_('access method'))
-    vnc_port = models.IntegerField()
-    owner = models.ForeignKey(User)
+    name = CharField(blank=True, max_length=100, verbose_name=_('name'),
+                     help_text=_('Human readable name of instance.'))
+    description = TextField(blank=True, verbose_name=_('description'))
+    template = ForeignKey(InstanceTemplate, blank=True, null=True,
+                          related_name='instance_set',
+                          help_text=_('Template the instance derives from.'),
+                          verbose_name=_('template'))
+    pw = CharField(help_text=_('Original password of the instance.'),
+                   max_length=20, verbose_name=_('password'))
+    time_of_suspend = DateTimeField(blank=True, default=None, null=True,
+                                    verbose_name=_('time of suspend'),
+                                    help_text=_('Proposed time of automatic '
+                                                'suspension.'))
+    time_of_delete = DateTimeField(blank=True, default=None, null=True,
+                                   verbose_name=_('time of delete'),
+                                   help_text=_('Proposed time of automatic '
+                                               'suspension.'))
+    active_since = DateTimeField(blank=True, null=True,
+                                 help_text=_('Time stamp of successful '
+                                             'boot report.'),
+                                 verbose_name=_('active since'))
+    node = ForeignKey(Node, blank=True, null=True,
+                      related_name='instance_set',
+                      help_text=_('Current hypervisor of this instance.'),
+                      verbose_name=_('host node'))
+    state = CharField(choices=STATES, default='NOSTATE', max_length=20)
+    disks = ManyToManyField(Disk, related_name='instance_set',
+                            help_text=_('Set of mounted disks.'),
+                            verbose_name=_('disks'))
+    lease = ForeignKey(Lease, help_text=_('Preferred expiration periods.'))
+    access_method = CharField(max_length=10, choices=ACCESS_METHODS,
+                              help_text=_('Primary remote access method.'),
+                              verbose_name=_('access method'))
+    vnc_port = IntegerField(verbose_name=_('vnc_port'),
+                            help_text=_('TCP port where VNC console listens.'))
+    owner = ForeignKey(User)
 
     class Meta:
         ordering = ['pk', ]
@@ -307,7 +357,7 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
 
         return inst
 
-    @models.permalink
+    @permalink
     def get_absolute_url(self):
         return ('dashboard.views.detail', None, {'id': self.id})
 
@@ -560,15 +610,17 @@ def delete_instance_pre(sender, instance, using, **kwargs):
 
 
 class InstanceActivity(TimeStampedModel):
-    activity_code = models.CharField(max_length=100)
-    task_uuid = models.CharField(blank=True, max_length=50, null=True,
-                                 unique=True)
-    instance = models.ForeignKey(Instance, related_name='activity_log')
-    user = models.ForeignKey(User, blank=True, null=True)
-    started = models.DateTimeField(blank=True, null=True)
-    finished = models.DateTimeField(blank=True, null=True)
-    result = models.TextField(blank=True, null=True)
-    state = models.CharField(default='PENDING', max_length=50)
+    activity_code = CharField(verbose_name=_('activity_code'), max_length=100)
+    task_uuid = CharField(verbose_name=_('task_uuid'), blank=True,
+                          max_length=50, null=True, unique=True)
+    instance = ForeignKey(Instance, verbose_name=_('instance'),
+                          related_name='activity_log')
+    user = ForeignKey(User, verbose_name=_('user'), blank=True, null=True)
+    started = DateTimeField(verbose_name=_('started'), blank=True, null=True)
+    finished = DateTimeField(verbose_name=_('finished'), blank=True, null=True)
+    result = TextField(verbose_name=_('result'), blank=True, null=True)
+    state = CharField(verbose_name=_('state'),
+                      default='PENDING', max_length=50)
 
     def update_state(self, new_state):
         self.state = new_state
@@ -581,13 +633,15 @@ class InstanceActivity(TimeStampedModel):
             self.save()
 
 
-class Interface(models.Model):
+class Interface(Model):
 
     """Network interface for an instance.
     """
-    vlan = models.ForeignKey(Vlan, related_name="vm_interface")
-    host = models.ForeignKey(Host, blank=True, null=True)
-    instance = models.ForeignKey(Instance, related_name='interface_set')
+    vlan = ForeignKey(Vlan, verbose_name=_('vlan'),
+                      related_name="vm_interface")
+    host = ForeignKey(Host, verbose_name=_('host'),  blank=True, null=True)
+    instance = ForeignKey(Instance, verbose_name=_('instance'),
+                          related_name='interface_set')
 
     @property
     def mac(self):
