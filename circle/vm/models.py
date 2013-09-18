@@ -2,7 +2,7 @@ from datetime import timedelta
 from importlib import import_module
 import logging
 
-import django.conf.settings
+import django.conf
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import pre_delete
