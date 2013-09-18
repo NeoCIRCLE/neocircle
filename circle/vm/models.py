@@ -1,7 +1,8 @@
 from datetime import timedelta
-
-import django.conf
+from importlib import import_module
 import logging
+
+import django.conf.settings
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models.signals import pre_delete
@@ -13,12 +14,13 @@ from netaddr import EUI
 
 from . import tasks
 from firewall.models import Vlan, Host
-from manager import vm_manager, scheduler
+from manager import vm_manager
 from storage.models import Disk
 
 
 logger = logging.getLogger(__name__)
 pwgen = User.objects.make_random_password
+scheduler = import_module(name=django.conf.settings.VM_SCHEDULER)
 ACCESS_PROTOCOLS = django.conf.settings.VM_ACCESS_PROTOCOLS
 ACCESS_METHODS = [(k, ap[0]) for k, ap in ACCESS_PROTOCOLS.iteritems()]
 
@@ -443,7 +445,7 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
 
         # Schedule
         act.update_state("PENDING")
-        self.node = scheduler.get_node(self)
+        self.node = scheduler.get_node(self, Node.objects.all())
         self.save()
 
         # Create virtual images

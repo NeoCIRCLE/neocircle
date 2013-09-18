@@ -1,10 +1,8 @@
-def get_node(instance):
-    ''' Select a node for an hosting an instance
-    based on requirements.
+def get_node(instance, nodes):
+    ''' Select a node for hosting an instance based on its requirements.
     '''
     # Return first Node or None
-    models = __import__('vm.models')
     try:
-        return models.models.Node.objects.all()[0]
+        return nodes[0]
     except:
         return None
