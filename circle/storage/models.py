@@ -4,12 +4,12 @@ import logging
 import uuid
 
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
 from django.db.models.signals import post_delete
+from django.utils.translation import ugettext_lazy as _
 from model_utils.models import TimeStampedModel
+from sizefield.models import FileSizeField
 
 from manager import storage_manager
-
 import tasks
 
 logger = logging.getLogger(__name__)
@@ -46,7 +46,7 @@ class Disk(TimeStampedModel):
     filename = models.CharField(max_length=256, verbose_name=_('filename'))
     datastore = models.ForeignKey(DataStore)
     type = models.CharField(max_length=10, choices=TYPES)
-    size = models.IntegerField()
+    size = FileSizeField()
     base = models.ForeignKey('self', blank=True, null=True,
                              related_name='derivatives')
     ready = models.BooleanField(default=False)

@@ -223,6 +223,7 @@ THIRD_PARTY_APPS = (
     'django_tables2',
     'crispy_forms',
     'djcelery',
+    'sizefield',
 )
 
 # Apps specific for this project go here.

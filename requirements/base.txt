@@ -5,7 +5,9 @@ django-braces==1.2.2
 django-celery==3.0.23
 django-crispy-forms==1.4.0
 django-model-utils==1.4.0
+django-sizefield==0.4
 django-tables2==0.14.0
+django-taggit==0.10a1
 logutils==0.3.3
 netaddr==0.7.10
 South==0.8.1
