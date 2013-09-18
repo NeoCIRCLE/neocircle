@@ -778,8 +778,8 @@ class Blacklist(models.Model):
 
 
 def send_task(sender, instance, created, **kwargs):
-    from firewall.tasks import ReloadTask
-    ReloadTask.apply_async(args=[sender.__name__])
+    from firewall.tasks import reloadtask
+    reloadtask.apply_async(args=[sender.__name__])
 
 
 post_save.connect(send_task, sender=Host)

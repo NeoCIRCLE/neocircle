@@ -1,7 +1,6 @@
-from celery.task import Task, PeriodicTask
 import celery
 from django.core.cache import cache
-from firewall.fw import *
+from firewall.fw import Firewall, dhcp, dns, ipset
 import django.conf
 
 settings = django.conf.settings.FIREWALL_SETTINGS
@@ -32,11 +31,8 @@ def get_dhcp_clients_task(data):
     pass
 
 
-class Periodic(PeriodicTask):
-    run_every = timedelta(seconds=10)
-
-    def run(self, **kwargs):
-
+@celery.task
+def periodic_task():
         if cache.get('dns_lock'):
             cache.delete("dns_lock")
             reload_dns_task.delay(dns())
@@ -60,9 +56,8 @@ class Periodic(PeriodicTask):
             print "blacklist ujratoltese kesz"
 
 
-class ReloadTask(Task):
-    def run(self, type='Host'):
-
+@celery.task
+def reloadtask(type='Host'):
         if type in ["Host", "Record", "Domain", "Vlan"]:
             cache.add("dns_lock", "true", 30)
 
