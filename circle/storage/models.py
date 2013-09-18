@@ -1,6 +1,8 @@
 # coding=utf-8
 
 import logging
+import uuid
+
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.db.models.signals import post_delete
@@ -8,7 +10,7 @@ from model_utils.models import TimeStampedModel
 
 from manager import storage_manager
 
-from . import tasks
+import tasks
 
 logger = logging.getLogger(__name__)
 
@@ -39,9 +41,9 @@ class Disk(TimeStampedModel):
     """
     TYPES = [('qcow2-norm', 'qcow2 normal'), ('qcow2-snap', 'qcow2 snapshot'),
              ('iso', 'iso'), ('raw-ro', 'raw read-only'), ('raw-rw', 'raw')]
-    name = models.CharField(max_length=100, verbose_name=_('name'))
-    filename = models.CharField(max_length=256, unique=True,
-                                verbose_name=_('filename'))
+    name = models.CharField(blank=True, max_length=100,
+                            verbose_name=_('name'))
+    filename = models.CharField(max_length=256, verbose_name=_('filename'))
     datastore = models.ForeignKey(DataStore)
     type = models.CharField(max_length=10, choices=TYPES)
     size = models.IntegerField()
@@ -70,14 +72,29 @@ class Disk(TimeStampedModel):
             'raw-rw': 'raw',
         }[self.type]
 
+    class WrongDiskTypeError(Exception):
+        def __init__(self, type):
+            self.type = type
+
+        def __str__(self):
+            return ("Operation can't be invoked on a disk of type '%s'." %
+                    self.type)
+
     def get_exclusive(self):
         """Get an instance of the disk for exclusive usage.
-
-        It might mean copying the disk, creating a snapshot or creating a
-        symbolic link to a read-only image.
         """
-        # TODO implement (or call) logic
-        return self
+        if self.type in ['qcow2-snap', 'raw-rw']:
+            raise self.WrongDiskTypeError(self.type)
+
+        filename = str(uuid.uuid4())
+        new_type = {
+            'qcow2-norm': 'qcow2-snap',
+            'iso': 'iso',
+            'raw-ro': 'raw-rw',
+        }[self.type]
+
+        return Disk(base=self, datastore=self.datastore, filename=filename,
+                    name=self.name, size=self.size, type=new_type)
 
     @property
     def device_type(self):
