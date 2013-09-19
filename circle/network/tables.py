@@ -132,7 +132,8 @@ class VlanTable(Table):
     class Meta:
         model = Vlan
         attrs = {'class': 'table table-striped table-condensed'}
-        fields = ('vid', 'name', 'interface', 'ipv4', 'ipv6', 'domain', )
+        fields = ('vid', 'name', 'interface', 'network4', 'network6',
+                  'domain', )
         order_by = 'vid'
 
 

@@ -201,18 +201,14 @@ class VlanForm(ModelForm):
             ),
             Fieldset(
                 'IPv4',
-                'net4',
-                'prefix4',
-                'ipv4',
+                'network4',
                 'snat_to',
                 'snat_ip',
                 'dhcp_pool',
             ),
             Fieldset(
                 'IPv6',
-                'net6',
-                'prefix6',
-                'ipv6',
+                'network6',
             ),
             Fieldset(
                 'Domain name service',
