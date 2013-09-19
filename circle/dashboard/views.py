@@ -1,4 +1,6 @@
 from django.views.generic import TemplateView, DetailView
+# from django_tables2 import SingleTableView
+
 from vm.models import Instance
 from django.core import signing
 
@@ -35,3 +37,7 @@ class VmDetailView(DetailView):
                 'vnc_url': '%s' % value
             })
         return context
+
+
+class VmList(TemplateView):
+    template_name = "dashboard/vm-list.html"
