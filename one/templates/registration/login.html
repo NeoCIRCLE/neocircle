@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load staticfiles %}
+{% get_current_language as LANGUAGE_CODE %}
+{% block content %}
+<form action="/ufo/" method="POST">
+    {% csrf_token %}
+    {{ form }}
+    <input type="submit" value="LOGIN" />
+</form>
+{% endblock %}

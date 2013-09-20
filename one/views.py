@@ -4,6 +4,7 @@ from django.conf import settings
 from datetime import timedelta as td
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.contrib.auth.views import login as auth_login
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.core import signing, urlresolvers
@@ -640,5 +641,10 @@ def sites(request, site):
         return render_to_response("sites/%s.html" % site, RequestContext(request, {}))
     else:
         return redirect(home)
+
+
+def login(request, *args, **kwargs):
+    request.session.set_expiry(0)
+    return auth_login(request, *args, **kwargs)
 
 # vim: et sw=4 ai fenc=utf8 smarttab :
