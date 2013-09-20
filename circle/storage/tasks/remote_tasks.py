@@ -1,7 +1,4 @@
-import celery
-import logging
-
-logger = logging.getLogger(__name__)
+from manager.mancelery import celery
 
 
 @celery.task(name='storagedriver.list_disks')

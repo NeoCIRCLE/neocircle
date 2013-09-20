@@ -8,8 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 from model_utils.models import TimeStampedModel
 from sizefield.models import FileSizeField
 
-from manager import storage_manager
-import tasks
+from .tasks import local_tasks, remote_tasks
 
 logger = logging.getLogger(__name__)
 
@@ -115,7 +114,7 @@ class Disk(TimeStampedModel):
         return u"%s (#%d)" % (self.name, self.id)
 
     def deploy_async(self):
-        storage_manager.deploy.apply_async(self)
+        local_tasks.deploy.apply_async(self)
 
     def deploy(self):
         """Reify the disk model on the associated data store.
@@ -138,7 +137,7 @@ class Disk(TimeStampedModel):
             'base_name': self.base.name if self.base else None,
             'type': 'snapshot' if self.type == 'qcow2-snap' else 'normal'
         }
-        tasks.create_disk.apply_async(
+        remote_tasks.create_disk.apply_async(
             args=[disk_desc], queue=self.datastore.hostname + ".storage").get()
         self.ready = True
         self.save()

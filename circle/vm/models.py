@@ -14,9 +14,8 @@ from django.utils.translation import ugettext_lazy as _
 from model_utils.models import TimeStampedModel
 from netaddr import EUI
 
-from . import tasks
+from .tasks import local_tasks, remote_tasks
 from firewall.models import Vlan, Host
-from manager import vm_manager
 from storage.models import Disk
 
 
@@ -482,7 +481,8 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
     def deploy_async(self, user=None):
         """ Launch celery task to handle the job asynchronously.
         """
-        vm_manager.deploy.apply_async(args=[self, user], queue="localhost.man")
+        local_tasks.deploy.apply_async(args=[self, user],
+                                       queue="localhost.man")
 
     def deploy(self, user=None, task_uuid=None):
         """ Deploy new virtual machine with network
@@ -507,8 +507,9 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
 
         # Deploy VM on remote machine
         act.update_state("DEPLOYING VM")
-        tasks.create.apply_async(args=[self.get_vm_desc()],
-                                 queue=self.node.host.hostname + ".vm").get()
+        queue_name = self.node.host.hostname + ".vm"
+        remote_tasks.create.apply_async(args=[self.get_vm_desc()],
+                                        queue=queue_name).get()
 
         # Estabilish network connection (vmdriver)
         act.update_state("DEPLOYING NET")
@@ -517,13 +518,13 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
 
         # Resume vm
         act.update_state("BOOTING")
-        tasks.resume.apply_async(args=[self.vm_name],
-                                 queue=self.node + ".vm").get()
+        remote_tasks.resume.apply_async(args=[self.vm_name],
+                                        queue=self.node + ".vm").get()
 
         act.finish(result='SUCCESS')
 
     def stop_async(self, user=None):
-        vm_manager.stop.apply_async(args=[self, user], queue="localhost.man")
+        local_tasks.stop.apply_async(args=[self, user], queue="localhost.man")
 
     def stop(self, user=None, task_uuid=None):
         act = InstanceActivity(activity_code='vm.Instance.stop')
@@ -532,11 +533,13 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         act.started = timezone.now()
         act.task_uuid = task_uuid
         act.save()
-        tasks.stop.apply_async(args=[self.get_vm_desc()],
-                               queue=self.node.host.hostname + ".vm").get()
+        queue_name = self.node.host.hostname + ".vm"
+        remote_tasks.stop.apply_async(args=[self.get_vm_desc()],
+                                      queue=queue_name).get()
 
     def resume_async(self, user=None):
-        vm_manager.resume.apply_async(args=[self, user], queue="localhost.man")
+        local_tasks.resume.apply_async(args=[self, user],
+                                       queue="localhost.man")
 
     def resume(self, user=None, task_uuid=None):
         act = InstanceActivity(activity_code='vm.Instance.resume')
@@ -545,12 +548,13 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         act.started = timezone.now()
         act.task_uuid = task_uuid
         act.save()
-        tasks.resume.apply_async(args=[self.get_vm_desc()],
-                                 queue=self.node.host.hostname + ".vm").get()
+        queue_name = self.node.host.hostname + ".vm"
+        remote_tasks.resume.apply_async(args=[self.get_vm_desc()],
+                                        queue=queue_name).get()
 
     def poweroff_async(self, user=None):
-        vm_manager.power_off.apply_async(args=[self, user],
-                                         queue="localhost.man")
+        local_tasks.power_off.apply_async(args=[self, user],
+                                          queue="localhost.man")
 
     def poweroff(self, user=None, task_uuid=None):
         act = InstanceActivity(activity_code='vm.Instance.power_off')
@@ -559,13 +563,13 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         act.started = timezone.now()
         act.task_uuid = task_uuid
         act.save()
-        tasks.power_off.apply_async(args=[self.get_vm_desc()],
-                                    queue=self.node.host.hostname + ".vm"
-                                    ).get()
+        queue_name = self.node.host.hostname + ".vm"
+        remote_tasks.power_off.apply_async(args=[self.get_vm_desc()],
+                                           queue=queue_name).get()
 
     def restart_async(self, user=None):
-        vm_manager.restart.apply_async(args=[self, user],
-                                       queue="localhost.man")
+        local_tasks.restart.apply_async(args=[self, user],
+                                        queue="localhost.man")
 
     def restart(self, user=None, task_uuid=None):
         act = InstanceActivity(activity_code='vm.Instance.restart')
@@ -574,12 +578,13 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         act.started = timezone.now()
         act.task_uuid = task_uuid
         act.save()
-        tasks.restart.apply_async(args=[self.get_vm_desc()],
-                                  queue=self.node.host.hostname + ".vm").get()
+        queue_name = self.node.host.hostname + ".vm"
+        remote_tasks.restart.apply_async(args=[self.get_vm_desc()],
+                                         queue=queue_name).get()
 
     def save_as_async(self, user=None):
-        vm_manager.save_as.apply_async(
-            args=[self, user], queue="localhost.man")
+        local_tasks.save_as.apply_async(args=[self, user],
+                                        queue="localhost.man")
 
     def save_as(self, user=None, task_uuid=None):
         act = InstanceActivity(activity_code='vm.Instance.restart')
@@ -588,8 +593,9 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         act.started = timezone.now()
         act.task_uuid = task_uuid
         act.save()
-        tasks.save_as.apply_async(args=[self.get_vm_desc()],
-                                  queue=self.node.host.hostname + ".vm").get()
+        queue_name = self.node.host.hostname + ".vm"
+        remote_tasks.save_as.apply_async(args=[self.get_vm_desc()],
+                                         queue=queue_name).get()
 
     def renew(self, which='both'):
         """Renew virtual machine instance leases.

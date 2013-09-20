@@ -1,4 +1,4 @@
-from .mancelery import celery
+from manager.mancelery import celery
 
 
 @celery.task
