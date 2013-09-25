@@ -7,8 +7,6 @@ from django.contrib.auth.models import User
 from django.db.models import (Model, ForeignKey, ManyToManyField, IntegerField,
                               DateTimeField, BooleanField, TextField,
                               CharField, permalink)
-from django.db.models.signals import pre_delete
-from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from model_utils.models import TimeStampedModel
@@ -607,12 +605,6 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         if which in ['delete', 'both']:
             self.time_of_delete = timezone.now() + self.lease.delete_interval
         self.save()
-
-
-@receiver(pre_delete, sender=Instance, dispatch_uid='delete_instance_pre')
-def delete_instance_pre(sender, instance, using, **kwargs):
-    # TODO implement
-    pass
 
 
 class InstanceActivity(TimeStampedModel):
