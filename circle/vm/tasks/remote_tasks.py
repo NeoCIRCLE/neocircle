@@ -54,3 +54,18 @@ def restore(params):
 @celery.task(name='vmdriver.migrate')
 def migrate(params):
     pass
+
+
+@celery.task(name='vmdriver.domain_info')
+def domain_info(params):
+    pass
+
+
+@celery.task(name='vmdriver.list_domains')
+def list_domains(params):
+    pass
+
+
+@celery.task(name='vmdriver.delete')
+def delete(params):
+    pass
