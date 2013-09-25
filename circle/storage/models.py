@@ -113,9 +113,6 @@ class Disk(TimeStampedModel):
     def __unicode__(self):
         return u"%s (#%d)" % (self.name, self.id)
 
-    def deploy_async(self):
-        local_tasks.deploy.apply_async(self)
-
     def deploy(self):
         """Reify the disk model on the associated data store.
 
@@ -142,6 +139,11 @@ class Disk(TimeStampedModel):
         self.ready = True
         self.save()
         return True
+
+    def deploy_async(self):
+        """Execute deploy asynchronously.
+        """
+        local_tasks.deploy.apply_async(self)
 
     def delete(self):
         # TODO

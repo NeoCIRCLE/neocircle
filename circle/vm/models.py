@@ -476,12 +476,6 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
             'raw_data': "" if not self.raw_data else self.raw_data
         }
 
-    def deploy_async(self, user=None):
-        """ Launch celery task to handle the job asynchronously.
-        """
-        local_tasks.deploy.apply_async(args=[self, user],
-                                       queue="localhost.man")
-
     def deploy(self, user=None, task_uuid=None):
         """ Deploy new virtual machine with network
         1. Schedule
@@ -521,8 +515,11 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
 
         act.finish(result='SUCCESS')
 
-    def stop_async(self, user=None):
-        local_tasks.stop.apply_async(args=[self, user], queue="localhost.man")
+    def deploy_async(self, user=None):
+        """Execute deploy asynchronously.
+        """
+        local_tasks.deploy.apply_async(args=[self, user],
+                                       queue="localhost.man")
 
     def stop(self, user=None, task_uuid=None):
         act = InstanceActivity(activity_code='vm.Instance.stop')
@@ -535,9 +532,10 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         remote_tasks.stop.apply_async(args=[self.get_vm_desc()],
                                       queue=queue_name).get()
 
-    def resume_async(self, user=None):
-        local_tasks.resume.apply_async(args=[self, user],
-                                       queue="localhost.man")
+    def stop_async(self, user=None):
+        """Execute stop asynchronously.
+        """
+        local_tasks.stop.apply_async(args=[self, user], queue="localhost.man")
 
     def resume(self, user=None, task_uuid=None):
         act = InstanceActivity(activity_code='vm.Instance.resume')
@@ -550,9 +548,11 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         remote_tasks.resume.apply_async(args=[self.vm_name],
                                         queue=queue_name).get()
 
-    def poweroff_async(self, user=None):
-        local_tasks.power_off.apply_async(args=[self, user],
-                                          queue="localhost.man")
+    def resume_async(self, user=None):
+        """Execute resume asynchronously.
+        """
+        local_tasks.resume.apply_async(args=[self, user],
+                                       queue="localhost.man")
 
     def poweroff(self, user=None, task_uuid=None):
         act = InstanceActivity(activity_code='vm.Instance.power_off')
@@ -565,9 +565,11 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         remote_tasks.power_off.apply_async(args=[self.get_vm_desc()],
                                            queue=queue_name).get()
 
-    def restart_async(self, user=None):
-        local_tasks.restart.apply_async(args=[self, user],
-                                        queue="localhost.man")
+    def poweroff_async(self, user=None):
+        """Execute poweroff asynchronously.
+        """
+        local_tasks.power_off.apply_async(args=[self, user],
+                                          queue="localhost.man")
 
     def restart(self, user=None, task_uuid=None):
         act = InstanceActivity(activity_code='vm.Instance.restart')
@@ -580,8 +582,10 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         remote_tasks.restart.apply_async(args=[self.get_vm_desc()],
                                          queue=queue_name).get()
 
-    def save_as_async(self, user=None):
-        local_tasks.save_as.apply_async(args=[self, user],
+    def restart_async(self, user=None):
+        """Execute restart asynchronously.
+        """
+        local_tasks.restart.apply_async(args=[self, user],
                                         queue="localhost.man")
 
     def save_as(self, user=None, task_uuid=None):
@@ -594,6 +598,12 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         queue_name = self.node.host.hostname + ".vm"
         remote_tasks.save_as.apply_async(args=[self.get_vm_desc()],
                                          queue=queue_name).get()
+
+    def save_as_async(self, user=None):
+        """Execute save_as asynchronously.
+        """
+        local_tasks.save_as.apply_async(args=[self, user],
+                                        queue="localhost.man")
 
     def renew(self, which='both'):
         """Renew virtual machine instance leases.
