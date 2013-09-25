@@ -519,7 +519,7 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         # Resume vm
         act.update_state("BOOTING")
         remote_tasks.resume.apply_async(args=[self.vm_name],
-                                        queue=self.node + ".vm").get()
+                                        queue=queue_name).get()
 
         act.finish(result='SUCCESS')
 
@@ -549,7 +549,7 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         act.task_uuid = task_uuid
         act.save()
         queue_name = self.node.host.hostname + ".vm"
-        remote_tasks.resume.apply_async(args=[self.get_vm_desc()],
+        remote_tasks.resume.apply_async(args=[self.vm_name],
                                         queue=queue_name).get()
 
     def poweroff_async(self, user=None):
@@ -678,6 +678,10 @@ class Interface(Model):
             'vlan': self.vlan.vid,
             'managed': self.host is not None
         }
+
+    def deploy(self):
+        #TODO
+        pass
 
     @classmethod
     def create_from_template(cls, instance, template):
