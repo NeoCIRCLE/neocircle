@@ -3,7 +3,9 @@
 import logging
 import uuid
 
-from django.db import models
+from django.contrib.auth.models import User
+from django.db.models import (Model, BooleanField, CharField, DateTimeField,
+                              ForeignKey, TextField)
 from django.utils.translation import ugettext_lazy as _
 from model_utils.models import TimeStampedModel
 from sizefield.models import FileSizeField
@@ -13,16 +15,14 @@ from .tasks import local_tasks, remote_tasks
 logger = logging.getLogger(__name__)
 
 
-class DataStore(models.Model):
+class DataStore(Model):
 
     """Collection of virtual disks.
     """
-    name = models.CharField(max_length=100, unique=True,
-                            verbose_name=_('name'))
-    path = models.CharField(max_length=200, unique=True,
-                            verbose_name=_('path'))
-    hostname = models.CharField(max_length=40, unique=True,
-                                verbose_name=_('hostname'))
+    name = CharField(max_length=100, unique=True, verbose_name=_('name'))
+    path = CharField(max_length=200, unique=True, verbose_name=_('path'))
+    hostname = CharField(max_length=40, unique=True,
+                         verbose_name=_('hostname'))
 
     class Meta:
         ordering = ['name']
@@ -39,17 +39,17 @@ class Disk(TimeStampedModel):
     """
     TYPES = [('qcow2-norm', 'qcow2 normal'), ('qcow2-snap', 'qcow2 snapshot'),
              ('iso', 'iso'), ('raw-ro', 'raw read-only'), ('raw-rw', 'raw')]
-    name = models.CharField(blank=True, max_length=100,
-                            verbose_name=_('name'))
-    filename = models.CharField(max_length=256, verbose_name=_('filename'))
-    datastore = models.ForeignKey(DataStore)
-    type = models.CharField(max_length=10, choices=TYPES)
+    name = CharField(blank=True, max_length=100, verbose_name=_("name"))
+    filename = CharField(max_length=256, verbose_name=_("filename"))
+    datastore = ForeignKey(DataStore, verbose_name=_("datastore"),
+                           help_text=_("The datastore that holds the disk."))
+    type = CharField(max_length=10, choices=TYPES)
     size = FileSizeField()
-    base = models.ForeignKey('self', blank=True, null=True,
-                             related_name='derivatives')
-    ready = models.BooleanField(default=False)
-    dev_num = models.CharField(default='a', max_length=1,
-                               verbose_name="device number")
+    base = ForeignKey('self', blank=True, null=True,
+                      related_name='derivatives')
+    ready = BooleanField(default=False)
+    dev_num = CharField(default='a', max_length=1,
+                        verbose_name="device number")
 
     class Meta:
         ordering = ['name']
@@ -91,8 +91,9 @@ class Disk(TimeStampedModel):
             'raw-ro': 'raw-rw',
         }[self.type]
 
-        return Disk(base=self, datastore=self.datastore, filename=filename,
-                    name=self.name, size=self.size, type=new_type)
+        return Disk.objects.create(base=self, datastore=self.datastore,
+                                   filename=filename, name=self.name,
+                                   size=self.size, type=new_type)
 
     @property
     def device_type(self):
@@ -149,3 +150,17 @@ class Disk(TimeStampedModel):
         # TODO
         # StorageDriver.delete_disk.delay(instance.to_json()).get()
         pass
+
+
+class DiskActivity(TimeStampedModel):
+    activity_code = CharField(verbose_name=_('activity_code'), max_length=100)
+    task_uuid = CharField(verbose_name=_('task_uuid'), blank=True,
+                          max_length=50, null=True, unique=True)
+    disk = ForeignKey(Disk, verbose_name=_('disk'),
+                      related_name='activity_log')
+    user = ForeignKey(User, verbose_name=_('user'), blank=True, null=True)
+    started = DateTimeField(verbose_name=_('started'), blank=True, null=True)
+    finished = DateTimeField(verbose_name=_('finished'), blank=True, null=True)
+    result = TextField(verbose_name=_('result'), blank=True, null=True)
+    state = CharField(verbose_name=_('state'), default='PENDING',
+                      max_length=50)
