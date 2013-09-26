@@ -132,11 +132,19 @@ class Disk(TimeStampedModel):
             'dir': self.datastore.path,
             'format': self.format,
             'size': self.size,
-            'base_name': self.base.name if self.base else None,
+            'base_name': self.base.filename if self.base else None,
             'type': 'snapshot' if self.type == 'qcow2-snap' else 'normal'
         }
-        remote_tasks.create_disk.apply_async(
-            args=[disk_desc], queue=self.datastore.hostname + ".storage").get()
+
+        # Delegate create / snapshot jobs
+        if self.type == 'qcow2-snap':
+            remote_tasks.snapshot.apply_async(
+                args=[disk_desc],
+                queue=self.datastore.hostname + ".storage").get()
+        else:
+            remote_tasks.create.apply_async(
+                args=[disk_desc],
+                queue=self.datastore.hostname + ".storage").get()
         self.ready = True
         self.save()
         return True
