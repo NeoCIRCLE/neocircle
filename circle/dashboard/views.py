@@ -1,5 +1,7 @@
 from django.views.generic import TemplateView, DetailView
-# from django_tables2 import SingleTableView
+from django_tables2 import SingleTableView
+
+from tables import VmListTable
 
 from vm.models import Instance
 from django.core import signing
@@ -39,5 +41,7 @@ class VmDetailView(DetailView):
         return context
 
 
-class VmList(TemplateView):
+class VmList(SingleTableView):
     template_name = "dashboard/vm-list.html"
+    model = Instance
+    table_class = VmListTable
