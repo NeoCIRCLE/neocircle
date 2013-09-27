@@ -189,6 +189,16 @@ class Disk(TimeStampedModel):
         local_tasks.remove.apply_async(args=[self, user],
                                        queue='localhost.man')
 
+    def restore(self, user=None, task_uuid=None):
+        """Restore removed disk.
+        """
+        # TODO
+        pass
+
+    def restore_async(self, user=None):
+        local_tasks.restore.apply_async(args=[self, user],
+                                        queue='localhost.man')
+
 
 class DiskActivity(TimeStampedModel):
     activity_code = CharField(verbose_name=_('activity_code'), max_length=100)

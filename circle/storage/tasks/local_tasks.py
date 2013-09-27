@@ -9,3 +9,8 @@ def deploy(disk, user):
 @celery.task
 def remove(disk, user):
     disk.remove(task_uuid=remove.request.id, user=user)
+
+
+@celery.task
+def restore(disk, user):
+    disk.restore(task_uuid=restore.request.id, user=user)
