@@ -89,16 +89,20 @@ class Disk(TimeStampedModel):
 
     def get_exclusive(self):
         """Get an instance of the disk for exclusive usage.
-        """
-        if self.type in ['qcow2-snap', 'raw-rw']:
-            raise self.WrongDiskTypeError(self.type)
 
-        filename = self.filename if self.type == 'iso' else str(uuid.uuid4())
-        new_type = {
+        This method manipulates the database only.
+        """
+        type_mapping = {
             'qcow2-norm': 'qcow2-snap',
             'iso': 'iso',
             'raw-ro': 'raw-rw',
-        }[self.type]
+        }
+
+        if self.type not in type_mapping.keys():
+            raise self.WrongDiskTypeError(self.type)
+
+        filename = self.filename if self.type == 'iso' else str(uuid.uuid4())
+        new_type = type_mapping[self.type]
 
         return Disk.objects.create(base=self, datastore=self.datastore,
                                    filename=filename, name=self.name,
