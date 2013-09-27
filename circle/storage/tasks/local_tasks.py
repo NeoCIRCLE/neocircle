@@ -7,8 +7,8 @@ def deploy(disk, user):
 
 
 @celery.task
-def delete():
-    pass
+def remove(disk, user):
+    disk.remove(task_uuid=remove.request.id, user=user)
 
 
 @celery.task

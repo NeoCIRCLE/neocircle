@@ -51,6 +51,7 @@ class Disk(TimeStampedModel):
     ready = BooleanField(default=False)
     dev_num = CharField(default='a', max_length=1,
                         verbose_name=_("device number"))
+    removed = DateTimeField(blank=True, default=None, null=True)
 
     class Meta:
         ordering = ['name']
@@ -179,10 +180,14 @@ class Disk(TimeStampedModel):
         local_tasks.deploy.apply_async(args=[self, user],
                                        queue="localhost.man")
 
-    def delete(self):
-        # TODO
-        # StorageDriver.delete_disk.delay(instance.to_json()).get()
-        pass
+    def remove(self, user=None, task_uuid=None):
+        # TODO add activity logging
+        self.removed = timezone.now()
+        self.save()
+
+    def remove_async(self, user=None):
+        local_tasks.remove.apply_async(args=[self, user],
+                                       queue='localhost.man')
 
 
 class DiskActivity(TimeStampedModel):
