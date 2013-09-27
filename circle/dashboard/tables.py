@@ -6,12 +6,27 @@ from django.utils.translation import ugettext_lazy as _
 
 
 class VmListTable(Table):
-    name = LinkColumn('dashboard.views.detail', args=[A('pk')])
-    admin = TemplateColumn(template_name='dashboard/vm-list/column-admin.html')
-    details = TemplateColumn(template_name=
-                             'dashboard/vm-list/column-details.html')
-    actions = TemplateColumn(template_name=
-                             'dashboard/vm-list/column-actions.html')
+    pk = Column(
+        verbose_name="ID",
+        attrs={'th': {'class': 'vm-list-table-thin'}},
+    )
+    name = LinkColumn(
+        'dashboard.views.detail',
+        args=[A('pk')],
+        attrs={'class': 'real-link'}
+    )
+    admin = TemplateColumn(
+        template_name='dashboard/vm-list/column-admin.html',
+        attrs={'th': {'class': 'vm-list-table-admin'}},
+    )
+    details = TemplateColumn(
+        template_name='dashboard/vm-list/column-details.html',
+        attrs={'th': {'class': 'vm-list-table-thin'}},
+    )
+    actions = TemplateColumn(
+        template_name='dashboard/vm-list/column-actions.html',
+        attrs={'th': {'class': 'vm-list-table-thin'}},
+    )
     time_of_suspend = TemplateColumn(
         '{{ record.time_of_suspend|timesince }}',
         verbose_name=_("Suspend in"))

@@ -71,6 +71,14 @@
   .vm-list-selected td:first-child {
     font-weight: bold;
   }
+
+  .vm-list-table-thin {
+    width: 10px;
+  }
+
+  .vm-list-table-admin {
+    width: 130px;
+  }
 </style>
 {% endblock %}
 
@@ -104,6 +112,15 @@ $(function() {
       'placement': 'left',
       'html': true,
       'trigger': 'click'
+    });
+
+    $('tbody a').click(function(e) {
+      // parent tr doesn't get selected when clicked
+      e.stopPropagation();
+      // browser doesn't jump to top when clicked the buttons
+      if(!$(this).hasClass('real-link')) {
+        return false;
+      }
     });
 
     /*

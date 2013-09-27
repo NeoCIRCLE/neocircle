@@ -45,3 +45,4 @@ class VmList(SingleTableView):
     template_name = "dashboard/vm-list.html"
     model = Instance
     table_class = VmListTable
+    table_pagination = False
