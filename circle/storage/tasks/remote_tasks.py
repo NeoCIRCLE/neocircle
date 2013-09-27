@@ -24,3 +24,8 @@ def snapshot(disk_desc):
 @celery.task(name='storagedriver.get')
 def get(path):
     pass
+
+
+@celery.task(name='storagedriver.merge')
+def merge(src_disk_desc, dst_disk_desc):
+    pass
