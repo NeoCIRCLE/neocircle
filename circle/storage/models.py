@@ -147,18 +147,30 @@ class Disk(TimeStampedModel):
         if self.ready:
             return False
 
+        act = DiskActivity(activity_code='storage.Disk.deploy')
+        act.disk = self
+        act.started = timezone.now()
+        act.state = 'PENDING'
+        act.task_uuid = task_uuid
+        act.user = user
+        act.save()
+
         # Delegate create / snapshot jobs
         queue_name = self.datastore.hostname + ".storage"
         disk_desc = self.get_disk_desc()
         if self.type == 'qcow2-snap':
+            act.update_state('CREATING SNAPSHOT')
             remote_tasks.snapshot.apply_async(args=[disk_desc],
                                               queue=queue_name).get()
         else:
+            act.update_state('CREATING DISK')
             remote_tasks.create.apply_async(args=[disk_desc],
                                             queue=queue_name).get()
 
         self.ready = True
         self.save()
+
+        act.finish('SUCCESS')
         return True
 
     def deploy_async(self, user=None):
