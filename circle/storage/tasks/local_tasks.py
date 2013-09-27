@@ -9,8 +9,3 @@ def deploy(disk, user):
 @celery.task
 def remove(disk, user):
     disk.remove(task_uuid=remove.request.id, user=user)
-
-
-@celery.task
-def save_as():
-    pass
