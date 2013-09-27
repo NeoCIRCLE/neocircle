@@ -121,6 +121,17 @@ class NodeActivity(TimeStampedModel):
     status = CharField(verbose_name=_('status'), default='PENDING',
                        max_length=50, help_text=_('Actual state of activity'))
 
+    def update_state(self, new_state):
+        self.state = new_state
+        self.save()
+
+    def finish(self, result=None):
+        if not self.finished:
+            self.finished = timezone.now()
+            self.result = result
+            self.state = 'COMPLETED'
+            self.save()
+
 
 class Lease(Model):
 

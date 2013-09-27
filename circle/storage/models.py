@@ -6,6 +6,7 @@ import uuid
 from django.contrib.auth.models import User
 from django.db.models import (Model, BooleanField, CharField, DateTimeField,
                               ForeignKey, TextField)
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from model_utils.models import TimeStampedModel
 from sizefield.models import FileSizeField
@@ -172,3 +173,14 @@ class DiskActivity(TimeStampedModel):
     result = TextField(verbose_name=_('result'), blank=True, null=True)
     state = CharField(verbose_name=_('state'), default='PENDING',
                       max_length=50)
+
+    def update_state(self, new_state):
+        self.state = new_state
+        self.save()
+
+    def finish(self, result=None):
+        if not self.finished:
+            self.finished = timezone.now()
+            self.result = result
+            self.state = 'COMPLETED'
+            self.save()
