@@ -116,6 +116,16 @@ class Disk(TimeStampedModel):
             'target_device': self.device_type + self.dev_num
         }
 
+    def get_disk_desc(self):
+        return {
+            'name': self.filename,
+            'dir': self.datastore.path,
+            'format': self.format,
+            'size': self.size,
+            'base_name': self.base.filename if self.base else None,
+            'type': 'snapshot' if self.type == 'qcow2-snap' else 'normal'
+        }
+
     def __unicode__(self):
         return u"%s (#%d)" % (self.name, self.id)
 
@@ -137,16 +147,8 @@ class Disk(TimeStampedModel):
         if self.ready:
             return False
 
-        disk_desc = {
-            'name': self.filename,
-            'dir': self.datastore.path,
-            'format': self.format,
-            'size': self.size,
-            'base_name': self.base.filename if self.base else None,
-            'type': 'snapshot' if self.type == 'qcow2-snap' else 'normal'
-        }
-
         # Delegate create / snapshot jobs
+        disk_desc = self.get_disk_desc()
         if self.type == 'qcow2-snap':
             remote_tasks.snapshot.apply_async(
                 args=[disk_desc],
@@ -155,6 +157,7 @@ class Disk(TimeStampedModel):
             remote_tasks.create.apply_async(
                 args=[disk_desc],
                 queue=self.datastore.hostname + ".storage").get()
+
         self.ready = True
         self.save()
         return True
