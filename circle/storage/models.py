@@ -57,6 +57,14 @@ class Disk(TimeStampedModel):
         verbose_name = _('disk')
         verbose_name_plural = _('disks')
 
+    class WrongDiskTypeError(Exception):
+        def __init__(self, type):
+            self.type = type
+
+        def __str__(self):
+            return ("Operation can't be invoked on a disk of type '%s'." %
+                    self.type)
+
     @property
     def path(self):
         return self.datastore.path + '/' + self.filename
@@ -71,13 +79,13 @@ class Disk(TimeStampedModel):
             'raw-rw': 'raw',
         }[self.type]
 
-    class WrongDiskTypeError(Exception):
-        def __init__(self, type):
-            self.type = type
-
-        def __str__(self):
-            return ("Operation can't be invoked on a disk of type '%s'." %
-                    self.type)
+    @property
+    def device_type(self):
+        return {
+            'qcow2': 'vd',
+            'raw': 'vd',
+            'iso': 'hd',
+        }[self.format]
 
     def get_exclusive(self):
         """Get an instance of the disk for exclusive usage.
@@ -95,14 +103,6 @@ class Disk(TimeStampedModel):
         return Disk.objects.create(base=self, datastore=self.datastore,
                                    filename=filename, name=self.name,
                                    size=self.size, type=new_type)
-
-    @property
-    def device_type(self):
-        return {
-            'qcow2': 'vd',
-            'raw': 'vd',
-            'iso': 'hd',
-        }[self.format]
 
     def get_vmdisk_desc(self):
         return {
