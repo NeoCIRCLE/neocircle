@@ -119,6 +119,11 @@ class Disk(TimeStampedModel):
     def __unicode__(self):
         return u"%s (#%d)" % (self.name, self.id)
 
+    def clean(self, *args, **kwargs):
+        if self.size == "" and self.base:
+            self.size = self.base.size
+        super(Disk, self).clean(*args, **kwargs)
+
     def deploy(self):
         """Reify the disk model on the associated data store.
 
