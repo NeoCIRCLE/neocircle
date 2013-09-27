@@ -124,7 +124,7 @@ class Disk(TimeStampedModel):
             self.size = self.base.size
         super(Disk, self).clean(*args, **kwargs)
 
-    def deploy(self):
+    def deploy(self, user=None, task_uuid=None):
         """Reify the disk model on the associated data store.
 
         :param self: the disk model to reify
@@ -159,10 +159,11 @@ class Disk(TimeStampedModel):
         self.save()
         return True
 
-    def deploy_async(self):
+    def deploy_async(self, user=None):
         """Execute deploy asynchronously.
         """
-        local_tasks.deploy.apply_async(self)
+        local_tasks.deploy.apply_async(args=[self, user],
+                                       queue="localhost.man")
 
     def delete(self):
         # TODO
