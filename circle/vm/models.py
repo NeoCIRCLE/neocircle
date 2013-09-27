@@ -499,28 +499,28 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         act.save()
 
         # Schedule
-        act.update_state("PENDING")
+        act.update_state('PENDING')
         self.node = scheduler.get_node(self, Node.objects.all())
         self.save()
 
         # Create virtual images
-        act.update_state("PREPARING DISKS")
+        act.update_state('PREPARING DISKS')
         for disk in self.disks.all():
             disk.deploy()
 
         # Deploy VM on remote machine
-        act.update_state("DEPLOYING VM")
+        act.update_state('DEPLOYING VM')
         queue_name = self.node.host.hostname + ".vm"
         remote_tasks.create.apply_async(args=[self.get_vm_desc()],
                                         queue=queue_name).get()
 
         # Estabilish network connection (vmdriver)
-        act.update_state("DEPLOYING NET")
+        act.update_state('DEPLOYING NET')
         for net in self.interface_set.all():
             net.deploy()
 
         # Resume vm
-        act.update_state("BOOTING")
+        act.update_state('BOOTING')
         remote_tasks.resume.apply_async(args=[self.vm_name],
                                         queue=queue_name).get()
 
