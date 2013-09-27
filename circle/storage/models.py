@@ -50,7 +50,7 @@ class Disk(TimeStampedModel):
                       related_name='derivatives')
     ready = BooleanField(default=False)
     dev_num = CharField(default='a', max_length=1,
-                        verbose_name="device number")
+                        verbose_name=_("device number"))
 
     class Meta:
         ordering = ['name']
