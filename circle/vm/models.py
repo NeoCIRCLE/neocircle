@@ -638,6 +638,7 @@ class InstanceActivity(TimeStampedModel):
         if not self.finished:
             self.finished = timezone.now()
             self.result = result
+            self.state = 'COMPLETED'
             self.save()
 
 
