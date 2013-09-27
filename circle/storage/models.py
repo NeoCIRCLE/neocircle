@@ -148,15 +148,14 @@ class Disk(TimeStampedModel):
             return False
 
         # Delegate create / snapshot jobs
+        queue_name = self.datastore.hostname + ".storage"
         disk_desc = self.get_disk_desc()
         if self.type == 'qcow2-snap':
-            remote_tasks.snapshot.apply_async(
-                args=[disk_desc],
-                queue=self.datastore.hostname + ".storage").get()
+            remote_tasks.snapshot.apply_async(args=[disk_desc],
+                                              queue=queue_name).get()
         else:
-            remote_tasks.create.apply_async(
-                args=[disk_desc],
-                queue=self.datastore.hostname + ".storage").get()
+            remote_tasks.create.apply_async(args=[disk_desc],
+                                            queue=queue_name).get()
 
         self.ready = True
         self.save()
