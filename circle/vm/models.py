@@ -309,7 +309,11 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
 
     class Meta:
         ordering = ['pk', ]
-        permissions = ()
+        permissions = (
+            ('own_instance', _('owner')),        # superuser, can delete, delegate perms
+            ('operate_instance', _('operator')),  # console, networking, change state
+            ('use_instance', _('user')),          # see all details
+        )
         verbose_name = _('instance')
         verbose_name_plural = _('instances')
 
