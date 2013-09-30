@@ -4,7 +4,11 @@
 {% block content %}
 
 <div class="alert alert-info">
-  Tip of the day: you can select multiple vm instances while holding down the <strong>CTRL</strong> button!
+  Tip #1: you can select multiple vm instances while holding down the <strong>CTRL</strong> key!
+</div>
+
+<div class="alert alert-info">
+  Tip #2: if you want to select multiple instances by one click select an instance then hold down <strong>SHIFT</strong> key and select another one!
 </div>
 
 <div class="row">
@@ -12,6 +16,19 @@
     <div class="panel panel-default">
       <div class="panel-heading">
         <h3 class="no-margin"><i class="icon-desktop"></i> Your virtual machines</h3>
+      </div>
+      <div class="panel-body vm-list-group-control">
+        <p>
+        <strong>Group actions</strong>
+        <button class="btn btn-info btn-xs">Select all</button>
+        <a class="btn btn-default btn-xs"><i class="icon-truck"></i> Migrate</a>
+          <button type="button" class="btn btn-xs btn-warning dropdown-toggle" data-toggle="dropdown">Action <i class="icon-caret-down"></i></button>
+          <ul class="dropdown-menu" role="menu">
+            <li><a href="#"><i class="icon-refresh"></i> Reboot</a></li>
+            <li><a href="#"><i class="icon-off"></i> Shutdown</a></li>
+            <li><a href="#"><i class="icon-remove"></i> Discard</a></li>
+          </ul>
+        </p>
       </div>
       <div class="panel-body">
         <table class="table table-bordered table-striped table-hover vm-list-table">
@@ -84,22 +101,63 @@
 
 {% block extra_js %}
 $(function() {
-    var ctrlDown = false;
+    $('.vm-list-group-control .btn').attr('disabled', true);
+
+    var ctrlDown, shiftDown = false;
     var ctrlKey = 17;
+    var shiftKey = 16;
+    var selected = [];
 
     $(document).keydown(function(e) {
       if (e.keyCode == ctrlKey) ctrlDown = true;
+      if (e.keyCode == shiftKey) shiftDown = true;
     }).keyup(function(e) {
       if (e.keyCode == ctrlKey) ctrlDown = false;
+      if (e.keyCode == shiftKey) shiftDown = false;
     });
 
-    $('.vm-list-table').find('tr').click(function() {
+    $('.vm-list-table tbody').find('tr').mousedown(function() {
       if (ctrlDown) {
         setRowColor($(this));
+        if(!$(this).hasClass('vm-list-selected')) {
+          selected.splice(selected.indexOf($(this).index()), 1);
+        } else {
+          selected.push($(this).index());
+        }
+      } else if(shiftDown) {
+        if(selected.length > 0) {
+          start = selected[selected.length - 1] + 1;
+          end = $(this).index();
+
+          if(start > end) {
+            var tmp = start - 1; start = end; end = tmp - 1;
+          }
+
+          for(var i = start; i <= end; i++) {
+            if(selected.indexOf(i) < 0) {
+              selected.push(i);
+              setRowColor($('.vm-list-table tbody tr').eq(i));
+              }
+          }
+        }
       } else {
         $('.vm-list-selected').removeClass('vm-list-selected');
         $(this).addClass('vm-list-selected');
+        selected = [$(this).index()];
       }
+
+      // reset btn disables
+      $('.vm-list-table tbody tr .btn').attr('disabled', false);
+      // show/hide group controls
+      if(selected.length > 1) {
+        $('.vm-list-group-control .btn').attr('disabled', false);
+        for(var i = 0; i < selected.length; i++) {
+          $('.vm-list-table tbody tr').eq(selected[i]).find('.btn').attr('disabled', true);
+        }
+      } else {
+        $('.vm-list-group-control .btn').attr('disabled', true);
+      }
+      return false;
     });
 
     $('.vm-list-details').popover({
