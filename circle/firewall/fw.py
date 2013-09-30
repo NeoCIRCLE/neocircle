@@ -156,10 +156,6 @@ class Firewall:
                       '-j ACCEPT')
 
     def postrun(self):
-        self.iptables('-A PUB_OUT -s 152.66.243.160/27 -p tcp --dport 25 '
-                      '-j LOG_ACC')
-        self.iptables('-A PUB_OUT -s 152.66.243.160/27 -p tcp --dport 445 '
-                      '-j LOG_ACC')
         self.iptables('-A PUB_OUT -p tcp --dport 25 -j LOG_DROP')
         self.iptables('-A PUB_OUT -p tcp --dport 445 -j LOG_DROP')
         self.iptables('-A PUB_OUT -p udp --dport 445 -j LOG_DROP')
@@ -205,15 +201,6 @@ class Firewall:
                                      '--to-source %s' %
                                      (str(s_vlan.network4), d_vlan.interface,
                                       s_vlan.snat_ip))
-
-        # hard-wired rules
-        self.iptablesnat('-A POSTROUTING -s 10.5.0.0/16 -o vlan0003 -j SNAT '
-                         '--to-source 10.3.255.254')  # man elerheto legyen
-        self.iptablesnat('-A POSTROUTING -o vlan0008 -j SNAT '
-                         '--to-source 10.0.0.247')  # wolf network for printing
-        self.iptablesnat('-A POSTROUTING -s 10.3.0.0/16 -p udp --dport 53 '
-                         '-o vlan0002 -j SNAT ''--to-source %s' %
-                         self.pub.ipv4)  # kulonben nem megy a dns man-ban
 
         self.iptablesnat('COMMIT')
 
@@ -273,21 +260,6 @@ class Firewall:
         self.ipt_filter()
         if not self.IPV6:
             self.ipt_nat()
-
-    def reload(self):
-        if self.IPV6:
-            process = subprocess.Popen(['/usr/bin/ssh', 'fw2',
-                                        '/usr/bin/sudo',
-                                        '/sbin/ip6tables-restore', '-c'],
-                                       shell=False, stdin=subprocess.PIPE)
-            process.communicate('\n'.join(self.RULES) + '\n')
-        else:
-            process = subprocess.Popen(['/usr/bin/ssh', 'fw2',
-                                        '/usr/bin/sudo',
-                                        '/sbin/iptables-restore', '-c'],
-                                       shell=False, stdin=subprocess.PIPE)
-            process.communicate('\n'.join(self.RULES) + '\n' +
-                                '\n'.join(self.RULES_NAT) + '\n')
 
     def get(self):
         if self.IPV6:
