@@ -1,10 +1,11 @@
+from django.core import signing
 from django.views.generic import TemplateView, DetailView
+
 from django_tables2 import SingleTableView
 
-from tables import VmListTable
-
 from vm.models import Instance
-from django.core import signing
+
+from .tables import VmListTable
 
 
 class IndexView(TemplateView):
