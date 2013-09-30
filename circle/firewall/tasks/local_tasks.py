@@ -1,58 +1,34 @@
-import celery
+from manager.mancelery import celery
 from django.core.cache import cache
 from firewall.fw import Firewall, dhcp, dns, ipset
 import django.conf
-
+import remote_tasks
 settings = django.conf.settings.FIREWALL_SETTINGS
-
-
-@celery.task
-def reload_dns_task(data):
-    pass
-
-
-@celery.task
-def reload_firewall_task(data4, data6):
-    pass
-
-
-@celery.task
-def reload_dhcp_task(data):
-    pass
-
-
-@celery.task
-def reload_blacklist_task(data):
-    pass
-
-
-@celery.task
-def get_dhcp_clients_task(data):
-    pass
 
 
 @celery.task
 def periodic_task():
         if cache.get('dns_lock'):
             cache.delete("dns_lock")
-            reload_dns_task.delay(dns())
+            remote_tasks.reload_dns_task.apply_async(args=[dns()],
+                                                     queue='firewall')
             print "dns ujratoltese kesz"
 
         if cache.get('dhcp_lock'):
             cache.delete("dhcp_lock")
-            reload_dhcp_task.delay(dhcp())
+            remote_tasks.reload_dhcp_task.delay(dhcp())
             print "dhcp ujratoltese kesz"
 
         if cache.get('firewall_lock'):
             cache.delete("firewall_lock")
             ipv4 = Firewall().get()
             ipv6 = Firewall(True).get()
-            reload_firewall_task.delay(ipv4, ipv6)
+            remote_tasks.reload_firewall_task.delay(ipv4, ipv6)
             print "firewall ujratoltese kesz"
 
         if cache.get('blacklist_lock'):
             cache.delete("blacklist_lock")
-            reload_blacklist_task.delay(list(ipset()))
+            remote_tasks.reload_blacklist_task.delay(list(ipset()))
             print "blacklist ujratoltese kesz"
 
 

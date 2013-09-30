@@ -6,7 +6,8 @@ HOSTNAME = "localhost"
 
 celery = Celery('manager', backend='amqp',
                 broker=getenv("AMQP_URI"),
-                include=['vm.tasks.local_tasks', 'storage.tasks.local_tasks'])
+                include=['vm.tasks.local_tasks', 'storage.tasks.local_tasks',
+                         'firewall.tasks.local_tasks'])
 
 celery.conf.update(
     CELERY_QUEUES=(
