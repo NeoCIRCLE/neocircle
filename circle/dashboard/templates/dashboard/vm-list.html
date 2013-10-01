@@ -20,9 +20,9 @@
       <div class="panel-body vm-list-group-control">
         <p>
         <strong>Group actions</strong>
-        <button class="btn btn-info btn-xs">Select all</button>
-        <a class="btn btn-default btn-xs"><i class="icon-truck"></i> Migrate</a>
-          <button type="button" class="btn btn-xs btn-warning dropdown-toggle" data-toggle="dropdown">Action <i class="icon-caret-down"></i></button>
+        <button class="btn btn-info btn-xs" disabled>Select all</button>
+        <a class="btn btn-default btn-xs" disabled><i class="icon-truck"></i> Migrate</a>
+          <button type="button" class="btn btn-xs btn-warning dropdown-toggle" data-toggle="dropdown" disabled>Action <i class="icon-caret-down"></i></button>
           <ul class="dropdown-menu" role="menu">
             <li><a href="#"><i class="icon-refresh"></i> Reboot</a></li>
             <li><a href="#"><i class="icon-off"></i> Shutdown</a></li>
@@ -101,8 +101,6 @@
 
 {% block extra_js %}
 $(function() {
-    $('.vm-list-group-control .btn').attr('disabled', true);
-
     var ctrlDown, shiftDown = false;
     var ctrlKey = 17;
     var shiftKey = 16;
