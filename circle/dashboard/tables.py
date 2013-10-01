@@ -1,5 +1,5 @@
 from django_tables2 import Table, A
-from django_tables2.columns import Column, LinkColumn, TemplateColumn
+from django_tables2.columns import LinkColumn, TemplateColumn
 
 from vm.models import Instance
 from django.utils.translation import ugettext_lazy as _
@@ -31,7 +31,9 @@ class VmListTable(Table):
     time_of_suspend = TemplateColumn(
         '{{ record.time_of_suspend|timesince }}',
         verbose_name=_("Suspend in"))
-    time_of_delete = Column(verbose_name=_("Delete in"))
+    time_of_delete = TemplateColumn(
+        '{{ record.time_of_delete|timesince }}',
+        verbose_name=_("Delete in"))
 
     class Meta:
         model = Instance
