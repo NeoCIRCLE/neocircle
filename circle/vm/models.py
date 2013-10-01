@@ -10,9 +10,9 @@ from django.db.models import (Model, ForeignKey, ManyToManyField, IntegerField,
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from model_utils.models import TimeStampedModel
-from netaddr import EUI
+from netaddr import EUI, mac_unix
 
-from .tasks import local_tasks, remote_tasks
+from .tasks import local_tasks, vm_tasks, net_tasks
 from firewall.models import Vlan, Host
 from storage.models import Disk
 
@@ -247,7 +247,8 @@ class InterfaceTemplate(Model):
                                        'association) should be generated.'))
     template = ForeignKey(InstanceTemplate, verbose_name=_('template'),
                           related_name='interface_set',
-                          help_text=_())
+                          help_text=_('Template the interface '
+                                      'template belongs to.'))
 
     class Meta:
         permissions = ()
@@ -351,10 +352,10 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         kwargs.setdefault('access_method', template.access_method)
         # create instance and do additional setup
         inst = cls(**kwargs)
-        for disk in template.disks:
-            inst.disks.add(disk.get_exclusive())
         # save instance
         inst.save()
+        for disk in template.disks.all():
+            inst.disks.add(disk.get_exclusive())
         # create related entities
         for iftmpl in template.interface_set.all():
             i = Interface.create_from_template(instance=inst, template=iftmpl)
@@ -511,8 +512,8 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         # Deploy VM on remote machine
         act.update_state('DEPLOYING VM')
         queue_name = self.node.host.hostname + ".vm"
-        remote_tasks.create.apply_async(args=[self.get_vm_desc()],
-                                        queue=queue_name).get()
+        vm_tasks.create.apply_async(args=[self.get_vm_desc()],
+                                    queue=queue_name).get()
 
         # Estabilish network connection (vmdriver)
         act.update_state('DEPLOYING NET')
@@ -521,8 +522,8 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
 
         # Resume vm
         act.update_state('BOOTING')
-        remote_tasks.resume.apply_async(args=[self.vm_name],
-                                        queue=queue_name).get()
+        vm_tasks.resume.apply_async(args=[self.vm_name],
+                                    queue=queue_name).get()
 
         act.finish(result='SUCCESS')
 
@@ -540,8 +541,8 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         act.task_uuid = task_uuid
         act.save()
         queue_name = self.node.host.hostname + ".vm"
-        remote_tasks.stop.apply_async(args=[self.get_vm_desc()],
-                                      queue=queue_name).get()
+        vm_tasks.stop.apply_async(args=[self.get_vm_desc()],
+                                  queue=queue_name).get()
 
     def stop_async(self, user=None):
         """Execute stop asynchronously.
@@ -556,8 +557,8 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         act.task_uuid = task_uuid
         act.save()
         queue_name = self.node.host.hostname + ".vm"
-        remote_tasks.resume.apply_async(args=[self.vm_name],
-                                        queue=queue_name).get()
+        vm_tasks.resume.apply_async(args=[self.vm_name],
+                                    queue=queue_name).get()
 
     def resume_async(self, user=None):
         """Execute resume asynchronously.
@@ -573,8 +574,8 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         act.task_uuid = task_uuid
         act.save()
         queue_name = self.node.host.hostname + ".vm"
-        remote_tasks.power_off.apply_async(args=[self.get_vm_desc()],
-                                           queue=queue_name).get()
+        vm_tasks.power_off.apply_async(args=[self.get_vm_desc()],
+                                       queue=queue_name).get()
 
     def poweroff_async(self, user=None):
         """Execute poweroff asynchronously.
@@ -590,8 +591,8 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         act.task_uuid = task_uuid
         act.save()
         queue_name = self.node.host.hostname + ".vm"
-        remote_tasks.restart.apply_async(args=[self.get_vm_desc()],
-                                         queue=queue_name).get()
+        vm_tasks.restart.apply_async(args=[self.get_vm_desc()],
+                                     queue=queue_name).get()
 
     def restart_async(self, user=None):
         """Execute restart asynchronously.
@@ -607,8 +608,8 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         act.task_uuid = task_uuid
         act.save()
         queue_name = self.node.host.hostname + ".vm"
-        remote_tasks.save_as.apply_async(args=[self.get_vm_desc()],
-                                         queue=queue_name).get()
+        vm_tasks.save_as.apply_async(args=[self.get_vm_desc()],
+                                     queue=queue_name).get()
 
     def save_as_async(self, user=None):
         """Execute save_as asynchronously.
@@ -663,6 +664,9 @@ class Interface(Model):
     instance = ForeignKey(Instance, verbose_name=_('instance'),
                           related_name='interface_set')
 
+    def __unicode__(self):
+        return 'cloud-' + str(self.instance.id) + '-' + str(self.vlan.vid)
+
     @property
     def mac(self):
         try:
@@ -680,31 +684,42 @@ class Interface(Model):
         i = instance.id & 0xfffffff
         v = vlan.vid & 0xfff
         m = (0x02 << 40) | (i << 12) | v
-        return EUI(m)
+        return EUI(m, dialect=mac_unix)
 
     def get_vmnetwork_desc(self):
         return {
-            'name': 'cloud-' + self.instance.id + '-' + self.vlan.vid,
+            'name': 'cloud-' + str(self.instance.id)
+                             + '-' + str(self.vlan.vid),
             'bridge': 'cloud',
-            'mac': self.mac,
+            'mac': str(self.mac),
             'ipv4': self.host.ipv4 if self.host is not None else None,
             'ipv6': self.host.ipv6 if self.host is not None else None,
             'vlan': self.vlan.vid,
             'managed': self.host is not None
         }
 
-    def deploy(self):
-        #TODO
-        pass
+    def deploy(self, user=None, task_uuid=None):
+        net_tasks.create.apply_async(
+            args=[self.get_vmnetwork_desc()],
+            queue=self.instance.node.host.hostname + '.net')
+
+    def remove(self, user=None, task_uuid=None):
+        net_tasks.delete.apply_async(
+            args=[self.get_vmnetwork_desc()],
+            queue=self.instance.node.host.hostname + '.net')
 
     @classmethod
     def create_from_template(cls, instance, template):
         """Create a new interface for an instance based on an
            InterfaceTemplate.
         """
-        host = (Host(vlan=template.vlan, mac=cls.generate_mac(instance,
-                                                              template.vlan))
-                if template.managed else None)
+        if template.managed:
+            host = Host(vlan=template.vlan,
+                        mac=str(cls.generate_mac(instance, template.vlan)))
+                        # TODO Fix at firewall EUI
+            host.save()
+        else:
+            host = None
         iface = cls(vlan=template.vlan, host=host, instance=instance)
         iface.save()
         return iface
