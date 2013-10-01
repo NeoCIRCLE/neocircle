@@ -172,14 +172,18 @@ $(function() {
       'trigger': 'click'
     });
 
-    $('tbody a').click(function(e) {
+    $('tbody a').mousedown(function(e) {
       // parent tr doesn't get selected when clicked
       e.stopPropagation();
+      });
+
+    $('tbody a').click(function(e) {
       // browser doesn't jump to top when clicked the buttons
       if(!$(this).hasClass('real-link')) {
         return false;
       }
     });
+
   });
 
   function collectIds(rows) {
