@@ -29,10 +29,10 @@ class VmListTable(Table):
         attrs={'th': {'class': 'vm-list-table-thin'}},
     )
     time_of_suspend = TemplateColumn(
-        '{{ record.time_of_suspend|timesince }}',
+        '{{ record.time_of_suspend|timeuntil }}',
         verbose_name=_("Suspend in"))
     time_of_delete = TemplateColumn(
-        '{{ record.time_of_delete|timesince }}',
+        '{{ record.time_of_delete|timeuntil }}',
         verbose_name=_("Delete in"))
 
     class Meta:
