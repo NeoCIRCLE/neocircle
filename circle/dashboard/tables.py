@@ -6,7 +6,8 @@ from django.utils.translation import ugettext_lazy as _
 
 
 class VmListTable(Table):
-    pk = Column(
+    pk = TemplateColumn(
+        template_name='dashboard/vm-list/column-id.html',
         verbose_name="ID",
         attrs={'th': {'class': 'vm-list-table-thin'}},
     )

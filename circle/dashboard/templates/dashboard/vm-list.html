@@ -21,7 +21,7 @@
         <p>
         <strong>Group actions</strong>
         <button class="btn btn-info btn-xs" disabled>Select all</button>
-        <a class="btn btn-default btn-xs" disabled><i class="icon-truck"></i> Migrate</a>
+        <a class="btn btn-default btn-xs" id="vm-list-group-migrate" disabled><i class="icon-truck"></i> Migrate</a>
           <button type="button" class="btn btn-xs btn-warning dropdown-toggle" data-toggle="dropdown" disabled>Action <i class="icon-caret-down"></i></button>
           <ul class="dropdown-menu" role="menu">
             <li><a href="#"><i class="icon-refresh"></i> Reboot</a></li>
@@ -158,6 +158,11 @@ $(function() {
       return false;
     });
 
+    
+    $('#vm-list-group-migrate').click(function() {
+      console.log(collectIds(selected));
+    });
+
     $('.vm-list-details').popover({
       'placement': 'auto',
       'html': true,
@@ -180,6 +185,14 @@ $(function() {
     });
   });
 
+  function collectIds(rows) {
+    var ids = [];
+    for(var i = 0; i < rows.length; i++) {
+      var div = $('td:first-child div', $('.vm-list-table tbody tr').eq(i));
+      ids.push(div.prop('id').replace('vm-', ''));
+    }
+    return ids;  
+  }
 
   function setRowColor(row) {
     if(!row.hasClass('vm-list-selected')) {
