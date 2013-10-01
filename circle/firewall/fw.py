@@ -1,8 +1,6 @@
 from firewall import models
 import django.conf
 
-
-import subprocess
 import re
 from datetime import datetime, timedelta
 from django.db.models import Q
@@ -12,14 +10,6 @@ settings = django.conf.settings.FIREWALL_SETTINGS
 
 
 class Firewall:
-    IPV6 = False
-    RULES = None
-    RULES_NAT = []
-    vlans = None
-    pub = None
-    hosts = None
-    fw = None
-
     def dportsport(self, rule, repl=True):
         retval = ' '
         if rule.proto == 'tcp' or rule.proto == 'udp':
@@ -46,7 +36,7 @@ class Firewall:
         if not rule.foreign_network:
             return
 
-        if self.IPV6 and host.ipv6:
+        if self.proto == 6 and host.ipv6:
             ipaddr = host.ipv6 + '/112'
         else:
             ipaddr = host.ipv4
@@ -245,30 +235,29 @@ class Firewall:
         # post-run stuff
         self.postrun()
 
-        if self.IPV6:
+        if self.proto == 6:
             self.RULES = [x for x in self.RULES if not ipv4_re.search(x)]
             self.RULES = [x.replace('icmp', 'icmpv6') for x in self.RULES]
 
-    def __init__(self, IPV6=False):
+    def __init__(self, proto=4):
         self.RULES = []
         self.RULES_NAT = []
-        self.IPV6 = IPV6
+        self.proto = proto
         self.vlans = models.Vlan.objects.all()
         self.hosts = models.Host.objects.all()
-        self.pub = models.Vlan.objects.get(name='PUB')
         self.fw = models.Firewall.objects.all()
         self.ipt_filter()
-        if not self.IPV6:
+        if self.proto != 6:
             self.ipt_nat()
 
     def get(self):
-        if self.IPV6:
+        if self.proto == 6:
             return {'filter': self.RULES, }
         else:
             return {'filter': self.RULES, 'nat': self.RULES_NAT}
 
     def show(self):
-        if self.IPV6:
+        if self.proto == 6:
             return '\n'.join(self.RULES) + '\n'
         else:
             return ('\n'.join(self.RULES) + '\n' +
@@ -385,11 +374,6 @@ def dns():
             DNS.append("^%s:%s:%s" % (d['name'], d['address'], d['ttl']))
 
     return DNS
-    process = subprocess.Popen(['/usr/bin/ssh', 'tinydns@%s' %
-                                settings['dns_hostname']],
-                               shell=False, stdin=subprocess.PIPE)
-    process.communicate("\n".join(DNS) + "\n")
-    # print "\n".join(DNS)+"\n"
 
 
 def prefix_to_mask(prefix):
@@ -452,9 +436,3 @@ def dhcp():
                     })
 
     return DHCP
-    process = subprocess.Popen(['/usr/bin/ssh', 'fw2',
-                                'cat > /tools/dhcp3/dhcpd.conf.generated;'
-                                'sudo /etc/init.d/isc-dhcp-server restart'],
-                               shell=False, stdin=subprocess.PIPE)
-#   print "\n".join(DHCP)+"\n"
-    process.communicate("\n".join(DHCP) + "\n")

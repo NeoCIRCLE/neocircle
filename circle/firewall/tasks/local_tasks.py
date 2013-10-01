@@ -21,8 +21,8 @@ def periodic_task():
 
         if cache.get('firewall_lock'):
             cache.delete("firewall_lock")
-            ipv4 = Firewall().get()
-            ipv6 = Firewall(True).get()
+            ipv4 = Firewall(proto=4).get()
+            ipv6 = Firewall(proto=6).get()
             remote_tasks.reload_firewall_task.delay(ipv4, ipv6)
             print "firewall ujratoltese kesz"
 
