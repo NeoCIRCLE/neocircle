@@ -625,6 +625,30 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         local_tasks.save_as.apply_async(args=[self, user],
                                         queue="localhost.man")
 
+    def remove(self, user=None, task_uuid=None):
+        """ Remove Instance with its networks.
+        """
+        act = InstanceActivity(activity_code='vm.Instance.remove')
+        act.instance = self
+        act.user = user
+        act.started = timezone.now()
+        act.task_uuid = task_uuid
+        act.save()
+        queue_name = self.node.host.hostname + ".vm"
+        # Delete instance
+        vm_tasks.delete.apply_async(args=[self.vm_name],
+                                    queue=queue_name).get()
+        # Delete networks
+        for net in self.interface_set.all():
+            net.remove()
+        act.finish(result="DONE")
+
+    def remove_async(self, user=None):
+        """ Asyncron remove()
+        """
+        local_tasks.delete.apply_async(args=[self, user],
+                                       queue="localhost.man")
+
     def renew(self, which='both'):
         """Renew virtual machine instance leases.
         """
