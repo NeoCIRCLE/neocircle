@@ -283,6 +283,24 @@ class Vlan(models.Model):
     def prefix6(self):
         return self.network6.prefixlen
 
+    def get_new_address(self):
+        i = 0
+        hosts = Host.objects.filter(vlan=self)
+        used_v4 = hosts.values_list('ipv4', flat=True)
+        used_v6 = hosts.values_list('ipv6', flat=True)
+
+        for ipv4 in self.network4.iter_hosts():
+            i += 1
+            if i > 10000:
+                break
+            ipv4 = str(ipv4)
+            if ipv4 not in used_v4:
+                print ipv4
+                ipv6 = ipv4_2_ipv6(ipv4)
+                if ipv6 not in used_v6:
+                    return (ipv4, ipv6)
+        raise ValidationError(_("All IP addresses are already in use."))
+
 
 class VlanGroup(models.Model):
     """
