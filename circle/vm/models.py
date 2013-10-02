@@ -544,8 +544,9 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         act.task_uuid = task_uuid
         act.save()
         queue_name = self.node.host.hostname + ".vm"
-        vm_tasks.stop.apply_async(args=[self.get_vm_desc()],
+        vm_tasks.stop.apply_async(args=[self.vm_name],
                                   queue=queue_name).get()
+        act.finish(result='SUCCESS')
 
     def stop_async(self, user=None):
         """Execute stop asynchronously.
@@ -562,6 +563,7 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         queue_name = self.node.host.hostname + ".vm"
         vm_tasks.resume.apply_async(args=[self.vm_name],
                                     queue=queue_name).get()
+        act.finish(result='SUCCESS')
 
     def resume_async(self, user=None):
         """Execute resume asynchronously.
@@ -577,8 +579,9 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         act.task_uuid = task_uuid
         act.save()
         queue_name = self.node.host.hostname + ".vm"
-        vm_tasks.power_off.apply_async(args=[self.get_vm_desc()],
+        vm_tasks.power_off.apply_async(args=[self.vm_name],
                                        queue=queue_name).get()
+        act.finish(result='SUCCESS')
 
     def poweroff_async(self, user=None):
         """Execute poweroff asynchronously.
@@ -594,8 +597,9 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         act.task_uuid = task_uuid
         act.save()
         queue_name = self.node.host.hostname + ".vm"
-        vm_tasks.restart.apply_async(args=[self.get_vm_desc()],
+        vm_tasks.restart.apply_async(args=[self.vm_name],
                                      queue=queue_name).get()
+        act.finish(result='SUCCESS')
 
     def restart_async(self, user=None):
         """Execute restart asynchronously.
@@ -611,10 +615,11 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         act.task_uuid = task_uuid
         act.save()
         queue_name = self.node.host.hostname + ".vm"
-        vm_tasks.save_as.apply_async(args=[self.get_vm_desc()],
+        vm_tasks.save_as.apply_async(args=[self.vm_name],
                                      queue=queue_name).get()
+        act.finish(result='SUCCESS')
 
-    def save_as_async(self, user=None):
+    def save_as_async(self, user=None, task_uuid=None):
         """Execute save_as asynchronously.
         """
         local_tasks.save_as.apply_async(args=[self, user],
