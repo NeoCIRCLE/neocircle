@@ -62,10 +62,6 @@ class Rule(models.Model):
                               verbose_name=_("owner"),
                               help_text=_("The user responsible for "
                                           "this rule."))
-    r_type = models.CharField(max_length=10, verbose_name=_("Rule type"),
-                              choices=CHOICES_type,
-                              help_text=_("The type of entity the rule "
-                                          "belongs to."))
     nat = models.BooleanField(default=False, verbose_name=_("NAT"),
                               help_text=_("If network address translation "
                                           "shoud be done."))
@@ -129,6 +125,15 @@ class Rule(models.Model):
                      (("dport=%s " % self.dport) if self.dport else '')),
             'desc': self.description}
 
+    @property
+    def r_type(self):
+        fields = [self.vlan, self.vlangroup, self.host, self.hostgroup,
+                  self.firewall]
+        for field in fields:
+            if field is not None:
+                return field.__class__.__name__.lower()
+        return None
+
     @models.permalink
     def get_absolute_url(self):
         return ('network.rule', None, {'pk': self.pk})
@@ -137,7 +142,6 @@ class Rule(models.Model):
         verbose_name = _("rule")
         verbose_name_plural = _("rules")
         ordering = (
-            'r_type',
             'direction',
             'proto',
             'sport',
@@ -495,11 +499,11 @@ class Host(models.Model):
             if public < 1024:
                 raise ValidationError(_("Only ports above 1024 can be used."))
             rule = Rule(direction='1', owner=self.owner, dport=public,
-                        proto=proto, nat=True, accept=True, r_type="host",
+                        proto=proto, nat=True, accept=True,
                         nat_dport=private, host=self, foreign_network=vg)
         else:
             rule = Rule(direction='1', owner=self.owner, dport=public,
-                        proto=proto, nat=False, accept=True, r_type="host",
+                        proto=proto, nat=False, accept=True,
                         host=self, foreign_network=vg)
 
         rule.full_clean()
