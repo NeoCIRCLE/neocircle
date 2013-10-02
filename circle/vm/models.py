@@ -358,11 +358,14 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
             inst.disks.add(disk.get_exclusive())
         # create related entities
         for iftmpl in template.interface_set.all():
-            i = Interface.create_from_template(instance=inst, template=iftmpl)
+            i = Interface.create_from_template(instance=inst,
+                                               template=iftmpl,
+                                               owner=owner)
             if i.host:
                 i.host.enable_net()
-                port, proto = ACCESS_PROTOCOLS[i.access_method][1:3]
-                i.host.add_port(proto, i.get_port(), port)
+                port, proto = ACCESS_PROTOCOLS[i.instance.access_method][1:3]
+                # TODO fix this port fw
+                i.host.add_port(proto, private=port)
 
         return inst
 
