@@ -29,6 +29,12 @@ def periodic_task():
                                                      queue='firewall')
             print "firewall ujratoltese kesz"
 
+        if cache.get('firewall_vlan_lock'):
+            cache.delete("firewall_vlan_lock")
+            remote_tasks.reload_firewall_vlan.apply_async(args=[vlan()],
+                                                          queue='firewall')
+            print "firewall_vlan ujratoltese kesz"
+
         if cache.get('blacklist_lock'):
             cache.delete("blacklist_lock")
             remote_tasks.reload_blacklist.apply_async(args=[list(ipset())],
@@ -49,5 +55,8 @@ def reloadtask(type='Host'):
 
         if type == "Blacklist":
             cache.add("blacklist_lock", "true", 30)
+
+        if type == "Vlan":
+            cache.add("firewall_vlan_lock", "true", 30)
 
         print type

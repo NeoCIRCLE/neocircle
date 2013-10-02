@@ -11,6 +11,11 @@ def reload_firewall(data4, data6):
     pass
 
 
+@celery.task(name='firewall.reload_firewall_vlan')
+def reload_firewall_vlan(data):
+    pass
+
+
 @celery.task(name='firewall.reload_dhcp')
 def reload_dhcp(data):
     pass

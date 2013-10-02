@@ -436,3 +436,11 @@ def dhcp():
                     })
 
     return DHCP
+
+
+def vlan():
+    obj = models.Vlan.objects.values('vid', 'name', 'network4', 'network6')
+    return {x['name']: {'tag': x['vid'],
+                        'addresses': [str(x['network4']),
+                                      str(x['network6'])]}
+            for x in obj}
