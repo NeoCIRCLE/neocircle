@@ -12,6 +12,7 @@ import django.conf
 from django.db.models.signals import post_save
 import random
 
+from firewall.tasks.local_tasks import reloadtask
 settings = django.conf.settings.FIREWALL_SETTINGS
 
 
@@ -782,8 +783,7 @@ class Blacklist(models.Model):
 
 
 def send_task(sender, instance, created, **kwargs):
-    from firewall.tasks.local_tasks import reloadtask
-    reloadtask.apply_async(args=[sender.__name__], queue='localhost.firewall')
+    reloadtask.apply_async(args=[sender.__name__])
 
 
 post_save.connect(send_task, sender=Host)

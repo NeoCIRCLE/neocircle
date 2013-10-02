@@ -10,7 +10,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from .tasks import reloadtask
+from .tasks.local_tasks import reloadtask
 from .models import Blacklist, Host
 
 
@@ -20,6 +20,7 @@ def reload_firewall(request):
             html = (_("Dear %s, you've signed in as administrator!<br />"
                       "Reloading in 10 seconds...") % request.user.username)
             reloadtask.delay()
+            reloadtask.delay('Vlan')
         else:
             html = (_("Dear %s, you've signed in!") % request.user.username)
     else:
