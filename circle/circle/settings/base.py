@@ -303,3 +303,12 @@ VM_ACCESS_PROTOCOLS = loads(get_env_variable('DJANGO_VM_ACCESS_PROTOCOLS',
                                                  "rdp": ["RDP", 3389, "tcp"],
                                                  "ssh": ["SSH", 22, "tcp"]}'''))
 VM_SCHEDULER = 'manager.scheduler'
+
+from datetime import timedelta
+
+CELERYBEAT_SCHEDULE = {
+    'blabla': {
+        'task': 'firewall.tasks.local_tasks.periodic_task',
+        'schedule': timedelta(seconds=5),
+    },
+}
