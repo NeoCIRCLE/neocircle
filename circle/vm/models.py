@@ -741,14 +741,22 @@ class Interface(Model):
             queue=self.instance.node.host.hostname + '.net')
 
     @classmethod
-    def create_from_template(cls, instance, template):
+    def create_from_template(cls, instance, template, owner=None):
         """Create a new interface for an instance based on an
            InterfaceTemplate.
         """
         if template.managed:
-            host = Host(vlan=template.vlan,
-                        mac=str(cls.generate_mac(instance, template.vlan)))
-                        # TODO Fix at firewall EUI
+
+            host = Host()
+            host.vlan = template.vlan
+            host.mac = str(cls.generate_mac(instance, template.vlan))
+            # TODO Fix at firewall EUI mac
+            host.hostname = instance.vm_name
+            # Get adresses from firewall #TODO fix tupple to dict.
+            addresses = template.vlan.get_new_address()
+            host.ipv4 = addresses[0]
+            host.ipv6 = addresses[1]
+            host.owner = owner
             host.save()
         else:
             host = None
