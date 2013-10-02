@@ -37,5 +37,7 @@ $(function () {
 
 
         });
+    if (window.location.hash)
+        $("a[href=" + window.location.hash +"]").tab('show');
 });
 
