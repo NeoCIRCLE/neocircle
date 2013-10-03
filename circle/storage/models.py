@@ -66,6 +66,15 @@ class Disk(TimeStampedModel):
             return ("Operation can't be invoked on a disk of type '%s'." %
                     self.type)
 
+    class DiskInUseError(Exception):
+        def __init__(self, disk):
+            self.disk = disk
+
+        def __str__(self):
+            return ("The requested operation can't be performed on disk "
+                    "'%s (%s)' because it is in use." %
+                    (self.disk.name, self.disk.filename))
+
     @property
     def path(self):
         return self.datastore.path + '/' + self.filename
@@ -87,6 +96,9 @@ class Disk(TimeStampedModel):
             'raw': 'vd',
             'iso': 'hd',
         }[self.format]
+
+    def is_in_use(self):
+        return self.instance_set.exclude(state='SHUTOFF').exists()
 
     def get_exclusive(self):
         """Get an instance of the disk for exclusive usage.
@@ -198,6 +210,45 @@ class Disk(TimeStampedModel):
     def restore_async(self, user=None):
         local_tasks.restore.apply_async(args=[self, user],
                                         queue='localhost.man')
+
+    def save_as(self, name, user=None, task_uuid=None):
+        mapping = {
+            'qcow2-snap': ('qcow2-norm', self.base),
+        }
+        if self.type not in mapping.keys():
+            raise self.WrongDiskTypeError(self.type)
+
+        if self.is_in_use():
+            raise self.DiskInUseError(self)
+
+        # from this point on, the caller has to guarantee that the disk is not
+        # going to be used until the operation is complete
+
+        act = DiskActivity(activity_code='storage.Disk.save_as')
+        act.disk = self
+        act.started = timezone.now()
+        act.state = 'PENDING'
+        act.task_uuid = task_uuid
+        act.user = user
+        act.save()
+
+        filename = str(uuid.uuid4())
+        new_type, new_base = mapping[self.type]
+
+        disk = Disk.objects.create(base=new_base, datastore=self.datastore,
+                                   filename=filename, name=name,
+                                   size=self.size, type=new_type)
+
+        queue_name = self.datastore.hostname + ".storage"
+        remote_tasks.merge.apply_async(args=[self.get_disk_desc(),
+                                             disk.get_disk_desc()],
+                                       queue=queue_name).get()
+
+        disk.ready = True
+        disk.save()
+        act.finish('SUCCESS')
+
+        return disk
 
 
 class DiskActivity(TimeStampedModel):
