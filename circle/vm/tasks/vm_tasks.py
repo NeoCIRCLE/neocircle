@@ -2,22 +2,32 @@ from manager.mancelery import celery
 
 
 @celery.task(name='vmdriver.create')
-def create(params):
+def deploy(params):
+    pass
+
+
+@celery.task(name='vmdriver.delete')
+def destroy(params):
+    pass
+
+
+@celery.task(name='vmdriver.save')
+def sleep(params):
+    pass
+
+
+@celery.task(name='vmdriver.restore')
+def wake_up(params):
     pass
 
 
 @celery.task(name='vmdriver.suspend')
-def stop(params):
+def suspend(params):
     pass
 
 
 @celery.task(name='vmdriver.resume')
 def resume(params):
-    pass
-
-
-@celery.task(name='vmdriver.delete')
-def poweroff(params):
     pass
 
 
@@ -31,23 +41,8 @@ def reset(params):
     pass
 
 
-@celery.task(name='vmdriver.start')
-def restart(params):
-    pass
-
-
 @celery.task(name='vmdriver.reboot')
 def reboot(params):
-    pass
-
-
-@celery.task(name='vmdriver.save')
-def save(params):
-    pass
-
-
-@celery.task(name='vmdriver.restore')
-def restore(params):
     pass
 
 
@@ -63,9 +58,4 @@ def domain_info(params):
 
 @celery.task(name='vmdriver.list_domains')
 def list_domains(params):
-    pass
-
-
-@celery.task(name='vmdriver.delete')
-def delete(params):
     pass

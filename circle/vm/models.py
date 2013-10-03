@@ -530,30 +530,56 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
 
         act.finish(result='SUCCESS')
 
-    def deploy_async(self, user=None):
-        """Execute deploy asynchronously.
+    def destroy(self, user=None, task_uuid=None):
+        """ Remove Instance with its networks.
         """
-        local_tasks.deploy.apply_async(args=[self, user],
-                                       queue="localhost.man")
-
-    def stop(self, user=None, task_uuid=None):
-        act = InstanceActivity(activity_code='vm.Instance.stop')
+        act = InstanceActivity(activity_code='vm.Instance.destroy')
         act.instance = self
         act.user = user
         act.started = timezone.now()
         act.task_uuid = task_uuid
         act.save()
         queue_name = self.node.host.hostname + ".vm"
-        vm_tasks.stop.apply_async(args=[self.vm_name],
-                                  queue=queue_name).get()
+        # Delete instance
+        vm_tasks.destroy.apply_async(args=[self.vm_name],
+                                     queue=queue_name).get()
+        # Delete networks
+        for net in self.interface_set.all():
+            net.remove()
+        act.finish(result="DONE")
+
+    def destroy_async(self, user=None):
+        """Execute destroy() asyncrhonusly.
+        """
+        local_tasks.destroy.apply_async(args=[self, user],
+                                        queue="localhost.man")
+
+    def deploy_async(self, user=None):
+        """Execute deploy() asynchronously.
+        """
+        local_tasks.deploy.apply_async(args=[self, user],
+                                       queue="localhost.man")
+
+    def sleep(self, user=None, task_uuid=None):
+        """Suspend virtual machine with memory dump.
+        """
+        act = InstanceActivity(activity_code='vm.Instance.sleep')
+        act.instance = self
+        act.user = user
+        act.started = timezone.now()
+        act.task_uuid = task_uuid
+        act.save()
+        queue_name = self.node.host.hostname + ".vm"
+        vm_tasks.sleep.apply_async(args=[self.vm_name],
+                                   queue=queue_name).get()
         act.finish(result='SUCCESS')
 
-    def stop_async(self, user=None):
-        """Execute stop asynchronously.
+    def sleep_async(self, user=None):
+        """Execute suspend() asynchronously.
         """
-        local_tasks.stop.apply_async(args=[self, user], queue="localhost.man")
+        local_tasks.sleep.apply_async(args=[self, user], queue="localhost.man")
 
-    def resume(self, user=None, task_uuid=None):
+    def wake_up(self, user=None, task_uuid=None):
         act = InstanceActivity(activity_code='vm.Instance.resume')
         act.instance = self
         act.user = user
@@ -565,13 +591,15 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
                                     queue=queue_name).get()
         act.finish(result='SUCCESS')
 
-    def resume_async(self, user=None):
-        """Execute resume asynchronously.
+    def wake_up_async(self, user=None):
+        """Execute resume() asynchronously.
         """
         local_tasks.resume.apply_async(args=[self, user],
                                        queue="localhost.man")
 
-    def poweroff(self, user=None, task_uuid=None):
+    def shutdown(self, user=None, task_uuid=None):
+        """Shutdown virtual machine with ACPI signal.
+        """
         act = InstanceActivity(activity_code='vm.Instance.power_off')
         act.instance = self
         act.user = user
@@ -579,17 +607,19 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         act.task_uuid = task_uuid
         act.save()
         queue_name = self.node.host.hostname + ".vm"
-        vm_tasks.power_off.apply_async(args=[self.vm_name],
-                                       queue=queue_name).get()
+        vm_tasks.shutdown.apply_async(args=[self.vm_name],
+                                      queue=queue_name).get()
         act.finish(result='SUCCESS')
 
-    def poweroff_async(self, user=None):
-        """Execute poweroff asynchronously.
+    def shutdown_async(self, user=None):
+        """Execute shutdown asynchronously.
         """
-        local_tasks.power_off.apply_async(args=[self, user],
-                                          queue="localhost.man")
+        local_tasks.shutdown.apply_async(args=[self, user],
+                                         queue="localhost.man")
 
-    def restart(self, user=None, task_uuid=None):
+    def reset(self, user=None, task_uuid=None):
+        """Reset virtual machine (reset button)
+        """
         act = InstanceActivity(activity_code='vm.Instance.restart')
         act.instance = self
         act.user = user
@@ -601,52 +631,30 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
                                      queue=queue_name).get()
         act.finish(result='SUCCESS')
 
-    def restart_async(self, user=None):
-        """Execute restart asynchronously.
+    def reset_async(self, user=None):
+        """Execute reset asynchronously.
         """
         local_tasks.restart.apply_async(args=[self, user],
                                         queue="localhost.man")
 
-    def save_as(self, user=None, task_uuid=None):
-        act = InstanceActivity(activity_code='vm.Instance.restart')
+    def reboot(self, user=None, task_uuid=None):
+        """Reboot virtual machin with ctr+alt+del signal.
+        """
+        act = InstanceActivity(activity_code='vm.Instance.reboot')
         act.instance = self
         act.user = user
         act.started = timezone.now()
         act.task_uuid = task_uuid
         act.save()
         queue_name = self.node.host.hostname + ".vm"
-        vm_tasks.save_as.apply_async(args=[self.vm_name],
-                                     queue=queue_name).get()
+        vm_tasks.reboot.apply_async(args=[self.vm_name],
+                                    queue=queue_name).get()
         act.finish(result='SUCCESS')
 
-    def save_as_async(self, user=None, task_uuid=None):
-        """Execute save_as asynchronously.
+    def reboot_async(self, user=None):
+        """Execute reboot asynchronously.
         """
-        local_tasks.save_as.apply_async(args=[self, user],
-                                        queue="localhost.man")
-
-    def remove(self, user=None, task_uuid=None):
-        """ Remove Instance with its networks.
-        """
-        act = InstanceActivity(activity_code='vm.Instance.remove')
-        act.instance = self
-        act.user = user
-        act.started = timezone.now()
-        act.task_uuid = task_uuid
-        act.save()
-        queue_name = self.node.host.hostname + ".vm"
-        # Delete instance
-        vm_tasks.delete.apply_async(args=[self.vm_name],
-                                    queue=queue_name).get()
-        # Delete networks
-        for net in self.interface_set.all():
-            net.remove()
-        act.finish(result="DONE")
-
-    def remove_async(self, user=None):
-        """ Asyncron remove()
-        """
-        local_tasks.delete.apply_async(args=[self, user],
+        local_tasks.reboot.apply_async(args=[self, user],
                                        queue="localhost.man")
 
     def renew(self, which='both'):
@@ -735,8 +743,8 @@ class Interface(Model):
             args=[self.get_vmnetwork_desc()],
             queue=self.instance.node.host.hostname + '.net')
 
-    def remove(self, user=None, task_uuid=None):
-        net_tasks.delete.apply_async(
+    def destroy(self, user=None, task_uuid=None):
+        net_tasks.destroy.apply_async(
             args=[self.get_vmnetwork_desc()],
             queue=self.instance.node.host.hostname + '.net')
 

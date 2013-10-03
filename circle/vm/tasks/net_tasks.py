@@ -7,5 +7,5 @@ def create(params):
 
 
 @celery.task(name='netdriver.delete')
-def delete(params):
+def destroy(params):
     pass
