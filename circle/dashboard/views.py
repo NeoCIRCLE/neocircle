@@ -1,12 +1,13 @@
+import re
+
+from django.contrib.auth.models import User, Group
 from django.core import signing
-from django.http import HttpResponse
-from django.utils.translation import ugettext_lazy as _
-from django.views.generic import TemplateView, DetailView
+from django.shortcuts import redirect
+from django.views.generic import TemplateView, DetailView, UpdateView
 
 from django_tables2 import SingleTableView
 from guardian.shortcuts import (get_users_with_perms, get_groups_with_perms,
-                                get_perms)
-from tables import VmListTable
+                                get_perms, remove_perm, assign_perm)
 
 from vm.models import Instance
 
@@ -27,6 +28,20 @@ class IndexView(TemplateView):
             'instances': Instance.objects.filter(owner=user),
         })
         return context
+
+
+def split(t, at):
+    """
+    Split collection at first occurance of given element.
+
+    >>> split("FooBar", "B")
+    ('Foo', 'Bar')
+    >>> split(range(5), 2)
+    ([0, 1], [2, 3, 4])
+    """
+
+    pos = t.index(at)
+    return t[:pos], t[pos:]
 
 
 def first_common_element(a, b):
@@ -51,12 +66,22 @@ def get_acl_data(obj):
             'url': obj.get_absolute_url()}
 
 
-class VmDetailView(DetailView):
+def set_acl_level(obj, whom, level):
+    levels = obj._meta.permissions
+    levelids = [id for (id, name) in levels]
+    to_remove, to_add = split(levelids, level)
+    for p in to_remove:
+        remove_perm(p, whom, obj)
+    for p in to_add:
+        assign_perm(p, whom, obj)
+
+
+class VmDetailView(UpdateView):
     template_name = "dashboard/vm-detail.html"
     queryset = Instance.objects.all()
 
     def get_context_data(self, **kwargs):
-        context = super(DetailView, self).get_context_data(**kwargs)
+        context = super(VmDetailView, self).get_context_data(**kwargs)
         instance = context['instance']
         if instance.node:
             port = instance.vnc_port
@@ -68,6 +93,27 @@ class VmDetailView(DetailView):
             })
         context['acl'] = get_acl_data(instance)
         return context
+
+    def post(self, request, *args, **kwargs):
+        super(VmDetailView, self).post(request, *args, **kwargs)
+        context = self.get_context_data(**kwargs)
+        instance = context['instance']
+        for key, value in request.POST.items():
+            m = re.match('perm-([ug])-(\d+)', key)
+            if m:
+                type, id = m.groups()
+                entity = {'u': User, 'g': Group}[type].objects.get(id=id)
+                set_acl_level(instance, entity, value)
+
+        name = request.POST['perm-new-name']
+        value = request.POST['perm-new']
+        if name:
+            try:
+                entity = User.objects.get(username=name)
+            except User.DoesNotExist:
+                entity = Group.objects.get(name=name)
+            set_acl_level(instance, entity, value)
+        return redirect(instance)
 
 
 class VmList(SingleTableView):
