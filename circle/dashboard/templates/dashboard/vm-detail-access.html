@@ -28,8 +28,15 @@
             </select></td>
             <td><a href="#" class="btn btn-link btn-xs"><i class="icon-remove"><span class="sr-only">{% trans "remove" %}</span></i></a></td></tr>
         {% endfor %}
-      <tr><td><i class="icon-plus"></i></td><td><input type="text" class="form-control"></td>
-          <td><select class="form-control"><option>owner</option></select></td><td></td></tr>
+        <tr><td><i class="icon-plus"></i></td>
+            <td><input type="text" class="form-control" name="perm-new-name"
+                placeholder="{% trans "Name of group or user" %}"></td>
+            <td><select class="form-control" name="perm-new">
+                    {% for id, name in acl.levels %}
+                    <option value="{{id}}">{{name}}</option>
+                    {% endfor %}
+            </select></td><td></td>
+        </tr>
   </tbody>
   </table>
   <div class="form-actions">
