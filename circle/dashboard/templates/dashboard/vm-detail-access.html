@@ -12,7 +12,7 @@
     <tbody>
         {% for i in acl.users %}
         <tr><td><i class="icon-user"></i></td><td>{{i.user}}</td>
-            <td><select class="form-control" name="perm-u-{{i.id}}">
+            <td><select class="form-control" name="perm-u-{{i.user.id}}">
                     {% for id, name in acl.levels %}
                     <option{%if id = i.perm%} selected="selected"{%endif%} value="{{id}}">{{name}}</option>
                     {% endfor %}
@@ -21,7 +21,7 @@
         {% endfor %}
         {% for i in acl.groups %}
         <tr><td><i class="icon-group"></i></td><td>{{i.group}}</td>
-            <td><select class="form-control" name="perm-g-{{i.id}}">
+            <td><select class="form-control" name="perm-g-{{i.group.id}}">
                     {% for id, name in acl.levels %}
                     <option{%if id = i.perm%} selected="selected"{%endif%} value="{{id}}">{{name}}</option>
                     {% endfor %}
