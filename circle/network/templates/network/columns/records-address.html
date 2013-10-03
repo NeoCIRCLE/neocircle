@@ -1,0 +1,15 @@
+{% if record.host %}
+    {% if record.type == "A" %}
+        {{ record.host.ipv4 }}
+    {% elif  record.type == "AAAA" %}
+        {{ record.host.ipv6 }}
+    {% elif record.type == "CNAME" %}
+        {{ record.host.get_fqdn }}
+    {% elif record.type == "MX" %}
+        {{ record.host.get_fqdn }}
+    {% else %}
+       This should not appear! 
+    {% endif %}
+{% else %}
+    {{ record.address }}
+{% endif %}
