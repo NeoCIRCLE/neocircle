@@ -3,7 +3,8 @@
         <label for="cpu-priority-slider"><i class="icon-trophy"></i> CPU priority</label>
     </div>
     <div class="col-sm-9">
-        <input type="text" data-slider="true" data-slider-highlight="true" data-slider-snap="true" id="cpu-priority-slider" value="0.25">
+      <input type="text" data-slider="true" data-slider-highlight="true" 
+      data-slider-snap="true" data-slider-range="0,100" data-slider-step="1" id="cpu-priority-slider" value="{{ instance.priority }}">
     </div>
 </p>
 
@@ -13,7 +14,7 @@
         <label for="cpu-count-slider"><i class="icon-cogs"></i> CPU count</label>
     </div>
     <div class="col-sm-9">
-        <input type="text" value="1" data-slider="true" data-slider-highlight="true" data-slider-range="0,8" data-slider-snap="true" data-slider-step="1" id="cpu-count-slider">
+      <input type="text" value="{{ instance.num_cores }}" data-slider="true" data-slider-highlight="true" data-slider-range="0,8" data-slider-snap="true" data-slider-step="1" id="cpu-count-slider">
     </div>
 </p>
 
@@ -23,7 +24,7 @@
         <label for="ram-slider"><i class="icon-ticket"></i> RAM amount</label>
     </div>
     <div class="col-sm-9">
-        <input type="text" data-slider="true" data-slider-highlight="true" id="ram-slider" data-slider-range="128,4096" data-slider-snap="true" data-slider-step="128"> MiB
+      <input type="text" data-slider="true" data-slider-highlight="true" id="ram-slider" data-slider-range="128,4096" data-slider-snap="true" data-slider-step="128" value="{{ instance.ram_size }}"> MiB
     </div>
 </p>
 
