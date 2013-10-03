@@ -64,7 +64,7 @@ class IPNetworkField(models.Field):
     description = _('IP Network object')
     __metaclass__ = models.SubfieldBase
 
-    def __init__(self, version=4, *args, **kwargs):
+    def __init__(self, version=4, serialize=True, *args, **kwargs):
         kwargs['max_length'] = 100
         self.version = version
         super(IPNetworkField, self).__init__(*args, **kwargs)
@@ -98,7 +98,7 @@ class IPNetworkField(models.Field):
 
     def value_to_string(self, obj):
         value = self._get_val_from_obj(obj)
-        return self.get_prep_value(value)
+        return str(self.get_prep_value(value))
 
     def clean(self, value, model_instance):
         value = super(IPNetworkField, self).clean(value, model_instance)
