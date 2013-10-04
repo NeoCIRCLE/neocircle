@@ -298,7 +298,7 @@ class Vlan(models.Model):
                 print ipv4
                 ipv6 = ipv4_2_ipv6(ipv4)
                 if ipv6 not in used_v6:
-                    return (ipv4, ipv6)
+                    return {'ipv4': ipv4, 'ipv6': ipv6}
         raise ValidationError(_("All IP addresses are already in use."))
 
 

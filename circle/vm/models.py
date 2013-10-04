@@ -754,20 +754,20 @@ class Interface(Model):
            InterfaceTemplate.
         """
         if template.managed:
-
             host = Host()
             host.vlan = template.vlan
+            # TODO change Host's mac field's type to EUI in firewall
             host.mac = str(cls.generate_mac(instance, template.vlan))
-            # TODO Fix at firewall EUI mac
             host.hostname = instance.vm_name
-            # Get adresses from firewall #TODO fix tupple to dict.
+            # Get adresses from firewall
             addresses = template.vlan.get_new_address()
-            host.ipv4 = addresses[0]
-            host.ipv6 = addresses[1]
+            host.ipv4 = addresses['ipv4']
+            host.ipv6 = addresses['ipv6']
             host.owner = owner
             host.save()
         else:
             host = None
+
         iface = cls(vlan=template.vlan, host=host, instance=instance)
         iface.save()
         return iface
