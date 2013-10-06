@@ -2,8 +2,10 @@ import re
 
 from django.contrib.auth.models import User, Group
 from django.core import signing
+from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
-from django.views.generic import TemplateView, DetailView, UpdateView
+from django.views.generic import TemplateView, DetailView, View
+from django.views.generic.detail import SingleObjectMixin
 
 from django_tables2 import SingleTableView
 from guardian.shortcuts import (get_users_with_perms, get_groups_with_perms,
@@ -63,7 +65,7 @@ def get_acl_data(obj):
                'perm': first_common_element(levelids, get_perms(g, obj))}
               for g in groups]
     return {'users': users, 'groups': groups, 'levels': levels,
-            'url': obj.get_absolute_url()}
+            'url': reverse('dashboard.views.vm-acl', args=[obj.pk])}
 
 
 def set_acl_level(obj, whom, level):
@@ -76,9 +78,9 @@ def set_acl_level(obj, whom, level):
         assign_perm(p, whom, obj)
 
 
-class VmDetailView(UpdateView):
+class VmDetailView(DetailView):
     template_name = "dashboard/vm-detail.html"
-    queryset = Instance.objects.all()
+    model = Instance
 
     def get_context_data(self, **kwargs):
         context = super(VmDetailView, self).get_context_data(**kwargs)
@@ -94,10 +96,10 @@ class VmDetailView(UpdateView):
         context['acl'] = get_acl_data(instance)
         return context
 
+
+class AclUpdateView(View, SingleObjectMixin):
     def post(self, request, *args, **kwargs):
-        super(VmDetailView, self).post(request, *args, **kwargs)
-        context = self.get_context_data(**kwargs)
-        instance = context['instance']
+        instance = self.get_object()
         for key, value in request.POST.items():
             m = re.match('perm-([ug])-(\d+)', key)
             if m:
