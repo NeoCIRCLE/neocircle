@@ -1,11 +1,12 @@
 """Common settings and globals."""
 
-
+from datetime import timedelta
 from os import environ
 from os.path import abspath, basename, dirname, join, normpath
 from json import loads
 # from socket import SOCK_STREAM
 from sys import path
+
 
 # Normally you should not import ANYTHING from Django directly
 # into your settings, but ImproperlyConfigured is an exception.
@@ -311,3 +312,11 @@ AUTHENTICATION_BACKENDS = (
         'guardian.backends.ObjectPermissionBackend',
 )
 ANONYMOUS_USER_ID = -1
+
+# Set up periodic firewall tasks
+CELERYBEAT_SCHEDULE = {
+    'blabla': {
+        'task': 'firewall.tasks.local_tasks.periodic_task',
+        'schedule': timedelta(seconds=5),
+    },
+}

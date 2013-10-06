@@ -4,7 +4,11 @@
 {% block content %}
 
 <div class="alert alert-info">
-  Tip of the day: you can select multiple vm instances while holding down the <strong>CTRL</strong> button!
+  Tip #1: you can select multiple vm instances while holding down the <strong>CTRL</strong> key!
+</div>
+
+<div class="alert alert-info">
+  Tip #2: if you want to select multiple instances by one click select an instance then hold down <strong>SHIFT</strong> key and select another one!
 </div>
 
 <div class="row">
@@ -12,6 +16,16 @@
     <div class="panel panel-default">
       <div class="panel-heading">
         <h3 class="no-margin"><i class="icon-desktop"></i> Your virtual machines</h3>
+      </div>
+      <div class="panel-body vm-list-group-control">
+        <p>
+          <strong>Group actions</strong>
+          <button class="btn btn-info btn-xs" disabled>Select all</button>
+          <a class="btn btn-default btn-xs" id="vm-list-group-migrate" disabled><i class="icon-truck"></i> Migrate</a>
+          <a disabled href="#" class="btn btn-default btn-xs"><i class="icon-refresh"></i> Reboot</a>
+          <a disabled href="#" class="btn btn-default btn-xs"><i class="icon-off"></i> Shutdown</a>
+          <a disabled href="#" class="btn btn-danger btn-xs"><i class="icon-remove"></i> Discard</a>
+        </p>
       </div>
       <div class="panel-body">
         <table class="table table-bordered table-striped table-hover vm-list-table">
@@ -71,27 +85,79 @@
   .vm-list-selected td:first-child {
     font-weight: bold;
   }
+
+  .vm-list-table-thin {
+    width: 10px;
+  }
+
+  .vm-list-table-admin {
+    width: 130px;
+  }
 </style>
 {% endblock %}
 
 {% block extra_js %}
 $(function() {
-    var ctrlDown = false;
+    var ctrlDown, shiftDown = false;
     var ctrlKey = 17;
+    var shiftKey = 16;
+    var selected = [];
 
     $(document).keydown(function(e) {
       if (e.keyCode == ctrlKey) ctrlDown = true;
+      if (e.keyCode == shiftKey) shiftDown = true;
     }).keyup(function(e) {
       if (e.keyCode == ctrlKey) ctrlDown = false;
+      if (e.keyCode == shiftKey) shiftDown = false;
     });
 
-    $('.vm-list-table').find('tr').click(function() {
+    $('.vm-list-table tbody').find('tr').mousedown(function() {
       if (ctrlDown) {
         setRowColor($(this));
+        if(!$(this).hasClass('vm-list-selected')) {
+          selected.splice(selected.indexOf($(this).index()), 1);
+        } else {
+          selected.push($(this).index());
+        }
+      } else if(shiftDown) {
+        if(selected.length > 0) {
+          start = selected[selected.length - 1] + 1;
+          end = $(this).index();
+
+          if(start > end) {
+            var tmp = start - 1; start = end; end = tmp - 1;
+          }
+
+          for(var i = start; i <= end; i++) {
+            if(selected.indexOf(i) < 0) {
+              selected.push(i);
+              setRowColor($('.vm-list-table tbody tr').eq(i));
+              }
+          }
+        }
       } else {
         $('.vm-list-selected').removeClass('vm-list-selected');
         $(this).addClass('vm-list-selected');
+        selected = [$(this).index()];
       }
+
+      // reset btn disables
+      $('.vm-list-table tbody tr .btn').attr('disabled', false);
+      // show/hide group controls
+      if(selected.length > 1) {
+        $('.vm-list-group-control .btn').attr('disabled', false);
+        for(var i = 0; i < selected.length; i++) {
+          $('.vm-list-table tbody tr').eq(selected[i]).find('.btn').attr('disabled', true);
+        }
+      } else {
+        $('.vm-list-group-control .btn').attr('disabled', true);
+      }
+      return false;
+    });
+
+    
+    $('#vm-list-group-migrate').click(function() {
+      console.log(collectIds(selected));
     });
 
     $('.vm-list-details').popover({
@@ -106,25 +172,28 @@ $(function() {
       'trigger': 'click'
     });
 
-    /*
-    $('#check_all').click(function() {
-      var checked = $(this).prop('checked');
-      $('.vm-checkbox').each(function() {
-        // reverse
-        // $(this).prop('checked', !$(this).prop('checked'));
-        // set
-        $(this).prop('checked', checked);
-        setRowColor($(this))
-      })
-    });
+    $('tbody a').mousedown(function(e) {
+      // parent tr doesn't get selected when clicked
+      e.stopPropagation();
+      });
 
-    $('.vm-checkbox').click(function() {
-      setRowColor($(this));
+    $('tbody a').click(function(e) {
+      // browser doesn't jump to top when clicked the buttons
+      if(!$(this).hasClass('real-link')) {
+        return false;
+      }
     });
-    */
 
   });
 
+  function collectIds(rows) {
+    var ids = [];
+    for(var i = 0; i < rows.length; i++) {
+      var div = $('td:first-child div', $('.vm-list-table tbody tr').eq(rows[i]));
+      ids.push(div.prop('id').replace('vm-', ''));
+    }
+    return ids;  
+  }
 
   function setRowColor(row) {
     if(!row.hasClass('vm-list-selected')) {

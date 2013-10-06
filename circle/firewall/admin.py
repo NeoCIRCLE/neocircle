@@ -49,7 +49,7 @@ class RuleAdmin(admin.ModelAdmin):
     list_display = ('r_type', 'color_desc', 'owner', 'extra', 'direction',
                     'accept', 'proto', 'sport', 'dport', 'nat',
                     'nat_dport', 'used_in')
-    list_filter = ('r_type', 'vlan', 'owner', 'direction', 'accept',
+    list_filter = ('vlan', 'owner', 'direction', 'accept',
                    'proto', 'nat')
 
     def color_desc(self, instance):

@@ -12,15 +12,20 @@ def create(disk_desc):
 
 
 @celery.task(name='storagedriver.delete')
-def delete(json_data):
+def delete(path):
     pass
 
 
 @celery.task(name='storagedriver.snapshot')
-def snapshot(json_data):
+def snapshot(disk_desc):
     pass
 
 
 @celery.task(name='storagedriver.get')
-def get(json_data):
+def get(path):
+    pass
+
+
+@celery.task(name='storagedriver.merge')
+def merge(src_disk_desc, dst_disk_desc):
     pass

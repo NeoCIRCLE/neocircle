@@ -166,7 +166,6 @@ class RuleForm(ModelForm):
                 'extra',
                 'accept',
                 'owner',
-                'r_type',
                 'nat',
                 'nat_dport',
             ),

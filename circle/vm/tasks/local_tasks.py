@@ -1,14 +1,15 @@
 from manager.mancelery import celery
 
+# TODO: Keep syncronhised with Instance funcs
 
 @celery.task
 def deploy(instance, user):
-    '''Create new virtual machine from VM class.
+    ''' Call Insance.deploy() from celery task.
     '''
     instance.deploy(task_uuid=deploy.request.id, user=user)
 
 
-def delete():
+def destroy():
     pass
 
 

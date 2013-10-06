@@ -6,6 +6,7 @@ import uuid
 from django.contrib.auth.models import User
 from django.db.models import (Model, BooleanField, CharField, DateTimeField,
                               ForeignKey, TextField)
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from model_utils.models import TimeStampedModel
 from sizefield.models import FileSizeField
@@ -49,12 +50,30 @@ class Disk(TimeStampedModel):
                       related_name='derivatives')
     ready = BooleanField(default=False)
     dev_num = CharField(default='a', max_length=1,
-                        verbose_name="device number")
+                        verbose_name=_("device number"))
+    removed = DateTimeField(blank=True, default=None, null=True)
 
     class Meta:
         ordering = ['name']
         verbose_name = _('disk')
         verbose_name_plural = _('disks')
+
+    class WrongDiskTypeError(Exception):
+        def __init__(self, type):
+            self.type = type
+
+        def __str__(self):
+            return ("Operation can't be invoked on a disk of type '%s'." %
+                    self.type)
+
+    class DiskInUseError(Exception):
+        def __init__(self, disk):
+            self.disk = disk
+
+        def __str__(self):
+            return ("The requested operation can't be performed on disk "
+                    "'%s (%s)' because it is in use." %
+                    (self.disk.name, self.disk.filename))
 
     @property
     def path(self):
@@ -70,31 +89,6 @@ class Disk(TimeStampedModel):
             'raw-rw': 'raw',
         }[self.type]
 
-    class WrongDiskTypeError(Exception):
-        def __init__(self, type):
-            self.type = type
-
-        def __str__(self):
-            return ("Operation can't be invoked on a disk of type '%s'." %
-                    self.type)
-
-    def get_exclusive(self):
-        """Get an instance of the disk for exclusive usage.
-        """
-        if self.type in ['qcow2-snap', 'raw-rw']:
-            raise self.WrongDiskTypeError(self.type)
-
-        filename = self.filename if self.type == 'iso' else str(uuid.uuid4())
-        new_type = {
-            'qcow2-norm': 'qcow2-snap',
-            'iso': 'iso',
-            'raw-ro': 'raw-rw',
-        }[self.type]
-
-        return Disk.objects.create(base=self, datastore=self.datastore,
-                                   filename=filename, name=self.name,
-                                   size=self.size, type=new_type)
-
     @property
     def device_type(self):
         return {
@@ -102,6 +96,30 @@ class Disk(TimeStampedModel):
             'raw': 'vd',
             'iso': 'hd',
         }[self.format]
+
+    def is_in_use(self):
+        return self.instance_set.exclude(state='SHUTOFF').exists()
+
+    def get_exclusive(self):
+        """Get an instance of the disk for exclusive usage.
+
+        This method manipulates the database only.
+        """
+        type_mapping = {
+            'qcow2-norm': 'qcow2-snap',
+            'iso': 'iso',
+            'raw-ro': 'raw-rw',
+        }
+
+        if self.type not in type_mapping.keys():
+            raise self.WrongDiskTypeError(self.type)
+
+        filename = self.filename if self.type == 'iso' else str(uuid.uuid4())
+        new_type = type_mapping[self.type]
+
+        return Disk.objects.create(base=self, datastore=self.datastore,
+                                   filename=filename, name=self.name,
+                                   size=self.size, type=new_type)
 
     def get_vmdisk_desc(self):
         return {
@@ -111,10 +129,25 @@ class Disk(TimeStampedModel):
             'target_device': self.device_type + self.dev_num
         }
 
+    def get_disk_desc(self):
+        return {
+            'name': self.filename,
+            'dir': self.datastore.path,
+            'format': self.format,
+            'size': self.size,
+            'base_name': self.base.filename if self.base else None,
+            'type': 'snapshot' if self.type == 'qcow2-snap' else 'normal'
+        }
+
     def __unicode__(self):
         return u"%s (#%d)" % (self.name, self.id)
 
-    def deploy(self):
+    def clean(self, *args, **kwargs):
+        if self.size == "" and self.base:
+            self.size = self.base.size
+        super(Disk, self).clean(*args, **kwargs)
+
+    def deploy(self, user=None, task_uuid=None):
         """Reify the disk model on the associated data store.
 
         :param self: the disk model to reify
@@ -127,37 +160,95 @@ class Disk(TimeStampedModel):
         if self.ready:
             return False
 
-        disk_desc = {
-            'name': self.filename,
-            'dir': self.datastore.path,
-            'format': self.format,
-            'size': self.size,
-            'base_name': self.base.filename if self.base else None,
-            'type': 'snapshot' if self.type == 'qcow2-snap' else 'normal'
-        }
+        act = DiskActivity(activity_code='storage.Disk.deploy')
+        act.disk = self
+        act.started = timezone.now()
+        act.state = 'PENDING'
+        act.task_uuid = task_uuid
+        act.user = user
+        act.save()
 
         # Delegate create / snapshot jobs
+        queue_name = self.datastore.hostname + ".storage"
+        disk_desc = self.get_disk_desc()
         if self.type == 'qcow2-snap':
-            remote_tasks.snapshot.apply_async(
-                args=[disk_desc],
-                queue=self.datastore.hostname + ".storage").get()
+            act.update_state('CREATING SNAPSHOT')
+            remote_tasks.snapshot.apply_async(args=[disk_desc],
+                                              queue=queue_name).get()
         else:
-            remote_tasks.create.apply_async(
-                args=[disk_desc],
-                queue=self.datastore.hostname + ".storage").get()
+            act.update_state('CREATING DISK')
+            remote_tasks.create.apply_async(args=[disk_desc],
+                                            queue=queue_name).get()
+
         self.ready = True
         self.save()
+
+        act.finish('SUCCESS')
         return True
 
-    def deploy_async(self):
+    def deploy_async(self, user=None):
         """Execute deploy asynchronously.
         """
-        local_tasks.deploy.apply_async(self)
+        local_tasks.deploy.apply_async(args=[self, user],
+                                       queue="localhost.man")
 
-    def delete(self):
+    def remove(self, user=None, task_uuid=None):
+        # TODO add activity logging
+        self.removed = timezone.now()
+        self.save()
+
+    def remove_async(self, user=None):
+        local_tasks.remove.apply_async(args=[self, user],
+                                       queue='localhost.man')
+
+    def restore(self, user=None, task_uuid=None):
+        """Restore removed disk.
+        """
         # TODO
-        # StorageDriver.delete_disk.delay(instance.to_json()).get()
         pass
+
+    def restore_async(self, user=None):
+        local_tasks.restore.apply_async(args=[self, user],
+                                        queue='localhost.man')
+
+    def save_as(self, name, user=None, task_uuid=None):
+        mapping = {
+            'qcow2-snap': ('qcow2-norm', self.base),
+        }
+        if self.type not in mapping.keys():
+            raise self.WrongDiskTypeError(self.type)
+
+        if self.is_in_use():
+            raise self.DiskInUseError(self)
+
+        # from this point on, the caller has to guarantee that the disk is not
+        # going to be used until the operation is complete
+
+        act = DiskActivity(activity_code='storage.Disk.save_as')
+        act.disk = self
+        act.started = timezone.now()
+        act.state = 'PENDING'
+        act.task_uuid = task_uuid
+        act.user = user
+        act.save()
+
+        filename = str(uuid.uuid4())
+        new_type, new_base = mapping[self.type]
+
+        disk = Disk.objects.create(base=new_base, datastore=self.datastore,
+                                   filename=filename, name=name,
+                                   size=self.size, type=new_type)
+
+        queue_name = self.datastore.hostname + ".storage"
+        remote_tasks.merge.apply_async(args=[self.get_disk_desc(),
+                                             disk.get_disk_desc()],
+                                       queue=queue_name).get()
+
+        disk.ready = True
+        disk.save()
+        act.finish('SUCCESS')
+
+        return disk
 
 
 class DiskActivity(TimeStampedModel):
@@ -172,3 +263,14 @@ class DiskActivity(TimeStampedModel):
     result = TextField(verbose_name=_('result'), blank=True, null=True)
     state = CharField(verbose_name=_('state'), default='PENDING',
                       max_length=50)
+
+    def update_state(self, new_state):
+        self.state = new_state
+        self.save()
+
+    def finish(self, result=None):
+        if not self.finished:
+            self.finished = timezone.now()
+            self.result = result
+            self.state = 'COMPLETED'
+            self.save()

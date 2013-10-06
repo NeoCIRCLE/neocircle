@@ -90,6 +90,9 @@ class SmallHostTable(Table):
 
 class RecordTable(Table):
     fqdn = LinkColumn('network.record', args=[A('pk')], orderable=False)
+    address = TemplateColumn(
+        template_name="network/columns/records-address.html"
+    )
 
     class Meta:
         model = Record

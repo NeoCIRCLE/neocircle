@@ -1,8 +1,6 @@
 from firewall import models
 import django.conf
 
-
-import subprocess
 import re
 from datetime import datetime, timedelta
 from django.db.models import Q
@@ -12,14 +10,6 @@ settings = django.conf.settings.FIREWALL_SETTINGS
 
 
 class Firewall:
-    IPV6 = False
-    RULES = None
-    RULES_NAT = []
-    vlans = None
-    pub = None
-    hosts = None
-    fw = None
-
     def dportsport(self, rule, repl=True):
         retval = ' '
         if rule.proto == 'tcp' or rule.proto == 'udp':
@@ -46,7 +36,7 @@ class Firewall:
         if not rule.foreign_network:
             return
 
-        if self.IPV6 and host.ipv6:
+        if self.proto == 6 and host.ipv6:
             ipaddr = host.ipv6 + '/112'
         else:
             ipaddr = host.ipv4
@@ -156,10 +146,6 @@ class Firewall:
                       '-j ACCEPT')
 
     def postrun(self):
-        self.iptables('-A PUB_OUT -s 152.66.243.160/27 -p tcp --dport 25 '
-                      '-j LOG_ACC')
-        self.iptables('-A PUB_OUT -s 152.66.243.160/27 -p tcp --dport 445 '
-                      '-j LOG_ACC')
         self.iptables('-A PUB_OUT -p tcp --dport 25 -j LOG_DROP')
         self.iptables('-A PUB_OUT -p tcp --dport 445 -j LOG_DROP')
         self.iptables('-A PUB_OUT -p udp --dport 445 -j LOG_DROP')
@@ -206,15 +192,6 @@ class Firewall:
                                      (str(s_vlan.network4), d_vlan.interface,
                                       s_vlan.snat_ip))
 
-        # hard-wired rules
-        self.iptablesnat('-A POSTROUTING -s 10.5.0.0/16 -o vlan0003 -j SNAT '
-                         '--to-source 10.3.255.254')  # man elerheto legyen
-        self.iptablesnat('-A POSTROUTING -o vlan0008 -j SNAT '
-                         '--to-source 10.0.0.247')  # wolf network for printing
-        self.iptablesnat('-A POSTROUTING -s 10.3.0.0/16 -p udp --dport 53 '
-                         '-o vlan0002 -j SNAT ''--to-source %s' %
-                         self.pub.ipv4)  # kulonben nem megy a dns man-ban
-
         self.iptablesnat('COMMIT')
 
     def ipt_filter(self):
@@ -258,45 +235,29 @@ class Firewall:
         # post-run stuff
         self.postrun()
 
-        if self.IPV6:
+        if self.proto == 6:
             self.RULES = [x for x in self.RULES if not ipv4_re.search(x)]
             self.RULES = [x.replace('icmp', 'icmpv6') for x in self.RULES]
 
-    def __init__(self, IPV6=False):
+    def __init__(self, proto=4):
         self.RULES = []
         self.RULES_NAT = []
-        self.IPV6 = IPV6
+        self.proto = proto
         self.vlans = models.Vlan.objects.all()
         self.hosts = models.Host.objects.all()
-        self.pub = models.Vlan.objects.get(name='PUB')
         self.fw = models.Firewall.objects.all()
         self.ipt_filter()
-        if not self.IPV6:
+        if self.proto != 6:
             self.ipt_nat()
 
-    def reload(self):
-        if self.IPV6:
-            process = subprocess.Popen(['/usr/bin/ssh', 'fw2',
-                                        '/usr/bin/sudo',
-                                        '/sbin/ip6tables-restore', '-c'],
-                                       shell=False, stdin=subprocess.PIPE)
-            process.communicate('\n'.join(self.RULES) + '\n')
-        else:
-            process = subprocess.Popen(['/usr/bin/ssh', 'fw2',
-                                        '/usr/bin/sudo',
-                                        '/sbin/iptables-restore', '-c'],
-                                       shell=False, stdin=subprocess.PIPE)
-            process.communicate('\n'.join(self.RULES) + '\n' +
-                                '\n'.join(self.RULES_NAT) + '\n')
-
     def get(self):
-        if self.IPV6:
+        if self.proto == 6:
             return {'filter': self.RULES, }
         else:
             return {'filter': self.RULES, 'nat': self.RULES_NAT}
 
     def show(self):
-        if self.IPV6:
+        if self.proto == 6:
             return '\n'.join(self.RULES) + '\n'
         else:
             return ('\n'.join(self.RULES) + '\n' +
@@ -413,11 +374,6 @@ def dns():
             DNS.append("^%s:%s:%s" % (d['name'], d['address'], d['ttl']))
 
     return DNS
-    process = subprocess.Popen(['/usr/bin/ssh', 'tinydns@%s' %
-                                settings['dns_hostname']],
-                               shell=False, stdin=subprocess.PIPE)
-    process.communicate("\n".join(DNS) + "\n")
-    # print "\n".join(DNS)+"\n"
 
 
 def prefix_to_mask(prefix):
@@ -480,9 +436,11 @@ def dhcp():
                     })
 
     return DHCP
-    process = subprocess.Popen(['/usr/bin/ssh', 'fw2',
-                                'cat > /tools/dhcp3/dhcpd.conf.generated;'
-                                'sudo /etc/init.d/isc-dhcp-server restart'],
-                               shell=False, stdin=subprocess.PIPE)
-#   print "\n".join(DHCP)+"\n"
-    process.communicate("\n".join(DHCP) + "\n")
+
+
+def vlan():
+    obj = models.Vlan.objects.values('vid', 'name', 'network4', 'network6')
+    return {x['name']: {'tag': x['vid'],
+                        'addresses': [str(x['network4']),
+                                      str(x['network6'])]}
+            for x in obj}

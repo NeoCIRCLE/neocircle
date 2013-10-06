@@ -3,16 +3,14 @@ from manager.mancelery import celery
 
 @celery.task
 def deploy(disk, user):
-    '''Create new virtual machine from VM class.
-    '''
-    disk.deploy(task_uuid=deploy.rdiskd, user=user)
+    disk.deploy(task_uuid=deploy.request.id, user=user)
 
 
 @celery.task
-def delete():
-    pass
+def remove(disk, user):
+    disk.remove(task_uuid=remove.request.id, user=user)
 
 
 @celery.task
-def save_as():
-    pass
+def restore(disk, user):
+    disk.restore(task_uuid=restore.request.id, user=user)

@@ -12,6 +12,7 @@ import django.conf
 from django.db.models.signals import post_save
 import random
 
+from firewall.tasks.local_tasks import reloadtask
 settings = django.conf.settings.FIREWALL_SETTINGS
 
 
@@ -62,10 +63,6 @@ class Rule(models.Model):
                               verbose_name=_("owner"),
                               help_text=_("The user responsible for "
                                           "this rule."))
-    r_type = models.CharField(max_length=10, verbose_name=_("Rule type"),
-                              choices=CHOICES_type,
-                              help_text=_("The type of entity the rule "
-                                          "belongs to."))
     nat = models.BooleanField(default=False, verbose_name=_("NAT"),
                               help_text=_("If network address translation "
                                           "shoud be done."))
@@ -129,6 +126,15 @@ class Rule(models.Model):
                      (("dport=%s " % self.dport) if self.dport else '')),
             'desc': self.description}
 
+    @property
+    def r_type(self):
+        fields = [self.vlan, self.vlangroup, self.host, self.hostgroup,
+                  self.firewall]
+        for field in fields:
+            if field is not None:
+                return field.__class__.__name__.lower()
+        return None
+
     @models.permalink
     def get_absolute_url(self):
         return ('network.rule', None, {'pk': self.pk})
@@ -137,7 +143,6 @@ class Rule(models.Model):
         verbose_name = _("rule")
         verbose_name_plural = _("rules")
         ordering = (
-            'r_type',
             'direction',
             'proto',
             'sport',
@@ -277,6 +282,24 @@ class Vlan(models.Model):
     @property
     def prefix6(self):
         return self.network6.prefixlen
+
+    def get_new_address(self):
+        i = 0
+        hosts = Host.objects.filter(vlan=self)
+        used_v4 = hosts.values_list('ipv4', flat=True)
+        used_v6 = hosts.values_list('ipv6', flat=True)
+
+        for ipv4 in self.network4.iter_hosts():
+            i += 1
+            if i > 10000:
+                break
+            ipv4 = str(ipv4)
+            if ipv4 not in used_v4:
+                print ipv4
+                ipv6 = ipv4_2_ipv6(ipv4)
+                if ipv6 not in used_v6:
+                    return {'ipv4': ipv4, 'ipv6': ipv6}
+        raise ValidationError(_("All IP addresses are already in use."))
 
 
 class VlanGroup(models.Model):
@@ -495,11 +518,11 @@ class Host(models.Model):
             if public < 1024:
                 raise ValidationError(_("Only ports above 1024 can be used."))
             rule = Rule(direction='1', owner=self.owner, dport=public,
-                        proto=proto, nat=True, accept=True, r_type="host",
+                        proto=proto, nat=True, accept=True,
                         nat_dport=private, host=self, foreign_network=vg)
         else:
             rule = Rule(direction='1', owner=self.owner, dport=public,
-                        proto=proto, nat=False, accept=True, r_type="host",
+                        proto=proto, nat=False, accept=True,
                         host=self, foreign_network=vg)
 
         rule.full_clean()
@@ -778,7 +801,6 @@ class Blacklist(models.Model):
 
 
 def send_task(sender, instance, created, **kwargs):
-    from firewall.tasks import reloadtask
     reloadtask.apply_async(args=[sender.__name__])
 
 
