@@ -503,8 +503,17 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         self.save()
 
     def deploy(self, user=None, task_uuid=None):
-        """ Deploy new virtual machine with network
-        1. Schedule
+        """Deploy new virtual machine with network
+
+        :param self: The virtual machine to deploy.
+        :type self: vm.models.Instance
+
+        :param user: The user who's issuing the command.
+        :type user: django.contrib.auth.models.User
+
+        :param task_uuid: The task's UUID, if the command is being executed
+                          asynchronously.
+        :type task_uuid: str
         """
         act = InstanceActivity(activity_code='vm.Instance.deploy')
         act.instance = self
@@ -542,7 +551,17 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         act.finish(result='SUCCESS')
 
     def destroy(self, user=None, task_uuid=None):
-        """ Remove Instance with its networks.
+        """Remove virtual machine and its networks.
+
+        :param self: The virtual machine to destroy.
+        :type self: vm.models.Instance
+
+        :param user: The user who's issuing the command.
+        :type user: django.contrib.auth.models.User
+
+        :param task_uuid: The task's UUID, if the command is being executed
+                          asynchronously.
+        :type task_uuid: str
         """
         act = InstanceActivity(activity_code='vm.Instance.destroy')
         act.instance = self
@@ -560,7 +579,7 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         act.finish(result="DONE")
 
     def destroy_async(self, user=None):
-        """Execute destroy() asyncrhonusly.
+        """Execute destroy asynchronously.
         """
         local_tasks.destroy.apply_async(args=[self, user],
                                         queue="localhost.man")
@@ -586,7 +605,7 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         act.finish(result='SUCCESS')
 
     def sleep_async(self, user=None):
-        """Execute suspend() asynchronously.
+        """Execute sleep asynchronously.
         """
         local_tasks.sleep.apply_async(args=[self, user], queue="localhost.man")
 
@@ -603,7 +622,7 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         act.finish(result='SUCCESS')
 
     def wake_up_async(self, user=None):
-        """Execute resume() asynchronously.
+        """Execute wake_up asynchronously.
         """
         local_tasks.resume.apply_async(args=[self, user],
                                        queue="localhost.man")
@@ -649,7 +668,7 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
                                         queue="localhost.man")
 
     def reboot(self, user=None, task_uuid=None):
-        """Reboot virtual machin with ctr+alt+del signal.
+        """Reboot virtual machine with Ctrl+Alt+Del signal.
         """
         act = InstanceActivity(activity_code='vm.Instance.reboot')
         act.instance = self
