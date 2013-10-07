@@ -491,6 +491,17 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
             'raw_data': "" if not self.raw_data else self.raw_data
         }
 
+    def renew(self, which='both'):
+        """Renew virtual machine instance leases.
+        """
+        if which not in ['suspend', 'delete', 'both']:
+            raise ValueError('No such expiration type.')
+        if which in ['suspend', 'both']:
+            self.time_of_suspend = timezone.now() + self.lease.suspend_interval
+        if which in ['delete', 'both']:
+            self.time_of_delete = timezone.now() + self.lease.delete_interval
+        self.save()
+
     def deploy(self, user=None, task_uuid=None):
         """ Deploy new virtual machine with network
         1. Schedule
@@ -657,16 +668,6 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         local_tasks.reboot.apply_async(args=[self, user],
                                        queue="localhost.man")
 
-    def renew(self, which='both'):
-        """Renew virtual machine instance leases.
-        """
-        if which not in ['suspend', 'delete', 'both']:
-            raise ValueError('No such expiration type.')
-        if which in ['suspend', 'both']:
-            self.time_of_suspend = timezone.now() + self.lease.suspend_interval
-        if which in ['delete', 'both']:
-            self.time_of_delete = timezone.now() + self.lease.delete_interval
-        self.save()
 
 
 class InstanceActivity(TimeStampedModel):
