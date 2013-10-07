@@ -28,46 +28,11 @@
         </p>
       </div>
       <div class="panel-body">
-        <table class="table table-bordered table-striped table-hover vm-list-table">
-          <thead>
-            <tr>
-              <!--<td style="width: 10px;"><input type="checkbox" id="check_all"/></td> -->
-              <td style="width: 10px;">Id</td>
-              <td>Name</td>
-              <td>State</td>
-              <td>Suspend in</td>
-              <td>Delete in</td>
-              <td style="width: 130px;">Admin</td>
-              <td style="width: 10px;">Details</td>
-              <td style="width: 10px;">Actions</td>
-            </tr>
-          </thead>
-          <tbody>
-            {% for i in "xxxxxxxxxxxxxxxxxxxxx" %}
-            {% with forloop.counter as c %}
-                {% include "dashboard/vm-list/test-one.html" %}
-              {% endwith %}
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="row">
-  <div class="col-md-12">
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h3 class="no-margin"><i class="icon-desktop"></i> Your virtual machines</h3>
-      </div>
-      <div class="panel-body">
         {% render_table table %}
       </div>
     </div>
   </div>
 </div>
-
 
 <style>
   .popover {
