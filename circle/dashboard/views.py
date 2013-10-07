@@ -16,9 +16,14 @@ class IndexView(TemplateView):
         else:
             user = None
 
+        instances = Instance.objects.filter(owner=user)
         context = super(IndexView, self).get_context_data(**kwargs)
         context.update({
-            'instances': Instance.objects.filter(owner=user)[:5],
+            'instances': instances[:5],
+        })
+
+        context.update({
+            'more_instances': instances.count() - len(instances[:5])
         })
         return context
 
