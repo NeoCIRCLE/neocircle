@@ -235,6 +235,7 @@ LOCAL_APPS = (
     'network',
     'dashboard',
     'manager',
+    'acl',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
