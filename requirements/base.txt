@@ -4,7 +4,6 @@ celery==3.0.23
 django-braces==1.2.2
 django-celery==3.0.23
 django-crispy-forms==1.4.0
-django-guardian==1.1.1
 django-model-utils==1.4.0
 django-sizefield==0.4
 django-tables2==0.14.0

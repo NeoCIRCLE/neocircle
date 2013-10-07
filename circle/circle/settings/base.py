@@ -224,7 +224,6 @@ THIRD_PARTY_APPS = (
     'django_tables2',
     'crispy_forms',
     'djcelery',
-    'guardian',
     'sizefield',
 )
 
@@ -305,13 +304,6 @@ VM_ACCESS_PROTOCOLS = loads(get_env_variable('DJANGO_VM_ACCESS_PROTOCOLS',
                                                  "rdp": ["RDP", 3389, "tcp"],
                                                  "ssh": ["SSH", 22, "tcp"]}'''))
 VM_SCHEDULER = 'manager.scheduler'
-
-# Enable Guardian
-AUTHENTICATION_BACKENDS = (
-        'django.contrib.auth.backends.ModelBackend',  # django default
-        'guardian.backends.ObjectPermissionBackend',
-)
-ANONYMOUS_USER_ID = -1
 
 # Set up periodic firewall tasks
 CELERYBEAT_SCHEDULE = {
