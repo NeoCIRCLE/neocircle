@@ -51,3 +51,20 @@ class VmList(SingleTableView):
     model = Instance
     table_class = VmListTable
     table_pagination = False
+
+
+class VmCreate(TemplateView):
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/vm-create.html']
+        else:
+            return ['dashboard/ajax-wrapper.html']
+
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        if not request.is_ajax():
+            context.update({
+                'template': 'dashboard/vm-create.html'
+            })
+        return self.render_to_response(context)
