@@ -376,16 +376,6 @@ def dns():
     return DNS
 
 
-def prefix_to_mask(prefix):
-    t = [0, 0, 0, 0]
-    for i in range(0, 4):
-        if prefix > i * 8 + 7:
-            t[i] = 255
-        elif i * 8 < prefix and prefix <= (i + 1) * 8:
-            t[i] = 256 - (2 ** ((i + 1) * 8 - prefix))
-    return ".".join([str(i) for i in t])
-
-
 def dhcp():
     vlans = models.Vlan.objects.all()
     regex = re.compile(r'^([0-9]+)\.([0-9]+)\.[0-9]+\.[0-9]+\s+'
@@ -411,8 +401,8 @@ def dhcp():
       filename \"pxelinux.0\";
       allow bootp; allow booting;
     }''' % {
-                    'net': i_vlan.net4,
-                    'netmask': prefix_to_mask(i_vlan.prefix4),
+                    'net': str(i_vlan.network4.network),
+                    'netmask': str(i_vlan.network4.netmask),
                     'domain': i_vlan.domain,
                     'router': i_vlan.ipv4,
                     'ntp': i_vlan.ipv4,
