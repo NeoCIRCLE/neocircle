@@ -768,6 +768,47 @@ class Record(models.Model):
         )
 
 
+class SwitchPort(models.Model):
+    untagged_vlan = models.ForeignKey('Vlan',
+                                      related_name='untagged_ports',
+                                      verbose_name=_('untagged vlan'))
+    tagged_vlans = models.ForeignKey('VlanGroup', blank=True, null=True,
+                                     related_name='tagged_ports',
+                                     verbose_name=_('tagged vlans'))
+    description = models.TextField(blank=True, verbose_name=_('description'))
+    created_at = models.DateTimeField(auto_now_add=True,
+                                      verbose_name=_('created_at'))
+    modified_at = models.DateTimeField(auto_now=True,
+                                       verbose_name=_('modified_at'))
+
+    def __unicode__(self):
+        devices = ','.join(self.ethernet_devices.values_list('name',
+                                                             flat=True))
+        tagged_vlans = self.tagged_vlans.name if self.tagged_vlans else ''
+        return 'devices=%s untagged=%s tagged=%s' % (devices,
+                                                     self.untagged_vlan,
+                                                     tagged_vlans)
+
+
+class EthernetDevice(models.Model):
+    name = models.CharField(max_length=20,
+                            unique=True,
+                            verbose_name=_('interface'),
+                            help_text=_('The name of network interface the '
+                                        'gateway should serve this network '
+                                        'on. For example eth2.'))
+    switch_port = models.ForeignKey('SwitchPort',
+                                    related_name='ethernet_devices',
+                                    verbose_name=_('switch port'))
+    created_at = models.DateTimeField(auto_now_add=True,
+                                      verbose_name=_('created_at'))
+    modified_at = models.DateTimeField(auto_now=True,
+                                       verbose_name=_('modified_at'))
+
+    def __unicode__(self):
+        return self.name
+
+
 class Blacklist(models.Model):
     CHOICES_type = (('permban', 'permanent ban'), ('tempban', 'temporary ban'),
                     ('whitelist', 'whitelist'), ('tempwhite', 'tempwhite'))

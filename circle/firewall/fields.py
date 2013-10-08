@@ -91,9 +91,11 @@ class IPNetworkField(models.Field):
 
         if isinstance(value, IPNetwork):
             if self.version == 4:
-                return '.'.join(map(lambda x: "%03d" % x, value.ip.words)) + '/%d' % value.prefixlen
+                return ('.'.join(["%03d" % x for x in value.ip.words])
+                        + '/%02d' % value.prefixlen)
             else:
-                return ':'.join(map(lambda x: "%04X" % x, value.ip.words)) + '/%d' % value.prefixlen
+                return (':'.join(["%04X" % x for x in value.ip.words])
+                        + '/%03d' % value.prefixlen)
         return value
 
     def value_to_string(self, obj):

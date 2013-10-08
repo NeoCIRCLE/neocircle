@@ -440,7 +440,25 @@ def dhcp():
 
 def vlan():
     obj = models.Vlan.objects.values('vid', 'name', 'network4', 'network6')
-    return {x['name']: {'tag': x['vid'],
-                        'addresses': [str(x['network4']),
-                                      str(x['network6'])]}
-            for x in obj}
+    retval = {x['name']: {'tag': x['vid'],
+                          'type': 'internal',
+                          'interfaces': [x['name']],
+                          'addresses': [str(x['network4']),
+                                        str(x['network6'])]}
+              for x in obj}
+    for p in models.SwitchPort.objects.all():
+        eth_count = p.ethernet_devices.count()
+        if eth_count > 1:
+            name = 'bond%d' % p.id
+        elif eth_count == 1:
+            name = p.ethernet_devices.get().name
+        else:  # 0
+            continue
+        tag = p.untagged_vlan.vid
+        retval[name] = {'tag': tag}
+        if p.tagged_vlans is not None:
+            trunk = list(p.tagged_vlans.vlans.values_list('vid', flat=True))
+            retval[name]['trunks'] = sorted(trunk)
+        retval[name]['interfaces'] = list(
+            p.ethernet_devices.values_list('name', flat=True))
+    return retval
