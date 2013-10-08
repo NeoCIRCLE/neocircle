@@ -9,7 +9,7 @@ from firewall.fields import (MACAddressField, val_alfanum, val_reverse_domain,
                              ipv4_2_ipv6, IPNetworkField)
 from django.core.validators import MinValueValidator, MaxValueValidator
 import django.conf
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 import random
 
 from firewall.tasks.local_tasks import reloadtask
@@ -800,16 +800,11 @@ class Blacklist(models.Model):
         return ('network.blacklist', None, {'pk': self.pk})
 
 
-def send_task(sender, instance, created, **kwargs):
+def send_task(sender, instance, created=False, **kwargs):
     reloadtask.apply_async(args=[sender.__name__])
 
 
-post_save.connect(send_task, sender=Host)
-post_save.connect(send_task, sender=Rule)
-post_save.connect(send_task, sender=Domain)
-post_save.connect(send_task, sender=Record)
-post_save.connect(send_task, sender=Vlan)
-post_save.connect(send_task, sender=Firewall)
-post_save.connect(send_task, sender=Group)
-post_save.connect(send_task, sender=Host)
-post_save.connect(send_task, sender=Blacklist)
+for sender in [Host, Rule, Domain, Record, Vlan, Firewall, Group, Blacklist,
+               SwitchPort, EthernetDevice]:
+    post_save.connect(send_task, sender=sender)
+    post_delete.connect(send_task, sender=sender)
