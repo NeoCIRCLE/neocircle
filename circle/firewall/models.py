@@ -487,6 +487,7 @@ class Host(models.Model):
             else:
                 raise ValidationError(
                     _("All %s ports are already in use.") % proto)
+        return public
 
     def add_port(self, proto, public=None, private=None):
         """
