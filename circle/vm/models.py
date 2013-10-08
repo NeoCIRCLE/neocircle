@@ -523,12 +523,11 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         act.save()
 
         # Schedule
-        act.update_state('PENDING')
         self.node = scheduler.get_node(self, Node.objects.all())
         self.save()
 
         # Create virtual images
-        act.update_state('PREPARING DISKS')
+        act.update_state('DEPLOYING DISKS')
         for disk in self.disks.all():
             disk.deploy()
 
@@ -576,13 +575,15 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         act.task_uuid = task_uuid
         act.save()
         queue_name = self.node.host.hostname + ".vm"
-        # Delete instance
+        # Destroy virtual machine
+        act.update_state('DESTROYING VM')
         vm_tasks.destroy.apply_async(args=[self.vm_name],
                                      queue=queue_name).get()
         # Delete networks
         for net in self.interface_set.all():
             net.remove()
-        act.finish(result="DONE")
+
+        act.finish(result="SUCCESS")
 
     def destroy_async(self, user=None):
         """Execute destroy asynchronously.
@@ -610,7 +611,7 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         local_tasks.sleep.apply_async(args=[self, user], queue="localhost.man")
 
     def wake_up(self, user=None, task_uuid=None):
-        act = InstanceActivity(activity_code='vm.Instance.resume')
+        act = InstanceActivity(activity_code='vm.Instance.wake_up')
         act.instance = self
         act.user = user
         act.started = timezone.now()
@@ -619,6 +620,7 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         queue_name = self.node.host.hostname + ".vm"
         vm_tasks.resume.apply_async(args=[self.vm_name],
                                     queue=queue_name).get()
+
         act.finish(result='SUCCESS')
 
     def wake_up_async(self, user=None):
@@ -630,7 +632,7 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
     def shutdown(self, user=None, task_uuid=None):
         """Shutdown virtual machine with ACPI signal.
         """
-        act = InstanceActivity(activity_code='vm.Instance.power_off')
+        act = InstanceActivity(activity_code='vm.Instance.shutdown')
         act.instance = self
         act.user = user
         act.started = timezone.now()
@@ -639,6 +641,7 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         queue_name = self.node.host.hostname + ".vm"
         vm_tasks.shutdown.apply_async(args=[self.vm_name],
                                       queue=queue_name).get()
+
         act.finish(result='SUCCESS')
 
     def shutdown_async(self, user=None):
@@ -650,7 +653,7 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
     def reset(self, user=None, task_uuid=None):
         """Reset virtual machine (reset button)
         """
-        act = InstanceActivity(activity_code='vm.Instance.restart')
+        act = InstanceActivity(activity_code='vm.Instance.reset')
         act.instance = self
         act.user = user
         act.started = timezone.now()
@@ -659,6 +662,7 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         queue_name = self.node.host.hostname + ".vm"
         vm_tasks.restart.apply_async(args=[self.vm_name],
                                      queue=queue_name).get()
+
         act.finish(result='SUCCESS')
 
     def reset_async(self, user=None):
@@ -679,6 +683,7 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         queue_name = self.node.host.hostname + ".vm"
         vm_tasks.reboot.apply_async(args=[self.vm_name],
                                     queue=queue_name).get()
+
         act.finish(result='SUCCESS')
 
     def reboot_async(self, user=None):
