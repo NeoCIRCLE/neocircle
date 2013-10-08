@@ -6,7 +6,7 @@ from django.forms import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from firewall.fields import (MACAddressField, val_alfanum, val_reverse_domain,
                              val_domain, val_ipv4, val_ipv6, val_mx,
-                             ipv4_2_ipv6, IPNetworkField)
+                             ipv4_2_ipv6, IPNetworkField, IPAddressField)
 from django.core.validators import MinValueValidator, MaxValueValidator
 import django.conf
 from django.db.models.signals import post_save, post_delete
@@ -182,8 +182,6 @@ class Vlan(models.Model):
                                      'For example vlan0004 or eth2.'))
     network4 = IPNetworkField(unique=False,
                               version=4,
-                              null=True,
-                              blank=True,
                               verbose_name=_('IPv4 address/prefix'),
                               help_text=_(
                                   'The IPv4 address and the prefix length '
@@ -374,23 +372,20 @@ class Host(models.Model):
                           help_text=_('The MAC (Ethernet) address of the '
                                       'network interface. For example: '
                                       '99:AA:BB:CC:DD:EE.'))
-    ipv4 = models.GenericIPAddressField(protocol='ipv4', unique=True,
-                                        verbose_name=_('IPv4 address'),
-                                        help_text=_(
-                                            'The real IPv4 address of the '
-                                            'host, for example 10.5.1.34.'))
-    pub_ipv4 = models.GenericIPAddressField(
-        protocol='ipv4', blank=True, null=True,
+    ipv4 = IPAddressField(version=4, unique=True,
+                          verbose_name=_('IPv4 address'),
+                          help_text=_('The real IPv4 address of the '
+                                      'host, for example 10.5.1.34.'))
+    pub_ipv4 = IPAddressField(
+        version=4, blank=True, null=True,
         verbose_name=_('WAN IPv4 address'),
         help_text=_('The public IPv4 address of the host on the wide '
                     'area network, if different.'))
-    ipv6 = models.GenericIPAddressField(protocol='ipv6', unique=True,
-                                        blank=True, null=True,
-                                        verbose_name=_('IPv6 address'),
-                                        help_text=_(
-                                            'The global IPv6 address of the '
-                                            'host, for example '
-                                            '2001:500:88:200::10.'))
+    ipv6 = IPAddressField(version=6, unique=True,
+                          blank=True, null=True,
+                          verbose_name=_('IPv6 address'),
+                          help_text=_('The global IPv6 address of the host'
+                                      ', for example 2001:db:88:200::10.'))
     shared_ip = models.BooleanField(default=False, verbose_name=_('shared IP'),
                                     help_text=_(
                                         'If the given WAN IPv4 address is '
