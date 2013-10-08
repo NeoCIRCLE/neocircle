@@ -283,40 +283,40 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
               ('CRASHED', _('crashed')),
               ('PMSUSPENDED', _('pmsuspended'))]  # libvirt domain states
     name = CharField(blank=True, max_length=100, verbose_name=_('name'),
-                     help_text=_('Human readable name of instance.'))
+                     help_text=_("Human readable name of instance."))
     description = TextField(blank=True, verbose_name=_('description'))
     template = ForeignKey(InstanceTemplate, blank=True, null=True,
                           related_name='instance_set',
-                          help_text=_('Template the instance derives from.'),
+                          help_text=_("Template the instance derives from."),
                           verbose_name=_('template'))
-    pw = CharField(help_text=_('Original password of the instance.'),
+    pw = CharField(help_text=_("Original password of the instance."),
                    max_length=20, verbose_name=_('password'))
     time_of_suspend = DateTimeField(blank=True, default=None, null=True,
                                     verbose_name=_('time of suspend'),
-                                    help_text=_('Proposed time of automatic '
-                                                'suspension.'))
+                                    help_text=_("Proposed time of automatic "
+                                                "suspension."))
     time_of_delete = DateTimeField(blank=True, default=None, null=True,
                                    verbose_name=_('time of delete'),
-                                   help_text=_('Proposed time of automatic '
-                                               'suspension.'))
+                                   help_text=_("Proposed time of automatic "
+                                               "deletion."))
     active_since = DateTimeField(blank=True, null=True,
-                                 help_text=_('Time stamp of successful '
-                                             'boot report.'),
+                                 help_text=_("Time stamp of successful "
+                                             "boot report."),
                                  verbose_name=_('active since'))
     node = ForeignKey(Node, blank=True, null=True,
                       related_name='instance_set',
-                      help_text=_('Current hypervisor of this instance.'),
+                      help_text=_("Current hypervisor of this instance."),
                       verbose_name=_('host node'))
     state = CharField(choices=STATES, default='NOSTATE', max_length=20)
     disks = ManyToManyField(Disk, related_name='instance_set',
-                            help_text=_('Set of mounted disks.'),
+                            help_text=_("Set of mounted disks."),
                             verbose_name=_('disks'))
-    lease = ForeignKey(Lease, help_text=_('Preferred expiration periods.'))
+    lease = ForeignKey(Lease, help_text=_("Preferred expiration periods."))
     access_method = CharField(max_length=10, choices=ACCESS_METHODS,
-                              help_text=_('Primary remote access method.'),
+                              help_text=_("Primary remote access method."),
                               verbose_name=_('access method'))
     vnc_port = IntegerField(verbose_name=_('vnc_port'),
-                            help_text=_('TCP port where VNC console listens.'))
+                            help_text=_("TCP port where VNC console listens."))
     owner = ForeignKey(User)
 
     class Meta:
