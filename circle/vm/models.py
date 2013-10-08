@@ -766,8 +766,7 @@ class Interface(Model):
 
     def get_vmnetwork_desc(self):
         return {
-            'name': 'cloud-' + str(self.instance.id)
-                             + '-' + str(self.vlan.vid),
+            'name': self.__unicode__(),
             'bridge': 'cloud',
             'mac': str(self.mac),
             'ipv4': self.host.ipv4 if self.host is not None else None,
