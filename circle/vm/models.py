@@ -491,6 +491,12 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
             'raw_data': "" if not self.raw_data else self.raw_data
         }
 
+    def get_remote_queue_name(self, queue_id):
+        """Get the remote worker queue name of this instance with the specified
+           queue ID.
+        """
+        return self.node.host.hostname + "." + queue_id
+
     def renew(self, which='both'):
         """Renew virtual machine instance leases.
         """
@@ -531,9 +537,10 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         for disk in self.disks.all():
             disk.deploy()
 
+        queue_name = self.get_remote_queue_name('vm')
+
         # Deploy VM on remote machine
         act.update_state('DEPLOYING VM')
-        queue_name = self.node.host.hostname + ".vm"
         vm_tasks.create.apply_async(args=[self.get_vm_desc()],
                                     queue=queue_name).get()
 
@@ -574,9 +581,9 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         act.started = timezone.now()
         act.task_uuid = task_uuid
         act.save()
-        queue_name = self.node.host.hostname + ".vm"
         # Destroy virtual machine
         act.update_state('DESTROYING VM')
+        queue_name = self.get_remote_queue_name('vm')
         vm_tasks.destroy.apply_async(args=[self.vm_name],
                                      queue=queue_name).get()
         # Delete networks
@@ -600,9 +607,11 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         act.started = timezone.now()
         act.task_uuid = task_uuid
         act.save()
-        queue_name = self.node.host.hostname + ".vm"
+
+        queue_name = self.get_remote_queue_name('vm')
         vm_tasks.sleep.apply_async(args=[self.vm_name],
                                    queue=queue_name).get()
+
         act.finish(result='SUCCESS')
 
     def sleep_async(self, user=None):
@@ -617,7 +626,8 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         act.started = timezone.now()
         act.task_uuid = task_uuid
         act.save()
-        queue_name = self.node.host.hostname + ".vm"
+
+        queue_name = self.get_remote_queue_name('vm')
         vm_tasks.resume.apply_async(args=[self.vm_name],
                                     queue=queue_name).get()
 
@@ -638,7 +648,8 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         act.started = timezone.now()
         act.task_uuid = task_uuid
         act.save()
-        queue_name = self.node.host.hostname + ".vm"
+
+        queue_name = self.get_remote_queue_name('vm')
         vm_tasks.shutdown.apply_async(args=[self.vm_name],
                                       queue=queue_name).get()
 
@@ -659,7 +670,8 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         act.started = timezone.now()
         act.task_uuid = task_uuid
         act.save()
-        queue_name = self.node.host.hostname + ".vm"
+
+        queue_name = self.get_remote_queue_name('vm')
         vm_tasks.restart.apply_async(args=[self.vm_name],
                                      queue=queue_name).get()
 
@@ -680,7 +692,8 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         act.started = timezone.now()
         act.task_uuid = task_uuid
         act.save()
-        queue_name = self.node.host.hostname + ".vm"
+
+        queue_name = self.get_remote_queue_name('vm')
         vm_tasks.reboot.apply_async(args=[self.vm_name],
                                     queue=queue_name).get()
 
@@ -766,12 +779,12 @@ class Interface(Model):
     def deploy(self, user=None, task_uuid=None):
         net_tasks.create.apply_async(
             args=[self.get_vmnetwork_desc()],
-            queue=self.instance.node.host.hostname + '.net')
+            queue=self.instance.get_remote_queue_name('net'))
 
     def destroy(self, user=None, task_uuid=None):
         net_tasks.destroy.apply_async(
             args=[self.get_vmnetwork_desc()],
-            queue=self.instance.node.host.hostname + '.net')
+            queue=self.instance.get_remote_queue_name('net'))
 
     @classmethod
     def create_from_template(cls, instance, template, owner=None):
