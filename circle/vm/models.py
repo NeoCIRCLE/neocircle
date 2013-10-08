@@ -550,6 +550,12 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
 
         act.finish(result='SUCCESS')
 
+    def deploy_async(self, user=None):
+        """Execute deploy asynchronously.
+        """
+        local_tasks.deploy.apply_async(args=[self, user],
+                                       queue="localhost.man")
+
     def destroy(self, user=None, task_uuid=None):
         """Remove virtual machine and its networks.
 
@@ -583,12 +589,6 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         """
         local_tasks.destroy.apply_async(args=[self, user],
                                         queue="localhost.man")
-
-    def deploy_async(self, user=None):
-        """Execute deploy() asynchronously.
-        """
-        local_tasks.deploy.apply_async(args=[self, user],
-                                       queue="localhost.man")
 
     def sleep(self, user=None, task_uuid=None):
         """Suspend virtual machine with memory dump.
