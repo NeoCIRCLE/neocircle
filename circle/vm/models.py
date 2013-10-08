@@ -626,8 +626,8 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
     def wake_up_async(self, user=None):
         """Execute wake_up asynchronously.
         """
-        local_tasks.resume.apply_async(args=[self, user],
-                                       queue="localhost.man")
+        local_tasks.wake_up.apply_async(args=[self, user],
+                                        queue="localhost.man")
 
     def shutdown(self, user=None, task_uuid=None):
         """Shutdown virtual machine with ACPI signal.

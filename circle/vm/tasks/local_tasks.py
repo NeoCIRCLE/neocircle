@@ -1,37 +1,48 @@
 from manager.mancelery import celery
 
-# TODO: Keep syncronhised with Instance funcs
+# TODO: Keep synchronised with Instance funcs
+
 
 @celery.task
 def deploy(instance, user):
-    ''' Call Insance.deploy() from celery task.
-    '''
     instance.deploy(task_uuid=deploy.request.id, user=user)
 
 
-def destroy():
-    pass
+@celery.task
+def destroy(instance, user):
+    instance.destroy(task_uuid=destroy.request.id, user=user)
 
 
-def save_as():
-    pass
+@celery.task
+def sleep(instance, user):
+    instance.sleep(task_uuid=sleep.request.id, user=user)
 
 
-def suspend():
-    pass
+@celery.task
+def wake_up(instance, user):
+    instance.wake_up(task_uuid=wake_up.request.id, user=user)
 
 
-def resume():
-    pass
+@celery.task
+def shutdown(instance, user):
+    instance.shutdown(task_uuid=shutdown.request.id, user=user)
 
 
-def restart():
-    pass
+@celery.task
+def reset(instance, user):
+    instance.reset(task_uuid=reset.request.id, user=user)
 
 
-def reset():
-    pass
+@celery.task
+def reboot(instance, user):
+    instance.reboot(task_uuid=reboot.request.id, user=user)
 
 
-def migrate():
-    pass
+@celery.task
+def save_as(instance, user):
+    instance.save_as(task_uuid=save_as.request.id, user=user)
+
+
+@celery.task
+def migrate(instance, user):
+    instance.migrate(task_uuid=migrate.request.id, user=user)
