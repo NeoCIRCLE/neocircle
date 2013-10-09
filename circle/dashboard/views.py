@@ -20,10 +20,15 @@ class IndexView(TemplateView):
         context = super(IndexView, self).get_context_data(**kwargs)
         context.update({
             'instances': instances[:5],
+            'more_instances': instances.count() - len(instances[:5])
         })
 
+        stopped_vm_states = ['PAUSED', 'SHUTDOWN', 'SHUTOFF']
         context.update({
-            'more_instances': instances.count() - len(instances[:5])
+            'running_vms': instances.filter(state='RUNNING'),
+            'running_vm_num': instances.filter(state='RUNNING').count(),
+            'stopped_vm_num': instances.filter(
+                state__in=stopped_vm_states).count()
         })
         return context
 

@@ -38,15 +38,15 @@
     </div>
   </div>
   <div class="panel-body" id="vm-graph-view" style="display: none">
-    <p class="pull-right">  <input class="knob" data-fgColor="chartreuse" data-thickness=".4" data-width="100" data-height="100" data-readOnly="true" value="22"></p>
-    <p><span class="bigbig"><big>13</big> running </span>
+    <p class="pull-right">  <input class="knob" data-fgColor="chartreuse" data-thickness=".4" data-max="10" data-width="100" data-height="100" data-readOnly="true" value="{{ instances|length|add:more_instances }}"></p>
+    <p><span class="bigbig"><big>{{ running_vm_num }}</big> running </span>
       <ul class="list-inline">
-        <li class="label label-success"><i class="icon-play-sign"></i> szilva</li>
-        <li class="label label-success"><i class="icon-play-sign"></i> korte</li>
-        <li class="label label-success"><i class="icon-play-sign"></i> cseresznye</li>
+        {% for vm in running_vms %}
+          <li class="label label-success"><i class="icon-play-sign"></i> {{ vm.name}}</li>
+        {% endfor %}
       </ul>
     </p>
-    <p class="big text-warning"><big>10</big> stopped</p>
+    <p class="big text-warning"><big>{{ stopped_vm_num }}</big> stopped</p>
     <p>Total: $3000 </p>
 
     <div class="clearfix"></div>
