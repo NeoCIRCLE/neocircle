@@ -581,14 +581,17 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         act.started = timezone.now()
         act.task_uuid = task_uuid
         act.save()
+
+        # Destroy networks
+        act.update_state('DESTROYING NET')
+        for net in self.interface_set.all():
+            net.destroy()
+
         # Destroy virtual machine
         act.update_state('DESTROYING VM')
         queue_name = self.get_remote_queue_name('vm')
         vm_tasks.destroy.apply_async(args=[self.vm_name],
                                      queue=queue_name).get()
-        # Delete networks
-        for net in self.interface_set.all():
-            net.remove()
 
         act.finish(result="SUCCESS")
 
