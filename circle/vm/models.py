@@ -593,6 +593,11 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         vm_tasks.destroy.apply_async(args=[self.vm_name],
                                      queue=queue_name).get()
 
+        # Destroy disks
+        act.update_state('DESTROYING DISKS')
+        for disk in self.disks.all():
+            disk.destroy()
+
         act.finish(result="SUCCESS")
 
     def destroy_async(self, user=None):
