@@ -4,12 +4,27 @@ $(function () {
       type: 'GET',
       url: '/dashboard/vm/create/', 
       success: function(data) { 
-        // TODO this is ugly
-        var html = '<div class="modal fade" id="vm-create-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title">Modal title</h4></div><div class="modal-body"> ' +
-        data + 
-        '</div><div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button><button type="button" class="btn btn-primary">Save changes</button></div></div><!-- /.modal-content --></div><!-- /.modal-dialog --></div><!-- /.modal -->';
+        // TODO this is still ugly
+        var html = '<div class="modal fade" id="vm-create-modal" tabindex="-1" role="dialog">' +
+                    '<div class="modal-dialog">' +
+                      '<div class="modal-content">' +
+                        '<div class="modal-header">' +
+                          '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>' +
+                          '<h4 class="modal-title">Create VM</h4>' +
+                        '</div>' +
+                        '<div class="modal-body"> ' +
+                          data +
+                        '</div>' +
+                      /*'<div class="modal-footer">' +
+                          '<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>' +
+                          '<button type="button" class="btn btn-primary">Save changes</button>' +
+                        '</div>' + */
+                      '</div><!-- /.modal-content -->' +
+                     '</div><!-- /.modal-dialog -->' +
+                    '</div><!-- /.modal -->';
 
         $('.container').append(html);
+        vmCreateLoaded();
         $('#vm-create-modal').modal('show');
         $('#vm-create-modal').on('hidden.bs.modal', function() {
           $('#vm-create-modal').remove();
@@ -53,10 +68,22 @@ $(function () {
     $("[data-mark]")
         .each(function () {
             var value=$(this).attr('data-mark').parseFloat();
-
-
-        });
+    });
     if (window.location.hash)
         $("a[href=" + window.location.hash +"]").tab('show');
+
+    vmCreateLoaded();
 });
+
+function vmCreateLoaded() {
+  $('.vm-create-advanced').hide();
+  $('.vm-create-advanced-btn').click(function() {
+    $('.vm-create-advanced').stop().slideToggle();
+    if ($('.vm-create-advanced-icon').hasClass('icon-caret-down')) {
+      $('.vm-create-advanced-icon').removeClass('icon-caret-down').addClass('icon-caret-up');
+    } else { 
+      $('.vm-create-advanced-icon').removeClass('icon-caret-up').addClass('icon-caret-down');
+    } 
+  });
+}
 

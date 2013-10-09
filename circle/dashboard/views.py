@@ -65,6 +65,7 @@ class VmCreate(TemplateView):
         context = self.get_context_data(**kwargs)
         if not request.is_ajax():
             context.update({
-                'template': 'dashboard/vm-create.html'
+                'template': 'dashboard/vm-create.html',
+                'box_title': 'Create a VM'
             })
         return self.render_to_response(context)

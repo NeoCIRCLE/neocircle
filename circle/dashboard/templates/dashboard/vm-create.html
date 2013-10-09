@@ -1,1 +1,47 @@
-Create a VM
+
+<style>
+  .row {
+    margin-bottom: 15px;
+  }
+</style>
+<div class="row">
+  <div class="col-sm-10">
+  <select class="select form-control">
+    <option>Menő gép</option>
+    <option>Menő gép</option>
+    <option>Menő gép</option>
+    <option>Menő gép</option>
+    <option>Menő gép</option>
+  </select>
+  </div>
+</div> 
+
+<div class="row">
+  <div class="col-sm-5">
+    <a class="btn btn-info vm-create-advanced-btn">Advanced <i class="vm-create-advanced-icon icon-caret-down"></i></a>
+  </div>
+  <div class="col-sm-5 text-right">
+    <a class="btn btn-success "><i class="icon-play"></i> Start</a>
+  </div>
+</div>
+
+<div class="vm-create-advanced">
+  <div class="row">
+    <div class="col-sm-12">
+      <h2>Resources</h2>
+    </div>
+    {% include "dashboard/vm-detail-resources.html" %}
+  </div>
+
+  <div class="row">
+    <div class="col-sm-12">
+      <h2>Disks</h2>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-sm-12">
+      <h2>Network</h2>
+    </div>
+  </div>
+</div>
