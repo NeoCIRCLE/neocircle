@@ -318,6 +318,9 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
     vnc_port = IntegerField(verbose_name=_('vnc_port'),
                             help_text=_("TCP port where VNC console listens."))
     owner = ForeignKey(User)
+    destoryed = DateTimeField(blank=True, null=True,
+                              help_text=_("The virtual machine's time of "
+                                          "destruction."))
 
     class Meta:
         ordering = ['pk', ]
@@ -598,6 +601,8 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         for disk in self.disks.all():
             disk.destroy()
 
+        self.destoryed = timezone.now()
+        self.save()
         act.finish(result="SUCCESS")
 
     def destroy_async(self, user=None):
