@@ -192,12 +192,12 @@ class Disk(TimeStampedModel):
         local_tasks.deploy.apply_async(args=[self, user],
                                        queue="localhost.man")
 
-    def remove(self, user=None, task_uuid=None):
+    def destroy(self, user=None, task_uuid=None):
         # TODO add activity logging
         self.removed = timezone.now()
         self.save()
 
-    def remove_async(self, user=None):
+    def destroy_async(self, user=None):
         local_tasks.remove.apply_async(args=[self, user],
                                        queue='localhost.man')
 
