@@ -51,7 +51,7 @@ class Disk(TimeStampedModel):
     ready = BooleanField(default=False)
     dev_num = CharField(default='a', max_length=1,
                         verbose_name=_("device number"))
-    removed = DateTimeField(blank=True, default=None, null=True)
+    destroyed = DateTimeField(blank=True, default=None, null=True)
 
     class Meta:
         ordering = ['name']
@@ -194,15 +194,15 @@ class Disk(TimeStampedModel):
 
     def destroy(self, user=None, task_uuid=None):
         # TODO add activity logging
-        self.removed = timezone.now()
+        self.destroyed = timezone.now()
         self.save()
 
     def destroy_async(self, user=None):
-        local_tasks.remove.apply_async(args=[self, user],
-                                       queue='localhost.man')
+        local_tasks.destroy.apply_async(args=[self, user],
+                                        queue='localhost.man')
 
     def restore(self, user=None, task_uuid=None):
-        """Restore removed disk.
+        """Restore destroyed disk.
         """
         # TODO
         pass
