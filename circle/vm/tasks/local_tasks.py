@@ -39,10 +39,5 @@ def reboot(instance, user):
 
 
 @celery.task
-def save_as(instance, user):
-    instance.save_as(task_uuid=save_as.request.id, user=user)
-
-
-@celery.task
 def migrate(instance, user):
     instance.migrate(task_uuid=migrate.request.id, user=user)
