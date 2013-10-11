@@ -571,8 +571,8 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
     def deploy_async(self, user=None):
         """Execute deploy asynchronously.
         """
-        local_tasks.deploy.apply_async(args=[self, user],
-                                       queue="localhost.man")
+        return local_tasks.deploy.apply_async(args=[self, user],
+                                              queue="localhost.man")
 
     def destroy(self, user=None, task_uuid=None):
         """Remove virtual machine and its networks.
@@ -617,8 +617,8 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
     def destroy_async(self, user=None):
         """Execute destroy asynchronously.
         """
-        local_tasks.destroy.apply_async(args=[self, user],
-                                        queue="localhost.man")
+        return local_tasks.destroy.apply_async(args=[self, user],
+                                               queue="localhost.man")
 
     def sleep(self, user=None, task_uuid=None):
         """Suspend virtual machine with memory dump.
@@ -639,7 +639,8 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
     def sleep_async(self, user=None):
         """Execute sleep asynchronously.
         """
-        local_tasks.sleep.apply_async(args=[self, user], queue="localhost.man")
+        return local_tasks.sleep.apply_async(args=[self, user],
+                                             queue="localhost.man")
 
     def wake_up(self, user=None, task_uuid=None):
         act = InstanceActivity(activity_code='vm.Instance.wake_up')
@@ -658,8 +659,8 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
     def wake_up_async(self, user=None):
         """Execute wake_up asynchronously.
         """
-        local_tasks.wake_up.apply_async(args=[self, user],
-                                        queue="localhost.man")
+        return local_tasks.wake_up.apply_async(args=[self, user],
+                                               queue="localhost.man")
 
     def shutdown(self, user=None, task_uuid=None):
         """Shutdown virtual machine with ACPI signal.
@@ -680,8 +681,8 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
     def shutdown_async(self, user=None):
         """Execute shutdown asynchronously.
         """
-        local_tasks.shutdown.apply_async(args=[self, user],
-                                         queue="localhost.man")
+        return local_tasks.shutdown.apply_async(args=[self, user],
+                                                queue="localhost.man")
 
     def reset(self, user=None, task_uuid=None):
         """Reset virtual machine (reset button)
@@ -702,8 +703,8 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
     def reset_async(self, user=None):
         """Execute reset asynchronously.
         """
-        local_tasks.restart.apply_async(args=[self, user],
-                                        queue="localhost.man")
+        return local_tasks.restart.apply_async(args=[self, user],
+                                               queue="localhost.man")
 
     def reboot(self, user=None, task_uuid=None):
         """Reboot virtual machine with Ctrl+Alt+Del signal.
@@ -724,9 +725,8 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
     def reboot_async(self, user=None):
         """Execute reboot asynchronously.
         """
-        local_tasks.reboot.apply_async(args=[self, user],
-                                       queue="localhost.man")
-
+        return local_tasks.reboot.apply_async(args=[self, user],
+                                              queue="localhost.man")
 
 class InstanceActivity(TimeStampedModel):
     activity_code = CharField(verbose_name=_('activity_code'), max_length=100)
