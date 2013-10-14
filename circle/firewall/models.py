@@ -424,10 +424,7 @@ class Host(models.Model):
     def outgoing_rules(self):
         return self.rules.filter(direction='0')
 
-    def save(self, *args, **kwargs):
-        id = self.id
-        if not self.id and self.ipv6 == "auto":
-            self.ipv6 = ipv4_2_ipv6(self.ipv4)
+    def clean(self):
         if (not self.shared_ip and self.pub_ipv4 and Host.objects.
                 exclude(id=self.id).filter(pub_ipv4=self.pub_ipv4)):
             raise ValidationError(_("If shared_ip has been checked, "
@@ -435,14 +432,47 @@ class Host(models.Model):
         if Host.objects.exclude(id=self.id).filter(pub_ipv4=self.ipv4):
             raise ValidationError(_("You can't use another host's NAT'd "
                                     "address as your own IPv4."))
+
+    def save(self, *args, **kwargs):
+        if not self.id and self.ipv6 == "auto":
+            self.ipv6 = ipv4_2_ipv6(self.ipv4)
         self.full_clean()
+
         super(Host, self).save(*args, **kwargs)
-        if not id:
-            Record(domain=self.vlan.domain, host=self, type='A',
-                   owner=self.owner).save()
-            if self.ipv6:
-                Record(domain=self.vlan.domain, host=self, type='AAAA',
-                       owner=self.owner).save()
+
+        if self.ipv4 is not None:
+            Record.objects.filter(host=self, name=self.hostname,
+                                  type='A').update(address=self.ipv4)
+            record_count = self.record_set.filter(host=self,
+                                                  name=self.hostname,
+                                                  address=self.ipv4,
+                                                  type='A').count()
+            if record_count == 0:
+                Record(host=self,
+                       name=self.hostname,
+                       domain=self.vlan.domain,
+                       address=self.ipv4,
+                       owner=self.owner,
+                       description='host.save()',
+                       type='A').save()
+
+        if self.ipv6:
+            print 'aaaaaaaaa', self.ipv6
+            Record.objects.filter(host=self, name=self.hostname,
+                                  type='AAAA').update(address=self.ipv6)
+            record_count = self.record_set.filter(host=self,
+                                                  name=self.hostname,
+                                                  address=self.ipv6,
+                                                  type='AAAA').count()
+            print record_count
+            if record_count == 0:
+                Record(host=self,
+                       name=self.hostname,
+                       domain=self.vlan.domain,
+                       address=self.ipv6,
+                       owner=self.owner,
+                       description='host.save()',
+                       type='AAAA').save()
 
     def enable_net(self):
         self.groups.add(Group.objects.get(name="netezhet"))
@@ -542,9 +572,9 @@ class Host(models.Model):
             self.rules.filter(owner=self.owner, proto=proto, host=self,
                               dport=private).delete()
 
-    def get_hostname(self, proto):
+    def get_hostname(self, proto, public=True):
         """
-        Get a hostname for public ip address.
+        Get a private or public hostname for host.
 
         :param proto: The IP version (ipv4|ipv6).
         :type proto: str.
@@ -552,19 +582,18 @@ class Host(models.Model):
         assert proto in ('ipv6', 'ipv4', )
         try:
             if proto == 'ipv6':
-                res = self.record_set.filter(type='AAAA')
+                res = self.record_set.filter(type='AAAA',
+                                             address=self.ipv6)
             elif proto == 'ipv4':
-                if self.shared_ip:
+                if self.shared_ip and public:
                     res = Record.objects.filter(type='A',
                                                 address=self.pub_ipv4)
                 else:
-                    res = self.record_set.filter(type='A')
-            return unicode(res[0].get_data()['name'])
+                    res = self.record_set.filter(type='A',
+                                                 address=self.ipv4)
+            return unicode(res[0].fqdn)
         except:
-            if self.shared_ip:
-                return self.pub_ipv4
-            else:
-                return self.ipv4
+            return None
 
     def list_ports(self):
         """
@@ -600,7 +629,7 @@ class Host(models.Model):
         """
         Get fully qualified host name of host.
         """
-        return self.hostname + u'.' + unicode(self.vlan.domain)
+        return self.get_hostname('ipv4', public=False)
 
     @models.permalink
     def get_absolute_url(self):
@@ -644,7 +673,7 @@ class Record(models.Model):
                              verbose_name=_('host'))
     type = models.CharField(max_length=6, choices=CHOICES_type,
                             verbose_name=_('type'))
-    address = models.CharField(max_length=40, blank=True, null=True,
+    address = models.CharField(max_length=40,
                                verbose_name=_('address'))
     ttl = models.IntegerField(default=600, verbose_name=_('ttl'))
     owner = models.ForeignKey(User, verbose_name=_('owner'))
@@ -660,34 +689,14 @@ class Record(models.Model):
     def desc(self):
         a = self.get_data()
         return (u' '.join([a['name'], a['type'], a['address']])
-                if a else _('(empty)'))
+                if a else unicode(_('(empty)')))
 
     def save(self, *args, **kwargs):
         self.full_clean()
         super(Record, self).save(*args, **kwargs)
 
-    def _validate_w_host(self):
-        """Validate a record with host set."""
-        assert self.host
-        if self.type in ['A', 'AAAA']:
-            if self.address:
-                raise ValidationError(_("Can't specify address for A "
-                                        "or AAAA records if host is set!"))
-            if self.name:
-                raise ValidationError(_("Can't specify name for A "
-                                        "or AAAA records if host is set!"))
-        elif self.type == 'CNAME':
-            if not self.name:
-                raise ValidationError(_("Name must be specified for "
-                                        "CNAME records if host is set!"))
-            if self.address:
-                raise ValidationError(_("Can't specify address for "
-                                        "CNAME records if host is set!"))
-
-    def _validate_wo_host(self):
-        """Validate a record without a host set."""
-        assert self.host is None
-
+    def _validate_record(self):
+        """Validate a record."""
         if not self.address:
             raise ValidationError(_("Address must be specified!"))
         if self.type == 'A':
@@ -707,45 +716,19 @@ class Record(models.Model):
         if self.name:
             self.name = self.name.rstrip(".")    # remove trailing dots
 
-        if self.host:
-            self._validate_w_host()
-        else:
-            self._validate_wo_host()
+        self._validate_record()
 
     @property
     def fqdn(self):
-        if self.host and self.type != 'MX':
-            if self.type in ['A', 'AAAA']:
-                return self.host.get_fqdn()
-            elif self.type == 'CNAME':
-                return self.name + '.' + unicode(self.domain)
-            else:
-                return self.name
-        else:    # if self.host is None
-            if self.name:
-                return self.name + '.' + unicode(self.domain)
-            else:
-                return unicode(self.domain)
-
-    def __get_address(self):
-        if self.host:
-            if self.type == 'A':
-                return (self.host.pub_ipv4
-                        if self.host.pub_ipv4 and not self.host.shared_ip
-                        else self.host.ipv4)
-            elif self.type == 'AAAA':
-                return self.host.ipv6
-            elif self.type == 'CNAME':
-                return self.host.get_fqdn()
-        # otherwise:
-        return self.address
+        if self.name:
+            return '%s.%s' % (self.name, self.domain.name)
+        else:
+            return self.domain.name
 
     def get_data(self):
         name = self.fqdn
-        address = self.__get_address()
-        if self.host and self.type == 'AAAA' and not self.host.ipv6:
-            return None
-        elif not address or not name:
+        address = self.address
+        if not address or not name:
             return None
         else:
             return {'name': name,
