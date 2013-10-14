@@ -15,7 +15,7 @@ from netaddr import EUI, mac_unix
 from .tasks import local_tasks, vm_tasks, net_tasks
 from firewall.models import Vlan, Host
 from storage.models import Disk
-
+from acl.models import AclBase
 
 logger = logging.getLogger(__name__)
 pwgen = User.objects.make_random_password
@@ -256,7 +256,7 @@ class InterfaceTemplate(Model):
         verbose_name_plural = _('interface templates')
 
 
-class Instance(BaseResourceConfigModel, TimeStampedModel):
+class Instance(AclBase, BaseResourceConfigModel, TimeStampedModel):
 
     """Virtual machine instance.
 
@@ -282,6 +282,11 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
               ('SHUTOFF', _('shutoff')),
               ('CRASHED', _('crashed')),
               ('PMSUSPENDED', _('pmsuspended'))]  # libvirt domain states
+    ACL_LEVELS = (
+        ('user', _('user')),          # see all details
+        ('operator', _('operator')),  # console, networking, change state
+        ('owner', _('owner')),        # superuser, can delete, delegate perms
+    )
     name = CharField(blank=True, max_length=100, verbose_name=_('name'),
                      help_text=_('Human readable name of instance.'))
     description = TextField(blank=True, verbose_name=_('description'))
@@ -321,11 +326,6 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
 
     class Meta:
         ordering = ['pk', ]
-        permissions = (
-            ('own_instance', _('owner')),        # superuser, can delete, delegate perms
-            ('operate_instance', _('operator')),  # console, networking, change state
-            ('use_instance', _('user')),          # see all details
-        )
         verbose_name = _('instance')
         verbose_name_plural = _('instances')
 
