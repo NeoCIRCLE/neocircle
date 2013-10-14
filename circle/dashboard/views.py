@@ -2,6 +2,8 @@ import re
 
 from django.contrib.auth.models import User, Group
 from django.core import signing
+from django.core.exceptions import PermissionDenied
+from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
 from django.views.generic import TemplateView, DetailView, View
 from django.views.generic.detail import SingleObjectMixin
@@ -11,7 +13,6 @@ from django_tables2 import SingleTableView
 from vm.models import Instance
 
 from .tables import VmListTable
-from .utils import get_acl_data, set_acl_level
 
 
 class IndexView(TemplateView):
@@ -28,6 +29,16 @@ class IndexView(TemplateView):
             'instances': Instance.objects.filter(owner=user),
         })
         return context
+
+
+def get_acl_data(obj):
+    levels = obj.ACL_LEVELS
+    users = obj.get_users_with_level()
+    users = [{'user': u, 'level': l} for u, l in users]
+    groups = obj.get_groups_with_level()
+    groups = [{'group': g, 'level': l} for g, l in groups]
+    return {'users': users, 'groups': groups, 'levels': levels,
+            'url': reverse('dashboard.views.vm-acl', args=[obj.pk])}
 
 
 class VmDetailView(DetailView):
@@ -50,14 +61,17 @@ class VmDetailView(DetailView):
 
 
 class AclUpdateView(View, SingleObjectMixin):
+
     def post(self, request, *args, **kwargs):
         instance = self.get_object()
+        if not instance.has_level(request.user, "owner"):
+            raise PermissionDenied()
         for key, value in request.POST.items():
             m = re.match('perm-([ug])-(\d+)', key)
             if m:
                 type, id = m.groups()
                 entity = {'u': User, 'g': Group}[type].objects.get(id=id)
-                set_acl_level(instance, entity, value)
+                instance.set_level(entity, value)
 
         name = request.POST['perm-new-name']
         value = request.POST['perm-new']
@@ -66,7 +80,7 @@ class AclUpdateView(View, SingleObjectMixin):
                 entity = User.objects.get(username=name)
             except User.DoesNotExist:
                 entity = Group.objects.get(name=name)
-            set_acl_level(instance, entity, value)
+            instance.set_level(entity, value)
         return redirect(instance)
 
 
