@@ -457,7 +457,6 @@ class Host(models.Model):
                        type='A').save()
 
         if self.ipv6:
-            print 'aaaaaaaaa', self.ipv6
             Record.objects.filter(host=self, name=self.hostname,
                                   type='AAAA').update(address=self.ipv6)
             record_count = self.record_set.filter(host=self,
@@ -673,7 +672,7 @@ class Record(models.Model):
                              verbose_name=_('host'))
     type = models.CharField(max_length=6, choices=CHOICES_type,
                             verbose_name=_('type'))
-    address = models.CharField(max_length=40,
+    address = models.CharField(max_length=200,
                                verbose_name=_('address'))
     ttl = models.IntegerField(default=600, verbose_name=_('ttl'))
     owner = models.ForeignKey(User, verbose_name=_('owner'))
@@ -701,10 +700,12 @@ class Record(models.Model):
             val_ipv4(self.address)
         elif self.type == 'AAAA':
             val_ipv6(self.address)
-        elif self.type in ['CNAME', 'NS', 'PTR', 'TXT']:
+        elif self.type in ['CNAME', 'NS', 'PTR']:
             val_domain(self.address)
         elif self.type == 'MX':
             val_mx(self.address)
+        elif self.type == 'TXT':
+            pass
         else:
             raise ValidationError(_("Unknown record type."))
 

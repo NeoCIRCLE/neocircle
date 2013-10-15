@@ -320,39 +320,39 @@ def ipv6_to_arpa(ipv6):
 # ^                     PTR
 # C                     CNAME
 # :                     generic
+# 'fqdn:s:ttl           TXT
 
-def dns():
-    vlans = models.Vlan.objects.all()
-    # regex = re.compile(r'^([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)$')
+def generate_ptr_records():
     DNS = []
 
-    for i_vlan in vlans:
-        # m = regex.search(i_vlan.net4)
-        rev = i_vlan.reverse_domain
+    for host in models.Host.objects.order_by('vlan').all():
+        rev = host.vlan.reverse_domain
+        ipv4 = str(host.pub_ipv4 if host.pub_ipv4 and
+                   not host.shared_ip else host.ipv4)
+        i = ipv4.split('.', 4)
+        reverse = (host.reverse if host.reverse and
+                   len(host.reverse) else host.get_fqdn())
 
-        for i_host in i_vlan.host_set.all():
-            ipv4 = (i_host.pub_ipv4 if i_host.pub_ipv4 and
-                    not i_host.shared_ip else i_host.ipv4)
-            i = ipv4.split('.', 4)
-            reverse = (i_host.reverse if i_host.reverse and
-                       len(i_host.reverse) else i_host.get_fqdn())
+        # ipv4
+        if host.ipv4:
+            DNS.append("^%s:%s:%s" % (
+                (rev % {'a': int(i[0]), 'b': int(i[1]), 'c': int(i[2]),
+                        'd': int(i[3])}),
+                reverse, models.settings['dns_ttl']))
 
-            # ipv4
-            if i_host.ipv4:
-                DNS.append("^%s:%s:%s" % (
-                    (rev % {'a': int(i[0]), 'b': int(i[1]), 'c': int(i[2]),
-                            'd': int(i[3])}),
-                    reverse, models.settings['dns_ttl']))
+        # ipv6
+        if host.ipv6:
+            DNS.append("^%s:%s:%s" % (ipv6_to_arpa(str(host.ipv6)),
+                                      reverse, models.settings['dns_ttl']))
+        return DNS
 
-            # ipv6
-            if i_host.ipv6:
-                DNS.append("^%s:%s:%s" % (ipv6_to_arpa(i_host.ipv6),
-                                          reverse, models.settings['dns_ttl']))
 
-    for domain in models.Domain.objects.all():
-        DNS.append("Z%s:%s:support.ik.bme.hu::::::%s" %
-                   (domain.name, settings['dns_hostname'],
-                    models.settings['dns_ttl']))
+def txt_to_octal(txt):
+    return '\\' + '\\'.join(['%03o' % ord(x) for x in txt])
+
+
+def generate_records():
+    DNS = []
 
     for r in models.Record.objects.all():
         if r.type == 'A':
@@ -371,19 +371,39 @@ def dns():
                         'ttl': r.ttl})
         elif r.type == 'PTR':
             DNS.append("^%s:%s:%s" % (r.fqdn, r.address, r.ttl))
+        elif r.type == 'TXT':
+            DNS.append("'%s:%s:%s" % (r.fqdn,
+                                      txt_to_octal(r.address), r.ttl))
+
+    return DNS
+
+
+def dns():
+    DNS = []
+
+    # host PTR record
+    DNS += generate_ptr_records()
+
+    # domain SOA record
+    for domain in models.Domain.objects.all():
+        DNS.append("Z%s:%s:support.ik.bme.hu::::::%s" %
+                   (domain.name, settings['dns_hostname'],
+                    models.settings['dns_ttl']))
+
+    # records
+    DNS += generate_records()
 
     return DNS
 
 
 def dhcp():
-    vlans = models.Vlan.objects.all()
     regex = re.compile(r'^([0-9]+)\.([0-9]+)\.[0-9]+\.[0-9]+\s+'
                        r'([0-9]+)\.([0-9]+)\.[0-9]+\.[0-9]+$')
     DHCP = []
 
 # /tools/dhcp3/dhcpd.conf.generated
 
-    for i_vlan in vlans:
+    for i_vlan in models.Vlan.objects.all():
         if(i_vlan.dhcp_pool):
             m = regex.search(i_vlan.dhcp_pool)
             if(m or i_vlan.dhcp_pool == "manual"):
