@@ -21,9 +21,9 @@ $(function () {
                         '</div>' + */
                       '</div><!-- /.modal-content -->' +
                      '</div><!-- /.modal-dialog -->' +
-                    '</div><!-- /.modal -->';
+                    '</div>';
 
-        $('.container').append(html);
+        $('body').append(html);
         vmCreateLoaded();
         $('#vm-create-modal').modal('show');
         $('#vm-create-modal').on('hidden.bs.modal', function() {
@@ -52,31 +52,16 @@ $(function () {
   $('[title]').tooltip();
   $(':input[title]').tooltip({trigger: 'focus', placement: 'auto right'});
   $(".knob").knob();
-  $("[data-slider]")
-    .each(function () {
-      var input = $(this);
-      $("<span>")
-        .addClass("output")
-        .html($(this).val())
-        .insertAfter(input);
-    })
-    .bind("slider:ready slider:changed", function (event, data) {
-      $(this)
-        .nextAll(".output:first")
-          .html(data.value.toFixed(3));
-    });
-    $("[data-mark]")
-        .each(function () {
-            var value=$(this).attr('data-mark').parseFloat();
-    });
-    if (window.location.hash)
-        $("a[href=" + window.location.hash +"]").tab('show');
+  
+  if (window.location.hash)
+    $("a[href=" + window.location.hash +"]").tab('show');
 
-    vmCreateLoaded();
+  vmCreateLoaded();
 });
 
 function vmCreateLoaded() {
-  $('.vm-create-advanced').hide();
+  // temporarily disable for testing
+  //$('.vm-create-advanced').hide();
   $('.vm-create-advanced-btn').click(function() {
     $('.vm-create-advanced').stop().slideToggle();
     if ($('.vm-create-advanced-icon').hasClass('icon-caret-down')) {
@@ -85,5 +70,28 @@ function vmCreateLoaded() {
       $('.vm-create-advanced-icon').removeClass('icon-caret-up').addClass('icon-caret-down');
     } 
   });
-}
+  
+ 
+  $("[data-slider]").each(function() {
+    if($(this).css('display') != "none") 
+      $(this).simpleSlider();
+  });
 
+  $("[data-slider]")                                                        
+    .each(function () {                                                     
+      var input = $(this);                                                  
+      $("<span>")                                                           
+        .addClass("output")                                                 
+        .html($(this).val())                                                
+        .insertAfter(input);                                                
+    })                                                                      
+    .bind("slider:ready slider:changed", function (event, data) {           
+      $(this)                                                               
+        .nextAll(".output:first")                                           
+          .html(data.value.toFixed(3));                                     
+    });
+
+  $("[data-mark]").each(function () {                                                 
+    var value=$(this).attr('data-mark').parseFloat();               
+  }); 
+}
