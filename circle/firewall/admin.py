@@ -105,17 +105,7 @@ class DomainAdmin(admin.ModelAdmin):
 
 
 class RecordAdmin(admin.ModelAdmin):
-    list_display = ('name_', 'type', 'address_', 'ttl', 'host', 'owner')
-
-    @staticmethod
-    def address_(instance):
-        a = instance.get_data()
-        return a['address'] if a else None
-
-    @staticmethod
-    def name_(instance):
-        a = instance.get_data()
-        return a['name'] if a else None
+    list_display = ('name', 'type', 'address', 'ttl', 'host', 'owner')
 
 
 class BlacklistAdmin(admin.ModelAdmin):

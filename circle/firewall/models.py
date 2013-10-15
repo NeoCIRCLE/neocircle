@@ -687,9 +687,7 @@ class Record(models.Model):
         return self.desc()
 
     def desc(self):
-        a = self.get_data()
-        return (u' '.join([a['name'], a['type'], a['address']])
-                if a else unicode(_('(empty)')))
+        return u' '.join([self.fqdn, self.type, self.address])
 
     def save(self, *args, **kwargs):
         self.full_clean()
@@ -724,17 +722,6 @@ class Record(models.Model):
             return '%s.%s' % (self.name, self.domain.name)
         else:
             return self.domain.name
-
-    def get_data(self):
-        name = self.fqdn
-        address = self.address
-        if not address or not name:
-            return None
-        else:
-            return {'name': name,
-                    'type': self.type,
-                    'ttl': self.ttl,
-                    'address': address}
 
     @models.permalink
     def get_absolute_url(self):

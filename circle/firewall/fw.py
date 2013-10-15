@@ -355,23 +355,22 @@ def dns():
                     models.settings['dns_ttl']))
 
     for r in models.Record.objects.all():
-        d = r.get_data()
-        if d['type'] == 'A':
-            DNS.append("+%s:%s:%s" % (d['name'], d['address'], d['ttl']))
-        elif d['type'] == 'AAAA':
+        if r.type == 'A':
+            DNS.append("+%s:%s:%s" % (r.fqdn, r.address, r.ttl))
+        elif r.type == 'AAAA':
             DNS.append(":%s:28:%s:%s" %
-                       (d['name'], ipv6_to_octal(d['address']), d['ttl']))
-        elif d['type'] == 'NS':
-            DNS.append("&%s::%s:%s" % (d['name'], d['address'], d['ttl']))
-        elif d['type'] == 'CNAME':
-            DNS.append("C%s:%s:%s" % (d['name'], d['address'], d['ttl']))
-        elif d['type'] == 'MX':
-            mx = d['address'].split(':', 2)
+                       (r.fqdn, ipv6_to_octal(r.address), r.ttl))
+        elif r.type == 'NS':
+            DNS.append("&%s::%s:%s" % (r.fqdn, r.address, r.ttl))
+        elif r.type == 'CNAME':
+            DNS.append("C%s:%s:%s" % (r.fqdn, r.address, r.ttl))
+        elif r.type == 'MX':
+            mx = r.address.split(':', 2)
             DNS.append("@%(fqdn)s::%(mx)s:%(dist)s:%(ttl)s" %
-                       {'fqdn': d['name'], 'mx': mx[1], 'dist': mx[0],
-                        'ttl': d['ttl']})
-        elif d['type'] == 'PTR':
-            DNS.append("^%s:%s:%s" % (d['name'], d['address'], d['ttl']))
+                       {'fqdn': r.fqdn, 'mx': mx[1], 'dist': mx[0],
+                        'ttl': r.ttl})
+        elif r.type == 'PTR':
+            DNS.append("^%s:%s:%s" % (r.fqdn, r.address, r.ttl))
 
     return DNS
 
