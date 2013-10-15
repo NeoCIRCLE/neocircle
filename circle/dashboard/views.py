@@ -23,12 +23,11 @@ class IndexView(TemplateView):
             'more_instances': instances.count() - len(instances[:5])
         })
 
-        stopped_vm_states = ['PAUSED', 'SHUTDOWN', 'SHUTOFF']
         context.update({
             'running_vms': instances.filter(state='RUNNING'),
             'running_vm_num': instances.filter(state='RUNNING').count(),
-            'stopped_vm_num': instances.filter(
-                state__in=stopped_vm_states).count()
+            'stopped_vm_num': instances.exclude(
+                state__in=['RUNNING', 'NOSTATE']).count()
         })
         return context
 
