@@ -51,7 +51,7 @@
 
     <div class="clearfix"></div>
     <div class="text-right">
-      <a class="btn btn-primary btn-xs"><i class="icon-chevron-sign-right"></i> <strong>13</strong>  more  </a> 
+      <a href="{% url "dashboard.views.vm-list" %}" class="btn btn-primary btn-xs"><i class="icon-chevron-sign-right"></i> <strong>{{ instances|length|add:more_instances }}</strong>  machines  total</a> 
     </div>
   </div>
 </div>
