@@ -386,6 +386,15 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         return 'cloud-' + str(self.id)
 
     @property
+    def mem_dump(self):
+        """Return the path for the memory dump.
+
+        It is always on the first hard drive storage named cloud-<id>.dump
+        """
+        path = self.disks.all()[0].datastore.path
+        return path + '/' + 'cloud-' + str(self.id) + '.dump'
+
+    @property
     def primary_host(self):
         interfaces = self.interface_set.select_related('host')
         hosts = [i.host for i in interfaces if i.host]
@@ -622,7 +631,7 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         act.save()
 
         queue_name = self.get_remote_queue_name('vm')
-        vm_tasks.sleep.apply_async(args=[self.vm_name],
+        vm_tasks.sleep.apply_async(args=[self.vm_name, self.mem_dump],
                                    queue=queue_name).get()
 
         act.finish(result='SUCCESS')
@@ -641,7 +650,7 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         act.save()
 
         queue_name = self.get_remote_queue_name('vm')
-        vm_tasks.resume.apply_async(args=[self.vm_name],
+        vm_tasks.resume.apply_async(args=[self.vm_name, self.dump_mem],
                                     queue=queue_name).get()
 
         act.finish(result='SUCCESS')
@@ -717,7 +726,6 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         """
         local_tasks.reboot.apply_async(args=[self, user],
                                        queue="localhost.man")
-
 
 
 class InstanceActivity(TimeStampedModel):
