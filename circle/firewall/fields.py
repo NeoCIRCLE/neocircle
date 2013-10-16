@@ -77,7 +77,7 @@ class IPAddressField(models.Field):
         if isinstance(value, IPAddress):
             return value
 
-        return IPAddress(value, version=version)
+        return IPAddress(value.split('/')[0], version=version)
 
     def get_internal_type(self):
         return "CharField"
