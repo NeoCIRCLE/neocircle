@@ -77,6 +77,12 @@ function vmCreateLoaded() {
       $(this).simpleSlider();
   });
 
+  //slider only has background with this ...
+  //var js = document.createElement('script');
+  //js.src = '/static/dashboard/loopj-jquery-simple-slider-fa64f59/js/simple-slider.min.js'; 
+  //document.getElementsByTagName('head')[0].appendChild(js);
+
+
   $("[data-slider]")                                                        
     .each(function () {                                                     
       var input = $(this);                                                  
