@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from datetime import timedelta
 from importlib import import_module
 import logging
@@ -13,6 +14,7 @@ from model_utils.models import TimeStampedModel
 from netaddr import EUI, mac_unix
 
 from .tasks import local_tasks, vm_tasks, net_tasks
+from common.models import ActivityModel, activitycontextimpl
 from firewall.models import Vlan, Host
 from storage.models import Disk
 
@@ -99,38 +101,37 @@ class Node(TimeStampedModel):
         return self.name
 
 
-class NodeActivity(TimeStampedModel):
-    activity_code = CharField(verbose_name=_('activity code'),
-                              max_length=100)  # TODO
-    task_uuid = CharField(verbose_name=_('task_uuid'), blank=True,
-                          max_length=50, null=True, unique=True, help_text=_(
-                              'Celery task unique identifier.'))
-    node = ForeignKey(Node, verbose_name=_('node'),
-                      related_name='activity_log',
-                      help_text=_('Node this activity works on.'))
-    user = ForeignKey(User, verbose_name=_('user'), blank=True, null=True,
-                      help_text=_('The person who started this activity.'))
-    started = DateTimeField(verbose_name=_('started at'),
-                            blank=True, null=True,
-                            help_text=_('Time of activity initiation.'))
-    finished = DateTimeField(verbose_name=_('finished at'),
-                             blank=True, null=True,
-                             help_text=_('Time of activity finalization.'))
-    result = TextField(verbose_name=_('result'), blank=True, null=True,
-                       help_text=_('Human readable result of activity.'))
-    status = CharField(verbose_name=_('status'), default='PENDING',
-                       max_length=50, help_text=_('Actual state of activity'))
+class NodeActivity(ActivityModel):
+    node = ForeignKey(Node, related_name='activity_log',
+                      help_text=_('Node this activity works on.'),
+                      verbose_name=_('node'))
 
-    def update_state(self, new_state):
-        self.state = new_state
-        self.save()
+    @classmethod
+    def create(cls, code_suffix, node, task_uuid=None, user=None):
+        act = cls(activity_code='vm.Node.' + code_suffix,
+                  node=node, parent=None, started=timezone.now(),
+                  task_uuid=task_uuid, user=user)
+        act.save()
+        return act
 
-    def finish(self, result=None):
-        if not self.finished:
-            self.finished = timezone.now()
-            self.result = result
-            self.state = 'COMPLETED'
-            self.save()
+    def create_sub(self, code_suffix, task_uuid=None):
+        act = NodeActivity(
+            activity_code=self.activity_code + '.' + code_suffix,
+            node=self.node, parent=self, started=timezone.now(),
+            task_uuid=task_uuid, user=self.user)
+        act.save()
+        return act
+
+    @contextmanager
+    def sub_activity(self, code_suffix, task_uuid=None):
+        act = self.create_sub(code_suffix, task_uuid)
+        activitycontextimpl(act)
+
+
+@contextmanager
+def node_activity(code_suffix, node, task_uuid=None, user=None):
+    act = InstanceActivity.create(code_suffix, node, task_uuid, user)
+    activitycontextimpl(act)
 
 
 class Lease(Model):
@@ -533,40 +534,34 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
                           asynchronously.
         :type task_uuid: str
         """
-        act = InstanceActivity(activity_code='vm.Instance.deploy')
-        act.instance = self
-        act.user = user
-        act.started = timezone.now()
-        act.task_uuid = task_uuid
-        act.save()
+        with instance_activity(code_suffix='deploy', instance=self,
+                               task_uuid=task_uuid, user=user) as act:
 
-        # Schedule
-        self.node = scheduler.get_node(self, Node.objects.all())
-        self.save()
+            # Schedule
+            self.node = scheduler.get_node(self, Node.objects.all())
+            self.save()
 
-        # Create virtual images
-        act.update_state('DEPLOYING DISKS')
-        for disk in self.disks.all():
-            disk.deploy()
+            # Deploy virtual images
+            with act.sub_activity('deploying_disks'):
+                for disk in self.disks.all():
+                    disk.deploy()
 
-        queue_name = self.get_remote_queue_name('vm')
+            queue_name = self.get_remote_queue_name('vm')
 
-        # Deploy VM on remote machine
-        act.update_state('DEPLOYING VM')
-        vm_tasks.create.apply_async(args=[self.get_vm_desc()],
-                                    queue=queue_name).get()
+            # Deploy VM on remote machine
+            with act.sub_activity('deploying_vm'):
+                vm_tasks.create.apply_async(args=[self.get_vm_desc()],
+                                            queue=queue_name).get()
 
-        # Estabilish network connection (vmdriver)
-        act.update_state('DEPLOYING NET')
-        for net in self.interface_set.all():
-            net.deploy()
+            # Estabilish network connection (vmdriver)
+            with act.sub_activity('deploying_net'):
+                for net in self.interface_set.all():
+                    net.deploy()
 
-        # Resume vm
-        act.update_state('BOOTING')
-        vm_tasks.resume.apply_async(args=[self.vm_name],
-                                    queue=queue_name).get()
-
-        act.finish(result='SUCCESS')
+            # Resume vm
+            with act.sub_activity('booting'):
+                vm_tasks.resume.apply_async(args=[self.vm_name],
+                                            queue=queue_name).get()
 
     def deploy_async(self, user=None):
         """Execute deploy asynchronously.
@@ -587,32 +582,27 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
                           asynchronously.
         :type task_uuid: str
         """
-        act = InstanceActivity(activity_code='vm.Instance.destroy')
-        act.instance = self
-        act.user = user
-        act.started = timezone.now()
-        act.task_uuid = task_uuid
-        act.save()
+        with instance_activity(code_suffix='destroy', instance=self,
+                               task_uuid=task_uuid, user=user) as act:
 
-        # Destroy networks
-        act.update_state('DESTROYING NET')
-        for net in self.interface_set.all():
-            net.destroy()
+            # Destroy networks
+            with act.sub_activity('destroying_net'):
+                for net in self.interface_set.all():
+                    net.destroy()
 
-        # Destroy virtual machine
-        act.update_state('DESTROYING VM')
-        queue_name = self.get_remote_queue_name('vm')
-        vm_tasks.destroy.apply_async(args=[self.vm_name],
-                                     queue=queue_name).get()
+            # Destroy virtual machine
+            with act.sub_activity('destroying_vm'):
+                queue_name = self.get_remote_queue_name('vm')
+                vm_tasks.destroy.apply_async(args=[self.vm_name],
+                                             queue=queue_name).get()
 
-        # Destroy disks
-        act.update_state('DESTROYING DISKS')
-        for disk in self.disks.all():
-            disk.destroy()
+            # Destroy disks
+            with act.sub_activity('destroying_disks'):
+                for disk in self.disks.all():
+                    disk.destroy()
 
-        self.destoryed = timezone.now()
-        self.save()
-        act.finish(result="SUCCESS")
+            self.destoryed = timezone.now()
+            self.save()
 
     def destroy_async(self, user=None):
         """Execute destroy asynchronously.
@@ -623,18 +613,12 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
     def sleep(self, user=None, task_uuid=None):
         """Suspend virtual machine with memory dump.
         """
-        act = InstanceActivity(activity_code='vm.Instance.sleep')
-        act.instance = self
-        act.user = user
-        act.started = timezone.now()
-        act.task_uuid = task_uuid
-        act.save()
+        with instance_activity(code_suffix='sleep', instance=self,
+                               task_uuid=task_uuid, user=user):
 
-        queue_name = self.get_remote_queue_name('vm')
-        vm_tasks.sleep.apply_async(args=[self.vm_name, self.mem_dump],
-                                   queue=queue_name).get()
-
-        act.finish(result='SUCCESS')
+            queue_name = self.get_remote_queue_name('vm')
+            vm_tasks.sleep.apply_async(args=[self.vm_name, self.mem_dump],
+                                       queue=queue_name).get()
 
     def sleep_async(self, user=None):
         """Execute sleep asynchronously.
@@ -643,18 +627,12 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
                                              queue="localhost.man")
 
     def wake_up(self, user=None, task_uuid=None):
-        act = InstanceActivity(activity_code='vm.Instance.wake_up')
-        act.instance = self
-        act.user = user
-        act.started = timezone.now()
-        act.task_uuid = task_uuid
-        act.save()
+        with instance_activity(code_suffix='wake_up', instance=self,
+                               task_uuid=task_uuid, user=user):
 
-        queue_name = self.get_remote_queue_name('vm')
-        vm_tasks.resume.apply_async(args=[self.vm_name, self.dump_mem],
-                                    queue=queue_name).get()
-
-        act.finish(result='SUCCESS')
+            queue_name = self.get_remote_queue_name('vm')
+            vm_tasks.resume.apply_async(args=[self.vm_name, self.dump_mem],
+                                        queue=queue_name).get()
 
     def wake_up_async(self, user=None):
         """Execute wake_up asynchronously.
@@ -665,18 +643,12 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
     def shutdown(self, user=None, task_uuid=None):
         """Shutdown virtual machine with ACPI signal.
         """
-        act = InstanceActivity(activity_code='vm.Instance.shutdown')
-        act.instance = self
-        act.user = user
-        act.started = timezone.now()
-        act.task_uuid = task_uuid
-        act.save()
+        with instance_activity(code_suffix='shutdown', instance=self,
+                               task_uuid=task_uuid, user=user):
 
-        queue_name = self.get_remote_queue_name('vm')
-        vm_tasks.shutdown.apply_async(args=[self.vm_name],
-                                      queue=queue_name).get()
-
-        act.finish(result='SUCCESS')
+            queue_name = self.get_remote_queue_name('vm')
+            vm_tasks.shutdown.apply_async(args=[self.vm_name],
+                                          queue=queue_name).get()
 
     def shutdown_async(self, user=None):
         """Execute shutdown asynchronously.
@@ -687,18 +659,12 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
     def reset(self, user=None, task_uuid=None):
         """Reset virtual machine (reset button)
         """
-        act = InstanceActivity(activity_code='vm.Instance.reset')
-        act.instance = self
-        act.user = user
-        act.started = timezone.now()
-        act.task_uuid = task_uuid
-        act.save()
+        with instance_activity(code_suffix='reset', instance=self,
+                               task_uuid=task_uuid, user=user):
 
-        queue_name = self.get_remote_queue_name('vm')
-        vm_tasks.restart.apply_async(args=[self.vm_name],
-                                     queue=queue_name).get()
-
-        act.finish(result='SUCCESS')
+            queue_name = self.get_remote_queue_name('vm')
+            vm_tasks.restart.apply_async(args=[self.vm_name],
+                                         queue=queue_name).get()
 
     def reset_async(self, user=None):
         """Execute reset asynchronously.
@@ -709,18 +675,12 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
     def reboot(self, user=None, task_uuid=None):
         """Reboot virtual machine with Ctrl+Alt+Del signal.
         """
-        act = InstanceActivity(activity_code='vm.Instance.reboot')
-        act.instance = self
-        act.user = user
-        act.started = timezone.now()
-        act.task_uuid = task_uuid
-        act.save()
+        with instance_activity(code_suffix='reboot', instance=self,
+                               task_uuid=task_uuid, user=user):
 
-        queue_name = self.get_remote_queue_name('vm')
-        vm_tasks.reboot.apply_async(args=[self.vm_name],
-                                    queue=queue_name).get()
-
-        act.finish(result='SUCCESS')
+            queue_name = self.get_remote_queue_name('vm')
+            vm_tasks.reboot.apply_async(args=[self.vm_name],
+                                        queue=queue_name).get()
 
     def reboot_async(self, user=None):
         """Execute reboot asynchronously.
@@ -728,29 +688,38 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         return local_tasks.reboot.apply_async(args=[self, user],
                                               queue="localhost.man")
 
-class InstanceActivity(TimeStampedModel):
-    activity_code = CharField(verbose_name=_('activity_code'), max_length=100)
-    task_uuid = CharField(verbose_name=_('task_uuid'), blank=True,
-                          max_length=50, null=True, unique=True)
-    instance = ForeignKey(Instance, verbose_name=_('instance'),
-                          related_name='activity_log')
-    user = ForeignKey(User, verbose_name=_('user'), blank=True, null=True)
-    started = DateTimeField(verbose_name=_('started'), blank=True, null=True)
-    finished = DateTimeField(verbose_name=_('finished'), blank=True, null=True)
-    result = TextField(verbose_name=_('result'), blank=True, null=True)
-    state = CharField(verbose_name=_('state'),
-                      default='PENDING', max_length=50)
 
-    def update_state(self, new_state):
-        self.state = new_state
-        self.save()
+class InstanceActivity(ActivityModel):
+    instance = ForeignKey(Instance, related_name='activity_log',
+                          help_text=_('Instance this activity works on.'),
+                          verbose_name=_('instance'))
 
-    def finish(self, result=None):
-        if not self.finished:
-            self.finished = timezone.now()
-            self.result = result
-            self.state = 'COMPLETED'
-            self.save()
+    @classmethod
+    def create(cls, code_suffix, instance, task_uuid=None, user=None):
+        act = cls(activity_code='vm.Instance.' + code_suffix,
+                  instance=instance, parent=None, started=timezone.now(),
+                  task_uuid=task_uuid, user=user)
+        act.save()
+        return act
+
+    def create_sub(self, code_suffix, task_uuid=None):
+        act = InstanceActivity(
+            activity_code=self.activity_code + '.' + code_suffix,
+            instance=self.instance, parent=self, started=timezone.now(),
+            task_uuid=task_uuid, user=self.user)
+        act.save()
+        return act
+
+    @contextmanager
+    def sub_activity(self, code_suffix, task_uuid=None):
+        act = self.create_sub(code_suffix, task_uuid)
+        activitycontextimpl(act)
+
+
+@contextmanager
+def instance_activity(code_suffix, instance, task_uuid=None, user=None):
+    act = InstanceActivity.create(code_suffix, instance, task_uuid, user)
+    activitycontextimpl(act)
 
 
 class Interface(Model):

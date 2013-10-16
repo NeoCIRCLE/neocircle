@@ -1,17 +1,18 @@
 # coding=utf-8
 
+from contextlib import contextmanager
 import logging
 import uuid
 
-from django.contrib.auth.models import User
 from django.db.models import (Model, BooleanField, CharField, DateTimeField,
-                              ForeignKey, TextField)
+                              ForeignKey)
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from model_utils.models import TimeStampedModel
 from sizefield.models import FileSizeField
 
 from .tasks import local_tasks, remote_tasks
+from common.models import ActivityModel, activitycontextimpl
 
 logger = logging.getLogger(__name__)
 
@@ -160,31 +161,25 @@ class Disk(TimeStampedModel):
         if self.ready:
             return False
 
-        act = DiskActivity(activity_code='storage.Disk.deploy')
-        act.disk = self
-        act.started = timezone.now()
-        act.state = 'PENDING'
-        act.task_uuid = task_uuid
-        act.user = user
-        act.save()
+        with disk_activity(code_suffix='deploy', disk=self,
+                           task_uuid=task_uuid, user=user) as act:
 
-        # Delegate create / snapshot jobs
-        queue_name = self.datastore.hostname + ".storage"
-        disk_desc = self.get_disk_desc()
-        if self.type == 'qcow2-snap':
-            act.update_state('CREATING SNAPSHOT')
-            remote_tasks.snapshot.apply_async(args=[disk_desc],
-                                              queue=queue_name).get()
-        else:
-            act.update_state('CREATING DISK')
-            remote_tasks.create.apply_async(args=[disk_desc],
-                                            queue=queue_name).get()
+            # Delegate create / snapshot jobs
+            queue_name = self.datastore.hostname + ".storage"
+            disk_desc = self.get_disk_desc()
+            if self.type == 'qcow2-snap':
+                with act.sub_activity('creating_snapshot'):
+                    remote_tasks.snapshot.apply_async(args=[disk_desc],
+                                                      queue=queue_name).get()
+            else:
+                with act.sub_activity('creating_disk'):
+                    remote_tasks.create.apply_async(args=[disk_desc],
+                                                    queue=queue_name).get()
 
-        self.ready = True
-        self.save()
+            self.ready = True
+            self.save()
 
-        act.finish('SUCCESS')
-        return True
+            return True
 
     def deploy_async(self, user=None):
         """Execute deploy asynchronously.
@@ -224,53 +219,55 @@ class Disk(TimeStampedModel):
         # from this point on, the caller has to guarantee that the disk is not
         # going to be used until the operation is complete
 
-        act = DiskActivity(activity_code='storage.Disk.save_as')
-        act.disk = self
-        act.started = timezone.now()
-        act.state = 'PENDING'
-        act.task_uuid = task_uuid
-        act.user = user
+        with disk_activity(code_suffix='save_as', disk=self,
+                           task_uuid=task_uuid, user=user):
+
+            filename = str(uuid.uuid4())
+            new_type, new_base = mapping[self.type]
+
+            disk = Disk.objects.create(base=new_base, datastore=self.datastore,
+                                       filename=filename, name=name,
+                                       size=self.size, type=new_type)
+
+            queue_name = self.datastore.hostname + ".storage"
+            remote_tasks.merge.apply_async(args=[self.get_disk_desc(),
+                                                 disk.get_disk_desc()],
+                                           queue=queue_name).get()
+
+            disk.ready = True
+            disk.save()
+
+            return disk
+
+
+class DiskActivity(ActivityModel):
+    disk = ForeignKey(Disk, related_name='activity_log',
+                      help_text=_('Disk this activity works on.'),
+                      verbose_name=_('disk'))
+
+    @classmethod
+    def create(cls, code_suffix, instance, task_uuid=None, user=None):
+        act = cls(activity_code='storage.Disk.' + code_suffix,
+                  instance=instance, parent=None, started=timezone.now(),
+                  task_uuid=task_uuid, user=user)
         act.save()
+        return act
 
-        filename = str(uuid.uuid4())
-        new_type, new_base = mapping[self.type]
+    def create_sub(self, code_suffix, task_uuid=None):
+        act = DiskActivity(
+            activity_code=self.activity_code + '.' + code_suffix,
+            instance=self.instance, parent=self, started=timezone.now(),
+            task_uuid=task_uuid, user=self.user)
+        act.save()
+        return act
 
-        disk = Disk.objects.create(base=new_base, datastore=self.datastore,
-                                   filename=filename, name=name,
-                                   size=self.size, type=new_type)
-
-        queue_name = self.datastore.hostname + ".storage"
-        remote_tasks.merge.apply_async(args=[self.get_disk_desc(),
-                                             disk.get_disk_desc()],
-                                       queue=queue_name).get()
-
-        disk.ready = True
-        disk.save()
-        act.finish('SUCCESS')
-
-        return disk
+    @contextmanager
+    def sub_activity(self, code_suffix, task_uuid=None):
+        act = self.create_sub(code_suffix, task_uuid)
+        activitycontextimpl(act)
 
 
-class DiskActivity(TimeStampedModel):
-    activity_code = CharField(verbose_name=_('activity_code'), max_length=100)
-    task_uuid = CharField(verbose_name=_('task_uuid'), blank=True,
-                          max_length=50, null=True, unique=True)
-    disk = ForeignKey(Disk, verbose_name=_('disk'),
-                      related_name='activity_log')
-    user = ForeignKey(User, verbose_name=_('user'), blank=True, null=True)
-    started = DateTimeField(verbose_name=_('started'), blank=True, null=True)
-    finished = DateTimeField(verbose_name=_('finished'), blank=True, null=True)
-    result = TextField(verbose_name=_('result'), blank=True, null=True)
-    state = CharField(verbose_name=_('state'), default='PENDING',
-                      max_length=50)
-
-    def update_state(self, new_state):
-        self.state = new_state
-        self.save()
-
-    def finish(self, result=None):
-        if not self.finished:
-            self.finished = timezone.now()
-            self.result = result
-            self.state = 'COMPLETED'
-            self.save()
+@contextmanager
+def disk_activity(code_suffix, instance, task_uuid=None, user=None):
+    act = DiskActivity.create(code_suffix, instance, task_uuid, user)
+    activitycontextimpl(act)
