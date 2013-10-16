@@ -5,7 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils.ipv6 import is_valid_ipv6_address
 from south.modelsinspector import add_introspection_rules
 from django import forms
-from netaddr import IPAddress, IPNetwork, AddrFormatError
+from netaddr import IPAddress, IPNetwork, AddrFormatError, ZEROFILL
 import re
 
 
@@ -77,7 +77,8 @@ class IPAddressField(models.Field):
         if isinstance(value, IPAddress):
             return value
 
-        return IPAddress(value.split('/')[0], version=version)
+        return IPAddress(value.split('/')[0], version=version,
+                         flags=ZEROFILL)
 
     def get_internal_type(self):
         return "CharField"
