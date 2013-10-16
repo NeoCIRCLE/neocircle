@@ -330,7 +330,8 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         verbose_name_plural = _('instances')
 
     def __unicode__(self):
-        return self.name
+        parts = [self.name, "(" + str(self.id) + ")"]
+        return " ".join([s for s in parts if s != ""])
 
     @classmethod
     def create_from_template(cls, template, owner, **kwargs):
@@ -687,6 +688,7 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         """
         return local_tasks.reboot.apply_async(args=[self, user],
                                               queue="localhost.man")
+
 
 
 class InstanceActivity(ActivityModel):
