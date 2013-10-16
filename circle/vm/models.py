@@ -359,9 +359,10 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         inst = cls(**kwargs)
         # save instance
         inst.save()
+        # create related entities
         for disk in template.disks.all():
             inst.disks.add(disk.get_exclusive())
-        # create related entities
+
         for iftmpl in template.interface_set.all():
             i = Interface.create_from_template(instance=inst,
                                                template=iftmpl,
@@ -689,6 +690,39 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         return local_tasks.reboot.apply_async(args=[self, user],
                                               queue="localhost.man")
 
+    def save_as_template(self, name, **kwargs):
+        # prepare parameters
+        kwargs.setdefault('name', name)
+        kwargs.setdefault('description', self.description)
+        kwargs.setdefault('parent', self.template)
+        kwargs.setdefault('num_cores', self.num_cores)
+        kwargs.setdefault('ram_size', self.ram_size)
+        kwargs.setdefault('max_ram_size', self.max_ram_size)
+        kwargs.setdefault('arch', self.arch)
+        kwargs.setdefault('priority', self.priority)
+        kwargs.setdefault('boot_menu', self.boot_menu)
+        kwargs.setdefault('raw_data', self.raw_data)
+        kwargs.setdefault('lease', self.lease)
+        kwargs.setdefault('access_method', self.access_method)
+        kwargs.setdefault('system', self.template.system
+                          if self.template else None)
+        # create template and do additional setup
+        tmpl = InstanceTemplate(**kwargs)
+        # save template
+        tmpl.save()
+        # create related entities
+        for disk in self.disks.all():
+            try:
+                d = disk.save_as()
+            except Disk.WrongDiskTypeError:
+                d = disk
+
+            tmpl.disks.add(d)
+
+        for i in self.interface_set.all():
+            i.save_as_template(tmpl)
+
+        return tmpl
 
 
 class InstanceActivity(ActivityModel):
@@ -800,3 +834,11 @@ class Interface(Model):
         iface = cls(vlan=template.vlan, host=host, instance=instance)
         iface.save()
         return iface
+
+    def save_as_template(self, instance_template):
+        """Create a template based on this interface.
+        """
+        i = InterfaceTemplate(vlan=self.vlan, managed=self.host is not None,
+                              template=instance_template)
+        i.save()
+        return i

@@ -206,7 +206,7 @@ class Disk(TimeStampedModel):
         local_tasks.restore.apply_async(args=[self, user],
                                         queue='localhost.man')
 
-    def save_as(self, name, user=None, task_uuid=None):
+    def save_as(self, user=None, task_uuid=None):
         mapping = {
             'qcow2-snap': ('qcow2-norm', self.base),
         }
@@ -226,7 +226,7 @@ class Disk(TimeStampedModel):
             new_type, new_base = mapping[self.type]
 
             disk = Disk.objects.create(base=new_base, datastore=self.datastore,
-                                       filename=filename, name=name,
+                                       filename=filename, name=self.name,
                                        size=self.size, type=new_type)
 
             queue_name = self.datastore.hostname + ".storage"
