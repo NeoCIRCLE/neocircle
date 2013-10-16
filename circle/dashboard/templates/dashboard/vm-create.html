@@ -38,7 +38,8 @@
       <h2>Disks</h2>
     </div>
     <div class="col-sm-8" style="padding-top: 3px;">
-      <h3><span class="label label-primary"><i class="icon-file"></i> default</span>
+      <h3>
+        <span class="label label-primary"><i class="icon-file"></i> default <a href="#" class="hover-black"><i class="icon-remove-sign"></i></a></span>
       </h3>
       <h3>
         <div class="input-group" style="max-width: 300px;">
@@ -60,9 +61,23 @@
     <div class="col-sm-4">
       <h2>Network</h2> 
     </div>
+    <style>
+      /* temporary inline css for dev */
+      
+      a.hover-black {
+        color:white;
+      }
+
+      .hover-black:hover {
+        color: black /*#d9534f*/;
+        text-decoration: none;
+      }
+    </style>
     <div class="col-sm-8" style="padding-top: 3px;">
-      <h3><span class="label label-primary"><i class="icon-globe"></i> vmnet</span>
-      <span class="label label-default"><i class="icon-link"></i> grid</span></h3>
+      <h3>
+        <span class="label label-primary"><i class="icon-globe"></i> vmnet  <a href="#" class="hover-black"><i class="icon-remove-sign"></i></a></span>
+        <span class="label label-default"><i class="icon-link"></i> grid <a href="#" class="hover-black"><i class="icon-remove-sign hover-danger"></i></a></span>
+      </h3>
       <h3>
         <div class="input-group" style="max-width: 300px;">
           <select class="form-control">         
