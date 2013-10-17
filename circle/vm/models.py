@@ -27,6 +27,7 @@ ACCESS_METHODS = [(key, name) for key, (name, port, transport)
                   in ACCESS_PROTOCOLS.iteritems()]
 ARCHITECTURES = (('x86_64', 'x86-64 (64 bit)'),
                  ('i686', 'x86 (32 bit)'))
+VNC_PORT_RANGE = (2000, 65536)  # inclusive start, exclusive end
 
 
 class BaseResourceConfigModel(Model):
@@ -316,7 +317,7 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
     access_method = CharField(max_length=10, choices=ACCESS_METHODS,
                               help_text=_("Primary remote access method."),
                               verbose_name=_('access method'))
-    vnc_port = IntegerField(verbose_name=_('vnc_port'),
+    vnc_port = IntegerField(default=2000, verbose_name=_('vnc_port'),
                             help_text=_("TCP port where VNC console listens."))
     owner = ForeignKey(User)
     destoryed = DateTimeField(blank=True, null=True,
@@ -326,6 +327,7 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
     class Meta:
         ordering = ['pk', ]
         permissions = ()
+        unique_together = ('node', 'vnc_port')
         verbose_name = _('instance')
         verbose_name_plural = _('instances')
 
@@ -523,6 +525,21 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
             self.time_of_delete = timezone.now() + self.lease.delete_interval
         self.save()
 
+    def change_node(self, new_node):
+        if self.node == new_node:
+            return
+
+        self.node = new_node
+        if self.node:
+            used = self.node.instance_set.values_list('vnc_port', flat=True)
+            for p in xrange(*VNC_PORT_RANGE):
+                if p not in used:
+                    self.vnc_port = p
+                    break
+            else:
+                raise Exception("No unused port could be found for VNC.")
+        self.save()
+
     def deploy(self, user=None, task_uuid=None):
         """Deploy new virtual machine with network
 
@@ -540,8 +557,7 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
                                task_uuid=task_uuid, user=user) as act:
 
             # Schedule
-            self.node = scheduler.get_node(self, Node.objects.all())
-            self.save()
+            self.change_node(scheduler.get_node(self, Node.objects.all()))
 
             # Deploy virtual images
             with act.sub_activity('deploying_disks'):
