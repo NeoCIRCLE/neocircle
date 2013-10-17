@@ -489,8 +489,8 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         return {
             'name': self.vm_name,
             'vcpu': self.num_cores,
-            'memory': self.ram_size,
-            'memory_max': self.max_ram_size,
+            'memory': self.ram_size * 1024,  # convert from MiB to KiB
+            'memory_max': self.max_ram_size * 1024,  # convert from MiB to KiB
             'cpu_share': self.priority,
             'arch': self.arch,
             'boot_menu': self.boot_menu,
