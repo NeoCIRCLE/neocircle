@@ -85,7 +85,7 @@ class Disk(TimeStampedModel):
         return {
             'qcow2-norm': 'qcow2',
             'qcow2-snap': 'qcow2',
-            'iso': 'iso',
+            'iso': 'raw',
             'raw-ro': 'raw',
             'raw-rw': 'raw',
         }[self.type]
@@ -93,10 +93,12 @@ class Disk(TimeStampedModel):
     @property
     def device_type(self):
         return {
-            'qcow2': 'vd',
-            'raw': 'vd',
+            'qcow2-norm': 'vd',
+            'qcow2-snap': 'vd',
             'iso': 'hd',
-        }[self.format]
+            'raw-ro': 'vd',
+            'raw-rw': 'vd',
+        }[self.type]
 
     def is_in_use(self):
         return self.instance_set.exclude(state='SHUTOFF').exists()
@@ -127,7 +129,8 @@ class Disk(TimeStampedModel):
             'source': self.path,
             'driver_type': self.format,
             'driver_cache': 'default',
-            'target_device': self.device_type + self.dev_num
+            'target_device': self.device_type + self.dev_num,
+            'disk_device' : 'cdrom' if self.type == 'iso' else 'disk'
         }
 
     def get_disk_desc(self):
