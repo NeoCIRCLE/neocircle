@@ -549,7 +549,6 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
                     disk.deploy()
 
             queue_name = self.get_remote_queue_name('vm')
-
             # Deploy VM on remote machine
             with act.sub_activity('deploying_vm'):
                 vm_tasks.create.apply_async(args=[self.get_vm_desc()],
@@ -795,8 +794,8 @@ class Interface(Model):
             'name': self.__unicode__(),
             'bridge': 'cloud',
             'mac': str(self.mac),
-            'ipv4': self.host.ipv4 if self.host is not None else None,
-            'ipv6': self.host.ipv6 if self.host is not None else None,
+            'ipv4': str(self.host.ipv4) if self.host is not None else None,
+            'ipv6': str(self.host.ipv6) if self.host is not None else None,
             'vlan': self.vlan.vid,
             'managed': self.host is not None
         }
