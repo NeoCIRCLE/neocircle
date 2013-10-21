@@ -6,7 +6,7 @@ from crispy_forms.layout import Layout, Fieldset, Div, Submit, BaseInput
 from crispy_forms.bootstrap import FormActions
 
 from firewall.models import (Host, Vlan, Domain, Group, Record, Blacklist,
-                             Rule, VlanGroup)
+                             Rule, VlanGroup, SwitchPort)
 
 
 class LinkButton(BaseInput):
@@ -186,6 +186,28 @@ class RuleForm(ModelForm):
 
     class Meta:
         model = Rule
+
+
+class SwitchPortForm(ModelForm):
+    helper = FormHelper()
+    helper.layout = Layout(
+        Div(
+            Fieldset(
+                '',
+                'untagged_vlan',
+                'tagged_vlans',
+                'description',
+            )
+        ),
+        FormActions(
+            Submit('submit', 'Save'),
+            LinkButton('back', 'Back',
+                       reverse_lazy('network.switch_port_list'))
+        )
+    )
+
+    class Meta:
+        model = SwitchPort
 
 
 class VlanForm(ModelForm):

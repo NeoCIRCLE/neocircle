@@ -756,6 +756,10 @@ class SwitchPort(models.Model):
                                                      self.untagged_vlan,
                                                      tagged_vlans)
 
+    @models.permalink
+    def get_absolute_url(self):
+        return ('network.switch_port', None, {'pk': self.pk})
+
 
 class EthernetDevice(models.Model):
     name = models.CharField(max_length=20,

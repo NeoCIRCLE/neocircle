@@ -8,9 +8,12 @@ from .views import (IndexView,
                     BlacklistList, BlacklistDetail, BlacklistDelete,
                     BlacklistCreate,
                     RuleList, RuleDetail, RuleDelete, RuleCreate,
+                    SwitchPortList, SwitchPortDetail, SwitchPortCreate,
+                    SwitchPortDelete,
                     VlanGroupList, VlanGroupDetail, VlanGroupDelete,
                     VlanGroupCreate,
-                    remove_host_group, add_host_group)
+                    remove_host_group, add_host_group,
+                    remove_switch_port_device, add_switch_port_device)
 
 js_info_dict = {
     'packages': ('network', ),
@@ -56,6 +59,14 @@ urlpatterns = patterns(
     url('^rules/create$', RuleCreate.as_view(), name='network.rule_create'),
     url('^rules/(?P<pk>\d+)/$', RuleDetail.as_view(),
         name='network.rule'),
+    url('^switchports/$', SwitchPortList.as_view(),
+        name='network.switch_port_list'),
+    url('^switchports/create$', SwitchPortCreate.as_view(),
+        name='network.switch_port_create'),
+    url('^switchports/(?P<pk>\d+)/$', SwitchPortDetail.as_view(),
+        name='network.switch_port'),
+    url('^switchports/delete/(?P<pk>\d+)/$', SwitchPortDelete.as_view(),
+        name="network.switch_port_delete"),
     url('^vlans/$', VlanList.as_view(), name='network.vlan_list'),
     url('^vlans/create$', VlanCreate.as_view(), name='network.vlan_create'),
     url('^vlans/(?P<vid>\d+)/$', VlanDetail.as_view(), name='network.vlan'),
@@ -71,10 +82,18 @@ urlpatterns = patterns(
         name="network.vlan_group_delete"),
     url('^rules/delete/(?P<pk>\d+)/$', RuleDelete.as_view(),
         name="network.rule_delete"),
+
+    # non class based views
     url('^hosts/(?P<pk>\d+)/remove/(?P<group_pk>\d+)/$', remove_host_group,
         name='network.remove_host_group'),
     url('^hosts/(?P<pk>\d+)/add/$', add_host_group,
         name='network.add_host_group'),
+    url('^switchports/(?P<pk>\d+)/remove/(?P<device_pk>\d+)/$',
+        remove_switch_port_device, name='network.remove_switch_port_device'),
+    url('^switchports/(?P<pk>\d+)/add/$', add_switch_port_device,
+        name='network.add_switch_port_device'),
+
+    # js gettext catalog
     url(r'^jsi18n/$', 'django.views.i18n.javascript_catalog', js_info_dict,
         name="network.js_catalog"),
 )
