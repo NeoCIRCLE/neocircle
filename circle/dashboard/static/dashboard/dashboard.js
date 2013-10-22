@@ -59,6 +59,60 @@ $(function () {
   vmCreateLoaded();
 });
 
+function vmCreateTemplateChange(new_this) {
+  this.value = new_this.value;
+  if(this.value < 0) return;
+  $.ajax({
+    url: '/dashboard/template/' + this.value,
+    type: 'GET',
+    success: function(data, textStatus, xhr) {
+      if(xhr.status == 200) {
+       // set sliders
+        $('#cpu-priority-slider').simpleSlider("setValue", data['priority']);
+        $('#cpu-count-slider').simpleSlider("setValue", data['num_cores']);
+        $('#ram-slider').simpleSlider("setValue", data['ram_size']);
+
+        $('#vm-create-network-list').html('');
+        for(var n = 0; n<data['network'].length; n++) {
+          nn = data['network'][n]
+          $('#vm-create-network-list').append(
+              vmCreateNetworkLabel(nn.vlan_pk, nn.vlan, nn.managed)
+          );
+        }
+        vmCreateAddRemoveNetworkClick();
+      }
+    }
+  });
+}
+
+function vmCreateNetworkLabel(pk, name, managed) {
+  return '<span id="vlan-' + pk + '" class="label label-' +  (managed ? 'primary' : 'default')  + '"><i class="icon-' + (managed ? 'globe' : 'link') + '"></i> ' + name + ' <a href="#" class="hover-black vm-create-remove-network"><i class="icon-remove-sign"></i></a></span> ';
+
+}
+
+// #TODO this doesn't feel right
+function vmCreateAddRemoveNetworkClick() {
+    $('.vm-create-remove-network').click(function() {
+      var vlan_pk = ($(this).parent('span').prop('id')).replace('vlan-', '');
+      $(this).parent('span').fadeOut(500, function() { 
+        $(this).remove(); 
+        var vlan_name = $(this).text();
+
+        $('#vm-create-network-add-select').append($('<option>', {
+          value: vlan_pk,
+          text: vlan_name
+        }));
+
+        if ($('#vm-create-network-list').children('span').length < 1) {
+          $('#vm-create-network-list').append('Not added to any network!');
+        }
+      
+
+      });
+      return false;
+  });
+}
+
 function vmCreateLoaded() {
   // temporarily disable for testing
   //$('.vm-create-advanced').hide();
@@ -71,7 +125,26 @@ function vmCreateLoaded() {
     } 
   });
   
+  $('#vm-create-template-select').change(function() {
+    vmCreateTemplateChange(this);
+  });
  
+  $('#vm-create-network-add-button').click(function() {
+    var option = $('#vm-create-network-add-select :selected');
+    if(option.val() > 0) {
+      if ($('#vm-create-network-list').children('span').length < 1) { 
+        $('#vm-create-network-list').html('');
+      }  
+      $('#vm-create-network-list').append(
+        vmCreateNetworkLabel(option.val(), option.text(), true)
+      );
+      $('option:selected', $('#vm-create-network-add-select')).remove();
+      vmCreateAddRemoveNetworkClick();
+    }
+
+    return false;
+  });
+
   $("[data-slider]").each(function() {
     if($(this).css('display') != "none") 
       $(this).simpleSlider();

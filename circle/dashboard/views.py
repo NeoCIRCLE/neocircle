@@ -1,10 +1,13 @@
+from django.http import HttpResponse
 from django.views.generic import TemplateView, DetailView
 from django_tables2 import SingleTableView
 
 from tables import VmListTable
 
-from vm.models import Instance
+from vm.models import Instance, InstanceTemplate, InterfaceTemplate
 from django.core import signing
+
+import json
 
 
 class IndexView(TemplateView):
@@ -50,6 +53,37 @@ class VmDetailView(DetailView):
         return context
 
 
+class TemplateDetail(DetailView):
+    model = InstanceTemplate
+
+    def get(self, request, *args, **kwargs):
+        if request.is_ajax():
+            template = InstanceTemplate.objects.get(pk=kwargs['pk'])
+            template = {
+                'num_cores': template.num_cores,
+                'ram_size': template.ram_size,
+                'priority': template.priority,
+                'arch': template.arch,
+                'description': template.description,
+                'system': template.system,
+                'name': template.name,
+                'disks': [{'pk': d.pk, 'name': d.name}
+                          for d in template.disks.all()],
+                'network': [
+                    {'vlan_pk': i.vlan.pk, 'vlan': i.vlan.name,
+                     'managed': i.managed}
+                    for i in InterfaceTemplate.objects.filter(
+                        template=self.get_object()).all()
+                ]
+            }
+            print template
+            return HttpResponse(json.dumps(template),
+                                content_type="application/json")
+        else:
+            # return super(TemplateDetail, self).get(request, *args, **kwargs)
+            return HttpResponse('soon')
+
+
 class VmList(SingleTableView):
     template_name = "dashboard/vm-list.html"
     model = Instance
@@ -73,3 +107,12 @@ class VmCreate(TemplateView):
                 'box_title': 'Create a VM'
             })
         return self.render_to_response(context)
+
+    def get_context_data(self, **kwargs):
+        context = super(VmCreate, self).get_context_data(**kwargs)
+        context.update({
+            # TODO acl
+            'templates': InstanceTemplate.objects.all()
+        })
+
+        return context
