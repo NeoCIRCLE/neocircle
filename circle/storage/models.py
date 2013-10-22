@@ -130,7 +130,7 @@ class Disk(TimeStampedModel):
             'driver_type': self.format,
             'driver_cache': 'default',
             'target_device': self.device_type + self.dev_num,
-            'disk_device' : 'cdrom' if self.type == 'iso' else 'disk'
+            'disk_device': 'cdrom' if self.type == 'iso' else 'disk'
         }
 
     def get_disk_desc(self):
@@ -267,10 +267,10 @@ class DiskActivity(ActivityModel):
     @contextmanager
     def sub_activity(self, code_suffix, task_uuid=None):
         act = self.create_sub(code_suffix, task_uuid)
-        activitycontextimpl(act)
+        return activitycontextimpl(act)
 
 
 @contextmanager
 def disk_activity(code_suffix, instance, task_uuid=None, user=None):
     act = DiskActivity.create(code_suffix, instance, task_uuid, user)
-    activitycontextimpl(act)
+    return activitycontextimpl(act)

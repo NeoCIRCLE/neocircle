@@ -126,13 +126,13 @@ class NodeActivity(ActivityModel):
     @contextmanager
     def sub_activity(self, code_suffix, task_uuid=None):
         act = self.create_sub(code_suffix, task_uuid)
-        activitycontextimpl(act)
+        return activitycontextimpl(act)
 
 
 @contextmanager
 def node_activity(code_suffix, node, task_uuid=None, user=None):
     act = InstanceActivity.create(code_suffix, node, task_uuid, user)
-    activitycontextimpl(act)
+    return activitycontextimpl(act)
 
 
 class Lease(Model):
@@ -764,13 +764,13 @@ class InstanceActivity(ActivityModel):
     @contextmanager
     def sub_activity(self, code_suffix, task_uuid=None):
         act = self.create_sub(code_suffix, task_uuid)
-        activitycontextimpl(act)
+        return activitycontextimpl(act)
 
 
 @contextmanager
 def instance_activity(code_suffix, instance, task_uuid=None, user=None):
     act = InstanceActivity.create(code_suffix, instance, task_uuid, user)
-    activitycontextimpl(act)
+    return activitycontextimpl(act)
 
 
 class Interface(Model):
