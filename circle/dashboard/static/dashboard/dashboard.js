@@ -38,6 +38,10 @@ $(function () {
     $("a[href=" + window.location.hash +"]").tab('show');
 
   vmCreateLoaded();
+
+  /* no js compatibility */
+  $('.no-js-hidden').show();
+  $('.js-hidden').hide();
 });
 
 function vmCreateTemplateChange(new_this) {
@@ -59,6 +63,7 @@ function vmCreateTemplateChange(new_this) {
           $('#vm-create-network-list').append(
               vmCreateNetworkLabel(nn.vlan_pk, nn.vlan, nn.managed)
           );
+          $('#vm-create-network-add-form option[value="' + nn.vlan_pk + '|' + (nn.managed ? '1' : '0') + '"]').prop('selected', true);
         }
       }
     }
@@ -98,6 +103,7 @@ function vmCreateLoaded() {
     $('#vm-create-network-list').append(
       vmCreateNetworkLabel(option.val(), option.text(), managed > 0 ? true : false)
     );
+    $('#vm-create-network-add-form option[value="' + vlan_pk + '|' + (managed ? '1' : '0') + '"]').prop('selected', true);
     $('option:selected', $('#vm-create-network-add-select')).remove();
 
     /* add dummy text if no more networks are available */
@@ -113,22 +119,24 @@ function vmCreateLoaded() {
   // event for network remove button (icon, X)
   // TODO still not the right place
   $('body').on('click', '.vm-create-remove-network', function() {
-    console.log($('#vm-create-network-add-select option').length);
-    if($('#vm-create-network-add-select option')[0].value == -1) {   
-      $('#vm-create-network-add-button').attr('disabled', false);            
-      $('#vm-create-network-add-select').html('');
-    }
-    
-    var vlan_pk = ($(this).parent('span').prop('id')).replace('vlan-', '');
-    $(this).parent('span').fadeOut(500, function() { 
+    var value = ($(this).parent('span').prop('id')).replace('vlan-', '').split('|');
+    var vlan_pk = value[0];
+    var managed = value[1];
+    $(this).parent('span').fadeOut(500, function() {  
+      if($('#vm-create-network-add-select option')[0].value == -1) {   
+        $('#vm-create-network-add-button').attr('disabled', false);            
+        $('#vm-create-network-add-select').html('');
+      }
+      
       $(this).remove(); 
       var vlan_name = $(this).text();
 
       $('#vm-create-network-add-select').append($('<option>', {
-        value: vlan_pk,
+        value: vlan_pk + "|" + managed,
         text: vlan_name
       }));
 
+      $('#vm-create-network-add-form option[value="' + vlan_pk + '|' + (managed ? '1' : '0') + '"]').prop('selected', false);
       if ($('#vm-create-network-list').children('span').length < 1) {
         $('#vm-create-network-list').append('Not added to any network!');
       }

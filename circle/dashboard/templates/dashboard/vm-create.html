@@ -70,24 +70,35 @@
         color: black /*#d9534f*/;
         text-decoration: none;
       }
+
+      .no-js-hidden {
+        display: none;
+      }
     </style>
     <div class="col-sm-8" style="padding-top: 3px;">
-      <h3 id="vm-create-network-list">
-        Not added to any network!
-      </h3>
-      <h3 id="vm-create-network-add">
-        <div class="input-group" style="max-width: 300px;">
-          <select class="form-control" id="vm-create-network-add-select">         
-            <option value="1|1">vmnet2</option>
-            <option value="2|0">PUB</option>
-            <option value="3|0">OFF</option>
-          </select>
-          <div class="input-group-btn">
-            <!--<input type="submit" value="Add to network" class="btn btn-success"/>-->
-            <a href="#" id="vm-create-network-add-button" class="btn btn-success"><i class="icon-plus-sign"></i></a>
+      <select class="form-control js-hidden" id="vm-create-network-add-form" multiple>
+        <option value="1|1">vmnet2 - managed</option>
+        <option value="2|0">PUB</option>
+        <option value="3|0">OFF</option>
+      </select>
+      <div class="no-js-hidden">
+        <h3 id="vm-create-network-list" class="no-js-hidden">
+          Not added to any network!
+        </h3>
+        <h3 id="vm-create-network-add">
+          <div class="input-group" style="max-width: 300px;">
+            <select class="form-control" id="vm-create-network-add-select">         
+              <option value="1|1">vmnet2</option>
+              <option value="2|0">PUB</option>
+              <option value="3|0">OFF</option>
+            </select>
+            <div class="input-group-btn">
+              <!--<input type="submit" value="Add to network" class="btn btn-success"/>-->
+              <a href="#" id="vm-create-network-add-button" class="btn btn-success"><i class="icon-plus-sign"></i></a>
+            </div>
           </div>
-        </div>
-      </h3>
+        </h3>
+      </div>
     </div>
   </div>
 </div>
