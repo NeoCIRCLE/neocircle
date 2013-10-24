@@ -94,17 +94,16 @@ class VmCreate(TemplateView):
 
     def get_template_names(self):
         if self.request.is_ajax():
-            return ['dashboard/vm-create.html']
+            return ['dashboard/modal-wrapper.html']
         else:
-            return ['dashboard/ajax-wrapper.html']
+            return ['dashboard/nojs-wrapper.html']
 
     def get(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
-        if not request.is_ajax():
-            context.update({
-                'template': 'dashboard/vm-create.html',
-                'box_title': 'Create a VM'
-            })
+        context.update({
+            'template': 'dashboard/vm-create.html',
+            'box_title': 'Create a VM'
+        })
         return self.render_to_response(context)
 
     def get_context_data(self, **kwargs):
