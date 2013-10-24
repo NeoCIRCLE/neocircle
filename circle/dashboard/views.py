@@ -76,7 +76,6 @@ class TemplateDetail(DetailView):
                         template=self.get_object()).all()
                 ]
             }
-            print template
             return HttpResponse(json.dumps(template),
                                 content_type="application/json")
         else:
