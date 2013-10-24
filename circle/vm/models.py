@@ -567,7 +567,7 @@ class Instance(VirtualMachineDescModel, TimeStampedModel):
             queue_name = self.get_remote_queue_name('vm')
             # Deploy VM on remote machine
             with act.sub_activity('deploying_vm'):
-                vm_tasks.create.apply_async(args=[self.get_vm_desc()],
+                vm_tasks.deploy.apply_async(args=[self.get_vm_desc()],
                                             queue=queue_name).get()
 
             # Estabilish network connection (vmdriver)
