@@ -79,7 +79,6 @@ function vmCreateTemplateChange(new_this) {
               vmCreateNetworkLabel(nn.vlan_pk, nn.vlan, nn.managed)
           );
         }
-        vmCreateAddRemoveNetworkClick();
       }
     }
   });
@@ -87,31 +86,8 @@ function vmCreateTemplateChange(new_this) {
 
 function vmCreateNetworkLabel(pk, name, managed) {
   return '<span id="vlan-' + pk + '" class="label label-' +  (managed ? 'primary' : 'default')  + '"><i class="icon-' + (managed ? 'globe' : 'link') + '"></i> ' + name + ' <a href="#" class="hover-black vm-create-remove-network"><i class="icon-remove-sign"></i></a></span> ';
-
 }
 
-// #TODO this doesn't feel right
-function vmCreateAddRemoveNetworkClick() {
-    $('.vm-create-remove-network').click(function() {
-      var vlan_pk = ($(this).parent('span').prop('id')).replace('vlan-', '');
-      $(this).parent('span').fadeOut(500, function() { 
-        $(this).remove(); 
-        var vlan_name = $(this).text();
-
-        $('#vm-create-network-add-select').append($('<option>', {
-          value: vlan_pk,
-          text: vlan_name
-        }));
-
-        if ($('#vm-create-network-list').children('span').length < 1) {
-          $('#vm-create-network-list').append('Not added to any network!');
-        }
-      
-
-      });
-      return false;
-  });
-}
 
 function vmCreateLoaded() {
   // temporarily disable for testing
@@ -139,9 +115,28 @@ function vmCreateLoaded() {
         vmCreateNetworkLabel(option.val(), option.text(), true)
       );
       $('option:selected', $('#vm-create-network-add-select')).remove();
-      vmCreateAddRemoveNetworkClick();
     }
 
+    return false;
+  });
+
+  // event for network remove button (icon, X)
+  // TODO still not the right place
+  $('body').on('click', '.vm-create-remove-network', function() {
+    var vlan_pk = ($(this).parent('span').prop('id')).replace('vlan-', '');
+    $(this).parent('span').fadeOut(500, function() { 
+      $(this).remove(); 
+      var vlan_name = $(this).text();
+
+      $('#vm-create-network-add-select').append($('<option>', {
+        value: vlan_pk,
+        text: vlan_name
+      }));
+
+      if ($('#vm-create-network-list').children('span').length < 1) {
+        $('#vm-create-network-list').append('Not added to any network!');
+      }
+    });
     return false;
   });
 
