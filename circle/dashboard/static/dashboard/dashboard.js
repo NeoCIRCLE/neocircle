@@ -86,24 +86,39 @@ function vmCreateLoaded() {
     vmCreateTemplateChange(this);
   });
  
+  /* add network */
   $('#vm-create-network-add-button').click(function() {
     var option = $('#vm-create-network-add-select :selected');
-    if(option.val() > 0) {
-      if ($('#vm-create-network-list').children('span').length < 1) { 
-        $('#vm-create-network-list').html('');
-      }  
-      $('#vm-create-network-list').append(
-        vmCreateNetworkLabel(option.val(), option.text(), true)
-      );
-      $('option:selected', $('#vm-create-network-add-select')).remove();
+    var o = option.val().split('|');
+    var vlan_pk = o[0];
+    var managed = o[1];
+    if ($('#vm-create-network-list').children('span').length < 1) { 
+      $('#vm-create-network-list').html('');
+    }  
+    $('#vm-create-network-list').append(
+      vmCreateNetworkLabel(option.val(), option.text(), managed > 0 ? true : false)
+    );
+    $('option:selected', $('#vm-create-network-add-select')).remove();
+
+    /* add dummy text if no more networks are available */
+    if($('#vm-create-network-add-select option').length < 1) {
+      $('#vm-create-network-add-button').attr('disabled', true);
+      $('#vm-create-network-add-select').html('<option value="-1">We are out of &lt;options&gt; hehe</option>');
     }
 
     return false;
   });
 
+  /* remove network */
   // event for network remove button (icon, X)
   // TODO still not the right place
   $('body').on('click', '.vm-create-remove-network', function() {
+    console.log($('#vm-create-network-add-select option').length);
+    if($('#vm-create-network-add-select option')[0].value == -1) {   
+      $('#vm-create-network-add-button').attr('disabled', false);            
+      $('#vm-create-network-add-select').html('');
+    }
+    
     var vlan_pk = ($(this).parent('span').prop('id')).replace('vlan-', '');
     $(this).parent('span').fadeOut(500, function() { 
       $(this).remove(); 
