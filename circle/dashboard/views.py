@@ -46,7 +46,7 @@ class VmDetailView(DetailView):
         instance = context['instance']
         if instance.node:
             port = instance.vnc_port
-            host = instance.node.host.ipv4
+            host = str(instance.node.host.ipv4)
             value = signing.dumps({'host': host,
                                    'port': port}, key='asdasd')
             context.update({
