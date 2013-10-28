@@ -37,7 +37,7 @@
       <h2>Disks</h2>
     </div>
     <div class="col-sm-8" style="padding-top: 3px;">
-      <div class="js-hidden" style="padding-top: 15px;">
+      <div class="js-hidden" style="padding-top: 15px; max-width: 450px;">
         <select class="form-control" id="vm-create-disk-add-form" multiple>
           {% for d in disks %}
             <option value="{{ d.pk }}">{{ d.name }}</option>
@@ -84,7 +84,7 @@
       }
     </style>
     <div class="col-sm-8" style="padding-top: 3px;">
-      <div class="js-hidden" style="padding-top: 15px;">
+      <div class="js-hidden" style="padding-top: 15px; max-width: 450px;">
         <h4>Managed networks</h4>
         <select class="form-control" id="vm-create-network-add-managed" multiple>
           {% for v in vlans %}
