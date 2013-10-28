@@ -317,8 +317,9 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
     access_method = CharField(max_length=10, choices=ACCESS_METHODS,
                               help_text=_("Primary remote access method."),
                               verbose_name=_('access method'))
-    vnc_port = IntegerField(default=2000, verbose_name=_('vnc_port'),
-                            help_text=_("TCP port where VNC console listens."))
+    vnc_port = IntegerField(blank=True, default=None, null=True,
+                            help_text=_("TCP port where VNC console listens."),
+                            unique=True, verbose_name=_('vnc_port'))
     owner = ForeignKey(User)
     destoryed = DateTimeField(blank=True, null=True,
                               help_text=_("The virtual machine's time of "
@@ -327,7 +328,6 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
     class Meta:
         ordering = ['pk', ]
         permissions = ()
-        unique_together = ('node', 'vnc_port')
         verbose_name = _('instance')
         verbose_name_plural = _('instances')
 
@@ -525,21 +525,6 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
             self.time_of_delete = timezone.now() + self.lease.delete_interval
         self.save()
 
-    def change_node(self, new_node):
-        if self.node == new_node:
-            return
-
-        self.node = new_node
-        if self.node:
-            used = self.node.instance_set.values_list('vnc_port', flat=True)
-            for p in xrange(*VNC_PORT_RANGE):
-                if p not in used:
-                    self.vnc_port = p
-                    break
-            else:
-                raise Exception("No unused port could be found for VNC.")
-        self.save()
-
     def deploy(self, user=None, task_uuid=None):
         """Deploy new virtual machine with network
 
@@ -556,8 +541,19 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
         with instance_activity(code_suffix='deploy', instance=self,
                                task_uuid=task_uuid, user=user) as act:
 
+            # Find unused port for VNC
+            if self.vnc_port is None:
+                used = Instance.objects.values_list('vnc_port', flat=True)
+                for p in xrange(*VNC_PORT_RANGE):
+                    if p not in used:
+                        self.vnc_port = p
+                        break
+                else:
+                    raise Exception("No unused port could be found for VNC.")
+
             # Schedule
-            self.change_node(scheduler.get_node(self, Node.objects.all()))
+            self.node = scheduler.get_node(self, Node.objects.all())
+            self.save()
 
             # Deploy virtual images
             with act.sub_activity('deploying_disks'):
@@ -617,6 +613,10 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
             with act.sub_activity('destroying_disks'):
                 for disk in self.disks.all():
                     disk.destroy()
+
+            # Clear node and VNC port association
+            self.node = None
+            self.vnc_port = None
 
             self.destoryed = timezone.now()
             self.save()
