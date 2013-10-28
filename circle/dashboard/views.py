@@ -6,6 +6,7 @@ from tables import VmListTable
 
 from vm.models import Instance, InstanceTemplate, InterfaceTemplate
 from firewall.models import Vlan
+from storage.models import Disk
 from django.core import signing
 
 import json
@@ -112,7 +113,8 @@ class VmCreate(TemplateView):
         # TODO acl
         context.update({
             'templates': InstanceTemplate.objects.all(),
-            'vlans': Vlan.objects.all()
+            'vlans': Vlan.objects.all(),
+            'disks': Disk.objects.all()
         })
 
         return context

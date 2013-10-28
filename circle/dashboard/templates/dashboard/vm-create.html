@@ -31,30 +31,39 @@
     {% include "dashboard/vm-detail-resources.html" %}
   </div>
 
+  <!-- disk -->
   <div class="row">
     <div class="col-sm-4">
       <h2>Disks</h2>
     </div>
     <div class="col-sm-8" style="padding-top: 3px;">
-      <h3>
-        <span class="label label-primary"><i class="icon-file"></i> default <a href="#" class="hover-black"><i class="icon-remove-sign"></i></a></span>
-      </h3>
-      <h3>
-        <div class="input-group" style="max-width: 300px;">
-          <select class="form-control" id="vm-create-disks-add">         
-            <option value="1">yo disk</option>
-            <option value="2">huge</option>
-            <option value="3">minor</option>
-          </select>
-          <div class="input-group-btn">
-            <!--<input type="submit" value="Add disk" class="btn btn-success"/>-->
-            <a href="" class="btn btn-success"><i class="icon-plus-sign"></i></a>
+      <div class="js-hidden" style="padding-top: 15px;">
+        <select class="form-control" id="vm-create-disk-add-form" multiple>
+          {% for d in disks %}
+            <option value="{{ d.pk }}">{{ d.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="no-js-hidden">
+        <h3 id="vm-create-disk-list">
+          No disks are added!
+        </h3>
+        <h3 id="vm-create-disk-add">
+          <div class="input-group" style="max-width: 330px;">
+            <select class="form-control" id="vm-create-disk-add-select">         
+              <!-- options should be copied via js from above -->
+            </select>
+            <div class="input-group-btn">
+              <!--<input type="submit" value="Add to network" class="btn btn-success"/>-->
+              <a href="#" id="vm-create-disk-add-button" class="btn btn-success"><i class="icon-plus-sign"></i></a>
+            </div>
           </div>
-        </div>
-      </h3>
+        </h3>
+      </div>
     </div>
   </div>
 
+  <!-- network -->
   <div class="row">
     <div class="col-sm-4">
       <h2>Network</h2> 
@@ -91,7 +100,7 @@
         </select>
       </div>
       <div class="no-js-hidden">
-        <h3 id="vm-create-network-list" class="no-js-hidden">
+        <h3 id="vm-create-network-list">
           Not added to any network!
         </h3>
         <h3 id="vm-create-network-add">
