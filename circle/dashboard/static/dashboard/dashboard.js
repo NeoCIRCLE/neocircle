@@ -38,10 +38,6 @@ $(function () {
     $("a[href=" + window.location.hash +"]").tab('show');
 
   vmCreateLoaded();
-
-  /* no js compatibility */
-  $('.no-js-hidden').show();
-  $('.js-hidden').hide();
 });
 
 function vmCreateTemplateChange(new_this) {
@@ -144,6 +140,13 @@ function vmCreateLoaded() {
     return false;
   });
 
+
+  /* no js compatibility */
+  $('.no-js-hidden').show();
+  $('.js-hidden').hide();
+
+
+  /* slider things */
   $("[data-slider]").each(function() {
     if($(this).css('display') != "none") 
       $(this).simpleSlider();
