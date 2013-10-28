@@ -32,8 +32,7 @@ VNC_PORT_RANGE = (2000, 65536)  # inclusive start, exclusive end
 
 class BaseResourceConfigModel(Model):
 
-    """Abstract base class for models with base resource configuration
-       parameters.
+    """Abstract base for models with base resource configuration parameters.
     """
     num_cores = IntegerField(verbose_name=_('number of cores'),
                              help_text=_('Number of virtual CPU cores '
@@ -47,11 +46,6 @@ class BaseResourceConfigModel(Model):
                      choices=ARCHITECTURES)
     priority = IntegerField(verbose_name=_('priority'),
                             help_text=_('CPU priority.'))
-    boot_menu = BooleanField(verbose_name=_('boot menu'), default=False,
-                             help_text=_(
-                                 'Show boot device selection menu on boot.'))
-    raw_data = TextField(verbose_name=_('raw_data'), blank=True, help_text=_(
-        'Additional libvirt domain parameters in XML format.'))
 
     class Meta:
         abstract = True
@@ -67,6 +61,22 @@ class NamedBaseResourceConfig(BaseResourceConfigModel, TimeStampedModel):
 
     def __unicode__(self):
         return self.name
+
+
+class VirtualMachineDescModel(BaseResourceConfigModel):
+    """Abstract base for virtual machine describing models.
+    """
+    access_method = CharField(max_length=10, choices=ACCESS_METHODS,
+                              verbose_name=_('access method'),
+                              help_text=_('Primary remote access method.'))
+    boot_menu = BooleanField(verbose_name=_('boot menu'), default=False,
+                             help_text=_(
+                                 'Show boot device selection menu on boot.'))
+    raw_data = TextField(verbose_name=_('raw_data'), blank=True, help_text=_(
+        'Additional libvirt domain parameters in XML format.'))
+
+    class Meta:
+        abstract = True
 
 
 class Node(TimeStampedModel):
@@ -170,7 +180,7 @@ class Lease(Model):
         return self.name
 
 
-class InstanceTemplate(BaseResourceConfigModel, TimeStampedModel):
+class InstanceTemplate(VirtualMachineDescModel, TimeStampedModel):
 
     """Virtual machine template.
 
@@ -201,9 +211,6 @@ class InstanceTemplate(BaseResourceConfigModel, TimeStampedModel):
                        help_text=(_('Name of operating system in '
                                     'format like "%s".') %
                                   'Ubuntu 12.04 LTS Desktop amd64'))
-    access_method = CharField(max_length=10, choices=ACCESS_METHODS,
-                              verbose_name=_('access method'),
-                              help_text=_('Primary remote access method.'))
     state = CharField(max_length=10, choices=STATES, default='NEW')
     disks = ManyToManyField(Disk, verbose_name=_('disks'),
                             related_name='template_set',
@@ -258,7 +265,7 @@ class InterfaceTemplate(Model):
         verbose_name_plural = _('interface templates')
 
 
-class Instance(BaseResourceConfigModel, TimeStampedModel):
+class Instance(VirtualMachineDescModel, TimeStampedModel):
 
     """Virtual machine instance.
 
@@ -314,9 +321,6 @@ class Instance(BaseResourceConfigModel, TimeStampedModel):
                             help_text=_("Set of mounted disks."),
                             verbose_name=_('disks'))
     lease = ForeignKey(Lease, help_text=_("Preferred expiration periods."))
-    access_method = CharField(max_length=10, choices=ACCESS_METHODS,
-                              help_text=_("Primary remote access method."),
-                              verbose_name=_('access method'))
     vnc_port = IntegerField(blank=True, default=None, null=True,
                             help_text=_("TCP port where VNC console listens."),
                             unique=True, verbose_name=_('vnc_port'))
