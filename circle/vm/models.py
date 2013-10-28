@@ -401,7 +401,7 @@ class Instance(VirtualMachineDescModel, TimeStampedModel):
         It is always on the first hard drive storage named cloud-<id>.dump
         """
         path = self.disks.all()[0].datastore.path
-        return path + '/' + 'cloud-' + str(self.id) + '.dump'
+        return path + '/' + self.vm_name + '.dump'
 
     @property
     def primary_host(self):
