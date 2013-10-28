@@ -61,7 +61,6 @@
     </div>
     <style>
       /* temporary inline css for dev */
-      
       a.hover-black {
         color:white;
       }
@@ -76,22 +75,33 @@
       }
     </style>
     <div class="col-sm-8" style="padding-top: 3px;">
-      <select class="form-control js-hidden" id="vm-create-network-add-form" multiple>
-        <option value="1|1">vmnet2 - managed</option>
-        <option value="2|0">PUB</option>
-        <option value="3|0">OFF</option>
-      </select>
+      <div class="js-hidden" style="padding-top: 15px;">
+        <h4>Managed networks</h4>
+        <select class="form-control" id="vm-create-network-add-managed" multiple>
+          {% for v in vlans %}
+            <option value="{{ v.pk }}">{{ v.name }}</option>
+          {% endfor %}
+        </select>
+
+        <h4>Unmanaged networks</h4>
+        <select class="form-control" id="vm-create-network-add-unmanaged" multiple>
+          {% for v in vlans %}
+            <option value="{{ v.pk }}">{{ v.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
       <div class="no-js-hidden">
         <h3 id="vm-create-network-list" class="no-js-hidden">
           Not added to any network!
         </h3>
         <h3 id="vm-create-network-add">
-          <div class="input-group" style="max-width: 300px;">
+          <div class="input-group" style="max-width: 330px;">
             <select class="form-control" id="vm-create-network-add-select">         
-              <option value="1|1">vmnet2</option>
-              <option value="2|0">PUB</option>
-              <option value="3|0">OFF</option>
+              <!-- options should be copied via js from above -->
             </select>
+            <span class="input-group-addon">
+              <input id="vm-create-network-add-checkbox-managed" type="checkbox" title data-original-title="Managed network?" style="-webkit-transform: scale(1.4, 1.4); margin-top: 4px;" checked/>
+            </span>
             <div class="input-group-btn">
               <!--<input type="submit" value="Add to network" class="btn btn-success"/>-->
               <a href="#" id="vm-create-network-add-button" class="btn btn-success"><i class="icon-plus-sign"></i></a>

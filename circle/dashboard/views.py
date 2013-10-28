@@ -5,6 +5,7 @@ from django_tables2 import SingleTableView
 from tables import VmListTable
 
 from vm.models import Instance, InstanceTemplate, InterfaceTemplate
+from firewall.models import Vlan
 from django.core import signing
 
 import json
@@ -108,9 +109,10 @@ class VmCreate(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(VmCreate, self).get_context_data(**kwargs)
+        # TODO acl
         context.update({
-            # TODO acl
-            'templates': InstanceTemplate.objects.all()
+            'templates': InstanceTemplate.objects.all(),
+            'vlans': Vlan.objects.all()
         })
 
         return context
