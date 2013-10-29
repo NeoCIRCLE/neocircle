@@ -37,9 +37,9 @@ class Firewall:
             return
 
         if self.proto == 6 and host.ipv6:
-            ipaddr = host.ipv6 + '/112'
+            ipaddr = str(host.ipv6) + '/112'
         else:
-            ipaddr = host.ipv4
+            ipaddr = str(host.ipv4)
 
         dport_sport = self.dportsport(rule)
 
