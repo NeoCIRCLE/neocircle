@@ -120,3 +120,11 @@ class VmCreate(TemplateView):
         })
 
         return context
+
+    def post(self, request, *args, **kwargs):
+        resp = request.POST.copy()
+        resp['managed-vlans'] = request.POST.getlist('managed-vlans')
+        resp['unmanaged-vlans'] = request.POST.getlist('unmanaged-vlans')
+        resp['disks'] = request.POST.getlist('disks')
+
+        return HttpResponse(json.dumps(resp), content_type="application/json")

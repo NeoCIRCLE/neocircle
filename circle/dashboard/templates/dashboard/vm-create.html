@@ -3,9 +3,11 @@
     margin-bottom: 15px;
   }
 </style>
+<form method="POST" action="/dashboard/vm/create/">
+{% csrf_token %}
 <div class="row">
   <div class="col-sm-10">
-  <select class="select form-control" id="vm-create-template-select">
+  <select class="select form-control" id="vm-create-template-select" name="template-pk">
     <option value="-1">Choose a VM template</option>
     {% for template in templates %}
       <option value="{{ template.pk }}">{{ template.name}}</option>
@@ -19,7 +21,7 @@
     <a class="btn btn-info vm-create-advanced-btn">Advanced <i class="vm-create-advanced-icon icon-caret-down"></i></a>
   </div>
   <div class="col-sm-5 text-right">
-    <a class="btn btn-success "><i class="icon-play"></i> Start</a>
+    <button type="submit" class="btn btn-success "><i class="icon-play"></i> Start</button>
   </div>
 </div>
 
@@ -38,7 +40,7 @@
     </div>
     <div class="col-sm-8" style="padding-top: 3px;">
       <div class="js-hidden" style="padding-top: 15px; max-width: 450px;">
-        <select class="form-control" id="vm-create-disk-add-form" multiple>
+        <select class="form-control" id="vm-create-disk-add-form" multiple name="disks">
           {% for d in disks %}
             <option value="{{ d.pk }}">{{ d.name }}</option>
           {% endfor %}
@@ -86,14 +88,14 @@
     <div class="col-sm-8" style="padding-top: 3px;">
       <div class="js-hidden" style="padding-top: 15px; max-width: 450px;">
         <h4>Managed networks</h4>
-        <select class="form-control" id="vm-create-network-add-managed" multiple>
+        <select class="form-control" id="vm-create-network-add-managed" multiple name="managed-vlans">
           {% for v in vlans %}
             <option value="{{ v.pk }}">{{ v.name }}</option>
           {% endfor %}
         </select>
 
         <h4>Unmanaged networks</h4>
-        <select class="form-control" id="vm-create-network-add-unmanaged" multiple>
+        <select class="form-control" id="vm-create-network-add-unmanaged" multiple name="unmanaged-vlans">
           {% for v in vlans %}
             <option value="{{ v.pk }}">{{ v.name }}</option>
           {% endfor %}
@@ -121,3 +123,4 @@
     </div>
   </div>
 </div>
+</form>
