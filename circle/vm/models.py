@@ -17,6 +17,7 @@ from .tasks import local_tasks, vm_tasks, net_tasks
 from common.models import ActivityModel, activitycontextimpl
 from firewall.models import Vlan, Host
 from storage.models import Disk
+from django.core import signing
 
 
 logger = logging.getLogger(__name__)
@@ -510,6 +511,7 @@ class Instance(VirtualMachineDescModel, TimeStampedModel):
                 'passwd': '',
                 'port': self.vnc_port
             },
+            'boot_token': signing.dumps(self.id, salt='activate'),
             'raw_data': "" if not self.raw_data else self.raw_data
         }
 
