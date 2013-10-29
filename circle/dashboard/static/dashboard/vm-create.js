@@ -169,6 +169,21 @@ function vmCreateLoaded() {
       'pk': parseInt($(this).val())
     });
   });
+
+  /* add button */
+  $('#vm-create-submit').click(function() {
+    $.ajax({
+      url: '/dashboard/vm/create/',
+      headers: {"X-CSRFToken": getCookie('csrftoken')},
+      type: 'POST',
+      data: $('form').serialize(),
+      success: function(data, textStatus, xhr) {
+        console.log(data);
+      }
+    });
+    return false;
+  });
+
   /* no js compatibility */
   $('.no-js-hidden').show();
   $('.js-hidden').hide();
@@ -267,3 +282,29 @@ function vmCreateNetworkLabel(pk, name, managed) {
 function vmCreateDiskLabel(pk, name) {
   return '<span id="vlan-' + pk + '" class="label label-primary"><i class="icon-file"></i> ' + name + ' <a href="#" class="hover-black vm-create-remove-disk"><i class="icon-remove-sign"></i></a></span> ';
 }
+
+
+/* copied from /static/js/network.js 
+ * we gonna need this anyways for ajax POSTs */
+// for AJAX calls
+
+/**                                                                         
+ * Getter for user cookies                                                  
+ * @param  {String} name Cookie name                                        
+ * @return {String}      Cookie value                                       
+ */                                                                         
+                                                                            
+function getCookie(name) {                                                  
+  var cookieValue = null;                                                   
+  if (document.cookie && document.cookie != '') {                           
+    var cookies = document.cookie.split(';');                               
+    for (var i = 0; i < cookies.length; i++) {                              
+      var cookie = jQuery.trim(cookies[i]);                                 
+      if (cookie.substring(0, name.length + 1) == (name + '=')) {           
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;                                                              
+      }                                                                     
+    }                                                                       
+  }                                                                         
+  return cookieValue;                                                       
+} 
