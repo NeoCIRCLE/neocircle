@@ -38,37 +38,27 @@ $(function () {
   if (window.location.hash)
     $("a[href=" + window.location.hash +"]").tab('show');
 
-  vmCreateLoaded();
   addSliderMiscs();
 });
 
 function addSliderMiscs() {
-  $("[data-slider]").each(function() {
-    if($(this).css('display') != "none") 
-      $(this).simpleSlider();
+  $('.vm-slider').each(function() {  
+    $("<span>").addClass("output").html($(this).val()).insertAfter($(this));
+  });                                                                   
+                                                                            
+  $('.vm-slider').slider()                                              
+  .on('slide', function(e) {                                            
+    $(this).val(e.value);
+    $(this).parent('div').nextAll("span").html(e.value)                 
   });
 
-  //slider only has background with this ...
-  //var js = document.createElement('script');
-  //js.src = '/static/dashboard/loopj-jquery-simple-slider-fa64f59/js/simple-slider.min.js'; 
-  //document.getElementsByTagName('head')[0].appendChild(js);
+  refreshSliders();
+}
 
-
-  $("[data-slider]")                                                        
-    .each(function () {                                                     
-      var input = $(this);                                                  
-      $("<span>")                                                           
-        .addClass("output")                                                 
-        .html($(this).val())                                                
-        .insertAfter(input);                                                
-    })                                                                      
-    .bind("slider:ready slider:changed", function (event, data) {           
-      $(this)                                                               
-        .nextAll(".output:first")                                           
-          .html(data.value.toFixed(3));                                     
-    });
-
-  $("[data-mark]").each(function () {                                                 
-    var value=$(this).attr('data-mark').parseFloat();               
-  }); 
+// ehhh
+function refreshSliders() {
+  $('.vm-slider').each(function() {
+    $(this).val($(this).slider().data('slider').getValue());
+    $(this).parent('div').nextAll("span").html($(this).val());
+  });
 }

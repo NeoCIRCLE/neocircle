@@ -1,5 +1,10 @@
 var vlans = [];
 var disks = [];
+
+$(function() {
+  vmCreateLoaded();
+});
+
 function vmCreateLoaded() {
   // temporarily disable for testing
   //$('.vm-create-advanced').hide();
@@ -178,9 +183,12 @@ function vmCreateTemplateChange(new_this) {
     success: function(data, textStatus, xhr) {
       if(xhr.status == 200) {
         // set sliders
-        $('#cpu-priority-slider').simpleSlider("setValue", data['priority']);
-        $('#cpu-count-slider').simpleSlider("setValue", data['num_cores']);
-        $('#ram-slider').simpleSlider("setValue", data['ram_size']);
+        $('#vm-cpu-priority-slider').slider("setValue", data['priority']);
+        $('#vm-cpu-count-slider').slider("setValue", data['num_cores']);
+        $('#vm-ram-size-slider').slider("setValue", data['ram_size']);
+        
+        /* slider doesn't have change event ........................ */
+        refreshSliders();
 
         /* clear selections */
         $('select[id^="vm-create-network-add"], select[id$="managed"]').find('option').prop('selected', false);
