@@ -175,11 +175,6 @@ class Vlan(models.Model):
                             verbose_name=_('Name'),
                             help_text=_('The short name of the subnet.'),
                             validators=[val_alfanum])
-    interface = models.CharField(max_length=20, unique=True,
-                                 verbose_name=_('interface'), help_text=_(
-                                     'The name of network interface the '
-                                     'gateway should serve this network on. '
-                                     'For example vlan0004 or eth2.'))
     network4 = IPNetworkField(unique=False,
                               version=4,
                               verbose_name=_('IPv4 address/prefix'),

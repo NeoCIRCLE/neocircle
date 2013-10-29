@@ -75,11 +75,11 @@ class Firewall:
         for vlan in rule.foreign_network.vlans.all():
             if rule.direction == '1':  # going TO host
                 self.iptables('-A INPUT -i %s %s %s -g %s' %
-                              (vlan.interface, dport_sport, rule.extra,
+                              (vlan.name, dport_sport, rule.extra,
                                'LOG_ACC' if rule.accept else 'LOG_DROP'))
             else:
                 self.iptables('-A OUTPUT -o %s %s %s -g %s' %
-                              (vlan.interface, dport_sport, rule.extra,
+                              (vlan.name, dport_sport, rule.extra,
                                'LOG_ACC' if rule.accept else 'LOG_DROP'))
 
     def vlan2vlan(self, l_vlan, rule):
@@ -189,7 +189,7 @@ class Firewall:
                 for d_vlan in s_vlan.snat_to.all():
                     self.iptablesnat('-A POSTROUTING -s %s -o %s -j SNAT '
                                      '--to-source %s' %
-                                     (str(s_vlan.network4), d_vlan.interface,
+                                     (str(s_vlan.network4), d_vlan.name,
                                       s_vlan.snat_ip))
 
         self.iptablesnat('COMMIT')
@@ -210,7 +210,7 @@ class Firewall:
             for d_vlan in self.vlans:
                 self.iptables('-N %s_%s' % (s_vlan, d_vlan))
                 self.iptables('-A FORWARD -i %s -o %s -g %s_%s' %
-                              (s_vlan.interface, d_vlan.interface, s_vlan,
+                              (s_vlan.name, d_vlan.name, s_vlan,
                                d_vlan))
 
         # hosts' rules
@@ -428,7 +428,7 @@ def dhcp():
                     'dnsserver': settings['rdns_ip'],
                     'extra': ("range %s" % i_vlan.dhcp_pool
                               if m else "deny unknown-clients"),
-                    'interface': i_vlan.interface,
+                    'interface': i_vlan.name,
                     'name': i_vlan.name,
                     'tftp': i_vlan.ipv4
                 })
