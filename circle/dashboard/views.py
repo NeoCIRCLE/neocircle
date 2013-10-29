@@ -8,6 +8,7 @@ from vm.models import Instance, InstanceTemplate, InterfaceTemplate
 from firewall.models import Vlan
 from storage.models import Disk
 from django.core import signing
+from os import getenv
 
 import json
 
@@ -48,7 +49,8 @@ class VmDetailView(DetailView):
             port = instance.vnc_port
             host = str(instance.node.host.ipv4)
             value = signing.dumps({'host': host,
-                                   'port': port}, key='asdasd')
+                                   'port': port},
+                                  key=getenv("PROXY_SECRET", 'asdasd')),
             context.update({
                 'vnc_url': '%s' % value
             })
