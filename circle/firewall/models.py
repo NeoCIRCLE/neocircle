@@ -691,18 +691,22 @@ class Record(models.Model):
         """Validate a record."""
         if not self.address:
             raise ValidationError(_("Address must be specified!"))
-        if self.type == 'A':
-            val_ipv4(self.address)
-        elif self.type == 'AAAA':
-            val_ipv6(self.address)
-        elif self.type in ['CNAME', 'NS', 'PTR']:
-            val_domain(self.address)
-        elif self.type == 'MX':
-            val_mx(self.address)
-        elif self.type == 'TXT':
-            pass
-        else:
+
+        try:
+            validator = {
+                'A': val_ipv4,
+                'AAAA': val_ipv6,
+                'CNAME': val_domain,
+                'MX': val_mx,
+                'NS': val_domain,
+                'PTR': val_domain,
+                'TXT': None,
+            }[self.type]
+        except KeyError:
             raise ValidationError(_("Unknown record type."))
+        else:
+            if validator:
+                validator(self.address)
 
     def clean(self):
         """Validate the Record to be saved.
