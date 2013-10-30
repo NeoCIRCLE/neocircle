@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+from itertools import islice
+import logging
+from netaddr import IPSet
+
 from django.contrib.auth.models import User
 from django.db import models
 from django.forms import ValidationError
@@ -13,6 +17,7 @@ from django.db.models.signals import post_save, post_delete
 import random
 
 from firewall.tasks.local_tasks import reloadtask
+logger = logging.getLogger(__name__)
 settings = django.conf.settings.FIREWALL_SETTINGS
 
 
@@ -277,20 +282,18 @@ class Vlan(models.Model):
         return self.network6.prefixlen
 
     def get_new_address(self):
-        i = 0
         hosts = Host.objects.filter(vlan=self)
-        used_v4 = hosts.values_list('ipv4', flat=True)
-        used_v6 = hosts.values_list('ipv6', flat=True)
+        used_v4 = IPSet(hosts.values_list('ipv4', flat=True))
+        used_v6 = IPSet(hosts.exclude(ipv6__isnull=True)
+                        .values_list('ipv6', flat=True))
 
-        for ipv4 in self.network4.iter_hosts():
-            i += 1
-            if i > 10000:
-                break
+        for ipv4 in islice(self.network4.iter_hosts(), 10000):
             ipv4 = str(ipv4)
             if ipv4 not in used_v4:
-                print ipv4
+                logger.debug("Found unused IPv4 address %s.", ipv4)
                 ipv6 = ipv4_2_ipv6(ipv4)
                 if ipv6 not in used_v6:
+                    logger.debug("Found unused IPv6 address %s.", ipv6)
                     return {'ipv4': ipv4, 'ipv6': ipv6}
         raise ValidationError(_("All IP addresses are already in use."))
 
