@@ -366,7 +366,8 @@ class Instance(VirtualMachineDescModel, TimeStampedModel):
         # save instance
         inst.save()
         # create related entities
-        for disk in template.disks.all():
+        disks = kwargs.get('disks', default=template.disks.all())
+        for disk in disks:
             inst.disks.add(disk.get_exclusive())
 
         for iftmpl in template.interface_set.all():
