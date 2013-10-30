@@ -249,9 +249,9 @@ class DiskActivity(ActivityModel):
                       verbose_name=_('disk'))
 
     @classmethod
-    def create(cls, code_suffix, instance, task_uuid=None, user=None):
+    def create(cls, code_suffix, disk, task_uuid=None, user=None):
         act = cls(activity_code='storage.Disk.' + code_suffix,
-                  instance=instance, parent=None, started=timezone.now(),
+                  disk=disk, parent=None, started=timezone.now(),
                   task_uuid=task_uuid, user=user)
         act.save()
         return act
@@ -259,7 +259,7 @@ class DiskActivity(ActivityModel):
     def create_sub(self, code_suffix, task_uuid=None):
         act = DiskActivity(
             activity_code=self.activity_code + '.' + code_suffix,
-            instance=self.instance, parent=self, started=timezone.now(),
+            disk=self.disk, parent=self, started=timezone.now(),
             task_uuid=task_uuid, user=self.user)
         act.save()
         return act
@@ -271,6 +271,6 @@ class DiskActivity(ActivityModel):
 
 
 @contextmanager
-def disk_activity(code_suffix, instance, task_uuid=None, user=None):
-    act = DiskActivity.create(code_suffix, instance, task_uuid, user)
+def disk_activity(code_suffix, disk, task_uuid=None, user=None):
+    act = DiskActivity.create(code_suffix, disk, task_uuid, user)
     return activitycontextimpl(act)
