@@ -122,9 +122,20 @@ class VmCreate(TemplateView):
         return context
 
     def post(self, request, *args, **kwargs):
+        if self.request.user.is_authenticated():
+            user = self.request.user
+        else:
+            user = None
+
         resp = request.POST.copy()
         resp['managed-vlans'] = request.POST.getlist('managed-vlans')
         resp['unmanaged-vlans'] = request.POST.getlist('unmanaged-vlans')
         resp['disks'] = request.POST.getlist('disks')
 
+        template = InstanceTemplate.objects.get(
+            pk=request.POST.get('template-pk'))
+        inst = Instance.create_from_template(template=template, owner=user)
+        inst.deploy_async()
+
+        # TODO handle response
         return HttpResponse(json.dumps(resp), content_type="application/json")
