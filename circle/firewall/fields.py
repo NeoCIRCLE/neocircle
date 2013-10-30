@@ -5,7 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils.ipv6 import is_valid_ipv6_address
 from south.modelsinspector import add_introspection_rules
 from django import forms
-from netaddr import IPNetwork, AddrFormatError
+from netaddr import IPAddress, IPNetwork, AddrFormatError, ZEROFILL
 import re
 
 
@@ -40,6 +40,76 @@ class MACAddressField(models.Field):
         defaults.update(kwargs)
         return super(MACAddressField, self).formfield(**defaults)
 add_introspection_rules([], ["firewall\.fields\.MACAddressField"])
+
+
+class IPAddressFormField(forms.Field):
+    default_error_messages = {
+        'invalid': _(u'Enter a valid IP address. %s'),
+    }
+
+    def validate(self, value):
+        try:
+            return IPAddressField.from_str(value, version=self.version)
+        except (AddrFormatError, TypeError), e:
+            raise ValidationError(self.default_error_messages['invalid']
+                                  % unicode(e))
+
+    def __init__(self, *args, **kwargs):
+        self.version = kwargs['version']
+        del kwargs['version']
+        super(IPAddressFormField, self).__init__(*args, **kwargs)
+
+
+class IPAddressField(models.Field):
+    description = _('IP Network object')
+    __metaclass__ = models.SubfieldBase
+
+    def __init__(self, version=4, serialize=True, *args, **kwargs):
+        kwargs['max_length'] = 100
+        self.version = version
+        super(IPAddressField, self).__init__(*args, **kwargs)
+
+    @staticmethod
+    def from_str(value, version):
+        if not value or value == "":
+            return None
+
+        if isinstance(value, IPAddress):
+            return value
+
+        return IPAddress(value.split('/')[0], version=version,
+                         flags=ZEROFILL)
+
+    def get_internal_type(self):
+        return "CharField"
+
+    def to_python(self, value):
+        return IPAddressField.from_str(value, self.version)
+
+    def get_db_prep_value(self, value, connection, prepared=False):
+        if not value or value == "":
+            return None
+
+        if isinstance(value, IPAddress):
+            if self.version == 4:
+                return ('.'.join(["%03d" % x for x in value.words]))
+            else:
+                return (':'.join(["%04X" % x for x in value.words]))
+        return value
+
+    def value_to_string(self, obj):
+        value = self._get_val_from_obj(obj)
+        return str(self.get_prep_value(value))
+
+    def clean(self, value, model_instance):
+        value = super(IPAddressField, self).clean(value, model_instance)
+        return self.get_prep_value(value)
+
+    def formfield(self, **kwargs):
+        defaults = {'form_class': IPAddressFormField}
+        defaults['version'] = self.version
+        defaults.update(kwargs)
+        return super(IPAddressField, self).formfield(**defaults)
 
 
 class IPNetworkFormField(forms.Field):
@@ -91,9 +161,11 @@ class IPNetworkField(models.Field):
 
         if isinstance(value, IPNetwork):
             if self.version == 4:
-                return '.'.join(map(lambda x: "%03d" % x, value.ip.words)) + '/%d' % value.prefixlen
+                return ('.'.join(["%03d" % x for x in value.ip.words])
+                        + '/%02d' % value.prefixlen)
             else:
-                return ':'.join(map(lambda x: "%04X" % x, value.ip.words)) + '/%d' % value.prefixlen
+                return (':'.join(["%04X" % x for x in value.ip.words])
+                        + '/%03d' % value.prefixlen)
         return value
 
     def value_to_string(self, obj):
@@ -110,7 +182,7 @@ class IPNetworkField(models.Field):
         defaults.update(kwargs)
         return super(IPNetworkField, self).formfield(**defaults)
 
-add_introspection_rules([], ["^firewall\.fields\.IPNetworkField"])
+add_introspection_rules([], ["^firewall\.fields\.IP(Address|Network)Field"])
 
 
 def val_alfanum(value):

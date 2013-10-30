@@ -1,7 +1,7 @@
 from django_tables2 import Table, A
 from django_tables2.columns import LinkColumn, TemplateColumn
 
-from firewall.models import Host, Vlan, Domain, Group, Record, Rule
+from firewall.models import Host, Vlan, Domain, Group, Record, Rule, SwitchPort
 
 
 class BlacklistTable(Table):
@@ -127,6 +127,17 @@ class RuleTable(Table):
         fields = ('r_type', 'color_desc', 'owner', 'extra', 'direction',
                   'accept', 'proto', 'sport', 'dport', 'nat', 'nat_dport', )
         order_by = 'direction'
+
+
+class SwitchPortTable(Table):
+    pk = LinkColumn('network.switch_port', args=[A('pk')],
+                    verbose_name="ID")
+
+    class Meta:
+        model = SwitchPort
+        attrs = {'class': 'table table-striped table-condensed'}
+        fields = ('pk', 'untagged_vlan', 'tagged_vlans', 'description', )
+        order_by = 'pk'
 
 
 class VlanTable(Table):

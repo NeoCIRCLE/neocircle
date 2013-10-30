@@ -7,13 +7,13 @@ from django.http import HttpResponse
 from django_tables2 import SingleTableView
 
 from firewall.models import (Host, Vlan, Domain, Group, Record, Blacklist,
-                             Rule, VlanGroup)
+                             Rule, VlanGroup, SwitchPort, EthernetDevice)
 from .tables import (HostTable, VlanTable, SmallHostTable, DomainTable,
                      GroupTable, RecordTable, BlacklistTable, RuleTable,
                      VlanGroupTable, SmallRuleTable, SmallGroupRuleTable,
-                     SmallRecordTable)
+                     SmallRecordTable, SwitchPortTable)
 from .forms import (HostForm, VlanForm, DomainForm, GroupForm, RecordForm,
-                    BlacklistForm, RuleForm, VlanGroupForm)
+                    BlacklistForm, RuleForm, VlanGroupForm, SwitchPortForm)
 
 from django.contrib import messages
 from django.views.generic.edit import FormMixin
@@ -530,6 +530,50 @@ class RuleDelete(DeleteView):
             return reverse_lazy('network.rule_list')
 
 
+class SwitchPortList(SingleTableView):
+    model = SwitchPort
+    table_class = SwitchPortTable
+    template_name = "network/switch-port-list.html"
+    table_pagination = False
+
+
+class SwitchPortDetail(UpdateView, SuccessMessageMixin):
+    model = SwitchPort
+    template_name = "network/switch-port-edit.html"
+    form_class = SwitchPortForm
+    success_message = _(u'Succesfully modified switch port!')
+
+    def get_success_url(self):
+        if 'pk' in self.kwargs:
+            return reverse_lazy('network.switch_port', kwargs=self.kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(SwitchPortDetail, self).get_context_data(**kwargs)
+        context['switch_port_pk'] = self.object.pk
+        context['devices'] = EthernetDevice.objects.filter(
+            switch_port=self.object.pk)
+        return context
+
+
+class SwitchPortCreate(CreateView, SuccessMessageMixin):
+    model = SwitchPort
+    template_name = "network/switch-port-create.html"
+    form_class = SwitchPortForm
+    success_message = _(u'Successfully created switch port!')
+
+
+class SwitchPortDelete(DeleteView):
+    model = SwitchPort
+    template_name = "network/confirm/base_delete.html"
+
+    def get_success_url(self):
+        next = self.request.POST.get('next')
+        if next:
+            return next
+        else:
+            return reverse_lazy('network.switch_port_list')
+
+
 class VlanList(SingleTableView):
     model = Vlan
     table_class = VlanTable
@@ -690,3 +734,47 @@ def add_host_group(request, **kwargs):
                                             'group': group
                                         }))
         return redirect(reverse_lazy('network.host', kwargs=kwargs))
+
+
+def remove_switch_port_device(request, **kwargs):
+    device = EthernetDevice.objects.get(pk=kwargs['device_pk'])
+    # for get we show the confirmation page
+    if request.method == "GET":
+        return render(request, 'network/confirm/base_delete.html',
+                      {'object': device})
+
+    # for post we actually remove the group from the host
+    elif request.method == "POST":
+        device.delete()
+        if not request.is_ajax():
+            messages.success(request, _(u"Successfully deleted ethernet device"
+                                        " %(name)s!" % {
+                                            'name': device.name,
+                                        }))
+        return redirect(reverse_lazy('network.switch_port',
+                                     kwargs={'pk': kwargs['pk']}))
+
+
+def add_switch_port_device(request, **kwargs):
+    device_name = request.POST.get('device_name')
+
+    if (request.method == "POST" and device_name and len(device_name) > 0
+       and EthernetDevice.objects.filter(name=device_name).count() == 0):
+
+        switch_port = SwitchPort.objects.get(pk=kwargs['pk'])
+        new_device = EthernetDevice(name=device_name, switch_port=switch_port)
+        new_device.save()
+        if not request.is_ajax():
+            messages.success(request, _(u"Successfully added %(name)s to this"
+                                        " switch port" % {
+                                            'name': device_name,
+                                        }))
+        return redirect(reverse_lazy('network.switch_port', kwargs=kwargs))
+
+    elif not len(device_name) > 0:
+        messages.error(request, _("Ethernet device name cannot be empty!"))
+        return redirect(reverse_lazy('network.switch_port', kwargs=kwargs))
+    elif EthernetDevice.objects.get(name=device_name) is not None:
+        messages.error(request, _("There is already an ethernet device with"
+                                  " that name!"))
+        return redirect(reverse_lazy('network.switch_port', kwargs=kwargs))

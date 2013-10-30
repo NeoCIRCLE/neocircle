@@ -19,6 +19,9 @@
 {% url "network.rule_list" as u %}
 {% trans "Rules" as t %}
 {% include "network/menu-item.html" with href=u text=t %}
+{% url "network.switch_port_list" as u %}
+{% trans "Switch ports" as t %}
+{% include "network/menu-item.html" with href=u text=t %}
 
 <li class="dropdown{% if "groups" in request.path %} active{% endif %}">
     <a href="#" class="dropdown-toggle" data-toggle="dropdown">Groups <b class="caret"></b></a>

@@ -6,10 +6,10 @@ from django.forms import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from firewall.fields import (MACAddressField, val_alfanum, val_reverse_domain,
                              val_domain, val_ipv4, val_ipv6, val_mx,
-                             ipv4_2_ipv6, IPNetworkField)
+                             ipv4_2_ipv6, IPNetworkField, IPAddressField)
 from django.core.validators import MinValueValidator, MaxValueValidator
 import django.conf
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 import random
 
 from firewall.tasks.local_tasks import reloadtask
@@ -175,15 +175,8 @@ class Vlan(models.Model):
                             verbose_name=_('Name'),
                             help_text=_('The short name of the subnet.'),
                             validators=[val_alfanum])
-    interface = models.CharField(max_length=20, unique=True,
-                                 verbose_name=_('interface'), help_text=_(
-                                     'The name of network interface the '
-                                     'gateway should serve this network on. '
-                                     'For example vlan0004 or eth2.'))
     network4 = IPNetworkField(unique=False,
                               version=4,
-                              null=True,
-                              blank=True,
                               verbose_name=_('IPv4 address/prefix'),
                               help_text=_(
                                   'The IPv4 address and the prefix length '
@@ -374,23 +367,20 @@ class Host(models.Model):
                           help_text=_('The MAC (Ethernet) address of the '
                                       'network interface. For example: '
                                       '99:AA:BB:CC:DD:EE.'))
-    ipv4 = models.GenericIPAddressField(protocol='ipv4', unique=True,
-                                        verbose_name=_('IPv4 address'),
-                                        help_text=_(
-                                            'The real IPv4 address of the '
-                                            'host, for example 10.5.1.34.'))
-    pub_ipv4 = models.GenericIPAddressField(
-        protocol='ipv4', blank=True, null=True,
+    ipv4 = IPAddressField(version=4, unique=True,
+                          verbose_name=_('IPv4 address'),
+                          help_text=_('The real IPv4 address of the '
+                                      'host, for example 10.5.1.34.'))
+    pub_ipv4 = IPAddressField(
+        version=4, blank=True, null=True,
         verbose_name=_('WAN IPv4 address'),
         help_text=_('The public IPv4 address of the host on the wide '
                     'area network, if different.'))
-    ipv6 = models.GenericIPAddressField(protocol='ipv6', unique=True,
-                                        blank=True, null=True,
-                                        verbose_name=_('IPv6 address'),
-                                        help_text=_(
-                                            'The global IPv6 address of the '
-                                            'host, for example '
-                                            '2001:500:88:200::10.'))
+    ipv6 = IPAddressField(version=6, unique=True,
+                          blank=True, null=True,
+                          verbose_name=_('IPv6 address'),
+                          help_text=_('The global IPv6 address of the host'
+                                      ', for example 2001:db:88:200::10.'))
     shared_ip = models.BooleanField(default=False, verbose_name=_('shared IP'),
                                     help_text=_(
                                         'If the given WAN IPv4 address is '
@@ -429,10 +419,7 @@ class Host(models.Model):
     def outgoing_rules(self):
         return self.rules.filter(direction='0')
 
-    def save(self, *args, **kwargs):
-        id = self.id
-        if not self.id and self.ipv6 == "auto":
-            self.ipv6 = ipv4_2_ipv6(self.ipv4)
+    def clean(self):
         if (not self.shared_ip and self.pub_ipv4 and Host.objects.
                 exclude(id=self.id).filter(pub_ipv4=self.pub_ipv4)):
             raise ValidationError(_("If shared_ip has been checked, "
@@ -440,14 +427,46 @@ class Host(models.Model):
         if Host.objects.exclude(id=self.id).filter(pub_ipv4=self.ipv4):
             raise ValidationError(_("You can't use another host's NAT'd "
                                     "address as your own IPv4."))
+
+    def save(self, *args, **kwargs):
+        if not self.id and self.ipv6 == "auto":
+            self.ipv6 = ipv4_2_ipv6(self.ipv4)
         self.full_clean()
+
         super(Host, self).save(*args, **kwargs)
-        if not id:
-            Record(domain=self.vlan.domain, host=self, type='A',
-                   owner=self.owner).save()
-            if self.ipv6:
-                Record(domain=self.vlan.domain, host=self, type='AAAA',
-                       owner=self.owner).save()
+
+        if self.ipv4 is not None:
+            Record.objects.filter(host=self, name=self.hostname,
+                                  type='A').update(address=self.ipv4)
+            record_count = self.record_set.filter(host=self,
+                                                  name=self.hostname,
+                                                  address=self.ipv4,
+                                                  type='A').count()
+            if record_count == 0:
+                Record(host=self,
+                       name=self.hostname,
+                       domain=self.vlan.domain,
+                       address=self.ipv4,
+                       owner=self.owner,
+                       description='host.save()',
+                       type='A').save()
+
+        if self.ipv6:
+            Record.objects.filter(host=self, name=self.hostname,
+                                  type='AAAA').update(address=self.ipv6)
+            record_count = self.record_set.filter(host=self,
+                                                  name=self.hostname,
+                                                  address=self.ipv6,
+                                                  type='AAAA').count()
+            print record_count
+            if record_count == 0:
+                Record(host=self,
+                       name=self.hostname,
+                       domain=self.vlan.domain,
+                       address=self.ipv6,
+                       owner=self.owner,
+                       description='host.save()',
+                       type='AAAA').save()
 
     def enable_net(self):
         self.groups.add(Group.objects.get(name="netezhet"))
@@ -492,6 +511,7 @@ class Host(models.Model):
             else:
                 raise ValidationError(
                     _("All %s ports are already in use.") % proto)
+        return public
 
     def add_port(self, proto, public=None, private=None):
         """
@@ -546,9 +566,9 @@ class Host(models.Model):
             self.rules.filter(owner=self.owner, proto=proto, host=self,
                               dport=private).delete()
 
-    def get_hostname(self, proto):
+    def get_hostname(self, proto, public=True):
         """
-        Get a hostname for public ip address.
+        Get a private or public hostname for host.
 
         :param proto: The IP version (ipv4|ipv6).
         :type proto: str.
@@ -556,19 +576,18 @@ class Host(models.Model):
         assert proto in ('ipv6', 'ipv4', )
         try:
             if proto == 'ipv6':
-                res = self.record_set.filter(type='AAAA')
+                res = self.record_set.filter(type='AAAA',
+                                             address=self.ipv6)
             elif proto == 'ipv4':
-                if self.shared_ip:
+                if self.shared_ip and public:
                     res = Record.objects.filter(type='A',
                                                 address=self.pub_ipv4)
                 else:
-                    res = self.record_set.filter(type='A')
-            return unicode(res[0].get_data()['name'])
+                    res = self.record_set.filter(type='A',
+                                                 address=self.ipv4)
+            return unicode(res[0].fqdn)
         except:
-            if self.shared_ip:
-                return self.pub_ipv4
-            else:
-                return self.ipv4
+            return None
 
     def list_ports(self):
         """
@@ -604,7 +623,7 @@ class Host(models.Model):
         """
         Get fully qualified host name of host.
         """
-        return self.hostname + u'.' + unicode(self.vlan.domain)
+        return self.get_hostname('ipv4', public=False)
 
     @models.permalink
     def get_absolute_url(self):
@@ -648,7 +667,7 @@ class Record(models.Model):
                              verbose_name=_('host'))
     type = models.CharField(max_length=6, choices=CHOICES_type,
                             verbose_name=_('type'))
-    address = models.CharField(max_length=40, blank=True, null=True,
+    address = models.CharField(max_length=200,
                                verbose_name=_('address'))
     ttl = models.IntegerField(default=600, verbose_name=_('ttl'))
     owner = models.ForeignKey(User, verbose_name=_('owner'))
@@ -662,46 +681,26 @@ class Record(models.Model):
         return self.desc()
 
     def desc(self):
-        a = self.get_data()
-        return (u' '.join([a['name'], a['type'], a['address']])
-                if a else _('(empty)'))
+        return u' '.join([self.fqdn, self.type, self.address])
 
     def save(self, *args, **kwargs):
         self.full_clean()
         super(Record, self).save(*args, **kwargs)
 
-    def _validate_w_host(self):
-        """Validate a record with host set."""
-        assert self.host
-        if self.type in ['A', 'AAAA']:
-            if self.address:
-                raise ValidationError(_("Can't specify address for A "
-                                        "or AAAA records if host is set!"))
-            if self.name:
-                raise ValidationError(_("Can't specify name for A "
-                                        "or AAAA records if host is set!"))
-        elif self.type == 'CNAME':
-            if not self.name:
-                raise ValidationError(_("Name must be specified for "
-                                        "CNAME records if host is set!"))
-            if self.address:
-                raise ValidationError(_("Can't specify address for "
-                                        "CNAME records if host is set!"))
-
-    def _validate_wo_host(self):
-        """Validate a record without a host set."""
-        assert self.host is None
-
+    def _validate_record(self):
+        """Validate a record."""
         if not self.address:
             raise ValidationError(_("Address must be specified!"))
         if self.type == 'A':
             val_ipv4(self.address)
         elif self.type == 'AAAA':
             val_ipv6(self.address)
-        elif self.type in ['CNAME', 'NS', 'PTR', 'TXT']:
+        elif self.type in ['CNAME', 'NS', 'PTR']:
             val_domain(self.address)
         elif self.type == 'MX':
             val_mx(self.address)
+        elif self.type == 'TXT':
+            pass
         else:
             raise ValidationError(_("Unknown record type."))
 
@@ -711,51 +710,14 @@ class Record(models.Model):
         if self.name:
             self.name = self.name.rstrip(".")    # remove trailing dots
 
-        if self.host:
-            self._validate_w_host()
-        else:
-            self._validate_wo_host()
+        self._validate_record()
 
     @property
     def fqdn(self):
-        if self.host and self.type != 'MX':
-            if self.type in ['A', 'AAAA']:
-                return self.host.get_fqdn()
-            elif self.type == 'CNAME':
-                return self.name + '.' + unicode(self.domain)
-            else:
-                return self.name
-        else:    # if self.host is None
-            if self.name:
-                return self.name + '.' + unicode(self.domain)
-            else:
-                return unicode(self.domain)
-
-    def __get_address(self):
-        if self.host:
-            if self.type == 'A':
-                return (self.host.pub_ipv4
-                        if self.host.pub_ipv4 and not self.host.shared_ip
-                        else self.host.ipv4)
-            elif self.type == 'AAAA':
-                return self.host.ipv6
-            elif self.type == 'CNAME':
-                return self.host.get_fqdn()
-        # otherwise:
-        return self.address
-
-    def get_data(self):
-        name = self.fqdn
-        address = self.__get_address()
-        if self.host and self.type == 'AAAA' and not self.host.ipv6:
-            return None
-        elif not address or not name:
-            return None
+        if self.name:
+            return '%s.%s' % (self.name, self.domain.name)
         else:
-            return {'name': name,
-                    'type': self.type,
-                    'ttl': self.ttl,
-                    'address': address}
+            return self.domain.name
 
     @models.permalink
     def get_absolute_url(self):
@@ -766,6 +728,51 @@ class Record(models.Model):
             'domain',
             'name',
         )
+
+
+class SwitchPort(models.Model):
+    untagged_vlan = models.ForeignKey('Vlan',
+                                      related_name='untagged_ports',
+                                      verbose_name=_('untagged vlan'))
+    tagged_vlans = models.ForeignKey('VlanGroup', blank=True, null=True,
+                                     related_name='tagged_ports',
+                                     verbose_name=_('tagged vlans'))
+    description = models.TextField(blank=True, verbose_name=_('description'))
+    created_at = models.DateTimeField(auto_now_add=True,
+                                      verbose_name=_('created_at'))
+    modified_at = models.DateTimeField(auto_now=True,
+                                       verbose_name=_('modified_at'))
+
+    def __unicode__(self):
+        devices = ','.join(self.ethernet_devices.values_list('name',
+                                                             flat=True))
+        tagged_vlans = self.tagged_vlans.name if self.tagged_vlans else ''
+        return 'devices=%s untagged=%s tagged=%s' % (devices,
+                                                     self.untagged_vlan,
+                                                     tagged_vlans)
+
+    @models.permalink
+    def get_absolute_url(self):
+        return ('network.switch_port', None, {'pk': self.pk})
+
+
+class EthernetDevice(models.Model):
+    name = models.CharField(max_length=20,
+                            unique=True,
+                            verbose_name=_('interface'),
+                            help_text=_('The name of network interface the '
+                                        'gateway should serve this network '
+                                        'on. For example eth2.'))
+    switch_port = models.ForeignKey('SwitchPort',
+                                    related_name='ethernet_devices',
+                                    verbose_name=_('switch port'))
+    created_at = models.DateTimeField(auto_now_add=True,
+                                      verbose_name=_('created_at'))
+    modified_at = models.DateTimeField(auto_now=True,
+                                       verbose_name=_('modified_at'))
+
+    def __unicode__(self):
+        return self.name
 
 
 class Blacklist(models.Model):
@@ -800,16 +807,11 @@ class Blacklist(models.Model):
         return ('network.blacklist', None, {'pk': self.pk})
 
 
-def send_task(sender, instance, created, **kwargs):
+def send_task(sender, instance, created=False, **kwargs):
     reloadtask.apply_async(args=[sender.__name__])
 
 
-post_save.connect(send_task, sender=Host)
-post_save.connect(send_task, sender=Rule)
-post_save.connect(send_task, sender=Domain)
-post_save.connect(send_task, sender=Record)
-post_save.connect(send_task, sender=Vlan)
-post_save.connect(send_task, sender=Firewall)
-post_save.connect(send_task, sender=Group)
-post_save.connect(send_task, sender=Host)
-post_save.connect(send_task, sender=Blacklist)
+for sender in [Host, Rule, Domain, Record, Vlan, Firewall, Group, Blacklist,
+               SwitchPort, EthernetDevice]:
+    post_save.connect(send_task, sender=sender)
+    post_delete.connect(send_task, sender=sender)

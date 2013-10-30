@@ -47,16 +47,16 @@ def reloadtask(type='Host'):
         if type in ["Host", "Record", "Domain", "Vlan"]:
             cache.add("dns_lock", "true", 30)
 
-        if type == "Host":
+        if type in ["Host", "Vlan"]:
             cache.add("dhcp_lock", "true", 30)
 
-        if type in ["Host", "Rule", "Firewall"]:
+        if type in ["Host", "Rule", "Firewall", "Vlan"]:
             cache.add("firewall_lock", "true", 30)
 
         if type == "Blacklist":
             cache.add("blacklist_lock", "true", 30)
 
-        if type == "Vlan":
+        if type in ["Vlan", "SwitchPort", "EthernetDevice"]:
             cache.add("firewall_vlan_lock", "true", 30)
 
         print type

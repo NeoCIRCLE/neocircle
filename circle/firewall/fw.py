@@ -37,9 +37,9 @@ class Firewall:
             return
 
         if self.proto == 6 and host.ipv6:
-            ipaddr = host.ipv6 + '/112'
+            ipaddr = str(host.ipv6) + '/112'
         else:
-            ipaddr = host.ipv4
+            ipaddr = str(host.ipv4)
 
         dport_sport = self.dportsport(rule)
 
@@ -75,11 +75,11 @@ class Firewall:
         for vlan in rule.foreign_network.vlans.all():
             if rule.direction == '1':  # going TO host
                 self.iptables('-A INPUT -i %s %s %s -g %s' %
-                              (vlan.interface, dport_sport, rule.extra,
+                              (vlan.name, dport_sport, rule.extra,
                                'LOG_ACC' if rule.accept else 'LOG_DROP'))
             else:
                 self.iptables('-A OUTPUT -o %s %s %s -g %s' %
-                              (vlan.interface, dport_sport, rule.extra,
+                              (vlan.name, dport_sport, rule.extra,
                                'LOG_ACC' if rule.accept else 'LOG_DROP'))
 
     def vlan2vlan(self, l_vlan, rule):
@@ -189,7 +189,7 @@ class Firewall:
                 for d_vlan in s_vlan.snat_to.all():
                     self.iptablesnat('-A POSTROUTING -s %s -o %s -j SNAT '
                                      '--to-source %s' %
-                                     (str(s_vlan.network4), d_vlan.interface,
+                                     (str(s_vlan.network4), d_vlan.name,
                                       s_vlan.snat_ip))
 
         self.iptablesnat('COMMIT')
@@ -210,7 +210,7 @@ class Firewall:
             for d_vlan in self.vlans:
                 self.iptables('-N %s_%s' % (s_vlan, d_vlan))
                 self.iptables('-A FORWARD -i %s -o %s -g %s_%s' %
-                              (s_vlan.interface, d_vlan.interface, s_vlan,
+                              (s_vlan.name, d_vlan.name, s_vlan,
                                d_vlan))
 
         # hosts' rules
@@ -320,81 +320,90 @@ def ipv6_to_arpa(ipv6):
 # ^                     PTR
 # C                     CNAME
 # :                     generic
+# 'fqdn:s:ttl           TXT
 
-def dns():
-    vlans = models.Vlan.objects.all()
-    # regex = re.compile(r'^([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)$')
+def generate_ptr_records():
     DNS = []
 
-    for i_vlan in vlans:
-        # m = regex.search(i_vlan.net4)
-        rev = i_vlan.reverse_domain
+    for host in models.Host.objects.order_by('vlan').all():
+        rev = host.vlan.reverse_domain
+        ipv4 = str(host.pub_ipv4 if host.pub_ipv4 and
+                   not host.shared_ip else host.ipv4)
+        i = ipv4.split('.', 4)
+        reverse = (host.reverse if host.reverse and
+                   len(host.reverse) else host.get_fqdn())
 
-        for i_host in i_vlan.host_set.all():
-            ipv4 = (i_host.pub_ipv4 if i_host.pub_ipv4 and
-                    not i_host.shared_ip else i_host.ipv4)
-            i = ipv4.split('.', 4)
-            reverse = (i_host.reverse if i_host.reverse and
-                       len(i_host.reverse) else i_host.get_fqdn())
+        # ipv4
+        if host.ipv4:
+            DNS.append("^%s:%s:%s" % (
+                (rev % {'a': int(i[0]), 'b': int(i[1]), 'c': int(i[2]),
+                        'd': int(i[3])}),
+                reverse, models.settings['dns_ttl']))
 
-            # ipv4
-            if i_host.ipv4:
-                DNS.append("^%s:%s:%s" % (
-                    (rev % {'a': int(i[0]), 'b': int(i[1]), 'c': int(i[2]),
-                            'd': int(i[3])}),
-                    reverse, models.settings['dns_ttl']))
+        # ipv6
+        if host.ipv6:
+            DNS.append("^%s:%s:%s" % (ipv6_to_arpa(str(host.ipv6)),
+                                      reverse, models.settings['dns_ttl']))
+        return DNS
 
-            # ipv6
-            if i_host.ipv6:
-                DNS.append("^%s:%s:%s" % (ipv6_to_arpa(i_host.ipv6),
-                                          reverse, models.settings['dns_ttl']))
 
+def txt_to_octal(txt):
+    return '\\' + '\\'.join(['%03o' % ord(x) for x in txt])
+
+
+def generate_records():
+    DNS = []
+
+    for r in models.Record.objects.all():
+        if r.type == 'A':
+            DNS.append("+%s:%s:%s" % (r.fqdn, r.address, r.ttl))
+        elif r.type == 'AAAA':
+            DNS.append(":%s:28:%s:%s" %
+                       (r.fqdn, ipv6_to_octal(r.address), r.ttl))
+        elif r.type == 'NS':
+            DNS.append("&%s::%s:%s" % (r.fqdn, r.address, r.ttl))
+        elif r.type == 'CNAME':
+            DNS.append("C%s:%s:%s" % (r.fqdn, r.address, r.ttl))
+        elif r.type == 'MX':
+            mx = r.address.split(':', 2)
+            DNS.append("@%(fqdn)s::%(mx)s:%(dist)s:%(ttl)s" %
+                       {'fqdn': r.fqdn, 'mx': mx[1], 'dist': mx[0],
+                        'ttl': r.ttl})
+        elif r.type == 'PTR':
+            DNS.append("^%s:%s:%s" % (r.fqdn, r.address, r.ttl))
+        elif r.type == 'TXT':
+            DNS.append("'%s:%s:%s" % (r.fqdn,
+                                      txt_to_octal(r.address), r.ttl))
+
+    return DNS
+
+
+def dns():
+    DNS = []
+
+    # host PTR record
+    DNS += generate_ptr_records()
+
+    # domain SOA record
     for domain in models.Domain.objects.all():
         DNS.append("Z%s:%s:support.ik.bme.hu::::::%s" %
                    (domain.name, settings['dns_hostname'],
                     models.settings['dns_ttl']))
 
-    for r in models.Record.objects.all():
-        d = r.get_data()
-        if d['type'] == 'A':
-            DNS.append("+%s:%s:%s" % (d['name'], d['address'], d['ttl']))
-        elif d['type'] == 'AAAA':
-            DNS.append(":%s:28:%s:%s" %
-                       (d['name'], ipv6_to_octal(d['address']), d['ttl']))
-        elif d['type'] == 'NS':
-            DNS.append("&%s::%s:%s" % (d['name'], d['address'], d['ttl']))
-        elif d['type'] == 'CNAME':
-            DNS.append("C%s:%s:%s" % (d['name'], d['address'], d['ttl']))
-        elif d['type'] == 'MX':
-            mx = d['address'].split(':', 2)
-            DNS.append("@%(fqdn)s::%(mx)s:%(dist)s:%(ttl)s" %
-                       {'fqdn': d['name'], 'mx': mx[1], 'dist': mx[0],
-                        'ttl': d['ttl']})
-        elif d['type'] == 'PTR':
-            DNS.append("^%s:%s:%s" % (d['name'], d['address'], d['ttl']))
+    # records
+    DNS += generate_records()
 
     return DNS
 
 
-def prefix_to_mask(prefix):
-    t = [0, 0, 0, 0]
-    for i in range(0, 4):
-        if prefix > i * 8 + 7:
-            t[i] = 255
-        elif i * 8 < prefix and prefix <= (i + 1) * 8:
-            t[i] = 256 - (2 ** ((i + 1) * 8 - prefix))
-    return ".".join([str(i) for i in t])
-
-
 def dhcp():
-    vlans = models.Vlan.objects.all()
     regex = re.compile(r'^([0-9]+)\.([0-9]+)\.[0-9]+\.[0-9]+\s+'
                        r'([0-9]+)\.([0-9]+)\.[0-9]+\.[0-9]+$')
     DHCP = []
 
 # /tools/dhcp3/dhcpd.conf.generated
 
-    for i_vlan in vlans:
+    for i_vlan in models.Vlan.objects.all():
         if(i_vlan.dhcp_pool):
             m = regex.search(i_vlan.dhcp_pool)
             if(m or i_vlan.dhcp_pool == "manual"):
@@ -411,15 +420,15 @@ def dhcp():
       filename \"pxelinux.0\";
       allow bootp; allow booting;
     }''' % {
-                    'net': i_vlan.net4,
-                    'netmask': prefix_to_mask(i_vlan.prefix4),
+                    'net': str(i_vlan.network4.network),
+                    'netmask': str(i_vlan.network4.netmask),
                     'domain': i_vlan.domain,
                     'router': i_vlan.ipv4,
                     'ntp': i_vlan.ipv4,
                     'dnsserver': settings['rdns_ip'],
                     'extra': ("range %s" % i_vlan.dhcp_pool
                               if m else "deny unknown-clients"),
-                    'interface': i_vlan.interface,
+                    'interface': i_vlan.name,
                     'name': i_vlan.name,
                     'tftp': i_vlan.ipv4
                 })
@@ -440,7 +449,25 @@ def dhcp():
 
 def vlan():
     obj = models.Vlan.objects.values('vid', 'name', 'network4', 'network6')
-    return {x['name']: {'tag': x['vid'],
-                        'addresses': [str(x['network4']),
-                                      str(x['network6'])]}
-            for x in obj}
+    retval = {x['name']: {'tag': x['vid'],
+                          'type': 'internal',
+                          'interfaces': [x['name']],
+                          'addresses': [str(x['network4']),
+                                        str(x['network6'])]}
+              for x in obj}
+    for p in models.SwitchPort.objects.all():
+        eth_count = p.ethernet_devices.count()
+        if eth_count > 1:
+            name = 'bond%d' % p.id
+        elif eth_count == 1:
+            name = p.ethernet_devices.get().name
+        else:  # 0
+            continue
+        tag = p.untagged_vlan.vid
+        retval[name] = {'tag': tag}
+        if p.tagged_vlans is not None:
+            trunk = list(p.tagged_vlans.vlans.values_list('vid', flat=True))
+            retval[name]['trunks'] = sorted(trunk)
+        retval[name]['interfaces'] = list(
+            p.ethernet_devices.values_list('name', flat=True))
+    return retval
