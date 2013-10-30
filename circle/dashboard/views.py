@@ -116,7 +116,7 @@ class VmCreate(TemplateView):
         context.update({
             'templates': InstanceTemplate.objects.all(),
             'vlans': Vlan.objects.all(),
-            'disks': Disk.objects.all()
+            'disks': Disk.objects.exclude(type="qcow2-snap")
         })
 
         return context
