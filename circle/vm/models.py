@@ -362,12 +362,13 @@ class Instance(VirtualMachineDescModel, TimeStampedModel):
         kwargs.setdefault('raw_data', template.raw_data)
         kwargs.setdefault('lease', template.lease)
         kwargs.setdefault('access_method', template.access_method)
+        disks = kwargs.get('disks', template.disks.all())
+        kwargs.pop('disks')
         # create instance and do additional setup
         inst = cls(**kwargs)
         # save instance
         inst.save()
         # create related entities
-        disks = kwargs.get('disks', template.disks.all())
         for disk in disks:
             inst.disks.add(disk.get_exclusive())
 
