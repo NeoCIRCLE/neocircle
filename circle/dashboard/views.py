@@ -1,7 +1,9 @@
 from django.http import HttpResponse
 from django.views.generic import TemplateView, DetailView
-from django_tables2 import SingleTableView
+from django.core.urlresolvers import reverse_lazy
+from django.shortcuts import redirect
 
+from django_tables2 import SingleTableView
 from tables import VmListTable
 
 from vm.models import Instance, InstanceTemplate, InterfaceTemplate
@@ -121,21 +123,38 @@ class VmCreate(TemplateView):
 
         return context
 
+    # TODO handle not ajax posts
     def post(self, request, *args, **kwargs):
         if self.request.user.is_authenticated():
             user = self.request.user
         else:
             user = None
 
-        resp = request.POST.copy()
-        resp['managed-vlans'] = request.POST.getlist('managed-vlans')
-        resp['unmanaged-vlans'] = request.POST.getlist('unmanaged-vlans')
-        resp['disks'] = request.POST.getlist('disks')
+        resp = {}
+        try:
+            ikwargs = {
+                'num_cores': request.POST.get('cpu-count'),
+                'ram_size': request.POST.get('ram-size'),
+                'priority': request.POST.get('cpu-priority'),
+                'disks': Disk.objects.filter(
+                    pk__in=request.POST.getlist('disks'))
+            }
 
-        template = InstanceTemplate.objects.get(
-            pk=request.POST.get('template-pk'))
-        inst = Instance.create_from_template(template=template, owner=user)
-        inst.deploy_async()
+            template = InstanceTemplate.objects.get(
+                pk=request.POST.get('template-pk'))
+            inst = Instance.create_from_template(template=template,
+                                                 owner=user, **ikwargs)
+            inst.deploy_async()
 
-        # TODO handle response
-        return HttpResponse(json.dumps(resp), content_type="application/json")
+            resp['pk'] = inst.pk
+        except InstanceTemplate.DoesNotExist:
+            resp['error'] = True
+        except:
+            resp['error'] = True
+
+        if request.is_ajax():
+            return HttpResponse(json.dumps(resp),
+                                content_type="application/json",
+                                status=500 if resp.get('error') else 200)
+        else:
+            return redirect(reverse_lazy('dashboard.views.detail', resp))

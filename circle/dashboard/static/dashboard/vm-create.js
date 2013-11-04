@@ -6,8 +6,7 @@ $(function() {
 });
 
 function vmCreateLoaded() {
-  // temporarily disable for testing
-  //$('.vm-create-advanced').hide();
+  $('.vm-create-advanced').hide();
   $('.vm-create-advanced-btn').click(function() {
     $('.vm-create-advanced').stop().slideToggle();
     if ($('.vm-create-advanced-icon').hasClass('icon-caret-down')) {
@@ -178,7 +177,16 @@ function vmCreateLoaded() {
       type: 'POST',
       data: $('form').serialize(),
       success: function(data, textStatus, xhr) {
-        console.log(data);
+        if(data.pk) {
+          window.location.replace('/dashboard/vm/' + data.pk + '/#activity');
+        }
+      },
+      error: function(xhr, textStatus, error) {
+        if (xhr.status == 500) {
+          alert("uhuhuhuhuhuh");
+        } else {
+          alert("unknown error");
+        }
       }
     });
     return false;
