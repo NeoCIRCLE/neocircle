@@ -341,13 +341,17 @@ class Instance(VirtualMachineDescModel, TimeStampedModel):
         return " ".join([s for s in parts if s != ""])
 
     @classmethod
-    def create_from_template(cls, template, owner, disks=None, **kwargs):
+    def create_from_template(cls, template, owner, disks=None, networks=None,
+                             **kwargs):
         """Create a new instance based on an InstanceTemplate.
 
         Can also specify parameters as keyword arguments which should override
         template settings.
         """
         disks = template.disks.all() if disks is None else disks
+
+        networks = (template.interface_set.all() if networks is None
+                    else networks)
 
         # prepare parameters
         kwargs['template'] = template
@@ -366,10 +370,10 @@ class Instance(VirtualMachineDescModel, TimeStampedModel):
         for disk in disks:
             inst.disks.add(disk.get_exclusive())
 
-        for iftmpl in template.interface_set.all():
-            i = Interface.create_from_template(instance=inst,
-                                               template=iftmpl,
-                                               owner=owner)
+        for net in networks:
+            i = Interface.create(instance=inst, vlan=net.vlan, owner=owner,
+                                 managed=net.managed)
+
             if i.host:
                 i.host.enable_net()
                 port, proto = ACCESS_PROTOCOLS[i.instance.access_method][1:3]
@@ -829,18 +833,17 @@ class Interface(Model):
             queue=self.instance.get_remote_queue_name('net'))
 
     @classmethod
-    def create_from_template(cls, instance, template, owner=None):
-        """Create a new interface for an instance based on an
-           InterfaceTemplate.
+    def create(cls, instance, vlan, managed, owner=None):
+        """Create a new interface for a VM instance to the specified VLAN.
         """
-        if template.managed:
+        if managed:
             host = Host()
-            host.vlan = template.vlan
+            host.vlan = vlan
             # TODO change Host's mac field's type to EUI in firewall
-            host.mac = str(cls.generate_mac(instance, template.vlan))
+            host.mac = str(cls.generate_mac(instance, vlan))
             host.hostname = instance.vm_name
             # Get adresses from firewall
-            addresses = template.vlan.get_new_address()
+            addresses = vlan.get_new_address()
             host.ipv4 = addresses['ipv4']
             host.ipv6 = addresses['ipv6']
             host.owner = owner
@@ -848,7 +851,7 @@ class Interface(Model):
         else:
             host = None
 
-        iface = cls(vlan=template.vlan, host=host, instance=instance)
+        iface = cls(vlan=vlan, host=host, instance=instance)
         iface.save()
         return iface
 
