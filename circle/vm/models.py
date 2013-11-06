@@ -365,6 +365,7 @@ class Instance(VirtualMachineDescModel, TimeStampedModel):
         # create instance and do additional setup
         inst = cls(**kwargs)
         # save instance
+        inst.clean()
         inst.save()
         # create related entities
         for disk in disks:
