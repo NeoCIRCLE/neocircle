@@ -69,3 +69,9 @@ if get_env_variable('DJANGO_TOOLBAR', 'FALSE') == 'TRUE':
         'SHOW_TEMPLATE_CONTEXT': True,
     }
     ########## END TOOLBAR CONFIGURATION
+
+LOGGING['handlers']['console'] = {'level': 'DEBUG',
+                                  'class': 'logging.StreamHandler',
+                                  'formatter': 'simple'}
+for i in LOCAL_APPS:
+    LOGGING['loggers'][i] = {'handlers': ['console'], 'level': 'DEBUG'}
