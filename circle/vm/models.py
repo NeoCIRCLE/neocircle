@@ -341,12 +341,15 @@ class Instance(VirtualMachineDescModel, TimeStampedModel):
         return " ".join([s for s in parts if s != ""])
 
     @classmethod
-    def create_from_template(cls, template, owner, **kwargs):
+    def create_from_template(cls, template, owner, disks=None, **kwargs):
         """Create a new instance based on an InstanceTemplate.
 
         Can also specify parameters as keyword arguments which should override
         template settings.
         """
+        if disks is None:
+            disks = template.disks.all()
+
         # prepare parameters
         kwargs['template'] = template
         kwargs['owner'] = owner
@@ -362,8 +365,6 @@ class Instance(VirtualMachineDescModel, TimeStampedModel):
         kwargs.setdefault('raw_data', template.raw_data)
         kwargs.setdefault('lease', template.lease)
         kwargs.setdefault('access_method', template.access_method)
-        disks = kwargs.get('disks', template.disks.all())
-        kwargs.pop('disks')
         # create instance and do additional setup
         inst = cls(**kwargs)
         # save instance
