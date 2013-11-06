@@ -347,24 +347,17 @@ class Instance(VirtualMachineDescModel, TimeStampedModel):
         Can also specify parameters as keyword arguments which should override
         template settings.
         """
-        if disks is None:
-            disks = template.disks.all()
+        disks = template.disks.all() if disks is None else disks
 
         # prepare parameters
         kwargs['template'] = template
         kwargs['owner'] = owner
-        kwargs.setdefault('name', template.name)
-        kwargs.setdefault('description', template.description)
         kwargs.setdefault('pw', pwgen())
-        kwargs.setdefault('num_cores', template.num_cores)
-        kwargs.setdefault('ram_size', template.ram_size)
-        kwargs.setdefault('max_ram_size', template.max_ram_size)
-        kwargs.setdefault('arch', template.arch)
-        kwargs.setdefault('priority', template.priority)
-        kwargs.setdefault('boot_menu', template.boot_menu)
-        kwargs.setdefault('raw_data', template.raw_data)
-        kwargs.setdefault('lease', template.lease)
-        kwargs.setdefault('access_method', template.access_method)
+        ca = ['name', 'description', 'num_cores', 'ram_size', 'max_ram_size',
+              'arch', 'priority', 'boot_menu', 'raw_data', 'lease',
+              'access_method']
+        for attr in ca:
+            kwargs.setdefault(attr, getattr(template, attr))
         # create instance and do additional setup
         inst = cls(**kwargs)
         # save instance
