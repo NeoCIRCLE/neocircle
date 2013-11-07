@@ -2,22 +2,23 @@ from contextlib import contextmanager
 from datetime import timedelta
 from importlib import import_module
 import logging
+from netaddr import EUI, mac_unix
 
 import django.conf
 from django.contrib.auth.models import User
+from django.core import signing
 from django.db.models import (Model, ForeignKey, ManyToManyField, IntegerField,
                               DateTimeField, BooleanField, TextField,
                               CharField, permalink)
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
-from model_utils.models import TimeStampedModel
-from netaddr import EUI, mac_unix
 
-from .tasks import local_tasks, vm_tasks, net_tasks
+from model_utils.models import TimeStampedModel
+
 from common.models import ActivityModel, activitycontextimpl
 from firewall.models import Vlan, Host
 from storage.models import Disk
-from django.core import signing
+from .tasks import local_tasks, vm_tasks, net_tasks
 
 
 logger = logging.getLogger(__name__)
