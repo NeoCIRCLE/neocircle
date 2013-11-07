@@ -14,6 +14,7 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from model_utils.models import TimeStampedModel
+from taggit.managers import TaggableManager
 
 from common.models import ActivityModel, activitycontextimpl
 from firewall.models import Vlan, Host
@@ -76,6 +77,7 @@ class VirtualMachineDescModel(BaseResourceConfigModel):
                                  'Show boot device selection menu on boot.'))
     raw_data = TextField(verbose_name=_('raw_data'), blank=True, help_text=_(
         'Additional libvirt domain parameters in XML format.'))
+    tags = TaggableManager()
 
     class Meta:
         abstract = True
@@ -100,6 +102,7 @@ class Node(TimeStampedModel):
     enabled = BooleanField(verbose_name=_('enabled'), default=False,
                            help_text=_('Indicates whether the node can '
                                        'be used for hosting.'))
+    tags = TaggableManager()
 
     class Meta:
         permissions = ()

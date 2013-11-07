@@ -224,6 +224,7 @@ THIRD_PARTY_APPS = (
     'crispy_forms',
     'djcelery',
     'sizefield',
+    'taggit',
 )
 
 # Apps specific for this project go here.
