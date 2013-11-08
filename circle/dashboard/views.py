@@ -4,10 +4,12 @@ import logging
 import re
 
 from django.contrib.auth.models import User, Group
+from django.contrib.messages import warning
 from django.core import signing
 from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
+from django.utils.translation import ugettext_lazy as _
 from django.views.generic import TemplateView, DetailView, View
 from django.views.generic.detail import SingleObjectMixin
 from django.http import HttpResponse
@@ -102,8 +104,10 @@ class AclUpdateView(View, SingleObjectMixin):
                 entity = User.objects.get(username=name)
             except User.DoesNotExist:
                 entity = Group.objects.get(name=name)
-            instance.set_level(entity, value)
-        return redirect(instance)
+            except Group.DoesNotExist:
+                warning(request, _('User or group "%s" not found.') % name)
+                return
+
         logger.info("Set %s's new acl level for %s to %s by %s.",
                     unicode(entity), unicode(instance),
                     value, unicode(request.user))
