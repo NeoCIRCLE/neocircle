@@ -83,7 +83,8 @@ class AclUpdateView(View, SingleObjectMixin):
 
     def post(self, request, *args, **kwargs):
         instance = self.get_object()
-        if not instance.has_level(request.user, "owner"):
+        if not (instance.has_level(request.user, "owner") or
+                getattr(instance, 'owner', None) == request.user):
             logger.warning('Tried to set permissions of %s by non-owner %s.',
                            unicode(instance), unicode(request.user))
             raise PermissionDenied()
