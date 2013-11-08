@@ -124,6 +124,9 @@ class AclBase(Model):
     def has_level(self, user, level, group_also=True):
         logger.debug('%s.has_level(%s, %s, %s) called',
                      *[unicode(p) for p in [self, user, level, group_also]])
+        if getattr(user, 'is_superuser', False):
+            logger.debug('- superuser granted')
+            return True
         if isinstance(level, basestring):
             level = self.get_level_object(level)
             logger.debug("- level set by str: %s", unicode(level))
