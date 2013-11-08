@@ -16,7 +16,7 @@ class Level(Model):
 
     """Definition of a permission level.
 
-    Instances are automatically populated based on AclBase.."""
+    Instances are automatically populated based on AclBase."""
     name = CharField('name', max_length=50)
     content_type = ForeignKey(ContentType)
     codename = CharField('codename', max_length=100)
@@ -55,18 +55,36 @@ class AclBase(Model):
     object_level_set = GenericRelation(ObjectLevel)
 
     def get_level_object(self, level):
+
+        """Get Level object for this model by codename."""
         ct = ContentType.objects.get_for_model(self)
         return Level.objects.get(codename=level, content_type=ct)
 
     def set_level(self, whom, level):
+
+        """Set level of object for a user or group.
+
+        :param whom: user or group the level is set for
+        :type whom: User or Group
+        :param level: codename of level to set
+        :type level: Level or str or unicode
+        """
         if isinstance(whom, User):
             self.set_user_level(whom, level)
         elif isinstance(whom, Group):
             self.set_group_level(whom, level)
         else:
-            raise AttributeError("Whom must be a User or Group object.")
+            raise AttributeError('"whom" must be a User or Group object.')
 
     def set_user_level(self, user, level):
+
+        """Set level of object for a user.
+
+        :param whom: user the level is set for
+        :type whom: User
+        :param level: codename of level to set
+        :type level: Level or str or unicode
+        """
         logger.info('%s.set_user_level(%s, %s) called',
                     *[unicode(p) for p in [self, user, level]])
         if isinstance(level, basestring):
@@ -81,6 +99,14 @@ class AclBase(Model):
             i.save()
 
     def set_group_level(self, group, level):
+
+        """Set level of object for a user.
+
+        :param whom: user the level is set for
+        :type whom: User or unicode or str
+        :param level: codename of level to set
+        :type level: str or unicode
+        """
         logger.info('%s.set_group_level(%s, %s) called',
                     *[unicode(p) for p in [self, group, level]])
         if isinstance(level, basestring):
