@@ -1,5 +1,6 @@
 from os import getenv
 import json
+import logging
 import re
 
 from django.contrib.auth.models import User, Group
@@ -17,6 +18,8 @@ from .tables import VmListTable
 from vm.models import Instance, InstanceTemplate, InterfaceTemplate
 from firewall.models import Vlan
 from storage.models import Disk
+
+logger = logging.getLogger(__name__)
 
 
 class IndexView(TemplateView):
@@ -79,6 +82,8 @@ class AclUpdateView(View, SingleObjectMixin):
     def post(self, request, *args, **kwargs):
         instance = self.get_object()
         if not instance.has_level(request.user, "owner"):
+            logger.warning('Tried to set permissions of %s by non-owner %s.',
+                           unicode(instance), unicode(request.user))
             raise PermissionDenied()
         for key, value in request.POST.items():
             m = re.match('perm-([ug])-(\d+)', key)
@@ -86,6 +91,9 @@ class AclUpdateView(View, SingleObjectMixin):
                 type, id = m.groups()
                 entity = {'u': User, 'g': Group}[type].objects.get(id=id)
                 instance.set_level(entity, value)
+                logger.info("Set %s's acl level for %s to %s by %s.",
+                            unicode(entity), unicode(instance),
+                            value, unicode(request.user))
 
         name = request.POST['perm-new-name']
         value = request.POST['perm-new']
@@ -96,6 +104,9 @@ class AclUpdateView(View, SingleObjectMixin):
                 entity = Group.objects.get(name=name)
             instance.set_level(entity, value)
         return redirect(instance)
+        logger.info("Set %s's new acl level for %s to %s by %s.",
+                    unicode(entity), unicode(instance),
+                    value, unicode(request.user))
 
 
 class TemplateDetail(DetailView):

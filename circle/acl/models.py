@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib.auth.models import User, Group
 from django.contrib.contenttypes.generic import (
     GenericForeignKey, GenericRelation
@@ -6,6 +8,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import (
     ManyToManyField, ForeignKey, CharField, Model, IntegerField
 )
+
+logger = logging.getLogger(__name__)
 
 
 class Level(Model):
@@ -17,6 +21,9 @@ class Level(Model):
     content_type = ForeignKey(ContentType)
     codename = CharField('codename', max_length=100)
     weight = IntegerField('weight', null=True)
+
+    def __unicode__(self):
+        return "<%s/%s>" % (unicode(self.content_type), self.name)
 
     class Meta:
         unique_together = (('content_type', 'codename'),
@@ -34,6 +41,9 @@ class ObjectLevel(Model):
     content_object = GenericForeignKey()
     users = ManyToManyField(User)
     groups = ManyToManyField(Group)
+
+    def __unicode__(self):
+        return "<%s: %s>" % (unicode(self.content_object), unicode(self.level))
 
     class Meta:
         unique_together = (('content_type', 'object_id', 'level'),)
@@ -57,6 +67,8 @@ class AclBase(Model):
             raise AttributeError("Whom must be a User or Group object.")
 
     def set_user_level(self, user, level):
+        logger.info('%s.set_user_level(%s, %s) called',
+                    *[unicode(p) for p in [self, user, level]])
         if isinstance(level, basestring):
             level = self.get_level_object(level)
         if not self.object_level_set.filter(level_id=level.pk).exists():
@@ -69,6 +81,8 @@ class AclBase(Model):
             i.save()
 
     def set_group_level(self, group, level):
+        logger.info('%s.set_group_level(%s, %s) called',
+                    *[unicode(p) for p in [self, group, level]])
         if isinstance(level, basestring):
             level = self.get_level_object(level)
         #self.object_level_set.get_or_create(level=level, content_object=self)
@@ -82,8 +96,11 @@ class AclBase(Model):
             i.save()
 
     def has_level(self, user, level, group_also=True):
+        logger.debug('%s.has_level(%s, %s, %s) called',
+                     *[unicode(p) for p in [self, user, level, group_also]])
         if isinstance(level, basestring):
             level = self.get_level_object(level)
+            logger.debug("- level set by str: %s", unicode(level))
 
         object_levels = self.object_level_set.filter(
             level__weight__gte=level.weight).all()
@@ -102,21 +119,27 @@ class AclBase(Model):
         return False
 
     def get_users_with_level(self):
+        logger.debug('%s.get_users_with_level() called', unicode(self))
         object_levels = (self.object_level_set.select_related(
             'users', 'level').all())
         users = []
         for object_level in object_levels:
             name = object_level.level.codename
-            users.extend([(u, name) for u in object_level.users.all()])
+            olusers = object_level.users.all()
+            users.extend([(u, name) for u in olusers])
+            logger.debug('- %s: %s' % (name, [u.username for u in olusers]))
         return users
 
     def get_groups_with_level(self):
+        logger.debug('%s.get_groups_with_level() called', unicode(self))
         object_levels = (self.object_level_set.select_related(
             'groups', 'level').all())
         groups = []
         for object_level in object_levels:
             name = object_level.level.codename
-            groups.extend([(g, name) for g in object_level.groups.all()])
+            olgroups = object_level.groups.all()
+            groups.extend([(g, name) for g in olgroups])
+            logger.debug('- %s: %s' % (name, [g.name for g in olgroups]))
         return groups
 
     class Meta:
