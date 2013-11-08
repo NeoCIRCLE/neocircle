@@ -88,6 +88,11 @@ class AclUpdateView(View, SingleObjectMixin):
             logger.warning('Tried to set permissions of %s by non-owner %s.',
                            unicode(instance), unicode(request.user))
             raise PermissionDenied()
+        self.set_levels(request, instance)
+        self.add_levels(request, instance)
+        return redirect(instance)
+
+    def set_levels(self, request, instance):
         for key, value in request.POST.items():
             m = re.match('perm-([ug])-(\d+)', key)
             if m:
@@ -98,17 +103,22 @@ class AclUpdateView(View, SingleObjectMixin):
                             unicode(entity), unicode(instance),
                             value, unicode(request.user))
 
+    def add_levels(self, request, instance):
         name = request.POST['perm-new-name']
         value = request.POST['perm-new']
-        if name:
+        if not name:
+            return
+        try:
+            entity = User.objects.get(username=name)
+        except User.DoesNotExist:
+            entity = None
             try:
-                entity = User.objects.get(username=name)
-            except User.DoesNotExist:
                 entity = Group.objects.get(name=name)
             except Group.DoesNotExist:
                 warning(request, _('User or group "%s" not found.') % name)
                 return
 
+        instance.set_level(entity, value)
         logger.info("Set %s's new acl level for %s to %s by %s.",
                     unicode(entity), unicode(instance),
                     value, unicode(request.user))
