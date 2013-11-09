@@ -54,10 +54,11 @@ class AclBase(Model):
     """Define permission levels for Users/Groups per object."""
     object_level_set = GenericRelation(ObjectLevel)
 
-    def get_level_object(self, level):
+    @classmethod
+    def get_level_object(cls, level):
 
         """Get Level object for this model by codename."""
-        ct = ContentType.objects.get_for_model(self)
+        ct = ContentType.objects.get_for_model(cls)
         return Level.objects.get(codename=level, content_type=ct)
 
     def set_level(self, whom, level):
@@ -133,18 +134,12 @@ class AclBase(Model):
 
         object_levels = self.object_level_set.filter(
             level__weight__gte=level.weight).all()
-        if group_also:
-            try:
-                groups = user.group_set.values_list('id', flat=True)
-            except AttributeError:
-                pass  # e.g. AnyonymousUser doesn't have group_set
-            else:
-                for i in object_levels:
-                    if i.users.filter(pk=user.pk).exists():
-                        return True
-                    if (group_also and
-                            i.groups.filter(pk__in=groups).exists()):
-                        return True
+        groups = user.groups.values_list('id', flat=True) if group_also else []
+        for i in object_levels:
+            if i.users.filter(pk=user.pk).exists():
+                return True
+            if group_also and i.groups.filter(pk__in=groups).exists():
+                return True
         return False
 
     def get_users_with_level(self):
