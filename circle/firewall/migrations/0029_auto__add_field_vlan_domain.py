@@ -10,7 +10,7 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         # Adding field 'Vlan.domain'
         db.add_column('firewall_vlan', 'domain',
-                      self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['firewall.Domain']),
+                      self.gf('django.db.models.fields.related.ForeignKey')(default=1, to=orm['firewall.Domain']),
                       keep_default=False)
 
 

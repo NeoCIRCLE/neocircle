@@ -10,7 +10,7 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         # Adding field 'Rule.owner'
         db.add_column('firewall_rule', 'owner',
-                      self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['auth.User']),
+                      self.gf('django.db.models.fields.related.ForeignKey')(default=1, to=orm['auth.User']),
                       keep_default=False)
 
 
