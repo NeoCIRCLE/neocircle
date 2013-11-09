@@ -18,3 +18,5 @@ _build
 # Logs:
 *.log
 .ropeproject
+.coverage
+*,cover
