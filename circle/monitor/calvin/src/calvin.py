@@ -1,8 +1,9 @@
-import json, requests
+import requests
+
 
 class GraphiteHandler:
 
-    def __init__(self, server_name = "localhost", server_port = "8080"):
+    def __init__(self, server_name="localhost", server_port="8080"):
         self.__server_name = server_name
         self.__server_port = server_port
         self.__queries = []
@@ -34,11 +35,12 @@ class GraphiteHandler:
         Important: After sending queries to the server the fifo will lost its
         content.
         """
-        url_base = "http://%s:%s/render?" % (self.__server_name, self.__server_port)
+        url_base = "http://%s:%s/render?" % (self.__server_name,
+                                             self.__server_port)
         for query in self.__queries:
             response = requests.get(url_base + query.getGenerated())
             if query.getFormat() is "json":
-                self.__responses.append(response.json()[0]) #DICT
+                self.__responses.append(response.json())  # DICT
             else:
                 self.__responses.append(response)
         self.cleanUpQueries()
@@ -48,9 +50,10 @@ class GraphiteHandler:
         Pop the first query has got from the server.
         """
         try:
-            return self.__responses.pop(0) # Transform to dictionary
+            return self.__responses.pop(0)  # Transform to dictionary
         except:
             print("There is no more responses.")
+
 
 class Query:
 
@@ -90,7 +93,7 @@ class Query:
         """
         Function for setting the time you want to get the reports from.
         """
-        if(len(year)>4 or len(year)<2):
+        if(len(year) > 4 or len(year) < 2):
             raise
         self.__start = hour + ":" + minute + "_" + year + month + day
 
@@ -98,7 +101,8 @@ class Query:
         """
         Function for setting the time you want to get the reports from.
         """
-        if scale not in ["years", "months", "days", "hours", "minutes", "seconds"]:
+        if (scale not in ["years",
+                          "months", "days", "hours", "minutes", "seconds"]):
             raise
         self.__start = "-" + str(value) + scale
 
@@ -109,7 +113,7 @@ class Query:
         """
         Function for setting the time until you want to get the reports from.
         """
-        if(len(year)>4 or len(year)<2):
+        if(len(year) > 4 or len(year) < 2):
             raise
         self.__end = hour + ":" + minute + "_" + year + month + day
 
@@ -117,7 +121,8 @@ class Query:
         """
         Function for setting the time until you want to get the reports from.
         """
-        if scale not in ["years", "months", "days", "hours", "minutes", "seconds"]:
+        if (scale not in ["years",
+                          "months", "days", "hours", "minutes", "seconds"]):
             raise
         self.__end = "-" + str(value) + scale
 
@@ -160,5 +165,3 @@ class Query:
         if len(self.__generated) is 0:
             raise
         return self.__generated
-
-
