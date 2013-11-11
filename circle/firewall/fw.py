@@ -211,7 +211,6 @@ class Firewall:
             self.RULES = [x for x in self.RULES if not ipv4_re.search(x)]
             self.RULES = [x.replace('icmp', 'icmpv6') for x in self.RULES]
 
-
     def ipt_filter_firewall(self):
         """Build firewall's own rules."""
 
