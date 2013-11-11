@@ -3,7 +3,7 @@
 
 from os import environ
 
-from base import *
+from base import *  # noqa
 
 
 def get_env_setting(setting):
@@ -15,7 +15,8 @@ def get_env_setting(setting):
         raise ImproperlyConfigured(error_msg)
 
 ########## HOST CONFIGURATION
-# See: https://docs.djangoproject.com/en/1.5/releases/1.5/#allowed-hosts-required-in-production
+# See: https://docs.djangoproject.com/en/1.5/releases/1.5/
+#      #allowed-hosts-required-in-production
 ALLOWED_HOSTS = get_env_setting('DJANGO_ALLOWED_HOSTS').split(',')
 ########## END HOST CONFIGURATION
 

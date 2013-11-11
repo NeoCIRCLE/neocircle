@@ -55,23 +55,24 @@ class RuleAdmin(admin.ModelAdmin):
 
     def color_desc(self, instance):
         """Returns a colorful description of the instance."""
+        data = {
+            'type': instance.r_type,
+            'src': (instance.foreign_network.name
+                    if instance.direction == '1' else instance.r_type),
+            'dst': (instance.r_type if instance.direction == '1'
+                    else instance.foreign_network.name),
+            'para': (u'<span style="color: #00FF00;">' +
+                     (('proto=%s ' % instance.proto)
+                      if instance.proto else '') +
+                     (('sport=%s ' % instance.sport)
+                      if instance.sport else '') +
+                     (('dport=%s ' % instance.dport)
+                      if instance.dport else '') +
+                     '</span>'),
+            'desc': instance.description}
         return (u'<span style="color: #FF0000;">[%(type)s]</span> '
                 u'%(src)s<span style="color: #0000FF;"> ▸ </span>%(dst)s '
-                u'%(para)s %(desc)s') % {
-                    'type': instance.r_type,
-                    'src': (instance.foreign_network.name
-                            if instance.direction == '1' else instance.r_type),
-                    'dst': (instance.r_type if instance.direction == '1'
-                            else instance.foreign_network.name),
-                    'para': (u'<span style="color: #00FF00;">' +
-                             (('proto=%s ' % instance.proto)
-                                 if instance.proto else '') +
-                             (('sport=%s ' % instance.sport)
-                                 if instance.sport else '') +
-                             (('dport=%s ' % instance.dport)
-                                 if instance.dport else '') +
-                             '</span>'),
-                    'desc': instance.description}
+                u'%(para)s %(desc)s') % data
     color_desc.allow_tags = True
 
     @staticmethod

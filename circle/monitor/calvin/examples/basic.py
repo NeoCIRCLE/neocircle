@@ -1,4 +1,4 @@
-from calvin import *
+from calvin import *  # noqa
 
 server_name = "0.0.0.0"
 server_port = "8080"
@@ -10,12 +10,12 @@ query.setFormat("json") #Not neccesary, default is json
 query.setRelativeStart(1, "minutes") #Current cpu usage
 
 query.generate()
-#print(query.getGenerated())
+# print(query.getGenerated())
 
 print(query.getStart())
-#query.setAbsoluteStart("1889", "04", "20", "00", "00")
-#query.setRelativeEnd(...)
-#query.setAbsoluteEnd(...)
+# query.setAbsoluteStart("1889", "04", "20", "00", "00")
+# query.setRelativeEnd(...)
+# query.setAbsoluteEnd(...)
 
 handler = GraphiteHandler(server_name, server_port)
 

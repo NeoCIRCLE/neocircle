@@ -506,7 +506,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
             'name': self.vm_name,
             'vcpu': self.num_cores,
             'memory': int(self.ram_size) * 1024,  # convert from MiB to KiB
-            'memory_max': int(self.max_ram_size) * 1024,  # convert from MiB to KiB
+            'memory_max': int(self.max_ram_size) * 1024,  # convert MiB to KiB
             'cpu_share': self.priority,
             'arch': self.arch,
             'boot_menu': self.boot_menu,
@@ -762,9 +762,12 @@ class InstanceActivity(ActivityModel):
 
     def __unicode__(self):
         if self.parent:
-            return self.parent.activity_code + "(" + self.instance.name + ")" + "->" + self.activity_code
+            return '{}({})->{}'.format(self.parent.activity_code,
+                                       self.instance.name,
+                                       self.activity_code)
         else:
-            return self.activity_code + "(" + self.instance.name + ")"
+            return '{}({})'.format(self.activity_code,
+                                   self.instance.name)
 
     @classmethod
     def create(cls, code_suffix, instance, task_uuid=None, user=None):

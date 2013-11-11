@@ -19,7 +19,8 @@ def create_levels(app, created_models, verbosity, db=DEFAULT_DB_ALIAS,
     from django.contrib.contenttypes.models import ContentType
 
     app_models = [k for k in get_models(app) if AclBase in k.__bases__]
-    print "Creating levels for models: %s." % ", ".join([m.__name__ for m in app_models])
+    print "Creating levels for models: %s." % ", ".join(
+        [m.__name__ for m in app_models])
 
     # This will hold the levels we're looking for as
     # (content_type, (codename, name))
@@ -59,7 +60,8 @@ def create_levels(app, created_models, verbosity, db=DEFAULT_DB_ALIAS,
     Level.objects.using(db).bulk_create(levels)
     if verbosity >= 2:
         print("Adding levels [%s]." % ", ".join(levels))
-        print("Searched: [%s]." % ", ".join([unicode(l) for l in searched_levels]))
+        print("Searched: [%s]." % ", ".join(
+            [unicode(l) for l in searched_levels]))
         print("All: [%s]." % ", ".join([unicode(l) for l in all_levels]))
 
     # set weights

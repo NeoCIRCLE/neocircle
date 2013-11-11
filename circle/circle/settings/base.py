@@ -1,4 +1,5 @@
 """Common settings and globals."""
+# flake8: noqa
 
 from datetime import timedelta
 from os import environ

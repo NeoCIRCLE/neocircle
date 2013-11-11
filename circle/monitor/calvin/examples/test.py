@@ -1,4 +1,4 @@
-from calvin import *
+from calvin import *  # noqa
 import datetime
 
 query = Query()
@@ -9,7 +9,8 @@ query.generate()
 
 handler = GraphiteHandler("10.9.1.209")
 
-times = int(input("How many requests do you intend to send? [postive integer]  "))
+times = int(input(
+    "How many requests do you intend to send? [postive integer]  "))
 
 global_start = datetime.datetime.now()
 for i in range(1, times):
@@ -17,7 +18,7 @@ for i in range(1, times):
     handler.put(query)
     handler.send()
     local_end = datetime.datetime.now()
-    print((local_end-local_start).microseconds)
+    print((local_end - local_start).microseconds)
 global_end = datetime.datetime.now()
 
 print("*-*-*-*-*-*-*-*-*-*-*-*-*-*-*")

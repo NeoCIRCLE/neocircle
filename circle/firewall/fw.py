@@ -195,17 +195,33 @@ class Firewall:
         self.iptablesnat('COMMIT')
 
     def ipt_filter(self):
-        ipv4_re = re.compile('([0-9]{1,3}\.){3}[0-9]{1,3}')
 
-        # pre-run stuff
         self.prerun()
 
-        # firewall's own rules
+        self.ipt_filter_firewall()
+        self.ipt_filter_zones()
+        self.ipt_filter_host_rules()
+        self.ipt_filter_vlan_rules()
+        self.ipt_filter_vlan_drop()
+
+        self.postrun()
+
+        if self.proto == 6:  # remove ipv4-specific rules
+            ipv4_re = re.compile('([0-9]{1,3}\.){3}[0-9]{1,3}')
+            self.RULES = [x for x in self.RULES if not ipv4_re.search(x)]
+            self.RULES = [x.replace('icmp', 'icmpv6') for x in self.RULES]
+
+
+    def ipt_filter_firewall(self):
+        """Build firewall's own rules."""
+
         for f in self.fw:
             for rule in f.rules.all():
                 self.fw2vlan(rule)
 
-        # zonak kozotti lancokra ugras
+    def ipt_filter_zones(self):
+        """Jumping to chains between zones."""
+
         for s_vlan in self.vlans:
             for d_vlan in self.vlans:
                 self.iptables('-N %s_%s' % (s_vlan, d_vlan))
@@ -213,7 +229,9 @@ class Firewall:
                               (s_vlan.name, d_vlan.name, s_vlan,
                                d_vlan))
 
-        # hosts' rules
+    def ipt_filter_host_rules(self):
+        """Build hosts' rules."""
+
         for i_vlan in self.vlans:
             for i_host in i_vlan.host_set.all():
                 for group in i_host.groups.all():
@@ -222,22 +240,19 @@ class Firewall:
                 for rule in i_host.rules.all():
                     self.host2vlan(i_host, rule)
 
-        # enable communication between VLANs
+    def ipt_filter_vlan_rules(self):
+        """Enable communication between VLANs."""
+
         for s_vlan in self.vlans:
             for rule in s_vlan.rules.all():
                 self.vlan2vlan(s_vlan, rule)
 
-        # zonak kozotti lancokat zarja le
+    def ipt_filter_vlan_drop(self):
+        """Close intra-VLAN chains."""
+
         for s_vlan in self.vlans:
             for d_vlan in self.vlans:
                 self.iptables('-A %s_%s -g LOG_DROP' % (s_vlan, d_vlan))
-
-        # post-run stuff
-        self.postrun()
-
-        if self.proto == 6:
-            self.RULES = [x for x in self.RULES if not ipv4_re.search(x)]
-            self.RULES = [x.replace('icmp', 'icmpv6') for x in self.RULES]
 
     def __init__(self, proto=4):
         self.RULES = []
