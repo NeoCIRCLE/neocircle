@@ -234,3 +234,17 @@ class VmCreate(TemplateView):
                                 status=500 if resp.get('error') else 200)
         else:
             return redirect(reverse_lazy('dashboard.views.detail', resp))
+
+
+def delete_vm(request, **kwargs):
+    vm_pk = kwargs['pk']
+
+    vm = Instance.objects.get(pk=vm_pk)
+    print vm
+    vm.destroy_async()
+
+    if request.is_ajax():
+        return HttpResponse("ok")
+    else:
+        next = request.GET.get('next')
+        return redirect(next if next else reverse_lazy('dashboard.index'))
