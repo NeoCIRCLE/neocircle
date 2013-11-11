@@ -44,36 +44,6 @@
 },
 {
   "pk": 1, 
-  "model": "acl.level", 
-  "fields": {
-    "codename": "owner", 
-    "weight": 2, 
-    "name": "owner", 
-    "content_type": 15
-  }
-},
-{
-  "pk": 2, 
-  "model": "acl.level", 
-  "fields": {
-    "codename": "operator", 
-    "weight": 1, 
-    "name": "operator", 
-    "content_type": 15
-  }
-},
-{
-  "pk": 3, 
-  "model": "acl.level", 
-  "fields": {
-    "codename": "user", 
-    "weight": 0, 
-    "name": "user", 
-    "content_type": 15
-  }
-},
-{
-  "pk": 1, 
   "model": "auth.permission", 
   "fields": {
     "codename": "add_permission", 
