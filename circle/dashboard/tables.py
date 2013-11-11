@@ -14,7 +14,7 @@ class VmListTable(Table):
     name = LinkColumn(
         'dashboard.views.detail',
         args=[A('pk')],
-        attrs={'class': 'real-link'}
+        attrs={'a': {'class': 'real-link'}}
     )
     admin = TemplateColumn(
         template_name='dashboard/vm-list/column-admin.html',
