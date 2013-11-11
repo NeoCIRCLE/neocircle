@@ -5,20 +5,16 @@ import re
 
 from django.contrib.auth.models import User, Group
 from django.contrib.messages import warning
-from django.core import signing
 from django.core.exceptions import PermissionDenied
-from django.core.urlresolvers import reverse
+from django.core import signing
+from django.core.urlresolvers import reverse, reverse_lazy
+from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.utils.translation import ugettext_lazy as _
-from django.views.generic import TemplateView, DetailView, View
 from django.views.generic.detail import SingleObjectMixin
-from django.http import HttpResponse
-from django.views.generic import TemplateView, DetailView
-from django.core.urlresolvers import reverse_lazy
-from django.shortcuts import redirect
+from django.views.generic import TemplateView, DetailView, View
 
 from django_tables2 import SingleTableView
-from tables import VmListTable
 
 from .tables import VmListTable
 from vm.models import Instance, InstanceTemplate, InterfaceTemplate
@@ -63,7 +59,18 @@ def get_acl_data(obj):
             'url': reverse('dashboard.views.vm-acl', args=[obj.pk])}
 
 
-class VmDetailView(DetailView):
+class CheckedDetailView(DetailView):
+    read_level = 'user'
+
+    def get_context_data(self, **kwargs):
+        context = super(CheckedDetailView, self).get_context_data(**kwargs)
+        instance = context['instance']
+        if not instance.has_level(self.request.user, self.read_level):
+            raise PermissionDenied()
+        return context
+
+
+class VmDetailView(CheckedDetailView):
     template_name = "dashboard/vm-detail.html"
     model = Instance
 
