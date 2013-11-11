@@ -2,11 +2,10 @@ from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User, Group
 
-from vm.models import Instance
-
-
 
 class VmDetailTest(TestCase):
+    fixtures = ['test-vm-fixture.json']
+
     def setUp(self):
         self.u1 = User.objects.create(username='user1')
         self.u2 = User.objects.create(username='user2', is_staff=True)
@@ -20,3 +19,8 @@ class VmDetailTest(TestCase):
         c = Client()
         response = c.get('/dashboard/vm/235555/')
         self.assertEqual(response.status_code, 404)
+
+    def test_vm_page(self):
+        c = Client()
+        response = c.get('/dashboard/vm/1/')
+        self.assertEqual(response.status_code, 200)
