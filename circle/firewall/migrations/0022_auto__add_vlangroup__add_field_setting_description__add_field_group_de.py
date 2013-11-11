@@ -58,7 +58,7 @@ class Migration(SchemaMigration):
 
         # Adding field 'Rule.foreign_network'
         db.add_column('firewall_rule', 'foreign_network',
-                      self.gf('django.db.models.fields.related.ForeignKey')(default=None, related_name='ForeignRules', to=orm['firewall.VlanGroup']),
+                      self.gf('django.db.models.fields.related.ForeignKey')(default=1, related_name='ForeignRules', to=orm['firewall.VlanGroup']),
                       keep_default=False)
 
         # Adding field 'Rule.vlan'

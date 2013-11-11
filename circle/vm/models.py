@@ -20,8 +20,7 @@ from .tasks import local_tasks, vm_tasks, net_tasks
 from firewall.models import Vlan, Host
 from storage.models import Disk
 from common.models import ActivityModel, activitycontextimpl
-from django.core import signing
-
+from acl.models import AclBase
 
 logger = logging.getLogger(__name__)
 pwgen = User.objects.make_random_password
@@ -271,7 +270,7 @@ class InterfaceTemplate(Model):
         verbose_name_plural = _('interface templates')
 
 
-class Instance(VirtualMachineDescModel, TimeStampedModel):
+class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
     """Virtual machine instance.
 
@@ -297,6 +296,11 @@ class Instance(VirtualMachineDescModel, TimeStampedModel):
               ('SHUTOFF', _('shutoff')),
               ('CRASHED', _('crashed')),
               ('PMSUSPENDED', _('pmsuspended'))]  # libvirt domain states
+    ACL_LEVELS = (
+        ('user', _('user')),          # see all details
+        ('operator', _('operator')),  # console, networking, change state
+        ('owner', _('owner')),        # superuser, can delete, delegate perms
+    )
     name = CharField(blank=True, max_length=100, verbose_name=_('name'),
                      help_text=_("Human readable name of instance."))
     description = TextField(blank=True, verbose_name=_('description'))
@@ -337,7 +341,6 @@ class Instance(VirtualMachineDescModel, TimeStampedModel):
 
     class Meta:
         ordering = ['pk', ]
-        permissions = ()
         verbose_name = _('instance')
         verbose_name_plural = _('instances')
 

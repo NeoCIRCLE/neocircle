@@ -18,6 +18,6 @@ _build
 # Logs:
 *.log
 .ropeproject
-
-#celery
 celerybeat-schedule
+.coverage
+*,cover

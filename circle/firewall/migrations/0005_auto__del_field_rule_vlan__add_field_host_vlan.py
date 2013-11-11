@@ -21,7 +21,7 @@ class Migration(SchemaMigration):
 
         # Adding field 'Host.vlan'
         db.add_column('firewall_host', 'vlan',
-                      self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['firewall.Vlan']),
+                      self.gf('django.db.models.fields.related.ForeignKey')(default=1, to=orm['firewall.Vlan']),
                       keep_default=False)
 
         # Removing M2M table for field vlan on 'Host'

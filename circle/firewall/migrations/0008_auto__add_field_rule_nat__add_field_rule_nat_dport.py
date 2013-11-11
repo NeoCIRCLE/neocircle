@@ -15,7 +15,7 @@ class Migration(SchemaMigration):
 
         # Adding field 'Rule.nat_dport'
         db.add_column('firewall_rule', 'nat_dport',
-                      self.gf('django.db.models.fields.IntegerField')(default=None),
+                      self.gf('django.db.models.fields.IntegerField')(default=1),
                       keep_default=False)
 
 

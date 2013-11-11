@@ -1,8 +1,9 @@
 from django.test import TestCase
-from .models import Template
+from ..models import InstanceTemplate
 
 
 class TemplateTestCase(TestCase):
     def test_template_creation(self):
-        template = Template(name='My first template',
-                            access_method='ssh', )  # TODO add images & net
+        template = InstanceTemplate(name='My first template',
+                                    access_method='ssh', )
+        # TODO add images & net

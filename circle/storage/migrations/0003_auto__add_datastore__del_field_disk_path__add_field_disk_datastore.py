@@ -21,7 +21,7 @@ class Migration(SchemaMigration):
 
         # Adding field 'Disk.datastore'
         db.add_column('storage_disk', 'datastore',
-                      self.gf('django.db.models.fields.related.ForeignKey')(default=None, to=orm['storage.DataStore']),
+                      self.gf('django.db.models.fields.related.ForeignKey')(default=1, to=orm['storage.DataStore']),
                       keep_default=False)
 
 
