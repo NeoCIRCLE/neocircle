@@ -10,9 +10,10 @@ from django.core import signing
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.http import HttpResponse
 from django.shortcuts import redirect
-from django.utils.translation import ugettext_lazy as _
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import TemplateView, DetailView, View
+from django.contrib import messages
+from django.utils.translation import ugettext as _
 
 from django_tables2 import SingleTableView
 
@@ -223,6 +224,7 @@ class VmCreate(TemplateView):
             inst.deploy_async()
 
             resp['pk'] = inst.pk
+            messages.success(request, _('VM successfully created!'))
         except InstanceTemplate.DoesNotExist:
             resp['error'] = True
         except:
@@ -240,11 +242,15 @@ def delete_vm(request, **kwargs):
     vm_pk = kwargs['pk']
 
     vm = Instance.objects.get(pk=vm_pk)
-    print vm
     vm.destroy_async()
 
+    success_message = _("VM successfully deleted!")
     if request.is_ajax():
-        return HttpResponse("ok")
+        return HttpResponse(
+            json.dumps({'message': success_message}),
+            content_type="application/json",
+        )
     else:
+        messages.success(request, success_message)
         next = request.GET.get('next')
         return redirect(next if next else reverse_lazy('dashboard.index'))
