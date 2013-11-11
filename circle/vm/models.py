@@ -16,10 +16,11 @@ from django.utils.translation import ugettext_lazy as _
 from model_utils.models import TimeStampedModel
 from taggit.managers import TaggableManager
 
-from common.models import ActivityModel, activitycontextimpl
+from .tasks import local_tasks, vm_tasks, net_tasks
 from firewall.models import Vlan, Host
 from storage.models import Disk
-from .tasks import local_tasks, vm_tasks, net_tasks
+from common.models import ActivityModel, activitycontextimpl
+from django.core import signing
 
 
 logger = logging.getLogger(__name__)
@@ -501,8 +502,8 @@ class Instance(VirtualMachineDescModel, TimeStampedModel):
         return {
             'name': self.vm_name,
             'vcpu': self.num_cores,
-            'memory': self.ram_size * 1024,  # convert from MiB to KiB
-            'memory_max': self.max_ram_size * 1024,  # convert from MiB to KiB
+            'memory': int(self.ram_size) * 1024,  # convert from MiB to KiB
+            'memory_max': int(self.max_ram_size) * 1024,  # convert from MiB to KiB
             'cpu_share': self.priority,
             'arch': self.arch,
             'boot_menu': self.boot_menu,
@@ -755,6 +756,12 @@ class InstanceActivity(ActivityModel):
     instance = ForeignKey(Instance, related_name='activity_log',
                           help_text=_('Instance this activity works on.'),
                           verbose_name=_('instance'))
+
+    def __unicode__(self):
+        if self.parent:
+            return self.parent.activity_code + "(" + self.instance.name + ")" + "->" + self.activity_code
+        else:
+            return self.activity_code + "(" + self.instance.name + ")"
 
     @classmethod
     def create(cls, code_suffix, instance, task_uuid=None, user=None):
