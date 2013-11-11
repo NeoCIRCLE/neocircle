@@ -22,7 +22,6 @@
   </head>
 
   <body>
-
     <div class="navbar navbar-inverse navbar-fixed-top">
       <a class="navbar-brand" href="/dashboard/">{% block header-site %}CIRCLE{% endblock %}</a>
       <!-- temporarily -->
@@ -30,15 +29,26 @@
     </div>
 
     <div class="container">
-{% block content %}
-      <h1 class="alert alert-error">Please override "content" block.</h1>
-{% endblock %}
+      {% block messages %}
+      {% if messages %}
+      <div class="messagelist">
+      {% for message in messages %}
+      <div class="alert
+          {% if message.tags %} alert-{% if message.tags == "error" %}danger{% else %}{{ message.tags }}{% endif %}{% endif %}">
+          {{ message }}
+      </div>
+      {% endfor %}
+      </div>
+      {% endif %}
+      {% endblock messages %}
+      {% block content %}
+        <h1 class="alert alert-error">Please override "content" block.</h1>
+      {% endblock %}
       <hr />
       <footer>
         <p>&copy; Company 2013</p>
       </footer>
     </div> <!-- /container -->
-
   </body>
 {% block extra_js %}
 {% endblock %}
