@@ -229,6 +229,7 @@ THIRD_PARTY_APPS = (
 
 # Apps specific for this project go here.
 LOCAL_APPS = (
+    'common',
     'vm',
     'storage',
     'firewall',
@@ -305,11 +306,5 @@ VM_ACCESS_PROTOCOLS = loads(get_env_variable('DJANGO_VM_ACCESS_PROTOCOLS',
                                                  "ssh": ["SSH", 22, "tcp"]}'''))
 VM_SCHEDULER = 'manager.scheduler'
 
-from datetime import timedelta
 
-CELERYBEAT_SCHEDULE = {
-    'blabla': {
-        'task': 'firewall.tasks.local_tasks.periodic_task',
-        'schedule': timedelta(seconds=5),
-    },
-}
+BROKER_URL=get_env_variable('AMQP_URI')
