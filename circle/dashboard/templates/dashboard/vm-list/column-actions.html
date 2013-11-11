@@ -4,6 +4,6 @@
   <ul class="dropdown-menu" role="menu">
     <li><a href="#"><i class="icon-refresh"></i> Reboot</a></li>
     <li><a href="#"><i class="icon-off"></i> Shutdown</a></li>
-    <li><a href="#"><i class="icon-remove"></i> Discard</a></li>
+    <li><a class="real-link" href="{% url "dashboard.views.delete-vm" pk=record.pk %}?next={{ request.path }}"><i class="icon-remove"></i> Discard</a></li>
   </ul>
 </div>

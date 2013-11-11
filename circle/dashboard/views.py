@@ -254,3 +254,24 @@ def delete_vm(request, **kwargs):
         messages.success(request, success_message)
         next = request.GET.get('next')
         return redirect(next if next else reverse_lazy('dashboard.index'))
+
+
+def mass_delete_vm(request, **kwargs):
+    vms = request.POST.getlist('vms')
+    names = []
+    if vms is not None:
+        for i in Instance.objects.filter(pk__in=vms):
+            i.destroy_async()
+            names.append(i.name)
+
+    success_message = _("Mass delete complete, the following VMs were " +
+                        "deleted: %s" % u', '.join(names))
+
+    # we can get this only via AJAX ...
+    if request.is_ajax():
+        return HttpResponse(
+            json.dumps({'message': success_message}),
+            content_type="application/json"
+        )
+    else:
+        print "wat"
