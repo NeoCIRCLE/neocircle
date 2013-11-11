@@ -1,3 +1,17 @@
+from os import getenv
+import json
+import logging
+import re
+
+from django.contrib.auth.models import User, Group
+from django.contrib.messages import warning
+from django.core import signing
+from django.core.exceptions import PermissionDenied
+from django.core.urlresolvers import reverse
+from django.shortcuts import redirect
+from django.utils.translation import ugettext_lazy as _
+from django.views.generic import TemplateView, DetailView, View
+from django.views.generic.detail import SingleObjectMixin
 from django.http import HttpResponse
 from django.views.generic import TemplateView, DetailView
 from django.core.urlresolvers import reverse_lazy
@@ -6,13 +20,12 @@ from django.shortcuts import redirect
 from django_tables2 import SingleTableView
 from tables import VmListTable
 
+from .tables import VmListTable
 from vm.models import Instance, InstanceTemplate, InterfaceTemplate
 from firewall.models import Vlan
 from storage.models import Disk
-from django.core import signing
-from os import getenv
 
-import json
+logger = logging.getLogger(__name__)
 
 
 class IndexView(TemplateView):
@@ -40,12 +53,22 @@ class IndexView(TemplateView):
         return context
 
 
+def get_acl_data(obj):
+    levels = obj.ACL_LEVELS
+    users = obj.get_users_with_level()
+    users = [{'user': u, 'level': l} for u, l in users]
+    groups = obj.get_groups_with_level()
+    groups = [{'group': g, 'level': l} for g, l in groups]
+    return {'users': users, 'groups': groups, 'levels': levels,
+            'url': reverse('dashboard.views.vm-acl', args=[obj.pk])}
+
+
 class VmDetailView(DetailView):
     template_name = "dashboard/vm-detail.html"
-    queryset = Instance.objects.all()
+    model = Instance
 
     def get_context_data(self, **kwargs):
-        context = super(DetailView, self).get_context_data(**kwargs)
+        context = super(VmDetailView, self).get_context_data(**kwargs)
         instance = context['instance']
         if instance.node:
             port = instance.vnc_port
@@ -56,7 +79,53 @@ class VmDetailView(DetailView):
             context.update({
                 'vnc_url': '%s' % value
             })
+        context['acl'] = get_acl_data(instance)
         return context
+
+
+class AclUpdateView(View, SingleObjectMixin):
+
+    def post(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if not (instance.has_level(request.user, "owner") or
+                getattr(instance, 'owner', None) == request.user):
+            logger.warning('Tried to set permissions of %s by non-owner %s.',
+                           unicode(instance), unicode(request.user))
+            raise PermissionDenied()
+        self.set_levels(request, instance)
+        self.add_levels(request, instance)
+        return redirect(instance)
+
+    def set_levels(self, request, instance):
+        for key, value in request.POST.items():
+            m = re.match('perm-([ug])-(\d+)', key)
+            if m:
+                type, id = m.groups()
+                entity = {'u': User, 'g': Group}[type].objects.get(id=id)
+                instance.set_level(entity, value)
+                logger.info("Set %s's acl level for %s to %s by %s.",
+                            unicode(entity), unicode(instance),
+                            value, unicode(request.user))
+
+    def add_levels(self, request, instance):
+        name = request.POST['perm-new-name']
+        value = request.POST['perm-new']
+        if not name:
+            return
+        try:
+            entity = User.objects.get(username=name)
+        except User.DoesNotExist:
+            entity = None
+            try:
+                entity = Group.objects.get(name=name)
+            except Group.DoesNotExist:
+                warning(request, _('User or group "%s" not found.') % name)
+                return
+
+        instance.set_level(entity, value)
+        logger.info("Set %s's new acl level for %s to %s by %s.",
+                    unicode(entity), unicode(instance),
+                    value, unicode(request.user))
 
 
 class TemplateDetail(DetailView):
@@ -133,9 +202,9 @@ class VmCreate(TemplateView):
         resp = {}
         try:
             ikwargs = {
-                'num_cores': request.POST.get('cpu-count'),
-                'ram_size': request.POST.get('ram-size'),
-                'priority': request.POST.get('cpu-priority'),
+                'num_cores': int(request.POST.get('cpu-count')),
+                'ram_size': int(request.POST.get('ram-size')),
+                'priority': int(request.POST.get('cpu-priority')),
                 'disks': Disk.objects.filter(
                     pk__in=request.POST.getlist('disks'))
             }

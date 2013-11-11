@@ -1,11 +1,12 @@
 """Common settings and globals."""
 
-
+from datetime import timedelta
 from os import environ
 from os.path import abspath, basename, dirname, join, normpath
 from json import loads
 # from socket import SOCK_STREAM
 from sys import path
+
 
 # Normally you should not import ANYTHING from Django directly
 # into your settings, but ImproperlyConfigured is an exception.
@@ -229,12 +230,14 @@ THIRD_PARTY_APPS = (
 
 # Apps specific for this project go here.
 LOCAL_APPS = (
+    'common',
     'vm',
     'storage',
     'firewall',
     'network',
     'dashboard',
     'manager',
+    'acl',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -305,8 +308,9 @@ VM_ACCESS_PROTOCOLS = loads(get_env_variable('DJANGO_VM_ACCESS_PROTOCOLS',
                                                  "ssh": ["SSH", 22, "tcp"]}'''))
 VM_SCHEDULER = 'manager.scheduler'
 
-from datetime import timedelta
+BROKER_URL = get_env_variable('AMQP_URI')
 
+# Set up periodic firewall tasks
 CELERYBEAT_SCHEDULE = {
     'blabla': {
         'task': 'firewall.tasks.local_tasks.periodic_task',

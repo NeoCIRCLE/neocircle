@@ -815,7 +815,7 @@ class Blacklist(models.Model):
 
 
 def send_task(sender, instance, created=False, **kwargs):
-    reloadtask.apply_async(args=[sender.__name__])
+    reloadtask.apply_async(queue='localhost.man', args=[sender.__name__])
 
 
 for sender in [Host, Rule, Domain, Record, Vlan, Firewall, Group, Blacklist,

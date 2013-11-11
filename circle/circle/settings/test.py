@@ -16,3 +16,9 @@ DATABASES = {
         "PORT": "",
     },
 }
+SOUTH_TESTS_MIGRATE = False
+
+
+INSTALLED_APPS += (
+    'acl.tests',
+)

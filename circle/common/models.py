@@ -32,6 +32,12 @@ class ActivityModel(TimeStampedModel):
     result = TextField(verbose_name=_('result'), blank=True, null=True,
                        help_text=_('Human readable result of activity.'))
 
+    def __unicode__(self):
+        if self.parent:
+            return self.parent.activity_code + "->" + self.activity_code
+        else:
+            return self.activity_code
+
     class Meta:
         abstract = True
 
