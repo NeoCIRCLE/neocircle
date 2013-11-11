@@ -133,9 +133,9 @@ class VmCreate(TemplateView):
         resp = {}
         try:
             ikwargs = {
-                'num_cores': request.POST.get('cpu-count'),
-                'ram_size': request.POST.get('ram-size'),
-                'priority': request.POST.get('cpu-priority'),
+                'num_cores': int(request.POST.get('cpu-count')),
+                'ram_size': int(request.POST.get('ram-size')),
+                'priority': int(request.POST.get('cpu-priority')),
                 'disks': Disk.objects.filter(
                     pk__in=request.POST.getlist('disks'))
             }
