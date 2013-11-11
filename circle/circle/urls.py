@@ -2,6 +2,8 @@ from django.conf.urls import patterns, include, url
 # from django.views.generic import TemplateView
 
 from django.contrib import admin
+from django.contrib.auth.views import login
+
 admin.autodiscover()
 
 urlpatterns = patterns(
@@ -17,5 +19,6 @@ urlpatterns = patterns(
     url(r'^admin/', include(admin.site.urls)),
     url(r'^network/', include('network.urls')),
     url(r'^dashboard/', include('dashboard.urls')),
+    url(r'^login/', login),
     url(r'^vm-api/', include('vm.urls')),
 )
