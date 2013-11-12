@@ -10,6 +10,7 @@ from django.core import signing
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.http import HttpResponse
 from django.shortcuts import redirect
+from django.views.decorators.http import require_POST
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import TemplateView, DetailView, View
 from django.contrib import messages
@@ -238,10 +239,13 @@ class VmCreate(TemplateView):
             return redirect(reverse_lazy('dashboard.views.detail', resp))
 
 
+@require_POST
 def delete_vm(request, **kwargs):
     vm_pk = kwargs['pk']
 
     vm = Instance.objects.get(pk=vm_pk)
+    if not vm.has_level(request.user, 'owner'):
+        raise PermissionDenied()
     vm.destroy_async()
 
     success_message = _("VM successfully deleted!")
@@ -256,11 +260,18 @@ def delete_vm(request, **kwargs):
         return redirect(next if next else reverse_lazy('dashboard.index'))
 
 
+@require_POST
 def mass_delete_vm(request, **kwargs):
     vms = request.POST.getlist('vms')
     names = []
     if vms is not None:
         for i in Instance.objects.filter(pk__in=vms):
+            if not i.has_level(request.user, 'owner'):
+                logger.info('Tried to delete instance #%d without owner '
+                            'permission by %s.', i.pk, unicode(request.user))
+                raise PermissionDenied()  # no need for rollback or proper
+                                          # error message, this can't
+                                          # normally happen.
             i.destroy_async()
             names.append(i.name)
 
@@ -274,4 +285,6 @@ def mass_delete_vm(request, **kwargs):
             content_type="application/json"
         )
     else:
-        print "wat"
+        messages.success(request, success_message)
+        next = request.GET.get('next')
+        return redirect(next if next else reverse_lazy('dashboard.index'))
