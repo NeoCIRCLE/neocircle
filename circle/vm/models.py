@@ -772,6 +772,9 @@ class InstanceActivity(ActivityModel):
             return '{}({})'.format(self.activity_code,
                                    self.instance)
 
+    def get_readable_name(self):
+        return self.activity_code.split('.')[-1].replace('_', ' ').capitalize()
+
     @classmethod
     def create(cls, code_suffix, instance, task_uuid=None, user=None):
         act = cls(activity_code='vm.Instance.' + code_suffix,
