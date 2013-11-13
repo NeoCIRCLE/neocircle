@@ -760,6 +760,9 @@ class InstanceActivity(ActivityModel):
                           help_text=_('Instance this activity works on.'),
                           verbose_name=_('instance'))
 
+    class Meta:
+        ordering = ['-started', 'instance', '-id']
+
     def __unicode__(self):
         if self.parent:
             return '{}({})->{}'.format(self.parent.activity_code,
