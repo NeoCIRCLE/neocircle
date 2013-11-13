@@ -1344,7 +1344,7 @@
   "pk": 1, 
   "model": "vm.instance", 
   "fields": {
-    "destoryed": null, 
+    "destroyed": null, 
     "disks": [
       1
     ], 
