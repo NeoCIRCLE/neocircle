@@ -1,5 +1,6 @@
 from ..models import method_cache
 
+
 class TestClass(object):
     id = None
     called = 0
