@@ -8,11 +8,11 @@ from django.contrib.messages import warning
 from django.core.exceptions import PermissionDenied
 from django.core import signing
 from django.core.urlresolvers import reverse, reverse_lazy
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.views.decorators.http import require_POST
 from django.views.generic.detail import SingleObjectMixin
-from django.views.generic import TemplateView, DetailView, View
+from django.views.generic import TemplateView, DetailView, View, DeleteView
 from django.contrib import messages
 from django.utils.translation import ugettext as _
 
@@ -239,25 +239,41 @@ class VmCreate(TemplateView):
             return redirect(reverse_lazy('dashboard.views.detail', resp))
 
 
-@require_POST
-def delete_vm(request, **kwargs):
-    vm_pk = kwargs['pk']
+class VmDelete(DeleteView):
+    model = Instance
+    template_name = "dashboard/confirm/base_delete.html"
 
-    vm = Instance.objects.get(pk=vm_pk)
-    if not vm.has_level(request.user, 'owner'):
-        raise PermissionDenied()
-    vm.destroy_async()
+    def get_context_data(self, **kwargs):
+        # this is redundant now, but if we wanna add more to print
+        # we'll need this
+        context = super(VmDelete, self).get_context_data(**kwargs)
+        return context
 
-    success_message = _("VM successfully deleted!")
-    if request.is_ajax():
-        return HttpResponse(
-            json.dumps({'message': success_message}),
-            content_type="application/json",
-        )
-    else:
-        messages.success(request, success_message)
-        next = request.GET.get('next')
-        return redirect(next if next else reverse_lazy('dashboard.index'))
+    # github.com/django/django/blob/master/django/views/generic/edit.py#L245
+    def delete(self, request, *args, **kwargs):
+        object = self.get_object()
+        if not object.has_level(request.user, 'owner'):
+            raise PermissionDenied()
+
+        object.destroy_async()
+        success_url = self.get_success_url()
+        success_message = _("VM successfully deleted!")
+
+        if request.is_ajax():
+            return HttpResponse(
+                json.dumps({'message': success_message}),
+                content_type="application/json",
+            )
+        else:
+            messages.success(request, success_message)
+            return HttpResponseRedirect(success_url)
+
+    def get_success_url(self):
+        next = self.request.POST.get('next')
+        if next:
+            return next
+        else:
+            return reverse_lazy('dashboard.index')
 
 
 @require_POST
