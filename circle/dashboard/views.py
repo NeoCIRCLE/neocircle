@@ -95,8 +95,6 @@ class VmDetailView(CheckedDetailView):
             instance=self.object, parent=None
         ).order_by('-started').select_related()
         context['activity'] = ia
-        for i in ia[0].instanceactivity_set.all():
-            print i
         context['acl'] = get_acl_data(instance)
         return context
 
