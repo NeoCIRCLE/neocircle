@@ -335,7 +335,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                             help_text=_("TCP port where VNC console listens."),
                             unique=True, verbose_name=_('vnc_port'))
     owner = ForeignKey(User)
-    destoryed = DateTimeField(blank=True, null=True,
+    destroyed = DateTimeField(blank=True, null=True,
                               help_text=_("The virtual machine's time of "
                                           "destruction."))
 
@@ -633,7 +633,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
             self.node = None
             self.vnc_port = None
 
-            self.destoryed = timezone.now()
+            self.destroyed = timezone.now()
             self.save()
 
     def destroy_async(self, user=None):
