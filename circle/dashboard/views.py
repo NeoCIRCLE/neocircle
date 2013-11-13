@@ -19,7 +19,8 @@ from django.utils.translation import ugettext as _
 from django_tables2 import SingleTableView
 
 from .tables import VmListTable
-from vm.models import Instance, InstanceTemplate, InterfaceTemplate
+from vm.models import (Instance, InstanceTemplate, InterfaceTemplate,
+                       InstanceActivity)
 from firewall.models import Vlan
 from storage.models import Disk
 
@@ -88,6 +89,14 @@ class VmDetailView(CheckedDetailView):
             context.update({
                 'vnc_url': '%s' % value
             })
+
+        # activity data
+        ia = InstanceActivity.objects.filter(
+            instance=self.object, parent=None
+        ).order_by('-started').select_related()
+        context['activity'] = ia
+        for i in ia[0].instanceactivity_set.all():
+            print i
         context['acl'] = get_acl_data(instance)
         return context
 
