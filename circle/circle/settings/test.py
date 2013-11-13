@@ -22,3 +22,9 @@ SOUTH_TESTS_MIGRATE = False
 INSTALLED_APPS += (
     'acl.tests',
 )
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache'
+    }
+}

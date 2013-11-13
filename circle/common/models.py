@@ -1,7 +1,12 @@
+from hashlib import sha224
+from time import time
+
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.db.models import (CharField, DateTimeField, ForeignKey, TextField)
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
+
 from model_utils.models import TimeStampedModel
 
 
@@ -46,3 +51,62 @@ class ActivityModel(TimeStampedModel):
             self.finished = timezone.now()
             self.result = result
             self.save()
+
+
+def method_cache(memcached_seconds=60, instance_seconds=5):  # noqa
+    """Cache return value of decorated method to memcached and memory.
+
+    :param memcached_seconds: Invalidate memcached results after this time.
+    :param instance_seconds: Invalidate results cached to static memory after
+    this time.
+
+    If a result is cached on instance, return that first.  If that fails, check
+    memcached. If all else fails, run the method and cache on instance and in
+    memcached.
+
+    Do not use for methods with side effects.
+    Instances are hashed by their id attribute, args by their unicode
+    representation.
+
+    ** NOTE: Methods that return None are always "recached".
+    Based on https://djangosnippets.org/snippets/2477/
+    """
+
+    def inner_cache(method):
+
+        def get_key(instance, *args, **kwargs):
+            return sha224(unicode(method.__module__) +
+                          unicode(method.__name__) +
+                          unicode(instance.id) +
+                          unicode(args) +
+                          unicode(kwargs)).hexdigest()
+
+        def x(instance, *args, **kwargs):
+            invalidate = kwargs.pop('invalidate_cache', False)
+            now = time()
+            key = get_key(instance, *args, **kwargs)
+
+            result = None
+            try:
+                vals = getattr(instance, key)
+            except AttributeError:
+                pass
+            else:
+                if vals['time'] + instance_seconds > now:
+                    # has valid on class cache, return that
+                    result = vals['value']
+
+            if result is None:
+                result = cache.get(key)
+
+            if invalidate or (result is None):
+                # all caches failed, call the actual method
+                result = method(instance, *args, **kwargs)
+                # save to memcache and class attr
+                cache.set(key, result, memcached_seconds)
+                setattr(instance, key, {'time': now, 'value': result})
+
+            return result
+        return x
+
+    return inner_cache
