@@ -763,11 +763,11 @@ class InstanceActivity(ActivityModel):
     def __unicode__(self):
         if self.parent:
             return '{}({})->{}'.format(self.parent.activity_code,
-                                       self.instance.name,
+                                       self.instance,
                                        self.activity_code)
         else:
             return '{}({})'.format(self.activity_code,
-                                   self.instance.name)
+                                   self.instance)
 
     @classmethod
     def create(cls, code_suffix, instance, task_uuid=None, user=None):
