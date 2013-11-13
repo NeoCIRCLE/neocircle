@@ -119,7 +119,6 @@ class AclBase(Model):
         else:
             if isinstance(level, basestring):
                 level = self.get_level_object(level)
-            #self.object_level_set.get_or_create(level=level, content_object=self)
             if not self.object_level_set.filter(level_id=level.pk).exists():
                 self.object_level_set.create(level=level)
             pk = level.pk
