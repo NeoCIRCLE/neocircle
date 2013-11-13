@@ -133,3 +133,17 @@ class AclUserTest(TestCase):
         i1 = TestModel.objects.create(normal_field='Hello')
         i1.set_level(self.g1, 'bravo')
         unicode(ObjectLevel.objects.all()[0])
+
+    def test_set_user_level_none(self):
+        i = TestModel.objects.create(normal_field='Hello')
+        i.set_level(self.u1, 'alfa')
+        self.assertTrue(i.has_level(self.u1, 'alfa'))
+        i.set_level(self.u1, None)
+        self.assertFalse(i.has_level(self.u1, 'alfa'))
+
+    def test_set_group_level_none(self):
+        i = TestModel.objects.create(normal_field='Hello')
+        i.set_level(self.g1, 'alfa')
+        self.assertTrue(i.has_level(self.u1, 'alfa'))
+        i.set_level(self.g1, None)
+        self.assertFalse(i.has_level(self.u1, 'alfa'))

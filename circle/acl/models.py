@@ -67,8 +67,8 @@ class AclBase(Model):
 
         :param whom: user or group the level is set for
         :type whom: User or Group
-        :param level: codename of level to set
-        :type level: Level or str or unicode
+        :param level: codename of level to set, or None
+        :type level: Level or str or unicode or NoneType
         """
         if isinstance(whom, User):
             self.set_user_level(whom, level)
@@ -83,17 +83,21 @@ class AclBase(Model):
 
         :param whom: user the level is set for
         :type whom: User
-        :param level: codename of level to set
-        :type level: Level or str or unicode
+        :param level: codename of level to set, or None
+        :type level: Level or str or unicode or NoneType
         """
         logger.info('%s.set_user_level(%s, %s) called',
                     *[unicode(p) for p in [self, user, level]])
-        if isinstance(level, basestring):
-            level = self.get_level_object(level)
-        if not self.object_level_set.filter(level_id=level.pk).exists():
-            self.object_level_set.create(level=level)
+        if level is None:
+            pk = None
+        else:
+            if isinstance(level, basestring):
+                level = self.get_level_object(level)
+            if not self.object_level_set.filter(level_id=level.pk).exists():
+                self.object_level_set.create(level=level)
+            pk = level.pk
         for i in self.object_level_set.all():
-            if i.level_id != level.pk:
+            if i.level_id != pk:
                 i.users.remove(user)
             else:
                 i.users.add(user)
@@ -110,13 +114,17 @@ class AclBase(Model):
         """
         logger.info('%s.set_group_level(%s, %s) called',
                     *[unicode(p) for p in [self, group, level]])
-        if isinstance(level, basestring):
-            level = self.get_level_object(level)
-        #self.object_level_set.get_or_create(level=level, content_object=self)
-        if not self.object_level_set.filter(level_id=level.pk).exists():
-            self.object_level_set.create(level=level)
+        if level is None:
+            pk = None
+        else:
+            if isinstance(level, basestring):
+                level = self.get_level_object(level)
+            #self.object_level_set.get_or_create(level=level, content_object=self)
+            if not self.object_level_set.filter(level_id=level.pk).exists():
+                self.object_level_set.create(level=level)
+            pk = level.pk
         for i in self.object_level_set.all():
-            if i.level_id != level.pk:
+            if i.level_id != pk:
                 i.groups.remove(group)
             else:
                 i.groups.add(group)
