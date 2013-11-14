@@ -63,6 +63,16 @@ function refreshSliders() {
   });
 }
 
+function addMessage(text, type) {
+  div = '<div style="display: none;" class="alert alert-' + type + '">' + text + '</div>';
+  $('.messagelist').html('').append(div);
+  $('.messagelist div').fadeIn();
+}
+
+
+function addConfirmationModal(text, func) {
+
+}
 
 // for AJAX calls
 /**                                                                         

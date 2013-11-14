@@ -30,16 +30,16 @@
 
     <div class="container">
       {% block messages %}
-      {% if messages %}
       <div class="messagelist">
+      {% if messages %}
       {% for message in messages %}
       <div class="alert
           {% if message.tags %} alert-{% if message.tags == "error" %}danger{% else %}{{ message.tags }}{% endif %}{% endif %}">
           {{ message }}
       </div>
       {% endfor %}
-      </div>
       {% endif %}
+      </div>
       {% endblock messages %}
       {% block content %}
         <h1 class="alert alert-error">Please override "content" block.</h1>

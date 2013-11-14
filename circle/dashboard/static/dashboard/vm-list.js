@@ -101,13 +101,14 @@ $(function() {
             // reset group buttons
             selected = []
             $('.vm-list-group-control .btn').attr('disabled', true);
+            addMessage(data['message'], 'success');      
           });
-          console.log(data);
       },
       error: function(xhr, textStatus, error) {
         // TODO this
       }
     });
+    return false;
   });
 });
 

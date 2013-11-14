@@ -299,7 +299,7 @@ def mass_delete_vm(request, **kwargs):
             names.append(i.name)
 
     success_message = _("Mass delete complete, the following VMs were " +
-                        "deleted: %s" % u', '.join(names))
+                        "deleted: %s!" % u', '.join(names))
 
     # we can get this only via AJAX ...
     if request.is_ajax():
