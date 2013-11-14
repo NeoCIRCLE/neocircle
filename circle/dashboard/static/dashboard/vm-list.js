@@ -46,12 +46,12 @@ $(function() {
     $('.vm-list-table tbody tr .btn').attr('disabled', false);
     // show/hide group controls
     if(selected.length > 1) {
-      $('.vm-list-group-control .btn').attr('disabled', false);
+      $('.vm-list-group-control a').attr('disabled', false);
       for(var i = 0; i < selected.length; i++) {
         $('.vm-list-table tbody tr').eq(selected[i]).find('.btn').attr('disabled', true);
       }
     } else {
-      $('.vm-list-group-control .btn').attr('disabled', true);
+      $('.vm-list-group-control a').attr('disabled', true);
     }
     return false;
   });
@@ -86,7 +86,20 @@ $(function() {
   });
 
   /* group actions */
-  
+
+  /* select all */
+  $('#vm-list-group-select-all').click(function() {
+    $('.vm-list-table tbody tr').each(function() {
+      var index = $(this).index();
+      if(selected.indexOf(index) < 0) {
+        selected.push(index);
+        $(this).addClass('vm-list-selected');
+      }
+    });
+    console.log(selected);
+    return false;
+  });
+
   /* mass vm delete */
   $('#vm-list-group-delete').click(function() {
     $.ajax({
@@ -100,7 +113,8 @@ $(function() {
           $('.vm-list-table tbody tr').eq(selected[i]).fadeOut(500, function() {  
             // reset group buttons
             selected = []
-            $('.vm-list-group-control .btn').attr('disabled', true);
+            $('.vm-list-group-control a').attr('disabled', true);
+            $(this).remove();
             addMessage(data['message'], 'success');      
           });
       },
