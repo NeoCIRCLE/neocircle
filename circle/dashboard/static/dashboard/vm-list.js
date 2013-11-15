@@ -1,9 +1,9 @@
-$(function() {
-  var ctrlDown, shiftDown = false;
-  var ctrlKey = 17;
-  var shiftKey = 16;
-  var selected = [];
+var ctrlDown, shiftDown = false;
+var ctrlKey = 17;
+var shiftKey = 16;
+var selected = [];
 
+$(function() {
   $(document).keydown(function(e) {
     if (e.keyCode == ctrlKey) ctrlDown = true;
     if (e.keyCode == shiftKey) shiftDown = true;
@@ -96,32 +96,16 @@ $(function() {
         $(this).addClass('vm-list-selected');
       }
     });
-    console.log(selected);
+    if(selected.length > 0)
+      $('.vm-list-group-control a').attr('disabled', false);
     return false;
   });
 
   /* mass vm delete */
   $('#vm-list-group-delete').click(function() {
-    $.ajax({
-      traditional: true,
-      url: '/dashboard/vm/mass-delete/',
-      headers: {"X-CSRFToken": getCookie('csrftoken')},
-      type: 'POST',
-      data: {'vms': collectIds(selected)},
-      success: function(data, textStatus, xhr) {
-        for(var i=0; i< selected.length; i++)
-          $('.vm-list-table tbody tr').eq(selected[i]).fadeOut(500, function() {  
-            // reset group buttons
-            selected = []
-            $('.vm-list-group-control a').attr('disabled', true);
-            $(this).remove();
-            addMessage(data['message'], 'success');      
-          });
-      },
-      error: function(xhr, textStatus, error) {
-        // TODO this
-      }
-    });
+    text = "Are you sure you want to delete the selected VMs?";
+    random_vm_pk = $('.vm-delete').eq(0).data('vm-pk');
+    addModalConfirmation(text, random_vm_pk, massDeleteVm, false);
     return false;
   });
 });

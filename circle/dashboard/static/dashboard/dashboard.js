@@ -83,6 +83,7 @@ function deleteVm(pk, dir) {
     headers: {"X-CSRFToken": getCookie('csrftoken')}, 
     success: function(data, textStatus, xhr) { 
       if(!dir) {
+        selected = [];
         addMessage(data['message'], 'success');
         $('a[data-vm-pk="' + pk + '"]').closest('tr').fadeOut(function() {
           $(this).remove();  
@@ -95,6 +96,29 @@ function deleteVm(pk, dir) {
       addMessage('Uh oh :(', 'danger')
     }
   });
+}
+
+function massDeleteVm() {
+  $.ajax({                                                                
+      traditional: true,                                                    
+      url: '/dashboard/vm/mass-delete/',                                    
+      headers: {"X-CSRFToken": getCookie('csrftoken')},                     
+      type: 'POST',                                                         
+      data: {'vms': collectIds(selected)},                                  
+      success: function(data, textStatus, xhr) {                            
+        for(var i=0; i< selected.length; i++)                               
+          $('.vm-list-table tbody tr').eq(selected[i]).fadeOut(500, function() {
+            // reset group buttons                                          
+            selected = []                                                   
+            $('.vm-list-group-control a').attr('disabled', true);           
+            $(this).remove();                                               
+            addMessage(data['message'], 'success');                         
+          });                                                               
+      },                                                                    
+      error: function(xhr, textStatus, error) {                             
+        // TODO this                                                        
+      }                                                                     
+    });          
 }
 
 
