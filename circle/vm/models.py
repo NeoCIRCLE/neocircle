@@ -378,8 +378,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         inst.clean()
         inst.save()
         # create related entities
-        for disk in disks:
-            inst.disks.add(disk.get_exclusive())
+        inst.disks.add(*[disk.get_exclusive() for disk in disks])
 
         for net in networks:
             i = Interface.create(instance=inst, vlan=net.vlan, owner=owner,
