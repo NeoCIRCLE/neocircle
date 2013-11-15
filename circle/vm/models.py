@@ -66,6 +66,13 @@ class NamedBaseResourceConfig(BaseResourceConfigModel, TimeStampedModel):
         return self.name
 
 
+class Trait(Model):
+    name = CharField(max_length=50, verbose_name=_('name'))
+
+    def __unicode__(self):
+        return self.name
+
+
 class VirtualMachineDescModel(BaseResourceConfigModel):
     """Abstract base for virtual machine describing models.
     """
@@ -77,6 +84,11 @@ class VirtualMachineDescModel(BaseResourceConfigModel):
                                  'Show boot device selection menu on boot.'))
     raw_data = TextField(verbose_name=_('raw_data'), blank=True, help_text=_(
         'Additional libvirt domain parameters in XML format.'))
+    req_traits = ManyToManyField(Trait, blank=True,
+                                 help_text=_("A set of traits required for a "
+                                             "node to declare to be suitable "
+                                             "for hosting the VM."),
+                                 verbose_name=_("required traits"))
     tags = TaggableManager(blank=True, verbose_name=_("tags"))
 
     class Meta:
@@ -102,6 +114,9 @@ class Node(TimeStampedModel):
     enabled = BooleanField(verbose_name=_('enabled'), default=False,
                            help_text=_('Indicates whether the node can '
                                        'be used for hosting.'))
+    traits = ManyToManyField(Trait, blank=True,
+                             help_text=_("Declared traits."),
+                             verbose_name=_('traits'))
     tags = TaggableManager(blank=True, verbose_name=_("tags"))
 
     class Meta:
@@ -350,7 +365,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
     @classmethod
     def create_from_template(cls, template, owner, disks=None, networks=None,
-                             tags=None, **kwargs):
+                             req_traits=None, tags=None, **kwargs):
         """Create a new instance based on an InstanceTemplate.
 
         Can also specify parameters as keyword arguments which should override
@@ -360,6 +375,9 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
         networks = (template.interface_set.all() if networks is None
                     else networks)
+
+        req_traits = (template.req_traits.all() if req_traits is None
+                      else req_traits)
 
         tags = template.tags.all() if tags is None else tags
 
@@ -390,6 +408,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                 # TODO fix this port fw
                 i.host.add_port(proto, private=port)
 
+        inst.req_traits.add(*req_traits)
         inst.tags.add(*tags)
 
         return inst
