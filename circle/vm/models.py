@@ -382,19 +382,20 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         tags = template.tags.all() if tags is None else tags
 
         # prepare parameters
-        kwargs['template'] = template
-        kwargs['owner'] = owner
-        kwargs.setdefault('pw', pwgen())
-        ca = ['name', 'description', 'num_cores', 'ram_size', 'max_ram_size',
-              'arch', 'priority', 'boot_menu', 'raw_data', 'lease',
-              'access_method']
-        for attr in ca:
-            kwargs.setdefault(attr, getattr(template, attr))
+        common_fields = ['name', 'description', 'num_cores', 'ram_size',
+                         'max_ram_size', 'arch', 'priority', 'boot_menu',
+                         'raw_data', 'lease', 'access_method']
+        params = dict(template=template, owner=owner, pw=pwgen())
+        params.update([(f, getattr(template, f)) for f in common_fields])
+        params.update(kwargs)  # override defaults w/ user supplied values
+
         # create instance and do additional setup
-        inst = cls(**kwargs)
+        inst = cls(**params)
+
         # save instance
         inst.clean()
         inst.save()
+
         # create related entities
         inst.disks.add(*[disk.get_exclusive() for disk in disks])
 
