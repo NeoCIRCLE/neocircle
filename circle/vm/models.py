@@ -17,10 +17,10 @@ from model_utils.models import TimeStampedModel
 from taggit.managers import TaggableManager
 
 from .tasks import local_tasks, vm_tasks, net_tasks
+from acl.models import AclBase
+from common.models import ActivityModel, activitycontextimpl
 from firewall.models import Vlan, Host
 from storage.models import Disk
-from common.models import ActivityModel, activitycontextimpl
-from acl.models import AclBase
 
 logger = logging.getLogger(__name__)
 pwgen = User.objects.make_random_password
@@ -77,7 +77,7 @@ class VirtualMachineDescModel(BaseResourceConfigModel):
                                  'Show boot device selection menu on boot.'))
     raw_data = TextField(verbose_name=_('raw_data'), blank=True, help_text=_(
         'Additional libvirt domain parameters in XML format.'))
-    tags = TaggableManager()
+    tags = TaggableManager(blank=True, verbose_name=_("tags"))
 
     class Meta:
         abstract = True
@@ -102,7 +102,7 @@ class Node(TimeStampedModel):
     enabled = BooleanField(verbose_name=_('enabled'), default=False,
                            help_text=_('Indicates whether the node can '
                                        'be used for hosting.'))
-    tags = TaggableManager()
+    tags = TaggableManager(blank=True, verbose_name=_("tags"))
 
     class Meta:
         permissions = ()
@@ -350,7 +350,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
     @classmethod
     def create_from_template(cls, template, owner, disks=None, networks=None,
-                             **kwargs):
+                             tags=None, **kwargs):
         """Create a new instance based on an InstanceTemplate.
 
         Can also specify parameters as keyword arguments which should override
@@ -360,6 +360,8 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
         networks = (template.interface_set.all() if networks is None
                     else networks)
+
+        tags = template.tags.all() if tags is None else tags
 
         # prepare parameters
         kwargs['template'] = template
@@ -388,6 +390,8 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                 port, proto = ACCESS_PROTOCOLS[i.instance.access_method][1:3]
                 # TODO fix this port fw
                 i.host.add_port(proto, private=port)
+
+        inst.tags.add(*tags)
 
         return inst
 
