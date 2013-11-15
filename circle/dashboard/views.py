@@ -248,7 +248,13 @@ class VmCreate(TemplateView):
 
 class VmDelete(DeleteView):
     model = Instance
-    template_name = "dashboard/confirm/base_delete.html"
+    template_name = "dashboard/confirm/base-delete.html"
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/confirm/ajax-delete.html']
+        else:
+            return ['dashboard/confirm/base-delete.html']
 
     def get_context_data(self, **kwargs):
         # this is redundant now, but if we wanna add more to print
@@ -267,6 +273,8 @@ class VmDelete(DeleteView):
         success_message = _("VM successfully deleted!")
 
         if request.is_ajax():
+            if request.POST.get('redirect').lower() == "true":
+                messages.success(request, success_message)
             return HttpResponse(
                 json.dumps({'message': success_message}),
                 content_type="application/json",

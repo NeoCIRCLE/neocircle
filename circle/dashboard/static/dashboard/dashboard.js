@@ -39,6 +39,15 @@ $(function () {
     $("a[href=" + window.location.hash +"]").tab('show');
 
   addSliderMiscs();
+
+  /* for VM removes buttons */
+  $('.vm-delete').click(function() {
+    var vm_pk = $(this).data('vm-pk');
+    text = "Are you sure you want to delete this VM?";
+    var dir = window.location.pathname.indexOf('list') == -1;
+    addModalConfirmation(text, vm_pk, deleteVm, dir);
+    return false;
+  });
 });
 
 function addSliderMiscs() {
@@ -63,6 +72,32 @@ function refreshSliders() {
   });
 }
 
+/* deletes the VM with the pk
+ * if dir is true, then redirect to the dashboard landing page
+ * else it adds a success message */
+function deleteVm(pk, dir) {
+  $.ajax({
+    type: 'POST',
+    data: {'redirect': dir},
+    url: '/dashboard/vm/delete/' + pk + '/',
+    headers: {"X-CSRFToken": getCookie('csrftoken')}, 
+    success: function(data, textStatus, xhr) { 
+      if(!dir) {
+        addMessage(data['message'], 'success');
+        $('a[data-vm-pk="' + pk + '"]').closest('tr').fadeOut(function() {
+          $(this).remove();  
+        });
+      } else {
+        window.location.replace('/dashboard');
+      }
+    },
+    error: function(xhr, textStatus, error) {
+      addMessage('Uh oh :(', 'danger')
+    }
+  });
+}
+
+
 function addMessage(text, type) {
   div = '<div style="display: none;" class="alert alert-' + type + '">' + text + '</div>';
   $('.messagelist').html('').append(div);
@@ -70,8 +105,23 @@ function addMessage(text, type) {
 }
 
 
-function addConfirmationModal(text, func) {
-
+function addModalConfirmation(text, data, func, dir) {
+  $.ajax({
+    type: 'GET',
+    url: '/dashboard/vm/delete/' + data + '/',
+    data: {'text': text},
+    success: function(result) {
+      $('body').append(result);
+      $('#confirmation-modal').modal('show');
+      $('#confirmation-modal').on('hidden.bs.modal', function() {
+        $('#confirmation-modal').remove();
+      });
+      $('#confirmation-modal-button').click(function() {
+        func(data, dir);
+        $('#confirmation-modal').modal('hide');
+      });
+    }
+  });
 }
 
 // for AJAX calls
