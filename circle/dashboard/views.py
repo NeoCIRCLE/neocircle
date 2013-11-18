@@ -224,12 +224,13 @@ class VmCreate(TemplateView):
                 'priority': int(request.POST.get('cpu-priority')),
             }
 
-            networks = [{'vlan': Vlan.objects.get(pk=l), 'managed': True}
+            networks = [InterfaceTemplate(vlan=Vlan.objects.get(pk=l),
+                                          managed=True)
                         for l in request.POST.getlist('managed-vlans')
                         ]
-            networks.extend([{'vlan': Vlan.objects.get(pk=l),
-                              'managed': False}
-                             for l in request.POST.getlist('unmanaged-vlans')
+            networks.extend([InterfaceTemplate(vlan=Vlan.objects.get(pk=l),
+                                               managed=False)
+                            for l in request.POST.getlist('unmanaged-vlans')
                              ])
 
             disks = Disk.objects.filter(pk__in=request.POST.getlist('disks'))
