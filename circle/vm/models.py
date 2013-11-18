@@ -502,10 +502,11 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
     def get_connect_host(self, use_ipv6=False):
         """Get public hostname.
         """
-        if not self.firewall_host:
+        if not self.interface_set.exclude(host=None):
             return _('None')
         proto = 'ipv6' if use_ipv6 else 'ipv4'
-        return self.firewall_host.get_hostname(proto=proto)
+        return self.interface_set.exclude(host=None)[0].host.get_hostname(
+            proto=proto)
 
     def get_connect_uri(self, use_ipv6=False):
         """Get access parameters in URI format.
