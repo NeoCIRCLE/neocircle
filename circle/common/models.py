@@ -1,4 +1,5 @@
 from hashlib import sha224
+from logging import getLogger
 from time import time
 
 from django.contrib.auth.models import User
@@ -8,6 +9,8 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from model_utils.models import TimeStampedModel
+
+logger = getLogger(__name__)
 
 
 def activitycontextimpl(act):
@@ -105,6 +108,9 @@ def method_cache(memcached_seconds=60, instance_seconds=5):  # noqa
                 # save to memcache and class attr
                 cache.set(key, result, memcached_seconds)
                 setattr(instance, key, {'time': now, 'value': result})
+                logger.debug('Value of <%s>.%s(%s)=<%s> saved to cache.',
+                             unicode(instance), method.__name__,
+                             unicode(args), unicode(result))
 
             return result
         return x
