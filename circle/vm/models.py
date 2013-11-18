@@ -103,11 +103,6 @@ class Node(TimeStampedModel):
     name = CharField(max_length=50, unique=True,
                      verbose_name=_('name'),
                      help_text=_('Human readable name of node.'))
-    num_cores = IntegerField(verbose_name=_('number of cores'),
-                             help_text=_('Number of CPU threads '
-                                         'available to the virtual machines.'))
-    ram_size = IntegerField(verbose_name=_('RAM size'),
-                            help_text=_('Mebibytes of memory.'))
     priority = IntegerField(verbose_name=_('priority'),
                             help_text=_('Node usage priority.'))
     host = ForeignKey(Host, verbose_name=_('host'),
@@ -129,6 +124,20 @@ class Node(TimeStampedModel):
 
         return self.remote_query(vm_tasks.get_num_cores, timeout=1,
                                  default=False)
+
+    @property
+    @method_cache(300)
+    def num_cores(self):
+        """Number of CPU threads available to the virtual machines."""
+
+        return self.remote_query(vm_tasks.get_num_cores)
+
+    @property
+    @method_cache(300)
+    def ram_size(self):
+        """Bytes of total memory in the node."""
+
+        return self.remote_query(vm_tasks.get_ram_size)
 
     def get_remote_queue_name(self, queue_id):
         return self.host.hostname + "." + queue_id
