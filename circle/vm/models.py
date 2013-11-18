@@ -122,7 +122,7 @@ class Node(TimeStampedModel):
     @method_cache(10, 5)
     def online(self):
 
-        return self.remote_query(vm_tasks.get_num_cores, timeout=1,
+        return self.remote_query(vm_tasks.get_core_num, timeout=1,
                                  default=False)
 
     @property
@@ -130,7 +130,7 @@ class Node(TimeStampedModel):
     def num_cores(self):
         """Number of CPU threads available to the virtual machines."""
 
-        return self.remote_query(vm_tasks.get_num_cores)
+        return self.remote_query(vm_tasks.get_core_num)
 
     @property
     @method_cache(300)
