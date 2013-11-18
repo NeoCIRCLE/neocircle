@@ -244,7 +244,8 @@ class VmCreate(TemplateView):
             messages.success(request, _('VM successfully created!'))
         except InstanceTemplate.DoesNotExist:
             resp['error'] = True
-        except:
+        except Exception, e:
+            print e
             resp['error'] = True
 
         if request.is_ajax():
