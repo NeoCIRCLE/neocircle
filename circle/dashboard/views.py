@@ -221,14 +221,23 @@ class VmCreate(TemplateView):
                 'num_cores': int(request.POST.get('cpu-count')),
                 'ram_size': int(request.POST.get('ram-size')),
                 'priority': int(request.POST.get('cpu-priority')),
-                'disks': Disk.objects.filter(
-                    pk__in=request.POST.getlist('disks'))
             }
 
+            networks = [{'vlan': Vlan.objects.get(pk=l), 'managed': True}
+                        for l in request.POST.getlist('managed-vlans')
+                        ]
+            networks.extend([{'vlan': Vlan.objects.get(pk=l),
+                              'managed': False}
+                             for l in request.POST.getlist('unmanaged-vlans')
+                             ])
+
+            disks = Disk.objects.filter(pk__in=request.POST.getlist('disks'))
             template = InstanceTemplate.objects.get(
                 pk=request.POST.get('template-pk'))
+
             inst = Instance.create_from_template(template=template,
-                                                 owner=user, **ikwargs)
+                                                 owner=user, networks=networks,
+                                                 disks=disks, **ikwargs)
             inst.deploy_async()
 
             resp['pk'] = inst.pk
