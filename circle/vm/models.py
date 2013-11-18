@@ -126,15 +126,27 @@ class Node(TimeStampedModel):
     @property
     @method_cache(10, 5)
     def online(self):
-        r = vm_tasks.ping.apply_async(queue=self.get_remote_queue_name('vm'),
-                                      expires=3)
-        try:
-            return r.get(timeout=2)
-        except TimeoutError:
-            return False
+
+        return self.remote_query(vm_tasks.get_num_cores, timeout=1,
+                                 default=False)
 
     def get_remote_queue_name(self, queue_id):
         return self.host.hostname + "." + queue_id
+
+    def remote_query(self, task, timeout=2, raise_=False, default=None):
+        """Query the given task, and get the result.
+
+        If the result is not ready in timeout secs, return default value or
+        raise a TimeoutError."""
+        r = task.apply_async(
+            queue=self.get_remote_queue_name('vm'), expires=timeout + 1)
+        try:
+            return r.get(timeout=timeout)
+        except TimeoutError:
+            if raise_:
+                raise
+            else:
+                return default
 
     def __unicode__(self):
         return self.name
