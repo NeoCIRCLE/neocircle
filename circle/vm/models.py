@@ -18,9 +18,10 @@ from taggit.managers import TaggableManager
 
 from .tasks import local_tasks, vm_tasks, net_tasks
 from acl.models import AclBase
-from common.models import ActivityModel, activitycontextimpl
 from firewall.models import Vlan, Host
 from storage.models import Disk
+from common.models import ActivityModel, activitycontextimpl, method_cache
+from acl.models import AclBase
 
 logger = logging.getLogger(__name__)
 pwgen = User.objects.make_random_password
@@ -123,10 +124,9 @@ class Node(TimeStampedModel):
         permissions = ()
 
     @property
+    @method_cache(30)
     def online(self):
-        """Indicates whether the node is connected and functional.
-        """
-        pass  # TODO implement check
+        return True
 
     def __unicode__(self):
         return self.name
