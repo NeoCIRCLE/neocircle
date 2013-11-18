@@ -34,7 +34,11 @@ $(function () {
   $('[title]').tooltip();
   $(':input[title]').tooltip({trigger: 'focus', placement: 'auto right'});
   $(".knob").knob();
-  
+
+  $('[data-toggle="pill"]').click(function() {
+    window.location.hash = $(this).attr('href');
+  });
+
   if (window.location.hash)
     $("a[href=" + window.location.hash +"]").tab('show');
 
