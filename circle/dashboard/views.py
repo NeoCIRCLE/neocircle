@@ -94,6 +94,7 @@ class VmDetailView(CheckedDetailView):
         ia = InstanceActivity.objects.filter(
             instance=self.object, parent=None
         ).order_by('-started').select_related()
+
         context['activity'] = ia
         context['acl'] = get_acl_data(instance)
         return context
@@ -329,3 +330,40 @@ def mass_delete_vm(request, **kwargs):
         messages.success(request, success_message)
         next = request.GET.get('next')
         return redirect(next if next else reverse_lazy('dashboard.index'))
+
+
+@require_POST
+def vm_activity(request, pk):
+    latest = request.POST.get('latest')
+    latest_sub = request.POST.get('latest_sub')
+
+    instance = Instance.objects.get(pk=pk)
+    new_sub_activities = InstanceActivity.objects.filter(
+        parent=latest, pk__gt=latest_sub,
+        instance=instance)
+    # new_activities = InstanceActivity.objects.filter(
+    #     parent=None, instance=instance, pk__gt=latest).values('finished')
+    latest_sub_finished = InstanceActivity.objects.get(pk=latest_sub).finished
+
+    time_string = "%H:%M:%S"
+    new_sub_activities = [
+        {'name': a.get_readable_name(), 'id': a.pk,
+         'finished': None if a.finished is None else a.finished.strftime(
+             time_string
+         )
+         } for a in new_sub_activities
+    ]
+
+    response = {
+        'new_sub_activities': new_sub_activities,
+        # TODO 'new_acitivites': new_activities,
+        'is_parent_finished': True if InstanceActivity.objects.get(
+            pk=latest).finished is not None else False,
+        'latest_sub_finished': None if latest_sub_finished is None else
+        latest_sub_finished.strftime(time_string)
+    }
+
+    return HttpResponse(
+        json.dumps(response),
+        content_type="application/json"
+    )
