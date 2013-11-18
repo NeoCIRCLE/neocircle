@@ -127,6 +127,9 @@ class Node(TimeStampedModel):
     def online(self):
         return True
 
+    def get_remote_queue_name(self, queue_id):
+        return self.host.hostname + "." + queue_id
+
     def __unicode__(self):
         return self.name
 
@@ -549,7 +552,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         """Get the remote worker queue name of this instance with the specified
            queue ID.
         """
-        return self.node.host.hostname + "." + queue_id
+        return self.node.get_remote_queue_name(queue_id)
 
     def renew(self, which='both'):
         """Renew virtual machine instance leases.
