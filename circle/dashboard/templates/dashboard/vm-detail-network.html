@@ -3,13 +3,18 @@
 
 Interfaces</h2>
 
-<h3 class="list-group-item-heading"><i class="icon-globe"></i> vmnet </h3>
+{% for i in instance.interface_set.all %}
+  <h3 class="list-group-item-heading">
+    <i class="icon-{% if i.host %}globe{% else %}link{% endif %}"></i> {{ i.vlan }} 
+    {% if not i.host %}(unmanaged) <a href="#" class="btn btn-danger btn-xs">remove</a>{% endif %}
+  </h3>
+  {% if i.host %}
     <div class="row">
       <div class="col-md-5">
         <dl>
-        <dt>IPv4 address:</dt> <dd>10.9.8.7</dd>
-        <dt>IPv6 address:</dt> <dd> 2001:2001:2001:2001:2001:2001::</dd>
-        <dt>DNS name:</dt> <dd>550.vm.ik.bme.hu</dd>
+          <dt>IPv4 address:</dt> <dd>{{ i.host.ipv4 }}</dd>
+          <dt>IPv6 address:</dt> <dd>{{ i.host.ipv6 }}</dd>
+          <dt>DNS name:</dt> <dd>{{ i.host.get_fqdn }}</dd>
         </dl>
       </div>
       <div class="col-md-7">
@@ -78,6 +83,5 @@ Interfaces</h2>
         </div>
       </div>
     </div>
-
-<h3 class="list-group-item-heading"><i class="icon-link"></i> grid (unmanaged) <a href="#" class="btn btn-danger btn-xs">remove</a></h3>
-<h3 class="list-group-item-heading"><i class="icon-link"></i> asdasd (unmanaged) <a href="#" class="btn btn-danger btn-xs">remove</a></h3>
+  {% endif %}
+{% endfor %}
