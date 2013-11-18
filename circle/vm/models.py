@@ -1,7 +1,7 @@
 from contextlib import contextmanager
 from datetime import timedelta
 from importlib import import_module
-import logging
+from logging import getLogger
 from netaddr import EUI, mac_unix
 
 import django.conf
@@ -16,14 +16,13 @@ from django.utils.translation import ugettext_lazy as _
 from model_utils.models import TimeStampedModel
 from taggit.managers import TaggableManager
 
-from .tasks import local_tasks, vm_tasks, net_tasks
 from acl.models import AclBase
+from common.models import ActivityModel, activitycontextimpl, method_cache
 from firewall.models import Vlan, Host
 from storage.models import Disk
-from common.models import ActivityModel, activitycontextimpl, method_cache
-from acl.models import AclBase
+from .tasks import local_tasks, vm_tasks, net_tasks
 
-logger = logging.getLogger(__name__)
+logger = getLogger(__name__)
 pwgen = User.objects.make_random_password
 scheduler = import_module(name=django.conf.settings.VM_SCHEDULER)
 ACCESS_PROTOCOLS = django.conf.settings.VM_ACCESS_PROTOCOLS
