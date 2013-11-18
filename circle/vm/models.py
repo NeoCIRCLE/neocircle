@@ -13,6 +13,7 @@ from django.db.models import (Model, ForeignKey, ManyToManyField, IntegerField,
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
+from celery.exceptions import TimeoutError
 from model_utils.models import TimeStampedModel
 from taggit.managers import TaggableManager
 
@@ -123,9 +124,14 @@ class Node(TimeStampedModel):
         permissions = ()
 
     @property
-    @method_cache(30)
+    @method_cache(10, 5)
     def online(self):
-        return True
+        r = vm_tasks.ping.apply_async(queue=self.get_remote_queue_name('vm'),
+                                      expires=3)
+        try:
+            return r.get(timeout=2)
+        except TimeoutError:
+            return False
 
     def get_remote_queue_name(self, queue_id):
         return self.host.hostname + "." + queue_id
