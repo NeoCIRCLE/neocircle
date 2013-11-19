@@ -335,6 +335,9 @@ def mass_delete_vm(request, **kwargs):
 
 @require_POST
 def vm_activity(request, pk):
+    if not object.has_level(request.user, 'owner'):
+        raise PermissionDenied()
+
     latest = request.POST.get('latest')
     latest_sub = request.POST.get('latest_sub')
 
