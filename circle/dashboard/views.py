@@ -364,6 +364,7 @@ def mass_delete_vm(request, **kwargs):
 
 @require_POST
 def vm_activity(request, pk):
+    object = Instance.objects.get(pk=pk)
     if not object.has_level(request.user, 'owner'):
         raise PermissionDenied()
 
