@@ -679,6 +679,8 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                 vm_tasks.resume.apply_async(args=[self.vm_name],
                                             queue=queue_name).get()
 
+            self.renew('suspend')
+
     def deploy_async(self, user=None):
         """Execute deploy asynchronously.
         """
