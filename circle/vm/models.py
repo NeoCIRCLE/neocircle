@@ -423,6 +423,11 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         parts = [self.name, "(" + str(self.id) + ")"]
         return " ".join([s for s in parts if s != ""])
 
+    def clean(self, *args, **kwargs):
+        if self.time_of_delete is None:
+            self.renew(which='delete')
+        super(Instance, self).clean(*args, **kwargs)
+
     @classmethod
     def create_from_template(cls, template, owner, disks=None, networks=None,
                              req_traits=None, tags=None, **kwargs):
