@@ -75,6 +75,7 @@ class Trait(Model):
 
 
 class VirtualMachineDescModel(BaseResourceConfigModel):
+
     """Abstract base for virtual machine describing models.
     """
     access_method = CharField(max_length=10, choices=ACCESS_METHODS,
@@ -156,6 +157,36 @@ class Node(TimeStampedModel):
                 raise
             else:
                 return default
+
+    def update_vm_states(self):
+        domains = {}
+        for i in self.remote_query(vm_tasks.list_domains_info, timeout=5):
+            # [{'name': 'cloud-1234', 'state': 'RUNNING', ...}, ...]
+            try:
+                id = int(i['name'].split('-')[1])
+            except:
+                pass  # name format doesn't match
+            else:
+                domains[id] = i['state']
+
+        instances = self.instance_set.order_by('id').values('id', 'state')
+        for i in instances:
+            try:
+                d = domains[i['id']]
+            except KeyError:
+                logger.info('Node %s update: instance %s missing from '
+                            'libvirt', self, i['id'])
+            else:
+                if d != i['state']:
+                    logger.info('Node %s update: instance %s state changed '
+                                '(libvirt: %s, db: %s)',
+                                self, i['id'], d, i['state'])
+                    Instance.objects.get(id=i['id']).state_changed(d)
+
+                del domains[i['id']]
+        for i in domains.keys():
+            logger.info('Node %s update: domain %s in libvirt but not in db.',
+                        self, i)
 
     def __unicode__(self):
         return self.name
@@ -807,6 +838,11 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
             i.save_as_template(tmpl)
 
         return tmpl
+
+    def state_changed(self, new_state):
+        logger.debug('Instance %s state changed '
+                     '(db: %s, new: %s)',
+                     self, self.state, new_state)
 
 
 class InstanceActivity(ActivityModel):

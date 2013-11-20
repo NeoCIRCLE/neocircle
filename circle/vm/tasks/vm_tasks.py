@@ -61,6 +61,11 @@ def list_domains(params):
     pass
 
 
+@celery.task(name='vmdriver.list_domains_info')
+def list_domains_info(params):
+    pass
+
+
 @celery.task(name='vmdriver.ping')
 def ping(params):
     pass
