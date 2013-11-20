@@ -116,8 +116,8 @@ function massDeleteVm() {
             selected = []                                                   
             $('.vm-list-group-control a').attr('disabled', true);           
             $(this).remove();                                               
-            addMessage(data['message'], 'success');                         
-          });                                                               
+          }); 
+        addMessage(data['message'], 'success');                         
       },                                                                    
       error: function(xhr, textStatus, error) {                             
         // TODO this                                                        
