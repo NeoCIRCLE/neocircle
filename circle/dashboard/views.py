@@ -36,7 +36,7 @@ class IndexView(TemplateView):
         else:
             user = None
 
-        instances = Instance.objects.filter(owner=user)
+        instances = Instance.active.filter(owner=user)
         context = super(IndexView, self).get_context_data(**kwargs)
         context.update({
             'instances': instances[:5],
@@ -269,7 +269,7 @@ class VmCreate(TemplateView):
             inst = Instance.create_from_template(template=template,
                                                  owner=user, networks=networks,
                                                  disks=disks, **ikwargs)
-            inst.deploy_async()
+            inst.deploy_async(user=request.user)
 
             resp['pk'] = inst.pk
             messages.success(request, _('VM successfully created!'))
@@ -309,7 +309,7 @@ class VmDelete(DeleteView):
         if not object.has_level(request.user, 'owner'):
             raise PermissionDenied()
 
-        object.destroy_async()
+        object.destroy_async(user=request.user)
         success_url = self.get_success_url()
         success_message = _("VM successfully deleted!")
 
@@ -344,7 +344,7 @@ def mass_delete_vm(request, **kwargs):
                 raise PermissionDenied()  # no need for rollback or proper
                                           # error message, this can't
                                           # normally happen.
-            i.destroy_async()
+            i.destroy_async(request.user)
             names.append(i.name)
 
     success_message = _("Mass delete complete, the following VMs were " +
