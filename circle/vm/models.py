@@ -148,7 +148,7 @@ class Node(TimeStampedModel):
         If the result is not ready in timeout secs, return default value or
         raise a TimeoutError."""
         r = task.apply_async(
-            queue=self.get_remote_queue_name('vm'), expires=timeout + 1)
+            queue=self.get_remote_queue_name('vm'), expires=timeout + 60)
         try:
             return r.get(timeout=timeout)
         except TimeoutError:
