@@ -850,6 +850,8 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         logger.debug('Instance %s state changed '
                      '(db: %s, new: %s)',
                      self, self.state, new_state)
+        self.state = new_state
+        self.save()
 
 
 class InstanceActivity(ActivityModel):

@@ -7,7 +7,9 @@ HOSTNAME = "localhost"
 
 celery = Celery('manager', backend='amqp',
                 broker=getenv("AMQP_URI"),
-                include=['vm.tasks.local_tasks', 'storage.tasks.local_tasks',
+                include=['vm.tasks.local_tasks',
+                         'vm.tasks.local_periodic_tasks',
+                         'storage.tasks.local_tasks',
                          'firewall.tasks.local_tasks'])
 
 celery.conf.update(
@@ -21,6 +23,11 @@ celery.conf.update(
         'firewall.periodic_task': {
             'task': 'firewall.tasks.local_tasks.periodic_task',
             'schedule': timedelta(seconds=5),
+            'options': {'queue': 'localhost.man'}
+        },
+        'vm.periodic_tasks': {
+            'task': 'vm.tasks.local_periodic_tasks.update_domain_states',
+            'schedule': timedelta(seconds=10),
             'options': {'queue': 'localhost.man'}
         },
     }
