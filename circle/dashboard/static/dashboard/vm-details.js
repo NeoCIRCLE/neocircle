@@ -1,7 +1,30 @@
-
 $(function() {
   if($('.timeline .activity:first i:first').hasClass('icon-spin'))
     checkNewActivity();
+
+  /* save resources */
+  $('#vm-details-resources-save').click(function() {
+    $('i.icon-save', this).removeClass("icon-save").addClass("icon-refresh icon-spin");
+    $.ajax({
+      type: 'POST',
+      url: location.href,
+      data: $('#vm-details-resources-form').serialize(),
+      success: function(data, textStatus, xhr) {
+        addMessage(data['message'], 'success');
+        $("#vm-details-resources-save i").removeClass('icon-refresh icon-spin').addClass("icon-save");
+      },
+      error: function(xhr, textStatus, error) {
+        $("#vm-details-resources-save i").removeClass('icon-refresh icon-spin').addClass("icon-save");
+        addMessage("Eww, something is wrong", 'danger');
+        if (xhr.status == 500) {
+          // alert("uhuhuhuhuhuh");
+        } else {
+          // alert("unknown error");
+        }
+      }
+    });
+    return false;
+  });
 });
 
 function checkNewActivity() {

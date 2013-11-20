@@ -1,6 +1,9 @@
+{% load i18n %}
+<form id="vm-details-resources-form" method="POST" action="">
+  {% csrf_token %}
 <p class="row">
     <div class="col-sm-3">
-        <label for="vm-cpu-priority-slider"><i class="icon-trophy"></i> CPU priority</label>
+      <label for="vm-cpu-priority-slider"><i class="icon-trophy"></i> {% trans "CPU priority" %}</label>
     </div>
     <div class="col-sm-9">
       <input name="cpu-priority" type="text" id="vm-cpu-priority-slider" class="vm-slider" value="{{ instance.priority }}" data-slider-min="0" data-slider-max="100" data-slider-step="1" data-slider-value="{{ instance.priority }}" data-slider-orientation="horizontal" data-slider-handle="square" data-slider-tooltip="hide"/>         
@@ -10,7 +13,7 @@
 
 <p class="row">
     <div class="col-sm-3">
-        <label for="cpu-count-slider"><i class="icon-cogs"></i> CPU count</label>
+      <label for="cpu-count-slider"><i class="icon-cogs"></i> {% trans "CPU count" %}</label>
     </div>
     <div class="col-sm-9">
       <input name="cpu-count" type="text" id="vm-cpu-count-slider" class="vm-slider" value=" {{ instance.num_cores }}" data-slider-min="0" data-slider-max="8" data-slider-step="1" data-slider-value="{{ instance.num_cores }}" data-slider-orientation="horizontal" data-slider-handle="square" data-slider-tooltip="hide"/>         
@@ -20,13 +23,19 @@
 
 <p class="row">
     <div class="col-sm-3">
-        <label for="ram-slider"><i class="icon-ticket"></i> RAM amount</label>
+      <label for="ram-slider"><i class="icon-ticket"></i> {% trans "RAM amount" %}</label>
     </div>
     <div class="col-sm-9"> 
       <input name="ram-size" type="text" id="vm-ram-size-slider" class="vm-slider" value="{{ instance.ram_size }}" data-slider-min="128" data-slider-max="4096" data-slider-step="128" data-slider-value="{{ instance.ram_size }}" data-slider-orientation="horizontal" data-slider-handle="square" data-slider-tooltip="hide"/>         MiB  
   </div>
 </p>
 
+<p class="row">
+  <div class="col-sm-12">
+    <button type="submit" class="btn btn-success btn-sm" id="vm-details-resources-save"><i class="icon-save"></i> {% trans "Save resources" %}</button>
+  </div>
+</p>
+</form>
 {% block extra_js %}
   <style>
     label {padding-top: 6px;}

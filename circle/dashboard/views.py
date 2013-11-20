@@ -99,6 +99,35 @@ class VmDetailView(CheckedDetailView):
         context['acl'] = get_acl_data(instance)
         return context
 
+    def post(self, request, *args, **kwargs):
+        if (request.POST.get('ram-size') and request.POST.get('cpu-count')
+                and request.POST.get('cpu-priority')):
+            return self.__set_resources(request)
+
+    def __set_resources(self, request):
+        self.object = self.get_object()
+        if not self.object.has_level(request.user, 'owner'):
+            raise PermissionDenied()
+
+        resources = {
+            'num_cores': request.POST.get('cpu-count'),
+            'ram_size': request.POST.get('ram-size'),
+            'priority': request.POST.get('cpu-priority')
+        }
+        Instance.objects.filter(pk=self.object.pk).update(**resources)
+
+        success_message = _("Resources successfully updated!")
+        if request.is_ajax():
+            response = {'message': success_message}
+            return HttpResponse(
+                json.dumps(response),
+                content_type="application/json"
+            )
+        else:
+            messages.success(request, success_message)
+            return redirect(reverse_lazy("dashboard.views.detail",
+                                         kwargs={'pk': self.object.pk}))
+
 
 class AclUpdateView(View, SingleObjectMixin):
 
