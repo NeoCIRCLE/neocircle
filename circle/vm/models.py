@@ -646,6 +646,8 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
     def deploy_async(self, user=None):
         """Execute deploy asynchronously.
         """
+        logger.debug('Calling async local_tasks.deploy(%s, %s)',
+                     unicode(self), unicode(user))
         return local_tasks.deploy.apply_async(args=[self, user],
                                               queue="localhost.man")
 
