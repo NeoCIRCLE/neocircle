@@ -206,7 +206,7 @@ class TemplateDetail(DetailView):
 
 class VmList(SingleTableView):
     template_name = "dashboard/vm-list.html"
-    model = Instance
+    queryset = Instance.active.all()
     table_class = VmListTable
     table_pagination = False
 

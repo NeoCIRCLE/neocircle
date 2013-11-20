@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 from django.core import signing
 from django.db.models import (Model, ForeignKey, ManyToManyField, IntegerField,
                               DateTimeField, BooleanField, TextField,
-                              CharField, permalink)
+                              CharField, permalink, Manager)
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
@@ -32,6 +32,12 @@ ACCESS_METHODS = [(key, name) for key, (name, port, transport)
 ARCHITECTURES = (('x86_64', 'x86-64 (64 bit)'),
                  ('i686', 'x86 (32 bit)'))
 VNC_PORT_RANGE = (2000, 65536)  # inclusive start, exclusive end
+
+
+class InstanceActiveManager(Manager):
+    def get_query_set(self):
+        return super(InstanceActiveManager,
+                     self).get_query_set().filter(destroyed=None)
 
 
 class BaseResourceConfigModel(Model):
@@ -413,6 +419,8 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
     destroyed = DateTimeField(blank=True, null=True,
                               help_text=_("The virtual machine's time of "
                                           "destruction."))
+    objects = Manager()
+    active = InstanceActiveManager()
 
     class Meta:
         ordering = ['pk', ]
