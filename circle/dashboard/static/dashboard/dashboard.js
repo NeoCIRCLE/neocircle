@@ -127,6 +127,7 @@ function massDeleteVm() {
 
 
 function addMessage(text, type) {
+  $('body').animate({scrollTop: 0});
   div = '<div style="display: none;" class="alert alert-' + type + '">' + text + '</div>';
   $('.messagelist').html('').append(div);
   $('.messagelist div').fadeIn();
