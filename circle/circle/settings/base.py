@@ -311,10 +311,11 @@ VM_SCHEDULER = 'manager.scheduler'
 
 BROKER_URL = get_env_variable('AMQP_URI')
 
-# Set up periodic firewall tasks
-CELERYBEAT_SCHEDULE = {
-    'blabla': {
-        'task': 'firewall.tasks.local_tasks.periodic_task',
-        'schedule': timedelta(seconds=5),
-    },
+BROKER_URL=get_env_variable('AMQP_URI')
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:11211',
+    }
 }
