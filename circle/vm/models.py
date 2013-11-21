@@ -820,10 +820,36 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                                         queue=queue_name).get()
 
     def reboot_async(self, user=None):
-        """Execute reboot asynchronously.
-        """
+        """Execute reboot asynchronously. """
         return local_tasks.reboot.apply_async(args=[self, user],
                                               queue="localhost.man")
+
+    def migrate_async(self, to_node, user=None):
+        """Execute migrate asynchronously. """
+        return local_tasks.migrate.apply_async(args=[self, to_node, user],
+                                               queue="localhost.man")
+
+    def migrate(self, to_node, user=None, task_uuid=None):
+        """Live migrate running vm to another node. """
+        with instance_activity(code_suffix='migrate', instance=self,
+                               task_uuid=task_uuid, user=user) as act:
+            # Destroy networks
+            with act.sub_activity('destroying_net'):
+                for net in self.interface_set.all():
+                    net.destroy()
+
+            with act.sub_activity('migrate_vm'):
+                queue_name = self.get_remote_queue_name('vm')
+                vm_tasks.migrate.apply_async(args=[self.vm_name,
+                                             to_node.host.hostname],
+                                             queue=queue_name).get()
+            # Refresh node information
+            self.node = to_node
+            self.save()
+            # Estabilish network connection (vmdriver)
+            with act.sub_activity('deploying_net'):
+                for net in self.interface_set.all():
+                    net.deploy()
 
     def save_as_template(self, name, **kwargs):
         # prepare parameters
