@@ -153,7 +153,7 @@ class Node(TimeStampedModel):
     def get_remote_queue_name(self, queue_id):
         return self.host.hostname + "." + queue_id
 
-    def remote_query(self, task, timeout=2, raise_=False, default=None):
+    def remote_query(self, task, timeout=30, raise_=False, default=None):
         """Query the given task, and get the result.
 
         If the result is not ready in timeout secs, return default value or
