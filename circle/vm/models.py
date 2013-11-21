@@ -10,6 +10,7 @@ from django.core import signing
 from django.db.models import (Model, ForeignKey, ManyToManyField, IntegerField,
                               DateTimeField, BooleanField, TextField,
                               CharField, permalink, Manager)
+from django.dispatch import Signal
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
@@ -32,6 +33,9 @@ ACCESS_METHODS = [(key, name) for key, (name, port, transport)
 ARCHITECTURES = (('x86_64', 'x86-64 (64 bit)'),
                  ('i686', 'x86 (32 bit)'))
 VNC_PORT_RANGE = (2000, 65536)  # inclusive start, exclusive end
+
+pre_state_changed = Signal(providing_args=["new_state"])
+post_state_changed = Signal(providing_args=["new_state"])
 
 
 class InstanceActiveManager(Manager):
@@ -858,8 +862,15 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         logger.debug('Instance %s state changed '
                      '(db: %s, new: %s)',
                      self, self.state, new_state)
-        self.state = new_state
-        self.save()
+        try:
+            pre_state_changed.send(sender=self, new_state=new_state)
+        except Exception as e:
+            logger.info('Instance %s state change ignored: %s',
+                        unicode(self), unicode(e))
+        else:
+            self.state = new_state
+            self.save()
+            post_state_changed.send(sender=self, new_state=new_state)
 
 
 class InstanceActivity(ActivityModel):
