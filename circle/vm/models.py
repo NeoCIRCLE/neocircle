@@ -667,7 +667,8 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                     raise Exception("No unused port could be found for VNC.")
 
             # Schedule
-            self.node = scheduler.get_node(self, Node.objects.all())
+            if self.node is None:
+                self.node = scheduler.get_node(self, Node.objects.all())
             self.save()
 
             # Deploy virtual images
