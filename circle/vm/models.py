@@ -687,6 +687,9 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                 for net in self.interface_set.all():
                     net.deploy()
 
+            # Generate context
+            # TODO
+
             # Resume vm
             with act.sub_activity('booting'):
                 vm_tasks.resume.apply_async(args=[self.vm_name],
