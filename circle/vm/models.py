@@ -7,9 +7,9 @@ from netaddr import EUI, mac_unix
 import django.conf
 from django.contrib.auth.models import User
 from django.core import signing
-from django.db.models import (Model, ForeignKey, ManyToManyField, IntegerField,
-                              DateTimeField, BooleanField, TextField,
-                              CharField, permalink, Manager)
+from django.db.models import (Model, FloatField, ForeignKey, ManyToManyField,
+                              IntegerField, DateTimeField, BooleanField,
+                              TextField, CharField, permalink, Manager)
 from django.dispatch import Signal
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -125,6 +125,9 @@ class Node(TimeStampedModel):
                              help_text=_("Declared traits."),
                              verbose_name=_('traits'))
     tags = TaggableManager(blank=True, verbose_name=_("tags"))
+    overcommit = FloatField(default=1.0, verbose_name=_("overcommit ratio"),
+                            help_text=_("The ratio of total memory with "
+                                        "to without overcommit."))
 
     class Meta:
         permissions = ()
