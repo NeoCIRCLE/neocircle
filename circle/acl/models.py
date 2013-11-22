@@ -132,6 +132,8 @@ class AclBase(Model):
     def has_level(self, user, level, group_also=True):
         logger.debug('%s.has_level(%s, %s, %s) called',
                      *[unicode(p) for p in [self, user, level, group_also]])
+        if user is None or not user.is_authenticated():
+            return False
         if getattr(user, 'is_superuser', False):
             logger.debug('- superuser granted')
             return True
