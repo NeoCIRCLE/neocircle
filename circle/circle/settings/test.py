@@ -21,6 +21,7 @@ SOUTH_TESTS_MIGRATE = False
 
 INSTALLED_APPS += (
     'acl.tests',
+    'django_nose',
 )
 
 CACHES = {
