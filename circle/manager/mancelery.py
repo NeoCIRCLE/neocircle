@@ -13,7 +13,7 @@ celery = Celery('manager', backend='amqp',
                          'firewall.tasks.local_tasks'])
 
 celery.conf.update(
-    CELERY_TASK_RESULT_EXPIRES = 300,
+    CELERY_TASK_RESULT_EXPIRES=300,
     CELERY_QUEUES=(
         Queue(HOSTNAME + '.man', Exchange('manager', type='direct'),
               routing_key="manager"),
