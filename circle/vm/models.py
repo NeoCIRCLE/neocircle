@@ -153,6 +153,12 @@ class Node(TimeStampedModel):
 
         return self.remote_query(vm_tasks.get_ram_size)
 
+    @property
+    def ram_size_with_overcommit(self):
+        """Bytes of total memory including overcommit margin.
+        """
+        return self.ram_size * self.overcommit
+
     def get_remote_queue_name(self, queue_id):
         return self.host.hostname + "." + queue_id
 
