@@ -141,3 +141,19 @@ body {
 .dashboard-index .panel {
     height: 300px;
 }
+
+#vm-details-rename, #vm-details-rename *, #vm-details-h1-name, #vm-list-rename, #vm-list-rename * {
+  display: inline;
+}
+
+#vm-details-rename, #vm-list-rename {
+  display: none;
+}
+
+#vm-details-rename-name {
+  max-width: 160px;
+}
+
+#vm-list-rename-name {
+  max-width: 100px;
+}

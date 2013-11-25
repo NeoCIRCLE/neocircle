@@ -13,6 +13,7 @@ $(function() {
   });
 
   $('.vm-list-table tbody').find('tr').mousedown(function() {
+    var retval = true;
     if (ctrlDown) {
       setRowColor($(this));
       if(!$(this).hasClass('vm-list-selected')) {
@@ -20,6 +21,7 @@ $(function() {
       } else {
         selected.push($(this).index());
       }
+      retval = false;
     } else if(shiftDown) {
       if(selected.length > 0) {
         start = selected[selected.length - 1] + 1;
@@ -36,6 +38,7 @@ $(function() {
             }
         }
       }
+      retval = false;
     } else {
       $('.vm-list-selected').removeClass('vm-list-selected');
       $(this).addClass('vm-list-selected');
@@ -53,7 +56,7 @@ $(function() {
     } else {
       $('.vm-list-group-control a').attr('disabled', true);
     }
-    return false;
+    return retval;
   });
 
     
@@ -85,6 +88,42 @@ $(function() {
     }
   });
 
+  /* rename */
+  $("#vm-list-rename-button, .vm-details-rename-button").click(function() {
+    $("#vm-list-column-name", $(this).closest("tr")).hide();
+    $("#vm-list-rename", $(this).closest("tr")).css('display', 'inline');
+  });
+
+  /* rename ajax */
+  $('.vm-list-rename-submit').click(function() {
+    var row = $(this).closest("tr")
+    var name = $('#vm-list-rename-name', row).val();
+    var url = '/dashboard/vm/' + row.children("td:first-child").text().replace(" ", "") + '/';
+    $.ajax({
+      method: 'POST',
+      url: url,
+      data: {'new_name': name},
+      headers: {"X-CSRFToken": getCookie('csrftoken')},
+      success: function(data, textStatus, xhr) {
+        
+        $("#vm-list-column-name", row).html(
+          $("<a/>", {
+            'class': "real-link",
+            href: "/dashboard/vm/" + data['vm_pk'] + "/",
+            text: data['new_name']
+          })
+        ).show();
+        $('#vm-list-rename', row).hide();
+        // addMessage(data['message'], "success");
+      },
+      error: function(xhr, textStatus, error) {
+        addMessage("uhoh", "danger");
+      }
+    });
+    return false;
+  });
+  
+  
   /* group actions */
 
   /* select all */
@@ -131,5 +170,4 @@ function setRowColor(row) {
   } else {
     row.removeClass('vm-list-selected');
   }
-
 }

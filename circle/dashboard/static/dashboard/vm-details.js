@@ -25,6 +25,32 @@ $(function() {
     });
     return false;
   });
+
+  /* rename */
+  $("#vm-details-h1-name, .vm-details-rename-button").click(function() {
+    $("#vm-details-h1-name").hide();
+    $("#vm-details-rename").css('display', 'inline');
+  });
+
+  /* rename ajax */
+  $('#vm-details-rename-submit').click(function() {
+    var name = $('#vm-details-rename-name').val();
+    $.ajax({
+      method: 'POST',
+      url: location.href,
+      data: {'new_name': name},
+      headers: {"X-CSRFToken": getCookie('csrftoken')},
+      success: function(data, textStatus, xhr) {
+        $("#vm-details-h1-name").html(data['new_name']).show();
+        $('#vm-details-rename').hide();
+        // addMessage(data['message'], "success");
+      },
+      error: function(xhr, textStatus, error) {
+        addMessage("uhoh", "danger");
+      }
+    });
+    return false;
+  });
 });
 
 function checkNewActivity() {

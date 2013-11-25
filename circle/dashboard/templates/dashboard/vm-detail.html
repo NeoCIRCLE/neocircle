@@ -4,7 +4,18 @@
 {% block content %}
 <div class="body-content">
   <div class="page-header">
-    <h1>{{ instance.name }} <small>{{ instance.get_connect_host }}</small></h1>
+    <h1>
+      <div id="vm-details-rename">
+        <form action="" method="POST" id="vm-details-rename-form">
+          {% csrf_token %}
+          <input id="vm-details-rename-name" class="form-control" name="new_name" type="text" value="{{ instance.name }}"/> 
+          <button type="submit" id="vm-details-rename-submit" class="btn">{% trans "Rename" %}</button>
+        </form>
+      </div>
+      <div id="vm-details-h1-name">
+        {{ instance.name }} 
+      </div>
+      <small>{{ instance.get_connect_host }}</small></h1>
   </div>
   <div class="row">
     <div class="col-md-4" id="vm-info-pane">
@@ -13,6 +24,7 @@
         <div class="btn-group">
           <button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown">Action <i class="icon-caret-down"></i></button>
           <ul class="dropdown-menu" role="menu">
+            <li><a href="#" class="vm-details-rename-button" class="icon-pencil"></i> Rename</a></li>
             <li><a href="#"><i class="icon-refresh"></i> Reboot</a></li>
             <li><a href="#"><i class="icon-off"></i> Shutdown</a></li>
             <li><a data-vm-pk="{{ instance.pk }}" class="vm-delete" href="{% url "dashboard.views.delete-vm" pk=instance.pk %}"><i class="icon-remove"></i> Discard</a></li>

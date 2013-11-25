@@ -104,6 +104,10 @@ class VmDetailView(CheckedDetailView):
                 and request.POST.get('cpu-priority')):
             return self.__set_resources(request)
 
+        # this is usually not None so it should be the last
+        if request.POST.get('new_name'):
+            return self.__set_name(request)
+
     def __set_resources(self, request):
         self.object = self.get_object()
         if not self.object.has_level(request.user, 'owner'):
@@ -119,6 +123,28 @@ class VmDetailView(CheckedDetailView):
         success_message = _("Resources successfully updated!")
         if request.is_ajax():
             response = {'message': success_message}
+            return HttpResponse(
+                json.dumps(response),
+                content_type="application/json"
+            )
+        else:
+            messages.success(request, success_message)
+            return redirect(reverse_lazy("dashboard.views.detail",
+                                         kwargs={'pk': self.object.pk}))
+
+    def __set_name(self, request):
+        self.object = self.get_object()
+        new_name = request.POST.get("new_name")
+        Instance.objects.filter(pk=self.object.pk).update(
+            **{'name': new_name})
+
+        success_message = _("VM successfully renamed!")
+        if request.is_ajax():
+            response = {
+                'message': success_message,
+                'new_name': new_name,
+                'vm_pk': self.object.pk
+            }
             return HttpResponse(
                 json.dumps(response),
                 content_type="application/json"
