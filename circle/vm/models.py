@@ -40,6 +40,7 @@ post_state_changed = Signal(providing_args=["new_state"])
 
 
 class InstanceActiveManager(Manager):
+
     def get_query_set(self):
         return super(InstanceActiveManager,
                      self).get_query_set().filter(destroyed=None)
@@ -133,6 +134,9 @@ class Node(TimeStampedModel):
     class Meta:
         permissions = ()
 
+    def __unicode__(self):
+        return self.name
+
     @property
     @method_cache(10, 5)
     def online(self):
@@ -143,15 +147,15 @@ class Node(TimeStampedModel):
     @property
     @method_cache(300)
     def num_cores(self):
-        """Number of CPU threads available to the virtual machines."""
-
+        """Number of CPU threads available to the virtual machines.
+        """
         return self.remote_query(vm_tasks.get_core_num)
 
     @property
     @method_cache(300)
     def ram_size(self):
-        """Bytes of total memory in the node."""
-
+        """Bytes of total memory in the node.
+        """
         return self.remote_query(vm_tasks.get_ram_size)
 
     @property
@@ -207,9 +211,6 @@ class Node(TimeStampedModel):
         for i in domains.keys():
             logger.info('Node %s update: domain %s in libvirt but not in db.',
                         self, i)
-
-    def __unicode__(self):
-        return self.name
 
 
 class NodeActivity(ActivityModel):
@@ -679,6 +680,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
             # Schedule
             if self.node is None:
                 self.node = scheduler.get_node(self, Node.objects.all())
+
             self.save()
 
             # Deploy virtual images
@@ -687,6 +689,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                     disk.deploy()
 
             queue_name = self.get_remote_queue_name('vm')
+
             # Deploy VM on remote machine
             with act.sub_activity('deploying_vm'):
                 vm_tasks.deploy.apply_async(args=[self.get_vm_desc()],
