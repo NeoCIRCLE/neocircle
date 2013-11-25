@@ -332,39 +332,41 @@ class VmDelete(DeleteView):
             return reverse_lazy('dashboard.index')
 
 
-def mass_delete_vm(request, **kwargs):
-    if request.method == "GET":
+class VmMassDelete(View):
+    def get(self, request, *args, **kwargs):
         vms = request.GET.getlist('v[]')
         objects = Instance.objects.filter(pk__in=vms)
         return render(request, "dashboard/confirm/mass-delete.html",
                       {'objects': objects})
 
-    vms = request.POST.getlist('vms')
-    names = []
-    if vms is not None:
-        for i in Instance.objects.filter(pk__in=vms):
-            if not i.has_level(request.user, 'owner'):
-                logger.info('Tried to delete instance #%d without owner '
-                            'permission by %s.', i.pk, unicode(request.user))
-                raise PermissionDenied()  # no need for rollback or proper
-                                          # error message, this can't
-                                          # normally happen.
-            i.destroy_async(request.user)
-            names.append(i.name)
+    def post(self, request, *args, **kwargs):
+        vms = request.POST.getlist('vms')
+        names = []
+        if vms is not None:
+            for i in Instance.objects.filter(pk__in=vms):
+                if not i.has_level(request.user, 'owner'):
+                    logger.info('Tried to delete instance #%d without owner '
+                                'permission by %s.', i.pk,
+                                unicode(request.user))
+                    raise PermissionDenied()  # no need for rollback or proper
+                                            # error message, this can't
+                                            # normally happen.
+                i.destroy_async(request.user)
+                names.append(i.name)
 
-    success_message = _("Mass delete complete, the following VMs were " +
-                        "deleted: %s!" % u', '.join(names))
+        success_message = _("Mass delete complete, the following VMs were " +
+                            "deleted: %s!" % u', '.join(names))
 
-    # we can get this only via AJAX ...
-    if request.is_ajax():
-        return HttpResponse(
-            json.dumps({'message': success_message}),
-            content_type="application/json"
-        )
-    else:
-        messages.success(request, success_message)
-        next = request.GET.get('next')
-        return redirect(next if next else reverse_lazy('dashboard.index'))
+        # we can get this only via AJAX ...
+        if request.is_ajax():
+            return HttpResponse(
+                json.dumps({'message': success_message}),
+                content_type="application/json"
+            )
+        else:
+            messages.success(request, success_message)
+            next = request.GET.get('next')
+            return redirect(next if next else reverse_lazy('dashboard.index'))
 
 
 @require_POST

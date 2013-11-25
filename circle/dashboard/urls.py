@@ -3,7 +3,7 @@ from django.conf.urls import patterns, url
 from vm.models import Instance
 from .views import (
     IndexView, VmDetailView, VmList, VmCreate, TemplateDetail, AclUpdateView,
-    VmDelete, mass_delete_vm, vm_activity)
+    VmDelete, VmMassDelete, vm_activity)
 
 urlpatterns = patterns(
     '',
@@ -19,7 +19,7 @@ urlpatterns = patterns(
         name='dashboard.views.vm-create'),
     url(r'^vm/delete/(?P<pk>\d+)/$', VmDelete.as_view(),
         name="dashboard.views.delete-vm"),
-    url(r'^vm/mass-delete/', mass_delete_vm,
+    url(r'^vm/mass-delete/', VmMassDelete.as_view(),
         name='dashboard.view.mass-delete-vm'),
     url(r'^vm/(?P<pk>\d+)/activity/$', vm_activity)
 )
