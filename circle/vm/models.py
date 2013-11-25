@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from contextlib import contextmanager
 from datetime import timedelta
 from importlib import import_module
