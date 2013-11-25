@@ -39,6 +39,15 @@ pre_state_changed = Signal(providing_args=["new_state"])
 post_state_changed = Signal(providing_args=["new_state"])
 
 
+def find_unused_vnc_port():
+    used = Instance.objects.values_list('vnc_port', flat=True)
+    for p in xrange(*VNC_PORT_RANGE):
+        if p not in used:
+            return p
+    else:
+        raise Exception("No unused port could be found for VNC.")
+
+
 class InstanceActiveManager(Manager):
 
     def get_query_set(self):
@@ -669,13 +678,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
             # Find unused port for VNC
             if self.vnc_port is None:
-                used = Instance.objects.values_list('vnc_port', flat=True)
-                for p in xrange(*VNC_PORT_RANGE):
-                    if p not in used:
-                        self.vnc_port = p
-                        break
-                else:
-                    raise Exception("No unused port could be found for VNC.")
+                self.vnc_port = find_unused_vnc_port()
 
             # Schedule
             if self.node is None:
