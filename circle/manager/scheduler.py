@@ -2,6 +2,7 @@ from django.db.models import Sum
 
 
 class NotEnoughMemoryException(Exception):
+
     def __init__(self, message=None):
         if message is None:
             message = "No node has enough memory to accomodate the guest."
@@ -10,6 +11,7 @@ class NotEnoughMemoryException(Exception):
 
 
 class TraitsUnsatisfiableException(Exception):
+
     def __init__(self, message=None):
         if message is None:
             message = "No node can satisfy all required traits of the guest."
@@ -32,7 +34,7 @@ def select_node(instance, nodes):
 
     # sort nodes first by processor usage, then priority
     nodes.sort(key=lambda n: n.priority, reverse=True)
-    nodes.sort(key=processor_usage)
+    nodes.sort(key=free_cpu_time, reverse=True)
 
     return nodes[0]
 
@@ -59,9 +61,12 @@ def has_enough_ram(ram_size, node):
     return ram_size < unused and ram_size < free
 
 
-def processor_usage(node):
-    """Get a number indicating processor usage on the node.
+def free_cpu_time(node):
+    """Get an indicator number for idle processor time on the node.
 
-    Lower values indicate lower usage.
+    Higher values indicate more idle time.
     """
-    return 0  # TODO replace mock value with data from monitor
+    activity = 0
+    inactivity = 1 - activity
+    cores = node.num_cores
+    return cores * inactivity  # TODO replace mock value with data from monitor
