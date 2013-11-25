@@ -17,7 +17,7 @@ class TraitsUnsatisfiableException(Exception):
         Exception.__init__(self, message)
 
 
-def get_node(instance, nodes):
+def select_node(instance, nodes):
     ''' Select a node for hosting an instance based on its requirements.
     '''
     # check required traits

@@ -680,7 +680,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
             # Schedule
             if self.node is None:
-                self.node = scheduler.get_node(self, Node.objects.all())
+                self.node = scheduler.select_node(self, Node.objects.all())
 
             self.save()
 
