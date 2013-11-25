@@ -49,7 +49,12 @@ $(function () {
     var vm_pk = $(this).data('vm-pk');
     text = "Are you sure you want to delete this VM?";
     var dir = window.location.pathname.indexOf('list') == -1;
-    addModalConfirmation(text, vm_pk, deleteVm, dir);
+    addModalConfirmation(deleteVm, 
+      { 'url': '/dashboard/vm/delete/' + vm_pk + '/',
+        'data': [],
+        'vm_pk': vm_pk,
+        'redirect': dir});
+    
     return false;
   });
 });
@@ -79,17 +84,17 @@ function refreshSliders() {
 /* deletes the VM with the pk
  * if dir is true, then redirect to the dashboard landing page
  * else it adds a success message */
-function deleteVm(pk, dir) {
+function deleteVm(data) {
   $.ajax({
     type: 'POST',
-    data: {'redirect': dir},
-    url: '/dashboard/vm/delete/' + pk + '/',
+    data: {'redirect': data['redirect']},
+    url: data['url'],
     headers: {"X-CSRFToken": getCookie('csrftoken')}, 
-    success: function(data, textStatus, xhr) { 
-      if(!dir) {
+    success: function(re, textStatus, xhr) { 
+      if(!data['redirect']) {
         selected = [];
-        addMessage(data['message'], 'success');
-        $('a[data-vm-pk="' + pk + '"]').closest('tr').fadeOut(function() {
+        addMessage(re['message'], 'success');
+        $('a[data-vm-pk="' + data['vm_pk'] + '"]').closest('tr').fadeOut(function() {
           $(this).remove();  
         });
       } else {
@@ -102,22 +107,22 @@ function deleteVm(pk, dir) {
   });
 }
 
-function massDeleteVm() {
+function massDeleteVm(data) {
   $.ajax({                                                                
       traditional: true,                                                    
-      url: '/dashboard/vm/mass-delete/',                                    
+      url: data['url'],                                    
       headers: {"X-CSRFToken": getCookie('csrftoken')},                     
       type: 'POST',                                                         
-      data: {'vms': collectIds(selected)},                                  
-      success: function(data, textStatus, xhr) {                            
+      data: {'vms': data['data']['v']},                                  
+      success: function(re, textStatus, xhr) {                            
         for(var i=0; i< selected.length; i++)                               
-          $('.vm-list-table tbody tr').eq(selected[i]).fadeOut(500, function() {
+          $('.vm-list-table tbody tr').eq(data['data']['selected'][i]).fadeOut(500, function() {
             // reset group buttons                                          
             selected = []                                                   
             $('.vm-list-group-control a').attr('disabled', true);           
             $(this).remove();                                               
           }); 
-        addMessage(data['message'], 'success');                         
+        addMessage(re['message'], 'success');                         
       },                                                                    
       error: function(xhr, textStatus, error) {                             
         // TODO this                                                        
@@ -134,11 +139,11 @@ function addMessage(text, type) {
 }
 
 
-function addModalConfirmation(text, data, func, dir) {
+function addModalConfirmation(func, data) {
   $.ajax({
     type: 'GET',
-    url: '/dashboard/vm/delete/' + data + '/',
-    data: {'text': text},
+    url: data['url'],
+    data: jQuery.param(data['data']),
     success: function(result) {
       $('body').append(result);
       $('#confirmation-modal').modal('show');
@@ -146,7 +151,7 @@ function addModalConfirmation(text, data, func, dir) {
         $('#confirmation-modal').remove();
       });
       $('#confirmation-modal-button').click(function() {
-        func(data, dir);
+        func(data);
         $('#confirmation-modal').modal('hide');
       });
     }

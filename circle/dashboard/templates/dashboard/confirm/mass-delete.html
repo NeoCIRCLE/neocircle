@@ -2,9 +2,12 @@
   <div class="modal-dialog"> 
     <div class="modal-content"> 
       <div class="modal-body">  
-        Are you sure you want to delete <strong>{{ object }}</strong>?
-        <br />
-        <div class="pull-right">
+        Are you sure you want to delete these objects<br />
+        {% for o in objects %}
+          <strong>{{ o }}</strong>{% if not forloop.last %},{% endif %} 
+        {% endfor %}  
+        ?
+        <div class="pull-right" style="margin-top: 40px;">
           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button> 
           <button id="confirmation-modal-button" type="button" class="btn btn-danger">Delete</button> 
         </div>

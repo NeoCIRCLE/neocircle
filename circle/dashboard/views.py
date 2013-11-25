@@ -9,7 +9,7 @@ from django.core.exceptions import PermissionDenied
 from django.core import signing
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import TemplateView, DetailView, View, DeleteView
@@ -332,8 +332,13 @@ class VmDelete(DeleteView):
             return reverse_lazy('dashboard.index')
 
 
-@require_POST
 def mass_delete_vm(request, **kwargs):
+    if request.method == "GET":
+        vms = request.GET.getlist('v[]')
+        objects = Instance.objects.filter(pk__in=vms)
+        return render(request, "dashboard/confirm/mass-delete.html",
+                      {'objects': objects})
+
     vms = request.POST.getlist('vms')
     names = []
     if vms is not None:

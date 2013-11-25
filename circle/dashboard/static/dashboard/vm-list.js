@@ -103,9 +103,15 @@ $(function() {
 
   /* mass vm delete */
   $('#vm-list-group-delete').click(function() {
-    text = "Are you sure you want to delete the selected VMs?";
-    random_vm_pk = $('.vm-delete').eq(0).data('vm-pk');
-    addModalConfirmation(text, random_vm_pk, massDeleteVm, false);
+    addModalConfirmation(massDeleteVm,
+      {
+        'url': '/dashboard/vm/mass-delete/',
+        'data': {
+          'selected': selected,
+          'v': collectIds(selected)
+        }
+      }
+    );
     return false;
   });
 });
