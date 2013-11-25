@@ -149,9 +149,7 @@ class Node(TimeStampedModel):
     @property
     @method_cache(10, 5)
     def online(self):
-
-        return self.remote_query(vm_tasks.get_core_num, timeout=1,
-                                 default=False)
+        return self.remote_query(vm_tasks.ping, timeout=1, default=False)
 
     @property
     @method_cache(300)
