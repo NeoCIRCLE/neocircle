@@ -461,7 +461,6 @@ class Host(models.Model):
                                                   name=self.hostname,
                                                   address=self.ipv6,
                                                   type='AAAA').count()
-            print record_count
             if record_count == 0:
                 Record(host=self,
                        name=self.hostname,
