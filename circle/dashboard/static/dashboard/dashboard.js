@@ -15,22 +15,24 @@ $(function () {
     });
     return false;
   });
-  $('[href=#vm-graph-view]').click(function (e) {
-    $('#vm-list-view').hide();
-    $('#vm-graph-view').show();
-    $('[href=#vm-list-view]').removeClass('disabled');
-    $('[href=#vm-graph-view]').addClass('disabled');
+  $('[href=#index-graph-view]').click(function (e) {
+    var box = $(this).data('index-box');
+    $("#" + box + "-list-view").hide();
+    $("#" + box + "-graph-view").show();
+    $(this).next('a').removeClass('disabled');
+    $(this).addClass('disabled');
     e.stopImmediatePropagation();
     return false;
   });
-  $('[href=#vm-list-view]').click(function (e) {
-    $('#vm-graph-view').hide();
-    $('#vm-list-view').show();
-    $('[href=#vm-list-view]').addClass('disabled');
-    $('[href=#vm-graph-view]').removeClass('disabled');
+  $('[href=#index-list-view]').click(function (e) {
+    var box = $(this).data('index-box');
+    $('#' + box + '-graph-view').hide();
+    $('#' + box + '-list-view').show();
+    $(this).addClass('disabled');
+    $(this).prev("a").removeClass('disabled');
     e.stopImmediatePropagation();
     return false;
-  }).addClass('disabled');
+  });
   $('[title]').tooltip();
   $(':input[title]').tooltip({trigger: 'focus', placement: 'auto right'});
   $(".knob").knob();
