@@ -47,7 +47,6 @@ $(function () {
   /* for VM removes buttons */
   $('.vm-delete').click(function() {
     var vm_pk = $(this).data('vm-pk');
-    text = "Are you sure you want to delete this VM?";
     var dir = window.location.pathname.indexOf('list') == -1;
     addModalConfirmation(deleteVm, 
       { 'url': '/dashboard/vm/delete/' + vm_pk + '/',
