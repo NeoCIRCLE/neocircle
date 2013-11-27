@@ -674,6 +674,9 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         with instance_activity(code_suffix='deploy', instance=self,
                                task_uuid=task_uuid, user=user) as act:
 
+            # Clear destroyed flag
+            self.destroyed = None
+
             # Find unused port for VNC
             if self.vnc_port is None:
                 self.vnc_port = find_unused_vnc_port()
