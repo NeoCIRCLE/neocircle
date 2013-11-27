@@ -161,6 +161,10 @@ class Disk(TimeStampedModel):
                  otherwise, False.
         :rtype: bool
         """
+        if self.destroyed:
+            self.destroyed = None
+            self.save()
+
         if self.ready:
             return False
 
@@ -191,9 +195,14 @@ class Disk(TimeStampedModel):
                                        queue="localhost.man")
 
     def destroy(self, user=None, task_uuid=None):
+        if self.destroyed:
+            return False
+
         # TODO add activity logging
         self.destroyed = timezone.now()
         self.save()
+
+        return True
 
     def destroy_async(self, user=None):
         local_tasks.destroy.apply_async(args=[self, user],
