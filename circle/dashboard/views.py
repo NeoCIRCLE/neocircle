@@ -107,6 +107,12 @@ class VmDetailView(CheckedDetailView):
         if request.POST.get('new_name'):
             return self.__set_name(request)
 
+        if request.POST.get('new_tag') is not None:
+            return self.__add_tag(request)
+
+        if request.POST.get("to_remove") is not None:
+            return self.__remove_tag(request)
+
     def __set_resources(self, request):
         self.object = self.get_object()
         if not self.object.has_level(request.user, 'owner'):
@@ -152,6 +158,41 @@ class VmDetailView(CheckedDetailView):
             messages.success(request, success_message)
             return redirect(reverse_lazy("dashboard.views.detail",
                                          kwargs={'pk': self.object.pk}))
+
+    def __add_tag(self, request):
+        new_tag = request.POST.get('new_tag')
+        self.object = self.get_object()
+
+        if len(new_tag) < 1:
+            message = u"Please input something!"
+        elif len(new_tag) > 20:
+            message = u"Tag name is too long!"
+        else:
+            self.object.tags.add(new_tag)
+
+        try:
+            messages.error(request, message)
+        except:
+            pass
+
+        return redirect(reverse_lazy("dashboard.views.detail",
+                                     kwargs={'pk': self.object.pk}))
+
+    def __remove_tag(self, request):
+        try:
+            to_remove = request.POST.get('to_remove')
+            self.object = self.get_object()
+
+            self.object.tags.remove(to_remove)
+            message = u"Success"
+        except:  # note this won't really happen
+            message = u"Not success"
+
+        if request.is_ajax():
+            return HttpResponse(
+                json.dumps({'message': message}),
+                content_type="application=json"
+            )
 
 
 class AclUpdateView(View, SingleObjectMixin):

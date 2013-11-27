@@ -1,3 +1,4 @@
+{% load i18n %}
 <div class="row">
   <div class="col-md-4">
     <dl>
@@ -6,6 +7,34 @@
       <dt>Description:</dt>
       <dd><small>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc est libero, hendrerit at posuere sed, molestie congue quam. </small></dd>
     </dl>
+
+    <div style="font-weight: bold;">{% trans "Tags" %}</div>
+    <div id="vm-details-tags" style="margin-bottom: 20px;">
+      <div id="vm-details-tags-list">
+        {% if instance.tags.all %}
+          {% for t in instance.tags.all %}
+            <div class="label label-primary label-tag" style="display: inline-block">
+              {{ t }}
+              <a href="#" class="vm-details-remove-tag"><i class="icon-remove"></i></a>
+            </div>
+          {% endfor %}
+        {% else %}
+          <small>No tag added!</small>
+        {% endif %}
+      </div>
+      <form action="" method="POST">
+        {% csrf_token %}
+        <div class="input-group" id="vm-details-tags-form">
+          <input type="text" class="form-control input-sm input-tags" name="new_tag" id="vm-details-tags-input"/>
+          <!--<div class="input-group-addon">
+            <i class="icon-question"></i>
+          </div>-->
+          <div class="input-group-btn">
+            <input type="submit" class="btn btn-default btn-sm input-tags" value="{% trans "Add tag" %}"/>
+          </div>
+        </div>
+      </form>
+    </div><!-- id:vm-details-tags -->
   </div>
   <div class="col-md-8">
 <img src="/static/grafikon.png" style="width:45%"/>
