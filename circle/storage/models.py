@@ -60,21 +60,27 @@ class Disk(TimeStampedModel):
         verbose_name_plural = _('disks')
 
     class WrongDiskTypeError(Exception):
-        def __init__(self, type):
+
+        def __init__(self, type, message=None):
+            if message is None:
+                message = ("Operation can't be invoked on a disk of type '%s'."
+                           % type)
+
+            Exception.__init__(self, message)
+
             self.type = type
 
-        def __str__(self):
-            return ("Operation can't be invoked on a disk of type '%s'." %
-                    self.type)
-
     class DiskInUseError(Exception):
-        def __init__(self, disk):
-            self.disk = disk
 
-        def __str__(self):
-            return ("The requested operation can't be performed on disk "
-                    "'%s (%s)' because it is in use." %
-                    (self.disk.name, self.disk.filename))
+        def __init__(self, disk, message=None):
+            if message is None:
+                message = ("The requested operation can't be performed on "
+                           "disk '%s (%s)' because it is in use." %
+                           (self.disk.name, self.disk.filename))
+
+            Exception.__init__(self, message)
+
+            self.disk = disk
 
     @property
     def path(self):
