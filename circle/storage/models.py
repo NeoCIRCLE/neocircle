@@ -204,11 +204,12 @@ class Disk(TimeStampedModel):
         if self.destroyed:
             return False
 
-        # TODO add activity logging
-        self.destroyed = timezone.now()
-        self.save()
+        with disk_activity(code_suffix='destroy', disk=self,
+                           task_uuid=task_uuid, user=user):
+            self.destroyed = timezone.now()
+            self.save()
 
-        return True
+            return True
 
     def destroy_async(self, user=None):
         return local_tasks.destroy.apply_async(args=[self, user],
