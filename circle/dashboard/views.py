@@ -104,7 +104,6 @@ class VmDetailView(CheckedDetailView):
                 and request.POST.get('cpu-priority')):
             return self.__set_resources(request)
 
-        # this is usually not None so it should be the last
         if request.POST.get('new_name'):
             return self.__set_name(request)
 
