@@ -197,8 +197,8 @@ class Disk(TimeStampedModel):
     def deploy_async(self, user=None):
         """Execute deploy asynchronously.
         """
-        local_tasks.deploy.apply_async(args=[self, user],
-                                       queue="localhost.man")
+        return local_tasks.deploy.apply_async(args=[self, user],
+                                              queue="localhost.man")
 
     def destroy(self, user=None, task_uuid=None):
         if self.destroyed:
@@ -211,8 +211,8 @@ class Disk(TimeStampedModel):
         return True
 
     def destroy_async(self, user=None):
-        local_tasks.destroy.apply_async(args=[self, user],
-                                        queue='localhost.man')
+        return local_tasks.destroy.apply_async(args=[self, user],
+                                               queue='localhost.man')
 
     def restore(self, user=None, task_uuid=None):
         """Restore destroyed disk.
