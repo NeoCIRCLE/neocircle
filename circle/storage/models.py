@@ -49,7 +49,8 @@ class Disk(TimeStampedModel):
     size = FileSizeField()
     base = ForeignKey('self', blank=True, null=True,
                       related_name='derivatives')
-    ready = BooleanField(default=False)
+    ready = BooleanField(default=False,
+                         help_text=_("The associated resource is ready."))
     dev_num = CharField(default='a', max_length=1,
                         verbose_name=_("device number"))
     destroyed = DateTimeField(blank=True, default=None, null=True)
@@ -163,6 +164,13 @@ class Disk(TimeStampedModel):
         :param self: the disk model to reify
         :type self: storage.models.Disk
 
+        :param user: The user who's issuing the command.
+        :type user: django.contrib.auth.models.User
+
+        :param task_uuid: The task's UUID, if the command is being executed
+                          asynchronously.
+        :type task_uuid: str
+
         :return: True if a new reification of the disk has been created;
                  otherwise, False.
         :rtype: bool
@@ -212,6 +220,8 @@ class Disk(TimeStampedModel):
             return True
 
     def destroy_async(self, user=None):
+        """Execute destroy asynchronously.
+        """
         return local_tasks.destroy.apply_async(args=[self, user],
                                                queue='localhost.man')
 
