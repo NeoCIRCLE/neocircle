@@ -309,9 +309,9 @@ VM_ACCESS_PROTOCOLS = loads(get_env_variable('DJANGO_VM_ACCESS_PROTOCOLS',
                                                  "ssh": ["SSH", 22, "tcp"]}'''))
 VM_SCHEDULER = 'manager.scheduler'
 
-BROKER_URL = get_env_variable('AMQP_URI')
+#BROKER_URL = get_env_variable('AMQP_URI')
 
-BROKER_URL=get_env_variable('AMQP_URI')
+#BROKER_URL=get_env_variable('AMQP_URI')
 
 CACHES = {
     'default': {
