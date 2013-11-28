@@ -291,11 +291,13 @@ class VmList(SingleTableView):
     table_class = VmListTable
     table_pagination = False
 
+
 class NodeList(SingleTableView):
     template_name = "dashboard/node-list.html"
     model = Node
     table_class = NodeListTable
     table_pagination = False
+
 
 class VmCreate(TemplateView):
 
