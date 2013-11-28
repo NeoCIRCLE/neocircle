@@ -18,9 +18,9 @@ from django.utils.translation import ugettext as _
 
 from django_tables2 import SingleTableView
 
-from .tables import VmListTable
+from .tables import (VmListTable, NodeListTable)
 from vm.models import (Instance, InstanceTemplate, InterfaceTemplate,
-                       InstanceActivity)
+                       InstanceActivity, Node)
 from firewall.models import Vlan
 from storage.models import Disk
 
@@ -41,6 +41,12 @@ class IndexView(TemplateView):
         context.update({
             'instances': instances[:5],
             'more_instances': instances.count() - len(instances[:5])
+        })
+
+        nodes = Node.objects.all()
+        context.update({
+            'nodes': nodes[:1],
+            'more_nodes': nodes.count() - len(nodes[:1])
         })
 
         context.update({
@@ -104,9 +110,14 @@ class VmDetailView(CheckedDetailView):
                 and request.POST.get('cpu-priority')):
             return self.__set_resources(request)
 
-        # this is usually not None so it should be the last
         if request.POST.get('new_name'):
             return self.__set_name(request)
+
+        if request.POST.get('new_tag') is not None:
+            return self.__add_tag(request)
+
+        if request.POST.get("to_remove") is not None:
+            return self.__remove_tag(request)
 
     def __set_resources(self, request):
         self.object = self.get_object()
@@ -153,6 +164,50 @@ class VmDetailView(CheckedDetailView):
             messages.success(request, success_message)
             return redirect(reverse_lazy("dashboard.views.detail",
                                          kwargs={'pk': self.object.pk}))
+
+    def __add_tag(self, request):
+        new_tag = request.POST.get('new_tag')
+        self.object = self.get_object()
+
+        if len(new_tag) < 1:
+            message = u"Please input something!"
+        elif len(new_tag) > 20:
+            message = u"Tag name is too long!"
+        else:
+            self.object.tags.add(new_tag)
+
+        try:
+            messages.error(request, message)
+        except:
+            pass
+
+        return redirect(reverse_lazy("dashboard.views.detail",
+                                     kwargs={'pk': self.object.pk}))
+
+    def __remove_tag(self, request):
+        try:
+            to_remove = request.POST.get('to_remove')
+            self.object = self.get_object()
+
+            self.object.tags.remove(to_remove)
+            message = u"Success"
+        except:  # note this won't really happen
+            message = u"Not success"
+
+        if request.is_ajax():
+            return HttpResponse(
+                json.dumps({'message': message}),
+                content_type="application=json"
+            )
+
+
+class NodeDetailView(DetailView):
+    template_name = "dashboard/node-detail.html"
+    model = Node
+
+    def get_context_data(self, **kwargs):
+        context = super(NodeDetailView, self).get_context_data(**kwargs)
+        return context
 
 
 class AclUpdateView(View, SingleObjectMixin):
@@ -234,6 +289,13 @@ class VmList(SingleTableView):
     template_name = "dashboard/vm-list.html"
     queryset = Instance.active.all()
     table_class = VmListTable
+    table_pagination = False
+
+
+class NodeList(SingleTableView):
+    template_name = "dashboard/node-list.html"
+    model = Node
+    table_class = NodeListTable
     table_pagination = False
 
 

@@ -157,3 +157,40 @@ body {
 #vm-list-rename-name {
   max-width: 100px;
 }
+
+.label-tag {
+  /* pass */
+}
+
+#vm-details-tags-form {
+  margin-top: 15px;
+  max-width: 250px;
+}
+
+.vm-details-remove-tag {
+  color: white;
+  padding-left: 5px;
+}
+
+.vm-details-remove-tag:hover {
+  cursor: pointer;
+  color: black;
+  text-decoration: none;
+}
+
+/* small buttons for tags, copied from Bootstraps input-sm, bnt-sm */
+.btn-tags {
+  padding: 3px 6px;
+  font-size: 11px;
+  line-height: 1.5;
+  border-radius: 3px;
+}
+
+.input-tags {
+  height: 22px;
+  padding: 2px 8px;
+  font-size: 11px;
+  line-height: 1.5;
+  border-radius: 3px;
+}
+/* --- */

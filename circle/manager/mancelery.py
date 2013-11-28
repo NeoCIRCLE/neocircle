@@ -9,6 +9,7 @@ celery = Celery('manager', backend='amqp',
                 broker=getenv("AMQP_URI"),
                 include=['vm.tasks.local_tasks',
                          'vm.tasks.local_periodic_tasks',
+                         'vm.tasks.local_agent_tasks',
                          'storage.tasks.local_tasks',
                          'firewall.tasks.local_tasks'])
 

@@ -1,42 +1,40 @@
 from __future__ import unicode_literals
-from contextlib import contextmanager
 from datetime import timedelta
-from importlib import import_module
 from logging import getLogger
-from netaddr import EUI, mac_unix
+from importlib import import_module
 
 import django.conf
-from django.contrib.auth.models import User
-from django.core import signing
-from django.db.models import (Model, FloatField, ForeignKey, ManyToManyField,
+from django.db.models import (Model, ForeignKey, ManyToManyField,
                               IntegerField, DateTimeField, BooleanField,
                               TextField, CharField, permalink, Manager)
+from django.contrib.auth.models import User
+from django.core import signing
 from django.dispatch import Signal
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
-from celery.exceptions import TimeoutError
 from model_utils.models import TimeStampedModel
 from taggit.managers import TaggableManager
 
 from acl.models import AclBase
-from common.models import ActivityModel, activitycontextimpl, method_cache
-from firewall.models import Vlan, Host
 from storage.models import Disk
-from .tasks import local_tasks, vm_tasks, net_tasks
+from ..tasks import local_tasks, vm_tasks
+from .node import Node, Trait
+from .network import Interface
+from .activity import instance_activity
 
 logger = getLogger(__name__)
+pre_state_changed = Signal(providing_args=["new_state"])
+post_state_changed = Signal(providing_args=["new_state"])
 pwgen = User.objects.make_random_password
 scheduler = import_module(name=django.conf.settings.VM_SCHEDULER)
+
+ARCHITECTURES = (('x86_64', 'x86-64 (64 bit)'),
+                 ('i686', 'x86 (32 bit)'))
 ACCESS_PROTOCOLS = django.conf.settings.VM_ACCESS_PROTOCOLS
 ACCESS_METHODS = [(key, name) for key, (name, port, transport)
                   in ACCESS_PROTOCOLS.iteritems()]
-ARCHITECTURES = (('x86_64', 'x86-64 (64 bit)'),
-                 ('i686', 'x86 (32 bit)'))
 VNC_PORT_RANGE = (2000, 65536)  # inclusive start, exclusive end
-
-pre_state_changed = Signal(providing_args=["new_state"])
-post_state_changed = Signal(providing_args=["new_state"])
 
 
 def find_unused_vnc_port():
@@ -88,13 +86,6 @@ class NamedBaseResourceConfig(BaseResourceConfigModel, TimeStampedModel):
         return self.name
 
 
-class Trait(Model):
-    name = CharField(max_length=50, verbose_name=_('name'))
-
-    def __unicode__(self):
-        return self.name
-
-
 class VirtualMachineDescModel(BaseResourceConfigModel):
 
     """Abstract base for virtual machine describing models.
@@ -116,176 +107,6 @@ class VirtualMachineDescModel(BaseResourceConfigModel):
 
     class Meta:
         abstract = True
-
-
-class Node(TimeStampedModel):
-
-    """A VM host machine, a hypervisor.
-    """
-    name = CharField(max_length=50, unique=True,
-                     verbose_name=_('name'),
-                     help_text=_('Human readable name of node.'))
-    priority = IntegerField(verbose_name=_('priority'),
-                            help_text=_('Node usage priority.'))
-    host = ForeignKey(Host, verbose_name=_('host'),
-                      help_text=_('Host in firewall.'))
-    enabled = BooleanField(verbose_name=_('enabled'), default=False,
-                           help_text=_('Indicates whether the node can '
-                                       'be used for hosting.'))
-    traits = ManyToManyField(Trait, blank=True,
-                             help_text=_("Declared traits."),
-                             verbose_name=_('traits'))
-    tags = TaggableManager(blank=True, verbose_name=_("tags"))
-    overcommit = FloatField(default=1.0, verbose_name=_("overcommit ratio"),
-                            help_text=_("The ratio of total memory with "
-                                        "to without overcommit."))
-
-    class Meta:
-        permissions = ()
-
-    def __unicode__(self):
-        return self.name
-
-    @property
-    @method_cache(10, 5)
-    def online(self):
-        return self.remote_query(vm_tasks.ping, timeout=1, default=False)
-
-    @property
-    @method_cache(300)
-    def num_cores(self):
-        """Number of CPU threads available to the virtual machines.
-        """
-        return self.remote_query(vm_tasks.get_core_num)
-
-    @property
-    @method_cache(300)
-    def ram_size(self):
-        """Bytes of total memory in the node.
-        """
-        return self.remote_query(vm_tasks.get_ram_size)
-
-    @property
-    def ram_size_with_overcommit(self):
-        """Bytes of total memory including overcommit margin.
-        """
-        return self.ram_size * self.overcommit
-
-    def get_remote_queue_name(self, queue_id):
-        return self.host.hostname + "." + queue_id
-
-    def remote_query(self, task, timeout=30, raise_=False, default=None):
-        """Query the given task, and get the result.
-
-        If the result is not ready in timeout secs, return default value or
-        raise a TimeoutError."""
-        r = task.apply_async(
-            queue=self.get_remote_queue_name('vm'), expires=timeout + 60)
-        try:
-            return r.get(timeout=timeout)
-        except TimeoutError:
-            if raise_:
-                raise
-            else:
-                return default
-
-    def update_vm_states(self):
-        domains = {}
-        for i in self.remote_query(vm_tasks.list_domains_info, timeout=5):
-            # [{'name': 'cloud-1234', 'state': 'RUNNING', ...}, ...]
-            try:
-                id = int(i['name'].split('-')[1])
-            except:
-                pass  # name format doesn't match
-            else:
-                domains[id] = i['state']
-
-        instances = self.instance_set.order_by('id').values('id', 'state')
-        for i in instances:
-            try:
-                d = domains[i['id']]
-            except KeyError:
-                logger.info('Node %s update: instance %s missing from '
-                            'libvirt', self, i['id'])
-            else:
-                if d != i['state']:
-                    logger.info('Node %s update: instance %s state changed '
-                                '(libvirt: %s, db: %s)',
-                                self, i['id'], d, i['state'])
-                    Instance.objects.get(id=i['id']).state_changed(d)
-
-                del domains[i['id']]
-        for i in domains.keys():
-            logger.info('Node %s update: domain %s in libvirt but not in db.',
-                        self, i)
-
-
-class NodeActivity(ActivityModel):
-    node = ForeignKey(Node, related_name='activity_log',
-                      help_text=_('Node this activity works on.'),
-                      verbose_name=_('node'))
-
-    @classmethod
-    def create(cls, code_suffix, node, task_uuid=None, user=None):
-        act = cls(activity_code='vm.Node.' + code_suffix,
-                  node=node, parent=None, started=timezone.now(),
-                  task_uuid=task_uuid, user=user)
-        act.save()
-        return act
-
-    def create_sub(self, code_suffix, task_uuid=None):
-        act = NodeActivity(
-            activity_code=self.activity_code + '.' + code_suffix,
-            node=self.node, parent=self, started=timezone.now(),
-            task_uuid=task_uuid, user=self.user)
-        act.save()
-        return act
-
-    @contextmanager
-    def sub_activity(self, code_suffix, task_uuid=None):
-        act = self.create_sub(code_suffix, task_uuid)
-        return activitycontextimpl(act)
-
-
-@contextmanager
-def node_activity(code_suffix, node, task_uuid=None, user=None):
-    act = InstanceActivity.create(code_suffix, node, task_uuid, user)
-    return activitycontextimpl(act)
-
-
-class Lease(Model):
-
-    """Lease times for VM instances.
-
-    Specifies a time duration until suspension and deletion of a VM
-    instance.
-    """
-    name = CharField(max_length=100, unique=True,
-                     verbose_name=_('name'))
-    suspend_interval_seconds = IntegerField(verbose_name=_('suspend interval'))
-    delete_interval_seconds = IntegerField(verbose_name=_('delete interval'))
-
-    class Meta:
-        ordering = ['name', ]
-
-    @property
-    def suspend_interval(self):
-        return timedelta(seconds=self.suspend_interval_seconds)
-
-    @suspend_interval.setter
-    def suspend_interval(self, value):
-        self.suspend_interval_seconds = value.seconds
-
-    @property
-    def delete_interval(self):
-        return timedelta(seconds=self.delete_interval_seconds)
-
-    @delete_interval.setter
-    def delete_interval(self, value):
-        self.delete_interval_seconds = value.seconds
-
-    def __unicode__(self):
-        return self.name
 
 
 class InstanceTemplate(VirtualMachineDescModel, TimeStampedModel):
@@ -323,11 +144,13 @@ class InstanceTemplate(VirtualMachineDescModel, TimeStampedModel):
     disks = ManyToManyField(Disk, verbose_name=_('disks'),
                             related_name='template_set',
                             help_text=_('Disks which are to be mounted.'))
-    lease = ForeignKey(Lease, related_name='template_set',
+    lease = ForeignKey('Lease', related_name='template_set',
                        verbose_name=_('lease'),
                        help_text=_('Expiration times.'))
 
     class Meta:
+        app_label = 'vm'
+        db_table = 'vm_instancetemplate'
         ordering = ['name', ]
         permissions = ()
         verbose_name = _('template')
@@ -349,28 +172,6 @@ class InstanceTemplate(VirtualMachineDescModel, TimeStampedModel):
             return 'win'
         else:
             return 'linux'
-
-
-class InterfaceTemplate(Model):
-
-    """Network interface template for an instance template.
-
-    If the interface is managed, a host will be created for it.
-    """
-    vlan = ForeignKey(Vlan, verbose_name=_('vlan'),
-                      help_text=_('Network the interface belongs to.'))
-    managed = BooleanField(verbose_name=_('managed'), default=True,
-                           help_text=_('If a firewall host (i.e. IP address '
-                                       'association) should be generated.'))
-    template = ForeignKey(InstanceTemplate, verbose_name=_('template'),
-                          related_name='interface_set',
-                          help_text=_('Template the interface '
-                                      'template belongs to.'))
-
-    class Meta:
-        permissions = ()
-        verbose_name = _('interface template')
-        verbose_name_plural = _('interface templates')
 
 
 class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
@@ -433,7 +234,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
     disks = ManyToManyField(Disk, related_name='instance_set',
                             help_text=_("Set of mounted disks."),
                             verbose_name=_('disks'))
-    lease = ForeignKey(Lease, help_text=_("Preferred expiration periods."))
+    lease = ForeignKey('Lease', help_text=_("Preferred expiration periods."))
     vnc_port = IntegerField(blank=True, default=None, null=True,
                             help_text=_("TCP port where VNC console listens."),
                             unique=True, verbose_name=_('vnc_port'))
@@ -445,6 +246,8 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
     active = InstanceActiveManager()
 
     class Meta:
+        app_label = 'vm'
+        db_table = 'vm_instance'
         ordering = ['pk', ]
         verbose_name = _('instance')
         verbose_name_plural = _('instances')
@@ -918,136 +721,3 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
             self.state = new_state
             self.save()
             post_state_changed.send(sender=self, new_state=new_state)
-
-
-class InstanceActivity(ActivityModel):
-    instance = ForeignKey(Instance, related_name='activity_log',
-                          help_text=_('Instance this activity works on.'),
-                          verbose_name=_('instance'))
-
-    class Meta:
-        ordering = ['-started', 'instance', '-id']
-
-    def __unicode__(self):
-        if self.parent:
-            return '{}({})->{}'.format(self.parent.activity_code,
-                                       self.instance,
-                                       self.activity_code)
-        else:
-            return '{}({})'.format(self.activity_code,
-                                   self.instance)
-
-    def get_readable_name(self):
-        return self.activity_code.split('.')[-1].replace('_', ' ').capitalize()
-
-    @classmethod
-    def create(cls, code_suffix, instance, task_uuid=None, user=None):
-        act = cls(activity_code='vm.Instance.' + code_suffix,
-                  instance=instance, parent=None, started=timezone.now(),
-                  task_uuid=task_uuid, user=user)
-        act.save()
-        return act
-
-    def create_sub(self, code_suffix, task_uuid=None):
-        act = InstanceActivity(
-            activity_code=self.activity_code + '.' + code_suffix,
-            instance=self.instance, parent=self, started=timezone.now(),
-            task_uuid=task_uuid, user=self.user)
-        act.save()
-        return act
-
-    @contextmanager
-    def sub_activity(self, code_suffix, task_uuid=None):
-        act = self.create_sub(code_suffix, task_uuid)
-        return activitycontextimpl(act)
-
-
-@contextmanager
-def instance_activity(code_suffix, instance, task_uuid=None, user=None):
-    act = InstanceActivity.create(code_suffix, instance, task_uuid, user)
-    return activitycontextimpl(act)
-
-
-class Interface(Model):
-
-    """Network interface for an instance.
-    """
-    vlan = ForeignKey(Vlan, verbose_name=_('vlan'),
-                      related_name="vm_interface")
-    host = ForeignKey(Host, verbose_name=_('host'),  blank=True, null=True)
-    instance = ForeignKey(Instance, verbose_name=_('instance'),
-                          related_name='interface_set')
-
-    def __unicode__(self):
-        return 'cloud-' + str(self.instance.id) + '-' + str(self.vlan.vid)
-
-    @property
-    def mac(self):
-        try:
-            return self.host.mac
-        except:
-            return Interface.generate_mac(self.instance, self.vlan)
-
-    @classmethod
-    def generate_mac(cls, instance, vlan):
-        """Generate MAC address for a VM instance on a VLAN.
-        """
-        # MAC 02:XX:XX:XX:XX:XX
-        #        \________/\__/
-        #           VM ID   VLAN ID
-        i = instance.id & 0xfffffff
-        v = vlan.vid & 0xfff
-        m = (0x02 << 40) | (i << 12) | v
-        return EUI(m, dialect=mac_unix)
-
-    def get_vmnetwork_desc(self):
-        return {
-            'name': self.__unicode__(),
-            'bridge': 'cloud',
-            'mac': str(self.mac),
-            'ipv4': str(self.host.ipv4) if self.host is not None else None,
-            'ipv6': str(self.host.ipv6) if self.host is not None else None,
-            'vlan': self.vlan.vid,
-            'managed': self.host is not None
-        }
-
-    def deploy(self, user=None, task_uuid=None):
-        net_tasks.create.apply_async(
-            args=[self.get_vmnetwork_desc()],
-            queue=self.instance.get_remote_queue_name('net'))
-
-    def destroy(self, user=None, task_uuid=None):
-        net_tasks.destroy.apply_async(
-            args=[self.get_vmnetwork_desc()],
-            queue=self.instance.get_remote_queue_name('net'))
-
-    @classmethod
-    def create(cls, instance, vlan, managed, owner=None):
-        """Create a new interface for a VM instance to the specified VLAN.
-        """
-        if managed:
-            host = Host()
-            host.vlan = vlan
-            # TODO change Host's mac field's type to EUI in firewall
-            host.mac = str(cls.generate_mac(instance, vlan))
-            host.hostname = instance.vm_name
-            # Get adresses from firewall
-            addresses = vlan.get_new_address()
-            host.ipv4 = addresses['ipv4']
-            host.ipv6 = addresses['ipv6']
-            host.owner = owner
-            host.save()
-        else:
-            host = None
-
-        iface = cls(vlan=vlan, host=host, instance=instance)
-        iface.save()
-        return iface
-
-    def save_as_template(self, instance_template):
-        """Create a template based on this interface.
-        """
-        i = InterfaceTemplate(vlan=self.vlan, managed=self.host is not None,
-                              template=instance_template)
-        i.save()
-        return i

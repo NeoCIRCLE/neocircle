@@ -1,0 +1,51 @@
+{% extends "dashboard/base.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="body-content">
+  <div class="page-header">
+    <h1>{{ node.name }} <small>{{ node.get_connect_host }}</small></h1>
+  </div>
+  <div class="row">
+    <div class="col-md-4" id="vm-info-pane">
+      <div class="big">
+        <span class="label label-success">{{ node.enabled }}</span>
+        <div class="btn-group">
+          <button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown">Action <i class="icon-caret-down"></i></button>
+          <ul class="dropdown-menu" role="menu">
+	    <li><a href="#"><i class="icon-refresh"></i> Flash</a></li>
+            <li><a href="#"><i class="icon-refresh"></i> Reboot</a></li>
+            <li><a href="#"><i class="icon-off"></i> Shutdown</a></li>
+            <li><a data-vm-pk="{{ node.pk }}" class="vm-delete" href="{% url "dashboard.views.delete-vm" pk=node.pk %}"><i class="icon-remove"></i> Discard</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-8" id="vm-detail-pane">
+      <div class="panel panel-default" id="vm-detail-panel">
+        <ul class="nav nav-pills panel-heading">
+          <li class="active">
+            <a href="#home" data-toggle="pill" class="text-center">
+              <i class="icon-compass icon-2x"></i><br>
+              {% trans "Home" %}</a></li>
+          <li>
+            <a href="#resources" data-toggle="pill" class="text-center">
+              <i class="icon-tasks icon-2x"></i><br>
+              {% trans "Resources" %}</a></li>
+	  <li>
+            <a href="#activity" data-toggle="pill" class="text-center">
+              <i class="icon-time icon-2x"></i><br>
+              {% trans "Activity" %}</a></li>
+        </ul>
+
+        <div class="tab-content panel-body">
+          <div class="tab-pane active" id="home">{% include "dashboard/node-detail-home.html" %}</div>
+          <div class="tab-pane" id="resources">{% include "dashboard/node-detail-resources.html" %}</div>
+          <div class="tab-pane" id="activity">{% include "dashboard/node-detail-activity.html" %}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
