@@ -58,5 +58,5 @@ class NodeListTable(Table):
         model = Node
         attrs = {'class': ('table table-bordered table-striped table-hover '
                            'node-list-table')}
-        fields = ('pk', 'name', 'host' , 'enabled' , 'created' , 'modified' , 'priority' , 'overcommit' ,)
-
+        fields = ('pk', 'name', 'host', 'enabled', 'created', 'modified',
+                  'priority', 'overcommit', )
