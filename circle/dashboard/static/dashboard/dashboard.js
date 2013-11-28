@@ -41,8 +41,11 @@ $(function () {
     window.location.hash = $(this).attr('href');
   });
 
-  if (window.location.hash)
+  if (window.location.hash) {
+    if(window.location.hash.substring(1,4) == "ipv")
+      $("a[href=#network]").tab('show');
     $("a[href=" + window.location.hash +"]").tab('show');
+  }
 
   /* scroll to top if there is a message */
   if($(".messagelist").children(".alert").length > 0)
