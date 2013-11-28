@@ -1,7 +1,7 @@
-from django_tables2 import Table  # A
-from django_tables2.columns import TemplateColumn  # LinkColumn
+from django_tables2 import Table, A
+from django_tables2.columns import LinkColumn, TemplateColumn, Column
 
-from vm.models import Instance
+from vm.models import Instance, Node
 from django.utils.translation import ugettext_lazy as _
 
 
@@ -40,3 +40,23 @@ class VmListTable(Table):
         attrs = {'class': ('table table-bordered table-striped table-hover '
                            'vm-list-table')}
         fields = ('pk', 'name', 'state', 'time_of_suspend', 'time_of_delete', )
+
+
+class NodeListTable(Table):
+
+    pk = Column(
+        verbose_name="ID",
+    )
+
+    name = LinkColumn(
+        'dashboard.views.node-detail',
+        args=[A('pk')],
+        attrs={'a': {'class': 'real-link'}}
+    )
+
+    class Meta:
+        model = Node
+        attrs = {'class': ('table table-bordered table-striped table-hover '
+                           'node-list-table')}
+        fields = ('pk', 'name', 'host' , 'enabled' , 'created' , 'modified' , 'priority' , 'overcommit' ,)
+

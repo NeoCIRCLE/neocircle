@@ -18,9 +18,9 @@ from django.utils.translation import ugettext as _
 
 from django_tables2 import SingleTableView
 
-from .tables import VmListTable
+from .tables import (VmListTable, NodeListTable)
 from vm.models import (Instance, InstanceTemplate, InterfaceTemplate,
-                       InstanceActivity)
+                       InstanceActivity, Node)
 from firewall.models import Vlan
 from storage.models import Disk
 
@@ -276,6 +276,11 @@ class VmList(SingleTableView):
     table_class = VmListTable
     table_pagination = False
 
+class NodeList(SingleTableView):
+    template_name = "dashboard/node-list.html"
+    model = Node
+    table_class = NodeListTable
+    table_pagination = False
 
 class VmCreate(TemplateView):
 
