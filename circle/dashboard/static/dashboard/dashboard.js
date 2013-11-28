@@ -44,6 +44,10 @@ $(function () {
   if (window.location.hash)
     $("a[href=" + window.location.hash +"]").tab('show');
 
+  /* scroll to top if there is a message */
+  if($(".messagelist").children(".alert").length > 0)
+    $('body').animate({scrollTop: 0});
+
   addSliderMiscs();
 
   /* for VM removes buttons */
