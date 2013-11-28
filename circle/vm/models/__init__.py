@@ -1,4 +1,5 @@
 # flake8: noqa
+from .activity import NodeActivity
 from .activity import InstanceActivity
 from .instance import InstanceActiveManager
 from .instance import BaseResourceConfigModel
@@ -12,7 +13,6 @@ from .network import InterfaceTemplate
 from .network import Interface
 from .node import Trait
 from .node import Node
-from .node import NodeActivity
 from .node import Lease
 
 __all__ = [

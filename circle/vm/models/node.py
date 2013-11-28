@@ -1,5 +1,4 @@
 from __future__ import unicode_literals
-from contextlib import contextmanager
 from datetime import timedelta
 from logging import getLogger
 
@@ -7,17 +6,15 @@ from django.db.models import (
     Model, CharField, IntegerField, ForeignKey, BooleanField, ManyToManyField,
     FloatField,
 )
-from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from celery.exceptions import TimeoutError
 from model_utils.models import TimeStampedModel
 from taggit.managers import TaggableManager
 
-from common.models import ActivityModel, activitycontextimpl, method_cache
+from common.models import method_cache
 from firewall.models import Host
 from ..tasks import vm_tasks
-from .activity import InstanceActivity
 
 logger = getLogger(__name__)
 
@@ -137,43 +134,6 @@ class Node(TimeStampedModel):
 
     def __unicode__(self):
         return self.name
-
-
-class NodeActivity(ActivityModel):
-    node = ForeignKey(Node, related_name='activity_log',
-                      help_text=_('Node this activity works on.'),
-                      verbose_name=_('node'))
-
-    class Meta:
-        app_label = 'vm'
-        db_table = 'vm_nodeactivity'
-
-    @classmethod
-    def create(cls, code_suffix, node, task_uuid=None, user=None):
-        act = cls(activity_code='vm.Node.' + code_suffix,
-                  node=node, parent=None, started=timezone.now(),
-                  task_uuid=task_uuid, user=user)
-        act.save()
-        return act
-
-    def create_sub(self, code_suffix, task_uuid=None):
-        act = NodeActivity(
-            activity_code=self.activity_code + '.' + code_suffix,
-            node=self.node, parent=self, started=timezone.now(),
-            task_uuid=task_uuid, user=self.user)
-        act.save()
-        return act
-
-    @contextmanager
-    def sub_activity(self, code_suffix, task_uuid=None):
-        act = self.create_sub(code_suffix, task_uuid)
-        return activitycontextimpl(act)
-
-
-@contextmanager
-def node_activity(code_suffix, node, task_uuid=None, user=None):
-    act = InstanceActivity.create(code_suffix, node, task_uuid, user)
-    return activitycontextimpl(act)
 
 
 class Lease(Model):
