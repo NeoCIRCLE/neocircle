@@ -1,0 +1,9 @@
+
+<div class="btn-group">
+  <button type="button" class="btn btn-xs btn-warning dropdown-toggle" data-toggle="dropdown">Action <i class="icon-caret-down"></i></button>
+  <ul class="dropdown-menu" role="menu">
+    <li><a href="#"><i class="icon-refresh"></i> Reboot</a></li>
+    <li><a href="#"><i class="icon-off"></i> Shutdown</a></li>
+    <li><a data-node-pk="{{ record.pk }}" class="real-link node-delete" href="{% url "dashboard.views.delete-node" pk=record.pk %}?next={{ request.path }}"><i class="icon-remove"></i> Discard</a></li>
+  </ul>
+</div>
