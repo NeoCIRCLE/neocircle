@@ -43,6 +43,12 @@ class IndexView(TemplateView):
             'more_instances': instances.count() - len(instances[:5])
         })
 
+        nodes = Node.objects.all()
+        context.update({
+            'nodes': nodes[:1],
+            'more_nodes': nodes.count() - len(nodes[:1])
+        })
+
         context.update({
             'running_vms': instances.filter(state='RUNNING'),
             'running_vm_num': instances.filter(state='RUNNING').count(),
@@ -193,6 +199,15 @@ class VmDetailView(CheckedDetailView):
                 json.dumps({'message': message}),
                 content_type="application=json"
             )
+
+
+class NodeDetailView(DetailView):
+    template_name = "dashboard/node-detail.html"
+    model = Node
+
+    def get_context_data(self, **kwargs):
+        context = super(NodeDetailView, self).get_context_data(**kwargs)
+        return context
 
 
 class AclUpdateView(View, SingleObjectMixin):
