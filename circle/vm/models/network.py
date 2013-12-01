@@ -67,10 +67,12 @@ class Interface(Model):
         # MAC 02:XX:XX:XX:XX:XX
         #        \________/\__/
         #           VM ID   VLAN ID
+        class mac_custom(mac_unix):
+            word_fmt = '%.2X'
         i = instance.id & 0xfffffff
         v = vlan.vid & 0xfff
         m = (0x02 << 40) | (i << 12) | v
-        return EUI(m, dialect=mac_unix)
+        return EUI(m, dialect=mac_custom)
 
     def get_vmnetwork_desc(self):
         return {
@@ -108,6 +110,7 @@ class Interface(Model):
             host.ipv4 = addresses['ipv4']
             host.ipv6 = addresses['ipv6']
             host.owner = owner
+            host.full_clean()
             host.save()
         else:
             host = None

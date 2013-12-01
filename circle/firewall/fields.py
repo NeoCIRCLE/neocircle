@@ -35,6 +35,12 @@ class MACAddressField(models.Field):
     def get_internal_type(self):
         return 'CharField'
 
+    def to_python(self, value):
+        if not mac_re.search(str(value)):
+            raise ValidationError(
+                MACAddressFormField.default_error_messages['invalid'])
+        return str(value)
+
     def formfield(self, **kwargs):
         defaults = {'form_class': MACAddressFormField}
         defaults.update(kwargs)
