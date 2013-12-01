@@ -2,8 +2,11 @@ from django.test import TestCase
 
 from mock import Mock
 
-from ..models import (
+from ..models.instance import (
     InstanceTemplate, Instance, pre_state_changed, post_state_changed
+)
+from ..models.network import (
+    Interface
 )
 
 
@@ -51,3 +54,19 @@ class InstanceTestCase(TestCase):
         assert mock.called
         assert i.save.called
         assert i.state == 'RUNNING'
+
+
+class InterfaceTestCase(TestCase):
+
+    def test_interface_create(self):
+        from firewall.models import Vlan, Domain
+        from django.contrib.auth.models import User
+        owner = User()
+        owner.save()
+        i = Instance(id=10, owner=owner)
+        d = Domain(owner=owner)
+        d.save()
+        v = Vlan(vid=55, network4='127.0.0.1/8',
+                 network6='2001::1/32', domain=d)
+        v.save()
+        Interface.create(i, v, managed=True, owner=owner)
