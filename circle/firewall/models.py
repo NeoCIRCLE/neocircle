@@ -543,7 +543,7 @@ class Host(models.Model):
                         proto=proto, nat=True, accept=True,
                         nat_dport=private, host=self, foreign_network=vg)
         else:
-            rule = Rule(direction='1', owner=self.owner, dport=public,
+            rule = Rule(direction='1', owner=self.owner, dport=private,
                         proto=proto, nat=False, accept=True,
                         host=self, foreign_network=vg)
 
