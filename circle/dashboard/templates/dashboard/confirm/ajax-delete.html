@@ -1,8 +1,11 @@
+{% load i18n %}
 <div class="modal fade" id="confirmation-modal" tabindex="-1" role="dialog"> 
   <div class="modal-dialog"> 
     <div class="modal-content"> 
       <div class="modal-body">  
-        Are you sure you want to delete <strong>{{ object }}</strong>?
+          {%blocktrans with object=object%}
+          Are you sure you want to delete <strong>{{ object }}</strong>?
+          {%endblocktrans%}
         <br />
         <div class="pull-right" style="margin-top: 15px;">
           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button> 
