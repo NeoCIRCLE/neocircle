@@ -1,0 +1,27 @@
+{% extends "dashboard/base.html" %}
+{% load i18n %}
+
+{% block content %}
+  <div class="body-content">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="no-margin">
+            {% trans "Ownership transfer" %}
+        </h3>
+      </div>
+      <div class="panel-body">
+          {% blocktrans with owner=instance.owner fqdn=instance.primary_host %}
+          {{ owner }} offered to take the ownership of virtual machine {{fqdn}}.
+          Do you accept the responsility of being the host's owner?
+          {% endblocktrans %}
+        <div class="pull-right">
+          <form action="" method="POST">
+            {% csrf_token %}
+            <a class="btn btn-default" href="{% url "dashboard.index" %}">{% trans "No" %}</a>
+            <input type="hidden" name="key" value="{{ key }}"/>
+            <button class="btn btn-danger" type="submit">{% trans "Yes" %}</button>
+          </form>
+        </div>
+      </div>
+  </div>
+{% endblock %}

@@ -5,10 +5,10 @@ import re
 
 from django.contrib.auth.models import User, Group
 from django.contrib.messages import warning
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core import signing
 from django.core.urlresolvers import reverse, reverse_lazy
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 from django.views.generic.detail import SingleObjectMixin
@@ -17,10 +17,11 @@ from django.contrib import messages
 from django.utils.translation import ugettext as _
 
 from django_tables2 import SingleTableView
+from braces.views import LoginRequiredMixin
 
 from .tables import (VmListTable, NodeListTable)
 from vm.models import (Instance, InstanceTemplate, InterfaceTemplate,
-                       InstanceActivity, Node)
+                       InstanceActivity, Node, instance_activity)
 from firewall.models import Vlan
 from storage.models import Disk
 
@@ -496,3 +497,87 @@ def vm_activity(request, pk):
         json.dumps(response),
         content_type="application/json"
     )
+
+
+class TransferOwnershipConfirmView(LoginRequiredMixin, View):
+    max_age = 3 * 24 * 3600
+    success_message = _("Ownership successfully transferred.")
+
+    @classmethod
+    def get_salt(cls):
+        return unicode(cls)
+
+    def get(self, request, *args, **kwargs):
+        """Confirm ownership transfer based on token.
+        """
+        try:
+            key = request.GET['key']
+            logger.debug('Confirm dialog for token %s.', key)
+            instance, new_owner = self.get_instance(key, request.user)
+        except KeyError:
+            raise Http404()
+        except PermissionDenied():
+            messages.error(request, _('This token is for an other user.'))
+            raise
+        except SuspiciousOperation:
+            messages.error(request, _('This token is invalid or has expired.'))
+            raise PermissionDenied()
+        return render(request,
+                      "dashboard/confirm/base-transfer-ownership.html",
+                      dictionary={'instance': instance, 'key': key})
+
+    def post(self, request, *args, **kwargs):
+        """Really transfer ownership based on token.
+        """
+        try:
+            key = request.POST['key']
+            instance, owner = self.get_instance(key, request.user)
+        except KeyError:
+            logger.debug('Posted to %s without key field.',
+                         unicode(self.__class__))
+            raise SuspiciousOperation()
+
+        old = instance.owner
+        with instance_activity(code_suffix='ownership-transferred',
+                               instance=instance, user=request.user):
+            instance.owner = request.user
+            instance.clean()
+            instance.save()
+        messages.success(request, self.success_message)
+        logger.info('Ownership of %s transferred from %s to %s.',
+                    unicode(instance), unicode(old), unicode(request.user))
+        return HttpResponseRedirect(instance.get_absolute_url())
+
+    def get_instance(self, key, user):
+        """Get object based on signed token.
+        """
+        try:
+            instance, new_owner = (
+                signing.loads(key, max_age=self.max_age,
+                              salt=self.get_salt()))
+        except signing.BadSignature as e:
+            logger.error('Tried invalid token. Token: %s, user: %s. %s',
+                         key, unicode(user), unicode(e))
+            raise SuspiciousOperation()
+        except ValueError as e:
+            logger.error('Tried invalid token. Token: %s, user: %s. %s',
+                         key, unicode(user), unicode(e))
+            raise SuspiciousOperation()
+        except TypeError as e:
+            logger.error('Tried invalid token. Token: %s, user: %s. %s',
+                         key, unicode(user), unicode(e))
+            raise SuspiciousOperation()
+
+        try:
+            instance = Instance.objects.get(id=instance)
+        except Instance.DoesNotExist as e:
+            logger.error('Tried token to nonexistent instance %d. '
+                         'Token: %s, user: %s. %s',
+                         instance, key, unicode(user), unicode(e))
+            raise Http404()
+
+        if new_owner != user.pk:
+            logger.error('%s (%d) tried the token for %s. Token: %s.',
+                         unicode(user), user.pk, new_owner, key)
+            raise PermissionDenied()
+        return (instance, new_owner)

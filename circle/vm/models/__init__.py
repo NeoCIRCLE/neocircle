@@ -1,6 +1,7 @@
 # flake8: noqa
 from .activity import NodeActivity
 from .activity import InstanceActivity
+from .activity import instance_activity
 from .instance import InstanceActiveManager
 from .instance import BaseResourceConfigModel
 from .instance import NamedBaseResourceConfig
@@ -18,5 +19,6 @@ from .node import Lease
 __all__ = [
     'InstanceActivity', 'InstanceActiveManager', 'BaseResourceConfigModel',
     'NamedBaseResourceConfig', 'VirtualMachineDescModel', 'InstanceTemplate',
-    'Instance', 'post_state_changed', 'pre_state_changed', 'InterfaceTemplate',
-    'Interface', 'Trait', 'Node', 'NodeActivity', 'Lease', ]
+    'Instance', 'instance_activity', 'post_state_changed', 'pre_state_changed',
+    'InterfaceTemplate', 'Interface', 'Trait', 'Node', 'NodeActivity', 'Lease',
+]

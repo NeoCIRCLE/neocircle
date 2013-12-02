@@ -3,7 +3,9 @@ from django.conf.urls import patterns, url
 from vm.models import Instance
 from .views import (
     IndexView, VmDetailView, VmList, VmCreate, TemplateDetail, AclUpdateView,
-    VmDelete, VmMassDelete, vm_activity, NodeList, NodeDetailView)
+    VmDelete, VmMassDelete, vm_activity, NodeList, NodeDetailView,
+    TransferOwnershipConfirmView
+)
 
 urlpatterns = patterns(
     '',
@@ -25,5 +27,7 @@ urlpatterns = patterns(
     url(r'^node/list/$', NodeList.as_view(), name='dashboard.views.node-list'),
     url(r'^node/(?P<pk>\d+)/$', NodeDetailView.as_view(),
         name='dashboard.views.node-detail'),
+    url(r'^tx/$', TransferOwnershipConfirmView.as_view(),
+        name='dashboard.views.vm-transfer-ownership-confirm'),
 
 )
