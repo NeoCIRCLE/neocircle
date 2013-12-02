@@ -4,7 +4,7 @@ from vm.models import Instance
 from .views import (
     IndexView, VmDetailView, VmList, VmCreate, TemplateDetail, AclUpdateView,
     VmDelete, VmMassDelete, vm_activity, NodeList, NodeDetailView,
-    TransferOwnershipConfirmView
+    TransferOwnershipView, TransferOwnershipConfirmView
 )
 
 urlpatterns = patterns(
@@ -16,6 +16,8 @@ urlpatterns = patterns(
         name='dashboard.views.detail'),
     url(r'^vm/(?P<pk>\d+)/acl/$', AclUpdateView.as_view(model=Instance),
         name='dashboard.views.vm-acl'),
+    url(r'^vm/(?P<pk>\d+)/tx/$', TransferOwnershipView.as_view(),
+        name='dashboard.views.vm-transfer-ownership'),
     url(r'^vm/list/$', VmList.as_view(), name='dashboard.views.vm-list'),
     url(r'^vm/create/$', VmCreate.as_view(),
         name='dashboard.views.vm-create'),

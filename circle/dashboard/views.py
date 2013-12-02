@@ -499,6 +499,30 @@ def vm_activity(request, pk):
     )
 
 
+class TransferOwnershipView(LoginRequiredMixin, DetailView):
+    model = Instance
+    template_name = 'dashboard/vm-detail-tx-owner.html'
+
+    def post(self, request, *args, **kwargs):
+        try:
+            new_owner = User.objects.get(username=request.POST['name'])
+        except User.DoesNotExist:
+            raise Http404()
+        except KeyError:
+            raise SuspiciousOperation()
+
+        obj = self.get_object()
+        if not (obj.owner == request.user or
+                request.user.is_superuser):
+            raise PermissionDenied()
+
+        token = signing.dumps((obj.pk, new_owner.pk),
+                              salt=TransferOwnershipConfirmView.get_salt())
+        return HttpResponse("%s?key=%s" % (
+            reverse('dashboard.views.vm-transfer-ownership-confirm'), token),
+            content_type="text/plain")
+
+
 class TransferOwnershipConfirmView(LoginRequiredMixin, View):
     max_age = 3 * 24 * 3600
     success_message = _("Ownership successfully transferred.")
