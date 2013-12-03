@@ -612,11 +612,13 @@ class Host(models.Model):
                 forward['ipv4'] = {
                     'host': self.get_hostname(proto='ipv4'),
                     'port': public4,
+                    'pk': rule.pk,
                 }
             if self.ipv6:  # ipv6
                 forward['ipv6'] = {
                     'host': self.get_hostname(proto='ipv6'),
                     'port': public6,
+                    'pk': rule.pk,
                 }
             retval.append(forward)
         return retval
