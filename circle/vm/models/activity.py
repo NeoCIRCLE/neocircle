@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+from __future__ import absolute_import, unicode_literals
 from contextlib import contextmanager
 from logging import getLogger
 
@@ -16,9 +16,9 @@ class InstanceActivity(ActivityModel):
                           verbose_name=_('instance'))
 
     class Meta:
-        ordering = ['-started', 'instance', '-id']
         app_label = 'vm'
         db_table = 'vm_instanceactivity'
+        ordering = ['-started', 'instance', '-id']
 
     def __unicode__(self):
         if self.parent:

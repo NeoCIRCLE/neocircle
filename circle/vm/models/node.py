@@ -1,9 +1,8 @@
-from __future__ import unicode_literals
-from datetime import timedelta
+from __future__ import absolute_import, unicode_literals
 from logging import getLogger
 
 from django.db.models import (
-    Model, CharField, IntegerField, ForeignKey, BooleanField, ManyToManyField,
+    CharField, IntegerField, ForeignKey, BooleanField, ManyToManyField,
     FloatField,
 )
 from django.utils.translation import ugettext_lazy as _
@@ -15,19 +14,9 @@ from taggit.managers import TaggableManager
 from common.models import method_cache
 from firewall.models import Host
 from ..tasks import vm_tasks
+from .common import Trait
 
 logger = getLogger(__name__)
-
-
-class Trait(Model):
-    name = CharField(max_length=50, verbose_name=_('name'))
-
-    class Meta:
-        app_label = 'vm'
-        db_table = 'vm_trait'
-
-    def __unicode__(self):
-        return self.name
 
 
 class Node(TimeStampedModel):
@@ -135,40 +124,3 @@ class Node(TimeStampedModel):
         for i in domains.keys():
             logger.info('Node %s update: domain %s in libvirt but not in db.',
                         self, i)
-
-
-class Lease(Model):
-
-    """Lease times for VM instances.
-
-    Specifies a time duration until suspension and deletion of a VM
-    instance.
-    """
-    name = CharField(max_length=100, unique=True,
-                     verbose_name=_('name'))
-    suspend_interval_seconds = IntegerField(verbose_name=_('suspend interval'))
-    delete_interval_seconds = IntegerField(verbose_name=_('delete interval'))
-
-    class Meta:
-        app_label = 'vm'
-        db_table = 'vm_lease'
-        ordering = ['name', ]
-
-    @property
-    def suspend_interval(self):
-        return timedelta(seconds=self.suspend_interval_seconds)
-
-    @suspend_interval.setter
-    def suspend_interval(self, value):
-        self.suspend_interval_seconds = value.seconds
-
-    @property
-    def delete_interval(self):
-        return timedelta(seconds=self.delete_interval_seconds)
-
-    @delete_interval.setter
-    def delete_interval(self, value):
-        self.delete_interval_seconds = value.seconds
-
-    def __unicode__(self):
-        return self.name

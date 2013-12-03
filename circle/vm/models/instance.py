@@ -1,12 +1,12 @@
-from __future__ import unicode_literals
+from __future__ import absolute_import, unicode_literals
 from datetime import timedelta
 from logging import getLogger
 from importlib import import_module
 
 import django.conf
-from django.db.models import (Model, ForeignKey, ManyToManyField,
-                              IntegerField, DateTimeField, BooleanField,
-                              TextField, CharField, permalink, Manager)
+from django.db.models import (BooleanField, CharField, DateTimeField,
+                              IntegerField, ForeignKey, Manager,
+                              ManyToManyField, permalink, TextField)
 from django.contrib.auth.models import User
 from django.core import signing
 from django.dispatch import Signal
@@ -19,9 +19,10 @@ from taggit.managers import TaggableManager
 from acl.models import AclBase
 from storage.models import Disk
 from ..tasks import local_tasks, vm_tasks
-from .node import Node, Trait
-from .network import Interface
 from .activity import instance_activity
+from .common import BaseResourceConfigModel
+from .network import Interface
+from .node import Node, Trait
 
 logger = getLogger(__name__)
 pre_state_changed = Signal(providing_args=["new_state"])
@@ -29,8 +30,6 @@ post_state_changed = Signal(providing_args=["new_state"])
 pwgen = User.objects.make_random_password
 scheduler = import_module(name=django.conf.settings.VM_SCHEDULER)
 
-ARCHITECTURES = (('x86_64', 'x86-64 (64 bit)'),
-                 ('i686', 'x86 (32 bit)'))
 ACCESS_PROTOCOLS = django.conf.settings.VM_ACCESS_PROTOCOLS
 ACCESS_METHODS = [(key, name) for key, (name, port, transport)
                   in ACCESS_PROTOCOLS.iteritems()]
@@ -51,39 +50,6 @@ class InstanceActiveManager(Manager):
     def get_query_set(self):
         return super(InstanceActiveManager,
                      self).get_query_set().filter(destroyed=None)
-
-
-class BaseResourceConfigModel(Model):
-
-    """Abstract base for models with base resource configuration parameters.
-    """
-    num_cores = IntegerField(verbose_name=_('number of cores'),
-                             help_text=_('Number of virtual CPU cores '
-                                         'available to the virtual machine.'))
-    ram_size = IntegerField(verbose_name=_('RAM size'),
-                            help_text=_('Mebibytes of memory.'))
-    max_ram_size = IntegerField(verbose_name=_('maximal RAM size'),
-                                help_text=_('Upper memory size limit '
-                                            'for balloning.'))
-    arch = CharField(max_length=10, verbose_name=_('architecture'),
-                     choices=ARCHITECTURES)
-    priority = IntegerField(verbose_name=_('priority'),
-                            help_text=_('CPU priority.'))
-
-    class Meta:
-        abstract = True
-
-
-class NamedBaseResourceConfig(BaseResourceConfigModel, TimeStampedModel):
-
-    """Pre-created, named base resource configurations.
-    """
-    name = CharField(max_length=50, unique=True,
-                     verbose_name=_('name'), help_text=
-                     _('Name of base resource configuration.'))
-
-    def __unicode__(self):
-        return self.name
 
 
 class VirtualMachineDescModel(BaseResourceConfigModel):
