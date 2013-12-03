@@ -3,9 +3,13 @@
   <div class="modal-dialog"> 
     <div class="modal-content"> 
       <div class="modal-body">  
+        {% if text %}
+          {{ text }}
+        {% else %}
           {%blocktrans with object=object%}
-          Are you sure you want to delete <strong>{{ object }}</strong>?
+            Are you sure you want to delete <strong>{{ object }}</strong>?
           {%endblocktrans%}
+        {% endif %}
         <br />
         <div class="pull-right" style="margin-top: 15px;">
           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button> 

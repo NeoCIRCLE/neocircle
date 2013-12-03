@@ -194,3 +194,17 @@ body {
   border-radius: 3px;
 }
 /* --- */
+
+.vm-details-remove-port:hover {
+  text-decoration: none;
+}
+
+/* arrow in port add table */
+#ipv4 tbody td:nth-child(2), #ipv6 tbody td:nth-child(2) {
+  width: 60px;
+}
+
+/* port add buttons */
+.vm-details-network-port-add .input-group-addon, .vm-details-network-port-add .input-group-btn {                         
+  width: inherit ; 
+}   

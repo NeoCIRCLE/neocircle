@@ -44,31 +44,27 @@ Interfaces</h2>
                 </th></tr>
               </thead>
               <tbody>
-                <!-- inline td width shall be replaced -->
                 {% for l in i.host.list_ports %}
                   {% if l.ipv4 %}
                     <tr>
                       <td>
                         {{ l.ipv4.host }}:{{ l.ipv4.port }}
                       </td>
-                      <td style="width: 61px;"><i class="icon-long-arrow-right"></i></td>
-                      <td style="width: 111px;">
+                      <td><i class="icon-long-arrow-right"></i></td>
+                      <td>
                         {{ l.private }}/{{ l.proto }}
                       </td>
                       <td>
-                        <a href="#" class="btn btn-link btn-xs" title="{% trans "Remove" %}"><i class="icon-remove"><span class="sr-only">{% trans "Remove" %}</span></i></a>
+                        <a href="{% url "dashboard.views.remove-port" pk=instance.pk rule=l.ipv4.pk %}" class="btn btn-link btn-xs vm-details-remove-port" data-rule="{{ l.ipv4.pk }}" title="{% trans "Remove" %}"><i class="icon-remove"><span class="sr-only">{% trans "Remove" %}</span></i></a>
                       </td>
                     </tr>
                   {% endif %}
                 {% endfor %}
-                <tr><td>vm.ik.bme.hu:22620</td><td><i class="icon-long-arrow-right"></i></td><td><abbr title="ssh">22</abbr>/tcp</td><td><a href="#" class="btn btn-link btn-xs" title="remove"><i class="icon-remove"><span class="sr-only">{% trans "remove" %}</span></i></a></td></tr>
-                <tr><td>vm.ik.bme.hu:22620</td><td><i class="icon-long-arrow-right"></i></td><td>12344/tcp</td><td><a href="#" class="btn btn-link btn-xs" title="remove"><i class="icon-remove"><span class="sr-only">{% trans "remove" %}</span></i></a></td></tr>
-                <tr><td>vm.ik.bme.hu:22620</td><td><i class="icon-long-arrow-right"></i></td><td><abbr title="http-alt">8080</abbr>/tcp</td><td><a href="#" class="btn btn-link btn-xs" title="remove"><i class="icon-remove"><span class="sr-only">{% trans "remove" %}</span></i></a></td></tr>
               </tbody>
-              {% include "dashboard/vm-detail-network-port-add.html" %}
             </table>
           </div> <!-- /ipv4 -->
           <div class="tab-pane" id="ipv6">
+            {% if i.host.ipv6 %} 
             <table class="table table-striped rule-table">
               <thead>
                 <tr><th>
@@ -80,30 +76,29 @@ Interfaces</h2>
                 </th></tr>
               </thead>
               <tbody>
-                <!-- inline td width TODO not do it -->
                 {% for l in i.host.list_ports %}
                   {% if l.ipv6 %}
                     <tr>
                       <td>
                         {{ l.ipv6.host }}:{{ l.ipv6.port }}
                       </td>
-                      <td style="width: 61px;"><i class="icon-long-arrow-right"></i></td>
-                      <td style="width: 111px;">
+                      <td><i class="icon-long-arrow-right"></i></td>
+                      <td>
                         {{ l.private }}/{{ l.proto }}
                       </td>
                       <td>
-                        <a href="#" class="btn btn-link btn-xs" title="{% trans "Remove" %}"><i class="icon-remove"><span class="sr-only">{% trans "Remove" %}</span></i></a>
+                        <a href="{% url "dashboard.views.remove-port" pk=instance.pk rule=l.ipv4.pk %}" class="btn btn-link btn-xs vm-details-remove-port" data-rule="{{ l.ipv6.pk }}" title="{% trans "Remove" %}"><i class="icon-remove"><span class="sr-only">{% trans "Remove" %}</span></i></a>
                       </td>
                     </tr>
                   {% endif %}
                 {% endfor %}
-                <tr><td>550.vm.ik.bme.hu:22</td><td><i class="icon-long-arrow-right"></i></td><td><abbr title="ssh">22</abbr>/tcp</td><td><a href="#" class="btn btn-link btn-xs" title="remove"><i class="icon-remove"><span class="sr-only">{% trans "remove" %}</span></i></a></td></tr>
-                <tr><td>550.vm.ik.bme.hu:12344</td><td><i class="icon-long-arrow-right"></i></td><td>12344/tcp</td><td><a href="#" class="btn btn-link btn-xs" title="remove"><i class="icon-remove"><span class="sr-only">{% trans "remove" %}</span></i></a></td></tr>
-                <tr><td>550.vm.ik.bme.hu:8080</td><td><i class="icon-long-arrow-right"></i></td><td><abbr title="http-alt">8080</abbr>/tcp</td><td><a href="#" class="btn btn-link btn-xs" title="remove"><i class="icon-remove"><span class="sr-only">{% trans "remove" %}</span></i></a></td></tr>
               </tbody>
-              {% include "dashboard/vm-detail-network-port-add.html" %}
             </table>
-          </div>
+            {% else %}
+              <h4>{% trans "This VM doesn't have an IPv6 address!" %}</h4>
+            {% endif %}
+          </div><!-- /ipv6 -->
+          {% include "dashboard/vm-detail-network-port-add.html" %}
         </div>
       </div>
     </div>

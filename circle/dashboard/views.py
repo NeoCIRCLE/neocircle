@@ -22,7 +22,7 @@ from braces.views import LoginRequiredMixin
 from .tables import (VmListTable, NodeListTable)
 from vm.models import (Instance, InstanceTemplate, InterfaceTemplate,
                        InstanceActivity, Node, instance_activity)
-from firewall.models import Vlan
+from firewall.models import Vlan, Host, Rule
 from storage.models import Disk
 
 logger = logging.getLogger(__name__)
@@ -120,6 +120,9 @@ class VmDetailView(CheckedDetailView):
         if request.POST.get("to_remove") is not None:
             return self.__remove_tag(request)
 
+        if request.POST.get("port") is not None:
+            return self.__add_port(request)
+
     def __set_resources(self, request):
         self.object = self.get_object()
         if not self.object.has_level(request.user, 'owner'):
@@ -200,6 +203,31 @@ class VmDetailView(CheckedDetailView):
                 json.dumps({'message': message}),
                 content_type="application=json"
             )
+
+    def __add_port(self, request):
+        object = self.get_object()
+        if not object.has_level(request.user, 'owner'):
+            raise PermissionDenied()
+
+        port = request.POST.get("port")
+        proto = request.POST.get("proto")
+
+        try:
+            error = None
+            host = Host.objects.get(pk=request.POST.get("host_pk"))
+            host.add_port(proto, private=port)
+        except Host.DoesNotExist:
+            error = _("Host not found!")
+        except Exception, e:
+            error = u', '.join(e.messages)
+
+        if request.is_ajax():
+            pass
+        else:
+            if error:
+                messages.error(request, error)
+            return redirect(reverse_lazy("dashboard.views.detail",
+                                         kwargs={'pk': self.get_object().pk}))
 
 
 class NodeDetailView(DetailView):
@@ -389,6 +417,7 @@ class VmDelete(DeleteView):
     def get_context_data(self, **kwargs):
         # this is redundant now, but if we wanna add more to print
         # we'll need this
+        print kwargs
         context = super(VmDelete, self).get_context_data(**kwargs)
         return context
 
@@ -419,6 +448,52 @@ class VmDelete(DeleteView):
             return next
         else:
             return reverse_lazy('dashboard.index')
+
+
+class PortDelete(DeleteView):
+    model = Rule
+    pk_url_kwarg = 'rule'
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/confirm/ajax-delete.html']
+        else:
+            return ['dashboard/confirm/base-delete.html']
+
+    def get_context_data(self, **kwargs):
+        context = super(PortDelete, self).get_context_data(**kwargs)
+        rule = kwargs.get('object')
+        instance = rule.host.interface_set.get().instance
+        context['title'] = _("Port delete confirmation")
+        context['text'] = _("Are you sure you want to close %(port)d/"
+                            "%(proto)s on %(vm)s?" % {'port': rule.dport,
+                                                      'proto': rule.proto,
+                                                      'vm': instance})
+        return context
+
+    def delete(self, request, *args, **kwargs):
+        rule = Rule.objects.get(pk=kwargs.get("rule"))
+        instance = rule.host.interface_set.get().instance
+        if not instance.has_level(request.user, 'owner'):
+            raise PermissionDenied()
+
+        super(PortDelete, self).delete(request, *args, **kwargs)
+
+        success_url = self.get_success_url()
+        success_message = _("Port successfully removed!")
+
+        if request.is_ajax():
+            return HttpResponse(
+                json.dumps({'message': success_message}),
+                content_type="application/json",
+            )
+        else:
+            messages.success(request, success_message)
+            return HttpResponseRedirect("%s#network" % success_url)
+
+    def get_success_url(self):
+        return reverse_lazy('dashboard.views.detail',
+                            kwargs={'pk': self.kwargs.get("pk")})
 
 
 class VmMassDelete(View):

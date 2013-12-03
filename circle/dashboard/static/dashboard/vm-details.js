@@ -75,7 +75,38 @@ $(function() {
     });
     return false;
   });
+
+  /* remove port */
+  $('.vm-details-remove-port').click(function() {
+    addModalConfirmation(removePort, 
+      {
+        'url': $(this).prop("href"),
+        'data': [],
+        'rule': $(this).data("rule")
+      });
+    return false;
+  });
 });
+
+
+function removePort(data) {
+  $.ajax({
+    type: 'POST',
+    url: data['url'],
+    headers: {"X-CSRFToken": getCookie('csrftoken')},
+    success: function(re, textStatus, xhr) {
+      $("a[data-rule=" + data['rule'] + "]").each(function() {
+        $(this).closest("tr").fadeOut(500, function() {
+          $(this).remove();
+        });
+      });
+      addMessage(re['message'], "success");
+    },
+    error: function(xhr, textStatus, error) {
+
+    }
+  });
+}
 
 function checkNewActivity() {
   var latest = $('.activity:first').data('activity-id');

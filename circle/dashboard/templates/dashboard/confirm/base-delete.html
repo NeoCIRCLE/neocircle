@@ -6,13 +6,21 @@
     <div class="panel panel-default">
       <div class="panel-heading">
         <h3 class="no-margin">
-          Delete confirmation
+          {% if title %}
+            {{ title }}
+          {% else %}
+            Delete confirmation
+          {% endif %}  
         </h3>
       </div>
       <div class="panel-body">
-          {%blocktrans with object=object%}
-          Are you sure you want to delete <strong>{{ object }}</strong>?
-          {%endblocktrans%}
+          {% if text %}
+            {{ text }}
+          {% else %}
+            {%blocktrans with object=object%}
+              Are you sure you want to delete <strong>{{ object }}</strong>?
+            {%endblocktrans%}
+          {% endif %}
         <div class="pull-right">
           <form action="" method="POST">
             {% csrf_token %}
