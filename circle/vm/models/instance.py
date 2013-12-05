@@ -37,7 +37,7 @@ VNC_PORT_RANGE = (2000, 65536)  # inclusive start, exclusive end
 
 
 def find_unused_vnc_port():
-    used = Instance.objects.values_list('vnc_port', flat=True)
+    used = set(Instance.objects.values_list('vnc_port', flat=True))
     for p in xrange(*VNC_PORT_RANGE):
         if p not in used:
             return p
