@@ -487,7 +487,7 @@ class Host(models.Model):
                                         nat=True, proto=proto)
         else:
             ports = self.rules.filter(proto=proto, )
-        return ports.values_list('dport', flat=True)
+        return set(ports.values_list('dport', flat=True))
 
     def _get_random_port(self, proto, used_ports=None):
         """
@@ -496,7 +496,7 @@ class Host(models.Model):
 
         :param proto: The transport protocol of the generated port (tcp|udp).
         :type proto: str.
-        :param used_ports: Optional list of used ports returned by
+        :param used_ports: Optional set of used ports returned by
                            _get_ports_used.
         :returns: int -- the generated port number.
         :raises: ValidationError
