@@ -471,7 +471,8 @@ class Host(models.Model):
                        type='AAAA').save()
 
     def enable_net(self):
-        self.groups.add(Group.objects.get(name="netezhet"))
+        for i in settings.get('default_host_groups', []):
+            self.groups.add(Group.objects.get(name=i))
 
     def _get_ports_used(self, proto):
         """
