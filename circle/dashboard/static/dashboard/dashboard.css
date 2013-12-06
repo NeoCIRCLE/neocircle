@@ -91,6 +91,10 @@ body {
   min-height: 20em;
 }
 
+#node-detail-panel .panel-body {
+  min-height: 20em;
+}
+
 :link i:before:hover {
   text-decoration: none !important;
 }
@@ -142,19 +146,20 @@ body {
     height: 300px;
 }
 
-#vm-details-rename, #vm-details-rename *, #vm-details-h1-name, #vm-list-rename, #vm-list-rename * {
+#vm-details-rename, #vm-details-rename *, #vm-details-h1-name, #vm-list-rename, #vm-list-rename *,
+#node-details-rename, #node-details-rename *, #node-details-h1-name, #node-list-rename, #node-list-rename * {
   display: inline;
 }
 
-#vm-details-rename, #vm-list-rename {
+#vm-details-rename, #vm-list-rename, #node-details-rename, #node-list-rename {
   display: none;
 }
 
-#vm-details-rename-name {
+#vm-details-rename-name, #node-details-rename-name {
   max-width: 160px;
 }
 
-#vm-list-rename-name {
+#vm-list-rename-name, #node-list-rename-name {
   max-width: 100px;
 }
 

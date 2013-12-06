@@ -1,24 +1,51 @@
 {% load i18n %}
-<div class="panel panel-default">
+  <div class="panel panel-default">
   <div class="panel-heading">
     <div class="pull-right toolbar">
       <div class="btn-group">
-        <a href="#node-graph-view" class="btn btn-default btn-xs"><i class="icon-dashboard"></i></a>
-        <a href="#node-list-view" class="btn btn-default btn-xs"><i class="icon-list"></i></a>
+        <a href="#index-graph-view" data-index-box="node" class="btn btn-default btn-xs"><i class="icon-dashboard"></i></a>
+        <a href="#index-list-view" data-index-box="node" class="btn btn-default btn-xs disabled"><i class="icon-list"></i></a>
+
       </div>
       <span class="btn btn-default btn-xs infobtn" title="Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui.  "><i class="icon-info-sign"></i></span>
     </div>
     <h3 class="no-margin">
       <i class="icon-sitemap"></i> {% trans "Compute nodes" %}
     </h3>
+  </div >
+  <div class="list-group" id="node-list-view">
+    {% for i in nodes %}
+    <a href="{% url "dashboard.views.node-detail" pk=i.pk %}" class="list-group-item">
+    <i class="icon-{% if i.enabled == True %}play-sign{% else %}pause{% endif %}"></i> {{ i.name }} <div class="pull-right"><i class="icon-star text-primary" title="Mark as favorite."></i></div>
+      </a>
+    {% endfor %}
+    <div href="#" class="list-group-item list-group-footer">
+      <div class="row">
+        <div class="col-sm-6 col-xs-6 input-group input-group-sm">
+          <input type="text" class="form-control" placeholder="Search..." />
+          <div class="input-group-btn">
+            <button type="submit" class="form-control btn btn-primary" title="search"><i class="icon-search"></i></button>
+          </div>
+        </div>
+        <div class="col-sm-6 text-right">
+          {% if more_nodes > 0 %}
+          <a class="btn btn-primary btn-xs" href="{% url "dashboard.views.node-list" %}">
+            <i class="icon-chevron-sign-right"></i> <strong>{{ more_nodes }}</strong>  more  
+          </a>
+          {% endif %}
+          <a class="btn btn-success btn-xs node-create" href="{% url "dashboard.views.node-create" %}"><i class="icon-plus-sign"></i> new </a>
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="panel-body" id="node-graph-view" style="">
-    <p class="pull-right">  <input class="knob" data-fgColor="chartreuse" data-thickness=".4" data-width="60" data-height="60" data-readOnly="true" value="68"></p>
-    <p><span class="big"><big>13</big> running </span>
-    + <big>3</big> off + <big>3</big> missing</p>
+ 
+  <div class="panel-body" id="node-graph-view" style="display: none">
+	  <p class="pull-right">  <input class="knob" data-fgColor="chartreuse" data-thickness=".4" data-width="60" data-height="60" data-readOnly="true" value="{% widthratio node_num.running sum_node_num 100 %}"></p>
+    <p><span class="big"><big>{{ node_num.running }}</big> running </span>
+    + <big>{{ node_num.missing }}</big> missing + <br><big>{{ node_num.disabled }}</big> disabled + <big>{{ node_num.offline }}</big> offline</p>
       <ul class="list-inline">
-   {% for i in nodes %}
-	<li class="label label-success"><i class="icon-{% if i.enabled == True %}play-sign{% else %}pause{% endif %}"></i>{{ i.name }}</li>
+      {% for i in nodes %}
+   <a class="label {% if i.state == 'online' %}label-success{% elif i.state == 'missing' %}label-danger{% else %}label-warning{% endif %}" href="{% url "dashboard.views.node-detail" pk=i.pk %}"><i class="icon-{% if i.enabled == True %}play-sign{% else %}pause{% endif %}"></i> {{ i.name}}</a>
    {% endfor %}
    </ul>
 
@@ -31,12 +58,12 @@
 	    </div>
         </div>
         <div class="col-sm-6 text-right">
-         {% if more_nodes > 0 %}
+		{% if more_nodes >= 0  %}
           <a class="btn btn-primary btn-xs" href="{% url "dashboard.views.node-list" %}">
             <i class="icon-chevron-sign-right"></i> <strong>{{ more_nodes }}</strong>  more
           </a>
          {% endif %}
-	<a class="btn btn-success btn-xs vm-create" href="{% url "dashboard.views.vm-create" %}"><i class="icon-plus-sign"></i> new </a>
+	<a class="btn btn-success btn-xs node-create" href="{% url "dashboard.views.node-create" %}"><i class="icon-plus-sign"></i> new </a>
     	</div>
 </div>
 </div>

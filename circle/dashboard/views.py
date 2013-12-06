@@ -22,7 +22,7 @@ from django_tables2 import SingleTableView
 from braces.views import LoginRequiredMixin
 
 from .forms import VmCreateForm
-from .tables import (VmListTable, NodeListTable)
+from .tables import (VmListTable, NodeListTable, NodeVmListTable)
 from vm.models import (Instance, InstanceTemplate, InterfaceTemplate,
                        InstanceActivity, Node, instance_activity)
 from firewall.models import Vlan, Host, Rule
@@ -49,8 +49,15 @@ class IndexView(TemplateView):
 
         nodes = Node.objects.all()
         context.update({
-            'nodes': nodes[:1],
-            'more_nodes': nodes.count() - len(nodes[:1])
+            'nodes': nodes[:10],
+            'more_nodes': nodes.count() - len(nodes[:10]),
+            'sum_node_num': nodes.count(),
+            'node_num': {
+                'running': Node.get_state_count(True, True),
+                'missing': Node.get_state_count(False, True),
+                'disabled': Node.get_state_count(True, False),
+                'offline': Node.get_state_count(False, False)
+            }
         })
 
         context.update({
@@ -247,9 +254,38 @@ class NodeDetailView(DetailView):
     template_name = "dashboard/node-detail.html"
     model = Node
 
+
     def get_context_data(self, **kwargs):
         context = super(NodeDetailView, self).get_context_data(**kwargs)
+        context['table'] = NodeVmListTable(Instance.active.filter(node=self.object))
         return context
+
+    def post(self, request, *args, **kwargs):
+        if request.POST.get('new_name'):
+            return self.__set_name(request)
+
+    def __set_name(self, request):
+        self.object = self.get_object()
+        new_name = request.POST.get("new_name")
+        Node.objects.filter(pk=self.object.pk).update(
+            **{'name': new_name})
+
+        success_message = _("Node successfully renamed!")
+        if request.is_ajax():
+            response = {
+                'message': success_message,
+                'new_name': new_name,
+                'node_pk': self.object.pk
+            }
+            return HttpResponse(
+                json.dumps(response),
+                content_type="application/json"
+            )
+        else:
+            messages.success(request, success_message)
+            return redirect(reverse_lazy("dashboard.views.node-detail",
+                                         kwargs={'pk': self.object.pk}))
+
 
 
 class AclUpdateView(View, SingleObjectMixin):
@@ -333,7 +369,6 @@ class VmList(SingleTableView):
     table_class = VmListTable
     table_pagination = False
 
-
 class NodeList(SingleTableView):
     template_name = "dashboard/node-list.html"
     model = Node
@@ -414,6 +449,82 @@ class VmCreate(TemplateView):
         else:
             return redirect(path)
 
+class NodeCreate(TemplateView):
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/modal-wrapper.html']
+        else:
+            return ['dashboard/nojs-wrapper.html']
+
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        context.update({
+            'template': 'dashboard/node-create.html',
+            'box_title': 'Create a Node'
+        })
+        return self.render_to_response(context)
+
+    def get_context_data(self, **kwargs):
+        context = super(NodeCreate, self).get_context_data(**kwargs)
+        # TODO acl
+        context.update({
+            'templates': InstanceTemplate.objects.all(),
+            'vlans': Vlan.objects.all(),
+            'disks': Disk.objects.exclude(type="qcow2-snap")
+        })
+
+        return context
+
+    # TODO handle not ajax posts
+    def post(self, request, *args, **kwargs):
+        if self.request.user.is_authenticated():
+            user = self.request.user
+        else:
+            user = None
+
+        resp = {}
+        try:
+            ikwargs = {
+                'num_cores': int(request.POST.get('cpu-count')),
+                'ram_size': int(request.POST.get('ram-size')),
+                'priority': int(request.POST.get('cpu-priority')),
+            }
+
+            networks = [InterfaceTemplate(vlan=Vlan.objects.get(pk=l),
+                                          managed=True)
+                        for l in request.POST.getlist('managed-vlans')
+                        ]
+            networks.extend([InterfaceTemplate(vlan=Vlan.objects.get(pk=l),
+                                               managed=False)
+                            for l in request.POST.getlist('unmanaged-vlans')
+                             ])
+
+            disks = Disk.objects.filter(pk__in=request.POST.getlist('disks'))
+            template = InstanceTemplate.objects.get(
+                pk=request.POST.get('template-pk'))
+
+            inst = Instance.create_from_template(template=template,
+                                                 owner=user, networks=networks,
+                                                 disks=disks, **ikwargs)
+            inst.deploy_async(user=request.user)
+
+            resp['pk'] = inst.pk
+            messages.success(request, _('Node successfully created!'))
+        except InstanceTemplate.DoesNotExist:
+            resp['error'] = True
+        except Exception, e:
+            print e
+            resp['error'] = True
+
+        if request.is_ajax():
+            return HttpResponse(json.dumps(resp),
+                                content_type="application/json",
+                                status=500 if resp.get('error') else 200)
+        else:
+            return redirect(reverse_lazy('dashboard.views.detail', resp))
+
+
 
 class VmDelete(DeleteView):
     model = Instance
@@ -460,6 +571,94 @@ class VmDelete(DeleteView):
         else:
             return reverse_lazy('dashboard.index')
 
+    model = Instance
+    template_name = "dashboard/confirm/base-delete.html"
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/confirm/ajax-delete.html']
+        else:
+            return ['dashboard/confirm/base-delete.html']
+
+    def get_context_data(self, **kwargs):
+        # this is redundant now, but if we wanna add more to print
+        # we'll need this
+        context = super(VmDelete, self).get_context_data(**kwargs)
+        return context
+
+    # github.com/django/django/blob/master/django/views/generic/edit.py#L245
+    def delete(self, request, *args, **kwargs):
+        object = self.get_object()
+        if not object.has_level(request.user, 'owner'):
+            raise PermissionDenied()
+
+        object.destroy_async(user=request.user)
+        success_url = self.get_success_url()
+        success_message = _("VM successfully deleted!")
+
+        if request.is_ajax():
+            if request.POST.get('redirect').lower() == "true":
+                messages.success(request, success_message)
+            return HttpResponse(
+                json.dumps({'message': success_message}),
+                content_type="application/json",
+            )
+        else:
+            messages.success(request, success_message)
+            return HttpResponseRedirect(success_url)
+
+    def get_success_url(self):
+        next = self.request.POST.get('next')
+        if next:
+            return next
+        else:
+            return reverse_lazy('dashboard.index')
+
+
+class NodeDelete(DeleteView):
+
+    """This stuff deletes the node.
+    """
+    model = Node
+    template_name = "dashboard/confirm/base-delete.html"
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/confirm/ajax-delete.html']
+        else:
+            return ['dashboard/confirm/base-delete.html']
+
+    def get_context_data(self, **kwargs):
+        # this is redundant now, but if we wanna add more to print
+        # we'll need this
+        context = super(NodeDelete, self).get_context_data(**kwargs)
+        return context
+
+    # github.com/django/django/blob/master/django/views/generic/edit.py#L245
+    def delete(self, request, *args, **kwargs):
+        object = self.get_object()
+
+        object.delete()
+        success_url = self.get_success_url()
+        success_message = _("Node successfully deleted!")
+
+        if request.is_ajax():
+            if request.POST.get('redirect').lower() == "true":
+                messages.success(request, success_message)
+            return HttpResponse(
+                json.dumps({'message': success_message}),
+                content_type="application/json",
+            )
+        else:
+            messages.success(request, success_message)
+            return HttpResponseRedirect(success_url)
+
+    def get_success_url(self):
+        next = self.request.POST.get('next')
+        if next:
+            return next
+        else:
+            return reverse_lazy('dashboard.index')
 
 class PortDelete(DeleteView):
     model = Rule

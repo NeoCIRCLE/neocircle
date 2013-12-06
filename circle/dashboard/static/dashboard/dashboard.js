@@ -15,6 +15,23 @@ $(function () {
     });
     return false;
   });
+ 
+  $('.node-create').click(function(e) {
+    $.ajax({
+      type: 'GET',
+      url: '/dashboard/node/create/', 
+      success: function(data) { 
+        $('body').append(data);
+        nodeCreateLoaded();
+        addSliderMiscs();
+        $('#node-create-modal').modal('show');
+        $('#node-create-modal').on('hidden.bs.modal', function() {
+          $('#node-create-modal').remove();
+        });
+      }
+    });
+    return false;
+  });
   $('[href=#index-graph-view]').click(function (e) {
     var box = $(this).data('index-box');
     $("#" + box + "-list-view").hide();
@@ -65,6 +82,20 @@ $(function () {
     
     return false;
   });
+
+  /* for Node removes buttons */
+  $('.node-delete').click(function() {
+    var node_pk = $(this).data('node-pk');
+    var dir = window.location.pathname.indexOf('list') == -1;
+    addModalConfirmation(deleteNode, 
+      { 'url': '/dashboard/node/delete/' + node_pk + '/',
+        'data': [],
+        'node_pk': node_pk,
+        'redirect': dir});
+    
+    return false;
+  });
+ 
 });
 
 function addSliderMiscs() {

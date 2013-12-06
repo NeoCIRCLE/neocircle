@@ -2,14 +2,21 @@
 <form id="vm-details-resources-form" method="POST" action="">
   {% csrf_token %}
 
-<p class="row">
-    <div class="col-sm-3">
-      <label for="cpu-count-slider"><i class="icon-cogs"></i> {% trans "Name" %}</label>
-    </div>
-    <div class="col-sm-9">
-      <label > {{ node.name }} </label>
-    </div>
-</p>
+  <dl class="dl-horizontal">
+    <dt>Name:</dt><dd>{{ node.name }}</dd>
+    <dt>Number of cores:</dt><dd>{{ node.num_cores }}</dd>
+    <dt>Memory:</dt> <dd>{% widthratio node.ram_size 1048576 1 %} MB</dd>
+    <dt>Architecture:</td><dd>{{ record.arch }}</dd>
+    <dt>IPv4 address:</dt><dd>{{ node.host.ipv4 }}</dd>
+    <dt>IPv6 address:</dt><dd> {{ node.host.ipv6 }}</dd>
+    <dt>Enabled:</dt><dd>{{ node.enabled }}</dd>
+    <dt>Host online:</dt><dd> {{ node.online }}</dd>
+    <dt>Priority:</dt><dd>{{ node.priority }}</dd>
+    <dt>Host owner:</dt><dd>{{ node.host.owner }}</dd>
+    <dt>Vlan:</dt><dd>{{ node.host.vlan }}</dd>
+    <dt>Hostname:</dt><dd>{{ node.host.hostname }}</dd>
+    </dl>
+
 
 <p class="row">
     <div class="col-sm-3">
@@ -154,7 +161,7 @@
       <label for="cpu-count-slider"><i class="icon-cogs"></i> {% trans "CPU count" %}</label>
     </div>
     <div class="col-sm-9">
-      <label > {{ node.host. }} </label>
+      <label > {{ node.host }} </label>
     </div>
 </p>
 

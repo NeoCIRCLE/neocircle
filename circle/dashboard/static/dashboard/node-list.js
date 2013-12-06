@@ -13,6 +13,7 @@ $(function() {
   });
 
   $('.node-list-table tbody').find('tr').mousedown(function() {
+    var retval = true;
     if (ctrlDown) {
       setRowColor($(this));
       if(!$(this).hasClass('node-list-selected')) {
@@ -20,6 +21,7 @@ $(function() {
       } else {
         selected.push($(this).index());
       }
+      retval = false;
     } else if(shiftDown) {
       if(selected.length > 0) {
         start = selected[selected.length - 1] + 1;
@@ -36,6 +38,7 @@ $(function() {
             }
         }
       }
+      retval = false;
     } else {
       $('.node-list-selected').removeClass('node-list-selected');
       $(this).addClass('node-list-selected');
@@ -53,22 +56,26 @@ $(function() {
     } else {
       $('.node-list-group-control a').attr('disabled', true);
     }
-    return false;
+    return retval;
   });
 
-    
+$(':not(#anything)').on('click', function (e) {
+	    $('.node-list-details').each(function () {
+		            //the 'is' for buttons that trigger popups
+			    //        //the 'has' for icons and other elements within a button that triggers a popup
+                if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
+                            $(this).popover('hide');
+                                        return;
+                                                }
+                                                 });
+                                                    });
+
   $('#node-list-group-migrate').click(function() {
     console.log(collectIds(selected));
   });
 
   $('.node-list-details').popover({
     'placement': 'auto',
-    'html': true,
-    'trigger': 'hover'
-  });
-
-  $('.node-list-connect').popover({
-    'placement': 'left',
     'html': true,
     'trigger': 'click'
   });
@@ -80,11 +87,48 @@ $(function() {
 
   $('tbody a').click(function(e) {
     // browser doesn't jump to top when clicked the buttons
-    if(!$(this).hasClass('real-link')) {
+      
+      if(!$(this).hasClass('real-link')) {
       return false;
     }
   });
 
+  /* rename */
+  $("#node-list-rename-button, .node-details-rename-button").click(function() {
+    $("#node-list-column-name", $(this).closest("tr")).hide();
+    $("#node-list-rename", $(this).closest("tr")).css('display', 'inline');
+  });
+
+  /* rename ajax */
+  $('.node-list-rename-submit').click(function() {
+    var row = $(this).closest("tr")
+    var name = $('#node-list-rename-name', row).val();
+    var url = '/dashboard/node/' + row.children("td:first-child").text().replace(" ", "") + '/';
+    $.ajax({
+      method: 'POST',
+      url: url,
+      data: {'new_name': name},
+      headers: {"X-CSRFToken": getCookie('csrftoken')},
+      success: function(data, textStatus, xhr) {
+        
+        $("#node-list-column-name", row).html(
+          $("<a/>", {
+            'class': "real-link",
+            href: "/dashboard/node/" + data['node_pk'] + "/",
+            text: data['new_name']
+          })
+        ).show();
+        $('#node-list-rename', row).hide();
+        // addMessage(data['message'], "success");
+      },
+      error: function(xhr, textStatus, error) {
+        addMessage("uhoh", "danger");
+      }
+    });
+    return false;
+  });
+  
+  
   /* group actions */
 
   /* select all */
@@ -103,9 +147,15 @@ $(function() {
 
   /* mass vm delete */
   $('#node-list-group-delete').click(function() {
-    text = "Are you sure you want to delete the selected VMs?";
-    random_vm_pk = $('.vm-delete').eq(0).data('vm-pk');
-    addModalConfirmation(text, random_vm_pk, massDeleteVm, false);
+    addModalConfirmation(massDeleteVm,
+      {
+        'url': '/dashboard/node/mass-delete/',
+        'data': {
+          'selected': selected,
+          'v': collectIds(selected)
+        }
+      }
+    );
     return false;
   });
 });
@@ -114,16 +164,15 @@ function collectIds(rows) {
   var ids = [];
   for(var i = 0; i < rows.length; i++) {
     var div = $('td:first-child div', $('.node-list-table tbody tr').eq(rows[i]));
-    ids.push(div.prop('id').replace('vm-', ''));
+    ids.push(div.prop('id').replace('node-', ''));
   }
   return ids;  
 }
 
 function setRowColor(row) {
-  if(!row.hasClass('vm-list-selected')) {
+  if(!row.hasClass('node-list-selected')) {
     row.addClass('node-list-selected');
   } else {
     row.removeClass('node-list-selected');
   }
-
 }

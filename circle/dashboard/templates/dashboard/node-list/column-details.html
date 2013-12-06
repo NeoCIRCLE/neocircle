@@ -3,7 +3,7 @@
   <h4>Quick details</h4>
   <dl class="dl-horizontal">
     <dt>Number of cores:</dt><dd>{{ record.num_cores }}</dd>
-    <dt>Memory:</dt> <dd>{{ record.ram_size }} Mebibytes</dd>
+    <dt>Memory:</dt> <dd>{% widthratio record.ram_size 1048576 1 %} MB</dd>
     <dt>Architecture:</td><dd>{{ record.arch }}</dd>
   </dl>
   <dl>

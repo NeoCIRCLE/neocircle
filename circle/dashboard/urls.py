@@ -4,8 +4,8 @@ from vm.models import Instance
 from .views import (
     IndexView, VmDetailView, VmList, VmCreate, TemplateDetail, AclUpdateView,
     VmDelete, VmMassDelete, vm_activity, NodeList, NodeDetailView, PortDelete,
-    TransferOwnershipView, TransferOwnershipConfirmView
-)
+    TransferOwnershipView, TransferOwnershipConfirmView, NodeDelete,
+    NodeCreate)
 
 urlpatterns = patterns(
     '',
@@ -33,5 +33,8 @@ urlpatterns = patterns(
         name='dashboard.views.node-detail'),
     url(r'^tx/$', TransferOwnershipConfirmView.as_view(),
         name='dashboard.views.vm-transfer-ownership-confirm'),
-
+    url(r'^node/delete/(?P<pk>\d+)/$', NodeDelete.as_view(),
+        name="dashboard.views.delete-node"),
+    url(r'^node/create/$', NodeCreate.as_view(),
+        name='dashboard.views.node-create'),
 )

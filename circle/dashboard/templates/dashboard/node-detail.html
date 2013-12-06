@@ -7,22 +7,22 @@
     <h1>{{ node.name }} <small>{{ node.get_connect_host }}</small></h1>
   </div>
   <div class="row">
-    <div class="col-md-4" id="vm-info-pane">
+    <div class="col-md-4" id="node-info-pane">
       <div class="big">
-        <span class="label label-success">{{ node.enabled }}</span>
-        <div class="btn-group">
-          <button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown">Action <i class="icon-caret-down"></i></button>
-          <ul class="dropdown-menu" role="menu">
-	    <li><a href="#"><i class="icon-refresh"></i> Flash</a></li>
-            <li><a href="#"><i class="icon-refresh"></i> Reboot</a></li>
-            <li><a href="#"><i class="icon-off"></i> Shutdown</a></li>
-            <li><a data-vm-pk="{{ node.pk }}" class="vm-delete" href="{% url "dashboard.views.delete-vm" pk=node.pk %}"><i class="icon-remove"></i> Discard</a></li>
-          </ul>
-        </div>
+	      <span class="label {% if node.state == 'online' %}label-success
+			{% elif node.state == 'missing' %}label-danger
+			{% elif node.state == 'disabled' %}label-warning
+			{% elif node.state == 'offline' %}label-warning
+			{% endif %}">{{ node.state }}</span>
+		<div class="btn-group">
+			{% with node as record %}
+				{% include "dashboard/node-list/column-actions.html" with btn_size="" %}
+			{% endwith %}
+		</div>
       </div>
     </div>
-    <div class="col-md-8" id="vm-detail-pane">
-      <div class="panel panel-default" id="vm-detail-panel">
+    <div class="col-md-8" id="node-detail-pane">
+      <div class="panel panel-default" id="node-detail-panel">
         <ul class="nav nav-pills panel-heading">
           <li class="active">
             <a href="#home" data-toggle="pill" class="text-center">
@@ -33,16 +33,21 @@
               <i class="icon-tasks icon-2x"></i><br>
               {% trans "Resources" %}</a></li>
 	  <li>
+            <a href="#virtualmachines" data-toggle="pill" class="text-center">
+              <i class="icon-desktop icon-2x"></i><br>
+              {% trans "Virtual Machines" %}</a></li>
+ 	  <li>
             <a href="#activity" data-toggle="pill" class="text-center">
               <i class="icon-time icon-2x"></i><br>
               {% trans "Activity" %}</a></li>
-        </ul>
+	</ul>
 
         <div class="tab-content panel-body">
           <div class="tab-pane active" id="home">{% include "dashboard/node-detail-home.html" %}</div>
           <div class="tab-pane" id="resources">{% include "dashboard/node-detail-resources.html" %}</div>
           <div class="tab-pane" id="activity">{% include "dashboard/node-detail-activity.html" %}</div>
-        </div>
+          <div class="tab-pane" id="virtualmachines">{% include "dashboard/node-detail-vm.html" %}</div>
+  	</div>
       </div>
     </div>
   </div>

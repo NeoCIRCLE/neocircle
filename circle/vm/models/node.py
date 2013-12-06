@@ -41,6 +41,7 @@ class Node(TimeStampedModel):
                             help_text=_("The ratio of total memory with "
                                         "to without overcommit."))
 
+
     class Meta:
         app_label = 'vm'
         db_table = 'vm_node'
@@ -62,6 +63,19 @@ class Node(TimeStampedModel):
         """
 
         return self.remote_query(vm_tasks.get_core_num)
+    @property
+    def state(self):
+        """Node state.
+        """
+
+        if self.enabled and self.online :
+            return 'online'
+        elif self.enabled and not self.online:
+            return 'missing'
+        elif not self.enabled and self.online:
+            return 'disabled'
+        else:
+            return 'offline'
 
     @property
     @method_cache(300)
@@ -124,3 +138,7 @@ class Node(TimeStampedModel):
         for i in domains.keys():
             logger.info('Node %s update: domain %s in libvirt but not in db.',
                         self, i)
+
+    @classmethod
+    def get_state_count(cls, online, enabled):
+         return len([1 for i in cls.objects.filter(enabled=enabled).all() if i.online==online])

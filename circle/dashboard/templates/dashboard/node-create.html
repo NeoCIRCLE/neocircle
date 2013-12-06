@@ -6,17 +6,6 @@
 <form method="POST" action="/dashboard/vm/create/">
 {% csrf_token %}
 <div class="row">
-  <div class="col-sm-10">
-  <select class="select form-control" id="vm-create-template-select" name="template-pk">
-    <option value="-1">Choose a VM template</option>
-    {% for template in templates %}
-      <option value="{{ template.pk }}">{{ template.name}}</option>
-    {% endfor %}
-  </select>
-  </div>
-</div> 
-
-<div class="row">
   <div class="col-sm-5">
     <a class="btn btn-info vm-create-advanced-btn">Advanced <i class="vm-create-advanced-icon icon-caret-down"></i></a>
   </div>

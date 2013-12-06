@@ -1,0 +1,24 @@
+{% load render_table from django_tables2 %}
+{% block content %}
+<div class="panel-body">
+  {% render_table table %}
+</div>
+{% endblock %}
+<script>
+    "use strict";
+
+    $('a[data-toggle$="pill"][href!="#virtualmachines"]').click(function() {
+        $("#node-info-pane").fadeIn();
+        $("#node-detail-pane").removeClass("col-md-12");
+    });
+
+
+    $('a[href$="virtualmachines"]').click(function() {
+        $("#node-info-pane").hide();
+        $("#node-detail-pane").addClass("col-md-12");
+    });
+    </script>
+    
+{% block extra_js %}
+<script src="{{ STATIC_URL}}dashboard/vm-list.js"></script>
+{% endblock %}
