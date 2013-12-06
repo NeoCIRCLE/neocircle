@@ -5,7 +5,9 @@ import re
 
 from django.contrib.auth.models import User, Group
 from django.contrib.messages import warning
-from django.core.exceptions import PermissionDenied, SuspiciousOperation
+from django.core.exceptions import (
+    PermissionDenied, SuspiciousOperation, ObjectDoesNotExist,
+)
 from django.core import signing
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.http import HttpResponse, HttpResponseRedirect, Http404
@@ -151,6 +153,8 @@ class VmDetailView(CheckedDetailView):
 
     def __set_name(self, request):
         self.object = self.get_object()
+        if not self.object.has_level(request.user, 'owner'):
+            raise PermissionDenied()
         new_name = request.POST.get("new_name")
         Instance.objects.filter(pk=self.object.pk).update(
             **{'name': new_name})
@@ -174,6 +178,8 @@ class VmDetailView(CheckedDetailView):
     def __add_tag(self, request):
         new_tag = request.POST.get('new_tag')
         self.object = self.get_object()
+        if not self.object.has_level(request.user, 'owner'):
+            raise PermissionDenied()
 
         if len(new_tag) < 1:
             message = u"Please input something!"
@@ -194,6 +200,8 @@ class VmDetailView(CheckedDetailView):
         try:
             to_remove = request.POST.get('to_remove')
             self.object = self.get_object()
+            if not self.object.has_level(request.user, 'owner'):
+                raise PermissionDenied()
 
             self.object.tags.remove(to_remove)
             message = u"Success"
@@ -368,44 +376,60 @@ class VmCreate(TemplateView):
 
         resp = {}
         try:
-            ikwargs = {
-                'num_cores': int(request.POST.get('cpu-count')),
-                'ram_size': int(request.POST.get('ram-size')),
-                'priority': int(request.POST.get('cpu-priority')),
-            }
-
-            networks = [InterfaceTemplate(vlan=Vlan.objects.get(pk=l),
-                                          managed=True)
-                        for l in request.POST.getlist('managed-vlans')
-                        ]
-            networks.extend([InterfaceTemplate(vlan=Vlan.objects.get(pk=l),
-                                               managed=False)
-                            for l in request.POST.getlist('unmanaged-vlans')
-                             ])
-
-            disks = Disk.objects.filter(pk__in=request.POST.getlist('disks'))
+            pk = request.POST.get('template-pk')
             template = InstanceTemplate.objects.get(
-                pk=request.POST.get('template-pk'))
+                pk=pk)
+        except InstanceTemplate.DoesNotExist as e:
+            logger.warning('VmCreate.post: %s (pk=%d, user=%s)',
+                           unicode(e), unicode(request.user), pk)
+            resp['error'] = True
+        else:
+            if request.user.has_perm('vm.set_resources'):
+                ikwargs = {
+                    'num_cores': int(request.POST.get('cpu-count')),
+                    'ram_size': int(request.POST.get('ram-size')),
+                    'priority': int(request.POST.get('cpu-priority')),
+                }
 
-            inst = Instance.create_from_template(template=template,
-                                                 owner=user, networks=networks,
-                                                 disks=disks, **ikwargs)
+                try:
+                    networks = [InterfaceTemplate(vlan=Vlan.objects.get(pk=l),
+                                                  managed=True)
+                                for l in request.POST.getlist('managed-vlans')
+                                ]
+                    unmanaged = request.POST.getlist('unmanaged-vlans')
+                    networks.extend([
+                        InterfaceTemplate(vlan=Vlan.objects.get(pk=l),
+                                          managed=False)
+                        for l in unmanaged])
+
+                    disks = Disk.objects.filter(
+                        pk__in=request.POST.getlist('disks'))
+
+                    inst = Instance.create_from_template(
+                        template=template, owner=user, networks=networks,
+                        disks=disks, **ikwargs)
+                except ObjectDoesNotExist as e:
+                    raise
+                    logger.warning('VmCreate.post: %s (user=%s)',
+                                   unicode(e), unicode(request.user))
+                    raise SuspiciousOperation()
+            else:
+                inst = Instance.create_from_template(
+                    template=template, owner=user)
             inst.deploy_async(user=request.user)
-
             resp['pk'] = inst.pk
             messages.success(request, _('VM successfully created!'))
-        except InstanceTemplate.DoesNotExist:
-            resp['error'] = True
-        except Exception, e:
-            print e
-            resp['error'] = True
-
         if request.is_ajax():
             return HttpResponse(json.dumps(resp),
                                 content_type="application/json",
                                 status=500 if resp.get('error') else 200)
         else:
-            return redirect(reverse_lazy('dashboard.views.detail', resp))
+            if 'error' in resp:
+                messages.error(request, _('Failed to create VM.'))
+                return redirect(reverse('dashboard.index'))
+            else:
+                return redirect(reverse('dashboard.views.detail',
+                                        args=resp.values()))
 
 
 class VmDelete(DeleteView):
