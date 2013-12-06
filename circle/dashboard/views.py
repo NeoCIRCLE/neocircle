@@ -127,6 +127,8 @@ class VmDetailView(CheckedDetailView):
         self.object = self.get_object()
         if not self.object.has_level(request.user, 'owner'):
             raise PermissionDenied()
+        if not request.user.has_perm('vm.change_resources'):
+            raise PermissionDenied()
 
         resources = {
             'num_cores': request.POST.get('cpu-count'),
@@ -207,6 +209,8 @@ class VmDetailView(CheckedDetailView):
     def __add_port(self, request):
         object = self.get_object()
         if not object.has_level(request.user, 'owner'):
+            raise PermissionDenied()
+        if not request.user.has_perm('vm.config_ports'):
             raise PermissionDenied()
 
         port = request.POST.get("port")

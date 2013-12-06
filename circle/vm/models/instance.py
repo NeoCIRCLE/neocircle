@@ -215,6 +215,12 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         app_label = 'vm'
         db_table = 'vm_instance'
         ordering = ['pk', ]
+        permissions = (
+            ('access_console', _('Can access the graphical console of a VM.')),
+            ('change_resources', _('Can change resources of a running VM.')),
+            ('set_resources', _('Can change resources of a new VM.')),
+            ('config_ports', _('Can configure port forwards.')),
+        )
         verbose_name = _('instance')
         verbose_name_plural = _('instances')
 
