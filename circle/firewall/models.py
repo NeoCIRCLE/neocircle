@@ -536,20 +536,26 @@ class Host(models.Model):
         else:
             public = self._get_random_port(proto)
 
-        vg = VlanGroup.objects.get(name=settings["default_vlangroup"])
-        if self.shared_ip:
-            if public < 1024:
-                raise ValidationError(_("Only ports above 1024 can be used."))
-            rule = Rule(direction='1', owner=self.owner, dport=public,
-                        proto=proto, nat=True, accept=True,
-                        nat_dport=private, host=self, foreign_network=vg)
+        try:
+            vgname = settings["default_vlangroup"]
+            vg = VlanGroup.objects.get(name=vgname)
+        except VlanGroup.DoesNotExist as e:
+            logger.error('Host.add_port: default_vlangroup %s missing. %s',
+                         vgname, unicode(e))
         else:
-            rule = Rule(direction='1', owner=self.owner, dport=private,
-                        proto=proto, nat=False, accept=True,
-                        host=self, foreign_network=vg)
-
-        rule.full_clean()
-        rule.save()
+            if self.shared_ip:
+                if public < 1024:
+                    raise ValidationError(
+                        _("Only ports above 1024 can be used."))
+                rule = Rule(direction='1', owner=self.owner, dport=public,
+                            proto=proto, nat=True, accept=True,
+                            nat_dport=private, host=self, foreign_network=vg)
+            else:
+                rule = Rule(direction='1', owner=self.owner, dport=private,
+                            proto=proto, nat=False, accept=True,
+                            host=self, foreign_network=vg)
+            rule.full_clean()
+            rule.save()
 
     def del_port(self, proto, private):
         """
