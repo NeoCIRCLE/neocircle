@@ -21,6 +21,7 @@ from django.utils.translation import ugettext as _
 from django_tables2 import SingleTableView
 from braces.views import LoginRequiredMixin
 
+from .forms import VmCreateForm
 from .tables import (VmListTable, NodeListTable)
 from vm.models import (Instance, InstanceTemplate, InterfaceTemplate,
                        InstanceActivity, Node, instance_activity)
@@ -362,7 +363,8 @@ class VmCreate(TemplateView):
         context.update({
             'templates': InstanceTemplate.objects.all(),
             'vlans': Vlan.objects.all(),
-            'disks': Disk.objects.exclude(type="qcow2-snap")
+            'disks': Disk.objects.exclude(type="qcow2-snap"),
+            'vm_create_form': VmCreateForm,
         })
 
         return context
@@ -376,27 +378,31 @@ class VmCreate(TemplateView):
 
         resp = {}
         try:
-            pk = request.POST.get('template-pk')
+            pk = request.POST.get('template')
             template = InstanceTemplate.objects.get(
                 pk=pk)
+        except ValueError:
+            resp['error'] = True
+            resp['message'] = _("Select a VM from the list!")
         except InstanceTemplate.DoesNotExist as e:
             logger.warning('VmCreate.post: %s (pk=%d, user=%s)',
-                           unicode(e), unicode(request.user), pk)
+                           unicode(e), pk, unicode(request.user))
             resp['error'] = True
         else:
             if request.user.has_perm('vm.set_resources'):
                 ikwargs = {
-                    'num_cores': int(request.POST.get('cpu-count')),
-                    'ram_size': int(request.POST.get('ram-size')),
-                    'priority': int(request.POST.get('cpu-priority')),
+                    'num_cores': int(request.POST.get('cpu_count')),
+                    'ram_size': int(request.POST.get('ram_size')),
+                    'priority': int(request.POST.get('cpu_priority')),
                 }
 
                 try:
                     networks = [InterfaceTemplate(vlan=Vlan.objects.get(pk=l),
                                                   managed=True)
-                                for l in request.POST.getlist('managed-vlans')
+                                for l in request.POST.getlist(
+                                    'managed_networks')
                                 ]
-                    unmanaged = request.POST.getlist('unmanaged-vlans')
+                    unmanaged = request.POST.getlist('unmanaged_networks')
                     networks.extend([
                         InterfaceTemplate(vlan=Vlan.objects.get(pk=l),
                                           managed=False)
