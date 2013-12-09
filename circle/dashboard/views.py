@@ -6,7 +6,7 @@ import re
 from django.contrib.auth.models import User, Group
 from django.contrib.messages import warning
 from django.core.exceptions import (
-    PermissionDenied, SuspiciousOperation, ObjectDoesNotExist,
+    PermissionDenied, SuspiciousOperation,
 )
 from django.core import signing
 from django.core.urlresolvers import reverse, reverse_lazy
@@ -343,17 +343,26 @@ class NodeList(SingleTableView):
 
 class VmCreate(TemplateView):
 
+    form_class = VmCreateForm
+    form = None
+
     def get_template_names(self):
         if self.request.is_ajax():
             return ['dashboard/modal-wrapper.html']
         else:
             return ['dashboard/nojs-wrapper.html']
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request, form=None, *args, **kwargs):
+        if form is None:
+            form = self.form_class()
         context = self.get_context_data(**kwargs)
         context.update({
             'template': 'dashboard/vm-create.html',
-            'box_title': 'Create a VM'
+            'box_title': 'Create a VM',
+            'templates': InstanceTemplate.objects.all(),
+            'vlans': Vlan.objects.all(),
+            'disks': Disk.objects.exclude(type="qcow2-snap"),
+            'vm_create_form': form,
         })
         return self.render_to_response(context)
 
@@ -361,81 +370,49 @@ class VmCreate(TemplateView):
         context = super(VmCreate, self).get_context_data(**kwargs)
         # TODO acl
         context.update({
-            'templates': InstanceTemplate.objects.all(),
-            'vlans': Vlan.objects.all(),
-            'disks': Disk.objects.exclude(type="qcow2-snap"),
-            'vm_create_form': VmCreateForm,
         })
 
         return context
 
     # TODO handle not ajax posts
     def post(self, request, *args, **kwargs):
-        if self.request.user.is_authenticated():
-            user = self.request.user
+        if not self.request.user.is_authenticated():
+            raise PermissionDenied()
+
+        form = self.form_class(request.POST)
+        if not form.is_valid():
+            return self.get(request, form, *args, **kwargs)
+        post = form.cleaned_data
+        user = request.user
+
+        template = post['template']
+        if request.user.has_perm('vm.set_resources'):
+            ikwargs = {
+                'num_cores': post['cpu_count'],
+                'ram_size': post['ram_size'],
+                'priority': post['cpu_priority'],
+            }
+
+            networks = (
+                [InterfaceTemplate(vlan=l, managed=True)
+                    for l in post['unmanaged_networks']] +
+                [InterfaceTemplate(vlan=l, managed=False)
+                    for l in post['unmanaged_networks']])
+            disks = post['disks']
+            inst = Instance.create_from_template(
+                template=template, owner=user, networks=networks,
+                disks=disks, **ikwargs)
         else:
-            user = None
-
-        resp = {}
-        try:
-            pk = request.POST.get('template')
-            template = InstanceTemplate.objects.get(
-                pk=pk)
-        except ValueError:
-            resp['error'] = True
-            resp['message'] = _("Select a VM from the list!")
-        except InstanceTemplate.DoesNotExist as e:
-            logger.warning('VmCreate.post: %s (pk=%d, user=%s)',
-                           unicode(e), pk, unicode(request.user))
-            resp['error'] = True
-        else:
-            if request.user.has_perm('vm.set_resources'):
-                ikwargs = {
-                    'num_cores': int(request.POST.get('cpu_count')),
-                    'ram_size': int(request.POST.get('ram_size')),
-                    'priority': int(request.POST.get('cpu_priority')),
-                }
-
-                try:
-                    networks = [InterfaceTemplate(vlan=Vlan.objects.get(pk=l),
-                                                  managed=True)
-                                for l in request.POST.getlist(
-                                    'managed_networks')
-                                ]
-                    unmanaged = request.POST.getlist('unmanaged_networks')
-                    networks.extend([
-                        InterfaceTemplate(vlan=Vlan.objects.get(pk=l),
-                                          managed=False)
-                        for l in unmanaged])
-
-                    disks = Disk.objects.filter(
-                        pk__in=request.POST.getlist('disks'))
-
-                    inst = Instance.create_from_template(
-                        template=template, owner=user, networks=networks,
-                        disks=disks, **ikwargs)
-                except ObjectDoesNotExist as e:
-                    raise
-                    logger.warning('VmCreate.post: %s (user=%s)',
-                                   unicode(e), unicode(request.user))
-                    raise SuspiciousOperation()
-            else:
-                inst = Instance.create_from_template(
-                    template=template, owner=user)
-            inst.deploy_async(user=request.user)
-            resp['pk'] = inst.pk
-            messages.success(request, _('VM successfully created!'))
+            inst = Instance.create_from_template(
+                template=template, owner=user)
+        inst.deploy_async(user=request.user)
+        messages.success(request, _('VM successfully created!'))
+        path = inst.get_absolute_url()
         if request.is_ajax():
-            return HttpResponse(json.dumps(resp),
-                                content_type="application/json",
-                                status=500 if resp.get('error') else 200)
+            return HttpResponse(json.dumps({'redirect': path}),
+                                content_type="application/json")
         else:
-            if 'error' in resp:
-                messages.error(request, _('Failed to create VM.'))
-                return redirect(reverse('dashboard.index'))
-            else:
-                return redirect(reverse('dashboard.views.detail',
-                                        args=resp.values()))
+            return redirect(path)
 
 
 class VmDelete(DeleteView):

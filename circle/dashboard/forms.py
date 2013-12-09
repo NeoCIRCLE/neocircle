@@ -28,10 +28,13 @@ class VmCreateForm(forms.Form):
 
     disks = forms.ModelMultipleChoiceField(
         queryset=Disk.objects.exclude(type="qcow2-snap"),
+        required=False
     )
 
-    managed_networks = forms.ModelMultipleChoiceField(queryset=VLANS)
-    unmanaged_networks = forms.ModelMultipleChoiceField(queryset=VLANS)
+    managed_networks = forms.ModelMultipleChoiceField(
+        queryset=VLANS, required=False)
+    unmanaged_networks = forms.ModelMultipleChoiceField(
+        queryset=VLANS, required=False)
 
     def __init__(self, *args, **kwargs):
         super(VmCreateForm, self).__init__(*args, **kwargs)

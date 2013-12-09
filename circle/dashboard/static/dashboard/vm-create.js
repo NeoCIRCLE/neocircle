@@ -177,8 +177,18 @@ function vmCreateLoaded() {
       type: 'POST',
       data: $('form').serialize(),
       success: function(data, textStatus, xhr) {
-        if(data.pk) {
-          window.location.replace('/dashboard/vm/' + data.pk + '/#activity');
+        if(data.redirect) {
+          window.location.replace(data.redirect + '#activity');
+        }
+        else {
+            $('#vm-create-modal').remove();
+            $('body').append(data);
+            vmCreateLoaded();
+            addSliderMiscs();
+            $('#vm-create-modal').modal('show');
+            $('#vm-create-modal').on('hidden.bs.modal', function() {
+                $('#vm-create-modal').remove();
+            });
         }
       },
       error: function(xhr, textStatus, error) {
