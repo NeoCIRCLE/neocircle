@@ -30,6 +30,7 @@ $(function() {
   $("#vm-details-h1-name, .vm-details-rename-button").click(function() {
     $("#vm-details-h1-name").hide();
     $("#vm-details-rename").css('display', 'inline');
+    $("#vm-details-rename-name").focus();
   });
 
   /* rename ajax */

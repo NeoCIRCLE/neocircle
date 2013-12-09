@@ -92,6 +92,7 @@ $(function() {
   $("#vm-list-rename-button, .vm-details-rename-button").click(function() {
     $("#vm-list-column-name", $(this).closest("tr")).hide();
     $("#vm-list-rename", $(this).closest("tr")).css('display', 'inline');
+    $("#vm-list-rename-name", $(this).closest("tr")).focus();
   });
 
   /* rename ajax */
