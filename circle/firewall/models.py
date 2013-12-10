@@ -170,6 +170,8 @@ class Vlan(models.Model):
     range. The gateway also has an IP address in each range.
     """
 
+    CHOICES_NETWORK_TYPE = (('public', _('public')), ('dmz', _('dmz')),
+                            ('portforward', _('portforward')))
     vid = models.IntegerField(unique=True,
                               verbose_name=_('VID'),
                               help_text=_('The vlan ID of the subnet.'),
@@ -215,6 +217,9 @@ class Vlan(models.Model):
                                          'translated, i.e. their source '
                                          'address is rewritten to the value '
                                          'of NAT IP address.'))
+    network_type = models.CharField(choices=CHOICES_NETWORK_TYPE,
+                                    verbose_name=_('network type'),
+                                    max_length=20)
     description = models.TextField(blank=True, verbose_name=_('description'),
                                    help_text=_(
                                        'Description of the goals and elements '

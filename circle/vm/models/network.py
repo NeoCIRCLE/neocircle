@@ -110,6 +110,12 @@ class Interface(Model):
             host.ipv4 = addresses['ipv4']
             host.ipv6 = addresses['ipv6']
             host.owner = owner
+            if vlan.network_type == 'public':
+                host.shared_ip = False
+                host.pub_ipv4 = None
+            elif vlan.network_type == 'portforward':
+                host.shared_ip = True
+                host.pub_ipv4 = vlan.snat_ip
             host.full_clean()
             host.save()
         else:
