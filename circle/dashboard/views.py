@@ -224,9 +224,8 @@ class VmDetailView(CheckedDetailView):
 
     def __add_port(self, request):
         object = self.get_object()
-        if not object.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-        if not request.user.has_perm('vm.config_ports'):
+        if (not object.has_level(request.user, 'owner') or
+                not request.user.has_perm('vm.config_ports')):
             raise PermissionDenied()
 
         port = request.POST.get("port")
@@ -254,10 +253,10 @@ class NodeDetailView(DetailView):
     template_name = "dashboard/node-detail.html"
     model = Node
 
-
     def get_context_data(self, **kwargs):
         context = super(NodeDetailView, self).get_context_data(**kwargs)
-        context['table'] = NodeVmListTable(Instance.active.filter(node=self.object))
+        instances = Instance.active.filter(node=self.object)
+        context['table'] = NodeVmListTable(instances)
         return context
 
     def post(self, request, *args, **kwargs):
@@ -285,7 +284,6 @@ class NodeDetailView(DetailView):
             messages.success(request, success_message)
             return redirect(reverse_lazy("dashboard.views.node-detail",
                                          kwargs={'pk': self.object.pk}))
-
 
 
 class AclUpdateView(View, SingleObjectMixin):
@@ -369,6 +367,7 @@ class VmList(SingleTableView):
     table_class = VmListTable
     table_pagination = False
 
+
 class NodeList(SingleTableView):
     template_name = "dashboard/node-list.html"
     model = Node
@@ -449,6 +448,7 @@ class VmCreate(TemplateView):
         else:
             return redirect(path)
 
+
 class NodeCreate(TemplateView):
 
     def get_template_names(self):
@@ -525,7 +525,6 @@ class NodeCreate(TemplateView):
             return redirect(reverse_lazy('dashboard.views.detail', resp))
 
 
-
 class VmDelete(DeleteView):
     model = Instance
     template_name = "dashboard/confirm/base-delete.html"
@@ -536,49 +535,12 @@ class VmDelete(DeleteView):
         else:
             return ['dashboard/confirm/base-delete.html']
 
-    def get_context_data(self, **kwargs):
-        # this is redundant now, but if we wanna add more to print
-        # we'll need this
-        print kwargs
-        context = super(VmDelete, self).get_context_data(**kwargs)
-        return context
-
-    # github.com/django/django/blob/master/django/views/generic/edit.py#L245
-    def delete(self, request, *args, **kwargs):
-        object = self.get_object()
-        if not object.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-
-        object.destroy_async(user=request.user)
-        success_url = self.get_success_url()
-        success_message = _("VM successfully deleted!")
-
-        if request.is_ajax():
-            if request.POST.get('redirect').lower() == "true":
-                messages.success(request, success_message)
-            return HttpResponse(
-                json.dumps({'message': success_message}),
-                content_type="application/json",
-            )
-        else:
-            messages.success(request, success_message)
-            return HttpResponseRedirect(success_url)
-
     def get_success_url(self):
         next = self.request.POST.get('next')
         if next:
             return next
         else:
             return reverse_lazy('dashboard.index')
-
-    model = Instance
-    template_name = "dashboard/confirm/base-delete.html"
-
-    def get_template_names(self):
-        if self.request.is_ajax():
-            return ['dashboard/confirm/ajax-delete.html']
-        else:
-            return ['dashboard/confirm/base-delete.html']
 
     def get_context_data(self, **kwargs):
         # this is redundant now, but if we wanna add more to print
@@ -606,13 +568,6 @@ class VmDelete(DeleteView):
         else:
             messages.success(request, success_message)
             return HttpResponseRedirect(success_url)
-
-    def get_success_url(self):
-        next = self.request.POST.get('next')
-        if next:
-            return next
-        else:
-            return reverse_lazy('dashboard.index')
 
 
 class NodeDelete(DeleteView):
@@ -659,6 +614,7 @@ class NodeDelete(DeleteView):
             return next
         else:
             return reverse_lazy('dashboard.index')
+
 
 class PortDelete(DeleteView):
     model = Rule

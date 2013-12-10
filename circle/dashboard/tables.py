@@ -1,5 +1,5 @@
-from django_tables2 import Table, A
-from django_tables2.columns import LinkColumn, TemplateColumn, Column, BooleanColumn
+from django_tables2 import Table
+from django_tables2.columns import TemplateColumn, Column, BooleanColumn
 
 from vm.models import Instance, Node
 from django.utils.translation import ugettext_lazy as _
@@ -88,24 +88,17 @@ class NodeListTable(Table):
     )
     actions = TemplateColumn(
         attrs={'th': {'class': 'node-list-table-thin'}},
-        template_code='{% include "dashboard/node-list/column-actions.html" with btn_size="btn-xs" %}',
-#    actions = TemplateColumn('{% load my_filters %}{{ record.name|int_to_time }}'
-#        attrs={'th': {'class': 'node-list-table-thin'},'extra_tag':},
+        template_code=('{% include "dashboard/node-list/column-'
+                       'actions.html" with btn_size="btn-xs" %}'),
     )
-
-#    time_of_suspend = TemplateColumn(
-#        '{{ record.time_of_suspend|timeuntil }}',
-#        verbose_name=_("Suspend in"))
-
-#    time_of_delete = TemplateColumn(
-#        '{{ record.time_of_delete|timeuntil }}',
-#        verbose_name=_("Delete in"))
 
     class Meta:
         model = Node
         attrs = {'class': ('table table-bordered table-striped table-hover '
                            'node-list-table')}
-        fields = ('pk', 'name', 'host', 'enabled', 'priority', 'overcommit','number_of_VMs', )
+        fields = ('pk', 'name', 'host', 'enabled', 'priority', 'overcommit',
+                  'number_of_VMs', )
+
 
 class NodeVmListTable(Table):
     pk = TemplateColumn(
