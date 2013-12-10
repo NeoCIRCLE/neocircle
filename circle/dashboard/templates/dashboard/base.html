@@ -27,7 +27,11 @@
       <!-- temporarily -->
       <a class="navbar-brand pull-right" href="/network/" style="color: white; font-size: 10px;">Network</a>
       <a class="navbar-brand pull-right" href="/admin/" style="color: white; font-size: 10px;">Admin</a>
+      {% if user.is_authenticated %}
+      <a class="navbar-brand pull-right" href="/logout/?next=/login/" style="color: white; font-size: 10px;">Log out {{user}}</a>
+      {% else %}
       <a class="navbar-brand pull-right" href="/login/?next={% url "dashboard.index" %}" style="color: white; font-size: 10px;">Login</a>
+      {% endif %}
     </div>
 
     <div class="container">
