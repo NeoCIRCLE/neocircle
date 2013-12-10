@@ -181,7 +181,7 @@ function vmCreateLoaded() {
           window.location.replace(data.redirect + '#activity');
         }
         else {
-            $('#vm-create-modal').remove();
+            var r = $('#vm-create-modal'); r.next('div').remove(); r.remove();
             $('body').append(data);
             vmCreateLoaded();
             addSliderMiscs();
