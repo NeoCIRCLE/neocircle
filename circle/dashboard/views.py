@@ -31,7 +31,7 @@ from storage.models import Disk
 logger = logging.getLogger(__name__)
 
 
-class IndexView(TemplateView):
+class IndexView(LoginRequiredMixin, TemplateView):
     template_name = "dashboard/index.html"
 
     def get_context_data(self, **kwargs):
@@ -361,7 +361,7 @@ class TemplateDetail(DetailView):
             return HttpResponse('soon')
 
 
-class VmList(SingleTableView):
+class VmList(LoginRequiredMixin, SingleTableView):
     template_name = "dashboard/vm-list.html"
     queryset = Instance.active.all()
     table_class = VmListTable
