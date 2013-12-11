@@ -30,8 +30,8 @@ class VmDetailTest(TestCase):
         self.g1.delete()
 
     def login(self, client, username, password='password'):
-        response = client.post('/login/', {'username': username,
-                                           'password': password})
+        response = client.post('/accounts/login/', {'username': username,
+                                                    'password': password})
         self.assertNotEqual(response.status_code, 403)
 
     def test_404_vm_page(self):
