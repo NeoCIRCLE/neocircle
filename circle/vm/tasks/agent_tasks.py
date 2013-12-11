@@ -19,3 +19,8 @@ def set_time(vm, time):
 @celery.task(name='agent.set_hostname')
 def set_hostname(vm, time):
     pass
+
+
+@celery.task(name='agent.mount_store')
+def mount_store(vm, host, username, password):
+    pass
