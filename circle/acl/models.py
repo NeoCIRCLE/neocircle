@@ -6,7 +6,7 @@ from django.contrib.contenttypes.generic import (
 )
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import (
-    ManyToManyField, ForeignKey, CharField, Model, IntegerField
+    ManyToManyField, ForeignKey, CharField, Model, IntegerField, Q
 )
 
 logger = logging.getLogger(__name__)
@@ -174,6 +174,24 @@ class AclBase(Model):
             groups.extend([(g, name) for g in olgroups])
             logger.debug('- %s: %s' % (name, [g.name for g in olgroups]))
         return groups
+
+    @classmethod
+    def get_objects_with_level(cls, level, user):
+        logger.debug('%s.get_objects_with_level(%s,%s) called',
+                     unicode(cls), unicode(level), unicode(user))
+        if user is None or not user.is_authenticated():
+            return cls.objects.none()
+        if getattr(user, 'is_superuser', False):
+            logger.debug('- superuser granted')
+            return cls.objects
+        if isinstance(level, basestring):
+            level = cls.get_level_object(level)
+            logger.debug("- level set by str: %s", unicode(level))
+
+        ct = ContentType.objects.get_for_model(cls)
+        return user.objectlevel_set.filter(
+            Q(users=user) | Q(groups__in=user.groups.all()),
+            content_type=ct, level__weight__gte=level.weight).distinct()
 
     class Meta:
         abstract = True
