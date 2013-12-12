@@ -72,7 +72,7 @@ class Lease(Model):
 
     @suspend_interval.setter
     def suspend_interval(self, value):
-        self.suspend_interval_seconds = value.seconds
+        self.suspend_interval_seconds = value.total_seconds()
 
     @property
     def delete_interval(self):
@@ -80,7 +80,7 @@ class Lease(Model):
 
     @delete_interval.setter
     def delete_interval(self, value):
-        self.delete_interval_seconds = value.seconds
+        self.delete_interval_seconds = value.total_seconds()
 
     def get_readable_suspend_time(self):
         return timeuntil(datetime.utcnow() + self.suspend_interval,
