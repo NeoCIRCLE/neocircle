@@ -5,13 +5,18 @@ from .views import (
     IndexView, VmDetailView, VmList, VmCreate, TemplateDetail, AclUpdateView,
     VmDelete, VmMassDelete, vm_activity, NodeList, NodeDetailView, PortDelete,
     TransferOwnershipView, TransferOwnershipConfirmView, NodeDelete,
-    NodeCreate)
+    TemplateList, LeaseDetail, NodeCreate,
+)
 
 urlpatterns = patterns(
     '',
     url(r'^$', IndexView.as_view(), name="dashboard.index"),
+    url(r'^lease/(?P<pk>\d+)/$', LeaseDetail.as_view(),
+        name="dashboard.views.lease-detail"),
     url(r'^template/(?P<pk>\d+)/$', TemplateDetail.as_view(),
         name='dashboard.views.template-detail'),
+    url(r"^template/list/$", TemplateList.as_view(),
+        name="dashboard.views.template-list"),
     url(r'^vm/(?P<pk>\d+)/remove_port/(?P<rule>\d+)/$', PortDelete.as_view(),
         name='dashboard.views.remove-port'),
     url(r'^vm/(?P<pk>\d+)/$', VmDetailView.as_view(),

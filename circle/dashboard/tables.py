@@ -1,7 +1,8 @@
-from django_tables2 import Table
-from django_tables2.columns import TemplateColumn, Column, BooleanColumn
+from django_tables2 import Table, A
+from django_tables2.columns import (TemplateColumn, Column, BooleanColumn,
+                                    LinkColumn)
 
-from vm.models import Instance, Node
+from vm.models import Instance, Node, InstanceTemplate, Lease
 from django.utils.translation import ugettext_lazy as _
 
 
@@ -135,3 +136,64 @@ class NodeVmListTable(Table):
         attrs = {'class': ('table table-bordered table-striped table-hover '
                            'vm-list-table')}
         fields = ('pk', 'name', 'state', 'time_of_suspend', 'time_of_delete', )
+
+
+class TemplateListTable(Table):
+    pk = LinkColumn(
+        'dashboard.views.template-detail',
+        args=[A('pk')],
+        verbose_name=_("ID"),
+    )
+    num_cores = Column(
+        verbose_name=_("Cores"),
+    )
+    ram_size = TemplateColumn(
+        "{{ record.ram_size }} Mb",
+    )
+    priority = TemplateColumn(
+        "{{ record.priority }}/100 ",
+        verbose_name=_("CPU priority"),
+    )
+    lease = TemplateColumn(
+        "{{ record.lease.name }}",
+        verbose_name=_("Lease"),
+    )
+    actions = TemplateColumn(
+        verbose_name=_("Actions"),
+        template_name="dashboard/template-list/column-template-actions.html"
+    )
+
+    class Meta:
+        model = InstanceTemplate
+        attrs = {'class': ('table table-bordered table-striped table-hover'
+                           ' template-list-table')}
+        fields = ('pk', 'name', 'num_cores', 'ram_size', 'arch',
+                  'priority', 'system', 'access_method', 'lease', 'state',
+                  'actions', )
+
+
+class LeaseListTable(Table):
+    pk = LinkColumn(
+        'dashboard.views.lease-detail',
+        args=[A('pk')],
+        verbose_name=_("ID"),
+    )
+
+    suspend_in = TemplateColumn(
+        "{{ record.get_readable_suspend_time }}"
+    )
+
+    delete_in = TemplateColumn(
+        "{{ record.get_readable_delete_time }}"
+    )
+
+    actions = TemplateColumn(
+        verbose_name=_("Actions"),
+        template_name="dashboard/template-list/column-lease-actions.html"
+    )
+
+    class Meta:
+        model = Lease
+        attrs = {'class': ('table table-bordered table-striped table-hover'
+                           ' lease-list-table')}
+        fields = ('pk', 'name', 'suspend_in', 'delete_in', )

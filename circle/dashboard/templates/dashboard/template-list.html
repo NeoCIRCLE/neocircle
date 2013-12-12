@@ -1,0 +1,40 @@
+{% extends "dashboard/base.html" %}
+{% load i18n %}
+{% load render_table from django_tables2 %}
+{% block content %}
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <a href="#" class="pull-right btn btn-success btn-xs">
+          <i class="icon-plus"></i> new template
+        </a>
+        <h3 class="no-margin"><i class="icon-desktop"></i> {% trans "Templates" %}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="" style="max-width: 600px;">
+          {% render_table lease_table %}
+        </div>
+        {% render_table table %}
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<style>
+  .template-list-table td, .template-list-table th,
+  .lease-list-table td, .lease-list-table th {
+    text-align: center;
+  }
+
+  .vm-list-table-thin {
+    width: 10px;
+  }
+
+  .vm-list-table-admin {
+    width: 130px;
+  }
+</style>
+{% endblock %}

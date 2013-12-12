@@ -1,8 +1,9 @@
 from __future__ import absolute_import, unicode_literals
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 from django.db.models import Model, CharField, IntegerField
 from django.utils.translation import ugettext_lazy as _
+from django.utils.timesince import timeuntil
 
 from model_utils.models import TimeStampedModel
 
@@ -81,8 +82,18 @@ class Lease(Model):
     def delete_interval(self, value):
         self.delete_interval_seconds = value.seconds
 
+    def get_readable_suspend_time(self):
+        return timeuntil(datetime.utcnow() + self.suspend_interval,
+                         datetime.utcnow())
+
+    def get_readable_delete_time(self):
+        return timeuntil(datetime.utcnow() + self.delete_interval,
+                         datetime.utcnow())
+
     def __unicode__(self):
-        return self.name
+        return "%s (%s) - (%s)" % (self.name,
+                                   self.get_readable_suspend_time(),
+                                   self.get_readable_delete_time())
 
 
 class Trait(Model):

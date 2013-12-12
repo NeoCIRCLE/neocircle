@@ -1,12 +1,12 @@
 from django import forms
-from vm.models import InstanceTemplate
+from vm.models import InstanceTemplate, Lease
 from storage.models import Disk
 from firewall.models import Vlan
 # from django.core.urlresolvers import reverse_lazy
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import (Layout, Div, BaseInput,  # Submit
-                                 Field, HTML)
+from crispy_forms.layout import (Layout, Div, BaseInput,
+                                 Field, HTML, Submit)
 from crispy_forms.layout import TEMPLATE_PACK
 from crispy_forms.utils import render_field
 from django.template import Context
@@ -288,6 +288,29 @@ class VmCreateForm(forms.Form):
                 css_class="vm-create-advanced"
             ),
         )
+
+
+class TemplateForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super(TemplateForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.add_input(Submit('submit', 'Save changes'))
+
+    class Meta:
+        model = InstanceTemplate
+
+
+class LeaseForm(forms.ModelForm):
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.add_input(Submit("submit", "Save changes"))
+        return helper
+
+    class Meta:
+        model = Lease
 
 
 class LinkButton(BaseInput):

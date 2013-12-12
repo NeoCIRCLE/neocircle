@@ -14,21 +14,41 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 from django.views.generic.detail import SingleObjectMixin
-from django.views.generic import TemplateView, DetailView, View, DeleteView
+from django.views.generic import (TemplateView, DetailView, View, DeleteView,
+                                  UpdateView)
 from django.contrib import messages
 from django.utils.translation import ugettext as _
 
 from django_tables2 import SingleTableView
 from braces.views import LoginRequiredMixin
 
-from .forms import VmCreateForm
-from .tables import (VmListTable, NodeListTable, NodeVmListTable)
+from .forms import VmCreateForm, TemplateForm, LeaseForm
+from .tables import (VmListTable, NodeListTable, NodeVmListTable,
+                     TemplateListTable, LeaseListTable)
 from vm.models import (Instance, InstanceTemplate, InterfaceTemplate,
-                       InstanceActivity, Node, instance_activity)
+                       InstanceActivity, Node, instance_activity, Lease)
 from firewall.models import Vlan, Host, Rule
 from storage.models import Disk
 
 logger = logging.getLogger(__name__)
+
+
+# github.com/django/django/blob/stable/1.6.x/django/contrib/messages/views.py
+class SuccessMessageMixin(object):
+    """
+    Adds a success message on successful form submission.
+    """
+    success_message = ''
+
+    def form_valid(self, form):
+        response = super(SuccessMessageMixin, self).form_valid(form)
+        success_message = self.get_success_message(form.cleaned_data)
+        if success_message:
+            messages.success(self.request, success_message)
+        return response
+
+    def get_success_message(self, cleaned_data):
+        return self.success_message % cleaned_data
 
 
 class IndexView(LoginRequiredMixin, TemplateView):
@@ -331,8 +351,11 @@ class AclUpdateView(View, SingleObjectMixin):
                     value, unicode(request.user))
 
 
-class TemplateDetail(DetailView):
+class TemplateDetail(SuccessMessageMixin, UpdateView):
     model = InstanceTemplate
+    template_name = "dashboard/template-edit.html"
+    form_class = TemplateForm
+    success_message = _("Successfully modified template!")
 
     def get(self, request, *args, **kwargs):
         if request.is_ajax():
@@ -357,8 +380,23 @@ class TemplateDetail(DetailView):
             return HttpResponse(json.dumps(template),
                                 content_type="application/json")
         else:
-            # return super(TemplateDetail, self).get(request, *args, **kwargs)
-            return HttpResponse('soon')
+            return super(TemplateDetail, self).get(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy("dashboard.views.template-detail",
+                            kwargs=self.kwargs)
+
+
+class TemplateList(SingleTableView):
+    template_name = "dashboard/template-list.html"
+    model = InstanceTemplate
+    table_class = TemplateListTable
+    table_pagination = False
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(TemplateList, self).get_context_data(*args, **kwargs)
+        context['lease_table'] = LeaseListTable(Lease.objects.all())
+        return context
 
 
 class VmList(LoginRequiredMixin, SingleTableView):
@@ -697,6 +735,16 @@ class VmMassDelete(View):
             messages.success(request, success_message)
             next = request.GET.get('next')
             return redirect(next if next else reverse_lazy('dashboard.index'))
+
+
+class LeaseDetail(SuccessMessageMixin, UpdateView):
+    model = Lease
+    form_class = LeaseForm
+    template_name = "dashboard/lease-edit.html"
+    success_message = _("Successfully modified lease!")
+
+    def get_success_url(self):
+        return reverse_lazy("dashboard.views.lease-detail", kwargs=self.kwargs)
 
 
 @require_POST
