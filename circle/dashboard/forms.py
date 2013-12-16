@@ -1,3 +1,4 @@
+from datetime import timedelta
 from django import forms
 from vm.models import InstanceTemplate, Lease
 from storage.models import Disk
@@ -303,9 +304,129 @@ class TemplateForm(forms.ModelForm):
 
 class LeaseForm(forms.ModelForm):
 
+    def __init__(self, *args, **kwargs):
+        super(LeaseForm, self).__init__(*args, **kwargs)
+        self.generate_fields()
+
+    # e2ae8b048e7198428f696375b8bdcd89e90002d1/django/utils/timesince.py#L10
+    def get_intervals(self, delta_seconds):
+        chunks = (
+            (60 * 60 * 24 * 30, "months"),
+            (60 * 60 * 24 * 7, "weeks"),
+            (60 * 60 * 24, "days"),
+            (60 * 60, "hours"),
+        )
+        for i, (seconds, name) in enumerate(chunks):
+            count = delta_seconds // seconds
+            if count != 0:
+                break
+        re = {'%s' % name: count}
+        if i + 1 < len(chunks):
+            seconds2, name2 = chunks[i + 1]
+            count2 = (delta_seconds - (seconds * count)) // seconds2
+            if count2 != 0:
+                re['%s' % name2] = count2
+        return re
+
+    def generate_fields(self):
+        intervals = ["hours", "days", "weeks", "months"]
+        methods = ["suspend", "delete"]
+        # feels redundant but these lines are so long
+        seconds = {
+            'suspend': self.instance.suspend_interval.total_seconds(),
+            'delete': self.instance.delete_interval.total_seconds()
+        }
+        initial = {
+            'suspend': self.get_intervals(int(seconds['suspend'])),
+            'delete': self.get_intervals(int(seconds['delete']))
+        }
+        for m in methods:
+            for idx, i in enumerate(intervals):
+                self.fields["%s_%s" % (m, i)] = forms.IntegerField(
+                    min_value=0,
+                    initial=initial[m].get(i, 0))
+
+    def save(self, commit=True):
+        data = self.cleaned_data
+        suspend_seconds = timedelta(
+            hours=data['suspend_hours'],
+            days=(data['suspend_days'] + data['suspend_months'] * 30),
+            weeks=data['suspend_weeks'],
+        )
+        delete_seconds = timedelta(
+            hours=data['delete_hours'],
+            days=(data['delete_days'] + data['delete_months'] * 30),
+            weeks=data['delete_weeks'],
+        )
+        self.instance.delete_interval = delete_seconds
+        self.instance.suspend_interval = suspend_seconds
+        instance = super(LeaseForm, self).save(commit=False)
+        if commit:
+            instance.save()
+        return instance
+
     @property
     def helper(self):
         helper = FormHelper()
+        helper.layout = Layout(
+            Field('name'),
+            Field("suspend_interval_seconds", type="hidden"),
+            Field("delete_interval_seconds", type="hidden"),
+            Div(
+                Div(
+                    HTML(_("Suspend in")),
+                    css_class="input-group-addon",
+                ),
+                NumberField("suspend_hours", css_class="form-control"),
+                Div(
+                    HTML(_("hours")),
+                    css_class="input-group-addon",
+                ),
+                NumberField("suspend_days", css_class="form-control"),
+                Div(
+                    HTML(_("days")),
+                    css_class="input-group-addon",
+                ),
+                NumberField("suspend_weeks", css_class="form-control"),
+                Div(
+                    HTML(_("weeks")),
+                    css_class="input-group-addon",
+                ),
+                NumberField("suspend_months", css_class="form-control"),
+                Div(
+                    HTML(_("months")),
+                    css_class="input-group-addon",
+                ),
+                css_class="input-group interval-input",
+            ),
+            Div(
+                Div(
+                    HTML(_("Delete in")),
+                    css_class="input-group-addon",
+                ),
+                NumberField("delete_hours", css_class="form-control"),
+                Div(
+                    HTML(_("hours")),
+                    css_class="input-group-addon",
+                ),
+                NumberField("delete_days", css_class="form-control"),
+                Div(
+                    HTML(_("days")),
+                    css_class="input-group-addon",
+                ),
+                NumberField("delete_weeks", css_class="form-control"),
+                Div(
+                    HTML(_("weeks")),
+                    css_class="input-group-addon",
+                ),
+                NumberField("delete_months", css_class="form-control"),
+                Div(
+                    HTML(_("months")),
+                    css_class="input-group-addon",
+                ),
+                css_class="input-group interval-input",
+            )
+        )
         helper.add_input(Submit("submit", "Save changes"))
         return helper
 
@@ -328,6 +449,13 @@ class LinkButton(BaseInput):
     def __init__(self, name, text, url, *args, **kwargs):
         self.href = url
         super(LinkButton, self).__init__(name, text, *args, **kwargs)
+
+
+class NumberField(Field):
+    template = "crispy_forms/numberfield.html"
+
+    def __init__(self, *args, **kwargs):
+        super(NumberField, self).__init__(*args, **kwargs)
 
 
 class AnyTag(Div):
