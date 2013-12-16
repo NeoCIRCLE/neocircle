@@ -83,12 +83,12 @@ class Lease(Model):
         self.delete_interval_seconds = value.total_seconds()
 
     def get_readable_suspend_time(self):
-        return timeuntil(datetime.utcnow() + self.suspend_interval,
-                         datetime.utcnow())
+        n = datetime.utcnow()
+        return timeuntil(n + self.suspend_interval, n)
 
     def get_readable_delete_time(self):
-        return timeuntil(datetime.utcnow() + self.delete_interval,
-                         datetime.utcnow())
+        n = datetime.utcnow()
+        return timeuntil(n + self.delete_interval, n)
 
     def __unicode__(self):
         return "%s (%s) - (%s)" % (self.name,
