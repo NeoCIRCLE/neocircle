@@ -348,14 +348,25 @@ class LeaseForm(forms.ModelForm):
 
     def save(self, commit=True):
         data = self.cleaned_data
+        # 12 months are only 360 days and not 365
+        data['suspend_years'] = data['delete_years'] = 0
+        while data['suspend_months'] >= 12:
+            data['suspend_years'] += 1
+            data['suspend_months'] -= 12
+        while data['delete_months'] >= 12:
+            data['delete_years'] += 1
+            data['delete_months'] -= 12
+
         suspend_seconds = timedelta(
             hours=data['suspend_hours'],
-            days=(data['suspend_days'] + data['suspend_months'] * 30),
+            days=(data['suspend_days'] + data['suspend_months'] * 30 +
+                  data['suspend_years'] * 365),
             weeks=data['suspend_weeks'],
         )
         delete_seconds = timedelta(
             hours=data['delete_hours'],
-            days=(data['delete_days'] + data['delete_months'] * 30),
+            days=(data['delete_days'] + data['delete_months'] * 30 +
+                  data['delete_years'] * 365),
             weeks=data['delete_weeks'],
         )
         self.instance.delete_interval = delete_seconds
