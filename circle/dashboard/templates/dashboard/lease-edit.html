@@ -11,6 +11,9 @@
         <h3 class="no-margin"><i class="icon-desktop"></i> Edit lease</h3>
       </div>
       <div class="panel-body">
+        {% with form=form %}
+          {% include "display-form-errors.html" %}
+        {% endwith %}
         {% crispy form %}
       </div>
     </div>
