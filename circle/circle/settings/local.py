@@ -75,3 +75,5 @@ LOGGING['handlers']['console'] = {'level': 'DEBUG',
                                   'formatter': 'simple'}
 for i in LOCAL_APPS:
     LOGGING['loggers'][i] = {'handlers': ['console'], 'level': 'DEBUG'}
+
+CRISPY_FAIL_SILENTLY = not DEBUG
