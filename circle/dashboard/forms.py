@@ -12,7 +12,7 @@ from crispy_forms.layout import TEMPLATE_PACK
 from crispy_forms.utils import render_field
 from django.template import Context
 from django.template.loader import render_to_string
-
+from django.forms.widgets import TextInput
 from django.utils.translation import ugettext as _
 # from crispy_forms.bootstrap import FormActions
 
@@ -343,7 +343,7 @@ class LeaseForm(forms.ModelForm):
         for m in methods:
             for idx, i in enumerate(intervals):
                 self.fields["%s_%s" % (m, i)] = forms.IntegerField(
-                    min_value=0,
+                    min_value=0, widget=NumberInput,
                     initial=initial[m].get(i, 0))
 
     def save(self, commit=True):
@@ -376,6 +376,7 @@ class LeaseForm(forms.ModelForm):
                 Div(
                     HTML(_("Suspend in")),
                     css_class="input-group-addon",
+                    style="width: 100px;",
                 ),
                 NumberField("suspend_hours", css_class="form-control"),
                 Div(
@@ -403,6 +404,7 @@ class LeaseForm(forms.ModelForm):
                 Div(
                     HTML(_("Delete in")),
                     css_class="input-group-addon",
+                    style="width: 100px;",
                 ),
                 NumberField("delete_hours", css_class="form-control"),
                 Div(
@@ -451,10 +453,15 @@ class LinkButton(BaseInput):
         super(LinkButton, self).__init__(name, text, *args, **kwargs)
 
 
+class NumberInput(TextInput):
+    input_type = "number"
+
+
 class NumberField(Field):
     template = "crispy_forms/numberfield.html"
 
     def __init__(self, *args, **kwargs):
+        kwargs['min'] = 0
         super(NumberField, self).__init__(*args, **kwargs)
 
 
