@@ -1,13 +1,13 @@
 from datetime import timedelta
 from django import forms
-from vm.models import InstanceTemplate, Lease
+from vm.models import InstanceTemplate, Lease, InterfaceTemplate
 from storage.models import Disk
 from firewall.models import Vlan
 # from django.core.urlresolvers import reverse_lazy
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import (Layout, Div, BaseInput,
-                                 Field, HTML, Submit)
+                                 Field, HTML, Submit, Fieldset)
 from crispy_forms.layout import TEMPLATE_PACK
 from crispy_forms.utils import render_field
 from django.template import Context
@@ -18,6 +18,7 @@ from django.utils.translation import ugettext as _
 
 
 VLANS = Vlan.objects.all()
+DISKS = Disk.objects.exclude(type="qcow2-snap")
 
 
 class VmCreateForm(forms.Form):
@@ -28,7 +29,7 @@ class VmCreateForm(forms.Form):
     ram_size = forms.IntegerField()
 
     disks = forms.ModelMultipleChoiceField(
-        queryset=Disk.objects.exclude(type="qcow2-snap"),
+        queryset=DISKS,
         required=False
     )
 
@@ -292,11 +293,124 @@ class VmCreateForm(forms.Form):
 
 
 class TemplateForm(forms.ModelForm):
+    managed_networks = forms.ModelMultipleChoiceField(
+        queryset=VLANS, required=False)
+    unmanaged_networks = forms.ModelMultipleChoiceField(
+        queryset=VLANS, required=False)
 
     def __init__(self, *args, **kwargs):
         super(TemplateForm, self).__init__(*args, **kwargs)
-        self.helper = FormHelper()
-        self.helper.add_input(Submit('submit', 'Save changes'))
+        self.fields['disks'] = forms.ModelMultipleChoiceField(queryset=DISKS)
+        mn = self.instance.interface_set.filter(
+            managed=True).values_list("vlan", flat=True)
+        un = self.instance.interface_set.filter(
+            managed=False).values_list("vlan", flat=True)
+        self.initial['managed_networks'] = mn
+        self.initial['unmanaged_networks'] = un
+
+    def save(self, commit=True):
+        data = self.cleaned_data
+        # create and/or delete InterfaceTemplates
+        managed = InterfaceTemplate.objects.filter(
+            managed=True, template=self.instance).values_list("vlan",
+                                                              flat=True)
+        unmanaged = InterfaceTemplate.objects.filter(
+            managed=False, template=self.instance).values_list("vlan",
+                                                               flat=True)
+        for m in data['managed_networks']:
+            if m.pk not in managed:
+                InterfaceTemplate(vlan=m, managed=True,
+                                  template=self.instance).save()
+        InterfaceTemplate.objects.filter(
+            managed=True, template=self.instance).exclude(
+            vlan__in=data['managed_networks']).delete()
+
+        for u in data['unmanaged_networks']:
+            if u.pk not in unmanaged:
+                InterfaceTemplate(vlan=u, managed=False,
+                                  template=self.instance).save()
+        InterfaceTemplate.objects.filter(
+            managed=False, template=self.instance).exclude(
+            vlan__in=data['unmanaged_networks']).delete()
+
+        self.instance.disks = data['disks']  # TODO why do I need this
+        self.instance.max_ram_size = data.get('ram_size')
+        instance = super(TemplateForm, self).save(commit=False)
+        if commit:
+            instance.save()
+        return instance
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.layout = Layout(
+            Field("name"),
+            Fieldset(
+                _("Resource configuration"),
+                Div(  # cpu count
+                    Div(
+                        Field('num_cores', id="vm-cpu-count-slider",
+                              css_class="vm-slider",
+                              data_slider_min="1", data_slider_max="8",
+                              data_slider_step="1",
+                              data_slider_value=self.instance.num_cores,
+                              data_slider_handle="square",
+                              data_slider_tooltip="hide"),
+                        css_class="col-sm-9"
+                    ),
+                    css_class="row"
+                ),
+                Div(  # cpu priority
+                    Div(
+                        Field('priority', id="vm-cpu-priority-slider",
+                              css_class="vm-slider",
+                              data_slider_min="0", data_slider_max="100",
+                              data_slider_step="1",
+                              data_slider_value=self.instance.priority,
+                              data_slider_handle="square",
+                              data_slider_tooltip="hide"),
+                        css_class="col-sm-9"
+                    ),
+                    css_class="row"
+                ),
+                Div(
+                    Div(
+                        Field('ram_size', id="vm-ram-size-slider",
+                              css_class="vm-slider",
+                              data_slider_min="128", data_slider_max="4096",
+                              data_slider_step="128",
+                              data_slider_value=self.instance.ram_size,
+                              data_slider_handle="square",
+                              data_slider_tooltip="hide"),
+                        css_class="col-sm-9"
+                    ),
+                    css_class="row",
+                ),
+                Field('max_ram_size', type="hidden"),
+                Field('arch'),
+            ),
+            Fieldset(
+                "stuff",
+                Field('access_method'),
+                Field('boot_menu'),
+                Field('raw_data'),
+                Field('req_traits'),
+                Field('description'),
+                Field("parent"),
+                Field("system"),
+                Field("state"),
+            ),
+            Fieldset(
+                _("Exeternal"),
+                Field("disks"),
+                Field("managed_networks"),
+                Field("unmanaged_networks"),
+                Field("lease"),
+                Field("tags"),
+            ),
+        )
+        helper.add_input(Submit('submit', 'Save changes'))
+        return helper
 
     class Meta:
         model = InstanceTemplate
@@ -440,6 +554,7 @@ class LeaseForm(forms.ModelForm):
 
 
 class LinkButton(BaseInput):
+
     """
     Used to create a link button descriptor for the {% crispy %} template tag::
 
@@ -486,6 +601,7 @@ class AnyTag(Div):
 
 
 class WorkingBaseInput(BaseInput):
+
     def __init__(self, name, value, input_type="text", **kwargs):
         self.input_type = input_type
         self.field_classes = ""  # we need this for some reason
