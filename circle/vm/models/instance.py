@@ -20,7 +20,7 @@ from acl.models import AclBase
 from storage.models import Disk
 from ..tasks import local_tasks, vm_tasks
 from .activity import instance_activity
-from .common import BaseResourceConfigModel
+from .common import BaseResourceConfigModel, Lease
 from .network import Interface
 from .node import Node, Trait
 
@@ -62,6 +62,7 @@ class VirtualMachineDescModel(BaseResourceConfigModel):
     boot_menu = BooleanField(verbose_name=_('boot menu'), default=False,
                              help_text=_(
                                  'Show boot device selection menu on boot.'))
+    lease = ForeignKey(Lease, help_text=_("Preferred expiration periods."))
     raw_data = TextField(verbose_name=_('raw_data'), blank=True, help_text=_(
         'Additional libvirt domain parameters in XML format.'))
     req_traits = ManyToManyField(Trait, blank=True,
@@ -110,9 +111,6 @@ class InstanceTemplate(VirtualMachineDescModel, TimeStampedModel):
     disks = ManyToManyField(Disk, verbose_name=_('disks'),
                             related_name='template_set',
                             help_text=_('Disks which are to be mounted.'))
-    lease = ForeignKey('Lease', related_name='template_set',
-                       verbose_name=_('lease'),
-                       help_text=_('Expiration times.'))
 
     class Meta:
         app_label = 'vm'
@@ -200,7 +198,6 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
     disks = ManyToManyField(Disk, related_name='instance_set',
                             help_text=_("Set of mounted disks."),
                             verbose_name=_('disks'))
-    lease = ForeignKey('Lease', help_text=_("Preferred expiration periods."))
     vnc_port = IntegerField(blank=True, default=None, null=True,
                             help_text=_("TCP port where VNC console listens."),
                             unique=True, verbose_name=_('vnc_port'))
