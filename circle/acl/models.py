@@ -189,9 +189,10 @@ class AclBase(Model):
             logger.debug("- level set by str: %s", unicode(level))
 
         ct = ContentType.objects.get_for_model(cls)
-        return user.objectlevel_set.filter(
+        ols = user.objectlevel_set.filter(
             Q(users=user) | Q(groups__in=user.groups.all()),
             content_type=ct, level__weight__gte=level.weight).distinct()
+        return cls.objects.filter(objectlevel_set__in=ols.all())
 
     class Meta:
         abstract = True
