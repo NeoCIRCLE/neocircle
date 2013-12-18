@@ -218,7 +218,6 @@ class VlanForm(ModelForm):
                 'Identity',
                 'name',
                 'vid',
-                'interface',
             ),
             Fieldset(
                 'IPv4',
