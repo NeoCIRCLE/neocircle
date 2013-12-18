@@ -35,6 +35,9 @@ class InterfaceTemplate(Model):
         verbose_name = _('interface template')
         verbose_name_plural = _('interface templates')
 
+    def __unicode__(self):
+        return "%s - %s - %s" % (self.template, self.vlan, self.managed)
+
 
 class Interface(Model):
 
