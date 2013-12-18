@@ -241,6 +241,20 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         Can also specify parameters as keyword arguments which should override
         template settings.
         """
+        insts = cls.mass_create_from_template(template, owner, disks=disks,
+                                              networks=networks, tags=tags,
+                                              req_traits=req_traits, **kwargs)
+        return insts[0]
+
+    @classmethod
+    def mass_create_from_template(cls, template, owner, amount=1, disks=None,
+                                  networks=None, req_traits=None, tags=None,
+                                  **kwargs):
+        """Mass-create new instances based on an InstanceTemplate.
+
+        Can also specify parameters as keyword arguments which should override
+        template settings.
+        """
         disks = template.disks.all() if disks is None else disks
 
         networks = (template.interface_set.all() if networks is None
@@ -259,6 +273,11 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         params.update([(f, getattr(template, f)) for f in common_fields])
         params.update(kwargs)  # override defaults w/ user supplied values
 
+        return [cls.__create_instance(params, disks, networks, req_traits,
+                                      tags) for i in xrange(amount)]
+
+    @classmethod
+    def __create_instance(cls, params, disks, networks, req_traits, tags):
         # create instance and do additional setup
         inst = cls(**params)
 
@@ -270,8 +289,8 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         inst.disks.add(*[disk.get_exclusive() for disk in disks])
 
         for net in networks:
-            i = Interface.create(instance=inst, vlan=net.vlan, owner=owner,
-                                 managed=net.managed)
+            i = Interface.create(instance=inst, vlan=net.vlan,
+                                 owner=inst.owner, managed=net.managed)
             if i.host:
                 i.host.enable_net()
                 port, proto = ACCESS_PROTOCOLS[i.instance.access_method][1:3]
