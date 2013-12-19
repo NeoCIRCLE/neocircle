@@ -20,7 +20,7 @@ from django.contrib import messages
 from django.utils.translation import ugettext as _
 
 from django_tables2 import SingleTableView
-from braces.views import LoginRequiredMixin
+from braces.views import LoginRequiredMixin, SuperuserRequiredMixin
 
 from .forms import VmCreateForm, TemplateForm, LeaseForm
 from .tables import (VmListTable, NodeListTable, NodeVmListTable,
@@ -99,7 +99,7 @@ def get_acl_data(obj):
             'url': reverse('dashboard.views.vm-acl', args=[obj.pk])}
 
 
-class CheckedDetailView(DetailView):
+class CheckedDetailView(LoginRequiredMixin, DetailView):
     read_level = 'user'
 
     def get_context_data(self, **kwargs):
@@ -269,7 +269,7 @@ class VmDetailView(CheckedDetailView):
                                          kwargs={'pk': self.get_object().pk}))
 
 
-class NodeDetailView(DetailView):
+class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
     template_name = "dashboard/node-detail.html"
     model = Node
 
@@ -306,7 +306,7 @@ class NodeDetailView(DetailView):
                                          kwargs={'pk': self.object.pk}))
 
 
-class AclUpdateView(View, SingleObjectMixin):
+class AclUpdateView(LoginRequiredMixin, View, SingleObjectMixin):
 
     def post(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -361,7 +361,7 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
         return reverse_lazy("dashboard.views.template-list")
 
 
-class TemplateDetail(SuccessMessageMixin, UpdateView):
+class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = InstanceTemplate
     template_name = "dashboard/template-edit.html"
     form_class = TemplateForm
@@ -397,7 +397,7 @@ class TemplateDetail(SuccessMessageMixin, UpdateView):
                             kwargs=self.kwargs)
 
 
-class TemplateList(SingleTableView):
+class TemplateList(LoginRequiredMixin, SingleTableView):
     template_name = "dashboard/template-list.html"
     model = InstanceTemplate
     table_class = TemplateListTable
@@ -416,14 +416,14 @@ class VmList(LoginRequiredMixin, SingleTableView):
     table_pagination = False
 
 
-class NodeList(SingleTableView):
+class NodeList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
     template_name = "dashboard/node-list.html"
     model = Node
     table_class = NodeListTable
     table_pagination = False
 
 
-class VmCreate(TemplateView):
+class VmCreate(LoginRequiredMixin, TemplateView):
 
     form_class = VmCreateForm
     form = None
@@ -497,7 +497,7 @@ class VmCreate(TemplateView):
             return redirect(path)
 
 
-class NodeCreate(TemplateView):
+class NodeCreate(LoginRequiredMixin, SuperuserRequiredMixin, TemplateView):
 
     def get_template_names(self):
         if self.request.is_ajax():
@@ -573,7 +573,7 @@ class NodeCreate(TemplateView):
             return redirect(reverse_lazy('dashboard.views.detail', resp))
 
 
-class VmDelete(DeleteView):
+class VmDelete(LoginRequiredMixin, DeleteView):
     model = Instance
     template_name = "dashboard/confirm/base-delete.html"
 
@@ -591,6 +591,9 @@ class VmDelete(DeleteView):
             return reverse_lazy('dashboard.index')
 
     def get_context_data(self, **kwargs):
+        object = self.get_object()
+        if not object.has_level(self.request.user, 'owner'):
+            raise PermissionDenied()
         # this is redundant now, but if we wanna add more to print
         # we'll need this
         context = super(VmDelete, self).get_context_data(**kwargs)
@@ -618,7 +621,7 @@ class VmDelete(DeleteView):
             return HttpResponseRedirect(success_url)
 
 
-class NodeDelete(DeleteView):
+class NodeDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
 
     """This stuff deletes the node.
     """
@@ -664,7 +667,7 @@ class NodeDelete(DeleteView):
             return reverse_lazy('dashboard.index')
 
 
-class PortDelete(DeleteView):
+class PortDelete(LoginRequiredMixin, DeleteView):
     model = Rule
     pk_url_kwarg = 'rule'
 
@@ -710,7 +713,7 @@ class PortDelete(DeleteView):
                             kwargs={'pk': self.kwargs.get("pk")})
 
 
-class VmMassDelete(View):
+class VmMassDelete(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         vms = request.GET.getlist('v[]')
         objects = Instance.objects.filter(pk__in=vms)
@@ -757,7 +760,7 @@ class LeaseCreate(SuccessMessageMixin, CreateView):
         return reverse_lazy("dashboard.views.template-list")
 
 
-class LeaseDetail(SuccessMessageMixin, UpdateView):
+class LeaseDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Lease
     form_class = LeaseForm
     template_name = "dashboard/lease-edit.html"
