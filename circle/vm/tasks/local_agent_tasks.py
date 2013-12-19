@@ -6,7 +6,7 @@ import time
 
 @celery.task
 def agent_started(vm):
-    from vm.models.instance import Instance, instance_activity
+    from vm.models import Instance, instance_activity
     instance = Instance.objects.get(id=int(vm.split('-')[-1]))
 
     with instance_activity(code_suffix='agent', instance=instance) as act:
@@ -25,7 +25,7 @@ def agent_started(vm):
 
 @celery.task
 def agent_stopped(vm):
-    from vm.models.instance import Instance, InstanceActivity
+    from vm.models import Instance, InstanceActivity
     instance = Instance.objects.get(id=int(vm.split('-')[-1]))
     qs = InstanceActivity.objects.filter(instance=instance,
                                          activity_code='vm.Instance.agent')
@@ -36,7 +36,7 @@ def agent_stopped(vm):
 
 @celery.task
 def agent_ok(vm):
-    from vm.models.instance import Instance, InstanceActivity
+    from vm.models import Instance, InstanceActivity
     instance = Instance.objects.get(id=int(vm.split('-')[-1]))
     qs = InstanceActivity.objects.filter(instance=instance,
                                          activity_code='vm.Instance.agent')
