@@ -8,7 +8,7 @@ from firewall.fields import *
 from south.modelsinspector import add_introspection_rules
 from django.core.validators import MinValueValidator, MaxValueValidator
 import django.conf
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 import re
 import random
 
@@ -416,13 +416,6 @@ def send_task(sender, instance, created, **kwargs):
     from firewall.tasks import ReloadTask
     ReloadTask.apply_async(args=[sender.__name__])
 
-
-post_save.connect(send_task, sender=Host)
-post_save.connect(send_task, sender=Rule)
-post_save.connect(send_task, sender=Domain)
-post_save.connect(send_task, sender=Record)
-post_save.connect(send_task, sender=Vlan)
-post_save.connect(send_task, sender=Firewall)
-post_save.connect(send_task, sender=Group)
-post_save.connect(send_task, sender=Host)
-post_save.connect(send_task, sender=Blacklist)
+for sender in [Host, Rule, Domain, Record, Vlan, Firewall, Group, Blacklist]:
+    post_save.connect(send_task, sender=sender)
+#    post_delete.connect(send_task, sender=sender)

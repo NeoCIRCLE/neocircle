@@ -500,3 +500,15 @@ for mac, name, ipend in [("18:a9:05:64:19:aa", "mega6", 16), ("00:1e:0b:e9:79:1e
         print "nemok %s" % name
 '''
 
+def vlan():
+    obj = models.Vlan.objects.values('vid', 'interface', 'ipv4', 'prefix4',
+                                     'ipv6', 'prefix6')
+    return {
+        x['interface']: {
+            'tag': x['vid'],
+            'type': 'internal',
+            'interfaces': [x['interface']],
+            'addresses': ['%s/%s' % (x['ipv4'], x['prefix4']),
+                          '%s/%s' % (x['ipv6'], x['prefix6'])]}
+        for x in obj}
+
