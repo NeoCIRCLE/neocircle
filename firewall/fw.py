@@ -214,14 +214,8 @@ class Firewall:
         # hard-wired rules
         self.iptablesnat('-A POSTROUTING -s 10.5.0.0/16 -o vlan0003 -j SNAT '
                 '--to-source 10.3.255.254') # man elerheto legyen
-#        self.iptablesnat('-A POSTROUTING -o vlan0008 -j SNAT '
-#                '--to-source 10.0.0.247') # wolf network for printing
         self.iptablesnat('-A POSTROUTING -s 10.3.0.0/16 -p udp --dport 53 -o vlan0002 -j SNAT '
                 '--to-source %s' % self.pub.ipv4) # kulonben nem megy a dns man-ban
-        self.iptablesnat('-A PREROUTING -d 192.168.243.1/32 -j DNAT --to-destination 152.66.243.1')
-        self.iptablesnat('-A PREROUTING -d 152.66.243.4/32 -j DNAT --to-destination 152.66.243.102')
-        self.iptablesnat('-A PREROUTING -d 152.66.243.1/32 -p tcp --dport smtp -j DNAT --to-destination 152.66.243.102')
-        self.iptablesnat('-A PREROUTING -d 152.66.243.1/32 -p tcp --dport smtps -j DNAT --to-destination 152.66.243.102')
         self.iptablesnat('-A PREROUTING -d 152.66.243.130/32 -p udp --dport 1194 -j DNAT --to-destination 10.12.255.253')
 
 
