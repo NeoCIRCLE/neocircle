@@ -9,6 +9,7 @@ import re
 mac_re = re.compile(r'^([0-9a-fA-F]{2}([:-]?|$)){6}$')
 alfanum_re = re.compile(r'^[A-Za-z0-9_-]+$')
 domain_re = re.compile(r'^([A-Za-z0-9_-]\.?)+$')
+wildcard_domain_re = re.compile(r'^(\*\.)?([A-Za-z0-9_-]\.?)+$')
 ipv4_re = re.compile('^[0-9]+\.([0-9]+)\.([0-9]+)\.([0-9]+)$')
 reverse_domain_re = re.compile(r'^(%\([abcd]\)d|[a-z0-9.-])+$')
 
@@ -48,6 +49,11 @@ def is_valid_domain(value):
 def val_domain(value):
     """Validate whether the parameter is a valid domin name."""
     if not is_valid_domain(value):
+        raise ValidationError(_(u'%s - invalid domain name') % value)
+
+def val_wildcard_domain(value):
+    """Validate whether the parameter is a valid domin name."""
+    if not wildcard_domain_re.match(value):
         raise ValidationError(_(u'%s - invalid domain name') % value)
 
 def is_valid_reverse_domain(value):

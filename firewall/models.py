@@ -293,7 +293,7 @@ class Domain(models.Model):
 class Record(models.Model):
     CHOICES_type = (('A', 'A'), ('CNAME', 'CNAME'), ('AAAA', 'AAAA'),
             ('MX', 'MX'), ('NS', 'NS'), ('PTR', 'PTR'), ('TXT', 'TXT'))
-    name = models.CharField(max_length=40, validators=[val_domain],
+    name = models.CharField(max_length=40, validators=[val_wildcard_domain],
             blank=True, null=True)
     domain = models.ForeignKey('Domain')
     host = models.ForeignKey('Host', blank=True, null=True)
