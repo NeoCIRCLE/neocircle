@@ -15,7 +15,7 @@ from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import (TemplateView, DetailView, View, DeleteView,
-                                  UpdateView)
+                                  UpdateView, CreateView)
 from django.contrib import messages
 from django.utils.translation import ugettext as _
 
@@ -735,6 +735,16 @@ class VmMassDelete(View):
             messages.success(request, success_message)
             next = request.GET.get('next')
             return redirect(next if next else reverse_lazy('dashboard.index'))
+
+
+class LeaseCreate(SuccessMessageMixin, CreateView):
+    model = Lease
+    form_class = LeaseForm
+    template_name = "dashboard/lease-create.html"
+    success_message = _("Successfully created a new lease!")
+
+    def get_success_url(self):
+        return reverse_lazy("dashboard.views.template-list")
 
 
 class LeaseDetail(SuccessMessageMixin, UpdateView):

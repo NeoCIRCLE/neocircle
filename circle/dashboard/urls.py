@@ -5,7 +5,7 @@ from .views import (
     IndexView, VmDetailView, VmList, VmCreate, TemplateDetail, AclUpdateView,
     VmDelete, VmMassDelete, vm_activity, NodeList, NodeDetailView, PortDelete,
     TransferOwnershipView, TransferOwnershipConfirmView, NodeDelete,
-    TemplateList, LeaseDetail, NodeCreate,
+    TemplateList, LeaseDetail, NodeCreate, LeaseCreate, TemplateCreate,
 )
 
 urlpatterns = patterns(
@@ -13,6 +13,8 @@ urlpatterns = patterns(
     url(r'^$', IndexView.as_view(), name="dashboard.index"),
     url(r'^lease/(?P<pk>\d+)/$', LeaseDetail.as_view(),
         name="dashboard.views.lease-detail"),
+    url(r'^lease/create/$', LeaseCreate.as_view(),
+        name="dashboard.views.lease-create"),
     url(r'^template/(?P<pk>\d+)/$', TemplateDetail.as_view(),
         name='dashboard.views.template-detail'),
     url(r"^template/list/$", TemplateList.as_view(),

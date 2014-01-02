@@ -446,9 +446,13 @@ class LeaseForm(forms.ModelForm):
         intervals = ["hours", "days", "weeks", "months"]
         methods = ["suspend", "delete"]
         # feels redundant but these lines are so long
+        s = (self.instance.suspend_interval.total_seconds()
+             if self.instance.pk else 0)
+        d = (self.instance.delete_interval.total_seconds()
+             if self.instance.pk else 0)
         seconds = {
-            'suspend': self.instance.suspend_interval.total_seconds(),
-            'delete': self.instance.delete_interval.total_seconds()
+            'suspend': s,
+            'delete': d
         }
         initial = {
             'suspend': self.get_intervals(int(seconds['suspend'])),
@@ -487,8 +491,8 @@ class LeaseForm(forms.ModelForm):
         helper = FormHelper()
         helper.layout = Layout(
             Field('name'),
-            Field("suspend_interval_seconds", type="hidden"),
-            Field("delete_interval_seconds", type="hidden"),
+            Field("suspend_interval_seconds", type="hidden", value="0"),
+            Field("delete_interval_seconds", type="hidden", value="0"),
             Div(
                 Div(
                     HTML(_("Suspend in")),
