@@ -351,6 +351,16 @@ class AclUpdateView(View, SingleObjectMixin):
                     value, unicode(request.user))
 
 
+class TemplateCreate(SuccessMessageMixin, CreateView):
+    model = InstanceTemplate
+    form_class = TemplateForm
+    template_name = "dashboard/template-create.html"
+    success_message = _("Successfully created a new template!")
+
+    def get_success_url(self):
+        return reverse_lazy("dashboard.views.template-list")
+
+
 class TemplateDetail(SuccessMessageMixin, UpdateView):
     model = InstanceTemplate
     template_name = "dashboard/template-edit.html"

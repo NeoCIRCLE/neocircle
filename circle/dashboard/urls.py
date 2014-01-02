@@ -15,6 +15,8 @@ urlpatterns = patterns(
         name="dashboard.views.lease-detail"),
     url(r'^lease/create/$', LeaseCreate.as_view(),
         name="dashboard.views.lease-create"),
+    url(r'^template/create/$', TemplateCreate.as_view(),
+        name="dashboard.views.template-create"),
     url(r'^template/(?P<pk>\d+)/$', TemplateDetail.as_view(),
         name='dashboard.views.template-detail'),
     url(r"^template/list/$", TemplateList.as_view(),

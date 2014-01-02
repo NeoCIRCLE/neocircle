@@ -301,15 +301,24 @@ class TemplateForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(TemplateForm, self).__init__(*args, **kwargs)
         self.fields['disks'] = forms.ModelMultipleChoiceField(queryset=DISKS)
-        mn = self.instance.interface_set.filter(
-            managed=True).values_list("vlan", flat=True)
-        un = self.instance.interface_set.filter(
-            managed=False).values_list("vlan", flat=True)
-        self.initial['managed_networks'] = mn
-        self.initial['unmanaged_networks'] = un
+        if self.instance.pk:
+            mn = self.instance.interface_set.filter(
+                managed=True).values_list("vlan", flat=True)
+            un = self.instance.interface_set.filter(
+                managed=False).values_list("vlan", flat=True)
+            self.initial['managed_networks'] = mn
+            self.initial['unmanaged_networks'] = un
 
     def save(self, commit=True):
         data = self.cleaned_data
+        self.instance.max_ram_size = data.get('ram_size')
+
+        instance = super(TemplateForm, self).save(commit=False)
+        if commit:
+            instance.save()
+
+        self.instance.disks = data['disks']  # TODO why do I need this
+
         # create and/or delete InterfaceTemplates
         managed = InterfaceTemplate.objects.filter(
             managed=True, template=self.instance).values_list("vlan",
@@ -332,17 +341,15 @@ class TemplateForm(forms.ModelForm):
         InterfaceTemplate.objects.filter(
             managed=False, template=self.instance).exclude(
             vlan__in=data['unmanaged_networks']).delete()
-
-        self.instance.disks = data['disks']  # TODO why do I need this
-        self.instance.max_ram_size = data.get('ram_size')
-        instance = super(TemplateForm, self).save(commit=False)
-        if commit:
-            instance.save()
         return instance
 
     @property
     def helper(self):
         helper = FormHelper()
+        if not self.instance.pk:
+            self.instance.priority = 20
+            self.instance.ram_size = 512
+            self.instance.num_cores = 2
         helper.layout = Layout(
             Field("name"),
             Fieldset(
@@ -386,7 +393,7 @@ class TemplateForm(forms.ModelForm):
                     ),
                     css_class="row",
                 ),
-                Field('max_ram_size', type="hidden"),
+                Field('max_ram_size', type="hidden", value="0"),
                 Field('arch'),
             ),
             Fieldset(
