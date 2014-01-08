@@ -36,13 +36,15 @@ class VmDetailTest(TestCase):
 
     def test_404_vm_page(self):
         c = Client()
+        self.login(c, 'user1')
         response = c.get('/dashboard/vm/235555/')
         self.assertEqual(response.status_code, 404)
 
     def test_anon_vm_page(self):
         c = Client()
         response = c.get('/dashboard/vm/1/')
-        self.assertEqual(response.status_code, 403)
+        self.assertRedirects(response, '/accounts/login/'
+                                       '?next=/dashboard/vm/1/')
 
     def test_unauth_vm_page(self):
         c = Client()
