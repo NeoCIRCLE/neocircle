@@ -315,12 +315,13 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
     @property
     def mem_dump(self):
-        """Return the path for the memory dump.
+        """Return the path and datastore for the memory dump.
 
         It is always on the first hard drive storage named cloud-<id>.dump
         """
-        path = self.disks.all()[0].datastore.path
-        return path + '/' + self.vm_name + '.dump'
+        datastore = self.disks.all()[0].datastore
+        path = datastore.path + '/' + self.vm_name + '.dump'
+        return {'datastore': datastore, 'path': path}
 
     @property
     def primary_host(self):
@@ -558,6 +559,16 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                 for disk in self.disks.all():
                     disk.destroy()
 
+            # Delete mem. dump if exists
+            queue_name = self.mem_dump['datastore'].get_remote_queue_name(
+                'storage')
+            try:
+                from storage.tasks.remote_tasks import delete
+                delete.apply_async(args=[self.mem_dump['path']],
+                                   queue=queue_name).get()
+            except:
+                pass
+
             # Clear node and VNC port association
             self.node = None
             self.vnc_port = None
@@ -578,7 +589,8 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                                task_uuid=task_uuid, user=user):
 
             queue_name = self.get_remote_queue_name('vm')
-            vm_tasks.sleep.apply_async(args=[self.vm_name, self.mem_dump],
+            vm_tasks.sleep.apply_async(args=[self.vm_name,
+                                             self.mem_dump['path']],
                                        queue=queue_name).get()
 
     def sleep_async(self, user=None):
