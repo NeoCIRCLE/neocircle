@@ -34,6 +34,9 @@ class DataStore(Model):
     def __unicode__(self):
         return u'%s (%s)' % (self.name, self.path)
 
+    def get_remote_queue_name(self, queue_id):
+        return self.hostname + '.' + queue_id
+
 
 class Disk(TimeStampedModel):
 
@@ -150,6 +153,12 @@ class Disk(TimeStampedModel):
             'type': 'snapshot' if self.type == 'qcow2-snap' else 'normal'
         }
 
+    def get_remote_queue_name(self, queue_id):
+        if self.datastore:
+            return self.datastore.get_remote_queue_name(queue_id)
+        else:
+            return None
+
     def __unicode__(self):
         return u"%s (#%d)" % (self.name, self.id)
 
@@ -186,7 +195,7 @@ class Disk(TimeStampedModel):
                            task_uuid=task_uuid, user=user) as act:
 
             # Delegate create / snapshot jobs
-            queue_name = self.datastore.hostname + ".storage"
+            queue_name = self.get_remote_queue_name('storage')
             disk_desc = self.get_disk_desc()
             if self.type == 'qcow2-snap':
                 with act.sub_activity('creating_snapshot'):
@@ -258,7 +267,7 @@ class Disk(TimeStampedModel):
                                        filename=filename, name=self.name,
                                        size=self.size, type=new_type)
 
-            queue_name = self.datastore.hostname + ".storage"
+            queue_name = self.get_remote_queue_name('storage')
             remote_tasks.merge.apply_async(args=[self.get_disk_desc(),
                                                  disk.get_disk_desc()],
                                            queue=queue_name).get()
