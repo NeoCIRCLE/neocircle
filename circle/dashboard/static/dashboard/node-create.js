@@ -281,14 +281,3 @@ function nodeCreateTemplateChange(new_this) {
     }
   });
 }
-
-function vmCreateNetworkLabel(pk, name, managed) {
-  return '<span id="vlan-' + pk + '" class="label label-' +  (managed ? 'primary' : 'default')  + '"><i class="icon-' + (managed ? 'globe' : 'link') + '"></i> ' + name + ' <a href="#" class="hover-black node-create-remove-network"><i class="icon-remove-sign"></i></a></span> ';
-}
-
-
-function vmCreateDiskLabel(pk, name) {
-  return '<span id="vlan-' + pk + '" class="label label-primary"><i class="icon-file"></i> ' + name + ' <a href="#" class="hover-black node-create-remove-disk"><i class="icon-remove-sign"></i></a></span> ';
-}
-
-

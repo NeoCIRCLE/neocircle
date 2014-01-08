@@ -300,5 +300,3 @@ function vmCreateNetworkLabel(pk, name, managed) {
 function vmCreateDiskLabel(pk, name) {
   return '<span id="vlan-' + pk + '" class="label label-primary"><i class="icon-file"></i> ' + name + ' <a href="#" class="hover-black vm-create-remove-disk"><i class="icon-remove-sign"></i></a></span> ';
 }
-
-

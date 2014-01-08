@@ -251,7 +251,7 @@ class VmCreateForm(forms.Form):
                                             "",
                                             css_id=(
                                                 "vm-create-network-add"
-                                                "checkbox-managed"
+                                                "-checkbox-managed"
                                             ),
                                             input_type="checkbox",
                                             title="",
