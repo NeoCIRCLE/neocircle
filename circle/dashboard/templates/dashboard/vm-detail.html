@@ -25,6 +25,7 @@
           <button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown">Action <i class="icon-caret-down"></i></button>
           <ul class="dropdown-menu" role="menu">
             <li><a href="#" class="vm-details-rename-button"><i class="icon-pencil"></i> Rename</a></li>
+            <li><a href="#" class="vm-details-save-button"><i class="icon-save"></i> Save as</a></li>
             <li><a href="#"><i class="icon-refresh"></i> Reboot</a></li>
             <li><a href="#"><i class="icon-off"></i> Shutdown</a></li>
             <li><a data-vm-pk="{{ instance.pk }}" class="vm-delete" href="{% url "dashboard.views.delete-vm" pk=instance.pk %}"><i class="icon-remove"></i> Discard</a></li>
