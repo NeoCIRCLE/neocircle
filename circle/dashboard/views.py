@@ -411,9 +411,15 @@ class TemplateList(LoginRequiredMixin, SingleTableView):
 
 class VmList(LoginRequiredMixin, SingleTableView):
     template_name = "dashboard/vm-list.html"
-    queryset = Instance.active.all()
     table_class = VmListTable
     table_pagination = False
+    model = Instance
+
+    def get_queryset(self):
+        logger.debug('VmList.get_queryset() claled. User: %s',
+                     unicode(self.request.user))
+        return Instance.get_objects_with_level(
+            'user', self.request.user).filter(destroyed=None).all()
 
 
 class NodeList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
