@@ -813,7 +813,7 @@ def vm_activity(request, pk):
 
 class TransferOwnershipView(LoginRequiredMixin, DetailView):
     model = Instance
-    template_name = 'dashboard/vm-detail-tx-owner.html'
+    template_name = 'dashboard/vm-detail/tx-owner.html'
 
     def post(self, request, *args, **kwargs):
         try:
