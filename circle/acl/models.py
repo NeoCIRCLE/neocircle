@@ -37,7 +37,7 @@ class ObjectLevel(Model):
     """Permission level for a specific object."""
     level = ForeignKey(Level)
     content_type = ForeignKey(ContentType)
-    object_id = CharField(max_length=255)
+    object_id = IntegerField()
     content_object = GenericForeignKey()
     users = ManyToManyField(User)
     groups = ManyToManyField(Group)
@@ -192,7 +192,7 @@ class AclBase(Model):
         ols = user.objectlevel_set.filter(
             Q(users=user) | Q(groups__in=user.groups.all()),
             content_type=ct, level__weight__gte=level.weight).distinct()
-        return cls.objects.filter(objectlevel_set__in=ols.all())
+        return cls.objects.filter(object_level_set__in=ols.all())
 
     class Meta:
         abstract = True
