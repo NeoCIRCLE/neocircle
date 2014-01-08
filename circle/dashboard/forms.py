@@ -346,7 +346,7 @@ class TemplateForm(forms.ModelForm):
     @property
     def helper(self):
         helper = FormHelper()
-        if not self.instance.pk:
+        if not self.instance.pk and len(self.errors) < 1:
             self.instance.priority = 20
             self.instance.ram_size = 512
             self.instance.num_cores = 2
