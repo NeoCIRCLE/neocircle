@@ -437,7 +437,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         """Get the remote worker queue name of this instance with the specified
            queue ID.
         """
-        return self.node.get_remote_queue_name(queue_id)
+        return self.node.get_remote_queue_name(queue_id) if self.node else None
 
     def renew(self, which='both'):
         """Renew virtual machine instance leases.
@@ -535,19 +535,23 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                           asynchronously.
         :type task_uuid: str
         """
+        if self.destroyed:
+            return  # already destroyed, nothing to do here
+
         with instance_activity(code_suffix='destroy', instance=self,
                                task_uuid=task_uuid, user=user) as act:
 
-            # Destroy networks
-            with act.sub_activity('destroying_net'):
-                for net in self.interface_set.all():
-                    net.destroy()
+            if self.node:
+                # Destroy networks
+                with act.sub_activity('destroying_net'):
+                    for net in self.interface_set.all():
+                        net.destroy()
 
-            # Destroy virtual machine
-            with act.sub_activity('destroying_vm'):
-                queue_name = self.get_remote_queue_name('vm')
-                vm_tasks.destroy.apply_async(args=[self.vm_name],
-                                             queue=queue_name).get()
+                # Destroy virtual machine
+                with act.sub_activity('destroying_vm'):
+                    queue_name = self.get_remote_queue_name('vm')
+                    vm_tasks.destroy.apply_async(args=[self.vm_name],
+                                                 queue=queue_name).get()
 
             # Destroy disks
             with act.sub_activity('destroying_disks'):
