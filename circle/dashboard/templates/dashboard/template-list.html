@@ -16,9 +16,6 @@
         <h3 class="no-margin"><i class="icon-desktop"></i> {% trans "Templates" %}</h3>
       </div>
       <div class="panel-body">
-        <div class="" style="max-width: 600px;">
-          {% render_table lease_table %}
-        </div>
         {% render_table table %}
       </div>
     </div>
@@ -26,10 +23,47 @@
 </div>
 
 
+
+<div class="row">
+  <div class="col-md-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <a href="{% url "dashboard.views.template-create" %}" class="pull-right btn btn-success btn-xs">
+          <i class="icon-plus"></i> new template
+        </a>
+        <a href="{% url "dashboard.views.lease-create" %}" class="pull-right btn btn-success btn-xs" style="margin-right: 10px;">
+          <i class="icon-plus"></i> new lease
+        </a>
+        <h3 class="no-margin"><i class="icon-desktop"></i> {% trans "Leases" %}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="" style="max-width: 600px;">
+          {% render_table lease_table %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="no-margin"><i class="icon-desktop"></i> Placeholder</h3>
+      </div>
+      <div class="panel-body">
+        ???
+      </div>
+    </div>
+  </div>
+</div>
+
 <style>
   .template-list-table td, .template-list-table th,
   .lease-list-table td, .lease-list-table th {
     text-align: center;
+  }
+
+  .template-list-table td:nth-child(1), .lease-list-table td:nth-child(1) {
+    text-align: left;
   }
 
   .vm-list-table-thin {

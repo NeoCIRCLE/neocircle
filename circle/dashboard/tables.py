@@ -139,10 +139,9 @@ class NodeVmListTable(Table):
 
 
 class TemplateListTable(Table):
-    pk = LinkColumn(
+    name = LinkColumn(
         'dashboard.views.template-detail',
         args=[A('pk')],
-        verbose_name=_("ID"),
     )
     num_cores = Column(
         verbose_name=_("Cores"),
@@ -167,16 +166,15 @@ class TemplateListTable(Table):
         model = InstanceTemplate
         attrs = {'class': ('table table-bordered table-striped table-hover'
                            ' template-list-table')}
-        fields = ('pk', 'name', 'num_cores', 'ram_size', 'arch',
+        fields = ('name', 'num_cores', 'ram_size', 'arch',
                   'priority', 'system', 'access_method', 'lease', 'state',
                   'actions', )
 
 
 class LeaseListTable(Table):
-    pk = LinkColumn(
+    name = LinkColumn(
         'dashboard.views.lease-detail',
         args=[A('pk')],
-        verbose_name=_("ID"),
     )
 
     suspend_in = TemplateColumn(
@@ -196,4 +194,4 @@ class LeaseListTable(Table):
         model = Lease
         attrs = {'class': ('table table-bordered table-striped table-hover'
                            ' lease-list-table')}
-        fields = ('pk', 'name', 'suspend_in', 'delete_in', )
+        fields = ('name', 'suspend_in', 'delete_in', )
