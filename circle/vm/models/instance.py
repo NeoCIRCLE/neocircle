@@ -2,6 +2,7 @@ from __future__ import absolute_import, unicode_literals
 from datetime import timedelta
 from logging import getLogger
 from importlib import import_module
+import string
 
 import django.conf
 from django.db.models import (BooleanField, CharField, DateTimeField,
@@ -480,7 +481,15 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
             # Deploy virtual images
             with act.sub_activity('deploying_disks'):
+                devnums = list(string.lowercase)  # a-z
                 for disk in self.disks.all():
+                    # assign device numbers
+                    if disk.dev_num in devnums:
+                        devnums.remove(disk.dev_num)
+                    else:
+                        disk.dev_num = devnums.pop(0)
+                        disk.save()
+                    # deploy disk
                     disk.deploy()
 
             queue_name = self.get_remote_queue_name('vm')
