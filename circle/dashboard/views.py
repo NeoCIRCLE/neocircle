@@ -477,7 +477,7 @@ class VmCreate(LoginRequiredMixin, TemplateView):
 
             networks = (
                 [InterfaceTemplate(vlan=l, managed=True)
-                    for l in post['unmanaged_networks']] +
+                    for l in post['managed_networks']] +
                 [InterfaceTemplate(vlan=l, managed=False)
                     for l in post['unmanaged_networks']])
             disks = post['disks']
