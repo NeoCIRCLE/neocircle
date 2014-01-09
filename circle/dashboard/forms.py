@@ -299,15 +299,38 @@ class TemplateForm(forms.ModelForm):
         queryset=VLANS, required=False)
 
     def __init__(self, *args, **kwargs):
+        parent = kwargs.pop("parent", None)
         super(TemplateForm, self).__init__(*args, **kwargs)
         self.fields['disks'] = forms.ModelMultipleChoiceField(queryset=DISKS)
-        if self.instance.pk:
-            mn = self.instance.interface_set.filter(
+
+        if parent is not None:
+            template = InstanceTemplate.objects.get(pk=parent)
+            parent = template.__dict__
+            fields = ["system", "name", "num_cores", "boot_menu", "ram_size",
+                      "priority", "state", "access_method", "raw_data",
+                      "arch", "description"]
+            for f in fields:
+                self.initial[f] = parent[f]
+            self.initial['lease'] = parent['lease_id']
+            self.initial['disks'] = template.disks.all()
+            self.initial['parent'] = template
+            self.initial['name'] = "Clone of %s" % self.initial['name']
+            self.for_networks = template
+        else:
+            self.for_networks = self.instance
+
+        if self.instance.pk or parent is not None:
+            mn = self.for_networks.interface_set.filter(
                 managed=True).values_list("vlan", flat=True)
-            un = self.instance.interface_set.filter(
+            un = self.for_networks.interface_set.filter(
                 managed=False).values_list("vlan", flat=True)
             self.initial['managed_networks'] = mn
             self.initial['unmanaged_networks'] = un
+
+        if not self.instance.pk and len(self.errors) < 1:
+            self.instance.priority = 20
+            self.instance.ram_size = 512
+            self.instance.num_cores = 2
 
     def save(self, commit=True):
         data = self.cleaned_data
@@ -346,10 +369,6 @@ class TemplateForm(forms.ModelForm):
     @property
     def helper(self):
         helper = FormHelper()
-        if not self.instance.pk and len(self.errors) < 1:
-            self.instance.priority = 20
-            self.instance.ram_size = 512
-            self.instance.num_cores = 2
         helper.layout = Layout(
             Field("name"),
             Fieldset(
@@ -403,7 +422,7 @@ class TemplateForm(forms.ModelForm):
                 Field('raw_data'),
                 Field('req_traits'),
                 Field('description'),
-                Field("parent"),
+                Field("parent", type="hidden"),
                 Field("system"),
                 Field("state"),
             ),

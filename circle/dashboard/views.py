@@ -361,6 +361,15 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
     template_name = "dashboard/template-create.html"
     success_message = _("Successfully created a new template!")
 
+    def get(self, *args, **kwargs):
+        self.parent = self.request.GET.get("parent")
+        return super(TemplateCreate, self).get(*args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super(TemplateCreate, self).get_form_kwargs()
+        kwargs['parent'] = getattr(self, "parent", None)
+        return kwargs
+
     def get_success_url(self):
         return reverse_lazy("dashboard.views.template-list")
 
