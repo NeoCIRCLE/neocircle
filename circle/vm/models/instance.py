@@ -282,6 +282,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         # save instance
         inst.clean()
         inst.save()
+        inst.set_level(inst.owner, 'owner')
 
         # create related entities
         inst.disks.add(*[disk.get_exclusive() for disk in disks])
