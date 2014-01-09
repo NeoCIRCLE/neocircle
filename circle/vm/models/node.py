@@ -147,6 +147,3 @@ class Node(TimeStampedModel):
     @permalink
     def get_absolute_url(self):
         return ('dashboard.views.node-detail', None, {'pk': self.id})
-    def pr():
-        print "irdki"
-

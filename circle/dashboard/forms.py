@@ -1,22 +1,19 @@
 from datetime import timedelta
-from django import forms
-from vm.models import InstanceTemplate, Lease, InterfaceTemplate, Node
-from storage.models import Disk
-from firewall.models import Vlan, Host
+
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import (Layout, Div, BaseInput,
-                                 Field, HTML, Submit, Fieldset)
-from crispy_forms.layout import TEMPLATE_PACK
+from crispy_forms.layout import (
+    Layout, Div, BaseInput, Field, HTML, Submit, Fieldset, TEMPLATE_PACK
+)
 from crispy_forms.utils import render_field
+from django import forms
+from django.forms.widgets import TextInput
 from django.template import Context
 from django.template.loader import render_to_string
-from django.forms.widgets import TextInput
-from django.forms import ModelForm
-from crispy_forms.bootstrap import FormActions
-
-from django.forms.models import BaseInlineFormSet
-
 from django.utils.translation import ugettext as _
+
+from firewall.models import Vlan, Host
+from storage.models import Disk
+from vm.models import InstanceTemplate, Lease, InterfaceTemplate, Node
 
 
 VLANS = Vlan.objects.all()
@@ -425,7 +422,7 @@ class NodeForm(forms.ModelForm):
                         ),
                         css_class="row",
                     ),
-                    Div( # nested host
+                    Div(  # nested host
                         HTML("""{% load crispy_forms_tags %}
                             {% crispy hostform %}
                             """)
