@@ -176,7 +176,8 @@ class AclBase(Model):
         return groups
 
     @classmethod
-    def get_objects_with_level(cls, level, user):
+    def get_objects_with_level(cls, level, user,
+                               group_also=True, owner_also=False):
         logger.debug('%s.get_objects_with_level(%s,%s) called',
                      unicode(cls), unicode(level), unicode(user))
         if user is None or not user.is_authenticated():
@@ -189,10 +190,16 @@ class AclBase(Model):
             logger.debug("- level set by str: %s", unicode(level))
 
         ct = ContentType.objects.get_for_model(cls)
+        levelfilter = Q(users=user)
+        if group_also:
+            levelfilter |= Q(groups__in=user.groups.all())
         ols = user.objectlevel_set.filter(
-            Q(users=user) | Q(groups__in=user.groups.all()),
+            levelfilter,
             content_type=ct, level__weight__gte=level.weight).distinct()
-        return cls.objects.filter(object_level_set__in=ols.all())
+        clsfilter = Q(object_level_set__in=ols.all())
+        if owner_also:
+            clsfilter |= Q(owner=user)
+        return cls.objects.filter(clsfilter)
 
     class Meta:
         abstract = True
