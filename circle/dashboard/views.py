@@ -468,9 +468,6 @@ class VmCreate(LoginRequiredMixin, TemplateView):
 
     # TODO handle not ajax posts
     def post(self, request, *args, **kwargs):
-        if not self.request.user.is_authenticated():
-            raise PermissionDenied()
-
         form = self.form_class(request.POST)
         if not form.is_valid():
             return self.get(request, form, *args, **kwargs)
