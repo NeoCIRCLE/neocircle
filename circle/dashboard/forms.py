@@ -1,10 +1,8 @@
 from datetime import timedelta
 from django import forms
-from vm.models import InstanceTemplate, Lease, InterfaceTemplate
+from vm.models import InstanceTemplate, Lease, InterfaceTemplate, Node
 from storage.models import Disk
-from firewall.models import Vlan
-# from django.core.urlresolvers import reverse_lazy
-
+from firewall.models import Vlan, Host
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import (Layout, Div, BaseInput,
                                  Field, HTML, Submit, Fieldset)
@@ -13,8 +11,12 @@ from crispy_forms.utils import render_field
 from django.template import Context
 from django.template.loader import render_to_string
 from django.forms.widgets import TextInput
+from django.forms import ModelForm
+from crispy_forms.bootstrap import FormActions
+
+from django.forms.models import BaseInlineFormSet
+
 from django.utils.translation import ugettext as _
-# from crispy_forms.bootstrap import FormActions
 
 
 VLANS = Vlan.objects.all()
@@ -290,6 +292,169 @@ class VmCreateForm(forms.Form):
                 css_class="vm-create-advanced"
             ),
         )
+
+
+class HostForm(forms.ModelForm):
+
+    def setowner(self, user):
+        self.instance.owner = user
+
+    def __init__(self, *args, **kwargs):
+        super(HostForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_show_labels = False
+        self.helper.form_tag = False
+        self.helper.layout = Layout(
+            Div(
+                Div(  # host
+                    Div(
+                        AnyTag(
+                            'h3',
+                            HTML(_("Host")),
+                        ),
+                        css_class="col-sm-3",
+                    ),
+                    css_class="row",
+                ),
+                Div(  # host data
+                    Div(  # hostname
+                        HTML('<label for="node-hostname-box">'
+                             'Name'
+                             '</label>'),
+                        css_class="col-sm-3",
+                    ),
+                    Div(  # hostname
+                        'hostname',
+                        css_class="col-sm-9",
+                    ),
+                    Div(  # mac
+                        HTML('<label for="node-mac-box">'
+                             'MAC'
+                             '</label>'),
+                        css_class="col-sm-3",
+                    ),
+                    Div(
+                        'mac',
+                        css_class="col-sm-9",
+                    ),
+                    Div(  # ip
+                        HTML('<label for="node-ip-box">'
+                             'IP'
+                             '</label>'),
+                        css_class="col-sm-3",
+                    ),
+                    Div(
+                        'ipv4',
+                        css_class="col-sm-9",
+                    ),
+                    Div(  # vlan
+                        HTML('<label for="node-vlan-box">'
+                             'VLAN'
+                             '</label>'),
+                        css_class="col-sm-3",
+                    ),
+                    Div(
+                        'vlan',
+                        css_class="col-sm-9",
+                    ),
+                    css_class="row",
+                ),
+            ),
+        )
+
+    class Meta:
+        model = Host
+        fields = ['hostname', 'vlan', 'mac', 'ipv4', ]
+
+
+class NodeForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super(NodeForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_show_labels = False
+        self.helper.layout = Layout(
+            Div(
+                Div(
+                    Div(
+                        Div(
+                            AnyTag(
+                                'h3',
+                                HTML(_("Node")),
+                            ),
+                            css_class="col-sm-3",
+                        ),
+                        css_class="row",
+                    ),
+                    Div(
+                        Div(  # nodename
+                            HTML('<label for="node-nodename-box">'
+                                 'Name'
+                                 '</label>'),
+                            css_class="col-sm-3",
+                        ),
+                        Div(
+                            'name',
+                            css_class="col-sm-9",
+                        ),
+                        css_class="row",
+                    ),
+                    Div(
+                        Div(  # priority
+                            HTML('<label for="node-nodename-box">'
+                                 'Priority'
+                                 '</label>'),
+                            css_class="col-sm-3",
+                        ),
+                        Div(
+                            'priority',
+                            css_class="col-sm-9",
+                        ),
+                        css_class="row",
+                    ),
+                    Div(
+                        Div(  # enabled
+                            HTML('<label for="node-nodename-box">'
+                                 'Enabled'
+                                 '</label>'),
+                            css_class="col-sm-3",
+                        ),
+                        Div(
+                            'enabled',
+                            css_class="col-sm-9",
+                        ),
+                        css_class="row",
+                    ),
+                    Div( # nested host
+                        HTML("""{% load crispy_forms_tags %}
+                            {% crispy hostform %}
+                            """)
+                    ),
+                    Div(
+                        Div(
+                            AnyTag(  # tip: don't try to use Button class
+                                "button",
+                                AnyTag(
+                                    "i",
+                                    css_class="icon-play"
+                                ),
+                                HTML("Start"),
+                                css_id="node-create-submit",
+                                css_class="btn btn-success",
+                            ),
+                            css_class="col-sm-12 text-right",
+                        ),
+                        css_class="row",
+                    ),
+                    css_class="col-sm-11",
+                ),
+                css_class="row",
+            ),
+        )
+
+    class Meta:
+        model = Node
+        fields = ['name', 'priority', 'enabled', ]
 
 
 class TemplateForm(forms.ModelForm):

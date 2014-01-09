@@ -3,7 +3,7 @@ from logging import getLogger
 
 from django.db.models import (
     CharField, IntegerField, ForeignKey, BooleanField, ManyToManyField,
-    FloatField,
+    FloatField, permalink,
 )
 from django.utils.translation import ugettext_lazy as _
 
@@ -143,3 +143,10 @@ class Node(TimeStampedModel):
     def get_state_count(cls, online, enabled):
         return len([1 for i in cls.objects.filter(enabled=enabled).all()
                     if i.online == online])
+
+    @permalink
+    def get_absolute_url(self):
+        return ('dashboard.views.node-detail', None, {'pk': self.id})
+    def pr():
+        print "irdki"
+

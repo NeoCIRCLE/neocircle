@@ -19,10 +19,11 @@ from django.views.generic import (TemplateView, DetailView, View, DeleteView,
 from django.contrib import messages
 from django.utils.translation import ugettext as _
 
+from django.forms.models import inlineformset_factory
 from django_tables2 import SingleTableView
 from braces.views import LoginRequiredMixin, SuperuserRequiredMixin
 
-from .forms import VmCreateForm, TemplateForm, LeaseForm
+from .forms import VmCreateForm, TemplateForm, LeaseForm, NodeForm, HostForm
 from .tables import (VmListTable, NodeListTable, NodeVmListTable,
                      TemplateListTable, LeaseListTable)
 from vm.models import (Instance, InstanceTemplate, InterfaceTemplate,
@@ -517,17 +518,30 @@ class VmCreate(LoginRequiredMixin, TemplateView):
 
 class NodeCreate(LoginRequiredMixin, SuperuserRequiredMixin, TemplateView):
 
+    form_class = HostForm
+    hostform = None
+
+    formset_class = inlineformset_factory(Host, Node, form=NodeForm, extra=1)
+    formset = None
+
     def get_template_names(self):
         if self.request.is_ajax():
             return ['dashboard/modal-wrapper.html']
         else:
             return ['dashboard/nojs-wrapper.html']
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request, hostform=None, formset=None, *args, **kwargs):
+        if hostform is None:
+            hostform = self.form_class()
+        if formset is None:
+            formset = self.formset_class(instance=Host())
         context = self.get_context_data(**kwargs)
         context.update({
             'template': 'dashboard/node-create.html',
-            'box_title': 'Create a Node'
+            'box_title': 'Create a Node',
+            'hostform': hostform,
+            'formset': formset,
+
         })
         return self.render_to_response(context)
 
@@ -535,60 +549,34 @@ class NodeCreate(LoginRequiredMixin, SuperuserRequiredMixin, TemplateView):
         context = super(NodeCreate, self).get_context_data(**kwargs)
         # TODO acl
         context.update({
-            'templates': InstanceTemplate.objects.all(),
-            'vlans': Vlan.objects.all(),
-            'disks': Disk.objects.exclude(type="qcow2-snap")
         })
 
         return context
 
     # TODO handle not ajax posts
     def post(self, request, *args, **kwargs):
-        if self.request.user.is_authenticated():
-            user = self.request.user
-        else:
-            user = None
+        if not self.request.user.is_authenticated():
+            raise PermissionDenied()
 
-        resp = {}
-        try:
-            ikwargs = {
-                'num_cores': int(request.POST.get('cpu-count')),
-                'ram_size': int(request.POST.get('ram-size')),
-                'priority': int(request.POST.get('cpu-priority')),
-            }
+        hostform = self.form_class(request.POST)
+        formset = self.formset_class(request.POST, Host())
+        if not hostform.is_valid():
+            return self.get(request, hostform, formset, *args, **kwargs)
+        hostform.setowner(request.user)
+        savedform = hostform.save(commit=False)
+        formset = self.formset_class(request.POST, instance=savedform)
+        if not formset.is_valid():
+            return self.get(request, hostform, formset, *args, **kwargs)
 
-            networks = [InterfaceTemplate(vlan=Vlan.objects.get(pk=l),
-                                          managed=True)
-                        for l in request.POST.getlist('managed-vlans')
-                        ]
-            networks.extend([InterfaceTemplate(vlan=Vlan.objects.get(pk=l),
-                                               managed=False)
-                            for l in request.POST.getlist('unmanaged-vlans')
-                             ])
-
-            disks = Disk.objects.filter(pk__in=request.POST.getlist('disks'))
-            template = InstanceTemplate.objects.get(
-                pk=request.POST.get('template-pk'))
-
-            inst = Instance.create_from_template(template=template,
-                                                 owner=user, networks=networks,
-                                                 disks=disks, **ikwargs)
-            inst.deploy_async(user=request.user)
-
-            resp['pk'] = inst.pk
-            messages.success(request, _('Node successfully created!'))
-        except InstanceTemplate.DoesNotExist:
-            resp['error'] = True
-        except Exception, e:
-            print e
-            resp['error'] = True
-
+        savedform.save()
+        nodemodel = formset.save()
+        messages.success(request, _('Node successfully created!'))
+        path = nodemodel[0].get_absolute_url()
         if request.is_ajax():
-            return HttpResponse(json.dumps(resp),
-                                content_type="application/json",
-                                status=500 if resp.get('error') else 200)
+            return HttpResponse(json.dumps({'redirect': path}),
+                                content_type="application/json")
         else:
-            return redirect(reverse_lazy('dashboard.views.detail', resp))
+            return redirect(path)
 
 
 class VmDelete(LoginRequiredMixin, DeleteView):

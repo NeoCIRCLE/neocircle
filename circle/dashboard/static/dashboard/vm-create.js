@@ -181,13 +181,13 @@ function vmCreateLoaded() {
           window.location.replace(data.redirect + '#activity');
         }
         else {
-            var r = $('#vm-create-modal'); r.next('div').remove(); r.remove();
+            var r = $('#create-modal'); r.next('div').remove(); r.remove();
             $('body').append(data);
             vmCreateLoaded();
             addSliderMiscs();
-            $('#vm-create-modal').modal('show');
-            $('#vm-create-modal').on('hidden.bs.modal', function() {
-                $('#vm-create-modal').remove();
+            $('#create-modal').modal('show');
+            $('#create-modal').on('hidden.bs.modal', function() {
+                $('#create-modal').remove();
             });
         }
       },

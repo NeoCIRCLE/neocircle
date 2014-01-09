@@ -7,9 +7,9 @@ $(function () {
         $('body').append(data);
         vmCreateLoaded();
         addSliderMiscs();
-        $('#vm-create-modal').modal('show');
-        $('#vm-create-modal').on('hidden.bs.modal', function() {
-          $('#vm-create-modal').remove();
+        $('#create-modal').modal('show');
+        $('#create-modal').on('hidden.bs.modal', function() {
+          $('#create-modal').remove();
         });
       }
     });
@@ -24,9 +24,9 @@ $(function () {
         $('body').append(data);
         nodeCreateLoaded();
         addSliderMiscs();
-        $('#node-create-modal').modal('show');
-        $('#node-create-modal').on('hidden.bs.modal', function() {
-          $('#node-create-modal').remove();
+        $('#create-modal').modal('show');
+        $('#create-modal').on('hidden.bs.modal', function() {
+          $('#create-modal').remove();
         });
       }
     });
