@@ -323,8 +323,12 @@ class AclUpdateView(LoginRequiredMixin, View, SingleObjectMixin):
         for key, value in request.POST.items():
             m = re.match('perm-([ug])-(\d+)', key)
             if m:
-                type, id = m.groups()
-                entity = {'u': User, 'g': Group}[type].objects.get(id=id)
+                typ, id = m.groups()
+                entity = {'u': User, 'g': Group}[typ].objects.get(id=id)
+                if instance.owner == entity:
+                    logger.info("Tried to set owner's acl level for %s by %s.",
+                                unicode(instance), unicode(request.user))
+                    continue
                 instance.set_level(entity, value)
                 logger.info("Set %s's acl level for %s to %s by %s.",
                             unicode(entity), unicode(instance),
@@ -416,7 +420,7 @@ class VmList(LoginRequiredMixin, SingleTableView):
     model = Instance
 
     def get_queryset(self):
-        logger.debug('VmList.get_queryset() claled. User: %s',
+        logger.debug('VmList.get_queryset() called. User: %s',
                      unicode(self.request.user))
         return Instance.get_objects_with_level(
             'user', self.request.user).filter(destroyed=None).all()
