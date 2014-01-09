@@ -17,6 +17,7 @@ from django.db.models.signals import post_save, post_delete
 import random
 
 from firewall.tasks.local_tasks import reloadtask
+from acl.models import AclBase
 logger = logging.getLogger(__name__)
 settings = django.conf.settings.FIREWALL_SETTINGS
 
@@ -157,7 +158,7 @@ class Rule(models.Model):
         )
 
 
-class Vlan(models.Model):
+class Vlan(AclBase, models.Model):
 
     """
     A vlan of the network,
@@ -170,6 +171,10 @@ class Vlan(models.Model):
     range. The gateway also has an IP address in each range.
     """
 
+    ACL_LEVELS = (
+        ('user', _('user')),
+        ('operator', _('operator')),
+    )
     CHOICES_NETWORK_TYPE = (('public', _('public')), ('dmz', _('dmz')),
                             ('portforward', _('portforward')))
     vid = models.IntegerField(unique=True,
