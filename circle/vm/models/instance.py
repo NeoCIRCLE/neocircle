@@ -117,7 +117,9 @@ class InstanceTemplate(VirtualMachineDescModel, TimeStampedModel):
         app_label = 'vm'
         db_table = 'vm_instancetemplate'
         ordering = ['name', ]
-        permissions = ()
+        permissions = (
+            ('create_template', _('Can create an instance template.')),
+        )
         verbose_name = _('template')
         verbose_name_plural = _('templates')
 
