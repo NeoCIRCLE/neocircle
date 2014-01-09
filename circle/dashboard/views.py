@@ -60,7 +60,9 @@ class IndexView(LoginRequiredMixin, TemplateView):
         else:
             user = None
 
-        instances = Instance.active.filter(owner=user)
+        instances = Instance.get_objects_with_level(
+            'user', user).filter(destroyed=None)
+
         context = super(IndexView, self).get_context_data(**kwargs)
         context.update({
             'instances': instances[:5],
