@@ -95,8 +95,50 @@ $(function () {
     
     return false;
   });
+
+  /* search for vms */
+  var my_vms = []
+  $("#dashboard-vm-search-input").keyup(function() {
+    // if my_vms is empty get a list of our vms
+    if(my_vms.length < 1) {
+      $.ajaxSetup( { "async": false } );
+      $.get("/dashboard/vm/list/", function(result) {
+        for(var i in result) {
+          my_vms.push({
+            'pk': result[i].pk,
+            'name': result[i].fields.name,
+            'state': result[i].fields.state,
+          });
+        }
+      });
+      $.ajaxSetup( { "async": true } );
+    }
+
+    input = $("#dashboard-vm-search-input").val();
+    var search_result = []
+    var html = '';
+    for(var i in my_vms) {
+      if(my_vms[i].name.indexOf(input) != -1) {
+        search_result.push(my_vms[i]);
+      }
+    }
+    for(var i=0; i<5 && i<search_result.length; i++)
+      html += generateVmHTML(search_result[i].pk, search_result[i].name)
+    if(search_result.length == 0)
+      html += '<div class="list-group-item">No result</div>';
+    $("#dashboard-vm-list").html(html);
+  });
  
 });
+
+function generateVmHTML(pk, name) {
+  return '<a href="/dashboard/vm/' + pk + '/" class="list-group-item">' + 
+          '<i class="icon-play-sign"></i> ' + name +
+          '<div class="pull-right">' + 
+          '<i class="icon-star text-primary" title="" data-original-title="Mark as favorite."></i>' +
+          '</div>' + 
+          '</a>';
+}
 
 function addSliderMiscs() {
   $('.vm-slider').each(function() {  

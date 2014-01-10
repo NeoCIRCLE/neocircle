@@ -13,15 +13,17 @@
     </h3>
   </div>
   <div class="list-group" id="vm-list-view">
-    {% for i in instances %}
-    <a href="{{ i.get_absolute_url }}" class="list-group-item">
-      <i class="icon-{% if i.state == "RUNNING" %}play-sign{% else %}pause{% endif %}"></i> {{ i.name }} <div class="pull-right"><i class="icon-star text-primary" title="Mark as favorite."></i></div>
+    <div id="dashboard-vm-list">
+      {% for i in instances %}
+      <a href="{{ i.get_absolute_url }}" class="list-group-item">
+        <i class="icon-{% if i.state == "RUNNING" %}play-sign{% else %}pause{% endif %}"></i> {{ i.name }} <div class="pull-right"><i class="icon-star text-primary" title="Mark as favorite."></i></div>
       </a>
-    {% endfor %}
+      {% endfor %}
+    </div>
     <div href="#" class="list-group-item list-group-footer">
       <div class="row">
         <div class="col-sm-6 col-xs-6 input-group input-group-sm">
-          <input type="text" class="form-control" placeholder="Search..." />
+          <input id="dashboard-vm-search-input" type="text" class="form-control" placeholder="Search..." />
           <div class="input-group-btn">
             <button type="submit" class="form-control btn btn-primary" title="search"><i class="icon-search"></i></button>
           </div>

@@ -17,6 +17,7 @@ from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import (TemplateView, DetailView, View, DeleteView,
                                   UpdateView, CreateView)
 from django.contrib import messages
+from django.core import serializers
 from django.utils.translation import ugettext as _
 
 from django.forms.models import inlineformset_factory
@@ -430,6 +431,17 @@ class VmList(LoginRequiredMixin, SingleTableView):
     table_class = VmListTable
     table_pagination = False
     model = Instance
+
+    def get(self, *args, **kwargs):
+        if self.request.is_ajax():
+            vms = serializers.serialize('json', self.get_queryset(),
+                                        fields=('pk', 'name', 'state'))
+            return HttpResponse(
+                vms,
+                content_type="application/json",
+            )
+        else:
+            return super(VmList, self).get(*args, **kwargs)
 
     def get_queryset(self):
         logger.debug('VmList.get_queryset() called. User: %s',
