@@ -14,6 +14,8 @@ class AclUserTest(TestCase):
         self.g1.user_set.add(self.u1)
         self.g1.user_set.add(self.u2)
         self.g1.save()
+        self.g2 = Group.objects.create(name='group2')
+        self.g2.save()
 
     def test_level_exists(self):
         for codename, name in TestModel.ACL_LEVELS:
@@ -147,3 +149,14 @@ class AclUserTest(TestCase):
         self.assertTrue(i.has_level(self.u1, 'alfa'))
         i.set_level(self.g1, None)
         self.assertFalse(i.has_level(self.u1, 'alfa'))
+
+    def test_get_objects_with_group_level(self):
+        i1 = TestModel.objects.create(normal_field='Hello1')
+        i2 = TestModel.objects.create(normal_field='Hello2')
+        i1.set_level(self.g1, 'alfa')
+        i2.set_level(self.g1, 'bravo')
+        i2.set_level(self.g2, 'bravo')
+        self.assertItemsEqual(
+            TestModel.get_objects_with_group_level('alfa', self.g1), [i1, i2])
+        self.assertItemsEqual(
+            TestModel.get_objects_with_group_level('alfa', self.g2), [i2])

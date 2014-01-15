@@ -1,4 +1,5 @@
-from django.db.models import TextField
+from django.db.models import TextField, ForeignKey
+from django.contrib.auth.models import User
 
 from ..models import AclBase
 
@@ -15,6 +16,7 @@ class TestModel(AclBase):
 
 class Test2Model(AclBase):
     normal2_field = TextField()
+    owner = ForeignKey(User)
 
     ACL_LEVELS = (
         ('one', 'One'),

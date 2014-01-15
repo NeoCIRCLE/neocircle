@@ -201,5 +201,17 @@ class AclBase(Model):
             clsfilter |= Q(owner=user)
         return cls.objects.filter(clsfilter)
 
+    @classmethod
+    def get_objects_with_group_level(cls, level, group):
+        if isinstance(level, basestring):
+            level = cls.get_level_object(level)
+        ct = ContentType.objects.get_for_model(cls)
+        levelfilter = Q(groups=group)
+        ols = ObjectLevel.objects.filter(
+            levelfilter,
+            content_type=ct, level__weight__gte=level.weight).distinct()
+        clsfilter = Q(object_level_set__in=ols.all())
+        return cls.objects.filter(clsfilter)
+
     class Meta:
         abstract = True
