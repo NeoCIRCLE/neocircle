@@ -520,7 +520,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
             # Deploy virtual images
             with act.sub_activity('deploying_disks'):
-                devnums = list(string.lowercase)  # a-z
+                devnums = list(string.ascii_lowercase)  # a-z
                 for disk in self.disks.all():
                     # assign device numbers
                     if disk.dev_num in devnums:
