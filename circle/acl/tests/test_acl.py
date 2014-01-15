@@ -150,6 +150,26 @@ class AclUserTest(TestCase):
         i.set_level(self.g1, None)
         self.assertFalse(i.has_level(self.u1, 'alfa'))
 
+    def test_get_objects_with_level(self):
+        i1 = TestModel.objects.create(normal_field='Hello1')
+        i2 = TestModel.objects.create(normal_field='Hello2')
+        i1.set_level(self.u1, 'alfa')
+        i2.set_level(self.u1, 'bravo')
+        i2.set_level(self.u2, 'bravo')
+        self.assertItemsEqual(
+            TestModel.get_objects_with_level('alfa', self.u1), [i1, i2])
+        self.assertItemsEqual(
+            TestModel.get_objects_with_level('alfa', self.u2), [i2])
+
+    def test_get_objects_with_level_for_group(self):
+        i1 = TestModel.objects.create(normal_field='Hello1')
+        i2 = TestModel.objects.create(normal_field='Hello2')
+        i1.set_level(self.g1, 'alfa')
+        i2.set_level(self.g1, 'bravo')
+        i2.set_level(self.u1, 'bravo')
+        self.assertItemsEqual(
+            TestModel.get_objects_with_level('alfa', self.u1), [i1, i2])
+
     def test_get_objects_with_group_level(self):
         i1 = TestModel.objects.create(normal_field='Hello1')
         i2 = TestModel.objects.create(normal_field='Hello2')
