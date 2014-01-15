@@ -59,14 +59,29 @@ $(function() {
     return retval;
   });
 
+/*
+$('.popover-link').popover();
+
+$(':not(#anything)').on('click', function (e) {
+    $('.popover-link').each(function () {
+        //the 'is' for buttons that trigger popups
+        //the 'has' for icons and other elements within a button that triggers a popup
+        if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
+            $(this).popover('hide');
+            return;
+        }
+    });
+});
+*/
+
 $(':not(#anything)').on('click', function (e) {
 	    $('.node-list-details').each(function () {
 		            //the 'is' for buttons that trigger popups
 			    //        //the 'has' for icons and other elements within a button that triggers a popup
                 if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
-                            $(this).popover('hide');
-                                        return;
-                                                }
+				$(this).popover('hide');
+					return;
+          				}
                                                  });
                                                     });
 
@@ -79,6 +94,7 @@ $(':not(#anything)').on('click', function (e) {
     'html': true,
     'trigger': 'click'
   });
+
 
   $('tbody a').mousedown(function(e) {
     // parent tr doesn't get selected when clicked
@@ -127,8 +143,33 @@ $(':not(#anything)').on('click', function (e) {
     });
     return false;
   });
-  
-  
+
+ 
+
+  $('#table_container').on('click','#node-list-enable-button',function(){
+  enablenode($(this).attr('data-node-pk'),$(this).attr('data-status'));
+  });
+
+
+  // enabling / disabling node
+  function enablenode(pk,new_status) {
+    var url = '/dashboard/node/' + pk  + '/';
+    console.log('success');
+    $.ajax({
+      method: 'POST',
+      url: url,
+      data: {'new_status':new_status},
+      headers: {"X-CSRFToken": getCookie('csrftoken')},
+      success: function(data, textStatus, xhr) {
+      $('#table_container').load(location.href+" "+'#rendered_table');
+      },
+      error: function(xhr, textStatus, error) {
+        addMessage("uhoh", "danger");
+      }
+    });
+    return false;
+  }
+
   /* group actions */
 
   /* select all */

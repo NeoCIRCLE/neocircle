@@ -286,6 +286,8 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
     def post(self, request, *args, **kwargs):
         if request.POST.get('new_name'):
             return self.__set_name(request)
+        if request.POST.get('new_status'):
+            return self.__set_status(request)
 
     def __set_name(self, request):
         self.object = self.get_object()
@@ -298,6 +300,34 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
             response = {
                 'message': success_message,
                 'new_name': new_name,
+                'node_pk': self.object.pk
+            }
+            return HttpResponse(
+                json.dumps(response),
+                content_type="application/json"
+            )
+        else:
+            messages.success(request, success_message)
+            return redirect(reverse_lazy("dashboard.views.node-detail",
+                                         kwargs={'pk': self.object.pk}))
+
+    def __set_status(self, request):
+        self.object = self.get_object()
+        new_status = request.POST.get("new_status")
+        if new_status == "enable":
+            Node.objects.filter(pk=self.object.pk).update(
+                **{'enabled': True})
+        elif new_status == "disable":
+            Node.objects.filter(pk=self.object.pk).update(
+                **{'enabled': False})
+        else:
+            return
+
+        success_message = _("Node successfully changed status!")
+        if request.is_ajax():
+            response = {
+                'message': success_message,
+                'new_status': new_status,
                 'node_pk': self.object.pk
             }
             return HttpResponse(

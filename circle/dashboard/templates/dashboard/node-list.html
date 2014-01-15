@@ -26,9 +26,11 @@
           <a disabled href="#" class="btn btn-default btn-xs"><i class="icon-off"></i> Shutdown</a>
           <a id="node-list-group-delete" disabled href="#" class="btn btn-danger btn-xs"><i class="icon-remove"></i> Discard</a>
         </p>
-      </div>
-      <div class="panel-body">
+	</div>
+	<div id="table_container">
+        <div id="rendered_table" class="panel-body">
         {% render_table table %}
+        </div>
       </div>
     </div>
   </div>
