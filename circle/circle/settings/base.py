@@ -38,7 +38,7 @@ SITE_ROOT = dirname(DJANGO_ROOT)
 SITE_NAME = basename(DJANGO_ROOT)
 
 # Url to site: (e.g. http://localhost:8080/)
-DJANGO_URL = get_env_variable('DJANGO_URL')
+DJANGO_URL = get_env_variable('DJANGO_URL', '/')
 
 # Add our project to our pythonpath, this way we don't need to type our project
 # name in our dotted import paths:
