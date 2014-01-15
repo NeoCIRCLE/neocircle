@@ -454,6 +454,49 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
             self.time_of_delete = timezone.now() + self.lease.delete_interval
         self.save()
 
+    def __schedule_vm(self, act):
+        """Schedule the virtual machine.
+
+        :param self: The virtual machine.
+
+        :param act: Parent activity.
+        """
+        # Find unused port for VNC
+        if self.vnc_port is None:
+            self.vnc_port = find_unused_vnc_port()
+
+        # Schedule
+        if self.node is None:
+            self.node = scheduler.select_node(self, Node.objects.all())
+
+        self.save()
+
+    def __deploy_vm(self, act):
+        """Deploy the virtual machine.
+
+        :param self: The virtual machine.
+
+        :param act: Parent activity.
+        """
+        queue_name = self.get_remote_queue_name('vm')
+
+        # Deploy VM on remote machine
+        with act.sub_activity('deploying_vm'):
+            vm_tasks.deploy.apply_async(args=[self.get_vm_desc()],
+                                        queue=queue_name).get()
+
+        # Estabilish network connection (vmdriver)
+        with act.sub_activity('deploying_net'):
+            for net in self.interface_set.all():
+                net.deploy()
+
+        # Resume vm
+        with act.sub_activity('booting'):
+            vm_tasks.resume.apply_async(args=[self.vm_name],
+                                        queue=queue_name).get()
+
+        self.renew('suspend')
+
     def deploy(self, user=None, task_uuid=None):
         """Deploy new virtual machine with network
 
@@ -473,15 +516,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
             # Clear destroyed flag
             self.destroyed = None
 
-            # Find unused port for VNC
-            if self.vnc_port is None:
-                self.vnc_port = find_unused_vnc_port()
-
-            # Schedule
-            if self.node is None:
-                self.node = scheduler.select_node(self, Node.objects.all())
-
-            self.save()
+            self.__schedule_vm(act)
 
             # Deploy virtual images
             with act.sub_activity('deploying_disks'):
@@ -496,27 +531,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                     # deploy disk
                     disk.deploy()
 
-            queue_name = self.get_remote_queue_name('vm')
-
-            # Deploy VM on remote machine
-            with act.sub_activity('deploying_vm'):
-                vm_tasks.deploy.apply_async(args=[self.get_vm_desc()],
-                                            queue=queue_name).get()
-
-            # Estabilish network connection (vmdriver)
-            with act.sub_activity('deploying_net'):
-                for net in self.interface_set.all():
-                    net.deploy()
-
-            # Generate context
-            # TODO
-
-            # Resume vm
-            with act.sub_activity('booting'):
-                vm_tasks.resume.apply_async(args=[self.vm_name],
-                                            queue=queue_name).get()
-
-            self.renew('suspend')
+            self.__deploy_vm(act)
 
     def deploy_async(self, user=None):
         """Execute deploy asynchronously.
@@ -525,6 +540,76 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                      unicode(self), unicode(user))
         return local_tasks.deploy.apply_async(args=[self, user],
                                               queue="localhost.man")
+
+    def __destroy_vm(self, act):
+        """Destroy the virtual machine and its associated networks.
+
+        :param self: The virtual machine.
+
+        :param act: Parent activity.
+        """
+        # Destroy networks
+        with act.sub_activity('destroying_net'):
+            for net in self.interface_set.all():
+                net.destroy()
+
+        # Destroy virtual machine
+        with act.sub_activity('destroying_vm'):
+            queue_name = self.get_remote_queue_name('vm')
+            vm_tasks.destroy.apply_async(args=[self.vm_name],
+                                         queue=queue_name).get()
+
+    def __cleanup_after_destroy_vm(self, act):
+        """Clean up the virtual machine's data after destroy.
+
+        :param self: The virtual machine.
+
+        :param act: Parent activity.
+        """
+        # Delete mem. dump if exists
+        queue_name = self.mem_dump['datastore'].get_remote_queue_name(
+            'storage')
+        try:
+            from storage.tasks.remote_tasks import delete
+            delete.apply_async(args=[self.mem_dump['path']],
+                               queue=queue_name).get()
+        except:
+            pass
+
+        # Clear node and VNC port association
+        self.node = None
+        self.vnc_port = None
+
+    def redeploy(self, user=None, task_uuid=None):
+        """Redeploy virtual machine with network
+
+        :param self: The virtual machine to redeploy.
+
+        :param user: The user who's issuing the command.
+        :type user: django.contrib.auth.models.User
+
+        :param task_uuid: The task's UUID, if the command is being executed
+                          asynchronously.
+        :type task_uuid: str
+        """
+        with instance_activity(code_suffix='redeploy', instance=self,
+                               task_uuid=task_uuid, user=user) as act:
+            # Destroy VM
+            if self.node:
+                self.__destroy_vm(act)
+
+            self.__cleanup_after_destroy_vm(act)
+
+            # Deploy VM
+            self.__schedule_vm(act)
+
+            self.__deploy_vm(act)
+
+    def redeploy_async(self, user=None):
+        """Execute redeploy asynchronously.
+        """
+        return local_tasks.redeploy.apply_async(args=[self, user],
+                                                queue="localhost.man")
 
     def destroy(self, user=None, task_uuid=None):
         """Remove virtual machine and its networks.
@@ -546,35 +631,14 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                                task_uuid=task_uuid, user=user) as act:
 
             if self.node:
-                # Destroy networks
-                with act.sub_activity('destroying_net'):
-                    for net in self.interface_set.all():
-                        net.destroy()
-
-                # Destroy virtual machine
-                with act.sub_activity('destroying_vm'):
-                    queue_name = self.get_remote_queue_name('vm')
-                    vm_tasks.destroy.apply_async(args=[self.vm_name],
-                                                 queue=queue_name).get()
+                self.__destroy_vm(act)
 
             # Destroy disks
             with act.sub_activity('destroying_disks'):
                 for disk in self.disks.all():
                     disk.destroy()
 
-            # Delete mem. dump if exists
-            queue_name = self.mem_dump['datastore'].get_remote_queue_name(
-                'storage')
-            try:
-                from storage.tasks.remote_tasks import delete
-                delete.apply_async(args=[self.mem_dump['path']],
-                                   queue=queue_name).get()
-            except:
-                pass
-
-            # Clear node and VNC port association
-            self.node = None
-            self.vnc_port = None
+            self.__cleanup_after_destroy_vm(act)
 
             self.destroyed = timezone.now()
             self.save()

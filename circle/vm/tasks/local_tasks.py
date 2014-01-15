@@ -9,6 +9,11 @@ def deploy(instance, user):
 
 
 @celery.task
+def redeploy(instance, user):
+    instance.redeploy(task_uuid=redeploy.request.id, user=user)
+
+
+@celery.task
 def destroy(instance, user):
     instance.destroy(task_uuid=destroy.request.id, user=user)
 
