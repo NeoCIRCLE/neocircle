@@ -16,7 +16,7 @@ class TestModel(AclBase):
 
 class Test2Model(AclBase):
     normal2_field = TextField()
-    owner = ForeignKey(User)
+    owner = ForeignKey(User, null=True)
 
     ACL_LEVELS = (
         ('one', 'One'),
