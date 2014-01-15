@@ -3,6 +3,8 @@ from django.conf.urls import patterns, include, url
 
 from django.contrib import admin
 
+from circle.settings.base import get_env_variable
+
 admin.autodiscover()
 
 urlpatterns = patterns(
@@ -21,3 +23,10 @@ urlpatterns = patterns(
     url(r'^accounts/', include('django.contrib.auth.urls')),
     url(r'^vm-api/', include('vm.urls')),
 )
+
+
+if get_env_variable('DJANGO_SAML', 'FALSE') == 'TRUE':
+    urlpatterns += patterns(
+        '',
+        (r'^saml2/', include('djangosaml2.urls')),
+    )

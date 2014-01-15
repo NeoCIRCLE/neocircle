@@ -1,17 +1,18 @@
 """Common settings and globals."""
 # flake8: noqa
-
-from datetime import timedelta
 from os import environ
-from os.path import abspath, basename, dirname, join, normpath
-from json import loads
-# from socket import SOCK_STREAM
+from os.path import abspath, basename, dirname, join, normpath, isfile
 from sys import path
+
+from django.core.exceptions import ImproperlyConfigured
+from json import loads
+
+
+# from socket import SOCK_STREAM
 
 
 # Normally you should not import ANYTHING from Django directly
 # into your settings, but ImproperlyConfigured is an exception.
-from django.core.exceptions import ImproperlyConfigured
 
 
 def get_env_variable(var_name, default=None):
@@ -35,6 +36,9 @@ SITE_ROOT = dirname(DJANGO_ROOT)
 
 # Site name:
 SITE_NAME = basename(DJANGO_ROOT)
+
+# Url to site: (e.g. http://localhost:8080/)
+DJANGO_URL = get_env_variable('DJANGO_URL')
 
 # Add our project to our pythonpath, this way we don't need to type our project
 # name in our dotted import paths:
@@ -319,3 +323,62 @@ CACHES = {
         'LOCATION': '127.0.0.1:11211',
     }
 }
+
+
+if get_env_variable('DJANGO_SAML', 'FALSE') == 'TRUE':
+    try:
+        from shutil import which  # python >3.4
+    except ImportError:
+        from shutilwhich import which
+    from saml2 import BINDING_HTTP_POST, BINDING_HTTP_REDIRECT
+
+    # INSTALLED_APPS += (  # needed only for testing djangosaml2
+    #     'djangosaml',
+    # )
+    AUTHENTICATION_BACKENDS = (
+        'django.contrib.auth.backends.ModelBackend',
+        'djangosaml2.backends.Saml2Backend',
+    )
+    LOGIN_URL = '/saml2/login/'
+
+    remote_metadata = join(SITE_ROOT, 'remote_metadata.xml')
+    if not isfile(remote_metadata):
+        raise ImproperlyConfigured('Download SAML2 metadata to %s' %
+                                   remote_metadata)
+    required_attrs = loads(get_env_variable('DJANGO_SAML_REQUIRED',
+                                            '["uid"]'))
+    optional_attrs = loads(get_env_variable('DJANGO_SAML_OPTIONAL',
+                                            '["mail", "cn", "sn"]'))
+
+    SAML_CONFIG = {
+        'xmlsec_binary': which('xmlsec1'),
+        'entityid': DJANGO_URL + 'saml2/metadata/',
+        'attribute_map_dir': join(SITE_ROOT, 'attribute-maps'),
+        'service': {
+            'sp': {
+                'name': SITE_NAME,
+                'endpoints': {
+                    'assertion_consumer_service': [
+                        (DJANGO_URL + 'saml2/acs/', BINDING_HTTP_POST),
+                    ],
+                    'single_logout_service': [
+                        (DJANGO_URL + 'saml2/ls/', BINDING_HTTP_REDIRECT),
+                    ],
+                },
+                'required_attributes': required_attrs,
+                'optional_attributes': optional_attrs,
+            },
+        },
+        'metadata': {'local': [remote_metadata], },
+        'key_file': join(SITE_ROOT, 'samlcert.key'),  # private part
+        'cert_file': join(SITE_ROOT, 'samlcert.pem'),  # public part
+    }
+    try:
+        SAML_CONFIG += loads(get_env_variable('DJANGO_SAML_SETTINGS'))
+    except ImproperlyConfigured:
+        pass
+    SAML_CREATE_UNKNOWN_USER = True
+    SAML_ATTRIBUTE_MAPPING = loads(get_env_variable(
+        'DJANGO_SAML_ATTRIBUTE_MAPPING',
+        '{"mail": ["email"], "sn": ["last_name"], '
+        '"uid": ["username"], "cn": ["first_name"]}'))

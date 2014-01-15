@@ -1,8 +1,6 @@
 """Development settings and globals."""
 
 
-# from os.path import join, normpath
-
 from base import *  # noqa
 
 
@@ -69,6 +67,8 @@ if get_env_variable('DJANGO_TOOLBAR', 'FALSE') == 'TRUE':
         'SHOW_TEMPLATE_CONTEXT': True,
     }
     ########## END TOOLBAR CONFIGURATION
+
+LOGGING['loggers']['djangosaml2'] = {'handlers': ['console'], 'level': 'DEBUG'}
 
 LOGGING['handlers']['console'] = {'level': 'DEBUG',
                                   'class': 'logging.StreamHandler',
