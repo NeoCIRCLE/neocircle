@@ -193,7 +193,7 @@ class AclBase(Model):
         levelfilter = Q(users=user)
         if group_also:
             levelfilter |= Q(groups__in=user.groups.all())
-        ols = user.objectlevel_set.filter(
+        ols = ObjectLevel.objects.filter(
             levelfilter,
             content_type=ct, level__weight__gte=level.weight).distinct()
         clsfilter = Q(object_level_set__in=ols.all())
