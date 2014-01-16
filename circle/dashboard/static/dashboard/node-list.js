@@ -145,14 +145,18 @@ $(':not(#anything)').on('click', function (e) {
   });
 
  
-
+// on node list, change node status with calling enable node, refresh table
   $('#table_container').on('click','#node-list-enable-button',function(){
-  enablenode($(this).attr('data-node-pk'),$(this).attr('data-status'));
+  enablenode($(this).attr('data-node-pk'),$(this).attr('data-status'),contentrefresh,["#table_container","#rendered_table"]);
+ });
+
+// on node details, change node status, with calling enable node, refresh status span, resources div
+  $('#node-info-pane').on('click','#node-list-enable-button',function(){
+  enablenode($(this).attr('data-node-pk'),$(this).attr('data-status'),contentrefresh,["#node-info-pane","#node-info-data","#resources","#vm-details-resources-form"]);
   });
 
-
   // enabling / disabling node
-  function enablenode(pk,new_status) {
+  function enablenode(pk,new_status,refresh, elements) {
     var url = '/dashboard/node/' + pk  + '/';
     console.log('success');
     $.ajax({
@@ -161,8 +165,37 @@ $(':not(#anything)').on('click', function (e) {
       data: {'new_status':new_status},
       headers: {"X-CSRFToken": getCookie('csrftoken')},
       success: function(data, textStatus, xhr) {
-      $('#table_container').load(location.href+" "+'#rendered_table');
-      },
+      console.log("x++");
+      refresh(elements);
+     },
+      error: function(xhr, textStatus, error) {
+        addMessage("uhoh", "danger");
+      }
+    });
+    return false;
+  }
+
+// refresh the given contents, parameter is the array of contents, in pair
+  function contentrefresh(elements){
+  for (var i = 0; i < elements.length; i+=2) {
+      $(elements[i]).load(location.href+" "+elements[i+1]);
+  }
+ 
+  }
+
+  // enabling / disabling node
+  function enablenode2(pk,new_status) {
+    var url = '/dashboard/node/' + pk  + '/';
+    console.log('success');
+    $.ajax({
+      method: 'POST',
+      url: url,
+      data: {'new_status':new_status},
+      headers: {"X-CSRFToken": getCookie('csrftoken')},
+      success: function(data, textStatus, xhr) {
+      $('#node-info-pane').load(location.href+" "+'#node-info-data');
+      $('#resources').load(location.href+" "+'#vm-details-resources-form');
+	},
       error: function(xhr, textStatus, error) {
         addMessage("uhoh", "danger");
       }

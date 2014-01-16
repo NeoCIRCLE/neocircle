@@ -8,8 +8,8 @@
   </div>
   <div class="row">
     <div class="col-md-4" id="node-info-pane">
-      <div class="big">
-	      <span class="label {% if node.state == 'online' %}label-success
+      <div id="node-info-data" class="big">
+	      <span id="node-status-label" class="label {% if node.state == 'online' %}label-success
 			{% elif node.state == 'missing' %}label-danger
 			{% elif node.state == 'disabled' %}label-warning
 			{% elif node.state == 'offline' %}label-warning
@@ -42,9 +42,9 @@
               {% trans "Activity" %}</a></li>
 	</ul>
 
-        <div class="tab-content panel-body">
+        <div id="panel-body"  class="tab-content panel-body">
           <div class="tab-pane active" id="home">{% include "dashboard/node-detail-home.html" %}</div>
-          <div class="tab-pane" id="resources">{% include "dashboard/node-detail-resources.html" %}</div>
+	  <div class="tab-pane" id="resources">{% include "dashboard/node-detail-resources.html" %}</div>
           <div class="tab-pane" id="activity">{% include "dashboard/node-detail-activity.html" %}</div>
           <div class="tab-pane" id="virtualmachines">{% include "dashboard/node-detail-vm.html" %}</div>
   	</div>
