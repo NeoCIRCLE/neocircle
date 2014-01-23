@@ -17,7 +17,6 @@ from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import (TemplateView, DetailView, View, DeleteView,
                                   UpdateView, CreateView)
 from django.contrib import messages
-from django.core import serializers
 from django.utils.translation import ugettext as _
 
 from django.forms.models import inlineformset_factory
@@ -31,6 +30,7 @@ from vm.models import (Instance, InstanceTemplate, InterfaceTemplate,
                        InstanceActivity, Node, instance_activity, Lease)
 from firewall.models import Vlan, Host, Rule
 from storage.models import Disk
+from dashboard.models import Favourite
 
 logger = logging.getLogger(__name__)
 
@@ -61,13 +61,16 @@ class IndexView(LoginRequiredMixin, TemplateView):
             user = self.request.user
         else:
             user = None
+        context = super(IndexView, self).get_context_data(**kwargs)
 
+        favs = Instance.objects.filter(favourite__user=self.request.user)
         instances = Instance.get_objects_with_level(
             'user', user).filter(destroyed=None)
-
-        context = super(IndexView, self).get_context_data(**kwargs)
+        display = list(favs) + list(set(instances) - set(favs))
+        for d in display:
+            d.fav = True if d in favs else False
         context.update({
-            'instances': instances[:5],
+            'instances': display[:5],
             'more_instances': instances.count() - len(instances[:5])
         })
 
@@ -464,10 +467,15 @@ class VmList(LoginRequiredMixin, SingleTableView):
 
     def get(self, *args, **kwargs):
         if self.request.is_ajax():
-            vms = serializers.serialize('json', self.get_queryset(),
-                                        fields=('pk', 'name', 'state'))
+            favs = Instance.objects.filter(
+                favourite__user=self.request.user).values_list('pk', flat=True)
+            instances = Instance.get_objects_with_level(
+                'user', self.request.user).filter(
+                destroyed=None).values('pk', 'name', 'state')
+            for i in instances:
+                i['fav'] = True if i['pk'] in favs else False
             return HttpResponse(
-                vms,
+                json.dumps(list(instances)),  # instances is ValuesQuerySet
                 content_type="application/json",
             )
         else:
@@ -857,6 +865,19 @@ def vm_activity(request, pk):
         json.dumps(response),
         content_type="application/json"
     )
+
+
+class FavouriteView(TemplateView):
+
+    def post(self, *args, **kwargs):
+        user = self.request.user
+        vm = Instance.objects.get(pk=self.request.POST.get("vm"))
+        try:
+            Favourite.objects.get(instance=vm, user=user).delete()
+            return HttpResponse("Deleted!")
+        except Favourite.DoesNotExist:
+            Favourite(instance=vm, user=user).save()
+            return HttpResponse("Added!")
 
 
 class TransferOwnershipView(LoginRequiredMixin, DetailView):

@@ -6,6 +6,7 @@ from .views import (
     VmDelete, VmMassDelete, vm_activity, NodeList, NodeDetailView, PortDelete,
     TransferOwnershipView, TransferOwnershipConfirmView, NodeDelete,
     TemplateList, LeaseDetail, NodeCreate, LeaseCreate, TemplateCreate,
+    FavouriteView,
 )
 
 urlpatterns = patterns(
@@ -46,4 +47,6 @@ urlpatterns = patterns(
         name="dashboard.views.delete-node"),
     url(r'^node/create/$', NodeCreate.as_view(),
         name='dashboard.views.node-create'),
+    url(r'^favourite/$', FavouriteView.as_view(),
+        name='dashboard.views.favourite'),
 )

@@ -50,7 +50,8 @@ $(function () {
     e.stopImmediatePropagation();
     return false;
   });
-  $('[title]').tooltip();
+  $('[title]:not(.title-favourite)').tooltip();
+  $('.title-favourite').tooltip({'placement': 'right'});
   $(':input[title]').tooltip({trigger: 'focus', placement: 'auto right'});
   $(".knob").knob();
 
@@ -63,6 +64,34 @@ $(function () {
       $("a[href=#network]").tab('show');
     $("a[href=" + window.location.hash +"]").tab('show');
   }
+
+  /* favourite star */
+  $("#dashboard-vm-list").on('click', '.dashboard-vm-favourite', function(e) {
+    var star = $(this).children("i");
+    var pk = $(this).data("vm");
+    if(star.hasClass("icon-star-empty")) {
+      star.removeClass("icon-star-empty").addClass("icon-star");
+      star.prop("title", "Unfavourite");
+    } else {
+      star.removeClass("icon-star").addClass("icon-star-empty");
+      star.prop("title", "Mark as favourite");
+    }
+    $.ajax({
+      url: "/dashboard/favourite/",
+      type: "POST",
+      data: {'vm': pk},
+      headers: {"X-CSRFToken": getCookie('csrftoken')},
+      success: function(data, textStatus, xhr) {
+        // success
+      },
+      error: function(xhr, textStatus, error) {
+        console.log("oh babám");
+      }
+    });
+    $(star).tooltip('destroy').tooltip({'placement': 'right'});
+    my_vms = [];
+    return false;
+  });
 
   /* scroll to top if there is a message */
   if($(".messagelist").children(".alert").length > 0)
@@ -106,8 +135,9 @@ $(function () {
         for(var i in result) {
           my_vms.push({
             'pk': result[i].pk,
-            'name': result[i].fields.name,
-            'state': result[i].fields.state,
+            'name': result[i].name,
+            'state': result[i].state,
+            'fav': result[i].fav,
           });
         }
       });
@@ -122,22 +152,32 @@ $(function () {
         search_result.push(my_vms[i]);
       }
     }
+    search_result.sort(compareVmByFav);
     for(var i=0; i<5 && i<search_result.length; i++)
-      html += generateVmHTML(search_result[i].pk, search_result[i].name)
+      html += generateVmHTML(search_result[i].pk, search_result[i].name, search_result[i].fav);
     if(search_result.length == 0)
       html += '<div class="list-group-item">No result</div>';
     $("#dashboard-vm-list").html(html);
+    $('.title-favourite').tooltip({'placement': 'right'});
   });
  
 });
 
-function generateVmHTML(pk, name) {
+function generateVmHTML(pk, name, fav) {
   return '<a href="/dashboard/vm/' + pk + '/" class="list-group-item">' + 
           '<i class="icon-play-sign"></i> ' + name +
-          '<div class="pull-right">' + 
-          '<i class="icon-star text-primary" title="" data-original-title="Mark as favorite."></i>' +
+          '<div class="pull-right dashboard-vm-favourite" data-vm="' + pk +'">' + 
+          '<i class="title-favourite icon-star' + (fav ? "" : "-empty") + ' text-primary" title="" data-original-title="' + 
+          (fav ? "Un": "Mark as ") + 'favourite"></i>' +
           '</div>' + 
           '</a>';
+}
+
+function compareVmByFav(a, b) {
+  if(a.fav)
+    return -1;
+  else
+    return 1;
 }
 
 function addSliderMiscs() {

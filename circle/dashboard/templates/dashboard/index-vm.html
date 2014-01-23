@@ -16,7 +16,14 @@
     <div id="dashboard-vm-list">
       {% for i in instances %}
       <a href="{{ i.get_absolute_url }}" class="list-group-item">
-        <i class="icon-{% if i.state == "RUNNING" %}play-sign{% else %}pause{% endif %}"></i> {{ i.name }} <div class="pull-right"><i class="icon-star text-primary" title="Mark as favorite."></i></div>
+        <i class="icon-{% if i.state == "RUNNING" %}play-sign{% else %}pause{% endif %}"></i> {{ i.name }} 
+        <div class="pull-right dashboard-vm-favourite" data-vm="{{ i.pk }}">
+          {% if i.fav %}
+            <i class="icon-star text-primary title-favourite" title="Unfavourite"></i>
+          {% else %}
+            <i class="icon-star-empty text-primary title-favourite" title="Mark as favorite"></i>
+          {% endif %}
+        </div>
       </a>
       {% endfor %}
     </div>
