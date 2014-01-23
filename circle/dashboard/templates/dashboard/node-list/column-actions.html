@@ -4,10 +4,12 @@
   <ul class="dropdown-menu" role="menu">
 	  <li><a href="#"><i class="icon-cloud-upload"></i> Flush</a></li>
     {% if record.enabled %}
-    <li><a data-status="disable" data-node-pk="{{ record.pk }}" class="real-link node-enable" id="node-list-enable-button" href="#" ><i class="icon-remove"></i> Disable</a></li>
+    <li><a style="display:none" data-status="enable" data-node-pk="{{ record.pk }}" class="real-link node-enable" href="#" ><i class="icon-remove"></i> Enable</a>
+    <a style="display:block" data-status="disable" data-node-pk="{{ record.pk }}" class="real-link node-enable" href="#" ><i class="icon-remove"></i> Disable</a></li>
     {% else %}
-    <li><a data-status="enable" data-node-pk="{{ record.pk }}" class="real-link node-enable" id="node-list-enable-button" href="#" ><i class="icon-check"></i> Enable</a></li>
-    {% endif%}
-    <li><a data-node-pk="{{ record.pk }}" class="real-link node-delete" href="{% url "dashboard.views.delete-node" pk=record.pk %}?next={{ request.path }}"><i class="icon-trash"></i> Delete</a></li>
+    <li><a style="display:block" data-status="enable" data-node-pk="{{ record.pk }}" class="real-link node-enable" href="#" ><i class="icon-remove"></i> Enable</a>
+    <a style="display:none" data-status="disable" data-node-pk="{{ record.pk }}" class="real-link node-enable" href="#" ><i class="icon-remove"></i> Disable</a></li>
+    {% endif %}
+   <li><a data-node-pk="{{ record.pk }}" class="real-link node-delete" href="{% url "dashboard.views.delete-node" pk=record.pk %}?next={{ request.path }}"><i class="icon-trash"></i> Delete</a></li>
     </ul>
 </div>

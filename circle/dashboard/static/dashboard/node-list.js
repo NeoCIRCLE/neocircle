@@ -63,11 +63,15 @@ $(function() {
     console.log(collectIds(selected));
   });
 
-  $('#table_container').popover({
-    selector : '.node-list-details',
-    placement : 'auto',
-    html : true,
-    trigger : 'click',
+  $(document).ready( function()
+  {
+    colortable();
+    $('.node-list-details').popover(
+    {
+      placement : 'auto',
+      html : true,
+      trigger : 'click',
+    });
   });
 	
 
@@ -85,14 +89,13 @@ $(function() {
   });
 
   // find disabled nodes, set danger (red) on the rows
-function colortable() {
+  function colortable() 
+  {
 	var tr= $('.false').closest("tr");
 	tr.addClass('danger');
-    }
-$( document ).on('ready reload', function() {
-colortable();	
-});
-
+	var tr= $('.true').closest("tr");
+	tr.removeClass('danger');
+  }
 
   /* rename */
   $("#node-list-rename-button, .node-details-rename-button").click(function() {
@@ -129,19 +132,54 @@ colortable();
     return false;
   });
 
+  function enabletableSuccess(unit){
+    var tr= $(unit).closest("tr");
+    var tspan=tr.children('.enabled').children();
+    var buttons=tr.children('.actions').children('.btn-group').children('.dropdown-menu').children('li').children('.node-enable');
  
-// on node list, change node status with calling enable node, refresh table
-  $('#table_container').on('click','#node-list-enable-button',function(){
-	  enablenode($(this).attr('data-node-pk'),$(this).attr('data-status'),contentrefresh,["#table_container","#rendered_table"],[colortable]);
+    buttons.each(function(index){
+      if ($(this).css("display")=="block"){
+          $(this).css("display","none");
+        }
+      else{
+         $(this).css("display","block");
+        }
+    }); 
+    if(tspan.hasClass("false")){
+          tspan.removeClass("false");
+	  tspan.addClass("true");
+ 	  tspan.text("✔");
+      } 
+  else{
+  	  tspan.removeClass("true");
+	  tspan.addClass("false");
+	  tspan.text("✘");
+      }
+  	  colortable();
+  }
+
+  function enabledetailsSuccess(){
+    
+     // change big status span
+    $('#node-info-pane').load(location.href+" #node-info-data");
+    // change resources
+    $('#resources').load(location.href+" #vm-details-resources-form");
+  }
+
+  $('#table_container').on('click','.node-enable',function() {
+    enablenode($(this).attr('data-node-pk'), $(this).attr('data-status'),enabletableSuccess,this);
   });
 
 // on node details, change node status, with calling enable node, refresh status span, resources div
-  $('#node-info-pane').on('click','#node-list-enable-button',function(){
-  enablenode($(this).attr('data-node-pk'),$(this).attr('data-status'),contentrefresh,["#node-info-pane","#node-info-data","#resources","#vm-details-resources-form"],[]);
-  });
+  $('#node-info-pane').on('click','.node-enable',function(){
+    // post, change node status
+    enablenode($(this).attr('data-node-pk'),$(this).attr('data-status'),enabledetailsSuccess);
+   
+ });
+
 
   // enabling / disabling node
-  function enablenode(pk,new_status,refresh, elements,callback) {
+  function enablenode(pk,new_status,onsuccess,params) {
     var url = '/dashboard/node/' + pk  + '/';
     $.ajax({
       method: 'POST',
@@ -149,7 +187,7 @@ colortable();
       data: {'new_status':new_status},
       headers: {"X-CSRFToken": getCookie('csrftoken')},
       success: function(data, textStatus, xhr) {
-      refresh(elements,callback);
+      onsuccess(params);
       },
       error: function(xhr, textStatus, error) {
         addMessage("uhoh", "danger");
@@ -158,11 +196,13 @@ colortable();
     return false;
   }
 
+
 // refresh the given contents, parameter is the array of contents, in pair
   function contentrefresh(elements,callbacks){
   for (var i = 0; i < elements.length; i+=2) {
       $(elements[i]).load(location.href+" "+elements[i+1],callbacks[i/2]);
   }
+
   }
 
   /* group actions */
