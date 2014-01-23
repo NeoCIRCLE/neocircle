@@ -60,7 +60,6 @@ class Node(TimeStampedModel):
     def num_cores(self):
         """Number of CPU threads available to the virtual machines.
         """
-
         return self.remote_query(vm_tasks.get_core_num)
 
     @property
@@ -94,11 +93,13 @@ class Node(TimeStampedModel):
     def get_remote_queue_name(self, queue_id):
         return self.host.hostname + "." + queue_id
 
-    def remote_query(self, task, timeout=30, raise_=False, default=None):
+    def remote_query(self, task, timeout=1, raise_=False, default=None):
         """Query the given task, and get the result.
 
         If the result is not ready in timeout secs, return default value or
         raise a TimeoutError."""
+        if task != vm_tasks.ping and not self.online:
+            return default
         r = task.apply_async(
             queue=self.get_remote_queue_name('vm'), expires=timeout + 60)
         try:

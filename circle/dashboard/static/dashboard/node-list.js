@@ -59,42 +59,17 @@ $(function() {
     return retval;
   });
 
-/*
-$('.popover-link').popover();
-
-$(':not(#anything)').on('click', function (e) {
-    $('.popover-link').each(function () {
-        //the 'is' for buttons that trigger popups
-        //the 'has' for icons and other elements within a button that triggers a popup
-        if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
-            $(this).popover('hide');
-            return;
-        }
-    });
-});
-*/
-
-$(':not(#anything)').on('click', function (e) {
-	    $('.node-list-details').each(function () {
-		            //the 'is' for buttons that trigger popups
-			    //        //the 'has' for icons and other elements within a button that triggers a popup
-                if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
-				$(this).popover('hide');
-					return;
-          				}
-                                                 });
-                                                    });
-
   $('#node-list-group-migrate').click(function() {
     console.log(collectIds(selected));
   });
 
-  $('.node-list-details').popover({
-    'placement': 'auto',
-    'html': true,
-    'trigger': 'click'
+  $('#table_container').popover({
+    selector : '.node-list-details',
+    placement : 'auto',
+    html : true,
+    trigger : 'click',
   });
-
+	
 
   $('tbody a').mousedown(function(e) {
     // parent tr doesn't get selected when clicked
@@ -108,6 +83,16 @@ $(':not(#anything)').on('click', function (e) {
       return false;
     }
   });
+
+  // find disabled nodes, set danger (red) on the rows
+function colortable() {
+	var tr= $('.false').closest("tr");
+	tr.addClass('danger');
+    }
+$( document ).on('ready reload', function() {
+colortable();	
+});
+
 
   /* rename */
   $("#node-list-rename-button, .node-details-rename-button").click(function() {
@@ -147,27 +132,25 @@ $(':not(#anything)').on('click', function (e) {
  
 // on node list, change node status with calling enable node, refresh table
   $('#table_container').on('click','#node-list-enable-button',function(){
-  enablenode($(this).attr('data-node-pk'),$(this).attr('data-status'),contentrefresh,["#table_container","#rendered_table"]);
- });
+	  enablenode($(this).attr('data-node-pk'),$(this).attr('data-status'),contentrefresh,["#table_container","#rendered_table"],[colortable]);
+  });
 
 // on node details, change node status, with calling enable node, refresh status span, resources div
   $('#node-info-pane').on('click','#node-list-enable-button',function(){
-  enablenode($(this).attr('data-node-pk'),$(this).attr('data-status'),contentrefresh,["#node-info-pane","#node-info-data","#resources","#vm-details-resources-form"]);
+  enablenode($(this).attr('data-node-pk'),$(this).attr('data-status'),contentrefresh,["#node-info-pane","#node-info-data","#resources","#vm-details-resources-form"],[]);
   });
 
   // enabling / disabling node
-  function enablenode(pk,new_status,refresh, elements) {
+  function enablenode(pk,new_status,refresh, elements,callback) {
     var url = '/dashboard/node/' + pk  + '/';
-    console.log('success');
     $.ajax({
       method: 'POST',
       url: url,
       data: {'new_status':new_status},
       headers: {"X-CSRFToken": getCookie('csrftoken')},
       success: function(data, textStatus, xhr) {
-      console.log("x++");
-      refresh(elements);
-     },
+      refresh(elements,callback);
+      },
       error: function(xhr, textStatus, error) {
         addMessage("uhoh", "danger");
       }
@@ -176,31 +159,10 @@ $(':not(#anything)').on('click', function (e) {
   }
 
 // refresh the given contents, parameter is the array of contents, in pair
-  function contentrefresh(elements){
+  function contentrefresh(elements,callbacks){
   for (var i = 0; i < elements.length; i+=2) {
-      $(elements[i]).load(location.href+" "+elements[i+1]);
+      $(elements[i]).load(location.href+" "+elements[i+1],callbacks[i/2]);
   }
- 
-  }
-
-  // enabling / disabling node
-  function enablenode2(pk,new_status) {
-    var url = '/dashboard/node/' + pk  + '/';
-    console.log('success');
-    $.ajax({
-      method: 'POST',
-      url: url,
-      data: {'new_status':new_status},
-      headers: {"X-CSRFToken": getCookie('csrftoken')},
-      success: function(data, textStatus, xhr) {
-      $('#node-info-pane').load(location.href+" "+'#node-info-data');
-      $('#resources').load(location.href+" "+'#vm-details-resources-form');
-	},
-      error: function(xhr, textStatus, error) {
-        addMessage("uhoh", "danger");
-      }
-    });
-    return false;
   }
 
   /* group actions */
