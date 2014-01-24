@@ -148,17 +148,30 @@ class VmDetailView(CheckedDetailView):
                 and request.POST.get('cpu-priority')):
             return self.__set_resources(request)
 
-        if request.POST.get('new_name'):
-            return self.__set_name(request)
+        options = {
+            'change_password': self.__change_password,
+            'new_name': self.__set_name,
+            'new_tag': self.__add_tag,
+            'to_remove': self.__remove_tag,
+            'port': self.__add_port
+        }
 
-        if request.POST.get('new_tag') is not None:
-            return self.__add_tag(request)
+        for k, v in options.iteritems():
+            if request.POST.get(k) is not None:
+                return v(request)
 
-        if request.POST.get("to_remove") is not None:
-            return self.__remove_tag(request)
+    def __change_password(self, request):
+        self.object = self.get_object()
+        if not self.object.has_level(request.user, 'owner'):
+            raise PermissionDenied()
 
-        if request.POST.get("port") is not None:
-            return self.__add_port(request)
+        self.object.change_password(user=request.user)
+        messages.success(request, _("Password changed!"))
+        if request.is_ajax():
+            return HttpResponse("Success!")
+        else:
+            return redirect(reverse_lazy("dashboard.views.detail",
+                                         kwargs={'pk': self.object.pk}))
 
     def __set_resources(self, request):
         self.object = self.get_object()

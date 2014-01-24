@@ -241,3 +241,16 @@ a.hover-black {
   text-align: right;
 }
 
+/* vm details connection */
+.vm-details-pw dd {
+  margin-left: 155px;
+}
+
+.vm-details-pw dt {
+  width: 140px;
+}
+
+#vm-details-pw-confirm {
+  margin-top: 10px;
+  display: none;
+}

@@ -19,7 +19,7 @@ from taggit.managers import TaggableManager
 
 from acl.models import AclBase
 from storage.models import Disk
-from ..tasks import local_tasks, vm_tasks
+from ..tasks import local_tasks, vm_tasks, agent_tasks
 from .activity import instance_activity
 from .common import BaseResourceConfigModel, Lease
 from .network import Interface
@@ -452,6 +452,23 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
             self.time_of_suspend = timezone.now() + self.lease.suspend_interval
         if which in ['delete', 'both']:
             self.time_of_delete = timezone.now() + self.lease.delete_interval
+        self.save()
+
+    def change_password(self, user=None):
+        """Generate new password for the vm
+
+        :param self: The virtual machine.
+
+        :param user: The user who's issuing the command.
+        """
+
+        self.pw = pwgen()
+        with instance_activity(code_suffix='change_password', instance=self,
+                               user=user):
+            queue = "%s.agent" % self.node.host.hostname
+            agent_tasks.change_password.apply_async(queue=queue,
+                                                    args=(self.vm_name,
+                                                          self.pw))
         self.save()
 
     def __schedule_vm(self, act):

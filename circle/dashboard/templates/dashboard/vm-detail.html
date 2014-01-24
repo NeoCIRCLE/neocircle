@@ -33,12 +33,30 @@
         </div>
       </div>
       <h3>{% trans "Connection" %}</h3>
+      <!-- TODO RDP -->
       <input type="text" value="ssh cloud@vm.ik.bme.hu -p22312" class="form-control" readonly />
-      <dl class="dl-horizontal">
-        <dt>Etiam at felis:</dt>
-        <dd>condimentum lig igulaulal ulaligula vel</dd>
-        <dt>Vivamus nec:</dt>
-        <dd>ac metus interdum, tincidunt</dd>
+      <dl class="dl-horizontal vm-details-pw">
+        <dt>Password:</dt>
+        <dd>
+          <div class="input-group">
+            <input type="text" class="form-control input-sm input-tags" value="{{ instance.pw }}"/>
+            <span class="input-group-addon input-tags" id="vm-details-pw-show">
+              <i class="icon-eye-open" id="vm-details-pw-eye" title="Show password"></i>
+            </span>
+          </div>
+        </dd>
+        <dd style="font-size: 10px; text-align: right; padding-top: 8px;">
+          <a id="vm-details-pw-change" href="#">Generate new password!</a>
+        </dd>
+        <div id="vm-details-pw-confirm">
+          <dt>
+            Are you sure?
+          </dt>
+          <dd>
+            <a href="#" class="vm-details-pw-confirm-choice label label-success" data-choice="1" data-vm="{{ instance.pk }}">Yes</a> / 
+            <a href="#" class="vm-details-pw-confirm-choice label label-danger" data-choice="0">No</a>
+          </dd>
+        </div>
       </dl>
     </div>
     <div class="col-md-8" id="vm-detail-pane">

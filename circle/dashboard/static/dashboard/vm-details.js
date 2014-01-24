@@ -87,6 +87,57 @@ $(function() {
       });
     return false;
   });
+
+  /* for js fallback */
+  $("#vm-details-pw-show").parent("div").children("input").prop("type", "password");
+  
+  /* show password */
+  $("#vm-details-pw-show").click(function() {
+    var input = $(this).parent("div").children("input");
+    var eye = $(this).children("#vm-details-pw-eye");
+    
+    eye.tooltip("destroy")
+    if(eye.hasClass("icon-eye-open")) {
+      eye.removeClass("icon-eye-open").addClass("icon-eye-close");
+      input.prop("type", "text");
+      input.focus();
+      eye.prop("title", "Hide password");
+    } else {
+      eye.removeClass("icon-eye-close").addClass("icon-eye-open");
+      input.prop("type", "password");
+      eye.prop("title", "Show password");
+    }
+    eye.tooltip();
+  });
+
+  /* change password confirmation */
+  $("#vm-details-pw-change").click(function() {
+    $("#vm-details-pw-confirm").fadeIn();
+    return false;
+  });
+
+  /* change password */
+  $(".vm-details-pw-confirm-choice").click(function() {
+    choice = $(this).data("choice");
+    if(choice) {
+      pk = $(this).data("vm");
+      $.ajax({
+        type: 'POST',
+        url: "/dashboard/vm/" + pk + "/",
+        data: {'change_password': 'true'},
+        headers: {"X-CSRFToken": getCookie('csrftoken')},
+        success: function(re, textStatus, xhr) {
+          location.reload();
+        },
+        error: function(xhr, textStatus, error) {
+
+        }
+      });
+    } else {
+      $("#vm-details-pw-confirm").fadeOut(); 
+    }
+    return false;
+  });
 });
 
 

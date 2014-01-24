@@ -103,3 +103,13 @@ class VmDetailTest(TestCase):
         inst.set_level(self.u2, 'owner')
         response = c.post('/dashboard/vm/mass-delete/', {'vms': [1]})
         self.assertEqual(response.status_code, 302)
+
+    def test_unpermitted_password_change(self):
+        c = Client()
+        self.login(c, "user2")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u1, 'owner')
+        password = inst.pw
+        response = c.post("/dashboard/vm/1/", {'change_password': True})
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(password, inst.pw)
