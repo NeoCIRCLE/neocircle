@@ -126,7 +126,7 @@ $(function() {
         // addMessage(data['message'], "success");
       },
       error: function(xhr, textStatus, error) {
-        addMessage("uhoh", "danger");
+	 addMessage("uhoh", "danger");
       }
     });
     return false;
@@ -168,13 +168,14 @@ $(function() {
 
   $('#table_container').on('click','.node-enable',function() {
     enablenode($(this).attr('data-node-pk'), $(this).attr('data-status'),enabletableSuccess,this);
+    return false;
   });
 
 // on node details, change node status, with calling enable node, refresh status span, resources div
   $('#node-info-pane').on('click','.node-enable',function(){
     // post, change node status
     enablenode($(this).attr('data-node-pk'),$(this).attr('data-status'),enabledetailsSuccess);
-   
+    return false;
  });
 
 

@@ -787,6 +787,62 @@ class NodeDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
             return reverse_lazy('dashboard.index')
 
 
+class NodeStatus(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
+    template_name = "dashboard/confirm/node-status.html"
+    model = Node
+
+    def get_success_url(self):
+        next = self.request.GET.get('next')
+        if next:
+            return next
+        else:
+            return reverse_lazy("dashboard.views.node-detail",
+                                kwargs={'pk': self.object.pk})
+
+    def get_context_data(self, **kwargs):
+        context = super(NodeStatus, self).get_context_data(**kwargs)
+        context['status'] = self.request.GET.get('status')
+        return context
+
+    def post(self, request, *args, **kwargs):
+        if request.POST.get('new_status'):
+            print self.request.GET.get('next')
+            return self.__set_status(request)
+
+    def __set_status(self, request):
+        self.object = self.get_object()
+        new_status = request.POST.get("new_status")
+
+        if new_status == "enable":
+            Node.objects.filter(pk=self.object.pk).update(
+                **{'enabled': True})
+        elif new_status == "disable":
+            Node.objects.filter(pk=self.object.pk).update(
+                **{'enabled': False})
+        else:
+            if request.is_ajax():
+                return HttpResponse(content_type="application/json")
+
+            else:
+                return redirect(self.get_success_url())
+
+        success_message = _("Node successfully changed status!")
+
+        if request.is_ajax():
+            response = {
+                'message': success_message,
+                'new_status': new_status,
+                'node_pk': self.object.pk
+            }
+            return HttpResponse(
+                json.dumps(response),
+                content_type="application/json"
+            )
+        else:
+            messages.success(request, success_message)
+            return redirect(self.get_success_url())
+
+
 class PortDelete(LoginRequiredMixin, DeleteView):
     model = Rule
     pk_url_kwarg = 'rule'
