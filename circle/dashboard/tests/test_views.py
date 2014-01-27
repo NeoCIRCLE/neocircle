@@ -113,3 +113,22 @@ class VmDetailTest(TestCase):
         response = c.post("/dashboard/vm/1/", {'change_password': True})
         self.assertEqual(response.status_code, 403)
         self.assertEqual(password, inst.pw)
+
+    def test_unpermitted_network_add(self):
+        c = Client()
+        self.login(c, "user2")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u1, 'owner')
+        response = c.post("/dashboard/vm/1/", {'new_network_vlan': 1})
+        self.assertEqual(response.status_code, 403)
+
+    def test_permitted_network_add(self):
+        c = Client()
+        self.login(c, "user1")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u1, 'owner')
+        interface_count = inst.interface_set.count()
+        response = c.post("/dashboard/vm/1/",
+                          {'new_network_vlan': 1, 'managed': 'on'})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(inst.interface_set.count(), interface_count + 1)

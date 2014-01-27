@@ -201,10 +201,6 @@ function vmCreateLoaded() {
     });
     return false;
   });
-
-  /* no js compatibility */
-  $('.no-js-hidden').show();
-  $('.js-hidden').hide();
 }
 
 function vmCreateTemplateChange(new_this) {

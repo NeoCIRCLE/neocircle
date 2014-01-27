@@ -254,3 +254,7 @@ a.hover-black {
   margin-top: 10px;
   display: none;
 }
+
+.dashboard-vm-details-network-h3 {
+  margin-top: 20px;
+}

@@ -27,7 +27,8 @@ from .forms import VmCreateForm, TemplateForm, LeaseForm, NodeForm, HostForm
 from .tables import (VmListTable, NodeListTable, NodeVmListTable,
                      TemplateListTable, LeaseListTable)
 from vm.models import (Instance, InstanceTemplate, InterfaceTemplate,
-                       InstanceActivity, Node, instance_activity, Lease)
+                       InstanceActivity, Node, instance_activity, Lease,
+                       Interface)
 from firewall.models import Vlan, Host, Rule
 from storage.models import Disk
 from dashboard.models import Favourite
@@ -138,8 +139,9 @@ class VmDetailView(CheckedDetailView):
         ia = InstanceActivity.objects.filter(
             instance=self.object, parent=None
         ).order_by('-started').select_related()
-
         context['activity'] = ia
+
+        context['vlans'] = Vlan.objects.all()  # TODO acl
         context['acl'] = get_acl_data(instance)
         return context
 
@@ -153,7 +155,8 @@ class VmDetailView(CheckedDetailView):
             'new_name': self.__set_name,
             'new_tag': self.__add_tag,
             'to_remove': self.__remove_tag,
-            'port': self.__add_port
+            'port': self.__add_port,
+            'new_network_vlan': self.__new_network,
         }
 
         for k, v in options.iteritems():
@@ -287,6 +290,25 @@ class VmDetailView(CheckedDetailView):
                 messages.error(request, error)
             return redirect(reverse_lazy("dashboard.views.detail",
                                          kwargs={'pk': self.get_object().pk}))
+
+    def __new_network(self, request):
+        self.object = self.get_object()
+        if not self.object.has_level(request.user, 'owner'):
+            raise PermissionDenied()
+
+        vlan = Vlan.objects.get(pk=request.POST.get("new_network_vlan"))
+        managed = request.POST.get("new_network_managed")
+        managed = False if managed is None else True
+        try:
+            Interface.create(vlan=vlan, instance=self.object,
+                             managed=managed, owner=request.user)
+            messages.success(request, _("Successfully added new interface!"))
+        except Exception, e:
+            error = u' '.join(e.messages)
+            messages.error(request, error)
+
+        return redirect("%s#network" % reverse_lazy(
+            "dashboard.views.detail", kwargs={'pk': self.object.pk}))
 
 
 class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):

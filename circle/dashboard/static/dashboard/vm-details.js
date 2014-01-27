@@ -138,6 +138,13 @@ $(function() {
     }
     return false;
   });
+
+  /* add network button */
+  $("#vm-details-network-add").click(function() {
+    $("#vm-details-network-add-for-form").html($("#vm-details-network-add-form").html());
+    $('input[name="new_network_managed"]').tooltip();
+    return false;
+  });
 });
 
 

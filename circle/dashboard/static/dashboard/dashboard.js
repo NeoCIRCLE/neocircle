@@ -65,6 +65,11 @@ $(function () {
     $("a[href=" + window.location.hash +"]").tab('show');
   }
 
+
+  /* no js compatibility */
+  $('.no-js-hidden').show();
+  $('.js-hidden').hide();
+
   /* favourite star */
   $("#dashboard-vm-list").on('click', '.dashboard-vm-favourite', function(e) {
     var star = $(this).children("i");
