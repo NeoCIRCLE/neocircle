@@ -405,6 +405,24 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         return self.interface_set.exclude(host=None)[0].host.get_hostname(
             proto=proto)
 
+    def get_connect_command(self, use_ipv6=False):
+        try:
+            port = self.get_connect_port(use_ipv6=use_ipv6)
+            host = self.get_connect_host(use_ipv6=use_ipv6)
+            proto = self.access_method
+            print proto
+            if proto == 'rdp':
+                return 'rdesktop %(host)s:%(port)d -u cloud -p %(pw)s' % {
+                    'port': port, 'proto': proto, 'pw': self.pw,
+                    'host': host}
+            elif proto == 'ssh':
+                return ('sshpass -p %(pw)s ssh -o StrictHostKeyChecking=n '
+                        'cloud@%(host)s -p %(port)d') % {
+                    'port': port, 'proto': proto, 'pw': self.pw,
+                    'host': host}
+        except:
+            return
+
     def get_connect_uri(self, use_ipv6=False):
         """Get access parameters in URI format.
         """

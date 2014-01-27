@@ -34,7 +34,7 @@
       </div>
       <h3>{% trans "Connection" %}</h3>
       <!-- TODO RDP -->
-      <input type="text" value="ssh cloud@vm.ik.bme.hu -p22312" class="form-control" readonly />
+      <input type="text" value="{{ instance.get_connect_command }}" class="form-control" readonly />
       <dl class="dl-horizontal vm-details-pw">
         <dt>Password:</dt>
         <dd>

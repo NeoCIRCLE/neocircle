@@ -650,6 +650,32 @@ class Host(models.Model):
         """
         return self.get_hostname('ipv4', public=False)
 
+    def get_public_endpoints(self, port, protocol='tcp'):
+        """Get public IPv4 and IPv6 endpoints for local port.
+
+        Optionally the required protocol (e.g. TCP, UDP) can be specified.
+        """
+        endpoints = {}
+        # IPv4
+        public_ipv4 = self.pub_ipv4 if self.pub_ipv4 else self.ipv4
+        # try get matching port(s) without NAT
+        ports = self.incoming_rules.filter(accept=True, dport=port,
+                                           nat=False, proto=protocol)
+        if ports.exists():
+            public_port = ports[0].dport
+        else:
+            # try get matching port(s) with NAT
+            ports = self.incoming_rules.filter(accept=True, nat_dport=port,
+                                               nat=True, proto=protocol)
+            public_port = ports[0].dport if ports.exists() else None
+        endpoints['ipv4'] = ((public_ipv4, public_port) if public_port else
+                             None)
+        # IPv6
+        blocked = self.incoming_rules.filter(accept=False, dport=port,
+                                             proto=protocol).exists()
+        endpoints['ipv6'] = (self.ipv6, port) if not blocked else None
+        return endpoints
+
     @models.permalink
     def get_absolute_url(self):
         return ('network.host', None, {'pk': self.pk})
