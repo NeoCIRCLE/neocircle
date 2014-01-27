@@ -6,7 +6,7 @@ from .views import (
     VmDelete, VmMassDelete, vm_activity, NodeList, NodeDetailView, PortDelete,
     TransferOwnershipView, TransferOwnershipConfirmView, NodeDelete,
     TemplateList, LeaseDetail, NodeCreate, LeaseCreate, TemplateCreate,
-    FavouriteView, NodeStatus,
+    FavouriteView, NodeStatus, GroupList,
 )
 
 urlpatterns = patterns(
@@ -51,4 +51,6 @@ urlpatterns = patterns(
         name='dashboard.views.node-create'),
     url(r'^favourite/$', FavouriteView.as_view(),
         name='dashboard.views.favourite'),
+    url(r'^group/list/$', GroupList.as_view(),
+        name='dashboard.views.group-list'),
 )

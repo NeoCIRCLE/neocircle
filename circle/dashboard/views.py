@@ -25,7 +25,7 @@ from braces.views import LoginRequiredMixin, SuperuserRequiredMixin
 
 from .forms import VmCreateForm, TemplateForm, LeaseForm, NodeForm, HostForm
 from .tables import (VmListTable, NodeListTable, NodeVmListTable,
-                     TemplateListTable, LeaseListTable)
+                     TemplateListTable, LeaseListTable, GroupListTable)
 from vm.models import (Instance, InstanceTemplate, InterfaceTemplate,
                        InstanceActivity, Node, instance_activity, Lease,
                        Interface)
@@ -76,9 +76,12 @@ class IndexView(LoginRequiredMixin, TemplateView):
         })
 
         nodes = Node.objects.all()
+        groups = Group.objects.all()
         context.update({
             'nodes': nodes[:10],
             'more_nodes': nodes.count() - len(nodes[:10]),
+            'groups': groups[:10],
+            'more_groups': groups.count() - len(groups[:10]),
             'sum_node_num': nodes.count(),
             'node_num': {
                 'running': Node.get_state_count(True, True),
@@ -564,6 +567,13 @@ class NodeList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
     template_name = "dashboard/node-list.html"
     model = Node
     table_class = NodeListTable
+    table_pagination = False
+
+
+class GroupList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
+    template_name = "dashboard/group-list.html"
+    model = Group
+    table_class = GroupListTable
     table_pagination = False
 
 

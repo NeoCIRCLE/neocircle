@@ -8,26 +8,28 @@
     </h3>
   </div>
   <div class="list-group" id="vm-list-view">
+     {% for i in groups %}
     <a href="#" class="list-group-item">
-      <i class="icon-file"></i> ALMA <div class="pull-right"><i class="icon-download-alt "></i></div>
+	    <i class="icon-file"></i> {{ i.name }}<div class="pull-right"><i class="icon-download-alt "></i></div>
     </a>
-    <a href="#" class="list-group-item">
-      <i class="icon-file-text"></i> ALMA.docx <div class="pull-right"><i class="icon-download-alt "></i></div>
-    </a>
-    <a href="#" class="list-group-item">
-      <i class="icon-file-text"></i> ALMA.docx <div class="pull-right"><i class="icon-download-alt "></i></div>
-    </a>
-    <a href="#" class="list-group-item">
-      <i class="icon-file-text"></i> ALMA.docx <div class="pull-right"><i class="icon-download-alt "></i></div>
-    </a>
-    <a href="#" class="list-group-item">
-      <i class="icon-file-text"></i> ALMA.docx <div class="pull-right"><i class="icon-download-alt "></i></div>
-    </a>
+   {% endfor %}
     <div href="#" class="list-group-item list-group-footer text-right">
-      <p>
-        <a class="btn btn-primary btn-xs"><i class="icon-chevron-sign-right"></i> show more  </a>
-        <a class="btn btn-success btn-xs"><i class="icon-upload-alt"></i> upload  </a>
-      </p>
+      <div class="row">
+        <div class="col-sm-6 col-xs-6 input-group input-group-sm">
+          <input type="text" class="form-control" placeholder="Search..." />
+          <div class="input-group-btn">
+            <button type="submit" class="form-control btn btn-primary" title="search"><i class="icon-search"></i></button>
+          </div>
+        </div>
+        <div class="col-sm-6 text-right">
+	  {% if more_groups >= 0 %}
+          <a class="btn btn-primary btn-xs" href="{% url "dashboard.views.group-list" %}">
+            <i class="icon-chevron-sign-right"></i> <strong>{{ more_groups }}</strong>  more  
+          </a>
+	  {% endif %}
+          <a class="btn btn-success btn-xs group-create" href="#"><i class="icon-upload-alt"></i> upload </a>
+        </div>
+      </div>
     </div>
   </div>
 </div>

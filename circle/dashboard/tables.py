@@ -1,3 +1,4 @@
+from django.contrib.auth.models import Group
 from django_tables2 import Table, A
 from django_tables2.columns import (TemplateColumn, Column, BooleanColumn,
                                     LinkColumn)
@@ -99,6 +100,14 @@ class NodeListTable(Table):
                            'node-list-table')}
         fields = ('pk', 'name', 'host', 'enabled', 'priority', 'overcommit',
                   'number_of_VMs', )
+
+
+class GroupListTable(Table):
+    class Meta:
+        model = Group
+        attrs = {'class': ('table table-bordered table-striped table-hover '
+                           'group-list-table')}
+        fields = ('id', 'name', )
 
 
 class NodeVmListTable(Table):
