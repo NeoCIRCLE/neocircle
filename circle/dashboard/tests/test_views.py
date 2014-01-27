@@ -132,3 +132,12 @@ class VmDetailTest(TestCase):
                           {'new_network_vlan': 1, 'managed': 'on'})
         self.assertEqual(response.status_code, 302)
         self.assertEqual(inst.interface_set.count(), interface_count + 1)
+
+    def test_create_vm_w_unpermitted_network(self):
+        c = Client()
+        self.login(c, 'user1')
+        response = c.post('/dashboard/vm/create/',
+                          {'template': 1,
+                           'cpu_priority': 1, 'cpu_count': 1,
+                           'ram_size': 1000})
+        self.assertEqual(response.status_code, 403)

@@ -32,9 +32,7 @@ class VmCreateForm(forms.Form):
         required=False
     )
 
-    managed_networks = forms.ModelMultipleChoiceField(
-        queryset=VLANS, required=False)
-    unmanaged_networks = forms.ModelMultipleChoiceField(
+    networks = forms.ModelMultipleChoiceField(
         queryset=VLANS, required=False)
 
     def __init__(self, *args, **kwargs):
@@ -208,23 +206,10 @@ class VmCreateForm(forms.Form):
                     ),
                     Div(
                         Div(  # js-hidden
-                            AnyTag(
-                                "h4",
-                                HTML(_("Managed networks")),
-                            ),
                             Field(
-                                "managed_networks",
+                                "networks",
                                 css_class="form-control",
                                 id="vm-create-network-add-managed",
-                            ),
-                            AnyTag(
-                                "h4",
-                                HTML(_("Unmanaged networks")),
-                            ),
-                            Field(
-                                "unmanaged_networks",
-                                css_class="form-control",
-                                id="vm-create-network-add-unmanaged",
                             ),
                             css_class="js-hidden",
                             style="padding-top: 15px; max-width: 450px;",
@@ -242,24 +227,6 @@ class VmCreateForm(forms.Form):
                                         "select",
                                         css_class="form-control",
                                         css_id="vm-create-network-add-select",
-                                    ),
-                                    AnyTag(
-                                        "span",
-                                        WorkingBaseInput(
-                                            "",
-                                            "",
-                                            css_id=(
-                                                "vm-create-network-add"
-                                                "-checkbox-managed"
-                                            ),
-                                            input_type="checkbox",
-                                            title="",
-                                            data_original_title=(
-                                                _("Managed network?")
-                                            ),
-                                            checked="checked",
-                                        ),
-                                        css_class="input-group-addon",
                                     ),
                                     Div(
                                         AnyTag(
@@ -455,9 +422,7 @@ class NodeForm(forms.ModelForm):
 
 
 class TemplateForm(forms.ModelForm):
-    managed_networks = forms.ModelMultipleChoiceField(
-        queryset=VLANS, required=False)
-    unmanaged_networks = forms.ModelMultipleChoiceField(
+    networks = forms.ModelMultipleChoiceField(
         queryset=VLANS, required=False)
 
     def __init__(self, *args, **kwargs):
@@ -482,12 +447,8 @@ class TemplateForm(forms.ModelForm):
             self.for_networks = self.instance
 
         if self.instance.pk or parent is not None:
-            mn = self.for_networks.interface_set.filter(
-                managed=True).values_list("vlan", flat=True)
-            un = self.for_networks.interface_set.filter(
-                managed=False).values_list("vlan", flat=True)
-            self.initial['managed_networks'] = mn
-            self.initial['unmanaged_networks'] = un
+            n = self.for_networks.interface_set.values_list("vlan", flat=True)
+            self.initial['networks'] = n
 
         if not self.instance.pk and len(self.errors) < 1:
             self.instance.priority = 20
@@ -505,27 +466,16 @@ class TemplateForm(forms.ModelForm):
         self.instance.disks = data['disks']  # TODO why do I need this
 
         # create and/or delete InterfaceTemplates
-        managed = InterfaceTemplate.objects.filter(
-            managed=True, template=self.instance).values_list("vlan",
-                                                              flat=True)
-        unmanaged = InterfaceTemplate.objects.filter(
-            managed=False, template=self.instance).values_list("vlan",
-                                                               flat=True)
-        for m in data['managed_networks']:
-            if m.pk not in managed:
-                InterfaceTemplate(vlan=m, managed=True,
+        networks = InterfaceTemplate.objects.filter(
+            template=self.instance).values_list("vlan", flat=True)
+        for m in data['networks']:
+            if m.pk not in networks:
+                InterfaceTemplate(vlan=m, managed=m.managed,
                                   template=self.instance).save()
         InterfaceTemplate.objects.filter(
-            managed=True, template=self.instance).exclude(
-            vlan__in=data['managed_networks']).delete()
+            template=self.instance).exclude(
+            vlan__in=data['networks']).delete()
 
-        for u in data['unmanaged_networks']:
-            if u.pk not in unmanaged:
-                InterfaceTemplate(vlan=u, managed=False,
-                                  template=self.instance).save()
-        InterfaceTemplate.objects.filter(
-            managed=False, template=self.instance).exclude(
-            vlan__in=data['unmanaged_networks']).delete()
         return instance
 
     @property
@@ -591,8 +541,7 @@ class TemplateForm(forms.ModelForm):
             Fieldset(
                 _("Exeternal"),
                 Field("disks"),
-                Field("managed_networks"),
-                Field("unmanaged_networks"),
+                Field("networks"),
                 Field("lease"),
                 Field("tags"),
             ),

@@ -1404,5 +1404,71 @@
         "network_type": "public", 
         "description": ""
     }
+},
+{
+  "pk": 1, 
+  "model": "firewall.vlan", 
+  "fields": {
+    "comment": "", 
+    "domain": 1, 
+    "dhcp_pool": "", 
+    "managed": true, 
+    "name": "pub", 
+    "vid": 1066, 
+    "created_at": "2014-01-23T16:51:58.125Z", 
+    "modified_at": "2014-01-23T16:51:58.125Z", 
+    "owner": null, 
+    "snat_ip": null, 
+    "snat_to": [], 
+    "network6": null, 
+    "network4": "152.66.254.61/30", 
+    "reverse_domain": "%(d)d.%(c)d.%(b)d.%(a)d.in-addr.arpa", 
+    "network_type": "public", 
+    "description": ""
+  }
+},
+{
+  "pk": 1, 
+  "model": "vm.lease", 
+  "fields": {
+    "suspend_interval_seconds": 36000, 
+    "name": "alap", 
+    "delete_interval_seconds": 360000
+  }
+},
+{ 
+  "pk": 2,
+  "model": "vm.interfacetemplate",
+  "fields": {
+    "vlan": 1,
+    "managed": true,
+    "template": 1
+  }
+},
+{
+  "pk": 1, 
+  "model": "vm.instancetemplate", 
+  "fields": {
+    "req_traits": [], 
+    "disks": [
+      1
+    ], 
+    "name": "ubuntu", 
+    "parent": null, 
+    "created": "2014-01-23T18:03:52.319Z", 
+    "num_cores": 2, 
+    "description": "", 
+    "boot_menu": false, 
+    "ram_size": 1024, 
+    "modified": "2014-01-24T00:58:19.654Z", 
+    "system": "", 
+    "priority": 20, 
+    "state": "READY", 
+    "access_method": "ssh", 
+    "raw_data": "", 
+    "arch": "x86_64", 
+    "max_ram_size": 1024, 
+    "lease": 1
+  }
 }
 ]

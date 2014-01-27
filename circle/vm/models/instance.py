@@ -24,6 +24,7 @@ from .activity import instance_activity
 from .common import BaseResourceConfigModel, Lease
 from .network import Interface
 from .node import Node, Trait
+from django.core.exceptions import PermissionDenied
 
 logger = getLogger(__name__)
 pre_state_changed = Signal(providing_args=["new_state"])
@@ -259,6 +260,10 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
         networks = (template.interface_set.all() if networks is None
                     else networks)
+
+        for network in networks:
+            if not network.vlan.has_level(owner, 'user'):
+                raise PermissionDenied()
 
         req_traits = (template.req_traits.all() if req_traits is None
                       else req_traits)

@@ -141,7 +141,8 @@ class VmDetailView(CheckedDetailView):
         ).order_by('-started').select_related()
         context['activity'] = ia
 
-        context['vlans'] = Vlan.objects.all()  # TODO acl
+        context['vlans'] = Vlan.get_objects_with_level(
+            'user', self.request.user).all()
         context['acl'] = get_acl_data(instance)
         return context
 
@@ -297,11 +298,11 @@ class VmDetailView(CheckedDetailView):
             raise PermissionDenied()
 
         vlan = Vlan.objects.get(pk=request.POST.get("new_network_vlan"))
-        managed = request.POST.get("new_network_managed")
-        managed = False if managed is None else True
+        if not vlan.has_level(request.user, 'user'):
+            raise PermissionDenied()
         try:
             Interface.create(vlan=vlan, instance=self.object,
-                             managed=managed, owner=request.user)
+                             managed=vlan.managed, owner=request.user)
             messages.success(request, _("Successfully added new interface!"))
         except Exception, e:
             error = u' '.join(e.messages)
@@ -544,13 +545,13 @@ class VmCreate(LoginRequiredMixin, TemplateView):
     def get(self, request, form=None, *args, **kwargs):
         if form is None:
             form = self.form_class()
+        form.fields['disks'].queryset = Disk.objects.all()
+        form.fields['networks'].queryset = Vlan.get_objects_with_level(
+            'user', request.user)
         context = self.get_context_data(**kwargs)
         context.update({
             'template': 'dashboard/vm-create.html',
             'box_title': 'Create a VM',
-            'templates': InstanceTemplate.objects.all(),
-            'vlans': Vlan.objects.all(),
-            'disks': Disk.objects.exclude(type="qcow2-snap"),
             'vm_create_form': form,
         })
         return self.render_to_response(context)
@@ -578,12 +579,8 @@ class VmCreate(LoginRequiredMixin, TemplateView):
                 'ram_size': post['ram_size'],
                 'priority': post['cpu_priority'],
             }
-
-            networks = (
-                [InterfaceTemplate(vlan=l, managed=True)
-                    for l in post['managed_networks']] +
-                [InterfaceTemplate(vlan=l, managed=False)
-                    for l in post['unmanaged_networks']])
+            networks = [InterfaceTemplate(vlan=l, managed=l.managed)
+                        for l in post['networks']]
             disks = post['disks']
             inst = Instance.create_from_template(
                 template=template, owner=user, networks=networks,
