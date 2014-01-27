@@ -21,7 +21,6 @@ urlpatterns = patterns(
     url(r'^network/', include('network.urls')),
     url(r'^dashboard/', include('dashboard.urls')),
     url(r'^accounts/', include('django.contrib.auth.urls')),
-    url(r'^vm-api/', include('vm.urls')),
 )
 
 
