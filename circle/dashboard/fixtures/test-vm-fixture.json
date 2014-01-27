@@ -1373,7 +1373,7 @@
   }
 },
 {
-    "pk": 4, 
+    "pk": 1, 
     "model": "firewall.domain", 
     "fields": {
         "description": "", 
@@ -1389,7 +1389,7 @@
     "model": "firewall.vlan", 
     "fields": {
         "comment": "", 
-        "domain": 5, 
+        "domain": 1, 
         "dhcp_pool": "", 
         "name": "test vlan", 
         "vid": 1, 
@@ -1397,7 +1397,8 @@
         "modified_at": "2013-10-21T11:19:44.544Z", 
         "owner": null, 
         "snat_ip": null, 
-        "snat_to": [], "network6": null, 
+        "snat_to": [], 
+        "network6": null, 
         "network4": "192.168.1.0/24", 
         "reverse_domain": "%(d)d.%(c)d.%(b2)d.%(a)d.in-addr.arpa", 
         "network_type": "public", 
