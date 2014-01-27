@@ -225,6 +225,7 @@ class Vlan(AclBase, models.Model):
     network_type = models.CharField(choices=CHOICES_NETWORK_TYPE,
                                     verbose_name=_('network type'),
                                     max_length=20)
+    managed = models.BooleanField(default=True, verbose_name=_('managed'))
     description = models.TextField(blank=True, verbose_name=_('description'),
                                    help_text=_(
                                        'Description of the goals and elements '
