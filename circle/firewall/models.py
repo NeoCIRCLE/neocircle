@@ -365,7 +365,7 @@ class Host(models.Model):
     A host of the network.
     """
 
-    hostname = models.CharField(max_length=40, unique=True,
+    hostname = models.CharField(max_length=40,
                                 verbose_name=_('hostname'),
                                 help_text=_('The alphanumeric hostname of '
                                             'the host, the first part of '
@@ -421,6 +421,9 @@ class Host(models.Model):
                                       verbose_name=_('created at'))
     modified_at = models.DateTimeField(auto_now=True,
                                        verbose_name=_('modified at'))
+
+    class Meta(object):
+        unique_together = ('hostname', 'vlan')
 
     def __unicode__(self):
         return self.hostname
