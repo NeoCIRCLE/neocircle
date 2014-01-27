@@ -263,3 +263,32 @@ a.hover-black {
 .font-awesome-font {
   font-family: "FontAwesome";
 }
+
+.dropdown-menu
+{
+
+	position:absolute;
+	display:none;
+	z-index: 1;
+}
+
+
+.dropdown-toggle:focus + .dropdown-menu
+{
+
+	display: block;
+
+}
+
+.dropdown-toggle:focus
+{
+
+	outline:none;
+
+}
+
+.dropdown-menu:hover{
+
+	display: block;
+
+}

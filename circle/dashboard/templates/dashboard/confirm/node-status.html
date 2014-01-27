@@ -1,0 +1,34 @@
+{% extends "dashboard/base.html" %}
+{% load i18n %}
+
+{% block content %}
+  <div class="body-content">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="no-margin">
+          {% if title %}
+            {{ title }}
+          {% else %}
+            Status changing confirmation
+          {% endif %}  
+        </h3>
+      </div>
+      <div class="panel-body">
+          {% if text %}
+            {{ text }}
+          {% else %}
+            {%blocktrans with object=object%}
+              Are you sure you want to change <strong>{{ object }}</strong> status?
+            {%endblocktrans%}
+          {% endif %}
+        <div class="pull-right">
+          <form action="" method="POST">
+            {% csrf_token %}
+            <a class="btn btn-default">Back</a>
+	    <input type="hidden" name="new_status" value="{{ status }}"/>
+	    <button class="btn btn-warning">Yes, {{ status  }}</button>
+          </form>
+        </div>
+      </div>
+  </div>
+{% endblock %}
