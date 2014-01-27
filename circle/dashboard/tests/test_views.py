@@ -3,6 +3,7 @@ from django.test.client import Client
 from django.contrib.auth.models import User, Group
 
 from vm.models import Instance
+from firewall.models import Vlan
 
 
 class VmDetailTest(TestCase):
@@ -127,15 +128,17 @@ class VmDetailTest(TestCase):
         self.login(c, "user1")
         inst = Instance.objects.get(pk=1)
         inst.set_level(self.u1, 'owner')
+        vlan = Vlan.objects.get(id=1)
+        vlan.set_level(self.u1, 'user')
         interface_count = inst.interface_set.count()
         response = c.post("/dashboard/vm/1/",
-                          {'new_network_vlan': 1, 'managed': 'on'})
+                          {'new_network_vlan': 1})
         self.assertEqual(response.status_code, 302)
         self.assertEqual(inst.interface_set.count(), interface_count + 1)
 
     def test_create_vm_w_unpermitted_network(self):
         c = Client()
-        self.login(c, 'user1')
+        self.login(c, 'user2')
         response = c.post('/dashboard/vm/create/',
                           {'template': 1,
                            'cpu_priority': 1, 'cpu_count': 1,

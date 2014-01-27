@@ -1385,7 +1385,7 @@
     }
 },
 {
-    "pk": 1, 
+    "pk": 2, 
     "model": "firewall.vlan", 
     "fields": {
         "comment": "", 
