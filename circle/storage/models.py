@@ -11,6 +11,7 @@ from django.utils.translation import ugettext_lazy as _
 from model_utils.models import TimeStampedModel
 from sizefield.models import FileSizeField
 
+from acl.models import AclBase
 from .tasks import local_tasks, remote_tasks
 from common.models import ActivityModel, activitycontextimpl
 
@@ -38,10 +39,15 @@ class DataStore(Model):
         return self.hostname + '.' + queue_id
 
 
-class Disk(TimeStampedModel):
+class Disk(AclBase, TimeStampedModel):
 
     """A virtual disk.
     """
+    ACL_LEVELS = (
+        ('user', _('user')),          # see all details
+        ('operator', _('operator')),
+        ('owner', _('owner')),        # superuser, can delete, delegate perms
+    )
     TYPES = [('qcow2-norm', 'qcow2 normal'), ('qcow2-snap', 'qcow2 snapshot'),
              ('iso', 'iso'), ('raw-ro', 'raw read-only'), ('raw-rw', 'raw')]
     name = CharField(blank=True, max_length=100, verbose_name=_("name"))

@@ -78,7 +78,7 @@ class VirtualMachineDescModel(BaseResourceConfigModel):
         abstract = True
 
 
-class InstanceTemplate(VirtualMachineDescModel, TimeStampedModel):
+class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
     """Virtual machine template.
 
@@ -94,6 +94,11 @@ class InstanceTemplate(VirtualMachineDescModel, TimeStampedModel):
       * lease times (suspension & deletion)
       * time of creation and last modification
     """
+    ACL_LEVELS = (
+        ('user', _('user')),          # see all details
+        ('operator', _('operator')),
+        ('owner', _('owner')),        # superuser, can delete, delegate perms
+    )
     STATES = [('NEW', _('new')),        # template has just been created
               ('SAVING', _('saving')),  # changes are being saved
               ('READY', _('ready'))]    # template is ready for instantiation
@@ -257,6 +262,13 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         template settings.
         """
         disks = template.disks.all() if disks is None else disks
+
+        for disk in disks:
+            if not disk.has_level(owner, 'user'):
+                raise PermissionDenied()
+            elif (disk.type == 'qcow2-snap'
+                  and not disk.has_level(owner, 'owner')):
+                raise PermissionDenied()
 
         networks = (template.interface_set.all() if networks is None
                     else networks)
