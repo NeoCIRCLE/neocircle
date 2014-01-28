@@ -545,7 +545,7 @@ class VmCreate(LoginRequiredMixin, TemplateView):
     def get(self, request, form=None, *args, **kwargs):
         if form is None:
             form = self.form_class()
-        form.fields['disks'].queryset = Disk.objects.all()
+        form.fields['disks'].queryset = Disk.objects.exclude(type="qcow2-snap")
         form.fields['networks'].queryset = Vlan.get_objects_with_level(
             'user', request.user)
         context = self.get_context_data(**kwargs)
