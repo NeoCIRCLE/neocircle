@@ -38,7 +38,7 @@
     "ready": true, 
     "datastore": 1, 
     "dev_num": "a", 
-    "type": "raw-rw", 
+    "type": "qcow2-norm", 
     "size": 8589934592
   }
 },

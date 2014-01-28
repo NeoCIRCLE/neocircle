@@ -2,7 +2,8 @@ from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User, Group
 
-from vm.models import Instance
+from vm.models import Instance, InstanceTemplate
+from storage.models import Disk
 from firewall.models import Vlan
 
 
@@ -143,4 +144,43 @@ class VmDetailTest(TestCase):
                           {'template': 1,
                            'cpu_priority': 1, 'cpu_count': 1,
                            'ram_size': 1000})
+        self.assertEqual(response.status_code, 403)
+
+    def test_use_unpermitted_template(self):
+        c = Client()
+        self.login(c, 'user1')
+        Disk.objects.get(id=1).set_level(self.u1, 'user')
+        Vlan.objects.get(id=1).set_level(self.u1, 'user')
+        response = c.post('/dashboard/vm/create/',
+                          {'template': 1,
+                           'cpu_priority': 1, 'cpu_count': 1,
+                           'ram_size': 1000})
+        self.assertEqual(response.status_code, 403)
+
+    def test_use_permitted_template(self):
+        c = Client()
+        self.login(c, 'user1')
+        Disk.objects.get(id=1).set_level(self.u1, 'user')
+        InstanceTemplate.objects.get(id=1).set_level(self.u1, 'user')
+        Vlan.objects.get(id=1).set_level(self.u1, 'user')
+        response = c.post('/dashboard/vm/create/',
+                          {'template': 1,
+                           'cpu_priority': 1, 'cpu_count': 1,
+                           'ram_size': 1000})
+        self.assertEqual(response.status_code, 302)
+
+    def test_use_permitted_template_superuser(self):
+        c = Client()
+        self.login(c, 'superuser')
+        response = c.post('/dashboard/vm/create/',
+                          {'template': 1,
+                           'cpu_priority': 1, 'cpu_count': 1,
+                           'ram_size': 1000})
+        self.assertEqual(response.status_code, 302)
+
+    def test_edit_unpermitted_template(self):
+        c = Client()
+        self.login(c, 'user1')
+        InstanceTemplate.objects.get(id=1).set_level(self.u1, 'user')
+        response = c.post('/dashboard/template/1/', {})
         self.assertEqual(response.status_code, 403)

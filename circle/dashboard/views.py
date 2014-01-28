@@ -435,6 +435,11 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
     success_message = _("Successfully created a new template!")
 
     def get(self, *args, **kwargs):
+        if not self.request.user.has_perm('vm.create_template'):
+            raise PermissionDenied()
+        form = self.form_class()
+        form.fields['disks'].queryset = Disk.get_objects_with_level(
+            'user', self.request.user).exclude(type="qcow2-snap")
         self.parent = self.request.GET.get("parent")
         return super(TemplateCreate, self).get(*args, **kwargs)
 
@@ -442,6 +447,18 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
         kwargs = super(TemplateCreate, self).get_form_kwargs()
         kwargs['parent'] = getattr(self, "parent", None)
         return kwargs
+
+    def post(self, request, *args, **kwargs):
+        if not self.request.user.has_perm('vm.create_template'):
+            raise PermissionDenied()
+        form = self.form_class(request.POST)
+        if not form.is_valid():
+            return self.get(request, form, *args, **kwargs)
+        post = form.cleaned_data
+        for disk in post['disks']:
+            if not disk.has_level(request.user, 'user'):
+                raise PermissionDenied()
+        return super(TemplateCreate, self).post(self, request, args, kwargs)
 
     def get_success_url(self):
         return reverse_lazy("dashboard.views.template-list")
@@ -454,8 +471,10 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     success_message = _("Successfully modified template!")
 
     def get(self, request, *args, **kwargs):
+        template = InstanceTemplate.objects.get(pk=kwargs['pk'])
+        if not template.has_level(request.user, 'owner'):
+            raise PermissionDenied()
         if request.is_ajax():
-            template = InstanceTemplate.objects.get(pk=kwargs['pk'])
             template = {
                 'num_cores': template.num_cores,
                 'ram_size': template.ram_size,
@@ -482,6 +501,15 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return reverse_lazy("dashboard.views.template-detail",
                             kwargs=self.kwargs)
 
+    def post(self, request, *args, **kwargs):
+        template = self.get_object()
+        if not template.has_level(request.user, 'owner'):
+            raise PermissionDenied()
+        for disk in self.get_object().disks.all():
+            if not disk.has_level(request.user, 'user'):
+                raise PermissionDenied()
+        return super(TemplateDetail, self).post(self, request, args, kwargs)
+
 
 class TemplateList(LoginRequiredMixin, SingleTableView):
     template_name = "dashboard/template-list.html"
@@ -493,6 +521,12 @@ class TemplateList(LoginRequiredMixin, SingleTableView):
         context = super(TemplateList, self).get_context_data(*args, **kwargs)
         context['lease_table'] = LeaseListTable(Lease.objects.all())
         return context
+
+    def get_queryset(self):
+        logger.debug('TemplateList.get_queryset() called. User: %s',
+                     unicode(self.request.user))
+        return InstanceTemplate.get_objects_with_level(
+            'user', self.request.user).all()
 
 
 class VmList(LoginRequiredMixin, SingleTableView):
@@ -545,9 +579,13 @@ class VmCreate(LoginRequiredMixin, TemplateView):
     def get(self, request, form=None, *args, **kwargs):
         if form is None:
             form = self.form_class()
-        form.fields['disks'].queryset = Disk.objects.exclude(type="qcow2-snap")
+        form.fields['disks'].queryset = Disk.get_objects_with_level(
+            'user', request.user).exclude(type="qcow2-snap")
         form.fields['networks'].queryset = Vlan.get_objects_with_level(
             'user', request.user)
+        templates = InstanceTemplate.get_objects_with_level('user',
+                                                            request.user)
+        form.fields['template'].queryset = templates
         context = self.get_context_data(**kwargs)
         context.update({
             'template': 'dashboard/vm-create.html',
@@ -555,14 +593,6 @@ class VmCreate(LoginRequiredMixin, TemplateView):
             'vm_create_form': form,
         })
         return self.render_to_response(context)
-
-    def get_context_data(self, **kwargs):
-        context = super(VmCreate, self).get_context_data(**kwargs)
-        # TODO acl
-        context.update({
-        })
-
-        return context
 
     # TODO handle not ajax posts
     def post(self, request, *args, **kwargs):
@@ -573,6 +603,8 @@ class VmCreate(LoginRequiredMixin, TemplateView):
         user = request.user
 
         template = post['template']
+        if not template.has_level(request.user, 'user'):
+            raise PermissionDenied()
         if request.user.has_perm('vm.set_resources'):
             ikwargs = {
                 'num_cores': post['cpu_count'],
