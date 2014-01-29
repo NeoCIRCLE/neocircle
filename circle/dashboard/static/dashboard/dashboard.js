@@ -132,7 +132,7 @@ $(function () {
 
   /* search for vms */
   var my_vms = []
-  $("#dashboard-vm-search-input").keyup(function() {
+  $("#dashboard-vm-search-input").keyup(function(e) {
     // if my_vms is empty get a list of our vms
     if(my_vms.length < 1) {
       $.ajaxSetup( { "async": false } );
@@ -164,6 +164,11 @@ $(function () {
       html += '<div class="list-group-item">No result</div>';
     $("#dashboard-vm-list").html(html);
     $('.title-favourite').tooltip({'placement': 'right'});
+
+    // if there is only one result and ENTER is pressed redirect
+    if(e.keyCode == 13 && search_result.length == 1) {
+      window.location.href = "/dashboard/vm/" + search_result[0].pk + "/";
+    }
   });
  
 });
