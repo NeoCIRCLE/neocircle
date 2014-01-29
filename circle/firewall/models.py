@@ -262,7 +262,8 @@ class Vlan(AclBase, models.Model):
                                        verbose_name=_('modified at'))
 
     def __unicode__(self):
-        return self.name
+        return "%s - %s" % ("managed" if self.managed else "unmanaged",
+                            self.name)
 
     @models.permalink
     def get_absolute_url(self):

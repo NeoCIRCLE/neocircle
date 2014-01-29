@@ -209,7 +209,7 @@ class VmCreateForm(forms.Form):
                             Field(
                                 "networks",
                                 css_class="form-control",
-                                id="vm-create-network-add-managed",
+                                id="vm-create-network-add-vlan",
                             ),
                             css_class="js-hidden",
                             style="padding-top: 15px; max-width: 450px;",
@@ -225,7 +225,8 @@ class VmCreateForm(forms.Form):
                                 Div(
                                     AnyTag(
                                         "select",
-                                        css_class="form-control",
+                                        css_class=("form-control "
+                                                   "font-awesome-font"),
                                         css_id="vm-create-network-add-select",
                                     ),
                                     Div(

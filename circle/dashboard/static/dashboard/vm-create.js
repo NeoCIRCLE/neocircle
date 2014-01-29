@@ -25,8 +25,10 @@ function vmCreateLoaded() {
   /* add network */
   $('#vm-create-network-add-button').click(function() {
     var vlan_pk = $('#vm-create-network-add-select :selected').val();
-    var managed = $('#vm-create-network-add-checkbox-managed').prop('checked');
+    var managed = $('#vm-create-network-add-select :selected').data('managed');
     var name = $('#vm-create-network-add-select :selected').text();
+    // remove the hex chars
+    name = name.substring(name.indexOf(" "), name.length);
 
     if ($('#vm-create-network-list').children('span').length < 1) { 
       $('#vm-create-network-list').html('');
@@ -34,20 +36,16 @@ function vmCreateLoaded() {
     $('#vm-create-network-list').append(
       vmCreateNetworkLabel(vlan_pk, name, managed)
     );
-
-    /* select the network from the managed/unmanaged multiple select */
-    if(managed) {
-      $('#vm-create-network-add-managed option[value="' + vlan_pk + '"]').prop('selected', true);
-    } else {
-      $('#vm-create-network-add-unmanaged option[value="' + vlan_pk + '"]').prop('selected', true);
-    }
+    
+    /* select the network in the hidden network select */
+    $('#vm-create-network-add-vlan option[value="' + vlan_pk + '"]').prop('selected', true);
 
     $('option:selected', $('#vm-create-network-add-select')).remove();
     
     /* add dummy text if no more networks are available */
     if($('#vm-create-network-add-select option').length < 1) {
       $('#vm-create-network-add-button').attr('disabled', true);
-      $('#vm-create-network-add-select').html('<option value="-1">We are out of &lt;options&gt; hehe</option>');
+      $('#vm-create-network-add-select').html('<option value="-1">No more networks!</option>');
     }
 
     return false;
@@ -71,13 +69,13 @@ function vmCreateLoaded() {
       $(this).remove(); 
 
       var vlan_name = $(this).text();
-      $('#vm-create-network-add-select').append($('<option>', {
-        value: vlan_pk,
-        text: vlan_name
-      }));
+
+      var html = '<option data-managed="' + (managed ? 1 : 0) + '" value="' + vlan_pk + '">'+ 
+                 (managed ? "&#xf0ac;": "&#xf0c1;") + vlan_name + '</option>';
+      $('#vm-create-network-add-select').append(html);
 
       /* remove the selection from the multiple select */
-      $('#vm-create-network-add-' + (managed ? '' : 'un') + 'managed option[value="' + vlan_pk + '"]').prop('selected', false);
+      $('#vm-create-network-add-vlan option[value="' + vlan_pk + '"]').prop('selected', false);
       if ($('#vm-create-network-list').children('span').length < 1) {
         $('#vm-create-network-list').append('Not added to any network!');
       }
@@ -86,7 +84,18 @@ function vmCreateLoaded() {
   });
 
   /* copy networks from hidden select */
-  $('#vm-create-network-add-select').html($('#vm-create-network-add-managed').html());
+  $('#vm-create-network-add-vlan option').each(function() {
+    var managed = $(this).text().indexOf("mana") == 0;
+    var text = $(this).text();
+    var pk = $(this).val();
+    if(managed) {
+      text = text.replace("managed -", "&#xf0ac;");
+    } else {
+      text = text.replace("unmanaged -", "&#xf0c1;");
+    }
+    var html = '<option data-managed="' + (managed ? 1 : 0) + '" value="' + pk + '">' + text + '</option>';
+    $('#vm-create-network-add-select').append(html);
+  });
 
 
   /* build up network list */
@@ -201,6 +210,10 @@ function vmCreateLoaded() {
     });
     return false;
   });
+
+  /* for no js stuff */
+  $('.no-js-hidden').show();                                                
+  $('.js-hidden').hide(); 
 }
 
 function vmCreateTemplateChange(new_this) {
@@ -220,8 +233,8 @@ function vmCreateTemplateChange(new_this) {
         refreshSliders();
 
         /* clear selections */
-        $('select[id^="vm-create-network-add"], select[id$="managed"]').find('option').prop('selected', false);
-         $('#vm-create-disk-add-form').find('option').prop('selected', false);
+        $("#vm-create-network-add-vlan").find('option').prop('selected', false);
+        $('#vm-create-disk-add-form').find('option').prop('selected', false);
 
         /* append vlans from InterfaceTemplates */
         $('#vm-create-network-list').html('');
@@ -232,12 +245,13 @@ function vmCreateTemplateChange(new_this) {
               vmCreateNetworkLabel(nn.vlan_pk, nn.vlan, nn.managed)
           );
           
-          $('#vm-create-network-add-' + (nn.managed ? '' : 'un') + 'managed option[value="' + nn.vlan_pk + '"]').prop('selected', true);
+          $('#vm-create-network-add-vlan option[value="' + nn.vlan_pk + '"]').prop('selected', true);
           added_vlans.push(nn.vlan_pk);
         }
 
         /* remove already added vlans from dropdown or add new ones */
         $('#vm-create-network-add-select').html('');
+        // this is working because the vlans array already has the icon's hex code
         for(var i=0; i < vlans.length; i++)
           if(added_vlans.indexOf(vlans[i].pk) == -1)
             $('#vm-create-network-add-select').append($('<option>', {
@@ -245,11 +259,11 @@ function vmCreateTemplateChange(new_this) {
               text: vlans[i].name                                                     
             }));
        
-        /* enalbe the network add button if there are not added vlans */
+        /* enable the network add button if there are not added vlans */
         if(added_vlans.length != vlans.length) {
           $('#vm-create-network-add-button').attr('disabled', false);
         } else {
-          $('#vm-create-network-add-select').html('<option value="-1">We are out of &lt;options&gt; hehe</option>');
+          $('#vm-create-network-add-select').html('<option value="-1">No more networks!</option>');
           $('#vm-create-network-add-button').attr('disabled', true);
         }
 
@@ -276,7 +290,7 @@ function vmCreateTemplateChange(new_this) {
               text: disks[i].name                                                     
             }));
        
-        /* enalbe the disk add button if there are not added disks */
+        /* enable the disk add button if there are not added disks */
         if(added_disks.length != disks.length) {
           $('#vm-create-disk-add-button').attr('disabled', false);
         } else {

@@ -258,3 +258,8 @@ a.hover-black {
 .dashboard-vm-details-network-h3 {
   margin-top: 20px;
 }
+
+/* font awesome font */
+.font-awesome-font {
+  font-family: "FontAwesome";
+}
