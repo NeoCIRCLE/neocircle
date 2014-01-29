@@ -279,8 +279,8 @@ class VmDetailView(CheckedDetailView):
             error = None
             host = Host.objects.get(pk=request.POST.get("host_pk"))
             host.add_port(proto, private=port)
-        except Host.DoesNotExist:
-            error = _("Host not found!")
+        except ValueError:
+            error = _("There is a problem with your input!")
         except Exception, e:
             error = u', '.join(e.messages)
 
