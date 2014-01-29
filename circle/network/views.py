@@ -8,6 +8,7 @@ from django_tables2 import SingleTableView
 
 from firewall.models import (Host, Vlan, Domain, Group, Record, Blacklist,
                              Rule, VlanGroup, SwitchPort, EthernetDevice)
+from vm.models import Interface
 from .tables import (HostTable, VlanTable, SmallHostTable, DomainTable,
                      GroupTable, RecordTable, BlacklistTable, RuleTable,
                      VlanGroupTable, SmallRuleTable, SmallGroupRuleTable,
@@ -149,10 +150,16 @@ class DomainDetail(UpdateView, SuccessMessageMixin):
 
     def get_context_data(self, *args, **kwargs):
         context = super(DomainDetail, self).get_context_data(**kwargs)
-        context['domain_pk'] = self.get_object().pk
+        self.object = self.get_object()
+        context['domain_pk'] = self.object.pk
 
-        # records
-        q = Record.objects.filter(domain=self.get_object()).all()
+        q = Record.objects.filter(
+            domain=self.object,
+            host__in=Host.objects.filter(
+                interface__in=Interface.objects.filter(
+                    instance__destroyed=None)
+            )
+        )
         context['record_list'] = SmallRecordTable(q)
         return context
 
@@ -591,7 +598,11 @@ class VlanDetail(UpdateView, SuccessMessageMixin):
 
     def get_context_data(self, **kwargs):
         context = super(VlanDetail, self).get_context_data(**kwargs)
-        q = Host.objects.filter(vlan=self.object).all()
+
+        q = Host.objects.filter(interface__in=Interface.objects.filter(
+            vlan=self.object, instance__destroyed=None
+        ))
+
         context['host_list'] = SmallHostTable(q)
         context['vlan_vid'] = self.kwargs.get('vid')
         return context
