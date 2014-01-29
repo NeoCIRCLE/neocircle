@@ -1,5 +1,6 @@
 $(function () {
   $('.vm-create').click(function(e) {
+    var template = $(this).data("template");
     $.ajax({
       type: 'GET',
       url: '/dashboard/vm/create/', 
@@ -11,6 +12,9 @@ $(function () {
         $('#create-modal').on('hidden.bs.modal', function() {
           $('#create-modal').remove();
         });
+        if(template) {
+          $('#vm-create-template-select option[value="' + template + '"]').prop("selected", true).trigger("change");
+        }
       }
     });
     return false;

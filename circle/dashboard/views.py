@@ -94,6 +94,8 @@ class IndexView(LoginRequiredMixin, TemplateView):
             'stopped_vm_num': instances.exclude(
                 state__in=['RUNNING', 'NOSTATE']).count()
         })
+
+        context['templates'] = InstanceTemplate.objects.all()[:5]
         return context
 
 

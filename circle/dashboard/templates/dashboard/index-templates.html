@@ -1,3 +1,4 @@
+{% load i18n %}
 <div class="panel panel-default">
   <div class="panel-heading">
     <span class="btn btn-default btn-xs infobtn pull-right" title="Halp">
@@ -7,21 +8,12 @@
     </h3>
   </div>
   <div class="list-group" id="vm-list-view">
-    <a href="#" class="list-group-item">
-      <i class="icon-linux"></i> ALMA <small class="text-muted">CentOS 6</small><div class="pull-right"><i class="icon-play "></i></div>
+    {% for t in templates %}
+    <a href="{% url "dashboard.views.template-detail" pk=t.pk %}" class="list-group-item">
+      <i class="icon-{{ t.os_type }}"></i> {{ t.name }} <small class="text-muted">{{ t.system }}</small>
+      <div class="pull-right vm-create" data-template="{{ t.pk }}"><i title="{% trans "Start vm instance" %}" class="icon-play"></i></div>
     </a>
-    <a href="#" class="list-group-item">
-      <i class="icon-windows"></i> ALMA <small class="text-muted">Windows 7</small><div class="pull-right"><i class="icon-play "></i></div>
-    </a>
-    <a href="#" class="list-group-item">
-      <i class="icon-linux"></i> ALMA <small class="text-muted">Gentoo</small><div class="pull-right"><i class="icon-play "></i></div>
-    </a>
-    <a href="#" class="list-group-item">
-      <i class="icon-linux"></i> ALMA <small class="text-muted">Ubuntu 12.04 LTS</small><div class="pull-right"><i class="icon-play "></i></div>
-    </a>
-    <a href="#" class="list-group-item">
-      <i class="icon-windows"></i> ALMA <small class="text-muted">Windows 7</small><div class="pull-right"><i class="icon-play "></i></div>
-    </a>
+    {% endfor %}
     <div href="#" class="list-group-item list-group-footer text-right">
       <p>
         <a href="{% url "dashboard.views.template-list" %}" class="btn btn-primary btn-xs"><i class="icon-chevron-sign-right"></i> show all  </a>

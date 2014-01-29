@@ -142,7 +142,7 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
         """Get the type of the template's operating system.
         """
         if self.access_method == 'rdp':
-            return 'win'
+            return 'windows'
         else:
             return 'linux'
 
