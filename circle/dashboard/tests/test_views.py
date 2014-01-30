@@ -18,6 +18,7 @@ class VmDetailTest(TestCase):
         self.u2.set_password('password')
         self.u2.save()
         self.us = User.objects.create(username='superuser', is_superuser=True)
+        self.us.set_password('password')
         self.us.save()
         self.g1 = Group.objects.create(name='group1')
         self.g1.user_set.add(self.u1)
