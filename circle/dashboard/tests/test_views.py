@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User, Group
 
-from vm.models import Instance, InstanceTemplate
+from vm.models import Instance, InstanceTemplate, Lease
 from storage.models import Disk
 from firewall.models import Vlan
 
@@ -185,3 +185,20 @@ class VmDetailTest(TestCase):
         InstanceTemplate.objects.get(id=1).set_level(self.u1, 'user')
         response = c.post('/dashboard/template/1/', {})
         self.assertEqual(response.status_code, 403)
+
+    def test_permitted_lease_delete(self):
+        c = Client()
+        self.login(c, 'superuser')
+        leases = Lease.objects.count()
+        response = c.post("/dashboard/lease/delete/1/")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(leases - 1, Lease.objects.count())
+
+    def test_unpermitted_lease_delete(self):
+        c = Client()
+        self.login(c, 'user1')
+        leases = Lease.objects.count()
+        response = c.post("/dashboard/lease/delete/1/")
+        # redirect to the login page
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(leases, Lease.objects.count())
