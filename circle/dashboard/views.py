@@ -534,6 +534,37 @@ class TemplateList(LoginRequiredMixin, SingleTableView):
             'user', self.request.user).all()
 
 
+class TemplateDelete(LoginRequiredMixin, DeleteView):
+    model = InstanceTemplate
+
+    def get_success_url(self):
+        return reverse("dashboard.views.template-list")
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/confirm/ajax-delete.html']
+        else:
+            return ['dashboard/confirm/base-delete.html']
+
+    def delete(self, request, *args, **kwargs):
+        object = self.get_object()
+        if not object.has_level(request.user, 'owner'):
+            raise PermissionDenied()
+
+        object.delete()
+        success_url = self.get_success_url()
+        success_message = _("Template successfully deleted!")
+
+        if request.is_ajax():
+            return HttpResponse(
+                json.dumps({'message': success_message}),
+                content_type="application/json",
+            )
+        else:
+            messages.success(request, success_message)
+            return HttpResponseRedirect(success_url)
+
+
 class VmList(LoginRequiredMixin, SingleTableView):
     template_name = "dashboard/vm-list.html"
     table_class = VmListTable
@@ -956,6 +987,35 @@ class LeaseDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
 
     def get_success_url(self):
         return reverse_lazy("dashboard.views.lease-detail", kwargs=self.kwargs)
+
+
+class LeaseDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
+    model = Lease
+
+    def get_success_url(self):
+        return reverse("dashboard.views.template-list")
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/confirm/ajax-delete.html']
+        else:
+            return ['dashboard/confirm/base-delete.html']
+
+    def delete(self, request, *args, **kwargs):
+        object = self.get_object()
+
+        object.delete()
+        success_url = self.get_success_url()
+        success_message = _("Lease successfully deleted!")
+
+        if request.is_ajax():
+            return HttpResponse(
+                json.dumps({'message': success_message}),
+                content_type="application/json",
+            )
+        else:
+            messages.success(request, success_message)
+            return HttpResponseRedirect(success_url)
 
 
 @require_POST
