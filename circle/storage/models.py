@@ -86,7 +86,7 @@ class Disk(AclBase, TimeStampedModel):
             if message is None:
                 message = ("The requested operation can't be performed on "
                            "disk '%s (%s)' because it is in use." %
-                           (self.disk.name, self.disk.filename))
+                           (disk.name, disk.filename))
 
             Exception.__init__(self, message)
 
