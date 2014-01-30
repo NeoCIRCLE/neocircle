@@ -2,10 +2,27 @@
 {% load l10n %}
 
 {# <span style="color: #FF0000;">[{{ record.r_type }}]</span> #}
-{% if record.direction == "1" %}{{ record.foreign_network }}{% else %}{{ record.r_type }}{% endif %}
-{#<span style="color: #0000FF;"> ▸ </span>#}                                
+{% if record.direction == "1" %}
+  {{ record.foreign_network }}
+{% else %}
+  {% if record.r_type == "host" %}
+    {{ record.host.get_fqdn }}
+  {% else %}
+    {{ record.r_type }}
+  {% endif %}
+{% endif %}
+{#<span style="color: #0000FF;"> ▸ </span>#}
+
 <i class="icon-arrow-right"></i>                                            
-{% if record.direction == "0" %}{{ record.foreign_network }}{% else %}{{ record.r_type }}{% endif %}
+{% if record.direction == "0" %}
+  {{ record.foreign_network }}
+{% else %}
+  {% if record.r_type == "host" %}
+    {{ record.host.get_fqdn }}
+  {% else %}
+    {{ record.r_type }}
+  {% endif %}
+{% endif %}
 {% if record.accept %}
 <span class="label label-info" style="margin-left: 5px;">ACCEPT</span>
 {% endif %}
