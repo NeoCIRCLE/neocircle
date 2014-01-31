@@ -91,9 +91,10 @@ class Lease(Model):
         return timeuntil(n + self.delete_interval, n)
 
     def __unicode__(self):
-        return "%s (%s) - (%s)" % (self.name,
-                                   self.get_readable_suspend_time(),
-                                   self.get_readable_delete_time())
+        return _("%s (suspend: %s, remove: %s)") % (
+            self.name,
+            self.get_readable_suspend_time(),
+            self.get_readable_delete_time())
 
 
 class Trait(Model):
