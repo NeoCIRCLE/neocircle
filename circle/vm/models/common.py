@@ -58,8 +58,14 @@ class Lease(Model):
     """
     name = CharField(max_length=100, unique=True,
                      verbose_name=_('name'))
-    suspend_interval_seconds = IntegerField(verbose_name=_('suspend interval'))
-    delete_interval_seconds = IntegerField(verbose_name=_('delete interval'))
+    suspend_interval_seconds = IntegerField(
+        verbose_name=_('suspend interval'), help_text=_(
+            'Number of seconds after the an instance is suspended.'),
+        null=True, blank=True)
+    delete_interval_seconds = IntegerField(
+        verbose_name=_('delete interval'), help_text=_(
+            'Number of seconds after the an instance is deleted.'),
+        null=True, blank=True)
 
     class Meta:
         app_label = 'vm'
@@ -68,27 +74,49 @@ class Lease(Model):
 
     @property
     def suspend_interval(self):
-        return timedelta(seconds=self.suspend_interval_seconds)
+        v = self.suspend_interval_seconds
+        if v is not None:
+            return timedelta(seconds=v)
+        else:
+            return None
 
     @suspend_interval.setter
     def suspend_interval(self, value):
-        self.suspend_interval_seconds = value.total_seconds()
+        if value is not None:
+            self.suspend_interval_seconds = value.total_seconds()
+        else:
+            self.suspend_interval_seconds = None
 
     @property
     def delete_interval(self):
-        return timedelta(seconds=self.delete_interval_seconds)
+        v = self.delete_interval_seconds
+        if v is not None:
+            return timedelta(seconds=v)
+        else:
+            return None
 
     @delete_interval.setter
     def delete_interval(self, value):
-        self.delete_interval_seconds = value.total_seconds()
+        if value is not None:
+            self.delete_interval_seconds = value.total_seconds()
+        else:
+            self.delete_interval_seconds = None
 
     def get_readable_suspend_time(self):
-        n = datetime.utcnow()
-        return timeuntil(n + self.suspend_interval, n)
+        v = self.suspend_interval
+        if v is not None:
+            n = datetime.utcnow()
+            return timeuntil(n + v, n)
+        else:
+            return _("never")
 
     def get_readable_delete_time(self):
-        n = datetime.utcnow()
-        return timeuntil(n + self.delete_interval, n)
+        v = self.delete_interval
+        if v is not None:
+            n = datetime.utcnow()
+            return timeuntil(n + v, n)
+        else:
+            return _("never")
 
     def __unicode__(self):
         return _("%s (suspend: %s, remove: %s)") % (
