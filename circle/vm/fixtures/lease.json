@@ -1,0 +1,29 @@
+[
+{
+  "pk": 1,
+  "model": "vm.lease",
+  "fields": {
+    "suspend_interval_seconds": 18000,
+    "name": "lab",
+    "delete_interval_seconds": 691200
+  }
+},
+{
+  "pk": 2,
+  "model": "vm.lease",
+  "fields": {
+    "suspend_interval_seconds": 18000,
+    "name": "project",
+    "delete_interval_seconds": 691200
+  }
+},
+{
+  "pk": 3,
+  "model": "vm.lease",
+  "fields": {
+    "suspend_interval_seconds": 31564800,
+    "name": "server",
+    "delete_interval_seconds": null
+  }
+}
+]
