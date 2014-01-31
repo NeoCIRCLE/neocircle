@@ -31,7 +31,8 @@ from .forms import (
     VmCreateForm, TemplateForm, LeaseForm, NodeForm, HostForm, DiskAddForm,
 )
 from .tables import (VmListTable, NodeListTable, NodeVmListTable,
-                     TemplateListTable, LeaseListTable, GroupListTable)
+                     TemplateListTable, LeaseListTable, GroupListTable,
+                     UserListTable)
 from vm.models import (Instance, InstanceTemplate, InterfaceTemplate,
                        InstanceActivity, Node, instance_activity, Lease,
                        Interface)
@@ -485,6 +486,44 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
         else:
             messages.success(request, success_message)
             return redirect(reverse_lazy("dashboard.views.node-detail",
+                                         kwargs={'pk': self.object.pk}))
+
+
+class GroupDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
+    template_name = "dashboard/group-detail.html"
+    model = Group
+    table_pagination = False
+
+    def get_context_data(self, **kwargs):
+        context = super(GroupDetailView, self).get_context_data(**kwargs)
+        instances = Group.objects.filter(name=self.object)
+        context['table'] = UserListTable(instances[0].user_set.all())
+        return context
+
+    def post(self, request, *args, **kwargs):
+        if request.POST.get('new_name'):
+            return self.__set_name(request)
+
+    def __set_name(self, request):
+        self.object = self.get_object()
+        new_name = request.POST.get("new_name")
+        Group.objects.filter(pk=self.object.pk).update(
+            **{'name': new_name})
+
+        success_message = _("Node successfully renamed!")
+        if request.is_ajax():
+            response = {
+                'message': success_message,
+                'new_name': new_name,
+                'node_pk': self.object.pk
+            }
+            return HttpResponse(
+                json.dumps(response),
+                content_type="application/json"
+            )
+        else:
+            messages.success(request, success_message)
+            return redirect(reverse_lazy("dashboard.views.group-detail",
                                          kwargs={'pk': self.object.pk}))
 
 

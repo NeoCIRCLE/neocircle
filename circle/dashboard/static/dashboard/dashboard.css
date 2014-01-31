@@ -114,6 +114,10 @@ body {
   min-height: 20em;
 }
 
+#group-detail-panel .panel-body {
+  min-height: 20em;
+}
+
 :link i:before:hover {
   text-decoration: none !important;
 }
@@ -166,19 +170,20 @@ body {
 }
 
 #vm-details-rename, #vm-details-rename *, #vm-details-h1-name, #vm-list-rename, #vm-list-rename *,
-#node-details-rename, #node-details-rename *, #node-details-h1-name, #node-list-rename, #node-list-rename * {
+#node-details-rename, #node-details-rename *, #node-details-h1-name, #node-list-rename, #node-list-rename *#group-details-rename, #group-details-rename *, #group-details-h1-name, #group-list-rename, #group-list-rename * {
+ 
   display: inline;
 }
 
-#vm-details-rename, #vm-list-rename, #node-details-rename, #node-list-rename {
+#vm-details-rename, #vm-list-rename, #node-details-rename, #node-list-rename, #group-details-rename, #group-list-rename {
   display: none;
 }
 
-#vm-details-rename-name, #node-details-rename-name {
+#vm-details-rename-name, #node-details-rename-name, #group-details-rename-name {
   max-width: 160px;
 }
 
-#vm-list-rename-name, #node-list-rename-name {
+#vm-list-rename-name, #node-list-rename-name, #group-list-rename-name {
   max-width: 100px;
 }
 

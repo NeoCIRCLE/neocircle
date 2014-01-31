@@ -1,4 +1,4 @@
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
 from django_tables2 import Table, A
 from django_tables2.columns import (TemplateColumn, Column, BooleanColumn,
                                     LinkColumn)
@@ -103,11 +103,55 @@ class NodeListTable(Table):
 
 
 class GroupListTable(Table):
+    pk = TemplateColumn(
+        template_name='dashboard/group-list/column-id.html',
+        verbose_name="ID",
+        attrs={'th': {'class': 'group-list-table-thin'}},
+    )
+
+    name = TemplateColumn(
+        template_name="dashboard/group-list/column-name.html"
+    )
+
+    number_of_users = TemplateColumn(
+        template_name='dashboard/group-list/column-users.html',
+        attrs={'th': {'class': 'group-list-table-admin'}},
+    )
+
+    admin = TemplateColumn(
+        template_name='dashboard/group-list/column-admin.html',
+        attrs={'th': {'class': 'group-list-table-admin'}},
+    )
+
+    actions = TemplateColumn(
+        attrs={'th': {'class': 'group-list-table-thin'}},
+        template_code=('{% include "dashboard/group-list/column-'
+                       'actions.html" with btn_size="btn-xs" %}'),
+    )
+
     class Meta:
         model = Group
         attrs = {'class': ('table table-bordered table-striped table-hover '
                            'group-list-table')}
-        fields = ('id', 'name', )
+        fields = ('pk', 'name', )
+
+
+class UserListTable(Table):
+    pk = TemplateColumn(
+        template_name='dashboard/vm-list/column-id.html',
+        verbose_name="ID",
+        attrs={'th': {'class': 'vm-list-table-thin'}},
+    )
+
+    username = TemplateColumn(
+        template_name="dashboard/group-list/column-username.html"
+    )
+
+    class Meta:
+        model = User
+        attrs = {'class': ('table table-bordered table-striped table-hover '
+                           'vm-list-table')}
+        fields = ('pk', 'username', )
 
 
 class NodeVmListTable(Table):
@@ -145,6 +189,11 @@ class NodeVmListTable(Table):
         attrs = {'class': ('table table-bordered table-striped table-hover '
                            'vm-list-table')}
         fields = ('pk', 'name', 'state', 'time_of_suspend', 'time_of_delete', )
+
+
+class UserListTablex(Table):
+    class Meta:
+        model = User
 
 
 class TemplateListTable(Table):

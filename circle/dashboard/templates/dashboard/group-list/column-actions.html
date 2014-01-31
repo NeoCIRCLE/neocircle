@@ -1,0 +1,7 @@
+
+<div class="btn-group">
+	<button type="button" class="btn {{ btn_size }} btn-warning dropdown-toggle" data-toggle="dropdown">Action <i class="icon-caret-down"></i></button>
+  <ul class="dropdown-menu" role="menu">
+   <li><a data-node-pk="{{ record.pk }}" class="real-link node-delete" href="{% url "dashboard.views.delete-node" pk=record.pk %}?next={{ request.path }}"><i class="icon-trash"></i> Delete</a></li>
+    </ul>
+</div>
