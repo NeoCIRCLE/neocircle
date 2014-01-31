@@ -8,6 +8,9 @@ from ..models.instance import (
 from ..models.network import (
     Interface
 )
+from ..models.common import (
+    Lease
+)
 
 
 class TemplateTestCase(TestCase):
@@ -70,3 +73,27 @@ class InterfaceTestCase(TestCase):
                  network6='2001::1/32', domain=d)
         v.save()
         Interface.create(i, v, managed=True, owner=owner)
+
+
+class LeaseTestCase(TestCase):
+
+    fixtures = ['lease.json']
+
+    def test_methods(self):
+        from datetime import timedelta
+        td = timedelta(seconds=1)
+        l = Lease.objects.get(pk=1)
+
+        assert "never" not in unicode(l)
+        assert l.delete_interval > td
+        assert l.suspend_interval > td
+
+        l.delete_interval = None
+        assert "never" in unicode(l)
+        assert l.delete_interval is None
+
+        l.delete_interval = td * 2
+        assert "never" not in unicode(l)
+
+        l.suspend_interval = None
+        assert "never" in unicode(l)
