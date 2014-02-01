@@ -4,6 +4,24 @@
 {% block content %}
 <div class="body-content">
   <div class="page-header">
+    <div class="pull-right" style="padding-top: 15px;">
+      <a title="Rename" href="#" class="btn btn-default btn-xs vm-details-rename-button"><i class="icon-pencil"></i></a>
+      {% if instance.state.lower == "running" %}
+        <a title="Pause" href="#" class="btn btn-default btn-xs"><i class="icon-pause"></i></a>
+        <a title="Sleep" href="#" class="btn btn-default btn-xs"><i class="icon-moon"></i></a>
+      {% else %}
+        <a title="Start" href="#" class="btn btn-default btn-xs"><i class="icon-play"></i></a>
+        <a title="Wake up" href="#" class="btn btn-default btn-xs"><i class="icon-sun"></i></a>
+      {% endif %}  
+      <a title="Shut down" href="#" class="btn btn-default btn-xs"><i class="icon-off"></i></a>
+      <a title="Migrate" href="#" class="btn btn-default btn-xs"><i class="icon-truck"></i></a>
+      <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="save_as" value="dummy"/>
+        <button title="Save as template" class="btn btn-default btn-xs" type="submit"><i class="icon-save"></i></button>
+      </form>
+      <a title="Destroy" href="{% url "dashboard.views.delete-vm" pk=instance.pk %}" class="btn btn-default btn-xs vm-delete" data-vm-pk="{{ instance.pk }}"><i class="icon-remove"></i></a>
+    </div>
     <h1>
       <div id="vm-details-rename">
         <form action="" method="POST" id="vm-details-rename-form">
@@ -24,16 +42,15 @@
         <div class="btn-group">
           <button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown">Action <i class="icon-caret-down"></i></button>
           <ul class="dropdown-menu" role="menu">
-            <li><a href="#" class="vm-details-rename-button"><i class="icon-pencil"></i> Rename</a></li>
-            <li><a href="#" class="vm-details-save-button"><i class="icon-save"></i> Save as</a></li>
-            <li><a href="#"><i class="icon-refresh"></i> Reboot</a></li>
-            <li><a href="#"><i class="icon-off"></i> Shutdown</a></li>
-            <li><a data-vm-pk="{{ instance.pk }}" class="vm-delete" href="{% url "dashboard.views.delete-vm" pk=instance.pk %}"><i class="icon-remove"></i> Discard</a></li>
+            <li><a href="#" class="vm-details-rename-button"><i class="icon-pencil"></i> {% trans "Rename" %}</a></li>
+            <li><a data-vm-pk="{{ instance.pk }}" href="#" class="vm-details-save-as-button"><i class="icon-save"></i> {% trans "Save as" %}</a></li>
+            <li><a href="#"><i class="icon-refresh"></i> {% trans "Reboot" %}</a></li>
+            <li><a href="#"><i class="icon-off"></i> {% trans "Shutdown" %}</a></li>
+            <li><a data-vm-pk="{{ instance.pk }}" class="vm-delete" href="{% url "dashboard.views.delete-vm" pk=instance.pk %}"><i class="icon-remove"></i> {% trans "Discard" %}</a></li>
           </ul>
         </div>
       </div>
       <h3>{% trans "Connection" %}</h3>
-      <!-- TODO RDP -->
       <input type="text" value="{{ instance.get_connect_command }}" class="form-control" readonly />
       <dl class="dl-horizontal vm-details-pw">
         <dt>Password:</dt>
@@ -65,27 +82,32 @@
           <li class="active">
             <a href="#home" data-toggle="pill" class="text-center">
               <i class="icon-compass icon-2x"></i><br>
-              {% trans "Home" %}</a></li>
+              {% trans "Home" %}</a>
+          </li>
           <li>
             <a href="#resources" data-toggle="pill" class="text-center">
               <i class="icon-tasks icon-2x"></i><br>
-              {% trans "Resources" %}</a></li>
-            <li {% if instance.state != "RUNNING" %}class="disabled"{% endif %}>
+              {% trans "Resources" %}</a>
+          </li>
+          <li {% if instance.state != "RUNNING" %}class="disabled"{% endif %}>
             <a href="#{% if instance.state == "RUNNING" %}console" data-toggle="pill{% endif %}" class="text-center">
               <i class="icon-desktop icon-2x"></i><br>
               {% trans "Console" %}</a></li>
           <li>
             <a href="#access" data-toggle="pill" class="text-center">
               <i class="icon-group icon-2x"></i><br>
-              {% trans "Access" %}</a></li>
+              {% trans "Access" %}</a>
+          </li>
           <li>
             <a href="#network" data-toggle="pill" class="text-center">
               <i class="icon-globe icon-2x"></i><br>
-              {% trans "Network" %}</a></li>
+              {% trans "Network" %}</a>
+          </li>
           <li>
             <a href="#activity" data-toggle="pill" class="text-center">
               <i class="icon-time icon-2x"></i><br>
-              {% trans "Activity" %}</a></li>
+              {% trans "Activity" %}</a>
+          </li>
         </ul>
 
         <div class="tab-content panel-body">

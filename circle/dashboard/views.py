@@ -2,6 +2,7 @@ from os import getenv
 import json
 import logging
 import re
+from datetime import datetime
 
 from django.contrib.auth.models import User, Group
 from django.contrib.messages import warning
@@ -163,6 +164,7 @@ class VmDetailView(CheckedDetailView):
             'to_remove': self.__remove_tag,
             'port': self.__add_port,
             'new_network_vlan': self.__new_network,
+            'save_as': self.__save_as,
         }
 
         for k, v in options.iteritems():
@@ -315,6 +317,21 @@ class VmDetailView(CheckedDetailView):
 
         return redirect("%s#network" % reverse_lazy(
             "dashboard.views.detail", kwargs={'pk': self.object.pk}))
+
+    def __save_as(self, request):
+        self.object = self.get_object()
+        if not self.object.has_level(request.user, 'owner'):
+            raise PermissionDenied()
+
+        date = datetime.now().strftime("%Y-%m-%d %H:%M")
+        new_name = "Saved from %s (#%d) at %s" % (
+            self.object.name, self.object.pk, date
+        )
+        template = self.object.save_as_template(new_name)
+        messages.success(request, _("Instance succesfully saved as template, "
+                                    "please rename it!"))
+        return redirect(reverse_lazy("dashboard.views.template-detail",
+                                     kwargs={'pk': template.pk}))
 
 
 class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
