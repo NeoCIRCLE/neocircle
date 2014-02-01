@@ -264,6 +264,21 @@ a.hover-black {
   font-family: "FontAwesome";
 }
 
+.template-list-table tbody>tr>td, .template-list-table thead>tr>th,
+.lease-list-table tbody>tr>td, .lease-list-table thead>tr>th {
+  vertical-align: middle;
+  text-align: center;
+}
+
+.template-list-table td:nth-child(1), .lease-list-table td:nth-child(1) {
+  text-align: left;
+}
+
+.template-list-table-thin {
+  width: 95px;
+}
+
+
 .dropdown-menu
 {
 

@@ -164,7 +164,8 @@ class TemplateListTable(Table):
     )
     actions = TemplateColumn(
         verbose_name=_("Actions"),
-        template_name="dashboard/template-list/column-template-actions.html"
+        template_name="dashboard/template-list/column-template-actions.html",
+        attrs={'th': {'class': 'template-list-table-thin'}},
     )
 
     class Meta:
