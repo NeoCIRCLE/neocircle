@@ -99,10 +99,11 @@ function vmCreateLoaded() {
 
 
   /* build up network list */
-  $('#vm-create-network-add-select option').each(function() {
+  $('#vm-create-network-add-vlan option').each(function() {
     vlans.push({
-      'name': $(this).text(),
-      'pk': parseInt($(this).val())
+      'name': $(this).text().replace("unmanaged -", "&#xf0c1;").replace("managed -", "&#xf0ac;"),
+      'pk': parseInt($(this).val()),
+      'managed': $(this).text().indexOf("mana") == 0,
     });
   });
 
@@ -236,8 +237,11 @@ function vmCreateTemplateChange(new_this) {
         $("#vm-create-network-add-vlan").find('option').prop('selected', false);
         $('#vm-create-disk-add-form').find('option').prop('selected', false);
 
+        /* clear the network select */
+        $("#vm-create-network-add-select").html('');
+
         /* append vlans from InterfaceTemplates */
-        $('#vm-create-network-list').html('');
+        $('#vm-create-network-list').html("");
         var added_vlans = []
         for(var n = 0; n<data['network'].length; n++) {
           nn = data['network'][n]
@@ -253,11 +257,10 @@ function vmCreateTemplateChange(new_this) {
         $('#vm-create-network-add-select').html('');
         // this is working because the vlans array already has the icon's hex code
         for(var i=0; i < vlans.length; i++)
-          if(added_vlans.indexOf(vlans[i].pk) == -1)
-            $('#vm-create-network-add-select').append($('<option>', {
-              value: vlans[i].pk,                                                     
-              text: vlans[i].name                                                     
-            }));
+          if(added_vlans.indexOf(vlans[i].pk) == -1) {
+            var html = '<option data-managed="' + (vlans[i].managed ? 1 : 0) + '" value="' + vlans[i].pk + '">' + vlans[i].name + '</option>';
+            $('#vm-create-network-add-select').append(html);
+          }
        
         /* enable the network add button if there are not added vlans */
         if(added_vlans.length != vlans.length) {
@@ -267,6 +270,10 @@ function vmCreateTemplateChange(new_this) {
           $('#vm-create-network-add-button').attr('disabled', true);
         }
 
+        /* if there are no added vlans print it out */
+        if(added_vlans.length < 1) {
+          $('#vm-create-network-list').html("Not added to any network!");
+        }
 
         /* append disks */
         $('#vm-create-disk-list').html('');
