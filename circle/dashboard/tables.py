@@ -158,10 +158,6 @@ class TemplateListTable(Table):
     ram_size = TemplateColumn(
         "{{ record.ram_size }} Mb",
     )
-    priority = TemplateColumn(
-        "{{ record.priority }}/100 ",
-        verbose_name=_("CPU priority"),
-    )
     lease = TemplateColumn(
         "{{ record.lease.name }}",
         verbose_name=_("Lease"),
@@ -176,7 +172,7 @@ class TemplateListTable(Table):
         attrs = {'class': ('table table-bordered table-striped table-hover'
                            ' template-list-table')}
         fields = ('name', 'num_cores', 'ram_size', 'arch',
-                  'priority', 'system', 'access_method', 'lease', 'state',
+                  'system', 'access_method', 'lease', 'state',
                   'actions', )
 
 
