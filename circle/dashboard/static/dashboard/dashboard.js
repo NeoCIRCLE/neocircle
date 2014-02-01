@@ -144,7 +144,7 @@ $(function () {
         for(var i in result) {
           my_vms.push({
             'pk': result[i].pk,
-            'name': result[i].name,
+            'name': result[i].name.toLowerCase(),
             'state': result[i].state,
             'fav': result[i].fav,
           });
@@ -153,7 +153,7 @@ $(function () {
       $.ajaxSetup( { "async": true } );
     }
 
-    input = $("#dashboard-vm-search-input").val();
+    input = $("#dashboard-vm-search-input").val().toLowerCase();
     var search_result = []
     var html = '';
     for(var i in my_vms) {
@@ -172,6 +172,9 @@ $(function () {
     // if there is only one result and ENTER is pressed redirect
     if(e.keyCode == 13 && search_result.length == 1) {
       window.location.href = "/dashboard/vm/" + search_result[0].pk + "/";
+    }
+    if(e.keyCode == 13 && search_result.length > 1 && input.length > 0) {
+      window.location.href = "/dashboard/vm/list/?s=" + input;
     }
   });
  

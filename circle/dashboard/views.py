@@ -607,8 +607,12 @@ class VmList(LoginRequiredMixin, SingleTableView):
     def get_queryset(self):
         logger.debug('VmList.get_queryset() called. User: %s',
                      unicode(self.request.user))
-        return Instance.get_objects_with_level(
-            'user', self.request.user).filter(destroyed=None).all()
+        queryset = Instance.get_objects_with_level(
+            'user', self.request.user).filter(destroyed=None)
+        s = self.request.GET.get("s")
+        if s:
+            queryset = queryset.filter(name__icontains=s)
+        return queryset
 
 
 class NodeList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
