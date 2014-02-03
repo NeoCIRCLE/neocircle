@@ -17,16 +17,16 @@ class GraphiteHandler:
     def put(self, query):
         self.__queries.append(query)
 
-    def cleanUpQueries(self):
+    def clean_up_queries(self):
         self.__queries = []
 
-    def cleanUpResponses(self):
+    def clean_up_responses(self):
         self.__responses = []
 
-    def isEmpty(self):
+    def is_empty(self):
         return len(self.__queries) is 0
 
-    def generateAll(self):
+    def generate_all(self):
         """
         Regenerate the queries before sending.
         """
@@ -43,12 +43,12 @@ class GraphiteHandler:
         url_base = "http://%s:%s/render?" % (self.__server_name,
                                              self.__server_port)
         for query in self.__queries:
-            response = requests.get(url_base + query.getGenerated())
-            if query.getFormat() is "json":
+            response = requests.get(url_base + query.get_generated())
+            if query.get_format() is "json":
                 self.__responses.append(response.json())  # DICT
             else:
                 self.__responses.append(response)
-        self.cleanUpQueries()
+        self.clean_up_queries()
 
     def pop(self):
         """
@@ -76,7 +76,7 @@ class Query:
         self.__response_format = "json"
         self.__generated = ""
 
-    def setTarget(self, target):
+    def set_target(self, target):
         """
         Hostname of the target we should get the information from.
         After the hostname you should use the domain the target is in.
@@ -85,16 +85,16 @@ class Query:
         """
         self.__target = '.'.join(target.split('.')[::-1])
 
-    def getTarget(self):
+    def get_target(self):
         return self.__target
 
-    def setMetric(self, metric):
+    def set_metric(self, metric):
         self.__metric = metric
 
-    def getMetric(self):
+    def get_metric(self):
         return self.__metric
 
-    def setAbsoluteStart(self, year, month, day, hour, minute):
+    def set_absolute_start(self, year, month, day, hour, minute):
         """
         Function for setting the time you want to get the reports from.
         """
@@ -102,7 +102,7 @@ class Query:
             raise
         self.__start = hour + ":" + minute + "_" + year + month + day
 
-    def setRelativeStart(self, value, scale):
+    def set_relative_start(self, value, scale):
         """
         Function for setting the time you want to get the reports from.
         """
@@ -111,10 +111,10 @@ class Query:
             raise
         self.__start = "-" + str(value) + scale
 
-    def getStart(self):
+    def get_start(self):
         return self.__start
 
-    def setAbsoluteEnd(self, year, month, day, hour, minute):
+    def set_absolute_end(self, year, month, day, hour, minute):
         """
         Function for setting the time until you want to get the reports from.
         """
@@ -122,7 +122,7 @@ class Query:
             raise
         self.__end = hour + ":" + minute + "_" + year + month + day
 
-    def setRelativeEnd(self, value, scale):
+    def set_relative_end(self, value, scale):
         """
         Function for setting the time until you want to get the reports from.
         """
@@ -131,10 +131,10 @@ class Query:
             raise
         self.__end = "-" + str(value) + scale
 
-    def getEnd(self):
+    def get_end(self):
         return self.__end
 
-    def setFormat(self, fmat):
+    def set_format(self, fmat):
         """
         Function for setting the format of the response from the server.
         Valid values: ["csv", "raw", "json"]
@@ -144,7 +144,7 @@ class Query:
             raise
         self.__response_format = fmat
 
-    def getFormat(self):
+    def get_format(self):
         return self.__response_format
 
     def generate(self):
@@ -162,7 +162,7 @@ class Query:
         self.__generated = tmp
         return self.__generated
 
-    def getGenerated(self):
+    def get_generated(self):
         """
         Returns the generated query string.
         Throws exception if it haven't been done yet.
