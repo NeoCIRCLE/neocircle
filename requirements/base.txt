@@ -10,5 +10,6 @@ django-tables2==0.14.0
 django-taggit==0.11.2
 logutils==0.3.3
 netaddr==0.7.10
+requests==2.2.1
 South==0.8.1
 psycopg2==2.5.1
