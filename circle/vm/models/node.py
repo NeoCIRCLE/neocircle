@@ -16,8 +16,8 @@ from firewall.models import Host
 from ..tasks import vm_tasks
 from .common import Trait
 
-from monitor.calvin import Query
-from monitor.calvin import GraphiteHandler
+from monitor.calvin.calvin import Query
+from monitor.calvin.calvin import GraphiteHandler
 
 logger = getLogger(__name__)
 
