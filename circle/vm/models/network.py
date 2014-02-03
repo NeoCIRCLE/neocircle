@@ -121,6 +121,10 @@ class Interface(Model):
                 host.pub_ipv4 = vlan.snat_ip
             host.full_clean()
             host.save()
+            host.enable_net()
+            from .instance import ACCESS_PROTOCOLS
+            port, proto = ACCESS_PROTOCOLS[instance.access_method][1:3]
+            host.add_port(proto, private=port)
         else:
             host = None
 

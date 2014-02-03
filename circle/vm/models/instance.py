@@ -307,13 +307,8 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         inst.disks.add(*[disk.get_exclusive() for disk in disks])
 
         for net in networks:
-            i = Interface.create(instance=inst, vlan=net.vlan,
-                                 owner=inst.owner, managed=net.managed)
-            if i.host:
-                i.host.enable_net()
-                port, proto = ACCESS_PROTOCOLS[i.instance.access_method][1:3]
-                # TODO fix this port fw
-                i.host.add_port(proto, private=port)
+            Interface.create(instance=inst, vlan=net.vlan,
+                             owner=inst.owner, managed=net.managed)
 
         inst.req_traits.add(*req_traits)
         inst.tags.add(*tags)
