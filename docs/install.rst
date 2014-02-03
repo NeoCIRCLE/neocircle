@@ -51,7 +51,7 @@ Update the package lists, and install the required system software::
 
   $ sudo apt-get update
   $ sudo apt-get install --yes virtualenvwrapper postgresql git \
-      python-pip rabbitmq-server libpq-dev python-dev
+      python-pip rabbitmq-server libpq-dev python-dev ntp
 
 Set up *PostgreSQL* to listen on localhost and restart it::
 
