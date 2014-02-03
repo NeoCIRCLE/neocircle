@@ -16,6 +16,9 @@ from firewall.models import Host
 from ..tasks import vm_tasks
 from .common import Trait
 
+from monitor.calvin import Query
+from monitor.calvin import GraphiteHandler
+
 logger = getLogger(__name__)
 
 
@@ -60,6 +63,7 @@ class Node(TimeStampedModel):
     def num_cores(self):
         """Number of CPU threads available to the virtual machines.
         """
+
         return self.remote_query(vm_tasks.get_core_num)
 
     @property
@@ -93,13 +97,11 @@ class Node(TimeStampedModel):
     def get_remote_queue_name(self, queue_id):
         return self.host.hostname + "." + queue_id
 
-    def remote_query(self, task, timeout=1, raise_=False, default=None):
+    def remote_query(self, task, timeout=30, raise_=False, default=None):
         """Query the given task, and get the result.
 
         If the result is not ready in timeout secs, return default value or
         raise a TimeoutError."""
-        if task != vm_tasks.ping and not self.online:
-            return default
         r = task.apply_async(
             queue=self.get_remote_queue_name('vm'), expires=timeout + 60)
         try:
@@ -109,6 +111,35 @@ class Node(TimeStampedModel):
                 raise
             else:
                 return default
+
+    def get_monitor_info(self):
+        query = Query()
+        handler = GraphiteHandler()
+        query.setTarget(self.host.hostname + ".circle")
+        query.setFormat("json")
+        query.setRelativeStart(5, "minutes")
+        metrics = ["cpu.usage", "memory.usage", "network.bytes_sent",
+                   "network.bytes_received"]
+        collected = {}
+        for metric in metrics:
+            query.setMetric(metric)
+            query.generate()
+            handler.put(query)
+            handler.send()
+        for metric in metrics:
+            response = query.pop()
+            length = len(response[0]["datapoints"])
+            cache = response[0]["datapoints"][length - 1][0]
+            if cache is None:
+                cache = 0
+            collected[metric] = cache
+        return collected
+
+    def cpu_usage(self):
+        return self.get_monitor_info()["cpu.usage"]
+
+    def ram_usage(self):
+        return self.get_monitor_info()["memory.usage"]
 
     def update_vm_states(self):
         domains = {}
