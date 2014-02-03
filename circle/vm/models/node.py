@@ -115,14 +115,14 @@ class Node(TimeStampedModel):
     def get_monitor_info(self):
         query = Query()
         handler = GraphiteHandler()
-        query.setTarget(self.host.hostname + ".circle")
-        query.setFormat("json")
-        query.setRelativeStart(5, "minutes")
+        query.set_target(self.host.hostname + ".circle")
+        query.set_format("json")
+        query.set_relative_start(5, "minutes")
         metrics = ["cpu.usage", "memory.usage", "network.bytes_sent",
                    "network.bytes_received"]
         collected = {}
         for metric in metrics:
-            query.setMetric(metric)
+            query.set_metric(metric)
             query.generate()
             handler.put(query)
             handler.send()
