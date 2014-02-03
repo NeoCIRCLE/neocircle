@@ -494,7 +494,7 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
 
     def get(self, request, *args, **kwargs):
         template = InstanceTemplate.objects.get(pk=kwargs['pk'])
-        if not template.has_level(request.user, 'owner'):
+        if not template.has_level(request.user, 'user'):
             raise PermissionDenied()
         if request.is_ajax():
             template = {
