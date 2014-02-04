@@ -145,6 +145,12 @@ $(function() {
     $('input[name="new_network_managed"]').tooltip();
     return false;
   });
+
+  /* add disk button */
+  $("#vm-details-disk-add").click(function() {
+    $("#vm-details-disk-add-for-form").html($("#vm-details-disk-add-form").html());
+    return false;
+  });
 });
 
 

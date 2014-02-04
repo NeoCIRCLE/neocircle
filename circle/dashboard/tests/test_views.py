@@ -202,3 +202,25 @@ class VmDetailTest(TestCase):
         # redirect to the login page
         self.assertEqual(response.status_code, 302)
         self.assertEqual(leases, Lease.objects.count())
+
+    def test_unpermitted_vm_disk_add(self):
+        c = Client()
+        self.login(c, "user2")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u1, 'owner')
+        disks = inst.disks.count()
+        response = c.post("/dashboard/vm/1/", {'disk-name': "a",
+                                               'disk-size': 1})
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(disks, inst.disks.count())
+
+    def test_permitted_vm_disk_add(self):
+        c = Client()
+        self.login(c, "user1")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u1, 'owner')
+        disks = inst.disks.count()
+        response = c.post("/dashboard/vm/1/", {'disk-name': "a",
+                                               'disk-size': 1})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(disks + 1, inst.disks.count())

@@ -1,4 +1,7 @@
 {% load i18n %}
+{% load sizefieldtags %}
+{% load crispy_forms_tags %} 
+
 <form id="vm-details-resources-form" method="POST" action="">
   {% csrf_token %}
 <p class="row">
@@ -36,8 +39,45 @@
   </div>
 </p>
 </form>
+
+<hr />
+
+<div class="row">
+  <div class="col-sm-11">
+    <h3>
+      {% trans "Disks" %}
+      <div class="pull-right">
+        <a href="#" id="vm-details-disk-add" class="btn btn-success btn-xs">
+          <i class="icon-plus"></i> {% trans "Add new disk" %}
+        </a>
+      </div>
+    </h3>
+    <div class="row" id="vm-details-disk-add-for-form">
+
+    </div>
+    {% for d in instance.disks.all %}
+      <h4 class="list-group-item-heading dashboard-vm-details-network-h3">
+        <i class="icon-file"></i> {{ d.name }} - {{ d.size|filesize }}
+      </h4>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="js-hidden row" id="vm-details-disk-add-form">
+  <div class="col-md-12">
+    <div>
+      <hr />
+      <form method="POST" action="" style="max-width: 300px;">
+        {% crispy forms.disk_add_form %}
+      </form>
+      <hr />
+    </div> 
+  </div>
+</div>
+
 {% block extra_js %}
   <style>
     label {padding-top: 6px;}
+    .form-group {margin-bottom: 8px;}
   </style>
 {% endblock %}

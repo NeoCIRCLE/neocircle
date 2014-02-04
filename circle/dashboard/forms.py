@@ -1,4 +1,5 @@
 from datetime import timedelta
+import uuid
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import (
@@ -10,9 +11,10 @@ from django.forms.widgets import TextInput
 from django.template import Context
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext as _
+from sizefield.widgets import FileSizeWidget
 
 from firewall.models import Vlan, Host
-from storage.models import Disk
+from storage.models import Disk, DataStore
 from vm.models import InstanceTemplate, Lease, InterfaceTemplate, Node
 
 
@@ -693,6 +695,45 @@ class LeaseForm(forms.ModelForm):
 
     class Meta:
         model = Lease
+
+
+class DiskAddForm(forms.Form):
+    name = forms.CharField()
+    size = forms.CharField(widget=FileSizeWidget)
+
+    def clean_size(self):
+        size_in_bytes = self.cleaned_data.get("size")
+        if not size_in_bytes.isdigit():
+            raise forms.ValidationError(_("Invalid format, you can use "
+                                          " GB or MB!"))
+        return size_in_bytes
+
+    def save(self, vm, commit=True):
+        data = self.cleaned_data
+        d = Disk(
+            name=data['name'],
+            filename=str(uuid.uuid4()),
+            datastore=DataStore.objects.all()[0],
+            type="qcow2-norm",
+            size=data['size'],
+            dev_num="a",
+        )
+        d.save()
+        vm.disks.add(d)
+        return d
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.form_show_labels = False
+        helper.layout = Layout(
+            Field("name", placeholder=_("Name")),
+            Field("size", placeholder=_("Disk size (for example: 20GB, "
+                                        "1500MB)")),
+        )
+        helper.add_input(Submit("submit", "Create new disk",
+                                css_class="btn btn-success"))
+        return helper
 
 
 class LinkButton(BaseInput):
