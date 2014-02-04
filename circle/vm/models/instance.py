@@ -417,7 +417,6 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
             port = self.get_connect_port(use_ipv6=use_ipv6)
             host = self.get_connect_host(use_ipv6=use_ipv6)
             proto = self.access_method
-            print proto
             if proto == 'rdp':
                 return 'rdesktop %(host)s:%(port)d -u cloud -p %(pw)s' % {
                     'port': port, 'proto': proto, 'pw': self.pw,
