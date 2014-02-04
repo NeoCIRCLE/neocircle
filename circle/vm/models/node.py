@@ -127,7 +127,7 @@ class Node(TimeStampedModel):
             handler.put(query)
             handler.send()
         for metric in metrics:
-            response = query.pop()
+            response = handler.pop()
             length = len(response[0]["datapoints"])
             cache = response[0]["datapoints"][length - 1][0]
             if cache is None:

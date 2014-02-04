@@ -5,12 +5,12 @@ import os
 class GraphiteHandler:
 
     def __init__(self):
-        if os.getenv("NODE_MONITOR_SERVER") is "":
+        if os.getenv("GRAPHITE_SERVER") is "":
             raise RuntimeError
-        self.__server_name = os.getenv("NODE_MONITOR_SERVER")
-        if os.getenv("NODE_MONITOR_PORT") is "":
+        self.__server_name = os.getenv("GRAPHITE_SERVER")
+        if os.getenv("GRAPHITE_PORT") is "":
             raise RuntimeError
-        self.__server_port = os.getenv("NODE_MONITOR_PORT")
+        self.__server_port = os.getenv("GRAPHITE_PORT")
         self.__queries = []
         self.__responses = []
 
