@@ -19,6 +19,7 @@ from .forms import (HostForm, VlanForm, DomainForm, GroupForm, RecordForm,
 from django.contrib import messages
 from django.views.generic.edit import FormMixin
 from django.utils.translation import ugettext_lazy as _
+from braces.views import LoginRequiredMixin, SuperuserRequiredMixin
 # from django.db.models import Q
 from operator import itemgetter
 from itertools import chain
@@ -43,7 +44,7 @@ class SuccessMessageMixin(FormMixin):
         return self.success_message % cleaned_data
 
 
-class IndexView(TemplateView):
+class IndexView(LoginRequiredMixin, SuperuserRequiredMixin, TemplateView):
     template_name = "network/index.html"
 
     def get_context_data(self, **kwargs):
@@ -77,14 +78,16 @@ class IndexView(TemplateView):
         return context
 
 
-class BlacklistList(SingleTableView):
+class BlacklistList(LoginRequiredMixin, SuperuserRequiredMixin,
+                    SingleTableView):
     model = Blacklist
     table_class = BlacklistTable
     template_name = "network/blacklist-list.html"
     table_pagination = False
 
 
-class BlacklistDetail(UpdateView, SuccessMessageMixin):
+class BlacklistDetail(LoginRequiredMixin, SuperuserRequiredMixin,
+                      SuccessMessageMixin, UpdateView):
     model = Blacklist
     template_name = "network/blacklist-edit.html"
     form_class = BlacklistForm
@@ -101,7 +104,8 @@ class BlacklistDetail(UpdateView, SuccessMessageMixin):
         return context
 
 
-class BlacklistCreate(CreateView, SuccessMessageMixin):
+class BlacklistCreate(LoginRequiredMixin, SuperuserRequiredMixin,
+                      SuccessMessageMixin, CreateView):
     model = Blacklist
     template_name = "network/blacklist-create.html"
     form_class = BlacklistForm
@@ -109,7 +113,7 @@ class BlacklistCreate(CreateView, SuccessMessageMixin):
                         '%(ipv4)s - %(type)s!')
 
 
-class BlacklistDelete(DeleteView):
+class BlacklistDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
     model = Blacklist
     template_name = "network/confirm/base_delete.html"
 
@@ -131,14 +135,15 @@ class BlacklistDelete(DeleteView):
             return reverse_lazy('network.blacklist_list')
 
 
-class DomainList(SingleTableView):
+class DomainList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
     model = Domain
     table_class = DomainTable
     template_name = "network/domain-list.html"
     table_pagination = False
 
 
-class DomainDetail(UpdateView, SuccessMessageMixin):
+class DomainDetail(LoginRequiredMixin, SuperuserRequiredMixin,
+                   SuccessMessageMixin, UpdateView):
     model = Domain
     template_name = "network/domain-edit.html"
     form_class = DomainForm
@@ -164,14 +169,15 @@ class DomainDetail(UpdateView, SuccessMessageMixin):
         return context
 
 
-class DomainCreate(CreateView, SuccessMessageMixin):
+class DomainCreate(LoginRequiredMixin, SuperuserRequiredMixin,
+                   SuccessMessageMixin, CreateView):
     model = Domain
     template_name = "network/domain-create.html"
     form_class = DomainForm
     success_message = _(u'Successfully created domain %(name)s!')
 
 
-class DomainDelete(DeleteView):
+class DomainDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
     model = Domain
     template_name = "network/confirm/base_delete.html"
 
@@ -240,21 +246,23 @@ class DomainDelete(DeleteView):
         return context
 
 
-class GroupList(SingleTableView):
+class GroupList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
     model = Group
     table_class = GroupTable
     template_name = "network/group-list.html"
     table_pagination = False
 
 
-class GroupCreate(CreateView, SuccessMessageMixin):
+class GroupCreate(LoginRequiredMixin, SuperuserRequiredMixin,
+                  SuccessMessageMixin, CreateView):
     model = Group
     template_name = "network/group-create.html"
     form_class = GroupForm
     success_message = _(u'Successfully created host group %(name)s!')
 
 
-class GroupDetail(UpdateView, SuccessMessageMixin):
+class GroupDetail(LoginRequiredMixin, SuperuserRequiredMixin,
+                  SuccessMessageMixin, UpdateView):
     model = Group
     template_name = "network/group-edit.html"
     form_class = GroupForm
@@ -275,7 +283,7 @@ class GroupDetail(UpdateView, SuccessMessageMixin):
         return context
 
 
-class GroupDelete(DeleteView):
+class GroupDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
     model = Group
     template_name = "network/confirm/base_delete.html"
 
@@ -292,7 +300,7 @@ class GroupDelete(DeleteView):
         return context
 
 
-class HostList(SingleTableView):
+class HostList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
     model = Host
     table_class = HostTable
     template_name = "network/host-list.html"
@@ -313,7 +321,8 @@ class HostList(SingleTableView):
         return data
 
 
-class HostDetail(UpdateView, SuccessMessageMixin):
+class HostDetail(LoginRequiredMixin, SuperuserRequiredMixin,
+                 SuccessMessageMixin, UpdateView):
     model = Host
     template_name = "network/host-edit.html"
     form_class = HostForm
@@ -377,14 +386,15 @@ class HostDetail(UpdateView, SuccessMessageMixin):
             return reverse_lazy('network.host', kwargs=self.kwargs)
 
 
-class HostCreate(CreateView, SuccessMessageMixin):
+class HostCreate(LoginRequiredMixin, SuperuserRequiredMixin,
+                 SuccessMessageMixin, CreateView):
     model = Host
     template_name = "network/host-create.html"
     form_class = HostForm
     success_message = _(u'Successfully created host %(hostname)s!')
 
 
-class HostDelete(DeleteView):
+class HostDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
     model = Host
     template_name = "network/confirm/base_delete.html"
 
@@ -421,7 +431,7 @@ class HostDelete(DeleteView):
         return response
 
 
-class RecordList(SingleTableView):
+class RecordList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
     model = Record
     table_class = RecordTable
     template_name = "network/record-list.html"
@@ -441,7 +451,8 @@ class RecordList(SingleTableView):
         return data
 
 
-class RecordDetail(UpdateView, SuccessMessageMixin):
+class RecordDetail(LoginRequiredMixin, SuperuserRequiredMixin,
+                   SuccessMessageMixin, UpdateView):
     model = Record
     template_name = "network/record-edit.html"
     form_class = RecordForm
@@ -459,7 +470,8 @@ class RecordDetail(UpdateView, SuccessMessageMixin):
             return reverse_lazy('network.record', kwargs=self.kwargs)
 
 
-class RecordCreate(CreateView, SuccessMessageMixin):
+class RecordCreate(LoginRequiredMixin, SuperuserRequiredMixin,
+                   SuccessMessageMixin, CreateView):
     model = Record
     template_name = "network/record-create.html"
     form_class = RecordForm
@@ -473,7 +485,7 @@ class RecordCreate(CreateView, SuccessMessageMixin):
         }
 
 
-class RecordDelete(DeleteView):
+class RecordDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
     model = Record
     template_name = "network/confirm/base_delete.html"
 
@@ -485,14 +497,15 @@ class RecordDelete(DeleteView):
             return reverse_lazy('network.record_list')
 
 
-class RuleList(SingleTableView):
+class RuleList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
     model = Rule
     table_class = RuleTable
     template_name = "network/rule-list.html"
     table_pagination = False
 
 
-class RuleDetail(UpdateView, SuccessMessageMixin):
+class RuleDetail(LoginRequiredMixin, SuperuserRequiredMixin,
+                 SuccessMessageMixin, UpdateView):
     model = Rule
     template_name = "network/rule-edit.html"
     form_class = RuleForm
@@ -511,7 +524,8 @@ class RuleDetail(UpdateView, SuccessMessageMixin):
         return context
 
 
-class RuleCreate(CreateView, SuccessMessageMixin):
+class RuleCreate(LoginRequiredMixin, SuperuserRequiredMixin,
+                 SuccessMessageMixin, CreateView):
     model = Rule
     template_name = "network/rule-create.html"
     form_class = RuleForm
@@ -525,7 +539,7 @@ class RuleCreate(CreateView, SuccessMessageMixin):
         }
 
 
-class RuleDelete(DeleteView):
+class RuleDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
     model = Rule
     template_name = "network/confirm/base_delete.html"
 
@@ -537,14 +551,16 @@ class RuleDelete(DeleteView):
             return reverse_lazy('network.rule_list')
 
 
-class SwitchPortList(SingleTableView):
+class SwitchPortList(LoginRequiredMixin, SuperuserRequiredMixin,
+                     SingleTableView):
     model = SwitchPort
     table_class = SwitchPortTable
     template_name = "network/switch-port-list.html"
     table_pagination = False
 
 
-class SwitchPortDetail(UpdateView, SuccessMessageMixin):
+class SwitchPortDetail(LoginRequiredMixin, SuperuserRequiredMixin,
+                       SuccessMessageMixin, UpdateView):
     model = SwitchPort
     template_name = "network/switch-port-edit.html"
     form_class = SwitchPortForm
@@ -562,14 +578,15 @@ class SwitchPortDetail(UpdateView, SuccessMessageMixin):
         return context
 
 
-class SwitchPortCreate(CreateView, SuccessMessageMixin):
+class SwitchPortCreate(LoginRequiredMixin, SuperuserRequiredMixin,
+                       SuccessMessageMixin, CreateView):
     model = SwitchPort
     template_name = "network/switch-port-create.html"
     form_class = SwitchPortForm
     success_message = _(u'Successfully created switch port!')
 
 
-class SwitchPortDelete(DeleteView):
+class SwitchPortDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
     model = SwitchPort
     template_name = "network/confirm/base_delete.html"
 
@@ -581,14 +598,15 @@ class SwitchPortDelete(DeleteView):
             return reverse_lazy('network.switch_port_list')
 
 
-class VlanList(SingleTableView):
+class VlanList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
     model = Vlan
     table_class = VlanTable
     template_name = "network/vlan-list.html"
     table_pagination = False
 
 
-class VlanDetail(UpdateView, SuccessMessageMixin):
+class VlanDetail(LoginRequiredMixin, SuperuserRequiredMixin,
+                 SuccessMessageMixin, UpdateView):
     model = Vlan
     template_name = "network/vlan-edit.html"
     form_class = VlanForm
@@ -610,14 +628,15 @@ class VlanDetail(UpdateView, SuccessMessageMixin):
     success_url = reverse_lazy('network.vlan_list')
 
 
-class VlanCreate(CreateView, SuccessMessageMixin):
+class VlanCreate(LoginRequiredMixin, SuperuserRequiredMixin,
+                 SuccessMessageMixin, CreateView):
     model = Vlan
     template_name = "network/vlan-create.html"
     form_class = VlanForm
     success_message = _(u'Successfully created vlan %(name)s!')
 
 
-class VlanDelete(DeleteView):
+class VlanDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
     model = Vlan
     template_name = "network/confirm/base_delete.html"
 
@@ -667,14 +686,16 @@ class VlanDelete(DeleteView):
         return context
 
 
-class VlanGroupList(SingleTableView):
+class VlanGroupList(LoginRequiredMixin, SuperuserRequiredMixin,
+                    SingleTableView):
     model = VlanGroup
     table_class = VlanGroupTable
     template_name = "network/vlan-group-list.html"
     table_pagination = False
 
 
-class VlanGroupDetail(UpdateView, SuccessMessageMixin):
+class VlanGroupDetail(LoginRequiredMixin, SuperuserRequiredMixin,
+                      SuccessMessageMixin, UpdateView):
     model = VlanGroup
     template_name = "network/vlan-group-edit.html"
     form_class = VlanGroupForm
@@ -687,14 +708,15 @@ class VlanGroupDetail(UpdateView, SuccessMessageMixin):
         return context
 
 
-class VlanGroupCreate(CreateView, SuccessMessageMixin):
+class VlanGroupCreate(LoginRequiredMixin, SuperuserRequiredMixin,
+                      SuccessMessageMixin, CreateView):
     model = VlanGroup
     template_name = "network/vlan-group-create.html"
     form_class = VlanGroupForm
     success_message = _(u'Successfully created vlan group %(name)s!')
 
 
-class VlanGroupDelete(DeleteView):
+class VlanGroupDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
     model = VlanGroup
     template_name = "network/confirm/base_delete.html"
 
