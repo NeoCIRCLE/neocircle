@@ -66,7 +66,7 @@ class InterfaceTestCase(TestCase):
         from django.contrib.auth.models import User
         owner = User()
         owner.save()
-        i = Instance(id=10, owner=owner)
+        i = Instance(id=10, owner=owner, access_method='rdp')
         d = Domain(owner=owner)
         d.save()
         v = Vlan(vid=55, network4='127.0.0.1/8',
