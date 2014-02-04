@@ -9,6 +9,7 @@ from django.db import models
 from django.forms import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from firewall.fields import (MACAddressField, val_alfanum, val_reverse_domain,
+                             val_ipv6_template,
                              val_domain, val_ipv4, val_ipv6, val_mx,
                              ipv4_2_ipv6, IPNetworkField, IPAddressField)
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -247,6 +248,10 @@ class Vlan(AclBase, models.Model):
                     'For example, the template for the standard reverse '
                     'address is: "%(d)d.%(c)d.%(b)d.%(a)d.in-addr.arpa".'),
         default="%(d)d.%(c)d.%(b)d.%(a)d.in-addr.arpa")
+    ipv6_template = models.TextField(
+        validators=[val_ipv6_template],
+        verbose_name=_('ipv6 template'),
+        default="2001:738:2001:4031:%(b)d:%(c)d:%(d)d:0")
     dhcp_pool = models.TextField(blank=True, verbose_name=_('DHCP pool'),
                                  help_text=_(
                                      'The address range of the DHCP pool: '
@@ -303,10 +308,13 @@ class Vlan(AclBase, models.Model):
             ipv4 = str(ipv4)
             if ipv4 not in used_v4:
                 logger.debug("Found unused IPv4 address %s.", ipv4)
-                ipv6 = ipv4_2_ipv6(ipv4)
-                if ipv6 not in used_v6:
-                    logger.debug("Found unused IPv6 address %s.", ipv6)
-                    return {'ipv4': ipv4, 'ipv6': ipv6}
+                if self.network6 is None:
+                    return {'ipv4': ipv4, 'ipv6': None}
+                else:
+                    ipv6 = ipv4_2_ipv6(self.ipv6_template, ipv4)
+                    if ipv6 not in used_v6:
+                        logger.debug("Found unused IPv6 address %s.", ipv6)
+                        return {'ipv4': ipv4, 'ipv6': ipv6}
         raise ValidationError(_("All IP addresses are already in use."))
 
 
@@ -448,7 +456,7 @@ class Host(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.id and self.ipv6 == "auto":
-            self.ipv6 = ipv4_2_ipv6(self.ipv4)
+            self.ipv6 = ipv4_2_ipv6(self.vlan.ipv6_template, self.ipv4)
         self.full_clean()
 
         super(Host, self).save(*args, **kwargs)

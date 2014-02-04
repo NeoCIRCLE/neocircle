@@ -12,8 +12,9 @@ import re
 mac_re = re.compile(r'^([0-9a-fA-F]{2}(:|$)){6}$')
 alfanum_re = re.compile(r'^[A-Za-z0-9_-]+$')
 domain_re = re.compile(r'^([A-Za-z0-9_-]\.?)+$')
-ipv4_re = re.compile('^[0-9]+\.([0-9]+)\.([0-9]+)\.([0-9]+)$')
+ipv4_re = re.compile('^([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)$')
 reverse_domain_re = re.compile(r'^(%\([abcd]\)d|[a-z0-9.-])+$')
+ipv6_template_re = re.compile(r'^(%\([abcd]\)[dxX]|[A-Za-z0-9:-])+$')
 
 
 class MACAddressFormField(fields.RegexField):
@@ -220,6 +221,17 @@ def val_reverse_domain(value):
         raise ValidationError(u'%s - invalid reverse domain name' % value)
 
 
+def is_valid_ipv6_template(value):
+    """Check whether the parameter is a valid ipv6 template."""
+    return ipv6_template_re.match(value) is not None
+
+
+def val_ipv6_template(value):
+    """Validate whether the parameter is a valid ipv6 template."""
+    if not is_valid_ipv6_template(value):
+        raise ValidationError(u'%s - invalid reverse ipv6 template' % value)
+
+
 def is_valid_ipv4_address(value):
     """Check whether the parameter is a valid IPv4 address."""
     return ipv4_re.match(value) is not None
@@ -249,9 +261,11 @@ def val_mx(value):
                                 "Should be: <priority>:<hostname>"))
 
 
-def ipv4_2_ipv6(ipv4):
+def ipv4_2_ipv6(ipv6_template, ipv4):
     """Convert IPv4 address string to IPv6 address string."""
     val_ipv4(ipv4)
     m = ipv4_re.match(ipv4)
-    return ("2001:738:2001:4031:%s:%s:%s:0" %
-            (m.group(1), m.group(2), m.group(3)))
+    return (ipv6_template % {'a': int(m.group(1)),
+                             'b': int(m.group(2)),
+                             'c': int(m.group(3)),
+                             'd': int(m.group(4))})

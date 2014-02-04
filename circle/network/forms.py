@@ -231,6 +231,7 @@ class VlanForm(ModelForm):
             Fieldset(
                 'IPv6',
                 'network6',
+                'ipv6_template',
             ),
             Fieldset(
                 'Domain name service',
