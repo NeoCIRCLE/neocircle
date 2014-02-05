@@ -1224,3 +1224,45 @@ class TransferOwnershipConfirmView(LoginRequiredMixin, View):
                          unicode(user), user.pk, new_owner, key)
             raise PermissionDenied()
         return (instance, new_owner)
+
+
+class VmGraphView(LoginRequiredMixin, View):
+    def get(self, request, pk, metric, time, *args, **kwargs):
+        from urllib import urlencode
+        import urllib2
+
+        if metric not in ['cpu', 'memory', 'network']:
+            raise SuspiciousOperation()
+        try:
+            instance = Instance.objects.get(id=pk)
+        except Instance.DoesNotExist:
+            raise Http404()
+        if not instance.has_level(request.user, 'user'):
+            raise PermissionDenied()
+
+        prefix = 'vm.%s' % instance.vm_name
+        if metric == 'cpu':
+            target = ('cactiStyle(alias(derivative(%s.cpu.usage),'
+                      '"cpu usage (%%)"))') % prefix
+        elif metric == 'memory':
+            target = ('cactiStyle(alias(%s.memory.usage,'
+                      '"memory usage (%%)"))') % prefix
+        elif metric == 'network':
+            target = ('cactiStyle(aliasByMetric('
+                      'derivative(%s.network.bytes_*)))') % prefix
+        else:
+            raise SuspiciousOperation()
+
+        title = '%s (%s) - %s' % (instance.name, instance.vm_name, metric)
+
+        params = urlencode({'target': target,
+                            'from': '-%s' % time,
+                            'title': title.encode('UTF-8')})
+        url = ('http://%s:%s/render/?width=500&height=200&%s'
+               % (getenv("GRAPHITE_HOST"),
+                  getenv("GRAPHITE_PORT"),
+                  params))
+        print url
+        response = urllib2.urlopen(urllib2.Request(url))
+        return HttpResponse(response.read(), mimetype="image/png")
+        print pk, metric

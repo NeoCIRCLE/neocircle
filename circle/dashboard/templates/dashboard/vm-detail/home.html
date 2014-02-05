@@ -37,9 +37,8 @@
     </div><!-- id:vm-details-tags -->
   </div>
   <div class="col-md-8">
-<img src="/static/grafikon.png" style="width:45%"/>
-<img src="/static/grafikon.png" style="width:45%"/>
-<img src="/static/grafikon.png" style="width:45%"/>
-<img src="/static/grafikon.png" style="width:45%"/>
+    <img src="{% url "dashboard.views.vm-graph" instance.pk "cpu" "6h" %}" style="width:100%"/>
+    <img src="{% url "dashboard.views.vm-graph" instance.pk "memory" "6h" %}" style="width:100%"/>
+    <img src="{% url "dashboard.views.vm-graph" instance.pk "network" "6h" %}" style="width:100%"/>
   </div>
 </div>
