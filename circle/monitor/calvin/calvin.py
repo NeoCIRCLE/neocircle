@@ -5,10 +5,10 @@ import os
 class GraphiteHandler:
 
     def __init__(self):
-        if os.getenv("GRAPHITE_SERVER") is "":
+        if os.getenv("GRAPHITE_HOST") in ['', None]:
             raise RuntimeError
-        self.__server_name = os.getenv("GRAPHITE_SERVER")
-        if os.getenv("GRAPHITE_PORT") is "":
+        self.__server_name = os.getenv("GRAPHITE_HOST")
+        if os.getenv("GRAPHITE_PORT") in ['', None]:
             raise RuntimeError
         self.__server_port = os.getenv("GRAPHITE_PORT")
         self.__queries = []
