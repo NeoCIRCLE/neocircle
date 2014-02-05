@@ -118,8 +118,7 @@ class Node(TimeStampedModel):
         query.set_target(self.host.hostname + ".circle")
         query.set_format("json")
         query.set_relative_start(5, "minutes")
-        metrics = ["cpu.usage", "memory.usage", "network.bytes_sent",
-                   "network.bytes_received"]
+        metrics = ["cpu.usage", "memory.usage"]
         collected = {}
         for metric in metrics:
             query.set_metric(metric)
