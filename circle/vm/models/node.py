@@ -113,8 +113,14 @@ class Node(TimeStampedModel):
                 return default
 
     def get_monitor_info(self):
+        collected = {}
+        try:
+            handler = GraphiteHandler()
+        except:
+            collected["cpu.usage"] = None
+            collected["memory.usage"] = self.ram_size
+            return collected
         query = Query()
-        handler = GraphiteHandler()
         query.set_target(self.host.hostname + ".circle")
         query.set_format("json")
         query.set_relative_start(5, "minutes")
