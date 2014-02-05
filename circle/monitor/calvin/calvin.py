@@ -44,7 +44,7 @@ class GraphiteHandler:
                                              self.__server_port)
         for query in self.__queries:
             response = requests.get(url_base + query.get_generated())
-            if query.get_format() is "json":
+            if query.get_format() == "json":
                 self.__responses.append(response.json())  # DICT
             else:
                 self.__responses.append(response)
