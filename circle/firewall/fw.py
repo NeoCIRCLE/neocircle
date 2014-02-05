@@ -59,11 +59,11 @@ class Firewall:
 
             if rule.direction == '1':  # going TO host
                 self.iptables('-A %s_%s -d %s %s %s -g %s' %
-                              (vlan, host.vlan, ipaddr, dport_sport,
+                              (vlan.name, host.vlan.name, ipaddr, dport_sport,
                                rule.extra, action))
             else:
                 self.iptables('-A %s_%s -s %s %s %s -g %s' %
-                              (host.vlan, vlan, ipaddr, dport_sport,
+                              (host.vlan.name, vlan.name, ipaddr, dport_sport,
                                rule.extra, action))
 
     def fw2vlan(self, rule):
@@ -99,9 +99,10 @@ class Firewall:
 
             if rule.direction == '1':  # going TO host
                 self.iptables('-A %s_%s %s %s -g %s' %
-                              (vlan, l_vlan, dport_sport, rule.extra, action))
+                              (vlan.name, l_vlan.name, dport_sport,
+                               rule.extra, action))
             else:
-                self.iptables('-A %s_%s %s %s -g %s' % (l_vlan, vlan,
+                self.iptables('-A %s_%s %s %s -g %s' % (l_vlan.name, vlan.name,
                                                         dport_sport,
                                                         rule.extra, action))
 
@@ -223,10 +224,10 @@ class Firewall:
 
         for s_vlan in self.vlans:
             for d_vlan in self.vlans:
-                self.iptables('-N %s_%s' % (s_vlan, d_vlan))
+                self.iptables('-N %s_%s' % (s_vlan.name, d_vlan.name))
                 self.iptables('-A FORWARD -i %s -o %s -g %s_%s' %
-                              (s_vlan.name, d_vlan.name, s_vlan,
-                               d_vlan))
+                              (s_vlan.name, d_vlan.name, s_vlan.name,
+                               d_vlan.name))
 
     def ipt_filter_host_rules(self):
         """Build hosts' rules."""
@@ -251,7 +252,8 @@ class Firewall:
 
         for s_vlan in self.vlans:
             for d_vlan in self.vlans:
-                self.iptables('-A %s_%s -g LOG_DROP' % (s_vlan, d_vlan))
+                self.iptables('-A %s_%s -g LOG_DROP' % (s_vlan.name,
+                                                        d_vlan.name))
 
     def __init__(self, proto=4):
         self.RULES = []
