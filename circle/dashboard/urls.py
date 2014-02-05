@@ -7,6 +7,7 @@ from .views import (
     TransferOwnershipView, TransferOwnershipConfirmView, NodeDelete,
     TemplateList, LeaseDetail, NodeCreate, LeaseCreate, TemplateCreate,
     FavouriteView, NodeStatus, GroupList, TemplateDelete, LeaseDelete,
+    VmGraphView,
 )
 
 urlpatterns = patterns(
@@ -57,4 +58,8 @@ urlpatterns = patterns(
         name='dashboard.views.favourite'),
     url(r'^group/list/$', GroupList.as_view(),
         name='dashboard.views.group-list'),
+    url((r'^vm/(?P<pk>\d+)/graph/(?P<metric>cpu|memory|network)/'
+         r'(?P<time>[0-9]+[hdwy])$'),
+        VmGraphView.as_view(),
+        name='dashboard.views.vm-graph'),
 )
