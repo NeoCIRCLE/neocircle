@@ -382,3 +382,7 @@ if get_env_variable('DJANGO_SAML', 'FALSE') == 'TRUE':
         'DJANGO_SAML_ATTRIBUTE_MAPPING',
         '{"mail": ["email"], "sn": ["last_name"], '
         '"uid": ["username"], "cn": ["first_name"]}'))
+    SAML_CREATE_UNKNOWN_USER = True
+    if get_env_variable('DJANGO_SAML_ORG_ID_ATTRIBUTE', None) is not None:
+        SAML_ORG_ID_ATTRIBUTE = get_env_variable(
+            'DJANGO_SAML_ORG_ID_ATTRIBUTE')
