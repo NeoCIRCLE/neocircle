@@ -241,6 +241,18 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
             self.instance = instance
 
+    class WrongStateError(Exception):
+
+        def __init__(self, instance, message=None):
+            if message is None:
+                message = ("The instance's current state (%s) is "
+                           "inappropriate for the invoked operation."
+                           % instance.state)
+
+            Exception.__init__(self, message)
+
+            self.instance = instance
+
     def __unicode__(self):
         parts = [self.name, "(" + str(self.id) + ")"]
         return " ".join([s for s in parts if s != ""])
@@ -710,6 +722,9 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
     def sleep(self, user=None, task_uuid=None):
         """Suspend virtual machine with memory dump.
         """
+        if self.state not in ['RUNNING']:
+            raise self.WrongStateError(self)
+
         with instance_activity(code_suffix='sleep', instance=self,
                                task_uuid=task_uuid, user=user):
 
@@ -725,6 +740,9 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                                              queue="localhost.man")
 
     def wake_up(self, user=None, task_uuid=None):
+        if self.state not in ['SUSPENDED']:
+            raise self.WrongStateError(self)
+
         with instance_activity(code_suffix='wake_up', instance=self,
                                task_uuid=task_uuid, user=user):
 
