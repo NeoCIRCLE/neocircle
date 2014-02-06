@@ -267,12 +267,15 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                                     finished__isnull=True).exists():
             return 'MIGRATING'
 
-        act = next(self.activity_log.filter(finished__isnull=False,
-                                            resultant_state__isnull=False)
-                   .order_by('-finished')[:1], None)
+        try:
+            act = self.activity_log.filter(finished__isnull=False,
+                                           resultant_state__isnull=False
+                                           ).order_by('-finished').all()[0]
+        except IndexError:
+            act = None
         return 'NOSTATE' if act is None else act.resultant_state
 
-    def state_chaged(self, state):
+    def state_changed(self, state):
         try:
             self.libvirt_state_queue.put_nowait(state)
         except Full:

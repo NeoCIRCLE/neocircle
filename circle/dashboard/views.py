@@ -95,11 +95,12 @@ class IndexView(LoginRequiredMixin, TemplateView):
             }
         })
 
+        running = [i for i in instances if i.state == 'RUNNING']
+        stopped = [i for i in instances if i.state not in ['RUNNING', 'NOSTATE']]
         context.update({
-            'running_vms': instances.filter(state='RUNNING'),
-            'running_vm_num': instances.filter(state='RUNNING').count(),
-            'stopped_vm_num': instances.exclude(
-                state__in=['RUNNING', 'NOSTATE']).count()
+            'running_vms': running,
+            'running_vm_num': len(running),
+            'stopped_vm_num': len(stopped)
         })
 
         context['templates'] = InstanceTemplate.objects.all()[:5]

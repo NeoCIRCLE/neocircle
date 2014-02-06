@@ -117,7 +117,7 @@ class Disk(AclBase, TimeStampedModel):
         }[self.type]
 
     def is_in_use(self):
-        return self.instance_set.exclude(state='SHUTOFF').exists()
+        return any([i.state != 'SHUTOFF' for i in self.instance_set.all()])
 
     def get_exclusive(self):
         """Get an instance of the disk for exclusive usage.

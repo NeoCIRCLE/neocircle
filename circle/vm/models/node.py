@@ -157,7 +157,8 @@ class Node(TimeStampedModel):
             else:
                 domains[id] = i['state']
 
-        instances = self.instance_set.order_by('id').values('id', 'state')
+        instances = [{'id': i.id, 'state': i.state}
+                     for i in self.instance_set.order_by('id').all()]
         for i in instances:
             try:
                 d = domains[i['id']]
