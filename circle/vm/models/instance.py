@@ -822,8 +822,20 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                                task_uuid=task_uuid, user=user):
 
             queue_name = self.get_remote_queue_name('vm')
+            self.__clear_libvirt_state_queue()
             vm_tasks.shutdown.apply_async(args=[self.vm_name],
                                           queue=queue_name).get()
+            i = 2
+            while i > 0:
+                try:
+                    libvirt_state = self.libvirt_state_queue.get(True, 60)
+                except Empty:
+                    raise TimeoutError()
+                else:
+                    if libvirt_state == 'MISSING':
+                        break
+                    else:
+                        i -= 1
 
     def shutdown_async(self, user=None):
         """Execute shutdown asynchronously.
