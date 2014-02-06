@@ -10,6 +10,7 @@ from django.db.models import (BooleanField, CharField, DateTimeField,
                               ManyToManyField, permalink, TextField)
 from django.contrib.auth.models import User
 from django.core import signing
+from django.core.exceptions import PermissionDenied
 from django.dispatch import Signal
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -24,7 +25,6 @@ from .activity import instance_activity
 from .common import BaseResourceConfigModel, Lease
 from .network import Interface
 from .node import Node, Trait
-from django.core.exceptions import PermissionDenied
 
 logger = getLogger(__name__)
 pre_state_changed = Signal(providing_args=["new_state"])
