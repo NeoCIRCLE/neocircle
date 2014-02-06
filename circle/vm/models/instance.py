@@ -137,7 +137,8 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
     def running_instances(self):
         """Returns the number of running instances of the template.
         """
-        return self.instance_set.filter(state='RUNNING').count()
+        return len([i for i in self.instance_set.all()
+                    if i.state == 'RUNNING'])
 
     @property
     def os_type(self):
