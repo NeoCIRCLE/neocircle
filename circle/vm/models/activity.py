@@ -10,6 +10,18 @@ from common.models import ActivityModel, activitycontextimpl
 logger = getLogger(__name__)
 
 
+class ActivityInProgressError(Exception):
+
+        def __init__(self, activity, message=None):
+            if message is None:
+                message = ("Another activity is currently in progress: '%s'."
+                           % activity.activity_code)
+
+            Exception.__init__(self, message)
+
+            self.activity = activity
+
+
 class InstanceActivity(ActivityModel):
     instance = ForeignKey('Instance', related_name='activity_log',
                           help_text=_('Instance this activity works on.'),
@@ -18,7 +30,7 @@ class InstanceActivity(ActivityModel):
     class Meta:
         app_label = 'vm'
         db_table = 'vm_instanceactivity'
-        ordering = ['-started', 'instance', '-id']
+        ordering = ['-finished', '-started', 'instance', '-id']
 
     def __unicode__(self):
         if self.parent:
@@ -50,12 +62,24 @@ class InstanceActivity(ActivityModel):
 
     @contextmanager
     def sub_activity(self, code_suffix, task_uuid=None):
+
+        # Check for concurrent activities
+        active_children = self.children.filter(finished__isnull=True)
+        if active_children.exists():
+            raise ActivityInProgressError(active_children[0])
+
         act = self.create_sub(code_suffix, task_uuid)
         return activitycontextimpl(act)
 
 
 @contextmanager
 def instance_activity(code_suffix, instance, task_uuid=None, user=None):
+
+    # Check for concurrent activities
+    active_activities = instance.activity_log.filter(finished__isnull=True)
+    if active_activities.exists():
+        raise ActivityInProgressError(active_activities[0])
+
     act = InstanceActivity.create(code_suffix, instance, task_uuid, user)
     return activitycontextimpl(act)
 

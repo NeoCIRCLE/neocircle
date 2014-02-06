@@ -27,7 +27,7 @@ def activitycontextimpl(act, on_abort=None, on_commit=None):
 
 class ActivityModel(TimeStampedModel):
     activity_code = CharField(max_length=100, verbose_name=_('activity code'))
-    parent = ForeignKey('self', blank=True, null=True)
+    parent = ForeignKey('self', blank=True, null=True, related_name='children')
     task_uuid = CharField(blank=True, max_length=50, null=True, unique=True,
                           help_text=_('Celery task unique identifier.'),
                           verbose_name=_('task_uuid'))
