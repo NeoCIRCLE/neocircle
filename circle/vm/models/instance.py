@@ -2,6 +2,7 @@ from __future__ import absolute_import, unicode_literals
 from datetime import timedelta
 from logging import getLogger
 from importlib import import_module
+from Queue import Empty, Full, Queue
 import string
 
 import django.conf
@@ -208,6 +209,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                                           "destruction."))
     objects = Manager()
     active = InstanceActiveManager()
+    libvirt_state_queue = Queue(maxsize=10)
 
     class Meta:
         app_label = 'vm'
@@ -249,6 +251,13 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         parts = [self.name, "(" + str(self.id) + ")"]
         return " ".join([s for s in parts if s != ""])
 
+    def __clear_libvirt_state_queue(self):
+        while True:
+            try:
+                self.libvirt_state_queue.get_nowait()
+            except Empty:
+                break
+
     @property
     def state(self):
         """State of the virtual machine instance.
@@ -261,6 +270,12 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                                             resultant_state__isnull=False)
                    .order_by('-finished')[:1], None)
         return 'NOSTATE' if act is None else act.resultant_state
+
+    def state_chaged(self, state):
+        try:
+            self.libvirt_state_queue.put_nowait(state)
+        except Full:
+            pass
 
     def clean(self, *args, **kwargs):
         if self.time_of_delete is None:
@@ -907,15 +922,3 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
             i.save_as_template(tmpl)
 
         return tmpl
-
-    def state_changed(self, new_state):
-        logger.debug('Instance %s state changed '
-                     '(db: %s, new: %s)',
-                     self, self.state, new_state)
-        try:
-            pre_state_changed.send(sender=self, new_state=new_state)
-        except Exception as e:
-            logger.info('Instance %s state change ignored: %s',
-                        unicode(self), unicode(e))
-        else:
-            post_state_changed.send(sender=self, new_state=new_state)
