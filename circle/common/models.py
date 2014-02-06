@@ -4,7 +4,8 @@ from time import time
 
 from django.contrib.auth.models import User
 from django.core.cache import cache
-from django.db.models import (CharField, DateTimeField, ForeignKey, TextField)
+from django.db.models import (CharField, DateTimeField, ForeignKey,
+                              NullBooleanField, TextField)
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
@@ -13,14 +14,15 @@ from model_utils.models import TimeStampedModel
 logger = getLogger(__name__)
 
 
-def activitycontextimpl(act):
+def activitycontextimpl(act, on_abort=None, on_commit=None):
     try:
         yield act
     except Exception as e:
-        act.finish(str(e))
+        handler = None if on_abort is None else lambda a: on_abort(a, e)
+        act.finish(succeeded=False, result=str(e), event_handler=handler)
         raise e
     else:
-        act.finish()
+        act.finish(succeeded=True, event_handler=on_commit)
 
 
 class ActivityModel(TimeStampedModel):
@@ -37,6 +39,9 @@ class ActivityModel(TimeStampedModel):
     finished = DateTimeField(verbose_name=_('finished at'),
                              blank=True, null=True,
                              help_text=_('Time of activity finalization.'))
+    succeeded = NullBooleanField(blank=True, null=True,
+                                 help_text=_('True, if the activity has '
+                                             'finished successfully.'))
     result = TextField(verbose_name=_('result'), blank=True, null=True,
                        help_text=_('Human readable result of activity.'))
 
@@ -49,11 +54,22 @@ class ActivityModel(TimeStampedModel):
     class Meta:
         abstract = True
 
-    def finish(self, result=None):
+    def finish(self, succeeded, result=None, event_handler=None):
         if not self.finished:
             self.finished = timezone.now()
+            self.succeeded = succeeded
             self.result = result
+            if event_handler is not None:
+                event_handler(self)
             self.save()
+
+    @property
+    def has_succeeded(self):
+        return self.finished and self.succeeded
+
+    @property
+    def has_failed(self):
+        return self.finished and not self.succeeded
 
 
 def method_cache(memcached_seconds=60, instance_seconds=5):  # noqa
