@@ -230,6 +230,17 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         verbose_name = _('instance')
         verbose_name_plural = _('instances')
 
+    class InstanceDestroyedError(Exception):
+
+        def __init__(self, instance, message=None):
+            if message is None:
+                message = ("The instance (%s) has already been destroyed."
+                           % instance)
+
+            Exception.__init__(self, message)
+
+            self.instance = instance
+
     def __unicode__(self):
         parts = [self.name, "(" + str(self.id) + ")"]
         return " ".join([s for s in parts if s != ""])
@@ -556,11 +567,12 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                           asynchronously.
         :type task_uuid: str
         """
+        if self.destroyed:
+            raise self.InstanceDestroyedError(self)
+
         with instance_activity(code_suffix='deploy', instance=self,
                                task_uuid=task_uuid, user=user) as act:
 
-            # Clear destroyed flag
-            self.destroyed = None
 
             self.__schedule_vm(act)
 
