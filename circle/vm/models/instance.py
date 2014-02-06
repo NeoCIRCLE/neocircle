@@ -15,6 +15,7 @@ from django.dispatch import Signal
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
+from celery.exceptions import TimeoutError
 from model_utils.models import TimeStampedModel
 from taggit.managers import TaggableManager
 
@@ -326,17 +327,22 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         inst.save()
         inst.set_level(inst.owner, 'owner')
 
-        # create related entities
-        inst.disks.add(*[disk.get_exclusive() for disk in disks])
+        def __on_commit(activity):
+            activity.resultant_state = 'PENDING'
 
-        for net in networks:
-            Interface.create(instance=inst, vlan=net.vlan,
-                             owner=inst.owner, managed=net.managed)
+        with instance_activity(code_suffix='create', instance=inst,
+                               on_commit=__on_commit, user=inst.owner):
+            # create related entities
+            inst.disks.add(*[disk.get_exclusive() for disk in disks])
 
-        inst.req_traits.add(*req_traits)
-        inst.tags.add(*tags)
+            for net in networks:
+                Interface.create(instance=inst, vlan=net.vlan,
+                                 owner=inst.owner, managed=net.managed)
 
-        return inst
+            inst.req_traits.add(*req_traits)
+            inst.tags.add(*tags)
+
+            return inst
 
     @permalink
     def get_absolute_url(self):
@@ -582,9 +588,12 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         if self.destroyed:
             raise self.InstanceDestroyedError(self)
 
-        with instance_activity(code_suffix='deploy', instance=self,
-                               task_uuid=task_uuid, user=user) as act:
+        def __on_commit(activity):
+            activity.resultant_state = 'RUNNING'
 
+        with instance_activity(code_suffix='deploy', instance=self,
+                               on_commit=__on_commit, task_uuid=task_uuid,
+                               user=user) as act:
 
             self.__schedule_vm(act)
 
@@ -697,8 +706,12 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         if self.destroyed:
             return  # already destroyed, nothing to do here
 
+        def __on_commit(activity):
+            activity.resultant_state = 'DESTROYED'
+
         with instance_activity(code_suffix='destroy', instance=self,
-                               task_uuid=task_uuid, user=user) as act:
+                               on_commit=__on_commit, task_uuid=task_uuid,
+                               user=user) as act:
 
             if self.node:
                 self.__destroy_vm(act)
@@ -725,7 +738,17 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         if self.state not in ['RUNNING']:
             raise self.WrongStateError(self)
 
+        def __on_abort(activity, error):
+            if isinstance(error, TimeoutError):
+                activity.resultant_state = None
+            else:
+                activity.resultant_state = 'ERROR'
+
+        def __on_commit(activity):
+            activity.resultant_state = 'SUSPENDED'
+
         with instance_activity(code_suffix='sleep', instance=self,
+                               on_abort=__on_abort, on_commit=__on_commit,
                                task_uuid=task_uuid, user=user):
 
             queue_name = self.get_remote_queue_name('vm')
@@ -743,7 +766,14 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         if self.state not in ['SUSPENDED']:
             raise self.WrongStateError(self)
 
+        def __on_abort(activity, error):
+            activity.resultant_state = 'ERROR'
+
+        def __on_commit(activity):
+            activity.resultant_state = 'RUNNING'
+
         with instance_activity(code_suffix='wake_up', instance=self,
+                               on_abort=__on_abort, on_commit=__on_commit,
                                task_uuid=task_uuid, user=user):
 
             queue_name = self.get_remote_queue_name('vm')
@@ -759,7 +789,17 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
     def shutdown(self, user=None, task_uuid=None):
         """Shutdown virtual machine with ACPI signal.
         """
+        def __on_abort(activity, error):
+            if isinstance(error, TimeoutError):
+                activity.resultant_state = None
+            else:
+                activity.resultant_state = 'ERROR'
+
+        def __on_commit(activity):
+            activity.resultant_state = 'STOPPED'
+
         with instance_activity(code_suffix='shutdown', instance=self,
+                               on_abort=__on_abort, on_commit=__on_commit,
                                task_uuid=task_uuid, user=user):
 
             queue_name = self.get_remote_queue_name('vm')
