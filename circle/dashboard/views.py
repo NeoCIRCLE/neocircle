@@ -683,13 +683,28 @@ class VmCreate(LoginRequiredMixin, TemplateView):
         })
         return self.render_to_response(context)
 
-    # TODO handle not ajax posts
     def post(self, request, *args, **kwargs):
         form = self.form_class(request.POST)
         if not form.is_valid():
             return self.get(request, form, *args, **kwargs)
         post = form.cleaned_data
         user = request.user
+
+        try:
+            limit = user.profile.instance_limit
+        except Exception as e:
+            logger.debug('No profile or instance limit: %s', e)
+        else:
+            current = Instance.active.filter(owner=user).count()
+            logger.debug('current use: %d, limit: %d', current, limit)
+            if limit < current:
+                messages.error(request,
+                               _('Instance limit (%d) exceeded.') % limit)
+                if request.is_ajax():
+                    return HttpResponse(json.dumps({'redirect': '/'}),
+                                        content_type="application/json")
+                else:
+                    return redirect('/')
 
         template = post['template']
         if not template.has_level(request.user, 'user'):
