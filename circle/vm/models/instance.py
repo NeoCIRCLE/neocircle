@@ -166,14 +166,6 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
       * base resource configuration values
       * owner and privilege information
     """
-    STATES = [('NOSTATE', _('nostate')),
-              ('RUNNING', _('running')),
-              ('BLOCKED', _('blocked')),
-              ('PAUSED', _('paused')),
-              ('SHUTDOWN', _('shutdown')),
-              ('SHUTOFF', _('shutoff')),
-              ('CRASHED', _('crashed')),
-              ('PMSUSPENDED', _('pmsuspended'))]  # libvirt domain states
     ACL_LEVELS = (
         ('user', _('user')),          # see all details
         ('operator', _('operator')),  # console, networking, change state
@@ -204,7 +196,6 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                       related_name='instance_set',
                       help_text=_("Current hypervisor of this instance."),
                       verbose_name=_('host node'))
-    state = CharField(choices=STATES, default='NOSTATE', max_length=20)
     disks = ManyToManyField(Disk, related_name='instance_set',
                             help_text=_("Set of mounted disks."),
                             verbose_name=_('disks'))
@@ -257,6 +248,19 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
     def __unicode__(self):
         parts = [self.name, "(" + str(self.id) + ")"]
         return " ".join([s for s in parts if s != ""])
+
+    @property
+    def state(self):
+        """State of the virtual machine instance.
+        """
+        if self.activity_log.filter(activity_code__endswith='migrate',
+                                    finished__isnull=True).exists():
+            return 'MIGRATING'
+
+        act = next(self.activity_log.filter(finished__isnull=False,
+                                            resultant_state__isnull=False)
+                   .order_by('-finished')[:1], None)
+        return 'NOSTATE' if act is None else act.resultant_state
 
     def clean(self, *args, **kwargs):
         if self.time_of_delete is None:
@@ -914,6 +918,4 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
             logger.info('Instance %s state change ignored: %s',
                         unicode(self), unicode(e))
         else:
-            self.state = new_state
-            self.save()
             post_state_changed.send(sender=self, new_state=new_state)
