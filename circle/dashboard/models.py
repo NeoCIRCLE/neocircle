@@ -2,6 +2,7 @@ from logging import getLogger
 
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.auth.signals import user_logged_in
 from django.db.models import (
     Model, ForeignKey, OneToOneField, CharField, IntegerField
 )
@@ -29,6 +30,12 @@ class Profile(Model):
     instance_limit = IntegerField(default=5)
 
 
+def create_profile(sender, user, request, **kwargs):
+    profile, created = Profile.objects.get_or_create(user=user)
+    return created
+
+user_logged_in.connect(create_profile)
+
 if hasattr(settings, 'SAML_ORG_ID_ATTRIBUTE'):
     logger.debug("Register save_org_id to djangosaml2 pre_user_save")
     from djangosaml2.signals import pre_user_save
@@ -54,6 +61,7 @@ if hasattr(settings, 'SAML_ORG_ID_ATTRIBUTE'):
                          value, sender.username)
         return False
 
-    pre_user_save.connect(save_org_id, weak=False)
+    pre_user_save.connect(save_org_id)
+
 else:
     logger.debug("Do not register save_org_id to djangosaml2 pre_user_save")
