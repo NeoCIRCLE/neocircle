@@ -97,6 +97,8 @@ class Interface(Model):
         net_tasks.destroy.apply_async(
             args=[self.get_vmnetwork_desc()],
             queue=self.instance.get_remote_queue_name('net'))
+        if self.host is not None:
+            self.host.delete()
 
     @classmethod
     def create(cls, instance, vlan, managed, owner=None):
