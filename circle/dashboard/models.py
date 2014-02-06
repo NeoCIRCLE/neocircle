@@ -30,10 +30,16 @@ if hasattr(settings, 'SAML_ORG_ID_ATTRIBUTE'):
     logger.debug("Register save_org_id to djangosaml2 pre_user_save")
     from djangosaml2.signals import pre_user_save
 
-    def save_org_id(sender, attributes, user_modified):
+    def save_org_id(sender, **kwargs):
         logger.debug("save_org_id called by %s", sender.username)
+        attributes = kwargs.pop('attributes')
         atr = settings.SAML_ORG_ID_ATTRIBUTE
-        value = attributes[atr]
+        try:
+            value = attributes[atr][0]
+        except Exception as e:
+            value = None
+            logger.info("save_org_id couldn't find attribute. %s", unicode(e))
+
         profile, created = Profile.objects.get_or_create(user=sender)
         if created or profile.org_id != value:
             logger.info("org_id of %s added to user %s's profile",
