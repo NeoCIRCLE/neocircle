@@ -1357,7 +1357,6 @@
     "ram_size": 200, 
     "priority": 4, 
     "active_since": null, 
-    "state": "NOSTATE", 
     "template": null, 
     "access_method": "nx", 
     "lease": 1, 
