@@ -62,7 +62,8 @@ class InstanceActivity(ActivityModel):
         return act
 
     @contextmanager
-    def sub_activity(self, code_suffix, task_uuid=None):
+    def sub_activity(self, code_suffix, on_abort=None, on_commit=None,
+                     task_uuid=None):
 
         # Check for concurrent activities
         active_children = self.children.filter(finished__isnull=True)
@@ -70,11 +71,13 @@ class InstanceActivity(ActivityModel):
             raise ActivityInProgressError(active_children[0])
 
         act = self.create_sub(code_suffix, task_uuid)
-        return activitycontextimpl(act)
+
+        return activitycontextimpl(act, on_abort=on_abort, on_commit=on_commit)
 
 
 @contextmanager
-def instance_activity(code_suffix, instance, task_uuid=None, user=None):
+def instance_activity(code_suffix, instance, on_abort=None, on_commit=None,
+                      task_uuid=None, user=None):
 
     # Check for concurrent activities
     active_activities = instance.activity_log.filter(finished__isnull=True)
@@ -82,7 +85,8 @@ def instance_activity(code_suffix, instance, task_uuid=None, user=None):
         raise ActivityInProgressError(active_activities[0])
 
     act = InstanceActivity.create(code_suffix, instance, task_uuid, user)
-    return activitycontextimpl(act)
+
+    return activitycontextimpl(act, on_abort=on_abort, on_commit=on_commit)
 
 
 class NodeActivity(ActivityModel):
