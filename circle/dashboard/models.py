@@ -31,6 +31,8 @@ class Profile(Model):
 
 
 def create_profile(sender, user, request, **kwargs):
+    if not user.pk:
+        return False
     profile, created = Profile.objects.get_or_create(user=user)
     return created
 
@@ -49,6 +51,10 @@ if hasattr(settings, 'SAML_ORG_ID_ATTRIBUTE'):
         except Exception as e:
             value = None
             logger.info("save_org_id couldn't find attribute. %s", unicode(e))
+
+        if sender.pk is None:
+            sender.save()
+            logger.debug("save_org_id saved user %s", unicode(sender))
 
         profile, created = Profile.objects.get_or_create(user=sender)
         if created or profile.org_id != value:
