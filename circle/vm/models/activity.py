@@ -2,7 +2,7 @@ from __future__ import absolute_import, unicode_literals
 from contextlib import contextmanager
 from logging import getLogger
 
-from django.db.models import ForeignKey
+from django.db.models import CharField, ForeignKey
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
@@ -26,6 +26,7 @@ class InstanceActivity(ActivityModel):
     instance = ForeignKey('Instance', related_name='activity_log',
                           help_text=_('Instance this activity works on.'),
                           verbose_name=_('instance'))
+    resultant_state = CharField(blank=True, max_length=20, null=True)
 
     class Meta:
         app_label = 'vm'
@@ -47,16 +48,16 @@ class InstanceActivity(ActivityModel):
     @classmethod
     def create(cls, code_suffix, instance, task_uuid=None, user=None):
         act = cls(activity_code='vm.Instance.' + code_suffix,
-                  instance=instance, parent=None, started=timezone.now(),
-                  task_uuid=task_uuid, user=user)
+                  instance=instance, parent=None, resultant_state=None,
+                  started=timezone.now(), task_uuid=task_uuid, user=user)
         act.save()
         return act
 
     def create_sub(self, code_suffix, task_uuid=None):
         act = InstanceActivity(
             activity_code=self.activity_code + '.' + code_suffix,
-            instance=self.instance, parent=self, started=timezone.now(),
-            task_uuid=task_uuid, user=self.user)
+            instance=self.instance, parent=self, resultant_state=None,
+            started=timezone.now(), task_uuid=task_uuid, user=self.user)
         act.save()
         return act
 
