@@ -1468,7 +1468,8 @@
     "raw_data": "", 
     "arch": "x86_64", 
     "max_ram_size": 1024, 
-    "lease": 1
+    "lease": 1,
+    "owner": 1
   }
 }
 ]
