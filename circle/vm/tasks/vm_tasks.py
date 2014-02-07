@@ -80,7 +80,7 @@ def get_core_num(params):
 def get_ram_size(params):
     pass
 
+
 @celery.task(name='vmdriver.get_node_metrics')
 def get_node_metrics(params):
     pass
-
