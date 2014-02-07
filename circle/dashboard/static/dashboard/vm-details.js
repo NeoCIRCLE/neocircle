@@ -15,12 +15,11 @@ $(function() {
       },
       error: function(xhr, textStatus, error) {
         $("#vm-details-resources-save i").removeClass('icon-refresh icon-spin').addClass("icon-save");
-        addMessage("Eww, something is wrong", 'danger');
         if (xhr.status == 500) {
-          // alert("uhuhuhuhuhuh");
+          addMessage("500 Internal Server Error", "danger");
         } else {
-          // alert("unknown error");
-        }
+          addMessage(xhr.status + " Unknown Error", "danger");
+        }  
       }
     });
     return false;
@@ -47,7 +46,7 @@ $(function() {
         // addMessage(data['message'], "success");
       },
       error: function(xhr, textStatus, error) {
-        addMessage("uhoh", "danger");
+        addMessage("Error during renaming!", "danger");
       }
     });
     return false;

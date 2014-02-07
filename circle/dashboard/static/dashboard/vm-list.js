@@ -118,7 +118,7 @@ $(function() {
         // addMessage(data['message'], "success");
       },
       error: function(xhr, textStatus, error) {
-        addMessage("uhoh", "danger");
+        addMessage("Error during renaming!", "danger");
       }
     });
     return false;

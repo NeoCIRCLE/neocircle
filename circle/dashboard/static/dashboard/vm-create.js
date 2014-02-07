@@ -202,10 +202,12 @@ function vmCreateLoaded() {
         }
       },
       error: function(xhr, textStatus, error) {
+        var r = $('#create-modal'); r.next('div').remove(); r.remove();
+        
         if (xhr.status == 500) {
-          alert("uhuhuhuhuhuh");
+          addMessage("500 Internal Server Error", "danger");
         } else {
-          alert("unknown error");
+          addMessage(xhr.status + " Unknown Error", "danger");
         }
       }
     });
