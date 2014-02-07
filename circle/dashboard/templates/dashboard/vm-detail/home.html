@@ -3,9 +3,9 @@
   <div class="col-md-4">
     <dl>
       <dt>System:</dt>
-      <dd><i class="icon-linux"></i> Uhu Binux Optikai Rendszer</dd>
-      <dt>Description:</dt>
-      <dd><small>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc est libero, hendrerit at posuere sed, molestie congue quam. </small></dd>
+      <dd><i class="icon-{{ instance.template.os_type }}"></i> {{ instance.template.system }}</dd>
+      <dt style="margin-top: 5px;">Description:</dt>
+      <dd><small>{{ instance.description }}</small></dd>
     </dl>
 
     <div style="font-weight: bold;">{% trans "Tags" %}</div>
