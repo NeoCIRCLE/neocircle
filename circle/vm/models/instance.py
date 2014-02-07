@@ -147,6 +147,12 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
         else:
             return 'linux'
 
+    def save(self, *args, **kwargs):
+        is_new = getattr(self, "pk", None) is None
+        super(InstanceTemplate, self).save(*args, **kwargs)
+        if is_new:
+            self.set_level(self.owner, 'owner')
+
 
 class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 

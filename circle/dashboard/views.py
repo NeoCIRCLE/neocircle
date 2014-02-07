@@ -487,6 +487,29 @@ class AclUpdateView(LoginRequiredMixin, View, SingleObjectMixin):
                     value, unicode(request.user))
 
 
+class TemplateAclUpdateView(AclUpdateView):
+    model = InstanceTemplate
+
+    def post(self, request, *args, **kwargs):
+        template = self.get_object()
+        if not (template.has_level(request.user, "owner") or
+                getattr(template, 'owner', None) == request.user):
+            logger.warning('Tried to set permissions of %s by non-owner %s.',
+                           unicode(template), unicode(request.user))
+            raise PermissionDenied()
+        self.set_levels(request, template)
+        self.add_levels(request, template)
+
+        post_for_disk = request.POST.copy()
+        post_for_disk['perm-new'] = 'user'
+        request.POST = post_for_disk
+        for d in template.disks.all():
+            self.add_levels(request, d)
+
+        return redirect(reverse("dashboard.views.template-detail",
+                                kwargs=self.kwargs))
+
+
 class TemplateCreate(SuccessMessageMixin, CreateView):
     model = InstanceTemplate
     form_class = TemplateForm
@@ -496,27 +519,28 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
     def get(self, *args, **kwargs):
         if not self.request.user.has_perm('vm.create_template'):
             raise PermissionDenied()
-        form = self.form_class()
-        form.fields['disks'].queryset = Disk.get_objects_with_level(
-            'user', self.request.user).exclude(type="qcow2-snap")
+
         self.parent = self.request.GET.get("parent")
         return super(TemplateCreate, self).get(*args, **kwargs)
 
     def get_form_kwargs(self):
         kwargs = super(TemplateCreate, self).get_form_kwargs()
         kwargs['parent'] = getattr(self, "parent", None)
+        kwargs['user'] = self.request.user
         return kwargs
 
     def post(self, request, *args, **kwargs):
         if not self.request.user.has_perm('vm.create_template'):
             raise PermissionDenied()
-        form = self.form_class(request.POST)
+
+        form = self.form_class(request.POST, user=request.user)
         if not form.is_valid():
             return self.get(request, form, *args, **kwargs)
         post = form.cleaned_data
         for disk in post['disks']:
             if not disk.has_level(request.user, 'user'):
                 raise PermissionDenied()
+
         return super(TemplateCreate, self).post(self, request, args, kwargs)
 
     def get_success_url(self):
@@ -556,6 +580,11 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         else:
             return super(TemplateDetail, self).get(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super(TemplateDetail, self).get_context_data(**kwargs)
+        context['acl'] = get_acl_data(self.get_object())
+        return context
+
     def get_success_url(self):
         return reverse_lazy("dashboard.views.template-detail",
                             kwargs=self.kwargs)
@@ -568,6 +597,11 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
             if not disk.has_level(request.user, 'user'):
                 raise PermissionDenied()
         return super(TemplateDetail, self).post(self, request, args, kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super(TemplateDetail, self).get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
 
 
 class TemplateList(LoginRequiredMixin, SingleTableView):

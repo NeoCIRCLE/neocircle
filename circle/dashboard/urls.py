@@ -7,7 +7,7 @@ from .views import (
     TransferOwnershipView, TransferOwnershipConfirmView, NodeDelete,
     TemplateList, LeaseDetail, NodeCreate, LeaseCreate, TemplateCreate,
     FavouriteView, NodeStatus, GroupList, TemplateDelete, LeaseDelete,
-    VmGraphView,
+    VmGraphView, TemplateAclUpdateView
 )
 
 urlpatterns = patterns(
@@ -19,14 +19,18 @@ urlpatterns = patterns(
         name="dashboard.views.lease-create"),
     url(r'^lease/delete/(?P<pk>\d+)/$', LeaseDelete.as_view(),
         name="dashboard.views.lease-delete"),
+
     url(r'^template/create/$', TemplateCreate.as_view(),
         name="dashboard.views.template-create"),
+    url(r'template/(?P<pk>\d+)/acl/$', TemplateAclUpdateView.as_view(),
+        name='dashboard.views.template-acl'),
     url(r'^template/(?P<pk>\d+)/$', TemplateDetail.as_view(),
         name='dashboard.views.template-detail'),
     url(r"^template/list/$", TemplateList.as_view(),
         name="dashboard.views.template-list"),
     url(r"^template/delete/(?P<pk>\d+)/$", TemplateDelete.as_view(),
         name="dashboard.views.template-delete"),
+
     url(r'^vm/(?P<pk>\d+)/remove_port/(?P<rule>\d+)/$', PortDelete.as_view(),
         name='dashboard.views.remove-port'),
     url(r'^vm/(?P<pk>\d+)/$', VmDetailView.as_view(),
@@ -43,6 +47,7 @@ urlpatterns = patterns(
     url(r'^vm/mass-delete/', VmMassDelete.as_view(),
         name='dashboard.view.mass-delete-vm'),
     url(r'^vm/(?P<pk>\d+)/activity/$', vm_activity),
+
     url(r'^node/list/$', NodeList.as_view(), name='dashboard.views.node-list'),
     url(r'^node/(?P<pk>\d+)/$', NodeDetailView.as_view(),
         name='dashboard.views.node-detail'),
@@ -54,8 +59,10 @@ urlpatterns = patterns(
         name="dashboard.views.status-node"),
     url(r'^node/create/$', NodeCreate.as_view(),
         name='dashboard.views.node-create'),
+
     url(r'^favourite/$', FavouriteView.as_view(),
         name='dashboard.views.favourite'),
+
     url(r'^group/list/$', GroupList.as_view(),
         name='dashboard.views.group-list'),
     url((r'^vm/(?P<pk>\d+)/graph/(?P<metric>cpu|memory|network)/'
