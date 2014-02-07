@@ -118,6 +118,7 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
     disks = ManyToManyField(Disk, verbose_name=_('disks'),
                             related_name='template_set',
                             help_text=_('Disks which are to be mounted.'))
+    owner = ForeignKey(User)
 
     class Meta:
         app_label = 'vm'
