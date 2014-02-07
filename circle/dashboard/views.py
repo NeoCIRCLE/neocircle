@@ -457,7 +457,7 @@ class AclUpdateView(LoginRequiredMixin, View, SingleObjectMixin):
             if m:
                 typ, id = m.groups()
                 entity = {'u': User, 'g': Group}[typ].objects.get(id=id)
-                if instance.owner == entity:
+                if getattr(instance, "owner", None) == entity:
                     logger.info("Tried to set owner's acl level for %s by %s.",
                                 unicode(instance), unicode(request.user))
                     continue
