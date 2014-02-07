@@ -16,9 +16,9 @@
     </span> 
     <strong>{{ a.get_readable_name }}</strong>
     {{ a.started|date:"Y-m-d. H:i" }}, {{ a.user }}
-      {% if a.instanceactivity_set.count > 0 %}
+      {% if a.children.count > 0 %}
         <div class="sub-timeline">
-          {% for s in a.instanceactivity_set.all %}
+          {% for s in a.children.all %}
             <div data-activity-id="{{ s.pk }}" class="sub-activity">
             {{ s.get_readable_name }} - 
             {% if s.finished %}
