@@ -1267,18 +1267,20 @@ class VmGraphView(LoginRequiredMixin, View):
         if not instance.has_level(request.user, 'user'):
             raise PermissionDenied()
 
-        prefix = 'vm.%s' % instance.vm_name
-        if metric == 'cpu':
-            target = ('cactiStyle(alias(derivative(%s.cpu.usage),'
-                      '"cpu usage (%%)"))') % prefix
-        elif metric == 'memory':
-            target = ('cactiStyle(alias(%s.memory.usage,'
-                      '"memory usage (%%)"))') % prefix
-        elif metric == 'network':
-            target = ('cactiStyle(aliasByMetric('
-                      'derivative(%s.network.bytes_*)))') % prefix
-        else:
+        targets = {
+            'cpu': ('cactiStyle(alias(derivative(%s.cpu.usage),'
+                    '"cpu usage (%%)"))'),
+            'memory': ('cactiStyle(alias(%s.memory.usage,'
+                       '"memory usage (%%)"))'),
+            'network': ('cactiStyle(aliasByMetric('
+                        'derivative(%s.network.bytes_*)))'),
+        }
+
+        if metric not in targets.keys():
             raise SuspiciousOperation()
+
+        prefix = 'vm.%s' % instance.vm_name
+        target = targets[metric] % prefix
 
         title = '%s (%s) - %s' % (instance.name, instance.vm_name, metric)
 
