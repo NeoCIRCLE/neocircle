@@ -170,7 +170,7 @@ class Node(TimeStampedModel):
                     logger.info('Node %s update: instance %s state changed '
                                 '(libvirt: %s, db: %s)',
                                 self, i['id'], d, i['state'])
-                    self.instance_set.get(id=i['id']).state_changed(d)
+                    self.instance_set.get(id=i['id']).vm_state_changed(d)
 
                 del domains[i['id']]
         for i in domains.keys():

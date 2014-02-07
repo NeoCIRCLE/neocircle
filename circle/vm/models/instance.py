@@ -2,7 +2,6 @@ from __future__ import absolute_import, unicode_literals
 from datetime import timedelta
 from logging import getLogger
 from importlib import import_module
-from Queue import Empty, Full, Queue
 import string
 
 import django.conf
@@ -210,7 +209,6 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                                           "destruction."))
     objects = Manager()
     active = InstanceActiveManager()
-    libvirt_state_queue = Queue(maxsize=10)
 
     class Meta:
         app_label = 'vm'
@@ -252,13 +250,6 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         parts = [self.name, "(" + str(self.id) + ")"]
         return " ".join([s for s in parts if s != ""])
 
-    def __clear_libvirt_state_queue(self):
-        while True:
-            try:
-                self.libvirt_state_queue.get_nowait()
-            except Empty:
-                break
-
     @property
     def state(self):
         """State of the virtual machine instance.
@@ -275,11 +266,8 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
             act = None
         return 'NOSTATE' if act is None else act.resultant_state
 
-    def state_changed(self, state):
-        try:
-            self.libvirt_state_queue.put_nowait(state)
-        except Full:
-            pass
+    def vm_state_changed(self, new_state):
+        pass
 
     def clean(self, *args, **kwargs):
         if self.time_of_delete is None:
@@ -826,20 +814,8 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                                task_uuid=task_uuid, user=user):
 
             queue_name = self.get_remote_queue_name('vm')
-            self.__clear_libvirt_state_queue()
             vm_tasks.shutdown.apply_async(args=[self.vm_name],
                                           queue=queue_name).get()
-            i = 2
-            while i > 0:
-                try:
-                    libvirt_state = self.libvirt_state_queue.get(True, 60)
-                except Empty:
-                    raise TimeoutError()
-                else:
-                    if libvirt_state == 'MISSING':
-                        break
-                    else:
-                        i -= 1
 
     def shutdown_async(self, user=None):
         """Execute shutdown asynchronously.
