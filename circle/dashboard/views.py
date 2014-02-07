@@ -174,6 +174,7 @@ class VmDetailView(CheckedDetailView):
             'new_network_vlan': self.__new_network,
             'save_as': self.__save_as,
             'disk-name': self.__add_disk,
+            'shut_down': self.__shut_down,
         }
 
         for k, v in options.iteritems():
@@ -358,6 +359,15 @@ class VmDetailView(CheckedDetailView):
             messages.error(request, error)
 
         return redirect("%s#resources" % reverse_lazy(
+            "dashboard.views.detail", kwargs={'pk': self.object.pk}))
+
+    def __shut_down(self, request):
+        self.object = self.get_object()
+        if not self.object.has_level(request.user, 'owner'):
+            raise PermissionDenied()
+
+        self.object.shutdown_async(request.user)
+        return redirect("%s#activity" % reverse_lazy(
             "dashboard.views.detail", kwargs={'pk': self.object.pk}))
 
 

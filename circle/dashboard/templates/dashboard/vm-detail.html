@@ -13,7 +13,11 @@
         <a title="Start" href="#" class="btn btn-default btn-xs"><i class="icon-play"></i></a>
         <a title="Wake up" href="#" class="btn btn-default btn-xs"><i class="icon-sun"></i></a>
       {% endif %}  
-      <a title="Shut down" href="#" class="btn btn-default btn-xs"><i class="icon-off"></i></a>
+      <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="shut_down" value="dummy"/>
+        <button title="Shut down" class="btn btn-default btn-xs" type="submit"><i class="icon-off"></i></button>
+      </form>
       <a title="Migrate" href="#" class="btn btn-default btn-xs"><i class="icon-truck"></i></a>
       <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
         {% csrf_token %}
