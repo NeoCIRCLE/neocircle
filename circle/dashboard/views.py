@@ -156,6 +156,8 @@ class VmDetailView(CheckedDetailView):
         context['forms'] = {
             'disk_add_form': DiskAddForm(prefix="disk"),
         }
+        context['os_type_icon'] = instance.os_type.replace("unknown",
+                                                           "question")
         return context
 
     def post(self, request, *args, **kwargs):
