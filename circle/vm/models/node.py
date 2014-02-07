@@ -117,8 +117,9 @@ class Node(TimeStampedModel):
         try:
             handler = GraphiteHandler()
         except:
-            collected["cpu.usage"] = None
-            collected["memory.usage"] = self.ram_size
+            response = self.remote_query(vm_tasks.get_node_metrics, 30)
+            collected['cpu.usage'] = response['cpu.usage']
+            collected['memory.usage'] = response['memory.usage']
             return collected
         query = Query()
         query.set_target(self.host.hostname + ".circle")

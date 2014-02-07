@@ -157,6 +157,8 @@ class VmDetailView(CheckedDetailView):
         context['forms'] = {
             'disk_add_form': DiskAddForm(prefix="disk"),
         }
+        context['os_type_icon'] = instance.os_type.replace("unknown",
+                                                           "question")
         return context
 
     def post(self, request, *args, **kwargs):
@@ -173,6 +175,7 @@ class VmDetailView(CheckedDetailView):
             'new_network_vlan': self.__new_network,
             'save_as': self.__save_as,
             'disk-name': self.__add_disk,
+            'shut_down': self.__shut_down,
         }
 
         for k, v in options.iteritems():
@@ -359,6 +362,15 @@ class VmDetailView(CheckedDetailView):
         return redirect("%s#resources" % reverse_lazy(
             "dashboard.views.detail", kwargs={'pk': self.object.pk}))
 
+    def __shut_down(self, request):
+        self.object = self.get_object()
+        if not self.object.has_level(request.user, 'owner'):
+            raise PermissionDenied()
+
+        self.object.shutdown_async(request.user)
+        return redirect("%s#activity" % reverse_lazy(
+            "dashboard.views.detail", kwargs={'pk': self.object.pk}))
+
 
 class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
     template_name = "dashboard/node-detail.html"
@@ -446,7 +458,7 @@ class AclUpdateView(LoginRequiredMixin, View, SingleObjectMixin):
             if m:
                 typ, id = m.groups()
                 entity = {'u': User, 'g': Group}[typ].objects.get(id=id)
-                if instance.owner == entity:
+                if getattr(instance, "owner", None) == entity:
                     logger.info("Tried to set owner's acl level for %s by %s.",
                                 unicode(instance), unicode(request.user))
                     continue
@@ -476,6 +488,29 @@ class AclUpdateView(LoginRequiredMixin, View, SingleObjectMixin):
                     value, unicode(request.user))
 
 
+class TemplateAclUpdateView(AclUpdateView):
+    model = InstanceTemplate
+
+    def post(self, request, *args, **kwargs):
+        template = self.get_object()
+        if not (template.has_level(request.user, "owner") or
+                getattr(template, 'owner', None) == request.user):
+            logger.warning('Tried to set permissions of %s by non-owner %s.',
+                           unicode(template), unicode(request.user))
+            raise PermissionDenied()
+        self.set_levels(request, template)
+        self.add_levels(request, template)
+
+        post_for_disk = request.POST.copy()
+        post_for_disk['perm-new'] = 'user'
+        request.POST = post_for_disk
+        for d in template.disks.all():
+            self.add_levels(request, d)
+
+        return redirect(reverse("dashboard.views.template-detail",
+                                kwargs=self.kwargs))
+
+
 class TemplateCreate(SuccessMessageMixin, CreateView):
     model = InstanceTemplate
     form_class = TemplateForm
@@ -485,27 +520,28 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
     def get(self, *args, **kwargs):
         if not self.request.user.has_perm('vm.create_template'):
             raise PermissionDenied()
-        form = self.form_class()
-        form.fields['disks'].queryset = Disk.get_objects_with_level(
-            'user', self.request.user).exclude(type="qcow2-snap")
+
         self.parent = self.request.GET.get("parent")
         return super(TemplateCreate, self).get(*args, **kwargs)
 
     def get_form_kwargs(self):
         kwargs = super(TemplateCreate, self).get_form_kwargs()
         kwargs['parent'] = getattr(self, "parent", None)
+        kwargs['user'] = self.request.user
         return kwargs
 
     def post(self, request, *args, **kwargs):
         if not self.request.user.has_perm('vm.create_template'):
             raise PermissionDenied()
-        form = self.form_class(request.POST)
+
+        form = self.form_class(request.POST, user=request.user)
         if not form.is_valid():
             return self.get(request, form, *args, **kwargs)
         post = form.cleaned_data
         for disk in post['disks']:
             if not disk.has_level(request.user, 'user'):
                 raise PermissionDenied()
+
         return super(TemplateCreate, self).post(self, request, args, kwargs)
 
     def get_success_url(self):
@@ -545,6 +581,11 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         else:
             return super(TemplateDetail, self).get(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super(TemplateDetail, self).get_context_data(**kwargs)
+        context['acl'] = get_acl_data(self.get_object())
+        return context
+
     def get_success_url(self):
         return reverse_lazy("dashboard.views.template-detail",
                             kwargs=self.kwargs)
@@ -557,6 +598,11 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
             if not disk.has_level(request.user, 'user'):
                 raise PermissionDenied()
         return super(TemplateDetail, self).post(self, request, args, kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super(TemplateDetail, self).get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
 
 
 class TemplateList(LoginRequiredMixin, SingleTableView):
@@ -684,13 +730,28 @@ class VmCreate(LoginRequiredMixin, TemplateView):
         })
         return self.render_to_response(context)
 
-    # TODO handle not ajax posts
     def post(self, request, *args, **kwargs):
         form = self.form_class(request.POST)
         if not form.is_valid():
             return self.get(request, form, *args, **kwargs)
         post = form.cleaned_data
         user = request.user
+
+        try:
+            limit = user.profile.instance_limit
+        except Exception as e:
+            logger.debug('No profile or instance limit: %s', e)
+        else:
+            current = Instance.active.filter(owner=user).count()
+            logger.debug('current use: %d, limit: %d', current, limit)
+            if limit < current:
+                messages.error(request,
+                               _('Instance limit (%d) exceeded.') % limit)
+                if request.is_ajax():
+                    return HttpResponse(json.dumps({'redirect': '/'}),
+                                        content_type="application/json")
+                else:
+                    return redirect('/')
 
         template = post['template']
         if not template.has_level(request.user, 'user'):
@@ -1241,18 +1302,20 @@ class VmGraphView(LoginRequiredMixin, View):
         if not instance.has_level(request.user, 'user'):
             raise PermissionDenied()
 
-        prefix = 'vm.%s' % instance.vm_name
-        if metric == 'cpu':
-            target = ('cactiStyle(alias(derivative(%s.cpu.usage),'
-                      '"cpu usage (%%)"))') % prefix
-        elif metric == 'memory':
-            target = ('cactiStyle(alias(%s.memory.usage,'
-                      '"memory usage (%%)"))') % prefix
-        elif metric == 'network':
-            target = ('cactiStyle(aliasByMetric('
-                      'derivative(%s.network.bytes_*)))') % prefix
-        else:
+        targets = {
+            'cpu': ('cactiStyle(alias(derivative(%s.cpu.usage),'
+                    '"cpu usage (%%)"))'),
+            'memory': ('cactiStyle(alias(%s.memory.usage,'
+                       '"memory usage (%%)"))'),
+            'network': ('cactiStyle(aliasByMetric('
+                        'derivative(%s.network.bytes_*)))'),
+        }
+
+        if metric not in targets.keys():
             raise SuspiciousOperation()
+
+        prefix = 'vm.%s' % instance.vm_name
+        target = targets[metric] % prefix
 
         title = '%s (%s) - %s' % (instance.name, instance.vm_name, metric)
 

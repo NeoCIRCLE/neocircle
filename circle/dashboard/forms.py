@@ -1,6 +1,8 @@
 from datetime import timedelta
 import uuid
 
+from django.contrib.auth.models import User
+
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import (
     Layout, Div, BaseInput, Field, HTML, Submit, Fieldset, TEMPLATE_PACK
@@ -430,8 +432,16 @@ class TemplateForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         parent = kwargs.pop("parent", None)
+        self.user = kwargs.pop("user", None)
         super(TemplateForm, self).__init__(*args, **kwargs)
-        self.fields['disks'] = forms.ModelMultipleChoiceField(queryset=DISKS)
+        self.fields['disks'] = forms.ModelMultipleChoiceField(
+            queryset=Disk.get_objects_with_level(
+                'user', self.user).exclude(type="qcow2-snap")
+        )
+
+        data = self.data.copy()
+        data['owner'] = self.user.pk
+        self.data = data
 
         if parent is not None:
             template = InstanceTemplate.objects.get(pk=parent)
@@ -457,6 +467,11 @@ class TemplateForm(forms.ModelForm):
             self.instance.priority = 20
             self.instance.ram_size = 512
             self.instance.num_cores = 2
+
+    def clean_owner(self):
+        if self.instance.pk is not None:
+            return User.objects.get(pk=self.instance.owner.pk)
+        return self.user
 
     def save(self, commit=True):
         data = self.cleaned_data

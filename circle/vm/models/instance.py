@@ -119,6 +119,7 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
     disks = ManyToManyField(Disk, verbose_name=_('disks'),
                             related_name='template_set',
                             help_text=_('Disks which are to be mounted.'))
+    owner = ForeignKey(User)
 
     class Meta:
         app_label = 'vm'
@@ -147,6 +148,12 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
             return 'windows'
         else:
             return 'linux'
+
+    def save(self, *args, **kwargs):
+        is_new = getattr(self, "pk", None) is None
+        super(InstanceTemplate, self).save(*args, **kwargs)
+        if is_new:
+            self.set_level(self.owner, 'owner')
 
 
 class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
@@ -418,6 +425,24 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
             return timezone.now() - self.active_since
         else:
             return timedelta()  # zero
+
+    @property
+    def os_type(self):
+        """Get the type of the instance's operating system.
+        """
+        if self.template is None:
+            return "unknown"
+        else:
+            return self.template.os_type
+
+    @property
+    def system(self):
+        """Get the instance's operating system.
+        """
+        if self.template is None:
+            return _("Unknown")
+        else:
+            return self.template.system
 
     def get_age(self):
         """Deprecated. Use uptime instead.
