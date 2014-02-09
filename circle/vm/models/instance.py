@@ -15,7 +15,7 @@ from django.dispatch import Signal
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
-from celery.exceptions import TimeoutError
+from celery.exceptions import TimeLimitExceeded
 from model_utils.models import TimeStampedModel
 from taggit.managers import TaggableManager
 
@@ -775,7 +775,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
             raise self.WrongStateError(self)
 
         def __on_abort(activity, error):
-            if isinstance(error, TimeoutError):
+            if isinstance(error, TimeLimitExceeded):
                 activity.resultant_state = None
             else:
                 activity.resultant_state = 'ERROR'
@@ -826,7 +826,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         """Shutdown virtual machine with ACPI signal.
         """
         def __on_abort(activity, error):
-            if isinstance(error, TimeoutError):
+            if isinstance(error, TimeLimitExceeded):
                 activity.resultant_state = None
             else:
                 activity.resultant_state = 'ERROR'
@@ -841,6 +841,9 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
             queue_name = self.get_remote_queue_name('vm')
             vm_tasks.shutdown.apply_async(args=[self.vm_name],
                                           queue=queue_name).get()
+            self.node = None
+            self.vnc_port = None
+            self.save()
 
     def shutdown_async(self, user=None):
         """Execute shutdown asynchronously.
