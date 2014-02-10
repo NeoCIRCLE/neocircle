@@ -690,9 +690,9 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         queue_name = self.mem_dump['datastore'].get_remote_queue_name(
             'storage')
         try:
-            from storage.tasks.remote_tasks import delete
-            delete.apply_async(args=[self.mem_dump['path']],
-                               queue=queue_name).get()
+            from storage.tasks.remote_tasks import delete_dump
+            delete_dump.apply_async(args=[self.mem_dump['path']],
+                                    queue=queue_name).get()
         except:
             pass
 
