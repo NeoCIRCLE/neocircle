@@ -6,25 +6,34 @@
   <div class="page-header">
     <div class="pull-right" style="padding-top: 15px;">
       <a title="Rename" href="#" class="btn btn-default btn-xs vm-details-rename-button"><i class="icon-pencil"></i></a>
-      {% if instance.state.lower == "running" %}
-        <a title="Pause" href="#" class="btn btn-default btn-xs"><i class="icon-pause"></i></a>
-        <a title="Sleep" href="#" class="btn btn-default btn-xs"><i class="icon-moon"></i></a>
-      {% else %}
-        <a title="Start" href="#" class="btn btn-default btn-xs"><i class="icon-play"></i></a>
-        <a title="Wake up" href="#" class="btn btn-default btn-xs"><i class="icon-sun"></i></a>
-      {% endif %}  
+      <a title="Pause == sleep?" href="#" class="btn btn-default btn-xs"><i class="icon-pause"></i></a>
+      <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="sleep" value="dummy"/>
+        <button title="{% trans "Sleep" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-moon"></i></button>
+      </form>
+      <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="deploy" value="dummy"/>
+        <button title="{% trans "Deploy" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-play"></i></button>
+      </form>
+      <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="wake_up" value="dummy"/>
+        <button title="{% trans "Wake up" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-sun"></i></button>
+      </form>
       <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
         {% csrf_token %}
         <input type="hidden" name="shut_down" value="dummy"/>
-        <button title="Shut down" class="btn btn-default btn-xs" type="submit"><i class="icon-off"></i></button>
+        <button title="{% trans "Shut down" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-off"></i></button>
       </form>
       <a title="Migrate" href="#" class="btn btn-default btn-xs"><i class="icon-truck"></i></a>
       <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
         {% csrf_token %}
         <input type="hidden" name="save_as" value="dummy"/>
-        <button title="Save as template" class="btn btn-default btn-xs" type="submit"><i class="icon-save"></i></button>
+        <button title="{% trans "Save as template" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-save"></i></button>
       </form>
-      <a title="Destroy" href="{% url "dashboard.views.delete-vm" pk=instance.pk %}" class="btn btn-default btn-xs vm-delete" data-vm-pk="{{ instance.pk }}"><i class="icon-remove"></i></a>
+      <a title="{% trans "Destroy" %}" href="{% url "dashboard.views.delete-vm" pk=instance.pk %}" class="btn btn-default btn-xs vm-delete" data-vm-pk="{{ instance.pk }}"><i class="icon-remove"></i></a>
     </div>
     <h1>
       <div id="vm-details-rename">

@@ -177,8 +177,12 @@ class VmDetailView(CheckedDetailView):
             'save_as': self.__save_as,
             'disk-name': self.__add_disk,
             'shut_down': self.__shut_down,
+            'sleep': self.__sleep,
+            'wake_up': self.__wake_up,
+            'deploy': self.__deploy,
+            'reset': self.__reset,
+            'reboot': self.__reboot,
         }
-
         for k, v in options.iteritems():
             if request.POST.get(k) is not None:
                 return v(request)
@@ -370,8 +374,47 @@ class VmDetailView(CheckedDetailView):
             raise PermissionDenied()
 
         self.object.shutdown_async(request.user)
-        return redirect("%s#activity" % reverse_lazy(
-            "dashboard.views.detail", kwargs={'pk': self.object.pk}))
+        return redirect("%s#activity" % self.object.get_absolute_url())
+
+    def __sleep(self, request):
+        self.object = self.get_object()
+        if not self.object.has_level(request.user, 'owner'):
+            raise PermissionDenied()
+
+        self.object.sleep_async(request.user)
+        return redirect("%s#activity" % self.object.get_absolute_url())
+
+    def __wake_up(self, request):
+        self.object = self.get_object()
+        if not self.object.has_level(request.user, 'owner'):
+            raise PermissionDenied()
+
+        self.object.wake_up_async(request.user)
+        return redirect("%s#activity" % self.object.get_absolute_url())
+
+    def __deploy(self, request):
+        self.object = self.get_object()
+        if not self.object.has_level(request.user, 'owner'):
+            raise PermissionDenied()
+
+        self.object.deploy_async(request.user)
+        return redirect("%s#activity" % self.object.get_absolute_url())
+
+    def __reset(self, request):
+        self.object = self.get_object()
+        if not self.object.has_level(request.user, 'owner'):
+            raise PermissionDenied()
+
+        self.object.reset_async(request.user)
+        return redirect("%s#activity" % self.object.get_absolute_url())
+
+    def __reboot(self, request):
+        self.object = self.get_object()
+        if not self.object.has_level(request.user, 'owner'):
+            raise PermissionDenied()
+
+        self.object.reboot_async(request.user)
+        return redirect("%s#activity" % self.object.get_absolute_url())
 
 
 class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
