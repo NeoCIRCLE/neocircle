@@ -1,177 +1,20 @@
 {% load i18n %}
-<form id="vm-details-resources-form" method="POST" action="">
   {% csrf_token %}
 
   <dl class="dl-horizontal">
-    <dt>Name:</dt><dd>{{ node.name }}</dd>
-    <dt>Number of cores:</dt><dd>{{ node.num_cores }}</dd>
-    <dt>Memory:</dt> <dd>{% widthratio node.ram_size 1048576 1 %} MB</dd>
-    <dt>Architecture:</td><dd>{{ record.arch }}</dd>
-    <dt>IPv4 address:</dt><dd>{{ node.host.ipv4 }}</dd>
-    <dt>IPv6 address:</dt><dd> {{ node.host.ipv6 }}</dd>
-    <dt>Enabled:</dt><dd>{{ node.enabled }}</dd>
-    <dt>Host online:</dt><dd> {{ node.online }}</dd>
-    <dt>Priority:</dt><dd>{{ node.priority }}</dd>
-    <dt>Host owner:</dt><dd>{{ node.host.owner }}</dd>
-    <dt>Vlan:</dt><dd>{{ node.host.vlan }}</dd>
-    <dt>Hostname:</dt><dd>{{ node.host.hostname }}</dd>
+    <dt>{% trans "Node name" %}:</dt><dd>{{ node.name }}</dd>
+    <dt>{% trans "CPU cores" %}:</dt><dd>{{ node.num_cores }}</dd>
+    <dt>{% trans "RAM size" %}:</dt> <dd>{% widthratio node.ram_size 1048576 1 %} MB</dd>
+    <dt>{% trans "Architecture" %}:</td><dd>{{ node.arch }}</dd>
+    <dt>{% trans "Host IP" %}:</dt><dd>{{ node.host.ipv4 }}</dd>
+    <dt>{% trans "Enabled" %}:</dt><dd>{{ node.enabled }}</dd>
+    <dt>{% trans "Host online" %}:</dt><dd> {{ node.online }}</dd>
+    <dt>{% trans "Priority" %}:</dt><dd>{{ node.priority }}</dd>
+    <dt>{% trans "Host owner" %}:</dt><dd>{{ node.host.owner }}</dd>
+    <dt>{% trans "Vlan" %}:</dt><dd>{{ node.host.vlan }}</dd>
+    <dt>{% trans "Host name" %}:</dt><dd>{{ node.host.hostname }}</dd>
     </dl>
 
-
-<p class="row">
-    <div class="col-sm-3">
-      <label for="cpu-count-slider"><i class="icon-cogs"></i> {% trans "Enabled" %}</label>
-    </div>
-    <div class="col-sm-9">
-      <label > {{ node.enabled }} </label>
-    </div>
-</p>
-
-<p class="row">
-    <div class="col-sm-3">
-      <label for="cpu-count-slider"><i class="icon-cogs"></i> {% trans "Priority" %}</label>
-    </div>
-    <div class="col-sm-9">
-      <label > {{ node.priority }} </label>
-    </div>
-</p>
-
-<p class="row">
-    <div class="col-sm-3">
-      <label for="cpu-count-slider"><i class="icon-cogs"></i> {% trans "CPU cores" %}</label>
-    </div>
-    <div class="col-sm-9">
-      <label > {{ node.num_cores }} </label>
-    </div>
-</p>
-
-<p class="row">
-    <div class="col-sm-3">
-      <label for="cpu-count-slider"><i class="icon-cogs"></i> {% trans "RAM size" %}</label>
-    </div>
-    <div class="col-sm-9">
-      <label > {% widthratio node.ram_size 1024000 1 %} MB </label>
-    </div>
-</p>
-
-<p class="row">
-    <div class="col-sm-3">
-      <label for="cpu-count-slider"><i class="icon-cogs"></i> {% trans "Traits" %}</label>
-    </div>
-    <div class="col-sm-9">
-      <label > {{ node.traits.all }} </label>
-    </div>
-</p>
-
-<p class="row">
-    <div class="col-sm-3">
-      <label for="cpu-count-slider"><i class="icon-cogs"></i> {% trans "Tags" %}</label>
-    </div>
-    <div class="col-sm-9">
-      <label > {{ node.tags.all }} </label>
-    </div>
-</p>
-
-
-<p class="row">
-    <div class="col-sm-3">
-      <label for="cpu-count-slider"><i class="icon-cogs"></i> {% trans "Host owner" %}</label>
-    </div>
-    <div class="col-sm-9">
-      <label > {{ node.host.owner }} </label>
-    </div>
-</p>
-
-<p class="row">
-    <div class="col-sm-3">
-      <label for="cpu-count-slider"><i class="icon-cogs"></i> {% trans "Host IP" %}</label>
-    </div>
-    <div class="col-sm-9">
-      <label > {{ node.host.ipv4 }} </label>
-    </div>
-</p>
-
-<p class="row">
-    <div class="col-sm-3">
-      <label for="cpu-count-slider"><i class="icon-cogs"></i> {% trans "Shared IP" %}</label>
-    </div>
-    <div class="col-sm-9">
-      <label > {{ node.host.shared_ip }} </label>
-    </div>
-</p>
-
-<p class="row">
-    <div class="col-sm-3">
-      <label for="cpu-count-slider"><i class="icon-cogs"></i> {% trans "Host vlan" %}</label>
-    </div>
-    <div class="col-sm-9">
-      <label > {{ node.host.vlan }} </label>
-    </div>
-</p>
-
-<p class="row">
-    <div class="col-sm-3">
-      <label for="cpu-count-slider"><i class="icon-cogs"></i> {% trans "Host name" %}</label>
-    </div>
-    <div class="col-sm-9">
-      <label > {{ node.host.groups.all }} </label>
-    </div>
-</p>
-
-<p class="row">
-    <div class="col-sm-3">
-      <label for="cpu-count-slider"><i class="icon-cogs"></i> {% trans "Host name" %}</label>
-    </div>
-    <div class="col-sm-9">
-      <label > {{ node.host.hostname }} </label>
-    </div>
-</p>
-
-
-<p class="row">
-    <div class="col-sm-3">
-      <label for="cpu-count-slider"><i class="icon-cogs"></i> {% trans "Host name" %}</label>
-    </div>
-    <div class="col-sm-9">
-      <label > {{ node.host.hostname }} </label>
-    </div>
-</p>
-
-<p class="row">
-    <div class="col-sm-3">
-      <label for="cpu-count-slider"><i class="icon-cogs"></i> {% trans "Host online" %}</label>
-    </div>
-    <div class="col-sm-9">
-      <label > {{ node.online }} </label>
-    </div>
-</p>
-
-
-<p class="row">
-    <div class="col-sm-3">
-      <label for="ram-slider"><i class="icon-ticket"></i> {% trans "RAM amount" %}</label>
-    </div>
-    <div class="col-sm-9"> 
-      <input name="ram-size" type="text" id="vm-ram-size-slider" class="vm-slider" value="{{ instance.ram_size }}" data-slider-min="128" data-slider-max="4096" data-slider-step="128" data-slider-value="{{ instance.ram_size }}" data-slider-orientation="horizontal" data-slider-handle="square" data-slider-tooltip="hide"/>         MiB  
-  </div>
-</p>
-
-<p class="row">
-    <div class="col-sm-3">
-      <label for="cpu-count-slider"><i class="icon-cogs"></i> {% trans "CPU count" %}</label>
-    </div>
-    <div class="col-sm-9">
-      <label > {{ node.host }} </label>
-    </div>
-</p>
-
-
-<p class="row">
-  <div class="col-sm-12">
-    <button type="submit" class="btn btn-success btn-sm" id="vm-details-resources-save"><i class="icon-save"></i> {% trans "Save resources" %}</button>
-  </div>
-</p>
-</form>
 {% block extra_js %}
   <style>
     label {padding-top: 6px;}
