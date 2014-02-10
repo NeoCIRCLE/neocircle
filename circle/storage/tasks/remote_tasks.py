@@ -16,6 +16,11 @@ def delete(path):
     pass
 
 
+@celery.task(name='storagedriver.delete_dump')
+def delete_dump(path):
+    pass
+
+
 @celery.task(name='storagedriver.snapshot')
 def snapshot(disk_desc):
     pass
