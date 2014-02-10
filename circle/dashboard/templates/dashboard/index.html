@@ -8,27 +8,27 @@
   <div class="row">
 
     {% if perms.vm %}
-    <div class="col-lg-4 col-md-6">
+    <div class="col-lg-4 col-sm-6">
       {% include "dashboard/index-vm.html" %}
     </div>
     {% endif %}
 
-    <div class="col-lg-4 col-md-6">
+    <div class="col-lg-4 col-sm-6">
       {% include "dashboard/index-groups.html" %}
     </div>
 
-    <div class="col-lg-4 col-md-6">
+    <div class="col-lg-4 col-sm-6">
       {% include "dashboard/index-files.html" %}
     </div>
 
     {% if perms.vm.create_template %}
-    <div class="col-lg-4 col-md-6">
+    <div class="col-lg-4 col-sm-6">
       {% include "dashboard/index-templates.html" %}
     </div>
     {% endif %}
 
     {% if user.is_superuser %}
-    <div class="col-lg-4 col-md-6">
+    <div class="col-lg-4 col-sm-6">
       {% include "dashboard/index-nodes.html" %}
     </div>
     {% endif %}
