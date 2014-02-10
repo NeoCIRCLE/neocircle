@@ -339,7 +339,8 @@ class VmDetailView(CheckedDetailView):
         new_name = "Saved from %s (#%d) at %s" % (
             self.object.name, self.object.pk, date
         )
-        template = self.object.save_as_template(new_name)
+        template = self.object.save_as_template(name=new_name,
+                                                owner=request.user)
         messages.success(request, _("Instance succesfully saved as template, "
                                     "please rename it!"))
         return redirect(reverse_lazy("dashboard.views.template-detail",
