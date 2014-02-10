@@ -7,7 +7,8 @@ from .views import (
     TransferOwnershipView, TransferOwnershipConfirmView, NodeDelete,
     TemplateList, LeaseDetail, NodeCreate, LeaseCreate, TemplateCreate,
     FavouriteView, NodeStatus, GroupList, TemplateDelete, LeaseDelete,
-    VmGraphView, TemplateAclUpdateView, GroupDetailView,
+    VmGraphView, TemplateAclUpdateView, GroupDetailView, GroupDelete,
+    GroupAclUpdateView, GroupUserDelete,
 )
 
 urlpatterns = patterns(
@@ -62,7 +63,8 @@ urlpatterns = patterns(
 
     url(r'^favourite/$', FavouriteView.as_view(),
         name='dashboard.views.favourite'),
-
+    url(r'^group/delete/(?P<pk>\d+)/$', GroupDelete.as_view(),
+        name="dashboard.views.delete-group"),
     url(r'^group/list/$', GroupList.as_view(),
         name='dashboard.views.group-list'),
     url((r'^vm/(?P<pk>\d+)/graph/(?P<metric>cpu|memory|network)/'
@@ -71,4 +73,8 @@ urlpatterns = patterns(
         name='dashboard.views.vm-graph'),
     url(r'^group/(?P<pk>\d+)/$', GroupDetailView.as_view(),
         name='dashboard.views.group-detail'),
+    url(r'^group/(?P<pk>\d+)/acl/$', GroupAclUpdateView.as_view(),
+        name='dashboard.views.group-acl'),
+    url(r'^groupuser/delete/(?P<pk>\d+)/$', GroupUserDelete.as_view(),
+        name="dashboard.views.delete-groupuser"),
 )
