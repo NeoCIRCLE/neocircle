@@ -162,8 +162,6 @@ $(function() {
     
      // change big status span
     $('#node-info-pane').load(location.href+" #node-info-data");
-    // change resources
-    $('#resources').load(location.href+" #vm-details-resources-form");
   }
 
   $('#table_container').on('click','.node-enable',function() {
