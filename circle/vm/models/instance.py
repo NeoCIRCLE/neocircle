@@ -818,8 +818,9 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                                task_uuid=task_uuid, user=user):
 
             queue_name = self.get_remote_queue_name('vm')
-            vm_tasks.resume.apply_async(args=[self.vm_name, self.dump_mem],
-                                        queue=queue_name).get()
+            vm_tasks.wake_up.apply_async(args=[self.vm_name,
+                                               self.mem_dump['path']],
+                                         queue=queue_name).get()
 
     def wake_up_async(self, user=None):
         """Execute wake_up asynchronously.
