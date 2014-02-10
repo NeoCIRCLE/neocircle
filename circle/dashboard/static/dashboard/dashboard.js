@@ -112,12 +112,12 @@ $(function () {
   $('.vm-delete').click(function() {
     var vm_pk = $(this).data('vm-pk');
     var dir = window.location.pathname.indexOf('list') == -1;
-    addModalConfirmation(deleteVm, 
+    addModalConfirmation(deleteObject, 
       { 'url': '/dashboard/vm/delete/' + vm_pk + '/',
         'data': [],
-        'vm_pk': vm_pk,
-        'redirect': dir});
-    
+        'pk': vm_pk,
+	'type': "vm",
+	'redirect': dir});
     return false;
   });
 
@@ -125,16 +125,44 @@ $(function () {
   $('.node-delete').click(function() {
     var node_pk = $(this).data('node-pk');
     var dir = window.location.pathname.indexOf('list') == -1;
-    addModalConfirmation(deleteNode, 
+    addModalConfirmation(deleteObject, 
       { 'url': '/dashboard/node/delete/' + node_pk + '/',
         'data': [],
-        'node_pk': node_pk,
+        'pk': node_pk,
+  	'type': "node",
         'redirect': dir});
     
     return false;
   });
 
-  /* search for vms */
+  /* for Node removes buttons */
+  $('.group-delete').click(function() {
+    var group_pk = $(this).data('group-pk');
+    var dir = window.location.pathname.indexOf('list') == -1;
+    addModalConfirmation(deleteObject, 
+      { 'url': '/dashboard/group/delete/' + group_pk + '/',
+        'data': [],
+	'type': "group",
+        'pk': group_pk,
+        'redirect': dir});
+    
+    return false;
+  });
+
+  /* for Group removes buttons */
+  $('.group-delete').click(function() {
+    var group_pk = $(this).data('group-pk');
+    var dir = window.location.pathname.indexOf('list') == -1;
+    addModalConfirmation(deleteGroup, 
+      { 'url': '/dashboard/group/delete/' + group_pk + '/',
+        'data': [],
+        'group_pk': group_pk,
+        'redirect': dir});
+    
+    return false;
+  });
+
+ /* search for vms */
   var my_vms = []
   $("#dashboard-vm-search-input").keyup(function(e) {
     // if my_vms is empty get a list of our vms
@@ -222,7 +250,7 @@ function refreshSliders() {
 /* deletes the VM with the pk
  * if dir is true, then redirect to the dashboard landing page
  * else it adds a success message */
-function deleteVm(data) {
+function deleteObject(data) {
   $.ajax({
     type: 'POST',
     data: {'redirect': data['redirect']},
@@ -232,7 +260,7 @@ function deleteVm(data) {
       if(!data['redirect']) {
         selected = [];
         addMessage(re['message'], 'success');
-        $('a[data-vm-pk="' + data['vm_pk'] + '"]').closest('tr').fadeOut(function() {
+        $('a[data-'+data['type']+'-pk="' + data['pk'] + '"]').closest('tr').fadeOut(function() {
           $(this).remove();  
         });
       } else {
