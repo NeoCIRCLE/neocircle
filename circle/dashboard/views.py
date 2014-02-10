@@ -96,7 +96,8 @@ class IndexView(LoginRequiredMixin, TemplateView):
         })
 
         running = [i for i in instances if i.state == 'RUNNING']
-        stopped = [i for i in instances if i.state not in ['RUNNING', 'NOSTATE']]
+        stopped = [i for i in instances if i.state not in ['RUNNING',
+                                                           'NOSTATE']]
         context.update({
             'running_vms': running,
             'running_vm_num': len(running),
@@ -666,9 +667,12 @@ class VmList(LoginRequiredMixin, SingleTableView):
                 favourite__user=self.request.user).values_list('pk', flat=True)
             instances = Instance.get_objects_with_level(
                 'user', self.request.user).filter(
-                destroyed=None).values('pk', 'name', 'state')
-            for i in instances:
-                i['fav'] = True if i['pk'] in favs else False
+                destroyed=None).all()
+            instances = [{
+                'pk': i.pk,
+                'name': i.name,
+                'state': i.state,
+                'fav': i.pk in favs} for i in instances]
             return HttpResponse(
                 json.dumps(list(instances)),  # instances is ValuesQuerySet
                 content_type="application/json",
