@@ -19,7 +19,6 @@ from firewall.models import Vlan, Host
 from storage.models import Disk, DataStore
 from vm.models import InstanceTemplate, Lease, InterfaceTemplate, Node
 
-
 VLANS = Vlan.objects.all()
 DISKS = Disk.objects.exclude(type="qcow2-snap")
 
