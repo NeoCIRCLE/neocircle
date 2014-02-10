@@ -543,14 +543,21 @@ class TemplateAclUpdateView(AclUpdateView):
             logger.warning('Tried to set permissions of %s by non-owner %s.',
                            unicode(template), unicode(request.user))
             raise PermissionDenied()
-        self.set_levels(request, template)
-        self.add_levels(request, template)
 
-        post_for_disk = request.POST.copy()
-        post_for_disk['perm-new'] = 'user'
-        request.POST = post_for_disk
-        for d in template.disks.all():
-            self.add_levels(request, d)
+        name = request.POST['perm-new-name']
+        if (User.objects.filter(username=name).count() +
+                Group.objects.filter(name=name).count() < 1
+                and len(name) > 0):
+            warning(request, _('User or group "%s" not found.') % name)
+        else:
+            self.set_levels(request, template)
+            self.add_levels(request, template)
+
+            post_for_disk = request.POST.copy()
+            post_for_disk['perm-new'] = 'user'
+            request.POST = post_for_disk
+            for d in template.disks.all():
+                self.add_levels(request, d)
 
         return redirect(reverse("dashboard.views.template-detail",
                                 kwargs=self.kwargs))
