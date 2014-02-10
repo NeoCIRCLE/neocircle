@@ -671,8 +671,13 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         # Destroy virtual machine
         with act.sub_activity('destroying_vm'):
             queue_name = self.get_remote_queue_name('vm')
-            vm_tasks.destroy.apply_async(args=[self.vm_name],
-                                         queue=queue_name).get()
+            try:
+                vm_tasks.destroy.apply_async(args=[self.vm_name],
+                                             queue=queue_name).get()
+            except Exception as e:
+                if e.libvirtError is True:
+                    if "Domain not found" in str(e):
+                        pass
 
     def __cleanup_after_destroy_vm(self, act):
         """Clean up the virtual machine's data after destroy.
