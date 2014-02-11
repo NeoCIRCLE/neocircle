@@ -3,6 +3,7 @@ import json
 import logging
 import re
 from datetime import datetime
+import requests
 
 from django.contrib.auth.models import User, Group
 from django.contrib.messages import warning
@@ -1345,8 +1346,12 @@ class TransferOwnershipConfirmView(LoginRequiredMixin, View):
 
 class VmGraphView(LoginRequiredMixin, View):
     def get(self, request, pk, metric, time, *args, **kwargs):
-        from urllib import urlencode
-        import urllib2
+        graphite_host = getenv("GRAPHITE_HOST", None)
+        graphite_port = getenv("GRAPHITE_PORT", None)
+
+        if (graphite_host in ['', None] or graphite_port in ['', None]):
+            logger.debug('GRAPHITE_HOST is empty.')
+            raise Http404()
 
         if metric not in ['cpu', 'memory', 'network']:
             raise SuspiciousOperation()
@@ -1371,17 +1376,13 @@ class VmGraphView(LoginRequiredMixin, View):
 
         prefix = 'vm.%s' % instance.vm_name
         target = targets[metric] % prefix
-
         title = '%s (%s) - %s' % (instance.name, instance.vm_name, metric)
-
-        params = urlencode({'target': target,
-                            'from': '-%s' % time,
-                            'title': title.encode('UTF-8')})
-        url = ('http://%s:%s/render/?width=500&height=200&%s'
-               % (getenv("GRAPHITE_HOST"),
-                  getenv("GRAPHITE_PORT"),
-                  params))
-        print url
-        response = urllib2.urlopen(urllib2.Request(url))
-        return HttpResponse(response.read(), mimetype="image/png")
-        print pk, metric
+        params = {'target': target,
+                  'from': '-%s' % time,
+                  'title': title.encode('UTF-8'),
+                  'width': '500',
+                  'height': '200'}
+        url = ('http://%s:%s/render/?%s' % (graphite_host, graphite_port,
+                                            params))
+        response = requests.post(url, data=params)
+        return HttpResponse(response.content, mimetype="image/png")
