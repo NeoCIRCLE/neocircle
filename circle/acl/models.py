@@ -213,5 +213,11 @@ class AclBase(Model):
         clsfilter = Q(object_level_set__in=ols.all())
         return cls.objects.filter(clsfilter)
 
+    def save(self, *args, **kwargs):
+        if 'owner' in self and self.owner and 'owner' in self.ACL_LEVELS:
+            self.set_user_level(self.owner, 'owner')
+
+        super(AclBase, self).save(*args, **kwargs)
+
     class Meta:
         abstract = True
