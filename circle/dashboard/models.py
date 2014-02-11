@@ -1,14 +1,16 @@
+from itertools import chain
 from logging import getLogger
 
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.contrib.auth.signals import user_logged_in
 from django.db.models import (
-    Model, ForeignKey, OneToOneField, CharField, IntegerField
+    Model, ForeignKey, OneToOneField, CharField, IntegerField, TextField
 )
 from django.utils.translation import ugettext_lazy as _
 
 from vm.models import Instance
+from acl.models import AclBase
 
 logger = getLogger(__name__)
 
@@ -28,6 +30,33 @@ class Profile(Model):
         unique=True, blank=True, null=True, max_length=64,
         help_text=_('Unique identifier of the person, e.g. a student number.'))
     instance_limit = IntegerField(default=5)
+
+
+class GroupProfile(AclBase):
+    ACL_LEVELS = (
+        ('operator', _('operator')),
+        ('owner', _('owner')),
+    )
+
+    group = OneToOneField(Group)
+    org_id = CharField(
+        unique=True, blank=True, null=True, max_length=64,
+        help_text=_('Unique identifier of the group at the organization.'))
+    description = TextField()
+
+    @classmethod
+    def search(cls, name):
+        try:
+            return cls.objects.get(org_id=name).group
+        except cls.DoesNotExist:
+            return Group.objects.get(name=name)
+
+
+def get_or_create_profile(self):
+    obj, created = GroupProfile.objects.get_or_create(pk=self.pk)
+    return obj
+
+Group.profile = property(get_or_create_profile)
 
 
 def create_profile(sender, user, request, **kwargs):
