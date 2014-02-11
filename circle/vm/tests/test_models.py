@@ -1,11 +1,7 @@
 from django.test import TestCase
 
-from mock import Mock
-
 from ..models.instance import (
-    InstanceTemplate, Instance,
-    # post_state_changed
-    pre_state_changed,
+    InstanceTemplate, Instance
 )
 from ..models.network import (
     Interface
