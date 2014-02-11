@@ -4,7 +4,7 @@ import django.conf
 settings = django.conf.settings.FIREWALL_SETTINGS
 
 
-@celery.task
+@celery.task(ignore_result=True)
 def periodic_task():
         from firewall.fw import Firewall, dhcp, dns, ipset, vlan
         import remote_tasks
