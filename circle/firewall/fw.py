@@ -2,6 +2,7 @@ from firewall import models
 import django.conf
 
 import re
+import netaddr
 from datetime import datetime, timedelta
 from django.db.models import Q
 
@@ -302,33 +303,6 @@ def ipv6_to_octal(ipv6):
     return '\\' + '\\'.join(['%03o' % x for x in octets])
 
 
-def ipv4_to_arpa(ipv4, cname=False):
-    m2 = re.search(r'^([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)$', ipv4)
-    if cname:
-        return ('%s.dns1.%s.%s.%s.in-addr.arpa' %
-                (m2.group(4), m2.group(3), m2.group(2), m2.group(1)))
-    else:
-        return ('%s.%s.%s.%s.in-addr.arpa' %
-                (m2.group(4), m2.group(3), m2.group(2), m2.group(1)))
-
-
-def ipv6_to_arpa(ipv6):
-    while len(ipv6.split(':')) < 8:
-        ipv6 = ipv6.replace('::', ':::')
-    octets = []
-    for part in ipv6.split(':'):
-        if not part:
-            octets.extend([0, 0, 0, 0])
-        else:
-            # Pad hex part to 4 digits.
-            part = '%04x' % int(part, 16)
-            octets.insert(0, int(part[0], 16))
-            octets.insert(0, int(part[1], 16))
-            octets.insert(0, int(part[2], 16))
-            octets.insert(0, int(part[3], 16))
-    return '.'.join(['%1x' % x for x in octets]) + '.ip6.arpa'
-
-
 # =fqdn:ip:ttl          A, PTR
 # &fqdn:ip:x:ttl        NS
 # ZfqdnSOA
@@ -358,7 +332,7 @@ def generate_ptr_records():
 
         # ipv6
         if host.ipv6:
-            DNS.append("^%s:%s:%s" % (ipv6_to_arpa(str(host.ipv6)),
+            DNS.append("^%s:%s:%s" % (host.ipv6.reverse_dns,
                                       reverse, models.settings['dns_ttl']))
         return DNS
 
