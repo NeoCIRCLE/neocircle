@@ -53,7 +53,7 @@ class GroupProfile(AclBase):
 
 
 def get_or_create_profile(self):
-    obj, created = GroupProfile.objects.get_or_create(pk=self.pk)
+    obj, created = GroupProfile.objects.get_or_create(group_id=self.pk)
     return obj
 
 Group.profile = property(get_or_create_profile)
@@ -94,7 +94,29 @@ if hasattr(settings, 'SAML_ORG_ID_ATTRIBUTE'):
         else:
             logger.debug("org_id of %s already added to user %s's profile",
                          value, sender.username)
-        return False
+        memberatrs = getattr(settings, 'SAML_GROUP_ATTRIBUTES', [])
+        for group in chain(*[attributes[i] for i in memberatrs]):
+            try:
+                g = GroupProfile.search(group)
+            except Group.DoesNotExist:
+                logger.debug('cant find membergroup %s', group)
+            else:
+                logger.debug('could find membergroup %s (%s)',
+                             group, unicode(g))
+                g.user_set.add(sender)
+
+        owneratrs = getattr(settings, 'SAML_GROUP_OWNER_ATTRIBUTES', [])
+        for group in chain(*[attributes[i] for i in owneratrs]):
+            try:
+                g = GroupProfile.search(group)
+            except Group.DoesNotExist:
+                logger.debug('cant find ownergroup %s', group)
+            else:
+                logger.debug('could find ownergroup %s (%s)',
+                             group, unicode(g))
+                g.profile.set_level(sender, 'owner')
+
+        return False  # User did not change
 
     pre_user_save.connect(save_org_id)
 
