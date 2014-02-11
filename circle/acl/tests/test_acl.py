@@ -180,3 +180,33 @@ class AclUserTest(TestCase):
             TestModel.get_objects_with_group_level('alfa', self.g1), [i1, i2])
         self.assertItemsEqual(
             TestModel.get_objects_with_group_level('alfa', self.g2), [i2])
+
+    def test_owner(self):
+        i = Test2Model.objects.create(normal2_field='Hello',
+                                      owner=self.u1)
+        self.assertTrue(i.has_level(self.u1, 'one'))
+        self.assertTrue(i.has_level(self.u1, 'owner'))
+        self.assertFalse(i.has_level(self.u2, 'owner'))
+
+    def test_owner_change(self):
+        i = Test2Model.objects.create(normal2_field='Hello',
+                                      owner=self.u1)
+        self.assertTrue(i.has_level(self.u1, 'one'))
+        self.assertTrue(i.has_level(self.u1, 'owner'))
+        self.assertFalse(i.has_level(self.u2, 'owner'))
+        i.owner = self.u2
+        i.save()
+        self.assertTrue(i.has_level(self.u1, 'one'))
+        self.assertTrue(i.has_level(self.u1, 'owner'))
+        self.assertTrue(i.has_level(self.u2, 'owner'))
+
+    def test_owner_change_from_none(self):
+        i = Test2Model.objects.create(normal2_field='Hello')
+        self.assertFalse(i.has_level(self.u1, 'one'))
+        self.assertFalse(i.has_level(self.u1, 'owner'))
+        self.assertFalse(i.has_level(self.u2, 'owner'))
+        i.owner = self.u2
+        i.save()
+        self.assertFalse(i.has_level(self.u1, 'one'))
+        self.assertFalse(i.has_level(self.u1, 'owner'))
+        self.assertTrue(i.has_level(self.u2, 'owner'))

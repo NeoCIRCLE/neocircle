@@ -22,4 +22,5 @@ class Test2Model(AclBase):
         ('one', 'One'),
         ('two', 'Two'),
         ('three', 'Three'),
+        ('owner', 'owner'),
     )
