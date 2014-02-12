@@ -93,43 +93,43 @@
       <div class="panel panel-default" id="vm-detail-panel">
         <ul class="nav nav-pills panel-heading">
           <li class="active">
-            <a href="#home" data-toggle="pill" class="text-center">
+            <a href="#home" data-toggle="pill" data-target="#_home" class="text-center">
               <i class="icon-compass icon-2x"></i><br>
               {% trans "Home" %}</a>
           </li>
           <li>
-            <a href="#resources" data-toggle="pill" class="text-center">
+            <a href="#resources" data-toggle="pill" data-target="#_resources" class="text-center">
               <i class="icon-tasks icon-2x"></i><br>
               {% trans "Resources" %}</a>
           </li>
           <li {% if instance.state != "RUNNING" %}class="disabled"{% endif %}>
-            <a href="#{% if instance.state == "RUNNING" %}console" data-toggle="pill{% endif %}" class="text-center">
+            <a href="#{% if instance.state == "RUNNING" %}console" data-toggle="pill{% endif %}" data-target="#_console" class="text-center">
               <i class="icon-desktop icon-2x"></i><br>
               {% trans "Console" %}</a></li>
           <li>
-            <a href="#access" data-toggle="pill" class="text-center">
+            <a href="#access" data-toggle="pill" data-target="#_access" class="text-center">
               <i class="icon-group icon-2x"></i><br>
               {% trans "Access" %}</a>
           </li>
           <li>
-            <a href="#network" data-toggle="pill" class="text-center">
+            <a href="#network" data-toggle="pill" data-target="#_network" class="text-center">
               <i class="icon-globe icon-2x"></i><br>
               {% trans "Network" %}</a>
           </li>
           <li>
-            <a href="#activity" data-toggle="pill" class="text-center">
+            <a href="#activity" data-toggle="pill" data-target="#_activity" class="text-center">
               <i class="icon-time icon-2x"></i><br>
               {% trans "Activity" %}</a>
           </li>
         </ul>
 
         <div class="tab-content panel-body">
-          <div class="tab-pane active" id="home">{% include "dashboard/vm-detail/home.html" %}</div>
-          <div class="tab-pane" id="resources">{% include "dashboard/vm-detail/resources.html" %}</div>
-          <div class="tab-pane" id="console">{% include "dashboard/vm-detail/console.html" %}</div>
-          <div class="tab-pane" id="access">{% include "dashboard/vm-detail/access.html" %} </div>
-          <div class="tab-pane" id="network">{% include "dashboard/vm-detail/network.html" %}</div>
-          <div class="tab-pane" id="activity">{% include "dashboard/vm-detail/activity.html" %}</div>
+          <div class="tab-pane active" id="_home">{% include "dashboard/vm-detail/home.html" %}</div>
+          <div class="tab-pane" id="_resources">{% include "dashboard/vm-detail/resources.html" %}</div>
+          <div class="tab-pane" id="_console">{% include "dashboard/vm-detail/console.html" %}</div>
+          <div class="tab-pane" id="_access">{% include "dashboard/vm-detail/access.html" %} </div>
+          <div class="tab-pane" id="_network">{% include "dashboard/vm-detail/network.html" %}</div>
+          <div class="tab-pane" id="_activity">{% include "dashboard/vm-detail/activity.html" %}</div>
         </div>
       </div>
     </div>
