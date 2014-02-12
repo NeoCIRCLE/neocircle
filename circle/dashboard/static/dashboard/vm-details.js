@@ -205,7 +205,7 @@ function checkNewActivity(only_state, runs) {
       if(decideActivityRefresh()) {
         console.log("szia");
         setTimeout(
-          function() {checkNewActivity(true, runs + 1)}, 
+          function() {checkNewActivity(only_state, runs + 1)}, 
           1000 + runs * 250
         );
       }
@@ -215,5 +215,3 @@ function checkNewActivity(only_state, runs) {
     }
   });
 }
-
-
