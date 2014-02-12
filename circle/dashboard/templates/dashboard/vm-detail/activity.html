@@ -1,12 +1,6 @@
 {% load i18n %}
+
 <h3>{% trans "Activity" %}</h3>
-<style>
-  .sub-timeline {
-    border-left: 3px solid green;
-    margin-left: 30px;
-    padding-left: 10px;
-  }
-</style>
 
 <div id="activity-timeline" class="timeline">
   {% include "dashboard/vm-detail/_activity-timeline.html" %}
