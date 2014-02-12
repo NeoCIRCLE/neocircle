@@ -32,10 +32,6 @@
       {% endif %}
   </div>
   {% endfor %}
-  <div>
-    <span class="timeline-icon"><i class="icon-plus"></i></span> <strong>{% trans "Created" %}</strong> 
-    {{ instance.created|date:"Y-m-d H:i" }}, {{ instance.owner }}
-  </div>
 </div>
 
 {% block extra_js %}
