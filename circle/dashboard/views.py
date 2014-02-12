@@ -154,7 +154,11 @@ class VmDetailView(CheckedDetailView):
         context['activity'] = ia
 
         context['vlans'] = Vlan.get_objects_with_level(
-            'user', self.request.user).all()
+            'user', self.request.user
+        ).exclude(
+            pk__in=Interface.objects.filter(
+                instance=self.get_object()).values_list("vlan", flat=True)
+        ).all()
         context['acl'] = get_acl_data(instance)
         context['forms'] = {
             'disk_add_form': DiskAddForm(prefix="disk"),

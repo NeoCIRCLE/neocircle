@@ -104,7 +104,7 @@
               <h4>{% trans "This VM doesn't have an IPv6 address!" %}</h4>
             {% endif %}
           </div><!-- /ipv6 -->
-          {% include "dashboard/vm-detail/network-port-add.html" %}
+          {% include "dashboard/vm-detail/_network-port-add.html" %}
         </div>
       </div>
     </div>
@@ -121,6 +121,9 @@
         {% csrf_token %}
         <div class="input-group" style="max-width: 330px;">
           <select name="new_network_vlan" class="form-control">
+            {% if vlans|length == 0 %} 
+              <option value="-1">No more networks!</option>
+            {% endif %}
             {% for v in vlans %}
               <option value="{{ v.pk }}">{{ v.name }}</option>
             {% endfor %}
