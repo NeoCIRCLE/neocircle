@@ -1,6 +1,8 @@
 $(function() {
-  if($('.timeline .activity:first i:first').hasClass('icon-spin'))
-    checkNewActivity();
+  /* do we need to check for new activities */
+  if(decideActivityRefresh()) {
+    checkNewActivity(false, 1);
+  }
 
   /* save resources */
   $('#vm-details-resources-save').click(function() {
@@ -172,48 +174,41 @@ function removePort(data) {
   });
 }
 
-function checkNewActivity() {
-  var latest = $('.activity:first').data('activity-id');
-  var latest_sub = $('div[data-activity-id="' + latest + '"] .sub-timeline .sub-activity:first').data('activity-id');
+function decideActivityRefresh() {
+  var check = false;
+  /* if something is still spinning */
+  if($('.timeline .activity:first i:first').hasClass('icon-spin'))
+    check = true;
+  /* if there is only one activity */
+  if($('#activity-timeline div[class="activity"]').length < 2)
+    check = true;
+
+  return check;
+}
+
+function checkNewActivity(only_state, runs) {
+  // set default only_state to false
+  only_state = typeof only_state !== 'undefined' ? only_state : false;
   var instance = location.href.split('/'); instance = instance[instance.length - 2];
 
   $.ajax({
-    type: 'POST',
+    type: 'GET',
     url: '/dashboard/vm/' + instance + '/activity/',
-    headers: {"X-CSRFToken": getCookie('csrftoken')},
-    data: {'latest': latest, 'latest_sub': latest_sub},
+    data: {'only_state': only_state},
     success: function(data) {
-      if(data['new_sub_activities'].length > 0) {
-        d = data['new_sub_activities'];
-        html = ""
-        for(var i=0; i<d.length; i++) {
-          html += '<div data-activity-id="' + d[i].id + '" class="sub-activity">' + d[i].name + ' - ';
-          if(d[i].finished != null) {
-            html += d[i].finished
-          } else {
-            html += '<i class="icon-refresh icon-spin" class="sub-activity-loading-icon"></i>';
-          }
-          html += '</div>';
-        }
-        $('div[data-activity-id="' + latest_sub + '"] .sub-activity .sub-activity-loading-icon').remove();
-        $('div[data-activity-id="' + latest + '"] .sub-timeline').prepend(html);
+      if(!only_state) {
+        $("#activity-timeline").html(data['activities']);
       }
 
-      if(data['is_parent_finished']) {
-        var c = "icon-plus"
-        $('div[data-activity-id="' + latest + '"] .icon-refresh.icon-spin:first').removeClass('icon-refresh').removeClass('icon-spin').addClass(c);
-      }
+      $("#vm-details-state").html(data['state']);
 
-      if(data['latest_sub_finished'] != null) {
-        s = $('div[data-activity-id="' + latest_sub + '"]')
-        $('.icon-refresh.icon-spin', s).remove();
-        $(s).append(data['latest_sub_finished']);
+      if(decideActivityRefresh()) {
+        console.log("szia");
+        setTimeout(
+          function() {checkNewActivity(true, runs + 1)}, 
+          1000 + runs * 250
+        );
       }
-
-      if(data['is_parent_finished'])
-        return;
-      else
-        setTimeout(checkNewActivity, 1000);
     },
     error: function() {
 

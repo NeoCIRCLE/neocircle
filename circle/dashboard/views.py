@@ -14,13 +14,14 @@ from django.core import signing
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import redirect, render
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import (TemplateView, DetailView, View, DeleteView,
                                   UpdateView, CreateView)
 from django.contrib import messages
 from django.utils.translation import ugettext as _
 from django.template.defaultfilters import title
+from django.template.loader import render_to_string
 
 from django.forms.models import inlineformset_factory
 from django_tables2 import SingleTableView
@@ -151,7 +152,7 @@ class VmDetailView(CheckedDetailView):
         ia = InstanceActivity.objects.filter(
             instance=self.object, parent=None
         ).order_by('-started').select_related()
-        context['activity'] = ia
+        context['activities'] = ia
 
         context['vlans'] = Vlan.get_objects_with_level(
             'user', self.request.user
@@ -1186,40 +1187,25 @@ class LeaseDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
             return HttpResponseRedirect(success_url)
 
 
-@require_POST
+@require_GET
 def vm_activity(request, pk):
-    object = Instance.objects.get(pk=pk)
-    if not object.has_level(request.user, 'owner'):
+    instance = Instance.objects.get(pk=pk)
+    if not instance.has_level(request.user, 'owner'):
         raise PermissionDenied()
 
-    latest = request.POST.get('latest')
-    latest_sub = request.POST.get('latest_sub')
+    response = {}
+    only_state = request.GET.get("only_state")
 
-    instance = Instance.objects.get(pk=pk)
-    new_sub_activities = InstanceActivity.objects.filter(
-        parent=latest, pk__gt=latest_sub,
-        instance=instance)
-    # new_activities = InstanceActivity.objects.filter(
-    #     parent=None, instance=instance, pk__gt=latest).values('finished')
-    latest_sub_finished = InstanceActivity.objects.get(pk=latest_sub).finished
-
-    time_string = "%H:%M:%S"
-    new_sub_activities = [
-        {'name': a.get_readable_name(), 'id': a.pk,
-         'finished': None if a.finished is None else a.finished.strftime(
-             time_string
-         )
-         } for a in new_sub_activities
-    ]
-
-    response = {
-        'new_sub_activities': new_sub_activities,
-        # TODO 'new_acitivites': new_activities,
-        'is_parent_finished': True if InstanceActivity.objects.get(
-            pk=latest).finished is not None else False,
-        'latest_sub_finished': None if latest_sub_finished is None else
-        latest_sub_finished.strftime(time_string)
-    }
+    response['state'] = instance.state
+    if only_state is not None and only_state == "false":  # instance activity
+        print "Sdsa"
+        activities = render_to_string(
+            "dashboard/vm-detail/_activity-timeline.html",
+            {'activities': InstanceActivity.objects.filter(
+                instance=instance, parent=None
+            ).order_by('-started').select_related()}
+        )
+        response['activities'] = activities
 
     return HttpResponse(
         json.dumps(response),
