@@ -47,7 +47,7 @@
     </div>
   </div>
   <div class="panel-body" id="vm-graph-view" style="display: none">
-    <p class="pull-right">  <input class="knob" data-fgColor="chartreuse" data-thickness=".4" data-max="10" data-width="100" data-height="100" data-readOnly="true" value="{{ instances|length|add:more_instances }}"></p>
+    <p class="pull-right">  <input class="knob" data-fgColor="chartreuse" data-thickness=".4" data-max="{{ request.user.profile.instance_limit }}" data-width="100" data-height="100" data-readOnly="true" value="{{ instances|length|add:more_instances }}"></p>
     <p><span class="bigbig"><big>{{ running_vm_num }}</big> running </span>
       <ul class="list-inline">
         {% for vm in running_vms %}
@@ -56,7 +56,6 @@
       </ul>
     </p>
     <p class="big text-warning"><big>{{ stopped_vm_num }}</big> stopped</p>
-    <p>Total: $3000 </p>
 
     <div class="clearfix"></div>
     <div class="text-right">
