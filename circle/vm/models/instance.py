@@ -535,7 +535,10 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         """Get the remote worker queue name of this instance with the specified
            queue ID.
         """
-        return self.node.get_remote_queue_name(queue_id) if self.node else None
+        if self.node:
+            return self.node.get_remote_queue_name(queue_id)
+        else:
+            raise Node.DoesNotExist()
 
     def renew(self, which='both'):
         """Renew virtual machine instance leases.
@@ -843,8 +846,9 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         with instance_activity(code_suffix='shutdown', instance=self,
                                on_abort=__on_abort, on_commit=__on_commit,
                                task_uuid=task_uuid, user=user):
-
             queue_name = self.get_remote_queue_name('vm')
+            logger.debug("RPC Shutdown at queue: %s, for vm: %s.",
+                         self.vm_name, queue_name)
             vm_tasks.shutdown.apply_async(args=[self.vm_name],
                                           queue=queue_name).get()
             self.node = None
