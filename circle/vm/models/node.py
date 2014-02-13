@@ -94,8 +94,16 @@ class Node(TimeStampedModel):
         """
         return self.ram_size * self.overcommit
 
+    @method_cache(30)
     def get_remote_queue_name(self, queue_id):
-        return self.host.hostname + "." + queue_id
+        """ Return the remote queue name
+        throws Exception if there is no worker on the queue.
+        Until the cache provide reult there can be dead quques.
+        """
+        if vm_tasks.check_queue(self.host.hostname, queue_id):
+            return self.host.hostname + "." + queue_id
+        else:
+            raise Exception("Worker not found.")
 
     def remote_query(self, task, timeout=30, raise_=False, default=None):
         """Query the given task, and get the result.
