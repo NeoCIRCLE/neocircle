@@ -562,7 +562,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         self.pw = pwgen()
         with instance_activity(code_suffix='change_password', instance=self,
                                user=user):
-            queue = "%s.agent" % self.node.host.hostname
+            queue = self.get_remote_queue_name("agent")
             agent_tasks.change_password.apply_async(queue=queue,
                                                     args=(self.vm_name,
                                                           self.pw))
