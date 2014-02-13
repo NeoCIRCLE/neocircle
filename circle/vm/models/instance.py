@@ -849,7 +849,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
             queue_name = self.get_remote_queue_name('vm')
             logger.debug("RPC Shutdown at queue: %s, for vm: %s.",
                          self.vm_name, queue_name)
-            vm_tasks.shutdown.apply_async(args=[self.vm_name],
+            vm_tasks.shutdown.apply_async(kwargs={'name': self.vm_name},
                                           queue=queue_name).get()
             self.node = None
             self.vnc_port = None
