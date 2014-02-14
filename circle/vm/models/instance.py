@@ -22,7 +22,7 @@ from taggit.managers import TaggableManager
 from acl.models import AclBase
 from storage.models import Disk
 from ..tasks import local_tasks, vm_tasks, agent_tasks
-from .activity import instance_activity
+from .activity import instance_activity, InstanceActivity
 from .common import BaseResourceConfigModel, Lease
 from .network import Interface
 from .node import Node, Trait
@@ -272,6 +272,15 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         except IndexError:
             act = None
         return 'NOSTATE' if act is None else act.resultant_state
+
+    def manual_state_change(self, new_state, reason=None, user=None):
+        act = InstanceActivity.create(code_suffix='manual_state_change',
+                                      instance=self, user=user)
+        act.finished = act.started
+        act.result = reason
+        act.resultant_state = new_state
+        act.succeeded = True
+        act.save()
 
     def vm_state_changed(self, new_state):
         pass
