@@ -47,6 +47,11 @@ class InstanceActivity(ActivityModel):
 
     @classmethod
     def create(cls, code_suffix, instance, task_uuid=None, user=None):
+        # Check for concurrent activities
+        active_activities = instance.activity_log.filter(finished__isnull=True)
+        if active_activities.exists():
+            raise ActivityInProgressError(active_activities[0])
+
         act = cls(activity_code='vm.Instance.' + code_suffix,
                   instance=instance, parent=None, resultant_state=None,
                   started=timezone.now(), task_uuid=task_uuid, user=user)
@@ -54,6 +59,11 @@ class InstanceActivity(ActivityModel):
         return act
 
     def create_sub(self, code_suffix, task_uuid=None):
+        # Check for concurrent activities
+        active_children = self.children.filter(finished__isnull=True)
+        if active_children.exists():
+            raise ActivityInProgressError(active_children[0])
+
         act = InstanceActivity(
             activity_code=self.activity_code + '.' + code_suffix,
             instance=self.instance, parent=self, resultant_state=None,
@@ -64,28 +74,18 @@ class InstanceActivity(ActivityModel):
     @contextmanager
     def sub_activity(self, code_suffix, on_abort=None, on_commit=None,
                      task_uuid=None):
-
-        # Check for concurrent activities
-        active_children = self.children.filter(finished__isnull=True)
-        if active_children.exists():
-            raise ActivityInProgressError(active_children[0])
-
+        """Create a transactional context for a nested instance activity.
+        """
         act = self.create_sub(code_suffix, task_uuid)
-
         return activitycontextimpl(act, on_abort=on_abort, on_commit=on_commit)
 
 
 @contextmanager
 def instance_activity(code_suffix, instance, on_abort=None, on_commit=None,
                       task_uuid=None, user=None):
-
-    # Check for concurrent activities
-    active_activities = instance.activity_log.filter(finished__isnull=True)
-    if active_activities.exists():
-        raise ActivityInProgressError(active_activities[0])
-
+    """Create a transactional context for an instance activity.
+    """
     act = InstanceActivity.create(code_suffix, instance, task_uuid, user)
-
     return activitycontextimpl(act, on_abort=on_abort, on_commit=on_commit)
 
 
