@@ -74,13 +74,12 @@ class Node(TimeStampedModel):
         """
 
         if self.enabled and self.online:
-            return 'online'
+            return 'Online'
         elif self.enabled and not self.online:
-            return 'missing'
+            return 'Missing'
         elif not self.enabled and self.online:
-            return 'disabled'
+            return 'Disabled'
         else:
-            return 'offline'
             return 'Offline'
 
     def disable(self, user=None):
