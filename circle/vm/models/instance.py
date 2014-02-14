@@ -935,23 +935,31 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         kwargs.setdefault('access_method', self.access_method)
         kwargs.setdefault('system', self.template.system
                           if self.template else None)
+
+        def __try_save_disk(disk):
+            try:
+                return disk.save_as()
+            except Disk.WrongDiskTypeError:
+                return disk
+
+        # copy disks
+        disks = [__try_save_disk(disk) for disk in self.disks.all()]
+        kwargs.setdefault('disks', disks)
+
         # create template and do additional setup
         tmpl = InstanceTemplate(**kwargs)
+
         # save template
         tmpl.save()
-        # create related entities
-        for disk in self.disks.all():
-            try:
-                d = disk.save_as()
-            except Disk.WrongDiskTypeError:
-                d = disk
-
-            tmpl.disks.add(d)
-
-        for i in self.interface_set.all():
-            i.save_as_template(tmpl)
-
-        return tmpl
+        try:
+            # create interface templates
+            for i in self.interface_set.all():
+                i.save_as_template(tmpl)
+        except:
+            tmpl.delete()
+            raise
+        else:
+            return tmpl
 
     def shutdown_and_save_as_template(self, name, user=None, task_uuid=None,
                                       **kwargs):
