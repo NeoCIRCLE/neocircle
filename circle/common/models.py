@@ -17,7 +17,9 @@ logger = getLogger(__name__)
 def activitycontextimpl(act, on_abort=None, on_commit=None):
     try:
         yield act
-    except Exception as e:
+    except BaseException as e:
+        # BaseException is the common parent of Exception and
+        # system-exiting exceptions, e.g. KeyboardInterrupt
         handler = None if on_abort is None else lambda a: on_abort(a, e)
         act.finish(succeeded=False, result=str(e), event_handler=handler)
         raise e
