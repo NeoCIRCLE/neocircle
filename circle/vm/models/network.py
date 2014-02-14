@@ -57,6 +57,10 @@ class Interface(Model):
         return 'cloud-' + str(self.instance.id) + '-' + str(self.vlan.vid)
 
     @property
+    def destroyed(self):
+        return self.instance.destroyed
+
+    @property
     def mac(self):
         try:
             return self.host.mac
