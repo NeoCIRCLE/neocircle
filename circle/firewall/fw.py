@@ -2,7 +2,6 @@ from firewall import models
 import django.conf
 
 import re
-import netaddr
 from datetime import datetime, timedelta
 from django.db.models import Q
 
