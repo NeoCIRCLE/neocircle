@@ -308,14 +308,16 @@ class Vlan(AclBase, models.Model):
             ipv4 = str(ipv4)
             if ipv4 not in used_v4:
                 logger.debug("Found unused IPv4 address %s.", ipv4)
-                if self.network6 is None:
-                    return {'ipv4': ipv4, 'ipv6': None}
-                else:
+                ipv6 = None
+                if self.network6 is not None:
                     ipv6 = ipv4_2_ipv6(self.ipv6_template, ipv4)
-                    if ipv6 not in used_v6:
+                    if ipv6 in used_v6:
+                        continue
+                    else:
                         logger.debug("Found unused IPv6 address %s.", ipv6)
-                        return {'ipv4': ipv4, 'ipv6': ipv6}
-        raise ValidationError(_("All IP addresses are already in use."))
+                return {'ipv4': ipv4, 'ipv6': ipv6}
+        else:
+            raise ValidationError(_("All IP addresses are already in use."))
 
 
 class VlanGroup(models.Model):
