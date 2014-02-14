@@ -952,3 +952,8 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
             i.save_as_template(tmpl)
 
         return tmpl
+
+    def shutdown_and_save_as_template(self, name, user=None, task_uuid=None,
+                                      **kwargs):
+        self.shutdown(user, task_uuid)
+        self.save_as_template(name, **kwargs)
