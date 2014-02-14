@@ -465,11 +465,9 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
         self.object = self.get_object()
         new_status = request.POST.get("new_status")
         if new_status == "enable":
-            Node.objects.filter(pk=self.object.pk).update(
-                **{'enabled': True})
+            self.object.enable(user=request.user)
         elif new_status == "disable":
-            Node.objects.filter(pk=self.object.pk).update(
-                **{'enabled': False})
+            self.object.disable(user=request.user)
         else:
             return
 
