@@ -122,5 +122,5 @@ class NodeActivity(ActivityModel):
 
 @contextmanager
 def node_activity(code_suffix, node, task_uuid=None, user=None):
-    act = InstanceActivity.create(code_suffix, node, task_uuid, user)
+    act = NodeActivity.create(code_suffix, node, task_uuid, user)
     return activitycontextimpl(act)
