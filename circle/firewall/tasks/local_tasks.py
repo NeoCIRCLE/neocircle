@@ -1,62 +1,65 @@
-from manager.mancelery import celery
-from django.core.cache import cache
+from logging import getLogger
+from socket import gethostname
+
 import django.conf
+from django.core.cache import cache
+
+from manager.mancelery import celery
+
 settings = django.conf.settings.FIREWALL_SETTINGS
+logger = getLogger(__name__)
+
+
+def _apply_once(name, queues, task, data):
+    """Reload given networking component if needed.
+    """
+
+    lockname = "%s_lock" % name
+    if not cache.get(lockname):
+        return
+    cache.delete(lockname)
+
+    for queue in queues:
+        task.apply_async(args=data, queue=queue)
+    logger.info("%s configuration is reloaded.", name)
 
 
 @celery.task(ignore_result=True)
 def periodic_task():
-        from firewall.fw import Firewall, dhcp, dns, ipset, vlan
-        import remote_tasks
+    from firewall.fw import Firewall, dhcp, dns, ipset, vlan
+    from remote_tasks import (reload_dns, reload_dhcp, reload_firewall,
+                              reload_firewall_vlan, reload_blacklist)
 
-        if cache.get('dns_lock'):
-            cache.delete("dns_lock")
-            remote_tasks.reload_dns.apply_async(args=[dns()],
-                                                queue='dns')
-            print "dns ujratoltese kesz"
+    firewall_queues = [("%s.firewall" % i) for i in
+                       settings.get('firewall_queues', [gethostname()])]
+    dns_queues = [("%s.dns" % i) for i in
+                  settings.get('dns_queues', [gethostname()])]
 
-        if cache.get('dhcp_lock'):
-            cache.delete("dhcp_lock")
-            remote_tasks.reload_dhcp.apply_async(args=[dhcp()],
-                                                 queue='firewall')
-            print "dhcp ujratoltese kesz"
-
-        if cache.get('firewall_lock'):
-            cache.delete("firewall_lock")
-            ipv4 = Firewall(proto=4).get()
-            ipv6 = Firewall(proto=6).get()
-            remote_tasks.reload_firewall.apply_async(args=[ipv4, ipv6],
-                                                     queue='firewall')
-            print "firewall ujratoltese kesz"
-
-        if cache.get('firewall_vlan_lock'):
-            cache.delete("firewall_vlan_lock")
-            remote_tasks.reload_firewall_vlan.apply_async(args=[vlan()],
-                                                          queue='firewall')
-            print "firewall_vlan ujratoltese kesz"
-
-        if cache.get('blacklist_lock'):
-            cache.delete("blacklist_lock")
-            remote_tasks.reload_blacklist.apply_async(args=[list(ipset())],
-                                                      queue='firewall')
-            print "blacklist ujratoltese kesz"
+    _apply_once('dns', dns_queues, reload_dns,
+                lambda: (dns(), ))
+    _apply_once('dhcp', firewall_queues, reload_dhcp,
+                lambda: (dhcp(), ))
+    _apply_once('firewall', firewall_queues, reload_firewall,
+                lambda: (Firewall(proto=4).get(), Firewall(proto=6).get()))
+    _apply_once('firewall_vlan', firewall_queues, reload_firewall_vlan,
+                lambda: (vlan(), ))
+    _apply_once('blacklist', firewall_queues, reload_blacklist,
+                lambda: (list(ipset()), ))
 
 
 @celery.task
 def reloadtask(type='Host'):
-        if type in ["Host", "Record", "Domain", "Vlan"]:
-            cache.add("dns_lock", "true", 30)
-
-        if type in ["Host", "Vlan"]:
-            cache.add("dhcp_lock", "true", 30)
-
-        if type in ["Host", "Rule", "Firewall", "Vlan"]:
-            cache.add("firewall_lock", "true", 30)
-
-        if type == "Blacklist":
-            cache.add("blacklist_lock", "true", 30)
-
-        if type in ["Vlan", "SwitchPort", "EthernetDevice"]:
-            cache.add("firewall_vlan_lock", "true", 30)
-
-        print type
+    reload = {
+        'Host': ['dns', 'dhcp', 'firewall'],
+        'Record': ['dns'],
+        'Domain': ['dns'],
+        'Vlan': ['dns', 'dhcp', 'firewall', 'firewall_vlan'],
+        'Firewall': ['firewall'],
+        'Rule': ['firewall'],
+        'SwitchPort': ['firewall_vlan'],
+        'EthernetDevice': ['firewall_vlan'],
+    }[type]
+    logger.info("Reload %s on next periodic iteration applying change to %s.",
+                ", ".join(reload), type)
+    for i in reload:
+        cache.add("%s_lock" % i, "true", 30)
