@@ -20,7 +20,7 @@ def _apply_once(name, queues, task, data):
     cache.delete(lockname)
 
     for queue in queues:
-        task.apply_async(args=data, queue=queue)
+        task.apply_async(args=data(), queue=queue)
     logger.info("%s configuration is reloaded.", name)
 
 
