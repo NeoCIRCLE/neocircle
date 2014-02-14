@@ -16,6 +16,8 @@ from firewall.models import Host
 from ..tasks import vm_tasks
 from .common import Trait
 
+from .activity import node_activity
+
 from monitor.calvin.calvin import Query
 from monitor.calvin.calvin import GraphiteHandler
 
@@ -79,6 +81,19 @@ class Node(TimeStampedModel):
             return 'disabled'
         else:
             return 'offline'
+            return 'Offline'
+
+    def disable(self, user=None):
+        ''' Disable the node.'''
+        with node_activity(code_suffix='disable', node=self, user=user):
+            self.enabled = False
+            self.save()
+
+    def enable(self, user=None):
+        ''' Enable the node. '''
+        with node_activity(code_suffix='enable', node=self, user=user):
+            self.enabled = True
+            self.save()
 
     @property
     @method_cache(300)
