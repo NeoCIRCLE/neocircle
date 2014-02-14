@@ -22,7 +22,8 @@ from taggit.managers import TaggableManager
 from acl.models import AclBase
 from storage.models import Disk
 from ..tasks import local_tasks, vm_tasks, agent_tasks
-from .activity import instance_activity, InstanceActivity
+from .activity import (ActivityInProgressError, instance_activity,
+                       InstanceActivity)
 from .common import BaseResourceConfigModel, Lease
 from .network import Interface
 from .node import Node, Trait
@@ -274,6 +275,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         return 'NOSTATE' if act is None else act.resultant_state
 
     def manual_state_change(self, new_state, reason=None, user=None):
+        # TODO cancel concurrent activity (if exists)
         act = InstanceActivity.create(code_suffix='manual_state_change',
                                       instance=self, user=user)
         act.finished = act.started
@@ -283,7 +285,16 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         act.save()
 
     def vm_state_changed(self, new_state):
-        pass
+        try:
+            act = InstanceActivity.create(code_suffix='vm_state_changed',
+                                          instance=self)
+        except ActivityInProgressError:
+            pass  # discard state change if another activity is in progress.
+        else:
+            act.finished = act.started
+            act.resultant_state = new_state
+            act.succeeded = True
+            act.save()
 
     def clean(self, *args, **kwargs):
         if self.time_of_delete is None:
