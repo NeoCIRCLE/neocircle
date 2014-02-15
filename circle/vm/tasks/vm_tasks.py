@@ -98,3 +98,8 @@ def get_ram_size(params):
 @celery.task(name='vmdriver.get_node_metrics')
 def get_node_metrics(params):
     pass
+
+
+@celery.task(name='vmdriver.screenshot')
+def screenshot(params):
+    pass
