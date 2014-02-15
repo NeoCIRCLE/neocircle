@@ -171,7 +171,11 @@ class Node(TimeStampedModel):
 
     def update_vm_states(self):
         domains = {}
-        for i in self.remote_query(vm_tasks.list_domains_info, timeout=5):
+        domain_list = self.remote_query(vm_tasks.list_domains_info, timeout=5)
+        if domain_list is None:
+            logger.info("Monitoring failed at: %s", self.name)
+            return
+        for i in domain_list:
             # [{'name': 'cloud-1234', 'state': 'RUNNING', ...}, ...]
             try:
                 id = int(i['name'].split('-')[1])
