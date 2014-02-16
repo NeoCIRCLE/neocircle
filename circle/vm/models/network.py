@@ -97,11 +97,11 @@ class Interface(Model):
             args=[self.get_vmnetwork_desc()],
             queue=self.instance.get_remote_queue_name('net'))
 
-    def destroy(self, user=None, task_uuid=None):
+    def destroy(self, delete_host=True, user=None, task_uuid=None):
         net_tasks.destroy.apply_async(
             args=[self.get_vmnetwork_desc()],
             queue=self.instance.get_remote_queue_name('net'))
-        if self.host is not None:
+        if delete_host and self.host is not None:
             self.host.delete()
 
     @classmethod
