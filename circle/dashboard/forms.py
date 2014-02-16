@@ -554,7 +554,6 @@ class TemplateForm(forms.ModelForm):
                 Field('description'),
                 Field("parent", type="hidden"),
                 Field("system"),
-                Field("state"),
             ),
             Fieldset(
                 _("Exeternal"),
@@ -569,6 +568,7 @@ class TemplateForm(forms.ModelForm):
 
     class Meta:
         model = InstanceTemplate
+        exclude = ('state', )
 
 
 class LeaseForm(forms.ModelForm):
