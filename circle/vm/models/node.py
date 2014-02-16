@@ -163,11 +163,13 @@ class Node(TimeStampedModel):
             collected[metric] = cache
         return collected
 
+    @property
     def cpu_usage(self):
-        return self.get_monitor_info()["cpu.usage"]
+        return float(self.get_monitor_info()["cpu.usage"]) / 100
 
+    @property
     def ram_usage(self):
-        return self.get_monitor_info()["memory.usage"]
+        return float(self.get_monitor_info()["memory.usage"]) / 100
 
     def update_vm_states(self):
         domains = {}
