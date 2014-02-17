@@ -1,0 +1,51 @@
+            
+            <tr>
+              <!--<td><input type="checkbox"/ class="vm-checkbox" id="vm-1825{{ c }}"></td>-->
+              <td>
+                <div id="vm-1{{ c }}">1{{ c }}</div>
+              </td>
+              <td><a href="" class="real-link">network-devenv</a></td>
+              <td>running</td>
+              <td>10 days</td>
+              <td>1 month</td>
+              <td>
+                <a class="btn btn-default btn-xs" title data-original-title="Migrate">
+                  <i class="icon-truck"></i>
+                </a>
+                <a class="btn btn-default btn-xs" title data-original-title="Rename">
+                  <i class="icon-pencil"></i>
+                </a>
+                <a href="#" class="btn btn-default btn-xs vm-list-connect" data-toggle="popover"
+                  data-content='
+                  Belépés: <input style="width: 300px;" type="text" class="form-control" value="ssh cloud@vm.ik.bme.hu -p22312"/>
+                  Jelszó: <input style="width: 300px;" type="text" class="form-control" value="asdfkicsiasdfkocsi"/>
+                  '>Connect</a>
+              </td>
+              <td>
+                <a class="btn btn-info btn-xs vm-list-details" href="#" data-toggle="popover" 
+                  data-content='
+                  <h4>Quick details</h4>
+                  <dl class="dl-horizontal">
+                    <dt>Number of cores:</dt><dd>4</dd>
+                    <dt>Memory:</dt> <dd>512 MB</dd>
+                    <dt>Architecture:</td><dd>x86-64</dd>
+                  </dl>
+                  <dl>
+                    <dt>IPv4 address:</dt><dd>10.9.8.7</dd>
+                    <dt>IPv6 address:</dt><dd> 2001:2001:2001:2001:2001:2001::</dd>
+                    <dt>DNS name:</dt><dd>1825.vm.ik.bme.hu</dd>
+                  </ul>
+                  '>Details</a>
+              </td>
+              <td>
+                <div class="btn-group">
+                  <button type="button" class="btn btn-xs btn-warning dropdown-toggle" data-toggle="dropdown">Action <i class="icon-caret-down"></i></button>
+                  <ul class="dropdown-menu" role="menu">
+                    <li><a href="#"><i class="icon-refresh"></i> Reboot</a></li>
+                    <li><a href="#"><i class="icon-off"></i> Shutdown</a></li>
+                    <li><a href="#"><i class="icon-remove"></i> Discard</a></li>
+                  </ul>
+                </div>
+              </td>
+            
+            </tr>

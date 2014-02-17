@@ -31,7 +31,7 @@ from .forms import (
     VmCreateForm, TemplateForm, LeaseForm, NodeForm, HostForm, DiskAddForm,
 )
 from .tables import (VmListTable, NodeListTable, NodeVmListTable,
-                     TemplateListTable, LeaseListTable, GroupListTable)
+                     TemplateListTable, LeaseListTable, GroupListTable,)
 from vm.models import (Instance, InstanceTemplate, InterfaceTemplate,
                        InstanceActivity, Node, instance_activity, Lease,
                        Interface)
@@ -110,7 +110,7 @@ class IndexView(LoginRequiredMixin, TemplateView):
         return context
 
 
-def get_acl_data(obj):
+def get_vm_acl_data(obj):
     levels = obj.ACL_LEVELS
     users = obj.get_users_with_level()
     users = [{'user': u, 'level': l} for u, l in users]
@@ -120,13 +120,26 @@ def get_acl_data(obj):
             'url': reverse('dashboard.views.vm-acl', args=[obj.pk])}
 
 
+def get_group_acl_data(obj):
+    aclobj = obj.profile
+    levels = aclobj.ACL_LEVELS
+    users = aclobj.get_users_with_level()
+    users = [{'user': u, 'level': l} for u, l in users]
+    groups = aclobj.get_groups_with_level()
+    groups = [{'group': g, 'level': l} for g, l in groups]
+    return {'users': users, 'groups': groups, 'levels': levels,
+            'url': reverse('dashboard.views.group-acl', args=[obj.pk])}
+
+
 class CheckedDetailView(LoginRequiredMixin, DetailView):
     read_level = 'user'
 
+    def get_has_level(self):
+        return self.object.has_level
+
     def get_context_data(self, **kwargs):
         context = super(CheckedDetailView, self).get_context_data(**kwargs)
-        instance = context['instance']
-        if not instance.has_level(self.request.user, self.read_level):
+        if not self.get_has_level()(self.request.user, self.read_level):
             raise PermissionDenied()
         return context
 
@@ -160,7 +173,7 @@ class VmDetailView(CheckedDetailView):
             pk__in=Interface.objects.filter(
                 instance=self.get_object()).values_list("vlan", flat=True)
         ).all()
-        context['acl'] = get_acl_data(instance)
+        context['acl'] = get_vm_acl_data(instance)
         context['forms'] = {
             'disk_add_form': DiskAddForm(prefix="disk"),
         }
@@ -488,6 +501,48 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
                                          kwargs={'pk': self.object.pk}))
 
 
+class GroupDetailView(CheckedDetailView):
+    template_name = "dashboard/group-detail.html"
+    model = Group
+
+    def get_has_level(self):
+        return self.object.profile.has_level
+
+    def get_context_data(self, **kwargs):
+        context = super(GroupDetailView, self).get_context_data(**kwargs)
+        context['group'] = self.object
+        context['users'] = self.object.user_set.all()
+        context['acl'] = get_group_acl_data(self.object)
+        return context
+
+    def post(self, request, *args, **kwargs):
+
+        if request.POST.get('new_name'):
+            return self.__set_name(request)
+
+    def __set_name(self, request):
+        self.object = self.get_object()
+        new_name = request.POST.get("new_name")
+        Group.objects.filter(pk=self.object.pk).update(
+            **{'name': new_name})
+
+        success_message = _("Group successfully renamed!")
+        if request.is_ajax():
+            response = {
+                'message': success_message,
+                'new_name': new_name,
+                'group_pk': self.object.pk
+            }
+            return HttpResponse(
+                json.dumps(response),
+                content_type="application/json"
+            )
+        else:
+            messages.success(request, success_message)
+            return redirect(reverse_lazy("dashboard.views.group-detail",
+                                         kwargs={'pk': self.object.pk}))
+
+
 class AclUpdateView(LoginRequiredMixin, View, SingleObjectMixin):
 
     def post(self, request, *args, **kwargs):
@@ -567,6 +622,49 @@ class TemplateAclUpdateView(AclUpdateView):
                                 kwargs=self.kwargs))
 
 
+class GroupAclUpdateView(AclUpdateView):
+    model = Group
+
+    def post(self, request, *args, **kwargs):
+        instance = self.get_object().profile
+        if not (instance.has_level(request.user, "owner") or
+                getattr(instance, 'owner', None) == request.user):
+            logger.warning('Tried to set permissions of %s by non-owner %s.',
+                           unicode(instance), unicode(request.user))
+            raise PermissionDenied()
+        name = request.POST['perm-new-name']
+        if (User.objects.filter(username=name).count() +
+                Group.objects.filter(name=name).count() < 1
+                and len(name) > 0):
+            warning(request, _('User or group "%s" not found.') % name)
+        else:
+            self.set_levels(request, instance)
+            self.add_levels(request, instance)
+#        return redirect(self.profile)
+        return redirect(reverse("dashboard.views.group-detail",
+                                kwargs=self.kwargs))
+
+    def repost(self, request, *args, **kwargs):
+        group = self.get_object()
+        if not (group.profile.has_level(request.user, "owner") or
+                getattr(group.profile, 'owner', None) == request.user):
+            logger.warning('Tried to set permissions of %s by non-owner %s.',
+                           unicode(group), unicode(request.user))
+            raise PermissionDenied()
+
+        name = request.POST['perm-new-name']
+        if (User.objects.filter(username=name).count() +
+                Group.objects.filter(name=name).count() < 1
+                and len(name) > 0):
+            warning(request, _('User or group "%s" not found.') % name)
+        else:
+            self.set_levels(request, group.profile)
+            self.add_levels(request, group.profile)
+
+        return redirect(reverse("dashboard.views.group-detail",
+                                kwargs=self.kwargs))
+
+
 class TemplateCreate(SuccessMessageMixin, CreateView):
     model = InstanceTemplate
     form_class = TemplateForm
@@ -639,7 +737,7 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super(TemplateDetail, self).get_context_data(**kwargs)
-        context['acl'] = get_acl_data(self.get_object())
+        context['acl'] = get_vm_acl_data(self.get_object())
         return context
 
     def get_success_url(self):
@@ -758,6 +856,98 @@ class GroupList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
     model = Group
     table_class = GroupListTable
     table_pagination = False
+
+
+class GroupUserDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
+
+    """This stuff deletes the group.
+    """
+    model = User
+    template_name = "dashboard/confirm/base-delete.html"
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/confirm/ajax-delete.html']
+        else:
+            return ['dashboard/confirm/base-delete.html']
+
+    def get_context_data(self, **kwargs):
+        # this is redundant now, but if we wanna add more to print
+        # we'll need this
+        context = super(GroupUserDelete, self).get_context_data(**kwargs)
+        return context
+
+    # github.com/django/django/blob/master/django/views/generic/edit.py#L245
+    def delete(self, request, *args, **kwargs):
+        object = self.get_object()
+
+        object.delete()
+        success_url = self.get_success_url()
+        success_message = _("Group successfully deleted!")
+
+        if request.is_ajax():
+            if request.POST.get('redirect').lower() == "true":
+                messages.success(request, success_message)
+            return HttpResponse(
+                json.dumps({'message': success_message}),
+                content_type="application/json",
+            )
+        else:
+            messages.success(request, success_message)
+            return HttpResponseRedirect(success_url)
+
+    def get_success_url(self):
+        next = self.request.POST.get('next')
+        if next:
+            return next
+        else:
+            return reverse_lazy('dashboard.index')
+
+
+class GroupDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
+
+    """This stuff deletes the group.
+    """
+    model = Group
+    template_name = "dashboard/confirm/base-delete.html"
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/confirm/ajax-delete.html']
+        else:
+            return ['dashboard/confirm/base-delete.html']
+
+    def get_context_data(self, **kwargs):
+        # this is redundant now, but if we wanna add more to print
+        # we'll need this
+        context = super(GroupDelete, self).get_context_data(**kwargs)
+        return context
+
+    # github.com/django/django/blob/master/django/views/generic/edit.py#L245
+    def delete(self, request, *args, **kwargs):
+        object = self.get_object()
+
+        object.delete()
+        success_url = self.get_success_url()
+        success_message = _("Group successfully deleted!")
+
+        if request.is_ajax():
+            if request.POST.get('redirect').lower() == "true":
+                messages.success(request, success_message)
+            return HttpResponse(
+                json.dumps({'message': success_message}),
+                content_type="application/json",
+            )
+        else:
+            messages.success(request, success_message)
+            return HttpResponseRedirect(success_url)
+
+    def get_success_url(self):
+        next = self.request.POST.get('next')
+        if next:
+            return next
+        else:
+            return reverse_lazy('dashboard.index')
 
 
 class VmCreate(LoginRequiredMixin, TemplateView):

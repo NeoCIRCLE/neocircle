@@ -19,7 +19,6 @@ from firewall.models import Vlan, Host
 from storage.models import Disk, DataStore
 from vm.models import InstanceTemplate, Lease, InterfaceTemplate, Node
 
-
 VLANS = Vlan.objects.all()
 DISKS = Disk.objects.exclude(type="qcow2-snap")
 
@@ -554,7 +553,6 @@ class TemplateForm(forms.ModelForm):
                 Field('description'),
                 Field("parent", type="hidden"),
                 Field("system"),
-                Field("state"),
             ),
             Fieldset(
                 _("Exeternal"),
@@ -569,6 +567,7 @@ class TemplateForm(forms.ModelForm):
 
     class Meta:
         model = InstanceTemplate
+        exclude = ('state', )
 
 
 class LeaseForm(forms.ModelForm):

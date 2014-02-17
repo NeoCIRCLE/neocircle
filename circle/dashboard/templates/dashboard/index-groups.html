@@ -1,17 +1,17 @@
 <div class="panel panel-default">
   <div class="panel-heading">
-    <ul class="list-inline pull-right">
-      <li><a href="#vm-graph-view" class="btn btn-default btn-xs"><i class="icon-dashboard"></i></a></li>
-      <li><a href="#vm-list-view" class="btn btn-default btn-xs"><i class="icon-list"></i></a></li>
-    </ul>
-    <h3 class="no-margin"><i class="icon-group"></i> Groups
-    </h3>
-  </div>
+   <div class="pull-right toolbar">
+      <span class="btn btn-default btn-xs infobtn" title="Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui.  "><i class="icon-info-sign"></i></span>
+</div> 
+<h3 class="no-margin"><i class="icon-group"></i> Groups
+</h3>
+ 
+</div>
   <div class="list-group" id="vm-list-view">
      {% for i in groups %}
-    <a href="#" class="list-group-item">
-	    <i class="icon-file"></i> {{ i.name }}<div class="pull-right"><i class="icon-download-alt "></i></div>
-    </a>
+     <a href="{% url "dashboard.views.group-detail" pk=i.pk %}" class="list-group-item real-link">
+<i class="icon-group"></i> {{ i.name }}
+</a>
    {% endfor %}
     <div href="#" class="list-group-item list-group-footer text-right">
       <div class="row">

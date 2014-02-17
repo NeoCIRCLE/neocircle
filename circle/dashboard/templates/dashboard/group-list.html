@@ -15,16 +15,13 @@
   <div class="col-md-12">
     <div class="panel panel-default">
       <div class="panel-heading">
-        <h3 class="no-margin"><i class="icon-desktop"></i> Your nodes</h3>
+        <h3 class="no-margin"><i class="icon-group"></i> Your groups</h3>
       </div>
-      <div class="panel-body node-list-group-control">
+      <div class="panel-body group-list-group-control">
         <p>
           <strong>Group actions</strong>
-          <button id="node-list-group-select-all" class="btn btn-info btn-xs">Select all</button>
-          <a class="btn btn-default btn-xs" id="node-list-group-migrate" disabled><i class="icon-truck"></i> Migrate</a>
-          <a disabled href="#" class="btn btn-default btn-xs"><i class="icon-refresh"></i> Reboot</a>
-          <a disabled href="#" class="btn btn-default btn-xs"><i class="icon-off"></i> Shutdown</a>
-          <a id="node-list-group-delete" disabled href="#" class="btn btn-danger btn-xs"><i class="icon-remove"></i> Discard</a>
+          <button id="group-list-group-select-all" class="btn btn-info btn-xs">Select all</button>
+          <a id="group-list-group-delete" disabled href="#" class="btn btn-danger btn-xs"><i class="icon-remove"></i> Discard</a>
         </p>
 	</div>
 	<div id="table_container">
@@ -41,28 +38,28 @@
     max-width: 600px;
   }
 
-  .node-list-selected, .node-list-selected td {
+  .group-list-selected, .group-list-selected td {
     background-color: #e8e8e8 !important;
   }
 
-  .node-list-selected:hover, .node-list-selected:hover td {
+  .group-list-selected:hover, .group-list-selected:hover td {
     background-color: #d0d0d0 !important;
   }
 
-  .node-list-selected td:first-child {
+  .group-list-selected td:first-child {
     font-weight: bold;
   }
 
-  .node-list-table-thin {
+  .group-list-table-thin {
     width: 10px;
   }
 
-  .node-list-table-admin {
+  .group-list-table-admin {
     width: 130px;
   }
 </style>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ STATIC_URL}}dashboard/node-list.js"></script>
+<script src="{{ STATIC_URL}}dashboard/group-list.js"></script>
 {% endblock %}
