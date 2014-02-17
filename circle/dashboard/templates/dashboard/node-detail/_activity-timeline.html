@@ -1,0 +1,27 @@
+{% load i18n %}
+{% for a in activities %}
+<div class="activity" data-activity-id="{{ a.pk }}">
+  <span class="timeline-icon{% if a.has_failed %} timeline-icon-failed{% endif %}">
+  <i class="{% if not a.finished %} icon-refresh icon-spin {% else %}icon-plus{% endif %}"></i>
+</span>
+<strong>{{ a.get_readable_name }}</strong>
+{{ a.started|date:"Y-m-d H:i" }}, {{ a.user }}
+  {% if a.children.count > 0 %}
+    <div class="sub-timeline">
+      {% for s in a.children.all %}
+      <div data-activity-id="{{ s.pk }}" class="sub-activity{% if s.has_failed %} sub-activity-failed{% endif %}">
+        {{ s.get_readable_name }} - 
+        {% if s.finished %}
+          {{ s.finished|time:"H:i:s" }}
+        {% else %}
+          <i class="icon-refresh icon-spin" class="sub-activity-loading-icon"></i>
+        {% endif %}
+        {% if s.has_failed %}
+          <div class="label label-danger">{% trans "failed" %}</div>
+        {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+{% endfor %}
