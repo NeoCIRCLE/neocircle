@@ -1,3 +1,4 @@
+{% load i18n %}
 <div class="row">
   <div class="col-md-4">
     <dl>
@@ -6,6 +7,30 @@
       <dt>Description:</dt>
       <dd><small>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc est libero, hendrerit at posuere sed, molestie congue quam. </small></dd>
     </dl>
+    <div style="font-weight: bold;">{% trans "Traits" %}</div>
+    <div id="node-details-traits" style="margin-bottom: 20px;">
+      <div id="node-details-traits-list">
+        {% if node.tags.all %}
+          {% for t in node.tags.all %}
+            <div class="label label-primary label-tag" style="display: inline-block">
+              {{ t }}
+              <a href="#" class="node-details-remove-trait"><i class="icon-remove"></i></a>
+            </div>
+          {% endfor %}
+        {% else %}
+          <small>No trait added!</small>
+        {% endif %}
+      </div>
+      <form action="" method="POST">
+        {% csrf_token %}
+        <div class="input-group" id="node-details-trait-form">
+          <input type="text" class="form-control input-sm input-traits" name="new_trait" id="node-details-traits-input"/>
+          <div class="input-group-btn">
+            <input type="submit" class="btn btn-default btn-sm input-traits" value="{% trans "Add trait" %}"/>
+          </div>
+        </div>
+      </form>
+    </div><!-- id:node-details-traits -->
   </div>
   <div class="col-md-8">
 <img src="/static/grafikon.png" style="width:45%"/>
