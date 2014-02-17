@@ -11,6 +11,11 @@ def create(disk_desc):
     pass
 
 
+@celery.task(name='storagedriver.download')
+def download(disk_desc, url):
+    pass
+
+
 @celery.task(name='storagedriver.delete')
 def delete(path):
     pass
