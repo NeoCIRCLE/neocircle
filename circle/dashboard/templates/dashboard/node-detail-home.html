@@ -10,8 +10,8 @@
     <div style="font-weight: bold;">{% trans "Traits" %}</div>
     <div id="node-details-traits" style="margin-bottom: 20px;">
       <div id="node-details-traits-list">
-        {% if node.tags.all %}
-          {% for t in node.tags.all %}
+        {% if node.traits.all %}
+          {% for t in node.traits.all %}
             <div class="label label-primary label-tag" style="display: inline-block">
               {{ t }}
               <a href="#" class="node-details-remove-trait"><i class="icon-remove"></i></a>

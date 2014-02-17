@@ -34,7 +34,7 @@ from .tables import (VmListTable, NodeListTable, NodeVmListTable,
                      TemplateListTable, LeaseListTable, GroupListTable,)
 from vm.models import (Instance, InstanceTemplate, InterfaceTemplate,
                        InstanceActivity, Node, instance_activity, Lease,
-                       Interface)
+                       Interface, NodeActivity, Trait)
 from firewall.models import Vlan, Host, Rule
 from storage.models import Disk
 from dashboard.models import Favourite
@@ -444,6 +444,10 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
         context = super(NodeDetailView, self).get_context_data(**kwargs)
         instances = Instance.active.filter(node=self.object)
         context['table'] = NodeVmListTable(instances)
+        ia = NodeActivity.objects.filter(
+            node=self.object, parent=None
+        ).order_by('-started').select_related()
+        context['activities'] = ia
         return context
 
     def post(self, request, *args, **kwargs):
@@ -451,6 +455,8 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
             return self.__set_name(request)
         if request.POST.get('new_status'):
             return self.__set_status(request)
+        if request.POST.get('new_trait'):
+            return self.__add_trait(request)
 
     def __set_name(self, request):
         self.object = self.get_object()
@@ -499,6 +505,25 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
             messages.success(request, success_message)
             return redirect(reverse_lazy("dashboard.views.node-detail",
                                          kwargs={'pk': self.object.pk}))
+
+    def __add_trait(self, request):
+        new_trait_name = request.POST.get('new_trait')
+        self.object = self.get_object()
+
+        if len(new_trait_name) < 1:
+            message = u"Please input something!"
+        elif len(new_trait_name) > 20:
+            message = u"Trait name is too long!"
+        else:
+            self.object.traits.create(name=new_trait_name)
+
+        try:
+            messages.error(request, message)
+        except:
+            pass
+
+        return redirect(reverse_lazy("dashboard.views.node-detail",
+                                     kwargs={'pk': self.object.pk}))
 
 
 class GroupDetailView(CheckedDetailView):
