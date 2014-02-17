@@ -50,13 +50,9 @@ def has_enough_ram(ram_size, node):
     """True, if the node has enough memory to accomodate a guest requiring
        ram_size mebibytes of memory; otherwise, false.
     """
-<<<<<<< HEAD
     total = node.ram_size
     used = (node.ram_usage() / 100) * total
     unused = total - used
-=======
-    unused = node.ram_size * (1 - node.ram_usage)
->>>>>>> e17952087c648c91908f22e85c4db7194c5f8f60
 
     overcommit = node.ram_size_with_overcommit
     reserved = node.instance_set.aggregate(r=Sum('ram_size'))['r'] or 0
@@ -70,11 +66,7 @@ def free_cpu_time(node):
 
     Higher values indicate more idle time.
     """
-<<<<<<< HEAD
     activity = node.cpu_usage() / 100
-=======
-    activity = node.cpu_usage
->>>>>>> e17952087c648c91908f22e85c4db7194c5f8f60
     inactivity = 1 - activity
     cores = node.num_cores
     return cores * inactivity
