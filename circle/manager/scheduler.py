@@ -51,7 +51,7 @@ def has_enough_ram(ram_size, node):
        ram_size mebibytes of memory; otherwise, false.
     """
     total = node.ram_size
-    used = 512  # TODO replace mock value with data from monitor
+    used = (node.ram_usage() / 100) * total
     unused = total - used
 
     overcommit = node.ram_size_with_overcommit
@@ -66,7 +66,7 @@ def free_cpu_time(node):
 
     Higher values indicate more idle time.
     """
-    activity = 0
+    activity = node.cpu_usage() / 100
     inactivity = 1 - activity
     cores = node.num_cores
-    return cores * inactivity  # TODO replace mock value with data from monitor
+    return cores * inactivity
