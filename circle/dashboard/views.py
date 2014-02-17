@@ -81,6 +81,9 @@ class IndexView(LoginRequiredMixin, TemplateView):
             'more_instances': instances.count() - len(instances[:5])
         })
 
+        if user is not None:
+            context['notifications'] = user.notification_set.all()[:10]
+
         nodes = Node.objects.all()
         groups = Group.objects.all()
         context.update({
