@@ -223,6 +223,42 @@ class Disk(AclBase, TimeStampedModel):
         return local_tasks.deploy.apply_async(args=[self, user],
                                               queue="localhost.man")
 
+    @classmethod
+    def create_empty(cls, params={}, user=None):
+        disk = cls()
+        disk.__dict__.update(params)
+        disk.save()
+        return disk
+
+    @classmethod
+    def create_from_url_async(cls, url, params, user=None):
+        return local_tasks.create_from_url.apply_async(args=[cls, url, params,
+                                                             user],
+                                                       queue='localhost.man')
+
+    @classmethod
+    def create_from_url(cls, url, params={}, user=None, task_uuid=None):
+        disk = cls()
+        disk.filename = str(uuid.uuid4())
+        disk.type = "iso"
+        disk.size = 1
+        disk.datastore = DataStore.objects.all()[0]
+        disk.__dict__.update(params)
+        disk.save()
+        queue_name = disk.get_remote_queue_name('storage')
+
+        def __onabort(activity, error):
+            activity.disk.delete()
+            raise error
+
+        with disk_activity(code_suffix='download', disk=disk,
+                           task_uuid=task_uuid, user=user):
+            size = remote_tasks.download.apply_async(
+                kwargs={'url': url, 'disk': disk.get_disk_desc()},
+                queue=queue_name).get()
+            disk.size = size
+            disk.save()
+
     def destroy(self, user=None, task_uuid=None):
         if self.destroyed:
             return False
