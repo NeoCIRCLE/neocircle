@@ -14,6 +14,10 @@ from model_utils.models import TimeStampedModel
 logger = getLogger(__name__)
 
 
+class WorkerNotFound(Exception):
+    pass
+
+
 def activitycontextimpl(act, on_abort=None, on_commit=None):
     try:
         yield act
