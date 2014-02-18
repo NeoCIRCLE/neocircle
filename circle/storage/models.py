@@ -13,7 +13,7 @@ from sizefield.models import FileSizeField
 
 from acl.models import AclBase
 from .tasks import local_tasks, remote_tasks
-from common.models import ActivityModel, activitycontextimpl
+from common.models import ActivityModel, activitycontextimpl, WorkerNotFound
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +36,12 @@ class DataStore(Model):
         return u'%s (%s)' % (self.name, self.path)
 
     def get_remote_queue_name(self, queue_id):
-        return self.hostname + '.' + queue_id
+        logger.debug("Checking for storage queue %s.%s",
+                     self.hostname, queue_id)
+        if local_tasks.check_queue(self.hostname, queue_id):
+            return self.hostname + '.' + queue_id
+        else:
+            raise WorkerNotFound()
 
 
 class Disk(AclBase, TimeStampedModel):

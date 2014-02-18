@@ -2,6 +2,25 @@ from manager.mancelery import celery
 
 
 @celery.task
+def check_queue(storage, queue_id):
+    ''' Celery inspect job to check for active workers at queue_id
+        return True/False
+    '''
+    drivers = ['storage', 'download']
+    worker_list = [storage + "." + d for d in drivers]
+    queue_name = storage + "." + queue_id
+    # v is List of List of queues dict
+    active_queues = celery.control.inspect(worker_list).active_queues()
+    if active_queues is not None:
+        node_workers = [v for k, v in active_queues.iteritems()]
+        for worker in node_workers:
+            for queue in worker:
+                if queue['name'] == queue_name:
+                    return True
+    return False
+
+
+@celery.task
 def deploy(disk, user):
     disk.deploy(task_uuid=deploy.request.id, user=user)
 
