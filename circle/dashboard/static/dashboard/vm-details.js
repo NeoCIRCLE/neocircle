@@ -201,6 +201,11 @@ function checkNewActivity(only_state, runs) {
       }
 
       $("#vm-details-state").html(data['state']);
+      if(data['state'] == "RUNNING") {
+        $("[data-target=#_console]").attr("data-toggle", "pill").parent("li").removeClass("disabled");
+      } else {
+        $("[data-target=#_console]").attr("data-toggle", "_pill").parent("li").addClass("disabled");
+      }
 
       if(decideActivityRefresh()) {
         console.log("szia");
