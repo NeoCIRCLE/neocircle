@@ -11,7 +11,7 @@ from celery.exceptions import TimeoutError
 from model_utils.models import TimeStampedModel
 from taggit.managers import TaggableManager
 
-from common.models import method_cache
+from common.models import method_cache, WorkerNotFound
 from firewall.models import Host
 from ..tasks import vm_tasks
 from .common import Trait
@@ -117,7 +117,7 @@ class Node(TimeStampedModel):
         if vm_tasks.check_queue(self.host.hostname, queue_id):
             return self.host.hostname + "." + queue_id
         else:
-            raise Exception("Worker not found.")
+            raise WorkerNotFound()
 
     def remote_query(self, task, timeout=30, raise_=False, default=None):
         """Query the given task, and get the result.
