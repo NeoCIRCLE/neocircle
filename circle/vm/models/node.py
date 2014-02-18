@@ -194,6 +194,8 @@ class Node(TimeStampedModel):
             except KeyError:
                 logger.info('Node %s update: instance %s missing from '
                             'libvirt', self, i['id'])
+                # Set state to STOPPED when instance is missing
+                self.instance_set.get(id=i['id']).vm_state_changed('STOPPED')
             else:
                 if d != i['state']:
                     logger.info('Node %s update: instance %s state changed '

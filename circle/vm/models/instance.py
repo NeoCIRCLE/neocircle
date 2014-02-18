@@ -286,8 +286,13 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
     def vm_state_changed(self, new_state):
         try:
-            act = InstanceActivity.create(code_suffix='vm_state_changed',
-                                          instance=self)
+            act = InstanceActivity.create(
+                code_suffix='monitor_event_%s' % new_state,
+                instance=self)
+            if new_state == "STOPPED":
+                self.vnc_port = None
+                self.node = None
+                self.save()
         except ActivityInProgressError:
             pass  # discard state change if another activity is in progress.
         else:
