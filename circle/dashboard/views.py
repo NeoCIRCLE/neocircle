@@ -457,6 +457,8 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
             return self.__set_status(request)
         if request.POST.get('new_trait'):
             return self.__add_trait(request)
+        if request.POST.get('to_remove'):
+            return self.__remove_trait(request)
 
     def __set_name(self, request):
         self.object = self.get_object()
@@ -524,6 +526,22 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
 
         return redirect(reverse_lazy("dashboard.views.node-detail",
                                      kwargs={'pk': self.object.pk}))
+
+    def __remove_trait(self, request):
+        try:
+            to_remove = request.POST.get('to_remove')
+            self.object = self.get_object()
+
+            self.object.tags.remove(to_remove)
+            message = u"Success"
+        except:  # note this won't really happen
+            message = u"Not success"
+
+        if request.is_ajax():
+            return HttpResponse(
+                json.dumps({'message': message}),
+                content_type="application=json"
+            )
 
 
 class GroupDetailView(CheckedDetailView):
