@@ -28,7 +28,8 @@ from django_tables2 import SingleTableView
 from braces.views import LoginRequiredMixin, SuperuserRequiredMixin
 
 from .forms import (
-    VmCreateForm, TemplateForm, LeaseForm, NodeForm, HostForm, DiskAddForm,
+    VmCustomizeForm, TemplateForm, LeaseForm, NodeForm, HostForm,
+    DiskAddForm,
 )
 from .tables import (VmListTable, NodeListTable, NodeVmListTable,
                      TemplateListTable, LeaseListTable, GroupListTable,)
@@ -36,7 +37,6 @@ from vm.models import (Instance, InstanceTemplate, InterfaceTemplate,
                        InstanceActivity, Node, instance_activity, Lease,
                        Interface)
 from firewall.models import Vlan, Host, Rule
-from storage.models import Disk
 from dashboard.models import Favourite
 
 logger = logging.getLogger(__name__)
@@ -952,7 +952,7 @@ class GroupDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
 
 class VmCreate(LoginRequiredMixin, TemplateView):
 
-    form_class = VmCreateForm
+    form_class = VmCustomizeForm
     form = None
 
     def get_template_names(self):
@@ -962,30 +962,94 @@ class VmCreate(LoginRequiredMixin, TemplateView):
             return ['dashboard/nojs-wrapper.html']
 
     def get(self, request, form=None, *args, **kwargs):
-        if form is None:
-            form = self.form_class()
-        form.fields['disks'].queryset = Disk.get_objects_with_level(
-            'user', request.user).exclude(type="qcow2-snap")
-        form.fields['networks'].queryset = Vlan.get_objects_with_level(
-            'user', request.user)
+        form_error = form is not None
+        template = (form.template.pk if form_error
+                    else request.GET.get("template"))
         templates = InstanceTemplate.get_objects_with_level('user',
                                                             request.user)
-        form.fields['template'].queryset = templates
+        if form is None and template:
+            form = self.form_class(user=request.user,
+                                   template=templates.get(pk=template))
+
         context = self.get_context_data(**kwargs)
-        context.update({
-            'template': 'dashboard/vm-create.html',
-            'box_title': 'Create a VM',
-            'vm_create_form': form,
-        })
+        if template:
+            context.update({
+                'template': 'dashboard/_vm-create-2.html',
+                'box_title': _('Customize VM'),
+                'ajax_title': False,
+                'vm_create_form': form,
+                'template_o': templates.get(pk=template),
+            })
+        else:
+            context.update({
+                'template': 'dashboard/_vm-create-1.html',
+                'box_title': _('Create a VM'),
+                'ajax_title': False,
+                'templates': templates.all(),
+            })
         return self.render_to_response(context)
 
-    def post(self, request, *args, **kwargs):
-        form = self.form_class(request.POST)
+    def __create_normal(self, request, *args, **kwargs):
+        user = request.user
+        template = InstanceTemplate.objects.get(
+            pk=request.POST.get("template"))
+
+        # permission check
+        if not template.has_level(request.user, 'user'):
+            raise PermissionDenied()
+
+        inst = Instance.create_from_template(
+            template=template, owner=user)
+        return self.__deploy(request, inst)
+
+    def __create_customized(self, request, *args, **kwargs):
+        user = request.user
+        form = self.form_class(
+            request.POST, user=request.user,
+            template=InstanceTemplate.objects.get(
+                pk=request.POST.get("template")
+            )
+        )
         if not form.is_valid():
             return self.get(request, form, *args, **kwargs)
         post = form.cleaned_data
+
+        template = InstanceTemplate.objects.get(pk=post['template'])
+        # permission check
+        if not template.has_level(user, 'user'):
+            raise PermissionDenied()
+
+        if request.user.has_perm('vm.set_resources'):
+            ikwargs = {
+                'name': post['name'],
+                'num_cores': post['cpu_count'],
+                'ram_size': post['ram_size'],
+                'priority': post['cpu_priority'],
+            }
+            networks = [InterfaceTemplate(vlan=l, managed=l.managed)
+                        for l in post['networks']]
+            disks = post['disks']
+            inst = Instance.create_from_template(
+                template=template, owner=user, networks=networks,
+                disks=disks, **ikwargs)
+            return self.__deploy(request, inst)
+        else:
+            raise PermissionDenied()
+
+    def __deploy(self, request, instance, *args, **kwargs):
+        instance.deploy_async(user=request.user)
+        messages.success(request, _('VM successfully created!'))
+        path = instance.get_absolute_url()
+        if request.is_ajax():
+            return HttpResponse(json.dumps({'redirect': path}),
+                                content_type="application/json")
+        else:
+            return redirect("%s#activity" % path)
+
+    def post(self, request, *args, **kwargs):
         user = request.user
 
+        # limit chekcs
         try:
             limit = user.profile.instance_limit
         except Exception as e:
@@ -1002,32 +1066,11 @@ class VmCreate(LoginRequiredMixin, TemplateView):
                 else:
                     return redirect('/')
 
-        template = post['template']
-        if not template.has_level(request.user, 'user'):
-            raise PermissionDenied()
-        if request.user.has_perm('vm.set_resources'):
-            ikwargs = {
-                'num_cores': post['cpu_count'],
-                'ram_size': post['ram_size'],
-                'priority': post['cpu_priority'],
-            }
-            networks = [InterfaceTemplate(vlan=l, managed=l.managed)
-                        for l in post['networks']]
-            disks = post['disks']
-            inst = Instance.create_from_template(
-                template=template, owner=user, networks=networks,
-                disks=disks, **ikwargs)
-        else:
-            inst = Instance.create_from_template(
-                template=template, owner=user)
-        inst.deploy_async(user=request.user)
-        messages.success(request, _('VM successfully created!'))
-        path = inst.get_absolute_url()
-        if request.is_ajax():
-            return HttpResponse(json.dumps({'redirect': path}),
-                                content_type="application/json")
-        else:
-            return redirect(path)
+        create_func = (self.__create_normal if
+                       request.POST.get("customized") is None else
+                       self.__create_customized)
+
+        return create_func(request, *args, **kwargs)
 
 
 class NodeCreate(LoginRequiredMixin, SuperuserRequiredMixin, TemplateView):
