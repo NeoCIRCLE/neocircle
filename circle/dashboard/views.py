@@ -34,7 +34,7 @@ from .tables import (VmListTable, NodeListTable, NodeVmListTable,
                      TemplateListTable, LeaseListTable, GroupListTable,)
 from vm.models import (Instance, InstanceTemplate, InterfaceTemplate,
                        InstanceActivity, Node, instance_activity, Lease,
-                       Interface, NodeActivity, Trait)
+                       Interface, NodeActivity, )
 from firewall.models import Vlan, Host, Rule
 from storage.models import Disk
 from dashboard.models import Favourite
