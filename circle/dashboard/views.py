@@ -531,8 +531,7 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
         try:
             to_remove = request.POST.get('to_remove')
             self.object = self.get_object()
-
-            self.object.tags.remove(to_remove)
+            self.object.traits.remove(to_remove)
             message = u"Success"
         except:  # note this won't really happen
             message = u"Not success"

@@ -14,7 +14,7 @@
           {% for t in node.traits.all %}
             <div class="label label-success label-tag" style="display: inline-block">
               {{ t }}
-              <a href="#" class="node-details-remove-trait"><i class="icon-remove"></i></a>
+	      <a data-trait-pk="{{ t.pk }}" href="#" class="node-details-remove-trait"><i class="icon-remove"></i></a>
             </div>
           {% endfor %}
         {% else %}
