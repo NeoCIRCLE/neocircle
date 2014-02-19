@@ -6,8 +6,11 @@ def check_queue(node_hostname, queue_id):
     worker_list = [node_hostname + "." + d for d in drivers]
     queue_name = node_hostname + "." + queue_id
     inspect = celery.control.inspect(worker_list)
+    active_queues = inspect.active_queues()
+    if active_queues is None:
+        return False
     # v is List of List of queues dict
-    node_workers = [v for k, v in inspect.active_queues().iteritems()]
+    node_workers = [v for k, v in active_queues.iteritems()]
     for worker in node_workers:
         for queue in worker:
             if queue['name'] == queue_name:
