@@ -13,18 +13,10 @@ class Migration(SchemaMigration):
                       self.gf('django.db.models.fields.TextField')(default='', blank=True),
                       keep_default=False)
 
-        # Adding field 'InstanceTemplate.owner'
-        db.add_column(u'vm_instancetemplate', 'owner',
-                      self.gf('django.db.models.fields.related.ForeignKey')(default=0, to=orm['auth.User']),
-                      keep_default=False)
-
 
     def backwards(self, orm):
         # Deleting field 'Instance.system'
         db.delete_column(u'vm_instance', 'system')
-
-        # Deleting field 'InstanceTemplate.owner'
-        db.delete_column(u'vm_instancetemplate', 'owner_id')
 
 
     models = {
