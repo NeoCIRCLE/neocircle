@@ -74,6 +74,11 @@ class VirtualMachineDescModel(BaseResourceConfigModel):
                                              "node to declare to be suitable "
                                              "for hosting the VM."),
                                  verbose_name=_("required traits"))
+    system = TextField(verbose_name=_('operating system'),
+                       blank=True,
+                       help_text=(_('Name of operating system in '
+                                    'format like "%s".') %
+                                  'Ubuntu 12.04 LTS Desktop amd64'))
     tags = TaggableManager(blank=True, verbose_name=_("tags"))
 
     class Meta:
@@ -111,11 +116,6 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
     parent = ForeignKey('self', null=True, blank=True,
                         verbose_name=_('parent template'),
                         help_text=_('Template which this one is derived of.'))
-    system = TextField(verbose_name=_('operating system'),
-                       blank=True,
-                       help_text=(_('Name of operating system in '
-                                    'format like "%s".') %
-                                  'Ubuntu 12.04 LTS Desktop amd64'))
     state = CharField(max_length=10, choices=STATES, default='NEW')
     disks = ManyToManyField(Disk, verbose_name=_('disks'),
                             related_name='template_set',
@@ -963,7 +963,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
         def __try_save_disk(disk):
             try:
-                return disk.save_as()
+                return disk.save_as()  # can do in parallel
             except Disk.WrongDiskTypeError:
                 return disk
 
