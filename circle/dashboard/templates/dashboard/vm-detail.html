@@ -103,7 +103,7 @@
               {% trans "Resources" %}</a>
           </li>
           <li {% if instance.state != "RUNNING" %}class="disabled"{% endif %}>
-            <a href="#" {% if instance.state == "RUNNING" %}data-toggle="pill"{% endif %} data-target="#_console" class="text-center">
+            <a href="#{% if instance.state == "RUNNING" %}console" data-toggle="pill{% endif %}" data-target="#_console" class="text-center">
               <i class="icon-desktop icon-2x"></i><br>
               {% trans "Console" %}</a></li>
           <li>

@@ -49,7 +49,7 @@
     } return false;});
 
 
-    $('a[href$="console"]').click(function() {
+    $("body").on("click", 'a[href$="console"]', function() {
         var host, port, password, path;
 
         $("#vm-info-pane").hide();
