@@ -5,12 +5,12 @@ from importlib import import_module
 import string
 
 import django.conf
-from django.db.models import (BooleanField, CharField, DateTimeField,
-                              IntegerField, ForeignKey, Manager,
-                              ManyToManyField, permalink, TextField)
 from django.contrib.auth.models import User
 from django.core import signing
 from django.core.exceptions import PermissionDenied
+from django.db.models import (BooleanField, CharField, DateTimeField,
+                              IntegerField, ForeignKey, Manager,
+                              ManyToManyField, permalink, SET_NULL, TextField)
 from django.dispatch import Signal
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -180,7 +180,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                      help_text=_("Human readable name of instance."))
     description = TextField(blank=True, verbose_name=_('description'))
     template = ForeignKey(InstanceTemplate, blank=True, null=True,
-                          related_name='instance_set',
+                          related_name='instance_set', on_delete=SET_NULL,
                           help_text=_("Template the instance derives from."),
                           verbose_name=_('template'))
     pw = CharField(help_text=_("Original password of the instance."),
