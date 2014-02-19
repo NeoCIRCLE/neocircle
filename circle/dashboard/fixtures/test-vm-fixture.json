@@ -1462,7 +1462,6 @@
     "modified": "2014-01-24T00:58:19.654Z", 
     "system": "", 
     "priority": 20, 
-    "state": "READY", 
     "access_method": "ssh", 
     "raw_data": "", 
     "arch": "x86_64", 
