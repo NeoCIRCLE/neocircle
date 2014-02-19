@@ -106,9 +106,6 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
         ('operator', _('operator')),
         ('owner', _('owner')),        # superuser, can delete, delegate perms
     )
-    STATES = [('NEW', _('new')),        # template has just been created
-              ('SAVING', _('saving')),  # changes are being saved
-              ('READY', _('ready'))]    # template is ready for instantiation
     name = CharField(max_length=100, unique=True,
                      verbose_name=_('name'),
                      help_text=_('Human readable name of template.'))
@@ -116,7 +113,6 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
     parent = ForeignKey('self', null=True, blank=True,
                         verbose_name=_('parent template'),
                         help_text=_('Template which this one is derived of.'))
-    state = CharField(max_length=10, choices=STATES, default='NEW')
     disks = ManyToManyField(Disk, verbose_name=_('disks'),
                             related_name='template_set',
                             help_text=_('Disks which are to be mounted.'))
