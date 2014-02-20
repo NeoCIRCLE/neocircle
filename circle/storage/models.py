@@ -374,6 +374,7 @@ class DiskActivity(ActivityModel):
 
 
 @contextmanager
-def disk_activity(code_suffix, disk, task_uuid=None, user=None):
+def disk_activity(code_suffix, disk, task_uuid=None, user=None,
+                  on_abort=None, on_commit=None):
     act = DiskActivity.create(code_suffix, disk, task_uuid, user)
-    return activitycontextimpl(act)
+    return activitycontextimpl(act, on_abort=on_abort, on_commit=on_commit)
