@@ -1004,9 +1004,12 @@ class GroupAclRemoveView(LoginRequiredMixin, DeleteView):
         else:
             return ['dashboard/confirm/base-remove.html']
 
+    def remove_user(self, userpk):
+        container = self.get_object().profile
+        container.set_level(User.objects.get(pk=userpk), None)
+
     def delete(self, request, *args, **kwargs):
-        object = self.get_object()
-        object.profile.set_level(User.objects.get(pk=kwargs["user_pk"]), None)
+        self.remove_user(kwargs["user_pk"])
         success_url = self.get_success_url()
         success_message = _("Acl member successfully removed from group!")
 
