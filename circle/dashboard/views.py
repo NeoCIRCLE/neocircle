@@ -1006,7 +1006,7 @@ class GroupMemberRemoveView(LoginRequiredMixin, DeleteView):
 
     def remove_user(self, userpk):
         container = self.get_object()
-        container.set_level(User.objects.get(pk=userpk), None)
+        container.user_set.remove(User.objects.get(pk=userpk))
 
     def get_success_message(self):
         return _("Member successfully removed from group!")
