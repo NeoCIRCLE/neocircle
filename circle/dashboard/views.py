@@ -986,6 +986,40 @@ class GroupUserDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
             return reverse_lazy('dashboard.index')
 
 
+class GroupAclRemoveView(LoginRequiredMixin, DeleteView):
+    model = Group
+    slug_field = 'pk'
+    slug_url_kwarg = 'group_pk'
+
+    def get_success_url(self):
+        next = self.request.POST.get('next')
+        if next:
+            return next
+        else:
+            return reverse_lazy('dashboard.views.group-list')
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/confirm/ajax-remove.html']
+        else:
+            return ['dashboard/confirm/base-remove.html']
+
+    def delete(self, request, *args, **kwargs):
+        object = self.get_object()
+        object.profile.set_level(User.objects.get(pk=kwargs["user_pk"]), None)
+        success_url = self.get_success_url()
+        success_message = _("Acl member successfully removed from group!")
+
+        if request.is_ajax():
+            return HttpResponse(
+                json.dumps({'message': success_message}),
+                content_type="application/json",
+            )
+        else:
+            messages.success(request, success_message)
+            return HttpResponseRedirect(success_url)
+
+
 class GroupDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
 
     """This stuff deletes the group.
