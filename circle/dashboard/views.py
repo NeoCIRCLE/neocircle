@@ -986,7 +986,7 @@ class GroupUserDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
             return reverse_lazy('dashboard.index')
 
 
-class GroupAclRemoveView(LoginRequiredMixin, DeleteView):
+class GroupUserRemoveView(LoginRequiredMixin, DeleteView):
     model = Group
     slug_field = 'pk'
     slug_url_kwarg = 'group_pk'
@@ -1005,13 +1005,16 @@ class GroupAclRemoveView(LoginRequiredMixin, DeleteView):
             return ['dashboard/confirm/base-remove.html']
 
     def remove_user(self, userpk):
-        container = self.get_object().profile
+        container = self.get_object()
         container.set_level(User.objects.get(pk=userpk), None)
+
+    def get_success_message(self):
+        return _("Member successfully removed from group!")
 
     def delete(self, request, *args, **kwargs):
         self.remove_user(kwargs["user_pk"])
         success_url = self.get_success_url()
-        success_message = _("Acl member successfully removed from group!")
+        success_message = self.get_success_message()
 
         if request.is_ajax():
             return HttpResponse(
@@ -1021,6 +1024,16 @@ class GroupAclRemoveView(LoginRequiredMixin, DeleteView):
         else:
             messages.success(request, success_message)
             return HttpResponseRedirect(success_url)
+
+
+class GroupAclRemoveView(GroupUserRemoveView):
+
+    def remove_user(self, userpk):
+        container = self.get_object().profile
+        container.set_level(User.objects.get(pk=userpk), None)
+
+    def get_success_message(self):
+        return _("Acl member successfully removed from group!")
 
 
 class GroupDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
