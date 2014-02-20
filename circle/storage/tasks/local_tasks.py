@@ -1,4 +1,5 @@
 from manager.mancelery import celery
+from celery.contrib.abortable import AbortableTask
 
 
 @celery.task
@@ -35,9 +36,15 @@ def restore(disk, user):
     disk.restore(task_uuid=restore.request.id, user=user)
 
 
-@celery.task
-def create_from_url(Disk, url, params, user):
-    Disk.create_from_url(url=url,
-                         params=params,
-                         task_uuid=create_from_url.request.id,
-                         user=user)
+class create_from_url(AbortableTask):
+
+    def run(self, **kwargs):
+        Disk = kwargs['cls']
+        url = kwargs['url']
+        params = kwargs['params']
+        user = kwargs['user']
+        Disk.create_from_url(url=url,
+                             params=params,
+                             task_uuid=create_from_url.request.id,
+                             abortable_task=self,
+                             user=user)
