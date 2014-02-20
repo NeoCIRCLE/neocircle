@@ -986,7 +986,7 @@ class GroupUserDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
             return reverse_lazy('dashboard.index')
 
 
-class GroupUserRemoveView(LoginRequiredMixin, DeleteView):
+class GroupMemberRemoveView(LoginRequiredMixin, DeleteView):
     model = Group
     slug_field = 'pk'
     slug_url_kwarg = 'group_pk'
@@ -1026,7 +1026,7 @@ class GroupUserRemoveView(LoginRequiredMixin, DeleteView):
             return HttpResponseRedirect(success_url)
 
 
-class GroupAclRemoveView(GroupUserRemoveView):
+class GroupAclRemoveView(GroupMemberRemoveView):
 
     def remove_user(self, userpk):
         container = self.get_object().profile
