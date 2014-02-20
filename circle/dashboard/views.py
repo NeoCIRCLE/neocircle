@@ -635,8 +635,6 @@ class AclUpdateView(LoginRequiredMixin, View, SingleObjectMixin):
             m = re.match('perm-([ug])-(\d+)', key)
             if m:
                 typ, id = m.groups()
-                print "+++++++++++++++++++++"
-                print typ
                 entity = {'u': User, 'g': Group}[typ].objects.get(id=id)
                 if getattr(instance, "owner", None) == entity:
                     logger.info("Tried to set owner's acl level for %s by %s.",
