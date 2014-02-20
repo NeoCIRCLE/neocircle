@@ -1,16 +1,16 @@
 from django.conf.urls import patterns, url
 
 from .views import (
-    AclUpdateView, DiskAddView, FavouriteView, GroupAclUpdateView,
-    GroupDelete, GroupDetailView, GroupList, GroupUserDelete,
-    IndexView, LeaseCreate, LeaseDelete, LeaseDetail, MyPreferencesView,
-    NodeAddTraitView, NodeCreate, NodeDelete, NodeDetailView, NodeFlushView,
-    NodeGraphView, NodeList, NodeStatus, NotificationView, PortDelete,
-    TemplateAclUpdateView, TemplateCreate, TemplateDelete, TemplateDetail,
-    TemplateList, TransferOwnershipConfirmView, TransferOwnershipView,
-    vm_activity, VmCreate, VmDelete, VmDetailView, VmDetailVncTokenView,
-    VmGraphView, VmList, VmMassDelete, VmMigrateView, VmRenewView,
-    GroupAclRemoveView, GroupMemberRemoveView
+    AclUpdateView, DiskAddView, FavouriteView, GroupAclUpdateView, GroupDelete,
+    GroupDetailView, GroupList, GroupUserDelete, IndexView, LeaseCreate,
+    LeaseDelete, LeaseDetail, MyPreferencesView, NodeAddTraitView, NodeCreate,
+    NodeDelete, NodeDetailView, NodeFlushView, NodeGraphView, NodeList,
+    NodeStatus, NotificationView, PortDelete, TemplateAclUpdateView,
+    TemplateCreate, TemplateDelete, TemplateDetail, TemplateList,
+    TransferOwnershipConfirmView, TransferOwnershipView, vm_activity, VmCreate,
+    VmDelete, VmDetailView, VmDetailVncTokenView, VmGraphView, VmList,
+    VmMassDelete, VmMigrateView, VmRenewView, GroupRemoveAclUserView,
+    GroupRemoveAclGroupView, GroupRemoveUserView
 )
 from vm.models import Instance
 
@@ -102,10 +102,13 @@ urlpatterns = patterns(
         name="dashboard.views.disk-add"),
     url(r'^profile/$', MyPreferencesView.as_view(),
         name="dashboard.views.profile"),
-    url(r'^group/(?P<group_pk>\d+)/remove/acl/(?P<user_pk>\d+)/$',
-        GroupAclRemoveView.as_view(),
-        name="dashboard.views.remove-groupaclmember"),
-    url(r'^group/(?P<group_pk>\d+)/remove/member/(?P<user_pk>\d+)/$',
-        GroupMemberRemoveView.as_view(),
-        name="dashboard.views.remove-groupmember"),
+    url(r'^group/(?P<group_pk>\d+)/remove/acl/user/(?P<user_pk>\d+)/$',
+        GroupRemoveAclUserView.as_view(),
+        name="dashboard.views.remove-acluser"),
+    url(r'^group/(?P<group_pk>\d+)/remove/acl/group/(?P<user_pk>\d+)/$',
+        GroupRemoveAclGroupView.as_view(),
+        name="dashboard.views.remove-aclgroup"),
+    url(r'^group/(?P<group_pk>\d+)/remove/user/(?P<user_pk>\d+)/$',
+        GroupRemoveUserView.as_view(),
+        name="dashboard.views.remove-user"),
 )

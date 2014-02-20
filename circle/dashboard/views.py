@@ -635,6 +635,8 @@ class AclUpdateView(LoginRequiredMixin, View, SingleObjectMixin):
             m = re.match('perm-([ug])-(\d+)', key)
             if m:
                 typ, id = m.groups()
+                print "+++++++++++++++++++++"
+                print typ
                 entity = {'u': User, 'g': Group}[typ].objects.get(id=id)
                 if getattr(instance, "owner", None) == entity:
                     logger.info("Tried to set owner's acl level for %s by %s.",
@@ -986,7 +988,7 @@ class GroupUserDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
             return reverse_lazy('dashboard.index')
 
 
-class GroupMemberRemoveView(LoginRequiredMixin, DeleteView):
+class GroupRemoveUserView(LoginRequiredMixin, DeleteView):
     model = Group
     slug_field = 'pk'
     slug_url_kwarg = 'group_pk'
@@ -1004,15 +1006,15 @@ class GroupMemberRemoveView(LoginRequiredMixin, DeleteView):
         else:
             return ['dashboard/confirm/base-remove.html']
 
-    def remove_user(self, userpk):
+    def remove_member(self, pk):
         container = self.get_object()
-        container.user_set.remove(User.objects.get(pk=userpk))
+        container.user_set.remove(User.objects.get(pk=pk))
 
     def get_success_message(self):
         return _("Member successfully removed from group!")
 
     def delete(self, request, *args, **kwargs):
-        self.remove_user(kwargs["user_pk"])
+        self.remove_member(kwargs["user_pk"])
         success_url = self.get_success_url()
         success_message = self.get_success_message()
 
@@ -1026,14 +1028,24 @@ class GroupMemberRemoveView(LoginRequiredMixin, DeleteView):
             return HttpResponseRedirect(success_url)
 
 
-class GroupAclRemoveView(GroupMemberRemoveView):
+class GroupRemoveAclUserView(GroupRemoveUserView):
 
-    def remove_user(self, userpk):
+    def remove_member(self, pk):
         container = self.get_object().profile
-        container.set_level(User.objects.get(pk=userpk), None)
+        container.set_level(User.objects.get(pk=pk), None)
 
     def get_success_message(self):
-        return _("Acl member successfully removed from group!")
+        return _("Acl user successfully removed from group!")
+
+
+class GroupRemoveAclGroupView(GroupRemoveUserView):
+
+    def remove_member(self, pk):
+        container = self.get_object().profile
+        container.set_level(Group.objects.get(pk=pk), None)
+
+    def get_success_message(self):
+        return _("Acl group successfully removed from group!")
 
 
 class GroupDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
