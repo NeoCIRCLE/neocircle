@@ -276,8 +276,6 @@ class Disk(AclBase, TimeStampedModel):
                     size = result.get(timeout=5)
                     break
                 except TimeoutError:
-                    logger.info(abortable_task)
-                    logger.info(abortable_task.is_aborted())
                     if abortable_task and abortable_task.is_aborted():
                         AbortableAsyncResult(result.id).abort()
                         raise AbortException("Download aborted by user.")
