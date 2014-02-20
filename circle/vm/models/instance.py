@@ -805,12 +805,22 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
         with instance_activity(code_suffix='sleep', instance=self,
                                on_abort=__on_abort, on_commit=__on_commit,
-                               task_uuid=task_uuid, user=user):
+                               task_uuid=task_uuid, user=user) as act:
 
-            queue_name = self.get_remote_queue_name('vm')
-            vm_tasks.sleep.apply_async(args=[self.vm_name,
-                                             self.mem_dump['path']],
-                                       queue=queue_name).get()
+            # Destroy networks
+            with act.sub_activity('destroying_net'):
+                for net in self.interface_set.all():
+                    net.destroy(delete_host=False)
+
+            # Suspend vm
+            with act.sub_activity('suspending'):
+                queue_name = self.get_remote_queue_name('vm')
+                vm_tasks.sleep.apply_async(args=[self.vm_name,
+                                                 self.mem_dump['path']],
+                                           queue=queue_name).get()
+                self.node = None
+                self.vnc_port = None
+                self.save()
 
     def sleep_async(self, user=None):
         """Execute sleep asynchronously.
@@ -830,12 +840,22 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
         with instance_activity(code_suffix='wake_up', instance=self,
                                on_abort=__on_abort, on_commit=__on_commit,
-                               task_uuid=task_uuid, user=user):
+                               task_uuid=task_uuid, user=user) as act:
 
+            # Schedule vm
+            self.__schedule_vm(act)
             queue_name = self.get_remote_queue_name('vm')
-            vm_tasks.wake_up.apply_async(args=[self.vm_name,
-                                               self.mem_dump['path']],
-                                         queue=queue_name).get()
+
+            # Resume vm
+            with act.sub_activity('resuming'):
+                vm_tasks.wake_up.apply_async(args=[self.vm_name,
+                                                   self.mem_dump['path']],
+                                             queue=queue_name).get()
+
+            # Estabilish network connection (vmdriver)
+            with act.sub_activity('deploying_net'):
+                for net in self.interface_set.all():
+                    net.deploy()
 
     def wake_up_async(self, user=None):
         """Execute wake_up asynchronously.
