@@ -35,10 +35,13 @@ from braces.views import (
 
 from .forms import (
     CircleAuthenticationForm, DiskAddForm, HostForm, LeaseForm, MyProfileForm,
-    NodeForm, TemplateForm, TraitForm, VmCustomizeForm,
+    NodeForm, TraitForm, VmCustomizeForm, TemplateForm, GroupCreateForm,
 )
-from .tables import (NodeListTable, NodeVmListTable,
-                     TemplateListTable, LeaseListTable, GroupListTable,)
+
+from .tables import (
+    NodeListTable, NodeVmListTable, TemplateListTable, LeaseListTable,
+    GroupListTable,
+)
 from vm.models import (
     Instance, instance_activity, InstanceActivity, InstanceTemplate, Interface,
     InterfaceTemplate, Lease, Node, NodeActivity, Trait,
@@ -1276,6 +1279,52 @@ class NodeCreate(LoginRequiredMixin, SuperuserRequiredMixin, TemplateView):
                                 content_type="application/json")
         else:
             return redirect(path)
+
+
+class GroupCreate(LoginRequiredMixin, SuperuserRequiredMixin, TemplateView):
+
+    form_class = GroupCreateForm
+    form = None
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/modal-wrapper.html']
+        else:
+            return ['dashboard/nojs-wrapper.html']
+
+    def get(self, request, form=None, *args, **kwargs):
+        if form is None:
+            form = self.form_class()
+        context = self.get_context_data(**kwargs)
+        context.update({
+            'template': 'dashboard/group-create.html',
+            'box_title': 'Create a Group',
+            'form': form,
+
+        })
+        return self.render_to_response(context)
+
+    def get_context_data(self, **kwargs):
+        context = super(GroupCreate, self).get_context_data(**kwargs)
+        # TODO acl
+        context.update({
+        })
+
+        return context
+
+    def post(self, request, *args, **kwargs):
+        form = self.form_class(request.POST)
+        if not form.is_valid():
+            return self.get(request, form, *args, **kwargs)
+        form.cleaned_data
+        savedform = form.save()
+        messages.success(request, _('Group successfully created!'))
+        if request.is_ajax():
+            return HttpResponse(json.dumps({'redirect':
+                                savedform.profile.get_absolute_url()}),
+                                content_type="application/json")
+        else:
+            return redirect(savedform.profile.get_absolute_url())
 
 
 class VmDelete(LoginRequiredMixin, DeleteView):

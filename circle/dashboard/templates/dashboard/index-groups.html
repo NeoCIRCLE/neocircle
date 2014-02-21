@@ -26,7 +26,7 @@
             <i class="icon-chevron-sign-right"></i> <strong>{{ more_groups }}</strong>  more  
           </a>
 	  {% endif %}
-          <a class="btn btn-success btn-xs group-create" href="#"><i class="icon-upload-alt"></i> upload </a>
+          <a class="btn btn-success btn-xs group-create" href="{% url "dashboard.views.group-create" %}"><i class="icon-upload-alt"></i> upload </a>
         </div>
       </div>
     </div>

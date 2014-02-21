@@ -7,7 +7,7 @@ from django.contrib.auth.signals import user_logged_in
 from django.core.urlresolvers import reverse
 from django.db.models import (
     Model, ForeignKey, OneToOneField, CharField, IntegerField, TextField,
-    DateTimeField,
+    DateTimeField, permalink,
 )
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _, override
@@ -92,6 +92,11 @@ class GroupProfile(AclBase):
             return cls.objects.get(org_id=name).group
         except cls.DoesNotExist:
             return Group.objects.get(name=name)
+
+    @permalink
+    def get_absolute_url(self):
+        return ('dashboard.views.group-detail', None,
+                {'pk': self.group.pk})
 
 
 def get_or_create_profile(self):

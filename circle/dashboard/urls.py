@@ -10,8 +10,9 @@ from .views import (
     TransferOwnershipConfirmView, TransferOwnershipView, vm_activity, VmCreate,
     VmDelete, VmDetailView, VmDetailVncTokenView, VmGraphView, VmList,
     VmMassDelete, VmMigrateView, VmRenewView, GroupRemoveAclUserView,
-    GroupRemoveAclGroupView, GroupRemoveUserView
+    GroupRemoveAclGroupView, GroupRemoveUserView, GroupCreate,
 )
+
 from vm.models import Instance
 
 
@@ -111,4 +112,6 @@ urlpatterns = patterns(
     url(r'^group/(?P<group_pk>\d+)/remove/user/(?P<user_pk>\d+)/$',
         GroupRemoveUserView.as_view(),
         name="dashboard.views.remove-user"),
+    url(r'^group/create/$', GroupCreate.as_view(),
+        name='dashboard.views.group-create'),
 )
