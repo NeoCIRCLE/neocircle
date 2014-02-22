@@ -54,19 +54,21 @@ class Node(TimeStampedModel):
     def __unicode__(self):
         return self.name
 
-    @property
     @method_cache(10, 5)
-    def online(self):
+    def get_online(self):
 
         return self.remote_query(vm_tasks.ping, timeout=1, default=False)
 
-    @property
+    online = property(get_online)
+
     @method_cache(300)
-    def num_cores(self):
+    def get_num_cores(self):
         """Number of CPU threads available to the virtual machines.
         """
 
         return self.remote_query(vm_tasks.get_core_num)
+
+    num_cores = property(get_num_cores)
 
     @property
     def state(self):
@@ -94,13 +96,14 @@ class Node(TimeStampedModel):
             self.enabled = True
             self.save()
 
-    @property
     @method_cache(300)
-    def ram_size(self):
+    def get_ram_size(self):
         """Bytes of total memory in the node.
         """
 
         return self.remote_query(vm_tasks.get_ram_size)
+
+    ram_size = property(get_ram_size)
 
     @property
     def ram_size_with_overcommit(self):
