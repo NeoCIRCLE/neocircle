@@ -9,10 +9,10 @@
   <div class="row">
     <div class="col-md-4" id="node-info-pane">
       <div id="node-info-data" class="big">
-      <span id="node-details-state" class="label {% if node.state == 'Online' %}label-success
-			{% elif node.state == 'Missing' %}label-danger
-			{% elif node.state == 'Disabled' %}label-warning
-			{% elif node.state == 'Offline' %}label-warning
+      <span id="node-details-state" class="label {% if node.state == 'ONLINE' %}label-success
+			{% elif node.state == 'MISSING' %}label-danger
+			{% elif node.state == 'DISABLED' %}label-warning
+			{% elif node.state == 'OFFLINE' %}label-warning
 			{% endif %}">{{ node.state }}</span>
 		<div class="btn-group">
 			{% with node as record %}
