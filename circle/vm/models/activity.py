@@ -98,6 +98,18 @@ class NodeActivity(ActivityModel):
         app_label = 'vm'
         db_table = 'vm_nodeactivity'
 
+    def __unicode__(self):
+        if self.parent:
+            return '{}({})->{}'.format(self.parent.activity_code,
+                                       self.node,
+                                       self.activity_code)
+        else:
+            return '{}({})'.format(self.activity_code,
+                                   self.node)
+
+    def get_readable_name(self):
+        return self.activity_code.split('.')[-1].replace('_', ' ').capitalize()
+
     @classmethod
     def create(cls, code_suffix, node, task_uuid=None, user=None):
         act = cls(activity_code='vm.Node.' + code_suffix,
