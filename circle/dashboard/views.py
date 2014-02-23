@@ -35,7 +35,7 @@ from .tables import (VmListTable, NodeListTable, NodeVmListTable,
                      TemplateListTable, LeaseListTable, GroupListTable,)
 from vm.models import (Instance, InstanceTemplate, InterfaceTemplate,
                        InstanceActivity, Node, instance_activity, Lease,
-                       Interface)
+                       Interface, NodeActivity)
 from firewall.models import Vlan, Host, Rule
 from dashboard.models import Favourite
 
@@ -444,6 +444,10 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
         context = super(NodeDetailView, self).get_context_data(**kwargs)
         instances = Instance.active.filter(node=self.object)
         context['table'] = NodeVmListTable(instances)
+        na = NodeActivity.objects.filter(
+            node=self.object, parent=None
+        ).order_by('-started').select_related()
+        context['activities'] = na
         return context
 
     def post(self, request, *args, **kwargs):
