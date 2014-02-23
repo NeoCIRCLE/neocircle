@@ -158,6 +158,7 @@ class VmDetailView(CheckedDetailView):
                                    'port': port},
                                   key=getenv("PROXY_SECRET", 'asdasd')),
             context.update({
+                'graphite_enabled': VmGraphView.get_graphite_url() is not None,
                 'vnc_url': '%s' % value
             })
 
@@ -1569,45 +1570,70 @@ class TransferOwnershipConfirmView(LoginRequiredMixin, View):
         return (instance, new_owner)
 
 
-class VmGraphView(LoginRequiredMixin, View):
-    def get(self, request, pk, metric, time, *args, **kwargs):
+class GraphViewBase(LoginRequiredMixin, View):
+
+    metrics = {
+        'cpu': ('cactiStyle(alias(derivative(%s.cpu.usage),'
+                '"cpu usage (%%)"))'),
+        'memory': ('cactiStyle(alias(%s.memory.usage,'
+                   '"memory usage (%%)"))'),
+        'network': ('cactiStyle(aliasByMetric('
+                    'derivative(%s.network.bytes_*)))'),
+    }
+
+    @staticmethod
+    def get_graphite_url():
         graphite_host = getenv("GRAPHITE_HOST", None)
         graphite_port = getenv("GRAPHITE_PORT", None)
 
         if (graphite_host in ['', None] or graphite_port in ['', None]):
             logger.debug('GRAPHITE_HOST is empty.')
+            return None
+
+        return 'http://%s:%s' % (graphite_host, graphite_port)
+
+    def get(self, request, pk, metric, time, *args, **kwargs):
+        graphite_url = GraphViewBase.get_graphite_url()
+        if graphite_url is None:
             raise Http404()
 
-        if metric not in ['cpu', 'memory', 'network']:
+        if metric not in self.metrics.keys():
             raise SuspiciousOperation()
+
         try:
-            instance = Instance.objects.get(id=pk)
-        except Instance.DoesNotExist:
+            instance = self.get_object(request, pk)
+        except self.model.DoesNotExist:
             raise Http404()
-        if not instance.has_level(request.user, 'user'):
-            raise PermissionDenied()
 
-        targets = {
-            'cpu': ('cactiStyle(alias(derivative(%s.cpu.usage),'
-                    '"cpu usage (%%)"))'),
-            'memory': ('cactiStyle(alias(%s.memory.usage,'
-                       '"memory usage (%%)"))'),
-            'network': ('cactiStyle(aliasByMetric('
-                        'derivative(%s.network.bytes_*)))'),
-        }
-
-        if metric not in targets.keys():
-            raise SuspiciousOperation()
-
-        prefix = 'vm.%s' % instance.vm_name
-        target = targets[metric] % prefix
-        title = '%s (%s) - %s' % (instance.name, instance.vm_name, metric)
+        prefix = self.get_prefix(instance)
+        target = self.metrics[metric] % prefix
+        title = self.get_title(instance, metric)
         params = {'target': target,
                   'from': '-%s' % time,
                   'title': title.encode('UTF-8'),
                   'width': '500',
                   'height': '200'}
-        url = ('http://%s:%s/render/?%s' % (graphite_host, graphite_port,
-                                            params))
-        response = requests.post(url, data=params)
+        response = requests.post('%s/render/' % graphite_url, data=params)
         return HttpResponse(response.content, mimetype="image/png")
+
+    def get_prefix(self, instance):
+        raise NotImplementedError("Subclass must implement abstract method")
+
+    def get_title(self, instance, metric):
+        raise NotImplementedError("Subclass must implement abstract method")
+
+    def get_object(self, request, pk):
+        instance = self.model.objects.get(id=pk)
+        if not instance.has_level(request.user, 'user'):
+            raise PermissionDenied()
+        return instance
+
+
+class VmGraphView(GraphViewBase):
+    model = Instance
+
+    def get_prefix(self, instance):
+        return 'vm.%s' % instance.vm_name
+
+    def get_title(self, instance, metric):
+        return '%s (%s) - %s' % (instance.name, instance.vm_name, metric)
