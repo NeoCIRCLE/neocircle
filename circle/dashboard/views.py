@@ -449,6 +449,8 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
             node=self.object, parent=None
         ).order_by('-started').select_related()
         context['activities'] = na
+        context['graphite_enabled'] = (
+            NodeGraphView.get_graphite_url() is not None)
         return context
 
     def post(self, request, *args, **kwargs):
@@ -1637,3 +1639,16 @@ class VmGraphView(GraphViewBase):
 
     def get_title(self, instance, metric):
         return '%s (%s) - %s' % (instance.name, instance.vm_name, metric)
+
+
+class NodeGraphView(SuperuserRequiredMixin, GraphViewBase):
+    model = Node
+
+    def get_prefix(self, instance):
+        return 'circle.%s' % instance.name
+
+    def get_title(self, instance, metric):
+        return '%s - %s' % (instance.name, metric)
+
+    def get_object(self, request, pk):
+        return self.model.objects.get(id=pk)

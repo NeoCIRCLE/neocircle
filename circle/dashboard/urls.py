@@ -8,7 +8,7 @@ from .views import (
     TemplateList, LeaseDetail, NodeCreate, LeaseCreate, TemplateCreate,
     FavouriteView, NodeStatus, GroupList, TemplateDelete, LeaseDelete,
     VmGraphView, TemplateAclUpdateView, GroupDetailView, GroupDelete,
-    GroupAclUpdateView, GroupUserDelete,
+    GroupAclUpdateView, GroupUserDelete, NodeGraphView
 )
 
 urlpatterns = patterns(
@@ -71,6 +71,10 @@ urlpatterns = patterns(
          r'(?P<time>[0-9]{1,2}[hdwy])$'),
         VmGraphView.as_view(),
         name='dashboard.views.vm-graph'),
+    url((r'^node/(?P<pk>\d+)/graph/(?P<metric>cpu|memory|network)/'
+         r'(?P<time>[0-9]{1,2}[hdwy])$'),
+        NodeGraphView.as_view(),
+        name='dashboard.views.node-graph'),
     url(r'^group/(?P<pk>\d+)/$', GroupDetailView.as_view(),
         name='dashboard.views.group-detail'),
     url(r'^group/(?P<pk>\d+)/acl/$', GroupAclUpdateView.as_view(),
