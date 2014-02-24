@@ -541,6 +541,9 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
                 json.dumps({'message': message}),
                 content_type="application=json"
             )
+        else:
+            return redirect(reverse_lazy("dashboard.views.node-detail",
+                                         kwargs={'pk': self.object.pk}))
 
 
 class GroupDetailView(CheckedDetailView):
