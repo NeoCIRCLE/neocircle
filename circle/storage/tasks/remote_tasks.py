@@ -6,6 +6,11 @@ def list(dir):
     pass
 
 
+@celery.task(name='storagedriver.list_files')
+def list_files(dir):
+    pass
+
+
 @celery.task(name='storagedriver.create')
 def create(disk_desc):
     pass
