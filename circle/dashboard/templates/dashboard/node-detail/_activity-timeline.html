@@ -1,4 +1,5 @@
 {% load i18n %}
+<div id="activity-timeline" class="timeline">
 {% for a in activities %}
 <div class="activity" data-activity-id="{{ a.pk }}">
   <span class="timeline-icon{% if a.has_failed %} timeline-icon-failed{% endif %}">
@@ -25,3 +26,4 @@
   {% endif %}
 </div>
 {% endfor %}
+</div>
