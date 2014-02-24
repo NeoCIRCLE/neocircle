@@ -524,8 +524,7 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
         except:
             pass
 
-        return redirect(reverse_lazy("dashboard.views.node-detail",
-                                     kwargs={'pk': self.object.pk}))
+        return redirect(self.object.get_absolute_url())
 
     def __remove_trait(self, request):
         try:
