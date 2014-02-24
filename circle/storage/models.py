@@ -179,7 +179,7 @@ class Disk(AclBase, TimeStampedModel):
             self.size = self.base.size
         super(Disk, self).clean(*args, **kwargs)
 
-    def deploy(self, user=None, task_uuid=None):
+    def deploy(self, user=None, task_uuid=None, timeout=15):
         """Reify the disk model on the associated data store.
 
         :param self: the disk model to reify
@@ -212,11 +212,13 @@ class Disk(AclBase, TimeStampedModel):
             if self.type == 'qcow2-snap':
                 with act.sub_activity('creating_snapshot'):
                     remote_tasks.snapshot.apply_async(args=[disk_desc],
-                                                      queue=queue_name).get()
+                                                      queue=queue_name
+                                                      ).get(timeout=timeout)
             else:
                 with act.sub_activity('creating_disk'):
                     remote_tasks.create.apply_async(args=[disk_desc],
-                                                    queue=queue_name).get()
+                                                    queue=queue_name
+                                                    ).get(timeout=timeout)
 
             self.ready = True
             self.save()
@@ -310,7 +312,7 @@ class Disk(AclBase, TimeStampedModel):
         local_tasks.restore.apply_async(args=[self, user],
                                         queue='localhost.man')
 
-    def save_as(self, user=None, task_uuid=None):
+    def save_as(self, user=None, task_uuid=None, timeout=120):
         mapping = {
             'qcow2-snap': ('qcow2-norm', self.base),
         }
@@ -324,7 +326,7 @@ class Disk(AclBase, TimeStampedModel):
         # going to be used until the operation is complete
 
         with disk_activity(code_suffix='save_as', disk=self,
-                           task_uuid=task_uuid, user=user):
+                           task_uuid=task_uuid, user=user, timeout=300):
 
             filename = str(uuid.uuid4())
             new_type, new_base = mapping[self.type]
@@ -336,7 +338,8 @@ class Disk(AclBase, TimeStampedModel):
             queue_name = self.get_remote_queue_name('storage')
             remote_tasks.merge.apply_async(args=[self.get_disk_desc(),
                                                  disk.get_disk_desc()],
-                                           queue=queue_name).get()
+                                           queue=queue_name
+                                           ).get(timeout=timeout)
 
             disk.ready = True
             disk.save()

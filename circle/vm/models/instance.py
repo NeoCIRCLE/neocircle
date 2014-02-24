@@ -597,7 +597,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
         self.save()
 
-    def __deploy_vm(self, act):
+    def __deploy_vm(self, act, timeout=15):
         """Deploy the virtual machine.
 
         :param self: The virtual machine.
@@ -609,7 +609,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         # Deploy VM on remote machine
         with act.sub_activity('deploying_vm'):
             vm_tasks.deploy.apply_async(args=[self.get_vm_desc()],
-                                        queue=queue_name).get()
+                                        queue=queue_name).get(timeout=timeout)
 
         # Estabilish network connection (vmdriver)
         with act.sub_activity('deploying_net'):
@@ -619,7 +619,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         # Resume vm
         with act.sub_activity('booting'):
             vm_tasks.resume.apply_async(args=[self.vm_name],
-                                        queue=queue_name).get()
+                                        queue=queue_name).get(timeout=timeout)
 
         self.renew('suspend')
 
@@ -671,7 +671,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         return local_tasks.deploy.apply_async(args=[self, user],
                                               queue="localhost.man")
 
-    def __destroy_vm(self, act):
+    def __destroy_vm(self, act, timeout):
         """Destroy the virtual machine and its associated networks.
 
         :param self: The virtual machine.
@@ -688,13 +688,17 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
             queue_name = self.get_remote_queue_name('vm')
             try:
                 vm_tasks.destroy.apply_async(args=[self.vm_name],
-                                             queue=queue_name).get()
+                                             queue=queue_name
+                                             ).get(timeout=timeout)
             except Exception as e:
-                if e.libvirtError is True:
-                    if "Domain not found" in str(e):
-                        pass
+                if e.libvirtError is True and "Domain not found" in str(e):
+                    logger.debug("Domain %s was not found at %s"
+                                 % (self.vm_name, queue_name))
+                    pass
+                else:
+                    raise
 
-    def __cleanup_after_destroy_vm(self, act):
+    def __cleanup_after_destroy_vm(self, act, timeout=15):
         """Clean up the virtual machine's data after destroy.
 
         :param self: The virtual machine.
@@ -707,7 +711,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         try:
             from storage.tasks.remote_tasks import delete_dump
             delete_dump.apply_async(args=[self.mem_dump['path']],
-                                    queue=queue_name).get()
+                                    queue=queue_name).get(timeout=timeout)
         except:
             pass
 
@@ -788,7 +792,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         return local_tasks.destroy.apply_async(args=[self, user],
                                                queue="localhost.man")
 
-    def sleep(self, user=None, task_uuid=None):
+    def sleep(self, user=None, task_uuid=None, timeout=60):
         """Suspend virtual machine with memory dump.
         """
         if self.state not in ['RUNNING']:
@@ -817,7 +821,8 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                 queue_name = self.get_remote_queue_name('vm')
                 vm_tasks.sleep.apply_async(args=[self.vm_name,
                                                  self.mem_dump['path']],
-                                           queue=queue_name).get()
+                                           queue=queue_name
+                                           ).get(timeout=timeout)
                 self.node = None
                 self.vnc_port = None
                 self.save()
@@ -828,7 +833,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         return local_tasks.sleep.apply_async(args=[self, user],
                                              queue="localhost.man")
 
-    def wake_up(self, user=None, task_uuid=None):
+    def wake_up(self, user=None, task_uuid=None, timeout=60):
         if self.state not in ['SUSPENDED']:
             raise self.WrongStateError(self)
 
@@ -850,7 +855,8 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
             with act.sub_activity('resuming'):
                 vm_tasks.wake_up.apply_async(args=[self.vm_name,
                                                    self.mem_dump['path']],
-                                             queue=queue_name).get()
+                                             queue=queue_name
+                                             ).get(timeout=timeout)
 
             # Estabilish network connection (vmdriver)
             with act.sub_activity('deploying_net'):
@@ -863,7 +869,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         return local_tasks.wake_up.apply_async(args=[self, user],
                                                queue="localhost.man")
 
-    def shutdown(self, user=None, task_uuid=None):
+    def shutdown(self, user=None, task_uuid=None, timeout=120):
         """Shutdown virtual machine with ACPI signal.
         """
         def __on_abort(activity, error):
@@ -882,7 +888,8 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
             logger.debug("RPC Shutdown at queue: %s, for vm: %s.",
                          self.vm_name, queue_name)
             vm_tasks.shutdown.apply_async(kwargs={'name': self.vm_name},
-                                          queue=queue_name).get()
+                                          queue=queue_name
+                                          ).get(timeout=timeout)
             self.node = None
             self.vnc_port = None
             self.save()
@@ -893,7 +900,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         return local_tasks.shutdown.apply_async(args=[self, user],
                                                 queue="localhost.man")
 
-    def reset(self, user=None, task_uuid=None):
+    def reset(self, user=None, task_uuid=None, timeout=5):
         """Reset virtual machine (reset button)
         """
         with instance_activity(code_suffix='reset', instance=self,
@@ -901,7 +908,8 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
             queue_name = self.get_remote_queue_name('vm')
             vm_tasks.restart.apply_async(args=[self.vm_name],
-                                         queue=queue_name).get()
+                                         queue=queue_name
+                                         ).get(timeout=timeout)
 
     def reset_async(self, user=None):
         """Execute reset asynchronously.
@@ -909,7 +917,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         return local_tasks.restart.apply_async(args=[self, user],
                                                queue="localhost.man")
 
-    def reboot(self, user=None, task_uuid=None):
+    def reboot(self, user=None, task_uuid=Nonei, timeout=5):
         """Reboot virtual machine with Ctrl+Alt+Del signal.
         """
         with instance_activity(code_suffix='reboot', instance=self,
@@ -917,7 +925,8 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
             queue_name = self.get_remote_queue_name('vm')
             vm_tasks.reboot.apply_async(args=[self.vm_name],
-                                        queue=queue_name).get()
+                                        queue=queue_name
+                                        ).get(timeout=timeout)
 
     def reboot_async(self, user=None):
         """Execute reboot asynchronously. """
@@ -929,7 +938,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         return local_tasks.migrate.apply_async(args=[self, to_node, user],
                                                queue="localhost.man")
 
-    def migrate(self, to_node, user=None, task_uuid=None):
+    def migrate(self, to_node, user=None, task_uuid=None, timeout=120):
         """Live migrate running vm to another node. """
         with instance_activity(code_suffix='migrate', instance=self,
                                task_uuid=task_uuid, user=user) as act:
@@ -942,7 +951,8 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                 queue_name = self.get_remote_queue_name('vm')
                 vm_tasks.migrate.apply_async(args=[self.vm_name,
                                              to_node.host.hostname],
-                                             queue=queue_name).get()
+                                             queue=queue_name
+                                             ).get(timeout=timeout)
             # Refresh node information
             self.node = to_node
             self.save()
