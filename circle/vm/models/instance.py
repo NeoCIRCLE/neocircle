@@ -917,7 +917,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         return local_tasks.restart.apply_async(args=[self, user],
                                                queue="localhost.man")
 
-    def reboot(self, user=None, task_uuid=Nonei, timeout=5):
+    def reboot(self, user=None, task_uuid=None, timeout=5):
         """Reboot virtual machine with Ctrl+Alt+Del signal.
         """
         with instance_activity(code_suffix='reboot', instance=self,
