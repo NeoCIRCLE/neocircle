@@ -21,8 +21,8 @@
     <div class="col-md-4" id="group-info-pane">
       <div class="big">
         <div class="btn-group">
-          <button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown">Action <i class="icon-caret-down"></i></button>
-          <ul class="dropdown-menu" role="menu">
+          <button type="button" class="btn btn-warning nojs-dropdown-toogle dropdown-toggle" data-toggle="dropdown">Action <i class="icon-caret-down"></i></button>
+          <ul class="nojs-dropdown-menu dropdown-menu" role="menu">
             <li><a href="#" class="group-details-rename-button"><i class="icon-pencil"></i> Rename</a></li>
              <li><a data-group-pk="{{ group.pk }}" class="group-delete" href="{% url "dashboard.views.delete-group" pk=group.pk %}"><i class="icon-remove"></i> Discard</a></li>
 </ul>
