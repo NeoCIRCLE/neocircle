@@ -12,10 +12,12 @@ logger = logging.getLogger(__name__)
 @celery.task
 def garbage_collector(timeout=15):
     """ Garbage collector for disk images.
+    Moves 1 day old deleted images to trash folder.
+    If there is not enough free space on datastore (default 10%)
+    deletes oldest images from trash.
 
-        Moves 1 day old deleted images to trash folder.
-        If there is not enough free space on datastore (default 10%)
-        deletes oldest images from trash.
+    :param timeout: Seconds before TimeOut exception
+    :type timeoit: int
     """
     for ds in DataStore.objects.all():
         time_before = timezone.now() - timedelta(days=1)
@@ -37,8 +39,11 @@ def garbage_collector(timeout=15):
 
 @celery.task
 def list_orphan_disks(timeout=15):
-    """ List disk image files without Disk object in the database.
-        Exclude cloud-xxxxxxxx.dump format images.
+    """List disk image files without Disk object in the database.
+    Exclude cloud-xxxxxxxx.dump format images.
+
+    :param timeout: Seconds before TimeOut exception
+    :type timeoit: int
     """
     import re
     for ds in DataStore.objects.all():
@@ -53,7 +58,10 @@ def list_orphan_disks(timeout=15):
 
 @celery.task
 def list_missing_disks(timeout=15):
-    """ List Disk objects without disk image files.
+    """List Disk objects without disk image files.
+
+    :param timeout: Seconds before TimeOut exception
+    :type timeoit: int
     """
     for ds in DataStore.objects.all():
         queue_name = ds.get_remote_queue_name('storage')
