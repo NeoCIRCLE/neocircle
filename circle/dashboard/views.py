@@ -83,6 +83,8 @@ class IndexView(LoginRequiredMixin, TemplateView):
 
         if user is not None:
             context['notifications'] = user.notification_set.all()[:10]
+            context['new_notifications'] = user.notification_set.filter(
+                status="new").count()
 
         nodes = Node.objects.all()
         groups = Group.objects.all()
@@ -1655,3 +1657,37 @@ class NodeGraphView(SuperuserRequiredMixin, GraphViewBase):
 
     def get_object(self, request, pk):
         return self.model.objects.get(id=pk)
+
+
+class NotificationView(LoginRequiredMixin, TemplateView):
+    template_name = "dashboard/notifications.html"
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(NotificationView, self).get_context_data(
+            *args, **kwargs)
+        # we need to convert it to list, otherwise it's gonna be
+        # similar to a QuerySet and update everything to
+        # read status after get
+        context['notifications'] = list(
+            self.request.user.notification_set.values())
+        return context
+
+    def get(self, *args, **kwargs):
+        response = super(NotificationView, self).get(*args, **kwargs)
+        un = self.request.user.notification_set.filter(status="new")
+        for u in un:
+            u.status = "read"
+            u.save()
+        return response
+
+    def post(self, request, *args, **kwargs):
+        # unread notifications
+        un = request.user.notification_set.filter(status="new")
+        for u in un:
+            u.status = "read"
+            u.save()
+
+        if request.is_ajax():
+            return HttpResponse({'result': 'ok'})
+        else:
+            pass

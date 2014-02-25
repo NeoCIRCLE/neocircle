@@ -331,3 +331,30 @@ a.hover-black {
 	display: block;
 
 }
+
+
+.notification-messages {
+  padding: 10px 8px;
+  width: 350px;
+}
+
+.notification-message {
+  margin-bottom: 10px;
+  padding: 0 0 4px 0;
+  border-bottom: 1px dotted #D3D3D3;
+}
+
+.notification-messages .notification-message:last-child {
+  margin-bottom: 0px;
+  padding: 0px;
+  border-bottom: none;
+}
+
+.notification-message-text {
+  padding: 8px 15px;
+  display: none;
+}
+
+.notification-message .notification-message-subject {
+  cursor: pointer;
+}
