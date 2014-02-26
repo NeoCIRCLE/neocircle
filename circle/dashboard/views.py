@@ -1264,32 +1264,24 @@ class NodeStatus(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
         return context
 
     def post(self, request, *args, **kwargs):
-        if request.POST.get('new_status'):
+        if request.POST.get('change_status'):
             return self.__set_status(request)
 
     def __set_status(self, request):
         self.object = self.get_object()
-        new_status = request.POST.get("new_status")
 
-        if new_status == "enable":
+        if self.object.enable:
             Node.objects.filter(pk=self.object.pk).update(
                 **{'enabled': True})
-        elif new_status == "disable":
+        else:
             Node.objects.filter(pk=self.object.pk).update(
                 **{'enabled': False})
-        else:
-            if request.is_ajax():
-                return HttpResponse(content_type="application/json")
-
-            else:
-                return redirect(self.get_success_url())
 
         success_message = _("Node successfully changed status!")
 
         if request.is_ajax():
             response = {
                 'message': success_message,
-                'new_status': new_status,
                 'node_pk': self.object.pk
             }
             return HttpResponse(

@@ -298,7 +298,6 @@ function addModalConfirmation(func, data) {
     url: data['url'],
     data: jQuery.param(data['data']),
     success: function(result) {
-      console.log(result);
       $('body').append(result);
       $('#confirmation-modal').modal('show');
       $('#confirmation-modal').on('hidden.bs.modal', function() {
