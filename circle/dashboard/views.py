@@ -1257,7 +1257,10 @@ class NodeStatus(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(NodeStatus, self).get_context_data(**kwargs)
-        context['status'] = self.request.GET.get('status')
+        if self.object.enabled:
+            context['status'] = "disable"
+        else:
+            context['status'] = "enable"
         return context
 
     def post(self, request, *args, **kwargs):
