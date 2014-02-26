@@ -10,6 +10,7 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from model_utils.models import TimeStampedModel
 from sizefield.models import FileSizeField
+from datetime import timedelta
 
 from acl.models import AclBase
 from .tasks import local_tasks, remote_tasks
@@ -44,6 +45,11 @@ class DataStore(Model):
             return self.hostname + '.' + queue_id
         else:
             raise WorkerNotFound()
+
+    def get_deletable_disks(self):
+        return [disk.filename for disk in
+                self.disk_set.filter(
+                    destroyed__isnull=False) if disk.is_deletable()]
 
 
 class Disk(AclBase, TimeStampedModel):
@@ -125,6 +131,23 @@ class Disk(AclBase, TimeStampedModel):
             'raw-ro': 'vd',
             'raw-rw': 'vd',
         }[self.type]
+
+    def is_deletable(self):
+        """Returns True if no child and disk is destroyed."""
+        time_before = timezone.now() - timedelta(days=1)
+        if self.destroyed > time_before or self.has_active_child():
+            return False
+        else:
+            return True
+
+    def has_active_child(self):
+        """Returns True if disk have iactive childs."""
+        time_before = timezone.now() - timedelta(days=1)
+        for child in self.derivatives.all():
+            if child.destroyed > time_before or None:
+                return True
+        else:
+            return False
 
     def is_in_use(self):
         """Returns True if disc is attached to an active VM else False"""

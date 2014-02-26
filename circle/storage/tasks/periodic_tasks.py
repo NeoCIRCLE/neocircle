@@ -1,7 +1,5 @@
 from storage.models import DataStore
 import os
-from django.utils import timezone
-from datetime import timedelta
 from manager.mancelery import celery
 import logging
 from storage.tasks import remote_tasks
@@ -20,10 +18,8 @@ def garbage_collector(timeout=15):
     :type timeoit: int
     """
     for ds in DataStore.objects.all():
-        time_before = timezone.now() - timedelta(days=1)
         file_list = os.listdir(ds.path)
-        disk_list = [disk.filename for disk in
-                     ds.disk_set.filter(destroyed__lt=time_before)]
+        disk_list = ds.get_deletable_disks()
         queue_name = ds.get_remote_queue_name('storage')
         for i in set(file_list).intersection(disk_list):
             logger.info("Image: %s at Datastore: %s moved to trash folder." %
