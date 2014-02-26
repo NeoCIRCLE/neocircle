@@ -166,10 +166,8 @@ class Disk(AclBase, TimeStampedModel):
 
         if self.type not in type_mapping.keys():
             raise self.WrongDiskTypeError(self.type)
-        if self.type == 'iso':
-            filename = self.filename
-        else:
-            self.generate_filename()
+
+        filename = self.filename if self.type == 'iso' else None
         new_type = type_mapping[self.type]
 
         return Disk.objects.create(base=self, datastore=self.datastore,
@@ -210,9 +208,12 @@ class Disk(AclBase, TimeStampedModel):
     def clean(self, *args, **kwargs):
         if self.size == "" and self.base:
             self.size = self.base.size
+        super(Disk, self).clean(*args, **kwargs)
+
+    def save(self, *args, **kwargs):
         if self.filename is None:
             self.generate_filename()
-        super(Disk, self).clean(*args, **kwargs)
+        return super(Disk, self).save(*args, **kwargs)
 
     def deploy(self, user=None, task_uuid=None):
         """Reify the disk model on the associated data store.
