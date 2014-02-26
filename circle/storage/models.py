@@ -133,21 +133,20 @@ class Disk(AclBase, TimeStampedModel):
         }[self.type]
 
     def is_deletable(self):
-        """Returns True if no child and disk is destroyed."""
-        time_before = timezone.now() - timedelta(days=1)
-        if self.destroyed > time_before or self.has_active_child():
-            return False
-        else:
-            return True
+        """Returns whether the file can be deleted.
+
+        Checks if all children and the disk itself is destroyed.
+        """
+
+        yesterday = timezone.now() - timedelta(days=1)
+        return (self.destroyed is not None
+                and self.destroyed < yesterday) and not self.has_active_child()
 
     def has_active_child(self):
-        """Returns True if disk have iactive childs."""
-        time_before = timezone.now() - timedelta(days=1)
-        for child in self.derivatives.all():
-            if child.destroyed > time_before or None:
-                return True
-        else:
-            return False
+        """Returns if disk has children that are not destroyed.
+        """
+
+        return any((not i.is_deletable() for i in self.derivatives.all()))
 
     def is_in_use(self):
         """Returns True if disc is attached to an active VM else False"""
