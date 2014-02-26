@@ -6,10 +6,10 @@
 {% block navbar-ul %}
   <li class="dropdown" id="notification-button">
     <a href="{% url "dashboard.views.notifications" %}" style="color: white; font-size: 12px;" class="dropdown-toggle" data-toggle="dropdown">
-      Notifications{% if new_notifications > 0 %} <span class="badge">{{ new_notifications }}</span>{% endif %}
+      Notifications{% if new_notifications %} <span class="badge">{{ new_notifications }}</span>{% endif %}
     </a>
     <ul class="dropdown-menu notification-messages">
-      {% include "dashboard/_notifications-timeline.html" %}
+        <li>{% trans "Loading..." %}</li>
     </ul>
   </li>
 {% endblock %}

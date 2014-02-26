@@ -1,3 +1,4 @@
+{% load i18n %}
 {% for n in notifications %}
   <li class="notification-message">
     <span class="notification-message-subject">
@@ -11,5 +12,9 @@
     <div class="notification-message-text">
       {{ n.message }}
     </div>
+  </li>
+{% empty %}
+  <li class="notification-message">
+  {% trans "You have no notifications." %}
   </li>
 {% endfor %}

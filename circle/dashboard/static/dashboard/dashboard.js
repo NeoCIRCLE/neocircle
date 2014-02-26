@@ -212,19 +212,8 @@ $(function () {
     return false;
   });
 
-  /* notification read */
   $("#notification-button").click(function() {
-    $.ajax({
-      type: "POST",
-      url: "/dashboard/notifications/",
-      headers: {"X-CSRFToken": getCookie('csrftoken')}, 
-      success: function(re, textStatus, xhr) { 
-        //console.log("success");
-      },
-      error: function(xhr, textStatus, error) {
-        addMessage('Uh oh :(', 'danger')
-      }
-    });
+      $('.notification-messages').load("/dashboard/notifications/");
   });
 });
 
