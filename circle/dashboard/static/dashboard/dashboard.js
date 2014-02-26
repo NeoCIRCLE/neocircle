@@ -207,7 +207,7 @@ $(function () {
   });
 
   /* notification message toggle */
-  $(".notification-message-subject").click(function() {
+  $(document).on('click', ".notification-message-subject", function() {
     $(".notification-message-text", $(this).parent()).slideToggle();
     return false;
   });
