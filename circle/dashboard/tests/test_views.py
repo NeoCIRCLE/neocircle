@@ -224,3 +224,13 @@ class VmDetailTest(TestCase):
                                                'disk-size': 1})
         self.assertEqual(response.status_code, 302)
         self.assertEqual(disks + 1, inst.disks.count())
+
+    def test_notification_read(self):
+        c = Client()
+        self.login(c, "user1")
+        self.u1.profile.notify('subj', 'dashboard/test_message.txt',
+                               {'var': 'testme'})
+        assert self.u1.notification_set.get().status == 'new'
+        response = c.get("/dashboard/notifications/")
+        self.assertEqual(response.status_code, 200)
+        assert self.u1.notification_set.get().status == 'read'
