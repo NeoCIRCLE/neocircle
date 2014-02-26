@@ -101,10 +101,12 @@ class Disk(AclBase, TimeStampedModel):
 
     @property
     def path(self):
+        """Get the path where the files are stored."""
         return self.datastore.path + '/' + self.filename
 
     @property
     def format(self):
+        """Returns the proper file format for different type of images."""
         return {
             'qcow2-norm': 'qcow2',
             'qcow2-snap': 'qcow2',
@@ -115,6 +117,7 @@ class Disk(AclBase, TimeStampedModel):
 
     @property
     def device_type(self):
+        """Returns the proper device prefix for different file format."""
         return {
             'qcow2-norm': 'vd',
             'qcow2-snap': 'vd',
@@ -124,6 +127,7 @@ class Disk(AclBase, TimeStampedModel):
         }[self.type]
 
     def is_in_use(self):
+        """Returns True if disc is attached to an active VM else False"""
         return any([i.state != 'STOPPED' for i in self.instance_set.all()])
 
     def get_exclusive(self):
@@ -148,6 +152,7 @@ class Disk(AclBase, TimeStampedModel):
                                    size=self.size, type=new_type)
 
     def get_vmdisk_desc(self):
+        """Serialize disk object to the vmdriver."""
         return {
             'source': self.path,
             'driver_type': self.format,
@@ -157,6 +162,7 @@ class Disk(AclBase, TimeStampedModel):
         }
 
     def get_disk_desc(self):
+        """Serialize disk object to the storage driver."""
         return {
             'name': self.filename,
             'dir': self.datastore.path,
@@ -167,6 +173,7 @@ class Disk(AclBase, TimeStampedModel):
         }
 
     def get_remote_queue_name(self, queue_id):
+        """Returns the proper queue name based on the datastore."""
         if self.datastore:
             return self.datastore.get_remote_queue_name(queue_id)
         else:
