@@ -197,10 +197,10 @@ class Disk(AclBase, TimeStampedModel):
             'type': 'snapshot' if self.type == 'qcow2-snap' else 'normal'
         }
 
-    def get_remote_queue_name(self, queue_id):
+    def get_remote_queue_name(self, queue_id='storage', check_worker=True):
         """Returns the proper queue name based on the datastore."""
         if self.datastore:
-            return self.datastore.get_remote_queue_name(queue_id)
+            return self.datastore.get_remote_queue_name(queue_id, check_worker)
         else:
             return None
 
