@@ -150,7 +150,7 @@ class Disk(AclBase, TimeStampedModel):
         return {
             'source': self.path,
             'driver_type': self.format,
-            'driver_cache': 'default',
+            'driver_cache': 'none',
             'target_device': self.device_type + self.dev_num,
             'disk_device': 'cdrom' if self.type == 'iso' else 'disk'
         }
