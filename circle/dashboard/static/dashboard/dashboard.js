@@ -212,7 +212,7 @@ $(function () {
     return false;
   });
 
-  $("#notification-button").click(function() {
+  $("#notification-button a").click(function() {
       $('.notification-messages').load("/dashboard/notifications/");
   });
 });
