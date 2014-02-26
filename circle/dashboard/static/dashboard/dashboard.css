@@ -331,3 +331,17 @@ a.hover-black {
 	display: block;
 
 }
+
+
+#vm-migrate-node-list {                                                   
+  list-style: none;                                                       
+}                                                                         
+                                                                          
+#vm-migrate-node-list li {                                                
+  padding-bottom: 10px;                                                   
+}
+
+.vm-migrate-node-property {
+  display: block;
+  padding-left: 15px;
+}

@@ -458,7 +458,7 @@ class TemplateForm(forms.ModelForm):
             template = InstanceTemplate.objects.get(pk=parent)
             parent = template.__dict__
             fields = ["system", "name", "num_cores", "boot_menu", "ram_size",
-                      "priority", "state", "access_method", "raw_data",
+                      "priority", "access_method", "raw_data",
                       "arch", "description"]
             for f in fields:
                 self.initial[f] = parent[f]

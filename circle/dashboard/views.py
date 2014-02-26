@@ -1652,3 +1652,37 @@ class NodeGraphView(SuperuserRequiredMixin, GraphViewBase):
 
     def get_object(self, request, pk):
         return self.model.objects.get(id=pk)
+
+
+class VmMigrateView(SuperuserRequiredMixin, TemplateView):
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/modal-wrapper.html']
+        else:
+            return ['dashboard/nojs-wrapper.html']
+
+    def get(self, request, form=None, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        vm = Instance.objects.get(pk=kwargs['pk'])
+        context.update({
+            'template': 'dashboard/_vm-migrate.html',
+            'box_title': _('Migrate %(name)s' % {'name': vm.name}),
+            'ajax_title': True,
+            'vm': kwargs['pk'],
+            'nodes': [n for n in Node.objects.filter(enabled=True)
+                      if n.state == "ONLINE"]
+        })
+        return self.render_to_response(context)
+
+    def post(self, *args, **kwargs):
+        node = self.request.POST.get("node")
+        vm = Instance.objects.get(pk=kwargs['pk'])
+
+        if node:
+            node = Node.objects.get(pk=node)
+            vm.migrate_async(to_node=node, user=self.request.user)
+        else:
+            messages.error(self.request, _("You didn't select a node!"))
+
+        return redirect("%s#activity" % vm.get_absolute_url())

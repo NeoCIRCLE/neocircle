@@ -907,15 +907,15 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                                task_uuid=task_uuid, user=user):
 
             queue_name = self.get_remote_queue_name('vm')
-            vm_tasks.restart.apply_async(args=[self.vm_name],
-                                         queue=queue_name
-                                         ).get(timeout=timeout)
+            vm_tasks.reset.apply_async(args=[self.vm_name],
+                                       queue=queue_name
+                                       ).get(timeout=timeout)
 
     def reset_async(self, user=None):
         """Execute reset asynchronously.
         """
-        return local_tasks.restart.apply_async(args=[self, user],
-                                               queue="localhost.man")
+        return local_tasks.reset.apply_async(args=[self, user],
+                                             queue="localhost.man")
 
     def reboot(self, user=None, task_uuid=None, timeout=5):
         """Reboot virtual machine with Ctrl+Alt+Del signal.

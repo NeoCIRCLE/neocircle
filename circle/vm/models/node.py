@@ -235,6 +235,10 @@ class Node(TimeStampedModel):
     def ram_usage(self):
         return float(self.get_monitor_info()["memory.usage"]) / 100
 
+    @property
+    def byte_ram_usage(self):
+        return self.ram_usage * self.ram_size
+
     def update_vm_states(self):
         """Update state of Instances running on this Node.
 
