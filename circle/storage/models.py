@@ -2,6 +2,7 @@
 
 from contextlib import contextmanager
 import logging
+from os.path import join
 import uuid
 
 from django.db.models import (Model, BooleanField, CharField, DateTimeField,
@@ -108,7 +109,7 @@ class Disk(AclBase, TimeStampedModel):
     @property
     def path(self):
         """Get the path where the files are stored."""
-        return self.datastore.path + '/' + self.filename
+        return join(self.datastore.path, self.filename)
 
     @property
     def format(self):
