@@ -64,7 +64,8 @@ class ActivityModel(TimeStampedModel):
         if not self.finished:
             self.finished = timezone.now()
             self.succeeded = succeeded
-            self.result = result
+            if result is not None:
+                self.result = result
             if event_handler is not None:
                 event_handler(self)
             self.save()
