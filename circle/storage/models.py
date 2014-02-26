@@ -264,20 +264,6 @@ class Disk(AclBase, TimeStampedModel):
         return local_tasks.deploy.apply_async(args=[self, user],
                                               queue="localhost.man")
 
-    @classmethod
-    def create_empyt_async(instance=None, params=None, user=None):
-        """Create empty Disk object asynchronusly.
-
-        :param instance: instnace object to connect disk
-        :type instane: vm.models.Instance
-        :param params: disk custom parameters
-        :type params: dict
-        :param user: owner of the disk
-        :type user: django.contrib.auth.User
-        """
-        return local_tasks.create_empty.apply_async(
-            args=[instance, params, user], queue="localhost.man")
-
     def generate_filename(self):
         """Generate a unique filename and set it on the object.
         """
