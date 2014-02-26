@@ -274,20 +274,56 @@ class Disk(AclBase, TimeStampedModel):
             if instance:
                 instance.disks.add(disk)
             return disk
+
+    @classmethod
+    def create_from_url_async(cls, url, instance=None, params=None, user=None):
+        """Create disk object and download data from url asynchronusly.
+
+        :param url: image url to download.
+        :type url: url
+        :param instance: instnace object to connect disk
+        :type instane: vm.models.Instance
+        :param params: disk custom parameters
+        :type params: dict
+        :param user: owner of the disk
+        :type user: django.contrib.auth.User
+
+        :return: Task
+        :rtype: AsyncResult
+        """
         return local_tasks.create_from_url.apply_async(kwargs={
-            'cls': cls, 'url': url, 'params': params, 'user': user},
+            'cls': cls, 'url': url, 'instance': instance,
+            'params': params, 'user': user},
             queue='localhost.man')
 
-    def create_from_url(cls, url, params={}, user=None, task_uuid=None,
-                        abortable_task=None):
+    @classmethod
+    def create_from_url(cls, url, instance=None, params=None, user=None,
+                        task_uuid=None, abortable_task=None):
+        """Create disk object and download data from url synchronusly.
+
+        :param url: image url to download.
+        :type url: url
+        :param instance: instnace object to connect disk
+        :type instane: vm.models.Instance
+        :param params: disk custom parameters
+        :type params: dict
+        :param user: owner of the disk
+        :type user: django.contrib.auth.User
+
+        :return: Task
+        :rtype: AsyncResult
+        """
         disk = cls()
         disk.filename = str(uuid.uuid4())
         disk.type = "iso"
         disk.size = 1
+        # TODO get proper datastore
         disk.datastore = DataStore.objects.all()[0]
         if params:
             disk.__dict__.update(params)
         disk.save()
+        if instance:
+            instance.disks.add(disk)
         queue_name = disk.get_remote_queue_name('storage')
 
         def __on_abort(activity, error):
