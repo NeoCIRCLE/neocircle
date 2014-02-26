@@ -6,7 +6,6 @@
   <div class="page-header">
     <div class="pull-right" style="padding-top: 15px;">
       <a title="Rename" href="#" class="btn btn-default btn-xs vm-details-rename-button"><i class="icon-pencil"></i></a>
-      <a title="Pause == sleep?" href="#" class="btn btn-default btn-xs"><i class="icon-pause"></i></a>
       <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
         {% csrf_token %}
         <input type="hidden" name="sleep" value="dummy"/>
@@ -27,7 +26,19 @@
         <input type="hidden" name="shut_down" value="dummy"/>
         <button title="{% trans "Shut down" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-off"></i></button>
       </form>
-      <a title="Migrate" href="#" class="btn btn-default btn-xs"><i class="icon-truck"></i></a>
+      <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="reboot" value="dummy"/>
+        <button title="{% trans "Reboot (ctrl + alt + del)" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-refresh"></i></button>
+      </form>
+      <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="reset" value="dummy"/>
+        <button title="{% trans "Reset (power cycle)" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-bolt"></i></button>
+      </form>
+      <a title="Migrate" data-vm-pk="{{ instance.pk }}" href="{% url "dashboard.views.vm-migrate" pk=instance.pk %}" class="btn btn-default btn-xs vm-migrate">
+        <i class="icon-truck"></i>
+      </a>
       <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
         {% csrf_token %}
         <input type="hidden" name="save_as" value="dummy"/>
@@ -136,4 +147,9 @@
   </div>
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{{ STATIC_URL }}dashboard/vm-details.js"></script>
+  <script src="{{ STATIC_URL }}dashboard/vm-common.js"></script>
 {% endblock %}
