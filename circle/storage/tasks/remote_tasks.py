@@ -6,6 +6,11 @@ def list(dir):
     pass
 
 
+@celery.task(name='storagedriver.list_files')
+def list_files(dir):
+    pass
+
+
 @celery.task(name='storagedriver.create')
 def create(disk_desc):
     pass
@@ -38,4 +43,19 @@ def get(path):
 
 @celery.task(name='storagedriver.merge')
 def merge(src_disk_desc, dst_disk_desc):
+    pass
+
+
+@celery.task(name='storagedriver.make_free_space')
+def make_free_space(datastore, percent):
+    pass
+
+
+@celery.task(name='storagedriver.move_to_trash')
+def move_to_trash(datastore, disk_path):
+    pass
+
+
+@celery.task(name='storagedriver.get_storage_stat')
+def get_storage_stat(path):
     pass
