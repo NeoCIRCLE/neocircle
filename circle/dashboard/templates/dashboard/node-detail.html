@@ -19,14 +19,14 @@
   <ul class="dropdown-menu nojs-dropdown-toogle" role="menu">
     <li><a href="#" class="node-details-rename-button"><i class="icon-pencil"></i> {% trans "Rename" %}</a></li>
     <li><a href="#"><i class="icon-cloud-upload"></i> Flush</a></li>
-    {% if node.enabled %}
-      <li><a style="display:none" data-status="enable" data-node-pk="{{ node.pk }}" class="real-link node-enable" href="{% url "dashboard.views.status-node" pk=node.pk %}?next={{ request.path }}&status=enable"><i class="icon-check"></i> Enable</a>
-          <a style="display:block" data-status="disable" data-node-pk="{{ node.pk }}" class="real-link node-enable" href="{% url "dashboard.views.status-node" pk=node.pk %}?next={{ request.path }}&status=disable"><i class="icon-remove"></i> Disable</a></li>
-    {% else %}
-      <li><a style="display:block" data-status="enable" data-node-pk="{{ node.pk }}" class="real-link node-enable" href="{% url "dashboard.views.status-node" pk=node.pk %}?next={{ request.path }}&status=enable" >
+  {% if node.enabled %}
+    <li><a style="display:none" data-status="enable" data-node-pk="{{ node.pk }}" class="real-link node-enable" href="{% url "dashboard.views.status-node" pk=node.pk %}?next={{ request.path }}&status=enable"><i class="icon-check"></i> Enable</a>
+        <a style="display:block" data-status="disable" data-node-pk="{{ node.pk }}" class="real-link node-enable" href="{% url "dashboard.views.status-node" pk=node.pk %}?next={{ request.path }}&status=disable"><i class="icon-remove"></i> Disable</a></li>
+  {% else %}
+    <li><a style="display:block" data-status="enable" data-node-pk="{{ node.pk }}" class="real-link node-enable" href="{% url "dashboard.views.status-node" pk=node.pk %}?next={{ request.path }}&status=enable" >
 	<i class="icon-check"></i> Enable</a>
-    <a style="display:none" data-status="disable" data-node-pk="{{ node.pk }}" class="real-link node-enable" href="{% url "dashboard.views.status-node" pk=node.pk %}?next={{ request.path }}&status=disable" ><i class="icon-remove"></i> Disable</a></li>
-    {% endif %}
+      <a style="display:none" data-status="disable" data-node-pk="{{ node.pk }}" class="real-link node-enable" href="{% url "dashboard.views.status-node" pk=node.pk %}?next={{ request.path }}&status=disable" ><i class="icon-remove"></i> Disable</a></li>
+  {% endif %}
     <li><a data-node-pk="{{ node.pk }}" class="real-link node-delete" href="{% url "dashboard.views.delete-node" pk=node.pk %}?next={{ request.path }}"><i class="icon-trash"></i> Delete</a></li>
   </ul>
 </div>
