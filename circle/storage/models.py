@@ -238,14 +238,42 @@ class Disk(AclBase, TimeStampedModel):
                                               queue="localhost.man")
 
     @classmethod
-    def create_empty(cls, params={}, user=None):
-        disk = cls()
-        disk.__dict__.update(params)
-        disk.save()
-        return disk
+    def create_empyt_async(instance=None, params=None, user=None):
+        """Create empty Disk object asynchronusly.
+
+        :param instance: instnace object to connect disk
+        :type instane: vm.models.Instance
+        :param params: disk custom parameters
+        :type params: dict
+        :param user: owner of the disk
+        :type user: django.contrib.auth.User
+        """
+        return local_tasks.create_empty.apply_async(
+            args=[instance, params, user], queue="localhost.man")
 
     @classmethod
-    def create_from_url_async(cls, url, params=None, user=None):
+    def create_empty(cls, instance=None, params=None,
+                     user=None, task_uuid=None):
+        """Create empty Disk object.
+
+        :param instance: instnace object to connect disk
+        :type instane: vm.models.Instance
+        :param params: disk custom parameters
+        :type params: dict
+        :param user: owner of the disk
+        :type user: django.contrib.auth.User
+        """
+        with disk_activity(code_suffix="create", task_uuid=task_uuid,
+                           user=user) as act:
+            disk = cls()
+            if params:
+                disk.__dict__.update(params)
+            disk.save()
+            act.disk = disk
+            act.save()
+            if instance:
+                instance.disks.add(disk)
+            return disk
         return local_tasks.create_from_url.apply_async(kwargs={
             'cls': cls, 'url': url, 'params': params, 'user': user},
             queue='localhost.man')
