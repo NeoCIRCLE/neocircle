@@ -36,10 +36,11 @@ class DataStore(Model):
     def __unicode__(self):
         return u'%s (%s)' % (self.name, self.path)
 
-    def get_remote_queue_name(self, queue_id):
+    def get_remote_queue_name(self, queue_id, check_worker=True):
         logger.debug("Checking for storage queue %s.%s",
                      self.hostname, queue_id)
-        if local_tasks.check_queue(self.hostname, queue_id):
+        if not check_worker or local_tasks.check_queue(self.hostname,
+                                                       queue_id):
             return self.hostname + '.' + queue_id
         else:
             raise WorkerNotFound()
