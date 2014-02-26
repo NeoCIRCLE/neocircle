@@ -205,7 +205,7 @@ class Disk(AclBase, TimeStampedModel):
             return None
 
     def __unicode__(self):
-        return u"%s (#%d)" % (self.name, self.id)
+        return u"%s (#%d)" % (self.name, self.id or 0)
 
     def clean(self, *args, **kwargs):
         if self.size == "" and self.base:
@@ -311,11 +311,11 @@ class Disk(AclBase, TimeStampedModel):
 
     @classmethod
     def create_from_url_async(cls, url, instance=None, params=None, user=None):
-        """Create disk object and download data from url asynchronusly.
+        """Create disk object and download data from url asynchrnously.
 
-        :param url: image url to download.
-        :type url: url
-        :param instance: instnace object to connect disk
+        :param url: URL of image to download.
+        :type url: string
+        :param instance: instance object to connect disk
         :type instane: vm.models.Instance
         :param params: disk custom parameters
         :type params: dict
@@ -343,16 +343,18 @@ class Disk(AclBase, TimeStampedModel):
         :type params: dict
         :param user: owner of the disk
         :type user: django.contrib.auth.User
+        :param task_uuid: TODO
+        :param abortable_task: TODO
 
-        :return: Task
-        :rtype: AsyncResult
+        :return: The created Disk object
+        :rtype: Disk
         """
         disk = cls()
         disk.generate_filename()
         disk.type = "iso"
         disk.size = 1
         # TODO get proper datastore
-        disk.datastore = DataStore.objects.all()[0]
+        disk.datastore = DataStore.objects.get()
         if params:
             disk.__dict__.update(params)
         disk.save()
@@ -388,6 +390,7 @@ class Disk(AclBase, TimeStampedModel):
             disk.size = size
             disk.ready = True
             disk.save()
+        return disk
 
     def destroy(self, user=None, task_uuid=None):
         if self.destroyed:
@@ -407,7 +410,7 @@ class Disk(AclBase, TimeStampedModel):
                                                queue='localhost.man')
 
     def restore(self, user=None, task_uuid=None):
-        """Restore destroyed disk.
+        """Recover destroyed disk from trash if possible.
         """
         # TODO
         pass
