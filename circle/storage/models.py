@@ -166,8 +166,10 @@ class Disk(AclBase, TimeStampedModel):
 
         if self.type not in type_mapping.keys():
             raise self.WrongDiskTypeError(self.type)
-
-        filename = self.filename if self.type == 'iso' else str(uuid.uuid4())
+        if self.type == 'iso':
+            filename = self.filename
+        else:
+            self.generate_filename()
         new_type = type_mapping[self.type]
 
         return Disk.objects.create(base=self, datastore=self.datastore,
@@ -208,6 +210,8 @@ class Disk(AclBase, TimeStampedModel):
     def clean(self, *args, **kwargs):
         if self.size == "" and self.base:
             self.size = self.base.size
+        if self.filename is None:
+            self.generate_filename()
         super(Disk, self).clean(*args, **kwargs)
 
     def deploy(self, user=None, task_uuid=None):
@@ -274,6 +278,11 @@ class Disk(AclBase, TimeStampedModel):
         return local_tasks.create_empty.apply_async(
             args=[instance, params, user], queue="localhost.man")
 
+    def generate_filename(self):
+        """Generate a unique filename and set it on the object.
+        """
+        self.filename = str(uuid.uuid4())
+
     @classmethod
     def create_empty(cls, instance=None, params=None,
                      user=None, task_uuid=None):
@@ -291,6 +300,8 @@ class Disk(AclBase, TimeStampedModel):
             disk = cls()
             if params:
                 disk.__dict__.update(params)
+            if disk.filename is None:
+                disk.generate_filename()
             disk.save()
             act.disk = disk
             act.save()
@@ -337,7 +348,7 @@ class Disk(AclBase, TimeStampedModel):
         :rtype: AsyncResult
         """
         disk = cls()
-        disk.filename = str(uuid.uuid4())
+        disk.generate_filename()
         disk.type = "iso"
         disk.size = 1
         # TODO get proper datastore
@@ -421,12 +432,11 @@ class Disk(AclBase, TimeStampedModel):
         with disk_activity(code_suffix='save_as', disk=self,
                            task_uuid=task_uuid, user=user):
 
-            filename = str(uuid.uuid4())
             new_type, new_base = mapping[self.type]
 
             disk = Disk.objects.create(base=new_base, datastore=self.datastore,
-                                       filename=filename, name=self.name,
-                                       size=self.size, type=new_type)
+                                       name=self.name, size=self.size,
+                                       type=new_type)
 
             queue_name = self.get_remote_queue_name('storage')
             remote_tasks.merge.apply_async(args=[self.get_disk_desc(),
