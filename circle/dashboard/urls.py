@@ -8,7 +8,7 @@ from .views import (
     TemplateList, LeaseDetail, NodeCreate, LeaseCreate, TemplateCreate,
     FavouriteView, NodeStatus, GroupList, TemplateDelete, LeaseDelete,
     VmGraphView, TemplateAclUpdateView, GroupDetailView, GroupDelete,
-    GroupAclUpdateView, GroupUserDelete, NodeGraphView
+    GroupAclUpdateView, GroupUserDelete, NotificationView, NodeGraphView,
 )
 
 urlpatterns = patterns(
@@ -81,4 +81,7 @@ urlpatterns = patterns(
         name='dashboard.views.group-acl'),
     url(r'^groupuser/delete/(?P<pk>\d+)/$', GroupUserDelete.as_view(),
         name="dashboard.views.delete-groupuser"),
+
+    url(r'^notifications/$', NotificationView.as_view(),
+        name="dashboard.views.notifications"),
 )

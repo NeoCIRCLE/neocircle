@@ -1,0 +1,20 @@
+{% load i18n %}
+{% for n in notifications %}
+  <li class="notification-message">
+    <span class="notification-message-subject">
+      {% if n.status == "new" %}<i class="icon-envelope-alt"></i> {% endif %}
+      {{ n.subject }}
+    </span>
+    <span class="notification-message-date pull-right">
+      {{ n.created|timesince }}
+    </span>
+    <div style="clear: both;"></div>
+    <div class="notification-message-text">
+      {{ n.message }}
+    </div>
+  </li>
+{% empty %}
+  <li class="notification-message">
+  {% trans "You have no notifications." %}
+  </li>
+{% endfor %}

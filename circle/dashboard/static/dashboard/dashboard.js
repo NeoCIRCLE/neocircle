@@ -205,7 +205,16 @@ $(function () {
       window.location.href = "/dashboard/vm/list/?s=" + input;
     }
   });
- 
+
+  /* notification message toggle */
+  $(document).on('click', ".notification-message-subject", function() {
+    $(".notification-message-text", $(this).parent()).slideToggle();
+    return false;
+  });
+
+  $("#notification-button").click(function() {
+      $('.notification-messages').load("/dashboard/notifications/");
+  });
 });
 
 function generateVmHTML(pk, name, fav) {
