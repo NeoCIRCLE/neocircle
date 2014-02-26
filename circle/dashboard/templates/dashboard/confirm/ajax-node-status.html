@@ -1,0 +1,27 @@
+{% load i18n %}
+<div class="modal fade" id="confirmation-modal" tabindex="-1" role="dialog"> 
+  <div class="modal-dialog"> 
+    <div class="modal-content"> 
+      <div class="modal-body">  
+      
+          {% if text %}
+            {{ text }}
+          {% else %}
+            {%blocktrans with object=object%}
+              Are you sure you want to change <strong>{{ object }}</strong> status?
+            {%endblocktrans%}
+          {% endif %}
+        <div class="pull-right">
+          <form action="" method="POST">
+            {% csrf_token %}
+            <a class="btn btn-default">Back</a>
+	    <input type="hidden" name="new_status" value="{{ status }}"/>
+	    <button class="btn btn-warning">Yes, {{ status  }}</button>
+          </form>
+        </div>
+	<div class="clearfix"></div>
+
+      </div>
+    </div><!-- /.modal-content --> 
+  </div><!-- /.modal-dialog --> 
+</div>

@@ -25,3 +25,43 @@
     });
     return false;
   });
+
+  /* for Node removes buttons */
+  $('.node-enable').click(function() {
+    var node_pk = $(this).data('node-pk');
+    var node_status = $(this).data('status');
+    var dir = window.location.pathname.indexOf('list') == -1;
+    addModalConfirmation(deleteObject, 
+      { 'url': '/dashboard/node/status/' + node_pk + '/?status='+node_status,
+        'data': {'new_status':node_status},
+        'pk': node_pk,
+	'status': node_status,
+        'type': "node",
+        'redirect': dir});
+
+    return false;
+  });
+
+function changeNodeStatus(data) {
+  $.ajax({
+    type: 'POST',
+    url: data['url'],
+    headers: {"X-CSRFToken": getCookie('csrftoken')},
+    success: function(re, textStatus, xhr) {
+      if(!data['redirect']) {
+        selected = [];
+        addMessage(re['message'], 'success');
+        $('a[data-'+data['type']+'-pk="' + data['pk'] + '"]').closest('tr').fadeOut(function() {
+          $(this).remove();
+        });
+      } else {
+        window.location.replace('/dashboard');
+      }
+    },
+    error: function(xhr, textStatus, error) {
+      addMessage('Uh oh :(', 'danger')
+    }
+  });
+}
+
+

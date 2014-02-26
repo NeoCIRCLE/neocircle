@@ -1241,6 +1241,12 @@ class NodeStatus(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
     template_name = "dashboard/confirm/node-status.html"
     model = Node
 
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/confirm/ajax-node-status.html']
+        else:
+            return ['dashboard/confirm/node-status.html']
+
     def get_success_url(self):
         next = self.request.GET.get('next')
         if next:
@@ -1256,7 +1262,6 @@ class NodeStatus(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
 
     def post(self, request, *args, **kwargs):
         if request.POST.get('new_status'):
-            print self.request.GET.get('next')
             return self.__set_status(request)
 
     def __set_status(self, request):

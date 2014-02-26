@@ -135,7 +135,7 @@ $(function () {
     return false;
   });
 
-  /* for Node removes buttons */
+  /* for Group removes buttons */
   $('.group-delete').click(function() {
     var group_pk = $(this).data('group-pk');
     var dir = window.location.pathname.indexOf('list') == -1;
@@ -144,19 +144,6 @@ $(function () {
         'data': [],
 	'type': "group",
         'pk': group_pk,
-        'redirect': dir});
-    
-    return false;
-  });
-
-  /* for Group removes buttons */
-  $('.group-delete').click(function() {
-    var group_pk = $(this).data('group-pk');
-    var dir = window.location.pathname.indexOf('list') == -1;
-    addModalConfirmation(deleteGroup, 
-      { 'url': '/dashboard/group/delete/' + group_pk + '/',
-        'data': [],
-        'group_pk': group_pk,
         'redirect': dir});
     
     return false;
@@ -311,6 +298,7 @@ function addModalConfirmation(func, data) {
     url: data['url'],
     data: jQuery.param(data['data']),
     success: function(result) {
+      console.log(result);
       $('body').append(result);
       $('#confirmation-modal').modal('show');
       $('#confirmation-modal').on('hidden.bs.modal', function() {
