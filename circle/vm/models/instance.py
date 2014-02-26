@@ -607,9 +607,10 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         queue_name = self.get_remote_queue_name('vm')
 
         # Deploy VM on remote machine
-        with act.sub_activity('deploying_vm'):
-            vm_tasks.deploy.apply_async(args=[self.get_vm_desc()],
-                                        queue=queue_name).get(timeout=timeout)
+        with act.sub_activity('deploying_vm') as deploy_act:
+            deploy_act.result = vm_tasks.deploy.apply_async(
+                args=[self.get_vm_desc()],
+                queue=queue_name).get(timeout=timeout)
 
         # Estabilish network connection (vmdriver)
         with act.sub_activity('deploying_net'):
@@ -671,7 +672,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         return local_tasks.deploy.apply_async(args=[self, user],
                                               queue="localhost.man")
 
-    def __destroy_vm(self, act, timeout):
+    def __destroy_vm(self, act, timeout=15):
         """Destroy the virtual machine and its associated networks.
 
         :param self: The virtual machine.
