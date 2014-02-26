@@ -4,7 +4,19 @@
 {% block content %}
 <div class="body-content">
   <div class="page-header">
-    <h1>{{ node.name }} <small>{{ node.get_connect_host }}</small></h1>
+    <h1>	  
+      <div id="node-details-rename">
+       <form action="" method="POST" id="node-details-rename-form">
+         {% csrf_token %}
+         <input id="node-details-rename-name" class="form-control" name="new_name" type="text" value="{{ node.name }}"/> 
+         <button type="submit" id="node-details-rename-submit" class="btn">{% trans "Rename" %}</button>
+       </form>
+  </div>
+  <div id="node-details-h1-name">    
+      {{ node.name }} 
+  </div>
+</h1>
+      <small>{{ node.get_connect_host }}</small>
   </div>
   <div class="row">
     <div class="col-md-4" id="node-info-pane">
@@ -71,6 +83,6 @@
 
 {% endblock %}
 {% block extra_js %}
-<script src="{{ STATIC_URL}}dashboard/node-list.js"></script>
+<script src="{{ STATIC_URL}}dashboard/node-details.js"></script>
 {% endblock %}
 
