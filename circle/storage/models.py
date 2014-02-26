@@ -270,22 +270,18 @@ class Disk(AclBase, TimeStampedModel):
         self.filename = str(uuid.uuid4())
 
     @classmethod
-    def create_empty(cls, instance=None, params=None,
-                     user=None, task_uuid=None):
+    def create_empty(cls, instance=None, user=None, **kwargs):
         """Create empty Disk object.
 
-        :param instance: instnace object to connect disk
-        :type instane: vm.models.Instance
-        :param params: disk custom parameters
-        :type params: dict
-        :param user: owner of the disk
+        :param instance: Instance attach the Disk to.
+        :type instane: vm.models.Instance or NoneType
+        :param user: Creator of the disk.
         :type user: django.contrib.auth.User
+
+        :return: Disk object without a real image, to be .deploy()ed later.
         """
-        with disk_activity(code_suffix="create", task_uuid=task_uuid,
-                           user=user) as act:
-            disk = cls()
-            if params:
-                disk.__dict__.update(params)
+        with disk_activity(code_suffix="create", user=user) as act:
+            disk = cls(**kwargs)
             if disk.filename is None:
                 disk.generate_filename()
             disk.save()
