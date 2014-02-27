@@ -181,7 +181,7 @@ class VmDetailView(CheckedDetailView):
         context['acl'] = get_vm_acl_data(instance)
         context['forms'] = {
             'disk_add_form': DiskAddForm(
-                add_to="instance", object_pk=self.get_object().pk,
+                is_template=False, object_pk=self.get_object().pk,
                 prefix="disk"),
         }
         context['os_type_icon'] = instance.os_type.replace("unknown",
@@ -733,7 +733,7 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         context = super(TemplateDetail, self).get_context_data(**kwargs)
         context['acl'] = get_vm_acl_data(self.get_object())
         context['disk_add_form'] = DiskAddForm(
-            add_to="template",
+            is_template=True,
             object_pk=self.get_object().pk,
             prefix="disk",
         )
@@ -1711,11 +1711,20 @@ class VmMigrateView(SuperuserRequiredMixin, TemplateView):
 class DiskAddView(SuperuserRequiredMixin, TemplateView):
 
     def post(self, *args, **kwargs):
-        add_to = self.request.POST.get("disk-add_to")
+        is_template = self.request.POST.get("disk-is_template")
         object_pk = self.request.POST.get("disk-object_pk")
+        is_template = int(is_template) == 1
+        if is_template:
+            obj = InstanceTemplate.objects.get(pk=object_pk)
+        else:
+            obj = Instance.objects.get(pk=object_pk)
+
+        if not obj.has_level(self.request.user, 'owner'):
+            raise PermissionDenied()
+
         form = DiskAddForm(
             self.request.POST,
-            add_to=add_to, object_pk=object_pk,
+            is_template=is_template, object_pk=object_pk,
             prefix="disk"
         )
 
@@ -1728,9 +1737,9 @@ class DiskAddView(SuperuserRequiredMixin, TemplateView):
                                     for i in form.errors.items()])
             messages.error(self.request, error)
 
-        if add_to == "template":
-            r = InstanceTemplate.objects.get(pk=object_pk).get_absolute_url()
+        if is_template:
+            r = obj.get_absolute_url()
         else:
-            r = Instance.objects.get(pk=object_pk).get_absolute_url()
+            r = obj.get_absolute_url()
             r = "%s#resources" % r
         return redirect(r)

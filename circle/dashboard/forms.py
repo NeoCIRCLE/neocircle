@@ -729,14 +729,14 @@ class DiskAddForm(forms.Form):
     name = forms.CharField()
     size = forms.CharField(widget=FileSizeWidget, required=False)
     url = forms.CharField(required=False)
-    add_to = forms.CharField()
+    is_template = forms.CharField()
     object_pk = forms.CharField()
 
     def __init__(self, *args, **kwargs):
-        self.add_to = kwargs.pop("add_to")
+        self.is_template = kwargs.pop("is_template")
         self.object_pk = kwargs.pop("object_pk")
         super(DiskAddForm, self).__init__(*args, **kwargs)
-        self.initial['add_to'] = self.add_to
+        self.initial['is_template'] = 1 if self.is_template is True else 0
         self.initial['object_pk'] = self.object_pk
 
     def clean_size(self):
@@ -773,7 +773,7 @@ class DiskAddForm(forms.Form):
             # TODO
             d = None
 
-        if self.add_to == "template":
+        if self.is_template:
             vm_or_temp = InstanceTemplate.objects.get(pk=self.object_pk)
         else:
             vm_or_temp = Instance.objects.get(pk=self.object_pk)
@@ -787,7 +787,7 @@ class DiskAddForm(forms.Form):
         helper = FormHelper()
         helper.form_show_labels = False
         helper.layout = Layout(
-            Field("add_to", type="hidden"),
+            Field("is_template", type="hidden"),
             Field("object_pk", type="hidden"),
             Field("name", placeholder=_("Name")),
             Field("size", placeholder=_("Disk size (for example: 20GB, "
