@@ -65,4 +65,6 @@ $(function() {
           $('#noVNC_status').html("Can't connect to console.");
       });
   });
+  if (window.location.hash == "#console")
+      window.onscriptsload = function(){$('a[href$="console"]').click();};
 });
