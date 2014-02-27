@@ -88,6 +88,6 @@ urlpatterns = patterns(
     url(r'^notifications/$', NotificationView.as_view(),
         name="dashboard.views.notifications"),
 
-    url(r'^disk/add$', DiskAddView.as_view(),
+    url(r'^disk/add/$', DiskAddView.as_view(),
         name="dashboard.views.disk-add"),
 )

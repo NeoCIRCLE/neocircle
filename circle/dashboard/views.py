@@ -1708,7 +1708,7 @@ class VmMigrateView(SuperuserRequiredMixin, TemplateView):
         return redirect("%s#activity" % vm.get_absolute_url())
 
 
-class DiskAddView(SuperuserRequiredMixin, TemplateView):
+class DiskAddView(TemplateView):
 
     def post(self, *args, **kwargs):
         is_template = self.request.POST.get("disk-is_template")

@@ -209,8 +209,12 @@ class VmDetailTest(TestCase):
         inst = Instance.objects.get(pk=1)
         inst.set_level(self.u1, 'owner')
         disks = inst.disks.count()
-        response = c.post("/dashboard/vm/1/", {'disk-name': "a",
-                                               'disk-size': 1})
+        response = c.post("/dashboard/disk/add/", {
+            'disk-name': "a",
+            'disk-size': 1,
+            'disk-is_template': 0,
+            'disk-object_pk': 1,
+        })
         self.assertEqual(response.status_code, 403)
         self.assertEqual(disks, inst.disks.count())
 
@@ -220,8 +224,12 @@ class VmDetailTest(TestCase):
         inst = Instance.objects.get(pk=1)
         inst.set_level(self.u1, 'owner')
         disks = inst.disks.count()
-        response = c.post("/dashboard/vm/1/", {'disk-name': "a",
-                                               'disk-size': 1})
+        response = c.post("/dashboard/disk/add/", {
+            'disk-name': "a",
+            'disk-size': 1,
+            'disk-is_template': 0,
+            'disk-object_pk': 1,
+        })
         self.assertEqual(response.status_code, 302)
         self.assertEqual(disks + 1, inst.disks.count())
 
