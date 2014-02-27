@@ -148,6 +148,25 @@ class CheckedDetailView(LoginRequiredMixin, DetailView):
         return context
 
 
+class VmDetailVncTokenView(CheckedDetailView):
+    template_name = "dashboard/vm-detail.html"
+    model = Instance
+
+    def get(self, request, **kwargs):
+        self.object = self.get_object()
+        if not self.object.has_level(request.user, 'operator'):
+            raise PermissionDenied()
+        if self.object.node:
+            port = self.object.vnc_port
+            host = str(self.object.node.host.ipv4)
+            value = signing.dumps({'host': host,
+                                   'port': port},
+                                  key=getenv("PROXY_SECRET", 'asdasd')),
+            return HttpResponse('vnc/?d=%s' % value)
+        else:
+            raise Http404()
+
+
 class VmDetailView(CheckedDetailView):
     template_name = "dashboard/vm-detail.html"
     model = Instance
@@ -155,16 +174,11 @@ class VmDetailView(CheckedDetailView):
     def get_context_data(self, **kwargs):
         context = super(VmDetailView, self).get_context_data(**kwargs)
         instance = context['instance']
-        if instance.node:
-            port = instance.vnc_port
-            host = str(instance.node.host.ipv4)
-            value = signing.dumps({'host': host,
-                                   'port': port},
-                                  key=getenv("PROXY_SECRET", 'asdasd')),
-            context.update({
-                'graphite_enabled': VmGraphView.get_graphite_url() is not None,
-                'vnc_url': '%s' % value
-            })
+        context.update({
+            'graphite_enabled': VmGraphView.get_graphite_url() is not None,
+            'vnc_url': reverse_lazy("dashboard.views.detail-vnc",
+                                    kwargs={'pk': self.object.pk})
+        })
 
         # activity data
         ia = InstanceActivity.objects.filter(

@@ -9,7 +9,7 @@ from .views import (
     FavouriteView, NodeStatus, GroupList, TemplateDelete, LeaseDelete,
     VmGraphView, TemplateAclUpdateView, GroupDetailView, GroupDelete,
     GroupAclUpdateView, GroupUserDelete, NotificationView, NodeGraphView,
-    VmMigrateView,
+    VmMigrateView, VmDetailVncTokenView,
 )
 
 urlpatterns = patterns(
@@ -37,6 +37,8 @@ urlpatterns = patterns(
         name='dashboard.views.remove-port'),
     url(r'^vm/(?P<pk>\d+)/$', VmDetailView.as_view(),
         name='dashboard.views.detail'),
+    url(r'^vm/(?P<pk>\d+)/vnctoken/$', VmDetailVncTokenView.as_view(),
+        name='dashboard.views.detail-vnc'),
     url(r'^vm/(?P<pk>\d+)/acl/$', AclUpdateView.as_view(model=Instance),
         name='dashboard.views.vm-acl'),
     url(r'^vm/(?P<pk>\d+)/tx/$', TransferOwnershipView.as_view(),

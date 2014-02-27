@@ -63,15 +63,25 @@
 	    port = window.location.port == "" ? "443" : window.location.port;
         }
         password = '';
-        path = 'vnc/?d={{ vnc_url }}';
+        $('#_console .btn-toolbar button').attr('disabled', true);
+        $('#noVNC_status').html('Retreiving authorization token.');
+        $.get('{{ vnc_url }}', function(data) {
+            if (data.indexOf('vnc') != 0) {
+                $('#noVNC_status').html('No authorization token received.');
+            }
+            else {
+                rfb = new RFB({'target': $D('noVNC_canvas'),
+                               'encrypt': (window.location.protocol === "https:"),
+                               'true_color':   true,
+                               'local_cursor': true,
+                               'shared':       true,
+                               'view_only':    false,
+                               'updateState':  updateState});
+                rfb.connect(host, port, password, data);
+        }
+        }).fail(function(){
+            $('#noVNC_status').html("Can't connect to console.");
+        });
 
-        rfb = new RFB({'target': $D('noVNC_canvas'),
-                       'encrypt': (window.location.protocol === "https:"),
-                       'true_color':   true,
-                       'local_cursor': true,
-                       'shared':       true,
-                       'view_only':    false,
-                       'updateState':  updateState});
-        rfb.connect(host, port, password, path);
     });
     </script>
