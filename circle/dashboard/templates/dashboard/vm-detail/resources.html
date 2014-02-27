@@ -52,9 +52,12 @@
         </a>
       </div>
     </h3>
-    <div class="row" id="vm-details-disk-add-for-form">
 
-    </div>
+    <div class="row" id="vm-details-disk-add-for-form"></div>
+
+    {% if not instance.disks.all %}
+      {% trans "No disks are added!" %}
+    {% endif %}
     {% for d in instance.disks.all %}
       <h4 class="list-group-item-heading dashboard-vm-details-network-h3">
         <i class="icon-file"></i> {{ d.name }} (#{{ d.id }}) - {{ d.size|filesize }}
@@ -67,7 +70,7 @@
   <div class="col-md-12">
     <div>
       <hr />
-      <form method="POST" action="" style="max-width: 300px;">
+      <form method="POST" action="{% url "dashboard.views.disk-add" %}" style="max-width: 350px;">
         {% crispy forms.disk_add_form %}
       </form>
       <hr />

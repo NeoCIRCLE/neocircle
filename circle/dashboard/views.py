@@ -20,7 +20,7 @@ from django.views.generic import (TemplateView, DetailView, View, DeleteView,
                                   UpdateView, CreateView)
 from django.contrib import messages
 from django.utils.translation import ugettext as _
-from django.template.defaultfilters import title
+from django.template.defaultfilters import title as title_filter
 from django.template.loader import render_to_string
 
 from django.forms.models import inlineformset_factory
@@ -180,7 +180,9 @@ class VmDetailView(CheckedDetailView):
         ).all()
         context['acl'] = get_vm_acl_data(instance)
         context['forms'] = {
-            'disk_add_form': DiskAddForm(prefix="disk"),
+            'disk_add_form': DiskAddForm(
+                add_to="instance", object_pk=self.get_object().pk,
+                prefix="disk"),
         }
         context['os_type_icon'] = instance.os_type.replace("unknown",
                                                            "question")
@@ -199,7 +201,6 @@ class VmDetailView(CheckedDetailView):
             'port': self.__add_port,
             'new_network_vlan': self.__new_network,
             'save_as': self.__save_as,
-            'disk-name': self.__add_disk,
             'shut_down': self.__shut_down,
             'sleep': self.__sleep,
             'wake_up': self.__wake_up,
@@ -373,24 +374,6 @@ class VmDetailView(CheckedDetailView):
                                     "please rename it!"))
         return redirect(reverse_lazy("dashboard.views.template-detail",
                                      kwargs={'pk': template.pk}))
-
-    def __add_disk(self, request):
-        self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-
-        form = DiskAddForm(request.POST, prefix="disk")
-        if form.is_valid():
-            messages.success(request, _("New disk successfully created!"))
-            form.save(self.object)
-        else:
-            error = "<br /> ".join(["<strong>%s</strong>: %s" %
-                                    (title(i[0]), i[1][0])
-                                    for i in form.errors.items()])
-            messages.error(request, error)
-
-        return redirect("%s#resources" % reverse_lazy(
-            "dashboard.views.detail", kwargs={'pk': self.object.pk}))
 
     def __shut_down(self, request):
         self.object = self.get_object()
@@ -749,6 +732,11 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super(TemplateDetail, self).get_context_data(**kwargs)
         context['acl'] = get_vm_acl_data(self.get_object())
+        context['disk_add_form'] = DiskAddForm(
+            add_to="template",
+            object_pk=self.get_object().pk,
+            prefix="disk",
+        )
         return context
 
     def get_success_url(self):
@@ -1718,3 +1706,31 @@ class VmMigrateView(SuperuserRequiredMixin, TemplateView):
             messages.error(self.request, _("You didn't select a node!"))
 
         return redirect("%s#activity" % vm.get_absolute_url())
+
+
+class DiskAddView(SuperuserRequiredMixin, TemplateView):
+
+    def post(self, *args, **kwargs):
+        add_to = self.request.POST.get("disk-add_to")
+        object_pk = self.request.POST.get("disk-object_pk")
+        form = DiskAddForm(
+            self.request.POST,
+            add_to=add_to, object_pk=object_pk,
+            prefix="disk"
+        )
+
+        if form.is_valid():
+            messages.success(self.request, _("Disk successfully added!"))
+            form.save()
+        else:
+            error = "<br /> ".join(["<strong>%s</strong>: %s" %
+                                    (title_filter(i[0]), i[1][0])
+                                    for i in form.errors.items()])
+            messages.error(self.request, error)
+
+        if add_to == "template":
+            r = InstanceTemplate.objects.get(pk=object_pk).get_absolute_url()
+        else:
+            r = Instance.objects.get(pk=object_pk).get_absolute_url()
+            r = "%s#resources" % r
+        return redirect(r)

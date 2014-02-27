@@ -64,8 +64,19 @@
         </form>
       </div>
     </div>
-  </div>
-</div>
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="no-margin"><i class="icon-file"></i> {% trans "Create new disk" %}</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{% url "dashboard.views.disk-add" %}" method="POST">
+          {% crispy disk_add_form %} 
+        </form>
+      </div>
+    </div>
+  </div><!-- .col-md-4 -->
+</div><!-- .row -->
 
 
 <style>
