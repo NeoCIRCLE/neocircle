@@ -80,7 +80,7 @@
         <dt>Password:</dt>
         <dd>
           <div class="input-group">
-            <input type="text" class="form-control input-sm input-tags" value="{{ instance.pw }}"/>
+            <input type="text" id="vm-details-pw-input" class="form-control input-sm input-tags" value="{{ instance.pw }}"/>
             <span class="input-group-addon input-tags" id="vm-details-pw-show">
               <i class="icon-eye-open" id="vm-details-pw-eye" title="Show password"></i>
             </span>
@@ -113,8 +113,8 @@
               <i class="icon-tasks icon-2x"></i><br>
               {% trans "Resources" %}</a>
           </li>
-          <li {% if instance.state != "RUNNING" %}class="disabled"{% endif %}>
-            <a href="#{% if instance.state == "RUNNING" %}console" data-toggle="pill{% endif %}" data-target="#_console" class="text-center">
+          <li {% if not instance.is_console_available %}class="disabled"{% endif %}>
+            <a href="#console" data-toggle="pill" data-target="#_console" class="text-center">
               <i class="icon-desktop icon-2x"></i><br>
               {% trans "Console" %}</a></li>
           <li>
@@ -152,4 +152,5 @@
 {% block extra_js %}
   <script src="{{ STATIC_URL }}dashboard/vm-details.js"></script>
   <script src="{{ STATIC_URL }}dashboard/vm-common.js"></script>
+  <script src="{{ STATIC_URL }}dashboard/vm-console.js"></script>
 {% endblock %}

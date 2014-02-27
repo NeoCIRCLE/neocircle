@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User, Group
 
-from vm.models import Instance, InstanceTemplate, Lease
+from vm.models import Instance, InstanceTemplate, Lease, Node
 from storage.models import Disk
 from firewall.models import Vlan
 
@@ -234,3 +234,37 @@ class VmDetailTest(TestCase):
         response = c.get("/dashboard/notifications/")
         self.assertEqual(response.status_code, 200)
         assert self.u1.notification_set.get().status == 'read'
+
+
+class VmDetailVncTest(TestCase):
+    fixtures = ['test-vm-fixture.json', 'node.json']
+
+    def setUp(self):
+        self.u1 = User.objects.create(username='user1')
+        self.u1.set_password('password')
+        self.u1.save()
+
+    def login(self, client, username, password='password'):
+        response = client.post('/accounts/login/', {'username': username,
+                                                    'password': password})
+        self.assertNotEqual(response.status_code, 403)
+
+    def test_permitted_vm_console(self):
+        c = Client()
+        self.login(c, 'user1')
+        inst = Instance.objects.get(pk=1)
+        inst.node = Node.objects.all()[0]
+        inst.save()
+        inst.set_level(self.u1, 'operator')
+        response = c.get('/dashboard/vm/1/vnctoken/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_not_permitted_vm_console(self):
+        c = Client()
+        self.login(c, 'user1')
+        inst = Instance.objects.get(pk=1)
+        inst.node = Node.objects.all()[0]
+        inst.save()
+        inst.set_level(self.u1, 'user')
+        response = c.get('/dashboard/vm/1/vnctoken/')
+        self.assertEqual(response.status_code, 403)
