@@ -1,11 +1,20 @@
-{% extends "base.html" %}
+{% extends "registration/base.html" %}
 {% load i18n %}
-{% load staticfiles %}
+{% load crispy_forms_tags %}
 {% get_current_language as LANGUAGE_CODE %}
+
 {% block content %}
-<form action="" method="POST">
-    {% csrf_token %}
-    {{ form }}
-    <input type="submit" value="LOGIN" />
-</form>
+  <div class="row">
+    <div class="login-form">
+      {% if form.password.errors or form.username.errors %}
+      {% include "display-form-errors.html" %}
+      {% endif %}
+      <h3>{% trans "Please login to continue!" %}</h3>
+      <form action="" method="POST">
+          {% csrf_token %}
+          {% crispy form %}
+      </form>
+      <a class="pull-right" href="">Forgot your password?</a>
+    </div>
+  </div>
 {% endblock %}

@@ -391,3 +391,5 @@ if get_env_variable('DJANGO_SAML', 'FALSE') == 'TRUE':
     if get_env_variable('DJANGO_SAML_ORG_ID_ATTRIBUTE', False) != False:
         SAML_ORG_ID_ATTRIBUTE = get_env_variable(
             'DJANGO_SAML_ORG_ID_ATTRIBUTE')
+
+LOGIN_REDIRECT_URL = "/"

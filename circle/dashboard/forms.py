@@ -2,6 +2,7 @@ from datetime import timedelta
 import uuid
 
 from django.contrib.auth.models import User
+from django.contrib.auth.forms import AuthenticationForm
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import (
@@ -758,6 +759,48 @@ class DiskAddForm(forms.Form):
                                         "1500MB)")),
         )
         helper.add_input(Submit("submit", "Create new disk",
+                                css_class="btn btn-success"))
+        return helper
+
+
+class CircleAuthenticationForm(AuthenticationForm):
+    # fields: username, password
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.form_show_labels = False
+        helper.layout = Layout(
+            AnyTag(
+                "div",
+                AnyTag(
+                    "span",
+                    AnyTag(
+                        "i",
+                        css_class="icon-user",
+                    ),
+                    css_class="input-group-addon",
+                ),
+                Field("username", placeholder=_("Username"),
+                      css_class="form-control"),
+                css_class="input-group",
+            ),
+            AnyTag(
+                "div",
+                AnyTag(
+                    "span",
+                    AnyTag(
+                        "i",
+                        css_class="icon-lock",
+                    ),
+                    css_class="input-group-addon",
+                ),
+                Field("password", placeholder=_("Password"),
+                      css_class="form-control"),
+                css_class="input-group",
+            ),
+        )
+        helper.add_input(Submit("submit", _("Sign in"),
                                 css_class="btn btn-success"))
         return helper
 
