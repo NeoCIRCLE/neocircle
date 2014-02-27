@@ -30,9 +30,9 @@
   $('.node-enable').click(function() {
     var node_pk = $(this).data('node-pk');
     var dir = window.location.pathname.indexOf('list') == -1;
-    addModalConfirmation(deleteObject, 
+    addModalConfirmation(changeNodeStatus, 
       { 'url': '/dashboard/node/status/' + node_pk + '/',
-        'data': {'change_status':""},
+        'data': [],
         'pk': node_pk,
         'type': "node",
         'redirect': dir});

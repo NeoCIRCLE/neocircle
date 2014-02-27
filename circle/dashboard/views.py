@@ -456,8 +456,10 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
     def post(self, request, *args, **kwargs):
         if request.POST.get('new_name'):
             return self.__set_name(request)
-        if request.POST.get('new_status'):
+        if request.POST.get('change_status'):
             return self.__set_status(request)
+        return redirect(reverse_lazy("dashboard.views.node-detail",
+                                     kwargs={'pk': self.get_object().pk}))
 
     def __set_name(self, request):
         self.object = self.get_object()
@@ -469,7 +471,6 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
         if request.is_ajax():
             response = {
                 'message': success_message,
-                'new_name': new_name,
                 'node_pk': self.object.pk
             }
             return HttpResponse(
@@ -483,19 +484,14 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
 
     def __set_status(self, request):
         self.object = self.get_object()
-        new_status = request.POST.get("new_status")
-        if new_status == "enable":
+        if not self.object.enabled:
             self.object.enable(user=request.user)
-        elif new_status == "disable":
-            self.object.disable(user=request.user)
         else:
-            return
-
+            self.object.disable(user=request.user)
         success_message = _("Node successfully changed status!")
         if request.is_ajax():
             response = {
                 'message': success_message,
-                'new_status': new_status,
                 'node_pk': self.object.pk
             }
             return HttpResponse(
@@ -1266,11 +1262,12 @@ class NodeStatus(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
     def post(self, request, *args, **kwargs):
         if request.POST.get('change_status'):
             return self.__set_status(request)
+        return redirect(reverse_lazy("dashboard.views.node-detail",
+                                     kwargs={'pk': self.get_object().pk}))
 
     def __set_status(self, request):
         self.object = self.get_object()
-
-        if self.object.enable:
+        if not self.object.enabled:
             Node.objects.filter(pk=self.object.pk).update(
                 **{'enabled': True})
         else:
