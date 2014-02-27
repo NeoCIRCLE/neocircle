@@ -28,7 +28,7 @@ class DiskTestCase(TestCase):
         assert not d.is_deletable()
 
     def test_deletable_newly_destroyed(self):
-        d = self._disk()
+        d = self._disk(destroyed=new)
         assert not d.is_deletable()
 
     def test_deletable_no_child(self):
