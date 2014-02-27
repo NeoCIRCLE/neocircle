@@ -21,6 +21,7 @@
 
     function updateState(rfb, state, oldstate, msg) {
         $('#_console .btn-toolbar button').attr('disabled', !(state === "normal"));
+        rfb.sendKey(0xffe3); // press and release ctrl to kill screensaver
 
         if (typeof(msg) !== 'undefined') {
             $('#noVNC_status').html(msg);
