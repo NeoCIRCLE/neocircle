@@ -44,8 +44,12 @@
     <p><span class="big"><big>{{ node_num.running }}</big> running </span>
     + <big>{{ node_num.missing }}</big> missing + <br><big>{{ node_num.disabled }}</big> disabled + <big>{{ node_num.offline }}</big> offline</p>
       <ul class="list-inline">
-      {% for i in nodes %}
-   <a class="label {% if i.state == 'online' %}label-success{% elif i.state == 'missing' %}label-danger{% else %}label-warning{% endif %}" href="{% url "dashboard.views.node-detail" pk=i.pk %}"><i class="icon-{% if i.enabled == True %}play-sign{% else %}pause{% endif %}"></i> {{ i.name}}</a>
+	      {% for i in nodes %}
+      <a class="label {% if i.state == 'ONLINE' %}label-success
+                        {% elif i.state == 'MISSING' %}label-danger
+                        {% elif i.state == 'DISABLED' %}label-warning
+                        {% elif i.state == 'OFFLINE' %}label-warning
+                        {% endif %}" href="{% url "dashboard.views.node-detail" pk=i.pk %}"><i class="icon-{% if i.enabled == True %}play-sign{% else %}pause{% endif %}"></i> {{ i.name}}</a>
    {% endfor %}
    </ul>
 
