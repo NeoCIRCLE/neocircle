@@ -471,6 +471,7 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
         if request.is_ajax():
             response = {
                 'message': success_message,
+                'new_name': new_name,
                 'node_pk': self.object.pk
             }
             return HttpResponse(
