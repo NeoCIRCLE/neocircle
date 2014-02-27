@@ -80,7 +80,7 @@
         <dt>Password:</dt>
         <dd>
           <div class="input-group">
-            <input type="text" class="form-control input-sm input-tags" value="{{ instance.pw }}"/>
+            <input type="text" id="vm-details-pw-input" class="form-control input-sm input-tags" value="{{ instance.pw }}"/>
             <span class="input-group-addon input-tags" id="vm-details-pw-show">
               <i class="icon-eye-open" id="vm-details-pw-eye" title="Show password"></i>
             </span>
@@ -152,4 +152,5 @@
 {% block extra_js %}
   <script src="{{ STATIC_URL }}dashboard/vm-details.js"></script>
   <script src="{{ STATIC_URL }}dashboard/vm-common.js"></script>
+  <script src="{{ STATIC_URL }}dashboard/vm-console.js"></script>
 {% endblock %}
