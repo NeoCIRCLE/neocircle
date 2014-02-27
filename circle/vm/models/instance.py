@@ -270,6 +270,9 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
             act = None
         return 'NOSTATE' if act is None else act.resultant_state
 
+    def is_console_available(self):
+        return self.state in ('RUNNING', )
+
     def manual_state_change(self, new_state, reason=None, user=None):
         # TODO cancel concurrent activity (if exists)
         act = InstanceActivity.create(code_suffix='manual_state_change',
