@@ -1269,11 +1269,9 @@ class NodeStatus(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
     def __set_status(self, request):
         self.object = self.get_object()
         if not self.object.enabled:
-            Node.objects.filter(pk=self.object.pk).update(
-                **{'enabled': True})
+            self.object.enable(user=request.user)
         else:
-            Node.objects.filter(pk=self.object.pk).update(
-                **{'enabled': False})
+            self.object.disable(user=request.user)
 
         success_message = _("Node successfully changed status!")
 
