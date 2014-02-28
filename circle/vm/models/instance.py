@@ -40,12 +40,26 @@ ACCESS_METHODS = [(key, name) for key, (name, port, transport)
 VNC_PORT_RANGE = (2000, 65536)  # inclusive start, exclusive end
 
 
+def find_unused_port(port_range, used_ports=[]):
+    """Find an unused port in the specified range.
+
+    The list of used ports can be specified optionally.
+
+    :param port_range: a tuple representing a port range (w/ exclusive end)
+                       e.g. (6000, 7000) represents ports 6000 through 6999
+    """
+    ports = xrange(*port_range)
+    used = set(used_ports)
+    unused = (port for port in ports if port not in used)
+    return next(unused, None)  # first or None
+
+
 def find_unused_vnc_port():
-    used = set(Instance.objects.values_list('vnc_port', flat=True))
-    for p in xrange(*VNC_PORT_RANGE):
-        if p not in used:
-            return p
-    else:
+    port = find_unused_port(
+        port_range=VNC_PORT_RANGE,
+        used_ports=Instance.objects.values_list('vnc_port', flat=True))
+
+    if port is None:
         raise Exception("No unused port could be found for VNC.")
 
 
