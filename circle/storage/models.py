@@ -150,7 +150,11 @@ class Disk(AclBase, TimeStampedModel):
         return any((not i.is_deletable() for i in self.derivatives.all()))
 
     def is_in_use(self):
-        """Returns True if disc is attached to an active VM else False"""
+        """Returns if disk is attached to an active VM.
+
+        'In use' means the disk is attached to a VM which is not STOPPED, as
+        any other VMs leave the disk in an inconsistent state.
+        """
         return any([i.state != 'STOPPED' for i in self.instance_set.all()])
 
     def get_exclusive(self):
