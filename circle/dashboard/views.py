@@ -1660,6 +1660,14 @@ class VmGraphView(GraphViewBase):
 
 
 class NodeGraphView(SuperuserRequiredMixin, GraphViewBase):
+    metrics = {
+        'cpu': ('cactiStyle(alias(derivative(%s.cpu.times),'
+                '"cpu usage (%%)"))'),
+        'memory': ('cactiStyle(alias(%s.memory.usage,'
+                   '"memory usage (%%)"))'),
+        'network': ('cactiStyle(aliasByMetric('
+                    'derivative(%s.network.bytes_*)))'),
+    }
     model = Node
 
     def get_prefix(self, instance):
