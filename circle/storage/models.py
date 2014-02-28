@@ -280,8 +280,8 @@ class Disk(AclBase, TimeStampedModel):
     def create_empty(cls, instance=None, user=None, **kwargs):
         """Create empty Disk object.
 
-        :param instance: Instance attach the Disk to.
-        :type instane: vm.models.Instance or NoneType
+        :param instance: Instance or template attach the Disk to.
+        :type instance: vm.models.Instance or InstanceTemplate or NoneType
         :param user: Creator of the disk.
         :type user: django.contrib.auth.User
 
@@ -299,37 +299,33 @@ class Disk(AclBase, TimeStampedModel):
             return disk
 
     @classmethod
-    def create_from_url_async(cls, url, instance=None, params=None, user=None):
+    def create_from_url_async(cls, url, instance=None, user=None, **kwargs):
         """Create disk object and download data from url asynchrnously.
 
         :param url: URL of image to download.
         :type url: string
-        :param instance: instance object to connect disk
-        :type instane: vm.models.Instance
-        :param params: disk custom parameters
-        :type params: dict
+        :param instance: Instance or template attach the Disk to.
+        :type instance: vm.models.Instance or InstanceTemplate or NoneType
         :param user: owner of the disk
         :type user: django.contrib.auth.User
 
         :return: Task
         :rtype: AsyncResult
         """
-        return local_tasks.create_from_url.apply_async(kwargs={
-            'cls': cls, 'url': url, 'instance': instance,
-            'params': params, 'user': user},
-            queue='localhost.man')
+        kwargs.update({'cls': cls, 'url': url,
+                       'instance': instance, 'user': user})
+        return local_tasks.create_from_url.apply_async(kwargs=kwargs,
+                                                       queue='localhost.man')
 
     @classmethod
-    def create_from_url(cls, url, instance=None, params=None, user=None,
-                        task_uuid=None, abortable_task=None):
+    def create_from_url(cls, url, instance=None, user=None,
+                        task_uuid=None, abortable_task=None, **kwargs):
         """Create disk object and download data from url synchronusly.
 
         :param url: image url to download.
         :type url: url
-        :param instance: instnace object to connect disk
-        :type instane: vm.models.Instance
-        :param params: disk custom parameters
-        :type params: dict
+        :param instance: Instance or template attach the Disk to.
+        :type instance: vm.models.Instance or InstanceTemplate or NoneType
         :param user: owner of the disk
         :type user: django.contrib.auth.User
         :param task_uuid: TODO
@@ -338,14 +334,13 @@ class Disk(AclBase, TimeStampedModel):
         :return: The created Disk object
         :rtype: Disk
         """
-        disk = cls()
+        kwargs.setdefault('name', url.split('/')[-1])
+        disk = cls(**kwargs)
         disk.generate_filename()
         disk.type = "iso"
         disk.size = 1
         # TODO get proper datastore
         disk.datastore = DataStore.objects.get()
-        if params:
-            disk.__dict__.update(params)
         disk.save()
         if instance:
             instance.disks.add(disk)
