@@ -25,6 +25,10 @@ class HostAdmin(admin.ModelAdmin):
     filter_horizontal = ('groups', )
     inlines = (RuleInline, RecordInline)
 
+    def queryset(self, request):
+        qs = super(HostAdmin, self).queryset(request)
+        return qs.prefetch_related('groups')
+
     @staticmethod
     def list_groups(instance):
         """Returns instance's groups' names as a comma-separated list."""
