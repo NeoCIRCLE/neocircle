@@ -1507,23 +1507,22 @@ class TransferOwnershipView(LoginRequiredMixin, DetailView):
 
 
 class TransferOwnershipConfirmView(LoginRequiredMixin, View):
+    """User can accept an ownership offer."""
+
     max_age = 3 * 24 * 3600
-    success_message = _("Ownership successfully transferred.")
+    success_message = _("Ownership successfully transferred to you.")
 
     @classmethod
     def get_salt(cls):
         return unicode(cls)
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request, key, *args, **kwargs):
         """Confirm ownership transfer based on token.
         """
+        logger.debug('Confirm dialog for token %s.', key)
         try:
-            key = request.GET['key']
-            logger.debug('Confirm dialog for token %s.', key)
             instance, new_owner = self.get_instance(key, request.user)
-        except KeyError:
-            raise Http404()
-        except PermissionDenied():
+        except PermissionDenied:
             messages.error(request, _('This token is for an other user.'))
             raise
         except SuspiciousOperation:
@@ -1533,16 +1532,10 @@ class TransferOwnershipConfirmView(LoginRequiredMixin, View):
                       "dashboard/confirm/base-transfer-ownership.html",
                       dictionary={'instance': instance, 'key': key})
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, key, *args, **kwargs):
         """Really transfer ownership based on token.
         """
-        try:
-            key = request.POST['key']
-            instance, owner = self.get_instance(key, request.user)
-        except KeyError:
-            logger.debug('Posted to %s without key field.',
-                         unicode(self.__class__))
-            raise SuspiciousOperation()
+        instance, owner = self.get_instance(key, request.user)
 
         old = instance.owner
         with instance_activity(code_suffix='ownership-transferred',
