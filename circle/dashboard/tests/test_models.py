@@ -15,7 +15,7 @@ class NotificationTestCase(TestCase):
 
     def test_notification_send(self):
         c1 = self.u1.notification_set.count()
-        c2 = self.u1.notification_set.count()
+        c2 = self.u2.notification_set.count()
         profile = self.u1.profile
         msg = profile.notify('subj',
                              'dashboard/test_message.txt',
