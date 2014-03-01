@@ -540,36 +540,36 @@ class Host(models.Model):
 
         super(Host, self).save(*args, **kwargs)
 
+        # IPv4
         if self.ipv4 is not None:
-            Record.objects.filter(host=self, name=self.hostname,
-                                  type='A').update(address=self.ipv4)
-            record_count = self.record_set.filter(host=self,
-                                                  name=self.hostname,
-                                                  address=self.ipv4,
-                                                  type='A').count()
-            if record_count == 0:
+            # update existing records
+            affected_records = Record.objects.filter(
+                host=self, name=self.hostname,
+                type='A').update(address=self.ipv4)
+            # create new record
+            if affected_records == 0:
                 Record(host=self,
                        name=self.hostname,
                        domain=self.vlan.domain,
                        address=self.ipv4,
                        owner=self.owner,
-                       description='host.save()',
+                       description='created by host.save()',
                        type='A').save()
 
-        if self.ipv6:
-            Record.objects.filter(host=self, name=self.hostname,
-                                  type='AAAA').update(address=self.ipv6)
-            record_count = self.record_set.filter(host=self,
-                                                  name=self.hostname,
-                                                  address=self.ipv6,
-                                                  type='AAAA').count()
-            if record_count == 0:
+        # IPv6
+        if self.ipv6 is not None:
+            # update existing records
+            affected_records = Record.objects.filter(
+                host=self, name=self.hostname,
+                type='AAAA').update(address=self.ipv6)
+            # create new record
+            if affected_records == 0:
                 Record(host=self,
                        name=self.hostname,
                        domain=self.vlan.domain,
                        address=self.ipv6,
                        owner=self.owner,
-                       description='host.save()',
+                       description='created by host.save()',
                        type='AAAA').save()
 
     def enable_net(self):
