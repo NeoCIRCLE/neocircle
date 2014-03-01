@@ -1,8 +1,17 @@
 {% load i18n %}
 <h3>{% trans "Owner" %}</h3>
 <p>
+  {% if user == instance.owner %}
   {% blocktrans %}You are the current owner of this instance.{% endblocktrans %}
-  <a href="#" class="btn btn-link">{% trans "Transfer ownership..." %}</a>
+  {% else %}
+  {% blocktrans with owner=instance.owner %}
+    The current owner of this instance is {{owner}}.
+  {% endblocktrans %}
+  {% endif %}
+  {% if user == instance.owner or user.is_superuser %}
+  <a href="{% url "dashboard.views.vm-transfer-ownership" instance.pk %}"
+      class="btn btn-link">{% trans "Transfer ownership..." %}</a>
+  {% endif %}
 </p>
 <h3>{% trans "Permissions"|capfirst %}</h3>
   <form action="{{acl.url}}" method="post">{% csrf_token %}
