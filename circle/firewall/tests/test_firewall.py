@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from ..admin import HostAdmin
 from firewall.models import Vlan, Domain, Record, Host
 from django.forms import ValidationError
+from ..iptables import IptRule, IptChain, InvalidRuleExcepion
 
 
 class MockInstance:
@@ -109,3 +110,50 @@ class HostGetHostnameTestCase(TestCase):
         self.r.save()
         self.assertEqual(self.h.get_hostname(proto='ipv4', public=True),
                          self.r.fqdn)
+
+
+class IptablesTestCase(TestCase):
+    def setUp(self):
+        self.r = [IptRule(priority=4, action='ACCEPT',
+                          src=('127.0.0.4', None)),
+                  IptRule(priority=4, action='ACCEPT',
+                          src=('127.0.0.4', None)),
+                  IptRule(priority=2, action='ACCEPT',
+                          dst=('127.0.0.2', None),
+                          extra='-p icmp'),
+                  IptRule(priority=6, action='ACCEPT',
+                          dst=('127.0.0.6', None),
+                          proto='tcp', dport=80),
+                  IptRule(priority=1, action='ACCEPT',
+                          dst=('127.0.0.1', None),
+                          proto='udp', dport=53),
+                  IptRule(priority=5, action='ACCEPT',
+                          dst=('127.0.0.5', None),
+                          proto='tcp', dport=443),
+                  IptRule(priority=2, action='ACCEPT',
+                          dst=('127.0.0.2', None),
+                          proto='icmp'),
+                  IptRule(priority=6, action='ACCEPT',
+                          dst=('127.0.0.6', None),
+                          proto='tcp', dport='1337')]
+
+    def test_chain_add(self):
+        ch = IptChain(name='test')
+        ch.add(*self.r)
+        self.assertEqual(len(ch), len(self.r) - 1)
+
+    def test_rule_compile_ok(self):
+        self.assertEqual(self.r[5].compile(),
+                         '-d 127.0.0.5 -p tcp --dport 443 -g ACCEPT')
+
+    def test_rule_compile_fail(self):
+        self.assertRaises(InvalidRuleExcepion,
+                          IptRule, **{'priority': 5, 'action': 'ACCEPT',
+                                      'dst': '127.0.0.5',
+                                      'proto': 'icmp', 'dport': 443})
+
+    def test_chain_compile(self):
+        ch = IptChain(name='test')
+        ch.add(*self.r)
+        compiled = ch.compile()
+        self.assertEqual(len(compiled.splitlines()), len(ch))
