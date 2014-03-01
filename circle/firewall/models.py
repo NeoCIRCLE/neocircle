@@ -354,30 +354,6 @@ class Vlan(AclBase, models.Model):
     def get_absolute_url(self):
         return ('network.vlan', None, {'vid': self.vid})
 
-    @property
-    def net4(self):
-        return self.network4.network
-
-    @property
-    def ipv4(self):
-        return self.network4.ip
-
-    @property
-    def prefix4(self):
-        return self.network4.prefixlen
-
-    @property
-    def net6(self):
-        return self.network6.network
-
-    @property
-    def ipv6(self):
-        return self.network6.ip
-
-    @property
-    def prefix6(self):
-        return self.network6.prefixlen
-
     def get_random_addresses(self, used_v4, buffer_size=100, max_hosts=10000):
         addresses = islice(self.network4.iter_hosts(), max_hosts)
         unused_addresses = list(islice(
