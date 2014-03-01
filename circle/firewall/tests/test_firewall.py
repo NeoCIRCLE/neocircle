@@ -96,12 +96,12 @@ class HostGetHostnameTestCase(TestCase):
         self.vlan.save()
         self.h = Host(hostname='h', mac='01:02:03:04:05:00', ipv4='10.0.0.1',
                       vlan=self.vlan, owner=self.u1, shared_ip=True,
-                      pub_ipv4=self.vlan.snat_ip)
+                      external_ipv4=self.vlan.snat_ip)
         self.h.save()
 
     def test_issue_93_wo_record(self):
         self.assertEqual(self.h.get_hostname(proto='ipv4', public=True),
-                         unicode(self.h.pub_ipv4))
+                         unicode(self.h.external_ipv4))
 
     def test_issue_93_w_record(self):
         self.r = Record(name='vm', type='A', domain=self.d, owner=self.u1,

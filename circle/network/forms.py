@@ -167,7 +167,8 @@ class RuleForm(ModelForm):
                 'accept',
                 'owner',
                 'nat',
-                'nat_dport',
+                'nat_external_port',
+                'nat_external_ipv4',
             ),
             Fieldset(
                 'External',

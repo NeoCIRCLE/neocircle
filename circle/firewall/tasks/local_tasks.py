@@ -48,7 +48,7 @@ def periodic_task():
 
 
 @celery.task
-def reloadtask(type='Host'):
+def reloadtask(type='Host', timeout=15):
     reload = {
         'Host': ['dns', 'dhcp', 'firewall'],
         'Record': ['dns'],
