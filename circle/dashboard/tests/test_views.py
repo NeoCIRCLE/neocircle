@@ -1,13 +1,22 @@
 from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User, Group
+from django.core.exceptions import SuspiciousOperation
 
 from vm.models import Instance, InstanceTemplate, Lease, Node
+from ..models import Profile
 from storage.models import Disk
 from firewall.models import Vlan
 
 
-class VmDetailTest(TestCase):
+class LoginMixin(object):
+    def login(self, client, username, password='password'):
+        response = client.post('/accounts/login/', {'username': username,
+                                                    'password': password})
+        self.assertNotEqual(response.status_code, 403)
+
+
+class VmDetailTest(LoginMixin, TestCase):
     fixtures = ['test-vm-fixture.json']
 
     def setUp(self):
@@ -31,11 +40,6 @@ class VmDetailTest(TestCase):
         self.u2.delete()
         self.us.delete()
         self.g1.delete()
-
-    def login(self, client, username, password='password'):
-        response = client.post('/accounts/login/', {'username': username,
-                                                    'password': password})
-        self.assertNotEqual(response.status_code, 403)
 
     def test_404_vm_page(self):
         c = Client()
@@ -236,18 +240,13 @@ class VmDetailTest(TestCase):
         assert self.u1.notification_set.get().status == 'read'
 
 
-class VmDetailVncTest(TestCase):
+class VmDetailVncTest(LoginMixin, TestCase):
     fixtures = ['test-vm-fixture.json', 'node.json']
 
     def setUp(self):
         self.u1 = User.objects.create(username='user1')
         self.u1.set_password('password')
         self.u1.save()
-
-    def login(self, client, username, password='password'):
-        response = client.post('/accounts/login/', {'username': username,
-                                                    'password': password})
-        self.assertNotEqual(response.status_code, 403)
 
     def test_permitted_vm_console(self):
         c = Client()
@@ -268,3 +267,70 @@ class VmDetailVncTest(TestCase):
         inst.set_level(self.u1, 'user')
         response = c.get('/dashboard/vm/1/vnctoken/')
         self.assertEqual(response.status_code, 403)
+
+
+class TransferOwnershipViewTest(LoginMixin, TestCase):
+    fixtures = ['test-vm-fixture.json']
+
+    def setUp(self):
+        self.u1 = User.objects.create(username='user1')
+        self.u1.set_password('password')
+        self.u1.save()
+        Profile.objects.create(user=self.u1)
+        self.u2 = User.objects.create(username='user2', is_staff=True)
+        self.u2.set_password('password')
+        self.u2.save()
+        Profile.objects.create(user=self.u2)
+        self.us = User.objects.create(username='superuser', is_superuser=True)
+        self.us.set_password('password')
+        self.us.save()
+        Profile.objects.create(user=self.us)
+        inst = Instance.objects.get(pk=1)
+        inst.owner = self.u1
+        inst.save()
+
+    def test_non_owner_offer(self):
+        c2 = self.u2.notification_set.count()
+        c = Client()
+        self.login(c, 'user2')
+        with self.assertRaises(SuspiciousOperation):
+            c.post('/dashboard/vm/1/tx/')
+        self.assertEqual(self.u2.notification_set.count(), c2)
+
+    def test_owned_offer(self):
+        c2 = self.u2.notification_set.count()
+        c = Client()
+        self.login(c, 'user1')
+        response = c.get('/dashboard/vm/1/tx/')
+        assert response.status_code == 200
+        response = c.post('/dashboard/vm/1/tx/', {'name': 'user2'})
+        self.assertEqual(self.u2.notification_set.count(), c2 + 1)
+
+    def test_transfer(self):
+        c = Client()
+        self.login(c, 'user1')
+        response = c.post('/dashboard/vm/1/tx/', {'name': 'user2'})
+        url = response.context['token']
+        c = Client()
+        self.login(c, 'user2')
+        response = c.post(url)
+        self.assertEquals(Instance.objects.get(pk=1).owner.pk, self.u2.pk)
+
+    def test_transfer_token_used_by_others(self):
+        c = Client()
+        self.login(c, 'user1')
+        response = c.post('/dashboard/vm/1/tx/', {'name': 'user2'})
+        url = response.context['token']
+        response = c.post(url)  # token is for user2
+        assert response.status_code == 403
+        self.assertEquals(Instance.objects.get(pk=1).owner.pk, self.u1.pk)
+
+    def test_transfer_by_superuser(self):
+        c = Client()
+        self.login(c, 'superuser')
+        response = c.post('/dashboard/vm/1/tx/', {'name': 'user2'})
+        url = response.context['token']
+        c = Client()
+        self.login(c, 'user2')
+        response = c.post(url)
+        self.assertEquals(Instance.objects.get(pk=1).owner.pk, self.u2.pk)
