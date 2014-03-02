@@ -1,18 +1,21 @@
 {% load i18n %}
 {% load sizefieldtags %}
 
-<form method="POST" action="{% url "dashboard.views.vm-migrate" pk=vm %}">
+<form method="POST" action="{% url "dashboard.views.vm-migrate" pk=vm.pk %}">
   {% csrf_token %}
   <ul id="vm-migrate-node-list">
-  {% for n in nodes %}
-    <li>
-      <strong>{{ n }}</strong>
-      <input type="radio" name="node" value="{{ n.pk }}" style="float: right;"/> 
-      <span class="vm-migrate-node-property">{% trans "CPU load" %}: {{ n.cpu_usage }}</span>
-      <span class="vm-migrate-node-property">{% trans "RAM usage" %}: {{ n.byte_ram_usage|filesize }}/{{ n.ram_size|filesize }}</span>
-      <div style="clear: both;"></div>  
-    </li>
-  {% endfor %}
+    {% for n in nodes %}
+      <li class="panel panel-default"><div class="panel-body">
+        <label for="migrate-to-{{n.pk}}">
+          <strong>{{ n }}</strong>
+        </label>
+        <input id="migrate-to-{{n.pk}}" type="radio" name="node" value="{{ n.pk }}" style="float: right;" />
+        <span class="vm-migrate-node-property">{% trans "CPU load" %}: {{ n.cpu_usage }}</span>
+        <span class="vm-migrate-node-property">{% trans "RAM usage" %}: {{ n.byte_ram_usage|filesize }}/{{ n.ram_size|filesize }}</span>
+        <div style="clear: both;"></div>
+      </div></li>
+    {% endfor %}
+  {% endwith %}
   </ul>
   <button type="submit" class="btn btn-primary btn-sm"><i class="icon-truck"></i> Migrate</button>
 </form>
