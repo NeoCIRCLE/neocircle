@@ -4,12 +4,15 @@
 <form method="POST" action="{% url "dashboard.views.vm-migrate" pk=vm.pk %}">
   {% csrf_token %}
   <ul id="vm-migrate-node-list">
+  {% with current=vm.node.pk %}
     {% for n in nodes %}
       <li class="panel panel-default"><div class="panel-body">
         <label for="migrate-to-{{n.pk}}">
           <strong>{{ n }}</strong>
+          {% if current == n.pk %}<div class="label label-info">{% trans "current" %}</div>{% endif %}
         </label>
-        <input id="migrate-to-{{n.pk}}" type="radio" name="node" value="{{ n.pk }}" style="float: right;" />
+        <input id="migrate-to-{{n.pk}}" type="radio" name="node" value="{{ n.pk }}" style="float: right;"
+        {% if current == n.pk %}disabled="disabled"{% endif %} />
         <span class="vm-migrate-node-property">{% trans "CPU load" %}: {{ n.cpu_usage }}</span>
         <span class="vm-migrate-node-property">{% trans "RAM usage" %}: {{ n.byte_ram_usage|filesize }}/{{ n.ram_size|filesize }}</span>
         <div style="clear: both;"></div>
