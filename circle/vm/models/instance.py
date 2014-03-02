@@ -583,10 +583,13 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                                                           self.pw))
         self.save()
 
-    def __schedule_vm(self, act):
-        """Schedule the virtual machine.
+    def select_node(self):
+        """Returns the node the VM should be deployed or migrated to.
+        """
+        return scheduler.select_node(self, Node.objects.all())
 
-        :param self: The virtual machine.
+    def __schedule_vm(self, act):
+        """Schedule the virtual machine as part of a higher level activity.
 
         :param act: Parent activity.
         """
@@ -596,7 +599,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
         # Schedule
         if self.node is None:
-            self.node = scheduler.select_node(self, Node.objects.all())
+            self.node = self.select_node()
 
         self.save()
 
