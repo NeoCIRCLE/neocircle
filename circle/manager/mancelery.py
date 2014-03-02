@@ -28,9 +28,14 @@ celery.conf.update(
             'schedule': timedelta(seconds=5),
             'options': {'queue': 'localhost.man'}
         },
-        'vm.periodic_tasks': {
+        'vm.update_domain_states': {
             'task': 'vm.tasks.local_periodic_tasks.update_domain_states',
             'schedule': timedelta(seconds=10),
+            'options': {'queue': 'localhost.man'}
+        },
+        'vm.garbage_collector': {
+            'task': 'vm.tasks.local_periodic_tasks.garbage_collector',
+            'schedule': timedelta(minutes=10),
             'options': {'queue': 'localhost.man'}
         },
         'storage.periodic_tasks': {
