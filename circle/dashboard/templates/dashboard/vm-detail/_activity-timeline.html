@@ -7,7 +7,7 @@
 <strong{% if user.is_superuser and a.result %} title="{{ a.result }}"{% endif %}>
     {{ a.get_readable_name }}
 </strong>
-{{ a.started|date:"Y-m-d H:i" }}, {{ a.user }}
+{{ a.started|date:"Y-m-d H:i" }}{% if a.user %}, {{ a.user }}{% endif %}
   {% if a.children.count > 0 %}
     <div class="sub-timeline">
       {% for s in a.children.all %}
