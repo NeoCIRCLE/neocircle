@@ -57,7 +57,7 @@ urlpatterns = patterns(
     url(r'^node/list/$', NodeList.as_view(), name='dashboard.views.node-list'),
     url(r'^node/(?P<pk>\d+)/$', NodeDetailView.as_view(),
         name='dashboard.views.node-detail'),
-    url(r'^tx/$', TransferOwnershipConfirmView.as_view(),
+    url(r'^tx/(?P<key>.*)/?$', TransferOwnershipConfirmView.as_view(),
         name='dashboard.views.vm-transfer-ownership-confirm'),
     url(r'^node/delete/(?P<pk>\d+)/$', NodeDelete.as_view(),
         name="dashboard.views.delete-node"),
