@@ -22,14 +22,14 @@
   </div>
   {% if saml2 %}
   <div class="col-sm-6">
-    <h4 style="padding-top: 0; margin-top: 0;">Login with SSO</h4>
-      <a href="{% url "saml2_login" %}">Click here!</a>
+    <h4 style="padding-top: 0; margin-top: 0;">{% trans "Login with SSO" %}</h4>
+    <a href="{% url "saml2_login" %}">{% trans "Click here!" %}</a>
   </div>
   {% endif %}
 </div>
 <div class="row">
   <div class="col-sm-12">
-    <a class="pull-right" href="{% url "accounts.password-reset" %}">Forgot your password?</a>
+    <a class="pull-right" href="{% url "accounts.password-reset" %}">{% trans "Forgot your password?" %}</a>
   </div>
 </div>
 {% endblock %}
