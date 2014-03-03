@@ -6,7 +6,8 @@ from django.shortcuts import redirect
 from django.core.urlresolvers import reverse
 
 from circle.settings.base import get_env_variable
-from dashboard.forms import CircleAuthenticationForm
+from dashboard.views import circle_login
+
 
 admin.autodiscover()
 
@@ -24,8 +25,7 @@ urlpatterns = patterns(
     url(r'^admin/', include(admin.site.urls)),
     url(r'^network/', include('network.urls')),
     url(r'^dashboard/', include('dashboard.urls')),
-    url(r'^accounts/login/?$', 'django.contrib.auth.views.login',
-        {'authentication_form': CircleAuthenticationForm}),
+    url(r'^accounts/login/?$', circle_login, name="accounts.login"),
     url(r'^accounts/', include('django.contrib.auth.urls')),
 )
 

@@ -4,17 +4,32 @@
 {% get_current_language as LANGUAGE_CODE %}
 
 {% block content %}
-  <div class="row">
-    <div class="login-form">
-      {% if form.password.errors or form.username.errors %}
+<div class="row">
+  {% if form.password.errors or form.username.errors %}
+    <div class="login-form-errors">
       {% include "display-form-errors.html" %}
-      {% endif %}
-      <h3>{% trans "Please login to continue!" %}</h3>
+    </div>
+  {% endif %}
+  <div class="col-sm-6">
+    <div class="login-form">
       <form action="" method="POST">
           {% csrf_token %}
           {% crispy form %}
       </form>
-      <a class="pull-right" href="">Forgot your password?</a>
     </div>
   </div>
+  <div class="col-sm-6">
+    <h4 style="padding-top: 0; margin-top: 0;">Login with eduID</h4>
+    {% if saml2 %}
+      <a href="{% url "saml2_login" %}">Click here!</a>
+    {% else %}
+      {% trans "SAML2 NOT AVAILABLE" %}
+    {% endif %}
+  </div>
+</div>
+<div class="row">
+  <div class="col-sm-12">
+    <a class="pull-right" href="">Forgot your password?</a>
+  </div>
+</div>
 {% endblock %}

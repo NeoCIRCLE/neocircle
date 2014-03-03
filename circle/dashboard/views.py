@@ -5,7 +5,9 @@ import re
 from datetime import datetime
 import requests
 
+from django.conf import settings
 from django.contrib.auth.models import User, Group
+from django.contrib.auth.views import login
 from django.contrib.messages import warning
 from django.core.exceptions import (
     PermissionDenied, SuspiciousOperation,
@@ -29,7 +31,7 @@ from braces.views import LoginRequiredMixin, SuperuserRequiredMixin
 
 from .forms import (
     VmCustomizeForm, TemplateForm, LeaseForm, NodeForm, HostForm,
-    DiskAddForm,
+    DiskAddForm, CircleAuthenticationForm,
 )
 from .tables import (VmListTable, NodeListTable, NodeVmListTable,
                      TemplateListTable, LeaseListTable, GroupListTable,)
@@ -1718,3 +1720,12 @@ class VmMigrateView(SuperuserRequiredMixin, TemplateView):
             messages.error(self.request, _("You didn't select a node!"))
 
         return redirect("%s#activity" % vm.get_absolute_url())
+
+
+def circle_login(request):
+    authentication_form = CircleAuthenticationForm
+    extra_context = {
+        'saml2': getattr(settings, "SAML_CONFIG", False)
+    }
+    return login(request, authentication_form=authentication_form,
+                 extra_context=extra_context)
