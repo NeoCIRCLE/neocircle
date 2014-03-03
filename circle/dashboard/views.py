@@ -1725,7 +1725,7 @@ class VmMigrateView(SuperuserRequiredMixin, TemplateView):
 def circle_login(request):
     authentication_form = CircleAuthenticationForm
     extra_context = {
-        'saml2': getattr(settings, "SAML_CONFIG", False)
+        'saml2': hasattr(settings, "SAML_CONFIG")
     }
     return login(request, authentication_form=authentication_form,
                  extra_context=extra_context)

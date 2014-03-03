@@ -15,8 +15,8 @@
   <div class="col-sm-{% if saml2 %}6{% else %}12{% endif %}">
     <div class="login-form">
       <form action="" method="POST">
-          {% csrf_token %}
-          {% crispy form %}
+        {% csrf_token %}
+        {% crispy form %}
       </form>
     </div>
   </div>
