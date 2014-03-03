@@ -2,7 +2,9 @@ from datetime import timedelta
 import uuid
 
 from django.contrib.auth.models import User
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import (
+    AuthenticationForm, PasswordResetForm, SetPasswordForm,
+)
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import (
@@ -802,6 +804,51 @@ class CircleAuthenticationForm(AuthenticationForm):
         )
         helper.add_input(Submit("submit", _("Sign in"),
                                 css_class="btn btn-success"))
+        return helper
+
+
+class CirclePasswordResetForm(PasswordResetForm):
+    # fields: email
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.form_show_labels = False
+        helper.layout = Layout(
+            AnyTag(
+                "div",
+                AnyTag(
+                    "span",
+                    AnyTag(
+                        "i",
+                        css_class="icon-envelope",
+                    ),
+                    css_class="input-group-addon",
+                ),
+                Field("email", placeholder=_("Email address"),
+                      css_class="form-control"),
+                Div(
+                    AnyTag(
+                        "button",
+                        HTML(_("Reset password")),
+                        css_class="btn btn-success",
+                    ),
+                    css_class="input-group-btn",
+                ),
+                css_class="input-group",
+            ),
+        )
+        return helper
+
+
+class CircleSetPasswordForm(SetPasswordForm):
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.add_input(Submit("submit", _("Change password"),
+                                css_class="btn btn-success change-password",
+                                css_id="submit-password-button"))
         return helper
 
 
