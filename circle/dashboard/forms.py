@@ -17,7 +17,9 @@ from sizefield.widgets import FileSizeWidget
 
 from firewall.models import Vlan, Host
 from storage.models import Disk, DataStore
-from vm.models import InstanceTemplate, Lease, InterfaceTemplate, Node
+from vm.models import (
+    InstanceTemplate, Lease, InterfaceTemplate, Node, Trait,
+)
 
 VLANS = Vlan.objects.all()
 DISKS = Disk.objects.exclude(type="qcow2-snap")
@@ -803,3 +805,21 @@ class WorkingBaseInput(BaseInput):
         self.input_type = input_type
         self.field_classes = ""  # we need this for some reason
         super(WorkingBaseInput, self).__init__(name, value, **kwargs)
+
+
+class TraitForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super(TraitForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_show_labels = False
+        self.helper.layout = Layout(
+            Div(
+                'name',
+                css_class="col-sm-2",
+            ),
+        )
+
+    class Meta:
+        model = Trait
+        fields = ['name']
