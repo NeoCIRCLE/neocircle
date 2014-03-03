@@ -1731,7 +1731,7 @@ class VmMigrateView(SuperuserRequiredMixin, TemplateView):
             'template': 'dashboard/_vm-migrate.html',
             'box_title': _('Migrate %(name)s' % {'name': vm.name}),
             'ajax_title': True,
-            'vm': kwargs['pk'],
+            'vm': vm,
             'nodes': [n for n in Node.objects.filter(enabled=True)
                       if n.state == "ONLINE"]
         })
