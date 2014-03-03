@@ -2,7 +2,7 @@
 
 from itertools import islice, chain
 import logging
-from netaddr import IPSet
+from netaddr import IPSet, EUI
 
 from django.contrib.auth.models import User
 from django.db import models
@@ -705,6 +705,17 @@ class Host(models.Model):
     @models.permalink
     def get_absolute_url(self):
         return ('network.host', None, {'pk': self.pk})
+
+    @property
+    def eui(self):
+        return EUI(self.mac)
+
+    @property
+    def hw_vendor(self):
+        try:
+            return self.eui.oui.registration().org
+        except:
+            return None
 
 
 class Firewall(models.Model):
