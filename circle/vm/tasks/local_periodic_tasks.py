@@ -1,4 +1,3 @@
-from datetime import datetime
 import logging
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
