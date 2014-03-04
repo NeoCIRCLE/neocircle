@@ -287,13 +287,9 @@ class Disk(AclBase, TimeStampedModel):
 
         :return: Disk object without a real image, to be .deploy()ed later.
         """
-        with disk_activity(code_suffix="create", user=user) as act:
-            disk = cls(**kwargs)
-            if disk.filename is None:
-                disk.generate_filename()
-            disk.save()
-            act.disk = disk
-            act.save()
+
+        disk = cls.objects.create(**kwargs)
+        with disk_activity(code_suffix="create", user=user, disk=disk):
             if instance:
                 instance.disks.add(disk)
             return disk
