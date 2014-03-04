@@ -48,3 +48,9 @@ class create_from_url(AbortableTask):
                              task_uuid=create_from_url.request.id,
                              abortable_task=self,
                              user=user)
+
+
+@celery.task
+def create_empty(Disk, instance, params, user):
+    Disk.create_empty(instance, params, user,
+                      task_uuid=create_empty.request.id)

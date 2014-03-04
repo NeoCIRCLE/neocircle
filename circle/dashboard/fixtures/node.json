@@ -1,0 +1,72 @@
+[
+{
+  "pk": 1, 
+  "model": "firewall.vlan", 
+  "fields": {
+    "comment": "", 
+    "ipv6_template": "2001:7:2:4031:%(b)d:%(c)d:%(d)d:0", 
+    "domain": 1, 
+    "dhcp_pool": "", 
+    "managed": true, 
+    "name": "pub", 
+    "vid": 3066, 
+    "created_at": "2014-02-19T17:00:17.358Z", 
+    "modified_at": "2014-02-19T17:00:17.358Z", 
+    "owner": null, 
+    "snat_ip": null, 
+    "snat_to": [], 
+    "network6": null, 
+    "network4": "10.7.0.93/16", 
+    "reverse_domain": "%(d)d.%(c)d.%(b)d.%(a)d.in-addr.arpa", 
+    "network_type": "public", 
+    "description": ""
+  }
+},
+{
+  "pk": 1, 
+  "model": "firewall.host", 
+  "fields": {
+    "comment": "", 
+    "vlan": 1, 
+    "reverse": "", 
+    "created_at": "2014-02-19T17:03:45.365Z", 
+    "hostname": "devenv", 
+    "modified_at": "2014-02-24T15:55:01.412Z", 
+    "location": "", 
+    "pub_ipv4": null, 
+    "mac": "11:22:33:44:55:66", 
+    "shared_ip": false, 
+    "ipv4": "10.7.0.96", 
+    "groups": [], 
+    "ipv6": null, 
+    "owner": 1, 
+    "description": ""
+  }
+},
+{
+  "pk": 1, 
+  "model": "firewall.domain", 
+  "fields": {
+    "description": "", 
+    "created_at": "2014-02-19T17:00:08.819Z", 
+    "modified_at": "2014-02-19T17:00:08.819Z", 
+    "ttl": 600, 
+    "owner": 1, 
+    "name": "test.ik.bme.hu"
+  }
+},
+{
+  "pk": 1, 
+  "model": "vm.node", 
+  "fields": {
+    "name": "devenv", 
+    "created": "2014-02-19T17:03:45.322Z", 
+    "overcommit": 1.0, 
+    "enabled": true, 
+    "modified": "2014-02-19T21:11:34.671Z", 
+    "priority": 1, 
+    "traits": [], 
+    "host": 1
+  }
+}
+]

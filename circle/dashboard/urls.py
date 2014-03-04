@@ -9,7 +9,7 @@ from .views import (
     FavouriteView, NodeStatus, GroupList, TemplateDelete, LeaseDelete,
     VmGraphView, TemplateAclUpdateView, GroupDetailView, GroupDelete,
     GroupAclUpdateView, GroupUserDelete, NotificationView, NodeGraphView,
-    VmMigrateView, DiskAddView
+    VmMigrateView, DiskAddVie, VmDetailVncTokenView,
 )
 
 urlpatterns = patterns(
@@ -37,6 +37,8 @@ urlpatterns = patterns(
         name='dashboard.views.remove-port'),
     url(r'^vm/(?P<pk>\d+)/$', VmDetailView.as_view(),
         name='dashboard.views.detail'),
+    url(r'^vm/(?P<pk>\d+)/vnctoken/$', VmDetailVncTokenView.as_view(),
+        name='dashboard.views.detail-vnc'),
     url(r'^vm/(?P<pk>\d+)/acl/$', AclUpdateView.as_view(model=Instance),
         name='dashboard.views.vm-acl'),
     url(r'^vm/(?P<pk>\d+)/tx/$', TransferOwnershipView.as_view(),
@@ -55,7 +57,7 @@ urlpatterns = patterns(
     url(r'^node/list/$', NodeList.as_view(), name='dashboard.views.node-list'),
     url(r'^node/(?P<pk>\d+)/$', NodeDetailView.as_view(),
         name='dashboard.views.node-detail'),
-    url(r'^tx/$', TransferOwnershipConfirmView.as_view(),
+    url(r'^tx/(?P<key>.*)/?$', TransferOwnershipConfirmView.as_view(),
         name='dashboard.views.vm-transfer-ownership-confirm'),
     url(r'^node/delete/(?P<pk>\d+)/$', NodeDelete.as_view(),
         name="dashboard.views.delete-node"),

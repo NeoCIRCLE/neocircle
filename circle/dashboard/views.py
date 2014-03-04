@@ -37,7 +37,7 @@ from vm.models import (Instance, InstanceTemplate, InterfaceTemplate,
                        InstanceActivity, Node, instance_activity, Lease,
                        Interface, NodeActivity)
 from firewall.models import Vlan, Host, Rule
-from dashboard.models import Favourite
+from dashboard.models import Favourite, Profile
 
 logger = logging.getLogger(__name__)
 
@@ -148,6 +148,25 @@ class CheckedDetailView(LoginRequiredMixin, DetailView):
         return context
 
 
+class VmDetailVncTokenView(CheckedDetailView):
+    template_name = "dashboard/vm-detail.html"
+    model = Instance
+
+    def get(self, request, **kwargs):
+        self.object = self.get_object()
+        if not self.object.has_level(request.user, 'operator'):
+            raise PermissionDenied()
+        if self.object.node:
+            port = self.object.vnc_port
+            host = str(self.object.node.host.ipv4)
+            value = signing.dumps({'host': host,
+                                   'port': port},
+                                  key=getenv("PROXY_SECRET", 'asdasd')),
+            return HttpResponse('vnc/?d=%s' % value)
+        else:
+            raise Http404()
+
+
 class VmDetailView(CheckedDetailView):
     template_name = "dashboard/vm-detail.html"
     model = Instance
@@ -155,16 +174,11 @@ class VmDetailView(CheckedDetailView):
     def get_context_data(self, **kwargs):
         context = super(VmDetailView, self).get_context_data(**kwargs)
         instance = context['instance']
-        if instance.node:
-            port = instance.vnc_port
-            host = str(instance.node.host.ipv4)
-            value = signing.dumps({'host': host,
-                                   'port': port},
-                                  key=getenv("PROXY_SECRET", 'asdasd')),
-            context.update({
-                'graphite_enabled': VmGraphView.get_graphite_url() is not None,
-                'vnc_url': '%s' % value
-            })
+        context.update({
+            'graphite_enabled': VmGraphView.get_graphite_url() is not None,
+            'vnc_url': reverse_lazy("dashboard.views.detail-vnc",
+                                    kwargs={'pk': self.object.pk})
+        })
 
         # activity data
         ia = InstanceActivity.objects.filter(
@@ -1464,7 +1478,12 @@ class TransferOwnershipView(LoginRequiredMixin, DetailView):
         try:
             new_owner = User.objects.get(username=request.POST['name'])
         except User.DoesNotExist:
-            raise Http404()
+            new_owner = User.objects.get(email=request.POST['name'])
+        except User.DoesNotExist:
+            new_owner = User.objects.get(profile__org_id=request.POST['name'])
+        except User.DoesNotExist:
+            messages.error(request, _('Can not find specified user.'))
+            return self.get(request, *args, **kwargs)
         except KeyError:
             raise SuspiciousOperation()
 
@@ -1475,29 +1494,41 @@ class TransferOwnershipView(LoginRequiredMixin, DetailView):
 
         token = signing.dumps((obj.pk, new_owner.pk),
                               salt=TransferOwnershipConfirmView.get_salt())
-        return HttpResponse("%s?key=%s" % (
-            reverse('dashboard.views.vm-transfer-ownership-confirm'), token),
-            content_type="text/plain")
+        token_path = reverse(
+            'dashboard.views.vm-transfer-ownership-confirm', args=[token])
+        try:
+            new_owner.profile.notify(
+                _('Ownership offer'),
+                'dashboard/notifications/ownership-offer.html',
+                {'instance': obj, 'token': token_path})
+        except Profile.DoesNotExist:
+            messages.error(request, _('Can not notify selected user.'))
+        else:
+            messages.success(request,
+                             _('User %s is notified about the offer.') % (
+                                 unicode(new_owner), ))
+
+        return redirect(reverse_lazy("dashboard.views.detail",
+                                     kwargs={'pk': obj.pk}))
 
 
 class TransferOwnershipConfirmView(LoginRequiredMixin, View):
+    """User can accept an ownership offer."""
+
     max_age = 3 * 24 * 3600
-    success_message = _("Ownership successfully transferred.")
+    success_message = _("Ownership successfully transferred to you.")
 
     @classmethod
     def get_salt(cls):
         return unicode(cls)
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request, key, *args, **kwargs):
         """Confirm ownership transfer based on token.
         """
+        logger.debug('Confirm dialog for token %s.', key)
         try:
-            key = request.GET['key']
-            logger.debug('Confirm dialog for token %s.', key)
             instance, new_owner = self.get_instance(key, request.user)
-        except KeyError:
-            raise Http404()
-        except PermissionDenied():
+        except PermissionDenied:
             messages.error(request, _('This token is for an other user.'))
             raise
         except SuspiciousOperation:
@@ -1507,16 +1538,10 @@ class TransferOwnershipConfirmView(LoginRequiredMixin, View):
                       "dashboard/confirm/base-transfer-ownership.html",
                       dictionary={'instance': instance, 'key': key})
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, key, *args, **kwargs):
         """Really transfer ownership based on token.
         """
-        try:
-            key = request.POST['key']
-            instance, owner = self.get_instance(key, request.user)
-        except KeyError:
-            logger.debug('Posted to %s without key field.',
-                         unicode(self.__class__))
-            raise SuspiciousOperation()
+        instance, owner = self.get_instance(key, request.user)
 
         old = instance.owner
         with instance_activity(code_suffix='ownership-transferred',
@@ -1527,6 +1552,11 @@ class TransferOwnershipConfirmView(LoginRequiredMixin, View):
         messages.success(request, self.success_message)
         logger.info('Ownership of %s transferred from %s to %s.',
                     unicode(instance), unicode(old), unicode(request.user))
+        if old.profile:
+            old.profile.notify(
+                _('Ownership accepted'),
+                'dashboard/notifications/ownership-accepted.html',
+                {'instance': instance})
         return HttpResponseRedirect(instance.get_absolute_url())
 
     def get_instance(self, key, user):
@@ -1536,15 +1566,7 @@ class TransferOwnershipConfirmView(LoginRequiredMixin, View):
             instance, new_owner = (
                 signing.loads(key, max_age=self.max_age,
                               salt=self.get_salt()))
-        except signing.BadSignature as e:
-            logger.error('Tried invalid token. Token: %s, user: %s. %s',
-                         key, unicode(user), unicode(e))
-            raise SuspiciousOperation()
-        except ValueError as e:
-            logger.error('Tried invalid token. Token: %s, user: %s. %s',
-                         key, unicode(user), unicode(e))
-            raise SuspiciousOperation()
-        except TypeError as e:
+        except (signing.BadSignature, ValueError, TypeError) as e:
             logger.error('Tried invalid token. Token: %s, user: %s. %s',
                          key, unicode(user), unicode(e))
             raise SuspiciousOperation()
@@ -1634,6 +1656,14 @@ class VmGraphView(GraphViewBase):
 
 
 class NodeGraphView(SuperuserRequiredMixin, GraphViewBase):
+    metrics = {
+        'cpu': ('cactiStyle(alias(derivative(%s.cpu.times),'
+                '"cpu usage (%%)"))'),
+        'memory': ('cactiStyle(alias(%s.memory.usage,'
+                   '"memory usage (%%)"))'),
+        'network': ('cactiStyle(aliasByMetric('
+                    'derivative(%s.network.bytes_*)))'),
+    }
     model = Node
 
     def get_prefix(self, instance):
@@ -1689,7 +1719,7 @@ class VmMigrateView(SuperuserRequiredMixin, TemplateView):
             'template': 'dashboard/_vm-migrate.html',
             'box_title': _('Migrate %(name)s' % {'name': vm.name}),
             'ajax_title': True,
-            'vm': kwargs['pk'],
+            'vm': vm,
             'nodes': [n for n in Node.objects.filter(enabled=True)
                       if n.state == "ONLINE"]
         })

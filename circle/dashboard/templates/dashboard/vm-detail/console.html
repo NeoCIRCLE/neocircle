@@ -1,6 +1,6 @@
 <div class="btn-toolbar">
-        <button id="sendCtrlAltDelButton" class="btn btn-danger small" href="#">Send CtrlAltDel</button>
-        <button id="sendPasswordButton" class="btn btn-default small" href="#">Type password</button>
+        <button id="sendCtrlAltDelButton" class="btn btn-danger small">Send CtrlAltDel</button>
+        <button id="sendPasswordButton" class="btn btn-default small">Type password</button>
 </div>
 <div class="alert alert-info" id="noVNC_status">
 </div>
@@ -10,68 +10,6 @@
 
 <script src="{{ STATIC_URL }}dashboard/novnc/util.js"></script>
 <script>
-    "use strict";
-
-    var INCLUDE_URI = '{{ STATIC_URL }}dashboard/novnc/';
-
-    Util.load_scripts(["webutil.js", "base64.js", "websock.js", "des.js",
-                       "input.js", "display.js", "jsunzip.js", "rfb.js"]);
-
-    var rfb;
-
-    function updateState(rfb, state, oldstate, msg) {
-        var s, sb, cad
-        s = $('#noVNC_status')[0];
-        cad = $('#sendCtrlAltDelButton')[0];
-
-        if (state === "normal") { cad.disabled = false; }
-        else                    { cad.disabled = true; }
-
-        if (typeof(msg) !== 'undefined') {
-            s.innerHTML = msg;
-        }
-    }
-
-    $('a[data-toggle$="pill"][href!="#console"]').click(function() {
-        if (rfb) {
-            rfb.disconnect();
-            rfb = 0;
-        }
-        $("#vm-info-pane").fadeIn();
-        $("#vm-detail-pane").removeClass("col-md-12");
-    });
-    $('#sendCtrlAltDelButton').click(function() {
-        rfb.sendCtrlAltDel(); return false;});
-    $('#sendPasswordButton').click(function() {
-        var pw = '{{instance.pw}}';
-        for (var i=0; i < pw.length; i++) {
-            rfb.sendKey(pw.charCodeAt(i));
-    } return false;});
-
-
-    $("body").on("click", 'a[href$="console"]', function() {
-        var host, port, password, path;
-
-        $("#vm-info-pane").hide();
-        $("#vm-detail-pane").addClass("col-md-12");
-        WebUtil.init_logging('warn');
-
-        host = window.location.hostname;
-        if (window.location.port == 8080) {
-            port = 9999;
-        } else {
-	    port = window.location.port == "" ? "443" : window.location.port;
-        }
-        password = '';
-        path = 'vnc/?d={{ vnc_url }}';
-
-        rfb = new RFB({'target': $D('noVNC_canvas'),
-                       'encrypt': (window.location.protocol === "https:"),
-                       'true_color':   true,
-                       'local_cursor': true,
-                       'shared':       true,
-                       'view_only':    false,
-                       'updateState':  updateState});
-        rfb.connect(host, port, password, path);
-    });
-    </script>
+  var INCLUDE_URI = '{{ STATIC_URL }}dashboard/novnc/';
+  var VNC_URL = "{{ vnc_url }}";
+</script>

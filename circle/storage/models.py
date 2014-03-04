@@ -2,6 +2,7 @@
 
 from contextlib import contextmanager
 import logging
+from os.path import join
 import uuid
 
 from django.db.models import (Model, BooleanField, CharField, DateTimeField,
@@ -10,6 +11,7 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from model_utils.models import TimeStampedModel
 from sizefield.models import FileSizeField
+from datetime import timedelta
 
 from acl.models import AclBase
 from .tasks import local_tasks, remote_tasks
@@ -36,13 +38,19 @@ class DataStore(Model):
     def __unicode__(self):
         return u'%s (%s)' % (self.name, self.path)
 
-    def get_remote_queue_name(self, queue_id):
+    def get_remote_queue_name(self, queue_id, check_worker=True):
         logger.debug("Checking for storage queue %s.%s",
                      self.hostname, queue_id)
-        if local_tasks.check_queue(self.hostname, queue_id):
+        if not check_worker or local_tasks.check_queue(self.hostname,
+                                                       queue_id):
             return self.hostname + '.' + queue_id
         else:
             raise WorkerNotFound()
+
+    def get_deletable_disks(self):
+        return [disk.filename for disk in
+                self.disk_set.filter(
+                    destroyed__isnull=False) if disk.is_deletable()]
 
 
 class Disk(AclBase, TimeStampedModel):
@@ -100,10 +108,12 @@ class Disk(AclBase, TimeStampedModel):
 
     @property
     def path(self):
-        return self.datastore.path + '/' + self.filename
+        """Get the path where the files are stored."""
+        return join(self.datastore.path, self.filename)
 
     @property
     def format(self):
+        """Returns the proper file format for different type of images."""
         return {
             'qcow2-norm': 'qcow2',
             'qcow2-snap': 'qcow2',
@@ -114,6 +124,7 @@ class Disk(AclBase, TimeStampedModel):
 
     @property
     def device_type(self):
+        """Returns the proper device prefix for different file format."""
         return {
             'qcow2-norm': 'vd',
             'qcow2-snap': 'vd',
@@ -122,7 +133,28 @@ class Disk(AclBase, TimeStampedModel):
             'raw-rw': 'vd',
         }[self.type]
 
+    def is_deletable(self):
+        """Returns whether the file can be deleted.
+
+        Checks if all children and the disk itself is destroyed.
+        """
+
+        yesterday = timezone.now() - timedelta(days=1)
+        return (self.destroyed is not None
+                and self.destroyed < yesterday) and not self.has_active_child()
+
+    def has_active_child(self):
+        """Returns if disk has children that are not destroyed.
+        """
+
+        return any((not i.is_deletable() for i in self.derivatives.all()))
+
     def is_in_use(self):
+        """Returns if disk is attached to an active VM.
+
+        'In use' means the disk is attached to a VM which is not STOPPED, as
+        any other VMs leave the disk in an inconsistent state.
+        """
         return any([i.state != 'STOPPED' for i in self.instance_set.all()])
 
     def get_exclusive(self):
@@ -139,7 +171,7 @@ class Disk(AclBase, TimeStampedModel):
         if self.type not in type_mapping.keys():
             raise self.WrongDiskTypeError(self.type)
 
-        filename = self.filename if self.type == 'iso' else str(uuid.uuid4())
+        filename = self.filename if self.type == 'iso' else None
         new_type = type_mapping[self.type]
 
         return Disk.objects.create(base=self, datastore=self.datastore,
@@ -147,6 +179,7 @@ class Disk(AclBase, TimeStampedModel):
                                    size=self.size, type=new_type)
 
     def get_vmdisk_desc(self):
+        """Serialize disk object to the vmdriver."""
         return {
             'source': self.path,
             'driver_type': self.format,
@@ -156,6 +189,7 @@ class Disk(AclBase, TimeStampedModel):
         }
 
     def get_disk_desc(self):
+        """Serialize disk object to the storage driver."""
         return {
             'name': self.filename,
             'dir': self.datastore.path,
@@ -165,19 +199,25 @@ class Disk(AclBase, TimeStampedModel):
             'type': 'snapshot' if self.type == 'qcow2-snap' else 'normal'
         }
 
-    def get_remote_queue_name(self, queue_id):
+    def get_remote_queue_name(self, queue_id='storage', check_worker=True):
+        """Returns the proper queue name based on the datastore."""
         if self.datastore:
-            return self.datastore.get_remote_queue_name(queue_id)
+            return self.datastore.get_remote_queue_name(queue_id, check_worker)
         else:
             return None
 
     def __unicode__(self):
-        return u"%s (#%d)" % (self.name, self.id)
+        return u"%s (#%d)" % (self.name, self.id or 0)
 
     def clean(self, *args, **kwargs):
         if self.size == "" and self.base:
             self.size = self.base.size
         super(Disk, self).clean(*args, **kwargs)
+
+    def save(self, *args, **kwargs):
+        if self.filename is None:
+            self.generate_filename()
+        return super(Disk, self).save(*args, **kwargs)
 
     def deploy(self, user=None, task_uuid=None, timeout=15):
         """Reify the disk model on the associated data store.
@@ -231,29 +271,79 @@ class Disk(AclBase, TimeStampedModel):
         return local_tasks.deploy.apply_async(args=[self, user],
                                               queue="localhost.man")
 
-    @classmethod
-    def create_empty(cls, params={}, user=None):
-        disk = cls()
-        disk.__dict__.update(params)
-        disk.save()
-        return disk
+    def generate_filename(self):
+        """Generate a unique filename and set it on the object.
+        """
+        self.filename = str(uuid.uuid4())
 
     @classmethod
-    def create_from_url_async(cls, url, params=None, user=None):
-        return local_tasks.create_from_url.apply_async(kwargs={
-            'cls': cls, 'url': url, 'params': params, 'user': user},
-            queue='localhost.man')
+    def create_empty(cls, instance=None, user=None, **kwargs):
+        """Create empty Disk object.
 
-    def create_from_url(cls, url, params={}, user=None, task_uuid=None,
-                        abortable_task=None):
-        disk = cls()
-        disk.filename = str(uuid.uuid4())
+        :param instance: Instance or template attach the Disk to.
+        :type instance: vm.models.Instance or InstanceTemplate or NoneType
+        :param user: Creator of the disk.
+        :type user: django.contrib.auth.User
+
+        :return: Disk object without a real image, to be .deploy()ed later.
+        """
+        with disk_activity(code_suffix="create", user=user) as act:
+            disk = cls(**kwargs)
+            if disk.filename is None:
+                disk.generate_filename()
+            disk.save()
+            act.disk = disk
+            act.save()
+            if instance:
+                instance.disks.add(disk)
+            return disk
+
+    @classmethod
+    def create_from_url_async(cls, url, instance=None, user=None, **kwargs):
+        """Create disk object and download data from url asynchrnously.
+
+        :param url: URL of image to download.
+        :type url: string
+        :param instance: Instance or template attach the Disk to.
+        :type instance: vm.models.Instance or InstanceTemplate or NoneType
+        :param user: owner of the disk
+        :type user: django.contrib.auth.User
+
+        :return: Task
+        :rtype: AsyncResult
+        """
+        kwargs.update({'cls': cls, 'url': url,
+                       'instance': instance, 'user': user})
+        return local_tasks.create_from_url.apply_async(kwargs=kwargs,
+                                                       queue='localhost.man')
+
+    @classmethod
+    def create_from_url(cls, url, instance=None, user=None,
+                        task_uuid=None, abortable_task=None, **kwargs):
+        """Create disk object and download data from url synchronusly.
+
+        :param url: image url to download.
+        :type url: url
+        :param instance: Instance or template attach the Disk to.
+        :type instance: vm.models.Instance or InstanceTemplate or NoneType
+        :param user: owner of the disk
+        :type user: django.contrib.auth.User
+        :param task_uuid: TODO
+        :param abortable_task: TODO
+
+        :return: The created Disk object
+        :rtype: Disk
+        """
+        kwargs.setdefault('name', url.split('/')[-1])
+        disk = cls(**kwargs)
+        disk.generate_filename()
         disk.type = "iso"
         disk.size = 1
-        disk.datastore = DataStore.objects.all()[0]
-        if params:
-            disk.__dict__.update(params)
+        # TODO get proper datastore
+        disk.datastore = DataStore.objects.get()
         disk.save()
+        if instance:
+            instance.disks.add(disk)
         queue_name = disk.get_remote_queue_name('storage')
 
         def __on_abort(activity, error):
@@ -284,6 +374,7 @@ class Disk(AclBase, TimeStampedModel):
             disk.size = size
             disk.ready = True
             disk.save()
+        return disk
 
     def destroy(self, user=None, task_uuid=None):
         if self.destroyed:
@@ -303,7 +394,7 @@ class Disk(AclBase, TimeStampedModel):
                                                queue='localhost.man')
 
     def restore(self, user=None, task_uuid=None):
-        """Restore destroyed disk.
+        """Recover destroyed disk from trash if possible.
         """
         # TODO
         pass
@@ -328,12 +419,11 @@ class Disk(AclBase, TimeStampedModel):
         with disk_activity(code_suffix='save_as', disk=self,
                            task_uuid=task_uuid, user=user, timeout=300):
 
-            filename = str(uuid.uuid4())
             new_type, new_base = mapping[self.type]
 
             disk = Disk.objects.create(base=new_base, datastore=self.datastore,
-                                       filename=filename, name=self.name,
-                                       size=self.size, type=new_type)
+                                       name=self.name, size=self.size,
+                                       type=new_type)
 
             queue_name = self.get_remote_queue_name('storage')
             remote_tasks.merge.apply_async(args=[self.get_disk_desc(),

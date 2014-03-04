@@ -4,13 +4,16 @@
   <span class="timeline-icon{% if a.has_failed %} timeline-icon-failed{% endif %}">
   <i class="{% if not a.finished %} icon-refresh icon-spin {% else %}icon-plus{% endif %}"></i>
 </span> 
-<strong>{{ a.get_readable_name }}</strong>
-{{ a.started|date:"Y-m-d H:i" }}, {{ a.user }}
+<strong{% if user.is_superuser and a.result %} title="{{ a.result }}"{% endif %}>
+    {{ a.get_readable_name }}
+</strong>
+{{ a.started|date:"Y-m-d H:i" }}{% if a.user %}, {{ a.user }}{% endif %}
   {% if a.children.count > 0 %}
     <div class="sub-timeline">
       {% for s in a.children.all %}
       <div data-activity-id="{{ s.pk }}" class="sub-activity{% if s.has_failed %} sub-activity-failed{% endif %}">
-        {{ s.get_readable_name }} - 
+          <span{% if user.is_superuser and s.result %} title="{{ s.result }}"{% endif %}>
+              {{ s.get_readable_name }}</span> &ndash;
         {% if s.finished %}
           {{ s.finished|time:"H:i:s" }}
         {% else %}

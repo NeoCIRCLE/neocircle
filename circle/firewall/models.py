@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from itertools import islice
+from itertools import islice, chain
 import logging
-from netaddr import IPSet
+from netaddr import IPSet, EUI
 
 from django.contrib.auth.models import User
 from django.db import models
@@ -298,13 +298,28 @@ class Vlan(AclBase, models.Model):
     def prefix6(self):
         return self.network6.prefixlen
 
+    def get_next_address(self, used_v4):
+        try:
+            last_address = list(used_v4)[-1]
+        except IndexError:
+            return []
+        next_address = last_address + 1
+
+        if next_address in self.network4.iter_hosts():
+            logger.debug("Found unused IPv4 address %s after %s.",
+                         next_address, last_address)
+            return [next_address]
+        else:
+            return []
+
     def get_new_address(self):
-        hosts = Host.objects.filter(vlan=self)
+        hosts = self.host_set
         used_v4 = IPSet(hosts.values_list('ipv4', flat=True))
         used_v6 = IPSet(hosts.exclude(ipv6__isnull=True)
                         .values_list('ipv6', flat=True))
 
-        for ipv4 in islice(self.network4.iter_hosts(), 10000):
+        for ipv4 in chain(self.get_next_address(used_v4),
+                          islice(self.network4.iter_hosts(), 10000)):
             ipv4 = str(ipv4)
             if ipv4 not in used_v4:
                 logger.debug("Found unused IPv4 address %s.", ipv4)
@@ -690,6 +705,17 @@ class Host(models.Model):
     @models.permalink
     def get_absolute_url(self):
         return ('network.host', None, {'pk': self.pk})
+
+    @property
+    def eui(self):
+        return EUI(self.mac)
+
+    @property
+    def hw_vendor(self):
+        try:
+            return self.eui.oui.registration().org
+        except:
+            return None
 
 
 class Firewall(models.Model):

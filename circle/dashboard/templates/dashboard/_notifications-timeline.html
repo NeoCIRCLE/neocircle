@@ -10,7 +10,7 @@
     </span>
     <div style="clear: both;"></div>
     <div class="notification-message-text">
-      {{ n.message }}
+      {{ n.message|safe }}
     </div>
   </li>
 {% empty %}
