@@ -734,6 +734,7 @@ class DiskAddForm(forms.Form):
     def __init__(self, *args, **kwargs):
         self.is_template = kwargs.pop("is_template")
         self.object_pk = kwargs.pop("object_pk")
+        self.user = kwargs.pop("user")
         super(DiskAddForm, self).__init__(*args, **kwargs)
         self.initial['is_template'] = 1 if self.is_template is True else 0
         self.initial['object_pk'] = self.object_pk
@@ -771,7 +772,7 @@ class DiskAddForm(forms.Form):
                 'size': data['size'],
                 'dev_num': "a",
             }
-            d = Disk.create_empty(instance=inst, user=None, **kwargs)
+            d = Disk.create_empty(instance=inst, user=self.user, **kwargs)
         else:
             kwargs = {
                 'name': data['name'],
@@ -779,7 +780,7 @@ class DiskAddForm(forms.Form):
                 'dev_num': "a",
             }
             Disk.create_from_url_async(data['url'], instance=inst,
-                                       user=None, **kwargs)
+                                       user=self.user, **kwargs)
             d = None
 
         return d

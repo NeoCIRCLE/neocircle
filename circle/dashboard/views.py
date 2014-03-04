@@ -195,6 +195,7 @@ class VmDetailView(CheckedDetailView):
         context['acl'] = get_vm_acl_data(instance)
         context['forms'] = {
             'disk_add_form': DiskAddForm(
+                user=self.request.user,
                 is_template=False, object_pk=self.get_object().pk,
                 prefix="disk"),
         }
@@ -749,6 +750,7 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         context['acl'] = get_vm_acl_data(obj)
         context['disks'] = obj.disks.all()
         context['disk_add_form'] = DiskAddForm(
+            user=self.request.user,
             is_template=True,
             object_pk=obj.pk,
             prefix="disk",
@@ -1756,6 +1758,7 @@ class DiskAddView(TemplateView):
 
         form = DiskAddForm(
             self.request.POST,
+            user=self.request.user,
             is_template=is_template, object_pk=object_pk,
             prefix="disk"
         )
