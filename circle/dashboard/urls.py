@@ -9,7 +9,7 @@ from .views import (
     FavouriteView, NodeStatus, GroupList, TemplateDelete, LeaseDelete,
     VmGraphView, TemplateAclUpdateView, GroupDetailView, GroupDelete,
     GroupAclUpdateView, GroupUserDelete, NotificationView, NodeGraphView,
-    VmMigrateView, DiskAddVie, VmDetailVncTokenView,
+    VmMigrateView, DiskAddView, VmDetailVncTokenView,
 )
 
 urlpatterns = patterns(

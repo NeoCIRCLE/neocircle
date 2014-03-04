@@ -744,11 +744,13 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
             return super(TemplateDetail, self).get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
+        obj = self.get_object()
         context = super(TemplateDetail, self).get_context_data(**kwargs)
-        context['acl'] = get_vm_acl_data(self.get_object())
+        context['acl'] = get_vm_acl_data(obj)
+        context['disks'] = obj.disks.all()
         context['disk_add_form'] = DiskAddForm(
             is_template=True,
-            object_pk=self.get_object().pk,
+            object_pk=obj.pk,
             prefix="disk",
         )
         return context

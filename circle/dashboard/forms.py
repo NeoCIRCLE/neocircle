@@ -1,5 +1,4 @@
 from datetime import timedelta
-import uuid
 
 from django.contrib.auth.models import User
 
@@ -759,26 +758,29 @@ class DiskAddForm(forms.Form):
     def save(self, commit=True):
         data = self.cleaned_data
 
-        if data['size']:
-            d = Disk(
-                name=data['name'],
-                filename=str(uuid.uuid4()),
-                datastore=DataStore.objects.all()[0],
-                type="qcow2-norm",
-                size=data['size'],
-                dev_num="a",
-            )
-            d.save()
-        else:
-            # TODO
-            d = None
-
         if self.is_template:
-            vm_or_temp = InstanceTemplate.objects.get(pk=self.object_pk)
+            inst = InstanceTemplate.objects.get(pk=self.object_pk)
         else:
-            vm_or_temp = Instance.objects.get(pk=self.object_pk)
+            inst = Instance.objects.get(pk=self.object_pk)
 
-        vm_or_temp.disks.add(d)
+        if data['size']:
+            kwargs = {
+                'name': data['name'],
+                'type': "qcow2-norm",
+                'datastore': DataStore.objects.all()[0],
+                'size': data['size'],
+                'dev_num': "a",
+            }
+            d = Disk.create_empty(instance=inst, user=None, **kwargs)
+        else:
+            kwargs = {
+                'name': data['name'],
+                'datastore': DataStore.objects.all()[0],
+                'dev_num': "a",
+            }
+            Disk.create_from_url_async(data['url'], instance=inst,
+                                       user=None, **kwargs)
+            d = None
 
         return d
 
