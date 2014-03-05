@@ -815,8 +815,20 @@ class TraitForm(forms.ModelForm):
         self.helper.form_show_labels = False
         self.helper.layout = Layout(
             Div(
-                'name',
-                css_class="col-sm-2",
+                Div(
+                    Field('name', id="node-details-traits-input",
+                          css_class="input-sm input-traits"),
+                    Div(
+                        HTML('<input type="submit" '
+                             'class="btn btn-default btn-sm input-traits" '
+                             'value="Add trait"/>',
+                             ),
+                        css_class="input-group-btn",
+                    ),
+                    css_class="input-group",
+                    id="node-details-traits-form",
+                ),
+                css_class="row",
             ),
         )
 

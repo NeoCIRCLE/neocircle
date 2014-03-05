@@ -8,7 +8,7 @@ from .views import (
     TemplateList, LeaseDetail, NodeCreate, LeaseCreate, TemplateCreate,
     FavouriteView, NodeStatus, GroupList, TemplateDelete, LeaseDelete,
     VmGraphView, TemplateAclUpdateView, GroupDetailView, GroupDelete,
-    GroupAclUpdateView, GroupUserDelete,
+    GroupAclUpdateView, GroupUserDelete, NodeAddTraitView,
 )
 
 urlpatterns = patterns(
@@ -52,6 +52,8 @@ urlpatterns = patterns(
     url(r'^node/list/$', NodeList.as_view(), name='dashboard.views.node-list'),
     url(r'^node/(?P<pk>\d+)/$', NodeDetailView.as_view(),
         name='dashboard.views.node-detail'),
+    url(r'^node/(?P<pk>\d+)/add-trait/$', NodeAddTraitView.as_view(),
+        name='dashboard.views.node-addtrait'),
     url(r'^tx/$', TransferOwnershipConfirmView.as_view(),
         name='dashboard.views.vm-transfer-ownership-confirm'),
     url(r'^node/delete/(?P<pk>\d+)/$', NodeDelete.as_view(),

@@ -29,11 +29,12 @@ from braces.views import LoginRequiredMixin, SuperuserRequiredMixin
 
 from .forms import (
     VmCreateForm, TemplateForm, LeaseForm, NodeForm, HostForm, DiskAddForm,
+    TraitForm,
 )
 from .tables import (VmListTable, NodeListTable, NodeVmListTable,
                      TemplateListTable, LeaseListTable, GroupListTable,)
 from vm.models import (Instance, InstanceTemplate, InterfaceTemplate,
-                       InstanceActivity, Node, instance_activity, Lease,
+                       InstanceActivity, Node, Trait, instance_activity, Lease,
                        Interface, NodeActivity, )
 from firewall.models import Vlan, Host, Rule
 from storage.models import Disk
@@ -439,8 +440,12 @@ class VmDetailView(CheckedDetailView):
 class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
     template_name = "dashboard/node-detail.html"
     model = Node
+    form = None
+    form_class = TraitForm
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, form=None, **kwargs):
+        if form is None:
+            form = self.form_class()
         context = super(NodeDetailView, self).get_context_data(**kwargs)
         instances = Instance.active.filter(node=self.object)
         context['table'] = NodeVmListTable(instances)
@@ -448,6 +453,7 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
             node=self.object, parent=None
         ).order_by('-started').select_related()
         context['activities'] = ia
+        context['trait_form'] = form
         return context
 
     def post(self, request, *args, **kwargs):
@@ -455,8 +461,6 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
             return self.__set_name(request)
         if request.POST.get('new_status'):
             return self.__set_status(request)
-        if request.POST.get('new_trait'):
-            return self.__add_trait(request)
         if request.POST.get('to_remove'):
             return self.__remove_trait(request)
 
@@ -507,24 +511,6 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
             messages.success(request, success_message)
             return redirect(reverse_lazy("dashboard.views.node-detail",
                                          kwargs={'pk': self.object.pk}))
-
-    def __add_trait(self, request):
-        new_trait_name = request.POST.get('new_trait')
-        self.object = self.get_object()
-
-        if len(new_trait_name) < 1:
-            message = u"Please input something!"
-        elif len(new_trait_name) > 20:
-            message = u"Trait name is too long!"
-        else:
-            self.object.traits.create(name=new_trait_name)
-
-        try:
-            messages.error(request, message)
-        except:
-            pass
-
-        return redirect(self.object.get_absolute_url())
 
     def __remove_trait(self, request):
         try:
@@ -1228,6 +1214,40 @@ class NodeDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
             return next
         else:
             return reverse_lazy('dashboard.index')
+
+
+class NodeAddTraitView(SuperuserRequiredMixin, DetailView):
+    model = Node
+    template_name = "dashboard/node-add-trait.html"
+
+    def get_success_url(self):
+        next = self.request.GET.get('next')
+        if next:
+            return next
+        else:
+            return reverse_lazy("dashboard.views.node-detail",
+                                kwargs={'pk': self.object.pk})
+
+    def get_context_data(self, **kwargs):
+        self.object = self.get_object()
+        context = super(NodeAddTraitView, self).get_context_data(**kwargs)
+        context['form'] = (TraitForm(self.request.POST) if self.request.POST
+                           else TraitForm())
+        return context
+
+    def post(self, request, pk, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        form = context['form']
+        if form.is_valid():
+            node = self.object
+            n = form.cleaned_data['name']
+            trait, created = Trait.objects.get_or_create(name=n)
+            node.traits.add(trait)
+            success_message = _("Trait successfully added to node.")
+            messages.success(request, success_message)
+            return redirect(self.get_success_url())
+        else:
+            return self.get(self, request, pk, *args, **kwargs)
 
 
 class NodeStatus(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):

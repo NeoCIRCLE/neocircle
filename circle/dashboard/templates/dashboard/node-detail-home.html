@@ -21,15 +21,17 @@
 	<small>{% trans "No trait added!" %}</small>
         {% endif %}
       </div>
-      <form action="" method="POST">
-        {% csrf_token %}
-        <div class="input-group" id="node-details-traits-form">
-          <input type="text" class="form-control input-sm input-traits" name="new_trait" id="node-details-traits-input"/>
-          <div class="input-group-btn">
-            <input type="submit" class="btn btn-default btn-sm input-traits" value="{% trans "Add trait" %}"/>
-          </div>
-        </div>
-      </form>
+ {% load crispy_forms_tags %}
+<style>
+  .row {
+    margin-bottom: 15px;
+  }
+</style>
+
+  <form action="{% url "dashboard.views.node-addtrait" node.pk %}" method="POST">
+  {% csrf_token %}
+  {% crispy trait_form %}
+  </form>     
     </div><!-- id:node-details-traits -->
   </div>
   <div class="col-md-8">
