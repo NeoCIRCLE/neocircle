@@ -524,7 +524,7 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
         if request.is_ajax():
             return HttpResponse(
                 json.dumps({'message': message}),
-                content_type="application=json"
+                content_type="application/json"
             )
         else:
             return redirect(self.object.get_absolute_url())

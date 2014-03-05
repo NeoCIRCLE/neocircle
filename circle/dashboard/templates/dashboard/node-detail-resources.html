@@ -5,7 +5,7 @@
     <dt>{% trans "Node name" %}:</dt><dd>{{ node.name }}</dd>
     <dt>{% trans "CPU cores" %}:</dt><dd>{{ node.num_cores }}</dd>
     <dt>{% trans "RAM size" %}:</dt> <dd>{% widthratio node.ram_size 1048576 1 %} MB</dd>
-    <dt>{% trans "Architecture" %}:</td><dd>{{ node.arch }}</dd>
+    <dt>{% trans "Architecture" %}:</dt><dd>{{ node.arch }}</dd>
     <dt>{% trans "Host IP" %}:</dt><dd>{{ node.host.ipv4 }}</dd>
     <dt>{% trans "Enabled" %}:</dt><dd>{{ node.enabled }}</dd>
     <dt>{% trans "Host online" %}:</dt><dd> {{ node.online }}</dd>
