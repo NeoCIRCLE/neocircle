@@ -454,9 +454,10 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
         return context
 
     def post(self, request, *args, **kwargs):
+        print request.POST
         if request.POST.get('new_name'):
             return self.__set_name(request)
-        if request.POST.get('change_status'):
+        if request.POST.get('change_status') is not None:
             return self.__set_status(request)
         return redirect(reverse_lazy("dashboard.views.node-detail",
                                      kwargs={'pk': self.get_object().pk}))
@@ -1261,7 +1262,7 @@ class NodeStatus(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
         return context
 
     def post(self, request, *args, **kwargs):
-        if request.POST.get('change_status'):
+        if request.POST.get('change_status') is not None:
             return self.__set_status(request)
         return redirect(reverse_lazy("dashboard.views.node-detail",
                                      kwargs={'pk': self.get_object().pk}))
