@@ -310,8 +310,8 @@ class Disk(AclBase, TimeStampedModel):
         """
         kwargs.update({'cls': cls, 'url': url,
                        'instance': instance, 'user': user})
-        return local_tasks.create_from_url.apply_async(kwargs=kwargs,
-                                                       queue='localhost.man')
+        return local_tasks.create_from_url.apply_async(
+            kwargs=kwargs, queue='localhost.man')
 
     @classmethod
     def create_from_url(cls, url, instance=None, user=None,
