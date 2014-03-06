@@ -631,6 +631,8 @@ class Host(models.Model):
                 if self.shared_ip and public:
                     res = Record.objects.filter(type='A',
                                                 address=self.pub_ipv4)
+                    if res.count() < 1:
+                        return unicode(self.pub_ipv4)
                 else:
                     res = self.record_set.filter(type='A',
                                                  address=self.ipv4)

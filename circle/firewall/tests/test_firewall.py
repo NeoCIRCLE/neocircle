@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
 from ..admin import HostAdmin
-from firewall.models import Vlan, Domain, Host
+from firewall.models import Vlan, Domain, Record, Host
 from django.forms import ValidationError
 
 
@@ -82,3 +82,32 @@ class GetNewAddressTestCase(TestCase):
         Host(hostname='h-6', mac='01:02:03:04:05:06',
              ipv4='10.0.0.6', vlan=self.vlan, owner=self.u1).save()
         self.assertEqual(self.vlan.get_new_address()['ipv4'], '10.0.0.2')
+
+
+class HostGetHostnameTestCase(TestCase):
+    def setUp(self):
+        self.u1 = User.objects.create(username='user1')
+        self.u1.save()
+        self.d = Domain(name='example.org', owner=self.u1)
+        self.d.save()
+        Record.objects.all().delete()
+        self.vlan = Vlan(vid=1, name='test', network4='10.0.0.0/24',
+                         network6='2001:738:2001:4031::/80', domain=self.d,
+                         owner=self.u1, network_type='portforward',
+                         snat_ip='10.1.1.1')
+        self.vlan.save()
+        self.h = Host(hostname='h', mac='01:02:03:04:05:00', ipv4='10.0.0.1',
+                      vlan=self.vlan, owner=self.u1, shared_ip=True,
+                      pub_ipv4=self.vlan.snat_ip)
+        self.h.save()
+
+    def test_issue_93_wo_record(self):
+        self.assertEqual(self.h.get_hostname(proto='ipv4', public=True),
+                         unicode(self.h.pub_ipv4))
+
+    def test_issue_93_w_record(self):
+        self.r = Record(name='vm', type='A', domain=self.d, owner=self.u1,
+                        address=self.vlan.snat_ip)
+        self.r.save()
+        self.assertEqual(self.h.get_hostname(proto='ipv4', public=True),
+                         self.r.fqdn)
