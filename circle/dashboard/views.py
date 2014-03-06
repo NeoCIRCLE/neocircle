@@ -44,6 +44,15 @@ from dashboard.models import Favourite, Profile
 logger = logging.getLogger(__name__)
 
 
+def search_user(keyword):
+    try:
+        return User.objects.get(username=keyword)
+    except User.DoesNotExist:
+        return User.objects.get(email=keyword)
+    except User.DoesNotExist:
+        return User.objects.get(profile__org_id=keyword)
+
+
 # github.com/django/django/blob/stable/1.6.x/django/contrib/messages/views.py
 class SuccessMessageMixin(object):
     """
@@ -1490,11 +1499,7 @@ class TransferOwnershipView(LoginRequiredMixin, DetailView):
 
     def post(self, request, *args, **kwargs):
         try:
-            new_owner = User.objects.get(username=request.POST['name'])
-        except User.DoesNotExist:
-            new_owner = User.objects.get(email=request.POST['name'])
-        except User.DoesNotExist:
-            new_owner = User.objects.get(profile__org_id=request.POST['name'])
+            new_owner = search_user(request.POST['name'])
         except User.DoesNotExist:
             messages.error(request, _('Can not find specified user.'))
             return self.get(request, *args, **kwargs)
