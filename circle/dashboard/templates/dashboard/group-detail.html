@@ -43,7 +43,7 @@
 		<td><a data-groupmember-pk="{{i.pk}}" href="{% url "dashboard.views.remove-user" user_pk=i.pk group_pk=group.pk %}?next={{ request.path }}" class="real-link groupmember-delete btn btn-link btn-xs"><i class="icon-remove"><span class="sr-only">{% trans "remove" %}</span></i></a></td></tr>
         {% endfor %}
         <tr><td><i class="icon-plus"></i></td>
-            <td><input type="text" class="form-control" name="perm-new-name"
+            <td><input type="text" class="form-control" name="list-new-name"
                 placeholder="{% trans "Name of user" %}"></td>
         </tr>
   </tbody>

@@ -593,9 +593,15 @@ class GroupDetailView(CheckedDetailView):
         return context
 
     def post(self, request, *args, **kwargs):
-
         if request.POST.get('new_name'):
             return self.__set_name(request)
+        if request.POST.get('list-new-name'):
+            return self.__add_user(request)
+
+    def __add_user(self, request):
+        self.object = self.get_object()
+        return redirect(reverse_lazy("dashboard.views.group-detail",
+                                     kwargs={'pk': self.object.pk}))
 
     def __set_name(self, request):
         self.object = self.get_object()
