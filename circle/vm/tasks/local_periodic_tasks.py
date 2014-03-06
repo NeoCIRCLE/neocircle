@@ -49,5 +49,8 @@ def garbage_collector(timeout=15):
             except Exception as e:
                 logger.debug('Could not notify owner of instance %d .%s',
                              i.pk, unicode(e))
+        elif i.is_expiring():
+            logger.debug("Instance %d expires soon." % i.pk)
+            i.notify_owners_about_expiration()
         else:
             logger.debug("Instance %d didn't expire." % i.pk)
