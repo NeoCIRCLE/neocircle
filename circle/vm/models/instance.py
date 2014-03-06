@@ -562,6 +562,32 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         else:
             raise Node.DoesNotExist()
 
+    def is_expiring(self, threshold=0.1):
+        """Returns if an instance will expire soon.
+
+        Soon means that the time of suspend or delete comes in 10% of the
+        interval what the Lease allows. This rate is configurable with the
+        only parameter, threshold (0.1 = 10% by default).
+        """
+        return (self._is_suspend_expiring(self, threshold) or
+                self._is_delete_expiring(self, threshold))
+
+    def _is_suspend_expiring(self, threshold=0.1):
+        interval = self.lease.suspend_interval
+        if interval is not None:
+            limit = timezone.now() + threshold * self.lease.suspend_interval
+            return limit > self.time_of_suspend
+        else:
+            return False
+
+    def _is_delete_expiring(self, threshold=0.1):
+        interval = self.lease.delete_interval
+        if interval is not None:
+            limit = timezone.now() + threshold * self.lease.delete_interval
+            return limit > self.time_of_delete
+        else:
+            return False
+
     def get_renew_times(self):
         """Returns new suspend and delete times if renew would be called.
         """
