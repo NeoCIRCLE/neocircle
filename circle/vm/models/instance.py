@@ -968,47 +968,54 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                 for net in self.interface_set.all():
                     net.deploy()
 
-    def save_as_template(self, name, **kwargs):
-        # prepare parameters
-        kwargs.setdefault('name', name)
-        kwargs.setdefault('description', self.description)
-        kwargs.setdefault('parent', self.template)
-        kwargs.setdefault('num_cores', self.num_cores)
-        kwargs.setdefault('ram_size', self.ram_size)
-        kwargs.setdefault('max_ram_size', self.max_ram_size)
-        kwargs.setdefault('arch', self.arch)
-        kwargs.setdefault('priority', self.priority)
-        kwargs.setdefault('boot_menu', self.boot_menu)
-        kwargs.setdefault('raw_data', self.raw_data)
-        kwargs.setdefault('lease', self.lease)
-        kwargs.setdefault('access_method', self.access_method)
-        kwargs.setdefault('system', self.template.system
-                          if self.template else None)
+    def save_as_template_async(self, name, user=None, **kwargs):
+        return local_tasks.save_as_template.apply_async(
+            args=[self, name, user, kwargs], queue="localhost.man")
 
-        def __try_save_disk(disk):
+    def save_as_template(self, name, task_uuid=None, user=None,
+                         timeout=300, **kwargs):
+        with instance_activity(code_suffix="save_as_template", instance=self,
+                               task_uuid=task_uuid, user=user):
+            # prepare parameters
+            kwargs.setdefault('name', name)
+            kwargs.setdefault('description', self.description)
+            kwargs.setdefault('parent', self.template)
+            kwargs.setdefault('num_cores', self.num_cores)
+            kwargs.setdefault('ram_size', self.ram_size)
+            kwargs.setdefault('max_ram_size', self.max_ram_size)
+            kwargs.setdefault('arch', self.arch)
+            kwargs.setdefault('priority', self.priority)
+            kwargs.setdefault('boot_menu', self.boot_menu)
+            kwargs.setdefault('raw_data', self.raw_data)
+            kwargs.setdefault('lease', self.lease)
+            kwargs.setdefault('access_method', self.access_method)
+            kwargs.setdefault('system', self.template.system
+                              if self.template else None)
+
+            def __try_save_disk(disk):
+                try:
+                    return disk.save_as()  # can do in parallel
+                except Disk.WrongDiskTypeError:
+                    return disk
+
+            # create template and do additional setup
+            tmpl = InstanceTemplate(**kwargs)
+            tmpl.full_clean()
+            logger.info("Clean utani save")
+            tmpl.save()
+            tmpl.disks.add(*[__try_save_disk(disk)
+                             for disk in self.disks.all()])
+            # save template
+            tmpl.save()
             try:
-                return disk.save_as()  # can do in parallel
-            except Disk.WrongDiskTypeError:
-                return disk
-
-        # copy disks
-        disks = [__try_save_disk(disk) for disk in self.disks.all()]
-        kwargs.setdefault('disks', disks)
-
-        # create template and do additional setup
-        tmpl = InstanceTemplate(**kwargs)
-
-        # save template
-        tmpl.save()
-        try:
-            # create interface templates
-            for i in self.interface_set.all():
-                i.save_as_template(tmpl)
-        except:
-            tmpl.delete()
-            raise
-        else:
-            return tmpl
+                # create interface templates
+                for i in self.interface_set.all():
+                    i.save_as_template(tmpl)
+            except:
+                tmpl.delete()
+                raise
+            else:
+                return tmpl
 
     def shutdown_and_save_as_template(self, name, user=None, task_uuid=None,
                                       **kwargs):
