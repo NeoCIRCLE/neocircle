@@ -393,7 +393,11 @@ class Disk(AclBase, TimeStampedModel):
         local_tasks.restore.apply_async(args=[self, user],
                                         queue='localhost.man')
 
-    def save_as(self, user=None, task_uuid=None, timeout=120):
+    def save_as_async(self, disk, task_uuid=None, timeout=300, user=None):
+        return local_tasks.save_as.apply_async(args=[disk, timeout, user],
+                                               queue="localhost.man")
+
+    def save_as(self, user=None, task_uuid=None, timeout=300):
         mapping = {
             'qcow2-snap': ('qcow2-norm', self.base),
         }
@@ -406,25 +410,24 @@ class Disk(AclBase, TimeStampedModel):
         # from this point on, the caller has to guarantee that the disk is not
         # going to be used until the operation is complete
 
-        with disk_activity(code_suffix='save_as', disk=self,
-                           task_uuid=task_uuid, user=user, timeout=300):
+        new_type, new_base = mapping[self.type]
 
-            new_type, new_base = mapping[self.type]
+        disk = Disk.create(base=new_base, datastore=self.datastore,
+                           name=self.name, size=self.size,
+                           type=new_type)
 
-            disk = Disk.objects.create(base=new_base, datastore=self.datastore,
-                                       name=self.name, size=self.size,
-                                       type=new_type)
-
+        disk.save()
+        with disk_activity(code_suffix="save_as", disk=self,
+                           user=user, task_uuid=None):
             queue_name = self.get_remote_queue_name('storage')
             remote_tasks.merge.apply_async(args=[self.get_disk_desc(),
                                                  disk.get_disk_desc()],
                                            queue=queue_name
-                                           ).get(timeout=timeout)
-
+                                           ).get()
             disk.ready = True
             disk.save()
 
-            return disk
+        return disk
 
 
 class DiskActivity(ActivityModel):
