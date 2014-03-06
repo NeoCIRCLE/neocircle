@@ -1764,7 +1764,10 @@ class DiskAddView(TemplateView):
         )
 
         if form.is_valid():
-            messages.success(self.request, _("Disk successfully added!"))
+            if form.cleaned_data.get("size"):
+                messages.success(self.request, _("Disk successfully added!"))
+            else:
+                messages.success(self.request, _("Disk download started!"))
             form.save()
         else:
             error = "<br /> ".join(["<strong>%s</strong>: %s" %
