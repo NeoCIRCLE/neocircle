@@ -8,6 +8,16 @@
       <dd><small>{{ instance.description }}</small></dd>
     </dl>
 
+    <h4>{% trans "Expiration" %} {% if instance.is_expiring %}<i class="icon-warning-sign text-danger"></i>{% endif %}
+      <a href="{% url "dashboard.views.vm-renew" instance.pk "" %}" class="btn btn-success btn-xs pull-right">{% trans "renew" %}</a>
+    </h4>
+    <dl>
+      <dt>{% trans "Suspended at:" %}</dt>
+      <dd><i class="icon-moon"></i> {{ instance.time_of_suspend|timeuntil }}</dd>
+      <dt>{% trans "Destroyed at:" %}</dt>
+      <dd><i class="icon-remove"></i> {{ instance.time_of_delete|timeuntil }}</dd>
+    </dl>
+
     <div style="font-weight: bold;">{% trans "Tags" %}</div>
     <div id="vm-details-tags" style="margin-bottom: 20px;">
       <div id="vm-details-tags-list">
