@@ -1068,6 +1068,14 @@ class GroupRemoveAclUserView(GroupRemoveUserView):
 
 class GroupRemoveAclGroupView(GroupRemoveUserView):
 
+    def get_context_data(self, **kwargs):
+        context = super(GroupRemoveUserView, self).get_context_data(**kwargs)
+        try:
+            context['member'] = Group.objects.get(pk=self.user_pk)
+        except User.DoesNotExist:
+            raise Http404()
+        return context
+
     def remove_member(self, pk):
         container = self.get_object().profile
         container.set_level(Group.objects.get(pk=pk), None)
