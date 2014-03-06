@@ -373,13 +373,14 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
             activity.resultant_state = 'PENDING'
 
         with instance_activity(code_suffix='create', instance=inst,
-                               on_commit=__on_commit, user=inst.owner):
+                               on_commit=__on_commit, user=inst.owner) as act:
             # create related entities
             inst.disks.add(*[disk.get_exclusive() for disk in disks])
 
             for net in networks:
                 Interface.create(instance=inst, vlan=net.vlan,
-                                 owner=inst.owner, managed=net.managed)
+                                 owner=inst.owner, managed=net.managed,
+                                 base_activity=act)
 
             inst.req_traits.add(*req_traits)
             inst.tags.add(*tags)

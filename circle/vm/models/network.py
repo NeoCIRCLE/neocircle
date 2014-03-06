@@ -8,6 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from firewall.models import Vlan, Host
 from ..tasks import net_tasks
+from .activity import instance_activity
 
 logger = getLogger(__name__)
 
@@ -105,7 +106,7 @@ class Interface(Model):
             self.host.delete()
 
     @classmethod
-    def create(cls, instance, vlan, managed, owner=None):
+    def create(cls, instance, vlan, managed, owner=None, base_activity=None):
         """Create a new interface for a VM instance to the specified VLAN.
         """
         if managed:
@@ -115,9 +116,19 @@ class Interface(Model):
             host.mac = str(cls.generate_mac(instance, vlan))
             host.hostname = instance.vm_name
             # Get adresses from firewall
-            addresses = vlan.get_new_address()
-            host.ipv4 = addresses['ipv4']
-            host.ipv6 = addresses['ipv6']
+            if base_activity is None:
+                act = instance_activity(code_suffix='allocating_ip',
+                                        instance=instance, user=owner)
+            else:
+                act = base_activity.sub_activity('allocating_ip')
+            with act as act:
+                addresses = vlan.get_new_address()
+                host.ipv4 = addresses['ipv4']
+                host.ipv6 = addresses['ipv6']
+                act.result = ('new addresses: ipv4: %(ip4)s, ipv6: %(ip6)s, '
+                              'vlan: %(vlan)s' % {'ip4': host.ipv4,
+                                                  'ip6': host.ipv6,
+                                                  'vlan': vlan.name})
             host.owner = owner
             if vlan.network_type == 'public':
                 host.shared_ip = False
