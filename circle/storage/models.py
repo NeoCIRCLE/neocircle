@@ -16,6 +16,7 @@ from datetime import timedelta
 from acl.models import AclBase
 from .tasks import local_tasks, remote_tasks
 from celery.exceptions import TimeoutError
+from manager.mancelery import celery
 from common.models import ActivityModel, activitycontextimpl, WorkerNotFound
 
 logger = logging.getLogger(__name__)
@@ -132,6 +133,19 @@ class Disk(AclBase, TimeStampedModel):
             'raw-ro': 'vd',
             'raw-rw': 'vd',
         }[self.type]
+
+    def is_downloading(self):
+        da = DiskActivity.objects.filter(disk=self).latest("created")
+        return (da.activity_code == "storage.Disk.download"
+                and da.succeeded is None)
+
+    def get_download_percentage(self):
+        if not self.is_downloading():
+            return None
+
+        task = DiskActivity.objects.latest("created").task_uuid
+        result = celery.AsyncResult(id=task)
+        return result.info.get("percent")
 
     def is_deletable(self):
         """Returns whether the file can be deleted.

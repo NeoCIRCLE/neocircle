@@ -60,7 +60,7 @@
     {% endif %}
     {% for d in instance.disks.all %}
       <h4 class="list-group-item-heading dashboard-vm-details-network-h3">
-        <i class="icon-file"></i> {{ d.name }} (#{{ d.id }}) - {{ d.size|filesize }}
+        {% include "dashboard/_disk-list-element.html" %}
       </h4>
     {% endfor %}
   </div>
