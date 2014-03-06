@@ -172,12 +172,11 @@ class Disk(AclBase, TimeStampedModel):
         if self.type not in type_mapping.keys():
             raise self.WrongDiskTypeError(self.type)
 
-        filename = self.filename if self.type == 'iso' else None
         new_type = type_mapping[self.type]
 
-        return Disk.objects.create(base=self, datastore=self.datastore,
-                                   filename=filename, name=self.name,
-                                   size=self.size, type=new_type)
+        return Disk.create(base=self, datastore=self.datastore,
+                           name=self.name, size=self.size,
+                           type=new_type)
 
     def get_vmdisk_desc(self):
         """Serialize disk object to the vmdriver."""
@@ -215,11 +214,6 @@ class Disk(AclBase, TimeStampedModel):
             self.size = self.base.size
         super(Disk, self).clean(*args, **kwargs)
 
-    def save(self, *args, **kwargs):
-        if self.filename is None:
-            self.generate_filename()
-        return super(Disk, self).save(*args, **kwargs)
-
     def deploy(self, user=None, task_uuid=None, timeout=15):
         """Reify the disk model on the associated data store.
 
@@ -250,7 +244,7 @@ class Disk(AclBase, TimeStampedModel):
             # Delegate create / snapshot jobs
             queue_name = self.get_remote_queue_name('storage')
             disk_desc = self.get_disk_desc()
-            if self.type == 'qcow2-snap':
+            if self.base is not None:
                 with act.sub_activity('creating_snapshot'):
                     remote_tasks.snapshot.apply_async(args=[disk_desc],
                                                       queue=queue_name
@@ -272,10 +266,11 @@ class Disk(AclBase, TimeStampedModel):
         return local_tasks.deploy.apply_async(args=[self, user],
                                               queue="localhost.man")
 
-    def generate_filename(self):
-        """Generate a unique filename and set it on the object.
-        """
-        self.filename = str(uuid.uuid4())
+    @classmethod
+    def create(cls, **params):
+        disk = cls(filename=str(uuid.uuid4()), **params)
+        disk.save()
+        return disk
 
     @classmethod
     def create_empty(cls, instance=None, user=None, **kwargs):
@@ -288,13 +283,8 @@ class Disk(AclBase, TimeStampedModel):
 
         :return: Disk object without a real image, to be .deploy()ed later.
         """
-        with disk_activity(code_suffix="create", user=user) as act:
-            disk = cls(**kwargs)
-            if disk.filename is None:
-                disk.generate_filename()
-            disk.save()
-            act.disk = disk
-            act.save()
+        disk = cls.create(**kwargs)
+        with disk_activity(code_suffix="create", user=user, disk=disk):
             if instance:
                 instance.disks.add(disk)
             return disk
@@ -337,7 +327,6 @@ class Disk(AclBase, TimeStampedModel):
         """
         kwargs.setdefault('name', url.split('/')[-1])
         disk = cls(**kwargs)
-        disk.generate_filename()
         disk.type = "iso"
         disk.size = 1
         # TODO get proper datastore
