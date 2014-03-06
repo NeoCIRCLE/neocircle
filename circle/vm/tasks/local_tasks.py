@@ -19,6 +19,12 @@ def destroy(instance, user):
 
 
 @celery.task
+def save_as_template(instance, name, user, params):
+    instance.save_as_template(name, task_uuid=save_as_template.request.id,
+                              user=user, **params)
+
+
+@celery.task
 def sleep(instance, user):
     instance.sleep(task_uuid=sleep.request.id, user=user)
 
