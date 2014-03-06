@@ -770,17 +770,15 @@ class DiskAddForm(forms.Form):
                 'type': "qcow2-norm",
                 'datastore': DataStore.objects.all()[0],
                 'size': data['size'],
-                'dev_num': "a",
             }
             d = Disk.create_empty(instance=inst, user=self.user, **kwargs)
         else:
             kwargs = {
                 'name': data['name'],
-                'datastore': DataStore.objects.all()[0],
-                'dev_num': "a",
+                'url': data['url'],
             }
-            Disk.create_from_url_async(data['url'], instance=inst,
-                                       user=self.user, **kwargs)
+            Disk.create_from_url_async(instance=inst, user=self.user,
+                                       **kwargs)
             d = None
 
         return d
