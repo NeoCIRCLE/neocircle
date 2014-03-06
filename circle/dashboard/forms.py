@@ -512,6 +512,9 @@ class TemplateForm(forms.ModelForm):
 
     @property
     def helper(self):
+        kwargs_raw_data = {}
+        if not self.user.is_superuser:
+            kwargs_raw_data['readonly'] = None
         helper = FormHelper()
         helper.layout = Layout(
             Field("name"),
@@ -563,7 +566,7 @@ class TemplateForm(forms.ModelForm):
                 "stuff",
                 Field('access_method'),
                 Field('boot_menu'),
-                Field('raw_data'),
+                Field('raw_data', **kwargs_raw_data),
                 Field('req_traits'),
                 Field('description'),
                 Field("parent", type="hidden"),
