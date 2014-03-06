@@ -1009,12 +1009,24 @@ class GroupRemoveUserView(LoginRequiredMixin, DeleteView):
     slug_field = 'pk'
     slug_url_kwarg = 'group_pk'
 
+    def get_context_data(self, **kwargs):
+        context = super(GroupRemoveUserView, self).get_context_data(**kwargs)
+        try:
+            context['member'] = User.objects.get(pk=self.user_pk)
+        except User.DoesNotExist:
+            raise Http404()
+        return context
+
     def get_success_url(self):
         next = self.request.POST.get('next')
         if next:
             return next
         else:
             return reverse_lazy('dashboard.views.group-list')
+
+    def get(self, request, user_pk, *args, **kwargs):
+        self.user_pk = user_pk
+        return super(GroupRemoveUserView, self).get(request, *args, **kwargs)
 
     def get_template_names(self):
         if self.request.is_ajax():
