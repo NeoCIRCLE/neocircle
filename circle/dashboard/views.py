@@ -600,7 +600,15 @@ class GroupDetailView(CheckedDetailView):
 
     def __add_user(self, request):
         self.object = self.get_object()
-        self.add_levels(request)
+        name = request.POST['list-new-name']
+        if not name:
+            return
+        try:
+            entity = User.objects.get(username=name)
+        except User.DoesNotExist:
+            warning(request, _('User "%s" not found.') % name)
+            return
+        self.object.user_set.add(entity)
         return redirect(reverse_lazy("dashboard.views.group-detail",
                                      kwargs={'pk': self.object.pk}))
 
@@ -625,18 +633,6 @@ class GroupDetailView(CheckedDetailView):
             messages.success(request, success_message)
             return redirect(reverse_lazy("dashboard.views.group-detail",
                                          kwargs={'pk': self.object.pk}))
-
-    def add_levels(self, request):
-        name = request.POST['list-new-name']
-        if not name:
-            return
-        try:
-            entity = User.objects.get(username=name)
-        except User.DoesNotExist:
-            warning(request, _('User "%s" not found.') % name)
-            return
-
-        self.object.user_set.add(entity)
 
 
 class AclUpdateView(LoginRequiredMixin, View, SingleObjectMixin):
