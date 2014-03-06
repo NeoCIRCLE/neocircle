@@ -22,6 +22,12 @@ def check_queue(storage, queue_id):
 
 
 @celery.task
+def save_as(disk, timeout, user):
+    disk.save_disk_as(task_uuid=save_as.request.id, user=user,
+                      disk=disk, timeout=timeout)
+
+
+@celery.task
 def deploy(disk, user):
     disk.deploy(task_uuid=deploy.request.id, user=user)
 
