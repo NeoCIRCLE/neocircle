@@ -632,17 +632,23 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
             timezone.now() + self.lease.suspend_interval,
             timezone.now() + self.lease.delete_interval)
 
-    def renew(self, which='both'):
+    def renew(self, which='both', base_activity=None, user=None):
         """Renew virtual machine instance leases.
         """
-        if which not in ('suspend', 'delete', 'both'):
-            raise ValueError('No such expiration type.')
-        time_of_suspend, time_of_delete = self.get_renew_times()
-        if which in ('suspend', 'both'):
-            self.time_of_suspend = time_of_suspend
-        if which in ('delete', 'both'):
-            self.time_of_delete = time_of_delete
-        self.save()
+        if base_activity is None:
+            act = instance_activity(code_suffix='renew', instance=self,
+                                    user=user)
+        else:
+            act = base_activity.sub_activity('renew')
+        with act:
+            if which not in ('suspend', 'delete', 'both'):
+                raise ValueError('No such expiration type.')
+            time_of_suspend, time_of_delete = self.get_renew_times()
+            if which in ('suspend', 'both'):
+                self.time_of_suspend = time_of_suspend
+            if which in ('delete', 'both'):
+                self.time_of_delete = time_of_delete
+            self.save()
 
     def change_password(self, user=None):
         """Generate new password for the vm
