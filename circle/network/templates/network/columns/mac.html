@@ -1,0 +1,3 @@
+{% load i18n %}
+
+<span title="{% blocktrans with vendor=record.hw_vendor|default:"n/a" %}Vendor: {{vendor}}{% endblocktrans %}">{{ record.mac }}</span>

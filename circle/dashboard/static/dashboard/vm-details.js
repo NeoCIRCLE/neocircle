@@ -131,7 +131,11 @@ $(function() {
           location.reload();
         },
         error: function(xhr, textStatus, error) {
-
+          if (xhr.status == 500) {
+            addMessage("Internal Server Error", "danger");
+          } else {
+            addMessage(xhr.status + " Unknown Error", "danger");
+          }
         }
       });
     } else {

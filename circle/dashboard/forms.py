@@ -2,6 +2,9 @@ from datetime import timedelta
 import uuid
 
 from django.contrib.auth.models import User
+from django.contrib.auth.forms import (
+    AuthenticationForm, PasswordResetForm, SetPasswordForm,
+)
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import (
@@ -484,6 +487,16 @@ class TemplateForm(forms.ModelForm):
             return User.objects.get(pk=self.instance.owner.pk)
         return self.user
 
+    def clean(self):
+        cleaned_data = self.cleaned_data
+        # if raw_data has changed and the user is not superuser
+        if "raw_data" in self.changed_data and not self.user.is_superuser:
+            old_raw_data = InstanceTemplate.objects.get(
+                pk=self.instance.pk).raw_data
+            cleaned_data['raw_data'] = old_raw_data
+
+        return cleaned_data
+
     def save(self, commit=True):
         data = self.cleaned_data
         self.instance.max_ram_size = data.get('ram_size')
@@ -509,6 +522,9 @@ class TemplateForm(forms.ModelForm):
 
     @property
     def helper(self):
+        kwargs_raw_data = {}
+        if not self.user.is_superuser:
+            kwargs_raw_data['readonly'] = None
         helper = FormHelper()
         helper.layout = Layout(
             Field("name"),
@@ -560,7 +576,7 @@ class TemplateForm(forms.ModelForm):
                 "stuff",
                 Field('access_method'),
                 Field('boot_menu'),
-                Field('raw_data'),
+                Field('raw_data', **kwargs_raw_data),
                 Field('req_traits'),
                 Field('description'),
                 Field("parent", type="hidden"),
@@ -759,6 +775,93 @@ class DiskAddForm(forms.Form):
         )
         helper.add_input(Submit("submit", "Create new disk",
                                 css_class="btn btn-success"))
+        return helper
+
+
+class CircleAuthenticationForm(AuthenticationForm):
+    # fields: username, password
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.form_show_labels = False
+        helper.layout = Layout(
+            AnyTag(
+                "div",
+                AnyTag(
+                    "span",
+                    AnyTag(
+                        "i",
+                        css_class="icon-user",
+                    ),
+                    css_class="input-group-addon",
+                ),
+                Field("username", placeholder=_("Username"),
+                      css_class="form-control"),
+                css_class="input-group",
+            ),
+            AnyTag(
+                "div",
+                AnyTag(
+                    "span",
+                    AnyTag(
+                        "i",
+                        css_class="icon-lock",
+                    ),
+                    css_class="input-group-addon",
+                ),
+                Field("password", placeholder=_("Password"),
+                      css_class="form-control"),
+                css_class="input-group",
+            ),
+        )
+        helper.add_input(Submit("submit", _("Sign in"),
+                                css_class="btn btn-success"))
+        return helper
+
+
+class CirclePasswordResetForm(PasswordResetForm):
+    # fields: email
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.form_show_labels = False
+        helper.layout = Layout(
+            AnyTag(
+                "div",
+                AnyTag(
+                    "span",
+                    AnyTag(
+                        "i",
+                        css_class="icon-envelope",
+                    ),
+                    css_class="input-group-addon",
+                ),
+                Field("email", placeholder=_("Email address"),
+                      css_class="form-control"),
+                Div(
+                    AnyTag(
+                        "button",
+                        HTML(_("Reset password")),
+                        css_class="btn btn-success",
+                    ),
+                    css_class="input-group-btn",
+                ),
+                css_class="input-group",
+            ),
+        )
+        return helper
+
+
+class CircleSetPasswordForm(SetPasswordForm):
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.add_input(Submit("submit", _("Change password"),
+                                css_class="btn btn-success change-password",
+                                css_id="submit-password-button"))
         return helper
 
 

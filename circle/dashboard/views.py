@@ -5,8 +5,10 @@ import re
 from datetime import datetime
 import requests
 
+from django.conf import settings
 from django.contrib.auth.models import User, Group
-from django.contrib.auth.views import redirect_to_login
+from django.contrib.auth.views import login, redirect_to_login
+from django.contrib.auth.views import login
 from django.contrib.messages import warning
 from django.core.exceptions import (
     PermissionDenied, SuspiciousOperation,
@@ -32,7 +34,7 @@ from braces.views import (
 
 from .forms import (
     VmCustomizeForm, TemplateForm, LeaseForm, NodeForm, HostForm,
-    DiskAddForm,
+    DiskAddForm, CircleAuthenticationForm,
 )
 from .tables import (VmListTable, NodeListTable, NodeVmListTable,
                      TemplateListTable, LeaseListTable, GroupListTable,)
@@ -43,6 +45,15 @@ from firewall.models import Vlan, Host, Rule
 from dashboard.models import Favourite, Profile
 
 logger = logging.getLogger(__name__)
+
+
+def search_user(keyword):
+    try:
+        return User.objects.get(username=keyword)
+    except User.DoesNotExist:
+        return User.objects.get(email=keyword)
+    except User.DoesNotExist:
+        return User.objects.get(profile__org_id=keyword)
 
 
 # github.com/django/django/blob/stable/1.6.x/django/contrib/messages/views.py
@@ -1491,11 +1502,7 @@ class TransferOwnershipView(LoginRequiredMixin, DetailView):
 
     def post(self, request, *args, **kwargs):
         try:
-            new_owner = User.objects.get(username=request.POST['name'])
-        except User.DoesNotExist:
-            new_owner = User.objects.get(email=request.POST['name'])
-        except User.DoesNotExist:
-            new_owner = User.objects.get(profile__org_id=request.POST['name'])
+            new_owner = search_user(request.POST['name'])
         except User.DoesNotExist:
             messages.error(request, _('Can not find specified user.'))
             return self.get(request, *args, **kwargs)
@@ -1873,7 +1880,7 @@ class VmMigrateView(SuperuserRequiredMixin, TemplateView):
             'template': 'dashboard/_vm-migrate.html',
             'box_title': _('Migrate %(name)s' % {'name': vm.name}),
             'ajax_title': True,
-            'vm': kwargs['pk'],
+            'vm': vm,
             'nodes': [n for n in Node.objects.filter(enabled=True)
                       if n.state == "ONLINE"]
         })
@@ -1890,3 +1897,12 @@ class VmMigrateView(SuperuserRequiredMixin, TemplateView):
             messages.error(self.request, _("You didn't select a node!"))
 
         return redirect("%s#activity" % vm.get_absolute_url())
+
+
+def circle_login(request):
+    authentication_form = CircleAuthenticationForm
+    extra_context = {
+        'saml2': hasattr(settings, "SAML_CONFIG")
+    }
+    return login(request, authentication_form=authentication_form,
+                 extra_context=extra_context)
