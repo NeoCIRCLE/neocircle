@@ -562,6 +562,43 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         else:
             raise Node.DoesNotExist()
 
+    def _is_notified_about_expiration(self):
+        renews = self.activity_log.filter(activity_code__endswith='renew')
+        cond = {'activity_code__endswith': 'notification_about_expiration'}
+        if len(renews) > 0:
+            cond['finished__gt'] = renews[0].started
+        return self.activity_log.filter(**cond).exists()
+
+    def notify_owners_about_expiration(self, again=False):
+        """Notify owners about vm expiring soon if they aren't already.
+
+        :param again: Notify already notified owners.
+        """
+        if not again and self._is_notified_about_expiration():
+            return False
+        success, failed = [], []
+
+        def on_commit(act):
+            act.result = {'failed': failed, 'success': success}
+
+        with instance_activity('notification_about_expiration', instance=self,
+                               on_commit=on_commit):
+            from dashboard.views import VmRenewView
+            level = self.get_level_object("owner")
+            for u, ulevel in self.get_users_with_level(level__pk=level.pk):
+                try:
+                    token = VmRenewView.get_token_url(self, u)
+                    u.profile.notify(
+                        _('%s expiring soon') % unicode(self),
+                        'dashboard/notifications/vm-expiring.html',
+                        {'instance': self, 'token': token}, valid_until=min(
+                            self.time_of_delete, self.time_of_suspend))
+                except Exception as e:
+                    failed.append((u, e))
+                else:
+                    success.append(u)
+        return True
+
     def is_expiring(self, threshold=0.1):
         """Returns if an instance will expire soon.
 
