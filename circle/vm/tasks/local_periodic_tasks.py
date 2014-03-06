@@ -31,21 +31,23 @@ def garbage_collector(timeout=15):
             logger.info("Expired instance %d destroyed.", i.pk)
             try:
                 i.owner.profile.notify(
-                    _('Machine destroyed'),
+                    _('%s destroyed') % unicode(i),
                     'dashboard/notifications/vm-destroyed.html',
                     {'instance': i})
-            except:
-                logger.debug('Could not notify owner of instance %d.', i.pk)
+            except Exception as e:
+                logger.debug('Could not notify owner of instance %d .%s',
+                             i.pk, unicode(e))
         elif (i.time_of_suspend and now < i.time_of_suspend and
               i.state == 'RUNNING'):
             i.sleep_async()
             logger.info("Expired instance %d suspended." % i.pk)
             try:
                 i.owner.profile.notify(
-                    _('Machine suspended'),
+                    _('%s suspended') % unicode(i),
                     'dashboard/notifications/vm-suspended.html',
                     {'instance': i})
-            except:
-                logger.debug('Could not notify owner of instance %d.', i.pk)
+            except Exception as e:
+                logger.debug('Could not notify owner of instance %d .%s',
+                             i.pk, unicode(e))
         else:
             logger.debug("Instance %d didn't expire." % i.pk)
