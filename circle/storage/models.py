@@ -65,7 +65,8 @@ class Disk(AclBase, TimeStampedModel):
     TYPES = [('qcow2-norm', 'qcow2 normal'), ('qcow2-snap', 'qcow2 snapshot'),
              ('iso', 'iso'), ('raw-ro', 'raw read-only'), ('raw-rw', 'raw')]
     name = CharField(blank=True, max_length=100, verbose_name=_("name"))
-    filename = CharField(max_length=256, verbose_name=_("filename"))
+    filename = CharField(max_length=256, unique=True,
+                         verbose_name=_("filename"))
     datastore = ForeignKey(DataStore, verbose_name=_("datastore"),
                            help_text=_("The datastore that holds the disk."))
     type = CharField(max_length=10, choices=TYPES)
