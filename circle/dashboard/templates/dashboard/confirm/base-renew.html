@@ -12,7 +12,7 @@
         </h3>
       </div>
       <div class="panel-body">
-        {%blocktrans with object=object%}
+        {%blocktrans with object=instance.name%}
             Do you want to renew <strong>{{ object }}</strong>?
         {%endblocktrans%}
         {%blocktrans with suspend=time_of_suspend delete=time_of_delete|default:"n/a" %}
