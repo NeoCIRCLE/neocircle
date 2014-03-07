@@ -48,15 +48,7 @@ function removeMember(data) {
     url: data['url'],
     headers: {"X-CSRFToken": getCookie('csrftoken')},
     success: function(re, textStatus, xhr) {
-      if(!data['redirect']) {
-        selected = [];
-        addMessage(re['message'], 'success');
-        $('a[data-'+data['type']+'-pk="' + data['pk'] + '"]').closest('tr').fadeOut(function() {
-          $(this).remove();
-        });
-      } else {
-        window.location.replace('/dashboard');
-      }
+    $('#group-detail-pane').load(location.href+" #group-detail-panel");
     },
     error: function(xhr, textStatus, error) {
       addMessage('Uh oh :(', 'danger')

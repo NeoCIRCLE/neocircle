@@ -1022,7 +1022,8 @@ class GroupRemoveUserView(LoginRequiredMixin, DeleteView):
         if next:
             return next
         else:
-            return reverse_lazy('dashboard.views.group-list')
+            return reverse_lazy("dashboard.views.group-detail",
+                                kwargs={'pk': self.get_object().pk})
 
     def get(self, request, member_pk, *args, **kwargs):
         self.member_pk = member_pk
@@ -1045,7 +1046,6 @@ class GroupRemoveUserView(LoginRequiredMixin, DeleteView):
         self.remove_member(kwargs["member_pk"])
         success_url = self.get_success_url()
         success_message = self.get_success_message()
-
         if request.is_ajax():
             return HttpResponse(
                 json.dumps({'message': success_message}),
