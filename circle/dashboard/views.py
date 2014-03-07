@@ -1012,7 +1012,7 @@ class GroupRemoveUserView(LoginRequiredMixin, DeleteView):
     def get_context_data(self, **kwargs):
         context = super(GroupRemoveUserView, self).get_context_data(**kwargs)
         try:
-            context['member'] = User.objects.get(pk=self.user_pk)
+            context['member'] = User.objects.get(pk=self.member_pk)
         except User.DoesNotExist:
             raise Http404()
         return context
@@ -1024,8 +1024,8 @@ class GroupRemoveUserView(LoginRequiredMixin, DeleteView):
         else:
             return reverse_lazy('dashboard.views.group-list')
 
-    def get(self, request, user_pk, *args, **kwargs):
-        self.user_pk = user_pk
+    def get(self, request, member_pk, *args, **kwargs):
+        self.member_pk = member_pk
         return super(GroupRemoveUserView, self).get(request, *args, **kwargs)
 
     def get_template_names(self):
@@ -1042,7 +1042,7 @@ class GroupRemoveUserView(LoginRequiredMixin, DeleteView):
         return _("Member successfully removed from group!")
 
     def delete(self, request, *args, **kwargs):
-        self.remove_member(kwargs["user_pk"])
+        self.remove_member(kwargs["member_pk"])
         success_url = self.get_success_url()
         success_message = self.get_success_message()
 
@@ -1071,7 +1071,7 @@ class GroupRemoveAclGroupView(GroupRemoveUserView):
     def get_context_data(self, **kwargs):
         context = super(GroupRemoveUserView, self).get_context_data(**kwargs)
         try:
-            context['member'] = Group.objects.get(pk=self.user_pk)
+            context['member'] = Group.objects.get(pk=self.member_pk)
         except User.DoesNotExist:
             raise Http404()
         return context

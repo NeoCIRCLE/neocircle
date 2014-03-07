@@ -1,4 +1,3 @@
-
   /* rename */
   $("#group-details-h1-name, .group-details-rename-button").click(function() {
     $("#group-details-h1-name").hide();
@@ -25,3 +24,44 @@
     });
     return false;
   });
+
+  /* for Node removes buttons */
+  $('.delete-from-group').click(function() {
+    var href = $(this).attr('href');
+    var group = $(this).data('group_pk');
+    var member = $(this).data('member_pk');
+    var dir = window.location.pathname.indexOf('list') == -1;
+    addModalConfirmation(removeMember, 
+      { 'url': href,
+        'data': [],
+        'group_pk': group,
+        'member_pk': member,
+        'type': "user",
+        'redirect': dir});
+
+    return false;
+  });
+
+function removeMember(data) {
+  $.ajax({
+    type: 'POST',
+    url: data['url'],
+    headers: {"X-CSRFToken": getCookie('csrftoken')},
+    success: function(re, textStatus, xhr) {
+      if(!data['redirect']) {
+        selected = [];
+        addMessage(re['message'], 'success');
+        $('a[data-'+data['type']+'-pk="' + data['pk'] + '"]').closest('tr').fadeOut(function() {
+          $(this).remove();
+        });
+      } else {
+        window.location.replace('/dashboard');
+      }
+    },
+    error: function(xhr, textStatus, error) {
+      addMessage('Uh oh :(', 'danger')
+    }
+  });
+}
+
+

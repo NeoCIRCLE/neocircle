@@ -1,0 +1,22 @@
+{% load i18n %}
+<div class="modal fade" id="confirmation-modal" tabindex="-1" role="dialog"> 
+  <div class="modal-dialog"> 
+    <div class="modal-content"> 
+      <div class="modal-body">  
+        {% if text %}
+          {{ text }}
+        {% else %}
+          {%blocktrans with object=object%}
+	  Are you sure you want to remove <strong>{{ member }}</strong> from <strong>{{ object }}</strong>?
+          {%endblocktrans%}
+        {% endif %}
+        <br />
+        <div class="pull-right" style="margin-top: 15px;">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button> 
+          <button id="confirmation-modal-button" type="button" class="btn btn-warning">Remove</button> 
+        </div>
+        <div class="clearfix"></div>
+      </div>
+    </div><!-- /.modal-content --> 
+  </div><!-- /.modal-dialog --> 
+</div>
