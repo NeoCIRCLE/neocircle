@@ -2,7 +2,7 @@ from manager.mancelery import celery
 
 
 def check_queue(node_hostname, queue_id):
-    drivers = ['vmdriver', 'netdriver']
+    drivers = ['vmdriver', 'netdriver', 'agentdriver']
     worker_list = [node_hostname + "." + d for d in drivers]
     queue_name = node_hostname + "." + queue_id
     inspect = celery.control.inspect(worker_list)
