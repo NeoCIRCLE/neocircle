@@ -1606,16 +1606,6 @@ class TransferOwnershipConfirmView(LoginRequiredMixin, View):
 
 
 class GraphViewBase(LoginRequiredMixin, View):
-
-    metrics = {
-        'cpu': ('cactiStyle(alias(derivative(%s.cpu.usage),'
-                '"cpu usage (%%)"))'),
-        'memory': ('cactiStyle(alias(%s.memory.usage,'
-                   '"memory usage (%%)"))'),
-        'network': ('cactiStyle(aliasByMetric('
-                    'derivative(%s.network.bytes_*)))'),
-    }
-
     @staticmethod
     def get_graphite_url():
         graphite_host = getenv("GRAPHITE_HOST", None)
@@ -1641,7 +1631,7 @@ class GraphViewBase(LoginRequiredMixin, View):
             raise Http404()
 
         prefix = self.get_prefix(instance)
-        target = self.metrics[metric] % prefix
+        target = self.metrics[metric] % {'prefix': prefix}
         title = self.get_title(instance, metric)
         params = {'target': target,
                   'from': '-%s' % time,
@@ -1665,6 +1655,18 @@ class GraphViewBase(LoginRequiredMixin, View):
 
 
 class VmGraphView(GraphViewBase):
+    metrics = {
+        'cpu': ('cactiStyle(alias(nonNegativeDerivative(%(prefix)s.cpu.usage),'
+                '"cpu usage (%%)"))'),
+        'memory': ('cactiStyle(alias(%(prefix)s.memory.usage,'
+                   '"memory usage (%%)"))'),
+        'network': (
+            'group('
+            'aliasSub(nonNegativeDerivative(%(prefix)s.network.bytes_recv*),'
+            ' ".*-(\d+)\\)", "out (vlan \\1)"),'
+            'aliasSub(nonNegativeDerivative(%(prefix)s.network.bytes_sent*),'
+            ' ".*-(\d+)\\)", "in (vlan \\1)"))'),
+    }
     model = Instance
 
     def get_prefix(self, instance):
@@ -1676,12 +1678,12 @@ class VmGraphView(GraphViewBase):
 
 class NodeGraphView(SuperuserRequiredMixin, GraphViewBase):
     metrics = {
-        'cpu': ('cactiStyle(alias(derivative(%s.cpu.times),'
+        'cpu': ('cactiStyle(alias(nonNegativeDerivative(%(prefix)s.cpu.times),'
                 '"cpu usage (%%)"))'),
-        'memory': ('cactiStyle(alias(%s.memory.usage,'
+        'memory': ('cactiStyle(alias(%(prefix)s.memory.usage,'
                    '"memory usage (%%)"))'),
         'network': ('cactiStyle(aliasByMetric('
-                    'derivative(%s.network.bytes_*)))'),
+                    'nonNegativeDerivative(%(prefix)s.network.bytes_*)))'),
     }
     model = Node
 
