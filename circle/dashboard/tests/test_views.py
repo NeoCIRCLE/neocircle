@@ -190,6 +190,28 @@ class VmDetailTest(LoginMixin, TestCase):
         response = c.post('/dashboard/template/1/', {})
         self.assertEqual(response.status_code, 403)
 
+    def test_edit_unpermitted_template_raw_data(self):
+        c = Client()
+        self.login(c, 'user1')
+        tmpl = InstanceTemplate.objects.get(id=1)
+        tmpl.set_level(self.u1, 'owner')
+        tmpl.disks.get().set_level(self.u1, 'owner')
+        kwargs = tmpl.__dict__.copy()
+        kwargs.update(name='t1', lease=1, disks=1, raw_data='tst1')
+        response = c.post('/dashboard/template/1/', kwargs)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(InstanceTemplate.objects.get(id=1).raw_data,
+                         tmpl.raw_data)
+
+    def test_edit_permitted_template_raw_data(self):
+        c = Client()
+        self.login(c, 'superuser')
+        kwargs = InstanceTemplate.objects.get(id=1).__dict__.copy()
+        kwargs.update(name='t2', lease=1, disks=1, raw_data='tst2')
+        response = c.post('/dashboard/template/1/', kwargs)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(InstanceTemplate.objects.get(id=1).raw_data, 'tst2')
+
     def test_permitted_lease_delete(self):
         c = Client()
         self.login(c, 'superuser')

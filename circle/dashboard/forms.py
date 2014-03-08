@@ -487,15 +487,14 @@ class TemplateForm(forms.ModelForm):
             return User.objects.get(pk=self.instance.owner.pk)
         return self.user
 
-    def clean(self):
-        cleaned_data = self.cleaned_data
+    def clean_raw_data(self):
         # if raw_data has changed and the user is not superuser
         if "raw_data" in self.changed_data and not self.user.is_superuser:
             old_raw_data = InstanceTemplate.objects.get(
                 pk=self.instance.pk).raw_data
-            cleaned_data['raw_data'] = old_raw_data
-
-        return cleaned_data
+            return old_raw_data
+        else:
+            return self.cleaned_data['raw_data']
 
     def save(self, commit=True):
         data = self.cleaned_data
