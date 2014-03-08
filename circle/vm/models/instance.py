@@ -831,7 +831,6 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                                            queue=queue_name
                                            ).get(timeout=timeout)
                 self.node = None
-                self.vnc_port = None
                 self.save()
 
     def sleep_async(self, user=None):
