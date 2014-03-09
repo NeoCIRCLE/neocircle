@@ -1,4 +1,5 @@
 from django.test import TestCase
+from mock import Mock
 
 from ..models.common import (
     Lease
@@ -30,6 +31,13 @@ class TemplateTestCase(TestCase):
                                     access_method='ssh', )
         template.clean()
         # TODO add images & net
+
+
+class InstanceTestCase(TestCase):
+
+    def test_is_running(self):
+        inst = Mock(state='RUNNING')
+        assert Instance.is_running.getter(inst)
 
 
 class InterfaceTestCase(TestCase):

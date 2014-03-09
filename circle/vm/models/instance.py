@@ -273,6 +273,10 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         return " ".join([s for s in parts if s != ""])
 
     @property
+    def is_running(self):
+        return self.state == 'RUNNING'
+
+    @property
     def state(self):
         """State of the virtual machine instance.
         """
