@@ -133,6 +133,7 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
     def __unicode__(self):
         return self.name
 
+    @property
     def running_instances(self):
         """Returns the number of running instances of the template.
         """
