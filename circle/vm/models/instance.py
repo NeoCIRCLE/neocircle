@@ -137,8 +137,7 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
     def running_instances(self):
         """The number of running instances of the template.
         """
-        return len([i for i in self.instance_set.all()
-                    if i.state == 'RUNNING'])
+        return sum(1 for i in self.instance_set.all() if i.is_running)
 
     @property
     def os_type(self):
@@ -245,7 +244,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
     def __unicode__(self):
         parts = (self.name, "(" + str(self.id) + ")")
-        return " ".join([s for s in parts if s != ""])
+        return " ".join(s for s in parts if s != "")
 
     @property
     def is_console_available(self):
