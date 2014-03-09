@@ -51,7 +51,7 @@ class DataStore(Model):
     def get_deletable_disks(self):
         return [disk.filename for disk in
                 self.disk_set.filter(
-                    destroyed__isnull=False) if disk.is_deletable()]
+                    destroyed__isnull=False) if disk.is_deletable]
 
 
 class Disk(AclBase, TimeStampedModel):
@@ -159,21 +159,20 @@ class Disk(AclBase, TimeStampedModel):
         result = celery.AsyncResult(id=task)
         return result.info.get("percent")
 
+    @property
     def is_deletable(self):
-        """Returns whether the file can be deleted.
-
-        Checks if all children and the disk itself is destroyed.
+        """True if the associated file can be deleted.
         """
-
+        # Check if all children and the disk itself is destroyed.
         yesterday = timezone.now() - timedelta(days=1)
         return (self.destroyed is not None
-                and self.destroyed < yesterday) and not self.has_active_child()
+                and self.destroyed < yesterday) and self.children_deletable
 
-    def has_active_child(self):
-        """Returns if disk has children that are not destroyed.
+    @property
+    def children_deletable(self):
+        """True if all children of the disk are deletable.
         """
-
-        return any((not i.is_deletable() for i in self.derivatives.all()))
+        return all(i.is_deletable for i in self.derivatives.all())
 
     @property
     def is_in_use(self):
