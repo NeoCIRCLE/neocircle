@@ -276,17 +276,23 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
     def state(self):
         """State of the virtual machine instance.
         """
+        # check special cases
         if self.activity_log.filter(activity_code__endswith='migrate',
                                     finished__isnull=True).exists():
             return 'MIGRATING'
 
+        # <<< add checks for special cases before this
+
+        # default case
+        acts = self.activity_log.filter(finished__isnull=False,
+                                        resultant_state__isnull=False
+                                        ).order_by('-finished')[:1]
         try:
-            act = self.activity_log.filter(finished__isnull=False,
-                                           resultant_state__isnull=False
-                                           ).order_by('-finished').all()[0]
+            act = acts[0]
         except IndexError:
-            act = None
-        return 'NOSTATE' if act is None else act.resultant_state
+            return 'NOSTATE'
+        else:
+            return act.resultant_state
 
     def is_console_available(self):
         return self.state in ('RUNNING', )
