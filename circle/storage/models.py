@@ -110,12 +110,14 @@ class Disk(AclBase, TimeStampedModel):
 
     @property
     def path(self):
-        """Get the path where the files are stored."""
+        """The path where the files are stored.
+        """
         return join(self.datastore.path, self.filename)
 
     @property
     def vm_format(self):
-        """Returns the proper file format for different type of images."""
+        """Returns the proper file format for different type of images.
+        """
         return {
             'qcow2-norm': 'qcow2',
             'qcow2-snap': 'qcow2',
@@ -126,7 +128,8 @@ class Disk(AclBase, TimeStampedModel):
 
     @property
     def format(self):
-        """Returns the proper file format for different type of images."""
+        """Returns the proper file format for different types of images.
+        """
         return {
             'qcow2-norm': 'qcow2',
             'qcow2-snap': 'qcow2',
@@ -137,7 +140,8 @@ class Disk(AclBase, TimeStampedModel):
 
     @property
     def device_type(self):
-        """Returns the proper device prefix for different file format."""
+        """Returns the proper device prefix for different types of images.
+        """
         return {
             'qcow2-norm': 'vd',
             'qcow2-snap': 'vd',
@@ -204,7 +208,8 @@ class Disk(AclBase, TimeStampedModel):
                            type=new_type)
 
     def get_vmdisk_desc(self):
-        """Serialize disk object to the vmdriver."""
+        """Serialize disk object to the vmdriver.
+        """
         return {
             'source': self.path,
             'driver_type': self.vm_format,
@@ -214,7 +219,8 @@ class Disk(AclBase, TimeStampedModel):
         }
 
     def get_disk_desc(self):
-        """Serialize disk object to the storage driver."""
+        """Serialize disk object to the storage driver.
+        """
         return {
             'name': self.filename,
             'dir': self.datastore.path,
@@ -225,7 +231,8 @@ class Disk(AclBase, TimeStampedModel):
         }
 
     def get_remote_queue_name(self, queue_id='storage', check_worker=True):
-        """Returns the proper queue name based on the datastore."""
+        """Returns the proper queue name based on the datastore.
+        """
         if self.datastore:
             return self.datastore.get_remote_queue_name(queue_id, check_worker)
         else:
