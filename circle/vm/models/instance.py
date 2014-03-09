@@ -102,18 +102,6 @@ class VirtualMachineDescModel(BaseResourceConfigModel):
 class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
     """Virtual machine template.
-
-    Every template has:
-      * a name and a description
-      * an optional parent template
-      * state of the template
-      * an OS name/description
-      * a method of access to the system
-      * default values of base resource configuration
-      * list of attached images
-      * set of interfaces
-      * lease times (suspension & deletion)
-      * time of creation and last modification
     """
     ACL_LEVELS = (
         ('user', _('user')),          # see all details
@@ -174,20 +162,6 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
 class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
     """Virtual machine instance.
-
-    Every instance has:
-      * a name and a description
-      * an optional parent template
-      * associated share
-      * a generated password for login authentication
-      * time of deletion and time of suspension
-      * lease times (suspension & deletion)
-      * last boot timestamp
-      * host node
-      * current state (libvirt domain state)
-      * time of creation and last modification
-      * base resource configuration values
-      * owner and privilege information
     """
     ACL_LEVELS = (
         ('user', _('user')),          # see all details
