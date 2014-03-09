@@ -135,7 +135,7 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
     class Meta:
         app_label = 'vm'
         db_table = 'vm_instancetemplate'
-        ordering = ['name', ]
+        ordering = ('name', )
         permissions = (
             ('create_template', _('Can create an instance template.')),
         )
@@ -235,7 +235,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
     class Meta:
         app_label = 'vm'
         db_table = 'vm_instance'
-        ordering = ['pk', ]
+        ordering = ('pk', )
         permissions = (
             ('access_console', _('Can access the graphical console of a VM.')),
             ('change_resources', _('Can change resources of a running VM.')),
@@ -269,7 +269,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
             self.instance = instance
 
     def __unicode__(self):
-        parts = [self.name, "(" + str(self.id) + ")"]
+        parts = (self.name, "(" + str(self.id) + ")")
         return " ".join([s for s in parts if s != ""])
 
     @property
