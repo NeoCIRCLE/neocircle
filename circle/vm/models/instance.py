@@ -273,6 +273,10 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         return " ".join([s for s in parts if s != ""])
 
     @property
+    def is_console_available(self):
+        return self.is_running
+
+    @property
     def is_running(self):
         return self.state == 'RUNNING'
 
@@ -297,9 +301,6 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
             return 'NOSTATE'
         else:
             return act.resultant_state
-
-    def is_console_available(self):
-        return self.state in ('RUNNING', )
 
     def manual_state_change(self, new_state, reason=None, user=None):
         # TODO cancel concurrent activity (if exists)
