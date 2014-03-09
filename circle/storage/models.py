@@ -175,13 +175,14 @@ class Disk(AclBase, TimeStampedModel):
 
         return any((not i.is_deletable() for i in self.derivatives.all()))
 
+    @property
     def is_in_use(self):
-        """Returns if disk is attached to an active VM.
+        """True if disk is attached to an active VM.
 
         'In use' means the disk is attached to a VM which is not STOPPED, as
         any other VMs leave the disk in an inconsistent state.
         """
-        return any([i.state != 'STOPPED' for i in self.instance_set.all()])
+        return any(i.state != 'STOPPED' for i in self.instance_set.all())
 
     def get_exclusive(self):
         """Get an instance of the disk for exclusive usage.
@@ -432,7 +433,7 @@ class Disk(AclBase, TimeStampedModel):
         if self.type not in mapping.keys():
             raise self.WrongDiskTypeError(self.type)
 
-        if self.is_in_use():
+        if self.is_in_use:
             raise self.DiskInUseError(self)
 
         # from this point on, the caller has to guarantee that the disk is not
