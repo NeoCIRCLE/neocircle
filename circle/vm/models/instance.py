@@ -287,14 +287,10 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         act.save()
 
     def vm_state_changed(self, new_state):
+        # log state change
         try:
-            act = InstanceActivity.create(
-                code_suffix='monitor_event_%s' % new_state,
-                instance=self)
-            if new_state == "STOPPED":
-                self.vnc_port = None
-                self.node = None
-                self.save()
+            act = InstanceActivity.create(code_suffix='vm_state_changed',
+                                          instance=self)
         except ActivityInProgressError:
             pass  # discard state change if another activity is in progress.
         else:
@@ -302,6 +298,11 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
             act.resultant_state = new_state
             act.succeeded = True
             act.save()
+
+        if new_state == 'STOPPED':
+            self.vnc_port = None
+            self.node = None
+            self.save()
 
     def clean(self, *args, **kwargs):
         if self.time_of_delete is None:
