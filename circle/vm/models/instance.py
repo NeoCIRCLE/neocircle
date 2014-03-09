@@ -135,14 +135,14 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
     @property
     def running_instances(self):
-        """Returns the number of running instances of the template.
+        """The number of running instances of the template.
         """
         return len([i for i in self.instance_set.all()
                     if i.state == 'RUNNING'])
 
     @property
     def os_type(self):
-        """Get the type of the template's operating system.
+        """The type of the template's operating system.
         """
         if self.access_method == 'rdp':
             return 'windows'
