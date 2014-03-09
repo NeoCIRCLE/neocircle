@@ -1405,7 +1405,8 @@ class VmMassDelete(LoginRequiredMixin, View):
             return redirect(next if next else reverse_lazy('dashboard.index'))
 
 
-class LeaseCreate(SuccessMessageMixin, CreateView):
+class LeaseCreate(LoginRequiredMixin, SuperuserRequiredMixin,
+                  SuccessMessageMixin, CreateView):
     model = Lease
     form_class = LeaseForm
     template_name = "dashboard/lease-create.html"
@@ -1415,7 +1416,8 @@ class LeaseCreate(SuccessMessageMixin, CreateView):
         return reverse_lazy("dashboard.views.template-list")
 
 
-class LeaseDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class LeaseDetail(LoginRequiredMixin, SuperuserRequiredMixin,
+                  SuccessMessageMixin, UpdateView):
     model = Lease
     form_class = LeaseForm
     template_name = "dashboard/lease-edit.html"
