@@ -276,38 +276,33 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         else:
             return act.resultant_state
 
-    def manual_state_change(self, new_state, reason=None, user=None):
-        # TODO cancel concurrent activity (if exists)
-        act = InstanceActivity.create(code_suffix='manual_state_change',
-                                      instance=self, user=user)
-        act.finished = act.started
-        act.result = reason
-        act.resultant_state = new_state
-        act.succeeded = True
-        act.save()
+    @classmethod
+    def create(cls, params, disks, networks, req_traits, tags):
+        # create instance and do additional setup
+        inst = cls(**params)
 
-    def vm_state_changed(self, new_state):
-        # log state change
-        try:
-            act = InstanceActivity.create(code_suffix='vm_state_changed',
-                                          instance=self)
-        except ActivityInProgressError:
-            pass  # discard state change if another activity is in progress.
-        else:
-            act.finished = act.started
-            act.resultant_state = new_state
-            act.succeeded = True
-            act.save()
+        # save instance
+        inst.full_clean()
+        inst.save()
+        inst.set_level(inst.owner, 'owner')
 
-        if new_state == 'STOPPED':
-            self.vnc_port = None
-            self.node = None
-            self.save()
+        def __on_commit(activity):
+            activity.resultant_state = 'PENDING'
 
-    def clean(self, *args, **kwargs):
-        if self.time_of_delete is None:
-            self._do_renew(which='delete')
-        super(Instance, self).clean(*args, **kwargs)
+        with instance_activity(code_suffix='create', instance=inst,
+                               on_commit=__on_commit, user=inst.owner) as act:
+            # create related entities
+            inst.disks.add(*[disk.get_exclusive() for disk in disks])
+
+            for net in networks:
+                Interface.create(instance=inst, vlan=net.vlan,
+                                 owner=inst.owner, managed=net.managed,
+                                 base_activity=act)
+
+            inst.req_traits.add(*req_traits)
+            inst.tags.add(*tags)
+
+            return inst
 
     @classmethod
     def create_from_template(cls, template, owner, disks=None, networks=None,
@@ -369,33 +364,38 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         return [cls.create(cps, disks, networks, req_traits, tags)
                 for cps in customized_params]
 
-    @classmethod
-    def create(cls, params, disks, networks, req_traits, tags):
-        # create instance and do additional setup
-        inst = cls(**params)
+    def clean(self, *args, **kwargs):
+        if self.time_of_delete is None:
+            self._do_renew(which='delete')
+        super(Instance, self).clean(*args, **kwargs)
 
-        # save instance
-        inst.clean()
-        inst.save()
-        inst.set_level(inst.owner, 'owner')
+    def manual_state_change(self, new_state, reason=None, user=None):
+        # TODO cancel concurrent activity (if exists)
+        act = InstanceActivity.create(code_suffix='manual_state_change',
+                                      instance=self, user=user)
+        act.finished = act.started
+        act.result = reason
+        act.resultant_state = new_state
+        act.succeeded = True
+        act.save()
 
-        def __on_commit(activity):
-            activity.resultant_state = 'PENDING'
+    def vm_state_changed(self, new_state):
+        # log state change
+        try:
+            act = InstanceActivity.create(code_suffix='vm_state_changed',
+                                          instance=self)
+        except ActivityInProgressError:
+            pass  # discard state change if another activity is in progress.
+        else:
+            act.finished = act.started
+            act.resultant_state = new_state
+            act.succeeded = True
+            act.save()
 
-        with instance_activity(code_suffix='create', instance=inst,
-                               on_commit=__on_commit, user=inst.owner) as act:
-            # create related entities
-            inst.disks.add(*[disk.get_exclusive() for disk in disks])
-
-            for net in networks:
-                Interface.create(instance=inst, vlan=net.vlan,
-                                 owner=inst.owner, managed=net.managed,
-                                 base_activity=act)
-
-            inst.req_traits.add(*req_traits)
-            inst.tags.add(*tags)
-
-            return inst
+        if new_state == 'STOPPED':
+            self.vnc_port = None
+            self.node = None
+            self.save()
 
     @permalink
     def get_absolute_url(self):
