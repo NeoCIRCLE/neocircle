@@ -359,19 +359,18 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         params = dict(template=template, owner=owner, pw=pwgen())
         params.update([(f, getattr(template, f)) for f in common_fields])
         params.update(kwargs)  # override defaults w/ user supplied values
-        if '%d' not in params['name']:
+
+        if amount > 1 and '%d' not in params['name']:
             params['name'] += ' %d'
 
-        instances = []
-        for i in xrange(amount):
-            real_params = params
-            real_params['name'] = real_params['name'].replace('%d', str(i))
-            instances.append(cls.__create_instance(real_params, disks,
-                                                   networks, req_traits, tags))
-        return instances
+        customized_params = (dict(params,
+                                  name=params['name'].replace('%d', str(i)))
+                             for i in xrange(amount))
+        return [cls.create(cps, disks, networks, req_traits, tags)
+                for cps in customized_params]
 
     @classmethod
-    def __create_instance(cls, params, disks, networks, req_traits, tags):
+    def create(cls, params, disks, networks, req_traits, tags):
         # create instance and do additional setup
         inst = cls(**params)
 
