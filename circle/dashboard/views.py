@@ -595,8 +595,10 @@ class GroupDetailView(CheckedDetailView):
     def post(self, request, *args, **kwargs):
         if request.POST.get('new_name'):
             return self.__set_name(request)
-        if request.POST.get('list-new-name'):
+        if request.POST.get('list-new-name') is not None:
             return self.__add_user(request)
+        elif request.POST.get('list-new-list') is not None:
+            return self.__add_list(request)
 
     def __add_user(self, request):
         name = request.POST['list-new-name']
@@ -604,14 +606,19 @@ class GroupDetailView(CheckedDetailView):
 
     def __add_username(self, request, name):
         self.object = self.get_object()
+
         if not name:
-            return
+            return redirect(reverse_lazy("dashboard.views.group-detail",
+                                         kwargs={'pk': self.object.pk}))
         try:
             entity = User.objects.get(username=name)
+            self.object.user_set.add(entity)
         except User.DoesNotExist:
             warning(request, _('User "%s" not found.') % name)
-            return
-        self.object.user_set.add(entity)
+        return redirect(reverse_lazy("dashboard.views.group-detail",
+                                     kwargs={'pk': self.object.pk}))
+
+    def __add_list(self, request, name):
         return redirect(reverse_lazy("dashboard.views.group-detail",
                                      kwargs={'pk': self.object.pk}))
 
