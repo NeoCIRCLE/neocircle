@@ -599,8 +599,11 @@ class GroupDetailView(CheckedDetailView):
             return self.__add_user(request)
 
     def __add_user(self, request):
-        self.object = self.get_object()
         name = request.POST['list-new-name']
+        return self.__add_username(request, name)
+
+    def __add_username(self, request, name):
+        self.object = self.get_object()
         if not name:
             return
         try:
