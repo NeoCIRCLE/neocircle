@@ -28,9 +28,11 @@
       {% include "dashboard/index-groups.html" %}
     </div>
 
+    {% comment %}
     <div class="col-lg-4 col-sm-6">
       {% include "dashboard/index-files.html" %}
     </div>
+    {% endcomment %}
 
     {% if perms.vm.create_template %}
     <div class="col-lg-4 col-sm-6">
