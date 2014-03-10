@@ -395,6 +395,11 @@ class Disk(AclBase, TimeStampedModel):
                                                queue="localhost.man")
 
     def save_as(self, user=None, task_uuid=None, timeout=300):
+        """Save VM as template.
+
+        VM must be in STOPPED state to perform this action.
+        The timeout parameter is not used now.
+        """
         mapping = {
             'qcow2-snap': ('qcow2-norm', self.base),
         }
@@ -420,7 +425,7 @@ class Disk(AclBase, TimeStampedModel):
             remote_tasks.merge.apply_async(args=[self.get_disk_desc(),
                                                  disk.get_disk_desc()],
                                            queue=queue_name
-                                           ).get()
+                                           ).get()  # Timeout
             disk.ready = True
             disk.save()
 
