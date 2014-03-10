@@ -50,9 +50,10 @@ def search_user(keyword):
     try:
         return User.objects.get(username=keyword)
     except User.DoesNotExist:
-        return User.objects.get(email=keyword)
-    except User.DoesNotExist:
-        return User.objects.get(profile__org_id=keyword)
+        try:
+            return User.objects.get(profile__org_id=keyword)
+        except User.DoesNotExist:
+            return User.objects.get(email=keyword)
 
 
 # github.com/django/django/blob/stable/1.6.x/django/contrib/messages/views.py
