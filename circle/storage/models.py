@@ -326,12 +326,9 @@ class Disk(AclBase, TimeStampedModel):
         :rtype: Disk
         """
         kwargs.setdefault('name', url.split('/')[-1])
-        disk = cls(**kwargs)
-        disk.type = "iso"
-        disk.size = 1
+        disk = Disk.create(type="iso", size=1, **kwargs)
         # TODO get proper datastore
         disk.datastore = DataStore.objects.get()
-        disk.save()
         if instance:
             instance.disks.add(disk)
         queue_name = disk.get_remote_queue_name('storage')
