@@ -595,30 +595,35 @@ class GroupDetailView(CheckedDetailView):
     def post(self, request, *args, **kwargs):
         if request.POST.get('new_name'):
             return self.__set_name(request)
-        if request.POST.get('list-new-name') is not None:
+        if request.POST.get('list-new-name'):
             return self.__add_user(request)
-        elif request.POST.get('list-new-list') is not None:
+        if request.POST.get('list-new-namelist'):
             return self.__add_list(request)
+        if (request.POST.get('list-new-name') is not None) and \
+                (request.POST.get('list-new-namelist') is not None):
+            return redirect(reverse_lazy("dashboard.views.group-detail",
+                                         kwargs={'pk': self.get_object().pk}))
 
     def __add_user(self, request):
         name = request.POST['list-new-name']
-        return self.__add_username(request, name)
+        self.__add_username(request, name)
+        return redirect(reverse_lazy("dashboard.views.group-detail",
+                                     kwargs={'pk': self.object.pk}))
 
     def __add_username(self, request, name):
         self.object = self.get_object()
-
         if not name:
-            return redirect(reverse_lazy("dashboard.views.group-detail",
-                                         kwargs={'pk': self.object.pk}))
+            return
         try:
             entity = User.objects.get(username=name)
             self.object.user_set.add(entity)
         except User.DoesNotExist:
             warning(request, _('User "%s" not found.') % name)
-        return redirect(reverse_lazy("dashboard.views.group-detail",
-                                     kwargs={'pk': self.object.pk}))
 
-    def __add_list(self, request, name):
+    def __add_list(self, request):
+        userlist = request.POST.get('list-new-namelist').split('\r\n')
+        for line in userlist:
+            self.__add_username(request, line)
         return redirect(reverse_lazy("dashboard.views.group-detail",
                                      kwargs={'pk': self.object.pk}))
 
