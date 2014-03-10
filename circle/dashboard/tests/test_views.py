@@ -136,11 +136,17 @@ class VmDetailTest(LoginMixin, TestCase):
         self.assertEqual(response.status_code, 403)
         self.assertEqual(password, Instance.objects.get(pk=1).pw)
 
-    def test_unpermitted_network_add(self):
+    def test_unpermitted_network_add_wo_perm(self):
+        c = Client()
+        self.login(c, "user2")
+        response = c.post("/dashboard/vm/1/", {'new_network_vlan': 1})
+        self.assertEqual(response.status_code, 403)
+
+    def test_unpermitted_network_add_wo_vlan_perm(self):
         c = Client()
         self.login(c, "user2")
         inst = Instance.objects.get(pk=1)
-        inst.set_level(self.u1, 'owner')
+        inst.set_level(self.u2, 'owner')
         response = c.post("/dashboard/vm/1/", {'new_network_vlan': 1})
         self.assertEqual(response.status_code, 403)
 
