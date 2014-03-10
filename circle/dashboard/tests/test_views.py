@@ -134,7 +134,7 @@ class VmDetailTest(LoginMixin, TestCase):
         password = inst.pw
         response = c.post("/dashboard/vm/1/", {'change_password': True})
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(password, inst.pw)
+        self.assertEqual(password, Instance.objects.get(pk=1).pw)
 
     def test_unpermitted_network_add(self):
         c = Client()
