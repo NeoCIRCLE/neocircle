@@ -761,8 +761,12 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
     def shut_off(self, user=None, task_uuid=None):
         """Shut off VM. (plug-out)
         """
+        def __on_commit(activity):
+            activity.resultant_state = 'STOPPED'
+
         with instance_activity(code_suffix='shut_off', instance=self,
-                               task_uuid=task_uuid, user=user) as act:
+                               task_uuid=task_uuid, user=user,
+                               on_commit=__on_commit) as act:
             # Destroy VM
             if self.node:
                 self.__destroy_vm(act)
