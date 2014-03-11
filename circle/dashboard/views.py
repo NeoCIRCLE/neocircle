@@ -1225,8 +1225,7 @@ class NodeAddTraitView(SuperuserRequiredMixin, DetailView):
         if next:
             return next
         else:
-            return reverse_lazy("dashboard.views.node-detail",
-                                kwargs={'pk': self.object.pk})
+            return self.object.get_absolute_url()
 
     def get_context_data(self, **kwargs):
         self.object = self.get_object()
