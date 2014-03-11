@@ -28,13 +28,15 @@
   /* for Node removes buttons */
   $('.delete-from-group').click(function() {
     var href = $(this).attr('href');
+    var tr = $(this).closest('tr');
     var group = $(this).data('group_pk');
     var member = $(this).data('member_pk');
     var dir = window.location.pathname.indexOf('list') == -1;
     addModalConfirmation(removeMember, 
       { 'url': href,
         'data': [],
-        'group_pk': group,
+	'tr': tr,
+    	'group_pk': group,
         'member_pk': member,
         'type': "user",
         'redirect': dir});
@@ -48,7 +50,8 @@ function removeMember(data) {
     url: data['url'],
     headers: {"X-CSRFToken": getCookie('csrftoken')},
     success: function(re, textStatus, xhr) {
-    $('#group-detail-pane').load(location.href+" #group-detail-panel");
+    data['tr'].fadeOut(function() {
+	    $(this).remove();});
     },
     error: function(xhr, textStatus, error) {
       addMessage('Uh oh :(', 'danger')
