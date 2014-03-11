@@ -758,6 +758,23 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         return local_tasks.redeploy.apply_async(args=[self, user],
                                                 queue="localhost.man")
 
+    def shut_off(self, user=None, task_uuid=None):
+        """Shut off VM. (plug-out)
+        """
+        with instance_activity(code_suffix='shut_off', instance=self,
+                               task_uuid=task_uuid, user=user) as act:
+            # Destroy VM
+            if self.node:
+                self.__destroy_vm(act)
+
+            self.__cleanup_after_destroy_vm(act)
+
+    def shut_off_async(self, user=None):
+        """Shut off VM. (plug-out)
+        """
+        return local_tasks.shut_off.apply_async(args=[self, user],
+                                                queue="localhost.man")
+
     def destroy(self, user=None, task_uuid=None):
         """Remove virtual machine and its networks.
 
