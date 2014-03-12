@@ -726,6 +726,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         # Clear node and VNC port association
         self.node = None
         self.vnc_port = None
+        self.save()
 
     def redeploy(self, user=None, task_uuid=None):
         """Redeploy virtual machine with network
