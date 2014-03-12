@@ -61,6 +61,21 @@ function changeNodeStatus(data) {
   });
 }
 
+/* for Node flush buttons */
+  $('.node-flush').click(function() {
+    var node_pk = $(this).data('node-pk');
+    var dir = window.location.pathname.indexOf('list') == -1;
+    addModalConfirmation(changeNodeStatus, 
+      { 'url': '/dashboard/node/flush/' + node_pk + '/',
+        'data': [],
+        'pk': node_pk,
+        'type': "node",
+        'redirect': dir});
+
+    return false;
+  });
+
+
   // remove trait
   $('.node-details-remove-trait').click(function() {
     var to_remove =  $(this).data("trait-pk");
