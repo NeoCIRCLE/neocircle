@@ -726,7 +726,6 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         # Clear node and VNC port association
         self.node = None
         self.vnc_port = None
-        self.save()
 
     def redeploy(self, user=None, task_uuid=None):
         """Redeploy virtual machine with network
@@ -773,6 +772,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                 self.__destroy_vm(act)
 
             self.__cleanup_after_destroy_vm(act)
+            self.save()
 
     def shut_off_async(self, user=None):
         """Shut off VM. (plug-out)
