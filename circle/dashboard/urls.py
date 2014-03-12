@@ -9,7 +9,7 @@ from .views import (
     FavouriteView, NodeStatus, GroupList, TemplateDelete, LeaseDelete,
     VmGraphView, TemplateAclUpdateView, GroupDetailView, GroupDelete,
     GroupAclUpdateView, GroupUserDelete, NotificationView, NodeGraphView,
-    VmMigrateView, VmDetailVncTokenView,
+    VmMigrateView, DiskAddView, VmDetailVncTokenView,
 )
 
 urlpatterns = patterns(
@@ -89,4 +89,7 @@ urlpatterns = patterns(
 
     url(r'^notifications/$', NotificationView.as_view(),
         name="dashboard.views.notifications"),
+
+    url(r'^disk/add/$', DiskAddView.as_view(),
+        name="dashboard.views.disk-add"),
 )

@@ -152,6 +152,10 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
         if is_new:
             self.set_level(self.owner, 'owner')
 
+    @permalink
+    def get_absolute_url(self):
+        return ('dashboard.views.template-detail', None, {'pk': self.pk})
+
 
 class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
