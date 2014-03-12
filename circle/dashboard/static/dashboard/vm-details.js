@@ -160,6 +160,11 @@ $(function() {
     $("#vm-details-disk-add-for-form").html($("#vm-details-disk-add-form").html());
     return false;
   });
+
+  /* show help */
+  $(".vm-details-help-button").click(function() {
+    $(".vm-details-help").stop().slideToggle();
+  });
 });
 
 

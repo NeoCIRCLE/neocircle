@@ -44,6 +44,7 @@
         <button title="{% trans "Save as template" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-save"></i></button>
       </form>
       <a title="{% trans "Destroy" %}" href="{% url "dashboard.views.delete-vm" pk=instance.pk %}" class="btn btn-default btn-xs vm-delete" data-vm-pk="{{ instance.pk }}"><i class="icon-remove"></i></a>
+      <a title="{% trans "Help" %}" href="#" class="btn btn-default btn-xs vm-details-help-button"><i class="icon-question"></i></a>
     </div>
     <h1>
       <div id="vm-details-rename">
@@ -56,7 +57,49 @@
       <div id="vm-details-h1-name">
         {{ instance.name }} 
       </div>
-      <small>{{ instance.primary_host.get_fqdn }}</small></h1>
+      <small>{{ instance.primary_host.get_fqdn }}</small>
+    </h1>
+    <div class="vm-details-help js-hidden">
+      <ul style="list-style: none;">
+        <li>
+          <strong>{% trans "Sleep" %}:</strong>
+          {% trans "Suspend virtual machine with memory dump." %}
+        </li>
+        <li>
+          <strong>{% trans "Wake up" %}:</strong>
+          {% trans "?" %}
+        </li>
+        <li>
+          <strong>{% trans "Shutdown" %}:</strong>
+          {% trans "Shutdown virtual machine with ACPI signal." %}
+        </li>
+        <li>
+          <strong>{% trans "Reboot (ctrl + alt + del)" %}:</strong>
+          {% trans "Reboot virtual machine with Ctrl+Alt+Del signal." %}
+        </li>
+        <li>
+          <strong>{% trans "Reset (power cycle)" %}:</strong>
+          {% trans "Reset virtual machine (reset button)" %}
+        </li>
+        <li>
+          <strong>{% trans "Shut off" %}:</strong>
+          {% trans "Shut off VM. (plug-out)" %}
+        </li>
+        <li>
+          <strong>{% trans "Migrate" %}:</strong>
+          {% trans "Live migrate running vm to another node." %}
+        </li>
+        <li>
+          <strong>{% trans "Save as template" %}:</strong>
+          {% trans "?" %}
+        </li>
+        <li>
+          <strong>{% trans "Destroy" %}:</strong>
+          {% trans "Remove virtual machine and its networks." %}
+        </li>
+      </ul>
+    </div>
+    <div style="clear: both;"></div>
   </div>
   <div class="row">
     <div class="col-md-4" id="vm-info-pane">

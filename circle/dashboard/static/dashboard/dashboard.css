@@ -370,3 +370,22 @@ a.hover-black {
   display: block;
   padding-left: 15px;
 }
+
+.vm-details-help {
+  max-width: 700px;
+  padding: 10px 10px 0px 10px;
+  margin-left: 50px;
+  /*  fancy stuff
+  border: 1px solid #ccc;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  border-radius: 8px; 
+  */
+}
+
+.vm-details-help li {
+  padding-bottom: 5px;
+}
+
+.vm-details-help ul {
+  padding-left: 0px;
+}
