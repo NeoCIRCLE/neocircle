@@ -1413,6 +1413,53 @@ class NodeStatus(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
             return redirect(self.get_success_url())
 
 
+class NodeFlushView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
+    template_name = "dashboard/confirm/node-flush.html"
+    model = Node
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/confirm/ajax-node-flush.html']
+        else:
+            return ['dashboard/confirm/node-flush.html']
+
+    def get_success_url(self):
+        next = self.request.GET.get('next')
+        if next:
+            return next
+        else:
+            return reverse_lazy("dashboard.views.node-detail",
+                                kwargs={'pk': self.object.pk})
+
+    def get_context_data(self, **kwargs):
+        context = super(NodeFlushView, self).get_context_data(**kwargs)
+        return context
+
+    def post(self, request, *args, **kwargs):
+        if request.POST.get('flush') is not None:
+            return self.__flush(request)
+        return redirect(reverse_lazy("dashboard.views.node-detail",
+                                     kwargs={'pk': self.get_object().pk}))
+
+    def __flush(self, request):
+        self.object = self.get_object()
+        self.object.flush_async(user=request.user)
+        success_message = _("Node successfully flushed!")
+
+        if request.is_ajax():
+            response = {
+                'message': success_message,
+                'node_pk': self.object.pk
+            }
+            return HttpResponse(
+                json.dumps(response),
+                content_type="application/json"
+            )
+        else:
+            messages.success(request, success_message)
+            return redirect(self.get_success_url())
+
+
 class PortDelete(LoginRequiredMixin, DeleteView):
     model = Rule
     pk_url_kwarg = 'rule'
