@@ -5,7 +5,6 @@
 <div class="body-content">
   <div class="page-header">
     <div class="pull-right" style="padding-top: 15px;">
-      <a title="Rename" href="#" class="btn btn-default btn-xs vm-details-rename-button"><i class="icon-pencil"></i></a>
       <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
         {% csrf_token %}
         <input type="hidden" name="sleep" value="dummy"/>
