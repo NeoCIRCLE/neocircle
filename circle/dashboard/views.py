@@ -1602,13 +1602,31 @@ class AbstractVmFunctionView(AccessMixin, View):
                       self.get_context(instance))
 
     def post(self, request, pk, key=None, *args, **kwargs):
+        class LoginNeeded(Exception):
+            pass
         pk = int(pk)
         instance = get_object_or_404(Instance, pk=pk)
-        if key:
-            user = self.validate_key(pk, key)
-        else:
-            user = request.user
-            self.check_acl(instance, user)
+
+        try:
+            if not request.user.is_authenticated() and key:
+                try:
+                    user = self.validate_key(pk, key)
+                except signing.SignatureExpired:
+                    messages.error(request, _(
+                        'The token has expired, please log in.'))
+                    raise LoginNeeded()
+                self.key = key
+            else:
+                user = request.user
+                self.check_acl(instance, request.user)
+        except LoginNeeded:
+            return redirect_to_login(request.get_full_path(),
+                                     self.get_login_url(),
+                                     self.get_redirect_field_name())
+        except SuspiciousOperation as e:
+            messages.error(request, _('This token is invalid.'))
+            logger.warning('This token %s is invalid. %s', key, unicode(e))
+            raise PermissionDenied()
 
         if self.do_action(instance, user):
             messages.success(request, self.success_message)

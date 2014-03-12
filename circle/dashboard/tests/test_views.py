@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User, Group
 from django.core.exceptions import SuspiciousOperation
+from django.core.urlresolvers import reverse
 
 from vm.models import Instance, InstanceTemplate, Lease, Node
 from ..models import Profile
@@ -385,23 +386,21 @@ class RenewViewTest(LoginMixin, TestCase):
     def test_renew_get_by_nonowner_w_key(self):
         key = VmRenewView.get_token_url(Instance.objects.get(pk=1), self.u2)
         c = Client()
-        self.login(c, 'user2')
         response = c.get(key)
         self.assertEquals(response.status_code, 200)
 
-    def test_renew_post_by_nonowner_w_key(self):
+    def test_renew_post_by_anon_w_key(self):
         key = VmRenewView.get_token_url(Instance.objects.get(pk=1), self.u2)
         ct = Instance.objects.get(pk=1).activity_log.\
             filter(activity_code__endswith='renew').count()
         c = Client()
-        self.login(c, 'user2')
         response = c.post(key)
         self.assertEquals(response.status_code, 302)
         ct2 = Instance.objects.get(pk=1).activity_log.\
             filter(activity_code__endswith='renew').count()
         self.assertEquals(ct + 1, ct2)
 
-    def test_renew_post_by_nonowner_w_invalid_key(self):
+    def test_renew_post_by_anon_w_invalid_key(self):
         class Mockinst(object):
             pk = 2
         key = VmRenewView.get_token_url(Mockinst(), self.u2)
@@ -412,5 +411,18 @@ class RenewViewTest(LoginMixin, TestCase):
         response = c.post(key)
         self.assertEquals(response.status_code, 404)
         ct2 = Instance.objects.get(pk=1).activity_log.\
+            filter(activity_code__endswith='renew').count()
+        self.assertEquals(ct, ct2)
+
+    def test_renew_post_by_anon_w_expired_key(self):
+        key = reverse(VmRenewView.url_name, args=(
+            12, 'WzEyLDFd:1WLbSi:2zIb8SUNAIRIOMTmSmKSSit2gpY'))
+        ct = Instance.objects.get(pk=12).activity_log.\
+            filter(activity_code__endswith='renew').count()
+        c = Client()
+        self.login(c, 'user2')
+        response = c.post(key)
+        self.assertEquals(response.status_code, 403)
+        ct2 = Instance.objects.get(pk=12).activity_log.\
             filter(activity_code__endswith='renew').count()
         self.assertEquals(ct, ct2)
