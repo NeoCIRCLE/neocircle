@@ -408,6 +408,8 @@ class RenewViewTest(LoginMixin, TestCase):
             filter(activity_code__endswith='renew').count()
         c = Client()
         self.login(c, 'user2')
+        response = c.get(key)
+        self.assertEquals(response.status_code, 404)
         response = c.post(key)
         self.assertEquals(response.status_code, 404)
         ct2 = Instance.objects.get(pk=1).activity_log.\
@@ -421,6 +423,8 @@ class RenewViewTest(LoginMixin, TestCase):
             filter(activity_code__endswith='renew').count()
         c = Client()
         self.login(c, 'user2')
+        response = c.get(key)
+        self.assertEquals(response.status_code, 302)
         response = c.post(key)
         self.assertEquals(response.status_code, 403)
         ct2 = Instance.objects.get(pk=12).activity_log.\

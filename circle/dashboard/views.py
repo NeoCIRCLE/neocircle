@@ -1662,7 +1662,7 @@ class AbstractVmFunctionView(AccessMixin, View):
         user = User.objects.get(pk=user)
         return user
 
-    def do_action(self, instance, user):
+    def do_action(self, instance, user):  # noqa
         raise NotImplementedError('Please override do_action(instance, user)')
 
     def get_context(self, instance):
