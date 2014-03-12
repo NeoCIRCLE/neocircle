@@ -24,6 +24,7 @@ from django.contrib import messages
 from django.utils.translation import ugettext as _
 from django.template.defaultfilters import title
 from django.template.loader import render_to_string
+from django.template import RequestContext
 
 from django.forms.models import inlineformset_factory
 from django_tables2 import SingleTableView
@@ -1470,12 +1471,15 @@ def vm_activity(request, pk):
 
     response['state'] = instance.state
     if only_state is not None and only_state == "false":  # instance activity
-        print "Sdsa"
+        context = {
+            'activities': InstanceActivity.objects.filter(
+                instance=instance, parent=None
+            ).order_by('-started').select_related()
+        }
+
         activities = render_to_string(
             "dashboard/vm-detail/_activity-timeline.html",
-            {'activities': InstanceActivity.objects.filter(
-                instance=instance, parent=None
-            ).order_by('-started').select_related()}
+            RequestContext(request, context),
         )
         response['activities'] = activities
 
