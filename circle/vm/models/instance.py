@@ -975,7 +975,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
     def save_as_template(self, name, task_uuid=None, user=None,
                          timeout=300, **kwargs):
         with instance_activity(code_suffix="save_as_template", instance=self,
-                               task_uuid=task_uuid, user=user):
+                               task_uuid=task_uuid, user=user) as act:
             # prepare parameters
             kwargs.setdefault('name', name)
             kwargs.setdefault('description', self.description)
@@ -1000,12 +1000,12 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
             # create template and do additional setup
             tmpl = InstanceTemplate(**kwargs)
-            tmpl.full_clean()
-            logger.info("Clean utani save")
+            tmpl.full_clean()  # Avoiding database errors.
             tmpl.save()
-            tmpl.disks.add(*[__try_save_disk(disk)
-                             for disk in self.disks.all()])
-            # save template
+            with act.sub_activity('saving_disks'):
+                tmpl.disks.add(*[__try_save_disk(disk)
+                               for disk in self.disks.all()])
+                # save template
             tmpl.save()
             try:
                 # create interface templates
