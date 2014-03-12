@@ -36,6 +36,13 @@
         <input type="hidden" name="reset" value="dummy"/>
         <button title="{% trans "Reset (power cycle)" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-bolt"></i></button>
       </form>
+      <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="shut_off"/>
+        <button title="{% trans "Shut off" %}" class="btn btn-default btn-xs" type="submit">
+          <i class="icon-ban-circle"></i>
+        </button>
+      </form>
       <a title="Migrate" data-vm-pk="{{ instance.pk }}" href="{% url "dashboard.views.vm-migrate" pk=instance.pk %}" class="btn btn-default btn-xs vm-migrate">
         <i class="icon-truck"></i>
       </a>
