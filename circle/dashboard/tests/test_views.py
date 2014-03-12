@@ -263,6 +263,24 @@ class VmDetailTest(LoginMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         assert self.u1.notification_set.get().status == 'read'
 
+    def test_unpermitted_activity_get(self):
+        c = Client()
+        self.login(c, "user2")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u1, 'owner')
+
+        response = c.get("/dashboard/vm/1/activity/")
+        self.assertEqual(response.status_code, 403)
+
+    def test_permitted_activity_get(self):
+        c = Client()
+        self.login(c, "user1")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u1, 'owner')
+
+        response = c.get("/dashboard/vm/1/activity/")
+        self.assertEqual(response.status_code, 200)
+
 
 class VmDetailVncTest(LoginMixin, TestCase):
     fixtures = ['test-vm-fixture.json', 'node.json']
