@@ -29,3 +29,12 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache'
     }
 }
+
+LOGGING['loggers']['djangosaml2'] = {'handlers': ['console'],
+                                     'level': 'CRITICAL'}
+
+LOGGING['handlers']['console'] = {'level': 'WARNING',
+                                  'class': 'logging.StreamHandler',
+                                  'formatter': 'simple'}
+for i in LOCAL_APPS:
+    LOGGING['loggers'][i] = {'handlers': ['console'], 'level': 'CRITICAL'}
