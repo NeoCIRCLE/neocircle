@@ -7,7 +7,7 @@ import requests
 
 from django.conf import settings
 from django.contrib.auth.models import User, Group
-from django.contrib.auth.views import login
+from django.contrib.auth.views import login, redirect_to_login
 from django.contrib.messages import warning
 from django.core.exceptions import (
     PermissionDenied, SuspiciousOperation,
@@ -15,7 +15,7 @@ from django.core.exceptions import (
 from django.core import signing
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.http import HttpResponse, HttpResponseRedirect, Http404
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.views.decorators.http import require_GET
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import (TemplateView, DetailView, View, DeleteView,
@@ -27,7 +27,9 @@ from django.template.loader import render_to_string
 
 from django.forms.models import inlineformset_factory
 from django_tables2 import SingleTableView
-from braces.views import LoginRequiredMixin, SuperuserRequiredMixin
+from braces.views import (
+    LoginRequiredMixin, SuperuserRequiredMixin, AccessMixin
+)
 
 from .forms import (
     VmCustomizeForm, TemplateForm, LeaseForm, NodeForm, HostForm,
@@ -48,9 +50,10 @@ def search_user(keyword):
     try:
         return User.objects.get(username=keyword)
     except User.DoesNotExist:
-        return User.objects.get(email=keyword)
-    except User.DoesNotExist:
-        return User.objects.get(profile__org_id=keyword)
+        try:
+            return User.objects.get(profile__org_id=keyword)
+        except User.DoesNotExist:
+            return User.objects.get(email=keyword)
 
 
 # github.com/django/django/blob/stable/1.6.x/django/contrib/messages/views.py
@@ -1531,6 +1534,163 @@ class TransferOwnershipView(LoginRequiredMixin, DetailView):
 
         return redirect(reverse_lazy("dashboard.views.detail",
                                      kwargs={'pk': obj.pk}))
+
+
+class AbstractVmFunctionView(AccessMixin, View):
+    """Abstract instance-action view.
+
+    User can do the action with a valid token or if has at least required_level
+    ACL level for the instance.
+
+    Children should at least implement/add template_name, success_message,
+    url_name, and do_action().
+    """
+    token_max_age = 3 * 24 * 3600
+    required_level = 'owner'
+    success_message = _("Failed to perform requested action.")
+
+    @classmethod
+    def check_acl(cls, instance, user):
+        if not instance.has_level(user, cls.required_level):
+            raise PermissionDenied()
+
+    @classmethod
+    def get_salt(cls):
+        return unicode(cls)
+
+    @classmethod
+    def get_token(cls, instance, user, *args):
+        t = tuple([getattr(i, 'pk', i) for i in [instance, user] + list(args)])
+        return signing.dumps(t, salt=cls.get_salt())
+
+    @classmethod
+    def get_token_url(cls, instance, user, *args):
+        key = cls.get_token(instance, user, *args)
+        args = (instance.pk, key) + args
+        return reverse(cls.url_name, args=args)
+        # this wont work, CBVs suck: reverse(cls.as_view(), args=args)
+
+    def get_template_names(self):
+        return [self.template_name]
+
+    def get(self, request, pk, key=None, *args, **kwargs):
+        class LoginNeeded(Exception):
+            pass
+        pk = int(pk)
+        instance = get_object_or_404(Instance, pk=pk)
+        try:
+            if key:
+                logger.debug('Confirm dialog for token %s.', key)
+                try:
+                    self.validate_key(pk, key)
+                except signing.SignatureExpired:
+                    messages.error(request, _(
+                        'The token has expired, please log in.'))
+                    raise LoginNeeded()
+                self.key = key
+            else:
+                if not request.user.is_authenticated():
+                    raise LoginNeeded()
+                self.check_acl(instance, request.user)
+        except LoginNeeded:
+            return redirect_to_login(request.get_full_path(),
+                                     self.get_login_url(),
+                                     self.get_redirect_field_name())
+        except SuspiciousOperation as e:
+            messages.error(request, _('This token is invalid.'))
+            logger.warning('This token %s is invalid. %s', key, unicode(e))
+            raise PermissionDenied()
+        return render(request, self.get_template_names(),
+                      self.get_context(instance))
+
+    def post(self, request, pk, key=None, *args, **kwargs):
+        class LoginNeeded(Exception):
+            pass
+        pk = int(pk)
+        instance = get_object_or_404(Instance, pk=pk)
+
+        try:
+            if not request.user.is_authenticated() and key:
+                try:
+                    user = self.validate_key(pk, key)
+                except signing.SignatureExpired:
+                    messages.error(request, _(
+                        'The token has expired, please log in.'))
+                    raise LoginNeeded()
+                self.key = key
+            else:
+                user = request.user
+                self.check_acl(instance, request.user)
+        except LoginNeeded:
+            return redirect_to_login(request.get_full_path(),
+                                     self.get_login_url(),
+                                     self.get_redirect_field_name())
+        except SuspiciousOperation as e:
+            messages.error(request, _('This token is invalid.'))
+            logger.warning('This token %s is invalid. %s', key, unicode(e))
+            raise PermissionDenied()
+
+        if self.do_action(instance, user):
+            messages.success(request, self.success_message)
+        else:
+            messages.error(request, self.fail_message)
+        return HttpResponseRedirect(instance.get_absolute_url())
+
+    def validate_key(self, pk, key):
+        """Get object based on signed token.
+        """
+        try:
+            data = signing.loads(key, salt=self.get_salt())
+            logger.debug('Token data: %s', unicode(data))
+            instance, user = data
+            logger.debug('Extracted token data: instance: %s, user: %s',
+                         unicode(instance), unicode(user))
+        except (signing.BadSignature, ValueError, TypeError) as e:
+            logger.warning('Tried invalid token. Token: %s, user: %s. %s',
+                           key, unicode(self.request.user), unicode(e))
+            raise SuspiciousOperation()
+
+        try:
+            instance, user = signing.loads(key, max_age=self.token_max_age,
+                                           salt=self.get_salt())
+            logger.debug('Extracted non-expired token data: %s, %s',
+                         unicode(instance), unicode(user))
+        except signing.BadSignature as e:
+            raise signing.SignatureExpired()
+
+        if pk != instance:
+            logger.debug('pk (%d) != instance (%d)', pk, instance)
+            raise SuspiciousOperation()
+        user = User.objects.get(pk=user)
+        return user
+
+    def do_action(self, instance, user):  # noqa
+        raise NotImplementedError('Please override do_action(instance, user)')
+
+    def get_context(self, instance):
+        context = {'instance': instance}
+        if getattr(self, 'key', None) is not None:
+            context['key'] = self.key
+        return context
+
+
+class VmRenewView(AbstractVmFunctionView):
+    """User can renew an instance."""
+    template_name = 'dashboard/confirm/base-renew.html'
+    success_message = _("Virtual machine is successfully renewed.")
+    url_name = 'dashboard.views.vm-renew'
+
+    def get_context(self, instance):
+        context = super(VmRenewView, self).get_context(instance)
+        (context['time_of_suspend'],
+         context['time_of_delete']) = instance.get_renew_times()
+        return context
+
+    def do_action(self, instance, user):
+        instance.renew(user=user)
+        logger.info('Instance %s renewed by %s.', unicode(instance),
+                    unicode(user))
+        return True
 
 
 class TransferOwnershipConfirmView(LoginRequiredMixin, View):

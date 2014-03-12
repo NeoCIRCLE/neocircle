@@ -3,6 +3,10 @@ $(function() {
   if(decideActivityRefresh()) {
     checkNewActivity(false, 1);
   }
+  $('a[href="#activity"]').click(function(){
+    $('a[href="#activity"] i').addClass('icon-spin');
+    checkNewActivity(false,0);
+  });
 
   /* save resources */
   $('#vm-details-resources-save').click(function() {
@@ -211,13 +215,13 @@ function checkNewActivity(only_state, runs) {
         $("[data-target=#_console]").attr("data-toggle", "_pill").attr("href", "#").parent("li").addClass("disabled");
       }
 
-      if(decideActivityRefresh()) {
-        console.log("szia");
+      if(runs > 0 && decideActivityRefresh()) {
         setTimeout(
           function() {checkNewActivity(only_state, runs + 1)}, 
-          1000 + runs * 250
+          1000 + Math.exp(runs * 0.05)
         );
       }
+      $('a[href="#activity"] i').removeClass('icon-spin');
     },
     error: function() {
 

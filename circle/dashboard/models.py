@@ -5,7 +5,8 @@ from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.signals import user_logged_in
 from django.db.models import (
-    Model, ForeignKey, OneToOneField, CharField, IntegerField, TextField
+    Model, ForeignKey, OneToOneField, CharField, IntegerField, TextField,
+    DateTimeField,
 )
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _, override
@@ -34,12 +35,13 @@ class Notification(TimeStampedModel):
     to = ForeignKey(User)
     subject = CharField(max_length=128)
     message = TextField()
+    valid_until = DateTimeField(null=True, default=None)
 
     class Meta:
         ordering = ['-created']
 
     @classmethod
-    def send(cls, user, subject, template, context={}):
+    def send(cls, user, subject, template, context={}, valid_until=None):
         try:
             language = user.profile.preferred_language
         except:
@@ -48,7 +50,8 @@ class Notification(TimeStampedModel):
             context['user'] = user
             rendered = render_to_string(template, context)
             subject = unicode(subject)
-        return cls.objects.create(to=user, subject=subject, message=rendered)
+        return cls.objects.create(to=user, subject=subject, message=rendered,
+                                  valid_until=valid_until)
 
 
 class Profile(Model):
@@ -62,8 +65,9 @@ class Profile(Model):
         help_text=_('Unique identifier of the person, e.g. a student number.'))
     instance_limit = IntegerField(default=5)
 
-    def notify(self, subject, template, context={}):
-        return Notification.send(self.user, subject, template, context)
+    def notify(self, subject, template, context={}, valid_until=None):
+        return Notification.send(self.user, subject, template, context,
+                                 valid_until)
 
 
 class GroupProfile(AclBase):

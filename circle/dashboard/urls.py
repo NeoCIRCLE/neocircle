@@ -9,7 +9,7 @@ from .views import (
     FavouriteView, NodeStatus, GroupList, TemplateDelete, LeaseDelete,
     VmGraphView, TemplateAclUpdateView, GroupDetailView, GroupDelete,
     GroupAclUpdateView, GroupUserDelete, NotificationView, NodeGraphView,
-    VmMigrateView, VmDetailVncTokenView,
+    VmMigrateView, VmDetailVncTokenView, VmRenewView,
 )
 
 urlpatterns = patterns(
@@ -53,6 +53,8 @@ urlpatterns = patterns(
     url(r'^vm/(?P<pk>\d+)/activity/$', vm_activity),
     url(r'^vm/(?P<pk>\d+)/migrate/$', VmMigrateView.as_view(),
         name='dashboard.views.vm-migrate'),
+    url(r'^vm/(?P<pk>\d+)/renew/((?P<key>.*)/?)$', VmRenewView.as_view(),
+        name='dashboard.views.vm-renew'),
 
     url(r'^node/list/$', NodeList.as_view(), name='dashboard.views.node-list'),
     url(r'^node/(?P<pk>\d+)/$', NodeDetailView.as_view(),

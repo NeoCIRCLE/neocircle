@@ -302,7 +302,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
     def clean(self, *args, **kwargs):
         if self.time_of_delete is None:
-            self.renew(which='delete')
+            self._do_renew(which='delete')
         super(Instance, self).clean(*args, **kwargs)
 
     @classmethod
@@ -355,9 +355,16 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         params = dict(template=template, owner=owner, pw=pwgen())
         params.update([(f, getattr(template, f)) for f in common_fields])
         params.update(kwargs)  # override defaults w/ user supplied values
+        if '%d' not in params['name']:
+            params['name'] += ' %d'
 
-        return [cls.__create_instance(params, disks, networks, req_traits,
-                                      tags) for i in xrange(amount)]
+        instances = []
+        for i in xrange(amount):
+            real_params = params
+            real_params['name'] = real_params['name'].replace('%d', str(i))
+            instances.append(cls.__create_instance(real_params, disks,
+                                                   networks, req_traits, tags))
+        return instances
 
     @classmethod
     def __create_instance(cls, params, disks, networks, req_traits, tags):
@@ -556,16 +563,98 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         else:
             raise Node.DoesNotExist()
 
-    def renew(self, which='both'):
+    def _is_notified_about_expiration(self):
+        renews = self.activity_log.filter(activity_code__endswith='renew')
+        cond = {'activity_code__endswith': 'notification_about_expiration'}
+        if len(renews) > 0:
+            cond['finished__gt'] = renews[0].started
+        return self.activity_log.filter(**cond).exists()
+
+    def notify_owners_about_expiration(self, again=False):
+        """Notify owners about vm expiring soon if they aren't already.
+
+        :param again: Notify already notified owners.
+        """
+        if not again and self._is_notified_about_expiration():
+            return False
+        success, failed = [], []
+
+        def on_commit(act):
+            act.result = {'failed': failed, 'success': success}
+
+        with instance_activity('notification_about_expiration', instance=self,
+                               on_commit=on_commit):
+            from dashboard.views import VmRenewView
+            level = self.get_level_object("owner")
+            for u, ulevel in self.get_users_with_level(level__pk=level.pk):
+                try:
+                    token = VmRenewView.get_token_url(self, u)
+                    u.profile.notify(
+                        _('%s expiring soon') % unicode(self),
+                        'dashboard/notifications/vm-expiring.html',
+                        {'instance': self, 'token': token}, valid_until=min(
+                            self.time_of_delete, self.time_of_suspend))
+                except Exception as e:
+                    failed.append((u, e))
+                else:
+                    success.append(u)
+        return True
+
+    def is_expiring(self, threshold=0.1):
+        """Returns if an instance will expire soon.
+
+        Soon means that the time of suspend or delete comes in 10% of the
+        interval what the Lease allows. This rate is configurable with the
+        only parameter, threshold (0.1 = 10% by default).
+        """
+        return (self._is_suspend_expiring(self, threshold) or
+                self._is_delete_expiring(self, threshold))
+
+    def _is_suspend_expiring(self, threshold=0.1):
+        interval = self.lease.suspend_interval
+        if interval is not None:
+            limit = timezone.now() + threshold * self.lease.suspend_interval
+            return limit > self.time_of_suspend
+        else:
+            return False
+
+    def _is_delete_expiring(self, threshold=0.1):
+        interval = self.lease.delete_interval
+        if interval is not None:
+            limit = timezone.now() + threshold * self.lease.delete_interval
+            return limit > self.time_of_delete
+        else:
+            return False
+
+    def get_renew_times(self):
+        """Returns new suspend and delete times if renew would be called.
+        """
+        return (
+            timezone.now() + self.lease.suspend_interval,
+            timezone.now() + self.lease.delete_interval)
+
+    def _do_renew(self, which='both'):
+        """Set expiration times to renewed values.
+        """
+        time_of_suspend, time_of_delete = self.get_renew_times()
+        if which in ('suspend', 'both'):
+            self.time_of_suspend = time_of_suspend
+        if which in ('delete', 'both'):
+            self.time_of_delete = time_of_delete
+
+    def renew(self, which='both', base_activity=None, user=None):
         """Renew virtual machine instance leases.
         """
-        if which not in ['suspend', 'delete', 'both']:
-            raise ValueError('No such expiration type.')
-        if which in ['suspend', 'both']:
-            self.time_of_suspend = timezone.now() + self.lease.suspend_interval
-        if which in ['delete', 'both']:
-            self.time_of_delete = timezone.now() + self.lease.delete_interval
-        self.save()
+        if base_activity is None:
+            act = instance_activity(code_suffix='renew', instance=self,
+                                    user=user)
+        else:
+            act = base_activity.sub_activity('renew')
+        with act:
+            if which not in ('suspend', 'delete', 'both'):
+                raise ValueError('No such expiration type.')
+            self._do_renew(which)
+            self.save()
 
     def change_password(self, user=None):
         """Generate new password for the vm
