@@ -504,6 +504,8 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
             return self.__set_status(request)
         if request.POST.get('to_remove'):
             return self.__remove_trait(request)
+        if request.POST.get('flush'):
+            return self.__flush(request)
         return redirect(reverse_lazy("dashboard.views.node-detail",
                                      kwargs={'pk': self.get_object().pk}))
 
@@ -518,6 +520,24 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
             response = {
                 'message': success_message,
                 'new_name': new_name,
+                'node_pk': self.object.pk
+            }
+            return HttpResponse(
+                json.dumps(response),
+                content_type="application/json"
+            )
+        else:
+            messages.success(request, success_message)
+            return redirect(reverse_lazy("dashboard.views.node-detail",
+                                         kwargs={'pk': self.object.pk}))
+
+    def __flush(self, request):
+        self.object = self.get_object()
+        self.object.flush_async(user=request.user)
+        success_message = _("Node successfully flushed!")
+        if request.is_ajax():
+            response = {
+                'message': success_message,
                 'node_pk': self.object.pk
             }
             return HttpResponse(
