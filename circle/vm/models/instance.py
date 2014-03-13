@@ -653,11 +653,12 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         """Renew virtual machine instance leases.
         """
         if base_activity is None:
-            act = instance_activity(code_suffix='renew', instance=self,
-                                    user=user)
+            act_ctx = instance_activity(code_suffix='renew', instance=self,
+                                        user=user)
         else:
-            act = base_activity.sub_activity('renew')
-        with act:
+            act_ctx = base_activity.sub_activity('renew')
+
+        with act_ctx:
             if which not in ('suspend', 'delete', 'both'):
                 raise ValueError('No such expiration type.')
             self._do_renew(which)
