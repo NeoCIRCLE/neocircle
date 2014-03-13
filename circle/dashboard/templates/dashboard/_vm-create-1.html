@@ -1,4 +1,5 @@
 {% load sizefieldtags %}
+{% load i18n %}
 
 <div class="vm-create-template-list">
   {% for t in templates %}
@@ -10,7 +11,7 @@
     <div class="vm-create-template-details">
       <ul>
         <li>
-        <i class="icon-gears"></i> CPU
+          <i class="icon-gears"></i> {% trans "CPU" %}
           <div class="progress pull-right">
             <div class="progress-bar progress-bar-success" role="progressbar" 
               aria-valuenow="{{ t.num_cores }}" aria-valuemin="0" aria-valuemax="8" style="width: 80%">
@@ -19,7 +20,7 @@
           </div>
         </li>
         <li>
-        <i class="icon-ticket"></i> Memory
+          <i class="icon-ticket"></i> {% trans "Memory" %}
           <div class="progress pull-right">
             <div class="progress-bar progress-bar-info" role="progressbar" 
               aria-valuenow="{{ t.ram_size }}" aria-valuemin="0" aria-valuemax="4096" 
@@ -29,19 +30,20 @@
           </div>
         </li>
         <li>
-        <i class="icon-file"></i> Disks 
-          <span style="float: right;">
+          <i class="icon-file"></i> {% trans "Disks" %} 
+          <span style="float: right; text-align: right;">
             {% for d in t.disks.all %}{{ d.name }} ({{ d.size|filesize }}){% if not forloop.last %}, {% endif %}{% endfor %}
           </span>
+          <div style="clear: both;"></div>
         </li>
         <li>
-        <i class="icon-globe"></i> Network:
+          <i class="icon-globe"></i> {% trans "Network" %}
           <span style="float: right;">
             {% for i in t.interface_set.all %}{{ i.vlan.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
           </span>
         </li>
         <li>
-          <i class="icon-tag"></i> Típus: {{ t.lease.name }}
+          <i class="icon-tag"></i> {% trans "Type" %}: {{ t.lease.name }}
           <span style="float: right;">
             <i class="icon-pause"></i> {{ t.lease.get_readable_suspend_time }}
             <i class="icon-remove"></i> {{ t.lease.get_readable_delete_time }}
