@@ -409,9 +409,13 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
         It is always on the first hard drive storage named cloud-<id>.dump
         """
-        datastore = self.disks.all()[0].datastore
-        path = datastore.path + '/' + self.vm_name + '.dump'
-        return {'datastore': datastore, 'path': path}
+        try:
+            datastore = self.disks.all()[0].datastore
+        except:
+            return None
+        else:
+            path = datastore.path + '/' + self.vm_name + '.dump'
+            return {'datastore': datastore, 'path': path}
 
     @property
     def primary_host(self):
@@ -717,9 +721,9 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         :param act: Parent activity.
         """
         # Delete mem. dump if exists
-        queue_name = self.mem_dump['datastore'].get_remote_queue_name(
-            'storage')
         try:
+            queue_name = self.mem_dump['datastore'].get_remote_queue_name(
+                'storage')
             from storage.tasks.remote_tasks import delete_dump
             delete_dump.apply_async(args=[self.mem_dump['path']],
                                     queue=queue_name).get(timeout=timeout)
