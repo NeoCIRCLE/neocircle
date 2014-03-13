@@ -209,7 +209,6 @@ function checkNewActivity(only_state, runs) {
     url: '/dashboard/vm/' + instance + '/activity/',
     data: {'only_state': only_state},
     success: function(data) {
-      console.log(data['activities']);
       if(!only_state) {
         $("#activity-timeline").html(data['activities']);
         $("[title]").tooltip();
