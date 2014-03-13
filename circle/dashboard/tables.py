@@ -79,9 +79,9 @@ class NodeListTable(Table):
         attrs={'th': {'class': 'node-list-table-admin'}},
     )
 
-    monitor = TemplateColumn(
-        template_name='dashboard/node-list/column-monitor.html',
-        attrs={'th': {'class': 'node-list-table-thin'}},
+    admin = TemplateColumn(
+        template_name='dashboard/node-list/column-admin.html',
+        attrs={'th': {'class': 'node-list-table-admin'}},
     )
 
     details = TemplateColumn(
