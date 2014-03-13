@@ -61,6 +61,8 @@ def find_unused_vnc_port():
 
     if port is None:
         raise Exception("No unused port could be found for VNC.")
+    else:
+        return port
 
 
 class InstanceActiveManager(Manager):
