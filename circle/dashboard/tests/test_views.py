@@ -9,6 +9,7 @@ from ..models import Profile
 from ..views import VmRenewView
 from storage.models import Disk
 from firewall.models import Vlan
+from mock import Mock
 
 
 class LoginMixin(object):
@@ -19,9 +20,10 @@ class LoginMixin(object):
 
 
 class VmDetailTest(LoginMixin, TestCase):
-    fixtures = ['test-vm-fixture.json']
+    fixtures = ['test-vm-fixture.json', 'node.json']
 
     def setUp(self):
+        Instance.get_remote_queue_name = Mock(return_value='test')
         self.u1 = User.objects.create(username='user1')
         self.u1.set_password('password')
         self.u1.save()
@@ -112,6 +114,19 @@ class VmDetailTest(LoginMixin, TestCase):
         inst.set_level(self.u2, 'owner')
         response = c.post('/dashboard/vm/mass-delete/', {'vms': [1]})
         self.assertEqual(response.status_code, 302)
+
+    def test_permitted_password_change(self):
+        c = Client()
+        self.login(c, "user2")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u2, 'owner')
+        inst.node = Node.objects.all()[0]
+        inst.save()
+        password = inst.pw
+        response = c.post("/dashboard/vm/1/", {'change_password': True})
+        self.assertTrue(Instance.get_remote_queue_name.called)
+        self.assertEqual(response.status_code, 302)
+        self.assertNotEqual(password, Instance.objects.get(pk=1).pw)
 
     def test_unpermitted_password_change(self):
         c = Client()
