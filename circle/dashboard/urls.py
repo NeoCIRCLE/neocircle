@@ -2,14 +2,15 @@ from django.conf.urls import patterns, url
 
 from vm.models import Instance
 from .views import (
-    IndexView, VmDetailView, VmList, VmCreate, TemplateDetail, AclUpdateView,
-    VmDelete, VmMassDelete, vm_activity, NodeList, NodeDetailView, PortDelete,
-    TransferOwnershipView, TransferOwnershipConfirmView, NodeDelete,
-    TemplateList, LeaseDetail, NodeCreate, LeaseCreate, TemplateCreate,
-    FavouriteView, NodeStatus, GroupList, TemplateDelete, LeaseDelete,
-    VmGraphView, TemplateAclUpdateView, GroupDetailView, GroupDelete,
-    GroupAclUpdateView, GroupUserDelete, NotificationView, NodeGraphView,
-    VmMigrateView, VmDetailVncTokenView, VmRenewView, DiskAddView,
+    AclUpdateView, DiskAddView, FavouriteView, GroupAclUpdateView, GroupDelete,
+    GroupDetailView, GroupList, GroupUserDelete, IndexView, LeaseCreate,
+    LeaseDelete, LeaseDetail, NodeAddTraitView, NodeCreate, NodeDelete,
+    NodeDetailView, NodeGraphView, NodeList, NodeStatus, NotificationView,
+    PortDelete, TemplateAclUpdateView, TemplateCreate, TemplateDelete,
+    TemplateDetail, TemplateList, TransferOwnershipConfirmView,
+    TransferOwnershipView, vm_activity, VmCreate, VmDelete, VmDetailView,
+    VmDetailVncTokenView, VmGraphView, VmList, VmMassDelete, VmMigrateView,
+    VmRenewView,
 )
 
 urlpatterns = patterns(
@@ -59,6 +60,8 @@ urlpatterns = patterns(
     url(r'^node/list/$', NodeList.as_view(), name='dashboard.views.node-list'),
     url(r'^node/(?P<pk>\d+)/$', NodeDetailView.as_view(),
         name='dashboard.views.node-detail'),
+    url(r'^node/(?P<pk>\d+)/add-trait/$', NodeAddTraitView.as_view(),
+        name='dashboard.views.node-addtrait'),
     url(r'^tx/(?P<key>.*)/?$', TransferOwnershipConfirmView.as_view(),
         name='dashboard.views.vm-transfer-ownership-confirm'),
     url(r'^node/delete/(?P<pk>\d+)/$', NodeDelete.as_view(),

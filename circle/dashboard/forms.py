@@ -20,7 +20,7 @@ from sizefield.widgets import FileSizeWidget
 from firewall.models import Vlan, Host
 from storage.models import Disk, DataStore
 from vm.models import (
-    InstanceTemplate, Lease, InterfaceTemplate, Node, Instance
+    InstanceTemplate, Lease, InterfaceTemplate, Node, Trait, Instance
 )
 
 VLANS = Vlan.objects.all()
@@ -964,3 +964,30 @@ class WorkingBaseInput(BaseInput):
         self.input_type = input_type
         self.field_classes = ""  # we need this for some reason
         super(WorkingBaseInput, self).__init__(name, value, **kwargs)
+
+
+class TraitForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super(TraitForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_show_labels = False
+        self.helper.layout = Layout(
+            Div(
+                Field('name', id="node-details-traits-input",
+                      css_class="input-sm input-traits"),
+                Div(
+                    HTML('<input type="submit" '
+                         'class="btn btn-default btn-sm input-traits" '
+                         'value="Add trait"/>',
+                         ),
+                    css_class="input-group-btn",
+                ),
+                css_class="input-group",
+                id="node-details-traits-form",
+            ),
+        )
+
+    class Meta:
+        model = Trait
+        fields = ['name']

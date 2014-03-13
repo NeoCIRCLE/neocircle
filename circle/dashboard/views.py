@@ -33,14 +33,15 @@ from braces.views import (
 )
 
 from .forms import (
-    VmCustomizeForm, TemplateForm, LeaseForm, NodeForm, HostForm,
-    DiskAddForm, CircleAuthenticationForm,
+    CircleAuthenticationForm, DiskAddForm, HostForm, LeaseForm, NodeForm,
+    TemplateForm, TraitForm, VmCustomizeForm,
 )
 from .tables import (VmListTable, NodeListTable, NodeVmListTable,
                      TemplateListTable, LeaseListTable, GroupListTable,)
-from vm.models import (Instance, InstanceTemplate, InterfaceTemplate,
-                       InstanceActivity, Node, instance_activity, Lease,
-                       Interface, NodeActivity)
+from vm.models import (
+    Instance, instance_activity, InstanceActivity, InstanceTemplate, Interface,
+    InterfaceTemplate, Lease, Node, NodeActivity, Trait,
+)
 from firewall.models import Vlan, Host, Rule
 from dashboard.models import Favourite, Profile
 
@@ -466,8 +467,12 @@ class VmDetailView(CheckedDetailView):
 class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
     template_name = "dashboard/node-detail.html"
     model = Node
+    form = None
+    form_class = TraitForm
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, form=None, **kwargs):
+        if form is None:
+            form = self.form_class()
         context = super(NodeDetailView, self).get_context_data(**kwargs)
         instances = Instance.active.filter(node=self.object)
         context['table'] = NodeVmListTable(instances)
@@ -475,6 +480,7 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
             node=self.object, parent=None
         ).order_by('-started').select_related()
         context['activities'] = na
+        context['trait_form'] = form
         context['graphite_enabled'] = (
             NodeGraphView.get_graphite_url() is not None)
         return context
@@ -485,6 +491,8 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
             return self.__set_name(request)
         if request.POST.get('change_status') is not None:
             return self.__set_status(request)
+        if request.POST.get('to_remove'):
+            return self.__remove_trait(request)
         return redirect(reverse_lazy("dashboard.views.node-detail",
                                      kwargs={'pk': self.get_object().pk}))
 
@@ -530,6 +538,23 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
             messages.success(request, success_message)
             return redirect(reverse_lazy("dashboard.views.node-detail",
                                          kwargs={'pk': self.object.pk}))
+
+    def __remove_trait(self, request):
+        try:
+            to_remove = request.POST.get('to_remove')
+            self.object = self.get_object()
+            self.object.traits.remove(to_remove)
+            message = u"Success"
+        except:  # note this won't really happen
+            message = u"Not success"
+
+        if request.is_ajax():
+            return HttpResponse(
+                json.dumps({'message': message}),
+                content_type="application/json"
+            )
+        else:
+            return redirect(self.object.get_absolute_url())
 
 
 class GroupDetailView(CheckedDetailView):
@@ -1267,6 +1292,39 @@ class NodeDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
             return next
         else:
             return reverse_lazy('dashboard.index')
+
+
+class NodeAddTraitView(SuperuserRequiredMixin, DetailView):
+    model = Node
+    template_name = "dashboard/node-add-trait.html"
+
+    def get_success_url(self):
+        next = self.request.GET.get('next')
+        if next:
+            return next
+        else:
+            return self.object.get_absolute_url()
+
+    def get_context_data(self, **kwargs):
+        self.object = self.get_object()
+        context = super(NodeAddTraitView, self).get_context_data(**kwargs)
+        context['form'] = (TraitForm(self.request.POST) if self.request.POST
+                           else TraitForm())
+        return context
+
+    def post(self, request, pk, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        form = context['form']
+        if form.is_valid():
+            node = self.object
+            n = form.cleaned_data['name']
+            trait, created = Trait.objects.get_or_create(name=n)
+            node.traits.add(trait)
+            success_message = _("Trait successfully added to node.")
+            messages.success(request, success_message)
+            return redirect(self.get_success_url())
+        else:
+            return self.get(self, request, pk, *args, **kwargs)
 
 
 class NodeStatus(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):

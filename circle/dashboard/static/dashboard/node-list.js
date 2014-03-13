@@ -198,6 +198,7 @@ $(function() {
   }
 
 
+
 // refresh the given contents, parameter is the array of contents, in pair
   function contentrefresh(elements,callbacks){
   for (var i = 0; i < elements.length; i+=2) {

@@ -191,31 +191,31 @@ body {
   /* pass */
 }
 
-#vm-details-tags-form {
+#vm-details-tags-form, #node-details-traits-form {
   margin-top: 15px;
   max-width: 250px;
 }
 
-.vm-details-remove-tag {
+.vm-details-remove-tag, .node-details-remove-trait {
   color: white;
   padding-left: 5px;
 }
 
-.vm-details-remove-tag:hover {
+.vm-details-remove-tag:hover, .node-details-remove-trait:hover {
   cursor: pointer;
   color: black;
   text-decoration: none;
 }
 
 /* small buttons for tags, copied from Bootstraps input-sm, bnt-sm */
-.btn-tags {
+.btn-tags, .btn-traits {
   padding: 3px 6px;
   font-size: 11px;
   line-height: 1.5;
   border-radius: 3px;
 }
 
-.input-tags {
+.input-tags, .input-tratis {
   height: 22px;
   padding: 2px 8px;
   font-size: 11px;
