@@ -152,6 +152,10 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
         if is_new:
             self.set_level(self.owner, 'owner')
 
+    @permalink
+    def get_absolute_url(self):
+        return ('dashboard.views.template-detail', None, {'pk': self.pk})
+
 
 class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
@@ -413,9 +417,13 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
         It is always on the first hard drive storage named cloud-<id>.dump
         """
-        datastore = self.disks.all()[0].datastore
-        path = datastore.path + '/' + self.vm_name + '.dump'
-        return {'datastore': datastore, 'path': path}
+        try:
+            datastore = self.disks.all()[0].datastore
+        except:
+            return None
+        else:
+            path = datastore.path + '/' + self.vm_name + '.dump'
+            return {'datastore': datastore, 'path': path}
 
     @property
     def primary_host(self):
@@ -803,9 +811,9 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         :param act: Parent activity.
         """
         # Delete mem. dump if exists
-        queue_name = self.mem_dump['datastore'].get_remote_queue_name(
-            'storage')
         try:
+            queue_name = self.mem_dump['datastore'].get_remote_queue_name(
+                'storage')
             from storage.tasks.remote_tasks import delete_dump
             delete_dump.apply_async(args=[self.mem_dump['path']],
                                     queue=queue_name).get(timeout=timeout)
@@ -1079,47 +1087,54 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                 for net in self.interface_set.all():
                     net.deploy()
 
-    def save_as_template(self, name, **kwargs):
-        # prepare parameters
-        kwargs.setdefault('name', name)
-        kwargs.setdefault('description', self.description)
-        kwargs.setdefault('parent', self.template)
-        kwargs.setdefault('num_cores', self.num_cores)
-        kwargs.setdefault('ram_size', self.ram_size)
-        kwargs.setdefault('max_ram_size', self.max_ram_size)
-        kwargs.setdefault('arch', self.arch)
-        kwargs.setdefault('priority', self.priority)
-        kwargs.setdefault('boot_menu', self.boot_menu)
-        kwargs.setdefault('raw_data', self.raw_data)
-        kwargs.setdefault('lease', self.lease)
-        kwargs.setdefault('access_method', self.access_method)
-        kwargs.setdefault('system', self.template.system
-                          if self.template else None)
+    def save_as_template_async(self, name, user=None, **kwargs):
+        return local_tasks.save_as_template.apply_async(
+            args=[self, name, user, kwargs], queue="localhost.man")
 
-        def __try_save_disk(disk):
+    def save_as_template(self, name, task_uuid=None, user=None,
+                         timeout=300, **kwargs):
+        with instance_activity(code_suffix="save_as_template", instance=self,
+                               task_uuid=task_uuid, user=user) as act:
+            # prepare parameters
+            kwargs.setdefault('name', name)
+            kwargs.setdefault('description', self.description)
+            kwargs.setdefault('parent', self.template)
+            kwargs.setdefault('num_cores', self.num_cores)
+            kwargs.setdefault('ram_size', self.ram_size)
+            kwargs.setdefault('max_ram_size', self.max_ram_size)
+            kwargs.setdefault('arch', self.arch)
+            kwargs.setdefault('priority', self.priority)
+            kwargs.setdefault('boot_menu', self.boot_menu)
+            kwargs.setdefault('raw_data', self.raw_data)
+            kwargs.setdefault('lease', self.lease)
+            kwargs.setdefault('access_method', self.access_method)
+            kwargs.setdefault('system', self.template.system
+                              if self.template else None)
+
+            def __try_save_disk(disk):
+                try:
+                    return disk.save_as()  # can do in parallel
+                except Disk.WrongDiskTypeError:
+                    return disk
+
+            # create template and do additional setup
+            tmpl = InstanceTemplate(**kwargs)
+            tmpl.full_clean()  # Avoiding database errors.
+            tmpl.save()
+            with act.sub_activity('saving_disks'):
+                tmpl.disks.add(*[__try_save_disk(disk)
+                               for disk in self.disks.all()])
+                # save template
+            tmpl.save()
             try:
-                return disk.save_as()  # can do in parallel
-            except Disk.WrongDiskTypeError:
-                return disk
-
-        # copy disks
-        disks = [__try_save_disk(disk) for disk in self.disks.all()]
-        kwargs.setdefault('disks', disks)
-
-        # create template and do additional setup
-        tmpl = InstanceTemplate(**kwargs)
-
-        # save template
-        tmpl.save()
-        try:
-            # create interface templates
-            for i in self.interface_set.all():
-                i.save_as_template(tmpl)
-        except:
-            tmpl.delete()
-            raise
-        else:
-            return tmpl
+                # create interface templates
+                for i in self.interface_set.all():
+                    i.save_as_template(tmpl)
+            except:
+                tmpl.delete()
+                raise
+            else:
+                return tmpl
 
     def shutdown_and_save_as_template(self, name, user=None, task_uuid=None,
                                       **kwargs):

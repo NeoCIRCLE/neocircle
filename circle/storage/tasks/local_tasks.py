@@ -22,6 +22,12 @@ def check_queue(storage, queue_id):
 
 
 @celery.task
+def save_as(disk, timeout, user):
+    disk.save_disk_as(task_uuid=save_as.request.id, user=user,
+                      disk=disk, timeout=timeout)
+
+
+@celery.task
 def deploy(disk, user):
     disk.deploy(task_uuid=deploy.request.id, user=user)
 
@@ -36,18 +42,18 @@ def restore(disk, user):
     disk.restore(task_uuid=restore.request.id, user=user)
 
 
-class create_from_url(AbortableTask):
+class CreateFromURLTask(AbortableTask):
+
+    def __init__(self):
+        self.bind(celery)
 
     def run(self, **kwargs):
-        Disk = kwargs['cls']
-        url = kwargs['url']
-        params = kwargs['params']
-        user = kwargs['user']
-        Disk.create_from_url(url=url,
-                             params=params,
+        Disk = kwargs.pop('cls')
+        Disk.create_from_url(url=kwargs.pop('url'),
                              task_uuid=create_from_url.request.id,
                              abortable_task=self,
-                             user=user)
+                             **kwargs)
+create_from_url = CreateFromURLTask()
 
 
 @celery.task

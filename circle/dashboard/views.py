@@ -22,7 +22,7 @@ from django.views.generic import (TemplateView, DetailView, View, DeleteView,
                                   UpdateView, CreateView)
 from django.contrib import messages
 from django.utils.translation import ugettext as _
-from django.template.defaultfilters import title
+from django.template.defaultfilters import title as title_filter
 from django.template.loader import render_to_string
 from django.template import RequestContext
 
@@ -209,7 +209,10 @@ class VmDetailView(CheckedDetailView):
         ).all()
         context['acl'] = get_vm_acl_data(instance)
         context['forms'] = {
-            'disk_add_form': DiskAddForm(prefix="disk"),
+            'disk_add_form': DiskAddForm(
+                user=self.request.user,
+                is_template=False, object_pk=self.get_object().pk,
+                prefix="disk"),
         }
         context['os_type_icon'] = instance.os_type.replace("unknown",
                                                            "question")
@@ -228,7 +231,6 @@ class VmDetailView(CheckedDetailView):
             'port': self.__add_port,
             'new_network_vlan': self.__new_network,
             'save_as': self.__save_as,
-            'disk-name': self.__add_disk,
             'shut_down': self.__shut_down,
             'sleep': self.__sleep,
             'wake_up': self.__wake_up,
@@ -403,24 +405,6 @@ class VmDetailView(CheckedDetailView):
                                     "please rename it!"))
         return redirect(reverse_lazy("dashboard.views.template-detail",
                                      kwargs={'pk': template.pk}))
-
-    def __add_disk(self, request):
-        self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-
-        form = DiskAddForm(request.POST, prefix="disk")
-        if form.is_valid():
-            messages.success(request, _("New disk successfully created!"))
-            form.save(self.object)
-        else:
-            error = "<br /> ".join(["<strong>%s</strong>: %s" %
-                                    (title(i[0]), i[1][0])
-                                    for i in form.errors.items()])
-            messages.error(request, error)
-
-        return redirect("%s#resources" % reverse_lazy(
-            "dashboard.views.detail", kwargs={'pk': self.object.pk}))
 
     def __shut_down(self, request):
         self.object = self.get_object()
@@ -785,8 +769,16 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
             return super(TemplateDetail, self).get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
+        obj = self.get_object()
         context = super(TemplateDetail, self).get_context_data(**kwargs)
-        context['acl'] = get_vm_acl_data(self.get_object())
+        context['acl'] = get_vm_acl_data(obj)
+        context['disks'] = obj.disks.all()
+        context['disk_add_form'] = DiskAddForm(
+            user=self.request.user,
+            is_template=True,
+            object_pk=obj.pk,
+            prefix="disk",
+        )
         return context
 
     def get_success_url(self):
@@ -1941,3 +1933,44 @@ def circle_login(request):
     }
     return login(request, authentication_form=authentication_form,
                  extra_context=extra_context)
+
+
+class DiskAddView(TemplateView):
+
+    def post(self, *args, **kwargs):
+        is_template = self.request.POST.get("disk-is_template")
+        object_pk = self.request.POST.get("disk-object_pk")
+        is_template = int(is_template) == 1
+        if is_template:
+            obj = InstanceTemplate.objects.get(pk=object_pk)
+        else:
+            obj = Instance.objects.get(pk=object_pk)
+
+        if not obj.has_level(self.request.user, 'owner'):
+            raise PermissionDenied()
+
+        form = DiskAddForm(
+            self.request.POST,
+            user=self.request.user,
+            is_template=is_template, object_pk=object_pk,
+            prefix="disk"
+        )
+
+        if form.is_valid():
+            if form.cleaned_data.get("size"):
+                messages.success(self.request, _("Disk successfully added!"))
+            else:
+                messages.success(self.request, _("Disk download started!"))
+            form.save()
+        else:
+            error = "<br /> ".join(["<strong>%s</strong>: %s" %
+                                    (title_filter(i[0]), i[1][0])
+                                    for i in form.errors.items()])
+            messages.error(self.request, error)
+
+        if is_template:
+            r = obj.get_absolute_url()
+        else:
+            r = obj.get_absolute_url()
+            r = "%s#resources" % r
+        return redirect(r)

@@ -1,5 +1,4 @@
 from datetime import timedelta
-import uuid
 
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import (
@@ -20,7 +19,9 @@ from sizefield.widgets import FileSizeWidget
 
 from firewall.models import Vlan, Host
 from storage.models import Disk, DataStore
-from vm.models import InstanceTemplate, Lease, InterfaceTemplate, Node
+from vm.models import (
+    InstanceTemplate, Lease, InterfaceTemplate, Node, Instance
+)
 
 VLANS = Vlan.objects.all()
 DISKS = Disk.objects.exclude(type="qcow2-snap")
@@ -740,27 +741,61 @@ class LeaseForm(forms.ModelForm):
 
 class DiskAddForm(forms.Form):
     name = forms.CharField()
-    size = forms.CharField(widget=FileSizeWidget)
+    size = forms.CharField(widget=FileSizeWidget, required=False)
+    url = forms.CharField(required=False)
+    is_template = forms.CharField()
+    object_pk = forms.CharField()
+
+    def __init__(self, *args, **kwargs):
+        self.is_template = kwargs.pop("is_template")
+        self.object_pk = kwargs.pop("object_pk")
+        self.user = kwargs.pop("user")
+        super(DiskAddForm, self).__init__(*args, **kwargs)
+        self.initial['is_template'] = 1 if self.is_template is True else 0
+        self.initial['object_pk'] = self.object_pk
 
     def clean_size(self):
         size_in_bytes = self.cleaned_data.get("size")
-        if not size_in_bytes.isdigit():
+        if not size_in_bytes.isdigit() and len(size_in_bytes) > 0:
             raise forms.ValidationError(_("Invalid format, you can use "
                                           " GB or MB!"))
         return size_in_bytes
 
-    def save(self, vm, commit=True):
+    def clean(self):
+        cleaned_data = self.cleaned_data
+        size = cleaned_data.get("size")
+        url = cleaned_data.get("url")
+
+        if not size and not url:
+            msg = _("You have to either specify size or URL")
+            self._errors[_("Global")] = self.error_class([msg])
+        return cleaned_data
+
+    def save(self, commit=True):
         data = self.cleaned_data
-        d = Disk(
-            name=data['name'],
-            filename=str(uuid.uuid4()),
-            datastore=DataStore.objects.all()[0],
-            type="qcow2-norm",
-            size=data['size'],
-            dev_num="a",
-        )
-        d.save()
-        vm.disks.add(d)
+
+        if self.is_template:
+            inst = InstanceTemplate.objects.get(pk=self.object_pk)
+        else:
+            inst = Instance.objects.get(pk=self.object_pk)
+
+        if data['size']:
+            kwargs = {
+                'name': data['name'],
+                'type': "qcow2-norm",
+                'datastore': DataStore.objects.all()[0],
+                'size': data['size'],
+            }
+            d = Disk.create_empty(instance=inst, user=self.user, **kwargs)
+        else:
+            kwargs = {
+                'name': data['name'],
+                'url': data['url'],
+            }
+            Disk.create_from_url_async(instance=inst, user=self.user,
+                                       **kwargs)
+            d = None
+
         return d
 
     @property
@@ -768,11 +803,23 @@ class DiskAddForm(forms.Form):
         helper = FormHelper()
         helper.form_show_labels = False
         helper.layout = Layout(
+            Field("is_template", type="hidden"),
+            Field("object_pk", type="hidden"),
             Field("name", placeholder=_("Name")),
             Field("size", placeholder=_("Disk size (for example: 20GB, "
                                         "1500MB)")),
+            Field("url", placeholder=_("URL to an ISO image")),
+            AnyTag(
+                "div",
+                HTML(
+                    _("Either specify the size for an empty disk or a URL "
+                      "to an ISO image!")
+                ),
+                css_class="alert alert-info",
+                style="padding: 5px; text-align: justify;",
+            ),
         )
-        helper.add_input(Submit("submit", "Create new disk",
+        helper.add_input(Submit("submit", _("Add"),
                                 css_class="btn btn-success"))
         return helper
 

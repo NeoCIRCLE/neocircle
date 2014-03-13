@@ -16,6 +16,7 @@ from datetime import timedelta
 from acl.models import AclBase
 from .tasks import local_tasks, remote_tasks
 from celery.exceptions import TimeoutError
+from manager.mancelery import celery
 from common.models import ActivityModel, activitycontextimpl, WorkerNotFound
 
 logger = logging.getLogger(__name__)
@@ -65,7 +66,8 @@ class Disk(AclBase, TimeStampedModel):
     TYPES = [('qcow2-norm', 'qcow2 normal'), ('qcow2-snap', 'qcow2 snapshot'),
              ('iso', 'iso'), ('raw-ro', 'raw read-only'), ('raw-rw', 'raw')]
     name = CharField(blank=True, max_length=100, verbose_name=_("name"))
-    filename = CharField(max_length=256, verbose_name=_("filename"))
+    filename = CharField(max_length=256, unique=True,
+                         verbose_name=_("filename"))
     datastore = ForeignKey(DataStore, verbose_name=_("datastore"),
                            help_text=_("The datastore that holds the disk."))
     type = CharField(max_length=10, choices=TYPES)
@@ -112,12 +114,23 @@ class Disk(AclBase, TimeStampedModel):
         return join(self.datastore.path, self.filename)
 
     @property
-    def format(self):
+    def vm_format(self):
         """Returns the proper file format for different type of images."""
         return {
             'qcow2-norm': 'qcow2',
             'qcow2-snap': 'qcow2',
             'iso': 'raw',
+            'raw-ro': 'raw',
+            'raw-rw': 'raw',
+        }[self.type]
+
+    @property
+    def format(self):
+        """Returns the proper file format for different type of images."""
+        return {
+            'qcow2-norm': 'qcow2',
+            'qcow2-snap': 'qcow2',
+            'iso': 'iso',
             'raw-ro': 'raw',
             'raw-rw': 'raw',
         }[self.type]
@@ -132,6 +145,19 @@ class Disk(AclBase, TimeStampedModel):
             'raw-ro': 'vd',
             'raw-rw': 'vd',
         }[self.type]
+
+    def is_downloading(self):
+        da = DiskActivity.objects.filter(disk=self).latest("created")
+        return (da.activity_code == "storage.Disk.download"
+                and da.succeeded is None)
+
+    def get_download_percentage(self):
+        if not self.is_downloading():
+            return None
+
+        task = DiskActivity.objects.latest("created").task_uuid
+        result = celery.AsyncResult(id=task)
+        return result.info.get("percent")
 
     def is_deletable(self):
         """Returns whether the file can be deleted.
@@ -171,18 +197,17 @@ class Disk(AclBase, TimeStampedModel):
         if self.type not in type_mapping.keys():
             raise self.WrongDiskTypeError(self.type)
 
-        filename = self.filename if self.type == 'iso' else None
         new_type = type_mapping[self.type]
 
-        return Disk.objects.create(base=self, datastore=self.datastore,
-                                   filename=filename, name=self.name,
-                                   size=self.size, type=new_type)
+        return Disk.create(base=self, datastore=self.datastore,
+                           name=self.name, size=self.size,
+                           type=new_type)
 
     def get_vmdisk_desc(self):
         """Serialize disk object to the vmdriver."""
         return {
             'source': self.path,
-            'driver_type': self.format,
+            'driver_type': self.vm_format,
             'driver_cache': 'none',
             'target_device': self.device_type + self.dev_num,
             'disk_device': 'cdrom' if self.type == 'iso' else 'disk'
@@ -196,7 +221,7 @@ class Disk(AclBase, TimeStampedModel):
             'format': self.format,
             'size': self.size,
             'base_name': self.base.filename if self.base else None,
-            'type': 'snapshot' if self.type == 'qcow2-snap' else 'normal'
+            'type': 'snapshot' if self.base else 'normal'
         }
 
     def get_remote_queue_name(self, queue_id='storage', check_worker=True):
@@ -213,11 +238,6 @@ class Disk(AclBase, TimeStampedModel):
         if self.size == "" and self.base:
             self.size = self.base.size
         super(Disk, self).clean(*args, **kwargs)
-
-    def save(self, *args, **kwargs):
-        if self.filename is None:
-            self.generate_filename()
-        return super(Disk, self).save(*args, **kwargs)
 
     def deploy(self, user=None, task_uuid=None, timeout=15):
         """Reify the disk model on the associated data store.
@@ -249,7 +269,7 @@ class Disk(AclBase, TimeStampedModel):
             # Delegate create / snapshot jobs
             queue_name = self.get_remote_queue_name('storage')
             disk_desc = self.get_disk_desc()
-            if self.type == 'qcow2-snap':
+            if self.base is not None:
                 with act.sub_activity('creating_snapshot'):
                     remote_tasks.snapshot.apply_async(args=[disk_desc],
                                                       queue=queue_name
@@ -271,10 +291,12 @@ class Disk(AclBase, TimeStampedModel):
         return local_tasks.deploy.apply_async(args=[self, user],
                                               queue="localhost.man")
 
-    def generate_filename(self):
-        """Generate a unique filename and set it on the object.
-        """
-        self.filename = str(uuid.uuid4())
+    @classmethod
+    def create(cls, **params):
+        datastore = params.pop('datastore', DataStore.objects.get())
+        disk = cls(filename=str(uuid.uuid4()), datastore=datastore, **params)
+        disk.save()
+        return disk
 
     @classmethod
     def create_empty(cls, instance=None, user=None, **kwargs):
@@ -287,13 +309,8 @@ class Disk(AclBase, TimeStampedModel):
 
         :return: Disk object without a real image, to be .deploy()ed later.
         """
-        with disk_activity(code_suffix="create", user=user) as act:
-            disk = cls(**kwargs)
-            if disk.filename is None:
-                disk.generate_filename()
-            disk.save()
-            act.disk = disk
-            act.save()
+        disk = cls.create(**kwargs)
+        with disk_activity(code_suffix="create", user=user, disk=disk):
             if instance:
                 instance.disks.add(disk)
             return disk
@@ -314,8 +331,8 @@ class Disk(AclBase, TimeStampedModel):
         """
         kwargs.update({'cls': cls, 'url': url,
                        'instance': instance, 'user': user})
-        return local_tasks.create_from_url.apply_async(kwargs=kwargs,
-                                                       queue='localhost.man')
+        return local_tasks.create_from_url.apply_async(
+            kwargs=kwargs, queue='localhost.man')
 
     @classmethod
     def create_from_url(cls, url, instance=None, user=None,
@@ -335,13 +352,9 @@ class Disk(AclBase, TimeStampedModel):
         :rtype: Disk
         """
         kwargs.setdefault('name', url.split('/')[-1])
-        disk = cls(**kwargs)
-        disk.generate_filename()
-        disk.type = "iso"
-        disk.size = 1
+        disk = Disk.create(type="iso", size=1, **kwargs)
         # TODO get proper datastore
         disk.datastore = DataStore.objects.get()
-        disk.save()
         if instance:
             instance.disks.add(disk)
         queue_name = disk.get_remote_queue_name('storage')
@@ -403,7 +416,16 @@ class Disk(AclBase, TimeStampedModel):
         local_tasks.restore.apply_async(args=[self, user],
                                         queue='localhost.man')
 
-    def save_as(self, user=None, task_uuid=None, timeout=120):
+    def save_as_async(self, disk, task_uuid=None, timeout=300, user=None):
+        return local_tasks.save_as.apply_async(args=[disk, timeout, user],
+                                               queue="localhost.man")
+
+    def save_as(self, user=None, task_uuid=None, timeout=300):
+        """Save VM as template.
+
+        VM must be in STOPPED state to perform this action.
+        The timeout parameter is not used now.
+        """
         mapping = {
             'qcow2-snap': ('qcow2-norm', self.base),
         }
@@ -416,25 +438,24 @@ class Disk(AclBase, TimeStampedModel):
         # from this point on, the caller has to guarantee that the disk is not
         # going to be used until the operation is complete
 
-        with disk_activity(code_suffix='save_as', disk=self,
-                           task_uuid=task_uuid, user=user, timeout=300):
+        new_type, new_base = mapping[self.type]
 
-            new_type, new_base = mapping[self.type]
+        disk = Disk.create(base=new_base, datastore=self.datastore,
+                           name=self.name, size=self.size,
+                           type=new_type)
 
-            disk = Disk.objects.create(base=new_base, datastore=self.datastore,
-                                       name=self.name, size=self.size,
-                                       type=new_type)
-
+        disk.save()
+        with disk_activity(code_suffix="save_as", disk=self,
+                           user=user, task_uuid=None):
             queue_name = self.get_remote_queue_name('storage')
             remote_tasks.merge.apply_async(args=[self.get_disk_desc(),
                                                  disk.get_disk_desc()],
                                            queue=queue_name
-                                           ).get(timeout=timeout)
-
+                                           ).get()  # Timeout
             disk.ready = True
             disk.save()
 
-            return disk
+        return disk
 
 
 class DiskActivity(ActivityModel):

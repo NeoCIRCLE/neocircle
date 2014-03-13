@@ -1,5 +1,6 @@
 {% extends "dashboard/base.html" %}
 {% load i18n %}
+{% load sizefieldtags %}
 {% load crispy_forms_tags %} 
 {% block content %}
 
@@ -22,7 +23,7 @@
   <div class="col-md-4">
     <div class="panel panel-default">
       <div class="panel-heading">
-        <h3 class="no-margin"><i class="icon-group"></i> {% trans "Manage access"  %}</h3>
+        <h4 class="no-margin"><i class="icon-group"></i> {% trans "Manage access"  %}</h4>
       </div>
       <div class="panel-body">
         <form action="{% url "dashboard.views.template-acl" pk=object.pk %}" method="post">{% csrf_token %}
@@ -64,8 +65,35 @@
         </form>
       </div>
     </div>
-  </div>
-</div>
+    
+        
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4 class="no-margin"><i class="icon-file"></i> {% trans "Disk list" %}</h4>
+      </div>
+      <div class="panel-body">
+        <ul style="list-style: none; padding-left: 0;">
+        {% for d in disks %}
+          <li>
+            {% include "dashboard/_disk-list-element.html" %}
+          </li>
+        {% endfor %}
+        </ul>
+      </div>
+    </div>
+        
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4 class="no-margin"><i class="icon-folder-open"></i> {% trans "Create new disk" %}</h4>
+      </div>
+      <div class="panel-body">
+        <form action="{% url "dashboard.views.disk-add" %}" method="POST">
+          {% crispy disk_add_form %} 
+        </form>
+      </div>
+    </div>
+  </div><!-- .col-md-4 -->
+</div><!-- .row -->
 
 
 <style>
