@@ -510,7 +510,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                     'port': port, 'proto': proto, 'pw': self.pw,
                     'host': host}
             elif proto == 'ssh':
-                return ('sshpass -p %(pw)s ssh -o StrictHostKeyChecking=n '
+                return ('sshpass -p %(pw)s ssh -o StrictHostKeyChecking=no '
                         'cloud@%(host)s -p %(port)d') % {
                     'port': port, 'proto': proto, 'pw': self.pw,
                     'host': host}
