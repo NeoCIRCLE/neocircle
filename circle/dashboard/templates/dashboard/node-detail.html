@@ -4,7 +4,19 @@
 {% block content %}
 <div class="body-content">
   <div class="page-header">
-    <h1>{{ node.name }} <small>{{ node.get_connect_host }}</small></h1>
+    <h1>	  
+      <div id="node-details-rename">
+       <form action="" method="POST" id="node-details-rename-form">
+         {% csrf_token %}
+         <input id="node-details-rename-name" class="form-control" name="new_name" type="text" value="{{ node.name }}"/> 
+         <button type="submit" id="node-details-rename-submit" class="btn">{% trans "Rename" %}</button>
+       </form>
+  </div>
+  <div id="node-details-h1-name">    
+      {{ node.name }} 
+  </div>
+</h1>
+      <small>{{ node.get_connect_host }}</small>
   </div>
   <div class="row">
     <div class="col-md-4" id="node-info-pane">
@@ -14,11 +26,22 @@
 			{% elif node.state == 'DISABLED' %}label-warning
 			{% elif node.state == 'OFFLINE' %}label-warning
 			{% endif %}">{{ node.state }}</span>
-		<div class="btn-group">
-			{% with node as record %}
-				{% include "dashboard/node-list/column-actions.html" with btn_size="" %}
-			{% endwith %}
-		</div>
+<div class="btn-group">
+  <button type="button" class="btn {{ btn_size }} btn-warning nojs-dropdown-toogle dropdown-toggle" data-toggle="dropdown">Action <i class="icon-caret-down"></i></button>
+  <ul class="dropdown-menu nojs-dropdown-toogle" role="menu">
+    <li><a href="#" class="node-details-rename-button"><i class="icon-pencil"></i> {% trans "Rename" %}</a></li>
+    <li><a href="#"><i class="icon-cloud-upload"></i> Flush</a></li>
+  {% if node.enabled %}
+    <li><a style="display:none" data-node-pk="{{ node.pk }}" class="real-link node-enable" href="{% url "dashboard.views.status-node" pk=node.pk %}?next={{ request.path }}"><i class="icon-check"></i> Enable</a>
+    <a style="display:block" data-node-pk="{{ node.pk }}" class="real-link node-enable" href="{% url "dashboard.views.status-node" pk=node.pk %}?next={{ request.path }}"><i class="icon-remove"></i> Disable</a></li>
+  {% else %}
+    <li><a style="display:block" data-node-pk="{{ node.pk }}" class="real-link node-enable" href="{% url "dashboard.views.status-node" pk=node.pk %}?next={{ request.path }}" >
+	<i class="icon-check"></i> Enable</a>
+      <a style="display:none" data-node-pk="{{ node.pk }}" class="real-link node-enable" href="{% url "dashboard.views.status-node" pk=node.pk %}?next={{ request.path }}" ><i class="icon-remove"></i> Disable</a></li>
+  {% endif %}
+    <li><a data-node-pk="{{ node.pk }}" class="real-link node-delete" href="{% url "dashboard.views.delete-node" pk=node.pk %}?next={{ request.path }}"><i class="icon-trash"></i> Delete</a></li>
+  </ul>
+</div>
       </div>
     </div>
     <div class="col-md-8" id="node-detail-pane">
@@ -60,6 +83,6 @@
 
 {% endblock %}
 {% block extra_js %}
-<script src="{{ STATIC_URL}}dashboard/node-list.js"></script>
+<script src="{{ STATIC_URL}}dashboard/node-details.js"></script>
 {% endblock %}
 

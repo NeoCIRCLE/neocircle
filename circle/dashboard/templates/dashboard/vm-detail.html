@@ -113,8 +113,8 @@
       <div class="big">
         <span id="vm-details-state" class="label label-success">{{ instance.state }}</span>
         <div class="btn-group">
-          <button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown">Action <i class="icon-caret-down"></i></button>
-          <ul class="dropdown-menu" role="menu">
+          <button type="button" class="btn btn-warning nojs-dropdown-toogle dropdown-toggle" data-toggle="dropdown">Action <i class="icon-caret-down"></i></button>
+          <ul class="nojs-dropdown-menu dropdown-menu" role="menu">
             <li><a href="#" class="vm-details-rename-button"><i class="icon-pencil"></i> {% trans "Rename" %}</a></li>
             <li><a data-vm-pk="{{ instance.pk }}" href="#" class="vm-details-save-as-button"><i class="icon-save"></i> {% trans "Save as" %}</a></li>
             <li><a href="#"><i class="icon-refresh"></i> {% trans "Reboot" %}</a></li>

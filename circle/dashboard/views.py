@@ -480,10 +480,13 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
         return context
 
     def post(self, request, *args, **kwargs):
+        print request.POST
         if request.POST.get('new_name'):
             return self.__set_name(request)
-        if request.POST.get('new_status'):
+        if request.POST.get('change_status') is not None:
             return self.__set_status(request)
+        return redirect(reverse_lazy("dashboard.views.node-detail",
+                                     kwargs={'pk': self.get_object().pk}))
 
     def __set_name(self, request):
         self.object = self.get_object()
@@ -509,19 +512,14 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
 
     def __set_status(self, request):
         self.object = self.get_object()
-        new_status = request.POST.get("new_status")
-        if new_status == "enable":
+        if not self.object.enabled:
             self.object.enable(user=request.user)
-        elif new_status == "disable":
-            self.object.disable(user=request.user)
         else:
-            return
-
+            self.object.disable(user=request.user)
         success_message = _("Node successfully changed status!")
         if request.is_ajax():
             response = {
                 'message': success_message,
-                'new_status': new_status,
                 'node_pk': self.object.pk
             }
             return HttpResponse(
@@ -1275,6 +1273,12 @@ class NodeStatus(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
     template_name = "dashboard/confirm/node-status.html"
     model = Node
 
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/confirm/ajax-node-status.html']
+        else:
+            return ['dashboard/confirm/node-status.html']
+
     def get_success_url(self):
         next = self.request.GET.get('next')
         if next:
@@ -1285,37 +1289,30 @@ class NodeStatus(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(NodeStatus, self).get_context_data(**kwargs)
-        context['status'] = self.request.GET.get('status')
+        if self.object.enabled:
+            context['status'] = "disable"
+        else:
+            context['status'] = "enable"
         return context
 
     def post(self, request, *args, **kwargs):
-        if request.POST.get('new_status'):
-            print self.request.GET.get('next')
+        if request.POST.get('change_status') is not None:
             return self.__set_status(request)
+        return redirect(reverse_lazy("dashboard.views.node-detail",
+                                     kwargs={'pk': self.get_object().pk}))
 
     def __set_status(self, request):
         self.object = self.get_object()
-        new_status = request.POST.get("new_status")
-
-        if new_status == "enable":
-            Node.objects.filter(pk=self.object.pk).update(
-                **{'enabled': True})
-        elif new_status == "disable":
-            Node.objects.filter(pk=self.object.pk).update(
-                **{'enabled': False})
+        if not self.object.enabled:
+            self.object.enable(user=request.user)
         else:
-            if request.is_ajax():
-                return HttpResponse(content_type="application/json")
-
-            else:
-                return redirect(self.get_success_url())
+            self.object.disable(user=request.user)
 
         success_message = _("Node successfully changed status!")
 
         if request.is_ajax():
             response = {
                 'message': success_message,
-                'new_status': new_status,
                 'node_pk': self.object.pk
             }
             return HttpResponse(

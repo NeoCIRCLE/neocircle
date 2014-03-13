@@ -303,33 +303,27 @@ a.hover-black {
 }
 
 
-.dropdown-menu
+.nojs-dropdown-menu
 {
-
-	position:absolute;
-	display:none;
-	z-index: 1;
+  position:absolute;
+  display:none;
+  z-index: 1;
 }
 
 
-.dropdown-toggle:focus + .dropdown-menu
+.nojs-dropdown-toggle:focus + .nojs-dropdown-menu
 {
-
-	display: block;
-
+  display: block;
 }
 
-.dropdown-toggle:focus
+.nojs-dropdown-toggle:focus
 {
-
-	outline:none;
-
+  outline:none;
 }
 
-.dropdown-menu:hover{
-
-	display: block;
-
+.nojs-dropdown-menu:hover
+{
+  display: block;
 }
 
 .notification-messages {

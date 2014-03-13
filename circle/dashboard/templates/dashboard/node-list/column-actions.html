@@ -1,7 +1,7 @@
 
 <div class="btn-group">
-	<button type="button" class="btn {{ btn_size }} btn-warning dropdown-toggle" data-toggle="dropdown">Action <i class="icon-caret-down"></i></button>
-  <ul class="dropdown-menu" role="menu">
+	<button type="button" class="btn {{ btn_size }} btn-warning nojs-dropdown-toogle dropdown-toggle" data-toggle="dropdown">Action <i class="icon-caret-down"></i></button>
+  <ul class="dropdown-menu nojs-dropdown-toogle" role="menu">
 	  <li><a href="#"><i class="icon-cloud-upload"></i> Flush</a></li>
     {% if record.enabled %}
     <li><a style="display:none" data-status="enable" data-node-pk="{{ record.pk }}" class="real-link node-enable" href="{% url "dashboard.views.status-node" pk=record.pk %}?next={{ request.path }}&status=enable"><i class="icon-check"></i> Enable</a>

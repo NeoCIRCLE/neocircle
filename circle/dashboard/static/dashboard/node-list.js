@@ -162,6 +162,7 @@ $(function() {
     
      // change big status span
     $('#node-info-pane').load(location.href+" #node-info-data");
+    $('#activity-timeline-wrapper').load(location.href+" #activity-timeline");
   }
 
   $('#table_container').on('click','.node-enable',function() {
@@ -173,6 +174,7 @@ $(function() {
   $('#node-info-pane').on('click','.node-enable',function(){
     // post, change node status
     enablenode($(this).attr('data-node-pk'),$(this).attr('data-status'),enabledetailsSuccess);
+
     return false;
  });
 
