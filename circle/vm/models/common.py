@@ -119,10 +119,10 @@ class Lease(Model):
             return _("never")
 
     def __unicode__(self):
-        return _("%s (suspend: %s, remove: %s)") % (
-            self.name,
-            self.get_readable_suspend_time(),
-            self.get_readable_delete_time())
+        return _("%(name)s (suspend: %(s)s, remove: %(r)s)") % {
+            'name': self.name,
+            's': self.get_readable_suspend_time(),
+            'r': self.get_readable_delete_time()}
 
 
 class Trait(Model):

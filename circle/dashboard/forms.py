@@ -583,7 +583,7 @@ class TemplateForm(forms.ModelForm):
                 Field("system"),
             ),
             Fieldset(
-                _("Exeternal"),
+                _("External"),
                 Field("disks"),
                 Field("networks"),
                 Field("lease"),

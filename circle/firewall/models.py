@@ -72,7 +72,7 @@ class Rule(models.Model):
                                           "this rule."))
     nat = models.BooleanField(default=False, verbose_name=_("NAT"),
                               help_text=_("If network address translation "
-                                          "shoud be done."))
+                                          "should be done."))
     nat_dport = models.IntegerField(blank=True, null=True,
                                     help_text=_("Rewrite destination port "
                                                 "number to this if NAT is "
@@ -193,7 +193,7 @@ class Vlan(AclBase, models.Model):
                               verbose_name=_('IPv4 address/prefix'),
                               help_text=_(
                                   'The IPv4 address and the prefix length '
-                                  'of the gateway.'
+                                  'of the gateway. '
                                   'Recommended value is the last '
                                   'valid address of the subnet, '
                                   'for example '

@@ -401,7 +401,7 @@ class VmDetailView(CheckedDetailView):
         )
         template = self.object.save_as_template(name=new_name,
                                                 owner=request.user)
-        messages.success(request, _("Instance succesfully saved as template, "
+        messages.success(request, _("Instance successfully saved as template, "
                                     "please rename it!"))
         return redirect(reverse_lazy("dashboard.views.template-detail",
                                      kwargs={'pk': template.pk}))
@@ -1392,8 +1392,8 @@ class VmMassDelete(LoginRequiredMixin, View):
                 i.destroy_async(request.user)
                 names.append(i.name)
 
-        success_message = _("Mass delete complete, the following VMs were " +
-                            "deleted: %s!" % u', '.join(names))
+        success_message = _("Mass delete complete, the following VMs were "
+                            "deleted: %s!") % u', '.join(names)
 
         # we can get this only via AJAX ...
         if request.is_ajax():
