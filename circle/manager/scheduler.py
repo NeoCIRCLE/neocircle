@@ -23,7 +23,8 @@ def select_node(instance, nodes):
     ''' Select a node for hosting an instance based on its requirements.
     '''
     # check required traits
-    nodes = [n for n in nodes if has_traits(instance.req_traits.all(), n)]
+    nodes = [n for n in nodes
+             if n.enabled and has_traits(instance.req_traits.all(), n)]
     if not nodes:
         raise TraitsUnsatisfiableException()
 
