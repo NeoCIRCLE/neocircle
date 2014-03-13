@@ -14,9 +14,9 @@
         <div class="pull-right">
           <form action="" method="POST">
             {% csrf_token %}
-            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button> 
+            <button type="button" class="btn btn-default" data-dismiss="modal">{% trans "Cancel" %}</button> 
 	    <input type="hidden" name="change_status" value=""/>
-	    <button class="btn btn-warning">Yes, {{ status  }}</button>
+            <button class="btn btn-warning">{% blocktrans with status=status %}Yes, {{status}}{% endblocktrans %}</button>
           </form>
         </div>
 	<div class="clearfix"></div>
