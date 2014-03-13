@@ -616,21 +616,23 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         interval what the Lease allows. This rate is configurable with the
         only parameter, threshold (0.1 = 10% by default).
         """
-        return (self._is_suspend_expiring(self, threshold) or
-                self._is_delete_expiring(self, threshold))
+        return (self._is_suspend_expiring(threshold) or
+                self._is_delete_expiring(threshold))
 
     def _is_suspend_expiring(self, threshold=0.1):
         interval = self.lease.suspend_interval
-        if interval is not None:
-            limit = timezone.now() + threshold * self.lease.suspend_interval
+        if self.time_of_suspend is not None and interval is not None:
+            limit = timezone.now() + timedelta(seconds=(
+                threshold * self.lease.suspend_interval.total_seconds()))
             return limit > self.time_of_suspend
         else:
             return False
 
     def _is_delete_expiring(self, threshold=0.1):
         interval = self.lease.delete_interval
-        if interval is not None:
-            limit = timezone.now() + threshold * self.lease.delete_interval
+        if self.time_of_delete is not None and interval is not None:
+            limit = timezone.now() + timedelta(seconds=(
+                threshold * self.lease.delete_interval.total_seconds()))
             return limit > self.time_of_delete
         else:
             return False
