@@ -14,6 +14,10 @@ from model_utils.models import TimeStampedModel
 logger = getLogger(__name__)
 
 
+class WorkerNotFound(Exception):
+    pass
+
+
 def activitycontextimpl(act, on_abort=None, on_commit=None):
     try:
         yield act
@@ -60,7 +64,8 @@ class ActivityModel(TimeStampedModel):
         if not self.finished:
             self.finished = timezone.now()
             self.succeeded = succeeded
-            self.result = result
+            if result is not None:
+                self.result = result
             if event_handler is not None:
                 event_handler(self)
             self.save()

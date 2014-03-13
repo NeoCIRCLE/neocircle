@@ -1,7 +1,9 @@
 from datetime import timedelta
-import uuid
 
 from django.contrib.auth.models import User
+from django.contrib.auth.forms import (
+    AuthenticationForm, PasswordResetForm, SetPasswordForm,
+)
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import (
@@ -18,54 +20,59 @@ from sizefield.widgets import FileSizeWidget
 from firewall.models import Vlan, Host
 from storage.models import Disk, DataStore
 from vm.models import (
-    InstanceTemplate, Lease, InterfaceTemplate, Node, Trait,
+    InstanceTemplate, Lease, InterfaceTemplate, Node, Trait, Instance
 )
 
 VLANS = Vlan.objects.all()
 DISKS = Disk.objects.exclude(type="qcow2-snap")
 
 
-class VmCreateForm(forms.Form):
-    template = forms.ModelChoiceField(queryset=InstanceTemplate.objects.all(),
-                                      empty_label="Select pls")
+class VmCustomizeForm(forms.Form):
+    name = forms.CharField()
     cpu_priority = forms.IntegerField()
     cpu_count = forms.IntegerField()
     ram_size = forms.IntegerField()
 
     disks = forms.ModelMultipleChoiceField(
-        queryset=DISKS,
-        required=False
-    )
-
+        queryset=None, required=True)
     networks = forms.ModelMultipleChoiceField(
-        queryset=VLANS, required=False)
+        queryset=None, required=False)
+
+    template = forms.CharField()
+    customized = forms.CharField()  # dummy flag field
 
     def __init__(self, *args, **kwargs):
-        super(VmCreateForm, self).__init__(*args, **kwargs)
+        self.user = kwargs.pop("user", None)
+        self.template = kwargs.pop("template", None)
+        super(VmCustomizeForm, self).__init__(*args, **kwargs)
+
+        # set displayed disk and network list
+        self.fields['disks'].queryset = Disk.get_objects_with_level(
+            'user', self.user).exclude(type="qcow2-snap")
+        self.fields['networks'].queryset = Vlan.get_objects_with_level(
+            'user', self.user)
+
+        # set initial for disk and network list
+        self.initial['disks'] = self.template.disks.all()
+        self.initial['networks'] = InterfaceTemplate.objects.filter(
+            template=self.template).values_list("vlan", flat=True)
+
+        # set initial for resources
+        self.initial['cpu_priority'] = self.template.priority
+        self.initial['cpu_count'] = self.template.num_cores
+        self.initial['ram_size'] = self.template.ram_size
+
+        # initial name and template pk
+        self.initial['name'] = self.template.name
+        self.initial['template'] = self.template.pk
+        self.initial['customized'] = self.template.pk
+
         self.helper = FormHelper(self)
         self.helper.form_show_labels = False
         self.helper.layout = Layout(
-            Div(
-                Div(
-                    Field('template', id="vm-create-template-select",
-                          css_class="select form-control"),
-                    css_class="col-sm-10",
-                ),
-                css_class="row",
-            ),
+            Field("template", type="hidden"),
+            Field("customized", type="hidden"),
             Div(  # buttons
-                Div(
-                    AnyTag(
-                        "a",
-                        HTML("%s " % _("Advanced")),
-                        AnyTag(
-                            "i",
-                            css_class="vm-create-advanced-icon icon-caret-down"
-                        ),
-                        css_class="btn btn-info vm-create-advanced-btn",
-                    ),
-                    css_class="col-sm-5",
-                ),
                 Div(
                     AnyTag(  # tip: don't try to use Button class
                         "button",
@@ -74,193 +81,200 @@ class VmCreateForm(forms.Form):
                             css_class="icon-play"
                         ),
                         HTML(" Start"),
-                        css_id="vm-create-submit",
+                        css_id="vm-create-customized-start",
                         css_class="btn btn-success",
 
                     ),
-                    css_class="col-sm-5 text-right",
+                    css_class="col-sm-11 text-right",
                 ),
                 css_class="row",
             ),
-            Div(  # vm-create-advanced
+            Div(
+                Div(
+                    Field("name"),
+                    css_class="col-sm-5",
+                ),
+                css_class="row",
+            ),
+            Div(
+                Div(
+                    AnyTag(
+                        'h2',
+                        HTML(_("Resources")),
+                    ),
+                    css_class="col-sm-12",
+                ),
+                css_class="row",
+            ),
+            Div(  # cpu priority
+                Div(
+                    HTML('<label for="vm-cpu-priority-slider">'
+                         '<i class="icon-trophy"></i> CPU priority'
+                         '</label>'),
+                    css_class="col-sm-3"
+                ),
+                Div(
+                    Field('cpu_priority', id="vm-cpu-priority-slider",
+                          css_class="vm-slider",
+                          data_slider_min="0", data_slider_max="100",
+                          data_slider_step="1",
+                          data_slider_value=self.template.priority,
+                          data_slider_handle="square",
+                          data_slider_tooltip="hide"),
+                    css_class="col-sm-9"
+                ),
+                css_class="row"
+            ),
+            Div(  # cpu count
+                Div(
+                    HTML('<label for="cpu-count-slider">'
+                         '<i class="icon-cogs"></i> CPU count'
+                         '</label>'),
+                    css_class="col-sm-3"
+                ),
+                Div(
+                    Field('cpu_count', id="vm-cpu-count-slider",
+                          css_class="vm-slider",
+                          data_slider_min="1", data_slider_max="8",
+                          data_slider_step="1",
+                          data_slider_value=self.template.num_cores,
+                          data_slider_handle="square",
+                          data_slider_tooltip="hide"),
+                    css_class="col-sm-9"
+                ),
+                css_class="row"
+            ),
+            Div(  # ram size
+                Div(
+                    HTML('<label for="ram-slider">'
+                         '<i class="icon-ticket"></i> RAM amount'
+                         '</label>'),
+                    css_class="col-sm-3"
+                ),
+                Div(
+                    Field('ram_size', id="vm-ram-size-slider",
+                          css_class="vm-slider",
+                          data_slider_min="128", data_slider_max="4096",
+                          data_slider_step="128",
+                          data_slider_value=self.template.ram_size,
+                          data_slider_handle="square",
+                          data_slider_tooltip="hide"),
+                    css_class="col-sm-9"
+                ),
+                css_class="row"
+            ),
+            Div(  # disks
+                Div(
+                    AnyTag(
+                        "h2",
+                        HTML("Disks")
+                    ),
+                    css_class="col-sm-4",
+                ),
                 Div(
                     Div(
-                        AnyTag(
-                            'h2',
-                            HTML(_("Resources")),
-                        ),
-                        css_class="col-sm-12",
+                        Field("disks", css_class="form-control",
+                              id="vm-create-disk-add-form"),
+                        css_class="js-hidden",
+                        style="padding-top: 15px; max-width: 450px;",
                     ),
-                    css_class="row",
-                ),
-                Div(  # cpu priority
-                    Div(
-                        HTML('<label for="vm-cpu-priority-slider">'
-                             '<i class="icon-trophy"></i> CPU priority'
-                             '</label>'),
-                        css_class="col-sm-3"
-                    ),
-                    Div(
-                        Field('cpu_priority', id="vm-cpu-priority-slider",
-                              css_class="vm-slider",
-                              data_slider_min="0", data_slider_max="100",
-                              data_slider_step="1", data_slider_value="20",
-                              data_slider_handle="square",
-                              data_slider_tooltip="hide"),
-                        css_class="col-sm-9"
-                    ),
-                    css_class="row"
-                ),
-                Div(  # cpu count
-                    Div(
-                        HTML('<label for="cpu-count-slider">'
-                             '<i class="icon-cogs"></i> CPU count'
-                             '</label>'),
-                        css_class="col-sm-3"
-                    ),
-                    Div(
-                        Field('cpu_count', id="vm-cpu-count-slider",
-                              css_class="vm-slider",
-                              data_slider_min="1", data_slider_max="8",
-                              data_slider_step="1", data_slider_value="2",
-                              data_slider_handle="square",
-                              data_slider_tooltip="hide"),
-                        css_class="col-sm-9"
-                    ),
-                    css_class="row"
-                ),
-                Div(  # ram size
-                    Div(
-                        HTML('<label for="ram-slider">'
-                             '<i class="icon-ticket"></i> RAM amount'
-                             '</label>'),
-                        css_class="col-sm-3"
-                    ),
-                    Div(
-                        Field('ram_size', id="vm-ram-size-slider",
-                              css_class="vm-slider",
-                              data_slider_min="128", data_slider_max="4096",
-                              data_slider_step="128", data_slider_value="512",
-                              data_slider_handle="square",
-                              data_slider_tooltip="hide"),
-                        css_class="col-sm-9"
-                    ),
-                    css_class="row"
-                ),
-                Div(  # disks
                     Div(
                         AnyTag(
-                            "h2",
-                            HTML("Disks")
+                            "h3",
+                            HTML(_("No disks are added!")),
+                            css_id="vm-create-disk-list",
                         ),
-                        css_class="col-sm-4",
-                    ),
-                    Div(
-                        Div(
-                            Field("disks", css_class="form-control",
-                                  id="vm-create-disk-add-form"),
-                            css_class="js-hidden",
-                            style="padding-top: 15px; max-width: 450px;",
-                        ),
-                        Div(
-                            AnyTag(
-                                "h3",
-                                HTML(_("No disks are added!")),
-                                css_id="vm-create-disk-list",
-                            ),
-                            AnyTag(
-                                "h3",
+                        AnyTag(
+                            "h3",
+                            Div(
+                                AnyTag(
+                                    "select",
+                                    css_class="form-control",
+                                    css_id="vm-create-disk-add-select",
+                                ),
                                 Div(
                                     AnyTag(
-                                        "select",
-                                        css_class="form-control",
-                                        css_id="vm-create-disk-add-select",
-                                    ),
-                                    Div(
+                                        "a",
                                         AnyTag(
-                                            "a",
-                                            AnyTag(
-                                                "i",
-                                                css_class="icon-plus-sign",
-                                            ),
-                                            href="#",
-                                            css_id="vm-create-disk-add-button",
-                                            css_class="btn btn-success",
+                                            "i",
+                                            css_class="icon-plus-sign",
                                         ),
-                                        css_class="input-group-btn"
+                                        href="#",
+                                        css_id="vm-create-disk-add-button",
+                                        css_class="btn btn-success",
                                     ),
-                                    css_class="input-group",
-                                    style="max-width: 330px;",
+                                    css_class="input-group-btn"
                                 ),
-                                css_id="vm-create-disk-add",
+                                css_class="input-group",
+                                style="max-width: 330px;",
                             ),
-                            css_class="no-js-hidden",
+                            css_id="vm-create-disk-add",
                         ),
-                        css_class="col-sm-8",
-                        style="padding-top: 3px;",
+                        css_class="no-js-hidden",
                     ),
-                    css_class="row",
-                ),  # end of disks
-                Div(  # network
-                    Div(
+                    css_class="col-sm-8",
+                    style="padding-top: 3px;",
+                ),
+                css_class="row",
+            ),  # end of disks
+            Div(  # network
+                Div(
+                    AnyTag(
+                        "h2",
+                        HTML(_("Network")),
+                    ),
+                    css_class="col-sm-4",
+                ),
+                Div(
+                    Div(  # js-hidden
+                        Field(
+                            "networks",
+                            css_class="form-control",
+                            id="vm-create-network-add-vlan",
+                        ),
+                        css_class="js-hidden",
+                        style="padding-top: 15px; max-width: 450px;",
+                    ),
+                    Div(  # no-js-hidden
                         AnyTag(
-                            "h2",
-                            HTML(_("Network")),
+                            "h3",
+                            HTML(_("Not added to any network!")),
+                            css_id="vm-create-network-list",
                         ),
-                        css_class="col-sm-4",
-                    ),
-                    Div(
-                        Div(  # js-hidden
-                            Field(
-                                "networks",
-                                css_class="form-control",
-                                id="vm-create-network-add-vlan",
-                            ),
-                            css_class="js-hidden",
-                            style="padding-top: 15px; max-width: 450px;",
-                        ),
-                        Div(  # no-js-hidden
-                            AnyTag(
-                                "h3",
-                                HTML(_("Not added to any network!")),
-                                css_id="vm-create-network-list",
-                            ),
-                            AnyTag(
-                                "h3",
+                        AnyTag(
+                            "h3",
+                            Div(
+                                AnyTag(
+                                    "select",
+                                    css_class=("form-control "
+                                               "font-awesome-font"),
+                                    css_id="vm-create-network-add-select",
+                                ),
                                 Div(
                                     AnyTag(
-                                        "select",
-                                        css_class=("form-control "
-                                                   "font-awesome-font"),
-                                        css_id="vm-create-network-add-select",
-                                    ),
-                                    Div(
+                                        "a",
                                         AnyTag(
-                                            "a",
-                                            AnyTag(
-                                                "i",
-                                                css_class="icon-plus-sign",
-                                            ),
-                                            css_id=("vm-create-network-add"
-                                                    "-button"),
-                                            css_class="btn btn-success",
+                                            "i",
+                                            css_class="icon-plus-sign",
                                         ),
-                                        css_class="input-group-btn",
+                                        css_id=("vm-create-network-add"
+                                                "-button"),
+                                        css_class="btn btn-success",
                                     ),
-                                    css_class="input-group",
-                                    style="max-width: 330px;",
+                                    css_class="input-group-btn",
                                 ),
-                                css_class="vm-create-network-add"
+                                css_class="input-group",
+                                style="max-width: 330px;",
                             ),
-                            css_class="no-js-hidden",
+                            css_class="vm-create-network-add"
                         ),
-                        css_class="col-sm-8",
-                        style="padding-top: 3px;",
+                        css_class="no-js-hidden",
                     ),
-                    css_class="row"
-                ),  # end of network
-                css_class="vm-create-advanced"
-            ),
+                    css_class="col-sm-8",
+                    style="padding-top: 3px;",
+                ),
+                css_class="row"
+            ),  # end of network
         )
 
 
@@ -448,7 +462,7 @@ class TemplateForm(forms.ModelForm):
             template = InstanceTemplate.objects.get(pk=parent)
             parent = template.__dict__
             fields = ["system", "name", "num_cores", "boot_menu", "ram_size",
-                      "priority", "state", "access_method", "raw_data",
+                      "priority", "access_method", "raw_data",
                       "arch", "description"]
             for f in fields:
                 self.initial[f] = parent[f]
@@ -473,6 +487,15 @@ class TemplateForm(forms.ModelForm):
         if self.instance.pk is not None:
             return User.objects.get(pk=self.instance.owner.pk)
         return self.user
+
+    def clean_raw_data(self):
+        # if raw_data has changed and the user is not superuser
+        if "raw_data" in self.changed_data and not self.user.is_superuser:
+            old_raw_data = InstanceTemplate.objects.get(
+                pk=self.instance.pk).raw_data
+            return old_raw_data
+        else:
+            return self.cleaned_data['raw_data']
 
     def save(self, commit=True):
         data = self.cleaned_data
@@ -499,6 +522,9 @@ class TemplateForm(forms.ModelForm):
 
     @property
     def helper(self):
+        kwargs_raw_data = {}
+        if not self.user.is_superuser:
+            kwargs_raw_data['readonly'] = None
         helper = FormHelper()
         helper.layout = Layout(
             Field("name"),
@@ -550,7 +576,7 @@ class TemplateForm(forms.ModelForm):
                 "stuff",
                 Field('access_method'),
                 Field('boot_menu'),
-                Field('raw_data'),
+                Field('raw_data', **kwargs_raw_data),
                 Field('req_traits'),
                 Field('description'),
                 Field("parent", type="hidden"),
@@ -715,27 +741,61 @@ class LeaseForm(forms.ModelForm):
 
 class DiskAddForm(forms.Form):
     name = forms.CharField()
-    size = forms.CharField(widget=FileSizeWidget)
+    size = forms.CharField(widget=FileSizeWidget, required=False)
+    url = forms.CharField(required=False)
+    is_template = forms.CharField()
+    object_pk = forms.CharField()
+
+    def __init__(self, *args, **kwargs):
+        self.is_template = kwargs.pop("is_template")
+        self.object_pk = kwargs.pop("object_pk")
+        self.user = kwargs.pop("user")
+        super(DiskAddForm, self).__init__(*args, **kwargs)
+        self.initial['is_template'] = 1 if self.is_template is True else 0
+        self.initial['object_pk'] = self.object_pk
 
     def clean_size(self):
         size_in_bytes = self.cleaned_data.get("size")
-        if not size_in_bytes.isdigit():
+        if not size_in_bytes.isdigit() and len(size_in_bytes) > 0:
             raise forms.ValidationError(_("Invalid format, you can use "
                                           " GB or MB!"))
         return size_in_bytes
 
-    def save(self, vm, commit=True):
+    def clean(self):
+        cleaned_data = self.cleaned_data
+        size = cleaned_data.get("size")
+        url = cleaned_data.get("url")
+
+        if not size and not url:
+            msg = _("You have to either specify size or URL")
+            self._errors[_("Global")] = self.error_class([msg])
+        return cleaned_data
+
+    def save(self, commit=True):
         data = self.cleaned_data
-        d = Disk(
-            name=data['name'],
-            filename=str(uuid.uuid4()),
-            datastore=DataStore.objects.all()[0],
-            type="qcow2-norm",
-            size=data['size'],
-            dev_num="a",
-        )
-        d.save()
-        vm.disks.add(d)
+
+        if self.is_template:
+            inst = InstanceTemplate.objects.get(pk=self.object_pk)
+        else:
+            inst = Instance.objects.get(pk=self.object_pk)
+
+        if data['size']:
+            kwargs = {
+                'name': data['name'],
+                'type': "qcow2-norm",
+                'datastore': DataStore.objects.all()[0],
+                'size': data['size'],
+            }
+            d = Disk.create_empty(instance=inst, user=self.user, **kwargs)
+        else:
+            kwargs = {
+                'name': data['name'],
+                'url': data['url'],
+            }
+            Disk.create_from_url_async(instance=inst, user=self.user,
+                                       **kwargs)
+            d = None
+
         return d
 
     @property
@@ -743,12 +803,111 @@ class DiskAddForm(forms.Form):
         helper = FormHelper()
         helper.form_show_labels = False
         helper.layout = Layout(
+            Field("is_template", type="hidden"),
+            Field("object_pk", type="hidden"),
             Field("name", placeholder=_("Name")),
             Field("size", placeholder=_("Disk size (for example: 20GB, "
                                         "1500MB)")),
+            Field("url", placeholder=_("URL to an ISO image")),
+            AnyTag(
+                "div",
+                HTML(
+                    _("Either specify the size for an empty disk or a URL "
+                      "to an ISO image!")
+                ),
+                css_class="alert alert-info",
+                style="padding: 5px; text-align: justify;",
+            ),
         )
-        helper.add_input(Submit("submit", "Create new disk",
+        helper.add_input(Submit("submit", _("Add"),
                                 css_class="btn btn-success"))
+        return helper
+
+
+class CircleAuthenticationForm(AuthenticationForm):
+    # fields: username, password
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.form_show_labels = False
+        helper.layout = Layout(
+            AnyTag(
+                "div",
+                AnyTag(
+                    "span",
+                    AnyTag(
+                        "i",
+                        css_class="icon-user",
+                    ),
+                    css_class="input-group-addon",
+                ),
+                Field("username", placeholder=_("Username"),
+                      css_class="form-control"),
+                css_class="input-group",
+            ),
+            AnyTag(
+                "div",
+                AnyTag(
+                    "span",
+                    AnyTag(
+                        "i",
+                        css_class="icon-lock",
+                    ),
+                    css_class="input-group-addon",
+                ),
+                Field("password", placeholder=_("Password"),
+                      css_class="form-control"),
+                css_class="input-group",
+            ),
+        )
+        helper.add_input(Submit("submit", _("Sign in"),
+                                css_class="btn btn-success"))
+        return helper
+
+
+class CirclePasswordResetForm(PasswordResetForm):
+    # fields: email
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.form_show_labels = False
+        helper.layout = Layout(
+            AnyTag(
+                "div",
+                AnyTag(
+                    "span",
+                    AnyTag(
+                        "i",
+                        css_class="icon-envelope",
+                    ),
+                    css_class="input-group-addon",
+                ),
+                Field("email", placeholder=_("Email address"),
+                      css_class="form-control"),
+                Div(
+                    AnyTag(
+                        "button",
+                        HTML(_("Reset password")),
+                        css_class="btn btn-success",
+                    ),
+                    css_class="input-group-btn",
+                ),
+                css_class="input-group",
+            ),
+        )
+        return helper
+
+
+class CircleSetPasswordForm(SetPasswordForm):
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.add_input(Submit("submit", _("Change password"),
+                                css_class="btn btn-success change-password",
+                                css_id="submit-password-button"))
         return helper
 
 

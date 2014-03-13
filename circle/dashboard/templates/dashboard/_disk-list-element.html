@@ -1,0 +1,14 @@
+{% load i18n %}
+{% load sizefieldtags %}
+
+<i class="{% if d.is_downloading %}icon-refresh icon-spin{% else %}icon-file{% endif %}"></i> 
+{{ d.name }} (#{{ d.id }}) - 
+{% if not d.is_downloading %}
+  {% if d.ready %}
+    {{ d.size|filesize }}
+  {% else %}
+    <div class="label label-danger">failed</div>
+  {% endif %}
+{% else %}<span class="disk-list-disk-percentage" data-disk-pk="{{ d.pk }}">{{ d.get_download_percentage }}</span>%{% endif %}
+
+<div class="btn btn-xs btn-danger pull-right"><i class="icon-remove"></i> Remove</div>

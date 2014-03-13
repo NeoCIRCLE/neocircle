@@ -5,9 +5,15 @@ from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.signals import user_logged_in
 from django.db.models import (
-    Model, ForeignKey, OneToOneField, CharField, IntegerField, TextField
+    Model, ForeignKey, OneToOneField, CharField, IntegerField, TextField,
+    DateTimeField,
 )
-from django.utils.translation import ugettext_lazy as _
+from django.template.loader import render_to_string
+from django.utils.translation import ugettext_lazy as _, override
+
+from model_utils.models import TimeStampedModel
+from model_utils.fields import StatusField
+from model_utils import Choices
 
 from vm.models import Instance
 from acl.models import AclBase
@@ -20,6 +26,34 @@ class Favourite(Model):
     user = ForeignKey(User)
 
 
+class Notification(TimeStampedModel):
+    STATUS = Choices(('new', _('new')),
+                     ('delivered', _('delivered')),
+                     ('read', _('read')))
+
+    status = StatusField()
+    to = ForeignKey(User)
+    subject = CharField(max_length=128)
+    message = TextField()
+    valid_until = DateTimeField(null=True, default=None)
+
+    class Meta:
+        ordering = ['-created']
+
+    @classmethod
+    def send(cls, user, subject, template, context={}, valid_until=None):
+        try:
+            language = user.profile.preferred_language
+        except:
+            language = None
+        with override(language):
+            context['user'] = user
+            rendered = render_to_string(template, context)
+            subject = unicode(subject)
+        return cls.objects.create(to=user, subject=subject, message=rendered,
+                                  valid_until=valid_until)
+
+
 class Profile(Model):
     user = OneToOneField(User)
     preferred_language = CharField(verbose_name=_('preferred language'),
@@ -30,6 +64,10 @@ class Profile(Model):
         unique=True, blank=True, null=True, max_length=64,
         help_text=_('Unique identifier of the person, e.g. a student number.'))
     instance_limit = IntegerField(default=5)
+
+    def notify(self, subject, template, context={}, valid_until=None):
+        return Notification.send(self.user, subject, template, context,
+                                 valid_until)
 
 
 class GroupProfile(AclBase):

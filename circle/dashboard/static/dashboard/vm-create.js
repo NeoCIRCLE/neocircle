@@ -2,24 +2,72 @@ var vlans = [];
 var disks = [];
 
 $(function() {
-  vmCreateLoaded();
+  vmCustomizeLoaded();
 });
 
 function vmCreateLoaded() {
-  $('.vm-create-advanced').hide();
-  $('.vm-create-advanced-btn').click(function() {
-    $('.vm-create-advanced').stop().slideToggle();
-    if ($('.vm-create-advanced-icon').hasClass('icon-caret-down')) {
-      $('.vm-create-advanced-icon').removeClass('icon-caret-down').addClass('icon-caret-up');
-    } else { 
-      $('.vm-create-advanced-icon').removeClass('icon-caret-up').addClass('icon-caret-down');
-    } 
+  $(".vm-create-template-details").hide();
+
+  $(".vm-create-template-summary").click(function() {
+    $(this).next(".vm-create-template-details").slideToggle();
+  });
+
+  $(".customize-vm").click(function() {
+    var template = $(this).data("template-pk");
+    console.log(template);
+  
+    $.get("/dashboard/vm/create/?template=" + template, function(data) {
+        var r = $('#create-modal'); r.next('div').remove(); r.remove();
+        $('body').append(data);
+        vmCreateLoaded();
+        addSliderMiscs();
+        $('#create-modal').modal('show');
+        $('#create-modal').on('hidden.bs.modal', function() {
+            $('#create-modal').remove();
+        });
+    });
+    return false;
   });
   
-  $('#vm-create-template-select').change(function() {
-    vmCreateTemplateChange(this);
+  /* start vm button clicks */
+  $('.vm-create-start').click(function() {
+    template = $(this).data("template-pk");
+    $.ajax({
+      url: '/dashboard/vm/create/',
+      headers: {"X-CSRFToken": getCookie('csrftoken')},
+      type: 'POST',
+      data: {'template': template},
+      success: function(data, textStatus, xhr) {
+        if(data.redirect) {
+          window.location.replace(data.redirect + '#activity');
+        }
+        else {
+            var r = $('#create-modal'); r.next('div').remove(); r.remove();
+            $('body').append(data);
+            vmCreateLoaded();
+            addSliderMiscs();
+            $('#create-modal').modal('show');
+            $('#create-modal').on('hidden.bs.modal', function() {
+                $('#create-modal').remove();
+            });
+        }
+      },
+      error: function(xhr, textStatus, error) {
+        var r = $('#create-modal'); r.next('div').remove(); r.remove();
+        
+        if (xhr.status == 500) {
+          addMessage("500 Internal Server Error", "danger");
+        } else {
+          addMessage(xhr.status + " Unknown Error", "danger");
+        }
+      }
+    });
+    return false;
   });
- 
+
+}
+
+function vmCustomizeLoaded() {
   /* network thingies */
 
   /* add network */
@@ -86,15 +134,24 @@ function vmCreateLoaded() {
   /* copy networks from hidden select */
   $('#vm-create-network-add-vlan option').each(function() {
     var managed = $(this).text().indexOf("mana") == 0;
-    var text = $(this).text();
+    var raw_text = $(this).text();
     var pk = $(this).val();
     if(managed) {
-      text = text.replace("managed -", "&#xf0ac;");
+      text = raw_text.replace("managed -", "&#xf0ac;");
     } else {
-      text = text.replace("unmanaged -", "&#xf0c1;");
+      text = raw_text.replace("unmanaged -", "&#xf0c1;");
     }
     var html = '<option data-managed="' + (managed ? 1 : 0) + '" value="' + pk + '">' + text + '</option>';
-    $('#vm-create-network-add-select').append(html);
+
+  
+    if($('#vm-create-network-list span').length < 1) {
+      $("#vm-create-network-list").html("");
+    }
+    if($(this).is(":selected")) {
+      $("#vm-create-network-list").append(vmCreateNetworkLabel(pk, raw_text.replace("unmanaged -", "").replace("managed -", ""), managed));
+    } else {
+      $('#vm-create-network-add-select').append(html);
+    }
   });
 
 
@@ -168,8 +225,20 @@ function vmCreateLoaded() {
   });
 
   /* copy disks from hidden select */
-  $('#vm-create-disk-add-select').html($('#vm-create-disk-add-form').html());
+  $('#vm-create-disk-add-form option').each(function() {
+    var text = $(this).text();
+    var pk = $(this).val();
+    var html = '<option value="' + pk + '">' + text + '</option>';
 
+    if($('#vm-create-disk-list span').length < 1) {
+      $("#vm-create-disk-list").html("");
+    }
+    if($(this).is(":selected")) {
+      $("#vm-create-disk-list").append(vmCreateDiskLabel(pk, text));
+    } else {
+      $('#vm-create-disk-add-select').append(html);
+    }
+  });
 
   /* build up disk list */
   $('#vm-create-disk-add-select option').each(function() {
@@ -179,8 +248,8 @@ function vmCreateLoaded() {
     });
   });
 
-  /* add button */
-  $('#vm-create-submit').click(function() {
+  /* start vm button clicks */
+  $('#vm-create-customized-start').click(function() {
     $.ajax({
       url: '/dashboard/vm/create/',
       headers: {"X-CSRFToken": getCookie('csrftoken')},
@@ -219,97 +288,6 @@ function vmCreateLoaded() {
   $('.js-hidden').hide(); 
 }
 
-function vmCreateTemplateChange(new_this) {
-  this.value = new_this.value;
-  if(this.value < 0) return;
-  $.ajax({
-    url: '/dashboard/template/' + this.value,
-    type: 'GET',
-    success: function(data, textStatus, xhr) {
-      if(xhr.status == 200) {
-        // set sliders
-        $('#vm-cpu-priority-slider').slider("setValue", data['priority']);
-        $('#vm-cpu-count-slider').slider("setValue", data['num_cores']);
-        $('#vm-ram-size-slider').slider("setValue", data['ram_size']);
-        
-        /* slider doesn't have change event ........................ */
-        refreshSliders();
-
-        /* clear selections */
-        $("#vm-create-network-add-vlan").find('option').prop('selected', false);
-        $('#vm-create-disk-add-form').find('option').prop('selected', false);
-
-        /* clear the network select */
-        $("#vm-create-network-add-select").html('');
-
-        /* append vlans from InterfaceTemplates */
-        $('#vm-create-network-list').html("");
-        var added_vlans = []
-        for(var n = 0; n<data['network'].length; n++) {
-          nn = data['network'][n]
-          $('#vm-create-network-list').append(
-              vmCreateNetworkLabel(nn.vlan_pk, nn.vlan, nn.managed)
-          );
-          
-          $('#vm-create-network-add-vlan option[value="' + nn.vlan_pk + '"]').prop('selected', true);
-          added_vlans.push(nn.vlan_pk);
-        }
-
-        /* remove already added vlans from dropdown or add new ones */
-        $('#vm-create-network-add-select').html('');
-        // this is working because the vlans array already has the icon's hex code
-        for(var i=0; i < vlans.length; i++)
-          if(added_vlans.indexOf(vlans[i].pk) == -1) {
-            var html = '<option data-managed="' + (vlans[i].managed ? 1 : 0) + '" value="' + vlans[i].pk + '">' + vlans[i].name + '</option>';
-            $('#vm-create-network-add-select').append(html);
-          }
-       
-        /* enable the network add button if there are not added vlans */
-        if(added_vlans.length != vlans.length) {
-          $('#vm-create-network-add-button').attr('disabled', false);
-        } else {
-          $('#vm-create-network-add-select').html('<option value="-1">No more networks!</option>');
-          $('#vm-create-network-add-button').attr('disabled', true);
-        }
-
-        /* if there are no added vlans print it out */
-        if(added_vlans.length < 1) {
-          $('#vm-create-network-list').html("Not added to any network!");
-        }
-
-        /* append disks */
-        $('#vm-create-disk-list').html('');
-        var added_disks = []
-        for(var d = 0; d<data['disks'].length; d++) {
-          dd = data['disks'][d]
-          $('#vm-create-disk-list').append(
-              vmCreateDiskLabel(dd.pk, dd.name)
-          );
-          
-          $('#vm-create-disk-add-form option[value="' + dd.pk + '"]').prop('selected', true);
-          added_disks.push(dd.pk);
-        }
-
-        /* remove already added disks from dropdown or add new ones */
-        $('#vm-create-disk-add-select').html('');
-        for(var i=0; i < disks.length; i++)
-          if(added_disks.indexOf(disks[i].pk) == -1)
-            $('#vm-create-disk-add-select').append($('<option>', {
-              value: disks[i].pk,                                                     
-              text: disks[i].name                                                     
-            }));
-       
-        /* enable the disk add button if there are not added disks */
-        if(added_disks.length != disks.length) {
-          $('#vm-create-disk-add-button').attr('disabled', false);
-        } else {
-          $('#vm-create-disk-add-select').html('<option value="-1">We are out of &lt;options&gt; hehe</option>');
-          $('#vm-create-disk-add-button').attr('disabled', true);
-        }
-      }
-    }
-  });
-}
 
 function vmCreateNetworkLabel(pk, name, managed) {
   return '<span id="vlan-' + pk + '" class="label label-' +  (managed ? 'primary' : 'default')  + '"><i class="icon-' + (managed ? 'globe' : 'link') + '"></i> ' + name + ' <a href="#" class="hover-black vm-create-remove-network"><i class="icon-remove-sign"></i></a></span> ';

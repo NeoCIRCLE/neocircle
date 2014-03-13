@@ -14,8 +14,19 @@ def redeploy(instance, user):
 
 
 @celery.task
+def shut_off(instance, user):
+    instance.shut_off(task_uuid=shut_off.request.id, user=user)
+
+
+@celery.task
 def destroy(instance, user):
     instance.destroy(task_uuid=destroy.request.id, user=user)
+
+
+@celery.task
+def save_as_template(instance, name, user, params):
+    instance.save_as_template(name, task_uuid=save_as_template.request.id,
+                              user=user, **params)
 
 
 @celery.task

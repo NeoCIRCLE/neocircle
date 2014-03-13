@@ -11,7 +11,8 @@ celery = Celery('manager', backend='amqp',
                          'vm.tasks.local_periodic_tasks',
                          'vm.tasks.local_agent_tasks',
                          'storage.tasks.local_tasks',
-                         'firewall.tasks.local_tasks'])
+                         'storage.tasks.periodic_tasks',
+                         'firewall.tasks.local_tasks', ])
 
 celery.conf.update(
     CELERY_TASK_RESULT_EXPIRES=300,
@@ -27,9 +28,19 @@ celery.conf.update(
             'schedule': timedelta(seconds=5),
             'options': {'queue': 'localhost.man'}
         },
-        'vm.periodic_tasks': {
+        'vm.update_domain_states': {
             'task': 'vm.tasks.local_periodic_tasks.update_domain_states',
             'schedule': timedelta(seconds=10),
+            'options': {'queue': 'localhost.man'}
+        },
+        'vm.garbage_collector': {
+            'task': 'vm.tasks.local_periodic_tasks.garbage_collector',
+            'schedule': timedelta(minutes=10),
+            'options': {'queue': 'localhost.man'}
+        },
+        'storage.periodic_tasks': {
+            'task': 'storage.tasks.periodic_tasks.garbage_collector',
+            'schedule': timedelta(hours=1),
             'options': {'queue': 'localhost.man'}
         },
     }

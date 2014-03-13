@@ -66,6 +66,8 @@ $(function () {
   if (window.location.hash) {
     if(window.location.hash.substring(1,4) == "ipv")
       $("a[href=#network]").tab('show');
+    if(window.location.hash == "activity")
+      checkNewActivity(false, 1);
     $("a[href=" + window.location.hash +"]").tab('show');
   }
 
@@ -205,7 +207,16 @@ $(function () {
       window.location.href = "/dashboard/vm/list/?s=" + input;
     }
   });
- 
+
+  /* notification message toggle */
+  $(document).on('click', ".notification-message-subject", function() {
+    $(".notification-message-text", $(this).parent()).slideToggle();
+    return false;
+  });
+
+  $("#notification-button a").click(function() {
+      $('.notification-messages').load("/dashboard/notifications/");
+  });
 });
 
 function generateVmHTML(pk, name, fav) {

@@ -151,9 +151,9 @@ class AclBase(Model):
                 return True
         return False
 
-    def get_users_with_level(self):
+    def get_users_with_level(self, **kwargs):
         logger.debug('%s.get_users_with_level() called', unicode(self))
-        object_levels = (self.object_level_set.select_related(
+        object_levels = (self.object_level_set.filter(**kwargs).select_related(
             'users', 'level').all())
         users = []
         for object_level in object_levels:

@@ -3,6 +3,10 @@ $(function() {
   if(decideActivityRefresh()) {
     checkNewActivity(false, 1);
   }
+  $('a[href="#activity"]').click(function(){
+    $('a[href="#activity"] i').addClass('icon-spin');
+    checkNewActivity(false,0);
+  });
 
   /* save resources */
   $('#vm-details-resources-save').click(function() {
@@ -131,7 +135,11 @@ $(function() {
           location.reload();
         },
         error: function(xhr, textStatus, error) {
-
+          if (xhr.status == 500) {
+            addMessage("Internal Server Error", "danger");
+          } else {
+            addMessage(xhr.status + " Unknown Error", "danger");
+          }
         }
       });
     } else {
@@ -151,6 +159,11 @@ $(function() {
   $("#vm-details-disk-add").click(function() {
     $("#vm-details-disk-add-for-form").html($("#vm-details-disk-add-form").html());
     return false;
+  });
+
+  /* show help */
+  $(".vm-details-help-button").click(function() {
+    $(".vm-details-help").stop().slideToggle();
   });
 });
 
@@ -198,17 +211,23 @@ function checkNewActivity(only_state, runs) {
     success: function(data) {
       if(!only_state) {
         $("#activity-timeline").html(data['activities']);
+        $("[title]").tooltip();
       }
 
       $("#vm-details-state").html(data['state']);
+      if(data['state'] == "RUNNING") {
+        $("[data-target=#_console]").attr("data-toggle", "pill").attr("href", "#console").parent("li").removeClass("disabled");
+      } else {
+        $("[data-target=#_console]").attr("data-toggle", "_pill").attr("href", "#").parent("li").addClass("disabled");
+      }
 
-      if(decideActivityRefresh()) {
-        console.log("szia");
+      if(runs > 0 && decideActivityRefresh()) {
         setTimeout(
           function() {checkNewActivity(only_state, runs + 1)}, 
-          1000 + runs * 250
+          1000 + Math.exp(runs * 0.05)
         );
       }
+      $('a[href="#activity"] i').removeClass('icon-spin');
     },
     error: function() {
 

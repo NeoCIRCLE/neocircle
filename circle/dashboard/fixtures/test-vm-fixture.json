@@ -1372,6 +1372,35 @@
   }
 },
 {
+  "pk": 12, 
+  "model": "vm.instance", 
+  "fields": {
+    "destroyed": null, 
+    "disks": [], 
+    "boot_menu": false, 
+    "owner": 1, 
+    "time_of_delete": null, 
+    "max_ram_size": 200, 
+    "pw": "ads", 
+    "time_of_suspend": null, 
+    "ram_size": 200, 
+    "priority": 4, 
+    "active_since": null, 
+    "template": null, 
+    "access_method": "nx", 
+    "lease": 1, 
+    "node": null, 
+    "description": "", 
+    "arch": "x86_64", 
+    "name": "vanneve", 
+    "created": "2013-09-16T09:05:59.991Z", 
+    "raw_data": "", 
+    "vnc_port": 1235, 
+    "num_cores": 2, 
+    "modified": "2013-10-14T07:27:38.192Z"
+  }
+},
+{
     "pk": 1, 
     "model": "firewall.domain", 
     "fields": {
@@ -1462,7 +1491,6 @@
     "modified": "2014-01-24T00:58:19.654Z", 
     "system": "", 
     "priority": 20, 
-    "state": "READY", 
     "access_method": "ssh", 
     "raw_data": "", 
     "arch": "x86_64", 

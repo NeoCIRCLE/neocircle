@@ -339,7 +339,6 @@ if get_env_variable('DJANGO_SAML', 'FALSE') == 'TRUE':
         'django.contrib.auth.backends.ModelBackend',
         'djangosaml2.backends.Saml2Backend',
     )
-    LOGIN_URL = '/saml2/login/'
 
     remote_metadata = join(SITE_ROOT, 'remote_metadata.xml')
     if not isfile(remote_metadata):
@@ -388,6 +387,8 @@ if get_env_variable('DJANGO_SAML', 'FALSE') == 'TRUE':
         'DJANGO_SAML_GROUP_OWNER_ATTRIBUTES', '').split(',')
 
     SAML_CREATE_UNKNOWN_USER = True
-    if get_env_variable('DJANGO_SAML_ORG_ID_ATTRIBUTE', False) != False:
+    if get_env_variable('DJANGO_SAML_ORG_ID_ATTRIBUTE', False) is not False:
         SAML_ORG_ID_ATTRIBUTE = get_env_variable(
             'DJANGO_SAML_ORG_ID_ATTRIBUTE')
+
+LOGIN_REDIRECT_URL = "/"

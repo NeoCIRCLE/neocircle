@@ -5,12 +5,12 @@ from importlib import import_module
 import string
 
 import django.conf
-from django.db.models import (BooleanField, CharField, DateTimeField,
-                              IntegerField, ForeignKey, Manager,
-                              ManyToManyField, permalink, TextField)
 from django.contrib.auth.models import User
 from django.core import signing
 from django.core.exceptions import PermissionDenied
+from django.db.models import (BooleanField, CharField, DateTimeField,
+                              IntegerField, ForeignKey, Manager,
+                              ManyToManyField, permalink, SET_NULL, TextField)
 from django.dispatch import Signal
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -40,12 +40,26 @@ ACCESS_METHODS = [(key, name) for key, (name, port, transport)
 VNC_PORT_RANGE = (2000, 65536)  # inclusive start, exclusive end
 
 
+def find_unused_port(port_range, used_ports=[]):
+    """Find an unused port in the specified range.
+
+    The list of used ports can be specified optionally.
+
+    :param port_range: a tuple representing a port range (w/ exclusive end)
+                       e.g. (6000, 7000) represents ports 6000 through 6999
+    """
+    ports = xrange(*port_range)
+    used = set(used_ports)
+    unused = (port for port in ports if port not in used)
+    return next(unused, None)  # first or None
+
+
 def find_unused_vnc_port():
-    used = set(Instance.objects.values_list('vnc_port', flat=True))
-    for p in xrange(*VNC_PORT_RANGE):
-        if p not in used:
-            return p
-    else:
+    port = find_unused_port(
+        port_range=VNC_PORT_RANGE,
+        used_ports=Instance.objects.values_list('vnc_port', flat=True))
+
+    if port is None:
         raise Exception("No unused port could be found for VNC.")
 
 
@@ -74,6 +88,11 @@ class VirtualMachineDescModel(BaseResourceConfigModel):
                                              "node to declare to be suitable "
                                              "for hosting the VM."),
                                  verbose_name=_("required traits"))
+    system = TextField(verbose_name=_('operating system'),
+                       blank=True,
+                       help_text=(_('Name of operating system in '
+                                    'format like "%s".') %
+                                  'Ubuntu 12.04 LTS Desktop amd64'))
     tags = TaggableManager(blank=True, verbose_name=_("tags"))
 
     class Meta:
@@ -83,27 +102,12 @@ class VirtualMachineDescModel(BaseResourceConfigModel):
 class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
     """Virtual machine template.
-
-    Every template has:
-      * a name and a description
-      * an optional parent template
-      * state of the template
-      * an OS name/description
-      * a method of access to the system
-      * default values of base resource configuration
-      * list of attached images
-      * set of interfaces
-      * lease times (suspension & deletion)
-      * time of creation and last modification
     """
     ACL_LEVELS = (
         ('user', _('user')),          # see all details
         ('operator', _('operator')),
         ('owner', _('owner')),        # superuser, can delete, delegate perms
     )
-    STATES = [('NEW', _('new')),        # template has just been created
-              ('SAVING', _('saving')),  # changes are being saved
-              ('READY', _('ready'))]    # template is ready for instantiation
     name = CharField(max_length=100, unique=True,
                      verbose_name=_('name'),
                      help_text=_('Human readable name of template.'))
@@ -111,12 +115,6 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
     parent = ForeignKey('self', null=True, blank=True,
                         verbose_name=_('parent template'),
                         help_text=_('Template which this one is derived of.'))
-    system = TextField(verbose_name=_('operating system'),
-                       blank=True,
-                       help_text=(_('Name of operating system in '
-                                    'format like "%s".') %
-                                  'Ubuntu 12.04 LTS Desktop amd64'))
-    state = CharField(max_length=10, choices=STATES, default='NEW')
     disks = ManyToManyField(Disk, verbose_name=_('disks'),
                             related_name='template_set',
                             help_text=_('Disks which are to be mounted.'))
@@ -125,7 +123,7 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
     class Meta:
         app_label = 'vm'
         db_table = 'vm_instancetemplate'
-        ordering = ['name', ]
+        ordering = ('name', )
         permissions = (
             ('create_template', _('Can create an instance template.')),
         )
@@ -135,15 +133,15 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
     def __unicode__(self):
         return self.name
 
+    @property
     def running_instances(self):
-        """Returns the number of running instances of the template.
+        """The number of running instances of the template.
         """
-        return len([i for i in self.instance_set.all()
-                    if i.state == 'RUNNING'])
+        return sum(1 for i in self.instance_set.all() if i.is_running)
 
     @property
     def os_type(self):
-        """Get the type of the template's operating system.
+        """The type of the template's operating system.
         """
         if self.access_method == 'rdp':
             return 'windows'
@@ -156,24 +154,14 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
         if is_new:
             self.set_level(self.owner, 'owner')
 
+    @permalink
+    def get_absolute_url(self):
+        return ('dashboard.views.template-detail', None, {'pk': self.pk})
+
 
 class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
     """Virtual machine instance.
-
-    Every instance has:
-      * a name and a description
-      * an optional parent template
-      * associated share
-      * a generated password for login authentication
-      * time of deletion and time of suspension
-      * lease times (suspension & deletion)
-      * last boot timestamp
-      * host node
-      * current state (libvirt domain state)
-      * time of creation and last modification
-      * base resource configuration values
-      * owner and privilege information
     """
     ACL_LEVELS = (
         ('user', _('user')),          # see all details
@@ -184,7 +172,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                      help_text=_("Human readable name of instance."))
     description = TextField(blank=True, verbose_name=_('description'))
     template = ForeignKey(InstanceTemplate, blank=True, null=True,
-                          related_name='instance_set',
+                          related_name='instance_set', on_delete=SET_NULL,
                           help_text=_("Template the instance derives from."),
                           verbose_name=_('template'))
     pw = CharField(help_text=_("Original password of the instance."),
@@ -221,7 +209,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
     class Meta:
         app_label = 'vm'
         db_table = 'vm_instance'
-        ordering = ['pk', ]
+        ordering = ('pk', )
         permissions = (
             ('access_console', _('Can access the graphical console of a VM.')),
             ('change_resources', _('Can change resources of a running VM.')),
@@ -255,51 +243,66 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
             self.instance = instance
 
     def __unicode__(self):
-        parts = [self.name, "(" + str(self.id) + ")"]
-        return " ".join([s for s in parts if s != ""])
+        parts = (self.name, "(" + str(self.id) + ")")
+        return " ".join(s for s in parts if s != "")
+
+    @property
+    def is_console_available(self):
+        return self.is_running
+
+    @property
+    def is_running(self):
+        return self.state == 'RUNNING'
 
     @property
     def state(self):
         """State of the virtual machine instance.
         """
+        # check special cases
         if self.activity_log.filter(activity_code__endswith='migrate',
                                     finished__isnull=True).exists():
             return 'MIGRATING'
 
+        # <<< add checks for special cases before this
+
+        # default case
+        acts = self.activity_log.filter(finished__isnull=False,
+                                        resultant_state__isnull=False
+                                        ).order_by('-finished')[:1]
         try:
-            act = self.activity_log.filter(finished__isnull=False,
-                                           resultant_state__isnull=False
-                                           ).order_by('-finished').all()[0]
+            act = acts[0]
         except IndexError:
-            act = None
-        return 'NOSTATE' if act is None else act.resultant_state
-
-    def manual_state_change(self, new_state, reason=None, user=None):
-        # TODO cancel concurrent activity (if exists)
-        act = InstanceActivity.create(code_suffix='manual_state_change',
-                                      instance=self, user=user)
-        act.finished = act.started
-        act.result = reason
-        act.resultant_state = new_state
-        act.succeeded = True
-        act.save()
-
-    def vm_state_changed(self, new_state):
-        try:
-            act = InstanceActivity.create(code_suffix='vm_state_changed',
-                                          instance=self)
-        except ActivityInProgressError:
-            pass  # discard state change if another activity is in progress.
+            return 'NOSTATE'
         else:
-            act.finished = act.started
-            act.resultant_state = new_state
-            act.succeeded = True
-            act.save()
+            return act.resultant_state
 
-    def clean(self, *args, **kwargs):
-        if self.time_of_delete is None:
-            self.renew(which='delete')
-        super(Instance, self).clean(*args, **kwargs)
+    @classmethod
+    def create(cls, params, disks, networks, req_traits, tags):
+        # create instance and do additional setup
+        inst = cls(**params)
+
+        # save instance
+        inst.full_clean()
+        inst.save()
+        inst.set_level(inst.owner, 'owner')
+
+        def __on_commit(activity):
+            activity.resultant_state = 'PENDING'
+
+        with instance_activity(code_suffix='create', instance=inst,
+                               on_commit=__on_commit, user=inst.owner) as act:
+            # create related entities
+            inst.disks.add(*[disk.get_exclusive() for disk in disks])
+
+            for net in networks:
+                Interface.create(instance=inst, vlan=net.vlan,
+                                 owner=inst.owner, managed=net.managed,
+                                 base_activity=act)
+
+            inst.req_traits.add(*req_traits)
+            inst.tags.add(*tags)
+
+            return inst
 
     @classmethod
     def create_from_template(cls, template, owner, disks=None, networks=None,
@@ -352,35 +355,47 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         params.update([(f, getattr(template, f)) for f in common_fields])
         params.update(kwargs)  # override defaults w/ user supplied values
 
-        return [cls.__create_instance(params, disks, networks, req_traits,
-                                      tags) for i in xrange(amount)]
+        if amount > 1 and '%d' not in params['name']:
+            params['name'] += ' %d'
 
-    @classmethod
-    def __create_instance(cls, params, disks, networks, req_traits, tags):
-        # create instance and do additional setup
-        inst = cls(**params)
+        customized_params = (dict(params,
+                                  name=params['name'].replace('%d', str(i)))
+                             for i in xrange(amount))
+        return [cls.create(cps, disks, networks, req_traits, tags)
+                for cps in customized_params]
 
-        # save instance
-        inst.clean()
-        inst.save()
-        inst.set_level(inst.owner, 'owner')
+    def clean(self, *args, **kwargs):
+        if self.time_of_delete is None:
+            self._do_renew(which='delete')
+        super(Instance, self).clean(*args, **kwargs)
 
-        def __on_commit(activity):
-            activity.resultant_state = 'PENDING'
+    def manual_state_change(self, new_state, reason=None, user=None):
+        # TODO cancel concurrent activity (if exists)
+        act = InstanceActivity.create(code_suffix='manual_state_change',
+                                      instance=self, user=user)
+        act.finished = act.started
+        act.result = reason
+        act.resultant_state = new_state
+        act.succeeded = True
+        act.save()
 
-        with instance_activity(code_suffix='create', instance=inst,
-                               on_commit=__on_commit, user=inst.owner):
-            # create related entities
-            inst.disks.add(*[disk.get_exclusive() for disk in disks])
+    def vm_state_changed(self, new_state):
+        # log state change
+        try:
+            act = InstanceActivity.create(code_suffix='vm_state_changed',
+                                          instance=self)
+        except ActivityInProgressError:
+            pass  # discard state change if another activity is in progress.
+        else:
+            act.finished = act.started
+            act.resultant_state = new_state
+            act.succeeded = True
+            act.save()
 
-            for net in networks:
-                Interface.create(instance=inst, vlan=net.vlan,
-                                 owner=inst.owner, managed=net.managed)
-
-            inst.req_traits.add(*req_traits)
-            inst.tags.add(*tags)
-
-            return inst
+        if new_state == 'STOPPED':
+            self.vnc_port = None
+            self.node = None
+            self.save()
 
     @permalink
     def get_absolute_url(self):
@@ -401,9 +416,13 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
         It is always on the first hard drive storage named cloud-<id>.dump
         """
-        datastore = self.disks.all()[0].datastore
-        path = datastore.path + '/' + self.vm_name + '.dump'
-        return {'datastore': datastore, 'path': path}
+        try:
+            datastore = self.disks.all()[0].datastore
+        except:
+            return None
+        else:
+            path = datastore.path + '/' + self.vm_name + '.dump'
+            return {'datastore': datastore, 'path': path}
 
     @property
     def primary_host(self):
@@ -455,15 +474,6 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         else:
             return self.template.os_type
 
-    @property
-    def system(self):
-        """Get the instance's operating system.
-        """
-        if self.template is None:
-            return _("Unknown")
-        else:
-            return self.template.system
-
     def get_age(self):
         """Deprecated. Use uptime instead.
 
@@ -507,7 +517,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                     'port': port, 'proto': proto, 'pw': self.pw,
                     'host': host}
             elif proto == 'ssh':
-                return ('sshpass -p %(pw)s ssh -o StrictHostKeyChecking=n '
+                return ('sshpass -p %(pw)s ssh -o StrictHostKeyChecking=no '
                         'cloud@%(host)s -p %(port)d') % {
                     'port': port, 'proto': proto, 'pw': self.pw,
                     'host': host}
@@ -560,16 +570,98 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         else:
             raise Node.DoesNotExist()
 
-    def renew(self, which='both'):
+    def _is_notified_about_expiration(self):
+        renews = self.activity_log.filter(activity_code__endswith='renew')
+        cond = {'activity_code__endswith': 'notification_about_expiration'}
+        if len(renews) > 0:
+            cond['finished__gt'] = renews[0].started
+        return self.activity_log.filter(**cond).exists()
+
+    def notify_owners_about_expiration(self, again=False):
+        """Notify owners about vm expiring soon if they aren't already.
+
+        :param again: Notify already notified owners.
+        """
+        if not again and self._is_notified_about_expiration():
+            return False
+        success, failed = [], []
+
+        def on_commit(act):
+            act.result = {'failed': failed, 'success': success}
+
+        with instance_activity('notification_about_expiration', instance=self,
+                               on_commit=on_commit):
+            from dashboard.views import VmRenewView
+            level = self.get_level_object("owner")
+            for u, ulevel in self.get_users_with_level(level__pk=level.pk):
+                try:
+                    token = VmRenewView.get_token_url(self, u)
+                    u.profile.notify(
+                        _('%s expiring soon') % unicode(self),
+                        'dashboard/notifications/vm-expiring.html',
+                        {'instance': self, 'token': token}, valid_until=min(
+                            self.time_of_delete, self.time_of_suspend))
+                except Exception as e:
+                    failed.append((u, e))
+                else:
+                    success.append(u)
+        return True
+
+    def is_expiring(self, threshold=0.1):
+        """Returns if an instance will expire soon.
+
+        Soon means that the time of suspend or delete comes in 10% of the
+        interval what the Lease allows. This rate is configurable with the
+        only parameter, threshold (0.1 = 10% by default).
+        """
+        return (self._is_suspend_expiring(self, threshold) or
+                self._is_delete_expiring(self, threshold))
+
+    def _is_suspend_expiring(self, threshold=0.1):
+        interval = self.lease.suspend_interval
+        if interval is not None:
+            limit = timezone.now() + threshold * self.lease.suspend_interval
+            return limit > self.time_of_suspend
+        else:
+            return False
+
+    def _is_delete_expiring(self, threshold=0.1):
+        interval = self.lease.delete_interval
+        if interval is not None:
+            limit = timezone.now() + threshold * self.lease.delete_interval
+            return limit > self.time_of_delete
+        else:
+            return False
+
+    def get_renew_times(self):
+        """Returns new suspend and delete times if renew would be called.
+        """
+        return (
+            timezone.now() + self.lease.suspend_interval,
+            timezone.now() + self.lease.delete_interval)
+
+    def _do_renew(self, which='both'):
+        """Set expiration times to renewed values.
+        """
+        time_of_suspend, time_of_delete = self.get_renew_times()
+        if which in ('suspend', 'both'):
+            self.time_of_suspend = time_of_suspend
+        if which in ('delete', 'both'):
+            self.time_of_delete = time_of_delete
+
+    def renew(self, which='both', base_activity=None, user=None):
         """Renew virtual machine instance leases.
         """
-        if which not in ['suspend', 'delete', 'both']:
-            raise ValueError('No such expiration type.')
-        if which in ['suspend', 'both']:
-            self.time_of_suspend = timezone.now() + self.lease.suspend_interval
-        if which in ['delete', 'both']:
-            self.time_of_delete = timezone.now() + self.lease.delete_interval
-        self.save()
+        if base_activity is None:
+            act = instance_activity(code_suffix='renew', instance=self,
+                                    user=user)
+        else:
+            act = base_activity.sub_activity('renew')
+        with act:
+            if which not in ('suspend', 'delete', 'both'):
+                raise ValueError('No such expiration type.')
+            self._do_renew(which)
+            self.save()
 
     def change_password(self, user=None):
         """Generate new password for the vm
@@ -588,10 +680,13 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                                                           self.pw))
         self.save()
 
-    def __schedule_vm(self, act):
-        """Schedule the virtual machine.
+    def select_node(self):
+        """Returns the node the VM should be deployed or migrated to.
+        """
+        return scheduler.select_node(self, Node.objects.all())
 
-        :param self: The virtual machine.
+    def __schedule_vm(self, act):
+        """Schedule the virtual machine as part of a higher level activity.
 
         :param act: Parent activity.
         """
@@ -601,11 +696,11 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
         # Schedule
         if self.node is None:
-            self.node = scheduler.select_node(self, Node.objects.all())
+            self.node = self.select_node()
 
         self.save()
 
-    def __deploy_vm(self, act):
+    def __deploy_vm(self, act, timeout=15):
         """Deploy the virtual machine.
 
         :param self: The virtual machine.
@@ -615,9 +710,10 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         queue_name = self.get_remote_queue_name('vm')
 
         # Deploy VM on remote machine
-        with act.sub_activity('deploying_vm'):
-            vm_tasks.deploy.apply_async(args=[self.get_vm_desc()],
-                                        queue=queue_name).get()
+        with act.sub_activity('deploying_vm') as deploy_act:
+            deploy_act.result = vm_tasks.deploy.apply_async(
+                args=[self.get_vm_desc()],
+                queue=queue_name).get(timeout=timeout)
 
         # Estabilish network connection (vmdriver)
         with act.sub_activity('deploying_net'):
@@ -627,9 +723,9 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         # Resume vm
         with act.sub_activity('booting'):
             vm_tasks.resume.apply_async(args=[self.vm_name],
-                                        queue=queue_name).get()
+                                        queue=queue_name).get(timeout=timeout)
 
-        self.renew('suspend')
+        self.renew('suspend', act)
 
     def deploy(self, user=None, task_uuid=None):
         """Deploy new virtual machine with network
@@ -679,7 +775,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         return local_tasks.deploy.apply_async(args=[self, user],
                                               queue="localhost.man")
 
-    def __destroy_vm(self, act):
+    def __destroy_vm(self, act, timeout=15):
         """Destroy the virtual machine and its associated networks.
 
         :param self: The virtual machine.
@@ -696,13 +792,17 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
             queue_name = self.get_remote_queue_name('vm')
             try:
                 vm_tasks.destroy.apply_async(args=[self.vm_name],
-                                             queue=queue_name).get()
+                                             queue=queue_name
+                                             ).get(timeout=timeout)
             except Exception as e:
-                if e.libvirtError is True:
-                    if "Domain not found" in str(e):
-                        pass
+                if e.libvirtError is True and "Domain not found" in str(e):
+                    logger.debug("Domain %s was not found at %s"
+                                 % (self.vm_name, queue_name))
+                    pass
+                else:
+                    raise
 
-    def __cleanup_after_destroy_vm(self, act):
+    def __cleanup_after_destroy_vm(self, act, timeout=15):
         """Clean up the virtual machine's data after destroy.
 
         :param self: The virtual machine.
@@ -710,12 +810,12 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         :param act: Parent activity.
         """
         # Delete mem. dump if exists
-        queue_name = self.mem_dump['datastore'].get_remote_queue_name(
-            'storage')
         try:
+            queue_name = self.mem_dump['datastore'].get_remote_queue_name(
+                'storage')
             from storage.tasks.remote_tasks import delete_dump
             delete_dump.apply_async(args=[self.mem_dump['path']],
-                                    queue=queue_name).get()
+                                    queue=queue_name).get(timeout=timeout)
         except:
             pass
 
@@ -752,6 +852,28 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         """Execute redeploy asynchronously.
         """
         return local_tasks.redeploy.apply_async(args=[self, user],
+                                                queue="localhost.man")
+
+    def shut_off(self, user=None, task_uuid=None):
+        """Shut off VM. (plug-out)
+        """
+        def __on_commit(activity):
+            activity.resultant_state = 'STOPPED'
+
+        with instance_activity(code_suffix='shut_off', instance=self,
+                               task_uuid=task_uuid, user=user,
+                               on_commit=__on_commit) as act:
+            # Destroy VM
+            if self.node:
+                self.__destroy_vm(act)
+
+            self.__cleanup_after_destroy_vm(act)
+            self.save()
+
+    def shut_off_async(self, user=None):
+        """Shut off VM. (plug-out)
+        """
+        return local_tasks.shut_off.apply_async(args=[self, user],
                                                 queue="localhost.man")
 
     def destroy(self, user=None, task_uuid=None):
@@ -796,7 +918,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         return local_tasks.destroy.apply_async(args=[self, user],
                                                queue="localhost.man")
 
-    def sleep(self, user=None, task_uuid=None):
+    def sleep(self, user=None, task_uuid=None, timeout=60):
         """Suspend virtual machine with memory dump.
         """
         if self.state not in ['RUNNING']:
@@ -813,12 +935,22 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
         with instance_activity(code_suffix='sleep', instance=self,
                                on_abort=__on_abort, on_commit=__on_commit,
-                               task_uuid=task_uuid, user=user):
+                               task_uuid=task_uuid, user=user) as act:
 
-            queue_name = self.get_remote_queue_name('vm')
-            vm_tasks.sleep.apply_async(args=[self.vm_name,
-                                             self.mem_dump['path']],
-                                       queue=queue_name).get()
+            # Destroy networks
+            with act.sub_activity('destroying_net'):
+                for net in self.interface_set.all():
+                    net.destroy(delete_host=False)
+
+            # Suspend vm
+            with act.sub_activity('suspending'):
+                queue_name = self.get_remote_queue_name('vm')
+                vm_tasks.sleep.apply_async(args=[self.vm_name,
+                                                 self.mem_dump['path']],
+                                           queue=queue_name
+                                           ).get(timeout=timeout)
+                self.node = None
+                self.save()
 
     def sleep_async(self, user=None):
         """Execute sleep asynchronously.
@@ -826,7 +958,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         return local_tasks.sleep.apply_async(args=[self, user],
                                              queue="localhost.man")
 
-    def wake_up(self, user=None, task_uuid=None):
+    def wake_up(self, user=None, task_uuid=None, timeout=60):
         if self.state not in ['SUSPENDED']:
             raise self.WrongStateError(self)
 
@@ -838,12 +970,23 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
         with instance_activity(code_suffix='wake_up', instance=self,
                                on_abort=__on_abort, on_commit=__on_commit,
-                               task_uuid=task_uuid, user=user):
+                               task_uuid=task_uuid, user=user) as act:
 
+            # Schedule vm
+            self.__schedule_vm(act)
             queue_name = self.get_remote_queue_name('vm')
-            vm_tasks.wake_up.apply_async(args=[self.vm_name,
-                                               self.mem_dump['path']],
-                                         queue=queue_name).get()
+
+            # Resume vm
+            with act.sub_activity('resuming'):
+                vm_tasks.wake_up.apply_async(args=[self.vm_name,
+                                                   self.mem_dump['path']],
+                                             queue=queue_name
+                                             ).get(timeout=timeout)
+
+            # Estabilish network connection (vmdriver)
+            with act.sub_activity('deploying_net'):
+                for net in self.interface_set.all():
+                    net.deploy()
 
     def wake_up_async(self, user=None):
         """Execute wake_up asynchronously.
@@ -851,7 +994,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         return local_tasks.wake_up.apply_async(args=[self, user],
                                                queue="localhost.man")
 
-    def shutdown(self, user=None, task_uuid=None):
+    def shutdown(self, user=None, task_uuid=None, timeout=120):
         """Shutdown virtual machine with ACPI signal.
         """
         def __on_abort(activity, error):
@@ -870,7 +1013,8 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
             logger.debug("RPC Shutdown at queue: %s, for vm: %s.",
                          self.vm_name, queue_name)
             vm_tasks.shutdown.apply_async(kwargs={'name': self.vm_name},
-                                          queue=queue_name).get()
+                                          queue=queue_name
+                                          ).get(timeout=timeout)
             self.node = None
             self.vnc_port = None
             self.save()
@@ -881,23 +1025,24 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         return local_tasks.shutdown.apply_async(args=[self, user],
                                                 queue="localhost.man")
 
-    def reset(self, user=None, task_uuid=None):
+    def reset(self, user=None, task_uuid=None, timeout=5):
         """Reset virtual machine (reset button)
         """
         with instance_activity(code_suffix='reset', instance=self,
                                task_uuid=task_uuid, user=user):
 
             queue_name = self.get_remote_queue_name('vm')
-            vm_tasks.restart.apply_async(args=[self.vm_name],
-                                         queue=queue_name).get()
+            vm_tasks.reset.apply_async(args=[self.vm_name],
+                                       queue=queue_name
+                                       ).get(timeout=timeout)
 
     def reset_async(self, user=None):
         """Execute reset asynchronously.
         """
-        return local_tasks.restart.apply_async(args=[self, user],
-                                               queue="localhost.man")
+        return local_tasks.reset.apply_async(args=[self, user],
+                                             queue="localhost.man")
 
-    def reboot(self, user=None, task_uuid=None):
+    def reboot(self, user=None, task_uuid=None, timeout=5):
         """Reboot virtual machine with Ctrl+Alt+Del signal.
         """
         with instance_activity(code_suffix='reboot', instance=self,
@@ -905,7 +1050,8 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
             queue_name = self.get_remote_queue_name('vm')
             vm_tasks.reboot.apply_async(args=[self.vm_name],
-                                        queue=queue_name).get()
+                                        queue=queue_name
+                                        ).get(timeout=timeout)
 
     def reboot_async(self, user=None):
         """Execute reboot asynchronously. """
@@ -917,7 +1063,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         return local_tasks.migrate.apply_async(args=[self, to_node, user],
                                                queue="localhost.man")
 
-    def migrate(self, to_node, user=None, task_uuid=None):
+    def migrate(self, to_node, user=None, task_uuid=None, timeout=120):
         """Live migrate running vm to another node. """
         with instance_activity(code_suffix='migrate', instance=self,
                                task_uuid=task_uuid, user=user) as act:
@@ -930,7 +1076,8 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                 queue_name = self.get_remote_queue_name('vm')
                 vm_tasks.migrate.apply_async(args=[self.vm_name,
                                              to_node.host.hostname],
-                                             queue=queue_name).get()
+                                             queue=queue_name
+                                             ).get(timeout=timeout)
             # Refresh node information
             self.node = to_node
             self.save()
@@ -939,47 +1086,54 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                 for net in self.interface_set.all():
                     net.deploy()
 
-    def save_as_template(self, name, **kwargs):
-        # prepare parameters
-        kwargs.setdefault('name', name)
-        kwargs.setdefault('description', self.description)
-        kwargs.setdefault('parent', self.template)
-        kwargs.setdefault('num_cores', self.num_cores)
-        kwargs.setdefault('ram_size', self.ram_size)
-        kwargs.setdefault('max_ram_size', self.max_ram_size)
-        kwargs.setdefault('arch', self.arch)
-        kwargs.setdefault('priority', self.priority)
-        kwargs.setdefault('boot_menu', self.boot_menu)
-        kwargs.setdefault('raw_data', self.raw_data)
-        kwargs.setdefault('lease', self.lease)
-        kwargs.setdefault('access_method', self.access_method)
-        kwargs.setdefault('system', self.template.system
-                          if self.template else None)
+    def save_as_template_async(self, name, user=None, **kwargs):
+        return local_tasks.save_as_template.apply_async(
+            args=[self, name, user, kwargs], queue="localhost.man")
 
-        def __try_save_disk(disk):
+    def save_as_template(self, name, task_uuid=None, user=None,
+                         timeout=300, **kwargs):
+        with instance_activity(code_suffix="save_as_template", instance=self,
+                               task_uuid=task_uuid, user=user) as act:
+            # prepare parameters
+            kwargs.setdefault('name', name)
+            kwargs.setdefault('description', self.description)
+            kwargs.setdefault('parent', self.template)
+            kwargs.setdefault('num_cores', self.num_cores)
+            kwargs.setdefault('ram_size', self.ram_size)
+            kwargs.setdefault('max_ram_size', self.max_ram_size)
+            kwargs.setdefault('arch', self.arch)
+            kwargs.setdefault('priority', self.priority)
+            kwargs.setdefault('boot_menu', self.boot_menu)
+            kwargs.setdefault('raw_data', self.raw_data)
+            kwargs.setdefault('lease', self.lease)
+            kwargs.setdefault('access_method', self.access_method)
+            kwargs.setdefault('system', self.template.system
+                              if self.template else None)
+
+            def __try_save_disk(disk):
+                try:
+                    return disk.save_as()  # can do in parallel
+                except Disk.WrongDiskTypeError:
+                    return disk
+
+            # create template and do additional setup
+            tmpl = InstanceTemplate(**kwargs)
+            tmpl.full_clean()  # Avoiding database errors.
+            tmpl.save()
+            with act.sub_activity('saving_disks'):
+                tmpl.disks.add(*[__try_save_disk(disk)
+                               for disk in self.disks.all()])
+                # save template
+            tmpl.save()
             try:
-                return disk.save_as()
-            except Disk.WrongDiskTypeError:
-                return disk
-
-        # copy disks
-        disks = [__try_save_disk(disk) for disk in self.disks.all()]
-        kwargs.setdefault('disks', disks)
-
-        # create template and do additional setup
-        tmpl = InstanceTemplate(**kwargs)
-
-        # save template
-        tmpl.save()
-        try:
-            # create interface templates
-            for i in self.interface_set.all():
-                i.save_as_template(tmpl)
-        except:
-            tmpl.delete()
-            raise
-        else:
-            return tmpl
+                # create interface templates
+                for i in self.interface_set.all():
+                    i.save_as_template(tmpl)
+            except:
+                tmpl.delete()
+                raise
+            else:
+                return tmpl
 
     def shutdown_and_save_as_template(self, name, user=None, task_uuid=None,
                                       **kwargs):

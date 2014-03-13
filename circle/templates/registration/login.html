@@ -1,11 +1,35 @@
-{% extends "base.html" %}
+{% extends "registration/base.html" %}
 {% load i18n %}
-{% load staticfiles %}
+{% load crispy_forms_tags %}
 {% get_current_language as LANGUAGE_CODE %}
+
+{% block title %}{% trans "Login" %}{% endblock %}
+
 {% block content %}
-<form action="" method="POST">
-    {% csrf_token %}
-    {{ form }}
-    <input type="submit" value="LOGIN" />
-</form>
+<div class="row">
+  {% if form.password.errors or form.username.errors %}
+    <div class="login-form-errors">
+      {% include "display-form-errors.html" %}
+    </div>
+  {% endif %}
+  <div class="col-sm-{% if saml2 %}6{% else %}12{% endif %}">
+    <div class="login-form">
+      <form action="" method="POST">
+        {% csrf_token %}
+        {% crispy form %}
+      </form>
+    </div>
+  </div>
+  {% if saml2 %}
+  <div class="col-sm-6">
+    <h4 style="padding-top: 0; margin-top: 0;">{% trans "Login with SSO" %}</h4>
+    <a href="{% url "saml2_login" %}">{% trans "Click here!" %}</a>
+  </div>
+  {% endif %}
+</div>
+<div class="row">
+  <div class="col-sm-12">
+    <a class="pull-right" href="{% url "accounts.password-reset" %}">{% trans "Forgot your password?" %}</a>
+  </div>
+</div>
 {% endblock %}

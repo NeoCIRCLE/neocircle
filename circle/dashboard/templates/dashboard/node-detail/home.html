@@ -35,10 +35,11 @@
     </div><!-- id:node-details-traits -->
   </div>
   <div class="col-md-8">
-<img src="/static/grafikon.png" style="width:45%"/>
-<img src="/static/grafikon.png" style="width:45%"/>
-<img src="/static/grafikon.png" style="width:45%"/>
-<img src="/static/grafikon.png" style="width:45%"/>
+    {% if graphite_enabled %}
+    <img src="{% url "dashboard.views.node-graph" node.pk "cpu" "6h" %}" style="width:100%"/>
+    <img src="{% url "dashboard.views.node-graph" node.pk "memory" "6h" %}" style="width:100%"/>
+    <img src="{% url "dashboard.views.node-graph" node.pk "network" "6h" %}" style="width:100%"/>
+    {% endif %}
   </div>
   </div>
   <style>

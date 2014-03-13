@@ -1,0 +1,148 @@
+{% load sizefieldtags %}
+{% load i18n %}
+
+<div class="vm-create-template-list">
+  {% for t in templates %}
+  <div class="vm-create-template">
+    <div class="vm-create-template-summary">
+      {{ t.name }}
+      <span class="pull-right"><i class="icon-{{ t.os_type }}"></i> {{ t.system }}</span>
+    </div>
+    <div class="vm-create-template-details">
+      <ul>
+        <li>
+          <i class="icon-gears"></i> {% trans "CPU" %}
+          <div class="progress pull-right">
+            <div class="progress-bar progress-bar-success" role="progressbar" 
+              aria-valuenow="{{ t.num_cores }}" aria-valuemin="0" aria-valuemax="8" style="width: 80%">
+              <span class="progress-bar-text">{{ t.num_cores }} cores</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <i class="icon-ticket"></i> {% trans "Memory" %}
+          <div class="progress pull-right">
+            <div class="progress-bar progress-bar-info" role="progressbar" 
+              aria-valuenow="{{ t.ram_size }}" aria-valuemin="0" aria-valuemax="4096" 
+              style="width: 80%">
+              <span class="progress-bar-text">{{ t.ram_size }} MB</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <i class="icon-file"></i> {% trans "Disks" %} 
+          <span style="float: right; text-align: right;">
+            {% for d in t.disks.all %}{{ d.name }} ({{ d.size|filesize }}){% if not forloop.last %}, {% endif %}{% endfor %}
+          </span>
+          <div style="clear: both;"></div>
+        </li>
+        <li>
+          <i class="icon-globe"></i> {% trans "Network" %}
+          <span style="float: right;">
+            {% for i in t.interface_set.all %}{{ i.vlan.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+          </span>
+        </li>
+        <li>
+          <i class="icon-tag"></i> {% trans "Type" %}: {{ t.lease.name }}
+          <span style="float: right;">
+            <i class="icon-pause"></i> {{ t.lease.get_readable_suspend_time }}
+            <i class="icon-remove"></i> {{ t.lease.get_readable_delete_time }}
+          </span>
+        </li>
+        <li>
+          <i class="icon-hand-right"></i> Description:
+          <span style="float: right; max-width: 350px;">
+            {{ t.description }}
+          </span>
+          <div class="clearfix"></div>
+        </li>
+      </ul>
+      <div style="margin-top: 20px; padding: 0 15px; width: 100%">
+        <a class="btn btn-primary btn-xs customize-vm" data-template-pk="{{ t.pk }}" href="{% url "dashboard.views.vm-create" %}?template={{ t.pk }}"><i class="icon-wrench"></i> Customize</a>
+        <form class="pull-right text-right" method="POST" action="{% url "dashboard.views.vm-create" %}">
+          {% csrf_token %}
+          <input type="hidden" name="template" value="{{ t.pk }}"/>
+          <button class="btn btn-success btn-xs vm-create-start" data-template-pk="{{ t.pk }}" type="submit"><i class="icon-play"></i> Start</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<style>
+  .row {
+    margin-bottom: 15px;
+  }
+
+  .vm-create-template {
+    max-width: 800px;
+    border: 1px solid black;
+    border-bottom: none;
+  }
+
+  .vm-create-template-list .vm-create-template:last-child {
+    border-bottom: 1px solid black;
+  }
+
+  .vm-create-template-summary {
+    padding: 15px;
+    cursor: pointer;
+  }
+
+  .vm-create-template:nth-child(odd) .vm-create-template-summary {
+    background: #F5F5F5;
+  }
+
+  .vm-create-template-list .vm-create-template-summary:hover {
+    background: #D2D2D2;
+  }
+
+  .vm-create-template-details {
+    border-top: 1px dashed #D3D3D3;
+    padding: 15px;
+  }
+
+  .vm-create-template-details ul {
+    list-style: none;
+    padding: 0 15px;
+  }
+
+  .vm-create-template-details li {
+    border-bottom: 1px dotted #aaa;
+    padding: 5px 0px;
+  }
+
+  .progress {
+    position: relative;
+    width: 200px;
+    height: 12px;
+    margin-bottom: 0px;
+    margin-top: 5px;
+  }
+  .progress-bar-text {
+    position: absolute;
+    display: block;
+    width: 100%;
+    color: white;
+    /* outline */
+    text-shadow:  
+      -1px -1px 0 #000,
+      1px -1px 0 #000,
+      -1px 1px 0 #000,
+      1px 1px 0 #000;  
+    font-size: 10px;
+  }
+</style>
+
+{% block "extra-js" %}
+<script>
+$('.progress-bar').each(function() {
+  var min = $(this).attr('aria-valuemin');
+  var max = $(this).attr('aria-valuemax');
+  var now = $(this).attr('aria-valuenow');
+  var siz = (now-min)*100/(max-min);
+  $(this).css('width', siz+'%');
+});
+</script>
+{% endblock %}

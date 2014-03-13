@@ -1,14 +1,27 @@
 from django.test import TestCase
+from mock import Mock
 
+from ..models.common import (
+    Lease
+)
 from ..models.instance import (
-    InstanceTemplate, Instance
+    find_unused_port, InstanceTemplate, Instance
 )
 from ..models.network import (
     Interface
 )
-from ..models.common import (
-    Lease
-)
+
+
+class PortFinderTestCase(TestCase):
+
+    def test_find_unused_port_without_used_ports(self):
+        port = find_unused_port(port_range=(1000, 2000))
+        assert port is not None
+
+    def test_find_unused_port_with_fully_saturated_range(self):
+        r = (10, 20)
+        port = find_unused_port(port_range=r, used_ports=range(*r))
+        assert port is None
 
 
 class TemplateTestCase(TestCase):
@@ -18,6 +31,13 @@ class TemplateTestCase(TestCase):
                                     access_method='ssh', )
         template.clean()
         # TODO add images & net
+
+
+class InstanceTestCase(TestCase):
+
+    def test_is_running(self):
+        inst = Mock(state='RUNNING')
+        assert Instance.is_running.getter(inst)
 
 
 class InterfaceTestCase(TestCase):

@@ -2,13 +2,15 @@ from django.conf.urls import patterns, url
 
 from vm.models import Instance
 from .views import (
-    IndexView, VmDetailView, VmList, VmCreate, TemplateDetail, AclUpdateView,
-    VmDelete, VmMassDelete, vm_activity, NodeList, NodeDetailView, PortDelete,
-    TransferOwnershipView, TransferOwnershipConfirmView, NodeDelete,
-    TemplateList, LeaseDetail, NodeCreate, LeaseCreate, TemplateCreate,
-    FavouriteView, NodeStatus, GroupList, TemplateDelete, LeaseDelete,
-    VmGraphView, TemplateAclUpdateView, GroupDetailView, GroupDelete,
-    GroupAclUpdateView, GroupUserDelete, NodeAddTraitView,
+    AclUpdateView, DiskAddView, FavouriteView, GroupAclUpdateView, GroupDelete,
+    GroupDetailView, GroupList, GroupUserDelete, IndexView, LeaseCreate,
+    LeaseDelete, LeaseDetail, NodeAddTraitView, NodeCreate, NodeDelete,
+    NodeDetailView, NodeGraphView, NodeList, NodeStatus, NotificationView,
+    PortDelete, TemplateAclUpdateView, TemplateCreate, TemplateDelete,
+    TemplateDetail, TemplateList, TransferOwnershipConfirmView,
+    TransferOwnershipView, vm_activity, VmCreate, VmDelete, VmDetailView,
+    VmDetailVncTokenView, VmGraphView, VmList, VmMassDelete, VmMigrateView,
+    VmRenewView,
 )
 
 urlpatterns = patterns(
@@ -36,6 +38,8 @@ urlpatterns = patterns(
         name='dashboard.views.remove-port'),
     url(r'^vm/(?P<pk>\d+)/$', VmDetailView.as_view(),
         name='dashboard.views.detail'),
+    url(r'^vm/(?P<pk>\d+)/vnctoken/$', VmDetailVncTokenView.as_view(),
+        name='dashboard.views.detail-vnc'),
     url(r'^vm/(?P<pk>\d+)/acl/$', AclUpdateView.as_view(model=Instance),
         name='dashboard.views.vm-acl'),
     url(r'^vm/(?P<pk>\d+)/tx/$', TransferOwnershipView.as_view(),
@@ -48,13 +52,17 @@ urlpatterns = patterns(
     url(r'^vm/mass-delete/', VmMassDelete.as_view(),
         name='dashboard.view.mass-delete-vm'),
     url(r'^vm/(?P<pk>\d+)/activity/$', vm_activity),
+    url(r'^vm/(?P<pk>\d+)/migrate/$', VmMigrateView.as_view(),
+        name='dashboard.views.vm-migrate'),
+    url(r'^vm/(?P<pk>\d+)/renew/((?P<key>.*)/?)$', VmRenewView.as_view(),
+        name='dashboard.views.vm-renew'),
 
     url(r'^node/list/$', NodeList.as_view(), name='dashboard.views.node-list'),
     url(r'^node/(?P<pk>\d+)/$', NodeDetailView.as_view(),
         name='dashboard.views.node-detail'),
     url(r'^node/(?P<pk>\d+)/add-trait/$', NodeAddTraitView.as_view(),
         name='dashboard.views.node-addtrait'),
-    url(r'^tx/$', TransferOwnershipConfirmView.as_view(),
+    url(r'^tx/(?P<key>.*)/?$', TransferOwnershipConfirmView.as_view(),
         name='dashboard.views.vm-transfer-ownership-confirm'),
     url(r'^node/delete/(?P<pk>\d+)/$', NodeDelete.as_view(),
         name="dashboard.views.delete-node"),
@@ -73,10 +81,20 @@ urlpatterns = patterns(
          r'(?P<time>[0-9]{1,2}[hdwy])$'),
         VmGraphView.as_view(),
         name='dashboard.views.vm-graph'),
+    url((r'^node/(?P<pk>\d+)/graph/(?P<metric>cpu|memory|network)/'
+         r'(?P<time>[0-9]{1,2}[hdwy])$'),
+        NodeGraphView.as_view(),
+        name='dashboard.views.node-graph'),
     url(r'^group/(?P<pk>\d+)/$', GroupDetailView.as_view(),
         name='dashboard.views.group-detail'),
     url(r'^group/(?P<pk>\d+)/acl/$', GroupAclUpdateView.as_view(),
         name='dashboard.views.group-acl'),
     url(r'^groupuser/delete/(?P<pk>\d+)/$', GroupUserDelete.as_view(),
         name="dashboard.views.delete-groupuser"),
+
+    url(r'^notifications/$', NotificationView.as_view(),
+        name="dashboard.views.notifications"),
+
+    url(r'^disk/add/$', DiskAddView.as_view(),
+        name="dashboard.views.disk-add"),
 )

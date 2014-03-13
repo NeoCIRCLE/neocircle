@@ -331,3 +331,61 @@ a.hover-black {
 	display: block;
 
 }
+
+.notification-messages {
+  padding: 10px 8px;
+  width: 350px;
+}
+
+.notification-message {
+  margin-bottom: 10px;
+  padding: 0 0 4px 0;
+  border-bottom: 1px dotted #D3D3D3;
+}
+
+.notification-messages .notification-message:last-child {
+  margin-bottom: 0px;
+  padding: 0px;
+  border-bottom: none;
+}
+
+.notification-message-text {
+  padding: 8px 15px;
+  display: none;
+}
+
+.notification-message .notification-message-subject {
+  cursor: pointer;
+}
+
+#vm-migrate-node-list {                                                   
+  list-style: none;                                                       
+}                                                                         
+                                                                          
+#vm-migrate-node-list li {                                                
+  padding-bottom: 10px;                                                   
+}
+
+.vm-migrate-node-property {
+  display: block;
+  padding-left: 15px;
+}
+
+.vm-details-help {
+  max-width: 700px;
+  padding: 10px 10px 0px 10px;
+  margin-left: 50px;
+  /*  fancy stuff
+  border: 1px solid #ccc;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  border-radius: 8px; 
+  */
+}
+
+.vm-details-help li {
+  padding-bottom: 5px;
+}
+
+.vm-details-help ul {
+  padding-left: 0px;
+}

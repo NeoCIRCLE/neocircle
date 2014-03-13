@@ -23,7 +23,8 @@ def select_node(instance, nodes):
     ''' Select a node for hosting an instance based on its requirements.
     '''
     # check required traits
-    nodes = [n for n in nodes if has_traits(instance.req_traits.all(), n)]
+    nodes = [n for n in nodes
+             if n.enabled and has_traits(instance.req_traits.all(), n)]
     if not nodes:
         raise TraitsUnsatisfiableException()
 
@@ -51,7 +52,7 @@ def has_enough_ram(ram_size, node):
        ram_size mebibytes of memory; otherwise, false.
     """
     total = node.ram_size
-    used = (node.ram_usage() / 100) * total
+    used = (node.ram_usage / 100) * total
     unused = total - used
 
     overcommit = node.ram_size_with_overcommit
@@ -66,7 +67,7 @@ def free_cpu_time(node):
 
     Higher values indicate more idle time.
     """
-    activity = node.cpu_usage() / 100
+    activity = node.cpu_usage / 100
     inactivity = 1 - activity
     cores = node.num_cores
     return cores * inactivity

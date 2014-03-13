@@ -36,6 +36,9 @@ class GroupTable(Table):
 
 class HostTable(Table):
     hostname = LinkColumn('network.host', args=[A('pk')])
+    mac = TemplateColumn(
+        template_name="network/columns/mac.html"
+    )
 
     class Meta:
         model = Host

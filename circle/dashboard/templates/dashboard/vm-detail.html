@@ -5,35 +5,53 @@
 <div class="body-content">
   <div class="page-header">
     <div class="pull-right" style="padding-top: 15px;">
-      <a title="Rename" href="#" class="btn btn-default btn-xs vm-details-rename-button"><i class="icon-pencil"></i></a>
-      <a title="Pause == sleep?" href="#" class="btn btn-default btn-xs"><i class="icon-pause"></i></a>
       <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
         {% csrf_token %}
-        <input type="hidden" name="sleep" value="dummy"/>
+        <input type="hidden" name="sleep" />
         <button title="{% trans "Sleep" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-moon"></i></button>
       </form>
       <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
         {% csrf_token %}
-        <input type="hidden" name="deploy" value="dummy"/>
+        <input type="hidden" name="deploy" />
         <button title="{% trans "Deploy" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-play"></i></button>
       </form>
       <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
         {% csrf_token %}
-        <input type="hidden" name="wake_up" value="dummy"/>
+        <input type="hidden" name="wake_up" />
         <button title="{% trans "Wake up" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-sun"></i></button>
       </form>
       <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
         {% csrf_token %}
-        <input type="hidden" name="shut_down" value="dummy"/>
+        <input type="hidden" name="shut_down" />
         <button title="{% trans "Shut down" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-off"></i></button>
       </form>
-      <a title="Migrate" href="#" class="btn btn-default btn-xs"><i class="icon-truck"></i></a>
       <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
         {% csrf_token %}
-        <input type="hidden" name="save_as" value="dummy"/>
+        <input type="hidden" name="reboot" />
+        <button title="{% trans "Reboot (ctrl + alt + del)" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-refresh"></i></button>
+      </form>
+      <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="reset" />
+        <button title="{% trans "Reset (power cycle)" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-bolt"></i></button>
+      </form>
+      <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="shut_off"/>
+        <button title="{% trans "Shut off" %}" class="btn btn-default btn-xs" type="submit">
+          <i class="icon-ban-circle"></i>
+        </button>
+      </form>
+      <a title="Migrate" data-vm-pk="{{ instance.pk }}" href="{% url "dashboard.views.vm-migrate" pk=instance.pk %}" class="btn btn-default btn-xs vm-migrate">
+        <i class="icon-truck"></i>
+      </a>
+      <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="save_as" />
         <button title="{% trans "Save as template" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-save"></i></button>
       </form>
       <a title="{% trans "Destroy" %}" href="{% url "dashboard.views.delete-vm" pk=instance.pk %}" class="btn btn-default btn-xs vm-delete" data-vm-pk="{{ instance.pk }}"><i class="icon-remove"></i></a>
+      <a title="{% trans "Help" %}" href="#" class="btn btn-default btn-xs vm-details-help-button"><i class="icon-question"></i></a>
     </div>
     <h1>
       <div id="vm-details-rename">
@@ -46,7 +64,49 @@
       <div id="vm-details-h1-name">
         {{ instance.name }} 
       </div>
-      <small>{{ instance.primary_host.get_fqdn }}</small></h1>
+      <small>{{ instance.primary_host.get_fqdn }}</small>
+    </h1>
+    <div class="vm-details-help js-hidden">
+      <ul style="list-style: none;">
+        <li>
+          <strong>{% trans "Sleep" %}:</strong>
+          {% trans "Suspend virtual machine with memory dump." %}
+        </li>
+        <li>
+          <strong>{% trans "Wake up" %}:</strong>
+          {% trans "?" %}
+        </li>
+        <li>
+          <strong>{% trans "Shutdown" %}:</strong>
+          {% trans "Shutdown virtual machine with ACPI signal." %}
+        </li>
+        <li>
+          <strong>{% trans "Reboot (ctrl + alt + del)" %}:</strong>
+          {% trans "Reboot virtual machine with Ctrl+Alt+Del signal." %}
+        </li>
+        <li>
+          <strong>{% trans "Reset (power cycle)" %}:</strong>
+          {% trans "Reset virtual machine (reset button)" %}
+        </li>
+        <li>
+          <strong>{% trans "Shut off" %}:</strong>
+          {% trans "Shut off VM. (plug-out)" %}
+        </li>
+        <li>
+          <strong>{% trans "Migrate" %}:</strong>
+          {% trans "Live migrate running vm to another node." %}
+        </li>
+        <li>
+          <strong>{% trans "Save as template" %}:</strong>
+          {% trans "?" %}
+        </li>
+        <li>
+          <strong>{% trans "Destroy" %}:</strong>
+          {% trans "Remove virtual machine and its networks." %}
+        </li>
+      </ul>
+    </div>
+    <div style="clear: both;"></div>
   </div>
   <div class="row">
     <div class="col-md-4" id="vm-info-pane">
@@ -69,7 +129,7 @@
         <dt>Password:</dt>
         <dd>
           <div class="input-group">
-            <input type="text" class="form-control input-sm input-tags" value="{{ instance.pw }}"/>
+            <input type="text" id="vm-details-pw-input" class="form-control input-sm input-tags" value="{{ instance.pw }}"/>
             <span class="input-group-addon input-tags" id="vm-details-pw-show">
               <i class="icon-eye-open" id="vm-details-pw-eye" title="Show password"></i>
             </span>
@@ -102,8 +162,11 @@
               <i class="icon-tasks icon-2x"></i><br>
               {% trans "Resources" %}</a>
           </li>
-          <li {% if instance.state != "RUNNING" %}class="disabled"{% endif %}>
-            <a href="#{% if instance.state == "RUNNING" %}console" data-toggle="pill{% endif %}" data-target="#_console" class="text-center">
+          <li {% if not instance.is_console_available %}class="disabled">
+            <a href="#" data-toggle="pill_" data-target="#_console" class="text-center">
+              {% else %}>
+            <a href="#console" data-toggle="pill" data-target="#_console" class="text-center">
+              {% endif %}
               <i class="icon-desktop icon-2x"></i><br>
               {% trans "Console" %}</a></li>
           <li>
@@ -136,4 +199,10 @@
   </div>
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{{ STATIC_URL }}dashboard/vm-details.js"></script>
+  <script src="{{ STATIC_URL }}dashboard/vm-common.js"></script>
+  <script src="{{ STATIC_URL }}dashboard/vm-console.js"></script>
 {% endblock %}

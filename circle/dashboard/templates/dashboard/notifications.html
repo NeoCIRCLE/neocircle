@@ -1,0 +1,20 @@
+{% extends "dashboard/base.html" %}
+{% load i18n %}
+{% block content %}
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="no-margin"><i class="icon-desktop"></i> {% trans "Notifications" %}</h3>
+      </div>
+      <div class="panel-body">
+        <ul style="list-style: none;">
+          {% include "dashboard/_notifications-timeline.html" %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

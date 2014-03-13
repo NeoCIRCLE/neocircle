@@ -5,7 +5,9 @@ import re
 from datetime import datetime
 import requests
 
+from django.conf import settings
 from django.contrib.auth.models import User, Group
+from django.contrib.auth.views import login, redirect_to_login
 from django.contrib.messages import warning
 from django.core.exceptions import (
     PermissionDenied, SuspiciousOperation,
@@ -13,34 +15,47 @@ from django.core.exceptions import (
 from django.core import signing
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.http import HttpResponse, HttpResponseRedirect, Http404
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.views.decorators.http import require_GET
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import (TemplateView, DetailView, View, DeleteView,
                                   UpdateView, CreateView)
 from django.contrib import messages
 from django.utils.translation import ugettext as _
-from django.template.defaultfilters import title
+from django.template.defaultfilters import title as title_filter
 from django.template.loader import render_to_string
+from django.template import RequestContext
 
 from django.forms.models import inlineformset_factory
 from django_tables2 import SingleTableView
-from braces.views import LoginRequiredMixin, SuperuserRequiredMixin
+from braces.views import (
+    LoginRequiredMixin, SuperuserRequiredMixin, AccessMixin
+)
 
 from .forms import (
-    VmCreateForm, TemplateForm, LeaseForm, NodeForm, HostForm, DiskAddForm,
-    TraitForm,
+    CircleAuthenticationForm, DiskAddForm, HostForm, LeaseForm, NodeForm,
+    TemplateForm, TraitForm, VmCustomizeForm,
 )
 from .tables import (VmListTable, NodeListTable, NodeVmListTable,
                      TemplateListTable, LeaseListTable, GroupListTable,)
-from vm.models import (Instance, InstanceTemplate, InterfaceTemplate,
-                       InstanceActivity, Node, Trait, instance_activity, Lease,
-                       Interface, NodeActivity, )
+from vm.models import (
+    Instance, instance_activity, InstanceActivity, InstanceTemplate, Interface,
+    InterfaceTemplate, Lease, Node, NodeActivity, Trait,
+)
 from firewall.models import Vlan, Host, Rule
-from storage.models import Disk
-from dashboard.models import Favourite
+from dashboard.models import Favourite, Profile
 
 logger = logging.getLogger(__name__)
+
+
+def search_user(keyword):
+    try:
+        return User.objects.get(username=keyword)
+    except User.DoesNotExist:
+        try:
+            return User.objects.get(profile__org_id=keyword)
+        except User.DoesNotExist:
+            return User.objects.get(email=keyword)
 
 
 # github.com/django/django/blob/stable/1.6.x/django/contrib/messages/views.py
@@ -81,6 +96,10 @@ class IndexView(LoginRequiredMixin, TemplateView):
             'instances': display[:5],
             'more_instances': instances.count() - len(instances[:5])
         })
+
+        if user is not None:
+            context['new_notifications'] = user.notification_set.filter(
+                status="new").count()
 
         nodes = Node.objects.all()
         groups = Group.objects.all()
@@ -145,6 +164,25 @@ class CheckedDetailView(LoginRequiredMixin, DetailView):
         return context
 
 
+class VmDetailVncTokenView(CheckedDetailView):
+    template_name = "dashboard/vm-detail.html"
+    model = Instance
+
+    def get(self, request, **kwargs):
+        self.object = self.get_object()
+        if not self.object.has_level(request.user, 'operator'):
+            raise PermissionDenied()
+        if self.object.node:
+            port = self.object.vnc_port
+            host = str(self.object.node.host.ipv4)
+            value = signing.dumps({'host': host,
+                                   'port': port},
+                                  key=getenv("PROXY_SECRET", 'asdasd')),
+            return HttpResponse('vnc/?d=%s' % value)
+        else:
+            raise Http404()
+
+
 class VmDetailView(CheckedDetailView):
     template_name = "dashboard/vm-detail.html"
     model = Instance
@@ -152,15 +190,11 @@ class VmDetailView(CheckedDetailView):
     def get_context_data(self, **kwargs):
         context = super(VmDetailView, self).get_context_data(**kwargs)
         instance = context['instance']
-        if instance.node:
-            port = instance.vnc_port
-            host = str(instance.node.host.ipv4)
-            value = signing.dumps({'host': host,
-                                   'port': port},
-                                  key=getenv("PROXY_SECRET", 'asdasd')),
-            context.update({
-                'vnc_url': '%s' % value
-            })
+        context.update({
+            'graphite_enabled': VmGraphView.get_graphite_url() is not None,
+            'vnc_url': reverse_lazy("dashboard.views.detail-vnc",
+                                    kwargs={'pk': self.object.pk})
+        })
 
         # activity data
         ia = InstanceActivity.objects.filter(
@@ -176,7 +210,10 @@ class VmDetailView(CheckedDetailView):
         ).all()
         context['acl'] = get_vm_acl_data(instance)
         context['forms'] = {
-            'disk_add_form': DiskAddForm(prefix="disk"),
+            'disk_add_form': DiskAddForm(
+                user=self.request.user,
+                is_template=False, object_pk=self.get_object().pk,
+                prefix="disk"),
         }
         context['os_type_icon'] = instance.os_type.replace("unknown",
                                                            "question")
@@ -195,13 +232,13 @@ class VmDetailView(CheckedDetailView):
             'port': self.__add_port,
             'new_network_vlan': self.__new_network,
             'save_as': self.__save_as,
-            'disk-name': self.__add_disk,
             'shut_down': self.__shut_down,
             'sleep': self.__sleep,
             'wake_up': self.__wake_up,
             'deploy': self.__deploy,
             'reset': self.__reset,
             'reboot': self.__reboot,
+            'shut_off': self.__shut_off,
         }
         for k, v in options.iteritems():
             if request.POST.get(k) is not None:
@@ -370,24 +407,6 @@ class VmDetailView(CheckedDetailView):
         return redirect(reverse_lazy("dashboard.views.template-detail",
                                      kwargs={'pk': template.pk}))
 
-    def __add_disk(self, request):
-        self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-
-        form = DiskAddForm(request.POST, prefix="disk")
-        if form.is_valid():
-            messages.success(request, _("New disk successfully created!"))
-            form.save(self.object)
-        else:
-            error = "<br /> ".join(["<strong>%s</strong>: %s" %
-                                    (title(i[0]), i[1][0])
-                                    for i in form.errors.items()])
-            messages.error(request, error)
-
-        return redirect("%s#resources" % reverse_lazy(
-            "dashboard.views.detail", kwargs={'pk': self.object.pk}))
-
     def __shut_down(self, request):
         self.object = self.get_object()
         if not self.object.has_level(request.user, 'owner'):
@@ -436,6 +455,14 @@ class VmDetailView(CheckedDetailView):
         self.object.reboot_async(request.user)
         return redirect("%s#activity" % self.object.get_absolute_url())
 
+    def __shut_off(self, request):
+        self.object = self.get_object()
+        if not self.object.has_level(request.user, 'owner'):
+            raise PermissionDenied()
+
+        self.object.shut_off_async(request.user)
+        return redirect("%s#activity" % self.object.get_absolute_url())
+
 
 class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
     template_name = "dashboard/node-detail.html"
@@ -449,11 +476,13 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
         context = super(NodeDetailView, self).get_context_data(**kwargs)
         instances = Instance.active.filter(node=self.object)
         context['table'] = NodeVmListTable(instances)
-        ia = NodeActivity.objects.filter(
+        na = NodeActivity.objects.filter(
             node=self.object, parent=None
         ).order_by('-started').select_related()
-        context['activities'] = ia
+        context['activities'] = na
         context['trait_form'] = form
+        context['graphite_enabled'] = (
+            NodeGraphView.get_graphite_url() is not None)
         return context
 
     def post(self, request, *args, **kwargs):
@@ -765,8 +794,16 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
             return super(TemplateDetail, self).get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
+        obj = self.get_object()
         context = super(TemplateDetail, self).get_context_data(**kwargs)
-        context['acl'] = get_vm_acl_data(self.get_object())
+        context['acl'] = get_vm_acl_data(obj)
+        context['disks'] = obj.disks.all()
+        context['disk_add_form'] = DiskAddForm(
+            user=self.request.user,
+            is_template=True,
+            object_pk=obj.pk,
+            prefix="disk",
+        )
         return context
 
     def get_success_url(self):
@@ -981,7 +1018,7 @@ class GroupDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
 
 class VmCreate(LoginRequiredMixin, TemplateView):
 
-    form_class = VmCreateForm
+    form_class = VmCustomizeForm
     form = None
 
     def get_template_names(self):
@@ -991,30 +1028,94 @@ class VmCreate(LoginRequiredMixin, TemplateView):
             return ['dashboard/nojs-wrapper.html']
 
     def get(self, request, form=None, *args, **kwargs):
-        if form is None:
-            form = self.form_class()
-        form.fields['disks'].queryset = Disk.get_objects_with_level(
-            'user', request.user).exclude(type="qcow2-snap")
-        form.fields['networks'].queryset = Vlan.get_objects_with_level(
-            'user', request.user)
+        form_error = form is not None
+        template = (form.template.pk if form_error
+                    else request.GET.get("template"))
         templates = InstanceTemplate.get_objects_with_level('user',
                                                             request.user)
-        form.fields['template'].queryset = templates
+        if form is None and template:
+            form = self.form_class(user=request.user,
+                                   template=templates.get(pk=template))
+
         context = self.get_context_data(**kwargs)
-        context.update({
-            'template': 'dashboard/vm-create.html',
-            'box_title': 'Create a VM',
-            'vm_create_form': form,
-        })
+        if template:
+            context.update({
+                'template': 'dashboard/_vm-create-2.html',
+                'box_title': _('Customize VM'),
+                'ajax_title': False,
+                'vm_create_form': form,
+                'template_o': templates.get(pk=template),
+            })
+        else:
+            context.update({
+                'template': 'dashboard/_vm-create-1.html',
+                'box_title': _('Create a VM'),
+                'ajax_title': False,
+                'templates': templates.all(),
+            })
         return self.render_to_response(context)
 
-    def post(self, request, *args, **kwargs):
-        form = self.form_class(request.POST)
+    def __create_normal(self, request, *args, **kwargs):
+        user = request.user
+        template = InstanceTemplate.objects.get(
+            pk=request.POST.get("template"))
+
+        # permission check
+        if not template.has_level(request.user, 'user'):
+            raise PermissionDenied()
+
+        inst = Instance.create_from_template(
+            template=template, owner=user)
+        return self.__deploy(request, inst)
+
+    def __create_customized(self, request, *args, **kwargs):
+        user = request.user
+        form = self.form_class(
+            request.POST, user=request.user,
+            template=InstanceTemplate.objects.get(
+                pk=request.POST.get("template")
+            )
+        )
         if not form.is_valid():
             return self.get(request, form, *args, **kwargs)
         post = form.cleaned_data
+
+        template = InstanceTemplate.objects.get(pk=post['template'])
+        # permission check
+        if not template.has_level(user, 'user'):
+            raise PermissionDenied()
+
+        if request.user.has_perm('vm.set_resources'):
+            ikwargs = {
+                'name': post['name'],
+                'num_cores': post['cpu_count'],
+                'ram_size': post['ram_size'],
+                'priority': post['cpu_priority'],
+            }
+            networks = [InterfaceTemplate(vlan=l, managed=l.managed)
+                        for l in post['networks']]
+            disks = post['disks']
+            inst = Instance.create_from_template(
+                template=template, owner=user, networks=networks,
+                disks=disks, **ikwargs)
+            return self.__deploy(request, inst)
+        else:
+            raise PermissionDenied()
+
+    def __deploy(self, request, instance, *args, **kwargs):
+        instance.deploy_async(user=request.user)
+        messages.success(request, _('VM successfully created!'))
+        path = instance.get_absolute_url()
+        if request.is_ajax():
+            return HttpResponse(json.dumps({'redirect': path}),
+                                content_type="application/json")
+        else:
+            return redirect("%s#activity" % path)
+
+    def post(self, request, *args, **kwargs):
         user = request.user
 
+        # limit chekcs
         try:
             limit = user.profile.instance_limit
         except Exception as e:
@@ -1031,32 +1132,11 @@ class VmCreate(LoginRequiredMixin, TemplateView):
                 else:
                     return redirect('/')
 
-        template = post['template']
-        if not template.has_level(request.user, 'user'):
-            raise PermissionDenied()
-        if request.user.has_perm('vm.set_resources'):
-            ikwargs = {
-                'num_cores': post['cpu_count'],
-                'ram_size': post['ram_size'],
-                'priority': post['cpu_priority'],
-            }
-            networks = [InterfaceTemplate(vlan=l, managed=l.managed)
-                        for l in post['networks']]
-            disks = post['disks']
-            inst = Instance.create_from_template(
-                template=template, owner=user, networks=networks,
-                disks=disks, **ikwargs)
-        else:
-            inst = Instance.create_from_template(
-                template=template, owner=user)
-        inst.deploy_async(user=request.user)
-        messages.success(request, _('VM successfully created!'))
-        path = inst.get_absolute_url()
-        if request.is_ajax():
-            return HttpResponse(json.dumps({'redirect': path}),
-                                content_type="application/json")
-        else:
-            return redirect(path)
+        create_func = (self.__create_normal if
+                       request.POST.get("customized") is None else
+                       self.__create_customized)
+
+        return create_func(request, *args, **kwargs)
 
 
 class NodeCreate(LoginRequiredMixin, SuperuserRequiredMixin, TemplateView):
@@ -1388,7 +1468,8 @@ class VmMassDelete(LoginRequiredMixin, View):
             return redirect(next if next else reverse_lazy('dashboard.index'))
 
 
-class LeaseCreate(SuccessMessageMixin, CreateView):
+class LeaseCreate(LoginRequiredMixin, SuperuserRequiredMixin,
+                  SuccessMessageMixin, CreateView):
     model = Lease
     form_class = LeaseForm
     template_name = "dashboard/lease-create.html"
@@ -1398,7 +1479,8 @@ class LeaseCreate(SuccessMessageMixin, CreateView):
         return reverse_lazy("dashboard.views.template-list")
 
 
-class LeaseDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+class LeaseDetail(LoginRequiredMixin, SuperuserRequiredMixin,
+                  SuccessMessageMixin, UpdateView):
     model = Lease
     form_class = LeaseForm
     template_name = "dashboard/lease-edit.html"
@@ -1448,12 +1530,15 @@ def vm_activity(request, pk):
 
     response['state'] = instance.state
     if only_state is not None and only_state == "false":  # instance activity
-        print "Sdsa"
+        context = {
+            'activities': InstanceActivity.objects.filter(
+                instance=instance, parent=None
+            ).order_by('-started').select_related()
+        }
+
         activities = render_to_string(
             "dashboard/vm-detail/_activity-timeline.html",
-            {'activities': InstanceActivity.objects.filter(
-                instance=instance, parent=None
-            ).order_by('-started').select_related()}
+            RequestContext(request, context),
         )
         response['activities'] = activities
 
@@ -1482,9 +1567,10 @@ class TransferOwnershipView(LoginRequiredMixin, DetailView):
 
     def post(self, request, *args, **kwargs):
         try:
-            new_owner = User.objects.get(username=request.POST['name'])
+            new_owner = search_user(request.POST['name'])
         except User.DoesNotExist:
-            raise Http404()
+            messages.error(request, _('Can not find specified user.'))
+            return self.get(request, *args, **kwargs)
         except KeyError:
             raise SuspiciousOperation()
 
@@ -1495,29 +1581,198 @@ class TransferOwnershipView(LoginRequiredMixin, DetailView):
 
         token = signing.dumps((obj.pk, new_owner.pk),
                               salt=TransferOwnershipConfirmView.get_salt())
-        return HttpResponse("%s?key=%s" % (
-            reverse('dashboard.views.vm-transfer-ownership-confirm'), token),
-            content_type="text/plain")
+        token_path = reverse(
+            'dashboard.views.vm-transfer-ownership-confirm', args=[token])
+        try:
+            new_owner.profile.notify(
+                _('Ownership offer'),
+                'dashboard/notifications/ownership-offer.html',
+                {'instance': obj, 'token': token_path})
+        except Profile.DoesNotExist:
+            messages.error(request, _('Can not notify selected user.'))
+        else:
+            messages.success(request,
+                             _('User %s is notified about the offer.') % (
+                                 unicode(new_owner), ))
+
+        return redirect(reverse_lazy("dashboard.views.detail",
+                                     kwargs={'pk': obj.pk}))
 
 
-class TransferOwnershipConfirmView(LoginRequiredMixin, View):
-    max_age = 3 * 24 * 3600
-    success_message = _("Ownership successfully transferred.")
+class AbstractVmFunctionView(AccessMixin, View):
+    """Abstract instance-action view.
+
+    User can do the action with a valid token or if has at least required_level
+    ACL level for the instance.
+
+    Children should at least implement/add template_name, success_message,
+    url_name, and do_action().
+    """
+    token_max_age = 3 * 24 * 3600
+    required_level = 'owner'
+    success_message = _("Failed to perform requested action.")
+
+    @classmethod
+    def check_acl(cls, instance, user):
+        if not instance.has_level(user, cls.required_level):
+            raise PermissionDenied()
 
     @classmethod
     def get_salt(cls):
         return unicode(cls)
 
-    def get(self, request, *args, **kwargs):
-        """Confirm ownership transfer based on token.
+    @classmethod
+    def get_token(cls, instance, user, *args):
+        t = tuple([getattr(i, 'pk', i) for i in [instance, user] + list(args)])
+        return signing.dumps(t, salt=cls.get_salt())
+
+    @classmethod
+    def get_token_url(cls, instance, user, *args):
+        key = cls.get_token(instance, user, *args)
+        args = (instance.pk, key) + args
+        return reverse(cls.url_name, args=args)
+        # this wont work, CBVs suck: reverse(cls.as_view(), args=args)
+
+    def get_template_names(self):
+        return [self.template_name]
+
+    def get(self, request, pk, key=None, *args, **kwargs):
+        class LoginNeeded(Exception):
+            pass
+        pk = int(pk)
+        instance = get_object_or_404(Instance, pk=pk)
+        try:
+            if key:
+                logger.debug('Confirm dialog for token %s.', key)
+                try:
+                    self.validate_key(pk, key)
+                except signing.SignatureExpired:
+                    messages.error(request, _(
+                        'The token has expired, please log in.'))
+                    raise LoginNeeded()
+                self.key = key
+            else:
+                if not request.user.is_authenticated():
+                    raise LoginNeeded()
+                self.check_acl(instance, request.user)
+        except LoginNeeded:
+            return redirect_to_login(request.get_full_path(),
+                                     self.get_login_url(),
+                                     self.get_redirect_field_name())
+        except SuspiciousOperation as e:
+            messages.error(request, _('This token is invalid.'))
+            logger.warning('This token %s is invalid. %s', key, unicode(e))
+            raise PermissionDenied()
+        return render(request, self.get_template_names(),
+                      self.get_context(instance))
+
+    def post(self, request, pk, key=None, *args, **kwargs):
+        class LoginNeeded(Exception):
+            pass
+        pk = int(pk)
+        instance = get_object_or_404(Instance, pk=pk)
+
+        try:
+            if not request.user.is_authenticated() and key:
+                try:
+                    user = self.validate_key(pk, key)
+                except signing.SignatureExpired:
+                    messages.error(request, _(
+                        'The token has expired, please log in.'))
+                    raise LoginNeeded()
+                self.key = key
+            else:
+                user = request.user
+                self.check_acl(instance, request.user)
+        except LoginNeeded:
+            return redirect_to_login(request.get_full_path(),
+                                     self.get_login_url(),
+                                     self.get_redirect_field_name())
+        except SuspiciousOperation as e:
+            messages.error(request, _('This token is invalid.'))
+            logger.warning('This token %s is invalid. %s', key, unicode(e))
+            raise PermissionDenied()
+
+        if self.do_action(instance, user):
+            messages.success(request, self.success_message)
+        else:
+            messages.error(request, self.fail_message)
+        return HttpResponseRedirect(instance.get_absolute_url())
+
+    def validate_key(self, pk, key):
+        """Get object based on signed token.
         """
         try:
-            key = request.GET['key']
-            logger.debug('Confirm dialog for token %s.', key)
+            data = signing.loads(key, salt=self.get_salt())
+            logger.debug('Token data: %s', unicode(data))
+            instance, user = data
+            logger.debug('Extracted token data: instance: %s, user: %s',
+                         unicode(instance), unicode(user))
+        except (signing.BadSignature, ValueError, TypeError) as e:
+            logger.warning('Tried invalid token. Token: %s, user: %s. %s',
+                           key, unicode(self.request.user), unicode(e))
+            raise SuspiciousOperation()
+
+        try:
+            instance, user = signing.loads(key, max_age=self.token_max_age,
+                                           salt=self.get_salt())
+            logger.debug('Extracted non-expired token data: %s, %s',
+                         unicode(instance), unicode(user))
+        except signing.BadSignature as e:
+            raise signing.SignatureExpired()
+
+        if pk != instance:
+            logger.debug('pk (%d) != instance (%d)', pk, instance)
+            raise SuspiciousOperation()
+        user = User.objects.get(pk=user)
+        return user
+
+    def do_action(self, instance, user):  # noqa
+        raise NotImplementedError('Please override do_action(instance, user)')
+
+    def get_context(self, instance):
+        context = {'instance': instance}
+        if getattr(self, 'key', None) is not None:
+            context['key'] = self.key
+        return context
+
+
+class VmRenewView(AbstractVmFunctionView):
+    """User can renew an instance."""
+    template_name = 'dashboard/confirm/base-renew.html'
+    success_message = _("Virtual machine is successfully renewed.")
+    url_name = 'dashboard.views.vm-renew'
+
+    def get_context(self, instance):
+        context = super(VmRenewView, self).get_context(instance)
+        (context['time_of_suspend'],
+         context['time_of_delete']) = instance.get_renew_times()
+        return context
+
+    def do_action(self, instance, user):
+        instance.renew(user=user)
+        logger.info('Instance %s renewed by %s.', unicode(instance),
+                    unicode(user))
+        return True
+
+
+class TransferOwnershipConfirmView(LoginRequiredMixin, View):
+    """User can accept an ownership offer."""
+
+    max_age = 3 * 24 * 3600
+    success_message = _("Ownership successfully transferred to you.")
+
+    @classmethod
+    def get_salt(cls):
+        return unicode(cls)
+
+    def get(self, request, key, *args, **kwargs):
+        """Confirm ownership transfer based on token.
+        """
+        logger.debug('Confirm dialog for token %s.', key)
+        try:
             instance, new_owner = self.get_instance(key, request.user)
-        except KeyError:
-            raise Http404()
-        except PermissionDenied():
+        except PermissionDenied:
             messages.error(request, _('This token is for an other user.'))
             raise
         except SuspiciousOperation:
@@ -1527,16 +1782,10 @@ class TransferOwnershipConfirmView(LoginRequiredMixin, View):
                       "dashboard/confirm/base-transfer-ownership.html",
                       dictionary={'instance': instance, 'key': key})
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, key, *args, **kwargs):
         """Really transfer ownership based on token.
         """
-        try:
-            key = request.POST['key']
-            instance, owner = self.get_instance(key, request.user)
-        except KeyError:
-            logger.debug('Posted to %s without key field.',
-                         unicode(self.__class__))
-            raise SuspiciousOperation()
+        instance, owner = self.get_instance(key, request.user)
 
         old = instance.owner
         with instance_activity(code_suffix='ownership-transferred',
@@ -1547,6 +1796,11 @@ class TransferOwnershipConfirmView(LoginRequiredMixin, View):
         messages.success(request, self.success_message)
         logger.info('Ownership of %s transferred from %s to %s.',
                     unicode(instance), unicode(old), unicode(request.user))
+        if old.profile:
+            old.profile.notify(
+                _('Ownership accepted'),
+                'dashboard/notifications/ownership-accepted.html',
+                {'instance': instance})
         return HttpResponseRedirect(instance.get_absolute_url())
 
     def get_instance(self, key, user):
@@ -1556,15 +1810,7 @@ class TransferOwnershipConfirmView(LoginRequiredMixin, View):
             instance, new_owner = (
                 signing.loads(key, max_age=self.max_age,
                               salt=self.get_salt()))
-        except signing.BadSignature as e:
-            logger.error('Tried invalid token. Token: %s, user: %s. %s',
-                         key, unicode(user), unicode(e))
-            raise SuspiciousOperation()
-        except ValueError as e:
-            logger.error('Tried invalid token. Token: %s, user: %s. %s',
-                         key, unicode(user), unicode(e))
-            raise SuspiciousOperation()
-        except TypeError as e:
+        except (signing.BadSignature, ValueError, TypeError) as e:
             logger.error('Tried invalid token. Token: %s, user: %s. %s',
                          key, unicode(user), unicode(e))
             raise SuspiciousOperation()
@@ -1584,45 +1830,205 @@ class TransferOwnershipConfirmView(LoginRequiredMixin, View):
         return (instance, new_owner)
 
 
-class VmGraphView(LoginRequiredMixin, View):
-    def get(self, request, pk, metric, time, *args, **kwargs):
+class GraphViewBase(LoginRequiredMixin, View):
+    @staticmethod
+    def get_graphite_url():
         graphite_host = getenv("GRAPHITE_HOST", None)
         graphite_port = getenv("GRAPHITE_PORT", None)
 
         if (graphite_host in ['', None] or graphite_port in ['', None]):
             logger.debug('GRAPHITE_HOST is empty.')
+            return None
+
+        return 'http://%s:%s' % (graphite_host, graphite_port)
+
+    def get(self, request, pk, metric, time, *args, **kwargs):
+        graphite_url = GraphViewBase.get_graphite_url()
+        if graphite_url is None:
             raise Http404()
 
-        if metric not in ['cpu', 'memory', 'network']:
+        if metric not in self.metrics.keys():
             raise SuspiciousOperation()
+
         try:
-            instance = Instance.objects.get(id=pk)
-        except Instance.DoesNotExist:
+            instance = self.get_object(request, pk)
+        except self.model.DoesNotExist:
             raise Http404()
-        if not instance.has_level(request.user, 'user'):
-            raise PermissionDenied()
 
-        targets = {
-            'cpu': ('cactiStyle(alias(derivative(%s.cpu.usage),'
-                    '"cpu usage (%%)"))'),
-            'memory': ('cactiStyle(alias(%s.memory.usage,'
-                       '"memory usage (%%)"))'),
-            'network': ('cactiStyle(aliasByMetric('
-                        'derivative(%s.network.bytes_*)))'),
-        }
-
-        if metric not in targets.keys():
-            raise SuspiciousOperation()
-
-        prefix = 'vm.%s' % instance.vm_name
-        target = targets[metric] % prefix
-        title = '%s (%s) - %s' % (instance.name, instance.vm_name, metric)
+        prefix = self.get_prefix(instance)
+        target = self.metrics[metric] % {'prefix': prefix}
+        title = self.get_title(instance, metric)
         params = {'target': target,
                   'from': '-%s' % time,
                   'title': title.encode('UTF-8'),
                   'width': '500',
                   'height': '200'}
-        url = ('http://%s:%s/render/?%s' % (graphite_host, graphite_port,
-                                            params))
-        response = requests.post(url, data=params)
+        response = requests.post('%s/render/' % graphite_url, data=params)
         return HttpResponse(response.content, mimetype="image/png")
+
+    def get_prefix(self, instance):
+        raise NotImplementedError("Subclass must implement abstract method")
+
+    def get_title(self, instance, metric):
+        raise NotImplementedError("Subclass must implement abstract method")
+
+    def get_object(self, request, pk):
+        instance = self.model.objects.get(id=pk)
+        if not instance.has_level(request.user, 'user'):
+            raise PermissionDenied()
+        return instance
+
+
+class VmGraphView(GraphViewBase):
+    metrics = {
+        'cpu': ('cactiStyle(alias(nonNegativeDerivative(%(prefix)s.cpu.usage),'
+                '"cpu usage (%%)"))'),
+        'memory': ('cactiStyle(alias(%(prefix)s.memory.usage,'
+                   '"memory usage (%%)"))'),
+        'network': (
+            'group('
+            'aliasSub(nonNegativeDerivative(%(prefix)s.network.bytes_recv*),'
+            ' ".*-(\d+)\\)", "out (vlan \\1)"),'
+            'aliasSub(nonNegativeDerivative(%(prefix)s.network.bytes_sent*),'
+            ' ".*-(\d+)\\)", "in (vlan \\1)"))'),
+    }
+    model = Instance
+
+    def get_prefix(self, instance):
+        return 'vm.%s' % instance.vm_name
+
+    def get_title(self, instance, metric):
+        return '%s (%s) - %s' % (instance.name, instance.vm_name, metric)
+
+
+class NodeGraphView(SuperuserRequiredMixin, GraphViewBase):
+    metrics = {
+        'cpu': ('cactiStyle(alias(nonNegativeDerivative(%(prefix)s.cpu.times),'
+                '"cpu usage (%%)"))'),
+        'memory': ('cactiStyle(alias(%(prefix)s.memory.usage,'
+                   '"memory usage (%%)"))'),
+        'network': ('cactiStyle(aliasByMetric('
+                    'nonNegativeDerivative(%(prefix)s.network.bytes_*)))'),
+    }
+    model = Node
+
+    def get_prefix(self, instance):
+        return 'circle.%s' % instance.name
+
+    def get_title(self, instance, metric):
+        return '%s - %s' % (instance.name, metric)
+
+    def get_object(self, request, pk):
+        return self.model.objects.get(id=pk)
+
+
+class NotificationView(LoginRequiredMixin, TemplateView):
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/_notifications-timeline.html']
+        else:
+            return ['dashboard/notifications.html']
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(NotificationView, self).get_context_data(
+            *args, **kwargs)
+        # we need to convert it to list, otherwise it's gonna be
+        # similar to a QuerySet and update everything to
+        # read status after get
+        n = 10 if self.request.is_ajax() else 1000
+        context['notifications'] = list(
+            self.request.user.notification_set.values()[:n])
+        return context
+
+    def get(self, *args, **kwargs):
+        response = super(NotificationView, self).get(*args, **kwargs)
+        un = self.request.user.notification_set.filter(status="new")
+        for u in un:
+            u.status = "read"
+            u.save()
+        return response
+
+
+class VmMigrateView(SuperuserRequiredMixin, TemplateView):
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/modal-wrapper.html']
+        else:
+            return ['dashboard/nojs-wrapper.html']
+
+    def get(self, request, form=None, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        vm = Instance.objects.get(pk=kwargs['pk'])
+        context.update({
+            'template': 'dashboard/_vm-migrate.html',
+            'box_title': _('Migrate %(name)s' % {'name': vm.name}),
+            'ajax_title': True,
+            'vm': vm,
+            'nodes': [n for n in Node.objects.filter(enabled=True)
+                      if n.state == "ONLINE"]
+        })
+        return self.render_to_response(context)
+
+    def post(self, *args, **kwargs):
+        node = self.request.POST.get("node")
+        vm = Instance.objects.get(pk=kwargs['pk'])
+
+        if node:
+            node = Node.objects.get(pk=node)
+            vm.migrate_async(to_node=node, user=self.request.user)
+        else:
+            messages.error(self.request, _("You didn't select a node!"))
+
+        return redirect("%s#activity" % vm.get_absolute_url())
+
+
+def circle_login(request):
+    authentication_form = CircleAuthenticationForm
+    extra_context = {
+        'saml2': hasattr(settings, "SAML_CONFIG")
+    }
+    return login(request, authentication_form=authentication_form,
+                 extra_context=extra_context)
+
+
+class DiskAddView(TemplateView):
+
+    def post(self, *args, **kwargs):
+        is_template = self.request.POST.get("disk-is_template")
+        object_pk = self.request.POST.get("disk-object_pk")
+        is_template = int(is_template) == 1
+        if is_template:
+            obj = InstanceTemplate.objects.get(pk=object_pk)
+        else:
+            obj = Instance.objects.get(pk=object_pk)
+
+        if not obj.has_level(self.request.user, 'owner'):
+            raise PermissionDenied()
+
+        form = DiskAddForm(
+            self.request.POST,
+            user=self.request.user,
+            is_template=is_template, object_pk=object_pk,
+            prefix="disk"
+        )
+
+        if form.is_valid():
+            if form.cleaned_data.get("size"):
+                messages.success(self.request, _("Disk successfully added!"))
+            else:
+                messages.success(self.request, _("Disk download started!"))
+            form.save()
+        else:
+            error = "<br /> ".join(["<strong>%s</strong>: %s" %
+                                    (title_filter(i[0]), i[1][0])
+                                    for i in form.errors.items()])
+            messages.error(self.request, error)
+
+        if is_template:
+            r = obj.get_absolute_url()
+        else:
+            r = obj.get_absolute_url()
+            r = "%s#resources" % r
+        return redirect(r)

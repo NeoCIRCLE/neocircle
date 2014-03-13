@@ -1,16 +1,29 @@
 from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User, Group
+from django.core.exceptions import SuspiciousOperation
+from django.core.urlresolvers import reverse
 
-from vm.models import Instance, InstanceTemplate, Lease
+from vm.models import Instance, InstanceTemplate, Lease, Node
+from ..models import Profile
+from ..views import VmRenewView
 from storage.models import Disk
 from firewall.models import Vlan
+from mock import Mock
 
 
-class VmDetailTest(TestCase):
-    fixtures = ['test-vm-fixture.json']
+class LoginMixin(object):
+    def login(self, client, username, password='password'):
+        response = client.post('/accounts/login/', {'username': username,
+                                                    'password': password})
+        self.assertNotEqual(response.status_code, 403)
+
+
+class VmDetailTest(LoginMixin, TestCase):
+    fixtures = ['test-vm-fixture.json', 'node.json']
 
     def setUp(self):
+        Instance.get_remote_queue_name = Mock(return_value='test')
         self.u1 = User.objects.create(username='user1')
         self.u1.set_password('password')
         self.u1.save()
@@ -31,11 +44,6 @@ class VmDetailTest(TestCase):
         self.u2.delete()
         self.us.delete()
         self.g1.delete()
-
-    def login(self, client, username, password='password'):
-        response = client.post('/accounts/login/', {'username': username,
-                                                    'password': password})
-        self.assertNotEqual(response.status_code, 403)
 
     def test_404_vm_page(self):
         c = Client()
@@ -106,6 +114,19 @@ class VmDetailTest(TestCase):
         inst.set_level(self.u2, 'owner')
         response = c.post('/dashboard/vm/mass-delete/', {'vms': [1]})
         self.assertEqual(response.status_code, 302)
+
+    def test_permitted_password_change(self):
+        c = Client()
+        self.login(c, "user2")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u2, 'owner')
+        inst.node = Node.objects.all()[0]
+        inst.save()
+        password = inst.pw
+        response = c.post("/dashboard/vm/1/", {'change_password': True})
+        self.assertTrue(Instance.get_remote_queue_name.called)
+        self.assertEqual(response.status_code, 302)
+        self.assertNotEqual(password, Instance.objects.get(pk=1).pw)
 
     def test_unpermitted_password_change(self):
         c = Client()
@@ -186,6 +207,28 @@ class VmDetailTest(TestCase):
         response = c.post('/dashboard/template/1/', {})
         self.assertEqual(response.status_code, 403)
 
+    def test_edit_unpermitted_template_raw_data(self):
+        c = Client()
+        self.login(c, 'user1')
+        tmpl = InstanceTemplate.objects.get(id=1)
+        tmpl.set_level(self.u1, 'owner')
+        tmpl.disks.get().set_level(self.u1, 'owner')
+        kwargs = tmpl.__dict__.copy()
+        kwargs.update(name='t1', lease=1, disks=1, raw_data='tst1')
+        response = c.post('/dashboard/template/1/', kwargs)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(InstanceTemplate.objects.get(id=1).raw_data,
+                         tmpl.raw_data)
+
+    def test_edit_permitted_template_raw_data(self):
+        c = Client()
+        self.login(c, 'superuser')
+        kwargs = InstanceTemplate.objects.get(id=1).__dict__.copy()
+        kwargs.update(name='t2', lease=1, disks=1, raw_data='tst2')
+        response = c.post('/dashboard/template/1/', kwargs)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(InstanceTemplate.objects.get(id=1).raw_data, 'tst2')
+
     def test_permitted_lease_delete(self):
         c = Client()
         self.login(c, 'superuser')
@@ -209,8 +252,12 @@ class VmDetailTest(TestCase):
         inst = Instance.objects.get(pk=1)
         inst.set_level(self.u1, 'owner')
         disks = inst.disks.count()
-        response = c.post("/dashboard/vm/1/", {'disk-name': "a",
-                                               'disk-size': 1})
+        response = c.post("/dashboard/disk/add/", {
+            'disk-name': "a",
+            'disk-size': 1,
+            'disk-is_template': 0,
+            'disk-object_pk': 1,
+        })
         self.assertEqual(response.status_code, 403)
         self.assertEqual(disks, inst.disks.count())
 
@@ -220,7 +267,229 @@ class VmDetailTest(TestCase):
         inst = Instance.objects.get(pk=1)
         inst.set_level(self.u1, 'owner')
         disks = inst.disks.count()
-        response = c.post("/dashboard/vm/1/", {'disk-name': "a",
-                                               'disk-size': 1})
+        response = c.post("/dashboard/disk/add/", {
+            'disk-name': "a",
+            'disk-size': 1,
+            'disk-is_template': 0,
+            'disk-object_pk': 1,
+        })
         self.assertEqual(response.status_code, 302)
         self.assertEqual(disks + 1, inst.disks.count())
+
+    def test_notification_read(self):
+        c = Client()
+        self.login(c, "user1")
+        self.u1.profile.notify('subj', 'dashboard/test_message.txt',
+                               {'var': 'testme'})
+        assert self.u1.notification_set.get().status == 'new'
+        response = c.get("/dashboard/notifications/")
+        self.assertEqual(response.status_code, 200)
+        assert self.u1.notification_set.get().status == 'read'
+
+    def test_unpermitted_activity_get(self):
+        c = Client()
+        self.login(c, "user2")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u1, 'owner')
+
+        response = c.get("/dashboard/vm/1/activity/")
+        self.assertEqual(response.status_code, 403)
+
+    def test_permitted_activity_get(self):
+        c = Client()
+        self.login(c, "user1")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u1, 'owner')
+
+        response = c.get("/dashboard/vm/1/activity/")
+        self.assertEqual(response.status_code, 200)
+
+
+class VmDetailVncTest(LoginMixin, TestCase):
+    fixtures = ['test-vm-fixture.json', 'node.json']
+
+    def setUp(self):
+        self.u1 = User.objects.create(username='user1')
+        self.u1.set_password('password')
+        self.u1.save()
+
+    def test_permitted_vm_console(self):
+        c = Client()
+        self.login(c, 'user1')
+        inst = Instance.objects.get(pk=1)
+        inst.node = Node.objects.all()[0]
+        inst.save()
+        inst.set_level(self.u1, 'operator')
+        response = c.get('/dashboard/vm/1/vnctoken/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_not_permitted_vm_console(self):
+        c = Client()
+        self.login(c, 'user1')
+        inst = Instance.objects.get(pk=1)
+        inst.node = Node.objects.all()[0]
+        inst.save()
+        inst.set_level(self.u1, 'user')
+        response = c.get('/dashboard/vm/1/vnctoken/')
+        self.assertEqual(response.status_code, 403)
+
+
+class TransferOwnershipViewTest(LoginMixin, TestCase):
+    fixtures = ['test-vm-fixture.json']
+
+    def setUp(self):
+        self.u1 = User.objects.create(username='user1')
+        self.u1.set_password('password')
+        self.u1.save()
+        Profile.objects.create(user=self.u1)
+        self.u2 = User.objects.create(username='user2', is_staff=True)
+        self.u2.set_password('password')
+        self.u2.save()
+        Profile.objects.create(user=self.u2)
+        self.us = User.objects.create(username='superuser', is_superuser=True)
+        self.us.set_password('password')
+        self.us.save()
+        Profile.objects.create(user=self.us)
+        inst = Instance.objects.get(pk=1)
+        inst.owner = self.u1
+        inst.save()
+
+    def test_non_owner_offer(self):
+        c2 = self.u2.notification_set.count()
+        c = Client()
+        self.login(c, 'user2')
+        with self.assertRaises(SuspiciousOperation):
+            c.post('/dashboard/vm/1/tx/')
+        self.assertEqual(self.u2.notification_set.count(), c2)
+
+    def test_owned_offer(self):
+        c2 = self.u2.notification_set.count()
+        c = Client()
+        self.login(c, 'user1')
+        response = c.get('/dashboard/vm/1/tx/')
+        assert response.status_code == 200
+        response = c.post('/dashboard/vm/1/tx/', {'name': 'user2'})
+        self.assertEqual(self.u2.notification_set.count(), c2 + 1)
+
+    def test_transfer(self):
+        c = Client()
+        self.login(c, 'user1')
+        response = c.post('/dashboard/vm/1/tx/', {'name': 'user2'})
+        url = response.context['token']
+        c = Client()
+        self.login(c, 'user2')
+        response = c.post(url)
+        self.assertEquals(Instance.objects.get(pk=1).owner.pk, self.u2.pk)
+
+    def test_transfer_token_used_by_others(self):
+        c = Client()
+        self.login(c, 'user1')
+        response = c.post('/dashboard/vm/1/tx/', {'name': 'user2'})
+        url = response.context['token']
+        response = c.post(url)  # token is for user2
+        assert response.status_code == 403
+        self.assertEquals(Instance.objects.get(pk=1).owner.pk, self.u1.pk)
+
+    def test_transfer_by_superuser(self):
+        c = Client()
+        self.login(c, 'superuser')
+        response = c.post('/dashboard/vm/1/tx/', {'name': 'user2'})
+        url = response.context['token']
+        c = Client()
+        self.login(c, 'user2')
+        response = c.post(url)
+        self.assertEquals(Instance.objects.get(pk=1).owner.pk, self.u2.pk)
+
+
+class RenewViewTest(LoginMixin, TestCase):
+    fixtures = ['test-vm-fixture.json']
+
+    def setUp(self):
+        self.u1 = User.objects.create(username='user1')
+        self.u1.set_password('password')
+        self.u1.save()
+        Profile.objects.create(user=self.u1)
+        self.u2 = User.objects.create(username='user2', is_staff=True)
+        self.u2.set_password('password')
+        self.u2.save()
+        Profile.objects.create(user=self.u2)
+        self.us = User.objects.create(username='superuser', is_superuser=True)
+        self.us.set_password('password')
+        self.us.save()
+        Profile.objects.create(user=self.us)
+        inst = Instance.objects.get(pk=1)
+        inst.owner = self.u1
+        inst.save()
+
+    def test_renew_by_owner(self):
+        c = Client()
+        ct = Instance.objects.get(pk=1).activity_log.\
+            filter(activity_code__endswith='renew').count()
+        self.login(c, 'user1')
+        response = c.get('/dashboard/vm/1/renew/')
+        self.assertEquals(response.status_code, 200)
+        response = c.post('/dashboard/vm/1/renew/')
+        self.assertEquals(response.status_code, 302)
+        ct2 = Instance.objects.get(pk=1).activity_log.\
+            filter(activity_code__endswith='renew').count()
+        self.assertEquals(ct + 1, ct2)
+
+    def test_renew_get_by_nonowner_wo_key(self):
+        c = Client()
+        self.login(c, 'user2')
+        response = c.get('/dashboard/vm/1/renew/')
+        self.assertEquals(response.status_code, 403)
+
+    def test_renew_post_by_nonowner_wo_key(self):
+        c = Client()
+        self.login(c, 'user2')
+        response = c.post('/dashboard/vm/1/renew/')
+        self.assertEquals(response.status_code, 403)
+
+    def test_renew_get_by_nonowner_w_key(self):
+        key = VmRenewView.get_token_url(Instance.objects.get(pk=1), self.u2)
+        c = Client()
+        response = c.get(key)
+        self.assertEquals(response.status_code, 200)
+
+    def test_renew_post_by_anon_w_key(self):
+        key = VmRenewView.get_token_url(Instance.objects.get(pk=1), self.u2)
+        ct = Instance.objects.get(pk=1).activity_log.\
+            filter(activity_code__endswith='renew').count()
+        c = Client()
+        response = c.post(key)
+        self.assertEquals(response.status_code, 302)
+        ct2 = Instance.objects.get(pk=1).activity_log.\
+            filter(activity_code__endswith='renew').count()
+        self.assertEquals(ct + 1, ct2)
+
+    def test_renew_post_by_anon_w_invalid_key(self):
+        class Mockinst(object):
+            pk = 2
+        key = VmRenewView.get_token_url(Mockinst(), self.u2)
+        ct = Instance.objects.get(pk=1).activity_log.\
+            filter(activity_code__endswith='renew').count()
+        c = Client()
+        self.login(c, 'user2')
+        response = c.get(key)
+        self.assertEquals(response.status_code, 404)
+        response = c.post(key)
+        self.assertEquals(response.status_code, 404)
+        ct2 = Instance.objects.get(pk=1).activity_log.\
+            filter(activity_code__endswith='renew').count()
+        self.assertEquals(ct, ct2)
+
+    def test_renew_post_by_anon_w_expired_key(self):
+        key = reverse(VmRenewView.url_name, args=(
+            12, 'WzEyLDFd:1WLbSi:2zIb8SUNAIRIOMTmSmKSSit2gpY'))
+        ct = Instance.objects.get(pk=12).activity_log.\
+            filter(activity_code__endswith='renew').count()
+        c = Client()
+        self.login(c, 'user2')
+        response = c.get(key)
+        self.assertEquals(response.status_code, 302)
+        response = c.post(key)
+        self.assertEquals(response.status_code, 403)
+        ct2 = Instance.objects.get(pk=12).activity_log.\
+            filter(activity_code__endswith='renew').count()
+        self.assertEquals(ct, ct2)
