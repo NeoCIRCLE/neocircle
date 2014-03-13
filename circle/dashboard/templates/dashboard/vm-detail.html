@@ -7,40 +7,47 @@
     <div class="pull-right" style="padding-top: 15px;">
       <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
         {% csrf_token %}
-        <input type="hidden" name="sleep" value="dummy"/>
+        <input type="hidden" name="sleep" />
         <button title="{% trans "Sleep" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-moon"></i></button>
       </form>
       <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
         {% csrf_token %}
-        <input type="hidden" name="deploy" value="dummy"/>
+        <input type="hidden" name="deploy" />
         <button title="{% trans "Deploy" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-play"></i></button>
       </form>
       <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
         {% csrf_token %}
-        <input type="hidden" name="wake_up" value="dummy"/>
+        <input type="hidden" name="wake_up" />
         <button title="{% trans "Wake up" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-sun"></i></button>
       </form>
       <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
         {% csrf_token %}
-        <input type="hidden" name="shut_down" value="dummy"/>
+        <input type="hidden" name="shut_down" />
         <button title="{% trans "Shut down" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-off"></i></button>
       </form>
       <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
         {% csrf_token %}
-        <input type="hidden" name="reboot" value="dummy"/>
+        <input type="hidden" name="reboot" />
         <button title="{% trans "Reboot (ctrl + alt + del)" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-refresh"></i></button>
       </form>
       <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
         {% csrf_token %}
-        <input type="hidden" name="reset" value="dummy"/>
+        <input type="hidden" name="reset" />
         <button title="{% trans "Reset (power cycle)" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-bolt"></i></button>
+      </form>
+      <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="shut_off"/>
+        <button title="{% trans "Shut off" %}" class="btn btn-default btn-xs" type="submit">
+          <i class="icon-ban-circle"></i>
+        </button>
       </form>
       <a title="Migrate" data-vm-pk="{{ instance.pk }}" href="{% url "dashboard.views.vm-migrate" pk=instance.pk %}" class="btn btn-default btn-xs vm-migrate">
         <i class="icon-truck"></i>
       </a>
       <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
         {% csrf_token %}
-        <input type="hidden" name="save_as" value="dummy"/>
+        <input type="hidden" name="save_as" />
         <button title="{% trans "Save as template" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-save"></i></button>
       </form>
       <a title="{% trans "Destroy" %}" href="{% url "dashboard.views.delete-vm" pk=instance.pk %}" class="btn btn-default btn-xs vm-delete" data-vm-pk="{{ instance.pk }}"><i class="icon-remove"></i></a>

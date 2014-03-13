@@ -235,6 +235,7 @@ class VmDetailView(CheckedDetailView):
             'deploy': self.__deploy,
             'reset': self.__reset,
             'reboot': self.__reboot,
+            'shut_off': self.__shut_off,
         }
         for k, v in options.iteritems():
             if request.POST.get(k) is not None:
@@ -467,6 +468,14 @@ class VmDetailView(CheckedDetailView):
             raise PermissionDenied()
 
         self.object.reboot_async(request.user)
+        return redirect("%s#activity" % self.object.get_absolute_url())
+
+    def __shut_off(self, request):
+        self.object = self.get_object()
+        if not self.object.has_level(request.user, 'owner'):
+            raise PermissionDenied()
+
+        self.object.shut_off_async(request.user)
         return redirect("%s#activity" % self.object.get_absolute_url())
 
 
