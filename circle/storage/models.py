@@ -293,7 +293,8 @@ class Disk(AclBase, TimeStampedModel):
 
     @classmethod
     def create(cls, **params):
-        disk = cls(filename=str(uuid.uuid4()), **params)
+        datastore = params.pop('datastore', DataStore.objects.get())
+        disk = cls(filename=str(uuid.uuid4()), datastore=datastore, **params)
         disk.save()
         return disk
 
