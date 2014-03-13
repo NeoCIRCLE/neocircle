@@ -494,7 +494,7 @@ msgstr "Minden %s port használatban van."
 #: models.py:574
 #, python-format
 msgid "Port %(proto)s %(public)s is already in use."
-msgstr "A(z) %(public)s %(public)s port használatban van."
+msgstr "A(z) %(public)s %(proto)s port használatban van."
 
 #: models.py:589
 msgid "Only ports above 1024 can be used."
