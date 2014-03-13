@@ -114,12 +114,23 @@ class Disk(AclBase, TimeStampedModel):
         return join(self.datastore.path, self.filename)
 
     @property
-    def format(self):
+    def vm_format(self):
         """Returns the proper file format for different type of images."""
         return {
             'qcow2-norm': 'qcow2',
             'qcow2-snap': 'qcow2',
             'iso': 'raw',
+            'raw-ro': 'raw',
+            'raw-rw': 'raw',
+        }[self.type]
+
+    @property
+    def format(self):
+        """Returns the proper file format for different type of images."""
+        return {
+            'qcow2-norm': 'qcow2',
+            'qcow2-snap': 'qcow2',
+            'iso': 'iso',
             'raw-ro': 'raw',
             'raw-rw': 'raw',
         }[self.type]
@@ -196,7 +207,7 @@ class Disk(AclBase, TimeStampedModel):
         """Serialize disk object to the vmdriver."""
         return {
             'source': self.path,
-            'driver_type': self.format,
+            'driver_type': self.vm_format,
             'driver_cache': 'none',
             'target_device': self.device_type + self.dev_num,
             'disk_device': 'cdrom' if self.type == 'iso' else 'disk'
@@ -210,7 +221,7 @@ class Disk(AclBase, TimeStampedModel):
             'format': self.format,
             'size': self.size,
             'base_name': self.base.filename if self.base else None,
-            'type': 'snapshot' if self.type == 'qcow2-snap' else 'normal'
+            'type': 'snapshot' if self.base else 'normal'
         }
 
     def get_remote_queue_name(self, queue_id='storage', check_worker=True):
