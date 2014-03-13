@@ -199,29 +199,30 @@ class Node(TimeStampedModel):
                 return default
 
     def get_monitor_info(self):
-        collected = {}
         try:
             handler = GraphiteHandler()
-        except:
-            response = self.remote_query(vm_tasks.get_node_metrics, 30)
-            collected['cpu.usage'] = response['cpu.usage']
-            collected['memory.usage'] = response['memory.usage']
-            return collected
+        except RuntimeError:
+            return self.remote_query(vm_tasks.get_node_metrics, 30)
+
         query = Query()
         query.set_target(self.host.hostname + ".circle")
         query.set_format("json")
         query.set_relative_start(5, "minutes")
+
         metrics = ["cpu.usage", "memory.usage"]
-        collected = {}
         for metric in metrics:
             query.set_metric(metric)
             query.generate()
             handler.put(query)
             handler.send()
+
+        collected = {}
         for metric in metrics:
             response = handler.pop()
-            length = len(response[0]["datapoints"])
-            cache = response[0]["datapoints"][length - 1][0]
+            try:
+                cache = response[0]["datapoints"][-1][0]
+            except (IndexError, KeyError):
+                cache = 0
             if cache is None:
                 cache = 0
             collected[metric] = cache
