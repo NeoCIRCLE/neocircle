@@ -731,6 +731,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                                         queue=queue_name).get(timeout=timeout)
 
         self._do_renew()
+        self.save()
 
     def deploy(self, user=None, task_uuid=None):
         """Deploy new virtual machine with network
