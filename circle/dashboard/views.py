@@ -88,7 +88,7 @@ class IndexView(LoginRequiredMixin, TemplateView):
 
         favs = Instance.objects.filter(favourite__user=self.request.user)
         instances = Instance.get_objects_with_level(
-            'user', user).filter(destroyed=None)
+            'user', user).filter(destroyed_at=None)
         display = list(favs) + list(set(instances) - set(favs))
         for d in display:
             d.fav = True if d in favs else False
@@ -882,7 +882,7 @@ class VmList(LoginRequiredMixin, ListView):
                 favourite__user=self.request.user).values_list('pk', flat=True)
             instances = Instance.get_objects_with_level(
                 'user', self.request.user).filter(
-                destroyed=None).all()
+                destroyed_at=None).all()
             instances = [{
                 'pk': i.pk,
                 'name': i.name,
@@ -899,7 +899,7 @@ class VmList(LoginRequiredMixin, ListView):
         logger.debug('VmList.get_queryset() called. User: %s',
                      unicode(self.request.user))
         queryset = Instance.get_objects_with_level(
-            'user', self.request.user).filter(destroyed=None)
+            'user', self.request.user).filter(destroyed_at=None)
         s = self.request.GET.get("s")
         if s:
             queryset = queryset.filter(name__icontains=s)

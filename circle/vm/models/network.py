@@ -59,7 +59,7 @@ class Interface(Model):
 
     @property
     def destroyed(self):
-        return self.instance.destroyed
+        return self.instance.destroyed_at
 
     @property
     def mac(self):

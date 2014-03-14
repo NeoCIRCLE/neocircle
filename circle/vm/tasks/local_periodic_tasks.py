@@ -25,7 +25,7 @@ def garbage_collector(timeout=15):
     :type timeout: int
     """
     now = timezone.now()
-    for i in Instance.objects.filter(destroyed=None).all():
+    for i in Instance.objects.filter(destroyed_at=None).all():
         if i.time_of_delete and now > i.time_of_delete:
             i.destroy_async()
             logger.info("Expired instance %d destroyed.", i.pk)

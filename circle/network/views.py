@@ -162,7 +162,7 @@ class DomainDetail(LoginRequiredMixin, SuperuserRequiredMixin,
             domain=self.object,
             host__in=Host.objects.filter(
                 interface__in=Interface.objects.filter(
-                    instance__destroyed=None)
+                    instance__destroyed_at=None)
             )
         )
         context['record_list'] = SmallRecordTable(q)
@@ -618,7 +618,7 @@ class VlanDetail(LoginRequiredMixin, SuperuserRequiredMixin,
         context = super(VlanDetail, self).get_context_data(**kwargs)
 
         q = Host.objects.filter(interface__in=Interface.objects.filter(
-            vlan=self.object, instance__destroyed=None
+            vlan=self.object, instance__destroyed_at=None
         ))
 
         context['host_list'] = SmallHostTable(q)

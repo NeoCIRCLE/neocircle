@@ -70,7 +70,7 @@ class InstanceActiveManager(Manager):
 
     def get_query_set(self):
         return super(InstanceActiveManager,
-                     self).get_query_set().filter(destroyed=None)
+                     self).get_query_set().filter(destroyed_at=None)
 
 
 class VirtualMachineDescModel(BaseResourceConfigModel):
@@ -203,9 +203,9 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                             help_text=_("TCP port where VNC console listens."),
                             unique=True, verbose_name=_('vnc_port'))
     owner = ForeignKey(User)
-    destroyed = DateTimeField(blank=True, null=True,
-                              help_text=_("The virtual machine's time of "
-                                          "destruction."))
+    destroyed_at = DateTimeField(blank=True, null=True,
+                                 help_text=_("The virtual machine's time of "
+                                             "destruction."))
     objects = Manager()
     active = InstanceActiveManager()
 
@@ -752,7 +752,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                           asynchronously.
         :type task_uuid: str
         """
-        if self.destroyed:
+        if self.destroyed_at:
             raise self.InstanceDestroyedError(self)
 
         def __on_commit(activity):
@@ -901,7 +901,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                           asynchronously.
         :type task_uuid: str
         """
-        if self.destroyed:
+        if self.destroyed_at:
             return  # already destroyed, nothing to do here
 
         def __on_commit(activity):
@@ -921,7 +921,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
             self.__cleanup_after_destroy_vm(act)
 
-            self.destroyed = timezone.now()
+            self.destroyed_at = timezone.now()
             self.save()
 
     def destroy_async(self, user=None):
