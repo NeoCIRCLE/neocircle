@@ -25,6 +25,17 @@ from django.utils import timezone
 logger = getLogger(__name__)
 
 
+def node_available(function):
+    """Decorate methods to ignore disabled Nodes.
+    """
+    def decorate(self, *args, **kwargs):
+        if self.enabled is True and self.online is True:
+            return function(self, *args, **kwargs)
+        else:
+            return None
+    return decorate
+
+
 class Node(TimeStampedModel):
 
     """A VM host machine, a hypervisor.
@@ -68,6 +79,7 @@ class Node(TimeStampedModel):
 
     online = property(get_online)
 
+    @node_available
     @method_cache(300)
     def get_num_cores(self):
         """Number of CPU threads available to the virtual machines.
@@ -106,6 +118,7 @@ class Node(TimeStampedModel):
             self.get_num_cores(invalidate_cache=True)
             self.get_ram_size(invalidate_cache=True)
 
+    @node_available
     @method_cache(300)
     def get_ram_size(self):
         """Bytes of total memory in the node.
@@ -115,6 +128,7 @@ class Node(TimeStampedModel):
     ram_size = property(get_ram_size)
 
     @property
+    @node_available
     def ram_size_with_overcommit(self):
         """Bytes of total memory including overcommit margin.
         """
@@ -198,6 +212,7 @@ class Node(TimeStampedModel):
             else:
                 return default
 
+    @node_available
     def get_monitor_info(self):
         try:
             handler = GraphiteHandler()
@@ -229,17 +244,21 @@ class Node(TimeStampedModel):
         return collected
 
     @property
+    @node_available
     def cpu_usage(self):
         return float(self.get_monitor_info()["cpu.usage"]) / 100
 
     @property
+    @node_available
     def ram_usage(self):
         return float(self.get_monitor_info()["memory.usage"]) / 100
 
     @property
+    @node_available
     def byte_ram_usage(self):
         return self.ram_usage * self.ram_size
 
+    @node_available
     def update_vm_states(self):
         """Update state of Instances running on this Node.
 
