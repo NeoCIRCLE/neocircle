@@ -1,17 +1,16 @@
 {% extends "dashboard/base.html" %}
 {% load i18n %}
-{% load render_table from django_tables2 %}
 {% block content %}
 
 <div class="row">
   <div class="col-md-12">
     <div class="panel panel-default">
       <div class="panel-heading">
-        <h3 class="no-margin"><i class="icon-desktop"></i> Your virtual machines</h3>
+        <h3 class="no-margin"><i class="icon-desktop"></i>{% trans "Virtual machines" %}</h3>
       </div>
       <div class="pull-right" style="max-width: 250px; margin-top: 15px; margin-right: 15px;">
         <form action="" method="GET" class="input-group">
-          <input type="text" name="s"{% if request.GET.s %} value="{{ request.GET.s }}"{% endif %} class="form-control input-tags" placeholder="Search..." />
+          <input type="text" name="s"{% if request.GET.s %} value="{{ request.GET.s }}"{% endif %} class="form-control input-tags" placeholder="{% trans "Search..."%}" />
           <div class="input-group-btn">
             <button type="submit" class="form-control btn btn-primary input-tags" title="search"><i class="icon-search"></i></button>
           </div>
@@ -19,30 +18,46 @@
       </div>
       <div class="panel-body vm-list-group-control">
         <p>
-          <strong>Group actions</strong>
-          <button id="vm-list-group-select-all" class="btn btn-info btn-xs">Select all</button>
-          <a class="btn btn-default btn-xs" id="vm-list-group-migrate" disabled><i class="icon-truck"></i> Migrate</a>
-          <a disabled href="#" class="btn btn-default btn-xs"><i class="icon-refresh"></i> Reboot</a>
-          <a disabled href="#" class="btn btn-default btn-xs"><i class="icon-off"></i> Shutdown</a>
-          <a id="vm-list-group-delete" disabled href="#" class="btn btn-danger btn-xs"><i class="icon-remove"></i> Discard</a>
+        <strong>{% trans "Group actions" %}</strong>
+        <button id="vm-list-group-select-all" class="btn btn-info btn-xs">{% trans "Select all" %}</button>
+        <a class="btn btn-default btn-xs" id="vm-list-group-migrate" disabled><i class="icon-truck"></i> {% trans "Migrate" %}</a>
+        <a disabled href="#" class="btn btn-default btn-xs"><i class="icon-refresh"></i> {% trans "Reboot" %}</a>
+        <a disabled href="#" class="btn btn-default btn-xs"><i class="icon-off"></i> {% trans "Shutdown" %}</a>
+        <a id="vm-list-group-delete" disabled href="#" class="btn btn-danger btn-xs"><i class="icon-remove"></i> {% trans "Destroy" %}</a>
         </p>
       </div>
       <div class="panel-body">
-        {% render_table table %}
-      </div>
+        <table class="table table-bordered table-striped table-hover vm-list-table">
+          <thead><tr>
+              <th class="orderable pk sortable vm-list-table-thin"><a href="?sort=pk">{% trans "ID" %}</a></th>
+              <th class="name orderable sortable"><a href="?sort=name">{% trans "Name" %}</a></th>
+              <th>{% trans "State" %}</th>
+              <th class="orderable sortable"><a href="?sort=owner">{% trans "Owner" %}</a></th>
+              {% if user.is_superuser %}<th class="orderable sortable"><a href="?sort=node">{% trans "Node" %}</a></th>{% endif %}
+          </tr></thead><tbody>
+          {% for i in object_list %}
+          <tr class="{% cycle 'odd' 'even' %}">
+            <td class="pk"><div id="vm-{{i.pk}}">{{i.pk}}</div> </td>
+            <td class="name"><a class="real-link" href="{% url "dashboard.views.detail" i.pk %}">{{ i.name }}</a>  </td>
+            <td class="state">{{ i.cached_state }}</td>
+            <td>{{ i.owner }}</td>
+            {% if user.is_superuser %}<td>{{ i.node.name|default:"-" }}</td>{% endif %}
+          </tr>
+          {% empty %}
+          <tr><td colspan="4">{% trans "You have no virtual machines." %}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
+</div>
 
 
 <div class="alert alert-info">
-  Tip #1: you can select multiple vm instances while holding down the <strong>CTRL</strong> key!
+	{% trans "You can select multiple vm instances while holding down the <strong>CTRL</strong> key." %}
+	{% trans "If you want to select multiple instances by one click select an instance then hold down <strong>SHIFT</strong> key and select another one!" %}
 </div>
-
-<div class="alert alert-info">
-  Tip #2: if you want to select multiple instances by one click select an instance then hold down <strong>SHIFT</strong> key and select another one!
-</div>
-
 
 <style>
   .popover {

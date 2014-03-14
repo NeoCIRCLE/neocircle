@@ -19,7 +19,7 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.views.decorators.http import require_GET
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import (TemplateView, DetailView, View, DeleteView,
-                                  UpdateView, CreateView)
+                                  UpdateView, CreateView, ListView)
 from django.contrib import messages
 from django.utils.translation import ugettext as _
 from django.template.defaultfilters import title as title_filter
@@ -36,7 +36,7 @@ from .forms import (
     CircleAuthenticationForm, DiskAddForm, HostForm, LeaseForm, NodeForm,
     TemplateForm, TraitForm, VmCustomizeForm,
 )
-from .tables import (VmListTable, NodeListTable, NodeVmListTable,
+from .tables import (NodeListTable, NodeVmListTable,
                      TemplateListTable, LeaseListTable, GroupListTable,)
 from vm.models import (
     Instance, instance_activity, InstanceActivity, InstanceTemplate, Interface,
@@ -117,9 +117,10 @@ class IndexView(LoginRequiredMixin, TemplateView):
             }
         })
 
-        running = [i for i in instances if i.state == 'RUNNING']
-        stopped = [i for i in instances if i.state not in ['RUNNING',
-                                                           'NOSTATE']]
+        running = [i for i in instances if i.cached_state == 'RUNNING']
+        stopped = [i for i in instances if i.cached_state not in ['RUNNING',
+                                                                  'NOSTATE']]
+
         context.update({
             'running_vms': running,
             'running_vm_num': len(running),
@@ -872,11 +873,8 @@ class TemplateDelete(LoginRequiredMixin, DeleteView):
             return HttpResponseRedirect(success_url)
 
 
-class VmList(LoginRequiredMixin, SingleTableView):
+class VmList(LoginRequiredMixin, ListView):
     template_name = "dashboard/vm-list.html"
-    table_class = VmListTable
-    table_pagination = False
-    model = Instance
 
     def get(self, *args, **kwargs):
         if self.request.is_ajax():
@@ -905,7 +903,7 @@ class VmList(LoginRequiredMixin, SingleTableView):
         s = self.request.GET.get("s")
         if s:
             queryset = queryset.filter(name__icontains=s)
-        return queryset
+        return queryset.select_related('owner', 'node')
 
 
 class NodeList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
