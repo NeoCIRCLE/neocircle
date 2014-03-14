@@ -349,11 +349,18 @@ class VmDetailView(CheckedDetailView):
 
         try:
             error = None
-            host = Host.objects.get(pk=request.POST.get("host_pk"))
+            interfaces = object.interface_set.all()
+            host = Host.objects.get(pk=request.POST.get("host_pk"),
+                                    interface__in=interfaces)
             host.add_port(proto, private=port)
+        except Host.DoesNotExist:
+            logger.error('Tried to add port to nonexistent host %d. User: %s. '
+                         'Instance: %s', request.POST.get("host_pk"),
+                         unicode(request.user), object)
+            raise PermissionDenied()
         except ValueError:
             error = _("There is a problem with your input!")
-        except Exception, e:
+        except Exception as e:
             error = u', '.join(e.messages)
 
         if request.is_ajax():
