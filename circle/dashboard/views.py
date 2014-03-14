@@ -364,7 +364,8 @@ class VmDetailView(CheckedDetailView):
         except ValueError:
             error = _("There is a problem with your input!")
         except Exception as e:
-            error = u', '.join(e.messages)
+            error = _("Unknown error.")
+            logger.error(e)
 
         if request.is_ajax():
             pass

@@ -360,6 +360,98 @@ class VmDetailTest(LoginMixin, TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(len(host.list_ports()), port_count + 1)
 
+    def test_unpermitted_add_tag(self):
+        c = Client()
+        self.login(c, "user2")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u2, 'user')
+        response = c.post("/dashboard/vm/1/", {'new_tag': 'test1'})
+        self.assertEqual(response.status_code, 403)
+
+    def test_permitted_add_tag(self):
+        c = Client()
+        self.login(c, "user2")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u2, 'owner')
+        tag_count = inst.tags.count()
+        response = c.post("/dashboard/vm/1/", {'new_tag': 'test2'})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(inst.tags.count(), tag_count + 1)
+
+    def test_permitted_add_tag_w_too_long_or_empty_tag(self):
+        c = Client()
+        self.login(c, "user2")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u2, 'owner')
+        tag_count = inst.tags.count()
+        response = c.post("/dashboard/vm/1/", {'new_tag': 't' * 30})
+        self.assertEqual(response.status_code, 302)
+        response = c.post("/dashboard/vm/1/", {'new_tag': ''})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(inst.tags.count(), tag_count)
+
+    def test_unpermitted_remove_tag(self):
+        c = Client()
+        self.login(c, "user2")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u2, 'user')
+        tag_count = inst.tags.count()
+        response = c.post("/dashboard/vm/1/", {'to_remove': 'test1'})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(inst.tags.count(), tag_count)
+
+    def test_permitted_remove_tag(self):
+        c = Client()
+        self.login(c, "user2")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u2, 'owner')
+        response = c.post("/dashboard/vm/1/", {'new_tag': 'test1'})
+        tag_count = inst.tags.count()
+        response = c.post("/dashboard/vm/1/", {'to_remove': 'test1'})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(inst.tags.count(), tag_count - 1)
+
+    def test_permitted_remove_tag_w_ajax(self):
+        c = Client()
+        self.login(c, "user2")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u2, 'owner')
+        response = c.post("/dashboard/vm/1/", {'new_tag': 'test1'})
+        tag_count = inst.tags.count()
+        response = c.post("/dashboard/vm/1/", {'to_remove': 'test1'},
+                          HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(inst.tags.count(), tag_count - 1)
+
+    def test_unpermitted_set_name(self):
+        c = Client()
+        self.login(c, "user2")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u2, 'user')
+        old_name = inst.name
+        response = c.post("/dashboard/vm/1/", {'new_name': 'test1235'})
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Instance.objects.get(pk=1).name, old_name)
+
+    def test_permitted_set_name(self):
+        c = Client()
+        self.login(c, "user2")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u2, 'owner')
+        response = c.post("/dashboard/vm/1/", {'new_name': 'test1234'})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Instance.objects.get(pk=1).name, 'test1234')
+
+    def test_permitted_set_name_w_ajax(self):
+        c = Client()
+        self.login(c, "user2")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u2, 'owner')
+        response = c.post("/dashboard/vm/1/", {'new_name': 'test123'},
+                          HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Instance.objects.get(pk=1).name, 'test123')
+
 
 class VmDetailVncTest(LoginMixin, TestCase):
     fixtures = ['test-vm-fixture.json', 'node.json']
