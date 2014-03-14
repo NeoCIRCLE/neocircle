@@ -25,6 +25,7 @@ from ..tasks import local_tasks, vm_tasks, agent_tasks
 from .activity import (ActivityInProgressError, instance_activity,
                        InstanceActivity)
 from .common import BaseResourceConfigModel, Lease
+from common.models import method_cache
 from .network import Interface
 from .node import Node, Trait
 
@@ -255,6 +256,11 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
     @property
     def is_running(self):
         return self.state == 'RUNNING'
+
+    @property
+    @method_cache(10, 5)
+    def cached_state(self):
+        return self.state
 
     @property
     def state(self):
