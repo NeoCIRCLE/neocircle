@@ -320,6 +320,26 @@ class VmDetailTest(LoginMixin, TestCase):
                                                'port': '1337'})
         self.assertEqual(response.status_code, 403)
 
+    def test_permitted_add_port_w_unhandled_exception(self):
+        c = Client()
+        self.login(c, "user2")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u2, 'owner')
+        vlan = Vlan.objects.get(id=1)
+        vlan.set_level(self.u2, 'user')
+        response = c.post("/dashboard/vm/1/",
+                          {'new_network_vlan': 1})
+        host = Host.objects.get(
+            interface__in=inst.interface_set.all())
+        self.u2.user_permissions.add(Permission.objects.get(
+            name='Can configure port forwards.'))
+        port_count = len(host.list_ports())
+        response = c.post("/dashboard/vm/1/", {'proto': 'tcp',
+                                               'host_pk': host.pk,
+                                               'port': 'invalid_port'})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(len(host.list_ports()), port_count)
+
     def test_permitted_add_port(self):
         c = Client()
         self.login(c, "user2")
