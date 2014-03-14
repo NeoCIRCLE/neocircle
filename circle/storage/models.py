@@ -18,7 +18,7 @@ from .tasks import local_tasks, remote_tasks
 from celery.exceptions import TimeoutError
 from manager.mancelery import celery
 from common.models import (ActivityModel, activitycontextimpl,
-                           WorkerNotFound, method_cache)
+                           WorkerNotFound)
 
 logger = logging.getLogger(__name__)
 
@@ -357,18 +357,17 @@ class Disk(AclBase, TimeStampedModel):
         :type instance: vm.models.Instance or InstanceTemplate or NoneType
         :param user: owner of the disk
         :type user: django.contrib.auth.User
-        :param task_uuid: TODO
-        :param abortable_task: TODO
+        :param task_uuid: UUID of the local task
+        :param abortable_task: UUID of the remote running abortable task.
 
         :return: The created Disk object
         :rtype: Disk
         """
         kwargs.setdefault('name', url.split('/')[-1])
-        disk = Disk.create(type="iso", size=1, **kwargs)
+        disk = Disk.create(type="iso", instance=instance, user=user,
+                           size=1, **kwargs)
         # TODO get proper datastore
         disk.datastore = DataStore.objects.get()
-        if instance:
-            instance.disks.add(disk)
         queue_name = disk.get_remote_queue_name('storage')
 
         def __on_abort(activity, error):
