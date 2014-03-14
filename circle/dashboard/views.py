@@ -117,14 +117,13 @@ class IndexView(LoginRequiredMixin, TemplateView):
             }
         })
 
-        running = [i for i in instances if i.cached_state == 'RUNNING']
-        stopped = [i for i in instances if i.cached_state not in ['RUNNING',
-                                                                  'NOSTATE']]
+        running = instances.filter(status='RUNNING')
+        stopped = instances.exclude(status__in=('RUNNING', 'NOSTATE'))
 
         context.update({
-            'running_vms': running,
-            'running_vm_num': len(running),
-            'stopped_vm_num': len(stopped)
+            'running_vms': running[:20],
+            'running_vm_num': running.count(),
+            'stopped_vm_num': stopped.count()
         })
 
         context['templates'] = InstanceTemplate.objects.all()[:5]

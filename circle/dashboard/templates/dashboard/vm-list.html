@@ -39,7 +39,7 @@
           <tr class="{% cycle 'odd' 'even' %}">
             <td class="pk"><div id="vm-{{i.pk}}">{{i.pk}}</div> </td>
             <td class="name"><a class="real-link" href="{% url "dashboard.views.detail" i.pk %}">{{ i.name }}</a>  </td>
-            <td class="state">{{ i.cached_state }}</td>
+            <td class="state">{{ i.get_status_display }}</td>
             <td>{{ i.owner }}</td>
             {% if user.is_superuser %}<td>{{ i.node.name|default:"-" }}</td>{% endif %}
           </tr>

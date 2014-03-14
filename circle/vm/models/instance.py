@@ -2,6 +2,7 @@ from __future__ import absolute_import, unicode_literals
 from datetime import timedelta
 from logging import getLogger
 from importlib import import_module
+from warnings import warn
 import string
 
 import django.conf
@@ -16,7 +17,8 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from celery.exceptions import TimeLimitExceeded
-from model_utils.models import TimeStampedModel
+from model_utils import Choices
+from model_utils.models import TimeStampedModel, StatusModel
 from taggit.managers import TaggableManager
 
 from acl.models import AclBase
@@ -25,7 +27,6 @@ from ..tasks import local_tasks, vm_tasks, agent_tasks
 from .activity import (ActivityInProgressError, instance_activity,
                        InstanceActivity)
 from .common import BaseResourceConfigModel, Lease
-from common.models import method_cache
 from .network import Interface
 from .node import Node, Trait
 
@@ -162,7 +163,8 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
         return ('dashboard.views.template-detail', None, {'pk': self.pk})
 
 
-class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
+class Instance(AclBase, VirtualMachineDescModel, StatusModel,
+               TimeStampedModel):
 
     """Virtual machine instance.
     """
@@ -170,6 +172,15 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         ('user', _('user')),          # see all details
         ('operator', _('operator')),  # console, networking, change state
         ('owner', _('owner')),        # superuser, can delete, delegate perms
+    )
+    STATUS = Choices(
+        ('NOSTATE', _('no state')),
+        ('RUNNING', _('running')),
+        ('STOPPED', _('stopped')),
+        ('SUSPENDED', _('suspended')),
+        ('ERROR', _('error')),
+        ('PENDING', _('pending')),
+        ('DESTROYED', _('destroyed')),
     )
     name = CharField(blank=True, max_length=100, verbose_name=_('name'),
                      help_text=_("Human readable name of instance."))
@@ -258,13 +269,23 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         return self.state == 'RUNNING'
 
     @property
-    @method_cache(10, 5)
-    def cached_state(self):
-        return self.state
-
-    @property
     def state(self):
-        """State of the virtual machine instance.
+        warn('Use Instance.status (or get_status_display) instead.',
+             DeprecationWarning)
+        return self.status
+
+    def _update_status(self):
+        """Set the proper status of the instance to Instance.status.
+        """
+        old = self.status
+        self.status = self._compute_status()
+        if old != self.status:
+            logger.info('Status of Instance#%d changed to %s',
+                        self.pk, self.status)
+            self.save()
+
+    def _compute_status(self):
+        """Return the proper status of the instance based on activities.
         """
         # check special cases
         if self.activity_log.filter(activity_code__endswith='migrate',
