@@ -17,7 +17,8 @@ from acl.models import AclBase
 from .tasks import local_tasks, remote_tasks
 from celery.exceptions import TimeoutError
 from manager.mancelery import celery
-from common.models import ActivityModel, activitycontextimpl, WorkerNotFound
+from common.models import (ActivityModel, activitycontextimpl,
+                           WorkerNotFound, method_cache)
 
 logger = logging.getLogger(__name__)
 
@@ -111,6 +112,7 @@ class Disk(AclBase, TimeStampedModel):
         return self.activity_log.filter(activity_code__endswith="deploy",
                                         succeeded__isnull=False)
 
+    @property
     def path(self):
         """The path where the files are stored.
         """
@@ -153,15 +155,16 @@ class Disk(AclBase, TimeStampedModel):
         }[self.type]
 
     def is_downloading(self):
-        da = DiskActivity.objects.filter(disk=self).latest("created")
-        return (da.activity_code == "storage.Disk.download"
-                and da.succeeded is None)
+        return self.activity_log.filter(
+            activity_code__endswith="downloading_disk",
+            succeeded__isnull=True)
 
     def get_download_percentage(self):
         if not self.is_downloading():
             return None
-
-        task = DiskActivity.objects.latest("created").task_uuid
+        task = self.activity_log.filter(
+            activity_code__endswith="deploy",
+            succeeded__isnull=True)[0].task_uuid
         result = celery.AsyncResult(id=task)
         return result.info.get("percent")
 
@@ -270,8 +273,7 @@ class Disk(AclBase, TimeStampedModel):
             self.save()
 
         if self.ready:
-            return False
-
+            return True
         with disk_activity(code_suffix='deploy', disk=self,
                            task_uuid=task_uuid, user=user) as act:
 
@@ -288,9 +290,6 @@ class Disk(AclBase, TimeStampedModel):
                     remote_tasks.create.apply_async(args=[disk_desc],
                                                     queue=queue_name
                                                     ).get(timeout=timeout)
-
-            self.ready = True
-            self.save()
 
             return True
 
