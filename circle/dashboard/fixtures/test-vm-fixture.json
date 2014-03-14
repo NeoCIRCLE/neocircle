@@ -1231,6 +1231,15 @@
   }
 },
 {
+  "pk": 1366,
+  "model": "auth.permission",
+  "fields": {
+    "codename": "config_ports",
+    "name": "Can configure port forwards.",
+    "content_type": 28
+  }
+},
+{
   "pk": 1, 
   "model": "auth.group", 
   "fields": {
