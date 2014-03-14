@@ -337,6 +337,9 @@ class VmDetailView(CheckedDetailView):
                 json.dumps({'message': message}),
                 content_type="application=json"
             )
+        else:
+            return redirect(reverse_lazy("dashboard.views.detail",
+                            kwargs={'pk': self.object.pk}))
 
     def __add_port(self, request):
         object = self.get_object()
