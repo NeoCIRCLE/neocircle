@@ -5,7 +5,7 @@ import logging
 from os.path import join
 import uuid
 
-from django.db.models import (Model, BooleanField, CharField, DateTimeField,
+from django.db.models import (Model, CharField, DateTimeField,
                               ForeignKey)
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -74,8 +74,6 @@ class Disk(AclBase, TimeStampedModel):
     size = FileSizeField()
     base = ForeignKey('self', blank=True, null=True,
                       related_name='derivatives')
-    ready = BooleanField(default=False,
-                         help_text=_("The associated resource is ready."))
     dev_num = CharField(default='a', max_length=1,
                         verbose_name=_("device number"))
     destroyed = DateTimeField(blank=True, default=None, null=True)
@@ -109,6 +107,10 @@ class Disk(AclBase, TimeStampedModel):
             self.disk = disk
 
     @property
+    def ready(self):
+        return self.activity_log.filter(activity_code__endswith="deploy",
+                                        succeeded__isnull=False)
+
     def path(self):
         """The path where the files are stored.
         """
