@@ -66,16 +66,18 @@ class Node(TimeStampedModel):
     def __unicode__(self):
         return self.name
 
-    @method_cache(10, 5)
+    @method_cache(10)
     def get_online(self):
         """Check if the node is online.
 
-        Runs a remote ping task if the worker is running.
+        Check if node is online by queue is available.
         """
         try:
-            return self.remote_query(vm_tasks.ping, timeout=1, default=False)
-        except WorkerNotFound:
+            self.get_remote_queue_name("vm")
+        except:
             return False
+        else:
+            return True
 
     online = property(get_online)
 
