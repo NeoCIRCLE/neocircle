@@ -300,10 +300,17 @@ class Disk(AclBase, TimeStampedModel):
                                               queue="localhost.man")
 
     @classmethod
-    def create(cls, **params):
+    def create(cls, instance=None, user=None, **params):
+        """Create disk with activity.
+        """
         datastore = params.pop('datastore', DataStore.objects.get())
         disk = cls(filename=str(uuid.uuid4()), datastore=datastore, **params)
         disk.save()
+        with disk_activity(code_suffix="create",
+                           user=user,
+                           disk=disk):
+            if instance:
+                instance.disks.add(disk)
         return disk
 
     @classmethod
@@ -317,11 +324,8 @@ class Disk(AclBase, TimeStampedModel):
 
         :return: Disk object without a real image, to be .deploy()ed later.
         """
-        disk = cls.create(**kwargs)
-        with disk_activity(code_suffix="create", user=user, disk=disk):
-            if instance:
-                instance.disks.add(disk)
-            return disk
+        disk = Disk.create(instance=None, user=None, **kwargs)
+        return disk
 
     @classmethod
     def create_from_url_async(cls, url, instance=None, user=None, **kwargs):
@@ -377,24 +381,24 @@ class Disk(AclBase, TimeStampedModel):
             class AbortException(Exception):
                 pass
 
-        with disk_activity(code_suffix='download', disk=disk,
+        with disk_activity(code_suffix='deploy', disk=disk,
                            task_uuid=task_uuid, user=user,
-                           on_abort=__on_abort):
-            result = remote_tasks.download.apply_async(
-                kwargs={'url': url, 'parent_id': task_uuid,
-                        'disk': disk.get_disk_desc()},
-                queue=queue_name)
-            while True:
-                try:
-                    size = result.get(timeout=5)
-                    break
-                except TimeoutError:
-                    if abortable_task and abortable_task.is_aborted():
-                        AbortableAsyncResult(result.id).abort()
-                        raise AbortException("Download aborted by user.")
-            disk.size = size
-            disk.ready = True
-            disk.save()
+                           on_abort=__on_abort) as act:
+            with act.sub_activity('downloading_disk'):
+                result = remote_tasks.download.apply_async(
+                    kwargs={'url': url, 'parent_id': task_uuid,
+                            'disk': disk.get_disk_desc()},
+                    queue=queue_name)
+                while True:
+                    try:
+                        size = result.get(timeout=5)
+                        break
+                    except TimeoutError:
+                        if abortable_task and abortable_task.is_aborted():
+                            AbortableAsyncResult(result.id).abort()
+                            raise AbortException("Download aborted by user.")
+                disk.size = size
+                disk.save()
         return disk
 
     def destroy(self, user=None, task_uuid=None):
@@ -454,16 +458,15 @@ class Disk(AclBase, TimeStampedModel):
 
         disk.save()
         with disk_activity(code_suffix="save_as", disk=self,
-                           user=user, task_uuid=None):
-            queue_name = self.get_remote_queue_name('storage')
-            remote_tasks.merge.apply_async(args=[self.get_disk_desc(),
-                                                 disk.get_disk_desc()],
-                                           queue=queue_name
-                                           ).get()  # Timeout
-            disk.ready = True
-            disk.save()
-
-        return disk
+                           user=user, task_uuid=task_uuid):
+            with disk_activity(code_suffix="deploy", disk=disk,
+                               user=user, task_uuid=task_uuid):
+                queue_name = self.get_remote_queue_name('storage')
+                remote_tasks.merge.apply_async(args=[self.get_disk_desc(),
+                                                     disk.get_disk_desc()],
+                                               queue=queue_name
+                                               ).get()  # Timeout
+            return disk
 
 
 class DiskActivity(ActivityModel):
@@ -478,6 +481,15 @@ class DiskActivity(ActivityModel):
                   task_uuid=task_uuid, user=user)
         act.save()
         return act
+
+    def __unicode__(self):
+        if self.parent:
+            return '{}({})->{}'.format(self.parent.activity_code,
+                                       self.disk,
+                                       self.activity_code)
+        else:
+            return '{}({})'.format(self.activity_code,
+                                   self.disk)
 
     def create_sub(self, code_suffix, task_uuid=None):
         act = DiskActivity(
