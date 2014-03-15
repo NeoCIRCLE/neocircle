@@ -36,17 +36,18 @@ class InstanceTestCase(TestCase):
         inst = Mock(state='RUNNING')
         assert Instance.is_running.getter(inst)
 
-    def deploy_destroyed(self):
-        inst = Mock(destroyed_at=datetime.now())
+    def test_deploy_destroyed(self):
+        inst = Mock(destroyed_at=datetime.now(), spec=Instance,
+                    InstanceDestroyedError=Instance.InstanceDestroyedError)
         with self.assertRaises(Instance.InstanceDestroyedError):
             Instance.deploy(inst)
 
-    def destroy_destroyed(self):
-        inst = Mock(destroyed_at=datetime.now())
+    def test_destroy_destroyed(self):
+        inst = Mock(destroyed_at=datetime.now(), spec=Instance)
         Instance.destroy(inst)
         self.assertFalse(inst.save.called)
 
-    def destroy_sets_destroyed(self):
+    def test_destroy_sets_destroyed(self):
         inst = MagicMock(destroyed_at=None, spec=Instance)
         inst.node = MagicMock(spec=Node)
         inst.disks.all.return_value = []
