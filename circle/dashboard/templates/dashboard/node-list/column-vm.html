@@ -1,5 +1,5 @@
 {% load i18n %} 
 
 <div id="node-list-column-vm">
-  <a class="real-link" href="{% url "dashboard.views.node-detail" pk=record.pk %}#virtualmachines">{{ record.instance_set.count }}</a>
+  <a class="real-link" href="{% url "dashboard.views.node-detail" pk=record.pk %}#virtualmachines">{{ value }}</a>
 </div>

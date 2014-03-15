@@ -14,6 +14,7 @@ from django.core.exceptions import (
 )
 from django.core import signing
 from django.core.urlresolvers import reverse, reverse_lazy
+from django.db.models import Count
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import redirect, render, get_object_or_404
 from django.views.decorators.http import require_GET
@@ -921,9 +922,12 @@ class VmList(LoginRequiredMixin, SingleTableView):
 
 class NodeList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
     template_name = "dashboard/node-list.html"
-    model = Node
     table_class = NodeListTable
     table_pagination = False
+
+    def get_queryset(self):
+        return Node.objects.annotate(
+            number_of_VMs=Count('instance_set')).select_related('host')
 
 
 class GroupList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):

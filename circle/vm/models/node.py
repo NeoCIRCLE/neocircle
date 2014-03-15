@@ -305,7 +305,8 @@ class Node(TimeStampedModel):
 
     @classmethod
     def get_state_count(cls, online, enabled):
-        return len([1 for i in cls.objects.filter(enabled=enabled).all()
+        return len([1 for i in
+                    cls.objects.filter(enabled=enabled).select_related('host')
                     if i.online == online])
 
     @permalink
