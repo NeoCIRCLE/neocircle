@@ -3,13 +3,17 @@ from django.test.client import Client
 from django.contrib.auth.models import User, Group
 from django.core.exceptions import SuspiciousOperation
 from django.core.urlresolvers import reverse
+from django.contrib.auth.models import Permission
 
 from vm.models import Instance, InstanceTemplate, Lease, Node
 from ..models import Profile
 from ..views import VmRenewView
 from storage.models import Disk
-from firewall.models import Vlan
+from firewall.models import Vlan, Host, VlanGroup
 from mock import Mock
+
+import django.conf
+settings = django.conf.settings.FIREWALL_SETTINGS
 
 
 class LoginMixin(object):
@@ -37,6 +41,8 @@ class VmDetailTest(LoginMixin, TestCase):
         self.g1.user_set.add(self.u1)
         self.g1.user_set.add(self.u2)
         self.g1.save()
+        settings["default_vlangroup"] = 'public'
+        VlanGroup.objects.create(name='public')
 
     def tearDown(self):
         super(VmDetailTest, self).tearDown()
@@ -136,13 +142,19 @@ class VmDetailTest(LoginMixin, TestCase):
         password = inst.pw
         response = c.post("/dashboard/vm/1/", {'change_password': True})
         self.assertEqual(response.status_code, 403)
-        self.assertEqual(password, inst.pw)
+        self.assertEqual(password, Instance.objects.get(pk=1).pw)
 
-    def test_unpermitted_network_add(self):
+    def test_unpermitted_network_add_wo_perm(self):
+        c = Client()
+        self.login(c, "user2")
+        response = c.post("/dashboard/vm/1/", {'new_network_vlan': 1})
+        self.assertEqual(response.status_code, 403)
+
+    def test_unpermitted_network_add_wo_vlan_perm(self):
         c = Client()
         self.login(c, "user2")
         inst = Instance.objects.get(pk=1)
-        inst.set_level(self.u1, 'owner')
+        inst.set_level(self.u2, 'owner')
         response = c.post("/dashboard/vm/1/", {'new_network_vlan': 1})
         self.assertEqual(response.status_code, 403)
 
@@ -303,6 +315,170 @@ class VmDetailTest(LoginMixin, TestCase):
 
         response = c.get("/dashboard/vm/1/activity/")
         self.assertEqual(response.status_code, 200)
+
+    def test_unpermitted_add_port_wo_config_ports_perm(self):
+        c = Client()
+        self.login(c, "user2")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u2, 'owner')
+        response = c.post("/dashboard/vm/1/", {'port': True,
+                                               'proto': 'tcp',
+                                               'port': '1337'})
+        self.assertEqual(response.status_code, 403)
+
+    def test_unpermitted_add_port_wo_obj_levels(self):
+        c = Client()
+        self.login(c, "user2")
+        self.u2.user_permissions.add(Permission.objects.get(
+            name='Can configure port forwards.'))
+        response = c.post("/dashboard/vm/1/", {'port': True,
+                                               'proto': 'tcp',
+                                               'port': '1337'})
+        self.assertEqual(response.status_code, 403)
+
+    def test_unpermitted_add_port_w_bad_host(self):
+        c = Client()
+        self.login(c, "user2")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u2, 'owner')
+        self.u2.user_permissions.add(Permission.objects.get(
+            name='Can configure port forwards.'))
+        response = c.post("/dashboard/vm/1/", {'proto': 'tcp',
+                                               'host_pk': '9999',
+                                               'port': '1337'})
+        self.assertEqual(response.status_code, 403)
+
+    def test_permitted_add_port_w_unhandled_exception(self):
+        c = Client()
+        self.login(c, "user2")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u2, 'owner')
+        vlan = Vlan.objects.get(id=1)
+        vlan.set_level(self.u2, 'user')
+        response = c.post("/dashboard/vm/1/",
+                          {'new_network_vlan': 1})
+        host = Host.objects.get(
+            interface__in=inst.interface_set.all())
+        self.u2.user_permissions.add(Permission.objects.get(
+            name='Can configure port forwards.'))
+        port_count = len(host.list_ports())
+        response = c.post("/dashboard/vm/1/", {'proto': 'tcp',
+                                               'host_pk': host.pk,
+                                               'port': 'invalid_port'})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(len(host.list_ports()), port_count)
+
+    def test_permitted_add_port(self):
+        c = Client()
+        self.login(c, "user2")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u2, 'owner')
+        vlan = Vlan.objects.get(id=1)
+        vlan.set_level(self.u2, 'user')
+        response = c.post("/dashboard/vm/1/",
+                          {'new_network_vlan': 1})
+        host = Host.objects.get(
+            interface__in=inst.interface_set.all())
+        self.u2.user_permissions.add(Permission.objects.get(
+            name='Can configure port forwards.'))
+        port_count = len(host.list_ports())
+        response = c.post("/dashboard/vm/1/", {'proto': 'tcp',
+                                               'host_pk': host.pk,
+                                               'port': '1337'})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(len(host.list_ports()), port_count + 1)
+
+    def test_unpermitted_add_tag(self):
+        c = Client()
+        self.login(c, "user2")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u2, 'user')
+        response = c.post("/dashboard/vm/1/", {'new_tag': 'test1'})
+        self.assertEqual(response.status_code, 403)
+
+    def test_permitted_add_tag(self):
+        c = Client()
+        self.login(c, "user2")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u2, 'owner')
+        tag_count = inst.tags.count()
+        response = c.post("/dashboard/vm/1/", {'new_tag': 'test2'})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(inst.tags.count(), tag_count + 1)
+
+    def test_permitted_add_tag_w_too_long_or_empty_tag(self):
+        c = Client()
+        self.login(c, "user2")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u2, 'owner')
+        tag_count = inst.tags.count()
+        response = c.post("/dashboard/vm/1/", {'new_tag': 't' * 30})
+        self.assertEqual(response.status_code, 302)
+        response = c.post("/dashboard/vm/1/", {'new_tag': ''})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(inst.tags.count(), tag_count)
+
+    def test_unpermitted_remove_tag(self):
+        c = Client()
+        self.login(c, "user2")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u2, 'user')
+        tag_count = inst.tags.count()
+        response = c.post("/dashboard/vm/1/", {'to_remove': 'test1'})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(inst.tags.count(), tag_count)
+
+    def test_permitted_remove_tag(self):
+        c = Client()
+        self.login(c, "user2")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u2, 'owner')
+        response = c.post("/dashboard/vm/1/", {'new_tag': 'test1'})
+        tag_count = inst.tags.count()
+        response = c.post("/dashboard/vm/1/", {'to_remove': 'test1'})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(inst.tags.count(), tag_count - 1)
+
+    def test_permitted_remove_tag_w_ajax(self):
+        c = Client()
+        self.login(c, "user2")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u2, 'owner')
+        response = c.post("/dashboard/vm/1/", {'new_tag': 'test1'})
+        tag_count = inst.tags.count()
+        response = c.post("/dashboard/vm/1/", {'to_remove': 'test1'},
+                          HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(inst.tags.count(), tag_count - 1)
+
+    def test_unpermitted_set_name(self):
+        c = Client()
+        self.login(c, "user2")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u2, 'user')
+        old_name = inst.name
+        response = c.post("/dashboard/vm/1/", {'new_name': 'test1235'})
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Instance.objects.get(pk=1).name, old_name)
+
+    def test_permitted_set_name(self):
+        c = Client()
+        self.login(c, "user2")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u2, 'owner')
+        response = c.post("/dashboard/vm/1/", {'new_name': 'test1234'})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Instance.objects.get(pk=1).name, 'test1234')
+
+    def test_permitted_set_name_w_ajax(self):
+        c = Client()
+        self.login(c, "user2")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u2, 'owner')
+        response = c.post("/dashboard/vm/1/", {'new_name': 'test123'},
+                          HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Instance.objects.get(pk=1).name, 'test123')
 
 
 class VmDetailVncTest(LoginMixin, TestCase):

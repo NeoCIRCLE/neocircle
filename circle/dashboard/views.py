@@ -345,6 +345,9 @@ class VmDetailView(CheckedDetailView):
                 json.dumps({'message': message}),
                 content_type="application=json"
             )
+        else:
+            return redirect(reverse_lazy("dashboard.views.detail",
+                            kwargs={'pk': self.object.pk}))
 
     def __add_port(self, request):
         object = self.get_object()
@@ -357,12 +360,20 @@ class VmDetailView(CheckedDetailView):
 
         try:
             error = None
-            host = Host.objects.get(pk=request.POST.get("host_pk"))
+            interfaces = object.interface_set.all()
+            host = Host.objects.get(pk=request.POST.get("host_pk"),
+                                    interface__in=interfaces)
             host.add_port(proto, private=port)
+        except Host.DoesNotExist:
+            logger.error('Tried to add port to nonexistent host %d. User: %s. '
+                         'Instance: %s', request.POST.get("host_pk"),
+                         unicode(request.user), object)
+            raise PermissionDenied()
         except ValueError:
             error = _("There is a problem with your input!")
-        except Exception, e:
-            error = u', '.join(e.messages)
+        except Exception as e:
+            error = _("Unknown error.")
+            logger.error(e)
 
         if request.is_ajax():
             pass
