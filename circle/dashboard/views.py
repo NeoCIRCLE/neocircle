@@ -197,10 +197,11 @@ class VmDetailView(CheckedDetailView):
         })
 
         # activity data
-        ia = InstanceActivity.objects.filter(
-            instance=self.object, parent=None
-        ).order_by('-started').select_related()
-        context['activities'] = ia
+        context['activities'] = (
+            InstanceActivity.objects.filter(
+                instance=self.object, parent=None).
+            order_by('-started').
+            select_related('user').prefetch_related('children'))
 
         context['vlans'] = Vlan.get_objects_with_level(
             'user', self.request.user
