@@ -92,7 +92,7 @@ class Node(TimeStampedModel):
 
     def disable(self, user=None):
         ''' Disable the node.'''
-        if self.enabled is True:
+        if self.enabled:
             with node_activity(code_suffix='disable', node=self, user=user):
                 self.enabled = False
                 self.save()
@@ -132,7 +132,7 @@ class Node(TimeStampedModel):
             self.node_online()
             return self.host.hostname + "." + queue_id
         else:
-            if self.enabled is True:
+            if self.enabled:
                 self.node_offline()
             raise WorkerNotFound()
 

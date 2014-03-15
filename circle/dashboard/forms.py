@@ -751,7 +751,7 @@ class DiskAddForm(forms.Form):
         self.object_pk = kwargs.pop("object_pk")
         self.user = kwargs.pop("user")
         super(DiskAddForm, self).__init__(*args, **kwargs)
-        self.initial['is_template'] = 1 if self.is_template is True else 0
+        self.initial['is_template'] = 1 if self.is_template else 0
         self.initial['object_pk'] = self.object_pk
 
     def clean_size(self):

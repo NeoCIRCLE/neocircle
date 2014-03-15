@@ -801,10 +801,9 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                                              queue=queue_name
                                              ).get(timeout=timeout)
             except Exception as e:
-                if e.libvirtError is True and "Domain not found" in str(e):
+                if e.libvirtError and "Domain not found" in str(e):
                     logger.debug("Domain %s was not found at %s"
                                  % (self.vm_name, queue_name))
-                    pass
                 else:
                     raise
 
