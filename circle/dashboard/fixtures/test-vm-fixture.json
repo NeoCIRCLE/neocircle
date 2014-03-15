@@ -35,7 +35,6 @@
     "filename": "disc.img", 
     "destroyed": null, 
     "base": null, 
-    "ready": true, 
     "datastore": 1, 
     "dev_num": "a", 
     "type": "qcow2-norm", 
