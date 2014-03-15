@@ -82,11 +82,12 @@ class Node(TimeStampedModel):
               True: {False: ('MISSING', _('missing')),
                      True: ('ONLINE', _('online'))}}
 
-    @property
-    def state(self):
+    def get_state(self):
         """The state combined of online and enabled attributes.
         """
         return self.STATES[self.enabled][self.online][0]
+
+    state = property(get_state)
 
     def get_status_display(self):
         return self.STATES[self.enabled][self.online][1]
