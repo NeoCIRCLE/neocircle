@@ -13,7 +13,7 @@ from taggit.managers import TaggableManager
 
 from common.models import method_cache, WorkerNotFound
 from firewall.models import Host
-from ..tasks import vm_tasks
+from ..tasks import vm_tasks, local_tasks
 from .common import Trait
 
 from .activity import node_activity, NodeActivity
@@ -100,6 +100,21 @@ class Node(TimeStampedModel):
             with act_ctx:
                 self.enabled = False
                 self.save()
+
+    def flush(self, user=None):
+        """Disable node and move all instances to other ones.
+        """
+        with node_activity('flush', node=self, user=user) as act:
+            self.disable(user, act)
+            for i in self.instance_set.all():
+                with act.sub_activity('migrate_instance_%d' % i.pk):
+                    i.migrate()
+
+    def flush_async(self, user=None):
+        """Execute flush asynchronously.
+        """
+        return local_tasks.flush.apply_async(args=[self, user],
+                                             queue="localhost.man")
 
     def enable(self, user=None):
         ''' Enable the node. '''
