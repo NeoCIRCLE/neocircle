@@ -945,7 +945,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
             # Destroy networks
             with act.sub_activity('destroying_net'):
                 for net in self.interface_set.all():
-                    net.destroy(delete_host=False)
+                    net.shutdown()
 
             # Suspend vm
             with act.sub_activity('suspending'):
@@ -1075,7 +1075,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
             # Destroy networks
             with act.sub_activity('destroying_net'):
                 for net in self.interface_set.all():
-                    net.destroy(delete_host=False)
+                    net.shutdown()
 
             with act.sub_activity('migrate_vm'):
                 queue_name = self.get_remote_queue_name('vm')
