@@ -93,18 +93,6 @@ class Interface(Model):
             'managed': self.host is not None
         }
 
-    def deploy(self, user=None, task_uuid=None):
-        net_tasks.create.apply_async(
-            args=[self.get_vmnetwork_desc()],
-            queue=self.instance.get_remote_queue_name('net'))
-
-    def destroy(self, delete_host=True, user=None, task_uuid=None):
-        net_tasks.destroy.apply_async(
-            args=[self.get_vmnetwork_desc()],
-            queue=self.instance.get_remote_queue_name('net'))
-        if delete_host and self.host is not None:
-            self.host.delete()
-
     @classmethod
     def create(cls, instance, vlan, managed, owner=None, base_activity=None):
         """Create a new interface for a VM instance to the specified VLAN.
@@ -148,6 +136,18 @@ class Interface(Model):
         iface = cls(vlan=vlan, host=host, instance=instance)
         iface.save()
         return iface
+
+    def deploy(self, user=None, task_uuid=None):
+        net_tasks.create.apply_async(
+            args=[self.get_vmnetwork_desc()],
+            queue=self.instance.get_remote_queue_name('net'))
+
+    def destroy(self, delete_host=True, user=None, task_uuid=None):
+        net_tasks.destroy.apply_async(
+            args=[self.get_vmnetwork_desc()],
+            queue=self.instance.get_remote_queue_name('net'))
+        if delete_host and self.host is not None:
+            self.host.delete()
 
     def save_as_template(self, instance_template):
         """Create a template based on this interface.
