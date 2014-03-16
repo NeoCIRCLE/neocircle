@@ -1,5 +1,5 @@
 from django.test import TestCase
-from mock import Mock
+from mock import Mock, MagicMock, patch, call
 
 from ..models.common import (
     Lease
@@ -10,6 +10,7 @@ from ..models.instance import (
 from ..models.network import (
     Interface
 )
+from ..models.node import Node
 
 
 class PortFinderTestCase(TestCase):
@@ -38,6 +39,33 @@ class InstanceTestCase(TestCase):
     def test_is_running(self):
         inst = Mock(state='RUNNING')
         assert Instance.is_running.getter(inst)
+
+    def test_migrate_with_scheduling(self):
+        inst = MagicMock(spec=Instance)
+        inst.interface_set.all.return_value = []
+        inst.node = MagicMock(spec=Node)
+        with patch('vm.models.instance.instance_activity') as ia, \
+                patch('vm.models.instance.vm_tasks.migrate') as migr:
+            Instance.migrate(inst)
+
+            migr.apply_async.assert_called()
+            self.assertIn(call().__enter__().sub_activity(u'scheduling'),
+                          ia.mock_calls)
+            inst.select_node.assert_called()
+
+    def test_migrate_wo_scheduling(self):
+        inst = MagicMock(spec=Instance)
+        inst.interface_set.all.return_value = []
+        inst.node = MagicMock(spec=Node)
+        with patch('vm.models.instance.instance_activity') as ia, \
+                patch('vm.models.instance.vm_tasks.migrate') as migr:
+            inst.select_node.side_effect = AssertionError
+
+            Instance.migrate(inst, inst.node)
+
+            migr.apply_async.assert_called()
+            self.assertNotIn(call().__enter__().sub_activity(u'scheduling'),
+                             ia.mock_calls)
 
 
 class InterfaceTestCase(TestCase):

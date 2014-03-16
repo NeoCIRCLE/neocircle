@@ -1068,10 +1068,15 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         return local_tasks.migrate.apply_async(args=[self, to_node, user],
                                                queue="localhost.man")
 
-    def migrate(self, to_node, user=None, task_uuid=None, timeout=120):
+    def migrate(self, to_node=None, user=None, task_uuid=None, timeout=120):
         """Live migrate running vm to another node. """
         with instance_activity(code_suffix='migrate', instance=self,
                                task_uuid=task_uuid, user=user) as act:
+            if not to_node:
+                with act.sub_activity('scheduling') as sa:
+                    to_node = self.select_node()
+                    sa.result = to_node
+
             # Destroy networks
             with act.sub_activity('destroying_net'):
                 for net in self.interface_set.all():
