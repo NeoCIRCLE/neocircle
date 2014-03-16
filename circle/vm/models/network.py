@@ -138,6 +138,13 @@ class Interface(Model):
         return iface
 
     def deploy(self, user=None, task_uuid=None):
+        if self.destroyed:
+            from .instance import Instance
+            raise Instance.InstanceDestroyedError(self.instance,
+                                                  "The associated instance "
+                                                  "(%s) has already been "
+                                                  "destroyed" % self.instance)
+
         net_tasks.create.apply_async(
             args=[self.get_vmnetwork_desc()],
             queue=self.instance.get_remote_queue_name('net'))
@@ -148,6 +155,9 @@ class Interface(Model):
             queue=self.instance.get_remote_queue_name('net'))
 
     def destroy(self, user=None, task_uuid=None):
+        if self.destroyed:
+            return
+
         self.shutdown(user, task_uuid)
         if self.host is not None:
             self.host.delete()
