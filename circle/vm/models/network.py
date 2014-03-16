@@ -103,13 +103,13 @@ class Interface(Model):
             # TODO change Host's mac field's type to EUI in firewall
             host.mac = str(cls.generate_mac(instance, vlan))
             host.hostname = instance.vm_name
-            # Get adresses from firewall
+            # Get addresses from firewall
             if base_activity is None:
-                act = instance_activity(code_suffix='allocating_ip',
-                                        instance=instance, user=owner)
+                act_ctx = instance_activity(code_suffix='allocating_ip',
+                                            instance=instance, user=owner)
             else:
-                act = base_activity.sub_activity('allocating_ip')
-            with act as act:
+                act_ctx = base_activity.sub_activity('allocating_ip')
+            with act_ctx as act:
                 addresses = vlan.get_new_address()
                 host.ipv4 = addresses['ipv4']
                 host.ipv6 = addresses['ipv6']
