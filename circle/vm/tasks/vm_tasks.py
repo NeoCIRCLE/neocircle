@@ -13,7 +13,7 @@ def check_queue(node_hostname, queue_id):
     :param node_hostname: Short hostname of the node.
     :param queue_id: Queue identifier (eg. vm).
     """
-    drivers = ['vmdriver', 'netdriver', 'agentdriver']
+    # drivers = ['vmdriver', 'netdriver', 'agentdriver']
     # worker_list = [node_hostname + "." + d for d in drivers]
     queue_name = node_hostname + "." + queue_id
     active_queues = get_queues()
@@ -26,6 +26,7 @@ def check_queue(node_hostname, queue_id):
             if queue['name'] == queue_name:
                 return True
     return False
+
 
 def get_queues():
     """Get active celery queues.
@@ -41,8 +42,6 @@ def get_queues():
         logger.debug('Queue list of length %d cached.', len(result))
         cache.set(key, result, 10)
     return result
-
-
 
 
 @celery.task(name='vmdriver.create')
