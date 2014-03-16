@@ -90,10 +90,14 @@ class Node(TimeStampedModel):
         else:
             return 'OFFLINE'
 
-    def disable(self, user=None):
+    def disable(self, user=None, base_activity=None):
         ''' Disable the node.'''
         if self.enabled:
-            with node_activity(code_suffix='disable', node=self, user=user):
+            if base_activity:
+                act_ctx = base_activity.sub_activity('disable')
+            else:
+                act_ctx = node_activity('disable', node=self, user=user)
+            with act_ctx:
                 self.enabled = False
                 self.save()
 
