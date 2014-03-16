@@ -1,11 +1,11 @@
 from django.test import TestCase
-from mock import Mock
+from mock import Mock, MagicMock, patch
 
 from ..models.common import (
     Lease
 )
 from ..models.instance import (
-    find_unused_port, InstanceTemplate, Instance
+    find_unused_port, InstanceTemplate, Instance, ActivityInProgressError
 )
 from ..models.network import (
     Interface
@@ -38,6 +38,17 @@ class InstanceTestCase(TestCase):
     def test_is_running(self):
         inst = Mock(state='RUNNING')
         assert Instance.is_running.getter(inst)
+
+    def test_mon_stopped_while_activity_running(self):
+        node = Mock()
+        port = Mock()
+        inst = MagicMock(spec=Instance, node=node, vnc_port=port)
+        inst.save.side_effect = AssertionError
+        with patch('vm.models.instance.InstanceActivity') as ia:
+            ia.create.side_effect = ActivityInProgressError(MagicMock())
+            Instance.vm_state_changed(inst, 'STOPPED')
+        self.assertEquals(inst.node, node)
+        self.assertEquals(inst.vnc_port, port)
 
 
 class InterfaceTestCase(TestCase):
