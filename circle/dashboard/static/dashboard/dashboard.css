@@ -383,3 +383,12 @@ a.hover-black {
 .vm-details-help ul {
   padding-left: 0px;
 }
+
+.template-disk-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.template-disk-list li {
+  padding-bottom: 5px;
+}

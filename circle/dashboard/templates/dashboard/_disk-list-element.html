@@ -1,7 +1,7 @@
 {% load i18n %}
 {% load sizefieldtags %}
 
-<i class="{% if d.is_downloading %}icon-refresh icon-spin{% else %}icon-file{% endif %}"></i> 
+<i class="{% if d.is_downloading %}icon-refresh icon-spin{% else %}icon-file{% if not d.ready %}" style="color: #d9534f;{% endif %}{% endif %}"></i> 
 {{ d.name }} (#{{ d.id }}) - 
 {% if not d.is_downloading %}
   {% if d.ready %}
@@ -14,4 +14,5 @@
   data-disk-pk="{{ d.pk }}" class="btn btn-xs btn-danger pull-right disk-remove">
     <i class="icon-remove"></i>{% if long_remove %} Remove{% endif %}
 </a>
+<div class="btn btn-xs btn-danger pull-right"><i class="icon-remove"></i>{% if long_remove %} Remove{% endif %}</div>
 <div style="clear: both;"></div>
