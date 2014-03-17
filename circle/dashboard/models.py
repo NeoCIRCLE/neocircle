@@ -73,6 +73,7 @@ class Profile(Model):
     def get_absolute_url(self):
         return reverse("dashboard.views.profile")
 
+
 class GroupProfile(AclBase):
     ACL_LEVELS = (
         ('operator', _('operator')),
