@@ -324,7 +324,7 @@ class Disk(AclBase, TimeStampedModel):
 
         :return: Disk object without a real image, to be .deploy()ed later.
         """
-        disk = Disk.create(instance=None, user=None, **kwargs)
+        disk = Disk.create(instance, user, **kwargs)
         return disk
 
     @classmethod
