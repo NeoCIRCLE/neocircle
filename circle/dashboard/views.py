@@ -1999,8 +1999,10 @@ def circle_login(request):
     extra_context = {
         'saml2': hasattr(settings, "SAML_CONFIG")
     }
-    return login(request, authentication_form=authentication_form,
-                 extra_context=extra_context)
+    response = login(request, authentication_form=authentication_form,
+                     extra_context=extra_context)
+    set_language_cookie(request, response)
+    return response
 
 
 class DiskAddView(TemplateView):
