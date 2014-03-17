@@ -756,8 +756,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
             vm_tasks.resume.apply_async(args=[self.vm_name],
                                         queue=queue_name).get(timeout=timeout)
 
-        self._do_renew()
-        self.save()
+        self.renew(which='both', base_activity=act)
 
     def deploy(self, user=None, task_uuid=None):
         """Deploy new virtual machine with network
