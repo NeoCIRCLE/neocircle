@@ -768,12 +768,28 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
         form = self.form_class(request.POST, user=request.user)
         if not form.is_valid():
             return self.get(request, form, *args, **kwargs)
-        post = form.cleaned_data
-        for disk in post['disks']:
-            if not disk.has_level(request.user, 'user'):
-                raise PermissionDenied()
+        else:
+            post = form.cleaned_data
+
+            networks = self.__create_networks(post.pop("networks"))
+            req_traits = post.pop("req_traits")
+            tags = post.pop("tags")
+            post['pw'] = User.objects.make_random_password()
+            post.pop("parent")
+
+            inst = Instance.create(params=post, disks=[], networks=networks,
+                                   tags=tags, req_traits=req_traits)
+            messages.success(request, _("Your disk has been created, "
+                                        "you can now add disks to it!"))
+            return redirect("%s#resources" % inst.get_absolute_url())
 
         return super(TemplateCreate, self).post(self, request, args, kwargs)
+
+    def __create_networks(self, vlans):
+        networks = []
+        for v in vlans:
+            networks.append(InterfaceTemplate(vlan=v, managed=v.managed))
+        return networks
 
     def get_success_url(self):
         return reverse_lazy("dashboard.views.template-list")
