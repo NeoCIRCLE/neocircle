@@ -1019,6 +1019,9 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
                 for net in self.interface_set.all():
                     net.deploy()
 
+            # Renew vm
+            self.renew(which='both', base_activity=act)
+
     def wake_up_async(self, user=None):
         """Execute wake_up asynchronously.
         """
