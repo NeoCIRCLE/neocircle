@@ -10,7 +10,7 @@ from ..models import Profile
 from ..views import VmRenewView
 from storage.models import Disk
 from firewall.models import Vlan, Host, VlanGroup
-from mock import Mock
+from mock import Mock, patch
 
 import django.conf
 settings = django.conf.settings.FIREWALL_SETTINGS
@@ -480,6 +480,46 @@ class VmDetailTest(LoginMixin, TestCase):
                           HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Instance.objects.get(pk=1).name, 'test123')
+
+    def test_permitted_wake_up_wrong_state(self):
+        c = Client()
+        self.login(c, "user2")
+        with patch.object(Instance, 'wake_up_async') as mock_method:
+            inst = Instance.objects.get(pk=1)
+            mock_method.side_effect = inst.wake_up
+            inst.manual_state_change('RUNNING')
+            inst.set_level(self.u2, 'owner')
+            self.assertRaises(inst.WrongStateError, c.post,
+                              "/dashboard/vm/1/", {'wake_up': True})
+            self.assertEqual(inst.status, 'RUNNING')
+            assert mock_method.called
+
+    def test_permitted_wake_up(self):
+        c = Client()
+        self.login(c, "user2")
+        with patch.object(Instance, 'select_node', return_value=None):
+            with patch.object(Instance, 'wake_up_async') as new_wake_up:
+                with patch('vm.tasks.vm_tasks.wake_up.apply_async') as wuaa:
+                    inst = Instance.objects.get(pk=1)
+                    new_wake_up.side_effect = inst.wake_up
+                    inst.get_remote_queue_name = Mock(return_value='test')
+                    inst.manual_state_change('SUSPENDED')
+                    inst.set_level(self.u2, 'owner')
+                    response = c.post("/dashboard/vm/1/", {'wake_up': True})
+                    self.assertEqual(response.status_code, 302)
+                    self.assertEqual(inst.status, 'RUNNING')
+                    assert new_wake_up.called
+                    assert wuaa.called
+
+    def test_unpermitted_wake_up(self):
+        c = Client()
+        self.login(c, "user2")
+        inst = Instance.objects.get(pk=1)
+        inst.manual_state_change('SUSPENDED')
+        inst.set_level(self.u2, 'user')
+        response = c.post("/dashboard/vm/1/", {'wake_up': True})
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(inst.status, 'SUSPENDED')
 
 
 class VmDetailVncTest(LoginMixin, TestCase):
