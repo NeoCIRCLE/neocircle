@@ -20,7 +20,7 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.views.decorators.http import require_GET
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import (TemplateView, DetailView, View, DeleteView,
-                                  UpdateView, CreateView)
+                                  UpdateView, CreateView, ListView)
 from django.contrib import messages
 from django.utils.translation import ugettext as _
 from django.template.defaultfilters import title as title_filter
@@ -37,7 +37,7 @@ from .forms import (
     CircleAuthenticationForm, DiskAddForm, HostForm, LeaseForm, NodeForm,
     TemplateForm, TraitForm, VmCustomizeForm,
 )
-from .tables import (VmListTable, NodeListTable, NodeVmListTable,
+from .tables import (NodeListTable, NodeVmListTable,
                      TemplateListTable, LeaseListTable, GroupListTable,)
 from vm.models import (
     Instance, instance_activity, InstanceActivity, InstanceTemplate, Interface,
@@ -89,7 +89,7 @@ class IndexView(LoginRequiredMixin, TemplateView):
 
         favs = Instance.objects.filter(favourite__user=self.request.user)
         instances = Instance.get_objects_with_level(
-            'user', user).filter(destroyed=None)
+            'user', user).filter(destroyed_at=None)
         display = list(favs) + list(set(instances) - set(favs))
         for d in display:
             d.fav = True if d in favs else False
@@ -118,13 +118,13 @@ class IndexView(LoginRequiredMixin, TemplateView):
             }
         })
 
-        running = [i for i in instances if i.state == 'RUNNING']
-        stopped = [i for i in instances if i.state not in ['RUNNING',
-                                                           'NOSTATE']]
+        running = instances.filter(status='RUNNING')
+        stopped = instances.exclude(status__in=('RUNNING', 'NOSTATE'))
+
         context.update({
-            'running_vms': running,
-            'running_vm_num': len(running),
-            'stopped_vm_num': len(stopped)
+            'running_vms': running[:20],
+            'running_vm_num': running.count(),
+            'stopped_vm_num': stopped.count()
         })
 
         context['templates'] = InstanceTemplate.objects.all()[:5]
@@ -198,10 +198,11 @@ class VmDetailView(CheckedDetailView):
         })
 
         # activity data
-        ia = InstanceActivity.objects.filter(
-            instance=self.object, parent=None
-        ).order_by('-started').select_related()
-        context['activities'] = ia
+        context['activities'] = (
+            InstanceActivity.objects.filter(
+                instance=self.object, parent=None).
+            order_by('-started').
+            select_related('user').prefetch_related('children'))
 
         context['vlans'] = Vlan.get_objects_with_level(
             'user', self.request.user
@@ -884,11 +885,8 @@ class TemplateDelete(LoginRequiredMixin, DeleteView):
             return HttpResponseRedirect(success_url)
 
 
-class VmList(LoginRequiredMixin, SingleTableView):
+class VmList(LoginRequiredMixin, ListView):
     template_name = "dashboard/vm-list.html"
-    table_class = VmListTable
-    table_pagination = False
-    model = Instance
 
     def get(self, *args, **kwargs):
         if self.request.is_ajax():
@@ -896,7 +894,7 @@ class VmList(LoginRequiredMixin, SingleTableView):
                 favourite__user=self.request.user).values_list('pk', flat=True)
             instances = Instance.get_objects_with_level(
                 'user', self.request.user).filter(
-                destroyed=None).all()
+                destroyed_at=None).all()
             instances = [{
                 'pk': i.pk,
                 'name': i.name,
@@ -913,11 +911,11 @@ class VmList(LoginRequiredMixin, SingleTableView):
         logger.debug('VmList.get_queryset() called. User: %s',
                      unicode(self.request.user))
         queryset = Instance.get_objects_with_level(
-            'user', self.request.user).filter(destroyed=None)
+            'user', self.request.user).filter(destroyed_at=None)
         s = self.request.GET.get("s")
         if s:
             queryset = queryset.filter(name__icontains=s)
-        return queryset
+        return queryset.select_related('owner', 'node')
 
 
 class NodeList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):

@@ -91,18 +91,20 @@ class Node(TimeStampedModel):
 
     num_cores = property(get_num_cores)
 
-    @property
-    def state(self):
+    STATES = {False: {False: ('OFFLINE', _('offline')),
+                      True: ('DISABLED', _('disabled'))},
+              True: {False: ('MISSING', _('missing')),
+                     True: ('ONLINE', _('online'))}}
+
+    def get_state(self):
         """The state combined of online and enabled attributes.
         """
-        if self.enabled and self.online:
-            return 'ONLINE'
-        elif self.enabled and not self.online:
-            return 'MISSING'
-        elif not self.enabled and self.online:
-            return 'DISABLED'
-        else:
-            return 'OFFLINE'
+        return self.STATES[self.enabled][self.online][0]
+
+    state = property(get_state)
+
+    def get_status_display(self):
+        return self.STATES[self.enabled][self.online][1]
 
     def disable(self, user=None):
         ''' Disable the node.'''

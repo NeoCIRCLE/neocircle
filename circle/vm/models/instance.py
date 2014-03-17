@@ -2,6 +2,7 @@ from __future__ import absolute_import, unicode_literals
 from datetime import timedelta
 from logging import getLogger
 from importlib import import_module
+from warnings import warn
 import string
 
 import django.conf
@@ -16,7 +17,8 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from celery.exceptions import TimeLimitExceeded
-from model_utils.models import TimeStampedModel
+from model_utils import Choices
+from model_utils.models import TimeStampedModel, StatusModel
 from taggit.managers import TaggableManager
 
 from acl.models import AclBase
@@ -69,7 +71,7 @@ class InstanceActiveManager(Manager):
 
     def get_query_set(self):
         return super(InstanceActiveManager,
-                     self).get_query_set().filter(destroyed=None)
+                     self).get_query_set().filter(destroyed_at=None)
 
 
 class VirtualMachineDescModel(BaseResourceConfigModel):
@@ -161,7 +163,8 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
         return ('dashboard.views.template-detail', None, {'pk': self.pk})
 
 
-class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
+class Instance(AclBase, VirtualMachineDescModel, StatusModel,
+               TimeStampedModel):
 
     """Virtual machine instance.
     """
@@ -169,6 +172,15 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
         ('user', _('user')),          # see all details
         ('operator', _('operator')),  # console, networking, change state
         ('owner', _('owner')),        # superuser, can delete, delegate perms
+    )
+    STATUS = Choices(
+        ('NOSTATE', _('no state')),
+        ('RUNNING', _('running')),
+        ('STOPPED', _('stopped')),
+        ('SUSPENDED', _('suspended')),
+        ('ERROR', _('error')),
+        ('PENDING', _('pending')),
+        ('DESTROYED', _('destroyed')),
     )
     name = CharField(blank=True, max_length=100, verbose_name=_('name'),
                      help_text=_("Human readable name of instance."))
@@ -202,9 +214,9 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                             help_text=_("TCP port where VNC console listens."),
                             unique=True, verbose_name=_('vnc_port'))
     owner = ForeignKey(User)
-    destroyed = DateTimeField(blank=True, null=True,
-                              help_text=_("The virtual machine's time of "
-                                          "destruction."))
+    destroyed_at = DateTimeField(blank=True, null=True,
+                                 help_text=_("The virtual machine's time of "
+                                             "destruction."))
     objects = Manager()
     active = InstanceActiveManager()
 
@@ -258,7 +270,22 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
     @property
     def state(self):
-        """State of the virtual machine instance.
+        warn('Use Instance.status (or get_status_display) instead.',
+             DeprecationWarning)
+        return self.status
+
+    def _update_status(self):
+        """Set the proper status of the instance to Instance.status.
+        """
+        old = self.status
+        self.status = self._compute_status()
+        if old != self.status:
+            logger.info('Status of Instance#%d changed to %s',
+                        self.pk, self.status)
+            self.save()
+
+    def _compute_status(self):
+        """Return the proper status of the instance based on activities.
         """
         # check special cases
         if self.activity_log.filter(activity_code__endswith='migrate',
@@ -745,7 +772,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                           asynchronously.
         :type task_uuid: str
         """
-        if self.destroyed:
+        if self.destroyed_at:
             raise self.InstanceDestroyedError(self)
 
         def __on_commit(activity):
@@ -893,7 +920,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
                           asynchronously.
         :type task_uuid: str
         """
-        if self.destroyed:
+        if self.destroyed_at:
             return  # already destroyed, nothing to do here
 
         def __on_commit(activity):
@@ -913,7 +940,7 @@ class Instance(AclBase, VirtualMachineDescModel, TimeStampedModel):
 
             self.__cleanup_after_destroy_vm(act)
 
-            self.destroyed = timezone.now()
+            self.destroyed_at = timezone.now()
             self.save()
 
     def destroy_async(self, user=None):

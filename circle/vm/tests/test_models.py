@@ -1,15 +1,12 @@
+from datetime import datetime
 from django.test import TestCase
+from django.utils.translation import ugettext_lazy as _
 from mock import Mock, MagicMock, patch
 
-from ..models.common import (
-    Lease
+from ..models import (
+    Lease, Node, Interface, Instance, InstanceTemplate,
 )
-from ..models.instance import (
-    find_unused_port, InstanceTemplate, Instance, ActivityInProgressError
-)
-from ..models.network import (
-    Interface
-)
+from ..models.instance import find_unused_port, ActivityInProgressError
 
 
 class PortFinderTestCase(TestCase):
@@ -50,6 +47,27 @@ class InstanceTestCase(TestCase):
         self.assertEquals(inst.node, node)
         self.assertEquals(inst.vnc_port, port)
 
+    def test_deploy_destroyed(self):
+        inst = Mock(destroyed_at=datetime.now(), spec=Instance,
+                    InstanceDestroyedError=Instance.InstanceDestroyedError)
+        with self.assertRaises(Instance.InstanceDestroyedError):
+            Instance.deploy(inst)
+
+    def test_destroy_destroyed(self):
+        inst = Mock(destroyed_at=datetime.now(), spec=Instance)
+        Instance.destroy(inst)
+        self.assertFalse(inst.save.called)
+
+    def test_destroy_sets_destroyed(self):
+        inst = MagicMock(destroyed_at=None, spec=Instance)
+        inst.node = MagicMock(spec=Node)
+        inst.disks.all.return_value = []
+        with patch('vm.models.instance.instance_activity') as ia:
+            ia.return_value = MagicMock()
+            Instance.destroy(inst)
+        self.assertTrue(inst.destroyed_at)
+        inst.save.assert_called()
+
 
 class InterfaceTestCase(TestCase):
 
@@ -89,3 +107,14 @@ class LeaseTestCase(TestCase):
 
         l.suspend_interval = None
         assert "never" in unicode(l)
+
+
+class NodeTestCase(TestCase):
+
+    def test_state(self):
+        node = Mock(spec=Node)
+        node.online = True
+        node.enabled = True
+        node.STATES = Node.STATES
+        self.assertEqual(Node.get_state(node), "ONLINE")
+        assert isinstance(Node.get_status_display(node), _("").__class__)

@@ -1352,7 +1352,7 @@
   "pk": 1, 
   "model": "vm.instance", 
   "fields": {
-    "destroyed": null, 
+    "destroyed_at": null, 
     "disks": [
       1
     ], 
@@ -1383,7 +1383,7 @@
   "pk": 12, 
   "model": "vm.instance", 
   "fields": {
-    "destroyed": null, 
+    "destroyed_at": null, 
     "disks": [], 
     "boot_menu": false, 
     "owner": 1, 

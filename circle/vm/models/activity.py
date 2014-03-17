@@ -79,6 +79,11 @@ class InstanceActivity(ActivityModel):
         act = self.create_sub(code_suffix, task_uuid)
         return activitycontextimpl(act, on_abort=on_abort, on_commit=on_commit)
 
+    def save(self, *args, **kwargs):
+        ret = super(InstanceActivity, self).save(*args, **kwargs)
+        self.instance._update_status()
+        return ret
+
 
 @contextmanager
 def instance_activity(code_suffix, instance, on_abort=None, on_commit=None,
