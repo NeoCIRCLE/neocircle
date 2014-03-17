@@ -497,18 +497,19 @@ class VmDetailTest(LoginMixin, TestCase):
     def test_permitted_wake_up(self):
         c = Client()
         self.login(c, "user2")
-        with patch.object(Instance, 'wake_up_async') as new_wake_up:
-            with patch('vm.tasks.vm_tasks.wake_up.apply_async') as wuaa:
-                inst = Instance.objects.get(pk=1)
-                new_wake_up.side_effect = inst.wake_up
-                inst.get_remote_queue_name = Mock(return_value='test')
-                inst.manual_state_change('SUSPENDED')
-                inst.set_level(self.u2, 'owner')
-                response = c.post("/dashboard/vm/1/", {'wake_up': True})
-                self.assertEqual(response.status_code, 302)
-                self.assertEqual(inst.status, 'RUNNING')
-                assert new_wake_up.called
-                assert wuaa.called
+        with patch.object(Instance, 'select_node', return_value=None):
+            with patch.object(Instance, 'wake_up_async') as new_wake_up:
+                with patch('vm.tasks.vm_tasks.wake_up.apply_async') as wuaa:
+                    inst = Instance.objects.get(pk=1)
+                    new_wake_up.side_effect = inst.wake_up
+                    inst.get_remote_queue_name = Mock(return_value='test')
+                    inst.manual_state_change('SUSPENDED')
+                    inst.set_level(self.u2, 'owner')
+                    response = c.post("/dashboard/vm/1/", {'wake_up': True})
+                    self.assertEqual(response.status_code, 302)
+                    self.assertEqual(inst.status, 'RUNNING')
+                    assert new_wake_up.called
+                    assert wuaa.called
 
     def test_unpermitted_wake_up(self):
         c = Client()
