@@ -4,6 +4,7 @@ from logging import getLogger
 from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.signals import user_logged_in
+from django.core.urlresolvers import reverse
 from django.db.models import (
     Model, ForeignKey, OneToOneField, CharField, IntegerField, TextField,
     DateTimeField,
@@ -68,6 +69,9 @@ class Profile(Model):
     def notify(self, subject, template, context={}, valid_until=None):
         return Notification.send(self.user, subject, template, context,
                                  valid_until)
+
+    def get_absolute_url(self):
+        return reverse("dashboard.views.profile")
 
 
 class GroupProfile(AclBase):

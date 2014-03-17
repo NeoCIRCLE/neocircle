@@ -34,8 +34,8 @@ from braces.views import (
 )
 
 from .forms import (
-    CircleAuthenticationForm, DiskAddForm, HostForm, LeaseForm, NodeForm,
-    TemplateForm, TraitForm, VmCustomizeForm,
+    CircleAuthenticationForm, DiskAddForm, HostForm, LeaseForm, MyProfileForm,
+    NodeForm, TemplateForm, TraitForm, VmCustomizeForm,
 )
 from .tables import (NodeListTable, NodeVmListTable,
                      TemplateListTable, LeaseListTable, GroupListTable,)
@@ -1999,8 +1999,10 @@ def circle_login(request):
     extra_context = {
         'saml2': hasattr(settings, "SAML_CONFIG")
     }
-    return login(request, authentication_form=authentication_form,
-                 extra_context=extra_context)
+    response = login(request, authentication_form=authentication_form,
+                     extra_context=extra_context)
+    set_language_cookie(request, response)
+    return response
 
 
 class DiskAddView(TemplateView):
@@ -2042,3 +2044,33 @@ class DiskAddView(TemplateView):
             r = obj.get_absolute_url()
             r = "%s#resources" % r
         return redirect(r)
+
+
+class MyPreferencesView(UpdateView):
+
+    model = Profile
+    form_class = MyProfileForm
+
+    def get_object(self, queryset=None):
+        if self.request.user.is_anonymous():
+            raise PermissionDenied()
+        try:
+            return self.request.user.profile
+        except Profile.DoesNotExist:
+            raise Http404(_("You don't have a profile."))
+
+    def form_valid(self, form):
+        response = super(MyPreferencesView, self).form_valid(form)
+        set_language_cookie(self.request, response)
+        return response
+
+
+def set_language_cookie(request, response, lang=None):
+    if lang is None:
+        try:
+            lang = request.user.profile.preferred_language
+        except:
+            return
+
+    cname = getattr(settings, 'LANGUAGE_COOKIE_NAME', 'django_language')
+    response.set_cookie(cname, lang, 365 * 86400)

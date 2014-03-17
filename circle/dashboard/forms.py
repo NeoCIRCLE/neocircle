@@ -22,6 +22,7 @@ from storage.models import Disk, DataStore
 from vm.models import (
     InstanceTemplate, Lease, InterfaceTemplate, Node, Trait, Instance
 )
+from .models import Profile
 
 VLANS = Vlan.objects.all()
 DISKS = Disk.objects.exclude(type="qcow2-snap")
@@ -991,3 +992,21 @@ class TraitForm(forms.ModelForm):
     class Meta:
         model = Trait
         fields = ['name']
+
+
+class MyProfileForm(forms.ModelForm):
+
+    class Meta:
+        fields = ('preferred_language', )
+        model = Profile
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.layout = Layout('preferred_language', )
+        helper.add_input(Submit("submit", _("Save")))
+        return helper
+
+    def save(self, *args, **kwargs):
+        value = super(MyProfileForm, self).save(*args, **kwargs)
+        return value

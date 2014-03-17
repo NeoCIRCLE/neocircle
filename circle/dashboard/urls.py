@@ -4,10 +4,10 @@ from vm.models import Instance
 from .views import (
     AclUpdateView, DiskAddView, FavouriteView, GroupAclUpdateView, GroupDelete,
     GroupDetailView, GroupList, GroupUserDelete, IndexView, LeaseCreate,
-    LeaseDelete, LeaseDetail, NodeAddTraitView, NodeCreate, NodeDelete,
-    NodeDetailView, NodeGraphView, NodeList, NodeStatus, NotificationView,
-    PortDelete, TemplateAclUpdateView, TemplateCreate, TemplateDelete,
-    TemplateDetail, TemplateList, TransferOwnershipConfirmView,
+    LeaseDelete, LeaseDetail, MyPreferencesView, NodeAddTraitView, NodeCreate,
+    NodeDelete, NodeDetailView, NodeGraphView, NodeList, NodeStatus,
+    NotificationView, PortDelete, TemplateAclUpdateView, TemplateCreate,
+    TemplateDelete, TemplateDetail, TemplateList, TransferOwnershipConfirmView,
     TransferOwnershipView, vm_activity, VmCreate, VmDelete, VmDetailView,
     VmDetailVncTokenView, VmGraphView, VmList, VmMassDelete, VmMigrateView,
     VmRenewView,
@@ -97,4 +97,6 @@ urlpatterns = patterns(
 
     url(r'^disk/add/$', DiskAddView.as_view(),
         name="dashboard.views.disk-add"),
+    url(r'^profile/$', MyPreferencesView.as_view(),
+        name="dashboard.views.profile"),
 )
