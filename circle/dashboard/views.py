@@ -422,12 +422,13 @@ class VmDetailView(CheckedDetailView):
         new_name = "Saved from %s (#%d) at %s" % (
             self.object.name, self.object.pk, date
         )
-        template = self.object.save_as_template(name=new_name,
-                                                owner=request.user)
-        messages.success(request, _("Instance successfully saved as template, "
-                                    "please rename it!"))
-        return redirect(reverse_lazy("dashboard.views.template-detail",
-                                     kwargs={'pk': template.pk}))
+
+        # TODO csak egy maradhat!!
+        self.object.save_as_template_async(name=new_name,
+                                           user=request.user,
+                                           owner=request.user)
+        messages.success(request, _("Saving instance as template!"))
+        return redirect("%s#activity" % self.object.get_absolute_url())
 
     def __shut_down(self, request):
         self.object = self.get_object()
