@@ -71,7 +71,7 @@ class Disk(AclBase, TimeStampedModel):
     datastore = ForeignKey(DataStore, verbose_name=_("datastore"),
                            help_text=_("The datastore that holds the disk."))
     type = CharField(max_length=10, choices=TYPES)
-    size = FileSizeField()
+    size = FileSizeField(null=True, default=None)
     base = ForeignKey('self', blank=True, null=True,
                       related_name='derivatives')
     ready = BooleanField(default=False,
@@ -359,7 +359,7 @@ class Disk(AclBase, TimeStampedModel):
         :rtype: Disk
         """
         kwargs.setdefault('name', url.split('/')[-1])
-        disk = Disk.create(type="iso", size=1, **kwargs)
+        disk = Disk.create(type="iso", size=None, **kwargs)
         # TODO get proper datastore
         disk.datastore = DataStore.objects.get()
         if instance:
