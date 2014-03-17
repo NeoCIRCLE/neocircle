@@ -81,12 +81,10 @@ class IndexView(LoginRequiredMixin, TemplateView):
     template_name = "dashboard/index.html"
 
     def get_context_data(self, **kwargs):
-        if self.request.user.is_authenticated():
-            user = self.request.user
-        else:
-            user = None
+        user = self.request.user
         context = super(IndexView, self).get_context_data(**kwargs)
 
+        # instances
         favs = Instance.objects.filter(favourite__user=self.request.user)
         instances = Instance.get_objects_with_level(
             'user', user).filter(destroyed_at=None)
@@ -98,26 +96,6 @@ class IndexView(LoginRequiredMixin, TemplateView):
             'more_instances': instances.count() - len(instances[:5])
         })
 
-        if user is not None:
-            context['new_notifications'] = user.notification_set.filter(
-                status="new").count()
-
-        nodes = Node.objects.all()
-        groups = Group.objects.all()
-        context.update({
-            'nodes': nodes[:10],
-            'more_nodes': nodes.count() - len(nodes[:10]),
-            'groups': groups[:10],
-            'more_groups': groups.count() - len(groups[:10]),
-            'sum_node_num': nodes.count(),
-            'node_num': {
-                'running': Node.get_state_count(True, True),
-                'missing': Node.get_state_count(False, True),
-                'disabled': Node.get_state_count(True, False),
-                'offline': Node.get_state_count(False, False)
-            }
-        })
-
         running = instances.filter(status='RUNNING')
         stopped = instances.exclude(status__in=('RUNNING', 'NOSTATE'))
 
@@ -127,7 +105,37 @@ class IndexView(LoginRequiredMixin, TemplateView):
             'stopped_vm_num': stopped.count()
         })
 
-        context['templates'] = InstanceTemplate.objects.all()[:5]
+        # notifications
+        context['new_notifications'] = user.notification_set.filter(
+            status="new").count()
+
+        # nodes
+        if user.is_superuser:
+            nodes = Node.objects.all()
+            context.update({
+                'nodes': nodes[:10],
+                'more_nodes': nodes.count() - len(nodes[:10]),
+                'sum_node_num': nodes.count(),
+                'node_num': {
+                    'running': Node.get_state_count(True, True),
+                    'missing': Node.get_state_count(False, True),
+                    'disabled': Node.get_state_count(True, False),
+                    'offline': Node.get_state_count(False, False)
+                }
+            })
+
+        # groups
+        groups = Group.objects.all()
+        context.update({
+            'groups': groups[:10],
+            'more_groups': groups.count() - len(groups[:10]),
+        })
+
+        # template
+        if user.has_perm('vm.create_template'):
+            context['templates'] = InstanceTemplate.get_objects_with_level(
+                'operator', user).all()[:5]
+
         return context
 
 
