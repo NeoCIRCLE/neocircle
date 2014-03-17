@@ -43,6 +43,7 @@ from vm.models import (
     Instance, instance_activity, InstanceActivity, InstanceTemplate, Interface,
     InterfaceTemplate, Lease, Node, NodeActivity, Trait,
 )
+from storage.models import Disk
 from firewall.models import Vlan, Host, Rule
 from dashboard.models import Favourite, Profile
 
@@ -2082,3 +2083,49 @@ def set_language_cookie(request, response, lang=None):
 
     cname = getattr(settings, 'LANGUAGE_COOKIE_NAME', 'django_language')
     response.set_cookie(cname, lang, 365 * 86400)
+
+
+class DiskRemoveView(DeleteView):
+    model = Disk
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/confirm/ajax-delete.html']
+        else:
+            return ['dashboard/confirm/base-delete.html']
+
+    def get_context_data(self, **kwargs):
+        context = super(DiskRemoveView, self).get_context_data(**kwargs)
+        disk = self.get_object()
+        app = disk.get_appliance()
+        context['title'] = _("Disk remove confirmation")
+        context['text'] = _("Are you sure you want to remove "
+                            "<strong>%(disk)s</strong> from "
+                            "<strong>%(app)s</strong>?" % {'disk': disk,
+                                                           'app': app}
+                            )
+        return context
+
+    def delete(self, request, *args, **kwargs):
+        disk = self.get_object()
+        if not disk.has_level(request.user, 'owner'):
+            raise PermissionDenied()
+
+        disk = self.get_object()
+        app = disk.get_appliance()
+
+        app.disks.remove(disk)
+        disk.destroy()
+
+        next_url = request.POST.get("next")
+        success_url = next_url if next_url else app.get_absolute_url()
+        success_message = _("Disk successfully removed!")
+
+        if request.is_ajax():
+            return HttpResponse(
+                json.dumps({'message': success_message}),
+                content_type="application/json",
+            )
+        else:
+            messages.success(request, success_message)
+            return HttpResponseRedirect("%s#resources" % success_url)

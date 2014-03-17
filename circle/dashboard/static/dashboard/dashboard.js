@@ -122,6 +122,18 @@ $(function () {
 	'redirect': dir});
     return false;
   });
+  
+  /* for disk remove buttons */
+  $('.disk-remove').click(function() {
+    var disk_pk = $(this).data('disk-pk');
+    addModalConfirmation(deleteObject, 
+      { 'url': '/dashboard/disk/' + disk_pk + '/remove/',
+        'data': [],
+        'pk': disk_pk,
+	'type': "disk",
+      });
+    return false;
+  });
 
   /* for Node removes buttons */
   $('.node-delete').click(function() {
@@ -258,9 +270,15 @@ function deleteObject(data) {
       if(!data['redirect']) {
         selected = [];
         addMessage(re['message'], 'success');
-        $('a[data-'+data['type']+'-pk="' + data['pk'] + '"]').closest('tr').fadeOut(function() {
-          $(this).remove();  
-        });
+        if(data.type === "disk") {
+          // no need to remove them from DOM
+          $('a[data-disk-pk="' + data.pk + '"]').parent("li").fadeOut();
+          $('a[data-disk-pk="' + data.pk + '"]').parent("h4").fadeOut();
+        } else { 
+          $('a[data-'+data['type']+'-pk="' + data['pk'] + '"]').closest('tr').fadeOut(function() {
+            $(this).remove();  
+          });
+        }
       } else {
         window.location.replace('/dashboard');
       }

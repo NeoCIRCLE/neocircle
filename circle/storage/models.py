@@ -204,6 +204,17 @@ class Disk(AclBase, TimeStampedModel):
         """
         return any(i.state != 'STOPPED' for i in self.instance_set.all())
 
+    def get_appliance(self):
+        """Return an Instance or InstanceTemplate object where the disk is used
+        """
+        instance = self.instance_set.all()
+        template = self.template_set.all()
+        app = list(instance) + list(template)
+        if len(app) > 0:
+            return app[0]
+        else:
+            return None
+
     def get_exclusive(self):
         """Get an instance of the disk for exclusive usage.
 
