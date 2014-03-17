@@ -1,12 +1,22 @@
+from django.core.cache import cache
+from logging import getLogger
+
 from manager.mancelery import celery
+
+logger = getLogger(__name__)
 
 
 def check_queue(node_hostname, queue_id):
-    drivers = ['vmdriver', 'netdriver', 'agentdriver']
-    worker_list = [node_hostname + "." + d for d in drivers]
+    """True if the queue is alive.
+
+    Example: check_queue('node01', 'vm'):
+    :param node_hostname: Short hostname of the node.
+    :param queue_id: Queue identifier (eg. vm).
+    """
+    # drivers = ['vmdriver', 'netdriver', 'agentdriver']
+    # worker_list = [node_hostname + "." + d for d in drivers]
     queue_name = node_hostname + "." + queue_id
-    inspect = celery.control.inspect(worker_list)
-    active_queues = inspect.active_queues()
+    active_queues = get_queues()
     if active_queues is None:
         return False
     # v is List of List of queues dict
@@ -16,6 +26,22 @@ def check_queue(node_hostname, queue_id):
             if queue['name'] == queue_name:
                 return True
     return False
+
+
+def get_queues():
+    """Get active celery queues.
+
+    Result is cached for 10 seconds!
+    """
+    key = __name__ + u'queues'
+    result = cache.get(key)
+    if result is None:
+        inspect = celery.control.inspect()
+        inspect.timeout = 0.1
+        result = inspect.active_queues()
+        logger.debug('Queue list of length %d cached.', len(result))
+        cache.set(key, result, 10)
+    return result
 
 
 @celery.task(name='vmdriver.create')

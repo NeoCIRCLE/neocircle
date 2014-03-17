@@ -25,6 +25,17 @@ from django.utils import timezone
 logger = getLogger(__name__)
 
 
+def node_available(function):
+    """Decorate methods to ignore disabled Nodes.
+    """
+    def decorate(self, *args, **kwargs):
+        if self.enabled and self.online:
+            return function(self, *args, **kwargs)
+        else:
+            return None
+    return decorate
+
+
 class Node(TimeStampedModel):
 
     """A VM host machine, a hypervisor.
@@ -55,19 +66,22 @@ class Node(TimeStampedModel):
     def __unicode__(self):
         return self.name
 
-    @method_cache(10, 5)
+    @method_cache(10)
     def get_online(self):
         """Check if the node is online.
 
-        Runs a remote ping task if the worker is running.
+        Check if node is online by queue is available.
         """
         try:
-            return self.remote_query(vm_tasks.ping, timeout=1, default=False)
-        except WorkerNotFound:
+            self.get_remote_queue_name("vm")
+        except:
             return False
+        else:
+            return True
 
     online = property(get_online)
 
+    @node_available
     @method_cache(300)
     def get_num_cores(self):
         """Number of CPU threads available to the virtual machines.
@@ -106,6 +120,7 @@ class Node(TimeStampedModel):
             self.get_num_cores(invalidate_cache=True)
             self.get_ram_size(invalidate_cache=True)
 
+    @node_available
     @method_cache(300)
     def get_ram_size(self):
         """Bytes of total memory in the node.
@@ -115,6 +130,7 @@ class Node(TimeStampedModel):
     ram_size = property(get_ram_size)
 
     @property
+    @node_available
     def ram_size_with_overcommit(self):
         """Bytes of total memory including overcommit margin.
         """
@@ -198,6 +214,7 @@ class Node(TimeStampedModel):
             else:
                 return default
 
+    @node_available
     def get_monitor_info(self):
         try:
             handler = GraphiteHandler()
@@ -229,17 +246,21 @@ class Node(TimeStampedModel):
         return collected
 
     @property
+    @node_available
     def cpu_usage(self):
         return float(self.get_monitor_info()["cpu.usage"]) / 100
 
     @property
+    @node_available
     def ram_usage(self):
         return float(self.get_monitor_info()["memory.usage"]) / 100
 
     @property
+    @node_available
     def byte_ram_usage(self):
         return self.ram_usage * self.ram_size
 
+    @node_available
     def update_vm_states(self):
         """Update state of Instances running on this Node.
 
@@ -284,7 +305,8 @@ class Node(TimeStampedModel):
 
     @classmethod
     def get_state_count(cls, online, enabled):
-        return len([1 for i in cls.objects.filter(enabled=enabled).all()
+        return len([1 for i in
+                    cls.objects.filter(enabled=enabled).select_related('host')
                     if i.online == online])
 
     @permalink
