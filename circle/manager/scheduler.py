@@ -1,4 +1,8 @@
+from logging import getLogger
+
 from django.db.models import Sum
+
+logger = getLogger(__name__)
 
 
 class NotEnoughMemoryException(Exception):
@@ -24,20 +28,25 @@ def select_node(instance, nodes):
     '''
     # check required traits
     nodes = [n for n in nodes
-             if n.enabled and has_traits(instance.req_traits.all(), n)]
+             if n.enabled and n.online
+             and has_traits(instance.req_traits.all(), n)]
     if not nodes:
+        logger.warning('select_node: no usable node for %s', unicode(instance))
         raise TraitsUnsatisfiableException()
 
     # check required RAM
     nodes = [n for n in nodes if has_enough_ram(instance.ram_size, n)]
     if not nodes:
+        logger.warning('select_node: no enough RAM for %s', unicode(instance))
         raise NotEnoughMemoryException()
 
     # sort nodes first by processor usage, then priority
     nodes.sort(key=lambda n: n.priority, reverse=True)
     nodes.sort(key=free_cpu_time, reverse=True)
+    result = nodes[0]
 
-    return nodes[0]
+    logger.info('select_node: %s for %s', unicode(result), unicode(instance))
+    return result
 
 
 def has_traits(traits, node):
@@ -51,15 +60,20 @@ def has_enough_ram(ram_size, node):
     """True, if the node has enough memory to accomodate a guest requiring
        ram_size mebibytes of memory; otherwise, false.
     """
-    total = node.ram_size
-    used = (node.ram_usage / 100) * total
-    unused = total - used
+    try:
+        total = node.ram_size
+        used = (node.ram_usage / 100) * total
+        unused = total - used
 
-    overcommit = node.ram_size_with_overcommit
-    reserved = node.instance_set.aggregate(r=Sum('ram_size'))['r'] or 0
-    free = overcommit - reserved
+        overcommit = node.ram_size_with_overcommit
+        reserved = node.instance_set.aggregate(r=Sum('ram_size'))['r'] or 0
+        free = overcommit - reserved
 
-    return ram_size < unused and ram_size < free
+        return ram_size < unused and ram_size < free
+    except TypeError as e:
+        logger.warning('Got incorrect monitoring data for node %s. %s',
+                       unicode(node), unicode(e))
+        return False
 
 
 def free_cpu_time(node):
@@ -67,7 +81,12 @@ def free_cpu_time(node):
 
     Higher values indicate more idle time.
     """
-    activity = node.cpu_usage / 100
-    inactivity = 1 - activity
-    cores = node.num_cores
-    return cores * inactivity
+    try:
+        activity = node.cpu_usage / 100
+        inactivity = 1 - activity
+        cores = node.num_cores
+        return cores * inactivity
+    except TypeError as e:
+        logger.warning('Got incorrect monitoring data for node %s. %s',
+                       unicode(node), unicode(e))
+        return False  # monitoring data is incorrect
