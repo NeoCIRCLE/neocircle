@@ -193,6 +193,9 @@ class Disk(AclBase, TimeStampedModel):
         result = celery.AsyncResult(id=task)
         return result.info.get("percent")
 
+    def get_latest_activity_result(self):
+        return self.activity_log.latest("pk").result
+
     @property
     def is_deletable(self):
         """True if the associated file can be deleted.

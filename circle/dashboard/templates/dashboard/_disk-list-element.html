@@ -1,13 +1,13 @@
 {% load i18n %}
 {% load sizefieldtags %}
 
-<i class="{% if d.is_downloading %}icon-refresh icon-spin{% else %}icon-file{% if not d.ready %}" style="color: #d9534f;{% endif %}{% endif %}"></i> 
+<i class="{% if d.is_downloading %}icon-refresh icon-spin{% else %}icon-file{% if d.failed %}" style="color: #d9534f;{% endif %}{% endif %}"></i> 
 {{ d.name }} (#{{ d.id }}) - 
 {% if not d.is_downloading %}
-  {% if d.ready %}
-    {{ d.size|filesize }}
+  {% if not d.failed %}
+    {% if d.size %}{{ d.size|filesize }}{% endif %}
   {% else %}
-    <div class="label label-danger">failed</div>
+  <div class="label label-danger"{% if user.is_superuser %} title="{{ d.get_latest_activity_result }}"{% endif %}>failed</div>
   {% endif %}
 {% else %}<span class="disk-list-disk-percentage" data-disk-pk="{{ d.pk }}">{{ d.get_download_percentage }}</span>%{% endif %}
 <a href="{% url "dashboard.views.disk-remove" pk=d.pk %}?next={{ request.path }}" 
