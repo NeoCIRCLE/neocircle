@@ -378,7 +378,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
         # prepare parameters
         common_fields = ['name', 'description', 'num_cores', 'ram_size',
                          'max_ram_size', 'arch', 'priority', 'boot_menu',
-                         'raw_data', 'lease', 'access_method']
+                         'raw_data', 'lease', 'access_method', 'system']
         params = dict(template=template, owner=owner, pw=pwgen())
         params.update([(f, getattr(template, f)) for f in common_fields])
         params.update(kwargs)  # override defaults w/ user supplied values

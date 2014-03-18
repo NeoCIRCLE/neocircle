@@ -1497,7 +1497,7 @@
     "boot_menu": false, 
     "ram_size": 1024, 
     "modified": "2014-01-24T00:58:19.654Z", 
-    "system": "", 
+    "system": "bubuntu", 
     "priority": 20, 
     "access_method": "ssh", 
     "raw_data": "", 

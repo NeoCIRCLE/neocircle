@@ -187,6 +187,7 @@ class VmDetailTest(LoginMixin, TestCase):
         Vlan.objects.get(id=1).set_level(self.u1, 'user')
         response = c.post('/dashboard/vm/create/',
                           {'template': 1,
+                           'system': "bubi",
                            'cpu_priority': 1, 'cpu_count': 1,
                            'ram_size': 1000})
         self.assertEqual(response.status_code, 403)
@@ -199,6 +200,7 @@ class VmDetailTest(LoginMixin, TestCase):
         Vlan.objects.get(id=1).set_level(self.u1, 'user')
         response = c.post('/dashboard/vm/create/',
                           {'template': 1,
+                           'system': "bubi",
                            'cpu_priority': 1, 'cpu_count': 1,
                            'ram_size': 1000})
         self.assertEqual(response.status_code, 302)
@@ -208,6 +210,7 @@ class VmDetailTest(LoginMixin, TestCase):
         self.login(c, 'superuser')
         response = c.post('/dashboard/vm/create/',
                           {'template': 1,
+                           'system': "bubi",
                            'cpu_priority': 1, 'cpu_count': 1,
                            'ram_size': 1000})
         self.assertEqual(response.status_code, 302)
