@@ -393,3 +393,5 @@ if get_env_variable('DJANGO_SAML', 'FALSE') == 'TRUE':
             'DJANGO_SAML_ORG_ID_ATTRIBUTE')
 
 LOGIN_REDIRECT_URL = "/"
+
+LOCALE_PATHS = (join(SITE_ROOT, 'locale'), )
