@@ -9,9 +9,9 @@ from django.db import models
 from django.forms import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from firewall.fields import (MACAddressField, val_alfanum, val_reverse_domain,
-                             val_ipv6_template,
-                             val_domain, val_ipv4, val_ipv6, val_mx,
-                             ipv4_2_ipv6, IPNetworkField, IPAddressField)
+                             val_ipv6_template, val_domain, val_ipv4,
+                             val_ipv6, val_mx, convert_ipv4_to_ipv6,
+                             IPNetworkField, IPAddressField)
 from django.core.validators import MinValueValidator, MaxValueValidator
 import django.conf
 from django.db.models.signals import post_save, post_delete
@@ -473,7 +473,8 @@ class Host(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.id and self.ipv6 == "auto":
-            self.ipv6 = ipv4_2_ipv6(self.vlan.ipv6_template, self.ipv4)
+            self.ipv6 = convert_ipv4_to_ipv6(self.vlan.ipv6_template,
+                                             self.ipv4)
         self.full_clean()
 
         super(Host, self).save(*args, **kwargs)

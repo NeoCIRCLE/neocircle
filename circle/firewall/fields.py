@@ -261,11 +261,12 @@ def val_mx(value):
                                 "Should be: <priority>:<hostname>"))
 
 
-def ipv4_2_ipv6(ipv6_template, ipv4):
+def convert_ipv4_to_ipv6(ipv6_template, ipv4):
     """Convert IPv4 address string to IPv6 address string."""
+    ipv4 = str(ipv4)
     val_ipv4(ipv4)
     m = ipv4_re.match(ipv4)
-    return (ipv6_template % {'a': int(m.group(1)),
-                             'b': int(m.group(2)),
-                             'c': int(m.group(3)),
-                             'd': int(m.group(4))})
+    return IPAddress(ipv6_template % {'a': int(m.group(1)),
+                                      'b': int(m.group(2)),
+                                      'c': int(m.group(3)),
+                                      'd': int(m.group(4))})
