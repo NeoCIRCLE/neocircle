@@ -66,7 +66,8 @@ class NodeListTable(Table):
     )
 
     name = TemplateColumn(
-        template_name="dashboard/node-list/column-name.html"
+        template_name="dashboard/node-list/column-name.html",
+        order_by="normalized_name"
     )
 
     priority = Column(
