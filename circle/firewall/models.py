@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from itertools import islice, chain
+from itertools import islice, ifilter
 import logging
 from netaddr import IPSet, EUI
 
@@ -9,9 +9,9 @@ from django.db import models
 from django.forms import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from firewall.fields import (MACAddressField, val_alfanum, val_reverse_domain,
-                             val_ipv6_template,
-                             val_domain, val_ipv4, val_ipv6, val_mx,
-                             ipv4_2_ipv6, IPNetworkField, IPAddressField)
+                             val_ipv6_template, val_domain, val_ipv4,
+                             val_ipv6, val_mx, convert_ipv4_to_ipv6,
+                             IPNetworkField, IPAddressField)
 from django.core.validators import MinValueValidator, MaxValueValidator
 import django.conf
 from django.db.models.signals import post_save, post_delete
@@ -298,19 +298,12 @@ class Vlan(AclBase, models.Model):
     def prefix6(self):
         return self.network6.prefixlen
 
-    def get_next_address(self, used_v4):
-        try:
-            last_address = list(used_v4)[-1]
-        except IndexError:
-            return []
-        next_address = last_address + 1
-
-        if next_address in self.network4.iter_hosts():
-            logger.debug("Found unused IPv4 address %s after %s.",
-                         next_address, last_address)
-            return [next_address]
-        else:
-            return []
+    def get_random_addresses(self, used_v4, buffer_size=100, max_hosts=10000):
+        addresses = islice(self.network4.iter_hosts(), max_hosts)
+        unused_addresses = list(islice(
+            ifilter(lambda x: x not in used_v4, addresses), buffer_size))
+        random.shuffle(unused_addresses)
+        return unused_addresses
 
     def get_new_address(self):
         hosts = self.host_set
@@ -318,19 +311,16 @@ class Vlan(AclBase, models.Model):
         used_v6 = IPSet(hosts.exclude(ipv6__isnull=True)
                         .values_list('ipv6', flat=True))
 
-        for ipv4 in chain(self.get_next_address(used_v4),
-                          islice(self.network4.iter_hosts(), 10000)):
-            ipv4 = str(ipv4)
-            if ipv4 not in used_v4:
-                logger.debug("Found unused IPv4 address %s.", ipv4)
-                ipv6 = None
-                if self.network6 is not None:
-                    ipv6 = ipv4_2_ipv6(self.ipv6_template, ipv4)
-                    if ipv6 in used_v6:
-                        continue
-                    else:
-                        logger.debug("Found unused IPv6 address %s.", ipv6)
-                return {'ipv4': ipv4, 'ipv6': ipv6}
+        for ipv4 in self.get_random_addresses(used_v4):
+            logger.debug("Found unused IPv4 address %s.", ipv4)
+            ipv6 = None
+            if self.network6 is not None:
+                ipv6 = convert_ipv4_to_ipv6(self.ipv6_template, ipv4)
+                if ipv6 in used_v6:
+                    continue
+                else:
+                    logger.debug("Found unused IPv6 address %s.", ipv6)
+            return {'ipv4': ipv4, 'ipv6': ipv6}
         else:
             raise ValidationError(_("All IP addresses are already in use."))
 
@@ -473,7 +463,8 @@ class Host(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.id and self.ipv6 == "auto":
-            self.ipv6 = ipv4_2_ipv6(self.vlan.ipv6_template, self.ipv4)
+            self.ipv6 = convert_ipv4_to_ipv6(self.vlan.ipv6_template,
+                                             self.ipv4)
         self.full_clean()
 
         super(Host, self).save(*args, **kwargs)
