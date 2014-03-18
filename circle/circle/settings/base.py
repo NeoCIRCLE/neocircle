@@ -172,6 +172,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.messages.context_processors.messages',
     'django.core.context_processors.request',
     'dashboard.context_processors.notifications',
+    'dashboard.context_processors.extract_settings',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-loaders
@@ -394,3 +395,5 @@ if get_env_variable('DJANGO_SAML', 'FALSE') == 'TRUE':
             'DJANGO_SAML_ORG_ID_ATTRIBUTE')
 
 LOGIN_REDIRECT_URL = "/"
+
+COMPANY_NAME = "BME VIK 2014"
