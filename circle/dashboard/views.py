@@ -423,10 +423,8 @@ class VmDetailView(CheckedDetailView):
             self.object.name, self.object.pk, date
         )
 
-        # TODO csak egy maradhat!!
         self.object.save_as_template_async(name=new_name,
-                                           user=request.user,
-                                           owner=request.user)
+                                           user=request.user)
         messages.success(request, _("Saving instance as template!"))
         return redirect("%s#activity" % self.object.get_absolute_url())
 
