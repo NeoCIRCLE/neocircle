@@ -65,11 +65,12 @@
       {% block content %}
         <h1 class="alert alert-error">Please override "content" block.</h1>
       {% endblock %}
-      <hr />
-      <footer>
-        <p>&copy; Company 2013</p>
-      </footer>
     </div> <!-- /container -->
+    <footer>
+      <a href="#">{% trans "Legal notice" %}</a> | <a href="#">{% trans "Policy" %}</a> | <a href="#">{% trans "Help" %}</a> |
+      <a href="#">{% trans "Support" %}</a>
+      <span class="pull-right">&copy; BME IK 2014</span>
+    </footer>
   </body>
 {% block extra_js %}
 {% endblock %}
