@@ -107,6 +107,18 @@ class Disk(AclBase, TimeStampedModel):
 
             self.disk = disk
 
+    class DiskIsNotReady(Exception):
+
+        def __init__(self, disk, message=None):
+            if message is None:
+                message = ("The requested operation can'T be performed on "
+                           "disk '%s (%s)' because it has never been"
+                           "deployed." % (disk.name, disk.filename))
+
+            Exception.__init__(self, message)
+
+            self.disk = disk
+
     @property
     def ready(self):
         return self.activity_log.filter(activity_code__endswith="deploy",
@@ -306,6 +318,7 @@ class Disk(AclBase, TimeStampedModel):
         datastore = params.pop('datastore', DataStore.objects.get())
         disk = cls(filename=str(uuid.uuid4()), datastore=datastore, **params)
         disk.save()
+        logger.debug("Disk created: %s", params)
         with disk_activity(code_suffix="create",
                            user=user,
                            disk=disk):
@@ -366,8 +379,6 @@ class Disk(AclBase, TimeStampedModel):
         kwargs.setdefault('name', url.split('/')[-1])
         disk = Disk.create(type="iso", instance=instance, user=user,
                            size=None, **kwargs)
-        # TODO get proper datastore
-        disk.datastore = DataStore.objects.get()
         queue_name = disk.get_remote_queue_name('storage')
 
         def __on_abort(activity, error):
@@ -439,12 +450,16 @@ class Disk(AclBase, TimeStampedModel):
         """
         mapping = {
             'qcow2-snap': ('qcow2-norm', self.base),
+            'qcow2-norm': ('qcow2-norm', self),
         }
         if self.type not in mapping.keys():
             raise self.WrongDiskTypeError(self.type)
 
         if self.is_in_use:
             raise self.DiskInUseError(self)
+
+        if not self.ready:
+            raise self.DiskIsNotReady(self)
 
         # from this point on, the caller has to guarantee that the disk is not
         # going to be used until the operation is complete
@@ -455,7 +470,6 @@ class Disk(AclBase, TimeStampedModel):
                            name=self.name, size=self.size,
                            type=new_type)
 
-        disk.save()
         with disk_activity(code_suffix="save_as", disk=self,
                            user=user, task_uuid=task_uuid):
             with disk_activity(code_suffix="deploy", disk=disk,

@@ -1128,20 +1128,23 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
         with instance_activity(code_suffix="save_as_template", instance=self,
                                task_uuid=task_uuid, user=user) as act:
             # prepare parameters
-            kwargs.setdefault('name', name)
-            kwargs.setdefault('description', self.description)
-            kwargs.setdefault('parent', self.template)
-            kwargs.setdefault('num_cores', self.num_cores)
-            kwargs.setdefault('ram_size', self.ram_size)
-            kwargs.setdefault('max_ram_size', self.max_ram_size)
-            kwargs.setdefault('arch', self.arch)
-            kwargs.setdefault('priority', self.priority)
-            kwargs.setdefault('boot_menu', self.boot_menu)
-            kwargs.setdefault('raw_data', self.raw_data)
-            kwargs.setdefault('lease', self.lease)
-            kwargs.setdefault('access_method', self.access_method)
-            kwargs.setdefault('system', self.template.system
-                              if self.template else None)
+            params = {
+                'access_method': self.access_method,
+                'arch': self.arch,
+                'boot_menu': self.boot_menu,
+                'description': self.description,
+                'lease': self.lease,  # Can be problem in new VM
+                'max_ram_size': self.max_ram_size,
+                'name': name,
+                'num_cores': self.num_cores,
+                'owner': user,
+                'parent': self.template,  # Can be problem
+                'priority': self.priority,
+                'ram_size': self.ram_size,
+                'raw_data': self.raw_data,
+                'system': self.template.system if self.template else "",
+            }
+            params.update(kwargs)
 
             def __try_save_disk(disk):
                 try:
@@ -1150,7 +1153,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
                     return disk
 
             # create template and do additional setup
-            tmpl = InstanceTemplate(**kwargs)
+            tmpl = InstanceTemplate(**params)
             tmpl.full_clean()  # Avoiding database errors.
             tmpl.save()
             with act.sub_activity('saving_disks'):
