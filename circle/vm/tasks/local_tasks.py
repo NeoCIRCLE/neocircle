@@ -61,4 +61,4 @@ def migrate(instance, to_node,  user):
 
 @celery.task
 def flush(node, user):
-    node.migrate(task_uuid=flush.request.id, user=user)
+    node.flush(task_uuid=flush.request.id, user=user)

@@ -101,10 +101,11 @@ class Node(TimeStampedModel):
                 self.enabled = False
                 self.save()
 
-    def flush(self, user=None):
+    def flush(self, user=None, task_uuid=None):
         """Disable node and move all instances to other ones.
         """
-        with node_activity('flush', node=self, user=user) as act:
+        with node_activity('flush', node=self, user=user,
+                           task_uuid=task_uuid) as act:
             self.disable(user, act)
             for i in self.instance_set.all():
                 with act.sub_activity('migrate_instance_%d' % i.pk):
