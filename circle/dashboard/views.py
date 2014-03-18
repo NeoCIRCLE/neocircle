@@ -182,12 +182,14 @@ class VmDetailVncTokenView(CheckedDetailView):
         if not self.object.has_level(request.user, 'operator'):
             raise PermissionDenied()
         if self.object.node:
-            port = self.object.vnc_port
-            host = str(self.object.node.host.ipv4)
-            value = signing.dumps({'host': host,
-                                   'port': port},
-                                  key=getenv("PROXY_SECRET", 'asdasd')),
-            return HttpResponse('vnc/?d=%s' % value)
+            with instance_activity(code_suffix='console-accessed',
+                                   instance=self.object, user=request.user,
+                                   concurrency_check=False):
+                port = self.object.vnc_port
+                host = str(self.object.node.host.ipv4)
+                value = signing.dumps({'host': host, 'port': port},
+                                      key=getenv("PROXY_SECRET", 'asdasd')),
+                return HttpResponse('vnc/?d=%s' % value)
         else:
             raise Http404()
 
