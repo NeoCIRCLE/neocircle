@@ -1,6 +1,5 @@
 {% extends "dashboard/base.html" %}
 {% load i18n %}
-
 {% block content %}
   <div class="body-content">
     <div class="panel panel-default">
@@ -25,8 +24,8 @@
           <form action="" method="POST">
             {% csrf_token %}
 	    <a class="btn btn-default">{% trans "Back" %}</a>
-            <input type="hidden" name="next" value="{{ request.GET.next }}"/>
-	    <button class="btn btn-warning">{% trans "Yes, flush" %}</button>
+	    <input type="hidden" name="flush" value=""/>
+	    <button class="btn btn-warning">{% trans "Yes" %}</button>
           </form>
         </div>
       </div>

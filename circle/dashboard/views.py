@@ -497,14 +497,13 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
         return context
 
     def post(self, request, *args, **kwargs):
-        print request.POST
         if request.POST.get('new_name'):
             return self.__set_name(request)
         if request.POST.get('change_status') is not None:
             return self.__set_status(request)
         if request.POST.get('to_remove'):
             return self.__remove_trait(request)
-        if request.POST.get('flush'):
+        if request.POST.get('flush') is not None:
             return self.__flush(request)
         return redirect(reverse_lazy("dashboard.views.node-detail",
                                      kwargs={'pk': self.get_object().pk}))
