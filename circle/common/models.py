@@ -1,3 +1,4 @@
+from collections import deque
 from hashlib import sha224
 from logging import getLogger
 from time import time
@@ -139,3 +140,78 @@ def method_cache(memcached_seconds=60, instance_seconds=5):  # noqa
         return x
 
     return inner_cache
+
+
+class HumanSortField(CharField):
+    """
+    A CharField that monitors another field on the same model and sets itself
+    to a normalized value, which can be used for sensible lexicographycal
+    sorting for fields containing numerals. (Avoiding technically correct
+    orderings like [a1, a10, a2], which can be annoying for file or host
+    names.)
+
+    Apart from CharField's default arguments, an argument is requered:
+        - monitor   sets the base field, whose value is normalized.
+        - maximum_number_length    can also be provided, and defaults to 4. If
+        you have to sort values containing numbers greater than 9999, you
+        should increase it.
+
+    Code is based on carljm's django-model-utils.
+    """
+    def __init__(self, *args, **kwargs):
+        logger.debug('Initing HumanSortField(%s %s)',
+                     unicode(args), unicode(kwargs))
+        kwargs.setdefault('default', "")
+        self.maximum_number_length = kwargs.pop('maximum_number_length', 4)
+        monitor = kwargs.pop('monitor', None)
+        if not monitor:
+            raise TypeError(
+                '%s requires a "monitor" argument' % self.__class__.__name__)
+        self.monitor = monitor
+        kwargs['blank'] = True
+        super(HumanSortField, self).__init__(*args, **kwargs)
+
+    def get_monitored_value(self, instance):
+        return getattr(instance, self.monitor)
+
+    def get_normalized_value(self, val):
+
+        def partition(s, pred):
+            match, notmatch = deque(), deque()
+            while s and pred(s[0]):
+                match.append(s.popleft())
+            while s and not pred(s[0]):
+                notmatch.append(s.popleft())
+            return (''.join(match), ''.join(notmatch), s)
+
+        logger.debug('Normalizing value: %s', val)
+        norm = ""
+        val = deque(val)
+        while val:
+            numbers, letters, val = partition(val, lambda s: s[0].isdigit())
+            norm += numbers and numbers.rjust(self.maximum_number_length, '0')
+            norm += letters
+        logger.debug('Normalized value: %s', norm)
+        return norm
+
+    def pre_save(self, model_instance, add):
+        logger.debug('Pre-saving %s.%s. %s',
+                     model_instance, self.attname, add)
+        value = self.get_normalized_value(
+            self.get_monitored_value(model_instance))
+        setattr(model_instance, self.attname, value[:self.max_length])
+        return super(HumanSortField, self).pre_save(model_instance, add)
+
+# allow South to handle these fields smoothly
+try:
+    from south.modelsinspector import add_introspection_rules
+    add_introspection_rules(rules=[
+        (
+            (HumanSortField,),
+            [],
+            {'monitor': ('monitor', {}),
+             'maximum_number_length': ('maximum_number_length', {}), }
+        ),
+    ], patterns=['common\.models\.'])
+except ImportError:
+    pass
