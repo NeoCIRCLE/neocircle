@@ -12,7 +12,7 @@
             {%endblocktrans%}
           {% endif %}
         <div class="pull-right">
-          <form action="" method="POST">
+		<form action="{% url "dashboard.views.flush-node" pk=node.pk %}?next={{next}}" method="POST">
             {% csrf_token %}
             <button type="button" class="btn btn-default" data-dismiss="modal">{% trans "Cancel" %}</button> 
 	    <input type="hidden" name="flush" value=""/>
