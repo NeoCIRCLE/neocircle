@@ -710,3 +710,29 @@ class RenewViewTest(LoginMixin, TestCase):
         ct2 = Instance.objects.get(pk=12).activity_log.\
             filter(activity_code__endswith='renew').count()
         self.assertEquals(ct, ct2)
+
+
+class IndexViewTest(LoginMixin, TestCase):
+    fixtures = ['test-vm-fixture.json', 'node.json']
+
+    def setUp(self):
+        self.u1 = User.objects.create(username='user1')
+        self.u1.set_password('password')
+        self.u1.save()
+        self.us = User.objects.create(username='superuser', is_superuser=True)
+        self.us.set_password('password')
+        self.us.save()
+
+    def test_context_variables_as_user(self):
+        c = Client()
+        self.login(c, 'user1')
+        response = c.get("/dashboard/")
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse("nodes" in response.context)
+
+    def test_context_variables_as_superuser(self):
+        c = Client()
+        self.login(c, 'superuser')
+        response = c.get("/dashboard/")
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue("nodes" in response.context)
