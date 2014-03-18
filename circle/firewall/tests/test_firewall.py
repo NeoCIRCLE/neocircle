@@ -1,3 +1,5 @@
+from netaddr import IPSet
+
 from django.test import TestCase
 from django.contrib.auth.models import User
 from ..admin import HostAdmin
@@ -75,13 +77,9 @@ class GetNewAddressTestCase(TestCase):
              vlan=self.vlan, owner=self.u1).save()
         self.assertRaises(ValidationError, self.vlan.get_new_address)
 
-    def test_new_addr_last(self):
-        self.assertEqual(self.vlan.get_new_address()['ipv4'], '10.0.0.6')
-
-    def test_new_addr_w_overflow(self):
-        Host(hostname='h-6', mac='01:02:03:04:05:06',
-             ipv4='10.0.0.6', vlan=self.vlan, owner=self.u1).save()
-        self.assertEqual(self.vlan.get_new_address()['ipv4'], '10.0.0.2')
+    def test_new_addr(self):
+        used_v4 = IPSet(self.vlan.host_set.values_list('ipv4', flat=True))
+        assert self.vlan.get_new_address()['ipv4'] not in used_v4
 
 
 class HostGetHostnameTestCase(TestCase):
