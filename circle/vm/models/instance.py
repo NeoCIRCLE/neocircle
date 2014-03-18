@@ -1141,7 +1141,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
                 'priority': self.priority,
                 'ram_size': self.ram_size,
                 'raw_data': self.raw_data,
-                'system': self.template.system if self.template else "",
+                'system': self.system,
             }
             params.update(kwargs)
 
