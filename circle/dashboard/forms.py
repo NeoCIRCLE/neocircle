@@ -445,6 +445,7 @@ class NodeForm(forms.ModelForm):
 class TemplateForm(forms.ModelForm):
     networks = forms.ModelMultipleChoiceField(
         queryset=VLANS, required=False)
+    system = forms.CharField(widget=forms.TextInput)
 
     def __init__(self, *args, **kwargs):
         parent = kwargs.pop("parent", None)
