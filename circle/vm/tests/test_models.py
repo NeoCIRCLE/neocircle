@@ -4,7 +4,7 @@ from django.utils.translation import ugettext_lazy as _
 from mock import Mock, MagicMock, patch
 
 from ..models import (
-    Lease, Node, Interface, Instance, InstanceTemplate,
+    Lease, Node, Interface, Instance, InstanceTemplate, InstanceActivity,
 )
 from ..models.instance import find_unused_port, ActivityInProgressError
 
@@ -118,3 +118,50 @@ class NodeTestCase(TestCase):
         node.STATES = Node.STATES
         self.assertEqual(Node.get_state(node), "ONLINE")
         assert isinstance(Node.get_status_display(node), _("").__class__)
+
+
+class InstanceActivityTestCase(TestCase):
+
+    def test_create_concurrency_check(self):
+        instance = MagicMock(spec=Instance)
+        instance.activity_log.filter.return_value.exists.return_value = True
+
+        with self.assertRaises(ActivityInProgressError):
+            InstanceActivity.create("test", instance, concurrency_check=True)
+
+    def test_create_no_concurrency_check(self):
+        instance = MagicMock(spec=Instance)
+        instance.activity_log.filter.return_value.exists.return_value = True
+
+        original_method = InstanceActivity.create.__func__
+
+        with patch('vm.models.activity.InstanceActivity') as ia, \
+                patch('vm.models.activity.timezone.now'):
+            # ia.__init__ = MagicMock()  raises AttributeError
+
+            original_method(ia, "test", instance, concurrency_check=False)
+            ia.save.assert_called()
+
+            # ia.__init__.assert_called_with(activity_code='vm.Instance.test',
+            #                                instance=instance, parent=None,
+            #                                resultant_state=None, started=now,
+            #                                task_uuid=None, user=None)
+
+    def test_create_sub_concurrency_check(self):
+        iaobj = MagicMock(spec=InstanceActivity)
+        iaobj.children.filter.return_value.exists.return_value = True
+
+        with self.assertRaises(ActivityInProgressError):
+            InstanceActivity.create_sub(iaobj, "test", concurrency_check=True)
+
+    def test_create_sub_no_concurrency_check(self):
+        iaobj = MagicMock(spec=InstanceActivity)
+        iaobj.activity_code = 'test'
+        iaobj.children.filter.return_value.exists.return_value = True
+
+        original_method = InstanceActivity.create_sub
+
+        with patch('vm.models.activity.InstanceActivity') as ia, \
+                patch('vm.models.activity.timezone.now'):
+            original_method(iaobj, "test", concurrency_check=False)
+            ia.save.assert_called()

@@ -46,10 +46,11 @@ class InstanceActivity(ActivityModel):
         return self.activity_code.split('.')[-1].replace('_', ' ').capitalize()
 
     @classmethod
-    def create(cls, code_suffix, instance, task_uuid=None, user=None):
+    def create(cls, code_suffix, instance, task_uuid=None, user=None,
+               concurrency_check=True):
         # Check for concurrent activities
         active_activities = instance.activity_log.filter(finished__isnull=True)
-        if active_activities.exists():
+        if concurrency_check and active_activities.exists():
             raise ActivityInProgressError(active_activities[0])
 
         act = cls(activity_code='vm.Instance.' + code_suffix,
@@ -58,10 +59,10 @@ class InstanceActivity(ActivityModel):
         act.save()
         return act
 
-    def create_sub(self, code_suffix, task_uuid=None):
+    def create_sub(self, code_suffix, task_uuid=None, concurrency_check=True):
         # Check for concurrent activities
         active_children = self.children.filter(finished__isnull=True)
-        if active_children.exists():
+        if concurrency_check and active_children.exists():
             raise ActivityInProgressError(active_children[0])
 
         act = InstanceActivity(
@@ -73,10 +74,10 @@ class InstanceActivity(ActivityModel):
 
     @contextmanager
     def sub_activity(self, code_suffix, on_abort=None, on_commit=None,
-                     task_uuid=None):
+                     task_uuid=None, concurrency_check=True):
         """Create a transactional context for a nested instance activity.
         """
-        act = self.create_sub(code_suffix, task_uuid)
+        act = self.create_sub(code_suffix, task_uuid, concurrency_check)
         return activitycontextimpl(act, on_abort=on_abort, on_commit=on_commit)
 
     def save(self, *args, **kwargs):
@@ -87,10 +88,11 @@ class InstanceActivity(ActivityModel):
 
 @contextmanager
 def instance_activity(code_suffix, instance, on_abort=None, on_commit=None,
-                      task_uuid=None, user=None):
+                      task_uuid=None, user=None, concurrency_check=True):
     """Create a transactional context for an instance activity.
     """
-    act = InstanceActivity.create(code_suffix, instance, task_uuid, user)
+    act = InstanceActivity.create(code_suffix, instance, task_uuid, user,
+                                  concurrency_check)
     return activitycontextimpl(act, on_abort=on_abort, on_commit=on_commit)
 
 
