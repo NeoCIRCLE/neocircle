@@ -42,6 +42,23 @@
   }
 },
 {
+   "pk": 1,
+   "model": "storage.diskactivity",
+   "fields":{
+      "activity_code": "storage.Disk.create",
+      "succeeded": true,
+      "parent": null,
+      "created": "2014-03-18T15:44:37.671Z",
+      "started": "2014-03-18T15:44:37.671Z",
+      "finished": "2014-03-18T15:44:37.677Z",
+      "modified": "2014-03-18T15:44:37.679Z",
+      "task_uuid": null,
+      "user": 1,
+      "disk": 1,
+      "result":null
+   }
+},
+{
   "pk": 1, 
   "model": "auth.permission", 
   "fields": {
