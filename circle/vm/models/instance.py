@@ -249,7 +249,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
             if message is None:
                 message = ("The instance's current state (%s) is "
                            "inappropriate for the invoked operation."
-                           % instance.state)
+                           % instance.status)
 
             Exception.__init__(self, message)
 
@@ -265,7 +265,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
 
     @property
     def is_running(self):
-        return self.state == 'RUNNING'
+        return self.status == 'RUNNING'
 
     @property
     def state(self):
@@ -950,7 +950,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
     def sleep(self, user=None, task_uuid=None, timeout=60):
         """Suspend virtual machine with memory dump.
         """
-        if self.state not in ['RUNNING']:
+        if self.status not in ['RUNNING']:
             raise self.WrongStateError(self)
 
         def __on_abort(activity, error):
@@ -988,7 +988,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
                                              queue="localhost.man")
 
     def wake_up(self, user=None, task_uuid=None, timeout=60):
-        if self.state not in ['SUSPENDED']:
+        if self.status not in ['SUSPENDED']:
             raise self.WrongStateError(self)
 
         def __on_abort(activity, error):
