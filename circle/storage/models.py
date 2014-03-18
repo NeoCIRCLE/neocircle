@@ -123,8 +123,18 @@ class Disk(AclBase, TimeStampedModel):
 
     @property
     def ready(self):
+        """ Returns True if the disk is physically ready on the storage.
+
+        It needs at least 1 successfull deploy action.
+        """
         return self.activity_log.filter(activity_code__endswith="deploy",
-                                        succeeded__isnull=False)
+                                        succeeded=True)
+
+    @property
+    def failed(self):
+        """ Returns True if the last activity on the disk is failed.
+        """
+        return not self.activity_log.all().order_by('-id')[0].succeeded
 
     @property
     def path(self):
