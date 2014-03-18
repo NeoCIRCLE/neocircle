@@ -1,18 +1,17 @@
+{% load i18n %}
 <div class="panel panel-default">
   <div class="panel-heading">
-   <div class="pull-right toolbar">
-      <span class="btn btn-default btn-xs infobtn" title="Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui.  "><i class="icon-info-sign"></i></span>
-</div> 
-<h3 class="no-margin"><i class="icon-group"></i> Groups
-</h3>
- 
-</div>
+    <div class="pull-right toolbar">
+      <span class="btn btn-default btn-xs infobtn" title="{% trans "Help" %}"><i class="icon-info-sign"></i></span>
+    </div> 
+    <h3 class="no-margin"><i class="icon-group"></i> Groups</h3>
+  </div>
   <div class="list-group" id="vm-list-view">
-     {% for i in groups %}
-     <a href="{% url "dashboard.views.group-detail" pk=i.pk %}" class="list-group-item real-link">
-<i class="icon-group"></i> {{ i.name }}
-</a>
-   {% endfor %}
+    {% for i in groups %}
+      <a href="{% url "dashboard.views.group-detail" pk=i.pk %}" class="list-group-item real-link">
+        <i class="icon-group"></i> {{ i.name }}
+      </a>
+    {% endfor %}
     <div href="#" class="list-group-item list-group-footer text-right">
       <div class="row">
         <div class="col-sm-6 col-xs-6 input-group input-group-sm">

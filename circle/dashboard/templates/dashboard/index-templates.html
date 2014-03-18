@@ -1,7 +1,7 @@
 {% load i18n %}
 <div class="panel panel-default">
   <div class="panel-heading">
-    <span class="btn btn-default btn-xs infobtn pull-right" title="Halp">
+    <span class="btn btn-default btn-xs infobtn pull-right" title="{% trans "Help" %}">
       <i class="icon-info-sign"></i>
     </span>
     <h3 class="no-margin"><i class="icon-puzzle-piece"></i> Templates
@@ -16,8 +16,8 @@
     {% endfor %}
     <div href="#" class="list-group-item list-group-footer text-right">
       <p>
-        <a href="{% url "dashboard.views.template-list" %}" class="btn btn-primary btn-xs"><i class="icon-chevron-sign-right"></i> show all  </a>
-        <a href="{% url "dashboard.views.template-create" %}" class="btn btn-success btn-xs"><i class="icon-plus-sign"></i> new </a>
+        <a href="{% url "dashboard.views.template-list" %}" class="btn btn-primary btn-xs"><i class="icon-chevron-sign-right"></i> {% trans "show all" %}</a>
+        <a href="{% url "dashboard.views.template-create" %}" class="btn btn-success btn-xs"><i class="icon-plus-sign"></i> {% trans "new" %}</a>
       </p>
     </div>
   </div>

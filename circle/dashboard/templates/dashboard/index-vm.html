@@ -6,7 +6,7 @@
         <a href="#index-graph-view" data-index-box="vm" class="btn btn-default btn-xs"><i class="icon-dashboard"></i></a>
         <a href="#index-list-view" data-index-box="vm" class="btn btn-default btn-xs disabled"><i class="icon-list"></i></a>
       </div>
-      <span class="btn btn-default btn-xs infobtn" title="Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui.  "><i class="icon-info-sign"></i></span>
+      <span class="btn btn-default btn-xs infobtn" title="{% trans "Help" %}"><i class="icon-info-sign"></i></span>
     </div>
     <h3 class="no-margin">
       <i class="icon-desktop"></i> Virtual machines
@@ -30,7 +30,7 @@
     <div href="#" class="list-group-item list-group-footer">
       <div class="row">
         <div class="col-sm-6 col-xs-6 input-group input-group-sm">
-          <input id="dashboard-vm-search-input" type="text" class="form-control" placeholder="Search..." />
+          <input id="dashboard-vm-search-input" type="text" class="form-control" placeholder="{% trans "Search..." %}" />
           <div class="input-group-btn">
             <button type="submit" class="form-control btn btn-primary" title="search"><i class="icon-search"></i></button>
           </div>
@@ -38,10 +38,10 @@
         <div class="col-sm-6 text-right">
           {% if more_instances > 0 %}
           <a class="btn btn-primary btn-xs" href="{% url "dashboard.views.vm-list" %}">
-            <i class="icon-chevron-sign-right"></i> <strong>{{ more_instances }}</strong>  more  
+            <i class="icon-chevron-sign-right"></i> {% blocktrans with more_instances=more_instances %}<strong>{{ more_instances }}</strong>  more{% endblocktrans %}
           </a>
           {% endif %}
-          <a class="btn btn-success btn-xs vm-create" href="{% url "dashboard.views.vm-create" %}"><i class="icon-plus-sign"></i> new </a>
+          <a class="btn btn-success btn-xs vm-create" href="{% url "dashboard.views.vm-create" %}"><i class="icon-plus-sign"></i> {% trans "new" %}</a>
         </div>
       </div>
     </div>
