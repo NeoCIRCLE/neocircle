@@ -93,7 +93,6 @@ class VirtualMachineDescModel(BaseResourceConfigModel):
                                              "for hosting the VM."),
                                  verbose_name=_("required traits"))
     system = TextField(verbose_name=_('operating system'),
-                       blank=True,
                        help_text=(_('Name of operating system in '
                                     'format like "%s".') %
                                   'Ubuntu 12.04 LTS Desktop amd64'))
