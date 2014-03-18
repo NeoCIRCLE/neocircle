@@ -108,6 +108,8 @@ class Disk(AclBase, TimeStampedModel):
             self.disk = disk
 
     class DiskIsNotReady(Exception):
+        """ Exception for operations that need a deployed disk.
+        """
 
         def __init__(self, disk, message=None):
             if message is None:
