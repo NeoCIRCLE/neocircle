@@ -278,6 +278,7 @@ class VmDetailView(CheckedDetailView):
         resources = {
             'num_cores': request.POST.get('cpu-count'),
             'ram_size': request.POST.get('ram-size'),
+            'max_ram_size': request.POST.get('ram-size'),  # TODO: max_ram
             'priority': request.POST.get('cpu-priority')
         }
         Instance.objects.filter(pk=self.object.pk).update(**resources)
@@ -422,7 +423,6 @@ class VmDetailView(CheckedDetailView):
         new_name = "Saved from %s (#%d) at %s" % (
             self.object.name, self.object.pk, date
         )
-
         self.object.save_as_template_async(name=new_name,
                                            user=request.user)
         messages.success(request, _("Saving instance as template!"))
@@ -776,7 +776,7 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
             tags = post.pop("tags")
             post['pw'] = User.objects.make_random_password()
             post.pop("parent")
-
+            post['max_ram_size'] = post['ram_size']
             inst = Instance.create(params=post, disks=[], networks=networks,
                                    tags=tags, req_traits=req_traits)
             messages.success(request, _("Your disk has been created, "
