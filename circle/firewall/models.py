@@ -17,6 +17,7 @@ import django.conf
 from django.db.models.signals import post_save, post_delete
 import random
 
+from common.models import HumanSortField
 from firewall.tasks.local_tasks import reloadtask
 from acl.models import AclBase
 logger = logging.getLogger(__name__)
@@ -387,6 +388,7 @@ class Host(models.Model):
                                             'the host, the first part of '
                                             'the FQDN.'),
                                 validators=[val_alfanum])
+    normalized_hostname = HumanSortField(monitor='hostname', max_length=80)
     reverse = models.CharField(max_length=40, validators=[val_domain],
                                verbose_name=_('reverse'),
                                help_text=_('The fully qualified reverse '
@@ -440,6 +442,7 @@ class Host(models.Model):
 
     class Meta(object):
         unique_together = ('hostname', 'vlan')
+        ordering = ('normalized_hostname', 'vlan')
 
     def __unicode__(self):
         return self.hostname

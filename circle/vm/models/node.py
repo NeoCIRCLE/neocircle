@@ -11,7 +11,7 @@ from celery.exceptions import TimeoutError
 from model_utils.models import TimeStampedModel
 from taggit.managers import TaggableManager
 
-from common.models import method_cache, WorkerNotFound
+from common.models import method_cache, WorkerNotFound, HumanSortField
 from firewall.models import Host
 from ..tasks import vm_tasks, local_tasks
 from .common import Trait
@@ -43,6 +43,7 @@ class Node(TimeStampedModel):
     name = CharField(max_length=50, unique=True,
                      verbose_name=_('name'),
                      help_text=_('Human readable name of node.'))
+    normalized_name = HumanSortField(monitor='name', max_length=100)
     priority = IntegerField(verbose_name=_('priority'),
                             help_text=_('Node usage priority.'))
     host = ForeignKey(Host, verbose_name=_('host'),
@@ -62,6 +63,7 @@ class Node(TimeStampedModel):
         app_label = 'vm'
         db_table = 'vm_node'
         permissions = ()
+        ordering = ('-enabled', 'normalized_name')
 
     def __unicode__(self):
         return self.name
