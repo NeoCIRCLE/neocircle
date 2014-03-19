@@ -113,8 +113,8 @@ class IndexView(LoginRequiredMixin, TemplateView):
         if user.is_superuser:
             nodes = Node.objects.all()
             context.update({
-                'nodes': nodes[:10],
-                'more_nodes': nodes.count() - len(nodes[:10]),
+                'nodes': nodes[:5],
+                'more_nodes': nodes.count() - len(nodes[:5]),
                 'sum_node_num': nodes.count(),
                 'node_num': {
                     'running': Node.get_state_count(True, True),
@@ -127,8 +127,8 @@ class IndexView(LoginRequiredMixin, TemplateView):
         # groups
         groups = Group.objects.all()
         context.update({
-            'groups': groups[:10],
-            'more_groups': groups.count() - len(groups[:10]),
+            'groups': groups[:5],
+            'more_groups': groups.count() - len(groups[:5]),
         })
 
         # template
