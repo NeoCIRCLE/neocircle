@@ -135,7 +135,8 @@ class Disk(AclBase, TimeStampedModel):
     def failed(self):
         """ Returns True if the last activity on the disk is failed.
         """
-        return not self.activity_log.all().order_by('-id')[0].succeeded
+        result = self.activity_log.all().order_by('-id')[0].succeeded
+        return not (result is None) and not result
 
     @property
     def path(self):
