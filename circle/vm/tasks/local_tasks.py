@@ -57,3 +57,8 @@ def reboot(instance, user):
 @celery.task
 def migrate(instance, to_node,  user):
     instance.migrate(to_node, task_uuid=migrate.request.id, user=user)
+
+
+@celery.task
+def flush(node, user):
+    node.flush(task_uuid=flush.request.id, user=user)

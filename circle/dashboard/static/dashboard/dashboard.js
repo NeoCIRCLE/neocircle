@@ -137,6 +137,21 @@ $(function () {
     return false;
   });
 
+  /* for Node flush buttons */
+  $('.node-flush').click(function() {
+    var node_pk = $(this).data('node-pk');
+    var postto = $(this).attr('href');
+    var dir = window.location.pathname.indexOf('list') == -1;
+    addModalConfirmation(function(){}, 
+      { 'url': postto, 
+        'data': [],
+        'pk': node_pk,
+        'type': "node",
+        'redirect': dir});
+
+    return false;
+  });
+
   /* for Group removes buttons */
   $('.group-delete').click(function() {
     var group_pk = $(this).data('group-pk');

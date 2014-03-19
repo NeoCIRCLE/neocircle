@@ -5,12 +5,12 @@ from .views import (
     AclUpdateView, DiskAddView, FavouriteView, GroupAclUpdateView, GroupDelete,
     GroupDetailView, GroupList, GroupUserDelete, IndexView, LeaseCreate,
     LeaseDelete, LeaseDetail, MyPreferencesView, NodeAddTraitView, NodeCreate,
-    NodeDelete, NodeDetailView, NodeGraphView, NodeList, NodeStatus,
-    NotificationView, PortDelete, TemplateAclUpdateView, TemplateCreate,
-    TemplateDelete, TemplateDetail, TemplateList, TransferOwnershipConfirmView,
-    TransferOwnershipView, vm_activity, VmCreate, VmDelete, VmDetailView,
-    VmDetailVncTokenView, VmGraphView, VmList, VmMassDelete, VmMigrateView,
-    VmRenewView,
+    NodeDelete, NodeDetailView, NodeFlushView, NodeGraphView, NodeList,
+    NodeStatus, NotificationView, PortDelete, TemplateAclUpdateView,
+    TemplateCreate, TemplateDelete, TemplateDetail, TemplateList,
+    TransferOwnershipConfirmView, TransferOwnershipView, vm_activity, VmCreate,
+    VmDelete, VmDetailView, VmDetailVncTokenView, VmGraphView, VmList,
+    VmMassDelete, VmMigrateView, VmRenewView,
 )
 
 urlpatterns = patterns(
@@ -68,6 +68,8 @@ urlpatterns = patterns(
         name="dashboard.views.delete-node"),
     url(r'^node/status/(?P<pk>\d+)/$', NodeStatus.as_view(),
         name="dashboard.views.status-node"),
+    url(r'^node/flush/(?P<pk>\d+)/$', NodeFlushView.as_view(),
+        name="dashboard.views.flush-node"),
     url(r'^node/create/$', NodeCreate.as_view(),
         name='dashboard.views.node-create'),
 

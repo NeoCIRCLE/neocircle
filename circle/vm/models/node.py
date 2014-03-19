@@ -13,7 +13,7 @@ from taggit.managers import TaggableManager
 
 from common.models import method_cache, WorkerNotFound
 from firewall.models import Host
-from ..tasks import vm_tasks
+from ..tasks import vm_tasks, local_tasks
 from .common import Trait
 
 from .activity import node_activity, NodeActivity
@@ -106,12 +106,32 @@ class Node(TimeStampedModel):
     def get_status_display(self):
         return self.STATES[self.enabled][self.online][1]
 
-    def disable(self, user=None):
+    def disable(self, user=None, base_activity=None):
         ''' Disable the node.'''
         if self.enabled:
-            with node_activity(code_suffix='disable', node=self, user=user):
+            if base_activity:
+                act_ctx = base_activity.sub_activity('disable')
+            else:
+                act_ctx = node_activity('disable', node=self, user=user)
+            with act_ctx:
                 self.enabled = False
                 self.save()
+
+    def flush(self, user=None, task_uuid=None):
+        """Disable node and move all instances to other ones.
+        """
+        with node_activity('flush', node=self, user=user,
+                           task_uuid=task_uuid) as act:
+            self.disable(user, act)
+            for i in self.instance_set.all():
+                with act.sub_activity('migrate_instance_%d' % i.pk):
+                    i.migrate()
+
+    def flush_async(self, user=None):
+        """Execute flush asynchronously.
+        """
+        return local_tasks.flush.apply_async(args=[self, user],
+                                             queue="localhost.man")
 
     def enable(self, user=None):
         ''' Enable the node. '''
