@@ -181,18 +181,19 @@ class Disk(AclBase, TimeStampedModel):
         }[self.type]
 
     def is_downloading(self):
-        return self.activity_log.filter(
-            activity_code__endswith="downloading_disk",
-            succeeded__isnull=True)
+        return self.size is None and not self.failed
 
     def get_download_percentage(self):
         if not self.is_downloading():
             return None
-        task = self.activity_log.filter(
-            activity_code__endswith="deploy",
-            succeeded__isnull=True)[0].task_uuid
-        result = celery.AsyncResult(id=task)
-        return result.info.get("percent")
+        try:
+            task = self.activity_log.filter(
+                activity_code__endswith="deploy",
+                succeeded__isnull=True)[0].task_uuid
+            result = celery.AsyncResult(id=task)
+            return result.info.get("percent")
+        except:
+            return 0
 
     def get_latest_activity_result(self):
         return self.activity_log.latest("pk").result
