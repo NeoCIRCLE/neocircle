@@ -736,3 +736,14 @@ class IndexViewTest(LoginMixin, TestCase):
         response = c.get("/dashboard/")
         self.assertEqual(response.status_code, 200)
         self.assertTrue("nodes" in response.context)
+
+    def test_context_processor_notifications(self):
+        c = Client()
+        self.login(c, "user1")
+
+        response = c.get("/dashboard/")
+        self.assertEqual(response.context['NEW_NOTIFICATIONS_COUNT'], 0)
+
+        self.u1.profile.notify("urgent", "dashboard/test_message.txt", )
+        response = c.get("/dashboard/")
+        self.assertEqual(response.context['NEW_NOTIFICATIONS_COUNT'], 1)
