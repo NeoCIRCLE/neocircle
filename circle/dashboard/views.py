@@ -105,10 +105,6 @@ class IndexView(LoginRequiredMixin, TemplateView):
             'stopped_vm_num': stopped.count()
         })
 
-        # notifications
-        context['new_notifications'] = user.notification_set.filter(
-            status="new").count()
-
         # nodes
         if user.is_superuser:
             nodes = Node.objects.all()
