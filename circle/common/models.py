@@ -174,22 +174,35 @@ class HumanSortField(CharField):
     def get_monitored_value(self, instance):
         return getattr(instance, self.monitor)
 
+    @staticmethod
+    def _partition(s, pred):
+        """Partition a deque of chars to a tuple of a
+           - string of the longest prefix matching pred,
+           - string of the longest prefix after the former one not matching,
+           - deque of the remaining characters.
+
+           >>> HumanSortField._partition(deque("1234abc567"),
+           ...                           lambda s: s.isdigit())
+           ('1234', 'abc', deque(['5', '6', '7']))
+           >>> HumanSortField._partition(deque("12ab"), lambda s: s.isalpha())
+           ('', '12', deque(['a', 'b']))
+        """
+        match, notmatch = deque(), deque()
+        while s and pred(s[0]):
+            match.append(s.popleft())
+        while s and not pred(s[0]):
+            notmatch.append(s.popleft())
+        return (''.join(match), ''.join(notmatch), s)
+
     def get_normalized_value(self, val):
-
-        def partition(s, pred):
-            match, notmatch = deque(), deque()
-            while s and pred(s[0]):
-                match.append(s.popleft())
-            while s and not pred(s[0]):
-                notmatch.append(s.popleft())
-            return (''.join(match), ''.join(notmatch), s)
-
         logger.debug('Normalizing value: %s', val)
         norm = ""
         val = deque(val)
         while val:
-            numbers, letters, val = partition(val, lambda s: s[0].isdigit())
-            norm += numbers and numbers.rjust(self.maximum_number_length, '0')
+            numbers, letters, val = self._partition(val,
+                                                    lambda s: s[0].isdigit())
+            if numbers:
+                norm += numbers.rjust(self.maximum_number_length, '0')
             norm += letters
         logger.debug('Normalized value: %s', norm)
         return norm
