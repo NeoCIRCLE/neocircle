@@ -2146,3 +2146,18 @@ class DiskRemoveView(DeleteView):
         else:
             messages.success(request, success_message)
             return HttpResponseRedirect("%s#resources" % success_url)
+
+
+@require_GET
+def get_disk_download_status(request, pk):
+    disk = Disk.objects.get(pk=pk)
+    if not disk.has_level(request.user, 'owner'):
+        raise PermissionDenied()
+
+    return HttpResponse(
+        json.dumps({
+            'percentage': disk.get_download_percentage(),
+            'failed': disk.failed
+        }),
+        content_type="application/json",
+    )

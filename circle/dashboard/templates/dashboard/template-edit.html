@@ -107,10 +107,14 @@
     font-weight: bold;
   }
 </style>
-<script>
-  $(function() {
-    $("#hint_id_num_cores, #hint_id_priority, #hint_id_ram_size").hide();
-  });
-</script>
+{% endblock %}
 
+{% block extra_js %}
+  <script>
+    $(function() {
+      $("#hint_id_num_cores, #hint_id_priority, #hint_id_ram_size").hide();
+    });
+  </script>
+
+  <script src="{{ STATIC_URL }}dashboard/disk-list.js"></script>
 {% endblock %}
