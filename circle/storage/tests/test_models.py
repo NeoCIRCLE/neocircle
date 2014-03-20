@@ -2,8 +2,10 @@ from datetime import timedelta
 
 from django.test import TestCase
 from django.utils import timezone
+from mock import MagicMock
 
 from ..models import Disk, DataStore
+
 
 old = timezone.now() - timedelta(days=2)
 new = timezone.now() - timedelta(hours=2)
@@ -46,3 +48,36 @@ class DiskTestCase(TestCase):
         self._disk(base=d, destroyed=new)
         self._disk(base=d)
         assert not d.is_deletable
+
+    def test_save_as_disk_in_use_error(self):
+        class MockException(Exception):
+            pass
+
+        d = MagicMock(spec=Disk)
+        d.DiskInUseError = MockException
+        d.type = "qcow2-norm"
+        d.is_in_use = True
+        with self.assertRaises(MockException):
+            Disk.save_as(d)
+
+    def test_save_as_wrong_type(self):
+        class MockException(Exception):
+            pass
+
+        d = MagicMock(spec=Disk)
+        d.WrongDiskTypeError = MockException
+        d.type = "wrong"
+        with self.assertRaises(MockException):
+            Disk.save_as(d)
+
+    def test_save_as_disk_not_ready(self):
+        class MockException(Exception):
+            pass
+
+        d = MagicMock(spec=Disk)
+        d.DiskIsNotReady = MockException
+        d.type = "qcow2-norm"
+        d.is_in_use = False
+        d.ready = False
+        with self.assertRaises(MockException):
+            Disk.save_as(d)
