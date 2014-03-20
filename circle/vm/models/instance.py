@@ -265,6 +265,8 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
 
     @property
     def is_running(self):
+        """Check if VM is in running state.
+        """
         return self.status == 'RUNNING'
 
     @property
@@ -306,6 +308,8 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
 
     @classmethod
     def create(cls, params, disks, networks, req_traits, tags):
+        """ Create new Instance object.
+        """
         # create instance and do additional setup
         inst = cls(**params)
 
@@ -397,7 +401,11 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
             self._do_renew(which='delete')
         super(Instance, self).clean(*args, **kwargs)
 
-    def manual_state_change(self, new_state, reason=None, user=None):
+    def manual_state_change(self, new_state="NOSTATE", reason=None, user=None):
+        """ Manually change state of an Instance.
+
+        Can be used to recover VM after administrator fixed problems.
+        """
         # TODO cancel concurrent activity (if exists)
         act = InstanceActivity.create(code_suffix='manual_state_change',
                                       instance=self, user=user)
@@ -535,6 +543,8 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
             proto=proto)
 
     def get_connect_command(self, use_ipv6=False):
+        """Returns a formatted connect string.
+        """
         try:
             port = self.get_connect_port(use_ipv6=use_ipv6)
             host = self.get_connect_host(use_ipv6=use_ipv6)
@@ -567,6 +577,8 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
             return
 
     def get_vm_desc(self):
+        """Serialize Instance object to vmdriver.
+        """
         return {
             'name': self.vm_name,
             'vcpu': self.num_cores,
@@ -988,6 +1000,10 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
                                              queue="localhost.man")
 
     def wake_up(self, user=None, task_uuid=None, timeout=60):
+        """ Wake up Virtual Machine from SUSPENDED state.
+
+        Power on Virtual Machine and load its memory from dump.
+        """
         if self.status not in ['SUSPENDED']:
             raise self.WrongStateError(self)
 
@@ -1119,11 +1135,18 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
                     net.deploy()
 
     def save_as_template_async(self, name, user=None, **kwargs):
+        """ Save as template asynchronusly.
+        """
         return local_tasks.save_as_template.apply_async(
             args=[self, name, user, kwargs], queue="localhost.man")
 
     def save_as_template(self, name, task_uuid=None, user=None,
                          timeout=300, **kwargs):
+        """ Save Virtual Machine as a Template.
+
+        Template can be shared with groups and users.
+        Users can instantiate Virtual Machines from Templates.
+        """
         with instance_activity(code_suffix="save_as_template", instance=self,
                                task_uuid=task_uuid, user=user) as act:
             # prepare parameters
