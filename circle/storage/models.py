@@ -114,7 +114,7 @@ class Disk(AclBase, TimeStampedModel):
 
         def __init__(self, disk, message=None):
             if message is None:
-                message = ("The requested operation can'T be performed on "
+                message = ("The requested operation can't be performed on "
                            "disk '%s (%s)' because it has never been"
                            "deployed." % (disk.name, disk.filename))
 
