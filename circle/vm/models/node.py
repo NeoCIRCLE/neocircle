@@ -7,6 +7,8 @@ from django.db.models import (
 )
 from django.utils.translation import ugettext_lazy as _
 
+from warnings import warn
+
 from celery.exceptions import TimeoutError
 from model_utils.models import TimeStampedModel
 from taggit.managers import TaggableManager
@@ -87,11 +89,21 @@ class Node(TimeStampedModel):
     @method_cache(300)
     def get_info(self):
         return self.remote_query(vm_tasks.get_info,
-                                 default={'cpu': '',
-                                          'ram': '0',
-                                          'arch': ''})
+                                 default={'core_num': '',
+                                          'ram_size': '0',
+                                          'architecture': ''})
 
     info = property(get_info)
+
+    @property
+    def ram_size(self):
+        warn('Use Node.info["ram_size"]', DeprecationWarning)
+        return self.info['ram_size']
+
+    @property
+    def num_cores(self):
+        warn('Use Node.info["core_num"]', DeprecationWarning)
+        return self.info['core_num']
 
     STATES = {False: {False: ('OFFLINE', _('offline')),
                       True: ('DISABLED', _('disabled'))},
