@@ -97,6 +97,13 @@ class InstanceTestCase(TestCase):
             self.assertNotIn(call().__enter__().sub_activity(u'scheduling'),
                              ia.mock_calls)
 
+    def test_status_icon(self):
+        inst = MagicMock(spec=Instance)
+        inst.status = 'dummy-value'
+        self.assertEqual(Instance.get_status_icon(inst), 'icon-question-sign')
+        inst.status = 'RUNNING'
+        self.assertEqual(Instance.get_status_icon(inst), 'icon-play')
+
 
 class InterfaceTestCase(TestCase):
 

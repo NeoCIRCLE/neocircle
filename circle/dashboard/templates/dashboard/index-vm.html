@@ -16,7 +16,8 @@
     <div id="dashboard-vm-list">
       {% for i in instances %}
       <a href="{{ i.get_absolute_url }}" class="list-group-item">
-        <i class="icon-{% if i.state == "RUNNING" %}play-sign{% else %}pause{% endif %}"></i> {{ i.name }} 
+        <i class="{{ i.get_status_icon }}" title="{{ i.get_status_display }}"></i> {{ i.name }}
+        <small class="text-muted">{{ i.primary_host.hostname }}</small>
         <div class="pull-right dashboard-vm-favourite" data-vm="{{ i.pk }}">
           {% if i.fav %}
             <i class="icon-star text-primary title-favourite" title="Unfavourite"></i>
@@ -51,7 +52,9 @@
     <p><span class="bigbig"><big>{{ running_vm_num }}</big> running </span>
       <ul class="list-inline">
         {% for vm in running_vms %}
-          <li class="label label-success"><i class="icon-play-sign"></i> {{ vm.name}}</li>
+          <li class="label label-success">
+            <a href="vm.get_absolute_url" title="{{vm.primary_host.get_fqdn}}"><i class="icon-play-sign"></i> {{ vm.name}}</a>
+          </li>
         {% endfor %}
       </ul>
     </p>
