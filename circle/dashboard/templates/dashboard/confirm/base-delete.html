@@ -9,7 +9,7 @@
           {% if title %}
             {{ title }}
           {% else %}
-            Delete confirmation
+            {% trans "Delete confirmation" %}
           {% endif %}  
         </h3>
       </div>
@@ -24,9 +24,9 @@
         <div class="pull-right">
           <form action="" method="POST">
             {% csrf_token %}
-            <a class="btn btn-default">Back</a>
+            <a class="btn btn-default">{% trans "Cancel" %}</a>
             <input type="hidden" name="next" value="{{ request.GET.next }}"/>
-            <button class="btn btn-danger">Yes, delete</button>
+            <button class="btn btn-danger">{% trans "Yes, delete" %}</button>
           </form>
         </div>
       </div>

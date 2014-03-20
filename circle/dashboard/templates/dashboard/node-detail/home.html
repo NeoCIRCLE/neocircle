@@ -1,13 +1,7 @@
 {% load i18n %}
 <div class="row">
   <div class="col-md-4">
-    <dl>
-      <dt>System:</dt>
-      <dd><i class="icon-linux"></i> Uhu Binux Optikai Rendszer</dd>
-      <dt>Description:</dt>
-      <dd><small>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc est libero, hendrerit at posuere sed, molestie congue quam. </small></dd>
-    </dl>
-    <div style="font-weight: bold;">{% trans "Traits" %}</div>
+    <div style="font-weight: bold;">{% trans "Traits the node provides" %}</div>
     <div id="node-details-traits" style="margin-bottom: 20px;">
       <div id="node-details-traits-list">
         {% if node.traits.all %}

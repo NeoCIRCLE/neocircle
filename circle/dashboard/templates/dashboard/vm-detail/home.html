@@ -2,9 +2,9 @@
 <div class="row">
   <div class="col-md-4">
     <dl>
-      <dt>System:</dt>
+      <dt>{% trans "System" %}:</dt>
       <dd><i class="icon-{{ os_type_icon }}"></i> {{ instance.system }}</dd>
-      <dt style="margin-top: 5px;">Description:</dt>
+      <dt style="margin-top: 5px;">{% trans "Description" %}:</dt>
       <dd><small>{{ instance.description }}</small></dd>
     </dl>
 
@@ -29,7 +29,7 @@
             </div>
           {% endfor %}
         {% else %}
-          <small>No tag added!</small>
+          <small>{% trans "No tag added!" %}</small>
         {% endif %}
       </div>
       <form action="" method="POST">

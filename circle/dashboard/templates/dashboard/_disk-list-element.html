@@ -7,7 +7,7 @@
   {% if d.ready %}
     {{ d.size|filesize }}
   {% else %}
-    <div class="label label-danger">failed</div>
+    <div class="label label-danger">{% trans "failed" %}</div>
   {% endif %}
 {% else %}<span class="disk-list-disk-percentage" data-disk-pk="{{ d.pk }}">{{ d.get_download_percentage }}</span>%{% endif %}
 
