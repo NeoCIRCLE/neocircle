@@ -85,13 +85,13 @@ class Node(TimeStampedModel):
 
     @node_available
     @method_cache(300)
-    def get_num_cores(self):
-        """Number of CPU threads available to the virtual machines.
-        """
+    def get_info(self):
+        return self.remote_query(vm_tasks.get_info,
+                                 default={'cpu': '',
+                                          'ram': '0',
+                                          'arch': ''})
 
-        return self.remote_query(vm_tasks.get_core_num, default=0)
-
-    num_cores = property(get_num_cores)
+    info = property(get_info)
 
     STATES = {False: {False: ('OFFLINE', _('offline')),
                       True: ('DISABLED', _('disabled'))},
@@ -143,15 +143,6 @@ class Node(TimeStampedModel):
                 self.save()
             self.get_num_cores(invalidate_cache=True)
             self.get_ram_size(invalidate_cache=True)
-
-    @node_available
-    @method_cache(300)
-    def get_ram_size(self):
-        """Bytes of total memory in the node.
-        """
-        return self.remote_query(vm_tasks.get_ram_size, default=0)
-
-    ram_size = property(get_ram_size)
 
     @property
     @node_available

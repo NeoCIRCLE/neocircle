@@ -119,8 +119,18 @@ def get_core_num(params):
     pass
 
 
+@celery.task(name='vmdriver.get_architecture')
+def get_architecture():
+    pass
+
+
 @celery.task(name='vmdriver.get_ram_size')
 def get_ram_size(params):
+    pass
+
+
+@celery.task(name='vmdriver.get_info')
+def get_info(params):
     pass
 
 
