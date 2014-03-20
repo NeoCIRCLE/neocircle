@@ -288,7 +288,7 @@ class Disk(AclBase, TimeStampedModel):
         return u"%s (#%d)" % (self.name, self.id or 0)
 
     def clean(self, *args, **kwargs):
-        if self.size == "" and self.base:
+        if (self.size is None or "") and self.base:
             self.size = self.base.size
         super(Disk, self).clean(*args, **kwargs)
 
@@ -346,6 +346,7 @@ class Disk(AclBase, TimeStampedModel):
         """
         datastore = params.pop('datastore', DataStore.objects.get())
         disk = cls(filename=str(uuid.uuid4()), datastore=datastore, **params)
+        disk.clean()
         disk.save()
         logger.debug("Disk created: %s", params)
         with disk_activity(code_suffix="create",
