@@ -93,7 +93,6 @@ class VirtualMachineDescModel(BaseResourceConfigModel):
                                              "for hosting the VM."),
                                  verbose_name=_("required traits"))
     system = TextField(verbose_name=_('operating system'),
-                       blank=True,
                        help_text=(_('Name of operating system in '
                                     'format like "%s".') %
                                   'Ubuntu 12.04 LTS Desktop amd64'))
@@ -250,7 +249,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
             if message is None:
                 message = ("The instance's current state (%s) is "
                            "inappropriate for the invoked operation."
-                           % instance.state)
+                           % instance.status)
 
             Exception.__init__(self, message)
 
@@ -266,7 +265,9 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
 
     @property
     def is_running(self):
-        return self.state == 'RUNNING'
+        """Check if VM is in running state.
+        """
+        return self.status == 'RUNNING'
 
     @property
     def state(self):
@@ -307,6 +308,8 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
 
     @classmethod
     def create(cls, params, disks, networks, req_traits, tags):
+        """ Create new Instance object.
+        """
         # create instance and do additional setup
         inst = cls(**params)
 
@@ -379,7 +382,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
         # prepare parameters
         common_fields = ['name', 'description', 'num_cores', 'ram_size',
                          'max_ram_size', 'arch', 'priority', 'boot_menu',
-                         'raw_data', 'lease', 'access_method']
+                         'raw_data', 'lease', 'access_method', 'system']
         params = dict(template=template, owner=owner, pw=pwgen())
         params.update([(f, getattr(template, f)) for f in common_fields])
         params.update(kwargs)  # override defaults w/ user supplied values
@@ -398,7 +401,11 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
             self._do_renew(which='delete')
         super(Instance, self).clean(*args, **kwargs)
 
-    def manual_state_change(self, new_state, reason=None, user=None):
+    def manual_state_change(self, new_state="NOSTATE", reason=None, user=None):
+        """ Manually change state of an Instance.
+
+        Can be used to recover VM after administrator fixed problems.
+        """
         # TODO cancel concurrent activity (if exists)
         act = InstanceActivity.create(code_suffix='manual_state_change',
                                       instance=self, user=user)
@@ -536,6 +543,8 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
             proto=proto)
 
     def get_connect_command(self, use_ipv6=False):
+        """Returns a formatted connect string.
+        """
         try:
             port = self.get_connect_port(use_ipv6=use_ipv6)
             host = self.get_connect_host(use_ipv6=use_ipv6)
@@ -568,6 +577,8 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
             return
 
     def get_vm_desc(self):
+        """Serialize Instance object to vmdriver.
+        """
         return {
             'name': self.vm_name,
             'vcpu': self.num_cores,
@@ -951,7 +962,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
     def sleep(self, user=None, task_uuid=None, timeout=60):
         """Suspend virtual machine with memory dump.
         """
-        if self.state not in ['RUNNING']:
+        if self.status not in ['RUNNING']:
             raise self.WrongStateError(self)
 
         def __on_abort(activity, error):
@@ -989,7 +1000,11 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
                                              queue="localhost.man")
 
     def wake_up(self, user=None, task_uuid=None, timeout=60):
-        if self.state not in ['SUSPENDED']:
+        """ Wake up Virtual Machine from SUSPENDED state.
+
+        Power on Virtual Machine and load its memory from dump.
+        """
+        if self.status not in ['SUSPENDED']:
             raise self.WrongStateError(self)
 
         def __on_abort(activity, error):
@@ -1125,28 +1140,38 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
                     net.deploy()
 
     def save_as_template_async(self, name, user=None, **kwargs):
+        """ Save as template asynchronusly.
+        """
         return local_tasks.save_as_template.apply_async(
             args=[self, name, user, kwargs], queue="localhost.man")
 
     def save_as_template(self, name, task_uuid=None, user=None,
                          timeout=300, **kwargs):
+        """ Save Virtual Machine as a Template.
+
+        Template can be shared with groups and users.
+        Users can instantiate Virtual Machines from Templates.
+        """
         with instance_activity(code_suffix="save_as_template", instance=self,
                                task_uuid=task_uuid, user=user) as act:
             # prepare parameters
-            kwargs.setdefault('name', name)
-            kwargs.setdefault('description', self.description)
-            kwargs.setdefault('parent', self.template)
-            kwargs.setdefault('num_cores', self.num_cores)
-            kwargs.setdefault('ram_size', self.ram_size)
-            kwargs.setdefault('max_ram_size', self.max_ram_size)
-            kwargs.setdefault('arch', self.arch)
-            kwargs.setdefault('priority', self.priority)
-            kwargs.setdefault('boot_menu', self.boot_menu)
-            kwargs.setdefault('raw_data', self.raw_data)
-            kwargs.setdefault('lease', self.lease)
-            kwargs.setdefault('access_method', self.access_method)
-            kwargs.setdefault('system', self.template.system
-                              if self.template else None)
+            params = {
+                'access_method': self.access_method,
+                'arch': self.arch,
+                'boot_menu': self.boot_menu,
+                'description': self.description,
+                'lease': self.lease,  # Can be problem in new VM
+                'max_ram_size': self.max_ram_size,
+                'name': name,
+                'num_cores': self.num_cores,
+                'owner': user,
+                'parent': self.template,  # Can be problem
+                'priority': self.priority,
+                'ram_size': self.ram_size,
+                'raw_data': self.raw_data,
+                'system': self.system,
+            }
+            params.update(kwargs)
 
             def __try_save_disk(disk):
                 try:
@@ -1155,15 +1180,13 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
                     return disk
 
             # create template and do additional setup
-            tmpl = InstanceTemplate(**kwargs)
+            tmpl = InstanceTemplate(**params)
             tmpl.full_clean()  # Avoiding database errors.
             tmpl.save()
-            with act.sub_activity('saving_disks'):
-                tmpl.disks.add(*[__try_save_disk(disk)
-                               for disk in self.disks.all()])
-                # save template
-            tmpl.save()
             try:
+                with act.sub_activity('saving_disks'):
+                    tmpl.disks.add(*[__try_save_disk(disk)
+                                   for disk in self.disks.all()])
                 # create interface templates
                 for i in self.interface_set.all():
                     i.save_as_template(tmpl)

@@ -10,7 +10,8 @@ from .views import (
     TemplateCreate, TemplateDelete, TemplateDetail, TemplateList,
     TransferOwnershipConfirmView, TransferOwnershipView, vm_activity, VmCreate,
     VmDelete, VmDetailView, VmDetailVncTokenView, VmGraphView, VmList,
-    VmMassDelete, VmMigrateView, VmRenewView,
+    VmMassDelete, VmMigrateView, VmRenewView, DiskRemoveView,
+    get_disk_download_status,
 )
 
 urlpatterns = patterns(
@@ -99,6 +100,11 @@ urlpatterns = patterns(
 
     url(r'^disk/add/$', DiskAddView.as_view(),
         name="dashboard.views.disk-add"),
+    url(r'^disk/(?P<pk>\d+)/remove/$', DiskRemoveView.as_view(),
+        name="dashboard.views.disk-remove"),
+    url(r'^disk/(?P<pk>\d+)/status/$', get_disk_download_status,
+        name="dashboard.views.disk-status"),
+
     url(r'^profile/$', MyPreferencesView.as_view(),
         name="dashboard.views.profile"),
 )

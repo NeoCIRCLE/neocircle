@@ -60,7 +60,9 @@
     {% endif %}
     {% for d in instance.disks.all %}
       <h4 class="list-group-item-heading dashboard-vm-details-network-h3">
-        {% include "dashboard/_disk-list-element.html" %}
+        {% with long_remove=True %}
+          {% include "dashboard/_disk-list-element.html" %}
+        {% endwith %}
       </h4>
     {% endfor %}
   </div>

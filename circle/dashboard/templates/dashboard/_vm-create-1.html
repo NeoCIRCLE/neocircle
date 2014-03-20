@@ -32,7 +32,7 @@
         <li>
           <i class="icon-file"></i> {% trans "Disks" %} 
           <span style="float: right; text-align: right;">
-            {% for d in t.disks.all %}{{ d.name }} ({{ d.size|filesize }}){% if not forloop.last %}, {% endif %}{% endfor %}
+            {% for d in t.disks.all %}{{ d.name }} ({% if d.size %}{{ d.size|filesize }}{% endif %}){% if not forloop.last %}, {% endif %}{% endfor %}
           </span>
           <div style="clear: both;"></div>
         </li>

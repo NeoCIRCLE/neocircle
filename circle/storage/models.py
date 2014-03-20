@@ -1,4 +1,5 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 
 from contextlib import contextmanager
 import logging
@@ -107,10 +108,35 @@ class Disk(AclBase, TimeStampedModel):
 
             self.disk = disk
 
+    class DiskIsNotReady(Exception):
+        """ Exception for operations that need a deployed disk.
+        """
+
+        def __init__(self, disk, message=None):
+            if message is None:
+                message = ("The requested operation can't be performed on "
+                           "disk '%s (%s)' because it has never been"
+                           "deployed." % (disk.name, disk.filename))
+
+            Exception.__init__(self, message)
+
+            self.disk = disk
+
     @property
     def ready(self):
+        """ Returns True if the disk is physically ready on the storage.
+
+        It needs at least 1 successfull deploy action.
+        """
         return self.activity_log.filter(activity_code__endswith="deploy",
-                                        succeeded__isnull=False)
+                                        succeeded=True)
+
+    @property
+    def failed(self):
+        """ Returns True if the last activity on the disk is failed.
+        """
+        result = self.activity_log.all().order_by('-id')[0].succeeded
+        return not (result is None) and not result
 
     @property
     def path(self):
@@ -155,18 +181,22 @@ class Disk(AclBase, TimeStampedModel):
         }[self.type]
 
     def is_downloading(self):
-        return self.activity_log.filter(
-            activity_code__endswith="downloading_disk",
-            succeeded__isnull=True)
+        return self.size is None and not self.failed
 
     def get_download_percentage(self):
         if not self.is_downloading():
             return None
-        task = self.activity_log.filter(
-            activity_code__endswith="deploy",
-            succeeded__isnull=True)[0].task_uuid
-        result = celery.AsyncResult(id=task)
-        return result.info.get("percent")
+        try:
+            task = self.activity_log.filter(
+                activity_code__endswith="deploy",
+                succeeded__isnull=True)[0].task_uuid
+            result = celery.AsyncResult(id=task)
+            return result.info.get("percent")
+        except:
+            return 0
+
+    def get_latest_activity_result(self):
+        return self.activity_log.latest("pk").result
 
     @property
     def is_deletable(self):
@@ -191,6 +221,17 @@ class Disk(AclBase, TimeStampedModel):
         any other VMs leave the disk in an inconsistent state.
         """
         return any(i.state != 'STOPPED' for i in self.instance_set.all())
+
+    def get_appliance(self):
+        """Return an Instance or InstanceTemplate object where the disk is used
+        """
+        instance = self.instance_set.all()
+        template = self.template_set.all()
+        app = list(instance) + list(template)
+        if len(app) > 0:
+            return app[0]
+        else:
+            return None
 
     def get_exclusive(self):
         """Get an instance of the disk for exclusive usage.
@@ -247,7 +288,7 @@ class Disk(AclBase, TimeStampedModel):
         return u"%s (#%d)" % (self.name, self.id or 0)
 
     def clean(self, *args, **kwargs):
-        if self.size == "" and self.base:
+        if (self.size is None or "") and self.base:
             self.size = self.base.size
         super(Disk, self).clean(*args, **kwargs)
 
@@ -305,7 +346,9 @@ class Disk(AclBase, TimeStampedModel):
         """
         datastore = params.pop('datastore', DataStore.objects.get())
         disk = cls(filename=str(uuid.uuid4()), datastore=datastore, **params)
+        disk.clean()
         disk.save()
+        logger.debug("Disk created: %s", params)
         with disk_activity(code_suffix="create",
                            user=user,
                            disk=disk):
@@ -366,8 +409,6 @@ class Disk(AclBase, TimeStampedModel):
         kwargs.setdefault('name', url.split('/')[-1])
         disk = Disk.create(type="iso", instance=instance, user=user,
                            size=None, **kwargs)
-        # TODO get proper datastore
-        disk.datastore = DataStore.objects.get()
         queue_name = disk.get_remote_queue_name('storage')
 
         def __on_abort(activity, error):
@@ -439,12 +480,16 @@ class Disk(AclBase, TimeStampedModel):
         """
         mapping = {
             'qcow2-snap': ('qcow2-norm', self.base),
+            'qcow2-norm': ('qcow2-norm', self),
         }
         if self.type not in mapping.keys():
             raise self.WrongDiskTypeError(self.type)
 
         if self.is_in_use:
             raise self.DiskInUseError(self)
+
+        if not self.ready:
+            raise self.DiskIsNotReady(self)
 
         # from this point on, the caller has to guarantee that the disk is not
         # going to be used until the operation is complete
@@ -455,7 +500,6 @@ class Disk(AclBase, TimeStampedModel):
                            name=self.name, size=self.size,
                            type=new_type)
 
-        disk.save()
         with disk_activity(code_suffix="save_as", disk=self,
                            user=user, task_uuid=task_uuid):
             with disk_activity(code_suffix="deploy", disk=disk,

@@ -72,7 +72,10 @@
         <h4 class="no-margin"><i class="icon-file"></i> {% trans "Disk list" %}</h4>
       </div>
       <div class="panel-body">
-        <ul style="list-style: none; padding-left: 0;">
+        <ul class="template-disk-list">
+        {% if not disks %}
+          {% trans "No disks are added!" %}
+        {% endif %}
         {% for d in disks %}
           <li>
             {% include "dashboard/_disk-list-element.html" %}
@@ -104,10 +107,14 @@
     font-weight: bold;
   }
 </style>
-<script>
-  $(function() {
-    $("#hint_id_num_cores, #hint_id_priority, #hint_id_ram_size").hide();
-  });
-</script>
+{% endblock %}
 
+{% block extra_js %}
+  <script>
+    $(function() {
+      $("#hint_id_num_cores, #hint_id_priority, #hint_id_ram_size").hide();
+    });
+  </script>
+
+  <script src="{{ STATIC_URL }}dashboard/disk-list.js"></script>
 {% endblock %}

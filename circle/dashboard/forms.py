@@ -445,15 +445,12 @@ class NodeForm(forms.ModelForm):
 class TemplateForm(forms.ModelForm):
     networks = forms.ModelMultipleChoiceField(
         queryset=VLANS, required=False)
+    system = forms.CharField(widget=forms.TextInput)
 
     def __init__(self, *args, **kwargs):
         parent = kwargs.pop("parent", None)
         self.user = kwargs.pop("user", None)
         super(TemplateForm, self).__init__(*args, **kwargs)
-        self.fields['disks'] = forms.ModelMultipleChoiceField(
-            queryset=Disk.get_objects_with_level(
-                'user', self.user).exclude(type="qcow2-snap")
-        )
 
         data = self.data.copy()
         data['owner'] = self.user.pk
@@ -468,7 +465,6 @@ class TemplateForm(forms.ModelForm):
             for f in fields:
                 self.initial[f] = parent[f]
             self.initial['lease'] = parent['lease_id']
-            self.initial['disks'] = template.disks.all()
             self.initial['parent'] = template
             self.initial['name'] = "Clone of %s" % self.initial['name']
             self.for_networks = template
@@ -506,8 +502,6 @@ class TemplateForm(forms.ModelForm):
         if commit:
             instance.save()
 
-        self.instance.disks = data['disks']  # TODO why do I need this
-
         # create and/or delete InterfaceTemplates
         networks = InterfaceTemplate.objects.filter(
             template=self.instance).values_list("vlan", flat=True)
@@ -526,6 +520,7 @@ class TemplateForm(forms.ModelForm):
         kwargs_raw_data = {}
         if not self.user.is_superuser:
             kwargs_raw_data['readonly'] = None
+
         helper = FormHelper()
         helper.layout = Layout(
             Field("name"),
@@ -585,7 +580,6 @@ class TemplateForm(forms.ModelForm):
             ),
             Fieldset(
                 _("External"),
-                Field("disks"),
                 Field("networks"),
                 Field("lease"),
                 Field("tags"),
@@ -596,7 +590,7 @@ class TemplateForm(forms.ModelForm):
 
     class Meta:
         model = InstanceTemplate
-        exclude = ('state', )
+        exclude = ('state', 'disks', )
 
 
 class LeaseForm(forms.ModelForm):

@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 from os import getenv
 import json
 import logging
@@ -43,6 +45,7 @@ from vm.models import (
     Instance, instance_activity, InstanceActivity, InstanceTemplate, Interface,
     InterfaceTemplate, Lease, Node, NodeActivity, Trait,
 )
+from storage.models import Disk
 from firewall.models import Vlan, Host, Rule
 from dashboard.models import Favourite, Profile
 
@@ -275,6 +278,7 @@ class VmDetailView(CheckedDetailView):
         resources = {
             'num_cores': request.POST.get('cpu-count'),
             'ram_size': request.POST.get('ram-size'),
+            'max_ram_size': request.POST.get('ram-size'),  # TODO: max_ram
             'priority': request.POST.get('cpu-priority')
         }
         Instance.objects.filter(pk=self.object.pk).update(**resources)
@@ -419,12 +423,10 @@ class VmDetailView(CheckedDetailView):
         new_name = "Saved from %s (#%d) at %s" % (
             self.object.name, self.object.pk, date
         )
-        template = self.object.save_as_template(name=new_name,
-                                                owner=request.user)
-        messages.success(request, _("Instance successfully saved as template, "
-                                    "please rename it!"))
-        return redirect(reverse_lazy("dashboard.views.template-detail",
-                                     kwargs={'pk': template.pk}))
+        self.object.save_as_template_async(name=new_name,
+                                           user=request.user)
+        messages.success(request, _("Saving instance as template!"))
+        return redirect("%s#activity" % self.object.get_absolute_url())
 
     def __shut_down(self, request):
         self.object = self.get_object()
@@ -765,12 +767,28 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
         form = self.form_class(request.POST, user=request.user)
         if not form.is_valid():
             return self.get(request, form, *args, **kwargs)
-        post = form.cleaned_data
-        for disk in post['disks']:
-            if not disk.has_level(request.user, 'user'):
-                raise PermissionDenied()
+        else:
+            post = form.cleaned_data
+
+            networks = self.__create_networks(post.pop("networks"))
+            req_traits = post.pop("req_traits")
+            tags = post.pop("tags")
+            post['pw'] = User.objects.make_random_password()
+            post.pop("parent")
+            post['max_ram_size'] = post['ram_size']
+            inst = Instance.create(params=post, disks=[], networks=networks,
+                                   tags=tags, req_traits=req_traits)
+            messages.success(request, _("Your disk has been created, "
+                                        "you can now add disks to it!"))
+            return redirect("%s#resources" % inst.get_absolute_url())
 
         return super(TemplateCreate, self).post(self, request, args, kwargs)
+
+    def __create_networks(self, vlans):
+        networks = []
+        for v in vlans:
+            networks.append(InterfaceTemplate(vlan=v, managed=v.managed))
+        return networks
 
     def get_success_url(self):
         return reverse_lazy("dashboard.views.template-list")
@@ -2115,3 +2133,64 @@ def set_language_cookie(request, response, lang=None):
 
     cname = getattr(settings, 'LANGUAGE_COOKIE_NAME', 'django_language')
     response.set_cookie(cname, lang, 365 * 86400)
+
+
+class DiskRemoveView(DeleteView):
+    model = Disk
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/confirm/ajax-delete.html']
+        else:
+            return ['dashboard/confirm/base-delete.html']
+
+    def get_context_data(self, **kwargs):
+        context = super(DiskRemoveView, self).get_context_data(**kwargs)
+        disk = self.get_object()
+        app = disk.get_appliance()
+        context['title'] = _("Disk remove confirmation")
+        context['text'] = _("Are you sure you want to remove "
+                            "<strong>%(disk)s</strong> from "
+                            "<strong>%(app)s</strong>?" % {'disk': disk,
+                                                           'app': app}
+                            )
+        return context
+
+    def delete(self, request, *args, **kwargs):
+        disk = self.get_object()
+        if not disk.has_level(request.user, 'owner'):
+            raise PermissionDenied()
+
+        disk = self.get_object()
+        app = disk.get_appliance()
+
+        app.disks.remove(disk)
+        disk.destroy()
+
+        next_url = request.POST.get("next")
+        success_url = next_url if next_url else app.get_absolute_url()
+        success_message = _("Disk successfully removed!")
+
+        if request.is_ajax():
+            return HttpResponse(
+                json.dumps({'message': success_message}),
+                content_type="application/json",
+            )
+        else:
+            messages.success(request, success_message)
+            return HttpResponseRedirect("%s#resources" % success_url)
+
+
+@require_GET
+def get_disk_download_status(request, pk):
+    disk = Disk.objects.get(pk=pk)
+    if not disk.has_level(request.user, 'owner'):
+        raise PermissionDenied()
+
+    return HttpResponse(
+        json.dumps({
+            'percentage': disk.get_download_percentage(),
+            'failed': disk.failed
+        }),
+        content_type="application/json",
+    )

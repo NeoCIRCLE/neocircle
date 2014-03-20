@@ -1,5 +1,4 @@
 from storage.models import DataStore
-import os
 from manager.mancelery import celery
 import logging
 from storage.tasks import remote_tasks
@@ -16,13 +15,15 @@ def garbage_collector(timeout=15):
     deletes oldest images from trash.
 
     :param timeout: Seconds before TimeOut exception
-    :type timeoit: int
+    :type timeout: int
     """
     for ds in DataStore.objects.all():
-        file_list = os.listdir(ds.path)
-        disk_list = ds.get_deletable_disks()
         queue_name = ds.get_remote_queue_name('storage')
-        for i in set(file_list).intersection(disk_list):
+        files = set(remote_tasks.list_files.apply_async(
+            args=[ds.path], queue=queue_name).get(timeout=timeout))
+        disks = set(ds.get_deletable_disks())
+        queue_name = ds.get_remote_queue_name('storage')
+        for i in disks & files:
             logger.info("Image: %s at Datastore: %s moved to trash folder." %
                         (i, ds.path))
             remote_tasks.move_to_trash.apply_async(

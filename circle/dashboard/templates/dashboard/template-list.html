@@ -8,7 +8,7 @@
     <div class="panel panel-default">
       <div class="panel-heading">
         <a href="{% url "dashboard.views.template-create" %}" class="pull-right btn btn-success btn-xs">
-          <i class="icon-plus"></i> new template
+          <i class="icon-plus"></i> {% trans "new base vm" %}
         </a>
         <h3 class="no-margin"><i class="icon-puzzle-piece"></i> {% trans "Templates" %}</h3>
       </div>
@@ -24,7 +24,7 @@
     <div class="panel panel-default">
       <div class="panel-heading">
         <a href="{% url "dashboard.views.lease-create" %}" class="pull-right btn btn-success btn-xs" style="margin-right: 10px;">
-          <i class="icon-plus"></i> new lease
+          <i class="icon-plus"></i> {% trans "new lease" %}
         </a>
         <h3 class="no-margin"><i class="icon-time"></i> {% trans "Leases" %}</h3>
       </div>

@@ -409,4 +409,11 @@ footer {
 footer a, footer a:hover, footer a:visited {                        
   color: white;                                                     
   text-decoration: underline;                                       
+.template-disk-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.template-disk-list li {
+  padding-bottom: 5px;
 }
