@@ -1155,12 +1155,10 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
             tmpl = InstanceTemplate(**params)
             tmpl.full_clean()  # Avoiding database errors.
             tmpl.save()
-            with act.sub_activity('saving_disks'):
-                tmpl.disks.add(*[__try_save_disk(disk)
-                               for disk in self.disks.all()])
-                # save template
-            tmpl.save()
             try:
+                with act.sub_activity('saving_disks'):
+                    tmpl.disks.add(*[__try_save_disk(disk)
+                                   for disk in self.disks.all()])
                 # create interface templates
                 for i in self.interface_set.all():
                     i.save_as_template(tmpl)
