@@ -301,7 +301,8 @@ class Disk(AclBase, TimeStampedModel):
         """Create disk with activity.
         """
         datastore = params.pop('datastore', DataStore.objects.get())
-        disk = cls(filename=str(uuid.uuid4()), datastore=datastore, **params)
+        filename = params.pop('filename', str(uuid.uuid4()))
+        disk = cls(filename=filename, datastore=datastore, **params)
         disk.save()
         with disk_activity(code_suffix="create",
                            user=user,
