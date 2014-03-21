@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-21 11:09+0100\n"
-"PO-Revision-Date: 2014-03-21 11:14+0100\n"
+"POT-Creation-Date: 2014-03-21 11:25+0100\n"
+"PO-Revision-Date: 2014-03-21 11:25+0100\n"
 "Last-Translator: Mate Ory <orymate@ik.bme.hu>\n"
 "Language-Team: Hungarian <cloud@ik.bme.hu>\n"
 "Language: hu\n"
@@ -573,6 +573,7 @@ msgstr "Ki"
 #: dashboard/templates/dashboard/template-edit.html:49
 #: dashboard/templates/dashboard/vm-detail/access.html:28
 #: dashboard/templates/dashboard/vm-detail/access.html:37
+#: dashboard/templates/dashboard/vm-detail/network.html:15
 msgid "remove"
 msgstr "eltávolítás"
 
@@ -710,6 +711,15 @@ msgstr "Engedélyezés"
 #: dashboard/templates/dashboard/node-list/column-actions.html:8
 msgid "Disable"
 msgstr "Tiltás"
+
+#: dashboard/templates/dashboard/node-detail.html:36
+#: dashboard/templates/dashboard/confirm/ajax-delete.html:16
+#: dashboard/templates/dashboard/confirm/mass-delete.html:11
+#: dashboard/templates/dashboard/node-list/column-actions.html:9
+#: dashboard/templates/dashboard/template-list/column-lease-actions.html:5
+#: dashboard/templates/dashboard/template-list/column-template-actions.html:8
+msgid "Delete"
+msgstr "Törlés"
 
 #: dashboard/templates/dashboard/node-detail.html:47
 #: dashboard/templates/dashboard/vm-detail.html:159
@@ -963,14 +973,6 @@ msgstr ""
 #: dashboard/templates/dashboard/confirm/node-status.html:27
 msgid "Cancel"
 msgstr "Mégsem"
-
-#: dashboard/templates/dashboard/confirm/ajax-delete.html:16
-#: dashboard/templates/dashboard/confirm/mass-delete.html:11
-#: dashboard/templates/dashboard/node-list/column-actions.html:9
-#: dashboard/templates/dashboard/template-list/column-lease-actions.html:5
-#: dashboard/templates/dashboard/template-list/column-template-actions.html:8
-msgid "Delete"
-msgstr "Törlés"
 
 #: dashboard/templates/dashboard/confirm/ajax-node-flush.html:10
 #: dashboard/templates/dashboard/confirm/node-flush.html:19
@@ -1239,11 +1241,11 @@ msgstr ""
 msgid "Transfer ownership..."
 msgstr "Tulajdon átruházása..."
 
-#: dashboard/templates/dashboard/vm-detail/console.html:2
+#: dashboard/templates/dashboard/vm-detail/console.html:3
 msgid "Send Ctrl+Alt+Del"
 msgstr "Ctrl+Alt+Del küldése"
 
-#: dashboard/templates/dashboard/vm-detail/console.html:3
+#: dashboard/templates/dashboard/vm-detail/console.html:4
 msgid "Type password"
 msgstr "Jelszó begépelése"
 
@@ -1279,6 +1281,14 @@ msgstr "Nincs címke."
 msgid "Add tag"
 msgstr "Címke hozzáadása"
 
+#: dashboard/templates/dashboard/vm-detail/network.html:4
+msgid "add interface"
+msgstr "új interfész"
+
+#: dashboard/templates/dashboard/vm-detail/network.html:6
+msgid "Interfaces"
+msgstr "Interfészek"
+
 #: dashboard/templates/dashboard/vm-detail/network.html:21
 #: firewall/models.py:403
 msgid "IPv4 address"
@@ -1292,6 +1302,18 @@ msgstr "IPv6 cím"
 #: dashboard/templates/dashboard/vm-detail/network.html:23
 msgid "DNS name"
 msgstr "DNS név"
+
+#: dashboard/templates/dashboard/vm-detail/network.html:34
+msgid "IPv4"
+msgstr "IPv4"
+
+#: dashboard/templates/dashboard/vm-detail/network.html:35
+msgid "IPv6"
+msgstr "IPv6"
+
+#: dashboard/templates/dashboard/vm-detail/network.html:37
+msgid "Port access"
+msgstr "Portok elérése"
 
 #: dashboard/templates/dashboard/vm-detail/network.html:64
 #: dashboard/templates/dashboard/vm-detail/network.html:96
