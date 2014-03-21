@@ -10,7 +10,7 @@ from django.db.models import (
     DateTimeField,
 )
 from django.template.loader import render_to_string
-from django.utils.translation import ugettext_lazy as _, override
+from django.utils.translation import ugettext_lazy as _, override, ugettext
 
 from model_utils.models import TimeStampedModel
 from model_utils.fields import StatusField
@@ -50,7 +50,7 @@ class Notification(TimeStampedModel):
         with override(language):
             context['user'] = user
             rendered = render_to_string(template, context)
-            subject = unicode(subject)
+            subject = ugettext(unicode(subject))
         return cls.objects.create(to=user, subject=subject, message=rendered,
                                   valid_until=valid_until)
 
