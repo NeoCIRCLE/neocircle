@@ -74,7 +74,7 @@
         </li>
         <li>
           <strong>{% trans "Wake up" %}:</strong>
-          {% trans "?" %}
+          {% trans "Wake up suspended machine." %}
         </li>
         <li>
           <strong>{% trans "Shutdown" %}:</strong>
@@ -98,7 +98,7 @@
         </li>
         <li>
           <strong>{% trans "Save as template" %}:</strong>
-          {% trans "?" %}
+          {% trans "Shut down the virtual machine, and save it as a new template." %}
         </li>
         <li>
           <strong>{% trans "Destroy" %}:</strong>
@@ -113,7 +113,7 @@
       <div class="big">
         <span id="vm-details-state" class="label label-success">{{ instance.state }}</span>
         <div class="btn-group">
-          <button type="button" class="btn btn-warning nojs-dropdown-toogle dropdown-toggle" data-toggle="dropdown">Action <i class="icon-caret-down"></i></button>
+          <button type="button" class="btn btn-warning nojs-dropdown-toogle dropdown-toggle" data-toggle="dropdown">{% trans "Action" %} <i class="icon-caret-down"></i></button>
           <ul class="nojs-dropdown-menu dropdown-menu" role="menu">
             <li><a href="#" class="vm-details-rename-button"><i class="icon-pencil"></i> {% trans "Rename" %}</a></li>
             <li><a data-vm-pk="{{ instance.pk }}" href="#" class="vm-details-save-as-button"><i class="icon-save"></i> {% trans "Save as" %}</a></li>
@@ -126,7 +126,7 @@
       <h3>{% trans "Connection" %}</h3>
       <input type="text" value="{{ instance.get_connect_command }}" class="form-control" readonly />
       <dl class="dl-horizontal vm-details-pw">
-        <dt>Password:</dt>
+        <dt>{% trans "Password" %}:</dt>
         <dd>
           <div class="input-group">
             <input type="text" id="vm-details-pw-input" class="form-control input-sm input-tags" value="{{ instance.pw }}"/>
@@ -136,15 +136,15 @@
           </div>
         </dd>
         <dd style="font-size: 10px; text-align: right; padding-top: 8px;">
-          <a id="vm-details-pw-change" href="#">Generate new password!</a>
+          <a id="vm-details-pw-change" href="#">{% trans "Generate new password!" %}</a>
         </dd>
-        <div id="vm-details-pw-confirm">
+        <div id="vm-details-pw-confirm"> {% comment %} TODO Couldn't this use a modal? {% endcomment%}
           <dt>
-            Are you sure?
+            {% trans "Are you sure?" %}
           </dt>
           <dd>
-            <a href="#" class="vm-details-pw-confirm-choice label label-success" data-choice="1" data-vm="{{ instance.pk }}">Yes</a> / 
-            <a href="#" class="vm-details-pw-confirm-choice label label-danger" data-choice="0">No</a>
+            <a href="#" class="vm-details-pw-confirm-choice label label-success" data-choice="1" data-vm="{{ instance.pk }}">{% trans "Yes" %}</a> / 
+            <a href="#" class="vm-details-pw-confirm-choice label label-danger" data-choice="0">{% trans "No" %}</a>
           </dd>
         </div>
       </dl>
@@ -162,11 +162,8 @@
               <i class="icon-tasks icon-2x"></i><br>
               {% trans "Resources" %}</a>
           </li>
-          <li {% if not instance.is_console_available %}class="disabled">
-            <a href="#" data-toggle="pill_" data-target="#_console" class="text-center">
-              {% else %}>
+          <li{% if not instance.is_console_available %} class="disabled"{% endif %}>
             <a href="#console" data-toggle="pill" data-target="#_console" class="text-center">
-              {% endif %}
               <i class="icon-desktop icon-2x"></i><br>
               {% trans "Console" %}</a></li>
           <li>

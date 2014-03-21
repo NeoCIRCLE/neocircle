@@ -7,7 +7,7 @@
   {% if not d.failed %}
     {% if d.size %}{{ d.size|filesize }}{% endif %}
   {% else %}
-  <div class="label label-danger"{% if user.is_superuser %} title="{{ d.get_latest_activity_result }}"{% endif %}>failed</div>
+  <div class="label label-danger"{% if user.is_superuser %} title="{{ d.get_latest_activity_result }}"{% endif %}>{% trans "failed" %}</div>
   {% endif %}
 {% else %}<span class="disk-list-disk-percentage" data-disk-pk="{{ d.pk }}">{{ d.get_download_percentage }}</span>%{% endif %}
 <a href="{% url "dashboard.views.disk-remove" pk=d.pk %}?next={{ request.path }}" 

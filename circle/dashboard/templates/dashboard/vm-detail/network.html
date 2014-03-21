@@ -1,9 +1,9 @@
 {% load i18n %}
 <h2>
   <a href="#" id="vm-details-network-add" class="btn btn-success pull-right no-js-hidden">
-    <i class="icon-plus"></i> add interface
+    <i class="icon-plus"></i> {% trans "add interface" %}
   </a>
-  Interfaces
+  {% trans "Interfaces" %}
 </h2>
 
 <div class="row" id="vm-details-network-add-for-form">
@@ -12,7 +12,7 @@
 {% for i in instance.interface_set.all %}
   <h3 class="list-group-item-heading dashboard-vm-details-network-h3">
     <i class="icon-{% if i.host %}globe{% else %}link{% endif %}"></i> {{ i.vlan.name }} 
-    {% if not i.host %}(unmanaged) <a href="#" class="btn btn-danger btn-xs">remove</a>{% endif %}
+    {% if not i.host %}(unmanaged) <a href="#" class="btn btn-danger btn-xs">{% trans "remove" %}</a>{% endif %}
   </h3>
   {% if i.host %}
     <div class="row">
@@ -31,10 +31,10 @@
       </div>
       <div class="col-md-7">
         <ul class="nav nav-pills pull-right">
-          <li class="active"><a href="#ipv4_{{ i.host.vlan.pk }}" data-toggle="pill" class="text-center">IPv4</a></li>
-          <li><a href="#ipv6_{{ i.host.vlan.pk }}" data-toggle="pill" class="text-center">IPv6</a></li>
+          <li class="active"><a href="#ipv4_{{ i.host.vlan.pk }}" data-toggle="pill" class="text-center">{% trans "IPv4" %}</a></li>
+          <li><a href="#ipv6_{{ i.host.vlan.pk }}" data-toggle="pill" class="text-center">{% trans "IPv6" %}</a></li>
         </ul>
-        <h4>Port access</h4>
+        <h4>{% trans "Port access" %}</h4>
         <div class="tab-content" style="padding-top: 10px;">
           <div class="tab-pane active" id="ipv4_{{ i.host.vlan.pk }}">
             <table class="table table-striped rule-table">

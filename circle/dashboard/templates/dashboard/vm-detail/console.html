@@ -1,6 +1,7 @@
+{% load i18n %}
 <div class="btn-toolbar">
-        <button id="sendCtrlAltDelButton" class="btn btn-danger small">Send CtrlAltDel</button>
-        <button id="sendPasswordButton" class="btn btn-default small">Type password</button>
+  <button id="sendCtrlAltDelButton" class="btn btn-danger small">{% trans "Send Ctrl+Alt+Del" %}</button>
+  <button id="sendPasswordButton" class="btn btn-default small">{% trans "Type password" %}</button>
 </div>
 <div class="alert alert-info" id="noVNC_status">
 </div>

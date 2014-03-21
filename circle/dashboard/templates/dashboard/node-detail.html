@@ -26,14 +26,14 @@
 			{% elif node.state == 'OFFLINE' %}label-warning
 			{% endif %}">{{ node.get_status_display|upper }}</span>
 <div class="btn-group">
-  <button type="button" class="btn {{ btn_size }} btn-warning nojs-dropdown-toogle dropdown-toggle" data-toggle="dropdown">Action <i class="icon-caret-down"></i></button>
+  <button type="button" class="btn {{ btn_size }} btn-warning nojs-dropdown-toogle dropdown-toggle" data-toggle="dropdown">{% trans "Action" %} <i class="icon-caret-down"></i></button>
   <ul class="dropdown-menu nojs-dropdown-toogle" role="menu">
     <li><a href="#" class="node-details-rename-button"><i class="icon-pencil"></i> {% trans "Rename" %}</a></li>
     <li><a data-node-pk="{{ node.pk }}" class="real-link node-flush" href="{% url "dashboard.views.flush-node" pk=node.pk %}"><i class="icon-cloud-upload"></i>{% trans "Flush" %}</a>
  <li>
  <a style="display:{% if node.enabled %}none{% else %}block{% endif %}" data-node-pk="{{ node.pk }}" class="real-link node-enable" href="{% url "dashboard.views.status-node" pk=node.pk %}?next={{ request.path }}"><i class="icon-check"></i>{% trans "Enable" %}</a>
   <a style="display:{% if not node.enabled %}none{% else %}block{% endif %}" data-node-pk="{{ node.pk }}" class="real-link node-enable" href="{% url "dashboard.views.status-node" pk=node.pk %}?next={{ request.path }}"><i class="icon-remove"></i>{% trans "Disable" %}</a></li>
-    <li><a data-node-pk="{{ node.pk }}" class="real-link node-delete" href="{% url "dashboard.views.delete-node" pk=node.pk %}?next={{ request.path }}"><i class="icon-trash"></i> Delete</a></li>
+  <li><a data-node-pk="{{ node.pk }}" class="real-link node-delete" href="{% url "dashboard.views.delete-node" pk=node.pk %}?next={{ request.path }}"><i class="icon-trash"></i> {% trans "Delete" %}</a></li>
   </ul>
 </div>
       </div>

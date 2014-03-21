@@ -1200,3 +1200,14 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
                                       **kwargs):
         self.shutdown(user, task_uuid)
         self.save_as_template(name, **kwargs)
+
+    def get_status_icon(self):
+        return {
+            'NOSTATE': 'icon-rocket',
+            'RUNNING': 'icon-play',
+            'STOPPED': 'icon-stop',
+            'SUSPENDED': 'icon-pause',
+            'ERROR': 'icon-warning_sign',
+            'PENDING': 'icon-rocket',
+            'DESTROYED': 'icon-trash',
+            'MIGRATING': 'icon-truck'}.get(self.status, 'icon-question-sign')

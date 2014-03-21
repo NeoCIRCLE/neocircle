@@ -9,19 +9,20 @@
       <span class="btn btn-default btn-xs infobtn" title="{% trans "Help" %}"><i class="icon-info-sign"></i></span>
     </div>
     <h3 class="no-margin">
-      <i class="icon-desktop"></i> Virtual machines
+      <i class="icon-desktop"></i> {% trans "Virtual machines" %}
     </h3>
   </div>
   <div class="list-group" id="vm-list-view">
     <div id="dashboard-vm-list">
       {% for i in instances %}
       <a href="{{ i.get_absolute_url }}" class="list-group-item">
-        <i class="icon-{% if i.state == "RUNNING" %}play-sign{% else %}pause{% endif %}"></i> {{ i.name }} 
+        <i class="{{ i.get_status_icon }}" title="{{ i.get_status_display }}"></i> {{ i.name }}
+        <small class="text-muted">{{ i.primary_host.hostname }}</small>
         <div class="pull-right dashboard-vm-favourite" data-vm="{{ i.pk }}">
           {% if i.fav %}
-            <i class="icon-star text-primary title-favourite" title="Unfavourite"></i>
+            <i class="icon-star text-primary title-favourite" title="{% trans "Unfavourite" %}"></i>
           {% else %}
-            <i class="icon-star-empty text-primary title-favourite" title="Mark as favorite"></i>
+            <i class="icon-star-empty text-primary title-favourite" title="{% trans "Mark as favorite" %}"></i>
           {% endif %}
         </div>
       </a>
@@ -38,7 +39,7 @@
         <div class="col-sm-6 text-right">
           {% if more_instances > 0 %}
           <a class="btn btn-primary btn-xs" href="{% url "dashboard.views.vm-list" %}">
-            <i class="icon-chevron-sign-right"></i> {% blocktrans with more_instances=more_instances %}<strong>{{ more_instances }}</strong>  more{% endblocktrans %}
+            <i class="icon-chevron-sign-right"></i> {% blocktrans with count=more_instances %}<strong>{{ count }}</strong>  more{% endblocktrans %}
           </a>
           {% endif %}
           <a class="btn btn-success btn-xs vm-create" href="{% url "dashboard.views.vm-create" %}"><i class="icon-plus-sign"></i> {% trans "new" %}</a>
@@ -48,14 +49,16 @@
   </div>
   <div class="panel-body" id="vm-graph-view" style="display: none">
     <p class="pull-right">  <input class="knob" data-fgColor="chartreuse" data-thickness=".4" data-max="{{ request.user.profile.instance_limit }}" data-width="100" data-height="100" data-readOnly="true" value="{{ instances|length|add:more_instances }}"></p>
-    <p><span class="bigbig"><big>{{ running_vm_num }}</big> running </span>
+    <p><span class="bigbig">{% blocktrans with count=running_vm_num %}<big>{{ count }}</big> running{% endblocktrans %}</span>
       <ul class="list-inline">
         {% for vm in running_vms %}
-          <li class="label label-success"><i class="icon-play-sign"></i> {{ vm.name}}</li>
+          <li class="label label-success">
+            <a href="vm.get_absolute_url" title="{{vm.primary_host.get_fqdn}}"><i class="{{vm.get_status_icon}}"></i> {{vm.name}}</a>
+          </li>
         {% endfor %}
       </ul>
     </p>
-    <p class="big text-warning"><big>{{ stopped_vm_num }}</big> stopped</p>
+    <p class="big text-warning">{% blocktrans with count=stopped_vm_num %}<big>{{ count }}</big> stopped{% endblocktrans %}</p>
 
     <div class="clearfix"></div>
     <div class="text-right">

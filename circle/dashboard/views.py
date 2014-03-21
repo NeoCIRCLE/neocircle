@@ -778,7 +778,7 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
             post['max_ram_size'] = post['ram_size']
             inst = Instance.create(params=post, disks=[], networks=networks,
                                    tags=tags, req_traits=req_traits)
-            messages.success(request, _("Your disk has been created, "
+            messages.success(request, _("The template has been created, "
                                         "you can now add disks to it!"))
             return redirect("%s#resources" % inst.get_absolute_url())
 
