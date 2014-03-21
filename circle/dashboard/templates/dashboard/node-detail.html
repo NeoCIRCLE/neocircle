@@ -33,7 +33,7 @@
  <li>
  <a style="display:{% if node.enabled %}none{% else %}block{% endif %}" data-node-pk="{{ node.pk }}" class="real-link node-enable" href="{% url "dashboard.views.status-node" pk=node.pk %}?next={{ request.path }}"><i class="icon-check"></i>{% trans "Enable" %}</a>
   <a style="display:{% if not node.enabled %}none{% else %}block{% endif %}" data-node-pk="{{ node.pk }}" class="real-link node-enable" href="{% url "dashboard.views.status-node" pk=node.pk %}?next={{ request.path }}"><i class="icon-remove"></i>{% trans "Disable" %}</a></li>
-    <li><a data-node-pk="{{ node.pk }}" class="real-link node-delete" href="{% url "dashboard.views.delete-node" pk=node.pk %}?next={{ request.path }}"><i class="icon-trash"></i> Delete</a></li>
+  <li><a data-node-pk="{{ node.pk }}" class="real-link node-delete" href="{% url "dashboard.views.delete-node" pk=node.pk %}?next={{ request.path }}"><i class="icon-trash"></i> {% trans "Delete" %}</a></li>
   </ul>
 </div>
       </div>
