@@ -31,7 +31,7 @@ class DiskTestCase(TestCase):
 
     def test_deletable_newly_destroyed(self):
         d = self._disk(destroyed=new)
-        assert not d.is_deletable
+        assert d.is_deletable
 
     def test_deletable_no_child(self):
         d = self._disk(destroyed=old)
@@ -86,3 +86,7 @@ class DiskTestCase(TestCase):
         d = MagicMock(spec=Disk)
         d.is_downloading = Mock(return_value=False)
         assert Disk.get_download_percentage(d) is None
+
+    def test_undeployed_disk_ready(self):
+        d = self._disk()
+        assert not d.ready

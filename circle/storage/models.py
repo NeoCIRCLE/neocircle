@@ -12,7 +12,6 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from model_utils.models import TimeStampedModel
 from sizefield.models import FileSizeField
-from datetime import timedelta
 
 from acl.models import AclBase
 from .tasks import local_tasks, remote_tasks
@@ -203,9 +202,7 @@ class Disk(AclBase, TimeStampedModel):
         """True if the associated file can be deleted.
         """
         # Check if all children and the disk itself is destroyed.
-        yesterday = timezone.now() - timedelta(days=1)
-        return (self.destroyed is not None
-                and self.destroyed < yesterday) and self.children_deletable
+        return (self.destroyed is not None) and self.children_deletable
 
     @property
     def children_deletable(self):
@@ -345,7 +342,8 @@ class Disk(AclBase, TimeStampedModel):
         """Create disk with activity.
         """
         datastore = params.pop('datastore', DataStore.objects.get())
-        disk = cls(filename=str(uuid.uuid4()), datastore=datastore, **params)
+        filename = params.pop('filename', str(uuid.uuid4()))
+        disk = cls(filename=filename, datastore=datastore, **params)
         disk.clean()
         disk.save()
         logger.debug("Disk created: %s", params)
