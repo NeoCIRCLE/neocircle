@@ -103,8 +103,6 @@ class BuildFirewall:
     def build_ipt(self):
         """Build rules."""
 
-        # TODO remove ipv4-specific rules
-
         self.ipt_filter_firewall()
         self.ipt_filter_host_rules()
         self.ipt_filter_vlan_rules()
@@ -113,10 +111,10 @@ class BuildFirewall:
         self.build_ipt_nat()
 
         context = {
-            'filter': (chain for name, chain in self.chains.iteritems()
-                       if chain.name not in ('PREROUTING', 'POSTROUTING')),
-            'nat': (chain for name, chain in self.chains.iteritems()
-                    if chain.name in ('PREROUTING', 'POSTROUTING'))}
+            'filter': lambda: (chain for name, chain in self.chains.iteritems()
+                               if chain.name not in IptChain.nat_chains),
+            'nat': lambda: (chain for name, chain in self.chains.iteritems()
+                            if chain.name in IptChain.nat_chains)}
 
         template = loader.get_template('firewall/iptables.conf')
         context['proto'] = 'ipv4'

@@ -15,7 +15,8 @@ class InvalidRuleExcepion(Exception):
 class IptRule(object):
 
     def __init__(self, priority=1000, action=None, src=None, dst=None,
-                 proto=None, sport=None, dport=None, extra=None):
+                 proto=None, sport=None, dport=None, extra=None,
+                 ipv4_only=False):
         if proto not in ['tcp', 'udp', 'icmp', None]:
             raise InvalidRuleExcepion()
         if proto not in ['tcp', 'udp'] and (sport is not None or
@@ -28,16 +29,21 @@ class IptRule(object):
         (self.src4, self.src6) = (None, None)
         if isinstance(src, tuple):
             (self.src4, self.src6) = src
+            if not self.src6:
+                ipv4_only = True
         (self.dst4, self.dst6) = (None, None)
         if isinstance(dst, tuple):
             (self.dst4, self.dst6) = dst
+            if not self.dst6:
+                ipv4_only = True
 
         self.proto = proto
         self.sport = sport
         self.dport = dport
 
         self.extra = extra
-        self.ipv4_only = extra and bool(ipv4_re.search(extra))
+        self.ipv4_only = (ipv4_only or
+                          extra is not None and bool(ipv4_re.search(extra)))
 
     def __hash__(self):
         return hash(frozenset(self.__dict__.items()))
@@ -69,8 +75,8 @@ class IptRule(object):
 
 
 class IptChain(object):
-    builtin_chains = ('FORWARD', 'INPUT', 'OUTPUT', 'PREROUTING',
-                      'POSTROUTING')
+    nat_chains = ('PREROUTING', 'POSTROUTING')
+    builtin_chains = ('FORWARD', 'INPUT', 'OUTPUT') + nat_chains
 
     def __init__(self, name):
         self.rules = set()
@@ -98,3 +104,6 @@ class IptChain(object):
         return '\n'.join([prefix + rule.compile(proto)
                           for rule in self.sort()
                           if not (proto == 'ipv6' and rule.ipv4_only)])
+
+    def compile_v6(self):
+        return self.compile('ipv6')
