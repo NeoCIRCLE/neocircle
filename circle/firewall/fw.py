@@ -1,4 +1,6 @@
 import re
+import logging
+from netaddr import IPAddress, AddrFormatError
 from datetime import datetime, timedelta
 from itertools import product
 
@@ -10,6 +12,7 @@ from django.template import loader, Context
 
 
 settings = django.conf.settings.FIREWALL_SETTINGS
+logger = logging.getLogger(__name__)
 
 
 class BuildFirewall:
@@ -132,17 +135,13 @@ def ipset():
 
 
 def ipv6_to_octal(ipv6):
-    while len(ipv6.split(':')) < 8:
-        ipv6 = ipv6.replace('::', ':::')
+    ipv6 = IPAddress(ipv6, version=6)
     octets = []
-    for part in ipv6.split(':'):
-        if not part:
-            octets.extend([0, 0])
-        else:
-            # Pad hex part to 4 digits.
-            part = '%04x' % int(part, 16)
-            octets.append(int(part[:2], 16))
-            octets.append(int(part[2:], 16))
+    for part in ipv6.words:
+        # Pad hex part to 4 digits.
+        part = '%04x' % part
+        octets.append(int(part[:2], 16))
+        octets.append(int(part[2:], 16))
     return '\\' + '\\'.join(['%03o' % x for x in octets])
 
 
@@ -173,7 +172,8 @@ def generate_ptr_records():
         if host.ipv6:
             DNS.append("^%s:%s:%s" % (host.ipv6.reverse_dns,
                                       reverse, settings['dns_ttl']))
-        return DNS
+
+    return DNS
 
 
 def txt_to_octal(txt):
@@ -196,7 +196,12 @@ def generate_records():
         if r.type == 'MX':
             params['address'], params['dist'] = r.address.split(':', 2)
         if r.type == 'AAAA':
-            params['octal'] = ipv6_to_octal(r.address)
+            try:
+                params['octal'] = ipv6_to_octal(r.address)
+            except AddrFormatError:
+                logger.error('Invalid ipv6 address: %s, record: %s',
+                             r.address, r)
+                continue
         if r.type == 'TXT':
             params['octal'] = txt_to_octal(r.address)
         retval.append(types[r.type] % params)
@@ -249,14 +254,14 @@ def dhcp():
                     'net': str(i_vlan.network4.network),
                     'netmask': str(i_vlan.network4.netmask),
                     'domain': i_vlan.domain,
-                    'router': i_vlan.ipv4,
-                    'ntp': i_vlan.ipv4,
+                    'router': i_vlan.network4.ip,
+                    'ntp': i_vlan.network4.ip,
                     'dnsserver': settings['rdns_ip'],
                     'extra': ("range %s" % i_vlan.dhcp_pool
                               if m else "deny unknown-clients"),
                     'interface': i_vlan.name,
                     'name': i_vlan.name,
-                    'tftp': i_vlan.ipv4
+                    'tftp': i_vlan.network4.ip,
                 })
 
                 for i_host in i_vlan.host_set.all():

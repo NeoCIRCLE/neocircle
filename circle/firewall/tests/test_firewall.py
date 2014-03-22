@@ -1,9 +1,10 @@
-from netaddr import IPSet
+from netaddr import IPSet, AddrFormatError
 
 from django.test import TestCase
 from django.contrib.auth.models import User
 from ..admin import HostAdmin
 from firewall.models import Vlan, Domain, Record, Host
+from firewall.fw import dns, ipv6_to_octal
 from django.forms import ValidationError
 from ..iptables import IptRule, IptChain, InvalidRuleExcepion
 
@@ -157,3 +158,39 @@ class IptablesTestCase(TestCase):
         ch.add(*self.r)
         compiled = ch.compile()
         self.assertEqual(len(compiled.splitlines()), len(ch))
+
+
+class DnsTestCase(TestCase):
+    def setUp(self):
+        self.u1 = User.objects.create(username='user1')
+        self.u1.save()
+        d = Domain(name='example.org', owner=self.u1)
+        d.save()
+        self.vlan = Vlan(vid=1, name='test', network4='10.0.0.0/29',
+                         network6='2001:738:2001:4031::/80', domain=d,
+                         owner=self.u1)
+        self.vlan.save()
+        for i in range(1, 6):
+            Host(hostname='h-%d' % i, mac='01:02:03:04:05:%02d' % i,
+                 ipv4='10.0.0.%d' % i, vlan=self.vlan,
+                 owner=self.u1).save()
+        self.r1 = Record(name='tst', type='A', address='127.0.0.1',
+                         domain=d, owner=self.u1)
+        self.rb = Record(name='tst', type='AAAA', address='1.0.0.1',
+                         domain=d, owner=self.u1)
+        self.r2 = Record(name='ts', type='AAAA', address='2001:123:45::6',
+                         domain=d, owner=self.u1)
+        self.r1.save()
+        self.r2.save()
+
+    def test_bad_aaaa_record(self):
+        self.assertRaises(AddrFormatError, ipv6_to_octal, self.rb.address)
+
+    def test_good_aaaa_record(self):
+        ipv6_to_octal(self.r2.address)
+
+    def test_dns_func(self):
+        records = dns()
+        self.assertEqual(Host.objects.count() * 2 +         # soa
+                         len((self.r1, self.r2)) + 1,
+                         len(records))
