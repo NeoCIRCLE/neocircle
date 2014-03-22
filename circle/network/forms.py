@@ -106,7 +106,7 @@ class HostForm(ModelForm):
                 'ipv4',
                 'ipv6',
                 'shared_ip',
-                'pub_ipv4',
+                'external_ipv4',
             ),
             Fieldset(
                 'Information',
