@@ -111,17 +111,7 @@
   <div class="row">
     <div class="col-md-4" id="vm-info-pane">
       <div class="big">
-        <span id="vm-details-state" class="label label-success">{{ instance.state }}</span>
-        <div class="btn-group">
-          <button type="button" class="btn btn-warning nojs-dropdown-toogle dropdown-toggle" data-toggle="dropdown">{% trans "Action" %} <i class="icon-caret-down"></i></button>
-          <ul class="nojs-dropdown-menu dropdown-menu" role="menu">
-            <li><a href="#" class="vm-details-rename-button"><i class="icon-pencil"></i> {% trans "Rename" %}</a></li>
-            <li><a data-vm-pk="{{ instance.pk }}" href="#" class="vm-details-save-as-button"><i class="icon-save"></i> {% trans "Save as" %}</a></li>
-            <li><a href="#"><i class="icon-refresh"></i> {% trans "Reboot" %}</a></li>
-            <li><a href="#"><i class="icon-off"></i> {% trans "Shutdown" %}</a></li>
-            <li><a data-vm-pk="{{ instance.pk }}" class="vm-delete" href="{% url "dashboard.views.delete-vm" pk=instance.pk %}"><i class="icon-remove"></i> {% trans "Discard" %}</a></li>
-          </ul>
-        </div>
+        <span id="vm-details-state" class="label label-success"><i class="{{ instance.get_status_icon }}"></i> {{ instance.get_status_display|upper }}</span>
       </div>
       <h3>{% trans "Connection" %}</h3>
       <input type="text" value="{{ instance.get_connect_command }}" class="form-control" readonly />
