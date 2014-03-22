@@ -130,8 +130,8 @@ class BuildFirewall:
 def ipset():
     week = datetime.now() - timedelta(days=2)
     filter_ban = (Q(type='tempban', modified_at__gte=week) |
-                  Q(type='permban')).values('ipv4', 'reason')
-    return Blacklist.objects.filter(filter_ban)
+                  Q(type='permban'))
+    return Blacklist.objects.filter(filter_ban).values('ipv4', 'reason')
 
 
 def ipv6_to_octal(ipv6):
