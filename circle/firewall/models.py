@@ -134,9 +134,6 @@ class Rule(models.Model):
         return (self.nat_external_ipv4
                 if self.nat_external_ipv4 else self.host.get_external_ipv4())
 
-    def get_external_ipv6(self):
-        return self.host.ipv6
-
     def get_external_port(self, proto='ipv4'):
         assert proto in ('ipv4', 'ipv6')
         if proto == 'ipv4' and self.nat_external_port:
