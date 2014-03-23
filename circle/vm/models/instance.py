@@ -218,6 +218,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
                                              "destruction."))
     objects = Manager()
     active = InstanceActiveManager()
+    _ops = {}  # operation factory registry
 
     class Meta:
         app_label = 'vm'

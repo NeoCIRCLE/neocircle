@@ -3,6 +3,7 @@ from __future__ import absolute_import, unicode_literals
 from common.models import activity_context
 from ..tasks.local_tasks import async_operation
 from .activity import InstanceActivity
+from .instance import Instance
 
 
 class Operation:
@@ -77,3 +78,12 @@ class Operation:
         """This method is called when the operation executes successfully.
         """
         pass
+
+
+def register_operation(op_cls, op_id=None):
+    """Register the specified operation with Instance.
+    """
+    if op_id is None:
+        op_id = op_cls.id
+
+    Instance._ops[op_id] = lambda inst: op_cls(inst)
