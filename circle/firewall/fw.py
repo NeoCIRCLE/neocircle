@@ -142,7 +142,7 @@ def ipv6_to_octal(ipv6):
         part = '%04x' % part
         octets.append(int(part[:2], 16))
         octets.append(int(part[2:], 16))
-    return '\\' + '\\'.join(['%03o' % x for x in octets])
+    return ''.join(['\\%03o' % x for x in octets])
 
 
 # =fqdn:ip:ttl          A, PTR
