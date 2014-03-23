@@ -153,8 +153,7 @@ class Node(TimeStampedModel):
             with node_activity(code_suffix='enable', node=self, user=user):
                 self.enabled = True
                 self.save()
-            self.get_num_cores(invalidate_cache=True)
-            self.get_ram_size(invalidate_cache=True)
+            self.get_info(invalidate_cache=True)
 
     @property
     @node_available
@@ -197,8 +196,7 @@ class Node(TimeStampedModel):
                 act.succeeded = True
                 act.save()
                 logger.info("Node %s is ONLINE." % self.name)
-                self.get_num_cores(invalidate_cache=True)
-                self.get_ram_size(invalidate_cache=True)
+                self.get_info(invalidate_cache=True)
 
     def node_offline(self):
         """Called when a node disappears.
