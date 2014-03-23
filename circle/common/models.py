@@ -1,4 +1,5 @@
 from collections import deque
+from contextlib import contextmanager
 from hashlib import sha224
 from logging import getLogger
 from time import time
@@ -30,6 +31,9 @@ def activitycontextimpl(act, on_abort=None, on_commit=None):
         raise e
     else:
         act.finish(succeeded=True, event_handler=on_commit)
+
+
+activity_context = contextmanager(activitycontextimpl)
 
 
 class ActivityModel(TimeStampedModel):
