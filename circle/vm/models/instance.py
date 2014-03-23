@@ -728,7 +728,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
         """
         return scheduler.select_node(self, Node.objects.all())
 
-    def __schedule_vm(self, act):
+    def _schedule_vm(self, act):
         """Schedule the virtual machine as part of a higher level activity.
 
         :param act: Parent activity.
@@ -743,7 +743,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
 
         self.save()
 
-    def __deploy_vm(self, act, timeout=15):
+    def _deploy_vm(self, act, timeout=15):
         """Deploy the virtual machine.
 
         :param self: The virtual machine.
@@ -793,7 +793,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
                                on_commit=__on_commit, task_uuid=task_uuid,
                                user=user) as act:
 
-            self.__schedule_vm(act)
+            self._schedule_vm(act)
 
             # Deploy virtual images
             with act.sub_activity('deploying_disks'):
@@ -808,7 +808,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
                     # deploy disk
                     disk.deploy()
 
-            self.__deploy_vm(act)
+            self._deploy_vm(act)
 
     def deploy_async(self, user=None):
         """Execute deploy asynchronously.
@@ -818,7 +818,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
         return local_tasks.deploy.apply_async(args=[self, user],
                                               queue="localhost.man")
 
-    def __destroy_vm(self, act, timeout=15):
+    def _destroy_vm(self, act, timeout=15):
         """Destroy the virtual machine and its associated networks.
 
         :param self: The virtual machine.
@@ -844,7 +844,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
                 else:
                     raise
 
-    def __cleanup_after_destroy_vm(self, act, timeout=15):
+    def _cleanup_after_destroy_vm(self, act, timeout=15):
         """Clean up the virtual machine's data after destroy.
 
         :param self: The virtual machine.
@@ -881,14 +881,14 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
                                task_uuid=task_uuid, user=user) as act:
             # Destroy VM
             if self.node:
-                self.__destroy_vm(act)
+                self._destroy_vm(act)
 
-            self.__cleanup_after_destroy_vm(act)
+            self._cleanup_after_destroy_vm(act)
 
             # Deploy VM
-            self.__schedule_vm(act)
+            self._schedule_vm(act)
 
-            self.__deploy_vm(act)
+            self._deploy_vm(act)
 
     def redeploy_async(self, user=None):
         """Execute redeploy asynchronously.
@@ -907,9 +907,9 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
                                on_commit=__on_commit) as act:
             # Destroy VM
             if self.node:
-                self.__destroy_vm(act)
+                self._destroy_vm(act)
 
-            self.__cleanup_after_destroy_vm(act)
+            self._cleanup_after_destroy_vm(act)
             self.save()
 
     def shut_off_async(self, user=None):
@@ -942,14 +942,14 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
                                user=user) as act:
 
             if self.node:
-                self.__destroy_vm(act)
+                self._destroy_vm(act)
 
             # Destroy disks
             with act.sub_activity('destroying_disks'):
                 for disk in self.disks.all():
                     disk.destroy()
 
-            self.__cleanup_after_destroy_vm(act)
+            self._cleanup_after_destroy_vm(act)
 
             self.destroyed_at = timezone.now()
             self.save()
@@ -1019,7 +1019,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
                                task_uuid=task_uuid, user=user) as act:
 
             # Schedule vm
-            self.__schedule_vm(act)
+            self._schedule_vm(act)
             queue_name = self.get_remote_queue_name('vm')
 
             # Resume vm
