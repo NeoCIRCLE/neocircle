@@ -6,6 +6,7 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.models import Permission
 
 from vm.models import Instance, InstanceTemplate, Lease, Node
+from vm.models.operation import WakeUpOperation
 from ..models import Profile
 from ..views import VmRenewView
 from storage.models import Disk
@@ -487,7 +488,7 @@ class VmDetailTest(LoginMixin, TestCase):
     def test_permitted_wake_up_wrong_state(self):
         c = Client()
         self.login(c, "user2")
-        with patch.object(Instance, 'wake_up_async') as mock_method:
+        with patch.object(WakeUpOperation, 'async') as mock_method:
             inst = Instance.objects.get(pk=1)
             mock_method.side_effect = inst.wake_up
             inst.manual_state_change('RUNNING')
@@ -501,7 +502,7 @@ class VmDetailTest(LoginMixin, TestCase):
         c = Client()
         self.login(c, "user2")
         with patch.object(Instance, 'select_node', return_value=None):
-            with patch.object(Instance, 'wake_up_async') as new_wake_up:
+            with patch.object(WakeUpOperation, 'async') as new_wake_up:
                 with patch('vm.tasks.vm_tasks.wake_up.apply_async') as wuaa:
                     inst = Instance.objects.get(pk=1)
                     new_wake_up.side_effect = inst.wake_up

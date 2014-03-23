@@ -775,14 +775,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
 
         self.renew(which='both', base_activity=act)
 
-    def deploy_async(self, user=None):
-        """Execute deploy asynchronously.
-        """
-        warn('Use self.deploy.async instead.', DeprecationWarning)
-        logger.debug('Calling async local_tasks.deploy(%s, %s)',
-                     unicode(self), unicode(user))
-        return self.deploy.async(user=user)
-
     def _destroy_vm(self, act, timeout=15):
         """Destroy the virtual machine and its associated networks.
 
@@ -829,64 +821,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
         # Clear node and VNC port association
         self.node = None
         self.vnc_port = None
-
-    def redeploy_async(self, user=None):
-        """Execute redeploy asynchronously.
-        """
-        warn('Use self.redeploy.async instead.', DeprecationWarning)
-        return self.redeploy.async(user=user)
-
-    def shut_off_async(self, user=None):
-        """Shut off VM. (plug-out)
-        """
-        warn('Use self.shut_off.async instead.', DeprecationWarning)
-        return self.shut_off.async(user=user)
-
-    def destroy_async(self, user=None):
-        """Execute destroy asynchronously.
-        """
-        warn('Use self.destroy.async instead.', DeprecationWarning)
-        return self.destroy.async(user=user)
-
-    def sleep_async(self, user=None):
-        """Execute sleep asynchronously.
-        """
-        warn('Use self.sleep.async instead.', DeprecationWarning)
-        return self.sleep.async(user=user)
-
-    def wake_up_async(self, user=None):
-        """Execute wake_up asynchronously.
-        """
-        warn('Use self.wake_up.async instead.', DeprecationWarning)
-        return self.wake_up.async(user=user)
-
-    def shutdown_async(self, user=None):
-        """Execute shutdown asynchronously.
-        """
-        warn('Use self.shutdown.async instead.', DeprecationWarning)
-        return self.shutdown.async(user=user)
-
-    def reset_async(self, user=None):
-        """Execute reset asynchronously.
-        """
-        warn('Use self.reset.async instead.', DeprecationWarning)
-        return self.reset.async(user=user)
-
-    def reboot_async(self, user=None):
-        """Execute reboot asynchronously. """
-        warn('Use self.reboot.async instead.', DeprecationWarning)
-        return self.reboot.async(user=user)
-
-    def migrate_async(self, to_node, user=None):
-        """Execute migrate asynchronously. """
-        warn('Use self.shut_off.async instead.', DeprecationWarning)
-        return self.migrate.async(user=user, to_node=to_node)
-
-    def save_as_template_async(self, name, user=None, **kwargs):
-        """ Save as template asynchronusly.
-        """
-        warn('Use self.shut_off.async instead.', DeprecationWarning)
-        return self.save_as_template.async(name=name, user=user, **kwargs)
 
     def shutdown_and_save_as_template(self, name, user=None, task_uuid=None,
                                       **kwargs):
