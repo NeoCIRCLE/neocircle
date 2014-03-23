@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-21 13:30+0100\n"
-"PO-Revision-Date: 2014-03-21 13:30+0100\n"
+"POT-Creation-Date: 2014-03-23 09:31+0100\n"
+"PO-Revision-Date: 2014-03-23 09:33+0100\n"
 "Last-Translator: Mate Ory <orymate@ik.bme.hu>\n"
 "Language-Team: Hungarian <cloud@ik.bme.hu>\n"
 "Language: hu\n"
@@ -29,7 +29,7 @@ msgstr "Celery feladat egyedi azonosítója."
 msgid "task_uuid"
 msgstr "feladat uuid"
 
-#: common/models.py:41 firewall/models.py:177 storage/models.py:64
+#: common/models.py:41 firewall/models.py:177 storage/models.py:63
 #: vm/models/instance.py:110 vm/models/instance.py:171
 msgid "user"
 msgstr "felhasználó"
@@ -67,7 +67,7 @@ msgid "Human readable result of activity."
 msgstr "A tevékenység eredménye olvasható formában."
 
 #: dashboard/forms.py:104 dashboard/templates/dashboard/node-detail.html:51
-#: dashboard/templates/dashboard/vm-detail.html:164
+#: dashboard/templates/dashboard/vm-detail.html:154
 msgid "Resources"
 msgstr "Erőforrások"
 
@@ -77,8 +77,8 @@ msgid "No disks are added!"
 msgstr "Egy lemez sincs hozzáadva!"
 
 #: dashboard/forms.py:225 dashboard/templates/dashboard/_vm-create-1.html:40
-#: dashboard/templates/dashboard/base.html:48
-#: dashboard/templates/dashboard/vm-detail.html:178
+#: dashboard/templates/dashboard/base.html:49
+#: dashboard/templates/dashboard/vm-detail.html:168
 msgid "Network"
 msgstr "Hálózat"
 
@@ -166,7 +166,7 @@ msgstr "Hozzáadás"
 msgid "Username"
 msgstr "Felhasználónév"
 
-#: dashboard/forms.py:854 dashboard/templates/dashboard/vm-detail.html:129
+#: dashboard/forms.py:854 dashboard/templates/dashboard/vm-detail.html:119
 msgid "Password"
 msgstr "Jelszó"
 
@@ -216,14 +216,14 @@ msgstr "választott nyelv"
 msgid "Unique identifier of the person, e.g. a student number."
 msgstr "A személy egyedi azonosítója, például hallgatói azonosító."
 
-#: dashboard/models.py:79 firewall/models.py:178 storage/models.py:65
+#: dashboard/models.py:79 firewall/models.py:178 storage/models.py:64
 #: vm/models/instance.py:111 vm/models/instance.py:172
 msgid "operator"
 msgstr "operátor"
 
 #: dashboard/models.py:80 firewall/models.py:71 firewall/models.py:266
 #: firewall/models.py:343 firewall/models.py:366 firewall/models.py:431
-#: firewall/models.py:728 firewall/models.py:757 storage/models.py:66
+#: firewall/models.py:728 firewall/models.py:757 storage/models.py:65
 #: vm/models/instance.py:112 vm/models/instance.py:173
 msgid "owner"
 msgstr "tulajdonos"
@@ -568,7 +568,6 @@ msgstr "Támogatás"
 #: dashboard/templates/dashboard/node-detail.html:11
 #: dashboard/templates/dashboard/node-detail.html:31
 #: dashboard/templates/dashboard/vm-detail.html:61
-#: dashboard/templates/dashboard/vm-detail.html:118
 #: dashboard/templates/dashboard/group-list/column-name.html:7
 #: dashboard/templates/dashboard/node-list/column-actions.html:5
 #: dashboard/templates/dashboard/node-list/column-admin.html:4
@@ -689,6 +688,10 @@ msgstr "<big>%(count)s</big> leállítva"
 msgid "Dashboard"
 msgstr "Műszerfal"
 
+#: dashboard/templates/dashboard/index.html:16
+msgid "You have no permission to start or manage virtual machines."
+msgstr "Nincs jogosultsága virtuális gépek indítására vagy kezelésére."
+
 #: dashboard/templates/dashboard/lease-create.html:10
 #: dashboard/templates/dashboard/lease-edit.html:10
 #: dashboard/templates/dashboard/profile_form.html:10
@@ -712,7 +715,6 @@ msgid "Add Trait"
 msgstr "Jellemző hozzáadása"
 
 #: dashboard/templates/dashboard/node-detail.html:29
-#: dashboard/templates/dashboard/vm-detail.html:116
 #: network/templates/network/index.html:20
 msgid "Action"
 msgstr "Művelet"
@@ -743,7 +745,7 @@ msgid "Delete"
 msgstr "Törlés"
 
 #: dashboard/templates/dashboard/node-detail.html:47
-#: dashboard/templates/dashboard/vm-detail.html:159
+#: dashboard/templates/dashboard/vm-detail.html:149
 msgid "Home"
 msgstr "Kezdőoldal"
 
@@ -752,7 +754,7 @@ msgid "Virtual Machines"
 msgstr "Virtuális gépek"
 
 #: dashboard/templates/dashboard/node-detail.html:59
-#: dashboard/templates/dashboard/vm-detail.html:183
+#: dashboard/templates/dashboard/vm-detail.html:173
 #: dashboard/templates/dashboard/node-detail/activity.html:3
 #: dashboard/templates/dashboard/vm-detail/activity.html:3
 msgid "Activity"
@@ -851,7 +853,6 @@ msgid "Wake up suspended machine."
 msgstr "Felfüggesztett gép felébresztése."
 
 #: dashboard/templates/dashboard/vm-detail.html:80
-#: dashboard/templates/dashboard/vm-detail.html:121
 #: dashboard/templates/dashboard/vm-list.html:25
 msgid "Shutdown"
 msgstr "Leállítás"
@@ -889,32 +890,19 @@ msgstr "Virtuális gép leállítása, majd mentése új sablonként."
 msgid "Remove virtual machine and its networks."
 msgstr "Virtuális gép és hálózatainak eltávolítása."
 
-#: dashboard/templates/dashboard/vm-detail.html:119
-msgid "Save as"
-msgstr "Mentés másként"
-
-#: dashboard/templates/dashboard/vm-detail.html:120
-#: dashboard/templates/dashboard/vm-list.html:24
-msgid "Reboot"
-msgstr "Újraindítás"
-
-#: dashboard/templates/dashboard/vm-detail.html:122
-msgid "Discard"
-msgstr "Eldobás"
-
-#: dashboard/templates/dashboard/vm-detail.html:126
+#: dashboard/templates/dashboard/vm-detail.html:116
 msgid "Connection"
 msgstr "Kapcsolat"
 
-#: dashboard/templates/dashboard/vm-detail.html:139
+#: dashboard/templates/dashboard/vm-detail.html:129
 msgid "Generate new password!"
 msgstr "Új jelszó generálása"
 
-#: dashboard/templates/dashboard/vm-detail.html:144
+#: dashboard/templates/dashboard/vm-detail.html:134
 msgid "Are you sure?"
 msgstr "Biztos benne?"
 
-#: dashboard/templates/dashboard/vm-detail.html:147
+#: dashboard/templates/dashboard/vm-detail.html:137
 #: dashboard/templates/dashboard/confirm/ajax-node-flush.html:19
 #: dashboard/templates/dashboard/confirm/base-delete.html:29
 #: dashboard/templates/dashboard/confirm/base-transfer-ownership.html:22
@@ -922,16 +910,16 @@ msgstr "Biztos benne?"
 msgid "Yes"
 msgstr "Igen"
 
-#: dashboard/templates/dashboard/vm-detail.html:148
+#: dashboard/templates/dashboard/vm-detail.html:138
 #: dashboard/templates/dashboard/confirm/base-transfer-ownership.html:20
 msgid "No"
 msgstr "Nem"
 
-#: dashboard/templates/dashboard/vm-detail.html:169
+#: dashboard/templates/dashboard/vm-detail.html:159
 msgid "Console"
 msgstr "Konzol"
 
-#: dashboard/templates/dashboard/vm-detail.html:173
+#: dashboard/templates/dashboard/vm-detail.html:163
 msgid "Access"
 msgstr "Hozzáférés"
 
@@ -942,6 +930,10 @@ msgstr "Csoportos műveletek"
 #: dashboard/templates/dashboard/vm-list.html:22
 msgid "Select all"
 msgstr "Összes kiválasztása"
+
+#: dashboard/templates/dashboard/vm-list.html:24
+msgid "Reboot"
+msgstr "Újraindítás"
 
 #: dashboard/templates/dashboard/vm-list.html:32
 msgid "ID"
@@ -1706,8 +1698,8 @@ msgid "All IP addresses are already in use."
 msgstr "Minden IP cím használatban van."
 
 #: firewall/models.py:334 firewall/models.py:361 firewall/models.py:719
-#: firewall/models.py:727 firewall/models.py:748 storage/models.py:31
-#: storage/models.py:70 vm/models/common.py:41 vm/models/common.py:60
+#: firewall/models.py:727 firewall/models.py:748 storage/models.py:30
+#: storage/models.py:69 vm/models/common.py:41 vm/models/common.py:60
 #: vm/models/common.py:129 vm/models/instance.py:115 vm/models/instance.py:184
 #: vm/models/node.py:46
 msgid "name"
@@ -1729,7 +1721,7 @@ msgstr "A csoport tagjait képező vlanok."
 msgid "Description of the group."
 msgstr "A csoport leírása."
 
-#: firewall/models.py:386 storage/models.py:34
+#: firewall/models.py:386 storage/models.py:33
 msgid "hostname"
 msgstr "gépnév"
 
@@ -2369,39 +2361,39 @@ msgstr "Amennyiben biztos benne, gépelje be az objektum nevét."
 msgid "Yes, delete it!"
 msgstr "Igen, törlés!"
 
-#: storage/models.py:32
+#: storage/models.py:31
 msgid "path"
 msgstr "útvonal"
 
-#: storage/models.py:38 storage/models.py:73
+#: storage/models.py:37 storage/models.py:72
 msgid "datastore"
 msgstr "adattár"
 
-#: storage/models.py:39
+#: storage/models.py:38
 msgid "datastores"
 msgstr "adattárak"
 
-#: storage/models.py:72
+#: storage/models.py:71
 msgid "filename"
 msgstr "fájlnév"
 
-#: storage/models.py:74
+#: storage/models.py:73
 msgid "The datastore that holds the disk."
 msgstr "A lemezt tároló adattár."
 
-#: storage/models.py:80
+#: storage/models.py:79
 msgid "device number"
 msgstr "eszközazonosító"
 
-#: storage/models.py:85 storage/models.py:518
+#: storage/models.py:84 storage/models.py:516
 msgid "disk"
 msgstr "lemez"
 
-#: storage/models.py:86 vm/models/instance.py:121 vm/models/instance.py:211
+#: storage/models.py:85 vm/models/instance.py:121 vm/models/instance.py:211
 msgid "disks"
 msgstr "lemezek"
 
-#: storage/models.py:517
+#: storage/models.py:515
 msgid "Disk this activity works on."
 msgstr "A lemez, amelyre a művelet vonatkozik."
 
@@ -2848,6 +2840,12 @@ msgstr "%s megsemmisítve"
 #, python-format
 msgid "%s suspended"
 msgstr "%s felfüggesztve"
+
+#~ msgid "Save as"
+#~ msgstr "Mentés másként"
+
+#~ msgid "Discard"
+#~ msgstr "Eldobás"
 
 #~ msgid "Instance successfully saved as template, please rename it!"
 #~ msgstr "A példány mentésre került sablonként. Nevezze át."
