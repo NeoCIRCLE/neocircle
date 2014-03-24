@@ -2,6 +2,7 @@ from __future__ import absolute_import, unicode_literals
 from logging import getLogger
 from string import ascii_lowercase
 
+from django.core.exceptions import PermissionDenied
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
@@ -43,7 +44,7 @@ class Operation:
         """This method contains the shared prelude of __call__ and async.
         """
         user = kwargs.setdefault('user', None)
-        self.check_auth(user)  # TODO what's check_auth's specification?
+        self.check_auth(user)
         self.check_precond()
         return self.create_activity(user=user)
 
@@ -76,7 +77,13 @@ class Operation:
         pass
 
     def check_auth(self, user):
-        pass
+        if not self.instance.has_level(user, self.acl_level):
+            raise PermissionDenied("%s doesn't have the required ACL level." %
+                                   user)
+
+        if not user.has_perms(self.required_perms):
+            raise PermissionDenied("%s doesn't have the required permissions."
+                                   % user)
 
     def create_activity(self, user=None):
         return InstanceActivity.create(code_suffix=self.activity_code_suffix,
