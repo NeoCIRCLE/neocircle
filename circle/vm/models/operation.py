@@ -63,7 +63,8 @@ class Operation:
     def async(self, **kwargs):
         """Execute the operation asynchronously.
 
-        Only a quick, preliminary check is ran before queuing the job.
+        Only a quick, preliminary check is ran before creating the associated
+        activity and queuing the job.
         """
         activity = self.__prelude(kwargs)
         return async_operation.apply_async(args=(self.id, self.instance.pk,
