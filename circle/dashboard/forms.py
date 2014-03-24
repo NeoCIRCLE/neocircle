@@ -185,32 +185,36 @@ class VmCustomizeForm(forms.Form):
                             HTML(_("No disks are added!")),
                             css_id="vm-create-disk-list",
                         ),
-                        AnyTag(
-                            "h3",
-                            Div(
-                                AnyTag(
-                                    "select",
-                                    css_class="form-control",
-                                    css_id="vm-create-disk-add-select",
-                                ),
-                                Div(
-                                    AnyTag(
-                                        "a",
-                                        AnyTag(
-                                            "i",
-                                            css_class="icon-plus-sign",
-                                        ),
-                                        href="#",
-                                        css_id="vm-create-disk-add-button",
-                                        css_class="btn btn-success",
-                                    ),
-                                    css_class="input-group-btn"
-                                ),
-                                css_class="input-group",
-                                style="max-width: 330px;",
-                            ),
-                            css_id="vm-create-disk-add",
+                        Div(
+                            HTML(""),
+                            style="clear: both;",
                         ),
+                        # AnyTag(
+                        #     "h3",
+                        #     Div(
+                        #         AnyTag(
+                        #             "select",
+                        #             css_class="form-control",
+                        #             css_id="vm-create-disk-add-select",
+                        #         ),
+                        #         Div(
+                        #             AnyTag(
+                        #                 "a",
+                        #                 AnyTag(
+                        #                     "i",
+                        #                     css_class="icon-plus-sign",
+                        #                 ),
+                        #                 href="#",
+                        #                 css_id="vm-create-disk-add-button",
+                        #                 css_class="btn btn-success",
+                        #             ),
+                        #             css_class="input-group-btn"
+                        #         ),
+                        #         css_class="input-group",
+                        #         style="max-width: 330px;",
+                        #     ),
+                        #     css_id="vm-create-disk-add",
+                        # ),
                         css_class="no-js-hidden",
                     ),
                     css_class="col-sm-8",
