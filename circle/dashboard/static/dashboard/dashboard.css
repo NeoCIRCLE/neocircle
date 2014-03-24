@@ -408,7 +408,9 @@ footer {
                                                                 
 footer a, footer a:hover, footer a:visited {                        
   color: white;                                                     
-  text-decoration: underline;                                       
+  text-decoration: underline;
+}
+
 .template-disk-list {
   list-style: none;
   padding-left: 0;
@@ -416,4 +418,8 @@ footer a, footer a:hover, footer a:visited {
 
 .template-disk-list li {
   padding-bottom: 5px;
+}
+
+#node-info-pane {
+  margin-bottom: 20px;
 }
