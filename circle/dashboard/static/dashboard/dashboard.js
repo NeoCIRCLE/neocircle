@@ -249,12 +249,16 @@ function generateVmHTML(pk, name, host, icon, _status, fav) {
       '</a>';     
 }
 
+/* copare vm-s by fav, pk order */
 function compareVmByFav(a, b) {
   if(a.fav && b.fav) {
     return a.pk < b.pk ? -1 : 1; 
   }
-  if(a.fav) {
+  else if(a.fav && !b.fav) {
     return -1;
+  }
+  else if(!a.fav && b.fav) {
+    return 1;
   }
   else
     return a.pk < b.pk ? -1 : 1; 
