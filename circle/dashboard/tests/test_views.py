@@ -524,6 +524,12 @@ class VmDetailTest(LoginMixin, TestCase):
         self.assertEqual(response.status_code, 403)
         self.assertEqual(inst.status, 'SUSPENDED')
 
+    def test_non_existing_template_get(self):
+        c = Client()
+        self.login(c, "superuser")
+        response = c.get("/dashboard/template/111111/")
+        self.assertEqual(response.status_code, 404)
+
 
 class VmDetailVncTest(LoginMixin, TestCase):
     fixtures = ['test-vm-fixture.json', 'node.json']

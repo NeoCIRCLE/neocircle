@@ -801,7 +801,7 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     success_message = _("Successfully modified template!")
 
     def get(self, request, *args, **kwargs):
-        template = InstanceTemplate.objects.get(pk=kwargs['pk'])
+        template = self.get_object()
         if not template.has_level(request.user, 'user'):
             raise PermissionDenied()
         if request.is_ajax():
