@@ -13,3 +13,8 @@ def async_operation(operation_id, instance_pk, activity_pk, **kwargs):
     activity.save()
 
     return operation._exec_op(activity=activity, **kwargs)
+
+
+@celery.task
+def flush(node, user):
+    node.flush(task_uuid=flush.request.id, user=user)
