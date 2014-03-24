@@ -409,6 +409,8 @@ footer {
 footer a, footer a:hover, footer a:visited {                        
   color: white;                                                     
   text-decoration: underline;                                       
+}
+  
 .template-disk-list {
   list-style: none;
   padding-left: 0;
@@ -416,4 +418,17 @@ footer a, footer a:hover, footer a:visited {
 
 .template-disk-list li {
   padding-bottom: 5px;
+}
+
+.index-vm-list-name {
+  display: inline-block; 
+  max-width: 70%; 
+  text-overflow: ellipsis; 
+  white-space: nowrap; 
+  overflow: hidden; 
+  float: left;
+}
+
+#dashboard-vm-list a small {
+  padding-left: 10px;
 }

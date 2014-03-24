@@ -16,8 +16,11 @@
     <div id="dashboard-vm-list">
       {% for i in instances %}
       <a href="{{ i.get_absolute_url }}" class="list-group-item">
-        <i class="{{ i.get_status_icon }}" title="{{ i.get_status_display }}"></i> {{ i.name }}
-        <small class="text-muted">{{ i.primary_host.hostname }}</small>
+        <span class="index-vm-list-name">
+          <i class="{{ i.get_status_icon }}" title="{{ i.get_status_display }}"></i>
+          {{ i.name }}
+        </span>
+        <small class="text-muted"> {{ i.primary_host.hostname }}</small>
         <div class="pull-right dashboard-vm-favourite" data-vm="{{ i.pk }}">
           {% if i.fav %}
             <i class="icon-star text-primary title-favourite" title="{% trans "Unfavourite" %}"></i>
@@ -25,6 +28,7 @@
             <i class="icon-star-empty text-primary title-favourite" title="{% trans "Mark as favorite" %}"></i>
           {% endif %}
         </div>
+      <div style="clear: both;"></div>
       </a>
       {% endfor %}
     </div>
