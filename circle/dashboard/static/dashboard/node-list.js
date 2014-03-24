@@ -161,7 +161,7 @@ $(function() {
   $('#table_container').on('click','.node-enable',function() {
     var tr= $(this).closest("tr");
     var pk =$(this).attr('data-node-pk');
-    var url = '/dashboard/node/' + pk  + '/';
+    var url = $(this).attr('href');
     $.ajax({
       method: 'POST',
       url: url,
