@@ -132,9 +132,8 @@ $(function() {
     return false;
   });
 
-  function enabletableSuccess(unit){
-    var tr= $(unit).closest("tr");
-    var tspan=tr.children('.enabled').children();
+  function statuschangeSuccess(tr){
+   var tspan=tr.children('.enabled').children();
     var buttons=tr.children('.actions').children('.btn-group').children('.dropdown-menu').children('li').children('.node-enable');
  
     buttons.each(function(index){
@@ -158,29 +157,10 @@ $(function() {
   	  colortable();
   }
 
-  function enabledetailsSuccess(){
-    
-     // change big status span
-    $('#node-info-pane').load(location.href+" #node-info-data");
-    $('#activity-timeline-wrapper').load(location.href+" #activity-timeline");
-  }
 
   $('#table_container').on('click','.node-enable',function() {
-    enablenode($(this).attr('data-node-pk'), $(this).attr('data-status'),enabletableSuccess,this);
-    return false;
-  });
-
-// on node details, change node status, with calling enable node, refresh status span, resources div
-  $('#node-info-pane').on('click','.node-enable',function(){
-    // post, change node status
-    enablenode($(this).attr('data-node-pk'),$(this).attr('data-status'),enabledetailsSuccess);
-
-    return false;
- });
-
-
-  // enabling / disabling node
-  function enablenode(pk,new_status,onsuccess,params) {
+    var tr= $(this).closest("tr");
+    var pk =$(this).attr('data-node-pk');
     var url = '/dashboard/node/' + pk  + '/';
     $.ajax({
       method: 'POST',
@@ -188,13 +168,18 @@ $(function() {
       data: {'change_status':''},
       headers: {"X-CSRFToken": getCookie('csrftoken')},
       success: function(data, textStatus, xhr) {
-      onsuccess(params);
+      statuschangeSuccess(tr);
       },
       error: function(xhr, textStatus, error) {
         addMessage("Error!", "danger");
       }
     });
     return false;
+  });
+
+
+  // enabling / disabling node
+  function enablenode(pk,new_status,onsuccess,params) {
   }
 
 
