@@ -921,7 +921,9 @@ class VmList(LoginRequiredMixin, ListView):
             instances = [{
                 'pk': i.pk,
                 'name': i.name,
-                'state': i.state,
+                'icon': i.get_status_icon(),
+                'host': "" if not i.primary_host else i.primary_host.hostname,
+                'status': i.get_status_display(),
                 'fav': i.pk in favs} for i in instances]
             return HttpResponse(
                 json.dumps(list(instances)),  # instances is ValuesQuerySet
