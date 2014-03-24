@@ -3,7 +3,7 @@ $(function () {
     var template = $(this).data("template");
     $.ajax({
       type: 'GET',
-      url: '/dashboard/vm/create/', 
+      url: '/dashboard/vm/create/' + (isNaN(template) ? '' : '?template=' + template), 
       success: function(data) { 
         $('body').append(data);
         vmCreateLoaded();
@@ -12,9 +12,6 @@ $(function () {
         $('#create-modal').on('hidden.bs.modal', function() {
           $('#create-modal').remove();
         });
-        if(template) {
-          $('#vm-create-template-select option[value="' + template + '"]').prop("selected", true).trigger("change");
-        }
       }
     });
     return false;
