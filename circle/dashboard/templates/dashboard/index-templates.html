@@ -13,6 +13,15 @@
       <i class="icon-{{ t.os_type }}"></i> {{ t.name }} <small class="text-muted">{{ t.system }}</small>
       <div class="pull-right vm-create" data-template="{{ t.pk }}"><i title="{% trans "Start vm instance" %}" class="icon-play"></i></div>
     </a>
+    {% empty %}
+      <div class="alert alert-warning" style="margin: 10px;">
+        <p>
+          {% trans "You don't have any templates, however you can still start virtual machines and even save them as new templates!" %}
+        </p>
+        <p>
+          {% trans "The new button below creates a new base vm, please use only if necessary!" %}
+        </p>
+      </div>
     {% endfor %}
     <div href="#" class="list-group-item list-group-footer text-right">
       <p>
