@@ -32,10 +32,7 @@ class Operation:
         self.instance = instance
 
     def __call__(self, **kwargs):
-        """Execute the operation synchronously.
-        """
-        activity = self.__prelude(kwargs)
-        return self._exec_op(activity=activity, **kwargs)
+        return self.call(**kwargs)
 
     def __unicode__(self):
         return self.name
@@ -72,6 +69,12 @@ class Operation:
         return async_operation.apply_async(args=(self.id, self.instance.pk,
                                                  activity.pk), kwargs=kwargs,
                                            queue=self.async_queue)
+
+    def call(self, **kwargs):
+        """Execute the operation synchronously.
+        """
+        activity = self.__prelude(kwargs)
+        return self._exec_op(activity=activity, **kwargs)
 
     def check_precond(self):
         pass
