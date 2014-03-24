@@ -754,26 +754,6 @@ class GroupAclUpdateView(AclUpdateView):
         return redirect(reverse("dashboard.views.group-detail",
                                 kwargs=self.kwargs))
 
-    def repost(self, request, *args, **kwargs):
-        group = self.get_object()
-        if not (group.profile.has_level(request.user, "owner") or
-                getattr(group.profile, 'owner', None) == request.user):
-            logger.warning('Tried to set permissions of %s by non-owner %s.',
-                           unicode(group), unicode(request.user))
-            raise PermissionDenied()
-
-        name = request.POST['perm-new-name']
-        if (User.objects.filter(username=name).count() +
-                Group.objects.filter(name=name).count() < 1
-                and len(name) > 0):
-            warning(request, _('User or group "%s" not found.') % name)
-        else:
-            self.set_levels(request, group.profile)
-            self.add_levels(request, group.profile)
-
-        return redirect(reverse("dashboard.views.group-detail",
-                                kwargs=self.kwargs))
-
 
 class TemplateCreate(SuccessMessageMixin, CreateView):
     model = InstanceTemplate
