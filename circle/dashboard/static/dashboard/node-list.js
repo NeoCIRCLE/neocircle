@@ -185,7 +185,7 @@ $(function() {
     $.ajax({
       method: 'POST',
       url: url,
-      data: {'new_status':new_status},
+      data: {'change_status':''},
       headers: {"X-CSRFToken": getCookie('csrftoken')},
       success: function(data, textStatus, xhr) {
       onsuccess(params);
