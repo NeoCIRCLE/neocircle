@@ -51,7 +51,8 @@ Update the package lists, and install the required system software::
 
   $ sudo apt-get update
   $ sudo apt-get install --yes virtualenvwrapper postgresql git \
-      python-pip rabbitmq-server libpq-dev python-dev ntp
+      python-pip rabbitmq-server libpq-dev python-dev ntp memcached \
+      libmemcached-dev
 
 Set up *PostgreSQL* to listen on localhost and restart it::
 
@@ -117,6 +118,7 @@ Set up default Circle configuration and activate the virtual environment::
               "localhost", "dns_ttl": "300", "reload_sleep": "10",
               "rdns_ip": "152.66.243.60", "default_vlangroup": "publikus"}'
   export AMQP_URI='amqp://cloud:password@localhost:5672/circle'
+  export CACHE_URI='pylibmc://127.0.0.1:11211/'
   END
   $ workon circle
   $ cd ~/circle

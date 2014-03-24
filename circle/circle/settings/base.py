@@ -322,7 +322,7 @@ VM_SCHEDULER = 'manager.scheduler'
 
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'BACKEND': 'pylibmc',
         'LOCATION': '127.0.0.1:11211',
     }
 }
