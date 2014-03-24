@@ -13,9 +13,11 @@
     </div>
     {% endif %}
 
+    {% if perms.auth %} 
     <div class="col-lg-4 col-sm-6">
       {% include "dashboard/index-groups.html" %}
     </div>
+    {% endif %}
 
     {% comment %}
     <div class="col-lg-4 col-sm-6">

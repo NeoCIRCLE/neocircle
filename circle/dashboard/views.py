@@ -47,7 +47,7 @@ from vm.models import (
     InterfaceTemplate, Lease, Node, NodeActivity, Trait,
 )
 from firewall.models import Vlan, Host, Rule
-from dashboard.models import Favourite, Profile
+from dashboard.models import Favourite, Profile, GroupProfile
 
 logger = logging.getLogger(__name__)
 
@@ -124,11 +124,14 @@ class IndexView(LoginRequiredMixin, TemplateView):
             })
 
         # groups
-        groups = Group.objects.all()
-        context.update({
-            'groups': groups[:5],
-            'more_groups': groups.count() - len(groups[:5]),
-        })
+        if user.has_module_perms('auth'):
+            pks = [i[0] for i in GroupProfile.get_objects_with_level(
+                'operator', user).values_list('pk')]
+            groups = Group.objects.filter(groupprofile__in=pks)
+            context.update({
+                'groups': groups[:5],
+                'more_groups': groups.count() - len(groups[:5]),
+            })
 
         # template
         if user.has_perm('vm.create_template'):
@@ -581,6 +584,7 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
 class GroupDetailView(CheckedDetailView):
     template_name = "dashboard/group-detail.html"
     model = Group
+    read_level = 'operator'
 
     def get_has_level(self):
         return self.object.profile.has_level
@@ -747,7 +751,6 @@ class GroupAclUpdateView(AclUpdateView):
         else:
             self.set_levels(request, instance)
             self.add_levels(request, instance)
-#        return redirect(self.profile)
         return redirect(reverse("dashboard.views.group-detail",
                                 kwargs=self.kwargs))
 
@@ -1331,7 +1334,7 @@ class NodeCreate(LoginRequiredMixin, SuperuserRequiredMixin, TemplateView):
             return redirect(path)
 
 
-class GroupCreate(LoginRequiredMixin, SuperuserRequiredMixin, TemplateView):
+class GroupCreate(LoginRequiredMixin, TemplateView):
 
     form_class = GroupCreateForm
     form = None
@@ -1343,6 +1346,8 @@ class GroupCreate(LoginRequiredMixin, SuperuserRequiredMixin, TemplateView):
             return ['dashboard/nojs-wrapper.html']
 
     def get(self, request, form=None, *args, **kwargs):
+        if not request.user.has_module_perms('auth'):
+            raise PermissionDenied()
         if form is None:
             form = self.form_class()
         context = self.get_context_data(**kwargs)
@@ -1363,11 +1368,14 @@ class GroupCreate(LoginRequiredMixin, SuperuserRequiredMixin, TemplateView):
         return context
 
     def post(self, request, *args, **kwargs):
+        if not request.user.has_module_perms('auth'):
+            raise PermissionDenied()
         form = self.form_class(request.POST)
         if not form.is_valid():
             return self.get(request, form, *args, **kwargs)
         form.cleaned_data
         savedform = form.save()
+        savedform.profile.set_level(request.user, 'owner')
         messages.success(request, _('Group successfully created!'))
         if request.is_ajax():
             return HttpResponse(json.dumps({'redirect':
