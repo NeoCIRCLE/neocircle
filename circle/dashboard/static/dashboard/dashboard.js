@@ -241,10 +241,14 @@ function generateVmHTML(pk, name, fav) {
 }
 
 function compareVmByFav(a, b) {
-  if(a.fav)
+  if(a.fav && b.fav) {
+    return a.pk < b.pk ? -1 : 1; 
+  }
+  if(a.fav) {
     return -1;
+  }
   else
-    return 1;
+    return a.pk < b.pk ? -1 : 1; 
 }
 
 function addSliderMiscs() {
