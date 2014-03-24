@@ -23,6 +23,7 @@ class Operation:
     """
     acl_level = 'owner'
     async_queue = 'localhost.man'
+    required_perms = ()
 
     def __init__(self, instance):
         """Initialize a new operation bound to the specified VM instance.
