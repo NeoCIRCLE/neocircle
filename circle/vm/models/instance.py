@@ -255,6 +255,8 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
             self.instance = instance
 
     def __getattr__(self, name):
+        # NOTE: __getattr__ is only called if the attribute doesn't already
+        # exist in your __dict__
         if name in self._ops:
             return self._ops[name](self)
         else:
