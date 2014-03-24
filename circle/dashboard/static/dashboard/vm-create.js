@@ -142,7 +142,6 @@ function vmCustomizeLoaded() {
       text = raw_text.replace("unmanaged -", "&#xf0c1;");
     }
     var html = '<option data-managed="' + (managed ? 1 : 0) + '" value="' + pk + '">' + text + '</option>';
-
   
     if($('#vm-create-network-list span').length < 1) {
       $("#vm-create-network-list").html("");
@@ -152,8 +151,14 @@ function vmCustomizeLoaded() {
     } else {
       $('#vm-create-network-add-select').append(html);
     }
+
   });
 
+  // if all networks are added add a dummy and disable the add button
+  if($("#vm-create-network-add-select option").length < 1) {
+    $("#vm-create-network-add-select").html('<option value="-1">No more networks!</option>');
+    $('#vm-create-network-add-button').attr('disabled', true);
+  }
 
   /* build up network list */
   $('#vm-create-network-add-vlan option').each(function() {
