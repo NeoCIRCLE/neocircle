@@ -177,21 +177,6 @@ $(function() {
     return false;
   });
 
-
-  // enabling / disabling node
-  function enablenode(pk,new_status,onsuccess,params) {
-  }
-
-
-
-// refresh the given contents, parameter is the array of contents, in pair
-  function contentrefresh(elements,callbacks){
-  for (var i = 0; i < elements.length; i+=2) {
-      $(elements[i]).load(location.href+" "+elements[i+1],callbacks[i/2]);
-  }
-
-  }
-
   /* group actions */
 
   /* select all */
