@@ -60,7 +60,7 @@ class Operation:
 
         Deriving classes should implement this method.
         """
-        pass
+        raise NotImplementedError
 
     def async(self, **kwargs):
         """Execute the operation asynchronously.
