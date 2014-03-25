@@ -14,7 +14,6 @@ function vmCreateLoaded() {
 
   $(".customize-vm").click(function() {
     var template = $(this).data("template-pk");
-    console.log(template);
   
     $.get("/dashboard/vm/create/?template=" + template, function(data) {
         var r = $('#create-modal'); r.next('div').remove(); r.remove();
@@ -251,8 +250,13 @@ function vmCustomizeLoaded() {
       type: 'POST',
       data: $('form').serialize(),
       success: function(data, textStatus, xhr) {
+        console.log(data);
         if(data.redirect) {
-          window.location.replace(data.redirect + '#activity');
+          /* it won't redirect to the same page */
+          if(window.location.pathname == data.redirect) {
+            window.location.reload();
+          }
+          window.location.href = data.redirect + '#activity';
         }
         else {
             var r = $('#create-modal'); r.next('div').remove(); r.remove();
