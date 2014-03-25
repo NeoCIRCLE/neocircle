@@ -49,7 +49,7 @@
     </div>
   </div>
   <div class="row">
-    <div class="col-md-4" id="node-info-pane">
+    <div class="col-md-2" id="node-info-pane">
       <div id="node-info-data" class="big">
       <span id="node-details-state" class="label {% if node.state == 'ONLINE' %}label-success
 			{% elif node.state == 'MISSING' %}label-danger
@@ -58,7 +58,7 @@
 			{% endif %}">{{ node.get_status_display|upper }}</span>
       </div>
     </div>
-    <div class="col-md-8" id="node-detail-pane">
+    <div class="col-md-10" id="node-detail-pane">
       <div class="panel panel-default" id="node-detail-panel">
         <ul class="nav nav-pills panel-heading">
           <li class="active">
