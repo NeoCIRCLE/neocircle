@@ -4,7 +4,12 @@
 {% block content %}
 <div class="body-content">
   <div class="page-header">
-    <h1>
+    <div class="pull-right" style="padding-top: 15px;">
+      <a title="{% trans "Rename" %}" href="#" class="btn btn-default btn-xs group-details-rename-button"><i class="icon-pencil"></i></a>
+      <a title="{% trans "Delete" %}" data-group-pk="{{ group.pk }}" class="btn btn-default btn-xs real-link group-delete" href="{% url "dashboard.views.delete-group" pk=group.pk %}"><i class="icon-trash"></i></a>
+      <a title="{% trans "Help" %}" href="#" class="btn btn-default btn-xs group-details-help-button"><i class="icon-question"></i></a>
+    </div>
+   <h1>
       <div id="group-details-rename">
         <form action="" method="POST" id="group-details-rename-form">
           {% csrf_token %}
