@@ -48,9 +48,7 @@ function changeNodeStatus(data) {
       if(!data['redirect']) {
         selected = [];
         addMessage(re['message'], 'success');
-        $('a[data-'+data['type']+'-pk="' + data['pk'] + '"]').closest('tr').fadeOut(function() {
-          $(this).remove();
-        });
+      
       } else {
         window.location.replace('/dashboard');
       }
