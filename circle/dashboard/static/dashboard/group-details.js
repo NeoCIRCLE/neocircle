@@ -25,3 +25,9 @@
     });
     return false;
   });
+
+  $(".group-details-help-button").click(function() {
+    $(".group-details-help").stop().slideToggle();
+  });
+
+
