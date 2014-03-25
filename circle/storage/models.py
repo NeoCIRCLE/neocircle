@@ -477,8 +477,8 @@ class Disk(AclBase, TimeStampedModel):
         The timeout parameter is not used now.
         """
         mapping = {
-            'qcow2-snap': ('qcow2-norm', self.base),
-            'qcow2-norm': ('qcow2-norm', self),
+            'qcow2-snap': 'qcow2-norm',
+            'qcow2-norm': 'qcow2-norm',
         }
         if self.type not in mapping.keys():
             raise self.WrongDiskTypeError(self.type)
@@ -492,9 +492,9 @@ class Disk(AclBase, TimeStampedModel):
         # from this point on, the caller has to guarantee that the disk is not
         # going to be used until the operation is complete
 
-        new_type, new_base = mapping[self.type]
+        new_type = mapping[self.type]
 
-        disk = Disk.create(base=new_base, datastore=self.datastore,
+        disk = Disk.create(datastore=self.datastore,
                            name=self.name, size=self.size,
                            type=new_type)
 
