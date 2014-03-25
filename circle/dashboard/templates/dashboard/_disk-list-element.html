@@ -11,7 +11,9 @@
   {% endif %}
 {% else %}<span class="disk-list-disk-percentage" data-disk-pk="{{ d.pk }}">{{ d.get_download_percentage }}</span>%{% endif %}
 <a href="{% url "dashboard.views.disk-remove" pk=d.pk %}?next={{ request.path }}" 
-  data-disk-pk="{{ d.pk }}" class="btn btn-xs btn-danger pull-right disk-remove">
-    <i class="icon-remove"></i>{% if long_remove %} Remove{% endif %}
+  data-disk-pk="{{ d.pk }}" class="btn btn-xs btn-danger pull-right disk-remove"
+  {% if not long_remove %}title="{% trans "Remove" %}"{% endif %}
+  >
+  <i class="icon-remove"></i>{% if long_remove %} {% trans "Remove" %}{% endif %}
 </a>
 <div style="clear: both;"></div>
