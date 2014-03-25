@@ -79,6 +79,14 @@ html {
   color: #fff;
 }
 
+.timeline .activity-active .timeline-icon {
+  background-color: black!important;
+}
+
+.timeline a {
+  color: black;
+}
+
 .timeline-icon.timeline-warning {
   border-color: #c09853;
   border-style: solid;
@@ -98,6 +106,10 @@ html {
   margin-left: 30px;
   padding-left: 10px;
   border-left: 3px solid green;                                           
+}
+
+.sub-activity-active {
+  border-left: 8px solid black;
 }
 
 .sub-activity-failed {

@@ -1,19 +1,21 @@
 {% load i18n %}
 {% for a in activities %}
-<div class="activity" data-activity-id="{{ a.pk }}">
+<div class="activity{% if a.pk == active.pk %} activity-active{%endif%}" data-activity-id="{{ a.pk }}">
   <span class="timeline-icon{% if a.has_failed %} timeline-icon-failed{% endif %}">
   <i class="{% if not a.finished %} icon-refresh icon-spin {% else %}icon-plus{% endif %}"></i>
 </span> 
 <strong{% if user.is_superuser and a.result %} title="{{ a.result }}"{% endif %}>
-    {{ a.get_readable_name }}
+  {% if user.is_superuser %}<a href="{{ a.get_absolute_url }}">{% endif %}
+    {{ a.get_readable_name }}{% if user.is_superuser %}</a>{% endif %}
 </strong>
 {{ a.started|date:"Y-m-d H:i" }}{% if a.user %}, {{ a.user }}{% endif %}
   {% if a.children.count > 0 %}
     <div class="sub-timeline">
       {% for s in a.children.all %}
-      <div data-activity-id="{{ s.pk }}" class="sub-activity{% if s.has_failed %} sub-activity-failed{% endif %}">
+      <div data-activity-id="{{ s.pk }}" class="sub-activity{% if s.has_failed %} sub-activity-failed{% endif %}{% if s.pk == active.pk %} sub-activity-active{% endif %}">
         <span{% if user.is_superuser and s.result %} title="{{ s.result }}"{% endif %}>
-              {{ s.get_readable_name }}</span> &ndash;
+          {% if user.is_superuser %}<a href="{{ s.get_absolute_url }}">{% endif %}
+              {{ s.get_readable_name }}{% if user.is_superuser %}</a>{% endif %}</span> &ndash;
         {% if s.finished %}
           {{ s.finished|time:"H:i:s" }}
         {% else %}

@@ -2,6 +2,7 @@ from __future__ import absolute_import, unicode_literals
 from contextlib import contextmanager
 from logging import getLogger
 
+from django.core.urlresolvers import reverse
 from django.db.models import CharField, ForeignKey
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -42,8 +43,19 @@ class InstanceActivity(ActivityModel):
             return '{}({})'.format(self.activity_code,
                                    self.instance)
 
+    def get_absolute_url(self):
+        return reverse('dashboard.views.vm-activity', args=[self.pk])
+
     def get_readable_name(self):
         return self.activity_code.split('.')[-1].replace('_', ' ').capitalize()
+
+    def get_status_id(self):
+        if self.succeeded is None:
+            return 'wait'
+        elif self.succeeded:
+            return 'success'
+        else:
+            return 'failed'
 
     @classmethod
     def create(cls, code_suffix, instance, task_uuid=None, user=None,
