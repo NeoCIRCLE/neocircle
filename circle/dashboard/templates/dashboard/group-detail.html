@@ -21,7 +21,19 @@
         {{ group.name }} 
       </div>
     </h1>
-  </div>
+    <div class="group-details-help js-hidden">
+      <ul style="list-style: none;">
+        <li>
+          <strong>{% trans "Rename" %}:</strong>
+          {% trans "Change the name of the group." %}
+        </li>
+        <li>
+          <strong>{% trans "Delete" %}:</strong>
+          {% trans "Delete group." %}
+        </li>
+      </ul>
+    </div>
+ </div>
   <div class="row">
     <div class="col-md-4" id="group-info-pane">
     </div>
