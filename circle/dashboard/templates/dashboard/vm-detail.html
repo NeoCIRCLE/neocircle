@@ -111,7 +111,10 @@
   <div class="row">
     <div class="col-md-4" id="vm-info-pane">
       <div class="big">
-        <span id="vm-details-state" class="label label-success"><i class="{{ instance.get_status_icon }}"></i> {{ instance.get_status_display|upper }}</span>
+        <span id="vm-details-state" class="label label-success">
+          <i class="{{ instance.get_status_icon }}"></i> 
+          <span>{{ instance.get_status_display|upper }}</span>
+        </span>
       </div>
       <h3>{% trans "Connection" %}</h3>
       <input type="text" value="{{ instance.get_connect_command }}" class="form-control" readonly />

@@ -214,7 +214,8 @@ function checkNewActivity(only_state, runs) {
         $("[title]").tooltip();
       }
 
-      $("#vm-details-state").html(data['state']);
+      $("#vm-details-state i").prop("class", data['icon']);
+      $("#vm-details-state span").html(data['state']);
       if(data['state'] == "RUNNING") {
         $("[data-target=#_console]").attr("data-toggle", "pill").attr("href", "#console").parent("li").removeClass("disabled");
       } else {

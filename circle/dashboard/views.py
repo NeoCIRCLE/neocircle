@@ -1598,6 +1598,7 @@ def vm_activity(request, pk):
     only_state = request.GET.get("only_state")
 
     response['state'] = instance.state
+    response['icon'] = instance.get_status_icon()
     if only_state is not None and only_state == "false":  # instance activity
         context = {
             'activities': InstanceActivity.objects.filter(
