@@ -3,7 +3,15 @@
 {% block content %}
 <div class="body-content">
   <div class="page-header">
-    <h1>	  
+     <div class="pull-right" style="padding-top: 15px;">
+      <a title="{% trans "Rename" %}" href="#" class="btn btn-default btn-xs node-details-rename-button"><i class="icon-pencil"></i></a>
+      <a title="{% trans "Flush" %}" data-node-pk="{{ node.pk }}" class="btn btn-default btn-xs real-link node-flush" href="{% url "dashboard.views.flush-node" pk=node.pk %}"><i class="icon-cloud-upload"></i></a>
+      <a title="{% trans "Enable" %}" style="display:{% if node.enabled %}none{% else %}inline-block{% endif %}" data-node-pk="{{ node.pk }}" class="btn btn-default btn-xs real-link node-enable" href="{% url "dashboard.views.status-node" pk=node.pk %}?next={{ request.path }}"><i class="icon-check"></i></a>
+      <a title="{% trans "Disable" %}" style="display:{% if not node.enabled %}none{% else %}inline-block{% endif %}" data-node-pk="{{ node.pk }}" class="btn btn-default btn-xs real-link node-enable" href="{% url "dashboard.views.status-node" pk=node.pk %}?next={{ request.path }}"><i class="icon-ban-circle"></i></a>
+      <a title="{% trans "Delete" %}" data-node-pk="{{ node.pk }}" class="btn btn-default btn-xs real-link node-delete" href="{% url "dashboard.views.delete-node" pk=node.pk %}"><i class="icon-trash"></i></a>
+      <a title="{% trans "Help" %}" href="#" class="btn btn-default btn-xs node-details-help-button"><i class="icon-question"></i></a>
+    </div>
+   <h1>	  
       <div id="node-details-rename">
        <form action="" method="POST" id="node-details-rename-form">
          {% csrf_token %}
@@ -15,8 +23,7 @@
       {{ node.name }} 
       </div>
     </h1>
-    <small>{{ node.get_connect_host }}</small>
-  </div>
+ </div>
   <div class="row">
     <div class="col-md-4" id="node-info-pane">
       <div id="node-info-data" class="big">
@@ -25,22 +32,6 @@
 			{% elif node.state == 'DISABLED' %}label-warning
 			{% elif node.state == 'OFFLINE' %}label-warning
 			{% endif %}">{{ node.get_status_display|upper }}</span>
-<div class="btn-group">
-  <button type="button" class="btn {{ btn_size }} btn-warning nojs-dropdown-toogle dropdown-toggle" data-toggle="dropdown">{% trans "Action" %} <i class="icon-caret-down"></i></button>
-  <ul class="dropdown-menu nojs-dropdown-toogle" role="menu">
-    <li>
-      <a href="#" class="node-details-rename-button"><i class="icon-pencil"></i> {% trans "Rename" %}</a>
-    </li>
-    <li>
-      <a data-node-pk="{{ node.pk }}" class="real-link node-flush" href="{% url "dashboard.views.flush-node" pk=node.pk %}"><i class="icon-cloud-upload"></i> {% trans "Flush" %}</a>
-    <li>
-    <a style="display:{% if node.enabled %}none{% else %}block{% endif %}" data-node-pk="{{ node.pk }}" class="real-link node-enable" href="{% url "dashboard.views.status-node" pk=node.pk %}?next={{ request.path }}"><i class="icon-check"></i> {% trans "Enable" %}</a>
-    <a style="display:{% if not node.enabled %}none{% else %}block{% endif %}" data-node-pk="{{ node.pk }}" class="real-link node-enable" href="{% url "dashboard.views.status-node" pk=node.pk %}?next={{ request.path }}"><i class="icon-remove"></i> {% trans "Disable" %}</a></li>
-    <li>
-      <a data-node-pk="{{ node.pk }}" class="real-link node-delete" href="{% url "dashboard.views.delete-node" pk=node.pk %}?next={{ request.path }}"><i class="icon-trash"></i> {% trans "Delete" %}</a>
-    </li>
-  </ul>
-</div>
       </div>
     </div>
     <div class="col-md-8" id="node-detail-pane">
