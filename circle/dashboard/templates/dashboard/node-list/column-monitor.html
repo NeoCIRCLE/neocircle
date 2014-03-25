@@ -1,0 +1,62 @@
+{%load sizefieldtags %}
+{% load i18n %}
+
+<i class="icon-gears"></i> {% trans "CPU" %}
+ <div class="progress pull-right">
+  <div class="progress-bar progress-bar-success" role="progressbar"
+   aria-valuenow="{{ record.cpu_usage }}" aria-valuemin="0" aria-valuemax="1" style="width: 80%">
+   <span class="progress-bar-text">
+	   {% if record.cpu_usage != None %}
+	   {{ record.cpu_usage|floatformat:1 }} %
+	   {% else %} - {% endif %} 
+   </span>
+  </div>
+ </div>
+<br>
+<i class="icon-ticket"></i> {% trans "Memory" %}
+ <div class="progress pull-right">
+  <div class="progress-bar progress-bar-info" role="progressbar"
+          aria-valuenow="{{ record.ram_usage}}" aria-valuemin="0" aria-valuemax="1" >
+	  <span class="progress-bar-text"> 
+		  {% if record.byte_ram_usage != None %}
+		  {% widthratio record.byte_ram_usage 1048576 1 %} MB
+	  	  {% else %} - {% endif %}
+	  </span>
+  </div>
+ </div>
+{% block "extra-js" %}
+<script>
+$('.progress-bar').each(function() {
+  var min = $(this).attr('aria-valuemin');
+  var max = $(this).attr('aria-valuemax');
+  var now = $(this).attr('aria-valuenow');
+  var siz = (now-min)*100/(max-min);
+  $(this).css('width', siz+'%');
+});
+</script>
+{% endblock %}
+<style>
+  .progress {
+    position: relative;
+    width: 100px;
+    height: 12px;
+    margin-bottom: 0px;
+    margin-top: 5px;
+    background-image: linear-gradient(to bottom, #BBEBEB 0px, #F5F5F5 100%);
+  }
+  .progress-bar-text {
+    position: absolute;
+    display: block;
+    width: 100%;
+    color: white;
+    /* outline */
+    text-shadow:  
+      -1px -1px 0 #000,
+      1px -1px 0 #000,
+      -1px 1px 0 #000,
+      1px 1px 0 #000;  
+    font-size: 10px;
+  }
+</style>
+
+
