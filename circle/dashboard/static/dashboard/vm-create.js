@@ -290,6 +290,6 @@ function vmCreateNetworkLabel(pk, name, managed) {
 
 
 function vmCreateDiskLabel(pk, name) {
-  var style = "float: left; margin: 5px;";
+  var style = "float: left; margin: 5px 5px 5px 0;";
   return '<span id="disk-' + pk + '" class="label label-primary" style="' + style + '"><i class="icon-file"></i> ' + name + ' <a href="#" class="hover-black vm-create-remove-disk"><i class="icon-remove-sign"></i></a></span> ';
 }
