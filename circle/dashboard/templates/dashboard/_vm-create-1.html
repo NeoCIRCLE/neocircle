@@ -58,7 +58,7 @@
         </li>
       </ul>
       <div style="margin-top: 20px; padding: 0 15px; width: 100%">
-        {% if user.is_superuser %}
+        {% if perms.vm_set_resources %}
         <a class="btn btn-primary btn-xs customize-vm" data-template-pk="{{ t.pk }}" href="{% url "dashboard.views.vm-create" %}?template={{ t.pk }}"><i class="icon-wrench"></i> {% trans "Customize" %}</a>
         {% endif %}
         <form class="pull-right text-right" method="POST" action="{% url "dashboard.views.vm-create" %}">
