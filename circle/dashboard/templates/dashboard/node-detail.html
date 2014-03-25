@@ -23,7 +23,31 @@
       {{ node.name }} 
       </div>
     </h1>
- </div>
+    <div class="node-details-help js-hidden">
+      <ul style="list-style: none;">
+        <li>
+          <strong>{% trans "Rename" %}:</strong>
+          {% trans "Change the name of the node." %}
+        </li>
+        <li>
+          <strong>{% trans "Flush" %}:</strong>
+          {% trans "Disable node and move all instances to other ones." %}
+        </li>
+        <li>
+          <strong>{% trans "Enable" %}:</strong>
+          {% trans "Enables node." %}
+        </li>
+        <li>
+          <strong>{% trans "Disable" %}:</strong>
+          {% trans "Disables node." %}
+        </li>
+        <li>
+          <strong>{% trans "Delete" %}:</strong>
+          {% trans "Remove node and its host." %}
+        </li>
+      </ul>
+    </div>
+  </div>
   <div class="row">
     <div class="col-md-4" id="node-info-pane">
       <div id="node-info-data" class="big">
