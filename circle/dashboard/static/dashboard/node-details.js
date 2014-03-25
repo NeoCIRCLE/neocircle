@@ -25,6 +25,10 @@
     return false;
   });
 
+  $(".node-details-help-button").click(function() {
+    $(".node-details-help").stop().slideToggle();
+  });
+
   /* for Node removes buttons */
   $('.node-enable').click(function() {
     var node_pk = $(this).data('node-pk');
