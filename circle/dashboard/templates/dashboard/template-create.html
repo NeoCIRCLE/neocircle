@@ -1,8 +1,10 @@
 {% extends "dashboard/base.html" %}
 {% load i18n %}
 {% load crispy_forms_tags %} 
-{% block content %}
 
+{% block title-page %}{% trans "Create base VM" %}{% endblock %}
+
+{% block content %}
 <div class="row">
   <div class="col-md-12">
     <div class="panel panel-default">
