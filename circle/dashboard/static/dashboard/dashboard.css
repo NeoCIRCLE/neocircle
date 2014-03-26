@@ -423,3 +423,25 @@ footer a, footer a:hover, footer a:visited {
 #node-info-pane {
   margin-bottom: 20px;
 }
+
+.template-choose-list {
+  max-width: 600px;
+}
+
+.template-choose-list-element {
+  cursor: pointer;
+}
+
+.template-choose-list-element small {
+  display: none;
+  float: right;
+  padding-right: 50px;
+}
+
+.template-choose-list-element {
+  padding: 15px;
+}
+
+.template-choose-list input[type="radio"] {
+  float: right;
+}

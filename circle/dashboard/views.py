@@ -741,11 +741,50 @@ class GroupAclUpdateView(AclUpdateView):
                                 kwargs=self.kwargs))
 
 
+class TemplateChoose(TemplateView):
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/modal-wrapper.html']
+        else:
+            return ['dashboard/nojs-wrapper.html']
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(TemplateChoose, self).get_context_data(*args, **kwargs)
+        templates = InstanceTemplate.get_objects_with_level("user",
+                                                            self.request.user)
+        context.update({
+            'box_title': _('Choose template'),
+            'ajax_title': False,
+            'template': "dashboard/_template-create-1.html",
+            'templates': templates.all(),
+        })
+        return context
+
+
 class TemplateCreate(SuccessMessageMixin, CreateView):
     model = InstanceTemplate
     form_class = TemplateForm
     template_name = "dashboard/template-create.html"
     success_message = _("Successfully created a new template!")
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/modal-wrapper.html']
+        else:
+            return ['dashboard/nojs-wrapper.html']
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(TemplateCreate, self).get_context_data(*args, **kwargs)
+
+        context.update({
+            'box_title': (_('Clone a template')
+                          if self.request.GET.get("parent").isdigit()
+                          else _("Create a new base VM")),
+            'ajax_title': False,
+            'template': "dashboard/_template-create-2.html",
+        })
+        return context
 
     def get(self, *args, **kwargs):
         if not self.request.user.has_perm('vm.create_template'):
@@ -767,7 +806,7 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
         form = self.form_class(request.POST, user=request.user)
         if not form.is_valid():
             return self.get(request, form, *args, **kwargs)
-        else:
+        elif form.cleaned_data.get("parent") is None:
             post = form.cleaned_data
 
             networks = self.__create_networks(post.pop("networks"))

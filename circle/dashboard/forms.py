@@ -9,6 +9,8 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import (
     Layout, Div, BaseInput, Field, HTML, Submit, Fieldset, TEMPLATE_PACK
 )
+
+from django.shortcuts import get_object_or_404
 from crispy_forms.utils import render_field
 from django import forms
 from django.forms.widgets import TextInput
@@ -456,8 +458,8 @@ class TemplateForm(forms.ModelForm):
         data['owner'] = self.user.pk
         self.data = data
 
-        if parent is not None:
-            template = InstanceTemplate.objects.get(pk=parent)
+        if parent is not None and parent.isdigit():
+            template = get_object_or_404(InstanceTemplate, pk=parent)
             parent = template.__dict__
             fields = ["system", "name", "num_cores", "boot_menu", "ram_size",
                       "priority", "access_method", "raw_data",
@@ -497,10 +499,15 @@ class TemplateForm(forms.ModelForm):
     def save(self, commit=True):
         data = self.cleaned_data
         self.instance.max_ram_size = data.get('ram_size')
+        is_new = self.instance.pk is None
 
         instance = super(TemplateForm, self).save(commit=False)
         if commit:
             instance.save()
+
+        if is_new:
+            self.instance.disks = InstanceTemplate.objects.get(
+                pk=self.instance.parent.pk).disks.all()
 
         # create and/or delete InterfaceTemplates
         networks = InterfaceTemplate.objects.filter(

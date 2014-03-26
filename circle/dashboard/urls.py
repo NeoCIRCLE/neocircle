@@ -11,7 +11,7 @@ from .views import (
     TransferOwnershipConfirmView, TransferOwnershipView, vm_activity, VmCreate,
     VmDelete, VmDetailView, VmDetailVncTokenView, VmGraphView, VmList,
     VmMassDelete, VmMigrateView, VmRenewView, DiskRemoveView,
-    get_disk_download_status,
+    get_disk_download_status, TemplateChoose,
 )
 
 urlpatterns = patterns(
@@ -26,6 +26,8 @@ urlpatterns = patterns(
 
     url(r'^template/create/$', TemplateCreate.as_view(),
         name="dashboard.views.template-create"),
+    url(r'^template/choose/$', TemplateChoose.as_view(),
+        name="dashboard.views.template-choose"),
     url(r'template/(?P<pk>\d+)/acl/$', TemplateAclUpdateView.as_view(),
         name='dashboard.views.template-acl'),
     url(r'^template/(?P<pk>\d+)/$', TemplateDetail.as_view(),
