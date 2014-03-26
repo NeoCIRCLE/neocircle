@@ -250,7 +250,6 @@ function vmCustomizeLoaded() {
       type: 'POST',
       data: $('form').serialize(),
       success: function(data, textStatus, xhr) {
-        console.log(data);
         if(data.redirect) {
           /* it won't redirect to the same page */
           if(window.location.pathname == data.redirect) {
