@@ -3,7 +3,7 @@ $(function () {
     var template = $(this).data("template");
     $.ajax({
       type: 'GET',
-      url: '/dashboard/vm/create/' + (isNaN(template) ? '' : '?template=' + template), 
+      url: '/dashboard/vm/create/' + (typeof template === "undefined" ? '' : '?template=' + template), 
       success: function(data) { 
         $('body').append(data);
         vmCreateLoaded();
