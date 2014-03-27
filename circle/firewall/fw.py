@@ -1,5 +1,6 @@
 import re
 import logging
+from collections import OrderedDict
 from netaddr import IPAddress, AddrFormatError
 from datetime import datetime, timedelta
 from itertools import product
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 class BuildFirewall:
 
     def __init__(self):
-        self.chains = {}
+        self.chains = OrderedDict()
 
     def add_rules(self, *args, **kwargs):
         for chain_name, ipt_rule in kwargs.items():
