@@ -128,7 +128,7 @@ class RuleTable(Table):
         model = Rule
         attrs = {'class': 'table table-striped table-hover table-condensed'}
         fields = ('r_type', 'color_desc', 'owner', 'extra', 'direction',
-                  'accept', 'proto', 'sport', 'dport', 'nat',
+                  'action', 'proto', 'sport', 'dport', 'nat',
                   'nat_external_port', )
         order_by = 'direction'
 

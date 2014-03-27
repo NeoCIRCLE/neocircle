@@ -37,7 +37,9 @@ class Rule(models.Model):
     CHOICES_type = (('host', 'host'), ('firewall', 'firewall'),
                    ('vlan', 'vlan'))
     CHOICES_proto = (('tcp', 'tcp'), ('udp', 'udp'), ('icmp', 'icmp'))
-    CHOICES_dir = (('out', 'out'), ('in', 'in'))
+    CHOICES_dir = (('out', _('out')), ('in', _('in')))
+    CHOICES_action = (('accept', _('accept')), ('drop', _('drop')),
+                      ('ignore', _('ignore')))
 
     direction = models.CharField(max_length=3, choices=CHOICES_dir,
                                  blank=False, verbose_name=_("direction"),
@@ -70,9 +72,10 @@ class Rule(models.Model):
     extra = models.TextField(blank=True, verbose_name=_("extra arguments"),
                              help_text=_("Additional arguments passed "
                                          "literally to the iptables-rule."))
-    accept = models.BooleanField(default=True, verbose_name=_("accept"),
-                                 help_text=_("Accept the matching packets "
-                                             "(or deny if not checked)."))
+    action = models.CharField(max_length=10, choices=CHOICES_action,
+                              default='drop', verbose_name=_('action'),
+                              help_text=_("Accept, drop or ignore the "
+                                          "matching packets."))
     owner = models.ForeignKey(User, blank=True, null=True,
                               verbose_name=_("owner"),
                               help_text=_("The user responsible for "
@@ -179,7 +182,7 @@ class Rule(models.Model):
 
     def get_ipt_rules(self, host=None):
         # action
-        action = 'LOG_ACC' if self.accept else 'LOG_DROP'
+        action = 'LOG_ACC' if self.action == 'accept' else 'LOG_DROP'
 
         # src and dst addresses
         src = None
@@ -207,7 +210,8 @@ class Rule(models.Model):
         for foreign_vlan in self.foreign_network.vlans.all():
             r = IptRule(priority=self.weight, action=action,
                         proto=self.proto, extra=self.extra,
-                        src=src, dst=dst, dport=dport, sport=sport)
+                        src=src, dst=dst, dport=dport, sport=sport,
+                        ignored=(self.action == 'ignore'))
             # host, hostgroup or vlan rule
             if host or self.vlan_id:
                 local_vlan = host.vlan.name if host else self.vlan.name
@@ -646,7 +650,7 @@ class Host(models.Model):
                          vgname, unicode(e))
         else:
             rule = Rule(direction='in', owner=self.owner, dport=private,
-                        proto=proto, nat=False, accept=True,
+                        proto=proto, nat=False, action='accept',
                         host=self, foreign_network=vg)
             if self.behind_nat:
                 if public < 1024:
@@ -735,7 +739,7 @@ class Host(models.Model):
         """
         endpoints = {}
         # IPv4
-        ports = self.incoming_rules.filter(accept=True, dport=port,
+        ports = self.incoming_rules.filter(action='accept', dport=port,
                                            proto=protocol)
         public_port = (ports[0].get_external_port(proto='ipv4')
                        if ports.exists() else None)
@@ -743,8 +747,8 @@ class Host(models.Model):
                              if public_port else
                              None)
         # IPv6
-        blocked = self.incoming_rules.filter(accept=False, dport=port,
-                                             proto=protocol).exists()
+        blocked = self.incoming_rules.exclude(
+            action='accept').filter(dport=port, proto=protocol).exists()
         endpoints['ipv6'] = (self.ipv6, port) if not blocked else None
         return endpoints
 

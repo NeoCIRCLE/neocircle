@@ -52,9 +52,9 @@ class VlanAdmin(admin.ModelAdmin):
 
 class RuleAdmin(admin.ModelAdmin):
     list_display = ('r_type', 'color_desc', 'owner', 'extra', 'direction',
-                    'accept', 'proto', 'sport', 'dport', 'nat',
+                    'action', 'proto', 'sport', 'dport', 'nat',
                     'nat_external_port', 'used_in')
-    list_filter = ('vlan', 'owner', 'direction', 'accept',
+    list_filter = ('vlan', 'owner', 'direction', 'action',
                    'proto', 'nat')
 
     def color_desc(self, instance):

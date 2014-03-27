@@ -140,6 +140,9 @@ class IptablesTestCase(TestCase):
                   IptRule(priority=2, action='ACCEPT',
                           dst=('127.0.0.2', None),
                           proto='icmp'),
+                  IptRule(priority=10, action='ACCEPT',
+                          dst=('127.0.0.10', None),
+                          proto='icmp', ignored=True),
                   IptRule(priority=6, action='ACCEPT',
                           dst=('127.0.0.6', None),
                           proto='tcp', dport='1337')]
@@ -153,6 +156,9 @@ class IptablesTestCase(TestCase):
         assert unicode(self.r[5])
         self.assertEqual(self.r[5].compile(),
                          '-d 127.0.0.5 -p tcp --dport 443 -g ACCEPT')
+
+    def test_ignored_rule_compile_ok(self):
+        assert self.r[7].compile().startswith('# ')
 
     def test_rule_compile_fail(self):
         self.assertRaises(InvalidRuleExcepion,
@@ -194,11 +200,11 @@ class ReloadTestCase(TestCase):
         vlg = VlanGroup.objects.create(name='public')
         vlg.vlans.add(self.vlan, self.vlan2)
         self.hg = Group.objects.create(name='netezhet')
-        Rule.objects.create(accept=True, hostgroup=self.hg,
+        Rule.objects.create(action='accept', hostgroup=self.hg,
                             foreign_network=vlg)
 
         firewall = Firewall.objects.create(name='fw')
-        Rule.objects.create(accept=True, firewall=firewall,
+        Rule.objects.create(action='accept', firewall=firewall,
                             foreign_network=vlg)
 
         for i in range(1, 6):
