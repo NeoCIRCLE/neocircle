@@ -140,9 +140,6 @@ class IptablesTestCase(TestCase):
                   IptRule(priority=2, action='ACCEPT',
                           dst=('127.0.0.2', None),
                           proto='icmp'),
-                  IptRule(priority=10, action='ACCEPT',
-                          dst=('127.0.0.10', None),
-                          proto='icmp', ignored=True),
                   IptRule(priority=6, action='ACCEPT',
                           dst=('127.0.0.6', None),
                           proto='tcp', dport='1337')]
@@ -156,9 +153,6 @@ class IptablesTestCase(TestCase):
         assert unicode(self.r[5])
         self.assertEqual(self.r[5].compile(),
                          '-d 127.0.0.5 -p tcp --dport 443 -g ACCEPT')
-
-    def test_ignored_rule_compile_ok(self):
-        assert self.r[7].compile().startswith('# ')
 
     def test_rule_compile_fail(self):
         self.assertRaises(InvalidRuleExcepion,

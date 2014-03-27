@@ -33,6 +33,7 @@ class BuildFirewall:
     def build_ipt_nat(self):
         # portforward
         for rule in Rule.objects.filter(
+                action__in=['accept', 'drop'],
                 nat=True, direction='in').select_related('host'):
             self.add_rules(PREROUTING=IptRule(
                 priority=1000,
@@ -55,7 +56,8 @@ class BuildFirewall:
     def ipt_filter_firewall(self):
         """Build firewall's own rules."""
 
-        for rule in Rule.objects.exclude(firewall=None).select_related(
+        rules = Rule.objects.filter(action__in=['accept', 'drop'])
+        for rule in rules.exclude(firewall=None).select_related(
                 'foreign_network').prefetch_related('foreign_network__vlans'):
             self.add_rules(**rule.get_ipt_rules())
 
@@ -63,12 +65,13 @@ class BuildFirewall:
         """Build hosts' rules."""
 
         # host rules
-        for rule in Rule.objects.exclude(host=None).select_related(
-                'foreign_network', 'host',
-                'host__vlan').prefetch_related('foreign_network__vlans'):
+        rules = Rule.objects.filter(action__in=['accept', 'drop'])
+        for rule in rules.exclude(host=None).select_related(
+                'foreign_network', 'host', 'host__vlan').prefetch_related(
+                'foreign_network__vlans'):
             self.add_rules(**rule.get_ipt_rules(rule.host))
         # group rules
-        for rule in Rule.objects.exclude(hostgroup=None).select_related(
+        for rule in rules.exclude(hostgroup=None).select_related(
                 'hostgroup', 'foreign_network').prefetch_related(
                 'hostgroup__host_set__vlan', 'foreign_network__vlans'):
             for host in rule.hostgroup.host_set.all():
@@ -77,7 +80,8 @@ class BuildFirewall:
     def ipt_filter_vlan_rules(self):
         """Enable communication between VLANs."""
 
-        for rule in Rule.objects.exclude(vlan=None).select_related(
+        rules = Rule.objects.filter(action__in=['accept', 'drop'])
+        for rule in rules.exclude(vlan=None).select_related(
                 'vlan', 'foreign_network').prefetch_related(
                 'foreign_network__vlans'):
             self.add_rules(**rule.get_ipt_rules())
