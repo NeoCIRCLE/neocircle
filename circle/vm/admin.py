@@ -5,8 +5,12 @@ from .models import (Instance, InstanceActivity, InstanceTemplate, Interface,
                      NodeActivity, Trait)
 
 
+class InstanceActivityAdmin(admin.ModelAdmin):
+        exclude = ('parent', )
+
+
 admin.site.register(Instance)
-admin.site.register(InstanceActivity)
+admin.site.register(InstanceActivity, InstanceActivityAdmin)
 admin.site.register(InstanceTemplate)
 admin.site.register(Interface)
 admin.site.register(InterfaceTemplate)
