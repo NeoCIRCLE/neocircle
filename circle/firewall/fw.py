@@ -228,18 +228,24 @@ def dns():
     return DNS
 
 
+class UniqueHostname(object):
+    """Append vlan id if hostname already exists."""
+    def __init__(self):
+        self.used_hostnames = set()
+
+    def get(self, hostname, vlan_id):
+        if hostname in self.used_hostnames:
+            hostname = "%s-%s" % (hostname, vlan_id)
+        self.used_hostnames.add(hostname)
+        return hostname
+
+
 def dhcp():
     regex = re.compile(r'^([0-9]+)\.([0-9]+)\.[0-9]+\.[0-9]+\s+'
                        r'([0-9]+)\.([0-9]+)\.[0-9]+\.[0-9]+$')
-    DHCP = []
+    config = []
 
-# /tools/dhcp3/dhcpd.conf.generated
-
-    for i_vlan in Vlan.objects.all():
-        if(i_vlan.dhcp_pool):
-            m = regex.search(i_vlan.dhcp_pool)
-            if(m or i_vlan.dhcp_pool == "manual"):
-                DHCP.append('''
+    VLAN_TEMPLATE = '''
     # %(name)s - %(interface)s
     subnet %(net)s netmask %(netmask)s {
       %(extra)s;
@@ -251,32 +257,42 @@ def dhcp():
       authoritative;
       filename \"pxelinux.0\";
       allow bootp; allow booting;
-    }''' % {
-                    'net': str(i_vlan.network4.network),
-                    'netmask': str(i_vlan.network4.netmask),
-                    'domain': i_vlan.domain,
-                    'router': i_vlan.network4.ip,
-                    'ntp': i_vlan.network4.ip,
-                    'dnsserver': settings['rdns_ip'],
-                    'extra': ("range %s" % i_vlan.dhcp_pool
-                              if m else "deny unknown-clients"),
-                    'interface': i_vlan.name,
-                    'name': i_vlan.name,
-                    'tftp': i_vlan.network4.ip,
+    }'''
+
+    HOST_TEMPLATE = '''
+    host %(hostname)s {
+        hardware ethernet %(mac)s;
+        fixed-address %(ipv4)s;
+    }'''
+
+    unique_hostnames = UniqueHostname()
+
+    for vlan in Vlan.objects.exclude(
+            dhcp_pool=None).select_related(
+            'domain').prefetch_related('host_set'):
+        m = regex.search(vlan.dhcp_pool)
+        if(m or vlan.dhcp_pool == "manual"):
+            config.append(VLAN_TEMPLATE % {
+                'net': str(vlan.network4.network),
+                'netmask': str(vlan.network4.netmask),
+                'domain': vlan.domain,
+                'router': vlan.network4.ip,
+                'ntp': vlan.network4.ip,
+                'dnsserver': settings['rdns_ip'],
+                'extra': ("range %s" % vlan.dhcp_pool
+                          if m else "deny unknown-clients"),
+                'interface': vlan.name,
+                'name': vlan.name,
+                'tftp': vlan.network4.ip})
+
+            for host in vlan.host_set.all():
+                config.append(HOST_TEMPLATE % {
+                    'hostname': unique_hostnames.get(host.hostname, vlan.vid),
+                    'mac': host.mac,
+                    'ipv4': host.ipv4,
                 })
 
-                for i_host in i_vlan.host_set.all():
-                    DHCP.append('''
-                    host %(hostname)s {
-                      hardware ethernet %(mac)s;
-                      fixed-address %(ipv4)s;
-                    }''' % {
-                        'hostname': i_host.hostname,
-                        'mac': i_host.mac,
-                        'ipv4': i_host.ipv4,
-                    })
-
-    return DHCP
+    return config
 
 
 def vlan():
