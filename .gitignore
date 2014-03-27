@@ -21,6 +21,7 @@ _build
 celerybeat-schedule
 .coverage
 *,cover
+coverage.xml
 
 # Gettext object file:
 *.mo
