@@ -86,7 +86,7 @@ class BuildFirewall:
         """Close intra-VLAN chains."""
 
         for chain in self.chains.values():
-            close_chain_rule = IptRule(priority=65534, action='LOG_DROP')
+            close_chain_rule = IptRule(priority=1, action='LOG_DROP')
             chain.add(close_chain_rule)
 
     def ipt_filter_vlan_jump(self):
@@ -100,7 +100,7 @@ class BuildFirewall:
             except KeyError:
                 pass
             else:
-                jump_rule = IptRule(priority=1, action=chain.name,
+                jump_rule = IptRule(priority=65535, action=chain.name,
                                     extra='-i %s -o %s' % (vl_in, vl_out))
                 self.add_rules(FORWARD=jump_rule)
 

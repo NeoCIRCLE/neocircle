@@ -59,11 +59,11 @@ class Rule(models.Model):
         blank=True, null=True, verbose_name=_("source port"),
         validators=[MinValueValidator(1), MaxValueValidator(65535)],
         help_text=_("Source port number of packets that match."))
-    priority = models.IntegerField(
-        verbose_name=_("priority"),
+    weight = models.IntegerField(
+        verbose_name=_("weight"),
         validators=[MinValueValidator(1), MaxValueValidator(65535)],
-        help_text=_("TODO"),
-        default=1000)
+        help_text=_("Rule weight"),
+        default=30000)
     proto = models.CharField(max_length=10, choices=CHOICES_proto,
                              blank=True, null=True, verbose_name=_("protocol"),
                              help_text=_("Protocol of packets that match."))
@@ -205,7 +205,7 @@ class Rule(models.Model):
 
         # process foreign vlans
         for foreign_vlan in self.foreign_network.vlans.all():
-            r = IptRule(priority=self.priority, action=action,
+            r = IptRule(priority=self.weight, action=action,
                         proto=self.proto, extra=self.extra,
                         src=src, dst=dst, dport=dport, sport=sport)
             # host, hostgroup or vlan rule
