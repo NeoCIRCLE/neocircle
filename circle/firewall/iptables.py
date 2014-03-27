@@ -16,7 +16,7 @@ class IptRule(object):
 
     def __init__(self, priority=1000, action=None, src=None, dst=None,
                  proto=None, sport=None, dport=None, extra=None,
-                 ipv4_only=False):
+                 ipv4_only=False, comment=None):
         if proto not in ['tcp', 'udp', 'icmp', None]:
             raise InvalidRuleExcepion()
         if proto not in ['tcp', 'udp'] and (sport is not None or
@@ -44,6 +44,7 @@ class IptRule(object):
         self.extra = extra
         self.ipv4_only = (ipv4_only or
                           extra is not None and bool(ipv4_re.search(extra)))
+        self.comment = comment
 
     def __hash__(self):
         return hash(frozenset(self.__dict__.items()))
@@ -67,6 +68,7 @@ class IptRule(object):
                             ('sport', '--sport %s'),
                             ('dport', '--dport %s'),
                             ('extra', '%s'),
+                            ('comment', '-m comment --comment "%s"'),
                             ('action', '-g %s')])
         params = [opts[param] % getattr(self, param)
                   for param in opts

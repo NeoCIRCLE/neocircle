@@ -210,6 +210,7 @@ class Rule(models.Model):
         for foreign_vlan in self.foreign_network.vlans.all():
             r = IptRule(priority=self.weight, action=action,
                         proto=self.proto, extra=self.extra,
+                        comment='Rule #%s' % self.pk,
                         src=src, dst=dst, dport=dport, sport=sport)
             # host, hostgroup or vlan rule
             if host or self.vlan_id:
