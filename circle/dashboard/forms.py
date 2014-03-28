@@ -33,6 +33,7 @@ class VmCustomizeForm(forms.Form):
     cpu_priority = forms.IntegerField()
     cpu_count = forms.IntegerField()
     ram_size = forms.IntegerField()
+    amount = forms.IntegerField(min_value=0, initial=1)
 
     disks = forms.ModelMultipleChoiceField(
         queryset=None, required=True)
@@ -68,12 +69,21 @@ class VmCustomizeForm(forms.Form):
         self.initial['template'] = self.template.pk
         self.initial['customized'] = self.template.pk
 
+        # set widget for amount
+        self.fields['amount'].widget = NumberInput()
+
         self.helper = FormHelper(self)
-        self.helper.form_show_labels = False
+
+        # don't show labels for the sliders
+        self.helper.form_show_labels = True
+        self.fields['cpu_count'].label = ""
+        self.fields['ram_size'].label = ""
+        self.fields['cpu_priority'].label = ""
+
         self.helper.layout = Layout(
             Field("template", type="hidden"),
             Field("customized", type="hidden"),
-            Div(  # buttons
+            Div(
                 Div(
                     AnyTag(  # tip: don't try to use Button class
                         "button",
@@ -84,16 +94,17 @@ class VmCustomizeForm(forms.Form):
                         HTML(" Start"),
                         css_id="vm-create-customized-start",
                         css_class="btn btn-success",
-
+                        style="float: right; margin-top: 24px;",
                     ),
-                    css_class="col-sm-11 text-right",
+                    Field("name", style="max-width: 350px;"),
+                    css_class="col-sm-12",
                 ),
                 css_class="row",
             ),
             Div(
                 Div(
-                    Field("name"),
-                    css_class="col-sm-5",
+                    Field("amount", min="1", style="max-width: 60px;"),
+                    css_class="col-sm-10",
                 ),
                 css_class="row",
             ),
@@ -185,32 +196,36 @@ class VmCustomizeForm(forms.Form):
                             HTML(_("No disks are added!")),
                             css_id="vm-create-disk-list",
                         ),
-                        AnyTag(
-                            "h3",
-                            Div(
-                                AnyTag(
-                                    "select",
-                                    css_class="form-control",
-                                    css_id="vm-create-disk-add-select",
-                                ),
-                                Div(
-                                    AnyTag(
-                                        "a",
-                                        AnyTag(
-                                            "i",
-                                            css_class="icon-plus-sign",
-                                        ),
-                                        href="#",
-                                        css_id="vm-create-disk-add-button",
-                                        css_class="btn btn-success",
-                                    ),
-                                    css_class="input-group-btn"
-                                ),
-                                css_class="input-group",
-                                style="max-width: 330px;",
-                            ),
-                            css_id="vm-create-disk-add",
+                        Div(
+                            HTML(""),
+                            style="clear: both;",
                         ),
+                        # AnyTag(
+                        #     "h3",
+                        #     Div(
+                        #         AnyTag(
+                        #             "select",
+                        #             css_class="form-control",
+                        #             css_id="vm-create-disk-add-select",
+                        #         ),
+                        #         Div(
+                        #             AnyTag(
+                        #                 "a",
+                        #                 AnyTag(
+                        #                     "i",
+                        #                     css_class="icon-plus-sign",
+                        #                 ),
+                        #                 href="#",
+                        #                 css_id="vm-create-disk-add-button",
+                        #                 css_class="btn btn-success",
+                        #             ),
+                        #             css_class="input-group-btn"
+                        #         ),
+                        #         css_class="input-group",
+                        #         style="max-width: 330px;",
+                        #     ),
+                        #     css_id="vm-create-disk-add",
+                        # ),
                         css_class="no-js-hidden",
                     ),
                     css_class="col-sm-8",

@@ -16,8 +16,11 @@
     <div id="dashboard-vm-list">
       {% for i in instances %}
       <a href="{{ i.get_absolute_url }}" class="list-group-item">
-        <i class="{{ i.get_status_icon }}" title="{{ i.get_status_display }}"></i> {{ i.name }}
-        <small class="text-muted">{{ i.primary_host.hostname }}</small>
+        <span class="index-vm-list-name">
+          <i class="{{ i.get_status_icon }}" title="{{ i.get_status_display }}"></i>
+          {{ i.name }}
+        </span>
+        <small class="text-muted"> {{ i.primary_host.hostname }}</small>
         <div class="pull-right dashboard-vm-favourite" data-vm="{{ i.pk }}">
           {% if i.fav %}
             <i class="icon-star text-primary title-favourite" title="{% trans "Unfavourite" %}"></i>
@@ -25,6 +28,7 @@
             <i class="icon-star-empty text-primary title-favourite" title="{% trans "Mark as favorite" %}"></i>
           {% endif %}
         </div>
+      <div style="clear: both;"></div>
       </a>
       {% endfor %}
     </div>
@@ -50,19 +54,24 @@
   <div class="panel-body" id="vm-graph-view" style="display: none">
     <p class="pull-right">  <input class="knob" data-fgColor="chartreuse" data-thickness=".4" data-max="{{ request.user.profile.instance_limit }}" data-width="100" data-height="100" data-readOnly="true" value="{{ instances|length|add:more_instances }}"></p>
     <p><span class="bigbig">{% blocktrans with count=running_vm_num %}<big>{{ count }}</big> running{% endblocktrans %}</span>
-      <ul class="list-inline">
+      <ul class="list-inline" style="max-height: 95px; overflow: hidden;">
         {% for vm in running_vms %}
-          <li class="label label-success">
-            <a href="vm.get_absolute_url" title="{{vm.primary_host.get_fqdn}}"><i class="{{vm.get_status_icon}}"></i> {{vm.name}}</a>
-          </li>
+        <li style="display: inline-block; padding: 2px;">
+          <a href="{{vm.get_absolute_url}}" title="{{vm.primary_host.get_fqdn}}"  class="label label-success">
+            <i class="{{vm.get_status_icon}}"></i> {{vm.name}}
+          </a>
+        </li>
         {% endfor %}
       </ul>
     </p>
-    <p class="big text-warning">{% blocktrans with count=stopped_vm_num %}<big>{{ count }}</big> stopped{% endblocktrans %}</p>
 
     <div class="clearfix"></div>
-    <div class="text-right">
-      <a href="{% url "dashboard.views.vm-list" %}" class="btn btn-primary btn-xs"><i class="icon-chevron-sign-right"></i> <strong>{{ instances|length|add:more_instances }}</strong>  machines  total</a> 
+    <div>
+      <a style="float: right; margin-top: 17px;" href="{% url "dashboard.views.vm-list" %}" class="btn btn-primary btn-xs">
+        <i class="icon-chevron-sign-right"></i> 
+        <strong>{{ instances|length|add:more_instances }}</strong>  machines  total
+      </a> 
+      <p class="big text-warning">{% blocktrans with count=stopped_vm_num %}<big>{{ count }}</big> stopped{% endblocktrans %}</p>
     </div>
   </div>
 </div>

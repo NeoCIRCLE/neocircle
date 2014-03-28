@@ -921,7 +921,9 @@ class VmList(LoginRequiredMixin, ListView):
             instances = [{
                 'pk': i.pk,
                 'name': i.name,
-                'state': i.state,
+                'icon': i.get_status_icon(),
+                'host': "" if not i.primary_host else i.primary_host.hostname,
+                'status': i.get_status_display(),
                 'fav': i.pk in favs} for i in instances]
             return HttpResponse(
                 json.dumps(list(instances)),  # instances is ValuesQuerySet
@@ -1098,9 +1100,9 @@ class VmCreate(LoginRequiredMixin, TemplateView):
         if not template.has_level(request.user, 'user'):
             raise PermissionDenied()
 
-        inst = Instance.create_from_template(
-            template=template, owner=user)
-        return self.__deploy(request, inst)
+        instances = [Instance.create_from_template(
+            template=template, owner=user)]
+        return self.__deploy(request, instances)
 
     def __create_customized(self, request, *args, **kwargs):
         user = request.user
@@ -1129,17 +1131,33 @@ class VmCreate(LoginRequiredMixin, TemplateView):
             networks = [InterfaceTemplate(vlan=l, managed=l.managed)
                         for l in post['networks']]
             disks = post['disks']
-            inst = Instance.create_from_template(
-                template=template, owner=user, networks=networks,
-                disks=disks, **ikwargs)
-            return self.__deploy(request, inst)
+
+            ikwargs.update({
+                'template': template,
+                'owner': user,
+                'networks': networks,
+                'disks': disks,
+            })
+
+            amount = post['amount']
+            instances = Instance.mass_create_from_template(amount=amount,
+                                                           **ikwargs)
+            return self.__deploy(request, instances)
         else:
             raise PermissionDenied()
 
-    def __deploy(self, request, instance, *args, **kwargs):
-        instance.deploy_async(user=request.user)
-        messages.success(request, _('VM successfully created!'))
-        path = instance.get_absolute_url()
+    def __deploy(self, request, instances, *args, **kwargs):
+        for i in instances:
+            i.deploy_async(user=request.user)
+
+        if len(instances) > 1:
+            messages.success(request, _("Successfully created %d VMs!" %
+                                        len(instances)))
+            path = reverse("dashboard.index")
+        else:
+            messages.success(request, _("VM successfully created!"))
+            path = instances[0].get_absolute_url()
+
         if request.is_ajax():
             return HttpResponse(json.dumps({'redirect': path}),
                                 content_type="application/json")

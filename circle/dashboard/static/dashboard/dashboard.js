@@ -3,7 +3,7 @@ $(function () {
     var template = $(this).data("template");
     $.ajax({
       type: 'GET',
-      url: '/dashboard/vm/create/', 
+      url: '/dashboard/vm/create/' + (typeof template === "undefined" ? '' : '?template=' + template), 
       success: function(data) { 
         $('body').append(data);
         vmCreateLoaded();
@@ -12,9 +12,6 @@ $(function () {
         $('#create-modal').on('hidden.bs.modal', function() {
           $('#create-modal').remove();
         });
-        if(template) {
-          $('#vm-create-template-select option[value="' + template + '"]').prop("selected", true).trigger("change");
-        }
       }
     });
     return false;
@@ -191,6 +188,9 @@ $(function () {
             'name': result[i].name.toLowerCase(),
             'state': result[i].state,
             'fav': result[i].fav,
+            'host': result[i].host,
+            'icon': result[i].icon,
+            'status': result[i].status,
           });
         }
       });
@@ -207,7 +207,9 @@ $(function () {
     }
     search_result.sort(compareVmByFav);
     for(var i=0; i<5 && i<search_result.length; i++)
-      html += generateVmHTML(search_result[i].pk, search_result[i].name, search_result[i].fav);
+      html += generateVmHTML(search_result[i].pk, search_result[i].name, 
+                             search_result[i].host, search_result[i].icon,
+                             search_result[i].status, search_result[i].fav);
     if(search_result.length == 0)
       html += '<div class="list-group-item">No result</div>';
     $("#dashboard-vm-list").html(html);
@@ -233,21 +235,33 @@ $(function () {
   });
 });
 
-function generateVmHTML(pk, name, fav) {
-  return '<a href="/dashboard/vm/' + pk + '/" class="list-group-item">' + 
-          '<i class="icon-play-sign"></i> ' + name +
-          '<div class="pull-right dashboard-vm-favourite" data-vm="' + pk +'">' + 
-          '<i class="title-favourite icon-star' + (fav ? "" : "-empty") + ' text-primary" title="" data-original-title="' + 
-          (fav ? "Un": "Mark as ") + 'favourite"></i>' +
-          '</div>' + 
-          '</a>';
+function generateVmHTML(pk, name, host, icon, _status, fav) {
+  return '<a href="/dashboard/vm/' + pk + '/" class="list-group-item">' +      
+        '<span class="index-vm-list-name">' + 
+          '<i class="' + icon + '" title="' + _status + '"></i> ' + name +
+        '</span>' + 
+        '<small class="text-muted"> ' + host + '</small>' +
+        '<div class="pull-right dashboard-vm-favourite" data-vm="' + pk + '">' +  
+          (fav ? '<i class="icon-star text-primary title-favourite" title="Unfavourite"></i>' :
+          '<i class="icon-star-empty text-primary title-favourite" title="Mark as favorite"></i>' ) +
+        '</div>' +                                                               
+      '<div style="clear: both;"></div>' +                                       
+      '</a>';     
 }
 
+/* copare vm-s by fav, pk order */
 function compareVmByFav(a, b) {
-  if(a.fav)
+  if(a.fav && b.fav) {
+    return a.pk < b.pk ? -1 : 1; 
+  }
+  else if(a.fav && !b.fav) {
     return -1;
-  else
+  }
+  else if(!a.fav && b.fav) {
     return 1;
+  }
+  else
+    return a.pk < b.pk ? -1 : 1; 
 }
 
 function addSliderMiscs() {

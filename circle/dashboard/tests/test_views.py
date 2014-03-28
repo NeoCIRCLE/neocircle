@@ -530,6 +530,24 @@ class VmDetailTest(LoginMixin, TestCase):
         response = c.get("/dashboard/template/111111/")
         self.assertEqual(response.status_code, 404)
 
+    def test_permitted_customized_vm_create(self):
+        c = Client()
+        self.login(c, "superuser")
+
+        instance_count = Instance.objects.all().count()
+        response = c.post("/dashboard/vm/create/", {
+            'name': 'vm',
+            'amount': 2,
+            'customized': 1,
+            'template': 1,
+            'cpu_priority': 1, 'cpu_count': 1, 'ram_size': 1,
+            'network': [],
+            'disks': [Disk.objects.get(id=1).pk],
+        })
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(instance_count + 2, Instance.objects.all().count())
+
 
 class VmDetailVncTest(LoginMixin, TestCase):
     fixtures = ['test-vm-fixture.json', 'node.json']

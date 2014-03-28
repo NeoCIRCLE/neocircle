@@ -58,12 +58,17 @@
         </li>
       </ul>
       <div style="margin-top: 20px; padding: 0 15px; width: 100%">
-        <a class="btn btn-primary btn-xs customize-vm" data-template-pk="{{ t.pk }}" href="{% url "dashboard.views.vm-create" %}?template={{ t.pk }}"><i class="icon-wrench"></i> Customize</a>
+        {% if perms.vm_set_resources %}
+        <a class="btn btn-primary btn-xs customize-vm" data-template-pk="{{ t.pk }}" href="{% url "dashboard.views.vm-create" %}?template={{ t.pk }}"><i class="icon-wrench"></i> {% trans "Customize" %}</a>
+        {% endif %}
         <form class="pull-right text-right" method="POST" action="{% url "dashboard.views.vm-create" %}">
           {% csrf_token %}
           <input type="hidden" name="template" value="{{ t.pk }}"/>
-          <button class="btn btn-success btn-xs vm-create-start" data-template-pk="{{ t.pk }}" type="submit"><i class="icon-play"></i> Start</button>
+          <button class="btn btn-success btn-xs vm-create-start" data-template-pk="{{ t.pk }}" type="submit">
+            <i class="icon-play"></i> {% trans "Start" %}
+          </button>
         </form>
+        <div style="clear: both;"></div>
       </div>
     </div>
   </div>
