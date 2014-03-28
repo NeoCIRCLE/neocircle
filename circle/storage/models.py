@@ -478,7 +478,6 @@ class Disk(AclBase, TimeStampedModel):
         """
         mapping = {
             'qcow2-snap': 'qcow2-norm',
-            'qcow2-norm': 'qcow2-norm',
         }
         if self.type not in mapping.keys():
             raise self.WrongDiskTypeError(self.type)
