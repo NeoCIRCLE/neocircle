@@ -66,6 +66,10 @@ class Operation:
 
         Only a quick, preliminary check is ran before creating the associated
         activity and queuing the job.
+
+        The returned value is the handle for the asynchronous job.
+
+        For more information, check the synchronous call's documentation.
         """
         activity = self.__prelude(kwargs)
         return async_operation.apply_async(args=(self.id, self.instance.pk,
@@ -73,7 +77,14 @@ class Operation:
                                            queue=self.async_queue)
 
     def call(self, **kwargs):
-        """Execute the operation synchronously.
+        """Execute the operation (synchronously).
+
+        Anticipated keyword arguments:
+        * user: The User invoking the operation. If this argument is not
+                present, it'll be provided with a default value of None.
+        * system: Indicates that the operation is invoked by the system, not a
+                  User. If this argument is present and has a value of True,
+                  then authorization checks are skipped.
         """
         activity = self.__prelude(kwargs)
         return self._exec_op(activity=activity, **kwargs)
