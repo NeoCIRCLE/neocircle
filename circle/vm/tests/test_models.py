@@ -9,6 +9,9 @@ from ..models import (
     Lease, Node, Interface, Instance, InstanceTemplate, InstanceActivity,
 )
 from ..models.instance import find_unused_port, ActivityInProgressError
+from ..models.operation import (
+    DeployOperation, DestroyOperation, MigrateOperation
+)
 
 
 class PortFinderTestCase(TestCase):
@@ -52,50 +55,60 @@ class InstanceTestCase(TestCase):
     def test_deploy_destroyed(self):
         inst = Mock(destroyed_at=datetime.now(), spec=Instance,
                     InstanceDestroyedError=Instance.InstanceDestroyedError)
-        with self.assertRaises(Instance.InstanceDestroyedError):
-            Instance.deploy(inst)
+        deploy_op = DeployOperation(inst)
+        with patch.object(DeployOperation, 'create_activity'):
+            with self.assertRaises(Instance.InstanceDestroyedError):
+                deploy_op(system=True)
 
     def test_destroy_destroyed(self):
-        inst = Mock(destroyed_at=datetime.now(), spec=Instance)
-        Instance.destroy(inst)
+        inst = Mock(destroyed_at=datetime.now(), spec=Instance,
+                    InstanceDestroyedError=Instance.InstanceDestroyedError)
+        destroy_op = DestroyOperation(inst)
+        with patch.object(DestroyOperation, 'create_activity'):
+            with self.assertRaises(Instance.InstanceDestroyedError):
+                destroy_op(system=True)
         self.assertFalse(inst.save.called)
 
     def test_destroy_sets_destroyed(self):
-        inst = MagicMock(destroyed_at=None, spec=Instance)
+        inst = Mock(destroyed_at=None, spec=Instance,
+                    InstanceDestroyedError=Instance.InstanceDestroyedError)
         inst.node = MagicMock(spec=Node)
         inst.disks.all.return_value = []
-        with patch('vm.models.instance.instance_activity') as ia:
-            ia.return_value = MagicMock()
-            Instance.destroy(inst)
+        destroy_op = DestroyOperation(inst)
+        with patch.object(DestroyOperation, 'create_activity'):
+            destroy_op(system=True)
         self.assertTrue(inst.destroyed_at)
         inst.save.assert_called()
 
     def test_migrate_with_scheduling(self):
-        inst = MagicMock(spec=Instance)
+        inst = Mock(destroyed_at=None, spec=Instance)
         inst.interface_set.all.return_value = []
         inst.node = MagicMock(spec=Node)
-        with patch('vm.models.instance.instance_activity') as ia, \
-                patch('vm.models.instance.vm_tasks.migrate') as migr:
-            Instance.migrate(inst)
+        migrate_op = MigrateOperation(inst)
+        with patch('vm.models.instance.vm_tasks.migrate') as migr:
+            act = MagicMock()
+            with patch.object(MigrateOperation, 'create_activity',
+                              return_value=act):
+                migrate_op(system=True)
 
             migr.apply_async.assert_called()
-            self.assertIn(call().__enter__().sub_activity(u'scheduling'),
-                          ia.mock_calls)
+            self.assertIn(call.sub_activity(u'scheduling'), act.mock_calls)
             inst.select_node.assert_called()
 
     def test_migrate_wo_scheduling(self):
-        inst = MagicMock(spec=Instance)
+        inst = MagicMock(destroyed_at=None, spec=Instance)
         inst.interface_set.all.return_value = []
         inst.node = MagicMock(spec=Node)
-        with patch('vm.models.instance.instance_activity') as ia, \
-                patch('vm.models.instance.vm_tasks.migrate') as migr:
+        migrate_op = MigrateOperation(inst)
+        with patch('vm.models.instance.vm_tasks.migrate') as migr:
             inst.select_node.side_effect = AssertionError
-
-            Instance.migrate(inst, inst.node)
+            act = MagicMock()
+            with patch.object(MigrateOperation, 'create_activity',
+                              return_value=act):
+                migrate_op(to_node=inst.node, system=True)
 
             migr.apply_async.assert_called()
-            self.assertNotIn(call().__enter__().sub_activity(u'scheduling'),
-                             ia.mock_calls)
+            self.assertNotIn(call.sub_activity(u'scheduling'), act.mock_calls)
 
     def test_status_icon(self):
         inst = MagicMock(spec=Instance)
@@ -233,7 +246,8 @@ class InstanceActivityTestCase(TestCase):
     def test_flush(self):
         node = MagicMock(spec=Node, enabled=True)
         user = MagicMock(spec=User)
-        insts = [MagicMock(spec=Instance), MagicMock(spec=Instance)]
+        insts = [MagicMock(spec=Instance, migrate=MagicMock()),
+                 MagicMock(spec=Instance, migrate=MagicMock())]
 
         with patch('vm.models.node.node_activity') as na:
             act = na.return_value.__enter__.return_value = MagicMock()
@@ -248,7 +262,8 @@ class InstanceActivityTestCase(TestCase):
 
     def test_flush_disabled_wo_user(self):
         node = MagicMock(spec=Node, enabled=False)
-        insts = [MagicMock(spec=Instance), MagicMock(spec=Instance)]
+        insts = [MagicMock(spec=Instance, migrate=MagicMock()),
+                 MagicMock(spec=Instance, migrate=MagicMock())]
 
         with patch('vm.models.node.node_activity') as na:
             act = na.return_value.__enter__.return_value = MagicMock()
