@@ -90,7 +90,8 @@ class Operation(object):
         return self._exec_op(activity=activity, **kwargs)
 
     def check_precond(self):
-        pass
+        if self.instance.destroyed_at:
+            raise self.instance.InstanceDestroyedError(self.instance)
 
     def check_auth(self, user):
         if not self.instance.has_level(user, self.acl_level):
@@ -147,9 +148,6 @@ class DeployOperation(Operation):
         activity.resultant_state = 'RUNNING'
 
     def _operation(self, activity, user, system):
-        if self.instance.destroyed_at:
-            raise self.instance.InstanceDestroyedError(self.instance)
-
         self.instance._schedule_vm(activity)
 
         # Deploy virtual images
@@ -187,10 +185,6 @@ class DestroyOperation(Operation):
                           asynchronously.
         :type task_uuid: str
         """)
-
-    def check_precond(self):
-        if self.instance.destroyed_at:
-            raise self.instance.InstanceDestroyedError(self.instance)
 
     def on_commit(self, activity):
         activity.resultant_state = 'DESTROYED'
@@ -423,6 +417,7 @@ class SleepOperation(Operation):
     description = _("""Suspend virtual machine with memory dump.""")
 
     def check_precond(self):
+        super(SleepOperation, self).check_precond()
         if self.instance.status not in ['RUNNING']:
             raise self.instance.WrongStateError(self.instance)
 
@@ -464,6 +459,7 @@ class WakeUpOperation(Operation):
         """)
 
     def check_precond(self):
+        super(WakeUpOperation, self).check_precond()
         if self.instance.status not in ['SUSPENDED']:
             raise self.instance.WrongStateError(self.instance)
 
