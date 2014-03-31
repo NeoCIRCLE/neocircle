@@ -19,7 +19,7 @@ from .instance import Instance, InstanceTemplate
 logger = getLogger(__name__)
 
 
-class Operation:
+class Operation(object):
     """Base class for VM operations.
     """
     acl_level = 'owner'
