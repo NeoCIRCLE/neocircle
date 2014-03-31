@@ -40,8 +40,10 @@ class Operation:
     def __prelude(self, kwargs):
         """This method contains the shared prelude of __call__ and async.
         """
+        skip_checks = kwargs.setdefault('system', False)
         user = kwargs.setdefault('user', None)
-        self.check_auth(user)
+        if not skip_checks:
+            self.check_auth(user)
         self.check_precond()
         return self.create_activity(user=user)
 
@@ -52,7 +54,7 @@ class Operation:
                               on_commit=self.on_commit):
             return self._operation(activity, user, **kwargs)
 
-    def _operation(self, activity, user, **kwargs):
+    def _operation(self, activity, user, system, **kwargs):
         """This method is the operation's particular implementation.
 
         Deriving classes should implement this method.
@@ -133,7 +135,7 @@ class DeployOperation(Operation):
     def on_commit(self, activity):
         activity.resultant_state = 'RUNNING'
 
-    def _operation(self, activity, user):
+    def _operation(self, activity, user, system):
         if self.instance.destroyed_at:
             raise self.instance.InstanceDestroyedError(self.instance)
 
@@ -182,7 +184,7 @@ class DestroyOperation(Operation):
     def on_commit(self, activity):
         activity.resultant_state = 'DESTROYED'
 
-    def _operation(self, activity, user):
+    def _operation(self, activity, user, system):
         if self.instance.node:
             self.instance._destroy_vm(activity)
 
@@ -206,7 +208,7 @@ class MigrateOperation(Operation):
     name = _("migrate")
     description = _("""Live migrate running vm to another node.""")
 
-    def _operation(self, activity, user, to_node=None, timeout=120):
+    def _operation(self, activity, user, system, to_node=None, timeout=120):
         if not to_node:
             with activity.sub_activity('scheduling') as sa:
                 to_node = self.instance.select_node()
@@ -240,7 +242,7 @@ class RebootOperation(Operation):
     name = _("reboot")
     description = _("""Reboot virtual machine with Ctrl+Alt+Del signal.""")
 
-    def _operation(self, activity, user, timeout=5):
+    def _operation(self, activity, user, system, timeout=5):
         queue_name = self.instance.get_remote_queue_name('vm')
         vm_tasks.reboot.apply_async(args=[self.instance.vm_name],
                                     queue=queue_name).get(timeout=timeout)
@@ -265,7 +267,7 @@ class RedeployOperation(Operation):
         :type task_uuid: str
         """)
 
-    def _operation(self, activity, user):
+    def _operation(self, activity, user, system):
         # Destroy VM
         if self.instance.node:
             self.instance._destroy_vm(activity)
@@ -287,7 +289,7 @@ class ResetOperation(Operation):
     name = _("reset")
     description = _("""Reset virtual machine (reset button)""")
 
-    def _operation(self, activity, user, timeout=5):
+    def _operation(self, activity, user, system, timeout=5):
         queue_name = self.instance.get_remote_queue_name('vm')
         vm_tasks.reset.apply_async(args=[self.instance.vm_name],
                                    queue=queue_name).get(timeout=timeout)
@@ -306,7 +308,7 @@ class SaveAsTemplateOperation(Operation):
         Users can instantiate Virtual Machines from Templates.
         """)
 
-    def _operation(self, activity, name, user, timeout=300, **kwargs):
+    def _operation(self, activity, name, user, system, timeout=300, **kwargs):
         # prepare parameters
         params = {
             'access_method': self.instance.access_method,
@@ -368,7 +370,7 @@ class ShutdownOperation(Operation):
     def on_commit(self, activity):
         activity.resultant_state = 'STOPPED'
 
-    def _operation(self, activity, user, timeout=120):
+    def _operation(self, activity, user, system, timeout=120):
         queue_name = self.instance.get_remote_queue_name('vm')
         logger.debug("RPC Shutdown at queue: %s, for vm: %s.",
                      self.instance.vm_name, queue_name)  # TODO param order ok?
@@ -391,7 +393,7 @@ class ShutOffOperation(Operation):
     def on_commit(activity):
         activity.resultant_state = 'STOPPED'
 
-    def _operation(self, activity, user):
+    def _operation(self, activity, user, system):
         # Destroy VM
         if self.instance.node:
             self.instance._destroy_vm(activity)
@@ -422,7 +424,7 @@ class SleepOperation(Operation):
     def on_commit(self, activity):
         activity.resultant_state = 'SUSPENDED'
 
-    def _operation(self, activity, user, timeout=60):
+    def _operation(self, activity, user, system, timeout=60):
         # Destroy networks
         with activity.sub_activity('destroying_net'):
             for net in self.instance.interface_set.all():
@@ -460,7 +462,7 @@ class WakeUpOperation(Operation):
     def on_commit(self, activity):
         activity.resultant_state = 'RUNNING'
 
-    def _operation(self, activity, user, timeout=60):
+    def _operation(self, activity, user, system, timeout=60):
         # Schedule vm
         self.instance._schedule_vm(activity)
         queue_name = self.instance.get_remote_queue_name('vm')
