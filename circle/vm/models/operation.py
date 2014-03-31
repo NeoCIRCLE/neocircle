@@ -26,13 +26,13 @@ class Operation:
     async_queue = 'localhost.man'
     required_perms = ()
 
+    def __call__(self, **kwargs):
+        return self.call(**kwargs)
+
     def __init__(self, instance):
         """Initialize a new operation bound to the specified VM instance.
         """
         self.instance = instance
-
-    def __call__(self, **kwargs):
-        return self.call(**kwargs)
 
     def __unicode__(self):
         return self.name
