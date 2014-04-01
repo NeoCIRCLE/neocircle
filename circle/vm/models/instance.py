@@ -171,9 +171,12 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
         tmpl.save()
 
         def __clone_disk(disk):
+            base = None
+            if disk.type == "iso":
+                base = disk
             cloned_disk = Disk.create(datastore=disk.datastore,
                                       name=disk.name, size=disk.size,
-                                      type=disk.type)
+                                      type=disk.type, base=base)
             #Paralell cloning disks
             disk.clone_async(cloned_disk, user=user)
             return cloned_disk
