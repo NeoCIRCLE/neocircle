@@ -508,9 +508,12 @@ class Disk(AclBase, TimeStampedModel):
         if not self.ready:
             raise self.DiskIsNotReady(self)
         if not disk:
+            base = None
+            if self.type == "iso":
+                base = self
             disk = Disk.create(datastore=self.datastore,
                                name=self.name, size=self.size,
-                               type=self.type)
+                               type=self.type, base=base)
 
         with disk_activity(code_suffix="clone", disk=self,
                            user=user, task_uuid=task_uuid):
