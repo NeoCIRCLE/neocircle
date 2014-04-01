@@ -2213,3 +2213,16 @@ def get_disk_download_status(request, pk):
         }),
         content_type="application/json",
     )
+
+
+class InstanceActivityDetail(SuperuserRequiredMixin, DetailView):
+    model = InstanceActivity
+    template_name = 'dashboard/instanceactivity_detail.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super(InstanceActivityDetail, self).get_context_data(**kwargs)
+        ctx['activities'] = (
+            self.object.instance.activity_log.filter(parent=None).
+            order_by('-started').select_related('user').
+            prefetch_related('children'))
+        return ctx
