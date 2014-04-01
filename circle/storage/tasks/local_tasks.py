@@ -28,6 +28,12 @@ def save_as(disk, timeout, user):
 
 
 @celery.task
+def clone(disk, new_disk, timeout, user):
+    disk.clone(task_uuid=save_as.request.id, user=user,
+               disk=new_disk, timeout=timeout)
+
+
+@celery.task
 def deploy(disk, user):
     disk.deploy(task_uuid=deploy.request.id, user=user)
 
@@ -57,6 +63,7 @@ create_from_url = CreateFromURLTask()
 
 
 @celery.task
-def create_empty(Disk, instance, params, user):
-    Disk.create_empty(instance, params, user,
-                      task_uuid=create_empty.request.id)
+def create_empty(Disk, instance, user, params):
+    Disk.create_empty(instance, user,
+                      task_uuid=create_empty.request.id,
+                      **params)
