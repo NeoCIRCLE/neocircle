@@ -42,6 +42,28 @@ class OperationTestCase(TestCase):
                 except AbortEx:
                     self.assertTrue(chk_pre.called)
 
+    def test_auth_check_on_non_system_call(self):
+        op = Operation(MagicMock())
+        op.activity_code_suffix = 'test'
+        op.id = 'test'
+        user = MagicMock()
+        with patch.object(Operation, 'check_auth') as check_auth:
+            with patch.object(Operation, 'check_precond'), \
+                    patch.object(Operation, 'create_activity'), \
+                    patch.object(Operation, '_exec_op'):
+                op.call(user=user)
+            check_auth.assert_called_with(user)
+
+    def test_no_auth_check_on_system_call(self):
+        op = Operation(MagicMock())
+        op.activity_code_suffix = 'test'
+        op.id = 'test'
+        with patch.object(Operation, 'check_auth', side_effect=AssertionError):
+            with patch.object(Operation, 'check_precond'), \
+                    patch.object(Operation, 'create_activity'), \
+                    patch.object(Operation, '_exec_op'):
+                op.call(system=True)
+
 
 class DeployOperationTestCase(TestCase):
     def test_operation_registered(self):
