@@ -778,9 +778,7 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
         context = super(TemplateCreate, self).get_context_data(*args, **kwargs)
 
         context.update({
-            'box_title': (_('Clone a template')
-                          if self.request.GET.get("parent").isdigit()
-                          else _("Create a new base VM")),
+            'box_title': _("Create a new base VM"),
             'ajax_title': False,
             'template': "dashboard/_template-create-2.html",
         })
@@ -806,7 +804,7 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
         form = self.form_class(request.POST, user=request.user)
         if not form.is_valid():
             return self.get(request, form, *args, **kwargs)
-        elif form.cleaned_data.get("parent") is None:
+        else:
             post = form.cleaned_data
 
             networks = self.__create_networks(post.pop("networks"))
