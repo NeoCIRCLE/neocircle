@@ -37,7 +37,7 @@ class Operation(object):
         return self.name
 
     def __prelude(self, kwargs):
-        """This method contains the shared prelude of __call__ and async.
+        """This method contains the shared prelude of call and async.
         """
         skip_checks = kwargs.setdefault('system', False)
         user = kwargs.setdefault('user', None)
