@@ -355,7 +355,14 @@ class Disk(AclBase, TimeStampedModel):
         return disk
 
     @classmethod
-    def create_empty(cls, instance=None, user=None, **kwargs):
+    def create_empty_async(cls, instance=None, user=None, **kwargs):
+        """Execute deploy asynchronously.
+        """
+        return local_tasks.create_empty.apply_async(
+            args=[cls, instance, user, kwargs], queue="localhost.man")
+
+    @classmethod
+    def create_empty(cls, instance=None, user=None, task_uuid=None, **kwargs):
         """Create empty Disk object.
 
         :param instance: Instance or template attach the Disk to.
@@ -366,6 +373,7 @@ class Disk(AclBase, TimeStampedModel):
         :return: Disk object without a real image, to be .deploy()ed later.
         """
         disk = Disk.create(instance, user, **kwargs)
+        disk.deploy(user=user, task_uuid=task_uuid)
         return disk
 
     @classmethod
