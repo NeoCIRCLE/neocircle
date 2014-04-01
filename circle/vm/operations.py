@@ -11,7 +11,7 @@ from celery.exceptions import TimeLimitExceeded
 from common.models import activity_context
 from storage.models import Disk
 from .tasks import vm_tasks
-from .tasks.local_tasks import async_operation
+from .tasks.local_tasks import async_instance_operation
 from .models import Instance, InstanceActivity, InstanceTemplate
 
 
@@ -71,9 +71,11 @@ class Operation(object):
         For more information, check the synchronous call's documentation.
         """
         activity = self.__prelude(kwargs)
-        return async_operation.apply_async(args=(self.id, self.instance.pk,
-                                                 activity.pk), kwargs=kwargs,
-                                           queue=self.async_queue)
+        return async_instance_operation.apply_async(args=(self.id,
+                                                          self.instance.pk,
+                                                          activity.pk),
+                                                    kwargs=kwargs,
+                                                    queue=self.async_queue)
 
     def call(self, **kwargs):
         """Execute the operation (synchronously).

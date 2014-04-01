@@ -9,7 +9,7 @@ from vm.operations import (
     SaveAsTemplateOperation, ShutdownOperation, ShutOffOperation,
     SleepOperation, WakeUpOperation,
 )
-from vm.tasks.local_tasks import async_operation
+from vm.tasks.local_tasks import async_instance_operation
 
 
 class OperationTestCase(TestCase):
@@ -20,7 +20,8 @@ class OperationTestCase(TestCase):
         op = Operation(MagicMock())
         op.activity_code_suffix = 'test'
         op.id = 'test'
-        with patch.object(async_operation, 'apply_async', side_effect=AbortEx):
+        with patch.object(async_instance_operation, 'apply_async',
+                          side_effect=AbortEx):
             with patch.object(Operation, 'check_precond'):
                 with patch.object(Operation, 'create_activity') as create_act:
                     try:
