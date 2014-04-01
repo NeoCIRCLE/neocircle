@@ -1,9 +1,9 @@
 from datetime import datetime
+from mock import Mock, MagicMock, patch, call
 
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.utils.translation import ugettext_lazy as _
-from mock import Mock, MagicMock, patch, call
 
 from ..models import (
     Lease, Node, Interface, Instance, InstanceTemplate, InstanceActivity,
