@@ -530,12 +530,17 @@ class Disk(AclBase, TimeStampedModel):
     def save_as(self, user=None, task_uuid=None, timeout=300):
         """Save VM as template.
 
+        Based on disk type:
+        qcow2-norm, qcow2-snap --> qcow2-norm
+        iso                    --> iso (with base)
+
         VM must be in STOPPED state to perform this action.
         The timeout parameter is not used now.
         """
         mapping = {
-            'qcow2-snap': ('qcow2-norm', self.base),
-            'qcow2-norm': ('qcow2-norm', self),
+            'qcow2-snap': ('qcow2-norm', None),
+            'qcow2-norm': ('qcow2-norm', None),
+            'iso': ("iso", self),
         }
         if self.type not in mapping.keys():
             raise self.WrongDiskTypeError(self.type)
@@ -551,7 +556,8 @@ class Disk(AclBase, TimeStampedModel):
 
         new_type, new_base = mapping[self.type]
 
-        disk = Disk.create(base=new_base, datastore=self.datastore,
+        disk = Disk.create(datastore=self.datastore,
+                           base=new_base,
                            name=self.name, size=self.size,
                            type=new_type)
 
