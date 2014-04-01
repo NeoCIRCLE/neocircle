@@ -474,6 +474,55 @@ class Disk(AclBase, TimeStampedModel):
         local_tasks.restore.apply_async(args=[self, user],
                                         queue='localhost.man')
 
+    def clone_async(self, new_disk=None, timeout=300, user=None):
+        """Clone a Disk to another Disk
+
+        :param new_disk: optional, the new Disk object to clone in
+        :type new_disk: storage.models.Disk
+        :param user: Creator of the disk.
+        :type user: django.contrib.auth.User
+
+        :return: AsyncResult
+        """
+        return local_tasks.clone.apply_async(args=[self, new_disk,
+                                                   timeout, user],
+                                             queue="localhost.man")
+
+    def clone(self, disk=None, user=None, task_uuid=None, timeout=300):
+        """Cloning Disk into another Disk.
+
+        The Disk.type can'T be snapshot.
+
+        :param new_disk: optional, the new Disk object to clone in
+        :type new_disk: storage.models.Disk
+        :param user: Creator of the disk.
+        :type user: django.contrib.auth.User
+
+        :return: the cloned Disk object.
+        """
+        banned_types = ['qcow2-snap']
+        if self.type in banned_types:
+            raise self.WrongDiskTypeError(self.type)
+        if self.is_in_use:
+            raise self.DiskInUseError(self)
+        if not self.ready:
+            raise self.DiskIsNotReady(self)
+        if not disk:
+            disk = Disk.create(datastore=self.datastore,
+                               name=self.name, size=self.size,
+                               type=self.type)
+
+        with disk_activity(code_suffix="clone", disk=self,
+                           user=user, task_uuid=task_uuid):
+            with disk_activity(code_suffix="deploy", disk=disk,
+                               user=user, task_uuid=task_uuid):
+                queue_name = self.get_remote_queue_name('storage')
+                remote_tasks.merge.apply_async(args=[self.get_disk_desc(),
+                                                     disk.get_disk_desc()],
+                                               queue=queue_name
+                                               ).get()  # Timeout
+            return disk
+
     def save_as_async(self, disk, task_uuid=None, timeout=300, user=None):
         return local_tasks.save_as.apply_async(args=[disk, timeout, user],
                                                queue="localhost.man")
