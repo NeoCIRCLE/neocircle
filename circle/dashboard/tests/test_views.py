@@ -6,7 +6,7 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.models import Permission
 
 from vm.models import Instance, InstanceTemplate, Lease, Node
-from vm.models.operation import WakeUpOperation
+from vm.operations import WakeUpOperation
 from ..models import Profile
 from ..views import VmRenewView
 from storage.models import Disk

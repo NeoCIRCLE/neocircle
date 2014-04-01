@@ -10,10 +10,9 @@ from celery.exceptions import TimeLimitExceeded
 
 from common.models import activity_context
 from storage.models import Disk
-from ..tasks import vm_tasks
-from ..tasks.local_tasks import async_operation
-from .activity import InstanceActivity
-from .instance import Instance, InstanceTemplate
+from .tasks import vm_tasks
+from .tasks.local_tasks import async_operation
+from .models import Instance, InstanceActivity, InstanceTemplate
 
 
 logger = getLogger(__name__)

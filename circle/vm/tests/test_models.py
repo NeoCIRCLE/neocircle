@@ -9,7 +9,7 @@ from ..models import (
     Lease, Node, Interface, Instance, InstanceTemplate, InstanceActivity,
 )
 from ..models.instance import find_unused_port, ActivityInProgressError
-from ..models.operation import (
+from ..operations import (
     DeployOperation, DestroyOperation, MigrateOperation
 )
 
