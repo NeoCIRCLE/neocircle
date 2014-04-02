@@ -5,7 +5,7 @@ from django.core.exceptions import SuspiciousOperation
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import Permission
 
-from vm.models import Instance, InstanceTemplate, Lease, Node
+from vm.models import Instance, InstanceTemplate, Lease, Node, Trait
 from ..models import Profile
 from ..views import VmRenewView
 from storage.models import Disk
@@ -547,6 +547,181 @@ class VmDetailTest(LoginMixin, TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(instance_count + 2, Instance.objects.all().count())
+
+
+class NodeDetailTest(LoginMixin, TestCase):
+    fixtures = ['test-vm-fixture.json', 'node.json']
+
+    def setUp(self):
+        Instance.get_remote_queue_name = Mock(return_value='test')
+        self.u1 = User.objects.create(username='user1')
+        self.u1.set_password('password')
+        self.u1.save()
+        self.u2 = User.objects.create(username='user2', is_staff=True)
+        self.u2.set_password('password')
+        self.u2.save()
+        self.us = User.objects.create(username='superuser', is_superuser=True)
+        self.us.set_password('password')
+        self.us.save()
+        self.g1 = Group.objects.create(name='group1')
+        self.g1.user_set.add(self.u1)
+        self.g1.user_set.add(self.u2)
+        self.g1.save()
+        settings["default_vlangroup"] = 'public'
+        VlanGroup.objects.create(name='public')
+        node = Node.objects.get(pk=1)
+        trait, created = Trait.objects.get_or_create(name='testtrait')
+        node.traits.add(trait)
+
+    def tearDown(self):
+        super(NodeDetailTest, self).tearDown()
+        self.u1.delete()
+        self.u2.delete()
+        self.us.delete()
+        self.g1.delete()
+
+    def test_404_superuser_node_page(self):
+        c = Client()
+        self.login(c, 'superuser')
+        response = c.get('/dashboard/node/25555/')
+        self.assertEqual(response.status_code, 404)
+
+    def test_302_user_node_page(self):
+        c = Client()
+        self.login(c, 'user1')
+        response = c.get('/dashboard/node/25555/')
+        self.assertEqual(response.status_code, 302)
+
+    def test_anon_node_page(self):
+        c = Client()
+        response = c.get('/dashboard/node/1/')
+        self.assertRedirects(response, '/accounts/login/'
+                                       '?next=/dashboard/node/1/')
+
+    def test_permitted_node_delete(self):
+        c = Client()
+        self.login(c, 'superuser')
+        response = c.post('/dashboard/node/delete/1/')
+        self.assertEqual(response.status_code, 302)
+
+    def test_not_permitted_node_delete(self):
+        c = Client()
+        self.login(c, 'user1')
+        response = c.post('/dashboard/node/delete/1/')
+        self.assertRedirects(response, '/accounts/login/'
+                                       '?next=/dashboard/node/delete/1/')
+
+    def test_anon_node_delete(self):
+        c = Client()
+        response = c.post('/dashboard/node/delete/1/')
+        self.assertRedirects(response, '/accounts/login/'
+                                       '?next=/dashboard/node/delete/1/')
+
+    def test_unpermitted_set_name(self):
+        c = Client()
+        self.login(c, "user2")
+        node = Node.objects.get(pk=1)
+        old_name = node.name
+        response = c.post("/dashboard/node/1/", {'new_name': 'test1235'})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Node.objects.get(pk=1).name, old_name)
+
+    def test_permitted_set_name(self):
+        c = Client()
+        self.login(c, "superuser")
+        response = c.post("/dashboard/node/1/", {'new_name': 'test1234'})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Node.objects.get(pk=1).name, 'test1234')
+
+    def test_permitted_set_name_w_ajax(self):
+        c = Client()
+        self.login(c, "superuser")
+        response = c.post("/dashboard/node/1/", {'new_name': 'test123'},
+                          HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Node.objects.get(pk=1).name, 'test123')
+
+    def test_unpermitted_set_name_w_ajax(self):
+        c = Client()
+        self.login(c, "user2")
+        node = Node.objects.get(pk=1)
+        old_name = node.name
+        response = c.post("/dashboard/node/1/", {'new_name': 'test12'},
+                          HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Node.objects.get(pk=1).name, old_name)
+
+    def test_unpermitted_add_trait(self):
+        c = Client()
+        self.login(c, "user2")
+        node = Node.objects.get(pk=1)
+        trait_count = node.traits.count()
+        response = c.post("/dashboard/node/1/add-trait/",
+                          {'name': 'test1'})
+        self.assertRedirects(response, '/accounts/login/'
+                             '?next=/dashboard/node/1/add-trait/')
+        self.assertEqual(len(Node.objects.get(pk=1).traits.all()), trait_count)
+
+    def test_anon_add_trait(self):
+        c = Client()
+        node = Node.objects.get(pk=1)
+        trait_count = node.traits.count()
+        response = c.post("/dashboard/node/1/add-trait/",
+                          {'name': 'test2'})
+        self.assertRedirects(response, '/accounts/login/'
+                             '?next=/dashboard/node/1/add-trait/')
+        self.assertEqual(len(Node.objects.get(pk=1).traits.all()), trait_count)
+
+    def test_permitted_add_trait(self):
+        c = Client()
+        self.login(c, "superuser")
+        node = Node.objects.get(pk=1)
+        trait_count = node.traits.count()
+        response = c.post("/dashboard/node/1/add-trait/", {'name': 'test3'})
+        self.assertRedirects(response, '/dashboard/node/1/')
+        self.assertEqual(node.traits.count(), trait_count + 1)
+
+    def test_unpermitted_remove_trait(self):
+        node = Node.objects.get(pk=1)
+        trait_count = node.traits.count()
+        traitid = node.traits.get(name='testtrait')
+        c = Client()
+        self.login(c, "user2")
+        response = c.post("/dashboard/node/1/", {'to_remove': traitid})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(node.traits.count(), trait_count)
+
+    def test_permitted_remove_trait(self):
+        node = Node.objects.get(pk=1)
+        trait_count = node.traits.count()
+        traitid = node.traits.get(name='testtrait').pk
+        c = Client()
+        self.login(c, "superuser")
+        response = c.post("/dashboard/node/1/", {'to_remove': traitid})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(node.traits.count(), trait_count - 1)
+
+    def test_permitted_remove_trait_w_ajax(self):
+        node = Node.objects.get(pk=1)
+        trait_count = Node.objects.get(pk=1).traits.count()
+        traitid = node.traits.get(name='testtrait').pk
+        c = Client()
+        self.login(c, "superuser")
+        response = c.post("/dashboard/node/1/", {'to_remove': traitid},
+                          HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Node.objects.get(pk=1).
+                         traits.count(), trait_count - 1)
+
+    def test_add_too_long_name_trait(self):
+        c = Client()
+        self.login(c, "superuser")
+        node = Node.objects.get(pk=1)
+        trait_count = node.traits.count()
+        s = 'x' * 100
+        response = c.post("/dashboard/node/1/add-trait/", {'name': s})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(node.traits.count(), trait_count)
 
 
 class VmDetailVncTest(LoginMixin, TestCase):
