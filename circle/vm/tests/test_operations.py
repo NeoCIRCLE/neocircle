@@ -1,9 +1,9 @@
 from django.test import TestCase
 
 from common.operations import operation_registry_name as op_reg_name
-from vm.models import Instance
+from vm.models import Instance, Node
 from vm.operations import (
-    DeployOperation, DestroyOperation, MigrateOperation,
+    DeployOperation, DestroyOperation, FlushOperation, MigrateOperation,
     RebootOperation, RedeployOperation, ResetOperation,
     SaveAsTemplateOperation, ShutdownOperation, ShutOffOperation,
     SleepOperation, WakeUpOperation,
@@ -18,6 +18,11 @@ class DeployOperationTestCase(TestCase):
 class DestroyOperationTestCase(TestCase):
     def test_operation_registered(self):
         assert DestroyOperation.id in getattr(Instance, op_reg_name)
+
+
+class FlushOperationTestCase(TestCase):
+    def test_operation_registered(self):
+        assert FlushOperation.id in getattr(Node, op_reg_name)
 
 
 class MigrateOperationTestCase(TestCase):
