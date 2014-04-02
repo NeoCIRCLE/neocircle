@@ -7,8 +7,10 @@ from django.contrib.auth.forms import (
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import (
-    Layout, Div, BaseInput, Field, HTML, Submit, Fieldset, TEMPLATE_PACK
+    Layout, Div, BaseInput, Field, HTML, Submit, Fieldset, TEMPLATE_PACK,
 )
+
+from crispy_forms.bootstrap import UneditableField as UF
 
 from django.shortcuts import get_object_or_404
 from crispy_forms.utils import render_field
@@ -593,6 +595,56 @@ class TemplateForm(forms.ModelForm):
             ),
         )
         helper.add_input(Submit('submit', 'Save changes'))
+        return helper
+
+    class Meta:
+        model = InstanceTemplate
+        exclude = ('state', 'disks', )
+
+
+class TemplateCloneForm(forms.ModelForm):
+    uneditable_fields = ['num_cores', 'priority', 'ram_size', 'max_ram_size',
+                         'arch', 'access_method', 'boot_menu', 'raw_data',
+                         'description', 'system',
+                         'lease', 'tags']
+
+    def __init__(self, *args, **kwargs):
+        self.clone_from = kwargs.pop("clone_from")
+        self.user = kwargs.pop("user")
+        super(TemplateCloneForm, self).__init__(*args, **kwargs)
+
+        data = self.data.copy()
+        template = get_object_or_404(InstanceTemplate, pk=self.clone_from)
+        for f in self.uneditable_fields:
+            self.initial[f] = getattr(template, f)
+            value = getattr(template, f)
+            if hasattr(value, "pk"):
+                value = value.pk
+            data.update({'%s' % f: value})
+
+        data.update({'owner': self.user.pk})
+        self.data = data
+
+    def save(self, *args, **kwargs):
+        pass
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+
+        ufs = [UF(uf) for uf in self.uneditable_fields]
+        helper.layout = Layout(
+            Fieldset(
+                _("Modify these"),
+                Field("name"),
+            ),
+            Fieldset(
+                _("You can't modify these ..."),
+                *ufs
+            )
+        )
+
+        helper.add_input(Submit('submit', _('Clone template')))
         return helper
 
     class Meta:

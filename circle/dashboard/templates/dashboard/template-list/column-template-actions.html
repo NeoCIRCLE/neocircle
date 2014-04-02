@@ -1,5 +1,5 @@
 {% load i18n %}
-<a href="{% url "dashboard.views.template-create" %}?parent={{ record.pk }}" id="template-list-clone-button" class="btn btn-default btn-xs" title="{% trans "Clone" %}">
+<a href="{% url "dashboard.views.template-clone" pk=record.pk %}" id="template-list-clone-button" class="btn btn-default btn-xs" title="{% trans "Clone" %}">
   <i class="icon-copy"></i>
 </a>
 <a href="{% url "dashboard.views.template-detail" pk=record.pk%}" id="template-list-edit-button" class="btn btn-default btn-xs" title="{% trans "Edit" %}">
