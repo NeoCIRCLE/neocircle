@@ -1,5 +1,6 @@
 from django.test import TestCase
 
+from common.operations import operation_registry_name as op_reg_name
 from vm.models import Instance
 from vm.operations import (
     DeployOperation, DestroyOperation, MigrateOperation,
@@ -11,54 +12,54 @@ from vm.operations import (
 
 class DeployOperationTestCase(TestCase):
     def test_operation_registered(self):
-        assert DeployOperation.id in Instance._ops
+        assert DeployOperation.id in getattr(Instance, op_reg_name)
 
 
 class DestroyOperationTestCase(TestCase):
     def test_operation_registered(self):
-        assert DestroyOperation.id in Instance._ops
+        assert DestroyOperation.id in getattr(Instance, op_reg_name)
 
 
 class MigrateOperationTestCase(TestCase):
     def test_operation_registered(self):
-        assert MigrateOperation.id in Instance._ops
+        assert MigrateOperation.id in getattr(Instance, op_reg_name)
 
 
 class RebootOperationTestCase(TestCase):
     def test_operation_registered(self):
-        assert RebootOperation.id in Instance._ops
+        assert RebootOperation.id in getattr(Instance, op_reg_name)
 
 
 class RedeployOperationTestCase(TestCase):
     def test_operation_registered(self):
-        assert RedeployOperation.id in Instance._ops
+        assert RedeployOperation.id in getattr(Instance, op_reg_name)
 
 
 class ResetOperationTestCase(TestCase):
     def test_operation_registered(self):
-        assert ResetOperation.id in Instance._ops
+        assert ResetOperation.id in getattr(Instance, op_reg_name)
 
 
 class SaveAsTemplateOperationTestCase(TestCase):
     def test_operation_registered(self):
-        assert SaveAsTemplateOperation.id in Instance._ops
+        assert SaveAsTemplateOperation.id in getattr(Instance, op_reg_name)
 
 
 class ShutdownOperationTestCase(TestCase):
     def test_operation_registered(self):
-        assert ShutdownOperation.id in Instance._ops
+        assert ShutdownOperation.id in getattr(Instance, op_reg_name)
 
 
 class ShutOffOperationTestCase(TestCase):
     def test_operation_registered(self):
-        assert ShutOffOperation.id in Instance._ops
+        assert ShutOffOperation.id in getattr(Instance, op_reg_name)
 
 
 class SleepOperationTestCase(TestCase):
     def test_operation_registered(self):
-        assert SleepOperation.id in Instance._ops
+        assert SleepOperation.id in getattr(Instance, op_reg_name)
 
 
 class WakeUpOperationTestCase(TestCase):
     def test_operation_registered(self):
-        assert WakeUpOperation.id in Instance._ops
+        assert WakeUpOperation.id in getattr(Instance, op_reg_name)
