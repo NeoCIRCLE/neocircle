@@ -448,3 +448,22 @@ footer a, footer a:hover, footer a:visited {
 #dashboard-vm-list a small {
   padding-left: 10px;
 }
+
+.index-template-list-name {
+  display: inline-block; 
+  max-width: 50%; 
+  text-overflow: ellipsis; 
+  white-space: nowrap; 
+  overflow: hidden; 
+  float: left;
+}
+
+#dashboard-template-list a small {
+  max-width: 50%;
+  float: left;
+  padding-top: 2px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  padding-left: 10px;
+}

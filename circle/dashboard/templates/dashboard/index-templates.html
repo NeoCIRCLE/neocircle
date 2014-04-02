@@ -7,11 +7,15 @@
     <h3 class="no-margin"><i class="icon-puzzle-piece"></i> {% trans "Templates" %}
     </h3>
   </div>
-  <div class="list-group" id="vm-list-view">
+  <div class="list-group" id="dashboard-template-list">
     {% for t in templates %}
     <a href="{% url "dashboard.views.template-detail" pk=t.pk %}" class="list-group-item">
-      <i class="icon-{{ t.os_type }}"></i> {{ t.name }} <small class="text-muted">{{ t.system }}</small>
+      <span class="index-template-list-name">
+        <i class="icon-{{ t.os_type }}"></i> {{ t.name }} 
+      </span>
+      <small class="text-muted index-template-list-system">{{ t.system }}</small>
       <div class="pull-right vm-create" data-template="{{ t.pk }}"><i title="{% trans "Start vm instance" %}" class="icon-play"></i></div>
+      <div class="clearfix"></div>
     </a>
     {% empty %}
       <div class="alert alert-warning" style="margin: 10px;">
