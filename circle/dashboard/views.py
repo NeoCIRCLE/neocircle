@@ -1448,7 +1448,7 @@ class NodeFlushView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
 
     def __flush(self, request):
         self.object = self.get_object()
-        self.object.flush_async(user=request.user)
+        self.object.flush.async(user=request.user)
         success_message = _("Node successfully flushed!")
         messages.success(request, success_message)
         return redirect(self.get_success_url())
