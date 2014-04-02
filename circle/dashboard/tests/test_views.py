@@ -638,16 +638,6 @@ class NodeDetailTest(LoginMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Node.objects.get(pk=1).name, 'test123')
 
-    def test_unpermitted_set_name_w_ajax(self):
-        c = Client()
-        self.login(c, "user2")
-        node = Node.objects.get(pk=1)
-        old_name = node.name
-        response = c.post("/dashboard/node/1/", {'new_name': 'test12'},
-                          HTTP_X_REQUESTED_WITH='XMLHttpRequest')
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(Node.objects.get(pk=1).name, old_name)
-
     def test_unpermitted_add_trait(self):
         c = Client()
         self.login(c, "user2")
@@ -753,6 +743,16 @@ class NodeDetailTest(LoginMixin, TestCase):
         node_enabled = node.enabled
         response = c.post("/dashboard/node/status/1/", {'change_status': ''})
         self.assertEqual(response.status_code, 302)
+        self.assertEqual(node_enabled, not Node.objects.get(pk=1).enabled)
+
+    def test_permitted_change_node_status_w_ajax(self):
+        c = Client()
+        self.login(c, "superuser")
+        node = Node.objects.get(pk=1)
+        node_enabled = node.enabled
+        response = c.post("/dashboard/node/status/1/", {'change_status': ''},
+                          HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(node_enabled, not Node.objects.get(pk=1).enabled)
 
 
