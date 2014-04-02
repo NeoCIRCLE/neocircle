@@ -450,18 +450,20 @@ class TemplateForm(forms.ModelForm):
     networks = forms.ModelMultipleChoiceField(
         queryset=VLANS, required=False)
     system = forms.CharField(widget=forms.TextInput)
+    parent_type = forms.CharField(required=False)
 
     def __init__(self, *args, **kwargs):
-        parent = kwargs.pop("parent", None)
+        self.parent = kwargs.pop("parent", None)
         self.user = kwargs.pop("user", None)
         super(TemplateForm, self).__init__(*args, **kwargs)
 
         data = self.data.copy()
         data['owner'] = self.user.pk
         self.data = data
+        self.initial['parent_type'] = self.parent
 
-        if parent is not None and parent.isdigit():
-            template = get_object_or_404(InstanceTemplate, pk=parent)
+        if self.parent is not None and self.parent.isdigit():
+            template = get_object_or_404(InstanceTemplate, pk=self.parent)
             parent = template.__dict__
             fields = ["system", "name", "num_cores", "boot_menu", "ram_size",
                       "priority", "access_method", "raw_data",
@@ -475,7 +477,7 @@ class TemplateForm(forms.ModelForm):
         else:
             self.for_networks = self.instance
 
-        if self.instance.pk or parent is not None:
+        if self.instance.pk or self.parent is not None:
             n = self.for_networks.interface_set.values_list("vlan", flat=True)
             self.initial['networks'] = n
 
@@ -501,15 +503,10 @@ class TemplateForm(forms.ModelForm):
     def save(self, commit=True):
         data = self.cleaned_data
         self.instance.max_ram_size = data.get('ram_size')
-        is_new = self.instance.pk is None
 
         instance = super(TemplateForm, self).save(commit=False)
         if commit:
             instance.save()
-
-        if is_new:
-            self.instance.disks = InstanceTemplate.objects.get(
-                pk=self.instance.parent.pk).disks.all()
 
         # create and/or delete InterfaceTemplates
         networks = InterfaceTemplate.objects.filter(
@@ -532,6 +529,7 @@ class TemplateForm(forms.ModelForm):
 
         helper = FormHelper()
         helper.layout = Layout(
+            Field("parent_type", type="hidden"),
             Field("name"),
             Fieldset(
                 _("Resource configuration"),

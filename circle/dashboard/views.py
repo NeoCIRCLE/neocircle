@@ -842,11 +842,19 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
             tags = post.pop("tags")
             post['pw'] = User.objects.make_random_password()
             post.pop("parent")
+            parent_type = post.pop("parent_type")
             post['max_ram_size'] = post['ram_size']
             inst = Instance.create(params=post, disks=[], networks=networks,
                                    tags=tags, req_traits=req_traits)
             messages.success(request, _("The template has been created, "
                                         "you can now add disks to it!"))
+
+            # if it's not a base vm we need to add disks and deploy it
+            if parent_type != "base_vm":
+                template = get_object_or_404(InstanceTemplate, pk=parent_type)
+                # TODO clone disks
+                inst.deploy_async()
+
             return redirect("%s#resources" % inst.get_absolute_url())
 
         return super(TemplateCreate, self).post(self, request, args, kwargs)
