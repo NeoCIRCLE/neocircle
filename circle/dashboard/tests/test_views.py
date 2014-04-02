@@ -595,8 +595,7 @@ class NodeDetailTest(LoginMixin, TestCase):
     def test_anon_node_page(self):
         c = Client()
         response = c.get('/dashboard/node/1/')
-        self.assertRedirects(response, '/accounts/login/'
-                                       '?next=/dashboard/node/1/')
+        self.assertEqual(response.status_code, 302)
 
     def test_permitted_node_delete(self):
         c = Client()
@@ -608,14 +607,12 @@ class NodeDetailTest(LoginMixin, TestCase):
         c = Client()
         self.login(c, 'user1')
         response = c.post('/dashboard/node/delete/1/')
-        self.assertRedirects(response, '/accounts/login/'
-                                       '?next=/dashboard/node/delete/1/')
+        self.assertEqual(response.status_code, 302)
 
     def test_anon_node_delete(self):
         c = Client()
         response = c.post('/dashboard/node/delete/1/')
-        self.assertRedirects(response, '/accounts/login/'
-                                       '?next=/dashboard/node/delete/1/')
+        self.assertEqual(response.status_code, 302)
 
     def test_unpermitted_set_name(self):
         c = Client()
@@ -658,8 +655,7 @@ class NodeDetailTest(LoginMixin, TestCase):
         trait_count = node.traits.count()
         response = c.post("/dashboard/node/1/add-trait/",
                           {'name': 'test1'})
-        self.assertRedirects(response, '/accounts/login/'
-                             '?next=/dashboard/node/1/add-trait/')
+        self.assertEqual(response.status_code, 302)
         self.assertEqual(len(Node.objects.get(pk=1).traits.all()), trait_count)
 
     def test_anon_add_trait(self):
@@ -668,8 +664,7 @@ class NodeDetailTest(LoginMixin, TestCase):
         trait_count = node.traits.count()
         response = c.post("/dashboard/node/1/add-trait/",
                           {'name': 'test2'})
-        self.assertRedirects(response, '/accounts/login/'
-                             '?next=/dashboard/node/1/add-trait/')
+        self.assertEqual(response.status_code, 302)
         self.assertEqual(len(Node.objects.get(pk=1).traits.all()), trait_count)
 
     def test_permitted_add_trait(self):
@@ -679,7 +674,8 @@ class NodeDetailTest(LoginMixin, TestCase):
         trait_count = node.traits.count()
         response = c.post("/dashboard/node/1/add-trait/", {'name': 'test3'})
         self.assertRedirects(response, '/dashboard/node/1/')
-        self.assertEqual(node.traits.count(), trait_count + 1)
+        self.assertEqual(Node.objects.get(pk=1).traits.count(),
+                         trait_count + 1)
 
     def test_unpermitted_remove_trait(self):
         node = Node.objects.get(pk=1)
@@ -689,7 +685,7 @@ class NodeDetailTest(LoginMixin, TestCase):
         self.login(c, "user2")
         response = c.post("/dashboard/node/1/", {'to_remove': traitid})
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(node.traits.count(), trait_count)
+        self.assertEqual(Node.objects.get(pk=1).traits.count(), trait_count)
 
     def test_permitted_remove_trait(self):
         node = Node.objects.get(pk=1)
@@ -699,7 +695,8 @@ class NodeDetailTest(LoginMixin, TestCase):
         self.login(c, "superuser")
         response = c.post("/dashboard/node/1/", {'to_remove': traitid})
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(node.traits.count(), trait_count - 1)
+        self.assertEqual(Node.objects.get(pk=1).traits.count(),
+                         trait_count - 1)
 
     def test_permitted_remove_trait_w_ajax(self):
         node = Node.objects.get(pk=1)
@@ -721,7 +718,42 @@ class NodeDetailTest(LoginMixin, TestCase):
         s = 'x' * 100
         response = c.post("/dashboard/node/1/add-trait/", {'name': s})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(node.traits.count(), trait_count)
+        self.assertEqual(Node.objects.get(pk=1).traits.count(), trait_count)
+
+    def test_anon_remove_trait(self):
+        c = Client()
+        node = Node.objects.get(pk=1)
+        trait_count = node.traits.count()
+        traitid = node.traits.get(name='testtrait').pk
+        response = c.post("/dashboard/node/1/", {'to_remove': traitid})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(len(Node.objects.get(pk=1).traits.all()), trait_count)
+
+    def test_anon_change_node_status(self):
+        c = Client()
+        node = Node.objects.get(pk=1)
+        node_enabled = node.enabled
+        response = c.post("/dashboard/node/1/", {'change_status': ''})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(node_enabled, Node.objects.get(pk=1).enabled)
+
+    def test_unpermitted_change_node_status(self):
+        c = Client()
+        self.login(c, "user2")
+        node = Node.objects.get(pk=1)
+        node_enabled = node.enabled
+        response = c.post("/dashboard/node/status/1/", {'change_status': ''})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(node_enabled, Node.objects.get(pk=1).enabled)
+
+    def test_permitted_change_node_status(self):
+        c = Client()
+        self.login(c, "superuser")
+        node = Node.objects.get(pk=1)
+        node_enabled = node.enabled
+        response = c.post("/dashboard/node/status/1/", {'change_status': ''})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(node_enabled, not Node.objects.get(pk=1).enabled)
 
 
 class VmDetailVncTest(LoginMixin, TestCase):
