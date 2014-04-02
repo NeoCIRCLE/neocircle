@@ -8,7 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from celery.exceptions import TimeLimitExceeded
 
-from common.models import activity_context
+from common.operations import Operation, register_operation
 from storage.models import Disk
 from .tasks import vm_tasks
 from .tasks.local_tasks import async_instance_operation
@@ -18,77 +18,13 @@ from .models import Instance, InstanceActivity, InstanceTemplate
 logger = getLogger(__name__)
 
 
-class Operation(object):
-    """Base class for VM operations.
-    """
+class InstanceOperation(Operation):
     acl_level = 'owner'
-    async_queue = 'localhost.man'
-    required_perms = ()
-
-    def __call__(self, **kwargs):
-        return self.call(**kwargs)
+    async_operation = async_instance_operation
 
     def __init__(self, instance):
-        """Initialize a new operation bound to the specified VM instance.
-        """
+        super(InstanceOperation, self).__init__(subject=instance)
         self.instance = instance
-
-    def __unicode__(self):
-        return self.name
-
-    def __prelude(self, kwargs):
-        """This method contains the shared prelude of call and async.
-        """
-        skip_checks = kwargs.setdefault('system', False)
-        user = kwargs.setdefault('user', None)
-        if not skip_checks:
-            self.check_auth(user)
-        self.check_precond()
-        return self.create_activity(user=user)
-
-    def _exec_op(self, activity, user, **kwargs):
-        """Execute the operation inside the specified activity's context.
-        """
-        with activity_context(activity, on_abort=self.on_abort,
-                              on_commit=self.on_commit):
-            return self._operation(activity, user, **kwargs)
-
-    def _operation(self, activity, user, system, **kwargs):
-        """This method is the operation's particular implementation.
-
-        Deriving classes should implement this method.
-        """
-        raise NotImplementedError
-
-    def async(self, **kwargs):
-        """Execute the operation asynchronously.
-
-        Only a quick, preliminary check is ran before creating the associated
-        activity and queuing the job.
-
-        The returned value is the handle for the asynchronous job.
-
-        For more information, check the synchronous call's documentation.
-        """
-        activity = self.__prelude(kwargs)
-        return async_instance_operation.apply_async(args=(self.id,
-                                                          self.instance.pk,
-                                                          activity.pk),
-                                                    kwargs=kwargs,
-                                                    queue=self.async_queue)
-
-    def call(self, **kwargs):
-        """Execute the operation (synchronously).
-
-        Anticipated keyword arguments:
-        * user: The User invoking the operation. If this argument is not
-                present, it'll be provided with a default value of None.
-        * system: Indicates that the operation is invoked by the system, not a
-                  User. If this argument is present and has a value of True,
-                  then authorization checks are skipped.
-        """
-        activity = self.__prelude(kwargs)
-        return self._exec_op(activity=activity, **kwargs)
 
     def check_precond(self):
         if self.instance.destroyed_at:
@@ -99,36 +35,18 @@ class Operation(object):
             raise PermissionDenied("%s doesn't have the required ACL level." %
                                    user)
 
-        if not user.has_perms(self.required_perms):
-            raise PermissionDenied("%s doesn't have the required permissions."
-                                   % user)
+        super(InstanceOperation, self).check_auth(user=user)
 
     def create_activity(self, user):
         return InstanceActivity.create(code_suffix=self.activity_code_suffix,
                                        instance=self.instance, user=user)
 
-    def on_abort(self, activity, error):
-        """This method is called when the operation aborts (i.e. raises an
-        exception).
-        """
-        pass
 
-    def on_commit(self, activity):
-        """This method is called when the operation executes successfully.
-        """
-        pass
+def register_instance_operation(op_cls, op_id=None):
+    return register_operation(Instance, op_cls, op_id)
 
 
-def register_operation(op_cls, op_id=None):
-    """Register the specified operation with Instance.
-    """
-    if op_id is None:
-        op_id = op_cls.id
-
-    Instance._ops[op_id] = lambda inst: op_cls(inst)
-
-
-class DeployOperation(Operation):
+class DeployOperation(InstanceOperation):
     activity_code_suffix = 'deploy'
     id = 'deploy'
     name = _("deploy")
@@ -167,10 +85,10 @@ class DeployOperation(Operation):
         self.instance._deploy_vm(activity)
 
 
-register_operation(DeployOperation)
+register_instance_operation(DeployOperation)
 
 
-class DestroyOperation(Operation):
+class DestroyOperation(InstanceOperation):
     activity_code_suffix = 'destroy'
     id = 'destroy'
     name = _("destroy")
@@ -205,10 +123,10 @@ class DestroyOperation(Operation):
         self.instance.save()
 
 
-register_operation(DestroyOperation)
+register_instance_operation(DestroyOperation)
 
 
-class MigrateOperation(Operation):
+class MigrateOperation(InstanceOperation):
     activity_code_suffix = 'migrate'
     id = 'migrate'
     name = _("migrate")
@@ -239,10 +157,10 @@ class MigrateOperation(Operation):
                 net.deploy()
 
 
-register_operation(MigrateOperation)
+register_instance_operation(MigrateOperation)
 
 
-class RebootOperation(Operation):
+class RebootOperation(InstanceOperation):
     activity_code_suffix = 'reboot'
     id = 'reboot'
     name = _("reboot")
@@ -254,10 +172,10 @@ class RebootOperation(Operation):
                                     queue=queue_name).get(timeout=timeout)
 
 
-register_operation(RebootOperation)
+register_instance_operation(RebootOperation)
 
 
-class RedeployOperation(Operation):
+class RedeployOperation(InstanceOperation):
     activity_code_suffix = 'redeploy'
     id = 'redeploy'
     name = _("redeploy")
@@ -286,10 +204,10 @@ class RedeployOperation(Operation):
         self.instance._deploy_vm(activity)
 
 
-register_operation(RedeployOperation)
+register_instance_operation(RedeployOperation)
 
 
-class ResetOperation(Operation):
+class ResetOperation(InstanceOperation):
     activity_code_suffix = 'reset'
     id = 'reset'
     name = _("reset")
@@ -301,10 +219,10 @@ class ResetOperation(Operation):
                                    queue=queue_name).get(timeout=timeout)
 
 
-register_operation(ResetOperation)
+register_instance_operation(ResetOperation)
 
 
-class SaveAsTemplateOperation(Operation):
+class SaveAsTemplateOperation(InstanceOperation):
     activity_code_suffix = 'save_as_template'
     id = 'save_as_template'
     name = _("save as template")
@@ -358,10 +276,10 @@ class SaveAsTemplateOperation(Operation):
             return tmpl
 
 
-register_operation(SaveAsTemplateOperation)
+register_instance_operation(SaveAsTemplateOperation)
 
 
-class ShutdownOperation(Operation):
+class ShutdownOperation(InstanceOperation):
     activity_code_suffix = 'shutdown'
     id = 'shutdown'
     name = _("shutdown")
@@ -387,10 +305,10 @@ class ShutdownOperation(Operation):
         self.instance.save()
 
 
-register_operation(ShutdownOperation)
+register_instance_operation(ShutdownOperation)
 
 
-class ShutOffOperation(Operation):
+class ShutOffOperation(InstanceOperation):
     activity_code_suffix = 'shut_off'
     id = 'shut_off'
     name = _("shut off")
@@ -408,10 +326,10 @@ class ShutOffOperation(Operation):
         self.instance.save()
 
 
-register_operation(ShutOffOperation)
+register_instance_operation(ShutOffOperation)
 
 
-class SleepOperation(Operation):
+class SleepOperation(InstanceOperation):
     activity_code_suffix = 'sleep'
     id = 'sleep'
     name = _("sleep")
@@ -447,10 +365,10 @@ class SleepOperation(Operation):
             self.instance.save()
 
 
-register_operation(SleepOperation)
+register_instance_operation(SleepOperation)
 
 
-class WakeUpOperation(Operation):
+class WakeUpOperation(InstanceOperation):
     activity_code_suffix = 'wake_up'
     id = 'wake_up'
     name = _("wake up")
@@ -490,4 +408,4 @@ class WakeUpOperation(Operation):
         self.instance.renew(which='both', base_activity=activity)
 
 
-register_operation(WakeUpOperation)
+register_instance_operation(WakeUpOperation)

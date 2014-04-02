@@ -20,6 +20,7 @@ from model_utils.models import TimeStampedModel, StatusModel
 from taggit.managers import TaggableManager
 
 from acl.models import AclBase
+from common.operations import OperatedMixin
 from storage.models import Disk
 from ..tasks import vm_tasks, agent_tasks
 from .activity import (ActivityInProgressError, instance_activity,
@@ -160,7 +161,7 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
         return ('dashboard.views.template-detail', None, {'pk': self.pk})
 
 
-class Instance(AclBase, VirtualMachineDescModel, StatusModel,
+class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                TimeStampedModel):
 
     """Virtual machine instance.
@@ -216,7 +217,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
                                              "destruction."))
     objects = Manager()
     active = InstanceActiveManager()
-    _ops = {}  # operation factory registry
 
     class Meta:
         app_label = 'vm'
@@ -253,15 +253,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
             Exception.__init__(self, message)
 
             self.instance = instance
-
-    def __getattr__(self, name):
-        # NOTE: __getattr__ is only called if the attribute doesn't already
-        # exist in your __dict__
-        if name in self._ops:
-            return self._ops[name](self)
-        else:
-            raise AttributeError("%s object has no attribute '%s'" %
-                                 (self.__class__.__name__, name))
 
     def __unicode__(self):
         parts = (self.name, "(" + str(self.id) + ")")
