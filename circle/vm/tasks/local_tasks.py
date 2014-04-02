@@ -16,5 +16,14 @@ def async_instance_operation(operation_id, instance_pk, activity_pk, **kwargs):
 
 
 @celery.task
-def flush(node, user):
-    node.flush(task_uuid=flush.request.id, user=user)
+def async_node_operation(operation_id, node_pk, activity_pk, **kwargs):
+    from vm.models import Node, NodeActivity
+    node = Node.objects.get(pk=node_pk)
+    operation = getattr(node, operation_id)
+    activity = NodeActivity.objects.get(pk=activity_pk)
+
+    # save async task UUID to activity
+    activity.task_uuid = async_node_operation.request.id
+    activity.save()
+
+    return operation._exec_op(activity=activity, **kwargs)

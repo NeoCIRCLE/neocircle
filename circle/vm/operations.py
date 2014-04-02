@@ -11,8 +11,10 @@ from celery.exceptions import TimeLimitExceeded
 from common.operations import Operation, register_operation
 from storage.models import Disk
 from .tasks import vm_tasks
-from .tasks.local_tasks import async_instance_operation
-from .models import Instance, InstanceActivity, InstanceTemplate
+from .tasks.local_tasks import async_instance_operation, async_node_operation
+from .models import (
+    Instance, InstanceActivity, InstanceTemplate, Node, NodeActivity,
+)
 
 
 logger = getLogger(__name__)
@@ -409,3 +411,35 @@ class WakeUpOperation(InstanceOperation):
 
 
 register_instance_operation(WakeUpOperation)
+
+
+class NodeOperation(Operation):
+    async_operation = async_node_operation
+
+    def __init__(self, node):
+        super(NodeOperation, self).__init__(subject=node)
+        self.node = node
+
+    def create_activity(self, user):
+        return NodeActivity.create(code_suffix=self.activity_code_suffix,
+                                   node=self.node, user=user)
+
+
+def register_node_operation(op_cls, op_id=None):
+    return register_operation(Node, op_cls, op_id)
+
+
+class FlushOperation(NodeOperation):
+    activity_code_suffix = 'flush'
+    id = 'flush'
+    name = _("flush")
+    description = _("""Disable node and move all instances to other ones.""")
+
+    def _operation(self, activity, user, system):
+        self.node.disable(user, activity)
+        for i in self.node.instance_set.all():
+            with activity.sub_activity('migrate_instance_%d' % i.pk):
+                i.migrate()
+
+
+register_node_operation(FlushOperation)

@@ -10,7 +10,7 @@ from ..models import (
 )
 from ..models.instance import find_unused_port, ActivityInProgressError
 from ..operations import (
-    DeployOperation, DestroyOperation, MigrateOperation
+    DeployOperation, DestroyOperation, FlushOperation, MigrateOperation,
 )
 
 
@@ -244,35 +244,37 @@ class InstanceActivityTestCase(TestCase):
         subact.__enter__.assert_called()
 
     def test_flush(self):
-        node = MagicMock(spec=Node, enabled=True)
-        user = MagicMock(spec=User)
         insts = [MagicMock(spec=Instance, migrate=MagicMock()),
                  MagicMock(spec=Instance, migrate=MagicMock())]
+        node = MagicMock(spec=Node, enabled=True)
+        node.instance_set.all.return_value = insts
+        user = MagicMock(spec=User)
+        flush_op = FlushOperation(node)
 
-        with patch('vm.models.node.node_activity') as na:
-            act = na.return_value.__enter__.return_value = MagicMock()
-            node.instance_set.all.return_value = insts
+        with patch.object(FlushOperation, 'create_activity') as create_act:
+            act = create_act.return_value = MagicMock()
 
-            Node.flush(node, user)
+            flush_op(user=user)
 
-            na.__enter__.assert_called()
+            create_act.assert_called()
             node.disable.assert_called_with(user, act)
             for i in insts:
                 i.migrate.assert_called()
 
     def test_flush_disabled_wo_user(self):
-        node = MagicMock(spec=Node, enabled=False)
         insts = [MagicMock(spec=Instance, migrate=MagicMock()),
                  MagicMock(spec=Instance, migrate=MagicMock())]
+        node = MagicMock(spec=Node, enabled=False)
+        node.instance_set.all.return_value = insts
+        flush_op = FlushOperation(node)
 
-        with patch('vm.models.node.node_activity') as na:
-            act = na.return_value.__enter__.return_value = MagicMock()
-            node.instance_set.all.return_value = insts
+        with patch.object(FlushOperation, 'create_activity') as create_act:
+            act = create_act.return_value = MagicMock()
 
-            Node.flush(node)
+            flush_op(system=True)
 
+            create_act.assert_called()
             node.disable.assert_called_with(None, act)
             # ^ should be called, but real method no-ops if disabled
-            na.__enter__.assert_called()
             for i in insts:
                 i.migrate.assert_called()
