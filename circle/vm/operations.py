@@ -39,9 +39,22 @@ class InstanceOperation(Operation):
 
         super(InstanceOperation, self).check_auth(user=user)
 
-    def create_activity(self, user):
-        return InstanceActivity.create(code_suffix=self.activity_code_suffix,
-                                       instance=self.instance, user=user)
+    def create_activity(self, parent, user):
+        if parent:
+            if parent.instance != self.instance:
+                raise ValueError("The instance associated with the specified "
+                                 "parent activity does not match the instance "
+                                 "bound to the operation.")
+            if parent.user != user:
+                raise ValueError("The user associated with the specified "
+                                 "parent activity does not match the user "
+                                 "provided as parameter.")
+
+            return parent.create_sub(code_suffix=self.activity_code_suffix)
+        else:
+            return InstanceActivity.create(
+                code_suffix=self.activity_code_suffix, instance=self.instance,
+                user=user)
 
 
 def register_instance_operation(op_cls, op_id=None):
@@ -420,9 +433,21 @@ class NodeOperation(Operation):
         super(NodeOperation, self).__init__(subject=node)
         self.node = node
 
-    def create_activity(self, user):
-        return NodeActivity.create(code_suffix=self.activity_code_suffix,
-                                   node=self.node, user=user)
+    def create_activity(self, parent, user):
+        if parent:
+            if parent.node != self.node:
+                raise ValueError("The node associated with the specified "
+                                 "parent activity does not match the node "
+                                 "bound to the operation.")
+            if parent.user != user:
+                raise ValueError("The user associated with the specified "
+                                 "parent activity does not match the user "
+                                 "provided as parameter.")
+
+            return parent.create_sub(code_suffix=self.activity_code_suffix)
+        else:
+            return NodeActivity.create(code_suffix=self.activity_code_suffix,
+                                       node=self.node, user=user)
 
 
 def register_node_operation(op_cls, op_id=None):

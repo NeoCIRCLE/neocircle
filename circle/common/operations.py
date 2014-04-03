@@ -25,10 +25,12 @@ class Operation(object):
         """
         skip_checks = kwargs.setdefault('system', False)
         user = kwargs.setdefault('user', None)
+        parent_activity = kwargs.pop('parent_activity', None)
+
         if not skip_checks:
             self.check_auth(user)
         self.check_precond()
-        return self.create_activity(user=user)
+        return self.create_activity(parent=parent_activity, user=user)
 
     def _exec_op(self, activity, user, **kwargs):
         """Execute the operation inside the specified activity's context.
@@ -65,11 +67,14 @@ class Operation(object):
         """Execute the operation (synchronously).
 
         Anticipated keyword arguments:
-        * user: The User invoking the operation. If this argument is not
-                present, it'll be provided with a default value of None.
+        * parent_activity: Parent activity for the operation. If this argument
+                           is present, the operation's activity will be created
+                           as a child activity of it.
         * system: Indicates that the operation is invoked by the system, not a
                   User. If this argument is present and has a value of True,
                   then authorization checks are skipped.
+        * user: The User invoking the operation. If this argument is not
+                present, it'll be provided with a default value of None.
         """
         activity = self.__prelude(kwargs)
         return self._exec_op(activity=activity, **kwargs)
@@ -82,7 +87,7 @@ class Operation(object):
             raise PermissionDenied("%s doesn't have the required permissions."
                                    % user)
 
-    def create_activity(self, user):
+    def create_activity(self, parent, user):
         raise NotImplementedError
 
     def on_abort(self, activity, error):
