@@ -311,8 +311,8 @@ class ShutdownOperation(InstanceOperation):
 
     def _operation(self, activity, user, system, timeout=120):
         queue_name = self.instance.get_remote_queue_name('vm')
-        logger.debug("RPC Shutdown at queue: %s, for vm: %s.",
-                     self.instance.vm_name, queue_name)  # TODO param order ok?
+        logger.debug("RPC Shutdown at queue: %s, for vm: %s.", queue_name,
+                     self.instance.vm_name)
         vm_tasks.shutdown.apply_async(kwargs={'name': self.instance.vm_name},
                                       queue=queue_name).get(timeout=timeout)
         self.instance.node = None
