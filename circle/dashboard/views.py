@@ -838,22 +838,34 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
             post = form.cleaned_data
 
             networks = self.__create_networks(post.pop("networks"))
-            req_traits = post.pop("req_traits")
-            tags = post.pop("tags")
-            post['pw'] = User.objects.make_random_password()
             post.pop("parent")
             parent_type = post.pop("parent_type")
             post['max_ram_size'] = post['ram_size']
-            inst = Instance.create(params=post, disks=[], networks=networks,
-                                   tags=tags, req_traits=req_traits)
-            messages.success(request, _("The template has been created, "
-                                        "you can now add disks to it!"))
 
             # if it's not a base vm we need to add disks and deploy it
             if parent_type != "base_vm":
                 template = get_object_or_404(InstanceTemplate, pk=parent_type)
-                # TODO clone disks
+                inst = Instance.create_from_template(template=template,
+                                                     networks=networks,
+                                                     **post)
                 inst.deploy_async()
+                messages.info(request, _("Your instance has been created, "
+                                         "modify it then press the save as "
+                                         "button to save it as a new template!"
+                                         ))
+
+            else:
+                req_traits = post.pop("req_traits")
+                tags = post.pop("tags")
+                post['pw'] = User.objects.make_random_password()
+                inst = Instance.create(params=post, disks=[],
+                                       networks=networks,
+                                       tags=tags, req_traits=req_traits)
+                messages.info(request, _("Your new base vm has been created, "
+                                         "add disks, make modifications, then"
+                                         " use the save as button to save it"
+                                         " as a new template!"
+                                         ))
 
             return redirect("%s#resources" % inst.get_absolute_url())
 
