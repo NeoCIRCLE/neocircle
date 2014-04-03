@@ -6,7 +6,11 @@ from django.db.models import CharField, ForeignKey
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
-from common.models import ActivityModel, activitycontextimpl
+from common.models import (
+    ActivityModel, activitycontextimpl, join_activity_code,
+)
+
+
 logger = getLogger(__name__)
 
 
@@ -23,6 +27,7 @@ class ActivityInProgressError(Exception):
 
 
 class InstanceActivity(ActivityModel):
+    ACTIVITY_CODE_BASE = join_activity_code('vm', 'Instance')
     instance = ForeignKey('Instance', related_name='activity_log',
                           help_text=_('Instance this activity works on.'),
                           verbose_name=_('instance'))
@@ -53,9 +58,10 @@ class InstanceActivity(ActivityModel):
         if concurrency_check and active_activities.exists():
             raise ActivityInProgressError(active_activities[0])
 
-        act = cls(activity_code='vm.Instance.' + code_suffix,
-                  instance=instance, parent=None, resultant_state=None,
-                  started=timezone.now(), task_uuid=task_uuid, user=user)
+        activity_code = join_activity_code(cls.ACTIVITY_CODE_BASE, code_suffix)
+        act = cls(activity_code=activity_code, instance=instance, parent=None,
+                  resultant_state=None, started=timezone.now(),
+                  task_uuid=task_uuid, user=user)
         act.save()
         return act
 
@@ -66,7 +72,7 @@ class InstanceActivity(ActivityModel):
             raise ActivityInProgressError(active_children[0])
 
         act = InstanceActivity(
-            activity_code=self.activity_code + '.' + code_suffix,
+            activity_code=join_activity_code(self.activity_code, code_suffix),
             instance=self.instance, parent=self, resultant_state=None,
             started=timezone.now(), task_uuid=task_uuid, user=self.user)
         act.save()
@@ -97,6 +103,7 @@ def instance_activity(code_suffix, instance, on_abort=None, on_commit=None,
 
 
 class NodeActivity(ActivityModel):
+    ACTIVITY_CODE_BASE = join_activity_code('vm', 'Node')
     node = ForeignKey('Node', related_name='activity_log',
                       help_text=_('Node this activity works on.'),
                       verbose_name=_('node'))
@@ -119,15 +126,15 @@ class NodeActivity(ActivityModel):
 
     @classmethod
     def create(cls, code_suffix, node, task_uuid=None, user=None):
-        act = cls(activity_code='vm.Node.' + code_suffix,
-                  node=node, parent=None, started=timezone.now(),
-                  task_uuid=task_uuid, user=user)
+        activity_code = join_activity_code(cls.ACTIVITY_CODE_BASE, code_suffix)
+        act = cls(activity_code=activity_code, node=node, parent=None,
+                  started=timezone.now(), task_uuid=task_uuid, user=user)
         act.save()
         return act
 
     def create_sub(self, code_suffix, task_uuid=None):
         act = NodeActivity(
-            activity_code=self.activity_code + '.' + code_suffix,
+            activity_code=join_activity_code(self.activity_code, code_suffix),
             node=self.node, parent=self, started=timezone.now(),
             task_uuid=task_uuid, user=self.user)
         act.save()

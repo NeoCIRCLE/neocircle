@@ -36,6 +36,15 @@ def activitycontextimpl(act, on_abort=None, on_commit=None):
 activity_context = contextmanager(activitycontextimpl)
 
 
+activity_code_separator = '.'
+
+
+def join_activity_code(*args):
+    """Join the specified parts into an activity code.
+    """
+    return activity_code_separator.join(args)
+
+
 class ActivityModel(TimeStampedModel):
     activity_code = CharField(max_length=100, verbose_name=_('activity code'))
     parent = ForeignKey('self', blank=True, null=True, related_name='children')
