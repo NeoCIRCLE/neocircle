@@ -1,6 +1,11 @@
+from logging import getLogger
+
 from .models import activity_context
 
 from django.core.exceptions import PermissionDenied
+
+
+logger = getLogger(__name__)
 
 
 class Operation(object):
@@ -56,6 +61,8 @@ class Operation(object):
 
         For more information, check the synchronous call's documentation.
         """
+        logger.info("%s called asynchronously with the following parameters: "
+                    "%r", self.__class__.__name__, kwargs)
         activity = self.__prelude(kwargs)
         return self.async_operation.apply_async(args=(self.id,
                                                       self.subject.pk,
@@ -76,6 +83,8 @@ class Operation(object):
         * user: The User invoking the operation. If this argument is not
                 present, it'll be provided with a default value of None.
         """
+        logger.info("%s called (synchronously) with the following parameters: "
+                    "%r", self.__class__.__name__, kwargs)
         activity = self.__prelude(kwargs)
         return self._exec_op(activity=activity, **kwargs)
 
