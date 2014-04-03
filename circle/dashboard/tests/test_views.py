@@ -522,6 +522,75 @@ class VmDetailTest(LoginMixin, TestCase):
         self.assertEqual(inst.status, 'SUSPENDED')
 
 
+class GroupDetailTest(LoginMixin, TestCase):
+    fixtures = ['test-vm-fixture.json', 'node.json']
+
+    def setUp(self):
+        Instance.get_remote_queue_name = Mock(return_value='test')
+        self.u1 = User.objects.create(username='user1')
+        self.u1.set_password('password')
+        self.u1.save()
+        self.u2 = User.objects.create(username='user2', is_staff=True)
+        self.u2.set_password('password')
+        self.u2.save()
+        self.us = User.objects.create(username='superuser', is_superuser=True)
+        self.us.set_password('password')
+        self.us.save()
+        self.g1 = Group.objects.create(name='group1')
+        self.g1.user_set.add(self.u1)
+        self.g1.user_set.add(self.u2)
+        self.g1.save()
+        settings["default_vlangroup"] = 'public'
+        VlanGroup.objects.create(name='public')
+
+    def tearDown(self):
+        super(GroupDetailTest, self).tearDown()
+        self.u1.delete()
+        self.u2.delete()
+        self.us.delete()
+        self.g1.delete()
+
+    def test_404_superuser_group_page(self):
+        c = Client()
+        self.login(c, 'superuser')
+        response = c.get('/dashboard/group/25555/')
+        self.assertEqual(response.status_code, 404)
+
+    def test_404_user_group_page(self):
+        c = Client()
+        self.login(c, 'user1')
+        response = c.get('/dashboard/group/25555/')
+        self.assertEqual(response.status_code, 404)
+
+    def test_anon_group_page(self):
+        c = Client()
+        response = c.get('/dashboard/group/1/')
+        self.assertEqual(response.status_code, 302)
+
+    def test_permitted_group_delete(self):
+        num_of_groups = Group.objects.count()
+        c = Client()
+        self.login(c, 'superuser')
+        response = c.post('/dashboard/group/delete/1/')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Group.objects.count(), num_of_groups - 1)
+
+    def test_unpermitted_group_delete(self):
+        num_of_groups = Group.objects.count()
+        c = Client()
+        self.login(c, 'user1')
+        response = c.post('/dashboard/group/delete/1/')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Group.objects.count(), num_of_groups)
+
+    def test_anon_group_delete(self):
+        num_of_groups = Group.objects.count()
+        c = Client()
+        response = c.post('/dashboard/group/delete/1/')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Group.objects.count(), num_of_groups)
+
+
 class VmDetailVncTest(LoginMixin, TestCase):
     fixtures = ['test-vm-fixture.json', 'node.json']
 
