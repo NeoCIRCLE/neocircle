@@ -175,25 +175,19 @@ class InstanceActivityTestCase(TestCase):
         instance.activity_log.filter.return_value.exists.return_value = True
 
         with self.assertRaises(ActivityInProgressError):
-            InstanceActivity.create("test", instance, concurrency_check=True)
+            InstanceActivity.create('test', instance, concurrency_check=True)
 
     def test_create_no_concurrency_check(self):
         instance = MagicMock(spec=Instance)
         instance.activity_log.filter.return_value.exists.return_value = True
 
-        original_method = InstanceActivity.create.__func__
-
-        with patch('vm.models.activity.InstanceActivity') as ia, \
-                patch('vm.models.activity.timezone.now'):
-            # ia.__init__ = MagicMock()  raises AttributeError
-
-            original_method(ia, "test", instance, concurrency_check=False)
-            ia.save.assert_called()
-
-            # ia.__init__.assert_called_with(activity_code='vm.Instance.test',
-            #                                instance=instance, parent=None,
-            #                                resultant_state=None, started=now,
-            #                                task_uuid=None, user=None)
+        with patch.object(InstanceActivity, '__new__'):
+            try:
+                InstanceActivity.create('test', instance,
+                                        concurrency_check=False)
+            except ActivityInProgressError:
+                raise AssertionError("'create' method checked for concurrent "
+                                     "activities.")
 
     def test_create_sub_concurrency_check(self):
         iaobj = MagicMock(spec=InstanceActivity)
@@ -207,12 +201,13 @@ class InstanceActivityTestCase(TestCase):
         iaobj.activity_code = 'test'
         iaobj.children.filter.return_value.exists.return_value = True
 
-        original_method = InstanceActivity.create_sub
-
-        with patch('vm.models.activity.InstanceActivity') as ia, \
-                patch('vm.models.activity.timezone.now'):
-            original_method(iaobj, "test", concurrency_check=False)
-            ia.save.assert_called()
+        with patch.object(InstanceActivity, '__new__'):
+            try:
+                InstanceActivity.create_sub(iaobj, 'test',
+                                            concurrency_check=False)
+            except ActivityInProgressError:
+                raise AssertionError("'create_sub' method checked for "
+                                     "concurrent activities.")
 
     def test_disable_enabled(self):
         node = MagicMock(spec=Node, enabled=True)
