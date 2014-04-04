@@ -533,6 +533,9 @@ class GroupDetailTest(LoginMixin, TestCase):
         self.u2 = User.objects.create(username='user2', is_staff=True)
         self.u2.set_password('password')
         self.u2.save()
+        self.u3 = User.objects.create(username='user3')
+        self.u3.set_password('password')
+        self.u3.save()
         self.us = User.objects.create(username='superuser', is_superuser=True)
         self.us.set_password('password')
         self.us.save()
@@ -567,6 +570,47 @@ class GroupDetailTest(LoginMixin, TestCase):
         response = c.get('/dashboard/group/1/')
         self.assertEqual(response.status_code, 302)
 
+    def test_superuser_group_page(self):
+        c = Client()
+        self.login(c, 'superuser')
+        response = c.get('/dashboard/group/1/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_acluser_group_page(self):
+        Group.objects.get(pk=1).profile.set_user_level(self.u1, 'operator')
+        c = Client()
+        self.login(c, 'user1')
+        response = c.get('/dashboard/group/1/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_acluser2_group_page(self):
+        Group.objects.get(pk=1).profile.set_user_level(self.u1, 'owner')
+        c = Client()
+        self.login(c, 'user1')
+        response = c.get('/dashboard/group/1/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_unpermitted_user_group_page(self):
+        c = Client()
+        self.login(c, 'user1')
+        response = c.get('/dashboard/group/1/')
+        self.assertEqual(response.status_code, 403)
+
+    def test_user_in_userlist_group_page(self):
+        Group.objects.get(pk=1).user_set.add(self.u1)
+        c = Client()
+        self.login(c, 'user1')
+        response = c.get('/dashboard/group/1/')
+        self.assertEqual(response.status_code, 403)
+
+    def test_groupmember_group_page(self):
+        # user1 is member of g1 - setUp
+        Group.objects.get(pk=1).profile.set_group_level(self.g1, 'owner')
+        c = Client()
+        self.login(c, 'user1')
+        response = c.get('/dashboard/group/1/')
+        self.assertEqual(response.status_code, 200)
+
     def test_permitted_group_delete(self):
         num_of_groups = Group.objects.count()
         c = Client()
@@ -578,10 +622,19 @@ class GroupDetailTest(LoginMixin, TestCase):
     def test_unpermitted_group_delete(self):
         num_of_groups = Group.objects.count()
         c = Client()
-        self.login(c, 'user1')
+        self.login(c, 'user3')
         response = c.post('/dashboard/group/delete/1/')
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Group.objects.count(), num_of_groups)
+
+    def test_acl_group_delete(self):
+        num_of_groups = Group.objects.count()
+        Group.objects.get(pk=1).profile.set_user_level(self.u1, 'owner')
+        c = Client()
+        self.login(c, 'user1')
+        response = c.post('/dashboard/group/delete/1/')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Group.objects.count(), num_of_groups - 1)
 
     def test_anon_group_delete(self):
         num_of_groups = Group.objects.count()

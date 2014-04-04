@@ -1082,24 +1082,22 @@ class GroupRemoveAclGroupView(GroupRemoveUserView):
         return _("Acl group successfully removed from group!")
 
 
-class GroupDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
+class GroupDelete(CheckedDetailView, DeleteView):
 
     """This stuff deletes the group.
     """
     model = Group
     template_name = "dashboard/confirm/base-delete.html"
+    read_level = 'operator'
+
+    def get_has_level(self):
+        return self.object.profile.has_level
 
     def get_template_names(self):
         if self.request.is_ajax():
             return ['dashboard/confirm/ajax-delete.html']
         else:
             return ['dashboard/confirm/base-delete.html']
-
-    def get_context_data(self, **kwargs):
-        # this is redundant now, but if we wanna add more to print
-        # we'll need this
-        context = super(GroupDelete, self).get_context_data(**kwargs)
-        return context
 
     # github.com/django/django/blob/master/django/views/generic/edit.py#L245
     def delete(self, request, *args, **kwargs):
