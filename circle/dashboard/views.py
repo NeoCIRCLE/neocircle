@@ -1613,12 +1613,12 @@ def vm_activity(request, pk):
         raise PermissionDenied()
 
     response = {}
-    only_state = request.GET.get("only_state")
+    only_status = request.GET.get("only_status")
 
-    response['human_readable_state'] = instance.get_status_display()
-    response['state'] = instance.state
+    response['human_readable_status'] = instance.get_status_display()
+    response['status'] = instance.status
     response['icon'] = instance.get_status_icon()
-    if only_state is not None and only_state == "false":  # instance activity
+    if only_status == "false":  # instance activity
         context = {
             'activities': InstanceActivity.objects.filter(
                 instance=instance, parent=None
