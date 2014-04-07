@@ -278,6 +278,12 @@ class Vlan(AclBase, models.Model):
                                   'valid address of the subnet, '
                                   'for example '
                                   '10.4.255.254/16 for 10.4.0.0/16.'))
+    host_ipv6_prefixlen = models.IntegerField(
+        verbose_name=_('IPv6 prefixlen/host'),
+        help_text=_('The prefix length of the subnet assigned to a host. '
+                    'For example /112 = 65536 addresses/host.'),
+        default=112,
+        validators=[MinValueValidator(1), MaxValueValidator(128)])
     network6 = IPNetworkField(unique=False,
                               version=6,
                               null=True,
@@ -511,7 +517,7 @@ class Host(models.Model):
     def ipv6_with_prefixlen(self):
         try:
             net = IPNetwork(self.ipv6)
-            net.prefixlen = 112
+            net.prefixlen = self.vlan.host_ipv6_prefixlen
             return net
         except TypeError:
             return None
