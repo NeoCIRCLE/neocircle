@@ -2,7 +2,7 @@ from django.conf.urls import patterns, url
 
 from .views import (
     AclUpdateView, DiskAddView, FavouriteView, GroupAclUpdateView, GroupDelete,
-    GroupDetailView, GroupList, GroupUserDelete, IndexView, LeaseCreate,
+    GroupDetailView, GroupList, IndexView, LeaseCreate,
     LeaseDelete, LeaseDetail, MyPreferencesView, NodeAddTraitView, NodeCreate,
     NodeDelete, NodeDetailView, NodeFlushView, NodeGraphView, NodeList,
     NodeStatus, NotificationView, PortDelete, TemplateAclUpdateView,
@@ -94,8 +94,6 @@ urlpatterns = patterns(
         name='dashboard.views.group-detail'),
     url(r'^group/(?P<pk>\d+)/acl/$', GroupAclUpdateView.as_view(),
         name='dashboard.views.group-acl'),
-    url(r'^groupuser/delete/(?P<pk>\d+)/$', GroupUserDelete.as_view(),
-        name="dashboard.views.delete-groupuser"),
     url(r'^notifications/$', NotificationView.as_view(),
         name="dashboard.views.notifications"),
 

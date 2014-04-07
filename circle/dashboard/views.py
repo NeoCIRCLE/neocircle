@@ -609,6 +609,9 @@ class GroupDetailView(CheckedDetailView):
                                          kwargs={'pk': self.get_object().pk}))
 
     def __add_user(self, request):
+        self.object = self.get_object()
+        if not self.get_has_level()(request.user, 'operator'):
+            raise PermissionDenied()
         name = request.POST['list-new-name']
         self.__add_username(request, name)
         return redirect(reverse_lazy("dashboard.views.group-detail",
@@ -625,6 +628,9 @@ class GroupDetailView(CheckedDetailView):
             warning(request, _('User "%s" not found.') % name)
 
     def __add_list(self, request):
+        self.object = self.get_object()
+        if not self.get_has_level()(request.user, 'operator'):
+            raise PermissionDenied()
         userlist = request.POST.get('list-new-namelist').split('\r\n')
         for line in userlist:
             self.__add_username(request, line)
@@ -954,52 +960,6 @@ class GroupList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
     model = Group
     table_class = GroupListTable
     table_pagination = False
-
-
-class GroupUserDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
-
-    """This stuff deletes the group.
-    """
-    model = User
-    template_name = "dashboard/confirm/base-delete.html"
-
-    def get_template_names(self):
-        if self.request.is_ajax():
-            return ['dashboard/confirm/ajax-delete.html']
-        else:
-            return ['dashboard/confirm/base-delete.html']
-
-    def get_context_data(self, **kwargs):
-        # this is redundant now, but if we wanna add more to print
-        # we'll need this
-        context = super(GroupUserDelete, self).get_context_data(**kwargs)
-        return context
-
-    # github.com/django/django/blob/master/django/views/generic/edit.py#L245
-    def delete(self, request, *args, **kwargs):
-        object = self.get_object()
-
-        object.delete()
-        success_url = self.get_success_url()
-        success_message = _("Group successfully deleted!")
-
-        if request.is_ajax():
-            if request.POST.get('redirect').lower() == "true":
-                messages.success(request, success_message)
-            return HttpResponse(
-                json.dumps({'message': success_message}),
-                content_type="application/json",
-            )
-        else:
-            messages.success(request, success_message)
-            return HttpResponseRedirect(success_url)
-
-    def get_success_url(self):
-        next = self.request.POST.get('next')
-        if next:
-            return next
-        else:
-            return reverse_lazy('dashboard.index')
 
 
 class GroupRemoveUserView(LoginRequiredMixin, DeleteView):

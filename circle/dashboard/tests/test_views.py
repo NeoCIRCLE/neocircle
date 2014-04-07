@@ -644,6 +644,74 @@ class GroupDetailTest(LoginMixin, TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Group.objects.count(), num_of_groups)
 
+    # add / delete in group
+
+    def test_anon_add_user_to_group(self):
+        c = Client()
+        user_in_group = Group.objects.get(pk=1).user_set.count()
+        response = c.post('/dashboard/group/1/', {'list-new-name': 'user3'})
+        self.assertEqual(user_in_group,
+                         Group.objects.get(pk=1).user_set.count())
+        self.assertEqual(response.status_code, 302)
+
+    def test_unpermitted_add_user_to_group(self):
+        c = Client()
+        self.login(c, 'user3')
+        user_in_group = Group.objects.get(pk=1).user_set.count()
+        response = c.post('/dashboard/group/1/', {'list-new-name': 'user3'})
+        self.assertEqual(user_in_group,
+                         Group.objects.get(pk=1).user_set.count())
+        self.assertEqual(response.status_code, 403)
+
+    def test_superuser_add_user_to_group(self):
+        c = Client()
+        self.login(c, 'superuser')
+        user_in_group = Group.objects.get(pk=1).user_set.count()
+        response = c.post('/dashboard/group/1/', {'list-new-name': 'user3'})
+        self.assertEqual(user_in_group + 1,
+                         Group.objects.get(pk=1).user_set.count())
+        self.assertEqual(response.status_code, 302)
+
+    def test_permitted_add_user_to_group(self):
+        c = Client()
+        self.login(c, 'user3')
+        user_in_group = Group.objects.get(pk=1).user_set.count()
+        Group.objects.get(pk=1).profile.set_user_level(self.u3, 'owner')
+        response = c.post('/dashboard/group/1/', {'list-new-name': 'user3'})
+        self.assertEqual(user_in_group + 1,
+                         Group.objects.get(pk=1).user_set.count())
+        self.assertEqual(response.status_code, 302)
+
+    def test_permitted_add_multipleuser_to_group(self):
+        c = Client()
+        self.login(c, 'user3')
+        user_in_group = Group.objects.get(pk=1).user_set.count()
+        Group.objects.get(pk=1).profile.set_user_level(self.u3, 'operator')
+        response = c.post('/dashboard/group/1/',
+                          {'list-new-namelist': 'user1\r\nuser2'})
+        self.assertEqual(user_in_group + 2,
+                         Group.objects.get(pk=1).user_set.count())
+        self.assertEqual(response.status_code, 302)
+
+    def test_unpermitted_add_multipleuser_to_group(self):
+        c = Client()
+        self.login(c, 'user3')
+        user_in_group = Group.objects.get(pk=1).user_set.count()
+        response = c.post('/dashboard/group/1/',
+                          {'list-new-namelist': 'user1\r\nuser2'})
+        self.assertEqual(user_in_group,
+                         Group.objects.get(pk=1).user_set.count())
+        self.assertEqual(response.status_code, 403)
+
+    def test_anon_add_multipleuser_to_group(self):
+        c = Client()
+        user_in_group = Group.objects.get(pk=1).user_set.count()
+        response = c.post('/dashboard/group/1/',
+                          {'list-new-namelist': 'user1\r\nuser2'})
+        self.assertEqual(user_in_group,
+                         Group.objects.get(pk=1).user_set.count())
+        self.assertEqual(response.status_code, 403)
+
 
 class VmDetailVncTest(LoginMixin, TestCase):
     fixtures = ['test-vm-fixture.json', 'node.json']
