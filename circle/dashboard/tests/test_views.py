@@ -710,7 +710,7 @@ class GroupDetailTest(LoginMixin, TestCase):
                           {'list-new-namelist': 'user1\r\nuser2'})
         self.assertEqual(user_in_group,
                          Group.objects.get(pk=1).user_set.count())
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 302)
 
 
 class VmDetailVncTest(LoginMixin, TestCase):
