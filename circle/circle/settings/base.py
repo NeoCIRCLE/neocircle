@@ -94,7 +94,7 @@ except:
 TIME_ZONE = get_env_variable('DJANGO_TIME_ZONE', default=systz)
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#language-code
-LANGUAGE_CODE = 'en'
+LANGUAGE_CODE = get_env_variable("DJANGO_LANGUAGE_CODE", "en")
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#languages
 LANGUAGES = (
