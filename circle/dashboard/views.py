@@ -1102,7 +1102,8 @@ class GroupDelete(CheckedDetailView, DeleteView):
     # github.com/django/django/blob/master/django/views/generic/edit.py#L245
     def delete(self, request, *args, **kwargs):
         object = self.get_object()
-
+        if not object.profile.has_level(request.user, 'operator'):
+            raise PermissionDenied()
         object.delete()
         success_url = self.get_success_url()
         success_message = _("Group successfully deleted!")

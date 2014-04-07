@@ -551,6 +551,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         self.u1.delete()
         self.u2.delete()
         self.us.delete()
+        self.u3.delete()
         self.g1.delete()
 
     def test_404_superuser_group_page(self):
@@ -624,7 +625,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         c = Client()
         self.login(c, 'user3')
         response = c.post('/dashboard/group/delete/1/')
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 403)
         self.assertEqual(Group.objects.count(), num_of_groups)
 
     def test_acl_group_delete(self):
