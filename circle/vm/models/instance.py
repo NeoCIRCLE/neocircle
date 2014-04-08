@@ -1207,7 +1207,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
             'RUNNING': 'icon-play',
             'STOPPED': 'icon-stop',
             'SUSPENDED': 'icon-pause',
-            'ERROR': 'icon-warning_sign',
+            'ERROR': 'icon-warning-sign',
             'PENDING': 'icon-rocket',
             'DESTROYED': 'icon-trash',
             'MIGRATING': 'icon-truck'}.get(self.status, 'icon-question-sign')
