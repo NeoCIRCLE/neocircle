@@ -1,5 +1,9 @@
 {% load i18n %}
 
+<div class="alert alert-info">
+  {% trans "Customize an existing template or create a brand new one from scratch!" %}
+</div>
+
 <form action="{% url "dashboard.views.template-create" %}">
   <div class="template-choose-list">
     {% for t in templates %}
