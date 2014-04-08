@@ -190,38 +190,6 @@ class RebootOperation(InstanceOperation):
 register_instance_operation(RebootOperation)
 
 
-class RedeployOperation(InstanceOperation):
-    activity_code_suffix = 'redeploy'
-    id = 'redeploy'
-    name = _("redeploy")
-    description = _("""Redeploy virtual machine with network
-
-        :param self: The virtual machine to redeploy.
-
-        :param user: The user who's issuing the command.
-        :type user: django.contrib.auth.models.User
-
-        :param task_uuid: The task's UUID, if the command is being executed
-                          asynchronously.
-        :type task_uuid: str
-        """)
-
-    def _operation(self, activity, user, system):
-        # Destroy VM
-        if self.instance.node:
-            self.instance._destroy_vm(activity)
-
-        self.instance._cleanup_after_destroy_vm(activity)
-
-        # Deploy VM
-        self.instance._schedule_vm(activity)
-
-        self.instance._deploy_vm(activity)
-
-
-register_instance_operation(RedeployOperation)
-
-
 class ResetOperation(InstanceOperation):
     activity_code_suffix = 'reset'
     id = 'reset'
