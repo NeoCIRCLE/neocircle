@@ -549,10 +549,14 @@ class GroupDetailTest(LoginMixin, TestCase):
         self.us.save()
         self.g1 = Group.objects.create(name='group1')
         self.g1.profile.set_user_level(self.u0, 'owner')
+        self.g1.profile.set_user_level(self.u4, 'operator')
         self.g1.user_set.add(self.u4)
         self.g1.save()
         self.g2 = Group.objects.create(name='group2')
         self.g2.save()
+        self.g3 = Group.objects.create(name='group3')
+        self.g3.save()
+        self.g1.profile.set_group_level(self.g3, 'operator')
         settings["default_vlangroup"] = 'public'
         VlanGroup.objects.create(name='public')
 
@@ -560,6 +564,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         super(GroupDetailTest, self).tearDown()
         self.g1.delete()
         self.g2.delete()
+        self.g3.delete()
         self.u0.delete()
         self.u1.delete()
         self.u2.delete()
@@ -844,6 +849,84 @@ class GroupDetailTest(LoginMixin, TestCase):
         response = c.post('/dashboard/group/' + str(self.g1.pk) +
                           '/remove/user/' + str(self.u4.pk) + '/')
         self.assertEqual(user_in_group - 1, self.g1.user_set.count())
+        self.assertEqual(response.status_code, 302)
+
+    def test_anon_remove_acluser_from_group(self):
+        c = Client()
+        gp = self.g1.profile
+        acl_users = len(gp.get_users_with_level())
+        response = c.post('/dashboard/group/' + str(self.g1.pk) +
+                          '/remove/acl/user/' + str(self.u4.pk) + '/')
+        self.assertEqual(acl_users, len(gp.get_users_with_level()))
+        self.assertEqual(response.status_code, 302)
+
+    def test_unpermitted_remove_acluser_from_group(self):
+        c = Client()
+        self.login(c, 'user3')
+        gp = self.g1.profile
+        acl_users = len(gp.get_users_with_level())
+        response = c.post('/dashboard/group/' + str(self.g1.pk) +
+                          '/remove/acl/user/' + str(self.u4.pk) + '/')
+        self.assertEqual(acl_users, len(gp.get_users_with_level()))
+        self.assertEqual(response.status_code, 403)
+
+    def test_superuser_remove_acluser_from_group(self):
+        c = Client()
+        gp = self.g1.profile
+        self.login(c, 'superuser')
+        acl_users = len(gp.get_users_with_level())
+        response = c.post('/dashboard/group/' + str(self.g1.pk) +
+                          '/remove/acl/user/' + str(self.u4.pk) + '/')
+        self.assertEqual(acl_users - 1, len(gp.get_users_with_level()))
+        self.assertEqual(response.status_code, 302)
+
+    def test_permitted_remove_acluser_from_group(self):
+        c = Client()
+        gp = self.g1.profile
+        self.login(c, 'user0')
+        acl_users = len(gp.get_users_with_level())
+        response = c.post('/dashboard/group/' + str(self.g1.pk) +
+                          '/remove/acl/user/' + str(self.u4.pk) + '/')
+        self.assertEqual(acl_users - 1, len(gp.get_users_with_level()))
+        self.assertEqual(response.status_code, 302)
+
+    def test_anon_remove_aclgroup_from_group(self):
+        c = Client()
+        gp = self.g1.profile
+        acl_groups = len(gp.get_groups_with_level())
+        response = c.post('/dashboard/group/' + str(self.g1.pk) +
+                          '/remove/acl/group/' + str(self.g3.pk) + '/')
+        self.assertEqual(acl_groups, len(gp.get_groups_with_level()))
+        self.assertEqual(response.status_code, 302)
+
+    def test_unpermitted_remove_aclgroup_from_group(self):
+        c = Client()
+        self.login(c, 'user3')
+        gp = self.g1.profile
+        acl_groups = len(gp.get_groups_with_level())
+        response = c.post('/dashboard/group/' + str(self.g1.pk) +
+                          '/remove/acl/group/' + str(self.g3.pk) + '/')
+        self.assertEqual(acl_groups, len(gp.get_groups_with_level()))
+        self.assertEqual(response.status_code, 403)
+
+    def test_superuser_remove_aclgroup_from_group(self):
+        c = Client()
+        gp = self.g1.profile
+        acl_groups = len(gp.get_groups_with_level())
+        self.login(c, 'superuser')
+        response = c.post('/dashboard/group/' + str(self.g1.pk) +
+                          '/remove/acl/group/' + str(self.g3.pk) + '/')
+        self.assertEqual(acl_groups - 1, len(gp.get_groups_with_level()))
+        self.assertEqual(response.status_code, 302)
+
+    def test_permitted_remove_aclgroup_from_group(self):
+        c = Client()
+        gp = self.g1.profile
+        acl_groups = len(gp.get_groups_with_level())
+        self.login(c, 'user0')
+        response = c.post('/dashboard/group/' + str(self.g1.pk) +
+                          '/remove/acl/group/' + str(self.g3.pk) + '/')
+        self.assertEqual(acl_groups - 1, len(gp.get_groups_with_level()))
         self.assertEqual(response.status_code, 302)
 
 
