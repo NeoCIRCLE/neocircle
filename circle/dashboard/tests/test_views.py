@@ -527,6 +527,7 @@ class GroupDetailTest(LoginMixin, TestCase):
 
     def setUp(self):
         Instance.get_remote_queue_name = Mock(return_value='test')
+        # u0 - owner for group1
         self.u0 = User.objects.create(username='user0')
         self.u0.set_password('password')
         self.u0.save()
@@ -539,26 +540,32 @@ class GroupDetailTest(LoginMixin, TestCase):
         self.u3 = User.objects.create(username='user3')
         self.u3.set_password('password')
         self.u3.save()
+        # u4 - removable user for group1
+        self.u4 = User.objects.create(username='user4')
+        self.u4.set_password('password')
+        self.u4.save()
         self.us = User.objects.create(username='superuser', is_superuser=True)
         self.us.set_password('password')
         self.us.save()
-        self.g0 = Group.objects.get(pk=1)
-        self.g0.profile.set_user_level(self.u0, 'owner')
         self.g1 = Group.objects.create(name='group1')
-        self.g1.user_set.add(self.u1)
-        self.g1.user_set.add(self.u2)
+        self.g1.profile.set_user_level(self.u0, 'owner')
+        self.g1.user_set.add(self.u4)
         self.g1.save()
+        self.g2 = Group.objects.create(name='group2')
+        self.g2.save()
         settings["default_vlangroup"] = 'public'
         VlanGroup.objects.create(name='public')
 
     def tearDown(self):
         super(GroupDetailTest, self).tearDown()
+        self.g1.delete()
+        self.g2.delete()
         self.u0.delete()
         self.u1.delete()
         self.u2.delete()
         self.us.delete()
         self.u3.delete()
-        self.g1.delete()
+        self.u4.delete()
 
     def test_404_superuser_group_page(self):
         c = Client()
@@ -574,54 +581,54 @@ class GroupDetailTest(LoginMixin, TestCase):
 
     def test_anon_group_page(self):
         c = Client()
-        response = c.get('/dashboard/group/1/')
+        response = c.get('/dashboard/group/' + str(self.g1.pk) + '/')
         self.assertEqual(response.status_code, 302)
 
     def test_superuser_group_page(self):
         c = Client()
         self.login(c, 'superuser')
-        response = c.get('/dashboard/group/1/')
+        response = c.get('/dashboard/group/' + str(self.g1.pk) + '/')
         self.assertEqual(response.status_code, 200)
 
     def test_acluser_group_page(self):
         c = Client()
         self.login(c, 'user0')
-        response = c.get('/dashboard/group/1/')
+        response = c.get('/dashboard/group/' + str(self.g1.pk) + '/')
         self.assertEqual(response.status_code, 200)
 
     def test_acluser2_group_page(self):
-        Group.objects.get(pk=1).profile.set_user_level(self.u1, 'operator')
+        self.g1.profile.set_user_level(self.u1, 'operator')
         c = Client()
         self.login(c, 'user1')
-        response = c.get('/dashboard/group/1/')
+        response = c.get('/dashboard/group/' + str(self.g1.pk) + '/')
         self.assertEqual(response.status_code, 200)
 
     def test_unpermitted_user_group_page(self):
         c = Client()
         self.login(c, 'user1')
-        response = c.get('/dashboard/group/1/')
+        response = c.get('/dashboard/group/' + str(self.g1.pk) + '/')
         self.assertEqual(response.status_code, 403)
 
     def test_user_in_userlist_group_page(self):
-        self.g0.user_set.add(self.u1)
+        self.g1.user_set.add(self.u1)
         c = Client()
         self.login(c, 'user1')
-        response = c.get('/dashboard/group/1/')
+        response = c.get('/dashboard/group/' + str(self.g1.pk) + '/')
         self.assertEqual(response.status_code, 403)
 
     def test_groupmember_group_page(self):
-        # user1 is member of g1 - setUp
-        Group.objects.get(pk=1).profile.set_group_level(self.g1, 'owner')
+        self.g2.user_set.add(self.u1)
+        self.g1.profile.set_group_level(self.g2, 'owner')
         c = Client()
         self.login(c, 'user1')
-        response = c.get('/dashboard/group/1/')
+        response = c.get('/dashboard/group/' + str(self.g1.pk) + '/')
         self.assertEqual(response.status_code, 200)
 
-    def test_permitted_group_delete(self):
+    def test_superuser_group_delete(self):
         num_of_groups = Group.objects.count()
         c = Client()
         self.login(c, 'superuser')
-        response = c.post('/dashboard/group/delete/1/')
+        response = c.post('/dashboard/group/delete/' + str(self.g1.pk) + '/')
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Group.objects.count(), num_of_groups - 1)
 
@@ -629,7 +636,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         num_of_groups = Group.objects.count()
         c = Client()
         self.login(c, 'user3')
-        response = c.post('/dashboard/group/delete/1/')
+        response = c.post('/dashboard/group/delete/' + str(self.g1.pk) + '/')
         self.assertEqual(response.status_code, 403)
         self.assertEqual(Group.objects.count(), num_of_groups)
 
@@ -637,154 +644,206 @@ class GroupDetailTest(LoginMixin, TestCase):
         num_of_groups = Group.objects.count()
         c = Client()
         self.login(c, 'user0')
-        response = c.post('/dashboard/group/delete/1/')
+        response = c.post('/dashboard/group/delete/' + str(self.g1.pk) + '/')
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Group.objects.count(), num_of_groups - 1)
 
     def test_anon_group_delete(self):
         num_of_groups = Group.objects.count()
         c = Client()
-        response = c.post('/dashboard/group/delete/1/')
+        response = c.post('/dashboard/group/delete/' + str(self.g1.pk) + '/')
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Group.objects.count(), num_of_groups)
 
-    # add / delete in group
+    # add to group
 
     def test_anon_add_user_to_group(self):
         c = Client()
-        user_in_group = self.g0.user_set.count()
-        response = c.post('/dashboard/group/1/', {'list-new-name': 'user3'})
+        user_in_group = self.g1.user_set.count()
+        response = c.post('/dashboard/group/' +
+                          str(self.g1.pk) + '/', {'list-new-name': 'user3'})
         self.assertEqual(user_in_group,
-                         self.g0.user_set.count())
+                         self.g1.user_set.count())
         self.assertEqual(response.status_code, 302)
 
     def test_unpermitted_add_user_to_group(self):
         c = Client()
         self.login(c, 'user3')
-        user_in_group = self.g0.user_set.count()
-        response = c.post('/dashboard/group/1/', {'list-new-name': 'user3'})
-        self.assertEqual(user_in_group, self.g0.user_set.count())
+        user_in_group = self.g1.user_set.count()
+        response = c.post('/dashboard/group/' +
+                          str(self.g1.pk) + '/', {'list-new-name': 'user3'})
+        self.assertEqual(user_in_group, self.g1.user_set.count())
         self.assertEqual(response.status_code, 403)
 
     def test_superuser_add_user_to_group(self):
         c = Client()
         self.login(c, 'superuser')
-        user_in_group = self.g0.user_set.count()
-        response = c.post('/dashboard/group/1/', {'list-new-name': 'user3'})
-        self.assertEqual(user_in_group + 1, self.g0.user_set.count())
+        user_in_group = self.g1.user_set.count()
+        response = c.post('/dashboard/group/' +
+                          str(self.g1.pk) + '/', {'list-new-name': 'user3'})
+        self.assertEqual(user_in_group + 1, self.g1.user_set.count())
         self.assertEqual(response.status_code, 302)
 
     def test_permitted_add_user_to_group(self):
         c = Client()
         self.login(c, 'user0')
-        user_in_group = self.g0.user_set.count()
-        response = c.post('/dashboard/group/1/', {'list-new-name': 'user3'})
-        self.assertEqual(user_in_group + 1, self.g0.user_set.count())
+        user_in_group = self.g1.user_set.count()
+        response = c.post('/dashboard/group/' +
+                          str(self.g1.pk) + '/', {'list-new-name': 'user3'})
+        self.assertEqual(user_in_group + 1, self.g1.user_set.count())
         self.assertEqual(response.status_code, 302)
 
     def test_permitted_add_multipleuser_to_group(self):
         c = Client()
-        self.g0 = Group.objects.get(pk=1)
         self.login(c, 'user0')
-        user_in_group = self.g0.user_set.count()
-        response = c.post('/dashboard/group/1/',
+        user_in_group = self.g1.user_set.count()
+        response = c.post('/dashboard/group/' +
+                          str(self.g1.pk) + '/',
                           {'list-new-namelist': 'user1\r\nuser2'})
-        self.assertEqual(user_in_group + 2, self.g0.user_set.count())
+        self.assertEqual(user_in_group + 2, self.g1.user_set.count())
         self.assertEqual(response.status_code, 302)
 
     def test_unpermitted_add_multipleuser_to_group(self):
         c = Client()
         self.login(c, 'user3')
-        user_in_group = self.g0.user_set.count()
-        response = c.post('/dashboard/group/1/',
+        user_in_group = self.g1.user_set.count()
+        response = c.post('/dashboard/group/' +
+                          str(self.g1.pk) + '/',
                           {'list-new-namelist': 'user1\r\nuser2'})
-        self.assertEqual(user_in_group, self.g0.user_set.count())
+        self.assertEqual(user_in_group, self.g1.user_set.count())
         self.assertEqual(response.status_code, 403)
 
     def test_anon_add_multipleuser_to_group(self):
         c = Client()
-        user_in_group = self.g0.user_set.count()
-        response = c.post('/dashboard/group/1/',
+        user_in_group = self.g1.user_set.count()
+        response = c.post('/dashboard/group/' +
+                          str(self.g1.pk) + '/',
                           {'list-new-namelist': 'user1\r\nuser2'})
-        self.assertEqual(user_in_group, self.g0.user_set.count())
+        self.assertEqual(user_in_group, self.g1.user_set.count())
         self.assertEqual(response.status_code, 302)
 
     def test_anon_add_acluser_to_group(self):
         c = Client()
-        gp = self.g0.profile
+        gp = self.g1.profile
         acl_users = len(gp.get_users_with_level())
-        response = c.post('/dashboard/group/1/acl/',
+        response = c.post('/dashboard/group/' +
+                          str(self.g1.pk) + '/acl/',
                           {'perm-new-name': 'user3', 'perm-new': 'owner'})
         self.assertEqual(acl_users, len(gp.get_users_with_level()))
         self.assertEqual(response.status_code, 302)
 
     def test_unpermitted_add_acluser_to_group(self):
         c = Client()
-        gp = self.g0.profile
         self.login(c, 'user3')
+        gp = self.g1.profile
         acl_users = len(gp.get_users_with_level())
-        response = c.post('/dashboard/group/1/acl/',
+        response = c.post('/dashboard/group/' +
+                          str(self.g1.pk) + '/acl/',
                           {'perm-new-name': 'user3', 'perm-new': 'owner'})
         self.assertEqual(acl_users, len(gp.get_users_with_level()))
         self.assertEqual(response.status_code, 403)
 
     def test_superuser_add_acluser_to_group(self):
         c = Client()
-        gp = self.g0.profile
+        gp = self.g1.profile
         self.login(c, 'superuser')
         acl_users = len(gp.get_users_with_level())
-        response = c.post('/dashboard/group/1/acl/',
+        response = c.post('/dashboard/group/' +
+                          str(self.g1.pk) + '/acl/',
                           {'perm-new-name': 'user3', 'perm-new': 'owner'})
         self.assertEqual(acl_users + 1, len(gp.get_users_with_level()))
         self.assertEqual(response.status_code, 302)
 
     def test_permitted_add_acluser_to_group(self):
         c = Client()
-        gp = self.g0.profile
+        gp = self.g1.profile
         self.login(c, 'user0')
         acl_users = len(gp.get_users_with_level())
-        response = c.post('/dashboard/group/1/acl/',
+        response = c.post('/dashboard/group/' +
+                          str(self.g1.pk) + '/acl/',
                           {'perm-new-name': 'user3', 'perm-new': 'owner'})
         self.assertEqual(acl_users + 1, len(gp.get_users_with_level()))
         self.assertEqual(response.status_code, 302)
 
     def test_anon_add_aclgroup_to_group(self):
         c = Client()
-        gp = self.g0.profile
+        gp = self.g1.profile
         acl_groups = len(gp.get_groups_with_level())
-        response = c.post('/dashboard/group/1/acl/',
-                          {'perm-new-name': 'group1', 'perm-new': 'owner'})
+        response = c.post('/dashboard/group/' +
+                          str(self.g1.pk) + '/acl/',
+                          {'perm-new-name': 'group2', 'perm-new': 'owner'})
         self.assertEqual(acl_groups, len(gp.get_groups_with_level()))
         self.assertEqual(response.status_code, 302)
 
     def test_unpermitted_add_aclgroup_to_group(self):
         c = Client()
-        gp = self.g0.profile
+        gp = self.g1.profile
         self.login(c, 'user3')
         acl_groups = len(gp.get_groups_with_level())
-        response = c.post('/dashboard/group/1/acl/',
-                          {'perm-new-name': 'group1', 'perm-new': 'owner'})
+        response = c.post('/dashboard/group/' +
+                          str(self.g1.pk) + '/acl/',
+                          {'perm-new-name': 'group2', 'perm-new': 'owner'})
         self.assertEqual(acl_groups, len(gp.get_groups_with_level()))
         self.assertEqual(response.status_code, 403)
 
     def test_superuser_add_aclgroup_to_group(self):
         c = Client()
-        gp = self.g0.profile
+        gp = self.g1.profile
         self.login(c, 'superuser')
         acl_groups = len(gp.get_groups_with_level())
-        response = c.post('/dashboard/group/1/acl/',
-                          {'perm-new-name': 'group1', 'perm-new': 'owner'})
+        response = c.post('/dashboard/group/' +
+                          str(self.g1.pk) + '/acl/',
+                          {'perm-new-name': 'group2', 'perm-new': 'owner'})
         self.assertEqual(acl_groups + 1, len(gp.get_groups_with_level()))
         self.assertEqual(response.status_code, 302)
 
     def test_permitted_add_aclgroup_to_group(self):
         c = Client()
-        gp = self.g0.profile
+        gp = self.g1.profile
         self.login(c, 'user0')
         acl_groups = len(gp.get_groups_with_level())
-        response = c.post('/dashboard/group/1/acl/',
-                          {'perm-new-name': 'group1', 'perm-new': 'owner'})
+        response = c.post('/dashboard/group/' +
+                          str(self.g1.pk) + '/acl/',
+                          {'perm-new-name': 'group2', 'perm-new': 'owner'})
         self.assertEqual(acl_groups + 1, len(gp.get_groups_with_level()))
+        self.assertEqual(response.status_code, 302)
+
+    # remove from group
+
+    def test_anon_remove_user_from_group(self):
+        c = Client()
+        user_in_group = self.g1.user_set.count()
+        response = c.post('/dashboard/group/' + str(self.g1.pk) +
+                          '/remove/user/' + str(self.u4.pk) + '/')
+        self.assertEqual(user_in_group,
+                         self.g1.user_set.count())
+        self.assertEqual(response.status_code, 302)
+
+    def test_unpermitted_remove_user_from_group(self):
+        c = Client()
+        self.login(c, 'user3')
+        user_in_group = self.g1.user_set.count()
+        response = c.post('/dashboard/group/' + str(self.g1.pk) +
+                          '/remove/user/' + str(self.u4.pk) + '/')
+        self.assertEqual(user_in_group, self.g1.user_set.count())
+        self.assertEqual(response.status_code, 403)
+
+    def test_superuser_remove_user_from_group(self):
+        c = Client()
+        self.login(c, 'superuser')
+        user_in_group = self.g1.user_set.count()
+        response = c.post('/dashboard/group/' + str(self.g1.pk) +
+                          '/remove/user/' + str(self.u4.pk) + '/')
+        self.assertEqual(user_in_group - 1, self.g1.user_set.count())
+        self.assertEqual(response.status_code, 302)
+
+    def test_permitted_remove_user_from_group(self):
+        c = Client()
+        self.login(c, 'user0')
+        user_in_group = self.g1.user_set.count()
+        response = c.post('/dashboard/group/' + str(self.g1.pk) +
+                          '/remove/user/' + str(self.u4.pk) + '/')
+        self.assertEqual(user_in_group - 1, self.g1.user_set.count())
         self.assertEqual(response.status_code, 302)
 
 

@@ -962,10 +962,11 @@ class GroupList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
     table_pagination = False
 
 
-class GroupRemoveUserView(LoginRequiredMixin, DeleteView):
+class GroupRemoveUserView(CheckedDetailView, DeleteView):
     model = Group
     slug_field = 'pk'
     slug_url_kwarg = 'group_pk'
+    read_level = 'operator'
 
     def get_context_data(self, **kwargs):
         context = super(GroupRemoveUserView, self).get_context_data(**kwargs)
@@ -1001,6 +1002,9 @@ class GroupRemoveUserView(LoginRequiredMixin, DeleteView):
         return _("Member successfully removed from group!")
 
     def delete(self, request, *args, **kwargs):
+        object = self.get_object()
+        if not object.profile.has_level(request.user, 'operator'):
+            raise PermissionDenied()
         self.remove_member(kwargs["member_pk"])
         success_url = self.get_success_url()
         success_message = self.get_success_message()
