@@ -751,7 +751,7 @@ class TemplateChoose(TemplateView):
 
     def get_context_data(self, *args, **kwargs):
         context = super(TemplateChoose, self).get_context_data(*args, **kwargs)
-        templates = InstanceTemplate.get_objects_with_level("user",
+        templates = InstanceTemplate.get_objects_with_level("operator",
                                                             self.request.user)
         context.update({
             'box_title': _('Choose template'),
