@@ -428,10 +428,6 @@ footer a, footer a:hover, footer a:visited {
   max-width: 600px;
 }
 
-.template-choose-list-element {
-  cursor: pointer;
-}
-
 .template-choose-list-element small {
   display: none;
   float: right;
@@ -439,7 +435,9 @@ footer a, footer a:hover, footer a:visited {
 }
 
 .template-choose-list-element {
-  padding: 15px;
+  padding: 6px 10px;
+  cursor: pointer;
+  margin-bottom: 15px; /* bootstrap panel default is 20px */
 }
 
 .template-choose-list input[type="radio"] {

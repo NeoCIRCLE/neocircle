@@ -36,6 +36,24 @@ $(function () {
     });
     return false;
   });
+
+  $('.template-choose').click(function(e) {
+    $.ajax({
+      type: 'GET',
+      url: '/dashboard/template/choose/', 
+      success: function(data) { 
+        $('body').append(data);
+        vmCreateLoaded();
+        addSliderMiscs();
+        $('#create-modal').modal('show');
+        $('#create-modal').on('hidden.bs.modal', function() {
+          $('#create-modal').remove();
+        });
+      }
+    });
+    return false;
+  });
+
   $('[href=#index-graph-view]').click(function (e) {
     var box = $(this).data('index-box');
     $("#" + box + "-list-view").hide();
