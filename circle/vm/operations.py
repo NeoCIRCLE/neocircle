@@ -247,7 +247,11 @@ class SaveAsTemplateOperation(InstanceOperation):
         Users can instantiate Virtual Machines from Templates.
         """)
 
-    def _operation(self, activity, name, user, system, timeout=300, **kwargs):
+    def _operation(self, activity, name, user, system, timeout=300,
+                   with_shutdown=True, **kwargs):
+        if with_shutdown:
+            ShutdownOperation(self.instance).call(parent_activity=activity,
+                                                  user=user)
         # prepare parameters
         params = {
             'access_method': self.instance.access_method,

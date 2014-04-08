@@ -815,11 +815,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         self.node = None
         self.vnc_port = None
 
-    def shutdown_and_save_as_template(self, name, user=None, task_uuid=None,
-                                      **kwargs):
-        self.shutdown(user=user)
-        self.save_as_template(name, user=user, **kwargs)
-
     def get_status_icon(self):
         return {
             'NOSTATE': 'icon-rocket',
