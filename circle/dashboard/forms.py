@@ -3,6 +3,7 @@ from datetime import timedelta
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import (
     AuthenticationForm, PasswordResetForm, SetPasswordForm,
+    PasswordChangeForm,
 )
 
 from crispy_forms.helper import FormHelper
@@ -1013,9 +1014,20 @@ class MyProfileForm(forms.ModelForm):
     def helper(self):
         helper = FormHelper()
         helper.layout = Layout('preferred_language', )
-        helper.add_input(Submit("submit", _("Save")))
+        helper.add_input(Submit("submit", _("Change language")))
         return helper
 
     def save(self, *args, **kwargs):
         value = super(MyProfileForm, self).save(*args, **kwargs)
         return value
+
+
+class CirclePasswordChangeForm(PasswordChangeForm):
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.add_input(Submit("submit", _("Change password"),
+                                css_class="btn btn-primary",
+                                css_id="submit-password-button"))
+        return helper
