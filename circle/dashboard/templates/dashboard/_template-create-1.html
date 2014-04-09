@@ -4,7 +4,8 @@
   {% trans "Customize an existing template or create a brand new one from scratch!" %}
 </div>
 
-<form action="{% url "dashboard.views.template-create" %}">
+<form action="{% url "dashboard.views.template-choose" %}" method="POST">
+  {% csrf_token %}
   <div class="template-choose-list">
     {% for t in templates %}
     <div class="panel panel-default template-choose-list-element">

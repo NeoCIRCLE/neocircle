@@ -212,6 +212,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
     vnc_port = IntegerField(blank=True, default=None, null=True,
                             help_text=_("TCP port where VNC console listens."),
                             unique=True, verbose_name=_('vnc_port'))
+    is_base = BooleanField(default=False)
     owner = ForeignKey(User)
     destroyed_at = DateTimeField(blank=True, null=True,
                                  help_text=_("The virtual machine's time of "

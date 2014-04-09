@@ -4,6 +4,51 @@
 {% block title-page %}{{ instance.name }} | vm{% endblock %}
 
 {% block content %}
+
+<style>
+.alert-new-template {
+  background: #3071a9;
+  color: white; 
+  font-size: 25px;
+}
+
+.alert-new-template ol {
+  margin-left: 25px;
+}
+</style>
+{% if instance.is_base %}
+<div class="alert alert-info alert-new-template">
+  <strong>{% trans "This is the master vm of your new template" %}</strong>
+  <a href="#" class="btn btn-default btn-lg pull-right vm-details-start-template-tour">
+    <i class="icon-play"></i> {% trans "Start template tutorial tour" %}
+  </a>
+  <ol>
+    <li>Modify the vm to suit your needs <strong>(optional)</strong>
+      <ul>
+        <li>Change the description</li>
+        <li>Change the resources it will need (CPU and RAM)</li>
+        <li>Attach or deattach disks</li>
+        <li>Add or remove network interfaces</li>
+      </ul>
+    </li>
+    <li>Deploy the vm</li>
+    <li>Connect to the machine</li>
+    <li>Do all the needed installation/customization</li>
+    <li>Log off</li>
+    <li>
+      Press the "Save as template" button
+      <form style="display: inline;" class="vm-details-button-save-as pull-right" 
+        method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="save_as" />
+        <button class="btn btn-default btn-lg" type="submit">
+          <i class="icon-save"></i> {% trans "Save as template" %}
+        </button>
+      </form>
+    </li>
+  </ol>
+</div>
+{% endif %}
 <div class="body-content">
   <div class="page-header">
     <div class="pull-right" style="padding-top: 15px;">
@@ -12,7 +57,7 @@
         <input type="hidden" name="sleep" />
         <button title="{% trans "Sleep" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-moon"></i></button>
       </form>
-      <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
+      <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}" id="vm-details-button-deploy">
         {% csrf_token %}
         <input type="hidden" name="deploy" />
         <button title="{% trans "Deploy" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-play"></i></button>
@@ -47,7 +92,7 @@
       <a title="Migrate" data-vm-pk="{{ instance.pk }}" href="{% url "dashboard.views.vm-migrate" pk=instance.pk %}" class="btn btn-default btn-xs vm-migrate">
         <i class="icon-truck"></i>
       </a>
-      <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
+      <form style="display: inline;" class="vm-details-button-save-as" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
         {% csrf_token %}
         <input type="hidden" name="save_as" />
         <button title="{% trans "Save as template" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-save"></i></button>
@@ -194,8 +239,10 @@
 {% endblock %}
 
 {% block extra_js %}
+  <script src="{{ STATIC_URL }}dashboard/bootstrap-tour.min.js"></script>
   <script src="{{ STATIC_URL }}dashboard/vm-details.js"></script>
   <script src="{{ STATIC_URL }}dashboard/vm-common.js"></script>
   <script src="{{ STATIC_URL }}dashboard/vm-console.js"></script>
   <script src="{{ STATIC_URL }}dashboard/disk-list.js"></script>
+  <script src="{{ STATIC_URL }}dashboard/vm-tour.js"></script>
 {% endblock %}

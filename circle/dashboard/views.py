@@ -757,9 +757,24 @@ class TemplateChoose(TemplateView):
             'box_title': _('Choose template'),
             'ajax_title': False,
             'template': "dashboard/_template-create-1.html",
-            'templates': templates.all(),
+            'templates': templates.all(),  # TODO acl?
         })
         return context
+
+    def post(self, request, *args, **kwargs):
+        if not request.user.has_perm('vm.create_template'):
+            raise PermissionDenied()
+
+        template = request.POST.get("parent")
+        if template == "base_vm":
+            return redirect(reverse("dashboard.views.template-create"))
+        else:
+            template = get_object_or_404(InstanceTemplate, pk=template)
+
+        instance = Instance.create_from_template(
+            template=template, owner=request.user, is_base=True)
+
+        return redirect(instance.get_absolute_url())
 
 
 class TemplateClone(CreateView):
