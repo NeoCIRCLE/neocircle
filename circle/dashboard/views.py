@@ -423,7 +423,7 @@ class VmDetailView(CheckedDetailView):
         new_name = "Saved from %s (#%d) at %s" % (
             self.object.name, self.object.pk, date
         )
-        self.object.save_as_template_async(name=new_name,
+        self.object.save_as_template.async(name=new_name,
                                            user=request.user)
         messages.success(request, _("Saving instance as template!"))
         return redirect("%s#activity" % self.object.get_absolute_url())
@@ -433,7 +433,7 @@ class VmDetailView(CheckedDetailView):
         if not self.object.has_level(request.user, 'owner'):
             raise PermissionDenied()
 
-        self.object.shutdown_async(request.user)
+        self.object.shutdown.async(user=request.user)
         return redirect("%s#activity" % self.object.get_absolute_url())
 
     def __sleep(self, request):
@@ -441,7 +441,7 @@ class VmDetailView(CheckedDetailView):
         if not self.object.has_level(request.user, 'owner'):
             raise PermissionDenied()
 
-        self.object.sleep_async(request.user)
+        self.object.sleep.async(user=request.user)
         return redirect("%s#activity" % self.object.get_absolute_url())
 
     def __wake_up(self, request):
@@ -449,7 +449,7 @@ class VmDetailView(CheckedDetailView):
         if not self.object.has_level(request.user, 'owner'):
             raise PermissionDenied()
 
-        self.object.wake_up_async(request.user)
+        self.object.wake_up.async(user=request.user)
         return redirect("%s#activity" % self.object.get_absolute_url())
 
     def __deploy(self, request):
@@ -457,7 +457,7 @@ class VmDetailView(CheckedDetailView):
         if not self.object.has_level(request.user, 'owner'):
             raise PermissionDenied()
 
-        self.object.deploy_async(request.user)
+        self.object.deploy.async(user=request.user)
         return redirect("%s#activity" % self.object.get_absolute_url())
 
     def __reset(self, request):
@@ -465,7 +465,7 @@ class VmDetailView(CheckedDetailView):
         if not self.object.has_level(request.user, 'owner'):
             raise PermissionDenied()
 
-        self.object.reset_async(request.user)
+        self.object.reset.async(user=request.user)
         return redirect("%s#activity" % self.object.get_absolute_url())
 
     def __reboot(self, request):
@@ -473,7 +473,7 @@ class VmDetailView(CheckedDetailView):
         if not self.object.has_level(request.user, 'owner'):
             raise PermissionDenied()
 
-        self.object.reboot_async(request.user)
+        self.object.reboot.async(user=request.user)
         return redirect("%s#activity" % self.object.get_absolute_url())
 
     def __shut_off(self, request):
@@ -481,7 +481,7 @@ class VmDetailView(CheckedDetailView):
         if not self.object.has_level(request.user, 'owner'):
             raise PermissionDenied()
 
-        self.object.shut_off_async(request.user)
+        self.object.shut_off.async(user=request.user)
         return redirect("%s#activity" % self.object.get_absolute_url())
 
 
@@ -1148,7 +1148,7 @@ class VmCreate(LoginRequiredMixin, TemplateView):
 
     def __deploy(self, request, instances, *args, **kwargs):
         for i in instances:
-            i.deploy_async(user=request.user)
+            i.deploy.async(user=request.user)
 
         if len(instances) > 1:
             messages.success(request, _("Successfully created %d VMs!" %
@@ -1286,7 +1286,7 @@ class VmDelete(LoginRequiredMixin, DeleteView):
         if not object.has_level(request.user, 'owner'):
             raise PermissionDenied()
 
-        object.destroy_async(user=request.user)
+        object.destroy.async(user=request.user)
         success_url = self.get_success_url()
         success_message = _("VM successfully deleted!")
 
@@ -1466,7 +1466,7 @@ class NodeFlushView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
 
     def __flush(self, request):
         self.object = self.get_object()
-        self.object.flush_async(user=request.user)
+        self.object.flush.async(user=request.user)
         success_message = _("Node successfully flushed!")
         messages.success(request, success_message)
         return redirect(self.get_success_url())
@@ -1537,7 +1537,7 @@ class VmMassDelete(LoginRequiredMixin, View):
                     raise PermissionDenied()  # no need for rollback or proper
                                             # error message, this can't
                                             # normally happen.
-                i.destroy_async(request.user)
+                i.destroy.async(user=request.user)
                 names.append(i.name)
 
         success_message = _("Mass delete complete, the following VMs were "
@@ -2066,7 +2066,7 @@ class VmMigrateView(SuperuserRequiredMixin, TemplateView):
 
         if node:
             node = Node.objects.get(pk=node)
-            vm.migrate_async(to_node=node, user=self.request.user)
+            vm.migrate.async(to_node=node, user=self.request.user)
         else:
             messages.error(self.request, _("You didn't select a node!"))
 

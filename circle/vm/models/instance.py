@@ -1,9 +1,9 @@
 from __future__ import absolute_import, unicode_literals
 from datetime import timedelta
-from logging import getLogger
 from importlib import import_module
+from logging import getLogger
+from string import ascii_lowercase
 from warnings import warn
-import string
 
 import django.conf
 from django.contrib.auth.models import User
@@ -16,14 +16,14 @@ from django.dispatch import Signal
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
-from celery.exceptions import TimeLimitExceeded
 from model_utils import Choices
 from model_utils.models import TimeStampedModel, StatusModel
 from taggit.managers import TaggableManager
 
 from acl.models import AclBase
+from common.operations import OperatedMixin
 from storage.models import Disk
-from ..tasks import local_tasks, vm_tasks, agent_tasks
+from ..tasks import vm_tasks, agent_tasks
 from .activity import (ActivityInProgressError, instance_activity,
                        InstanceActivity)
 from .common import BaseResourceConfigModel, Lease
@@ -162,7 +162,7 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
         return ('dashboard.views.template-detail', None, {'pk': self.pk})
 
 
-class Instance(AclBase, VirtualMachineDescModel, StatusModel,
+class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                TimeStampedModel):
 
     """Virtual machine instance.
@@ -727,479 +727,136 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel,
         """
         return scheduler.select_node(self, Node.objects.all())
 
-    def __schedule_vm(self, act):
-        """Schedule the virtual machine as part of a higher level activity.
-
-        :param act: Parent activity.
+    def deploy_disks(self):
+        """Deploy all associated disks.
         """
-        # Find unused port for VNC
-        if self.vnc_port is None:
-            self.vnc_port = find_unused_vnc_port()
-
-        # Schedule
-        if self.node is None:
-            self.node = self.select_node()
-
-        self.save()
-
-    def __deploy_vm(self, act, timeout=15):
-        """Deploy the virtual machine.
-
-        :param self: The virtual machine.
-
-        :param act: Parent activity.
-        """
-        queue_name = self.get_remote_queue_name('vm')
-
-        # Deploy VM on remote machine
-        with act.sub_activity('deploying_vm') as deploy_act:
-            deploy_act.result = vm_tasks.deploy.apply_async(
-                args=[self.get_vm_desc()],
-                queue=queue_name).get(timeout=timeout)
-
-        # Estabilish network connection (vmdriver)
-        with act.sub_activity('deploying_net'):
-            for net in self.interface_set.all():
-                net.deploy()
-
-        # Resume vm
-        with act.sub_activity('booting'):
-            vm_tasks.resume.apply_async(args=[self.vm_name],
-                                        queue=queue_name).get(timeout=timeout)
-
-        self.renew(which='both', base_activity=act)
-
-    def deploy(self, user=None, task_uuid=None):
-        """Deploy new virtual machine with network
-
-        :param self: The virtual machine to deploy.
-        :type self: vm.models.Instance
-
-        :param user: The user who's issuing the command.
-        :type user: django.contrib.auth.models.User
-
-        :param task_uuid: The task's UUID, if the command is being executed
-                          asynchronously.
-        :type task_uuid: str
-        """
-        if self.destroyed_at:
-            raise self.InstanceDestroyedError(self)
-
-        def __on_commit(activity):
-            activity.resultant_state = 'RUNNING'
-
-        with instance_activity(code_suffix='deploy', instance=self,
-                               on_commit=__on_commit, task_uuid=task_uuid,
-                               user=user) as act:
-
-            self.__schedule_vm(act)
-
-            # Deploy virtual images
-            with act.sub_activity('deploying_disks'):
-                devnums = list(string.ascii_lowercase)  # a-z
-                for disk in self.disks.all():
-                    # assign device numbers
-                    if disk.dev_num in devnums:
-                        devnums.remove(disk.dev_num)
-                    else:
-                        disk.dev_num = devnums.pop(0)
-                        disk.save()
-                    # deploy disk
-                    disk.deploy()
-
-            self.__deploy_vm(act)
-
-    def deploy_async(self, user=None):
-        """Execute deploy asynchronously.
-        """
-        logger.debug('Calling async local_tasks.deploy(%s, %s)',
-                     unicode(self), unicode(user))
-        return local_tasks.deploy.apply_async(args=[self, user],
-                                              queue="localhost.man")
-
-    def __destroy_vm(self, act, timeout=15):
-        """Destroy the virtual machine and its associated networks.
-
-        :param self: The virtual machine.
-
-        :param act: Parent activity.
-        """
-        # Destroy networks
-        with act.sub_activity('destroying_net'):
-            for net in self.interface_set.all():
-                net.destroy()
-
-        # Destroy virtual machine
-        with act.sub_activity('destroying_vm'):
-            queue_name = self.get_remote_queue_name('vm')
-            try:
-                vm_tasks.destroy.apply_async(args=[self.vm_name],
-                                             queue=queue_name
-                                             ).get(timeout=timeout)
-            except Exception as e:
-                if e.libvirtError and "Domain not found" in str(e):
-                    logger.debug("Domain %s was not found at %s"
-                                 % (self.vm_name, queue_name))
-                else:
-                    raise
-
-    def __cleanup_after_destroy_vm(self, act, timeout=15):
-        """Clean up the virtual machine's data after destroy.
-
-        :param self: The virtual machine.
-
-        :param act: Parent activity.
-        """
-        # Delete mem. dump if exists
-        try:
-            queue_name = self.mem_dump['datastore'].get_remote_queue_name(
-                'storage')
-            from storage.tasks.remote_tasks import delete_dump
-            delete_dump.apply_async(args=[self.mem_dump['path']],
-                                    queue=queue_name).get(timeout=timeout)
-        except:
-            pass
-
-        # Clear node and VNC port association
-        self.node = None
-        self.vnc_port = None
-
-    def redeploy(self, user=None, task_uuid=None):
-        """Redeploy virtual machine with network
-
-        :param self: The virtual machine to redeploy.
-
-        :param user: The user who's issuing the command.
-        :type user: django.contrib.auth.models.User
-
-        :param task_uuid: The task's UUID, if the command is being executed
-                          asynchronously.
-        :type task_uuid: str
-        """
-        with instance_activity(code_suffix='redeploy', instance=self,
-                               task_uuid=task_uuid, user=user) as act:
-            # Destroy VM
-            if self.node:
-                self.__destroy_vm(act)
-
-            self.__cleanup_after_destroy_vm(act)
-
-            # Deploy VM
-            self.__schedule_vm(act)
-
-            self.__deploy_vm(act)
-
-    def redeploy_async(self, user=None):
-        """Execute redeploy asynchronously.
-        """
-        return local_tasks.redeploy.apply_async(args=[self, user],
-                                                queue="localhost.man")
-
-    def shut_off(self, user=None, task_uuid=None):
-        """Shut off VM. (plug-out)
-        """
-        def __on_commit(activity):
-            activity.resultant_state = 'STOPPED'
-
-        with instance_activity(code_suffix='shut_off', instance=self,
-                               task_uuid=task_uuid, user=user,
-                               on_commit=__on_commit) as act:
-            # Destroy VM
-            if self.node:
-                self.__destroy_vm(act)
-
-            self.__cleanup_after_destroy_vm(act)
-            self.save()
-
-    def shut_off_async(self, user=None):
-        """Shut off VM. (plug-out)
-        """
-        return local_tasks.shut_off.apply_async(args=[self, user],
-                                                queue="localhost.man")
-
-    def destroy(self, user=None, task_uuid=None):
-        """Remove virtual machine and its networks.
-
-        :param self: The virtual machine to destroy.
-        :type self: vm.models.Instance
-
-        :param user: The user who's issuing the command.
-        :type user: django.contrib.auth.models.User
-
-        :param task_uuid: The task's UUID, if the command is being executed
-                          asynchronously.
-        :type task_uuid: str
-        """
-        if self.destroyed_at:
-            return  # already destroyed, nothing to do here
-
-        def __on_commit(activity):
-            activity.resultant_state = 'DESTROYED'
-
-        with instance_activity(code_suffix='destroy', instance=self,
-                               on_commit=__on_commit, task_uuid=task_uuid,
-                               user=user) as act:
-
-            if self.node:
-                self.__destroy_vm(act)
-
-            # Destroy disks
-            with act.sub_activity('destroying_disks'):
-                for disk in self.disks.all():
-                    disk.destroy()
-
-            self.__cleanup_after_destroy_vm(act)
-
-            self.destroyed_at = timezone.now()
-            self.save()
-
-    def destroy_async(self, user=None):
-        """Execute destroy asynchronously.
-        """
-        return local_tasks.destroy.apply_async(args=[self, user],
-                                               queue="localhost.man")
-
-    def sleep(self, user=None, task_uuid=None, timeout=60):
-        """Suspend virtual machine with memory dump.
-        """
-        if self.status not in ['RUNNING']:
-            raise self.WrongStateError(self)
-
-        def __on_abort(activity, error):
-            if isinstance(error, TimeLimitExceeded):
-                activity.resultant_state = None
+        devnums = list(ascii_lowercase)  # a-z
+        for disk in self.disks.all():
+            # assign device numbers
+            if disk.dev_num in devnums:
+                devnums.remove(disk.dev_num)
             else:
-                activity.resultant_state = 'ERROR'
+                disk.dev_num = devnums.pop(0)
+                disk.save()
+            # deploy disk
+            disk.deploy()
 
-        def __on_commit(activity):
-            activity.resultant_state = 'SUSPENDED'
+    def destroy_disks(self):
+        """Destroy all associated disks.
+        """
+        for disk in self.disks.all():
+            disk.destroy()
 
-        with instance_activity(code_suffix='sleep', instance=self,
-                               on_abort=__on_abort, on_commit=__on_commit,
-                               task_uuid=task_uuid, user=user) as act:
+    def deploy_net(self):
+        """Deploy all associated network interfaces.
+        """
+        for net in self.interface_set.all():
+            net.deploy()
 
-            # Destroy networks
-            with act.sub_activity('destroying_net'):
-                for net in self.interface_set.all():
-                    net.shutdown()
+    def destroy_net(self):
+        """Destroy all associated network interfaces.
+        """
+        for net in self.interface_set.all():
+            net.destroy()
 
-            # Suspend vm
-            with act.sub_activity('suspending'):
-                queue_name = self.get_remote_queue_name('vm')
-                vm_tasks.sleep.apply_async(args=[self.vm_name,
-                                                 self.mem_dump['path']],
+    def shutdown_net(self):
+        """Shutdown all associated network interfaces.
+        """
+        for net in self.interface_set.all():
+            net.shutdown()
+
+    def delete_vm(self, timeout=15):
+        queue_name = self.get_remote_queue_name('vm')
+        try:
+            return vm_tasks.destroy.apply_async(args=[self.vm_name],
+                                                queue=queue_name
+                                                ).get(timeout=timeout)
+        except Exception as e:
+            if e.libvirtError and "Domain not found" in str(e):
+                logger.debug("Domain %s was not found at %s"
+                             % (self.vm_name, queue_name))
+            else:
+                raise
+
+    def deploy_vm(self, timeout=15):
+        queue_name = self.get_remote_queue_name('vm')
+        return vm_tasks.deploy.apply_async(args=[self.get_vm_desc()],
                                            queue=queue_name
                                            ).get(timeout=timeout)
-                self.node = None
-                self.save()
 
-    def sleep_async(self, user=None):
-        """Execute sleep asynchronously.
-        """
-        return local_tasks.sleep.apply_async(args=[self, user],
-                                             queue="localhost.man")
+    def migrate_vm(self, to_node, timeout=120):
+        queue_name = self.get_remote_queue_name('vm')
+        return vm_tasks.migrate.apply_async(args=[self.vm_name,
+                                                  to_node.host.hostname],
+                                            queue=queue_name
+                                            ).get(timeout=timeout)
 
-    def wake_up(self, user=None, task_uuid=None, timeout=60):
-        """ Wake up Virtual Machine from SUSPENDED state.
+    def reboot_vm(self, timeout=5):
+        queue_name = self.get_remote_queue_name('vm')
+        return vm_tasks.reboot.apply_async(args=[self.vm_name],
+                                           queue=queue_name
+                                           ).get(timeout=timeout)
 
-        Power on Virtual Machine and load its memory from dump.
-        """
-        if self.status not in ['SUSPENDED']:
-            raise self.WrongStateError(self)
-
-        def __on_abort(activity, error):
-            activity.resultant_state = 'ERROR'
-
-        def __on_commit(activity):
-            activity.resultant_state = 'RUNNING'
-
-        with instance_activity(code_suffix='wake_up', instance=self,
-                               on_abort=__on_abort, on_commit=__on_commit,
-                               task_uuid=task_uuid, user=user) as act:
-
-            # Schedule vm
-            self.__schedule_vm(act)
-            queue_name = self.get_remote_queue_name('vm')
-
-            # Resume vm
-            with act.sub_activity('resuming'):
-                vm_tasks.wake_up.apply_async(args=[self.vm_name,
-                                                   self.mem_dump['path']],
-                                             queue=queue_name
-                                             ).get(timeout=timeout)
-
-            # Estabilish network connection (vmdriver)
-            with act.sub_activity('deploying_net'):
-                for net in self.interface_set.all():
-                    net.deploy()
-
-            # Renew vm
-            self.renew(which='both', base_activity=act)
-
-    def wake_up_async(self, user=None):
-        """Execute wake_up asynchronously.
-        """
-        return local_tasks.wake_up.apply_async(args=[self, user],
-                                               queue="localhost.man")
-
-    def shutdown(self, user=None, task_uuid=None, timeout=120):
-        """Shutdown virtual machine with ACPI signal.
-        """
-        def __on_abort(activity, error):
-            if isinstance(error, TimeLimitExceeded):
-                activity.resultant_state = None
-            else:
-                activity.resultant_state = 'ERROR'
-
-        def __on_commit(activity):
-            activity.resultant_state = 'STOPPED'
-
-        with instance_activity(code_suffix='shutdown', instance=self,
-                               on_abort=__on_abort, on_commit=__on_commit,
-                               task_uuid=task_uuid, user=user):
-            queue_name = self.get_remote_queue_name('vm')
-            logger.debug("RPC Shutdown at queue: %s, for vm: %s.",
-                         self.vm_name, queue_name)
-            vm_tasks.shutdown.apply_async(kwargs={'name': self.vm_name},
+    def reset_vm(self, timeout=5):
+        queue_name = self.get_remote_queue_name('vm')
+        return vm_tasks.reset.apply_async(args=[self.vm_name],
                                           queue=queue_name
                                           ).get(timeout=timeout)
-            self.node = None
-            self.vnc_port = None
-            self.save()
 
-    def shutdown_async(self, user=None):
-        """Execute shutdown asynchronously.
-        """
-        return local_tasks.shutdown.apply_async(args=[self, user],
-                                                queue="localhost.man")
+    def resume_vm(self, timeout=15):
+        queue_name = self.get_remote_queue_name('vm')
+        return vm_tasks.resume.apply_async(args=[self.vm_name],
+                                           queue=queue_name
+                                           ).get(timeout=timeout)
 
-    def reset(self, user=None, task_uuid=None, timeout=5):
-        """Reset virtual machine (reset button)
-        """
-        with instance_activity(code_suffix='reset', instance=self,
-                               task_uuid=task_uuid, user=user):
-
-            queue_name = self.get_remote_queue_name('vm')
-            vm_tasks.reset.apply_async(args=[self.vm_name],
-                                       queue=queue_name
-                                       ).get(timeout=timeout)
-
-    def reset_async(self, user=None):
-        """Execute reset asynchronously.
-        """
-        return local_tasks.reset.apply_async(args=[self, user],
-                                             queue="localhost.man")
-
-    def reboot(self, user=None, task_uuid=None, timeout=5):
-        """Reboot virtual machine with Ctrl+Alt+Del signal.
-        """
-        with instance_activity(code_suffix='reboot', instance=self,
-                               task_uuid=task_uuid, user=user):
-
-            queue_name = self.get_remote_queue_name('vm')
-            vm_tasks.reboot.apply_async(args=[self.vm_name],
-                                        queue=queue_name
-                                        ).get(timeout=timeout)
-
-    def reboot_async(self, user=None):
-        """Execute reboot asynchronously. """
-        return local_tasks.reboot.apply_async(args=[self, user],
-                                              queue="localhost.man")
-
-    def migrate_async(self, to_node, user=None):
-        """Execute migrate asynchronously. """
-        return local_tasks.migrate.apply_async(args=[self, to_node, user],
-                                               queue="localhost.man")
-
-    def migrate(self, to_node=None, user=None, task_uuid=None, timeout=120):
-        """Live migrate running vm to another node. """
-        with instance_activity(code_suffix='migrate', instance=self,
-                               task_uuid=task_uuid, user=user) as act:
-            if not to_node:
-                with act.sub_activity('scheduling') as sa:
-                    to_node = self.select_node()
-                    sa.result = to_node
-
-            # Destroy networks
-            with act.sub_activity('destroying_net'):
-                for net in self.interface_set.all():
-                    net.shutdown()
-
-            with act.sub_activity('migrate_vm'):
-                queue_name = self.get_remote_queue_name('vm')
-                vm_tasks.migrate.apply_async(args=[self.vm_name,
-                                             to_node.host.hostname],
+    def shutdown_vm(self, timeout=120):
+        queue_name = self.get_remote_queue_name('vm')
+        logger.debug("RPC Shutdown at queue: %s, for vm: %s.", queue_name,
+                     self.vm_name)
+        return vm_tasks.shutdown.apply_async(kwargs={'name': self.vm_name},
                                              queue=queue_name
                                              ).get(timeout=timeout)
-            # Refresh node information
-            self.node = to_node
+
+    def suspend_vm(self, timeout=60):
+        queue_name = self.get_remote_queue_name('vm')
+        return vm_tasks.sleep.apply_async(args=[self.vm_name,
+                                                self.mem_dump['path']],
+                                          queue=queue_name
+                                          ).get(timeout=timeout)
+
+    def wake_up_vm(self, timeout=60):
+        queue_name = self.get_remote_queue_name('vm')
+        return vm_tasks.wake_up.apply_async(args=[self.vm_name,
+                                                  self.mem_dump['path']],
+                                            queue=queue_name
+                                            ).get(timeout=timeout)
+
+    def delete_mem_dump(self, timeout=15):
+        queue_name = self.mem_dump['datastore'].get_remote_queue_name(
+            'storage')
+        from storage.tasks.remote_tasks import delete_dump
+        delete_dump.apply_async(args=[self.mem_dump['path']],
+                                queue=queue_name).get(timeout=timeout)
+
+    def allocate_node(self):
+        if self.node is None:
+            self.node = self.select_node()
             self.save()
-            # Estabilish network connection (vmdriver)
-            with act.sub_activity('deploying_net'):
-                for net in self.interface_set.all():
-                    net.deploy()
 
-    def save_as_template_async(self, name, user=None, **kwargs):
-        """ Save as template asynchronusly.
-        """
-        return local_tasks.save_as_template.apply_async(
-            args=[self, name, user, kwargs], queue="localhost.man")
+    def yield_node(self):
+        if self.node is not None:
+            self.node = None
+            self.save()
 
-    def save_as_template(self, name, task_uuid=None, user=None,
-                         timeout=300, **kwargs):
-        """ Save Virtual Machine as a Template.
+    def allocate_vnc_port(self):
+        if self.vnc_port is None:
+            self.vnc_port = find_unused_vnc_port()
+            self.save()
 
-        Template can be shared with groups and users.
-        Users can instantiate Virtual Machines from Templates.
-        """
-        with instance_activity(code_suffix="save_as_template", instance=self,
-                               task_uuid=task_uuid, user=user) as act:
-            # prepare parameters
-            params = {
-                'access_method': self.access_method,
-                'arch': self.arch,
-                'boot_menu': self.boot_menu,
-                'description': self.description,
-                'lease': self.lease,  # Can be problem in new VM
-                'max_ram_size': self.max_ram_size,
-                'name': name,
-                'num_cores': self.num_cores,
-                'owner': user,
-                'parent': self.template,  # Can be problem
-                'priority': self.priority,
-                'ram_size': self.ram_size,
-                'raw_data': self.raw_data,
-                'system': self.system,
-            }
-            params.update(kwargs)
-
-            def __try_save_disk(disk):
-                try:
-                    return disk.save_as()  # can do in parallel
-                except Disk.WrongDiskTypeError:
-                    return disk
-
-            # create template and do additional setup
-            tmpl = InstanceTemplate(**params)
-            tmpl.full_clean()  # Avoiding database errors.
-            tmpl.save()
-            try:
-                with act.sub_activity('saving_disks'):
-                    tmpl.disks.add(*[__try_save_disk(disk)
-                                   for disk in self.disks.all()])
-                # create interface templates
-                for i in self.interface_set.all():
-                    i.save_as_template(tmpl)
-            except:
-                tmpl.delete()
-                raise
-            else:
-                return tmpl
-
-    def shutdown_and_save_as_template(self, name, user=None, task_uuid=None,
-                                      **kwargs):
-        self.shutdown(user, task_uuid)
-        self.save_as_template(name, **kwargs)
+    def yield_vnc_port(self):
+        if self.vnc_port is not None:
+            self.vnc_port = None
+            self.save()
 
     def get_status_icon(self):
         return {

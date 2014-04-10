@@ -19,18 +19,16 @@ def check_queue(node_hostname, queue_id):
     active_queues = get_queues()
     if active_queues is None:
         return False
-    # v is List of List of queues dict
-    node_workers = [v for k, v in active_queues.iteritems()]
-    for worker in node_workers:
-        for queue in worker:
-            if queue['name'] == queue_name:
-                return True
-    return False
+    queue_names = (queue['name'] for worker in active_queues.itervalues()
+                   for queue in worker)
+    return queue_name in queue_names
 
 
 def get_queues():
     """Get active celery queues.
 
+    Returns a dictionary whose entries are (worker name;list of queues) pairs,
+    where queues are represented by dictionaries.
     Result is cached for 10 seconds!
     """
     key = __name__ + u'queues'
