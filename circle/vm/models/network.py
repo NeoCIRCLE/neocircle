@@ -150,9 +150,16 @@ class Interface(Model):
             queue=self.instance.get_remote_queue_name('net'))
 
     def shutdown(self):
-        net_tasks.destroy.apply_async(
-            args=[self.get_vmnetwork_desc()],
-            queue=self.instance.get_remote_queue_name('net'))
+        if self.destroyed:
+            from .instance import Instance
+            raise Instance.InstanceDestroyedError(self.instance,
+                                                  "The associated instance "
+                                                  "(%s) has already been "
+                                                  "destroyed" % self.instance)
+
+        queue_name = self.instance.get_remote_queue_name('net')
+        net_tasks.destroy.apply_async(args=[self.get_vmnetwork_desc()],
+                                      queue=queue_name)
 
     def destroy(self):
         if self.destroyed:
