@@ -137,7 +137,7 @@ class Interface(Model):
         iface.save()
         return iface
 
-    def deploy(self, user=None, task_uuid=None):
+    def deploy(self):
         if self.destroyed:
             from .instance import Instance
             raise Instance.InstanceDestroyedError(self.instance,
@@ -149,16 +149,16 @@ class Interface(Model):
             args=[self.get_vmnetwork_desc()],
             queue=self.instance.get_remote_queue_name('net'))
 
-    def shutdown(self, user=None, task_uuid=None):
+    def shutdown(self):
         net_tasks.destroy.apply_async(
             args=[self.get_vmnetwork_desc()],
             queue=self.instance.get_remote_queue_name('net'))
 
-    def destroy(self, user=None, task_uuid=None):
+    def destroy(self):
         if self.destroyed:
             return
 
-        self.shutdown(user, task_uuid)
+        self.shutdown()
         if self.host is not None:
             self.host.delete()
 
