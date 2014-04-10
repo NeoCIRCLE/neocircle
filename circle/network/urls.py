@@ -15,10 +15,6 @@ from .views import (IndexView,
                     remove_host_group, add_host_group,
                     remove_switch_port_device, add_switch_port_device)
 
-js_info_dict = {
-    'packages': ('network', ),
-}
-
 urlpatterns = patterns(
     '',
     url('^$', IndexView.as_view(), name='network.index'),
@@ -92,8 +88,4 @@ urlpatterns = patterns(
         remove_switch_port_device, name='network.remove_switch_port_device'),
     url('^switchports/(?P<pk>\d+)/add/$', add_switch_port_device,
         name='network.add_switch_port_device'),
-
-    # js gettext catalog
-    url(r'^jsi18n/$', 'django.views.i18n.javascript_catalog', js_info_dict,
-        name="network.js_catalog"),
 )
