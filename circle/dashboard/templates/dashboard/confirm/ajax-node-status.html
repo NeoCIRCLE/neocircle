@@ -12,7 +12,7 @@
             {%endblocktrans%}
           {% endif %}
         <div class="pull-right">
-		<form action="{% url "dashboard.views.status-node" pk=object.pk %}" method="POST">
+          <form action="{% url "dashboard.views.status-node" pk=object.pk %}" method="POST">
             {% csrf_token %}
             <button type="button" class="btn btn-default" data-dismiss="modal">{% trans "Cancel" %}</button> 
 	    <input type="hidden" name="change_status" value=""/>
