@@ -65,18 +65,7 @@ class DeployOperation(InstanceOperation):
     activity_code_suffix = 'deploy'
     id = 'deploy'
     name = _("deploy")
-    description = _("""Deploy new virtual machine with network
-
-        :param self: The virtual machine to deploy.
-        :type self: vm.models.Instance
-
-        :param user: The user who's issuing the command.
-        :type user: django.contrib.auth.models.User
-
-        :param task_uuid: The task's UUID, if the command is being executed
-                          asynchronously.
-        :type task_uuid: str
-        """)
+    description = _("Deploy new virtual machine with network.")
 
     def on_commit(self, activity):
         activity.resultant_state = 'RUNNING'
@@ -107,18 +96,7 @@ class DestroyOperation(InstanceOperation):
     activity_code_suffix = 'destroy'
     id = 'destroy'
     name = _("destroy")
-    description = _("""Remove virtual machine and its networks.
-
-        :param self: The virtual machine to destroy.
-        :type self: vm.models.Instance
-
-        :param user: The user who's issuing the command.
-        :type user: django.contrib.auth.models.User
-
-        :param task_uuid: The task's UUID, if the command is being executed
-                          asynchronously.
-        :type task_uuid: str
-        """)
+    description = _("Destroy virtual machine and its networks.")
 
     def on_commit(self, activity):
         activity.resultant_state = 'DESTROYED'
@@ -145,7 +123,7 @@ class MigrateOperation(InstanceOperation):
     activity_code_suffix = 'migrate'
     id = 'migrate'
     name = _("migrate")
-    description = _("""Live migrate running vm to another node.""")
+    description = _("Live migrate running VM to another node.")
 
     def _operation(self, activity, user, system, to_node=None, timeout=120):
         if not to_node:
@@ -179,7 +157,7 @@ class RebootOperation(InstanceOperation):
     activity_code_suffix = 'reboot'
     id = 'reboot'
     name = _("reboot")
-    description = _("""Reboot virtual machine with Ctrl+Alt+Del signal.""")
+    description = _("Reboot virtual machine with Ctrl+Alt+Del signal.")
 
     def _operation(self, activity, user, system, timeout=5):
         queue_name = self.instance.get_remote_queue_name('vm')
@@ -194,7 +172,7 @@ class ResetOperation(InstanceOperation):
     activity_code_suffix = 'reset'
     id = 'reset'
     name = _("reset")
-    description = _("""Reset virtual machine (reset button)""")
+    description = _("Reset virtual machine (reset button).")
 
     def _operation(self, activity, user, system, timeout=5):
         queue_name = self.instance.get_remote_queue_name('vm')
@@ -270,7 +248,7 @@ class ShutdownOperation(InstanceOperation):
     activity_code_suffix = 'shutdown'
     id = 'shutdown'
     name = _("shutdown")
-    description = _("""Shutdown virtual machine with ACPI signal.""")
+    description = _("Shutdown virtual machine with ACPI signal.")
 
     def on_abort(self, activity, error):
         if isinstance(error, TimeLimitExceeded):
@@ -299,7 +277,7 @@ class ShutOffOperation(InstanceOperation):
     activity_code_suffix = 'shut_off'
     id = 'shut_off'
     name = _("shut off")
-    description = _("""Shut off VM. (plug-out)""")
+    description = _("Shut off VM (plug-out).")
 
     def on_commit(activity):
         activity.resultant_state = 'STOPPED'
@@ -320,7 +298,7 @@ class SleepOperation(InstanceOperation):
     activity_code_suffix = 'sleep'
     id = 'sleep'
     name = _("sleep")
-    description = _("""Suspend virtual machine with memory dump.""")
+    description = _("Suspend virtual machine with memory dump.")
 
     def check_precond(self):
         super(SleepOperation, self).check_precond()
@@ -430,7 +408,7 @@ class FlushOperation(NodeOperation):
     activity_code_suffix = 'flush'
     id = 'flush'
     name = _("flush")
-    description = _("""Disable node and move all instances to other ones.""")
+    description = _("Disable node and move all instances to other ones.")
 
     def _operation(self, activity, user, system):
         self.node.disable(user, activity)
