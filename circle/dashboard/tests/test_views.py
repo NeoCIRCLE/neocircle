@@ -522,6 +522,56 @@ class VmDetailTest(LoginMixin, TestCase):
         self.assertEqual(inst.status, 'SUSPENDED')
 
 
+class GroupCreateTest(LoginMixin, TestCase):
+    fixtures = ['test-vm-fixture.json', 'node.json']
+
+    def setUp(self):
+        # u0 - user with creating group permissions
+        self.u0 = User.objects.create(username='user0')
+        self.u0.set_password('password')
+        self.u0.save()
+        permlist = Permission.objects.all()
+        self.u0.user_permissions.add(
+            filter(lambda element: 'group' in element.name and
+                   'add' in element.name, permlist)[0])
+        # u1 simple user without permissions
+        self.u1 = User.objects.create(username='user1')
+        self.u1.set_password('password')
+        self.u1.save()
+        self.us = User.objects.create(username='superuser', is_superuser=True)
+        self.us.set_password('password')
+        self.us.save()
+
+    def tearDown(self):
+        super(GroupCreateTest, self).tearDown()
+        self.u0.delete()
+        self.u1.delete()
+        self.us.delete()
+
+    def test_anon_group_page(self):
+        c = Client()
+        response = c.get('/dashboard/group/create/')
+        self.assertEqual(response.status_code, 302)
+
+    def test_superuser_group_page(self):
+        c = Client()
+        self.login(c, 'superuser')
+        response = c.get('/dashboard/group/create/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_permitted_group_page(self):
+        c = Client()
+        self.login(c, 'user0')
+        response = c.get('/dashboard/group/create/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_unpermitted_group_page(self):
+        c = Client()
+        self.login(c, 'user1')
+        response = c.get('/dashboard/group/create/')
+        self.assertEqual(response.status_code, 403)
+
+
 class GroupDetailTest(LoginMixin, TestCase):
     fixtures = ['test-vm-fixture.json', 'node.json']
 
