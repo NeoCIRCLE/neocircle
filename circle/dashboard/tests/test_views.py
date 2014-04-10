@@ -571,6 +571,37 @@ class GroupCreateTest(LoginMixin, TestCase):
         response = c.get('/dashboard/group/create/')
         self.assertEqual(response.status_code, 403)
 
+    def test_anon_group_create(self):
+        c = Client()
+        groupnum = Group.objects.count()
+        response = c.post('/dashboard/group/create/', {'name': 'newgroup'})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Group.objects.count(), groupnum)
+
+    def test_unpermitted_group_create(self):
+        c = Client()
+        groupnum = Group.objects.count()
+        self.login(c, 'user1')
+        response = c.post('/dashboard/group/create/', {'name': 'newgroup'})
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Group.objects.count(), groupnum)
+
+    def test_permitted_group_create(self):
+        c = Client()
+        groupnum = Group.objects.count()
+        self.login(c, 'user0')
+        response = c.post('/dashboard/group/create/', {'name': 'newgroup'})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Group.objects.count(), groupnum + 1)
+
+    def test_superuser_group_create(self):
+        c = Client()
+        groupnum = Group.objects.count()
+        self.login(c, 'superuser')
+        response = c.post('/dashboard/group/create/', {'name': 'newgroup'})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Group.objects.count(), groupnum + 1)
+
 
 class GroupDetailTest(LoginMixin, TestCase):
     fixtures = ['test-vm-fixture.json', 'node.json']
