@@ -708,6 +708,16 @@ class GroupDetailTest(LoginMixin, TestCase):
         self.assertEqual(user_in_group + 2, self.g1.user_set.count())
         self.assertEqual(response.status_code, 302)
 
+    def test_add_multipleuser_skip_badname_to_group(self):
+        c = Client()
+        self.login(c, 'user0')
+        user_in_group = self.g1.user_set.count()
+        response = c.post('/dashboard/group/' +
+                          str(self.g1.pk) + '/',
+                          {'list-new-namelist': 'user1\r\nnoname\r\nuser2'})
+        self.assertEqual(user_in_group + 2, self.g1.user_set.count())
+        self.assertEqual(response.status_code, 302)
+
     def test_unpermitted_add_multipleuser_to_group(self):
         c = Client()
         self.login(c, 'user3')
