@@ -4,9 +4,8 @@ from common.operations import operation_registry_name as op_reg_name
 from vm.models import Instance, Node
 from vm.operations import (
     DeployOperation, DestroyOperation, FlushOperation, MigrateOperation,
-    RebootOperation, RedeployOperation, ResetOperation,
-    SaveAsTemplateOperation, ShutdownOperation, ShutOffOperation,
-    SleepOperation, WakeUpOperation,
+    RebootOperation, ResetOperation, SaveAsTemplateOperation,
+    ShutdownOperation, ShutOffOperation, SleepOperation, WakeUpOperation,
 )
 
 
@@ -33,11 +32,6 @@ class MigrateOperationTestCase(TestCase):
 class RebootOperationTestCase(TestCase):
     def test_operation_registered(self):
         assert RebootOperation.id in getattr(Instance, op_reg_name)
-
-
-class RedeployOperationTestCase(TestCase):
-    def test_operation_registered(self):
-        assert RedeployOperation.id in getattr(Instance, op_reg_name)
 
 
 class ResetOperationTestCase(TestCase):
