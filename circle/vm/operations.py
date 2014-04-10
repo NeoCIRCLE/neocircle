@@ -281,7 +281,7 @@ class ShutOffOperation(InstanceOperation):
     name = _("shut off")
     description = _("Shut off VM (plug-out).")
 
-    def on_commit(activity):
+    def on_commit(self, activity):
         activity.resultant_state = 'STOPPED'
 
     def _operation(self, activity, user, system):
