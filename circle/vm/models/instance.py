@@ -1,7 +1,7 @@
 from __future__ import absolute_import, unicode_literals
 from datetime import timedelta
-from logging import getLogger
 from importlib import import_module
+from logging import getLogger
 from warnings import warn
 
 import django.conf
