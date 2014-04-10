@@ -1,6 +1,5 @@
 from __future__ import absolute_import, unicode_literals
 from logging import getLogger
-from string import ascii_lowercase
 
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
@@ -10,7 +9,6 @@ from celery.exceptions import TimeLimitExceeded
 
 from common.operations import Operation, register_operation
 from storage.models import Disk
-from .tasks import vm_tasks
 from .tasks.local_tasks import async_instance_operation, async_node_operation
 from .models import (
     Instance, InstanceActivity, InstanceTemplate, Node, NodeActivity,
@@ -70,23 +68,28 @@ class DeployOperation(InstanceOperation):
     def on_commit(self, activity):
         activity.resultant_state = 'RUNNING'
 
-    def _operation(self, activity, user, system):
-        self.instance._schedule_vm(activity)
+    def _operation(self, activity, user, system, timeout=15):
+        # Allocate VNC port and host node
+        self.instance.allocate_vnc_port()
+        self.instance.allocate_node()
 
         # Deploy virtual images
         with activity.sub_activity('deploying_disks'):
-            devnums = list(ascii_lowercase)  # a-z
-            for disk in self.instance.disks.all():
-                # assign device numbers
-                if disk.dev_num in devnums:
-                    devnums.remove(disk.dev_num)
-                else:
-                    disk.dev_num = devnums.pop(0)
-                    disk.save()
-                # deploy disk
-                disk.deploy()
+            self.instance.deploy_disks()
 
-        self.instance._deploy_vm(activity)
+        # Deploy VM on remote machine
+        with activity.sub_activity('deploying_vm') as deploy_act:
+            deploy_act.result = self.instance.deploy_vm(timeout=timeout)
+
+        # Establish network connection (vmdriver)
+        with activity.sub_activity('deploying_net'):
+            self.instance.deploy_net()
+
+        # Resume vm
+        with activity.sub_activity('booting'):
+            self.instance.resume_vm(timeout=timeout)
+
+        self.instance.renew(which='both', base_activity=activity)
 
 
 register_instance_operation(DeployOperation)
@@ -103,14 +106,27 @@ class DestroyOperation(InstanceOperation):
 
     def _operation(self, activity, user, system):
         if self.instance.node:
-            self.instance._destroy_vm(activity)
+            # Destroy networks
+            with activity.sub_activity('destroying_net'):
+                self.instance.destroy_net()
+
+            # Delete virtual machine
+            with activity.sub_activity('destroying_vm'):
+                self.instance.delete_vm()
 
         # Destroy disks
         with activity.sub_activity('destroying_disks'):
-            for disk in self.instance.disks.all():
-                disk.destroy()
+            self.instance.destroy_disks()
 
-        self.instance._cleanup_after_destroy_vm(activity)
+        # Delete mem. dump if exists
+        try:
+            self.instance.delete_mem_dump()
+        except:
+            pass
+
+        # Clear node and VNC port association
+        self.instance.yield_node()
+        self.instance.yield_vnc_port()
 
         self.instance.destroyed_at = timezone.now()
         self.instance.save()
@@ -131,23 +147,19 @@ class MigrateOperation(InstanceOperation):
                 to_node = self.instance.select_node()
                 sa.result = to_node
 
-        # Destroy networks
-        with activity.sub_activity('destroying_net'):
-            for net in self.instance.interface_set.all():
-                net.shutdown()
+        # Shutdown networks
+        with activity.sub_activity('shutdown_net'):
+            self.instance.shutdown_net()
 
         with activity.sub_activity('migrate_vm'):
-            queue_name = self.instance.get_remote_queue_name('vm')
-            vm_tasks.migrate.apply_async(args=[self.instance.vm_name,
-                                               to_node.host.hostname],
-                                         queue=queue_name).get(timeout=timeout)
+            self.instance.migrate_vm(to_node=to_node, timeout=timeout)
+
         # Refresh node information
         self.instance.node = to_node
         self.instance.save()
         # Estabilish network connection (vmdriver)
         with activity.sub_activity('deploying_net'):
-            for net in self.instance.interface_set.all():
-                net.deploy()
+            self.instance.deploy_net()
 
 
 register_instance_operation(MigrateOperation)
@@ -160,9 +172,7 @@ class RebootOperation(InstanceOperation):
     description = _("Reboot virtual machine with Ctrl+Alt+Del signal.")
 
     def _operation(self, activity, user, system, timeout=5):
-        queue_name = self.instance.get_remote_queue_name('vm')
-        vm_tasks.reboot.apply_async(args=[self.instance.vm_name],
-                                    queue=queue_name).get(timeout=timeout)
+        self.instance.reboot_vm(timeout=timeout)
 
 
 register_instance_operation(RebootOperation)
@@ -175,10 +185,7 @@ class ResetOperation(InstanceOperation):
     description = _("Reset virtual machine (reset button).")
 
     def _operation(self, activity, user, system, timeout=5):
-        queue_name = self.instance.get_remote_queue_name('vm')
-        vm_tasks.reset.apply_async(args=[self.instance.vm_name],
-                                   queue=queue_name).get(timeout=timeout)
-
+        self.instance.reset_vm(timeout=timeout)
 
 register_instance_operation(ResetOperation)
 
@@ -219,7 +226,7 @@ class SaveAsTemplateOperation(InstanceOperation):
 
         def __try_save_disk(disk):
             try:
-                return disk.save_as()  # can do in parallel
+                return disk.save_as()
             except Disk.WrongDiskTypeError:
                 return disk
 
@@ -260,14 +267,9 @@ class ShutdownOperation(InstanceOperation):
         activity.resultant_state = 'STOPPED'
 
     def _operation(self, activity, user, system, timeout=120):
-        queue_name = self.instance.get_remote_queue_name('vm')
-        logger.debug("RPC Shutdown at queue: %s, for vm: %s.", queue_name,
-                     self.instance.vm_name)
-        vm_tasks.shutdown.apply_async(kwargs={'name': self.instance.vm_name},
-                                      queue=queue_name).get(timeout=timeout)
-        self.instance.node = None
-        self.instance.vnc_port = None
-        self.instance.save()
+        self.instance.shutdown_vm(timeout=timeout)
+        self.instance.yield_node()
+        self.instance.yield_vnc_port()
 
 
 register_instance_operation(ShutdownOperation)
@@ -283,12 +285,17 @@ class ShutOffOperation(InstanceOperation):
         activity.resultant_state = 'STOPPED'
 
     def _operation(self, activity, user, system):
-        # Destroy VM
-        if self.instance.node:
-            self.instance._destroy_vm(activity)
+        # Shutdown networks
+        with activity.sub_activity('shutdown_net'):
+            self.instance.shutdown_net()
 
-        self.instance._cleanup_after_destroy_vm(activity)
-        self.instance.save()
+        # Delete virtual machine
+        with activity.sub_activity('delete_vm'):
+            self.instance.delete_vm()
+
+        # Clear node and VNC port association
+        self.instance.yield_node()
+        self.instance.yield_vnc_port()
 
 
 register_instance_operation(ShutOffOperation)
@@ -316,18 +323,15 @@ class SleepOperation(InstanceOperation):
 
     def _operation(self, activity, user, system, timeout=60):
         # Destroy networks
-        with activity.sub_activity('destroying_net'):
-            for net in self.instance.interface_set.all():
-                net.shutdown()
+        with activity.sub_activity('shutdown_net'):
+            self.instance.shutdown_net()
 
         # Suspend vm
         with activity.sub_activity('suspending'):
-            queue_name = self.instance.get_remote_queue_name('vm')
-            vm_tasks.sleep.apply_async(args=[self.instance.vm_name,
-                                             self.instance.mem_dump['path']],
-                                       queue=queue_name).get(timeout=timeout)
-            self.instance.node = None
-            self.instance.save()
+            self.instance.suspend_vm(timeout=timeout)
+
+        self.instance.yield_node()
+        # VNC port needs to be kept
 
 
 register_instance_operation(SleepOperation)
@@ -355,19 +359,16 @@ class WakeUpOperation(InstanceOperation):
 
     def _operation(self, activity, user, system, timeout=60):
         # Schedule vm
-        self.instance._schedule_vm(activity)
-        queue_name = self.instance.get_remote_queue_name('vm')
+        self.instance.allocate_vnc_port()
+        self.instance.allocate_node()
 
         # Resume vm
         with activity.sub_activity('resuming'):
-            vm_tasks.wake_up.apply_async(args=[self.instance.vm_name,
-                                               self.instance.mem_dump['path']],
-                                         queue=queue_name).get(timeout=timeout)
+            self.instance.wake_up_vm(timeout=timeout)
 
         # Estabilish network connection (vmdriver)
         with activity.sub_activity('deploying_net'):
-            for net in self.instance.interface_set.all():
-                net.deploy()
+            self.instance.deploy_net()
 
         # Renew vm
         self.instance.renew(which='both', base_activity=activity)

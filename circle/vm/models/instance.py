@@ -2,6 +2,7 @@ from __future__ import absolute_import, unicode_literals
 from datetime import timedelta
 from importlib import import_module
 from logging import getLogger
+from string import ascii_lowercase
 from warnings import warn
 
 import django.conf
@@ -726,94 +727,136 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         """
         return scheduler.select_node(self, Node.objects.all())
 
-    def _schedule_vm(self, act):
-        """Schedule the virtual machine as part of a higher level activity.
-
-        :param act: Parent activity.
+    def deploy_disks(self):
+        """Deploy all associated disks.
         """
-        # Find unused port for VNC
-        if self.vnc_port is None:
-            self.vnc_port = find_unused_vnc_port()
+        devnums = list(ascii_lowercase)  # a-z
+        for disk in self.disks.all():
+            # assign device numbers
+            if disk.dev_num in devnums:
+                devnums.remove(disk.dev_num)
+            else:
+                disk.dev_num = devnums.pop(0)
+                disk.save()
+            # deploy disk
+            disk.deploy()
 
-        # Schedule
-        if self.node is None:
-            self.node = self.select_node()
-
-        self.save()
-
-    def _deploy_vm(self, act, timeout=15):
-        """Deploy the virtual machine.
-
-        :param self: The virtual machine.
-
-        :param act: Parent activity.
+    def destroy_disks(self):
+        """Destroy all associated disks.
         """
+        for disk in self.disks.all():
+            disk.destroy()
+
+    def deploy_net(self):
+        """Deploy all associated network interfaces.
+        """
+        for net in self.interface_set.all():
+            net.deploy()
+
+    def destroy_net(self):
+        """Destroy all associated network interfaces.
+        """
+        for net in self.interface_set.all():
+            net.destroy()
+
+    def shutdown_net(self):
+        """Shutdown all associated network interfaces.
+        """
+        for net in self.interface_set.all():
+            net.shutdown()
+
+    def delete_vm(self, timeout=15):
         queue_name = self.get_remote_queue_name('vm')
+        try:
+            return vm_tasks.destroy.apply_async(args=[self.vm_name],
+                                                queue=queue_name
+                                                ).get(timeout=timeout)
+        except Exception as e:
+            if e.libvirtError and "Domain not found" in str(e):
+                logger.debug("Domain %s was not found at %s"
+                             % (self.vm_name, queue_name))
+            else:
+                raise
 
-        # Deploy VM on remote machine
-        with act.sub_activity('deploying_vm') as deploy_act:
-            deploy_act.result = vm_tasks.deploy.apply_async(
-                args=[self.get_vm_desc()],
-                queue=queue_name).get(timeout=timeout)
+    def deploy_vm(self, timeout=15):
+        queue_name = self.get_remote_queue_name('vm')
+        return vm_tasks.deploy.apply_async(args=[self.get_vm_desc()],
+                                           queue=queue_name
+                                           ).get(timeout=timeout)
 
-        # Estabilish network connection (vmdriver)
-        with act.sub_activity('deploying_net'):
-            for net in self.interface_set.all():
-                net.deploy()
+    def migrate_vm(self, to_node, timeout=120):
+        queue_name = self.get_remote_queue_name('vm')
+        return vm_tasks.migrate.apply_async(args=[self.vm_name,
+                                                  to_node.host.hostname],
+                                            queue=queue_name
+                                            ).get(timeout=timeout)
 
-        # Resume vm
-        with act.sub_activity('booting'):
-            vm_tasks.resume.apply_async(args=[self.vm_name],
-                                        queue=queue_name).get(timeout=timeout)
+    def reboot_vm(self, timeout=5):
+        queue_name = self.get_remote_queue_name('vm')
+        return vm_tasks.reboot.apply_async(args=[self.vm_name],
+                                           queue=queue_name
+                                           ).get(timeout=timeout)
 
-        self.renew(which='both', base_activity=act)
+    def reset_vm(self, timeout=5):
+        queue_name = self.get_remote_queue_name('vm')
+        return vm_tasks.reset.apply_async(args=[self.vm_name],
+                                          queue=queue_name
+                                          ).get(timeout=timeout)
 
-    def _destroy_vm(self, act, timeout=15):
-        """Destroy the virtual machine and its associated networks.
+    def resume_vm(self, timeout=15):
+        queue_name = self.get_remote_queue_name('vm')
+        return vm_tasks.resume.apply_async(args=[self.vm_name],
+                                           queue=queue_name
+                                           ).get(timeout=timeout)
 
-        :param self: The virtual machine.
-
-        :param act: Parent activity.
-        """
-        # Destroy networks
-        with act.sub_activity('destroying_net'):
-            for net in self.interface_set.all():
-                net.destroy()
-
-        # Destroy virtual machine
-        with act.sub_activity('destroying_vm'):
-            queue_name = self.get_remote_queue_name('vm')
-            try:
-                vm_tasks.destroy.apply_async(args=[self.vm_name],
+    def shutdown_vm(self, timeout=120):
+        queue_name = self.get_remote_queue_name('vm')
+        logger.debug("RPC Shutdown at queue: %s, for vm: %s.", queue_name,
+                     self.vm_name)
+        return vm_tasks.shutdown.apply_async(kwargs={'name': self.vm_name},
                                              queue=queue_name
                                              ).get(timeout=timeout)
-            except Exception as e:
-                if e.libvirtError and "Domain not found" in str(e):
-                    logger.debug("Domain %s was not found at %s"
-                                 % (self.vm_name, queue_name))
-                else:
-                    raise
 
-    def _cleanup_after_destroy_vm(self, act, timeout=15):
-        """Clean up the virtual machine's data after destroy.
+    def suspend_vm(self, timeout=60):
+        queue_name = self.get_remote_queue_name('vm')
+        return vm_tasks.sleep.apply_async(args=[self.vm_name,
+                                                self.mem_dump['path']],
+                                          queue=queue_name
+                                          ).get(timeout=timeout)
 
-        :param self: The virtual machine.
+    def wake_up_vm(self, timeout=60):
+        queue_name = self.get_remote_queue_name('vm')
+        return vm_tasks.wake_up.apply_async(args=[self.vm_name,
+                                                  self.mem_dump['path']],
+                                            queue=queue_name
+                                            ).get(timeout=timeout)
 
-        :param act: Parent activity.
-        """
-        # Delete mem. dump if exists
-        try:
-            queue_name = self.mem_dump['datastore'].get_remote_queue_name(
-                'storage')
-            from storage.tasks.remote_tasks import delete_dump
-            delete_dump.apply_async(args=[self.mem_dump['path']],
-                                    queue=queue_name).get(timeout=timeout)
-        except:
-            pass
+    def delete_mem_dump(self, timeout=15):
+        queue_name = self.mem_dump['datastore'].get_remote_queue_name(
+            'storage')
+        from storage.tasks.remote_tasks import delete_dump
+        delete_dump.apply_async(args=[self.mem_dump['path']],
+                                queue=queue_name).get(timeout=timeout)
 
-        # Clear node and VNC port association
-        self.node = None
-        self.vnc_port = None
+    def allocate_node(self):
+        if self.node is None:
+            self.node = self.select_node()
+            self.save()
+
+    def yield_node(self):
+        if self.node is not None:
+            self.node = None
+            self.save()
+
+    def allocate_vnc_port(self):
+        if self.vnc_port is None:
+            self.vnc_port = find_unused_vnc_port()
+            self.save()
+
+    def yield_vnc_port(self):
+        if self.vnc_port is not None:
+            self.vnc_port = None
+            self.save()
 
     def get_status_icon(self):
         return {
