@@ -20,24 +20,24 @@ function createTemplateTour() {
                   "<div class='popover-navigation'>" +
                     "<div class='btn-group'>" +
                       "<button class='btn btn-sm btn-default' data-role='prev'>" +
-                        '<i class="icon-chevron-left"></i> ' + "Prev" + "</button> " +
+                        '<i class="icon-chevron-left"></i> ' + gettext("Prev") + "</button> " +
                       "<button class='btn btn-sm btn-default' data-role='next'>" +
-                        'Next' + ' <i class="icon-chevron-right"></i></button> ' +
+                        gettext("Next") + ' <i class="icon-chevron-right"></i></button> ' +
                       "<button class='btn btn-sm btn-default' data-role='pause-resume' data-pause-text='Pause' data-resume-text='Resume'>Pause</button> " +
                     "</div>" +
                     "<button class='btn btn-sm btn-default' data-role='end'>" +
-                      "End tour" + ' <i class="icon-flag-checkered"></i></button>' +
+                      gettext("End tour") + ' <i class="icon-flag-checkered"></i></button>' +
                   "</div>" +
                 "</div>",
   });
 
   ttour.addStep({
     element: ".alert-new-template",
-    title: "Template Tutorial Tour",
-    content: "<p>Welcome to the template tutorial. In this quick tour, we gonna show you how to do the steps described above.</p>" +
-             '<p>For the next tour step press the "Next" button or the right arrow (or "Back" button/left arrow for the previous step).</p>' +
-             "<p>During the tour please don't try the functions because it may lead to graphical glitches, however " +
-             "you can end the tour any time you want with the End Tour button!</p>",
+    title: gettext("Template Tutorial Tour"),
+    content: "<p>" + gettext("Welcome to the template tutorial. In this quick tour, we gonna show you how to do the steps described above.") + "</p>" +
+             "<p>" + gettext('For the next tour step press the "Next" button or the right arrow (or "Back" button/left arrow for the previous step).') + "</p>" +
+             "<p>" + gettext("During the tour please don't try the functions because it may lead to graphical glitches, however " +
+                             "you can end the tour any time you want with the End Tour button!") + "</p>",
     placement: "bottom",
     backdrop: true,
   });
@@ -45,21 +45,20 @@ function createTemplateTour() {
   ttour.addStep({
     backdrop: true,
     element: 'a[href="#home"]',
-    title: "Home tab", 
-    content: "In this tab you can tag your virtual machine and modify the description.",
+    title: gettext("Home tab"), 
+    content: gettext("In this tab you can tag your virtual machine and modify the description."),
     placement: 'top',
     onShow: function() {
-      console.log("yosag van");
       $('a[href="#home"]').trigger("click");
     },
   });
 
   ttour.addStep({
     element: 'a[href="#resources"]',
-    title: "Resources tab",
+    title: gettext("Resources tab"),
     backdrop: true,
     placement: 'top',
-    content: "On the resources tab you can edit the CPU/RAM options and add/remove disks!",
+    content: gettext("On the resources tab you can edit the CPU/RAM options and add/remove disks!"),
     onShow: function() {
       $('a[href="#resources"]').trigger("click");
     },
@@ -69,10 +68,10 @@ function createTemplateTour() {
     element: '#vm-details-resources-form',
     placement: 'top',
     backdrop: true,
-    title: "Resources",
-    content: '<p><strong>CPU priority:</strong> higher (or lower?) is better</p>' + 
-             '<p><strong>CPU count:</strong> yooo</p>' +
-             '<p><strong>RAM amount:</strong> yoo RAM</p>', 
+    title: gettext("Resources"),
+    content: '<p><strong>' + gettext("CPU priority") + ":</strong> " + gettext("higher (or lower?) is better") + "</p>" + 
+             '<p><strong>' + gettext("CPU count") + ":</strong> " + gettext("number of CPU cores.") + "</p>" +
+             '<p><strong>' + gettext("RAM amount") + ":</strong> " + gettext("amount of RAM.") + "</p>", 
     onShow: function() {
       $('a[href="#resources"]').trigger("click");
     },
@@ -82,8 +81,8 @@ function createTemplateTour() {
     element: '#vm-details-resources-disk',
     backdrop: true,
     placement: 'top',
-    title: "Disks",
-    content: "You can add empty disks, download new ones and remove existing ones here.",
+    title: gettext("Disks"),
+    content: gettext("You can add empty disks, download new ones and remove existing ones here."),
     onShow: function() {
       $('a[href="#resources"]').trigger("click");
     },
@@ -93,8 +92,8 @@ function createTemplateTour() {
     element: 'a[href="#network"]',
     backdrop: true,
     placement: 'top',
-    title: "Network tab",
-    content: 'You can add new network interfaces or remove existing ones here.',
+    title: gettext("Network tab"),
+    content: gettext('You can add new network interfaces or remove existing ones here.'),
     onShow: function() {
       $('a[href="#network"]').trigger("click");
     },
@@ -103,43 +102,43 @@ function createTemplateTour() {
 
   ttour.addStep({
     element: "#vm-details-button-deploy",
-    title: "Deploy",
+    title: gettext("Deploy"),
     placement: "left",
     backdrop: true,
-    content: "Deploy the virtual machine",
+    content: gettext("Deploy the virtual machine."),
   });
 
   ttour.addStep({
     element: "#vm-info-pane",
-    title: "Connect",
+    title: gettext("Connect"),
     placement: "top",
     backdrop: true,
-    content: "Use the connection string or connect with your choice of client!",
+    content: gettext("Use the connection string or connect with your choice of client!"),
     
   });
 
   ttour.addStep({
     element: ".alert-new-template",
     placement: "bottom",
-    title: "Customize the virtual machine",
-    content: "After you have connected to the virtual do you modifications",
+    title: gettext("Customize the virtual machine"),
+    content: gettext("After you have connected to the virtual do you modifications."),
   });
 
   ttour.addStep({
     element: ".vm-details-button-save-as",
-    title: "Save",
+    title: gettext("Save as"),
     placement: "left",
     backdrop: true,
-    content: 'Press the "Save as template" button and wait until the activity finishes.',
+    content: gettext('Press the "Save as template" button and wait until the activity finishes.'),
   });
   
   
   ttour.addStep({
     element: ".alert-new-template",
-    title: "Finisih",
+    title: gettext("Finisih"),
     backdrop: true,
     placement: "bottom",
-    content: "This is the last message, if something is not clear you can do the the tour again!",
+    content: gettext("This is the last message, if something is not clear you can do the the tour again!"),
   });
   
   return ttour;
