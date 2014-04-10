@@ -541,9 +541,12 @@ class GroupCreateTest(LoginMixin, TestCase):
         self.us = User.objects.create(username='superuser', is_superuser=True)
         self.us.set_password('password')
         self.us.save()
+        self.g1 = Group.objects.create(name='group1')
+        self.g1.save()
 
     def tearDown(self):
         super(GroupCreateTest, self).tearDown()
+        self.g1.delete()
         self.u0.delete()
         self.u1.delete()
         self.us.delete()
@@ -601,6 +604,24 @@ class GroupCreateTest(LoginMixin, TestCase):
         response = c.post('/dashboard/group/create/', {'name': 'newgroup'})
         self.assertEqual(response.status_code, 302)
         self.assertEqual(Group.objects.count(), groupnum + 1)
+
+    def test_namecollision_group_create(self):
+        # hint: group1 is in setUp, the tests checks creating group with the
+        # same name
+        c = Client()
+        groupnum = Group.objects.count()
+        self.login(c, 'superuser')
+        response = c.post('/dashboard/group/create/', {'name': 'group1'})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Group.objects.count(), groupnum)
+
+    def test_creator_is_owner_when_group_create(self):
+        # has owner rights in the group the user who created the group?
+        c = Client()
+        self.login(c, 'user0')
+        c.post('/dashboard/group/create/', {'name': 'newgroup'})
+        newgroup = Group.objects.get(name='newgroup')
+        self.assertTrue(newgroup.profile.has_level(self.u0, 'owner'))
 
 
 class GroupDetailTest(LoginMixin, TestCase):
