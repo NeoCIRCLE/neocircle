@@ -443,3 +443,32 @@ footer a, footer a:hover, footer a:visited {
 .template-choose-list input[type="radio"] {
   float: right;
 }
+
+/* template create vm help */
+.alert-new-template {                                                       
+  background: #3071a9;                                                      
+  color: white;                                                             
+  font-size: 22px;                                                          
+}                                                                           
+                                                                            
+.alert-new-template ol {                                                    
+  margin-left: 25px;
+} 
+
+/* bootstrap tour */
+.tour-template {
+  max-width: 400px;
+  min-width: 270px;
+  font-size: 16px;
+}
+
+.tour-template {
+  text-align: justify;
+}
+.tour-template .popover-title {
+  font-weight: bold;
+}
+
+#vm-details-resources-form {
+  padding: 5px; /* it's nice this way in the tour */
+}

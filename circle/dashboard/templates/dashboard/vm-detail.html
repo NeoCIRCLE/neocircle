@@ -5,17 +5,6 @@
 
 {% block content %}
 
-<style>
-.alert-new-template {
-  background: #3071a9;
-  color: white; 
-  font-size: 25px;
-}
-
-.alert-new-template ol {
-  margin-left: 25px;
-}
-</style>
 {% if instance.is_base %}
 <div class="alert alert-info alert-new-template">
   <strong>{% trans "This is the master vm of your new template" %}</strong>
