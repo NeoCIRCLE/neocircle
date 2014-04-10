@@ -624,6 +624,91 @@ class GroupCreateTest(LoginMixin, TestCase):
         self.assertTrue(newgroup.profile.has_level(self.u0, 'owner'))
 
 
+class GroupDeleteTest(LoginMixin, TestCase):
+    fixtures = ['test-vm-fixture.json', 'node.json']
+
+    def setUp(self):
+        # u0 - user with creating group permissions
+        self.u0 = User.objects.create(username='user0')
+        self.u0.set_password('password')
+        self.u0.save()
+        permlist = Permission.objects.all()
+        self.u0.user_permissions.add(
+            filter(lambda element: 'group' in element.name and
+                   'delete' in element.name, permlist)[0])
+        # u1 simple user without permissions
+        self.u1 = User.objects.create(username='user1')
+        self.u1.set_password('password')
+        self.u1.save()
+        self.us = User.objects.create(username='superuser', is_superuser=True)
+        self.us.set_password('password')
+        self.us.save()
+        self.g1 = Group.objects.create(name='group1')
+        self.g1.profile.set_user_level(self.u0, 'owner')
+        self.g1.save()
+
+    def tearDown(self):
+        super(GroupDeleteTest, self).tearDown()
+        self.g1.delete()
+        self.u0.delete()
+        self.u1.delete()
+        self.us.delete()
+
+    def test_anon_group_page(self):
+        c = Client()
+        response = c.get('/dashboard/group/delete/' + str(self.g1.pk) + '/')
+        self.assertEqual(response.status_code, 302)
+
+    def test_superuser_group_page(self):
+        c = Client()
+        self.login(c, 'superuser')
+        response = c.get('/dashboard/group/delete/' + str(self.g1.pk) + '/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_permitted_group_page(self):
+        c = Client()
+        self.login(c, 'user0')
+        response = c.get('/dashboard/group/delete/' + str(self.g1.pk) + '/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_unpermitted_group_page(self):
+        c = Client()
+        self.login(c, 'user1')
+        response = c.get('/dashboard/group/delete/' + str(self.g1.pk) + '/')
+        self.assertEqual(response.status_code, 403)
+
+    def test_anon_group_delete(self):
+        c = Client()
+        groupnum = Group.objects.count()
+        response = c.post('/dashboard/group/delete/' + str(self.g1.pk) + '/')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Group.objects.count(), groupnum)
+
+    def test_unpermitted_group_delete(self):
+        c = Client()
+        groupnum = Group.objects.count()
+        self.login(c, 'user1')
+        response = c.post('/dashboard/group/delete/' + str(self.g1.pk) + '/')
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Group.objects.count(), groupnum)
+
+    def test_permitted_group_delete(self):
+        c = Client()
+        groupnum = Group.objects.count()
+        self.login(c, 'user0')
+        response = c.post('/dashboard/group/delete/' + str(self.g1.pk) + '/')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Group.objects.count(), groupnum - 1)
+
+    def test_superuser_group_delete(self):
+        c = Client()
+        groupnum = Group.objects.count()
+        self.login(c, 'superuser')
+        response = c.post('/dashboard/group/delete/' + str(self.g1.pk) + '/')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Group.objects.count(), groupnum - 1)
+
+
 class GroupDetailTest(LoginMixin, TestCase):
     fixtures = ['test-vm-fixture.json', 'node.json']
 
