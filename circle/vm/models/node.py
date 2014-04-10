@@ -147,10 +147,10 @@ class Node(OperatedMixin, TimeStampedModel):
 
     @method_cache(30)
     def get_remote_queue_name(self, queue_id):
-        """Return the name of the remote celery queue for this node.
+        """Returns the name of the remote celery queue for this node.
 
-        throws Exception if there is no worker on the queue.
-        Until the cache provide reult there can be dead queues.
+        Throws Exception if there is no worker on the queue.
+        The result may include dead queues because of caching.
         """
 
         if vm_tasks.check_queue(self.host.hostname, queue_id):
@@ -172,7 +172,7 @@ class Node(OperatedMixin, TimeStampedModel):
         else:
             logger.debug("The last activity was %s" % act)
             if act.activity_code.endswith("offline"):
-                act = NodeActivity.create(code_suffix='monitor_succes_online',
+                act = NodeActivity.create(code_suffix='monitor_success_online',
                                           node=self, user=None)
                 act.started = timezone.now()
                 act.finished = timezone.now()
