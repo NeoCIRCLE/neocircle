@@ -33,7 +33,6 @@
     "hostname": "devenv", 
     "modified_at": "2014-02-24T15:55:01.412Z", 
     "location": "", 
-    "pub_ipv4": null, 
     "mac": "11:22:33:44:55:66", 
     "shared_ip": false, 
     "ipv4": "10.7.0.96", 

@@ -106,7 +106,7 @@ class HostForm(ModelForm):
                 'ipv4',
                 'ipv6',
                 'shared_ip',
-                'pub_ipv4',
+                'external_ipv4',
             ),
             Fieldset(
                 'Information',
@@ -162,12 +162,14 @@ class RuleForm(ModelForm):
                 'foreign_network',
                 'dport',
                 'sport',
+                'weight',
                 'proto',
                 'extra',
-                'accept',
+                'action',
                 'owner',
                 'nat',
-                'nat_dport',
+                'nat_external_port',
+                'nat_external_ipv4',
             ),
             Fieldset(
                 'External',
@@ -232,6 +234,7 @@ class VlanForm(ModelForm):
                 'IPv6',
                 'network6',
                 'ipv6_template',
+                'host_ipv6_prefixlen',
             ),
             Fieldset(
                 'Domain name service',

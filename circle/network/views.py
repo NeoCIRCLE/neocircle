@@ -503,6 +503,11 @@ class RuleList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
     template_name = "network/rule-list.html"
     table_pagination = False
 
+    def get_table_data(self):
+        return Rule.objects.select_related('host', 'hostgroup', 'vlan',
+                                           'vlangroup', 'firewall',
+                                           'foreign_network', 'owner')
+
 
 class RuleDetail(LoginRequiredMixin, SuperuserRequiredMixin,
                  SuccessMessageMixin, UpdateView):
