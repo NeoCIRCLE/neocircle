@@ -283,7 +283,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         if old != self.status:
             logger.info('Status of Instance#%d changed to %s',
                         self.pk, self.status)
-            self.save()
+            self.save(update_fields=('status', ))
 
     def _compute_status(self):
         """Return the proper status of the instance based on activities.
