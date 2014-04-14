@@ -2203,3 +2203,43 @@ class InstanceActivityDetail(SuperuserRequiredMixin, DetailView):
             order_by('-started').select_related('user').
             prefetch_related('children'))
         return ctx
+
+
+class InterfaceDeleteView(DeleteView):
+    model = Interface
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/confirm/ajax-delete.html']
+        else:
+            return ['dashboard/confirm/base-delete.html']
+
+    def get_context_data(self, **kwargs):
+        context = super(InterfaceDeleteView, self).get_context_data(**kwargs)
+        interface = self.get_object()
+        context['text'] = _("Are you sure you want to remove this interface "
+                            "from <strong>%(vm)s</strong>?" %
+                            {'vm': interface.instance.name})
+        return context
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
+        self.object.destroy()
+        success_url = self.get_success_url()
+        success_message = _("Interface successfully deleted!")
+
+        if request.is_ajax():
+            return HttpResponse(
+                json.dumps({'message': success_message}),
+                content_type="application/json",
+            )
+        else:
+            messages.success(request, success_message)
+            return HttpResponseRedirect("%s#network" % success_url)
+
+    def get_success_url(self):
+        redirect = self.request.POST.get("next")
+        if redirect:
+            return redirect
+        self.object.instance.get_absolute_url()

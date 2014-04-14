@@ -165,6 +165,19 @@ $(function() {
   $(".vm-details-help-button").click(function() {
     $(".vm-details-help").stop().slideToggle();
   });
+
+
+  /* for interface remove buttons */
+  $('.interface-remove').click(function() {
+    var interface_pk = $(this).data('interface-pk');
+    addModalConfirmation(deleteObject, 
+      { 'url': '/dashboard/interface/' + interface_pk + '/delete/',
+        'data': [],
+        'pk': interface_pk,
+	'type': "interface",
+      });
+    return false;
+  });
 });
 
 
