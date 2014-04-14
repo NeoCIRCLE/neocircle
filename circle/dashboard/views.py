@@ -400,7 +400,7 @@ class VmDetailView(CheckedDetailView):
         if not self.object.has_level(request.user, 'owner'):
             raise PermissionDenied()
 
-        vlan = Vlan.objects.get(pk=request.POST.get("new_network_vlan"))
+        vlan = get_object_or_404(Vlan, pk=request.POST.get("new_network_vlan"))
         if not vlan.has_level(request.user, 'user'):
             raise PermissionDenied()
         try:

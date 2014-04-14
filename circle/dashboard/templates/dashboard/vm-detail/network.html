@@ -121,15 +121,15 @@
         {% csrf_token %}
         <div class="input-group" style="max-width: 330px;">
           <select name="new_network_vlan" class="form-control">
-            {% if vlans|length == 0 %} 
-              <option value="-1">No more networks!</option>
-            {% endif %}
             {% for v in vlans %}
               <option value="{{ v.pk }}">{{ v.name }}</option>
+              {% empty %}
+              <option value="-1">No more networks!</option>
             {% endfor %}
           </select>
           <div class="input-group-btn">
-            <button type="submit" class="btn btn-success"><i class="icon-plus-sign"></i></button>
+            <button {% if vlans|length == 0 %}disabled{% endif %}
+              type="submit" class="btn btn-success"><i class="icon-plus-sign"></i></button>
           </div>
         </div>
       </form>
