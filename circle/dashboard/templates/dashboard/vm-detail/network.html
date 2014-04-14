@@ -126,9 +126,16 @@
       <form method="POST" action="">
         {% csrf_token %}
         <div class="input-group" style="max-width: 330px;">
-          <select name="new_network_vlan" class="form-control">
+          <select name="new_network_vlan" class="form-control font-awesome-font">
             {% for v in vlans %}
-              <option value="{{ v.pk }}">{{ v.name }}</option>
+              <option value="{{ v.pk }}">
+                {% if v.managed %}
+                  &#xf0ac;
+                {% else %}
+                  &#xf0c1;
+                {% endif %}
+                {{ v.name }}
+              </option>
               {% empty %}
               <option value="-1">No more networks!</option>
             {% endfor %}
