@@ -968,6 +968,9 @@ class GroupRemoveUserView(CheckedDetailView, DeleteView):
     slug_url_kwarg = 'group_pk'
     read_level = 'operator'
 
+    def get_has_level(self):
+        return self.object.profile.has_level
+
     def get_context_data(self, **kwargs):
         context = super(GroupRemoveUserView, self).get_context_data(**kwargs)
         try:
