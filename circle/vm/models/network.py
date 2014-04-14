@@ -53,6 +53,7 @@ class Interface(Model):
     class Meta:
         app_label = 'vm'
         db_table = 'vm_interface'
+        ordering = ("-vlan__managed", )
 
     def __unicode__(self):
         return 'cloud-' + str(self.instance.id) + '-' + str(self.vlan.vid)

@@ -215,7 +215,7 @@ class VmDetailView(CheckedDetailView):
 
         context['vlans'] = Vlan.get_objects_with_level(
             'user', self.request.user
-        ).exclude(
+        ).exclude(  # exclude already added interfaces
             pk__in=Interface.objects.filter(
                 instance=self.get_object()).values_list("vlan", flat=True)
         ).all()
