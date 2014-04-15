@@ -47,7 +47,7 @@ $(function() {
       data: {'new_name': name},
       headers: {"X-CSRFToken": getCookie('csrftoken')},
       success: function(data, textStatus, xhr) {
-        $("#vm-details-h1-name").html(data['new_name']).show();
+        $("#vm-details-h1-name").text(data['new_name']).show();
         $('#vm-details-rename').hide();
         // addMessage(data['message'], "success");
       },
