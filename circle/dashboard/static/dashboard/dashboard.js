@@ -224,6 +224,50 @@ $(function () {
     }
   });
 
+  /* search for nodes */
+  var my_nodes = []
+  $("#dashboard-node-search-input").keyup(function(e) {
+    // if my_nodes is empty get a list of our nodes
+    if(my_nodes.length < 1) {
+      $.ajaxSetup( { "async": false } );
+      $.get("/dashboard/node/list/", function(result) {
+        for(var i in result) {
+	  console.log(result[i]);
+          my_nodes.push({
+            'pk': result[i].pk,
+            'name': result[i].name.toLowerCase(),
+            'icon': result[i].icon,
+            'status': result[i].status,
+          });
+        }
+      });
+      $.ajaxSetup( { "async": true } );
+    }
+
+    input = $("#dashboard-node-search-input").val().toLowerCase();
+    var search_result = []
+    var html = '';
+    for(var i in my_nodes) {
+      if(my_nodes[i].name.indexOf(input) != -1) {
+        search_result.push(my_nodes[i]);
+      }
+    }
+    for(var i=0; i<5 && i<search_result.length; i++)
+      html += generateNodeHTML(search_result[i].pk, search_result[i].name, 
+                             search_result[i].icon, search_result[i].status);
+    if(search_result.length == 0)
+      html += '<div class="list-group-item">No result</div>';
+    $("#dashboard-node-list").html(html);
+ 
+    // if there is only one result and ENTER is pressed redirect
+    if(e.keyCode == 13 && search_result.length == 1) {
+      window.location.href = "/dashboard/node/" + search_result[0].pk + "/";
+    }
+    if(e.keyCode == 13 && search_result.length > 1 && input.length > 0) {
+      window.location.href = "/dashboard/node/list/?s=" + input;
+    }
+  });
+
   /* notification message toggle */
   $(document).on('click', ".notification-message-subject", function() {
     $(".notification-message-text", $(this).parent()).slideToggle();
@@ -247,6 +291,15 @@ function generateVmHTML(pk, name, host, icon, _status, fav) {
         '</div>' +                                                               
       '<div style="clear: both;"></div>' +                                       
       '</a>';     
+}
+
+function generateNodeHTML(pk, name, icon, _status) {
+  return '<a href="/dashboard/node/' + pk + '/" class="list-group-item">' + 
+        '<span class="index-node-list-name">' + 
+          '<i class="' + icon + '" title="' + _status + '"></i> ' + name +
+        '</span>' + 
+      '<div style="clear: both;"></div>' + 
+      '</a>';
 }
 
 /* copare vm-s by fav, pk order */
