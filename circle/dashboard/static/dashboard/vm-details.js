@@ -31,33 +31,6 @@ $(function() {
     return false;
   });
 
-  /* rename */
-  $("#vm-details-h1-name, .vm-details-rename-button").click(function() {
-    $("#vm-details-h1-name").hide();
-    $("#vm-details-rename").css('display', 'inline');
-    $("#vm-details-rename-name").focus();
-  });
-
-  /* rename ajax */
-  $('#vm-details-rename-submit').click(function() {
-    var name = $('#vm-details-rename-name').val();
-    $.ajax({
-      method: 'POST',
-      url: location.href,
-      data: {'new_name': name},
-      headers: {"X-CSRFToken": getCookie('csrftoken')},
-      success: function(data, textStatus, xhr) {
-        $("#vm-details-h1-name").text(data['new_name']).show();
-        $('#vm-details-rename').hide();
-        // addMessage(data['message'], "success");
-      },
-      error: function(xhr, textStatus, error) {
-        addMessage("Error during renaming!", "danger");
-      }
-    });
-    return false;
-  });
-
   /* remove tag */
   $('.vm-details-remove-tag').click(function() {
     var to_remove =  $.trim($(this).parent('div').text());
@@ -166,7 +139,6 @@ $(function() {
     $(".vm-details-help").stop().slideToggle();
   });
 
-
   /* for interface remove buttons */
   $('.interface-remove').click(function() {
     var interface_pk = $(this).data('interface-pk');
@@ -178,6 +150,87 @@ $(function() {
       });
     return false;
   });
+
+  /* rename */
+  $("#vm-details-h1-name, .vm-details-rename-button").click(function() {
+    $("#vm-details-h1-name").hide();
+    $("#vm-details-rename").css('display', 'inline');
+    $("#vm-details-rename-name").focus();
+  });
+
+  /* rename in home tab */
+  $(".vm-details-home-edit-name-click").click(function() {
+    $(".vm-details-home-edit-name-click").hide();
+    $("#vm-details-home-rename").show();
+    $("input", $("#vm-details-home-rename")).focus();
+  });
+
+  /* rename ajax */
+  $('.vm-details-rename-submit').click(function() {
+    var name = $(this).parent("span").prev("input").val();
+    $.ajax({
+      method: 'POST',
+      url: location.href,
+      data: {'new_name': name},
+      headers: {"X-CSRFToken": getCookie('csrftoken')},
+      success: function(data, textStatus, xhr) {
+        $(".vm-details-home-edit-name").text(data['new_name']).show();
+        $(".vm-details-home-edit-name").parent("div").show();
+        $(".vm-details-home-edit-name-click").show();
+        $(".vm-details-home-rename-form-div").hide();
+        // update the inputs too
+        $(".vm-details-rename-submit").parent("span").prev("input").val(data['new_name']);  
+      },
+      error: function(xhr, textStatus, error) {
+        addMessage("Error during renaming!", "danger");
+      }
+    });
+    return false;
+  });
+  
+  /* update description click */
+  $(".vm-details-home-edit-description-click").click(function() {
+    $(".vm-details-home-edit-description-click").hide();
+    $("#vm-details-home-description").show();
+    return false;
+  });
+  
+  /* description update ajax */
+  $('.vm-details-description-submit').click(function() {
+    var description = $(this).prev("textarea").val();
+    console.log(description);
+    $.ajax({
+      method: 'POST',
+      url: location.href,
+      data: {'new_description': description},
+      headers: {"X-CSRFToken": getCookie('csrftoken')},
+      success: function(data, textStatus, xhr) {
+        var new_desc = data['new_description'];
+        /* we can't simply use $.text, because we need new lines */ 
+        var tagsToReplace = {
+          '&': "&amp;",
+          '<': "&lt;",
+          '>': "&gt;",
+        };
+        
+        new_desc = new_desc.replace(/[&<>]/g, function(tag) {
+          return tagsToReplace[tag] || tag;
+        });
+
+        $(".vm-details-home-edit-description")
+          .html(new_desc.replace(/\n/g, "<br />"));
+        $(".vm-details-home-edit-description-click").show();
+        $("#vm-details-home-description").hide();
+        // update the textareia
+        $("vm-details-home-description textarea").text(data['new_description']);  
+      },
+      error: function(xhr, textStatus, error) {
+        addMessage("Error during renaming!", "danger");
+      }
+    });
+    return false;
+  });
+
 });
 
 

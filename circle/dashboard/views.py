@@ -238,6 +238,7 @@ class VmDetailView(CheckedDetailView):
         options = {
             'change_password': self.__change_password,
             'new_name': self.__set_name,
+            'new_description': self.__set_description,
             'new_tag': self.__add_tag,
             'to_remove': self.__remove_tag,
             'port': self.__add_port,
@@ -316,8 +317,30 @@ class VmDetailView(CheckedDetailView):
             )
         else:
             messages.success(request, success_message)
-            return redirect(reverse_lazy("dashboard.views.detail",
-                                         kwargs={'pk': self.object.pk}))
+            return redirect(self.object.get_absolute_url())
+
+    def __set_description(self, request):
+        self.object = self.get_object()
+        if not self.object.has_level(request.user, 'owner'):
+            raise PermissionDenied()
+
+        new_description = request.POST.get("new_description")
+        Instance.objects.filter(pk=self.object.pk).update(
+            **{'description': new_description})
+
+        success_message = _("VM description successfully updated!")
+        if request.is_ajax():
+            response = {
+                'message': success_message,
+                'new_description': new_description,
+            }
+            return HttpResponse(
+                json.dumps(response),
+                content_type="application/json"
+            )
+        else:
+            messages.success(request, success_message)
+            return redirect(self.object.get_absolute_url())
 
     def __add_tag(self, request):
         new_tag = request.POST.get('new_tag')
