@@ -923,7 +923,7 @@ class EthernetDevice(models.Model):
         return self.name
 
 
-class Blacklist(models.Model):
+class BlacklistItem(models.Model):
     CHOICES_type = (('permban', 'permanent ban'), ('tempban', 'temporary ban'),
                     ('whitelist', 'whitelist'), ('tempwhite', 'tempwhite'))
     ipv4 = models.GenericIPAddressField(protocol='ipv4', unique=True)
@@ -945,7 +945,7 @@ class Blacklist(models.Model):
 
     def save(self, *args, **kwargs):
         self.full_clean()
-        super(Blacklist, self).save(*args, **kwargs)
+        super(BlacklistItem, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return self.ipv4
@@ -959,7 +959,7 @@ def send_task(sender, instance, created=False, **kwargs):
     reloadtask.apply_async(queue='localhost.man', args=[sender.__name__])
 
 
-for sender in [Host, Rule, Domain, Record, Vlan, Firewall, Group, Blacklist,
-               SwitchPort, EthernetDevice]:
+for sender in [Host, Rule, Domain, Record, Vlan, Firewall, Group,
+               BlacklistItem, SwitchPort, EthernetDevice]:
     post_save.connect(send_task, sender=sender)
     post_delete.connect(send_task, sender=sender)

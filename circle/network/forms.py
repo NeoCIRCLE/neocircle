@@ -5,7 +5,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, Div, Submit, BaseInput
 from crispy_forms.bootstrap import FormActions
 
-from firewall.models import (Host, Vlan, Domain, Group, Record, Blacklist,
+from firewall.models import (Host, Vlan, Domain, Group, Record, BlacklistItem,
                              Rule, VlanGroup, SwitchPort)
 
 
@@ -26,7 +26,7 @@ class LinkButton(BaseInput):
         super(LinkButton, self).__init__(name, text, *args, **kwargs)
 
 
-class BlacklistForm(ModelForm):
+class BlacklistItemForm(ModelForm):
     helper = FormHelper()
     helper.layout = Layout(
         Div(
@@ -45,7 +45,7 @@ class BlacklistForm(ModelForm):
     )
 
     class Meta:
-        model = Blacklist
+        model = BlacklistItem
 
 
 class DomainForm(ModelForm):
