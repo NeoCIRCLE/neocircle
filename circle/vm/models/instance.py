@@ -161,39 +161,6 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
         if is_new:
             self.set_level(self.owner, 'owner')
 
-    def clone(self, user=None, **kwargs):
-        """Cloning a Template to a new Template.
-
-        It returns the new Template object.
-        Disk cloning handled paralell and asynchronusly.
-        """
-        import copy
-        tmpl = copy.deepcopy(self)
-        tmpl.name = "Cloned from " + self.name
-        tmpl.pk = None
-        tmpl.full_clean()  # Avoiding database errors.
-        tmpl.save()
-
-        def __clone_disk(disk):
-            base = None
-            if disk.type == "iso":
-                base = disk
-            cloned_disk = Disk.create(datastore=disk.datastore,
-                                      name=disk.name, size=disk.size,
-                                      type=disk.type, base=base)
-            #Paralell cloning disks
-            disk.clone_async(cloned_disk, user=user)
-            return cloned_disk
-        try:
-            tmpl.disks.add(*[__clone_disk(disk)
-                           for disk in self.disks.all()])
-            tmpl.interface_set.add(*self.interface_set.all())
-        except:
-            tmpl.delete()
-            raise
-        else:
-            return tmpl
-
     @permalink
     def get_absolute_url(self):
         return ('dashboard.views.template-detail', None, {'pk': self.pk})
