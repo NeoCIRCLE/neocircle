@@ -203,7 +203,8 @@ class VmDetailView(CheckedDetailView):
         context.update({
             'graphite_enabled': VmGraphView.get_graphite_url() is not None,
             'vnc_url': reverse_lazy("dashboard.views.detail-vnc",
-                                    kwargs={'pk': self.object.pk})
+                                    kwargs={'pk': self.object.pk}),
+            'ops': list(instance.get_available_operations(self.request.user)),
         })
 
         # activity data
@@ -1589,23 +1590,28 @@ def vm_activity(request, pk):
         raise PermissionDenied()
 
     response = {}
-    only_status = request.GET.get("only_status")
+    only_status = request.GET.get("only_status", "false")
 
     response['human_readable_status'] = instance.get_status_display()
     response['status'] = instance.status
     response['icon'] = instance.get_status_icon()
     if only_status == "false":  # instance activity
         context = {
+            'instance': instance,
             'activities': InstanceActivity.objects.filter(
                 instance=instance, parent=None
-            ).order_by('-started').select_related()
+            ).order_by('-started').select_related(),
+            'ops': instance.get_available_operations(request.user),
         }
 
-        activities = render_to_string(
+        response['activities'] = render_to_string(
             "dashboard/vm-detail/_activity-timeline.html",
             RequestContext(request, context),
         )
-        response['activities'] = activities
+        response['ops'] = render_to_string(
+            "dashboard/vm-detail/_operations.html",
+            RequestContext(request, context),
+        )
 
     return HttpResponse(
         json.dumps(response),

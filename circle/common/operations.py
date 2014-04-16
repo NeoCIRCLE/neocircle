@@ -13,6 +13,7 @@ class Operation(object):
     """
     async_queue = 'localhost.man'
     required_perms = ()
+    do_not_call_in_templates = True
 
     def __call__(self, **kwargs):
         return self.call(**kwargs)
@@ -126,6 +127,19 @@ class OperatedMixin(object):
         else:
             raise AttributeError("%r object has no attribute %r" %
                                  (self.__class__.__name__, name))
+
+    def get_available_operations(self, user):
+        """Yield Operations that match permissions of user and preconditions.
+        """
+        for name in getattr(self, operation_registry_name, {}):
+            try:
+                op = getattr(self, name)
+                op.check_auth(user)
+                op.check_precond()
+            except:
+                pass  # unavailable
+            else:
+                yield op
 
 
 def register_operation(target_cls, op_cls, op_id=None):
