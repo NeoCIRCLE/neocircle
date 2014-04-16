@@ -5,7 +5,8 @@ from netaddr import IPAddress, AddrFormatError
 from datetime import datetime, timedelta
 from itertools import product
 
-from .models import (Host, Rule, Vlan, Domain, Record, Blacklist, SwitchPort)
+from .models import (Host, Rule, Vlan, Domain, Record, BlacklistItem,
+                     SwitchPort)
 from .iptables import IptRule, IptChain
 import django.conf
 from django.db.models import Q
@@ -136,7 +137,7 @@ def ipset():
     week = datetime.now() - timedelta(days=2)
     filter_ban = (Q(type='tempban', modified_at__gte=week) |
                   Q(type='permban'))
-    return Blacklist.objects.filter(filter_ban).values('ipv4', 'reason')
+    return BlacklistItem.objects.filter(filter_ban).values('ipv4', 'reason')
 
 
 def ipv6_to_octal(ipv6):

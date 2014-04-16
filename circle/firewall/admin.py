@@ -2,7 +2,7 @@
 
 from django.contrib import admin
 from firewall.models import (Rule, Host, Vlan, Group, VlanGroup, Firewall,
-                             Domain, Record, Blacklist,
+                             Domain, Record, BlacklistItem,
                              SwitchPort, EthernetDevice)
 from django import contrib
 
@@ -114,8 +114,8 @@ class RecordAdmin(admin.ModelAdmin):
     list_display = ('name', 'type', 'address', 'ttl', 'host', 'owner')
 
 
-class BlacklistAdmin(admin.ModelAdmin):
-    list_display = ('ipv4', 'reason', 'created_at', 'modified_at')
+class BlacklistItemAdmin(admin.ModelAdmin):
+    list_display = ('ipv4', 'type', 'reason', 'created_at', 'modified_at')
 
 
 class SwitchPortAdmin(admin.ModelAdmin):
@@ -133,6 +133,6 @@ admin.site.register(VlanGroup)
 admin.site.register(Firewall, FirewallAdmin)
 admin.site.register(Domain, DomainAdmin)
 admin.site.register(Record, RecordAdmin)
-admin.site.register(Blacklist, BlacklistAdmin)
+admin.site.register(BlacklistItem, BlacklistItemAdmin)
 admin.site.register(SwitchPort)
 admin.site.register(EthernetDevice, EthernetDeviceAdmin)

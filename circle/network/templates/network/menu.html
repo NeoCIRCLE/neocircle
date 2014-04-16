@@ -14,7 +14,7 @@
 {% trans "Records" as t %}
 {% include "network/menu-item.html" with href=u text=t %}
 {% url "network.blacklist_list" as u %}
-{% trans "Blacklists" as t %}
+{% trans "Blacklist" as t %}
 {% include "network/menu-item.html" with href=u text=t %}
 {% url "network.rule_list" as u %}
 {% trans "Rules" as t %}
@@ -43,4 +43,4 @@
 {# <li><a href="/firewalls/">{% trans "Firewalls" %}</a></li> #}
 {# <li><a href="/domains/">{% trans "Domains" %}</a></li> #}
 {# <li><a href="/records/">{% trans "DNS records" %}</a></li> #}
-{# <li><a href="/blacklists/">{% trans "Blacklists" %}</a></li> #}
+{# <li><a href="/blacklist/">{% trans "Blacklist" %}</a></li> #}

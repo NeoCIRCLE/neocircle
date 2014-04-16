@@ -4,7 +4,7 @@ from django_tables2.columns import LinkColumn, TemplateColumn
 from firewall.models import Host, Vlan, Domain, Group, Record, Rule, SwitchPort
 
 
-class BlacklistTable(Table):
+class BlacklistItemTable(Table):
     ipv4 = LinkColumn('network.blacklist', args=[A('pk')])
 
     class Meta:
