@@ -122,7 +122,7 @@ class Disk(AclBase, TimeStampedModel):
             self.disk = disk
 
     @property
-    def ready(self):
+    def is_ready(self):
         """ Returns True if the disk is physically ready on the storage.
 
         It needs at least 1 successfull deploy action.
@@ -310,7 +310,7 @@ class Disk(AclBase, TimeStampedModel):
             self.destroyed = None
             self.save()
 
-        if self.ready:
+        if self.is_ready:
             return True
         with disk_activity(code_suffix='deploy', disk=self,
                            task_uuid=task_uuid, user=user) as act:
@@ -505,7 +505,7 @@ class Disk(AclBase, TimeStampedModel):
             raise self.WrongDiskTypeError(self.type)
         if self.is_in_use:
             raise self.DiskInUseError(self)
-        if not self.ready:
+        if not self.is_ready:
             raise self.DiskIsNotReady(self)
         if not disk:
             base = None
@@ -551,7 +551,7 @@ class Disk(AclBase, TimeStampedModel):
         if self.is_in_use:
             raise self.DiskInUseError(self)
 
-        if not self.ready:
+        if not self.is_ready:
             raise self.DiskIsNotReady(self)
 
         # from this point on, the caller has to guarantee that the disk is not
