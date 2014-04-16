@@ -1,0 +1,14 @@
+{% load i18n %}
+
+{% for op in ops %}
+<form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}" class="operation operation-{{op.id}}">
+  {% csrf_token %}
+  <input type="hidden" name="{{op.id}}" />
+  <button title="{{op.name}}: {{op.description}}" class="btn btn-default btn-xs" type="submit"><i class="icon-{{op.icon|default:'cog'}}"></i></button>
+</form>
+{% endfor %}
+{% if user.is_superuser %}
+<a title="Migrate" data-vm-pk="{{ instance.pk }}" href="{% url "dashboard.views.vm-migrate" pk=instance.pk %}" class="btn btn-default btn-xs vm-migrate">
+  <i class="icon-truck"></i>
+</a>
+{% endif %}
