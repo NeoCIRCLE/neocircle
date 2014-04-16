@@ -8,7 +8,6 @@ from django.utils.translation import ugettext_lazy as _
 from celery.exceptions import TimeLimitExceeded
 
 from common.operations import Operation, register_operation
-from storage.models import Disk
 from .tasks.local_tasks import async_instance_operation, async_node_operation
 from .models import (
     Instance, InstanceActivity, InstanceTemplate, Node, NodeActivity,
@@ -224,20 +223,24 @@ class SaveAsTemplateOperation(InstanceOperation):
         }
         params.update(kwargs)
 
+        from storage.models import Disk
+
         def __try_save_disk(disk):
             try:
                 return disk.save_as()
             except Disk.WrongDiskTypeError:
                 return disk
 
+        with activity.sub_activity('saving_disks'):
+            disks = [__try_save_disk(disk)
+                     for disk in self.instance.disks.all()]
+
         # create template and do additional setup
         tmpl = InstanceTemplate(**params)
         tmpl.full_clean()  # Avoiding database errors.
         tmpl.save()
         try:
-            with activity.sub_activity('saving_disks'):
-                tmpl.disks.add(*[__try_save_disk(disk)
-                                 for disk in self.instance.disks.all()])
+            tmpl.disks.add(*disks)
             # create interface templates
             for i in self.instance.interface_set.all():
                 i.save_as_template(tmpl)
