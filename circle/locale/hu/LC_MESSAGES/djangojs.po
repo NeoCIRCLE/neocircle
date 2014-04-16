@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-04-10 12:20+0200\n"
+"POT-Creation-Date: 2014-04-16 08:59+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -174,49 +174,6 @@ msgstr ""
 
 #: network/static/js/host.js:25 network/static/js/switch-port.js:19
 msgid "Remove"
-msgstr ""
-
-#: network/static/js/record.js:109
-msgid "Address must be specified!"
-msgstr ""
-
-#: network/static/js/record.js:119
-#, c-format
-msgid "%s - not an IPv4 address"
-msgstr ""
-
-#: network/static/js/record.js:129
-#, c-format
-msgid "%s - not an IPv6 address"
-msgstr ""
-
-#: network/static/js/record.js:140
-msgid "Bad MX address format. "
-msgstr ""
-
-#: network/static/js/record.js:151 network/static/js/record.js.c:186
-#, c-format
-msgid "%s - invalid domain name"
-msgstr ""
-
-#: network/static/js/record.js:161
-msgid "Unknown record type."
-msgstr ""
-
-#: network/static/js/record.js:169 network/static/js/record.js.c:339
-msgid "You must choose a type"
-msgstr ""
-
-#: network/static/js/record.js:196
-msgid "You must choose a domain"
-msgstr ""
-
-#: network/static/js/record.js:203
-msgid "You must specify an owner!"
-msgstr ""
-
-#: network/static/js/record.js:321
-msgid "Specify a type!"
 msgstr ""
 
 #: network/static/js/switch-port.js:8
