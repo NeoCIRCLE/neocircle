@@ -42,7 +42,8 @@ class Operation(object):
         """
         with activity_context(activity, on_abort=self.on_abort,
                               on_commit=self.on_commit):
-            return self._operation(activity, user, **kwargs)
+            return self._operation(activity=activity, user=user,
+                                   **kwargs)
 
     def _operation(self, activity, user, system, **kwargs):
         """This method is the operation's particular implementation.
