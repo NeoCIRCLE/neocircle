@@ -526,10 +526,6 @@ class Disk(AclBase, TimeStampedModel):
                                                ).get()  # Timeout
             return disk
 
-    def save_as_async(self, disk, task_uuid=None, timeout=300, user=None):
-        return local_tasks.save_as.apply_async(args=[disk, timeout, user],
-                                               queue="localhost.man")
-
     def save_as(self, user=None, task_uuid=None, timeout=300):
         """Save VM as template.
 
