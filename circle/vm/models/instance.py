@@ -151,6 +151,10 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
         else:
             return 'linux'
 
+    @property
+    def is_ready(self):
+        return all(disk.is_ready for disk in self.disks)
+
     def save(self, *args, **kwargs):
         is_new = getattr(self, "pk", None) is None
         super(InstanceTemplate, self).save(*args, **kwargs)
