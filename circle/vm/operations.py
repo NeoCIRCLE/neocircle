@@ -10,7 +10,8 @@ from celery.exceptions import TimeLimitExceeded
 from common.operations import Operation, register_operation
 from .tasks.local_tasks import async_instance_operation, async_node_operation
 from .models import (
-    Instance, InstanceActivity, InstanceTemplate, Node, NodeActivity,
+    Instance, InstanceActivity, InstanceTemplate, Interface, Node,
+    NodeActivity,
 )
 
 
@@ -56,6 +57,29 @@ class InstanceOperation(Operation):
 
 def register_instance_operation(op_cls, op_id=None):
     return register_operation(Instance, op_cls, op_id)
+
+
+class AddInterfaceOperation(InstanceOperation):
+    activity_code_suffix = 'add_interface'
+    id = 'add_interface'
+    name = _("add interface")
+    description = _("Add a new network interface for the specified VLAN to "
+                    "the VM.")
+
+    def _operation(self, activity, user, system, vlan, managed=None):
+        if managed is None:
+            managed = vlan.managed
+
+        net = Interface.create(base_activity=activity, instance=self.instance,
+                               managed=managed, owner=user, vlan=vlan)
+
+        if self.instance.is_running:
+            net.deploy()
+
+        return net
+
+
+register_instance_operation(AddInterfaceOperation)
 
 
 class DeployOperation(InstanceOperation):
