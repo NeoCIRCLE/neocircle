@@ -950,6 +950,10 @@ class BlacklistItem(models.Model):
     def __unicode__(self):
         return self.ipv4
 
+    class Meta(object):
+        verbose_name = _('blacklist item')
+        verbose_name_plural = _('blacklist')
+
     @models.permalink
     def get_absolute_url(self):
         return ('network.blacklist', None, {'pk': self.pk})
