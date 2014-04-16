@@ -1,3 +1,5 @@
+import json
+
 from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User, Group
@@ -548,6 +550,41 @@ class VmDetailTest(LoginMixin, TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(instance_count + 2, Instance.objects.all().count())
+
+    def test_unpermitted_description_update(self):
+        c = Client()
+        self.login(c, "user1")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u2, 'owner')
+        inst.set_level(self.u1, 'user')
+        old_desc = inst.description
+        response = c.post("/dashboard/vm/1/", {'new_description': 'test1234'})
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Instance.objects.get(pk=1).description, old_desc)
+
+    def test_permitted_description_update_w_ajax(self):
+        c = Client()
+        self.login(c, "user1")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u1, 'owner')
+        response = c.post("/dashboard/vm/1/", {'new_description': "naonyo"},
+                          HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.content)['new_description'],
+                         "naonyo")
+        self.assertEqual(Instance.objects.get(pk=1).description, "naonyo")
+
+    def test_permitted_description_update(self):
+        c = Client()
+        self.login(c, "user1")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u1, 'owner')
+        response = c.post("/dashboard/vm/1/", {'new_description': "naonyo"})
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Instance.objects.get(pk=1).description, "naonyo")
 
 
 class NodeDetailTest(LoginMixin, TestCase):
