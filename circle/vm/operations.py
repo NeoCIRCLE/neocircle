@@ -202,8 +202,12 @@ class SaveAsTemplateOperation(InstanceOperation):
     def _operation(self, activity, name, user, system, timeout=300,
                    with_shutdown=True, **kwargs):
         if with_shutdown:
-            ShutdownOperation(self.instance).call(parent_activity=activity,
-                                                  user=user)
+            try:
+                ShutdownOperation(self.instance).call(parent_activity=activity,
+                                                      user=user)
+            except Instance.WrongStateError:
+                pass
+
         # prepare parameters
         params = {
             'access_method': self.instance.access_method,
@@ -259,6 +263,11 @@ class ShutdownOperation(InstanceOperation):
     id = 'shutdown'
     name = _("shutdown")
     description = _("Shutdown virtual machine with ACPI signal.")
+
+    def check_precond(self):
+        super(ShutdownOperation, self).check_precond()
+        if self.instance.status not in ['RUNNING']:
+            raise self.instance.WrongStateError(self.instance)
 
     def on_abort(self, activity, error):
         if isinstance(error, TimeLimitExceeded):
