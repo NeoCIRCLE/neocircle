@@ -144,7 +144,6 @@ class Interface(Model):
                                              queue=queue_name).get()
 
     def destroy(self):
-        self.shutdown()
         if self.host is not None:
             self.host.delete()
 

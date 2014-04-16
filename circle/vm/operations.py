@@ -131,6 +131,7 @@ class DestroyOperation(InstanceOperation):
         if self.instance.node:
             # Destroy networks
             with activity.sub_activity('destroying_net'):
+                self.instance.shutdown_net()
                 self.instance.destroy_net()
 
             # Delete virtual machine
@@ -199,6 +200,23 @@ class RebootOperation(InstanceOperation):
 
 
 register_instance_operation(RebootOperation)
+
+
+class RemoveInterfaceOperation(InstanceOperation):
+    activity_code_suffix = 'remove_interface'
+    id = 'remove_interface'
+    name = _("remove interface")
+    description = _("Remove the specified network interface from the VM.")
+
+    def _operation(self, activity, user, system, interface):
+        if self.instance.is_running:
+            interface.shutdown()
+
+        interface.destroy()
+        interface.delete()
+
+
+register_instance_operation(RemoveInterfaceOperation)
 
 
 class ResetOperation(InstanceOperation):
