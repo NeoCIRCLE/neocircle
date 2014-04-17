@@ -78,3 +78,8 @@ for i in LOCAL_APPS:
     LOGGING['loggers'][i] = {'handlers': ['console'], 'level': 'DEBUG'}
 
 CRISPY_FAIL_SILENTLY = not DEBUG
+
+# generate new static js i18n files only on devenv
+INSTALLED_APPS += (
+    "statici18n",
+)
