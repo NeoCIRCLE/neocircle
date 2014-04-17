@@ -197,6 +197,26 @@ class RebootOperation(InstanceOperation):
 register_instance_operation(RebootOperation)
 
 
+class RemoveDiskOperation(InstanceOperation):
+    activity_code_suffix = 'remove_disk'
+    id = 'remove_disk'
+    name = _("remove disk")
+    description = _("Remove the specified disk from the VM.")
+
+    def check_precond(self):
+        super(RemoveDiskOperation, self).check_precond()
+        # TODO remove check when hot-detach is implemented
+        if self.instance.status not in ['STOPPED']:
+            raise self.instance.WrongStateError(self.instance)
+
+    def _operation(self, activity, user, system, disk):
+        # TODO implement with hot-detach when it'll be available
+        return self.instance.disks.remove(disk)
+
+
+register_instance_operation(RemoveDiskOperation)
+
+
 class ResetOperation(InstanceOperation):
     activity_code_suffix = 'reset'
     id = 'reset'
