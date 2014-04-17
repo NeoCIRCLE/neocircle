@@ -1513,8 +1513,11 @@ class VmMassDelete(LoginRequiredMixin, View):
                     raise PermissionDenied()  # no need for rollback or proper
                                             # error message, this can't
                                             # normally happen.
-                i.destroy.async(user=request.user)
-                names.append(i.name)
+                try:
+                    i.destroy.async(user=request.user)
+                    names.append(i.name)
+                except Exception as e:
+                    logger.error(e)
 
         success_message = _("Mass delete complete, the following VMs were "
                             "deleted: %s!") % u', '.join(names)
