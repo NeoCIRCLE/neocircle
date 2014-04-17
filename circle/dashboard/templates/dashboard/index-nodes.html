@@ -15,11 +15,15 @@
   </div >
   <div class="list-group" id="node-list-view">
     <div id="dashboard-node-list">  
-    {% for i in nodes %}
-    <a href="{% url "dashboard.views.node-detail" pk=i.pk %}" class="list-group-item">
-    <i class="icon-{% if i.enabled == True %}play-sign{% else %}pause{% endif %}"></i> {{ i.name }} 
+      {% for i in nodes %}
+      <a href="{{ i.get_absolute_url }}" class="list-group-item">
+        <span class="index-node-list-name">
+          <i class="{{ i.get_status_icon }}" title="{{ i.get_status_display }}"></i>
+          {{ i.name }}
+        </span>
+      <div style="clear: both;"></div>
       </a>
-    {% endfor %}
+      {% endfor %}
     </div>
     <div href="#" class="list-group-item list-group-footer">
       <div class="row">
