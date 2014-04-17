@@ -493,9 +493,11 @@ class VmDetailTest(LoginMixin, TestCase):
             mock_method.side_effect = inst.wake_up
             inst.manual_state_change('RUNNING')
             inst.set_level(self.u2, 'owner')
-            self.assertRaises(inst.WrongStateError, c.post,
-                              "/dashboard/vm/1/", {'wake_up': True})
-            self.assertEqual(inst.status, 'RUNNING')
+            with patch('dashboard.views.messages') as msg:
+                c.post("/dashboard/vm/1/op/wake_up/")
+                assert msg.error.called
+            inst = Instance.objects.get(pk=1)
+            self.assertEqual(inst.status, 'RUNNING')  # mocked anyway
             assert mock_method.called
 
     def test_permitted_wake_up(self):
@@ -509,7 +511,9 @@ class VmDetailTest(LoginMixin, TestCase):
                     inst.get_remote_queue_name = Mock(return_value='test')
                     inst.manual_state_change('SUSPENDED')
                     inst.set_level(self.u2, 'owner')
-                    response = c.post("/dashboard/vm/1/", {'wake_up': True})
+                    with patch('dashboard.views.messages') as msg:
+                        response = c.post("/dashboard/vm/1/op/wake_up/")
+                        assert not msg.error.called
                     self.assertEqual(response.status_code, 302)
                     self.assertEqual(inst.status, 'RUNNING')
                     assert new_wake_up.called
@@ -521,8 +525,11 @@ class VmDetailTest(LoginMixin, TestCase):
         inst = Instance.objects.get(pk=1)
         inst.manual_state_change('SUSPENDED')
         inst.set_level(self.u2, 'user')
-        response = c.post("/dashboard/vm/1/", {'wake_up': True})
-        self.assertEqual(response.status_code, 403)
+        with patch('dashboard.views.messages') as msg:
+            response = c.post("/dashboard/vm/1/op/wake_up/")
+            assert msg.error.called
+            self.assertEqual(response.status_code, 302)
+        inst = Instance.objects.get(pk=1)
         self.assertEqual(inst.status, 'SUSPENDED')
 
     def test_non_existing_template_get(self):
