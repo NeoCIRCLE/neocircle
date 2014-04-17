@@ -204,7 +204,7 @@ class VmDetailView(CheckedDetailView):
             'graphite_enabled': VmGraphView.get_graphite_url() is not None,
             'vnc_url': reverse_lazy("dashboard.views.detail-vnc",
                                     kwargs={'pk': self.object.pk}),
-            'ops': list(instance.get_available_operations(self.request.user)),
+            'ops': get_operations(instance, self.request.user),
         })
 
         # activity data
@@ -484,6 +484,109 @@ class VmDetailView(CheckedDetailView):
 
         self.object.shut_off.async(user=request.user)
         return redirect("%s#activity" % self.object.get_absolute_url())
+
+
+class OperationView(DetailView):
+
+    template_name = 'dashboard/operate.html'
+
+    @property
+    def name(self):
+        return self.get_op().name
+
+    @property
+    def description(self):
+        return self.get_op().description
+
+    @classmethod
+    def get_urlname(cls):
+        return 'dashboard.vm.op.%s' % cls.op
+
+    def get_url(self):
+        return reverse(self.get_urlname(), args=(self.get_object().pk, ))
+
+    def get_wrapper_template_name(self):
+        if self.request.is_ajax():
+            return 'dashboard/_modal.html'
+        else:
+            return 'dashboard/_base.html'
+
+    @classmethod
+    def get_op_by_object(cls, obj):
+        return getattr(obj, cls.op)
+
+    def get_op(self):
+        if not hasattr(self, '_opobj'):
+            setattr(self, '_opobj', getattr(self.get_object(), self.op))
+        return self._opobj
+
+    def get_context_data(self, **kwargs):
+        ctx = super(OperationView, self).get_context_data(form=None, **kwargs)
+        ctx['op'] = self.get_op()
+        ctx['url'] = self.request.path
+        return ctx
+
+    def get(self, request, *args, **kwargs):
+        self.get_op().check_auth(request.user)
+        response = super(OperationView, self).get(request, *args, **kwargs)
+        response.render()
+        response.content = render_to_string(self.get_wrapper_template_name(),
+                                            {'body': response.content})
+        return response
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        try:
+            self.get_op().async(user=request.user)
+        except Exception as e:
+            messages.error(request, _('Could not start operation.'))
+            logger.error(e)
+        return redirect("%s#activity" % self.object.get_absolute_url())
+
+    @classmethod
+    def factory(cls, op, icon='cog'):
+        return type(str(cls.__name__ + op),
+                    (cls, ), {'op': op, 'icon': icon})
+
+    @classmethod
+    def bind_to_object(cls, instance):
+        v = cls()
+        v.get_object = lambda: instance
+        return v
+
+
+class VmOperationView(OperationView):
+
+    model = Instance
+
+
+vm_ops = {
+    'reset': VmOperationView.factory(op='reset', icon='bolt'),
+    'deploy': VmOperationView.factory(op='deploy', icon='play'),
+    'migrate': VmOperationView.factory(op='migrate', icon='truck'),
+    'reboot': VmOperationView.factory(op='reboot', icon='refresh'),
+    'shut_off': VmOperationView.factory(op='shut_off', icon='ban-circle'),
+    'shutdown': VmOperationView.factory(op='shutdown', icon='off'),
+    'save_as_template': VmOperationView.factory(
+        op='save_as_template', icon='save'),
+    'destroy': VmOperationView.factory(op='destroy', icon='remove'),
+    'sleep': VmOperationView.factory(op='sleep', icon='moon'),
+    'wake_up': VmOperationView.factory(op='wake_up', icon='sun'),
+}
+
+
+def get_operations(instance, user):
+    ops = []
+    for k, v in vm_ops.iteritems():
+        try:
+            op = v.get_op_by_object(instance)
+            op.check_auth(user)
+            op.check_precond()
+        except:
+            pass  # unavailable
+        else:
+            ops.append(v.bind_to_object(instance))
+    return ops
 
 
 class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
@@ -1601,7 +1704,7 @@ def vm_activity(request, pk):
             'activities': InstanceActivity.objects.filter(
                 instance=instance, parent=None
             ).order_by('-started').select_related(),
-            'ops': instance.get_available_operations(request.user),
+            'ops': get_operations(instance, request.user),
         }
 
         response['activities'] = render_to_string(
