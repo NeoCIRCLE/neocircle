@@ -317,6 +317,14 @@ class Node(OperatedMixin, TimeStampedModel):
                     cls.objects.filter(enabled=enabled).select_related('host')
                     if i.online == online])
 
+    def get_status_icon(self):
+        return {
+            'OFFLINE': 'icon-minus-sign',
+            'DISABLED': 'icon-moon',
+            'MISSING': 'icon-warning-sign',
+            'ONLINE': 'icon-play-sign'}.get(self.get_state(),
+                                            'icon-question-sign')
+
     @permalink
     def get_absolute_url(self):
         return ('dashboard.views.node-detail', None, {'pk': self.id})
