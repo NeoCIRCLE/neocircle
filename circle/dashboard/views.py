@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import
 
 from os import getenv
 import json
@@ -47,7 +47,7 @@ from vm.models import (
 )
 from storage.models import Disk
 from firewall.models import Vlan, Host, Rule
-from dashboard.models import Favourite, Profile
+from .models import Favourite, Profile
 
 logger = logging.getLogger(__name__)
 
