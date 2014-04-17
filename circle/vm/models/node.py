@@ -268,6 +268,14 @@ class Node(OperatedMixin, TimeStampedModel):
     def byte_ram_usage(self):
         return self.ram_usage * self.ram_size
 
+    def get_status_icon(self):
+        return {
+            'OFFLINE': 'icon-minus-sign',
+            'DISABLED': 'icon-moon',
+            'MISSING': 'icon-warning-sign',
+            'ONLINE': 'icon-play-sign'}.get(self.get_state(),
+                                            'icon-question-sign')
+
     @node_available
     def update_vm_states(self):
         """Update state of Instances running on this Node.
@@ -316,14 +324,6 @@ class Node(OperatedMixin, TimeStampedModel):
         return len([1 for i in
                     cls.objects.filter(enabled=enabled).select_related('host')
                     if i.online == online])
-
-    def get_status_icon(self):
-        return {
-            'OFFLINE': 'icon-minus-sign',
-            'DISABLED': 'icon-moon',
-            'MISSING': 'icon-warning-sign',
-            'ONLINE': 'icon-play-sign'}.get(self.get_state(),
-                                            'icon-question-sign')
 
     @permalink
     def get_absolute_url(self):

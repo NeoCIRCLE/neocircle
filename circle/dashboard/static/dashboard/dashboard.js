@@ -238,7 +238,8 @@ $(function () {
             'name': result[i].name.toLowerCase(),
             'icon': result[i].icon,
             'status': result[i].status,
-          });
+	    'url': result[i].url,
+	  });
         }
       });
       $.ajaxSetup( { "async": true } );
@@ -254,7 +255,8 @@ $(function () {
     }
     for(var i=0; i<5 && i<search_result.length; i++)
       html += generateNodeHTML(search_result[i].pk, search_result[i].name, 
-                             search_result[i].icon, search_result[i].status);
+                             search_result[i].icon, search_result[i].status,
+			     search_result[i].url);
     if(search_result.length == 0)
       html += '<div class="list-group-item">No result</div>';
     $("#dashboard-node-list").html(html);
@@ -293,13 +295,13 @@ function generateVmHTML(pk, name, host, icon, _status, fav) {
       '</a>';     
 }
 
-function generateNodeHTML(pk, name, icon, _status) {
-  return '<a href="/dashboard/node/' + pk + '/" class="list-group-item">' + 
-        '<span class="index-node-list-name">' + 
-          '<i class="' + icon + '" title="' + _status + '"></i> ' + name +
-        '</span>' + 
-      '<div style="clear: both;"></div>' + 
-      '</a>';
+function generateNodeHTML(pk, name, icon, _status, url) {
+  return '<a href="' + url + '" class="list-group-item" >' + 
+	'<span class="index-node-list-name">' + 
+	'<i class="' + icon + '" title="' + _status + '"></i> ' + name +
+	'</span>' + 
+	'<div style="clear: both;"></div>' + 
+	'</a>';
 }
 
 /* copare vm-s by fav, pk order */

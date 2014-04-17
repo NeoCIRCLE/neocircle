@@ -931,11 +931,12 @@ class NodeList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
             nodes = [{
                 'pk': i.pk,
                 'name': i.name,
-                'icon': '',
-                'status': ''} for i in nodes]
+                'icon': i.get_status_icon(),
+                'url': i.get_absolute_url(),
+                'status': i.state.lower()} for i in nodes]
 
             return HttpResponse(
-                json.dumps(list(nodes)),  # instances is ValuesQuerySet
+                json.dumps(list(nodes)),
                 content_type="application/json",
             )
         else:
