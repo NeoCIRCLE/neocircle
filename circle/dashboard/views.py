@@ -4,7 +4,6 @@ from os import getenv
 import json
 import logging
 import re
-from datetime import datetime
 import requests
 
 from django.conf import settings
@@ -243,14 +242,6 @@ class VmDetailView(CheckedDetailView):
             'to_remove': self.__remove_tag,
             'port': self.__add_port,
             'new_network_vlan': self.__new_network,
-            'save_as': self.__save_as,
-            'shut_down': self.__shut_down,
-            'sleep': self.__sleep,
-            'wake_up': self.__wake_up,
-            'deploy': self.__deploy,
-            'reset': self.__reset,
-            'reboot': self.__reboot,
-            'shut_off': self.__shut_off,
         }
         for k, v in options.iteritems():
             if request.POST.get(k) is not None:
@@ -414,76 +405,6 @@ class VmDetailView(CheckedDetailView):
 
         return redirect("%s#network" % reverse_lazy(
             "dashboard.views.detail", kwargs={'pk': self.object.pk}))
-
-    def __save_as(self, request):
-        self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-
-        date = datetime.now().strftime("%Y-%m-%d %H:%M")
-        new_name = "Saved from %s (#%d) at %s" % (
-            self.object.name, self.object.pk, date
-        )
-        self.object.save_as_template.async(name=new_name,
-                                           user=request.user)
-        messages.success(request, _("Saving instance as template!"))
-        return redirect("%s#activity" % self.object.get_absolute_url())
-
-    def __shut_down(self, request):
-        self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-
-        self.object.shutdown.async(user=request.user)
-        return redirect("%s#activity" % self.object.get_absolute_url())
-
-    def __sleep(self, request):
-        self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-
-        self.object.sleep.async(user=request.user)
-        return redirect("%s#activity" % self.object.get_absolute_url())
-
-    def __wake_up(self, request):
-        self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-
-        self.object.wake_up.async(user=request.user)
-        return redirect("%s#activity" % self.object.get_absolute_url())
-
-    def __deploy(self, request):
-        self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-
-        self.object.deploy.async(user=request.user)
-        return redirect("%s#activity" % self.object.get_absolute_url())
-
-    def __reset(self, request):
-        self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-
-        self.object.reset.async(user=request.user)
-        return redirect("%s#activity" % self.object.get_absolute_url())
-
-    def __reboot(self, request):
-        self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-
-        self.object.reboot.async(user=request.user)
-        return redirect("%s#activity" % self.object.get_absolute_url())
-
-    def __shut_off(self, request):
-        self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-
-        self.object.shut_off.async(user=request.user)
-        return redirect("%s#activity" % self.object.get_absolute_url())
 
 
 class OperationView(DetailView):
