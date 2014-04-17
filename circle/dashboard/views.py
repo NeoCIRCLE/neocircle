@@ -1305,14 +1305,6 @@ class GroupCreate(LoginRequiredMixin, TemplateView):
         })
         return self.render_to_response(context)
 
-    def get_context_data(self, **kwargs):
-        context = super(GroupCreate, self).get_context_data(**kwargs)
-        # TODO acl
-        context.update({
-        })
-
-        return context
-
     def post(self, request, *args, **kwargs):
         if not request.user.has_module_perms('auth'):
             raise PermissionDenied()
