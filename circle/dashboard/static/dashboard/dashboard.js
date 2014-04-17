@@ -234,7 +234,6 @@ $(function () {
         for(var i in result) {
 	  console.log(result[i]);
           my_nodes.push({
-            'pk': result[i].pk,
             'name': result[i].name.toLowerCase(),
             'icon': result[i].icon,
             'status': result[i].status,
@@ -274,7 +273,7 @@ $(function () {
 
     // if there is only one result and ENTER is pressed redirect
     if(e.keyCode == 13 && search_result.length == 1) {
-      window.location.href = "/dashboard/node/" + search_result[0].pk + "/";
+      window.location.href = search_result[0].url;
     }
     if(e.keyCode == 13 && search_result.length > 1 && input.length > 0) {
       window.location.href = "/dashboard/node/list/?s=" + input;

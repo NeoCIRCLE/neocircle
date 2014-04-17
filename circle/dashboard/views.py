@@ -929,7 +929,6 @@ class NodeList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
         if self.request.is_ajax():
             nodes = Node.objects.all()
             nodes = [{
-                'pk': i.pk,
                 'name': i.name,
                 'icon': i.get_status_icon(),
                 'url': i.get_absolute_url(),
