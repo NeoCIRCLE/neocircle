@@ -58,6 +58,26 @@ def register_instance_operation(op_cls, op_id=None):
     return register_operation(Instance, op_cls, op_id)
 
 
+class AddDiskOperation(InstanceOperation):
+    activity_code_suffix = 'add_disk'
+    id = 'add_disk'
+    name = _("add disk")
+    description = _("Add the specified disk to the VM.")
+
+    def check_precond(self):
+        super(AddDiskOperation, self).check_precond()
+        # TODO remove check when hot-attach is implemented
+        if self.instance.status not in ['STOPPED']:
+            raise self.instance.WrongStateError(self.instance)
+
+    def _operation(self, activity, user, system, disk):
+        # TODO implement with hot-attach when it'll be available
+        return self.instance.disks.add(disk)
+
+
+register_instance_operation(AddDiskOperation)
+
+
 class DeployOperation(InstanceOperation):
     activity_code_suffix = 'deploy'
     id = 'deploy'
