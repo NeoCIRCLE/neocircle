@@ -10,21 +10,25 @@ def check_queue(storage, queue_id):
     drivers = ['storage', 'download']
     worker_list = [storage + "." + d for d in drivers]
     queue_name = storage + "." + queue_id
-    # v is List of List of queues dict
     active_queues = celery.control.inspect(worker_list).active_queues()
-    if active_queues is not None:
-        node_workers = [v for k, v in active_queues.iteritems()]
-        for worker in node_workers:
-            for queue in worker:
-                if queue['name'] == queue_name:
-                    return True
-    return False
+    if active_queues is None:
+        return False
+
+    queue_names = (queue['name'] for worker in active_queues.itervalues()
+                   for queue in worker)
+    return queue_name in queue_names
 
 
 @celery.task
 def save_as(disk, timeout, user):
     disk.save_disk_as(task_uuid=save_as.request.id, user=user,
                       disk=disk, timeout=timeout)
+
+
+@celery.task
+def clone(disk, new_disk, timeout, user):
+    disk.clone(task_uuid=save_as.request.id, user=user,
+               disk=new_disk, timeout=timeout)
 
 
 @celery.task
@@ -57,6 +61,7 @@ create_from_url = CreateFromURLTask()
 
 
 @celery.task
-def create_empty(Disk, instance, params, user):
-    Disk.create_empty(instance, params, user,
-                      task_uuid=create_empty.request.id)
+def create_empty(Disk, instance, user, params):
+    Disk.create_empty(instance, user,
+                      task_uuid=create_empty.request.id,
+                      **params)

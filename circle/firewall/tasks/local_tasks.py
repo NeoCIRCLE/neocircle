@@ -26,7 +26,7 @@ def _apply_once(name, queues, task, data):
 
 @celery.task(ignore_result=True)
 def periodic_task():
-    from firewall.fw import Firewall, dhcp, dns, ipset, vlan
+    from firewall.fw import BuildFirewall, dhcp, dns, ipset, vlan
     from remote_tasks import (reload_dns, reload_dhcp, reload_firewall,
                               reload_firewall_vlan, reload_blacklist)
 
@@ -40,7 +40,7 @@ def periodic_task():
     _apply_once('dhcp', firewall_queues, reload_dhcp,
                 lambda: (dhcp(), ))
     _apply_once('firewall', firewall_queues, reload_firewall,
-                lambda: (Firewall(proto=4).get(), Firewall(proto=6).get()))
+                lambda: (BuildFirewall().build_ipt()))
     _apply_once('firewall_vlan', firewall_queues, reload_firewall_vlan,
                 lambda: (vlan(), ))
     _apply_once('blacklist', firewall_queues, reload_blacklist,
@@ -48,7 +48,7 @@ def periodic_task():
 
 
 @celery.task
-def reloadtask(type='Host'):
+def reloadtask(type='Host', timeout=15):
     reload = {
         'Host': ['dns', 'dhcp', 'firewall'],
         'Record': ['dns'],

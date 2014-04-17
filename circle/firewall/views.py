@@ -11,7 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from .tasks.local_tasks import reloadtask
-from .models import Blacklist, Host
+from .models import BlacklistItem, Host
 
 
 def reload_firewall(request):
@@ -38,7 +38,7 @@ def firewall_api(request):
             raise Exception(_("Wrong password."))
 
         if command == "blacklist":
-            obj, created = Blacklist.objects.get_or_create(ipv4=data["ip"])
+            obj, created = BlacklistItem.objects.get_or_create(ipv4=data["ip"])
             obj.reason = data["reason"]
             obj.snort_message = data["snort_message"]
             if created:

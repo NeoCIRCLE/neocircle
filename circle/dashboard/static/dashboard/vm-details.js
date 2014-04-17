@@ -199,24 +199,24 @@ function decideActivityRefresh() {
   return check;
 }
 
-function checkNewActivity(only_state, runs) {
-  // set default only_state to false
-  only_state = typeof only_state !== 'undefined' ? only_state : false;
+function checkNewActivity(only_status, runs) {
+  // set default only_status to false
+  only_status = typeof only_status !== 'undefined' ? only_status : false;
   var instance = location.href.split('/'); instance = instance[instance.length - 2];
 
   $.ajax({
     type: 'GET',
     url: '/dashboard/vm/' + instance + '/activity/',
-    data: {'only_state': only_state},
+    data: {'only_status': only_status},
     success: function(data) {
-      if(!only_state) {
+      if(!only_status) {
         $("#activity-timeline").html(data['activities']);
         $("[title]").tooltip();
       }
 
       $("#vm-details-state i").prop("class", data['icon']);
-      $("#vm-details-state span").html(data['state']);
-      if(data['state'] == "RUNNING") {
+      $("#vm-details-state span").html(data['human_readable_status'].toUpperCase());
+      if(data['status'] == "RUNNING") {
         $("[data-target=#_console]").attr("data-toggle", "pill").attr("href", "#console").parent("li").removeClass("disabled");
       } else {
         $("[data-target=#_console]").attr("data-toggle", "_pill").attr("href", "#").parent("li").addClass("disabled");
@@ -224,7 +224,7 @@ function checkNewActivity(only_state, runs) {
 
       if(runs > 0 && decideActivityRefresh()) {
         setTimeout(
-          function() {checkNewActivity(only_state, runs + 1)}, 
+          function() {checkNewActivity(only_status, runs + 1)}, 
           1000 + Math.exp(runs * 0.05)
         );
       }

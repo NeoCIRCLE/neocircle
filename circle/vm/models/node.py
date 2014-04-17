@@ -1,28 +1,27 @@
 from __future__ import absolute_import, unicode_literals
 from logging import getLogger
+from warnings import warn
 
 from django.db.models import (
     CharField, IntegerField, ForeignKey, BooleanField, ManyToManyField,
     FloatField, permalink,
 )
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
-
-from warnings import warn
 
 from celery.exceptions import TimeoutError
 from model_utils.models import TimeStampedModel
 from taggit.managers import TaggableManager
 
 from common.models import method_cache, WorkerNotFound, HumanSortField
+from common.operations import OperatedMixin
 from firewall.models import Host
-from ..tasks import vm_tasks, local_tasks
-from .common import Trait
-
-from .activity import node_activity, NodeActivity
-
 from monitor.calvin.calvin import Query
 from monitor.calvin.calvin import GraphiteHandler
-from django.utils import timezone
+from ..tasks import vm_tasks
+from .activity import node_activity, NodeActivity
+from .common import Trait
+
 
 logger = getLogger(__name__)
 
@@ -38,7 +37,7 @@ def node_available(function):
     return decorate
 
 
-class Node(TimeStampedModel):
+class Node(OperatedMixin, TimeStampedModel):
 
     """A VM host machine, a hypervisor.
     """
@@ -131,22 +130,6 @@ class Node(TimeStampedModel):
                 self.enabled = False
                 self.save()
 
-    def flush(self, user=None, task_uuid=None):
-        """Disable node and move all instances to other ones.
-        """
-        with node_activity('flush', node=self, user=user,
-                           task_uuid=task_uuid) as act:
-            self.disable(user, act)
-            for i in self.instance_set.all():
-                with act.sub_activity('migrate_instance_%d' % i.pk):
-                    i.migrate()
-
-    def flush_async(self, user=None):
-        """Execute flush asynchronously.
-        """
-        return local_tasks.flush.apply_async(args=[self, user],
-                                             queue="localhost.man")
-
     def enable(self, user=None):
         ''' Enable the node. '''
         if self.enabled is not True:
@@ -164,10 +147,10 @@ class Node(TimeStampedModel):
 
     @method_cache(30)
     def get_remote_queue_name(self, queue_id):
-        """Return the name of the remote celery queue for this node.
+        """Returns the name of the remote celery queue for this node.
 
-        throws Exception if there is no worker on the queue.
-        Until the cache provide reult there can be dead queues.
+        Throws Exception if there is no worker on the queue.
+        The result may include dead queues because of caching.
         """
 
         if vm_tasks.check_queue(self.host.hostname, queue_id):
@@ -189,7 +172,7 @@ class Node(TimeStampedModel):
         else:
             logger.debug("The last activity was %s" % act)
             if act.activity_code.endswith("offline"):
-                act = NodeActivity.create(code_suffix='monitor_succes_online',
+                act = NodeActivity.create(code_suffix='monitor_success_online',
                                           node=self, user=None)
                 act.started = timezone.now()
                 act.finished = timezone.now()

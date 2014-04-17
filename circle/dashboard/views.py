@@ -423,7 +423,7 @@ class VmDetailView(CheckedDetailView):
         new_name = "Saved from %s (#%d) at %s" % (
             self.object.name, self.object.pk, date
         )
-        self.object.save_as_template_async(name=new_name,
+        self.object.save_as_template.async(name=new_name,
                                            user=request.user)
         messages.success(request, _("Saving instance as template!"))
         return redirect("%s#activity" % self.object.get_absolute_url())
@@ -433,7 +433,7 @@ class VmDetailView(CheckedDetailView):
         if not self.object.has_level(request.user, 'owner'):
             raise PermissionDenied()
 
-        self.object.shutdown_async(request.user)
+        self.object.shutdown.async(user=request.user)
         return redirect("%s#activity" % self.object.get_absolute_url())
 
     def __sleep(self, request):
@@ -441,7 +441,7 @@ class VmDetailView(CheckedDetailView):
         if not self.object.has_level(request.user, 'owner'):
             raise PermissionDenied()
 
-        self.object.sleep_async(request.user)
+        self.object.sleep.async(user=request.user)
         return redirect("%s#activity" % self.object.get_absolute_url())
 
     def __wake_up(self, request):
@@ -449,7 +449,7 @@ class VmDetailView(CheckedDetailView):
         if not self.object.has_level(request.user, 'owner'):
             raise PermissionDenied()
 
-        self.object.wake_up_async(request.user)
+        self.object.wake_up.async(user=request.user)
         return redirect("%s#activity" % self.object.get_absolute_url())
 
     def __deploy(self, request):
@@ -457,7 +457,7 @@ class VmDetailView(CheckedDetailView):
         if not self.object.has_level(request.user, 'owner'):
             raise PermissionDenied()
 
-        self.object.deploy_async(request.user)
+        self.object.deploy.async(user=request.user)
         return redirect("%s#activity" % self.object.get_absolute_url())
 
     def __reset(self, request):
@@ -465,7 +465,7 @@ class VmDetailView(CheckedDetailView):
         if not self.object.has_level(request.user, 'owner'):
             raise PermissionDenied()
 
-        self.object.reset_async(request.user)
+        self.object.reset.async(user=request.user)
         return redirect("%s#activity" % self.object.get_absolute_url())
 
     def __reboot(self, request):
@@ -473,7 +473,7 @@ class VmDetailView(CheckedDetailView):
         if not self.object.has_level(request.user, 'owner'):
             raise PermissionDenied()
 
-        self.object.reboot_async(request.user)
+        self.object.reboot.async(user=request.user)
         return redirect("%s#activity" % self.object.get_absolute_url())
 
     def __shut_off(self, request):
@@ -481,7 +481,7 @@ class VmDetailView(CheckedDetailView):
         if not self.object.has_level(request.user, 'owner'):
             raise PermissionDenied()
 
-        self.object.shut_off_async(request.user)
+        self.object.shut_off.async(user=request.user)
         return redirect("%s#activity" % self.object.get_absolute_url())
 
 
@@ -509,8 +509,6 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
     def post(self, request, *args, **kwargs):
         if request.POST.get('new_name'):
             return self.__set_name(request)
-        if request.POST.get('change_status') is not None:
-            return self.__set_status(request)
         if request.POST.get('to_remove'):
             return self.__remove_trait(request)
         return redirect(reverse_lazy("dashboard.views.node-detail",
@@ -527,27 +525,6 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
             response = {
                 'message': success_message,
                 'new_name': new_name,
-                'node_pk': self.object.pk
-            }
-            return HttpResponse(
-                json.dumps(response),
-                content_type="application/json"
-            )
-        else:
-            messages.success(request, success_message)
-            return redirect(reverse_lazy("dashboard.views.node-detail",
-                                         kwargs={'pk': self.object.pk}))
-
-    def __set_status(self, request):
-        self.object = self.get_object()
-        if not self.object.enabled:
-            self.object.enable(user=request.user)
-        else:
-            self.object.disable(user=request.user)
-        success_message = _("Node successfully changed status!")
-        if request.is_ajax():
-            response = {
-                'message': success_message,
                 'node_pk': self.object.pk
             }
             return HttpResponse(
@@ -1023,7 +1000,9 @@ class VmList(LoginRequiredMixin, ListView):
             instances = [{
                 'pk': i.pk,
                 'name': i.name,
-                'state': i.state,
+                'icon': i.get_status_icon(),
+                'host': "" if not i.primary_host else i.primary_host.hostname,
+                'status': i.get_status_display(),
                 'fav': i.pk in favs} for i in instances]
             return HttpResponse(
                 json.dumps(list(instances)),  # instances is ValuesQuerySet
@@ -1200,9 +1179,9 @@ class VmCreate(LoginRequiredMixin, TemplateView):
         if not template.has_level(request.user, 'user'):
             raise PermissionDenied()
 
-        inst = Instance.create_from_template(
-            template=template, owner=user)
-        return self.__deploy(request, inst)
+        instances = [Instance.create_from_template(
+            template=template, owner=user)]
+        return self.__deploy(request, instances)
 
     def __create_customized(self, request, *args, **kwargs):
         user = request.user
@@ -1231,17 +1210,33 @@ class VmCreate(LoginRequiredMixin, TemplateView):
             networks = [InterfaceTemplate(vlan=l, managed=l.managed)
                         for l in post['networks']]
             disks = post['disks']
-            inst = Instance.create_from_template(
-                template=template, owner=user, networks=networks,
-                disks=disks, **ikwargs)
-            return self.__deploy(request, inst)
+
+            ikwargs.update({
+                'template': template,
+                'owner': user,
+                'networks': networks,
+                'disks': disks,
+            })
+
+            amount = post['amount']
+            instances = Instance.mass_create_from_template(amount=amount,
+                                                           **ikwargs)
+            return self.__deploy(request, instances)
         else:
             raise PermissionDenied()
 
-    def __deploy(self, request, instance, *args, **kwargs):
-        instance.deploy_async(user=request.user)
-        messages.success(request, _('VM successfully created!'))
-        path = instance.get_absolute_url()
+    def __deploy(self, request, instances, *args, **kwargs):
+        for i in instances:
+            i.deploy.async(user=request.user)
+
+        if len(instances) > 1:
+            messages.success(request, _("Successfully created %d VMs!" %
+                                        len(instances)))
+            path = reverse("dashboard.index")
+        else:
+            messages.success(request, _("VM successfully created!"))
+            path = instances[0].get_absolute_url()
+
         if request.is_ajax():
             return HttpResponse(json.dumps({'redirect': path}),
                                 content_type="application/json")
@@ -1370,7 +1365,7 @@ class VmDelete(LoginRequiredMixin, DeleteView):
         if not object.has_level(request.user, 'owner'):
             raise PermissionDenied()
 
-        object.destroy_async(user=request.user)
+        object.destroy.async(user=request.user)
         success_url = self.get_success_url()
         success_message = _("VM successfully deleted!")
 
@@ -1503,7 +1498,6 @@ class NodeStatus(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
             self.object.enable(user=request.user)
         else:
             self.object.disable(user=request.user)
-
         success_message = _("Node successfully changed status!")
 
         if request.is_ajax():
@@ -1550,7 +1544,7 @@ class NodeFlushView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
 
     def __flush(self, request):
         self.object = self.get_object()
-        self.object.flush_async(user=request.user)
+        self.object.flush.async(user=request.user)
         success_message = _("Node successfully flushed!")
         messages.success(request, success_message)
         return redirect(self.get_success_url())
@@ -1621,7 +1615,7 @@ class VmMassDelete(LoginRequiredMixin, View):
                     raise PermissionDenied()  # no need for rollback or proper
                                             # error message, this can't
                                             # normally happen.
-                i.destroy_async(request.user)
+                i.destroy.async(user=request.user)
                 names.append(i.name)
 
         success_message = _("Mass delete complete, the following VMs were "
@@ -1697,11 +1691,12 @@ def vm_activity(request, pk):
         raise PermissionDenied()
 
     response = {}
-    only_state = request.GET.get("only_state")
+    only_status = request.GET.get("only_status")
 
-    response['state'] = instance.state
+    response['human_readable_status'] = instance.get_status_display()
+    response['status'] = instance.status
     response['icon'] = instance.get_status_icon()
-    if only_state is not None and only_state == "false":  # instance activity
+    if only_status == "false":  # instance activity
         context = {
             'activities': InstanceActivity.objects.filter(
                 instance=instance, parent=None
@@ -2149,7 +2144,7 @@ class VmMigrateView(SuperuserRequiredMixin, TemplateView):
 
         if node:
             node = Node.objects.get(pk=node)
-            vm.migrate_async(to_node=node, user=self.request.user)
+            vm.migrate.async(to_node=node, user=self.request.user)
         else:
             messages.error(self.request, _("You didn't select a node!"))
 
@@ -2297,3 +2292,16 @@ def get_disk_download_status(request, pk):
         }),
         content_type="application/json",
     )
+
+
+class InstanceActivityDetail(SuperuserRequiredMixin, DetailView):
+    model = InstanceActivity
+    template_name = 'dashboard/instanceactivity_detail.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super(InstanceActivityDetail, self).get_context_data(**kwargs)
+        ctx['activities'] = (
+            self.object.instance.activity_log.filter(parent=None).
+            order_by('-started').select_related('user').
+            prefetch_related('children'))
+        return ctx

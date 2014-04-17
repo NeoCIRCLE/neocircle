@@ -2,7 +2,7 @@
 
 from django.contrib import admin
 from firewall.models import (Rule, Host, Vlan, Group, VlanGroup, Firewall,
-                             Domain, Record, Blacklist,
+                             Domain, Record, BlacklistItem,
                              SwitchPort, EthernetDevice)
 from django import contrib
 
@@ -16,7 +16,7 @@ class RecordInline(contrib.admin.TabularInline):
 
 
 class HostAdmin(admin.ModelAdmin):
-    list_display = ('hostname', 'vlan', 'ipv4', 'ipv6', 'pub_ipv4', 'mac',
+    list_display = ('hostname', 'vlan', 'ipv4', 'ipv6', 'external_ipv4', 'mac',
                     'shared_ip', 'owner', 'description', 'reverse',
                     'list_groups')
     ordering = ('hostname', )
@@ -24,6 +24,10 @@ class HostAdmin(admin.ModelAdmin):
     search_fields = ('hostname', 'description', 'ipv4', 'ipv6', 'mac')
     filter_horizontal = ('groups', )
     inlines = (RuleInline, RecordInline)
+
+    def queryset(self, request):
+        qs = super(HostAdmin, self).queryset(request)
+        return qs.prefetch_related('groups')
 
     @staticmethod
     def list_groups(instance):
@@ -48,9 +52,9 @@ class VlanAdmin(admin.ModelAdmin):
 
 class RuleAdmin(admin.ModelAdmin):
     list_display = ('r_type', 'color_desc', 'owner', 'extra', 'direction',
-                    'accept', 'proto', 'sport', 'dport', 'nat',
-                    'nat_dport', 'used_in')
-    list_filter = ('vlan', 'owner', 'direction', 'accept',
+                    'action', 'proto', 'sport', 'dport', 'nat',
+                    'nat_external_port', 'used_in')
+    list_filter = ('vlan', 'owner', 'direction', 'action',
                    'proto', 'nat')
 
     def color_desc(self, instance):
@@ -110,8 +114,8 @@ class RecordAdmin(admin.ModelAdmin):
     list_display = ('name', 'type', 'address', 'ttl', 'host', 'owner')
 
 
-class BlacklistAdmin(admin.ModelAdmin):
-    list_display = ('ipv4', 'reason', 'created_at', 'modified_at')
+class BlacklistItemAdmin(admin.ModelAdmin):
+    list_display = ('ipv4', 'type', 'reason', 'created_at', 'modified_at')
 
 
 class SwitchPortAdmin(admin.ModelAdmin):
@@ -129,6 +133,6 @@ admin.site.register(VlanGroup)
 admin.site.register(Firewall, FirewallAdmin)
 admin.site.register(Domain, DomainAdmin)
 admin.site.register(Record, RecordAdmin)
-admin.site.register(Blacklist, BlacklistAdmin)
+admin.site.register(BlacklistItem, BlacklistItemAdmin)
 admin.site.register(SwitchPort)
 admin.site.register(EthernetDevice, EthernetDeviceAdmin)

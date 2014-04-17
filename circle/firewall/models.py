@@ -2,7 +2,7 @@
 
 from itertools import islice, ifilter
 import logging
-from netaddr import IPSet, EUI
+from netaddr import IPSet, EUI, IPNetwork
 
 from django.contrib.auth.models import User
 from django.db import models
@@ -19,6 +19,7 @@ import random
 
 from common.models import HumanSortField
 from firewall.tasks.local_tasks import reloadtask
+from .iptables import IptRule
 from acl.models import AclBase
 logger = logging.getLogger(__name__)
 settings = django.conf.settings.FIREWALL_SETTINGS
@@ -36,9 +37,11 @@ class Rule(models.Model):
     CHOICES_type = (('host', 'host'), ('firewall', 'firewall'),
                    ('vlan', 'vlan'))
     CHOICES_proto = (('tcp', 'tcp'), ('udp', 'udp'), ('icmp', 'icmp'))
-    CHOICES_dir = (('0', 'out'), ('1', 'in'))
+    CHOICES_dir = (('out', _('out')), ('in', _('in')))
+    CHOICES_action = (('accept', _('accept')), ('drop', _('drop')),
+                      ('ignore', _('ignore')))
 
-    direction = models.CharField(max_length=1, choices=CHOICES_dir,
+    direction = models.CharField(max_length=3, choices=CHOICES_dir,
                                  blank=False, verbose_name=_("direction"),
                                  help_text=_("If the rule matches egress "
                                              "or ingress packets."))
@@ -58,28 +61,38 @@ class Rule(models.Model):
         blank=True, null=True, verbose_name=_("source port"),
         validators=[MinValueValidator(1), MaxValueValidator(65535)],
         help_text=_("Source port number of packets that match."))
+    weight = models.IntegerField(
+        verbose_name=_("weight"),
+        validators=[MinValueValidator(1), MaxValueValidator(65535)],
+        help_text=_("Rule weight"),
+        default=30000)
     proto = models.CharField(max_length=10, choices=CHOICES_proto,
                              blank=True, null=True, verbose_name=_("protocol"),
                              help_text=_("Protocol of packets that match."))
     extra = models.TextField(blank=True, verbose_name=_("extra arguments"),
                              help_text=_("Additional arguments passed "
                                          "literally to the iptables-rule."))
-    accept = models.BooleanField(default=False, verbose_name=_("accept"),
-                                 help_text=_("Accept the matching packets "
-                                             "(or deny if not checked)."))
+    action = models.CharField(max_length=10, choices=CHOICES_action,
+                              default='drop', verbose_name=_('action'),
+                              help_text=_("Accept, drop or ignore the "
+                                          "matching packets."))
     owner = models.ForeignKey(User, blank=True, null=True,
                               verbose_name=_("owner"),
                               help_text=_("The user responsible for "
                                           "this rule."))
+
     nat = models.BooleanField(default=False, verbose_name=_("NAT"),
                               help_text=_("If network address translation "
                                           "should be done."))
-    nat_dport = models.IntegerField(blank=True, null=True,
-                                    help_text=_("Rewrite destination port "
-                                                "number to this if NAT is "
-                                                "needed."),
-                                    validators=[MinValueValidator(1),
-                                                MaxValueValidator(65535)])
+    nat_external_port = models.IntegerField(
+        blank=True, null=True,
+        help_text=_("Rewrite destination port number to this if NAT is "
+                    "needed."),
+        validators=[MinValueValidator(1), MaxValueValidator(65535)])
+    nat_external_ipv4 = IPAddressField(
+        version=4, blank=True, null=True,
+        verbose_name=_('external IPv4 address'))
+
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name=_("created at"))
@@ -120,14 +133,25 @@ class Rule(models.Model):
         if len(selected_fields) > 1:
             raise ValidationError(_('Only one field can be selected.'))
 
+    def get_external_ipv4(self):
+        return (self.nat_external_ipv4
+                if self.nat_external_ipv4 else self.host.get_external_ipv4())
+
+    def get_external_port(self, proto='ipv4'):
+        assert proto in ('ipv4', 'ipv6')
+        if proto == 'ipv4' and self.nat_external_port:
+            return self.nat_external_port
+        else:
+            return self.dport
+
     def desc(self):
         """Return a short string representation of the current rule.
         """
         return u'[%(type)s] %(src)s ▸ %(dst)s %(para)s %(desc)s' % {
             'type': self.r_type,
-            'src': (unicode(self.foreign_network) if self.direction == '1'
+            'src': (unicode(self.foreign_network) if self.direction == 'in'
                     else self.r_type),
-            'dst': (self.r_type if self.direction == '1'
+            'dst': (self.r_type if self.direction == 'out'
                     else unicode(self.foreign_network)),
             'para': ((("proto=%s " % self.proto) if self.proto else '') +
                      (("sport=%s " % self.sport) if self.sport else '') +
@@ -147,6 +171,61 @@ class Rule(models.Model):
     def get_absolute_url(self):
         return ('network.rule', None, {'pk': self.pk})
 
+    @staticmethod
+    def get_chain_name(local, remote, direction):
+        if direction == 'in':
+            # remote -> local
+            return '%s_%s' % (remote, local)
+        else:
+            # local -> remote
+            return '%s_%s' % (local, remote)
+
+    def get_ipt_rules(self, host=None):
+        # action
+        action = 'LOG_ACC' if self.action == 'accept' else 'LOG_DROP'
+
+        # src and dst addresses
+        src = None
+        dst = None
+
+        if host:
+            ip = (host.ipv4, host.ipv6_with_prefixlen)
+            if self.direction == 'in':
+                dst = ip
+            else:
+                src = ip
+
+        # src and dst ports
+        if self.direction == 'in':
+            dport = self.dport
+            sport = self.sport
+        else:
+            dport = self.sport
+            sport = self.dport
+
+        # 'chain_name': rule dict
+        retval = {}
+
+        # process foreign vlans
+        for foreign_vlan in self.foreign_network.vlans.all():
+            r = IptRule(priority=self.weight, action=action,
+                        proto=self.proto, extra=self.extra,
+                        comment='Rule #%s' % self.pk,
+                        src=src, dst=dst, dport=dport, sport=sport)
+            # host, hostgroup or vlan rule
+            if host or self.vlan_id:
+                local_vlan = host.vlan.name if host else self.vlan.name
+                chain_name = Rule.get_chain_name(local=local_vlan,
+                                                 remote=foreign_vlan.name,
+                                                 direction=self.direction)
+            # firewall rule
+            elif self.firewall_id:
+                chain_name = 'INPUT' if self.direction == 'in' else 'OUTPUT'
+
+            retval[chain_name] = r
+
+        return retval
+
     class Meta:
         verbose_name = _("rule")
         verbose_name_plural = _("rules")
@@ -155,7 +234,7 @@ class Rule(models.Model):
             'proto',
             'sport',
             'dport',
-            'nat_dport',
+            'nat_external_port',
             'host',
         )
 
@@ -177,7 +256,7 @@ class Vlan(AclBase, models.Model):
         ('user', _('user')),
         ('operator', _('operator')),
     )
-    CHOICES_NETWORK_TYPE = (('public', _('public')), ('dmz', _('dmz')),
+    CHOICES_NETWORK_TYPE = (('public', _('public')),
                             ('portforward', _('portforward')))
     vid = models.IntegerField(unique=True,
                               verbose_name=_('VID'),
@@ -199,6 +278,12 @@ class Vlan(AclBase, models.Model):
                                   'valid address of the subnet, '
                                   'for example '
                                   '10.4.255.254/16 for 10.4.0.0/16.'))
+    host_ipv6_prefixlen = models.IntegerField(
+        verbose_name=_('IPv6 prefixlen/host'),
+        help_text=_('The prefix length of the subnet assigned to a host. '
+                    'For example /112 = 65536 addresses/host.'),
+        default=112,
+        validators=[MinValueValidator(1), MaxValueValidator(128)])
     network6 = IPNetworkField(unique=False,
                               version=6,
                               null=True,
@@ -226,6 +311,7 @@ class Vlan(AclBase, models.Model):
                                          'of NAT IP address.'))
     network_type = models.CharField(choices=CHOICES_NETWORK_TYPE,
                                     verbose_name=_('network type'),
+                                    default='portforward',
                                     max_length=20)
     managed = models.BooleanField(default=True, verbose_name=_('managed'))
     description = models.TextField(blank=True, verbose_name=_('description'),
@@ -274,30 +360,6 @@ class Vlan(AclBase, models.Model):
     @models.permalink
     def get_absolute_url(self):
         return ('network.vlan', None, {'vid': self.vid})
-
-    @property
-    def net4(self):
-        return self.network4.network
-
-    @property
-    def ipv4(self):
-        return self.network4.ip
-
-    @property
-    def prefix4(self):
-        return self.network4.prefixlen
-
-    @property
-    def net6(self):
-        return self.network6.network
-
-    @property
-    def ipv6(self):
-        return self.network6.ip
-
-    @property
-    def prefix6(self):
-        return self.network6.prefixlen
 
     def get_random_addresses(self, used_v4, buffer_size=100, max_hosts=10000):
         addresses = islice(self.network4.iter_hosts(), max_hosts)
@@ -403,7 +465,7 @@ class Host(models.Model):
                           verbose_name=_('IPv4 address'),
                           help_text=_('The real IPv4 address of the '
                                       'host, for example 10.5.1.34.'))
-    pub_ipv4 = IPAddressField(
+    external_ipv4 = IPAddressField(
         version=4, blank=True, null=True,
         verbose_name=_('WAN IPv4 address'),
         help_text=_('The public IPv4 address of the host on the wide '
@@ -449,18 +511,31 @@ class Host(models.Model):
 
     @property
     def incoming_rules(self):
-        return self.rules.filter(direction='1')
+        return self.rules.filter(direction='in')
 
     @property
-    def outgoing_rules(self):
-        return self.rules.filter(direction='0')
+    def ipv6_with_prefixlen(self):
+        try:
+            net = IPNetwork(self.ipv6)
+            net.prefixlen = self.vlan.host_ipv6_prefixlen
+            return net
+        except TypeError:
+            return None
+
+    def get_external_ipv4(self):
+        return self.external_ipv4 if self.external_ipv4 else self.ipv4
+
+    @property
+    def behind_nat(self):
+        return self.vlan.network_type != 'public'
 
     def clean(self):
-        if (not self.shared_ip and self.pub_ipv4 and Host.objects.
-                exclude(id=self.id).filter(pub_ipv4=self.pub_ipv4)):
+        if (self.external_ipv4 and not self.shared_ip and self.behind_nat
+                and Host.objects.exclude(id=self.id).filter(
+                    external_ipv4=self.external_ipv4)):
             raise ValidationError(_("If shared_ip has been checked, "
-                                    "pub_ipv4 has to be unique."))
-        if Host.objects.exclude(id=self.id).filter(pub_ipv4=self.ipv4):
+                                    "external_ipv4 has to be unique."))
+        if Host.objects.exclude(id=self.id).filter(external_ipv4=self.ipv4):
             raise ValidationError(_("You can't use another host's NAT'd "
                                     "address as your own IPv4."))
 
@@ -472,36 +547,36 @@ class Host(models.Model):
 
         super(Host, self).save(*args, **kwargs)
 
+        # IPv4
         if self.ipv4 is not None:
-            Record.objects.filter(host=self, name=self.hostname,
-                                  type='A').update(address=self.ipv4)
-            record_count = self.record_set.filter(host=self,
-                                                  name=self.hostname,
-                                                  address=self.ipv4,
-                                                  type='A').count()
-            if record_count == 0:
+            # update existing records
+            affected_records = Record.objects.filter(
+                host=self, name=self.hostname,
+                type='A').update(address=self.ipv4)
+            # create new record
+            if affected_records == 0:
                 Record(host=self,
                        name=self.hostname,
                        domain=self.vlan.domain,
                        address=self.ipv4,
                        owner=self.owner,
-                       description='host.save()',
+                       description='created by host.save()',
                        type='A').save()
 
-        if self.ipv6:
-            Record.objects.filter(host=self, name=self.hostname,
-                                  type='AAAA').update(address=self.ipv6)
-            record_count = self.record_set.filter(host=self,
-                                                  name=self.hostname,
-                                                  address=self.ipv6,
-                                                  type='AAAA').count()
-            if record_count == 0:
+        # IPv6
+        if self.ipv6 is not None:
+            # update existing records
+            affected_records = Record.objects.filter(
+                host=self, name=self.hostname,
+                type='AAAA').update(address=self.ipv6)
+            # create new record
+            if affected_records == 0:
                 Record(host=self,
                        name=self.hostname,
                        domain=self.vlan.domain,
                        address=self.ipv6,
                        owner=self.owner,
-                       description='host.save()',
+                       description='created by host.save()',
                        type='AAAA').save()
 
     def enable_net(self):
@@ -517,12 +592,15 @@ class Host(models.Model):
         :type proto: str.
         :returns: list -- list of int port numbers used.
         """
-        if self.shared_ip:
-            ports = Rule.objects.filter(host__pub_ipv4=self.pub_ipv4,
-                                        nat=True, proto=proto)
+        if self.behind_nat:
+            ports = Rule.objects.filter(
+                host__external_ipv4=self.external_ipv4,
+                nat=True,
+                proto=proto).values_list('nat_external_port', flat=True)
         else:
-            ports = self.rules.filter(proto=proto, )
-        return set(ports.values_list('dport', flat=True))
+            ports = self.rules.filter(proto=proto).values_list(
+                'dport', flat=True)
+        return set(ports)
 
     def _get_random_port(self, proto, used_ports=None):
         """
@@ -577,17 +655,15 @@ class Host(models.Model):
             logger.error('Host.add_port: default_vlangroup %s missing. %s',
                          vgname, unicode(e))
         else:
-            if self.shared_ip:
+            rule = Rule(direction='in', owner=self.owner, dport=private,
+                        proto=proto, nat=False, action='accept',
+                        host=self, foreign_network=vg)
+            if self.behind_nat:
                 if public < 1024:
                     raise ValidationError(
                         _("Only ports above 1024 can be used."))
-                rule = Rule(direction='1', owner=self.owner, dport=public,
-                            proto=proto, nat=True, accept=True,
-                            nat_dport=private, host=self, foreign_network=vg)
-            else:
-                rule = Rule(direction='1', owner=self.owner, dport=private,
-                            proto=proto, nat=False, accept=True,
-                            host=self, foreign_network=vg)
+                rule.nat_external_port = public
+                rule.nat = True
             rule.full_clean()
             rule.save()
 
@@ -602,12 +678,8 @@ class Host(models.Model):
         :param private: Port number of host in subject.
         """
 
-        if self.shared_ip:
-            self.rules.filter(owner=self.owner, proto=proto, host=self,
-                              nat_dport=private).delete()
-        else:
-            self.rules.filter(owner=self.owner, proto=proto, host=self,
-                              dport=private).delete()
+        self.rules.filter(owner=self.owner, proto=proto, host=self,
+                          dport=private).delete()
 
     def get_hostname(self, proto, public=True):
         """
@@ -622,11 +694,11 @@ class Host(models.Model):
                 res = self.record_set.filter(type='AAAA',
                                              address=self.ipv6)
             elif proto == 'ipv4':
-                if self.shared_ip and public:
-                    res = Record.objects.filter(type='A',
-                                                address=self.pub_ipv4)
+                if self.behind_nat and public:
+                    res = Record.objects.filter(
+                        type='A', address=self.get_external_ipv4())
                     if res.count() < 1:
-                        return unicode(self.pub_ipv4)
+                        return unicode(self.get_external_ipv4())
                 else:
                     res = self.record_set.filter(type='A',
                                                  address=self.ipv4)
@@ -640,27 +712,21 @@ class Host(models.Model):
         """
         retval = []
         for rule in self.rules.filter(owner=self.owner):
-            private = rule.nat_dport if self.shared_ip else rule.dport
             forward = {
                 'proto': rule.proto,
-                'private': private,
+                'private': rule.dport,
             }
-            if self.shared_ip:
-                public4 = rule.dport
-                public6 = rule.nat_dport
-            else:
-                public4 = public6 = rule.dport
 
             if True:      # ipv4
                 forward['ipv4'] = {
                     'host': self.get_hostname(proto='ipv4'),
-                    'port': public4,
+                    'port': rule.get_external_port(proto='ipv4'),
                     'pk': rule.pk,
                 }
             if self.ipv6:  # ipv6
                 forward['ipv6'] = {
                     'host': self.get_hostname(proto='ipv6'),
-                    'port': public6,
+                    'port': rule.get_external_port(proto='ipv6'),
                     'pk': rule.pk,
                 }
             retval.append(forward)
@@ -679,22 +745,16 @@ class Host(models.Model):
         """
         endpoints = {}
         # IPv4
-        public_ipv4 = self.pub_ipv4 if self.pub_ipv4 else self.ipv4
-        # try get matching port(s) without NAT
-        ports = self.incoming_rules.filter(accept=True, dport=port,
-                                           nat=False, proto=protocol)
-        if ports.exists():
-            public_port = ports[0].dport
-        else:
-            # try get matching port(s) with NAT
-            ports = self.incoming_rules.filter(accept=True, nat_dport=port,
-                                               nat=True, proto=protocol)
-            public_port = ports[0].dport if ports.exists() else None
-        endpoints['ipv4'] = ((public_ipv4, public_port) if public_port else
+        ports = self.incoming_rules.filter(action='accept', dport=port,
+                                           proto=protocol)
+        public_port = (ports[0].get_external_port(proto='ipv4')
+                       if ports.exists() else None)
+        endpoints['ipv4'] = ((self.get_external_ipv4(), public_port)
+                             if public_port else
                              None)
         # IPv6
-        blocked = self.incoming_rules.filter(accept=False, dport=port,
-                                             proto=protocol).exists()
+        blocked = self.incoming_rules.exclude(
+            action='accept').filter(dport=port, proto=protocol).exists()
         endpoints['ipv6'] = (self.ipv6, port) if not blocked else None
         return endpoints
 
@@ -863,7 +923,7 @@ class EthernetDevice(models.Model):
         return self.name
 
 
-class Blacklist(models.Model):
+class BlacklistItem(models.Model):
     CHOICES_type = (('permban', 'permanent ban'), ('tempban', 'temporary ban'),
                     ('whitelist', 'whitelist'), ('tempwhite', 'tempwhite'))
     ipv4 = models.GenericIPAddressField(protocol='ipv4', unique=True)
@@ -885,10 +945,14 @@ class Blacklist(models.Model):
 
     def save(self, *args, **kwargs):
         self.full_clean()
-        super(Blacklist, self).save(*args, **kwargs)
+        super(BlacklistItem, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return self.ipv4
+
+    class Meta(object):
+        verbose_name = _('blacklist item')
+        verbose_name_plural = _('blacklist')
 
     @models.permalink
     def get_absolute_url(self):
@@ -899,7 +963,7 @@ def send_task(sender, instance, created=False, **kwargs):
     reloadtask.apply_async(queue='localhost.man', args=[sender.__name__])
 
 
-for sender in [Host, Rule, Domain, Record, Vlan, Firewall, Group, Blacklist,
-               SwitchPort, EthernetDevice]:
+for sender in [Host, Rule, Domain, Record, Vlan, Firewall, Group,
+               BlacklistItem, SwitchPort, EthernetDevice]:
     post_save.connect(send_task, sender=sender)
     post_delete.connect(send_task, sender=sender)

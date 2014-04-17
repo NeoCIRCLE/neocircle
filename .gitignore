@@ -21,6 +21,13 @@ _build
 celerybeat-schedule
 .coverage
 *,cover
+coverage.xml
 
 # Gettext object file:
 *.mo
+
+# saml
+circle/attribute-maps/
+circle/remote_metadata.xml
+circle/samlcert.key
+circle/samlcert.pem

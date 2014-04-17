@@ -4,7 +4,7 @@ from django_tables2.columns import LinkColumn, TemplateColumn
 from firewall.models import Host, Vlan, Domain, Group, Record, Rule, SwitchPort
 
 
-class BlacklistTable(Table):
+class BlacklistItemTable(Table):
     ipv4 = LinkColumn('network.blacklist', args=[A('pk')])
 
     class Meta:
@@ -44,7 +44,7 @@ class HostTable(Table):
         model = Host
         attrs = {'class': 'table table-striped table-condensed'}
         fields = ('hostname', 'vlan', 'mac', 'ipv4', 'ipv6',
-                  'pub_ipv4', 'created_at', 'owner', )
+                  'external_ipv4', 'created_at', 'owner', )
         order_by = ('vlan', 'hostname', )
 
 
@@ -128,7 +128,8 @@ class RuleTable(Table):
         model = Rule
         attrs = {'class': 'table table-striped table-hover table-condensed'}
         fields = ('r_type', 'color_desc', 'owner', 'extra', 'direction',
-                  'accept', 'proto', 'sport', 'dport', 'nat', 'nat_dport', )
+                  'action', 'proto', 'sport', 'dport', 'nat',
+                  'nat_external_port', )
         order_by = 'direction'
 
 

@@ -6,15 +6,15 @@ from django.http import HttpResponse
 
 from django_tables2 import SingleTableView
 
-from firewall.models import (Host, Vlan, Domain, Group, Record, Blacklist,
+from firewall.models import (Host, Vlan, Domain, Group, Record, BlacklistItem,
                              Rule, VlanGroup, SwitchPort, EthernetDevice)
 from vm.models import Interface
 from .tables import (HostTable, VlanTable, SmallHostTable, DomainTable,
-                     GroupTable, RecordTable, BlacklistTable, RuleTable,
+                     GroupTable, RecordTable, BlacklistItemTable, RuleTable,
                      VlanGroupTable, SmallRuleTable, SmallGroupRuleTable,
                      SmallRecordTable, SwitchPortTable)
 from .forms import (HostForm, VlanForm, DomainForm, GroupForm, RecordForm,
-                    BlacklistForm, RuleForm, VlanGroupForm, SwitchPortForm)
+                    BlacklistItemForm, RuleForm, VlanGroupForm, SwitchPortForm)
 
 from django.contrib import messages
 from django.views.generic.edit import FormMixin
@@ -51,7 +51,8 @@ class IndexView(LoginRequiredMixin, SuperuserRequiredMixin, TemplateView):
         context = super(IndexView, self).get_context_data(**kwargs)
 
         size = 13
-        blacklists = Blacklist.objects.all().order_by('-modified_at')[:size]
+        blacklists = BlacklistItem.objects.all().order_by(
+            '-modified_at')[:size]
         domains = Domain.objects.all().order_by('-modified_at')[:size]
         groups = Group.objects.all().order_by('-modified_at')[:size]
         hosts = Host.objects.all().order_by('-modified_at')[:size]
@@ -80,18 +81,18 @@ class IndexView(LoginRequiredMixin, SuperuserRequiredMixin, TemplateView):
 
 class BlacklistList(LoginRequiredMixin, SuperuserRequiredMixin,
                     SingleTableView):
-    model = Blacklist
-    table_class = BlacklistTable
+    model = BlacklistItem
+    table_class = BlacklistItemTable
     template_name = "network/blacklist-list.html"
     table_pagination = False
 
 
 class BlacklistDetail(LoginRequiredMixin, SuperuserRequiredMixin,
                       SuccessMessageMixin, UpdateView):
-    model = Blacklist
+    model = BlacklistItem
     template_name = "network/blacklist-edit.html"
-    form_class = BlacklistForm
-    success_message = _(u'Successfully modified blacklist '
+    form_class = BlacklistItemForm
+    success_message = _(u'Successfully modified blacklist item'
                         '%(ipv4)s - %(type)s!')
 
     def get_success_url(self):
@@ -106,22 +107,22 @@ class BlacklistDetail(LoginRequiredMixin, SuperuserRequiredMixin,
 
 class BlacklistCreate(LoginRequiredMixin, SuperuserRequiredMixin,
                       SuccessMessageMixin, CreateView):
-    model = Blacklist
+    model = BlacklistItem
     template_name = "network/blacklist-create.html"
-    form_class = BlacklistForm
-    success_message = _(u'Successfully created blacklist '
+    form_class = BlacklistItemForm
+    success_message = _(u'Successfully created blacklist item '
                         '%(ipv4)s - %(type)s!')
 
 
 class BlacklistDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
-    model = Blacklist
+    model = BlacklistItem
     template_name = "network/confirm/base_delete.html"
 
     def get_context_data(self, **kwargs):
         """ display more information about the object """
         context = super(BlacklistDelete, self).get_context_data(**kwargs)
         if 'pk' in self.kwargs:
-            to_delete = Blacklist.objects.get(pk=self.kwargs['pk'])
+            to_delete = BlacklistItem.objects.get(pk=self.kwargs['pk'])
             context['object'] = "%s - %s - %s" % (to_delete.ipv4,
                                                   to_delete.reason,
                                                   to_delete.type)
@@ -502,6 +503,11 @@ class RuleList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
     table_class = RuleTable
     template_name = "network/rule-list.html"
     table_pagination = False
+
+    def get_table_data(self):
+        return Rule.objects.select_related('host', 'hostgroup', 'vlan',
+                                           'vlangroup', 'firewall',
+                                           'foreign_network', 'owner')
 
 
 class RuleDetail(LoginRequiredMixin, SuperuserRequiredMixin,

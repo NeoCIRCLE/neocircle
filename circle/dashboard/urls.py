@@ -3,15 +3,16 @@ from django.conf.urls import patterns, url
 from vm.models import Instance
 from .views import (
     AclUpdateView, DiskAddView, FavouriteView, GroupAclUpdateView, GroupDelete,
-    GroupDetailView, GroupList, GroupUserDelete, IndexView, LeaseCreate,
-    LeaseDelete, LeaseDetail, MyPreferencesView, NodeAddTraitView, NodeCreate,
-    NodeDelete, NodeDetailView, NodeFlushView, NodeGraphView, NodeList,
-    NodeStatus, NotificationView, PortDelete, TemplateAclUpdateView,
-    TemplateCreate, TemplateDelete, TemplateDetail, TemplateList,
-    TransferOwnershipConfirmView, TransferOwnershipView, vm_activity, VmCreate,
-    VmDelete, VmDetailView, VmDetailVncTokenView, VmGraphView, VmList,
-    VmMassDelete, VmMigrateView, VmRenewView, DiskRemoveView,
-    get_disk_download_status, TemplateChoose, TemplateClone
+    GroupDetailView, GroupList, GroupUserDelete, IndexView,
+    InstanceActivityDetail, LeaseCreate, LeaseDelete, LeaseDetail,
+    MyPreferencesView, NodeAddTraitView, NodeCreate, NodeDelete,
+    NodeDetailView, NodeFlushView, NodeGraphView, NodeList, NodeStatus,
+    NotificationView, PortDelete, TemplateAclUpdateView, TemplateCreate,
+    TemplateDelete, TemplateDetail, TemplateList, TransferOwnershipConfirmView,
+    TransferOwnershipView, vm_activity, VmCreate, VmDelete, VmDetailView,
+    VmDetailVncTokenView, VmGraphView, VmList, VmMassDelete, VmMigrateView,
+    VmRenewView, DiskRemoveView, get_disk_download_status,
+    TemplateChoose, TemplateClone,
 )
 
 urlpatterns = patterns(
@@ -61,6 +62,8 @@ urlpatterns = patterns(
         name='dashboard.views.vm-migrate'),
     url(r'^vm/(?P<pk>\d+)/renew/((?P<key>.*)/?)$', VmRenewView.as_view(),
         name='dashboard.views.vm-renew'),
+    url(r'^vm/activity/(?P<pk>\d+)/$', InstanceActivityDetail.as_view(),
+        name='dashboard.views.vm-activity'),
 
     url(r'^node/list/$', NodeList.as_view(), name='dashboard.views.node-list'),
     url(r'^node/(?P<pk>\d+)/$', NodeDetailView.as_view(),

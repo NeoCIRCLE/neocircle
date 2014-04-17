@@ -16,7 +16,7 @@
   <div class="list-group" id="node-list-view">
     {% for i in nodes %}
     <a href="{% url "dashboard.views.node-detail" pk=i.pk %}" class="list-group-item">
-    <i class="icon-{% if i.enabled == True %}play-sign{% else %}pause{% endif %}"></i> {{ i.name }} <div class="pull-right"><i class="icon-star text-primary" title="Mark as favorite."></i></div>
+    <i class="icon-{% if i.enabled == True %}play-sign{% else %}pause{% endif %}"></i> {{ i.name }} 
       </a>
     {% endfor %}
     <div href="#" class="list-group-item list-group-footer">

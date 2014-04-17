@@ -1,14 +1,17 @@
 from datetime import datetime
+from mock import Mock, MagicMock, patch, call
 
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.utils.translation import ugettext_lazy as _
-from mock import Mock, MagicMock, patch, call
 
 from ..models import (
     Lease, Node, Interface, Instance, InstanceTemplate, InstanceActivity,
 )
 from ..models.instance import find_unused_port, ActivityInProgressError
+from ..operations import (
+    DeployOperation, DestroyOperation, FlushOperation, MigrateOperation,
+)
 
 
 class PortFinderTestCase(TestCase):
@@ -52,50 +55,60 @@ class InstanceTestCase(TestCase):
     def test_deploy_destroyed(self):
         inst = Mock(destroyed_at=datetime.now(), spec=Instance,
                     InstanceDestroyedError=Instance.InstanceDestroyedError)
-        with self.assertRaises(Instance.InstanceDestroyedError):
-            Instance.deploy(inst)
+        deploy_op = DeployOperation(inst)
+        with patch.object(DeployOperation, 'create_activity'):
+            with self.assertRaises(Instance.InstanceDestroyedError):
+                deploy_op(system=True)
 
     def test_destroy_destroyed(self):
-        inst = Mock(destroyed_at=datetime.now(), spec=Instance)
-        Instance.destroy(inst)
+        inst = Mock(destroyed_at=datetime.now(), spec=Instance,
+                    InstanceDestroyedError=Instance.InstanceDestroyedError)
+        destroy_op = DestroyOperation(inst)
+        with patch.object(DestroyOperation, 'create_activity'):
+            with self.assertRaises(Instance.InstanceDestroyedError):
+                destroy_op(system=True)
         self.assertFalse(inst.save.called)
 
     def test_destroy_sets_destroyed(self):
-        inst = MagicMock(destroyed_at=None, spec=Instance)
+        inst = Mock(destroyed_at=None, spec=Instance,
+                    InstanceDestroyedError=Instance.InstanceDestroyedError)
         inst.node = MagicMock(spec=Node)
         inst.disks.all.return_value = []
-        with patch('vm.models.instance.instance_activity') as ia:
-            ia.return_value = MagicMock()
-            Instance.destroy(inst)
+        destroy_op = DestroyOperation(inst)
+        with patch.object(DestroyOperation, 'create_activity'):
+            destroy_op(system=True)
         self.assertTrue(inst.destroyed_at)
         inst.save.assert_called()
 
     def test_migrate_with_scheduling(self):
-        inst = MagicMock(spec=Instance)
+        inst = Mock(destroyed_at=None, spec=Instance)
         inst.interface_set.all.return_value = []
         inst.node = MagicMock(spec=Node)
-        with patch('vm.models.instance.instance_activity') as ia, \
-                patch('vm.models.instance.vm_tasks.migrate') as migr:
-            Instance.migrate(inst)
+        migrate_op = MigrateOperation(inst)
+        with patch('vm.models.instance.vm_tasks.migrate') as migr:
+            act = MagicMock()
+            with patch.object(MigrateOperation, 'create_activity',
+                              return_value=act):
+                migrate_op(system=True)
 
             migr.apply_async.assert_called()
-            self.assertIn(call().__enter__().sub_activity(u'scheduling'),
-                          ia.mock_calls)
+            self.assertIn(call.sub_activity(u'scheduling'), act.mock_calls)
             inst.select_node.assert_called()
 
     def test_migrate_wo_scheduling(self):
-        inst = MagicMock(spec=Instance)
+        inst = MagicMock(destroyed_at=None, spec=Instance)
         inst.interface_set.all.return_value = []
         inst.node = MagicMock(spec=Node)
-        with patch('vm.models.instance.instance_activity') as ia, \
-                patch('vm.models.instance.vm_tasks.migrate') as migr:
+        migrate_op = MigrateOperation(inst)
+        with patch('vm.models.instance.vm_tasks.migrate') as migr:
             inst.select_node.side_effect = AssertionError
-
-            Instance.migrate(inst, inst.node)
+            act = MagicMock()
+            with patch.object(MigrateOperation, 'create_activity',
+                              return_value=act):
+                migrate_op(to_node=inst.node, system=True)
 
             migr.apply_async.assert_called()
-            self.assertNotIn(call().__enter__().sub_activity(u'scheduling'),
-                             ia.mock_calls)
+            self.assertNotIn(call.sub_activity(u'scheduling'), act.mock_calls)
 
     def test_status_icon(self):
         inst = MagicMock(spec=Instance)
@@ -162,25 +175,19 @@ class InstanceActivityTestCase(TestCase):
         instance.activity_log.filter.return_value.exists.return_value = True
 
         with self.assertRaises(ActivityInProgressError):
-            InstanceActivity.create("test", instance, concurrency_check=True)
+            InstanceActivity.create('test', instance, concurrency_check=True)
 
     def test_create_no_concurrency_check(self):
         instance = MagicMock(spec=Instance)
         instance.activity_log.filter.return_value.exists.return_value = True
 
-        original_method = InstanceActivity.create.__func__
-
-        with patch('vm.models.activity.InstanceActivity') as ia, \
-                patch('vm.models.activity.timezone.now'):
-            # ia.__init__ = MagicMock()  raises AttributeError
-
-            original_method(ia, "test", instance, concurrency_check=False)
-            ia.save.assert_called()
-
-            # ia.__init__.assert_called_with(activity_code='vm.Instance.test',
-            #                                instance=instance, parent=None,
-            #                                resultant_state=None, started=now,
-            #                                task_uuid=None, user=None)
+        with patch.object(InstanceActivity, '__new__'):
+            try:
+                InstanceActivity.create('test', instance,
+                                        concurrency_check=False)
+            except ActivityInProgressError:
+                raise AssertionError("'create' method checked for concurrent "
+                                     "activities.")
 
     def test_create_sub_concurrency_check(self):
         iaobj = MagicMock(spec=InstanceActivity)
@@ -194,12 +201,13 @@ class InstanceActivityTestCase(TestCase):
         iaobj.activity_code = 'test'
         iaobj.children.filter.return_value.exists.return_value = True
 
-        original_method = InstanceActivity.create_sub
-
-        with patch('vm.models.activity.InstanceActivity') as ia, \
-                patch('vm.models.activity.timezone.now'):
-            original_method(iaobj, "test", concurrency_check=False)
-            ia.save.assert_called()
+        with patch.object(InstanceActivity, '__new__'):
+            try:
+                InstanceActivity.create_sub(iaobj, 'test',
+                                            concurrency_check=False)
+            except ActivityInProgressError:
+                raise AssertionError("'create_sub' method checked for "
+                                     "concurrent activities.")
 
     def test_disable_enabled(self):
         node = MagicMock(spec=Node, enabled=True)
@@ -231,33 +239,37 @@ class InstanceActivityTestCase(TestCase):
         subact.__enter__.assert_called()
 
     def test_flush(self):
+        insts = [MagicMock(spec=Instance, migrate=MagicMock()),
+                 MagicMock(spec=Instance, migrate=MagicMock())]
         node = MagicMock(spec=Node, enabled=True)
+        node.instance_set.all.return_value = insts
         user = MagicMock(spec=User)
-        insts = [MagicMock(spec=Instance), MagicMock(spec=Instance)]
+        flush_op = FlushOperation(node)
 
-        with patch('vm.models.node.node_activity') as na:
-            act = na.return_value.__enter__.return_value = MagicMock()
-            node.instance_set.all.return_value = insts
+        with patch.object(FlushOperation, 'create_activity') as create_act:
+            act = create_act.return_value = MagicMock()
 
-            Node.flush(node, user)
+            flush_op(user=user)
 
-            na.__enter__.assert_called()
+            create_act.assert_called()
             node.disable.assert_called_with(user, act)
             for i in insts:
                 i.migrate.assert_called()
 
     def test_flush_disabled_wo_user(self):
+        insts = [MagicMock(spec=Instance, migrate=MagicMock()),
+                 MagicMock(spec=Instance, migrate=MagicMock())]
         node = MagicMock(spec=Node, enabled=False)
-        insts = [MagicMock(spec=Instance), MagicMock(spec=Instance)]
+        node.instance_set.all.return_value = insts
+        flush_op = FlushOperation(node)
 
-        with patch('vm.models.node.node_activity') as na:
-            act = na.return_value.__enter__.return_value = MagicMock()
-            node.instance_set.all.return_value = insts
+        with patch.object(FlushOperation, 'create_activity') as create_act:
+            act = create_act.return_value = MagicMock()
 
-            Node.flush(node)
+            flush_op(system=True)
 
+            create_act.assert_called()
             node.disable.assert_called_with(None, act)
             # ^ should be called, but real method no-ops if disabled
-            na.__enter__.assert_called()
             for i in insts:
                 i.migrate.assert_called()

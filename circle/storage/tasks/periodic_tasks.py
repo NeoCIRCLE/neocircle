@@ -10,7 +10,6 @@ logger = logging.getLogger(__name__)
 def garbage_collector(timeout=15):
     """ Garbage collector for disk images.
 
-    Moves 1 day old deleted images to trash folder.
     If there is not enough free space on datastore (default 10%)
     deletes oldest images from trash.
 

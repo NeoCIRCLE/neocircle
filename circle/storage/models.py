@@ -122,7 +122,7 @@ class Disk(AclBase, TimeStampedModel):
             self.disk = disk
 
     @property
-    def ready(self):
+    def is_ready(self):
         """ Returns True if the disk is physically ready on the storage.
 
         It needs at least 1 successfull deploy action.
@@ -310,7 +310,7 @@ class Disk(AclBase, TimeStampedModel):
             self.destroyed = None
             self.save()
 
-        if self.ready:
+        if self.is_ready:
             return True
         with disk_activity(code_suffix='deploy', disk=self,
                            task_uuid=task_uuid, user=user) as act:
@@ -355,7 +355,14 @@ class Disk(AclBase, TimeStampedModel):
         return disk
 
     @classmethod
-    def create_empty(cls, instance=None, user=None, **kwargs):
+    def create_empty_async(cls, instance=None, user=None, **kwargs):
+        """Execute deploy asynchronously.
+        """
+        return local_tasks.create_empty.apply_async(
+            args=[cls, instance, user, kwargs], queue="localhost.man")
+
+    @classmethod
+    def create_empty(cls, instance=None, user=None, task_uuid=None, **kwargs):
         """Create empty Disk object.
 
         :param instance: Instance or template attach the Disk to.
@@ -366,6 +373,7 @@ class Disk(AclBase, TimeStampedModel):
         :return: Disk object without a real image, to be .deploy()ed later.
         """
         disk = Disk.create(instance, user, **kwargs)
+        disk.deploy(user=user, task_uuid=task_uuid)
         return disk
 
     @classmethod
@@ -466,19 +474,72 @@ class Disk(AclBase, TimeStampedModel):
         local_tasks.restore.apply_async(args=[self, user],
                                         queue='localhost.man')
 
-    def save_as_async(self, disk, task_uuid=None, timeout=300, user=None):
-        return local_tasks.save_as.apply_async(args=[disk, timeout, user],
-                                               queue="localhost.man")
+    def clone_async(self, new_disk=None, timeout=300, user=None):
+        """Clone a Disk to another Disk
+
+        :param new_disk: optional, the new Disk object to clone in
+        :type new_disk: storage.models.Disk
+        :param user: Creator of the disk.
+        :type user: django.contrib.auth.User
+
+        :return: AsyncResult
+        """
+        return local_tasks.clone.apply_async(args=[self, new_disk,
+                                                   timeout, user],
+                                             queue="localhost.man")
+
+    def clone(self, disk=None, user=None, task_uuid=None, timeout=300):
+        """Cloning Disk into another Disk.
+
+        The Disk.type can'T be snapshot.
+
+        :param new_disk: optional, the new Disk object to clone in
+        :type new_disk: storage.models.Disk
+        :param user: Creator of the disk.
+        :type user: django.contrib.auth.User
+
+        :return: the cloned Disk object.
+        """
+        banned_types = ['qcow2-snap']
+        if self.type in banned_types:
+            raise self.WrongDiskTypeError(self.type)
+        if self.is_in_use:
+            raise self.DiskInUseError(self)
+        if not self.is_ready:
+            raise self.DiskIsNotReady(self)
+        if not disk:
+            base = None
+            if self.type == "iso":
+                base = self
+            disk = Disk.create(datastore=self.datastore,
+                               name=self.name, size=self.size,
+                               type=self.type, base=base)
+
+        with disk_activity(code_suffix="clone", disk=self,
+                           user=user, task_uuid=task_uuid):
+            with disk_activity(code_suffix="deploy", disk=disk,
+                               user=user, task_uuid=task_uuid):
+                queue_name = self.get_remote_queue_name('storage')
+                remote_tasks.merge.apply_async(args=[self.get_disk_desc(),
+                                                     disk.get_disk_desc()],
+                                               queue=queue_name
+                                               ).get()  # Timeout
+            return disk
 
     def save_as(self, user=None, task_uuid=None, timeout=300):
         """Save VM as template.
+
+        Based on disk type:
+        qcow2-norm, qcow2-snap --> qcow2-norm
+        iso                    --> iso (with base)
 
         VM must be in STOPPED state to perform this action.
         The timeout parameter is not used now.
         """
         mapping = {
-            'qcow2-snap': ('qcow2-norm', self.base),
-            'qcow2-norm': ('qcow2-norm', self),
+            'qcow2-snap': ('qcow2-norm', None),
+            'qcow2-norm': ('qcow2-norm', None),
+            'iso': ("iso", self),
         }
         if self.type not in mapping.keys():
             raise self.WrongDiskTypeError(self.type)
@@ -486,7 +547,7 @@ class Disk(AclBase, TimeStampedModel):
         if self.is_in_use:
             raise self.DiskInUseError(self)
 
-        if not self.ready:
+        if not self.is_ready:
             raise self.DiskIsNotReady(self)
 
         # from this point on, the caller has to guarantee that the disk is not
@@ -494,7 +555,8 @@ class Disk(AclBase, TimeStampedModel):
 
         new_type, new_base = mapping[self.type]
 
-        disk = Disk.create(base=new_base, datastore=self.datastore,
+        disk = Disk.create(datastore=self.datastore,
+                           base=new_base,
                            name=self.name, size=self.size,
                            type=new_type)
 
