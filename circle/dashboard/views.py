@@ -933,6 +933,7 @@ class NodeList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
                 'name': i.name,
                 'icon': i.get_status_icon(),
                 'url': i.get_absolute_url(),
+                'label': i.get_status_label(),
                 'status': i.state.lower()} for i in nodes]
 
             return HttpResponse(

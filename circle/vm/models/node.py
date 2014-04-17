@@ -278,9 +278,9 @@ class Node(OperatedMixin, TimeStampedModel):
 
     def get_status_label(self):
         return {
-            'OFFLINE': 'label-warning',
-            'DISABLED': 'label-warning',
-            'MISSING': 'label-danger',
+            'OFFLINE': 'label-danger',
+            'DISABLED': 'label-danger',
+            'MISSING': 'label-warning',
             'ONLINE': 'label-success'}.get(self.get_state(),
                                            'label-danger')
 

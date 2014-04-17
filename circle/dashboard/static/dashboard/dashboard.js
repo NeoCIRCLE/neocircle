@@ -238,6 +238,7 @@ $(function () {
             'name': result[i].name.toLowerCase(),
             'icon': result[i].icon,
             'status': result[i].status,
+	    'label': result[i].label,
 	    'url': result[i].url,
 	  });
         }
@@ -254,7 +255,7 @@ $(function () {
       }
     }
     for(var i=0; i<5 && i<search_result.length; i++)
-      html += generateNodeHTML(search_result[i].pk, search_result[i].name, 
+      html += generateNodeHTML(search_result[i].name, 
                              search_result[i].icon, search_result[i].status,
 			     search_result[i].url);
     if(search_result.length == 0)
@@ -264,9 +265,9 @@ $(function () {
     html = '';
 
     for(var i=0; i<5 && i<search_result.length; i++)
-      html += generateNodeTagHTML(search_result[i].pk, search_result[i].name, 
+      html += generateNodeTagHTML(search_result[i].name, 
                              search_result[i].icon, search_result[i].status,
-			     search_result[i].url);
+			     search_result[i].label, search_result[i].url);
     if(search_result.length == 0)
       html += '<div class="list-group-item">No result</div>';
     $("#dashboard-node-taglist").html(html);
@@ -305,7 +306,7 @@ function generateVmHTML(pk, name, host, icon, _status, fav) {
       '</a>';     
 }
 
-function generateNodeHTML(pk, name, icon, _status, url) {
+function generateNodeHTML(name, icon, _status, url) {
   return '<a href="' + url + '" class="list-group-item" >' + 
 	'<span class="index-node-list-name">' + 
 	'<i class="' + icon + '" title="' + _status + '"></i> ' + name +
@@ -314,8 +315,8 @@ function generateNodeHTML(pk, name, icon, _status, url) {
 	'</a>';
 }
 
-function generateNodeTagHTML(pk, name, icon, _status, url) {
-  return '<a href="' + url + '" class="label label-danger" >' + 
+function generateNodeTagHTML(name, icon, _status, label , url) {
+  return '<a href="' + url + '" class="label ' + label + '" >' + 
 	'<i class="' + icon + '" title="' + _status + '"></i> ' + name +
 	'</a> ';
 }
