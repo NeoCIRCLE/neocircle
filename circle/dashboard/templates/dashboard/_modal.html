@@ -1,0 +1,12 @@
+{% load i18n %}
+<div class="modal fade" id="confirmation-modal" tabindex="-1" role="dialog"> 
+  <div class="modal-dialog"> 
+    <div class="modal-content"> 
+      <div class="modal-body">  
+        {{ body|safe|default:"(body missing from context.)" }}
+        <div class="clearfix"></div>
+      </div>
+      <div class="clearfix"></div>
+    </div><!-- /.modal-content --> 
+  </div><!-- /.modal-dialog --> 
+</div>
