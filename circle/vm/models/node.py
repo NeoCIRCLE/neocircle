@@ -276,6 +276,14 @@ class Node(OperatedMixin, TimeStampedModel):
             'ONLINE': 'icon-play-sign'}.get(self.get_state(),
                                             'icon-question-sign')
 
+    def get_status_label(self):
+        return {
+            'OFFLINE': 'label-warning',
+            'DISABLED': 'label-warning',
+            'MISSING': 'label-danger',
+            'ONLINE': 'label-success'}.get(self.get_state(),
+                                           'label-danger')
+
     @node_available
     def update_vm_states(self):
         """Update state of Instances running on this Node.

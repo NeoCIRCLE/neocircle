@@ -260,7 +260,17 @@ $(function () {
     if(search_result.length == 0)
       html += '<div class="list-group-item">No result</div>';
     $("#dashboard-node-list").html(html);
- 
+
+    html = '';
+
+    for(var i=0; i<5 && i<search_result.length; i++)
+      html += generateNodeTagHTML(search_result[i].pk, search_result[i].name, 
+                             search_result[i].icon, search_result[i].status,
+			     search_result[i].url);
+    if(search_result.length == 0)
+      html += '<div class="list-group-item">No result</div>';
+    $("#dashboard-node-taglist").html(html);
+
     // if there is only one result and ENTER is pressed redirect
     if(e.keyCode == 13 && search_result.length == 1) {
       window.location.href = "/dashboard/node/" + search_result[0].pk + "/";
@@ -302,6 +312,12 @@ function generateNodeHTML(pk, name, icon, _status, url) {
 	'</span>' + 
 	'<div style="clear: both;"></div>' + 
 	'</a>';
+}
+
+function generateNodeTagHTML(pk, name, icon, _status, url) {
+  return '<a href="' + url + '" class="label label-danger" >' + 
+	'<i class="' + icon + '" title="' + _status + '"></i> ' + name +
+	'</a> ';
 }
 
 /* copare vm-s by fav, pk order */
