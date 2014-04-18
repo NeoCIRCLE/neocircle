@@ -20,6 +20,7 @@ logger = getLogger(__name__)
 class InstanceOperation(Operation):
     acl_level = 'owner'
     async_operation = async_instance_operation
+    host_cls = Instance
 
     def __init__(self, instance):
         super(InstanceOperation, self).__init__(subject=instance)
@@ -52,10 +53,6 @@ class InstanceOperation(Operation):
             return InstanceActivity.create(
                 code_suffix=self.activity_code_suffix, instance=self.instance,
                 user=user)
-
-
-def register_instance_operation(op_cls, op_id=None):
-    return register_operation(Instance, op_cls, op_id)
 
 
 class DeployOperation(InstanceOperation):
@@ -91,7 +88,7 @@ class DeployOperation(InstanceOperation):
         self.instance.renew(which='both', base_activity=activity)
 
 
-register_instance_operation(DeployOperation)
+register_operation(DeployOperation)
 
 
 class DestroyOperation(InstanceOperation):
@@ -131,7 +128,7 @@ class DestroyOperation(InstanceOperation):
         self.instance.save()
 
 
-register_instance_operation(DestroyOperation)
+register_operation(DestroyOperation)
 
 
 class MigrateOperation(InstanceOperation):
@@ -161,7 +158,7 @@ class MigrateOperation(InstanceOperation):
             self.instance.deploy_net()
 
 
-register_instance_operation(MigrateOperation)
+register_operation(MigrateOperation)
 
 
 class RebootOperation(InstanceOperation):
@@ -174,7 +171,7 @@ class RebootOperation(InstanceOperation):
         self.instance.reboot_vm(timeout=timeout)
 
 
-register_instance_operation(RebootOperation)
+register_operation(RebootOperation)
 
 
 class ResetOperation(InstanceOperation):
@@ -186,7 +183,7 @@ class ResetOperation(InstanceOperation):
     def _operation(self, activity, user, system, timeout=5):
         self.instance.reset_vm(timeout=timeout)
 
-register_instance_operation(ResetOperation)
+register_operation(ResetOperation)
 
 
 class SaveAsTemplateOperation(InstanceOperation):
@@ -255,7 +252,7 @@ class SaveAsTemplateOperation(InstanceOperation):
             return tmpl
 
 
-register_instance_operation(SaveAsTemplateOperation)
+register_operation(SaveAsTemplateOperation)
 
 
 class ShutdownOperation(InstanceOperation):
@@ -284,7 +281,7 @@ class ShutdownOperation(InstanceOperation):
         self.instance.yield_vnc_port()
 
 
-register_instance_operation(ShutdownOperation)
+register_operation(ShutdownOperation)
 
 
 class ShutOffOperation(InstanceOperation):
@@ -310,7 +307,7 @@ class ShutOffOperation(InstanceOperation):
         self.instance.yield_vnc_port()
 
 
-register_instance_operation(ShutOffOperation)
+register_operation(ShutOffOperation)
 
 
 class SleepOperation(InstanceOperation):
@@ -346,7 +343,7 @@ class SleepOperation(InstanceOperation):
         # VNC port needs to be kept
 
 
-register_instance_operation(SleepOperation)
+register_operation(SleepOperation)
 
 
 class WakeUpOperation(InstanceOperation):
@@ -386,11 +383,12 @@ class WakeUpOperation(InstanceOperation):
         self.instance.renew(which='both', base_activity=activity)
 
 
-register_instance_operation(WakeUpOperation)
+register_operation(WakeUpOperation)
 
 
 class NodeOperation(Operation):
     async_operation = async_node_operation
+    host_cls = Node
 
     def __init__(self, node):
         super(NodeOperation, self).__init__(subject=node)
@@ -413,10 +411,6 @@ class NodeOperation(Operation):
                                        node=self.node, user=user)
 
 
-def register_node_operation(op_cls, op_id=None):
-    return register_operation(Node, op_cls, op_id)
-
-
 class FlushOperation(NodeOperation):
     activity_code_suffix = 'flush'
     id = 'flush'
@@ -430,4 +424,4 @@ class FlushOperation(NodeOperation):
                 i.migrate()
 
 
-register_node_operation(FlushOperation)
+register_operation(FlushOperation)

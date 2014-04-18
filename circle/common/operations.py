@@ -128,7 +128,7 @@ class OperatedMixin(object):
                                  (self.__class__.__name__, name))
 
 
-def register_operation(target_cls, op_cls, op_id=None):
+def register_operation(op_cls, op_id=None, target_cls=None):
     """Register the specified operation with the target class.
 
     You can optionally specify an ID to be used for the registration;
@@ -143,6 +143,17 @@ def register_operation(target_cls, op_cls, op_id=None):
                                       "operation can be called by on its "
                                       "host. Alternatively, provide the name "
                                       "in the 'op_id' parameter to this call.")
+
+    if target_cls is None:
+        try:
+            target_cls = op_cls.host_cls
+        except AttributeError:
+            raise NotImplementedError("Operations should specify a 'host_cls' "
+                                      "attribute designating the host class "
+                                      "the operation should be registered to. "
+                                      "Alternatively, provide the host class "
+                                      "in the 'target_cls' parameter to this "
+                                      "call.")
 
     if not issubclass(target_cls, OperatedMixin):
         raise TypeError("%r is not a subclass of %r" %
