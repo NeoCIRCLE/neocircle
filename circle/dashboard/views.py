@@ -483,10 +483,30 @@ class VmOperationView(OperationView):
     model = Instance
 
 
+class VmMigrateView(VmOperationView):
+
+    op = 'migrate'
+    icon = 'truck'
+    template_name = 'dashboard/_vm-migrate.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super(VmOperationView, self).get_context_data(**kwargs)
+        ctx['nodes'] = [n for n in Node.objects.filter(enabled=True)
+                        if n.state == "ONLINE"]
+        return ctx
+
+    def post(self, request, extra=None, *args, **kwargs):
+        node = self.request.POST.get("node")
+        if node:
+            node = get_object_or_404(Node, pk=node)
+            extra["to_node"] = node
+        return super(VmMigrateView, self).post(request, extra, *args, **kwargs)
+
+
 vm_ops = {
     'reset': VmOperationView.factory(op='reset', icon='bolt'),
     'deploy': VmOperationView.factory(op='deploy', icon='play'),
-    'migrate': VmOperationView.factory(op='migrate', icon='truck'),
+    'migrate': VmMigrateView,
     'reboot': VmOperationView.factory(op='reboot', icon='refresh'),
     'shut_off': VmOperationView.factory(op='shut_off', icon='ban-circle'),
     'shutdown': VmOperationView.factory(op='shutdown', icon='off'),
@@ -2045,40 +2065,6 @@ class NotificationView(LoginRequiredMixin, TemplateView):
             u.status = "read"
             u.save()
         return response
-
-
-class VmMigrateView(SuperuserRequiredMixin, TemplateView):
-
-    def get_template_names(self):
-        if self.request.is_ajax():
-            return ['dashboard/modal-wrapper.html']
-        else:
-            return ['dashboard/nojs-wrapper.html']
-
-    def get(self, request, form=None, *args, **kwargs):
-        context = self.get_context_data(**kwargs)
-        vm = Instance.objects.get(pk=kwargs['pk'])
-        context.update({
-            'template': 'dashboard/_vm-migrate.html',
-            'box_title': _('Migrate %(name)s' % {'name': vm.name}),
-            'ajax_title': True,
-            'vm': vm,
-            'nodes': [n for n in Node.objects.filter(enabled=True)
-                      if n.state == "ONLINE"]
-        })
-        return self.render_to_response(context)
-
-    def post(self, *args, **kwargs):
-        node = self.request.POST.get("node")
-        vm = Instance.objects.get(pk=kwargs['pk'])
-
-        if node:
-            node = Node.objects.get(pk=node)
-            vm.migrate.async(to_node=node, user=self.request.user)
-        else:
-            messages.error(self.request, _("You didn't select a node!"))
-
-        return redirect("%s#activity" % vm.get_absolute_url())
 
 
 def circle_login(request):
