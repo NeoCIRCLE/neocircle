@@ -3,10 +3,11 @@ from factory import Factory, Sequence
 from mock import patch, MagicMock
 
 from django.contrib.auth.models import User
-# from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied
 from django.http import HttpRequest, Http404
 
-from dashboard.views import InstanceActivityDetail, InstanceActivity
+from ..views import InstanceActivityDetail, InstanceActivity
+from ..views import vm_ops, Instance
 
 
 class ViewUserTestCase(unittest.TestCase):
@@ -34,6 +35,33 @@ class ViewUserTestCase(unittest.TestCase):
             go.return_value = act
             view = InstanceActivityDetail.as_view()
             self.assertEquals(view(request, pk=1234).render().status_code, 200)
+
+
+class VmOperationViewTestCase(unittest.TestCase):
+    def test_available(self):
+        request = FakeRequestFactory(superuser=True)
+        view = vm_ops['destroy']
+
+        with patch.object(view, 'get_object') as go:
+            inst = MagicMock(spec=Instance)
+            inst._meta.object_name = "Instance"
+            inst.destroy = Instance._ops['destroy'](inst)
+            go.return_value = inst
+            self.assertEquals(
+                view.as_view()(request, pk=1234).render().status_code, 200)
+
+    def test_unpermitted(self):
+        request = FakeRequestFactory()
+        view = vm_ops['destroy']
+
+        with patch.object(view, 'get_object') as go:
+            inst = MagicMock(spec=Instance)
+            inst._meta.object_name = "Instance"
+            inst.destroy = Instance._ops['destroy'](inst)
+            inst.has_level.return_value = False
+            go.return_value = inst
+            with self.assertRaises(PermissionDenied):
+                view.as_view()(request, pk=1234).render()
 
 
 def FakeRequestFactory(*args, **kwargs):
