@@ -28,11 +28,11 @@ class Operation(object):
     def __prelude(self, kwargs):
         """This method contains the shared prelude of call and async.
         """
-        skip_checks = kwargs.setdefault('system', False)
+        skip_auth_check = kwargs.setdefault('system', False)
         user = kwargs.setdefault('user', None)
         parent_activity = kwargs.pop('parent_activity', None)
 
-        if not skip_checks:
+        if not skip_auth_check:
             self.check_auth(user)
         self.check_precond()
         return self.create_activity(parent=parent_activity, user=user)
@@ -42,8 +42,7 @@ class Operation(object):
         """
         with activity_context(activity, on_abort=self.on_abort,
                               on_commit=self.on_commit):
-            return self._operation(activity=activity, user=user,
-                                   **kwargs)
+            return self._operation(activity=activity, user=user, **kwargs)
 
     def _operation(self, activity, user, system, **kwargs):
         """This method is the operation's particular implementation.
