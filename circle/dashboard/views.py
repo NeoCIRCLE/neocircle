@@ -442,7 +442,7 @@ class OperationView(DetailView):
         return self._opobj
 
     def get_context_data(self, **kwargs):
-        ctx = super(OperationView, self).get_context_data(form=None, **kwargs)
+        ctx = super(OperationView, self).get_context_data(**kwargs)
         ctx['op'] = self.get_op()
         ctx['url'] = self.request.path
         return ctx
@@ -455,10 +455,12 @@ class OperationView(DetailView):
                                             {'body': response.content})
         return response
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, extra=None, *args, **kwargs):
         self.object = self.get_object()
+        if extra is None:
+            extra = {}
         try:
-            self.get_op().async(user=request.user)
+            self.get_op().async(user=request.user, **extra)
         except Exception as e:
             messages.error(request, _('Could not start operation.'))
             logger.error(e)
