@@ -135,7 +135,14 @@ def register_operation(target_cls, op_cls, op_id=None):
     otherwise, the operation class' 'id' attribute will be used.
     """
     if op_id is None:
-        op_id = op_cls.id
+        try:
+            op_id = op_cls.id
+        except AttributeError:
+            raise NotImplementedError("Operations should specify an 'id' "
+                                      "attribute designating the name the "
+                                      "operation can be called by on its "
+                                      "host. Alternatively, provide the name "
+                                      "in the 'op_id' parameter to this call.")
 
     if not issubclass(target_cls, OperatedMixin):
         raise TypeError("%r is not a subclass of %r" %
