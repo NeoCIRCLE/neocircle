@@ -496,6 +496,8 @@ class VmMigrateView(VmOperationView):
         return ctx
 
     def post(self, request, extra=None, *args, **kwargs):
+        if extra is None:
+            extra = {}
         node = self.request.POST.get("node")
         if node:
             node = get_object_or_404(Node, pk=node)
