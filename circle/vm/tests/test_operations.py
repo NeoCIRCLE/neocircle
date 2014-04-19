@@ -44,11 +44,12 @@ class SaveAsTemplateOperationTestCase(TestCase):
         assert SaveAsTemplateOperation.id in getattr(Instance, op_reg_name)
 
     def test_rename(self):
-        assert SaveAsTemplateOperation._rename("foo") == "foo v2"
-        assert SaveAsTemplateOperation._rename("foo v2") == "foo v3"
-        assert SaveAsTemplateOperation._rename("foo v") == "foo v v2"
-        assert SaveAsTemplateOperation._rename("foo v9") == "foo v10"
-        assert SaveAsTemplateOperation._rename("foo v111") == "foo v112"
+        self.assertEqual(SaveAsTemplateOperation._rename("foo"), "foo v1")
+        self.assertEqual(SaveAsTemplateOperation._rename("foo v2"), "foo v3")
+        self.assertEqual(SaveAsTemplateOperation._rename("foo v"), "foo v v1")
+        self.assertEqual(SaveAsTemplateOperation._rename("foo v9"), "foo v10")
+        self.assertEqual(
+            SaveAsTemplateOperation._rename("foo v111"), "foo v112")
 
 
 class ShutdownOperationTestCase(TestCase):

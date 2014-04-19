@@ -1,6 +1,6 @@
 from __future__ import absolute_import, unicode_literals
 from logging import getLogger
-from re import match
+from re import search
 
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
@@ -203,13 +203,15 @@ class SaveAsTemplateOperation(InstanceOperation):
         """)
     icon = 'save'
 
-    def _rename(self, name):
-        m = match("^(.*)( v(\d+))?$", name)
-        if m.group(3) is None:
-            v = 2
+    @staticmethod
+    def _rename(name):
+        m = search(r" v(\d+)$", name)
+        if m:
+            v = int(m.group(1)) + 1
+            name = search(r"^(.*) v(\d+)$", name).group(1)
         else:
-            v = int(v) + 1
-        return "%s v%d" % (m.group(1), v)
+            v = 1
+        return "%s v%d" % (name, v)
 
     def _operation(self, activity, user, system, timeout=300,
                    with_shutdown=True, **kwargs):
