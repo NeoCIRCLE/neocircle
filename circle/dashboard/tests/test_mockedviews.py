@@ -112,6 +112,7 @@ class VmOperationViewTestCase(unittest.TestCase):
             self.assertEquals(
                 view.as_view()(request, pk=1234).render().status_code, 200)
 
+
 def FakeRequestFactory(*args, **kwargs):
     ''' FakeRequestFactory, FakeMessages and FakeRequestContext are good for
     mocking out django views; they are MUCH faster than the Django test client.
