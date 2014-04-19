@@ -1,5 +1,6 @@
 from __future__ import absolute_import, unicode_literals
 from logging import getLogger
+from re import match
 
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
@@ -206,7 +207,15 @@ class SaveAsTemplateOperation(InstanceOperation):
         """)
     icon = 'save'
 
-    def _operation(self, activity, name, user, system, timeout=300,
+    def _rename(self, name):
+        m = match("^(.*)( v(\d+))?$", name)
+        if m.group(3) is None:
+            v = 2
+        else:
+            v = int(v) + 1
+        return "%s v%d" % (m.group(1), v)
+
+    def _operation(self, activity, user, system, timeout=300,
                    with_shutdown=True, **kwargs):
         if with_shutdown:
             ShutdownOperation(self.instance).call(parent_activity=activity,
@@ -219,7 +228,7 @@ class SaveAsTemplateOperation(InstanceOperation):
             'description': self.instance.description,
             'lease': self.instance.lease,  # Can be problem in new VM
             'max_ram_size': self.instance.max_ram_size,
-            'name': name,
+            'name': self._rename(self.instance.name),
             'num_cores': self.instance.num_cores,
             'owner': user,
             'parent': self.instance.template,  # Can be problem
