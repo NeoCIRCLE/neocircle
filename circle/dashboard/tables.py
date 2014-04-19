@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from django.contrib.auth.models import Group, User
 from django_tables2 import Table, A
 from django_tables2.columns import (TemplateColumn, Column, BooleanColumn,

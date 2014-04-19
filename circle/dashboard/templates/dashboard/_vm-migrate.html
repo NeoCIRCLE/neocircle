@@ -1,10 +1,19 @@
+{% extends "dashboard/operate.html" %}
 {% load i18n %}
 {% load sizefieldtags %}
 
-<form method="POST" action="{% url "dashboard.views.vm-migrate" pk=vm.pk %}">
-  {% csrf_token %}
-  <ul id="vm-migrate-node-list">
-  {% with current=vm.node.pk selected=vm.select_node.pk %}
+{% block question %}
+<p>
+{% blocktrans with obj=object op=op.name %}
+Choose a compute node to migrate {{obj}} to.
+{% endblocktrans %}
+</p>
+<p class="text-info">{{op.name}}: {{op.description}}</p>
+{% endblock %}
+
+{% block formfields %}
+  <ul id="vm-migrate-node-list" class="list-unstyled">
+  {% with current=object.node.pk selected=object.select_node.pk %}
     {% for n in nodes %}
       <li class="panel panel-default"><div class="panel-body">
         <label for="migrate-to-{{n.pk}}">
@@ -22,5 +31,4 @@
     {% endfor %}
   {% endwith %}
   </ul>
-  <button type="submit" class="btn btn-primary btn-sm"><i class="icon-truck"></i> Migrate</button>
-</form>
+{% endblock %}

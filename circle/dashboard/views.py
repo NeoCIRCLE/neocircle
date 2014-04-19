@@ -1,10 +1,9 @@
-from __future__ import unicode_literals
+from __future__ import unicode_literals, absolute_import
 
 from os import getenv
 import json
 import logging
 import re
-from datetime import datetime
 import requests
 
 from django.conf import settings
@@ -47,7 +46,7 @@ from vm.models import (
 )
 from storage.models import Disk
 from firewall.models import Vlan, Host, Rule
-from dashboard.models import Favourite, Profile
+from .models import Favourite, Profile
 
 logger = logging.getLogger(__name__)
 
@@ -203,7 +202,8 @@ class VmDetailView(CheckedDetailView):
         context.update({
             'graphite_enabled': VmGraphView.get_graphite_url() is not None,
             'vnc_url': reverse_lazy("dashboard.views.detail-vnc",
-                                    kwargs={'pk': self.object.pk})
+                                    kwargs={'pk': self.object.pk}),
+            'ops': get_operations(instance, self.request.user),
         })
 
         # activity data
@@ -242,14 +242,6 @@ class VmDetailView(CheckedDetailView):
             'to_remove': self.__remove_tag,
             'port': self.__add_port,
             'new_network_vlan': self.__new_network,
-            'save_as': self.__save_as,
-            'shut_down': self.__shut_down,
-            'sleep': self.__sleep,
-            'wake_up': self.__wake_up,
-            'deploy': self.__deploy,
-            'reset': self.__reset,
-            'reboot': self.__reboot,
-            'shut_off': self.__shut_off,
         }
         for k, v in options.iteritems():
             if request.POST.get(k) is not None:
@@ -414,75 +406,132 @@ class VmDetailView(CheckedDetailView):
         return redirect("%s#network" % reverse_lazy(
             "dashboard.views.detail", kwargs={'pk': self.object.pk}))
 
-    def __save_as(self, request):
-        self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
-            raise PermissionDenied()
 
-        date = datetime.now().strftime("%Y-%m-%d %H:%M")
-        new_name = "Saved from %s (#%d) at %s" % (
-            self.object.name, self.object.pk, date
-        )
-        self.object.save_as_template.async(name=new_name,
-                                           user=request.user)
-        messages.success(request, _("Saving instance as template!"))
+class OperationView(DetailView):
+
+    template_name = 'dashboard/operate.html'
+
+    @property
+    def name(self):
+        return self.get_op().name
+
+    @property
+    def description(self):
+        return self.get_op().description
+
+    @classmethod
+    def get_urlname(cls):
+        return 'dashboard.vm.op.%s' % cls.op
+
+    def get_url(self):
+        return reverse(self.get_urlname(), args=(self.get_object().pk, ))
+
+    def get_wrapper_template_name(self):
+        if self.request.is_ajax():
+            return 'dashboard/_modal.html'
+        else:
+            return 'dashboard/_base.html'
+
+    @classmethod
+    def get_op_by_object(cls, obj):
+        return getattr(obj, cls.op)
+
+    def get_op(self):
+        if not hasattr(self, '_opobj'):
+            setattr(self, '_opobj', getattr(self.get_object(), self.op))
+        return self._opobj
+
+    def get_context_data(self, **kwargs):
+        ctx = super(OperationView, self).get_context_data(**kwargs)
+        ctx['op'] = self.get_op()
+        ctx['url'] = self.request.path
+        return ctx
+
+    def get(self, request, *args, **kwargs):
+        self.get_op().check_auth(request.user)
+        response = super(OperationView, self).get(request, *args, **kwargs)
+        response.render()
+        response.content = render_to_string(self.get_wrapper_template_name(),
+                                            {'body': response.content})
+        return response
+
+    def post(self, request, extra=None, *args, **kwargs):
+        self.object = self.get_object()
+        if extra is None:
+            extra = {}
+        try:
+            self.get_op().async(user=request.user, **extra)
+        except Exception as e:
+            messages.error(request, _('Could not start operation.'))
+            logger.error(e)
         return redirect("%s#activity" % self.object.get_absolute_url())
 
-    def __shut_down(self, request):
-        self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
-            raise PermissionDenied()
+    @classmethod
+    def factory(cls, op, icon='cog'):
+        return type(str(cls.__name__ + op),
+                    (cls, ), {'op': op, 'icon': icon})
 
-        self.object.shutdown.async(user=request.user)
-        return redirect("%s#activity" % self.object.get_absolute_url())
+    @classmethod
+    def bind_to_object(cls, instance):
+        v = cls()
+        v.get_object = lambda: instance
+        return v
 
-    def __sleep(self, request):
-        self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
-            raise PermissionDenied()
 
-        self.object.sleep.async(user=request.user)
-        return redirect("%s#activity" % self.object.get_absolute_url())
+class VmOperationView(OperationView):
 
-    def __wake_up(self, request):
-        self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
-            raise PermissionDenied()
+    model = Instance
 
-        self.object.wake_up.async(user=request.user)
-        return redirect("%s#activity" % self.object.get_absolute_url())
 
-    def __deploy(self, request):
-        self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
-            raise PermissionDenied()
+class VmMigrateView(VmOperationView):
 
-        self.object.deploy.async(user=request.user)
-        return redirect("%s#activity" % self.object.get_absolute_url())
+    op = 'migrate'
+    icon = 'truck'
+    template_name = 'dashboard/_vm-migrate.html'
 
-    def __reset(self, request):
-        self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
-            raise PermissionDenied()
+    def get_context_data(self, **kwargs):
+        ctx = super(VmOperationView, self).get_context_data(**kwargs)
+        ctx['nodes'] = [n for n in Node.objects.filter(enabled=True)
+                        if n.state == "ONLINE"]
+        return ctx
 
-        self.object.reset.async(user=request.user)
-        return redirect("%s#activity" % self.object.get_absolute_url())
+    def post(self, request, extra=None, *args, **kwargs):
+        if extra is None:
+            extra = {}
+        node = self.request.POST.get("node")
+        if node:
+            node = get_object_or_404(Node, pk=node)
+            extra["to_node"] = node
+        return super(VmMigrateView, self).post(request, extra, *args, **kwargs)
 
-    def __reboot(self, request):
-        self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
-            raise PermissionDenied()
 
-        self.object.reboot.async(user=request.user)
-        return redirect("%s#activity" % self.object.get_absolute_url())
+vm_ops = {
+    'reset': VmOperationView.factory(op='reset', icon='bolt'),
+    'deploy': VmOperationView.factory(op='deploy', icon='play'),
+    'migrate': VmMigrateView,
+    'reboot': VmOperationView.factory(op='reboot', icon='refresh'),
+    'shut_off': VmOperationView.factory(op='shut_off', icon='ban-circle'),
+    'shutdown': VmOperationView.factory(op='shutdown', icon='off'),
+    'save_as_template': VmOperationView.factory(
+        op='save_as_template', icon='save'),
+    'destroy': VmOperationView.factory(op='destroy', icon='remove'),
+    'sleep': VmOperationView.factory(op='sleep', icon='moon'),
+    'wake_up': VmOperationView.factory(op='wake_up', icon='sun'),
+}
 
-    def __shut_off(self, request):
-        self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
-            raise PermissionDenied()
 
-        self.object.shut_off.async(user=request.user)
-        return redirect("%s#activity" % self.object.get_absolute_url())
+def get_operations(instance, user):
+    ops = []
+    for k, v in vm_ops.iteritems():
+        try:
+            op = v.get_op_by_object(instance)
+            op.check_auth(user)
+            op.check_precond()
+        except:
+            pass  # unavailable
+        else:
+            ops.append(v.bind_to_object(instance))
+    return ops
 
 
 class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
@@ -1592,23 +1641,28 @@ def vm_activity(request, pk):
         raise PermissionDenied()
 
     response = {}
-    only_status = request.GET.get("only_status")
+    only_status = request.GET.get("only_status", "false")
 
     response['human_readable_status'] = instance.get_status_display()
     response['status'] = instance.status
     response['icon'] = instance.get_status_icon()
     if only_status == "false":  # instance activity
         context = {
+            'instance': instance,
             'activities': InstanceActivity.objects.filter(
                 instance=instance, parent=None
-            ).order_by('-started').select_related()
+            ).order_by('-started').select_related(),
+            'ops': get_operations(instance, request.user),
         }
 
-        activities = render_to_string(
+        response['activities'] = render_to_string(
             "dashboard/vm-detail/_activity-timeline.html",
             RequestContext(request, context),
         )
-        response['activities'] = activities
+        response['ops'] = render_to_string(
+            "dashboard/vm-detail/_operations.html",
+            RequestContext(request, context),
+        )
 
     return HttpResponse(
         json.dumps(response),
@@ -2016,40 +2070,6 @@ class NotificationView(LoginRequiredMixin, TemplateView):
             u.status = "read"
             u.save()
         return response
-
-
-class VmMigrateView(SuperuserRequiredMixin, TemplateView):
-
-    def get_template_names(self):
-        if self.request.is_ajax():
-            return ['dashboard/modal-wrapper.html']
-        else:
-            return ['dashboard/nojs-wrapper.html']
-
-    def get(self, request, form=None, *args, **kwargs):
-        context = self.get_context_data(**kwargs)
-        vm = Instance.objects.get(pk=kwargs['pk'])
-        context.update({
-            'template': 'dashboard/_vm-migrate.html',
-            'box_title': _('Migrate %(name)s' % {'name': vm.name}),
-            'ajax_title': True,
-            'vm': vm,
-            'nodes': [n for n in Node.objects.filter(enabled=True)
-                      if n.state == "ONLINE"]
-        })
-        return self.render_to_response(context)
-
-    def post(self, *args, **kwargs):
-        node = self.request.POST.get("node")
-        vm = Instance.objects.get(pk=kwargs['pk'])
-
-        if node:
-            node = Node.objects.get(pk=node)
-            vm.migrate.async(to_node=node, user=self.request.user)
-        else:
-            messages.error(self.request, _("You didn't select a node!"))
-
-        return redirect("%s#activity" % vm.get_absolute_url())
 
 
 def circle_login(request):

@@ -1,4 +1,5 @@
-from django.conf.urls import patterns, url
+from __future__ import absolute_import
+from django.conf.urls import patterns, url, include
 
 from vm.models import Instance
 from .views import (
@@ -34,7 +35,7 @@ urlpatterns = patterns(
         name="dashboard.views.template-list"),
     url(r"^template/delete/(?P<pk>\d+)/$", TemplateDelete.as_view(),
         name="dashboard.views.template-delete"),
-
+    url(r'^vm/(?P<pk>\d+)/op/', include('dashboard.vm.urls')),
     url(r'^vm/(?P<pk>\d+)/remove_port/(?P<rule>\d+)/$', PortDelete.as_view(),
         name='dashboard.views.remove-port'),
     url(r'^vm/(?P<pk>\d+)/$', VmDetailView.as_view(),

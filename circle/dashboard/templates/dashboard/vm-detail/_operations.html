@@ -1,0 +1,9 @@
+{% load i18n %}
+
+{% for op in ops %}
+<a href="{{op.get_url}}" class="operation operation-{{op.op}} btn btn-default btn-xs"
+  title="{{op.name}}: {{op.description}}">
+    <i class="icon-{{op.icon}}"></i>
+    <span class="sr-only">{{op.name}}</span>
+</a>
+{% endfor %}
