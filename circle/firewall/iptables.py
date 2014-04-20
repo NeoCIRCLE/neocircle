@@ -89,7 +89,7 @@ class IptChain(object):
             self.rules.add(rule)
 
     def sort(self):
-        return sorted(list(self.rules))
+        return sorted(list(self.rules), reverse=True)
 
     def __len__(self):
         return len(self.rules)

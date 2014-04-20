@@ -32,8 +32,8 @@ class Migration(SchemaMigration):
             if rule.nat:
                 # swap
                 tmp = rule.dport
-#                rule.dport = rule.nat_external_port
-#                rule.nat_external_port = tmp
+                rule.dport = rule.nat_external_port
+                rule.nat_external_port = tmp
             if rule.direction == '0':
                 rule.direction = 'out'
             elif rule.direction == '1':
