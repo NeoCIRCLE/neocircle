@@ -116,6 +116,7 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
     description = TextField(verbose_name=_('description'), blank=True)
     parent = ForeignKey('self', null=True, blank=True,
                         verbose_name=_('parent template'),
+                        on_delete=SET_NULL,
                         help_text=_('Template which this one is derived of.'))
     disks = ManyToManyField('storage.Disk', verbose_name=_('disks'),
                             related_name='template_set',
