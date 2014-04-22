@@ -979,7 +979,7 @@ class NodeList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
             number_of_VMs=Count('instance_set')).select_related('host')
 
 
-class GroupList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
+class GroupList(LoginRequiredMixin, SingleTableView):
     template_name = "dashboard/group-list.html"
     modul = Group
     table_class = GroupListTable
