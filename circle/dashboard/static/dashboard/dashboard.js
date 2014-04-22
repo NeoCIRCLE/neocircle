@@ -224,6 +224,46 @@ $(function () {
     }
   });
 
+  /* search for groups */
+  var my_groups = []
+  $("#dashboard-group-search-input").keyup(function(e) {
+    // if my_groups is empty get a list of our groups
+      if(my_groups.length < 1) {
+      $.ajaxSetup( { "async": false } );
+      $.get("/dashboard/group/list/", function(result) {
+        for(var i in result) {
+          my_groups.push({
+            'url': result[i].url,
+            'name': result[i].name.toLowerCase(),
+          });
+        }
+      });
+      $.ajaxSetup( { "async": true } );
+    }
+
+    input = $("#dashboard-group-search-input").val().toLowerCase();
+    var search_result = []
+    var html = '';
+    for(var i in my_groups) {
+      if(my_groups[i].name.indexOf(input) != -1) {
+        search_result.push(my_groups[i]);
+      }
+    }
+    for(var i=0; i<5 && i<search_result.length; i++)
+      html += generateGroupHTML(search_result[i].url, search_result[i].name);
+    if(search_result.length == 0)
+      html += '<div class="list-group-item">No result</div>';
+    $("#dashboard-group-list").html(html);
+
+    // if there is only one result and ENTER is pressed redirect
+    if(e.keyCode == 13 && search_result.length == 1) {
+      window.location.href = search_result[0].url;
+    }
+    if(e.keyCode == 13 && search_result.length > 1 && input.length > 0) {
+      window.location.href = "/dashboard/group/list/?s=" + input;
+    }
+  });
+
   /* notification message toggle */
   $(document).on('click', ".notification-message-subject", function() {
     $(".notification-message-text", $(this).parent()).slideToggle();
@@ -247,6 +287,11 @@ function generateVmHTML(pk, name, host, icon, _status, fav) {
         '</div>' +                                                               
       '<div style="clear: both;"></div>' +                                       
       '</a>';     
+}
+
+function generateuGroupHTML( name, url, icon, _status, fav) {
+  return name+url +
+      '';
 }
 
 /* copare vm-s by fav, pk order */
