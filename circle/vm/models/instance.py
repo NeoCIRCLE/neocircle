@@ -84,7 +84,8 @@ class VirtualMachineDescModel(BaseResourceConfigModel):
     boot_menu = BooleanField(verbose_name=_('boot menu'), default=False,
                              help_text=_(
                                  'Show boot device selection menu on boot.'))
-    lease = ForeignKey(Lease, help_text=_("Preferred expiration periods."))
+    lease = ForeignKey(Lease, help_text=_("Preferred expiration periods."),
+                       verbose_name=_("Lease"))
     raw_data = TextField(verbose_name=_('raw_data'), blank=True, help_text=_(
         'Additional libvirt domain parameters in XML format.'))
     req_traits = ManyToManyField(Trait, blank=True,

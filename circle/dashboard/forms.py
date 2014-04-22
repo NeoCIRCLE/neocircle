@@ -463,13 +463,16 @@ class NodeForm(forms.ModelForm):
 
 class TemplateForm(forms.ModelForm):
     networks = forms.ModelMultipleChoiceField(
-        queryset=VLANS, required=False)
+        queryset=None, required=False, label=_("Networks"))
     parent_type = forms.CharField(required=False)
 
     def __init__(self, *args, **kwargs):
         self.parent = kwargs.pop("parent", None)
         self.user = kwargs.pop("user", None)
         super(TemplateForm, self).__init__(*args, **kwargs)
+
+        self.fields['networks'].queryset = Vlan.get_objects_with_level(
+            'user', self.user)
 
         data = self.data.copy()
         data['owner'] = self.user.pk
@@ -590,7 +593,7 @@ class TemplateForm(forms.ModelForm):
                 Field('arch'),
             ),
             Fieldset(
-                "stuff",
+                _("Virtual machine settings"),
                 Field('access_method'),
                 Field('boot_menu'),
                 Field('raw_data', **kwargs_raw_data),
@@ -600,7 +603,7 @@ class TemplateForm(forms.ModelForm):
                 Field("system"),
             ),
             Fieldset(
-                _("External"),
+                _("External resources"),
                 Field("networks"),
                 Field("lease"),
                 Field("tags"),
