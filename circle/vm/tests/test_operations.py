@@ -43,6 +43,14 @@ class SaveAsTemplateOperationTestCase(TestCase):
     def test_operation_registered(self):
         assert SaveAsTemplateOperation.id in getattr(Instance, op_reg_name)
 
+    def test_rename(self):
+        self.assertEqual(SaveAsTemplateOperation._rename("foo"), "foo v1")
+        self.assertEqual(SaveAsTemplateOperation._rename("foo v2"), "foo v3")
+        self.assertEqual(SaveAsTemplateOperation._rename("foo v"), "foo v v1")
+        self.assertEqual(SaveAsTemplateOperation._rename("foo v9"), "foo v10")
+        self.assertEqual(
+            SaveAsTemplateOperation._rename("foo v111"), "foo v112")
+
 
 class ShutdownOperationTestCase(TestCase):
     def test_operation_registered(self):

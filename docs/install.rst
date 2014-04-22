@@ -129,7 +129,8 @@ Install the required Python libraries to the virtual environment::
 
 Sync the database and create a superuser::
 
-  $ circle/manage.py syncdb --migrate --noinput
+  $ circle/manage.py syncdb --all --noinput
+  $ circle/manage.py migrate --fake
   $ circle/manage.py createsuperuser --username=test --email=test@example.org 
 
 You can now start the development server::
@@ -179,4 +180,4 @@ configure vim like we do::
       filetype plugin indent on
       syntax on
   END
-  $ sudo pip install pyflakes rope pep8 mccabe     
+  $ sudo pip install pyflakes rope pep8 mccabe

@@ -277,6 +277,7 @@ function checkNewActivity(only_status, runs) {
     success: function(data) {
       if(!only_status) {
         $("#activity-timeline").html(data['activities']);
+        $("#ops").html(data['ops']);
         $("[title]").tooltip();
       }
 

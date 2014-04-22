@@ -1,5 +1,6 @@
 from __future__ import absolute_import, unicode_literals
 from logging import getLogger
+from re import search
 
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
@@ -8,7 +9,6 @@ from django.utils.translation import ugettext_lazy as _
 from celery.exceptions import TimeLimitExceeded
 
 from common.operations import Operation, register_operation
-from storage.models import Disk
 from .tasks.local_tasks import async_instance_operation, async_node_operation
 from .models import (
     Instance, InstanceActivity, InstanceTemplate, Node, NodeActivity,
@@ -21,6 +21,7 @@ logger = getLogger(__name__)
 class InstanceOperation(Operation):
     acl_level = 'owner'
     async_operation = async_instance_operation
+    host_cls = Instance
 
     def __init__(self, instance):
         super(InstanceOperation, self).__init__(subject=instance)
@@ -55,15 +56,12 @@ class InstanceOperation(Operation):
                 user=user)
 
 
-def register_instance_operation(op_cls, op_id=None):
-    return register_operation(Instance, op_cls, op_id)
-
-
 class DeployOperation(InstanceOperation):
     activity_code_suffix = 'deploy'
     id = 'deploy'
     name = _("deploy")
     description = _("Deploy new virtual machine with network.")
+    icon = 'play'
 
     def on_commit(self, activity):
         activity.resultant_state = 'RUNNING'
@@ -92,7 +90,7 @@ class DeployOperation(InstanceOperation):
         self.instance.renew(which='both', base_activity=activity)
 
 
-register_instance_operation(DeployOperation)
+register_operation(DeployOperation)
 
 
 class DestroyOperation(InstanceOperation):
@@ -100,6 +98,7 @@ class DestroyOperation(InstanceOperation):
     id = 'destroy'
     name = _("destroy")
     description = _("Destroy virtual machine and its networks.")
+    icon = 'remove'
 
     def on_commit(self, activity):
         activity.resultant_state = 'DESTROYED'
@@ -132,7 +131,7 @@ class DestroyOperation(InstanceOperation):
         self.instance.save()
 
 
-register_instance_operation(DestroyOperation)
+register_operation(DestroyOperation)
 
 
 class MigrateOperation(InstanceOperation):
@@ -140,6 +139,7 @@ class MigrateOperation(InstanceOperation):
     id = 'migrate'
     name = _("migrate")
     description = _("Live migrate running VM to another node.")
+    icon = 'truck'
 
     def _operation(self, activity, user, system, to_node=None, timeout=120):
         if not to_node:
@@ -162,7 +162,7 @@ class MigrateOperation(InstanceOperation):
             self.instance.deploy_net()
 
 
-register_instance_operation(MigrateOperation)
+register_operation(MigrateOperation)
 
 
 class RebootOperation(InstanceOperation):
@@ -170,12 +170,13 @@ class RebootOperation(InstanceOperation):
     id = 'reboot'
     name = _("reboot")
     description = _("Reboot virtual machine with Ctrl+Alt+Del signal.")
+    icon = 'refresh'
 
     def _operation(self, activity, user, system, timeout=5):
         self.instance.reboot_vm(timeout=timeout)
 
 
-register_instance_operation(RebootOperation)
+register_operation(RebootOperation)
 
 
 class ResetOperation(InstanceOperation):
@@ -183,11 +184,12 @@ class ResetOperation(InstanceOperation):
     id = 'reset'
     name = _("reset")
     description = _("Reset virtual machine (reset button).")
+    icon = 'bolt'
 
     def _operation(self, activity, user, system, timeout=5):
         self.instance.reset_vm(timeout=timeout)
 
-register_instance_operation(ResetOperation)
+register_operation(ResetOperation)
 
 
 class SaveAsTemplateOperation(InstanceOperation):
@@ -199,12 +201,27 @@ class SaveAsTemplateOperation(InstanceOperation):
         Template can be shared with groups and users.
         Users can instantiate Virtual Machines from Templates.
         """)
+    icon = 'save'
 
-    def _operation(self, activity, name, user, system, timeout=300,
+    @staticmethod
+    def _rename(name):
+        m = search(r" v(\d+)$", name)
+        if m:
+            v = int(m.group(1)) + 1
+            name = search(r"^(.*) v(\d+)$", name).group(1)
+        else:
+            v = 1
+        return "%s v%d" % (name, v)
+
+    def _operation(self, activity, user, system, timeout=300,
                    with_shutdown=True, **kwargs):
         if with_shutdown:
-            ShutdownOperation(self.instance).call(parent_activity=activity,
-                                                  user=user)
+            try:
+                ShutdownOperation(self.instance).call(parent_activity=activity,
+                                                      user=user)
+            except Instance.WrongStateError:
+                pass
+
         # prepare parameters
         params = {
             'access_method': self.instance.access_method,
@@ -213,7 +230,7 @@ class SaveAsTemplateOperation(InstanceOperation):
             'description': self.instance.description,
             'lease': self.instance.lease,  # Can be problem in new VM
             'max_ram_size': self.instance.max_ram_size,
-            'name': name,
+            'name': self._rename(self.instance.name),
             'num_cores': self.instance.num_cores,
             'owner': user,
             'parent': self.instance.template,  # Can be problem
@@ -224,20 +241,24 @@ class SaveAsTemplateOperation(InstanceOperation):
         }
         params.update(kwargs)
 
+        from storage.models import Disk
+
         def __try_save_disk(disk):
             try:
                 return disk.save_as()
             except Disk.WrongDiskTypeError:
                 return disk
 
+        with activity.sub_activity('saving_disks'):
+            disks = [__try_save_disk(disk)
+                     for disk in self.instance.disks.all()]
+
         # create template and do additional setup
         tmpl = InstanceTemplate(**params)
         tmpl.full_clean()  # Avoiding database errors.
         tmpl.save()
         try:
-            with activity.sub_activity('saving_disks'):
-                tmpl.disks.add(*[__try_save_disk(disk)
-                                 for disk in self.instance.disks.all()])
+            tmpl.disks.add(*disks)
             # create interface templates
             for i in self.instance.interface_set.all():
                 i.save_as_template(tmpl)
@@ -248,7 +269,7 @@ class SaveAsTemplateOperation(InstanceOperation):
             return tmpl
 
 
-register_instance_operation(SaveAsTemplateOperation)
+register_operation(SaveAsTemplateOperation)
 
 
 class ShutdownOperation(InstanceOperation):
@@ -256,6 +277,12 @@ class ShutdownOperation(InstanceOperation):
     id = 'shutdown'
     name = _("shutdown")
     description = _("Shutdown virtual machine with ACPI signal.")
+    icon = 'off'
+
+    def check_precond(self):
+        super(ShutdownOperation, self).check_precond()
+        if self.instance.status not in ['RUNNING']:
+            raise self.instance.WrongStateError(self.instance)
 
     def on_abort(self, activity, error):
         if isinstance(error, TimeLimitExceeded):
@@ -272,7 +299,7 @@ class ShutdownOperation(InstanceOperation):
         self.instance.yield_vnc_port()
 
 
-register_instance_operation(ShutdownOperation)
+register_operation(ShutdownOperation)
 
 
 class ShutOffOperation(InstanceOperation):
@@ -280,6 +307,7 @@ class ShutOffOperation(InstanceOperation):
     id = 'shut_off'
     name = _("shut off")
     description = _("Shut off VM (plug-out).")
+    icon = 'ban-circle'
 
     def on_commit(self, activity):
         activity.resultant_state = 'STOPPED'
@@ -298,7 +326,7 @@ class ShutOffOperation(InstanceOperation):
         self.instance.yield_vnc_port()
 
 
-register_instance_operation(ShutOffOperation)
+register_operation(ShutOffOperation)
 
 
 class SleepOperation(InstanceOperation):
@@ -306,6 +334,7 @@ class SleepOperation(InstanceOperation):
     id = 'sleep'
     name = _("sleep")
     description = _("Suspend virtual machine with memory dump.")
+    icon = 'moon'
 
     def check_precond(self):
         super(SleepOperation, self).check_precond()
@@ -334,7 +363,7 @@ class SleepOperation(InstanceOperation):
         # VNC port needs to be kept
 
 
-register_instance_operation(SleepOperation)
+register_operation(SleepOperation)
 
 
 class WakeUpOperation(InstanceOperation):
@@ -345,6 +374,7 @@ class WakeUpOperation(InstanceOperation):
 
         Power on Virtual Machine and load its memory from dump.
         """)
+    icon = 'sun'
 
     def check_precond(self):
         super(WakeUpOperation, self).check_precond()
@@ -374,11 +404,12 @@ class WakeUpOperation(InstanceOperation):
         self.instance.renew(which='both', base_activity=activity)
 
 
-register_instance_operation(WakeUpOperation)
+register_operation(WakeUpOperation)
 
 
 class NodeOperation(Operation):
     async_operation = async_node_operation
+    host_cls = Node
 
     def __init__(self, node):
         super(NodeOperation, self).__init__(subject=node)
@@ -401,10 +432,6 @@ class NodeOperation(Operation):
                                        node=self.node, user=user)
 
 
-def register_node_operation(op_cls, op_id=None):
-    return register_operation(Node, op_cls, op_id)
-
-
 class FlushOperation(NodeOperation):
     activity_code_suffix = 'flush'
     id = 'flush'
@@ -418,4 +445,4 @@ class FlushOperation(NodeOperation):
                 i.migrate()
 
 
-register_node_operation(FlushOperation)
+register_operation(FlushOperation)

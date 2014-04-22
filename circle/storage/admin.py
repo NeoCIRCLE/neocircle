@@ -5,7 +5,8 @@ from .models import Disk, DataStore, DiskActivity
 
 
 class DiskAdmin(contrib.admin.ModelAdmin):
-    list_display = ('name', 'datastore')
+    list_display = ('id', 'name', 'base', 'type', 'datastore')
+    ordering = ('-id', )
 
 
 class DataStoreAdmin(contrib.admin.ModelAdmin):

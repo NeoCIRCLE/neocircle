@@ -2,22 +2,21 @@
 
 $(function() {
 
-  /* vm migrate */
-  $('.vm-migrate').click(function(e) {
-    var icon = $(this).children("i");
-    var vm = $(this).data("vm-pk");
-    icon.removeClass("icon-truck").addClass("icon-spinner icon-spin");
+  /* vm operations */
+  $('#ops').on('click', '.operation.btn', function(e) {
+    var icon = $(this).children("i").addClass('icon-spinner icon-spin');
 
     $.ajax({
       type: 'GET',
-      url: '/dashboard/vm/' + vm + '/migrate/', 
+      url: $(this).attr('href'),
       success: function(data) {
-        icon.addClass("icon-truck").removeClass("icon-spinner icon-spin");
+        icon.removeClass("icon-spinner icon-spin");
         $('body').append(data);
-        $('#create-modal').modal('show');
-        $('#create-modal').on('hidden.bs.modal', function() {
-          $('#create-modal').remove();
+        $('#confirmation-modal').modal('show');
+        $('#confirmation-modal').on('hidden.bs.modal', function() {
+          $('#confirmation-modal').remove();
         });
+
         $('#vm-migrate-node-list li').click(function(e) {
           var li = $(this).closest('li');
           if (li.find('input').attr('disabled'))

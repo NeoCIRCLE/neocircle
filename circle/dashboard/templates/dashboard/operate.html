@@ -1,0 +1,19 @@
+{% load i18n %}
+
+{% block question %}
+<p>
+{% blocktrans with obj=object op=op.name %}
+Do you want to do the following operation on {{obj}}:
+<strong>{{op}}</strong>?
+{% endblocktrans %}
+</p>
+<p class="text-info">{{op.name}}: {{op.description}}</p>
+{% endblock %}
+<form method="POST" action="{{url}}">{% csrf_token %}
+  {% block formfields %}{% endblock %}
+  <div class="pull-right">
+    <a class="btn btn-default" href="{{object.get_absolute_url}}"
+        data-dismiss="modal">{% trans "Cancel" %}</a>
+      <button class="btn btn-danger" type="submit">{% if op.icon %}<i class="icon-{{op.icon}}"></i> {% endif %}{{ op|capfirst }}</button>
+  </div>
+</form>

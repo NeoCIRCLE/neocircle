@@ -78,7 +78,7 @@ class DiskTestCase(TestCase):
         d.DiskIsNotReady = MockException
         d.type = "qcow2-norm"
         d.is_in_use = False
-        d.ready = False
+        d.is_ready = False
         with self.assertRaises(MockException):
             Disk.save_as(d)
 
@@ -89,4 +89,4 @@ class DiskTestCase(TestCase):
 
     def test_undeployed_disk_ready(self):
         d = self._disk()
-        assert not d.ready
+        assert not d.is_ready

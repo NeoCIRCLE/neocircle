@@ -8,54 +8,11 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Renaming field 'Host.pub_ipv4' to 'Host.external_ipv4'
-        db.rename_column(u'firewall_host', 'pub_ipv4', 'external_ipv4')
-
-        # Renaming field 'Rule.nat_dport' to 'Rule.nat_external_port'
-        db.rename_column(u'firewall_rule', 'nat_dport', 'nat_external_port')
-
-        # Adding field 'Rule.priority'
-        db.add_column(u'firewall_rule', 'priority',
-                      self.gf('django.db.models.fields.IntegerField')(default=1000, null=True, blank=True),
-                      keep_default=False)
-
-        # Adding field 'Rule.nat_external_ipv4'
-        db.add_column(u'firewall_rule', 'nat_external_ipv4',
-                      self.gf('firewall.fields.IPAddressField')(max_length=100, null=True, blank=True),
-                      keep_default=False)
-
-        # Changing field 'Rule.direction'
-        db.alter_column(u'firewall_rule', 'direction', self.gf('django.db.models.fields.CharField')(max_length=3))
-
-        # Migrating data
-        for rule in orm.Rule.objects.all():
-            if rule.nat:
-                # swap
-                tmp = rule.dport
-                rule.dport = rule.nat_external_port
-                rule.nat_external_port = tmp
-            if rule.direction == '0':
-                rule.direction = 'out'
-            elif rule.direction == '1':
-                rule.direction = 'in'
-            rule.save()
+        db.rename_table(u'firewall_blacklist', 'firewall_blacklistitem')
 
     def backwards(self, orm):
+        db.rename_table(u'firewall_blacklistitem', 'firewall_blacklist')
 
-        # Renaming field 'Host.external_ipv4' to 'Host.pub_ipv4'
-        db.rename_column(u'firewall_host', 'external_ipv4', 'pub_ipv4')
-
-        # Renaming field 'Rule.nat_external_port' to 'Rule.nat_dport'
-        db.rename_column(u'firewall_rule', 'nat_external_port', 'nat_dport')
-
-        # Deleting field 'Rule.priority'
-        db.delete_column(u'firewall_rule', 'priority')
-
-        # Deleting field 'Rule.nat_external_ipv4'
-        db.delete_column(u'firewall_rule', 'nat_external_ipv4')
-
-        # Changing field 'Rule.direction'
-        db.alter_column(u'firewall_rule', 'direction', self.gf('django.db.models.fields.CharField')(max_length=3))
 
     models = {
         u'acl.level': {
@@ -111,8 +68,8 @@ class Migration(SchemaMigration):
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
-        u'firewall.blacklist': {
-            'Meta': {'object_name': 'Blacklist'},
+        u'firewall.blacklistitem': {
+            'Meta': {'object_name': 'BlacklistItem'},
             'created_at': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'host': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['firewall.Host']", 'null': 'True', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -190,7 +147,7 @@ class Migration(SchemaMigration):
         },
         u'firewall.rule': {
             'Meta': {'ordering': "('direction', 'proto', 'sport', 'dport', 'nat_external_port', 'host')", 'object_name': 'Rule'},
-            'accept': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'action': ('django.db.models.fields.CharField', [], {'default': "'drop'", 'max_length': '10'}),
             'created_at': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'description': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'direction': ('django.db.models.fields.CharField', [], {'max_length': '3'}),
@@ -206,11 +163,11 @@ class Migration(SchemaMigration):
             'nat_external_ipv4': ('firewall.fields.IPAddressField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
             'nat_external_port': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']", 'null': 'True', 'blank': 'True'}),
-            'priority': ('django.db.models.fields.IntegerField', [], {'default': '1000', 'null': 'True', 'blank': 'True'}),
             'proto': ('django.db.models.fields.CharField', [], {'max_length': '10', 'null': 'True', 'blank': 'True'}),
             'sport': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
             'vlan': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'rules'", 'null': 'True', 'to': u"orm['firewall.Vlan']"}),
-            'vlangroup': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'rules'", 'null': 'True', 'to': u"orm['firewall.VlanGroup']"})
+            'vlangroup': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'rules'", 'null': 'True', 'to': u"orm['firewall.VlanGroup']"}),
+            'weight': ('django.db.models.fields.IntegerField', [], {'default': '30000'})
         },
         u'firewall.switchport': {
             'Meta': {'object_name': 'SwitchPort'},
@@ -228,6 +185,7 @@ class Migration(SchemaMigration):
             'description': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'dhcp_pool': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'domain': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['firewall.Domain']"}),
+            'host_ipv6_prefixlen': ('django.db.models.fields.IntegerField', [], {'default': '112'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'ipv6_template': ('django.db.models.fields.TextField', [], {'default': "'2001:738:2001:4031:%(b)d:%(c)d:%(d)d:0'"}),
             'managed': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
@@ -235,7 +193,7 @@ class Migration(SchemaMigration):
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '20'}),
             'network4': ('firewall.fields.IPNetworkField', [], {'max_length': '100'}),
             'network6': ('firewall.fields.IPNetworkField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'network_type': ('django.db.models.fields.CharField', [], {'max_length': '20'}),
+            'network_type': ('django.db.models.fields.CharField', [], {'default': "'portforward'", 'max_length': '20'}),
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']", 'null': 'True', 'blank': 'True'}),
             'reverse_domain': ('django.db.models.fields.TextField', [], {'default': "'%(d)d.%(c)d.%(b)d.%(a)d.in-addr.arpa'"}),
             'snat_ip': ('django.db.models.fields.GenericIPAddressField', [], {'max_length': '39', 'null': 'True', 'blank': 'True'}),
