@@ -464,7 +464,6 @@ class NodeForm(forms.ModelForm):
 class TemplateForm(forms.ModelForm):
     networks = forms.ModelMultipleChoiceField(
         queryset=VLANS, required=False)
-    system = forms.CharField(widget=forms.TextInput)
     parent_type = forms.CharField(required=False)
 
     def __init__(self, *args, **kwargs):
@@ -613,6 +612,9 @@ class TemplateForm(forms.ModelForm):
     class Meta:
         model = InstanceTemplate
         exclude = ('state', 'disks', )
+        widgets = {
+            'system': forms.TextInput
+        }
 
 
 class TemplateCloneForm(forms.ModelForm):
