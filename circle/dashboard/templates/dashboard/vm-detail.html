@@ -12,20 +12,20 @@
     <i class="icon-play"></i> {% trans "Start template tutorial tour" %}
   </a>
   <ol>
-    <li>Modify the vm to suit your needs <strong>(optional)</strong>
+    <li>{% trans "Modify the VM to suit your needs <strong>(optional)</strong>" %}
       <ul>
-        <li>Change the description</li>
-        <li>Change the resources it will need (CPU and RAM)</li>
-        <li>Attach or deattach disks</li>
-        <li>Add or remove network interfaces</li>
+        <li>{% trans "Change the name and description" %}</li>
+        <li>{% trans "Change the resources (CPU and RAM)" %}</li>
+        <li>{% trans "Attach or detach disks" %}</li>
+        <li>{% trans "Add or remove network interfaces" %}</li>
       </ul>
     </li>
-    <li>Deploy the vm</li>
-    <li>Connect to the machine</li>
-    <li>Do all the needed installation/customization</li>
-    <li>Log off</li>
+    <li>{% trans "Deploy the VM" %}</li>
+    <li>{% trans "Connect to the machine" %}</li>
+    <li>{% trans "Do all the needed installations/customizations" %}</li>
+    <li>{% trans "Log off from the machine" %}</li>
     <li>
-      Press the "Save as template" button
+      {% trans "Press the Save as template button" %}
       <form style="display: inline;" class="vm-details-button-save-as pull-right" 
         method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
         {% csrf_token %}
