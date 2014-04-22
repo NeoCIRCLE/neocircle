@@ -7,7 +7,7 @@
     <h3 class="no-margin"><i class="icon-group"></i> {% trans "Groups" %}</h3>
   </div>
   <div class="list-group" id="vm-list-view">
-    <div id="dashboard-group-list">	  
+    <div id="dashboard-group-list">
       {% for i in groups %}
         <a href="{% url "dashboard.views.group-detail" pk=i.pk %}" class="list-group-item real-link">
         <i class="icon-group"></i> {{ i.name }}
