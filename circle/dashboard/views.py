@@ -994,7 +994,8 @@ class GroupList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
                     'operator', user).values_list('pk')]
                 groups = Group.objects.filter(groupprofile__in=pks)
             groups = [{
-                'url': '',
+                'url': reverse("dashboard.views.group-detail",
+                               kwargs={'pk': i.pk}),
                 'name': i.name} for i in groups]
             return HttpResponse(
                 json.dumps(list(groups)),
