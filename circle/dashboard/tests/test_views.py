@@ -175,6 +175,46 @@ class VmDetailTest(LoginMixin, TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(inst.interface_set.count(), interface_count + 1)
 
+    def test_permitted_network_delete(self):
+        c = Client()
+        self.login(c, "user1")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u1, 'owner')
+        inst.add_interface(vlan=Vlan.objects.get(pk=1), user=self.us)
+
+        iface_count = inst.interface_set.count()
+        c.post("/dashboard/interface/1/delete/")
+        self.assertEqual(inst.interface_set.count(), iface_count - 1)
+
+    def test_permitted_network_delete_w_ajax(self):
+        c = Client()
+        self.login(c, "user1")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u1, 'owner')
+        vlan = Vlan.objects.get(pk=1)
+        inst.add_interface(vlan=vlan, user=self.us)
+
+        iface_count = inst.interface_set.count()
+        response = c.post("/dashboard/interface/1/delete/",
+                          HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        removed_network = json.loads(response.content)['removed_network']
+        self.assertEqual(removed_network['vlan'], vlan.name)
+        self.assertEqual(removed_network['vlan_pk'], vlan.pk)
+        self.assertEqual(removed_network['managed'], vlan.managed)
+        self.assertEqual(inst.interface_set.count(), iface_count - 1)
+
+    def test_unpermitted_network_delete(self):
+        c = Client()
+        self.login(c, "user1")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u1, 'user')
+        inst.add_interface(vlan=Vlan.objects.get(pk=1), user=self.us)
+        iface_count = inst.interface_set.count()
+
+        response = c.post("/dashboard/interface/1/delete/")
+        self.assertEqual(iface_count, inst.interface_set.count())
+        self.assertEqual(response.status_code, 403)
+
     def test_create_vm_w_unpermitted_network(self):
         c = Client()
         self.login(c, 'user2')
