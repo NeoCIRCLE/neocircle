@@ -2277,7 +2277,13 @@ class InterfaceDeleteView(DeleteView):
 
         if request.is_ajax():
             return HttpResponse(
-                json.dumps({'message': success_message}),
+                json.dumps(
+                    {'message': success_message,
+                     'removed_network': {
+                         'vlan': self.object.vlan.name,
+                         'vlan_pk': self.object.vlan.pk,
+                         'managed': self.object.host is not None,
+                     }}),
                 content_type="application/json",
             )
         else:

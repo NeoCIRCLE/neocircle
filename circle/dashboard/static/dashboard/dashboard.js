@@ -304,9 +304,6 @@ function deleteObject(data) {
           $('a[data-disk-pk="' + data.pk + '"]').parent("li").fadeOut();
           $('a[data-disk-pk="' + data.pk + '"]').parent("h4").fadeOut();
         } 
-        else if(data.type === "interface") {
-          $('a[data-interface-pk="' + data.pk + '"]').closest("div").fadeOut();
-        }
         else { 
           $('a[data-'+data['type']+'-pk="' + data['pk'] + '"]').closest('tr').fadeOut(function() {
             $(this).remove();  

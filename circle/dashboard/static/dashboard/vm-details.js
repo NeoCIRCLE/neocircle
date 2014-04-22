@@ -123,8 +123,7 @@ $(function() {
 
   /* add network button */
   $("#vm-details-network-add").click(function() {
-    $("#vm-details-network-add-for-form").html($("#vm-details-network-add-form").html());
-    $('input[name="new_network_managed"]').tooltip();
+    $("#vm-details-network-add-form").toggle();
     return false;
   });
 
@@ -142,7 +141,7 @@ $(function() {
   /* for interface remove buttons */
   $('.interface-remove').click(function() {
     var interface_pk = $(this).data('interface-pk');
-    addModalConfirmation(deleteObject, 
+    addModalConfirmation(removeInterface, 
       { 'url': '/dashboard/interface/' + interface_pk + '/delete/',
         'data': [],
         'pk': interface_pk,
@@ -150,6 +149,34 @@ $(function() {
       });
     return false;
   });
+
+  /* removing interface post */
+  function removeInterface(data) {
+    $.ajax({
+      type: 'POST',
+      url: data['url'],
+      headers: {"X-CSRFToken": getCookie('csrftoken')}, 
+      success: function(re, textStatus, xhr) { 
+        /* remove the html element */
+        $('a[data-interface-pk="' + data.pk + '"]').closest("div").fadeOut();
+        
+        /* add the removed element to the list */
+        network_select = $('select[name="new_network_vlan"]');
+        name_html = (re.removed_network.managed ? "&#xf0ac;": "&#xf0c1;") + " " + re.removed_network.vlan;
+        option_html = '<option value="' + re.removed_network.vlan_pk + '">' + name_html + '</option>';
+        // if it's -1 then it's a dummy placeholder so we can use .html
+        if($("option", network_select)[0].value === "-1") {
+          network_select.html(option_html);
+          network_select.next("div").children("button").prop("disabled", false); 
+        } else {
+          network_select.append(option_html);
+        }
+      },
+      error: function(xhr, textStatus, error) {
+        addMessage('Uh oh :(', 'danger')
+      }
+    });
+  }
 
   /* rename */
   $("#vm-details-h1-name, .vm-details-rename-button").click(function() {
@@ -198,7 +225,6 @@ $(function() {
   /* description update ajax */
   $('.vm-details-description-submit').click(function() {
     var description = $(this).prev("textarea").val();
-    console.log(description);
     $.ajax({
       method: 'POST',
       url: location.href,
