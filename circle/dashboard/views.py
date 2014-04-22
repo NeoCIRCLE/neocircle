@@ -396,8 +396,7 @@ class VmDetailView(CheckedDetailView):
         if not vlan.has_level(request.user, 'user'):
             raise PermissionDenied()
         try:
-            Interface.create(vlan=vlan, instance=self.object,
-                             managed=vlan.managed, owner=request.user)
+            self.object.add_interface(vlan=vlan, user=request.user)
             messages.success(request, _("Successfully added new interface!"))
         except Exception, e:
             error = u' '.join(e.messages)

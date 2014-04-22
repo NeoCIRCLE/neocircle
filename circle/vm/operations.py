@@ -11,7 +11,8 @@ from celery.exceptions import TimeLimitExceeded
 from common.operations import Operation, register_operation
 from .tasks.local_tasks import async_instance_operation, async_node_operation
 from .models import (
-    Instance, InstanceActivity, InstanceTemplate, Node, NodeActivity,
+    Instance, InstanceActivity, InstanceTemplate, Interface, Node,
+    NodeActivity,
 )
 
 
@@ -54,6 +55,29 @@ class InstanceOperation(Operation):
             return InstanceActivity.create(
                 code_suffix=self.activity_code_suffix, instance=self.instance,
                 user=user)
+
+
+class AddInterfaceOperation(InstanceOperation):
+    activity_code_suffix = 'add_interface'
+    id = 'add_interface'
+    name = _("add interface")
+    description = _("Add a new network interface for the specified VLAN to "
+                    "the VM.")
+
+    def _operation(self, activity, user, system, vlan, managed=None):
+        if managed is None:
+            managed = vlan.managed
+
+        net = Interface.create(base_activity=activity, instance=self.instance,
+                               managed=managed, owner=user, vlan=vlan)
+
+        if self.instance.is_running:
+            net.deploy()
+
+        return net
+
+
+register_operation(AddInterfaceOperation)
 
 
 class DeployOperation(InstanceOperation):
@@ -107,6 +131,7 @@ class DestroyOperation(InstanceOperation):
         if self.instance.node:
             # Destroy networks
             with activity.sub_activity('destroying_net'):
+                self.instance.shutdown_net()
                 self.instance.destroy_net()
 
             # Delete virtual machine
@@ -177,6 +202,23 @@ class RebootOperation(InstanceOperation):
 
 
 register_operation(RebootOperation)
+
+
+class RemoveInterfaceOperation(InstanceOperation):
+    activity_code_suffix = 'remove_interface'
+    id = 'remove_interface'
+    name = _("remove interface")
+    description = _("Remove the specified network interface from the VM.")
+
+    def _operation(self, activity, user, system, interface):
+        if self.instance.is_running:
+            interface.shutdown()
+
+        interface.destroy()
+        interface.delete()
+
+
+register_operation(RemoveInterfaceOperation)
 
 
 class ResetOperation(InstanceOperation):
