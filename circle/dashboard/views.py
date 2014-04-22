@@ -981,17 +981,15 @@ class NodeList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
 
 class GroupList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
     template_name = "dashboard/group-list.html"
+    modul = Group
     table_class = GroupListTable
     table_pagination = False
 
     def get(self, *args, **kwargs):
-        user = self.request.user
         if self.request.is_ajax():
-            groups = []
-            if user.has_module_perms('auth'):
-                pks = [i[0] for i in GroupProfile.get_objects_with_level(
-                    'operator', user).values_list('pk')]
-                groups = Group.objects.filter(groupprofile__in=pks)
+            pks = [i[0] for i in GroupProfile.get_objects_with_level(
+                'operator', self.request.user).values_list('pk')]
+            groups = Group.objects.filter(groupprofile__in=pks)
             groups = [{
                 'url': reverse("dashboard.views.group-detail",
                                kwargs={'pk': i.pk}),
@@ -1004,14 +1002,11 @@ class GroupList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
             return super(GroupList, self).get(*args, **kwargs)
 
     def get_queryset(self):
-        user = self.request.user
         logger.debug('GroupList.get_queryset() called. User: %s',
                      unicode(self.request.user))
-        groups = []
-        if user.has_module_perms('auth'):
-            pks = [i[0] for i in GroupProfile.get_objects_with_level(
-                'operator', user).values_list('pk')]
-            groups = Group.objects.filter(groupprofile__in=pks)
+        pks = [i[0] for i in GroupProfile.get_objects_with_level(
+            'operator', self.request.user).values_list('pk')]
+        groups = Group.objects.filter(groupprofile__in=pks)
         s = self.request.GET.get("s")
         if s:
             groups = groups.filter(name__icontains=s)
