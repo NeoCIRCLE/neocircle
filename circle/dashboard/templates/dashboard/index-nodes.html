@@ -49,12 +49,12 @@
           </div>
         </div>
         <div class="col-sm-6 text-right">
-          {% if more_nodes > 0 %}
-          <a class="btn btn-primary btn-xs" href="{% url "dashboard.views.node-list" %}">
-		  <i class="icon-chevron-sign-right"></i> <strong>{{ more_nodes }}</strong>  more  
-          </a>
-          {% endif %}
-          <a class="btn btn-success btn-xs node-create" href="{% url "dashboard.views.node-create" %}"><i class="icon-plus-sign"></i> {% trans "new" %}</a>
+		{% if more_nodes > 0 %}
+		<a class="btn btn-primary btn-xs" href="{% url "dashboard.views.node-list" %}">
+		<i class="icon-chevron-sign-right"></i> <strong>{{ more_nodes }}</strong>  more  
+		</a>
+		{% endif %}
+		<a class="btn btn-success btn-xs node-create" href="{% url "dashboard.views.node-create" %}"><i class="icon-plus-sign"></i> {% trans "new" %}</a>
         </div>
       </div>
    </div>
