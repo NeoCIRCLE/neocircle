@@ -2270,7 +2270,8 @@ class InterfaceDeleteView(DeleteView):
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
 
-        self.object.destroy()
+        instance = self.object.instance
+        instance.remove_interface(interface=self.object, user=request.user)
         success_url = self.get_success_url()
         success_message = _("Interface successfully deleted!")
 
