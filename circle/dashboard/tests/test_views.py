@@ -5,6 +5,7 @@ from django.contrib.auth.models import User, Group
 from django.core.exceptions import SuspiciousOperation
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import Permission
+from django.contrib.auth import authenticate
 
 from vm.models import Instance, InstanceTemplate, Lease, Node, Trait
 from vm.operations import WakeUpOperation
@@ -991,3 +992,68 @@ class IndexViewTest(LoginMixin, TestCase):
         self.u1.profile.notify("urgent", "dashboard/test_message.txt", )
         response = c.get("/dashboard/")
         self.assertEqual(response.context['NEW_NOTIFICATIONS_COUNT'], 1)
+
+
+class ProfileViewTest(LoginMixin, TestCase):
+
+    def setUp(self):
+        self.u1 = User.objects.create(username='user1')
+        self.u1.set_password('password')
+        self.u1.save()
+        self.p1 = Profile.objects.create(user=self.u1)
+        self.p1.save()
+
+    def test_permitted_language_change(self):
+        c = Client()
+        self.login(c, "user1")
+        old_language_cookie_value = c.cookies['django_language'].value
+        old_language_db_value = self.u1.profile.preferred_language
+        response = c.post("/dashboard/profile/", {
+            'preferred_language': "hu",
+        })
+
+        self.assertEqual(response.status_code, 302)
+        self.assertNotEqual(old_language_cookie_value,
+                            c.cookies['django_language'].value)
+        self.assertNotEqual(old_language_db_value,
+                            User.objects.get(
+                                username="user1").profile.preferred_language)
+
+    def test_permitted_valid_password_change(self):
+        c = Client()
+        self.login(c, "user1")
+
+        c.post("/dashboard/profile/", {
+            'old_password': "password",
+            'new_password1': "asd",
+            'new_password2': "asd",
+        })
+
+        self.assertIsNone(authenticate(username="user1", password="password"))
+        self.assertIsNotNone(authenticate(username="user1", password="asd"))
+
+    def test_permitted_invalid_password_changes(self):
+        c = Client()
+        self.login(c, "user1")
+
+        # wrong current password
+        c.post("/dashboard/profile/", {
+            'old_password': "password1",
+            'new_password1': "asd",
+            'new_password2': "asd",
+        })
+
+        self.assertIsNotNone(authenticate(username="user1",
+                                          password="password"))
+        self.assertIsNone(authenticate(username="user1", password="asd"))
+
+        # wrong pw confirmation
+        c.post("/dashboard/profile/", {
+            'old_password': "password",
+            'new_password1': "asd",
+            'new_password2': "asd1",
+        })
+
+        self.assertIsNotNone(authenticate(username="user1",
+                                          password="password"))
+        self.assertIsNone(authenticate(username="user1", password="asd"))

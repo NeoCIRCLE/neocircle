@@ -37,6 +37,7 @@ from braces.views import (
 from .forms import (
     CircleAuthenticationForm, DiskAddForm, HostForm, LeaseForm, MyProfileForm,
     NodeForm, TemplateForm, TraitForm, VmCustomizeForm,
+    CirclePasswordChangeForm
 )
 from .tables import (NodeListTable, NodeVmListTable,
                      TemplateListTable, LeaseListTable, GroupListTable,)
@@ -2124,9 +2125,17 @@ class DiskAddView(TemplateView):
 
 
 class MyPreferencesView(UpdateView):
-
     model = Profile
-    form_class = MyProfileForm
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(MyPreferencesView, self).get_context_data(*args,
+                                                                  **kwargs)
+        context['forms'] = {
+            'change_password': CirclePasswordChangeForm(
+                user=self.request.user),
+            'change_language': MyProfileForm(instance=self.get_object()),
+        }
+        return context
 
     def get_object(self, queryset=None):
         if self.request.user.is_anonymous():
@@ -2136,10 +2145,36 @@ class MyPreferencesView(UpdateView):
         except Profile.DoesNotExist:
             raise Http404(_("You don't have a profile."))
 
-    def form_valid(self, form):
-        response = super(MyPreferencesView, self).form_valid(form)
-        set_language_cookie(self.request, response)
-        return response
+    def post(self, request, *args, **kwargs):
+        self.ojbect = self.get_object()
+        redirect_response = HttpResponseRedirect(
+            reverse("dashboard.views.profile"))
+        if "preferred_language" in request.POST:
+            form = MyProfileForm(request.POST, instance=self.get_object())
+            if form.is_valid():
+                lang = form.cleaned_data.get("preferred_language")
+                set_language_cookie(self.request, redirect_response, lang)
+                form.save()
+        else:
+            form = CirclePasswordChangeForm(user=request.user,
+                                            data=request.POST)
+            if form.is_valid():
+                form.save()
+
+        if form.is_valid():
+            return redirect_response
+        else:
+            return self.get(request, form=form, *args, **kwargs)
+
+    def get(self, request, form=None, *args, **kwargs):
+        # if this is not here, it won't work
+        self.object = self.get_object()
+        context = self.get_context_data(*args, **kwargs)
+        if form is not None:
+            # a little cheating, users can't post invalid
+            # language selection forms (without modifying the HTML)
+            context['forms']['change_password'] = form
+        return self.render_to_response(context)
 
 
 def set_language_cookie(request, response, lang=None):
