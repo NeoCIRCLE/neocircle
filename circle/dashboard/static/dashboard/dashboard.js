@@ -115,8 +115,8 @@ $(function () {
       { 'url': '/dashboard/vm/delete/' + vm_pk + '/',
         'data': [],
         'pk': vm_pk,
-	'type': "vm",
-	'redirect': dir});
+        'type': "vm",
+        'redirect': dir});
     return false;
   });
   
@@ -127,7 +127,7 @@ $(function () {
       { 'url': '/dashboard/disk/' + disk_pk + '/remove/',
         'data': [],
         'pk': disk_pk,
-	'type': "disk",
+        'type': "disk",
       });
     return false;
   });
@@ -140,7 +140,7 @@ $(function () {
       { 'url': '/dashboard/node/delete/' + node_pk + '/',
         'data': [],
         'pk': node_pk,
-  	'type': "node",
+        'type': "node",
         'redirect': dir});
     
     return false;
@@ -168,7 +168,7 @@ $(function () {
     addModalConfirmation(deleteObject, 
       { 'url': '/dashboard/group/delete/' + group_pk + '/',
         'data': [],
-	'type': "group",
+        'type': "group",
         'pk': group_pk,
         'redirect': dir});
     
@@ -232,14 +232,13 @@ $(function () {
       $.ajaxSetup( { "async": false } );
       $.get("/dashboard/node/list/", function(result) {
         for(var i in result) {
-	  console.log(result[i]);
           my_nodes.push({
             'name': result[i].name.toLowerCase(),
             'icon': result[i].icon,
             'status': result[i].status,
-	    'label': result[i].label,
-	    'url': result[i].url,
-	  });
+            'label': result[i].label,
+            'url': result[i].url,
+          });
         }
       });
       $.ajaxSetup( { "async": true } );
@@ -256,7 +255,7 @@ $(function () {
     for(var i=0; i<5 && i<search_result.length; i++)
       html += generateNodeHTML(search_result[i].name, 
                              search_result[i].icon, search_result[i].status,
-			     search_result[i].url);
+                             search_result[i].url);
     if(search_result.length == 0)
       html += '<div class="list-group-item">No result</div>';
     $("#dashboard-node-list").html(html);
@@ -266,7 +265,7 @@ $(function () {
     for(var i=0; i<5 && i<search_result.length; i++)
       html += generateNodeTagHTML(search_result[i].name, 
                              search_result[i].icon, search_result[i].status,
-			     search_result[i].label, search_result[i].url);
+                             search_result[i].label, search_result[i].url);
     if(search_result.length == 0)
       html += '<div class="list-group-item">No result</div>';
     $("#dashboard-node-taglist").html(html);
@@ -307,17 +306,17 @@ function generateVmHTML(pk, name, host, icon, _status, fav) {
 
 function generateNodeHTML(name, icon, _status, url) {
   return '<a href="' + url + '" class="list-group-item" >' + 
-	'<span class="index-node-list-name">' + 
-	'<i class="' + icon + '" title="' + _status + '"></i> ' + name +
-	'</span>' + 
-	'<div style="clear: both;"></div>' + 
-	'</a>';
+        '<span class="index-node-list-name">' + 
+        '<i class="' + icon + '" title="' + _status + '"></i> ' + name +
+        '</span>' + 
+        '<div style="clear: both;"></div>' + 
+        '</a>';
 }
 
 function generateNodeTagHTML(name, icon, _status, label , url) {
   return '<a href="' + url + '" class="label ' + label + '" >' + 
-	'<i class="' + icon + '" title="' + _status + '"></i> ' + name +
-	'</a> ';
+        '<i class="' + icon + '" title="' + _status + '"></i> ' + name +
+        '</a> ';
 }
 
 /* copare vm-s by fav, pk order */
