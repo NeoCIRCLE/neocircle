@@ -2269,8 +2269,11 @@ class InterfaceDeleteView(DeleteView):
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
-
         instance = self.object.instance
+
+        if not instance.has_level(request.user, 'operator'):
+            raise PermissionDenied()
+
         instance.remove_interface(interface=self.object, user=request.user)
         success_url = self.get_success_url()
         success_message = _("Interface successfully deleted!")
