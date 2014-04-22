@@ -46,7 +46,7 @@ from vm.models import (
 )
 from storage.models import Disk
 from firewall.models import Vlan, Host, Rule
-from .models import Favourite, Profile
+from .models import Favourite, Profile, GroupProfile
 
 logger = logging.getLogger(__name__)
 
@@ -984,6 +984,24 @@ class GroupList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
     model = Group
     table_class = GroupListTable
     table_pagination = False
+
+    def get(self, *args, **kwargs):
+        user = self.request.user
+        if self.request.is_ajax():
+            groups = []
+            if user.has_module_perms('auth'):
+                pks = [i[0] for i in GroupProfile.get_objects_with_level(
+                    'operator', user).values_list('pk')]
+                groups = Group.objects.filter(groupprofile__in=pks)
+            groups = [{
+                'url': i.get_absolute_url(),
+                'name': i.name} for i in groups]
+            return HttpResponse(
+                json.dumps(list(groups)),
+                content_type="application/json",
+            )
+        else:
+            return super(VmList, self).get(*args, **kwargs)
 
 
 class GroupUserDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
