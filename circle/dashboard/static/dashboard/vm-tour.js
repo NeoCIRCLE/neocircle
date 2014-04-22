@@ -46,7 +46,7 @@ function createTemplateTour() {
     backdrop: true,
     element: 'a[href="#home"]',
     title: gettext("Home tab"), 
-    content: gettext("In this tab you can tag your virtual machine and modify the description."),
+    content: gettext("In this tab you can tag your virtual machine and modify the name and description."),
     placement: 'top',
     onShow: function() {
       $('a[href="#home"]').trigger("click");
@@ -69,7 +69,7 @@ function createTemplateTour() {
     placement: 'top',
     backdrop: true,
     title: gettext("Resources"),
-    content: '<p><strong>' + gettext("CPU priority") + ":</strong> " + gettext("higher (or lower?) is better") + "</p>" + 
+    content: '<p><strong>' + gettext("CPU priority") + ":</strong> " + gettext("higher is better") + "</p>" + 
              '<p><strong>' + gettext("CPU count") + ":</strong> " + gettext("number of CPU cores.") + "</p>" +
              '<p><strong>' + gettext("RAM amount") + ":</strong> " + gettext("amount of RAM.") + "</p>", 
     onShow: function() {
@@ -118,14 +118,14 @@ function createTemplateTour() {
   });
 
   ttour.addStep({
-    element: ".alert-new-template",
-    placement: "bottom",
+    element: "#vm-info-pane",
+    placement: "top",
     title: gettext("Customize the virtual machine"),
-    content: gettext("After you have connected to the virtual do you modifications."),
+    content: gettext("After you have connected to the virtual machine do you modifications then log off."),
   });
 
   ttour.addStep({
-    element: ".vm-details-button-save-as",
+    element: ".operation-save_as_template",
     title: gettext("Save as"),
     placement: "left",
     backdrop: true,
@@ -135,7 +135,7 @@ function createTemplateTour() {
   
   ttour.addStep({
     element: ".alert-new-template",
-    title: gettext("Finisih"),
+    title: gettext("Finish"),
     backdrop: true,
     placement: "bottom",
     content: gettext("This is the last message, if something is not clear you can do the the tour again!"),
