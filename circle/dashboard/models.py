@@ -16,14 +16,13 @@ from model_utils.models import TimeStampedModel
 from model_utils.fields import StatusField
 from model_utils import Choices
 
-from vm.models import Instance
 from acl.models import AclBase
 
 logger = getLogger(__name__)
 
 
 class Favourite(Model):
-    instance = ForeignKey(Instance)
+    instance = ForeignKey("vm.Instance")
     user = ForeignKey(User)
 
 
