@@ -289,7 +289,7 @@ function generateVmHTML(pk, name, host, icon, _status, fav) {
       '</a>';     
 }
 
-function generateuGroupHTML( name, url, icon, _status, fav) {
+function generateGroupHTML(url, name) {
   return name+url +
       '';
 }
