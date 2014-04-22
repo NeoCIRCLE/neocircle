@@ -22,7 +22,6 @@ from taggit.managers import TaggableManager
 
 from acl.models import AclBase
 from common.operations import OperatedMixin
-from storage.models import Disk
 from ..tasks import vm_tasks, agent_tasks
 from .activity import (ActivityInProgressError, instance_activity,
                        InstanceActivity)
@@ -118,8 +117,9 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
     description = TextField(verbose_name=_('description'), blank=True)
     parent = ForeignKey('self', null=True, blank=True,
                         verbose_name=_('parent template'),
+                        on_delete=SET_NULL,
                         help_text=_('Template which this one is derived of.'))
-    disks = ManyToManyField(Disk, verbose_name=_('disks'),
+    disks = ManyToManyField('storage.Disk', verbose_name=_('disks'),
                             related_name='template_set',
                             help_text=_('Disks which are to be mounted.'))
     owner = ForeignKey(User)
@@ -211,7 +211,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                       related_name='instance_set',
                       help_text=_("Current hypervisor of this instance."),
                       verbose_name=_('host node'))
-    disks = ManyToManyField(Disk, related_name='instance_set',
+    disks = ManyToManyField('storage.Disk', related_name='instance_set',
                             help_text=_("Set of mounted disks."),
                             verbose_name=_('disks'))
     vnc_port = IntegerField(blank=True, default=None, null=True,

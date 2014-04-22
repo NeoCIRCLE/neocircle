@@ -58,10 +58,6 @@ class Interface(Model):
         return 'cloud-' + str(self.instance.id) + '-' + str(self.vlan.vid)
 
     @property
-    def destroyed(self):
-        return self.instance.destroyed_at
-
-    @property
     def mac(self):
         try:
             return self.host.mac
@@ -120,10 +116,10 @@ class Interface(Model):
             host.owner = owner
             if vlan.network_type == 'public':
                 host.shared_ip = False
-                host.pub_ipv4 = None
+                host.external_ipv4 = None
             elif vlan.network_type == 'portforward':
                 host.shared_ip = True
-                host.pub_ipv4 = vlan.snat_ip
+                host.external_ipv4 = vlan.snat_ip
             host.full_clean()
             host.save()
             host.enable_net()
@@ -138,34 +134,16 @@ class Interface(Model):
         return iface
 
     def deploy(self):
-        if self.destroyed:
-            from .instance import Instance
-            raise Instance.InstanceDestroyedError(self.instance,
-                                                  "The associated instance "
-                                                  "(%s) has already been "
-                                                  "destroyed" % self.instance)
-
-        net_tasks.create.apply_async(
-            args=[self.get_vmnetwork_desc()],
-            queue=self.instance.get_remote_queue_name('net'))
+        queue_name = self.instance.get_remote_queue_name('net')
+        return net_tasks.create.apply_async(args=[self.get_vmnetwork_desc()],
+                                            queue=queue_name).get()
 
     def shutdown(self):
-        if self.destroyed:
-            from .instance import Instance
-            raise Instance.InstanceDestroyedError(self.instance,
-                                                  "The associated instance "
-                                                  "(%s) has already been "
-                                                  "destroyed" % self.instance)
-
         queue_name = self.instance.get_remote_queue_name('net')
-        net_tasks.destroy.apply_async(args=[self.get_vmnetwork_desc()],
-                                      queue=queue_name)
+        return net_tasks.destroy.apply_async(args=[self.get_vmnetwork_desc()],
+                                             queue=queue_name).get()
 
     def destroy(self):
-        if self.destroyed:
-            return
-
-        self.shutdown()
         if self.host is not None:
             self.host.delete()
 

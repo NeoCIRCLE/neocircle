@@ -13,6 +13,7 @@ class Operation(object):
     """
     async_queue = 'localhost.man'
     required_perms = ()
+    do_not_call_in_templates = True
 
     def __call__(self, **kwargs):
         return self.call(**kwargs)
@@ -28,11 +29,11 @@ class Operation(object):
     def __prelude(self, kwargs):
         """This method contains the shared prelude of call and async.
         """
-        skip_checks = kwargs.setdefault('system', False)
+        skip_auth_check = kwargs.setdefault('system', False)
         user = kwargs.setdefault('user', None)
         parent_activity = kwargs.pop('parent_activity', None)
 
-        if not skip_checks:
+        if not skip_auth_check:
             self.check_auth(user)
         self.check_precond()
         return self.create_activity(parent=parent_activity, user=user)
@@ -42,8 +43,7 @@ class Operation(object):
         """
         with activity_context(activity, on_abort=self.on_abort,
                               on_commit=self.on_commit):
-            return self._operation(activity=activity, user=user,
-                                   **kwargs)
+            return self._operation(activity=activity, user=user, **kwargs)
 
     def _operation(self, activity, user, system, **kwargs):
         """This method is the operation's particular implementation.
@@ -128,15 +128,46 @@ class OperatedMixin(object):
             raise AttributeError("%r object has no attribute %r" %
                                  (self.__class__.__name__, name))
 
+    def get_available_operations(self, user):
+        """Yield Operations that match permissions of user and preconditions.
+        """
+        for name in getattr(self, operation_registry_name, {}):
+            try:
+                op = getattr(self, name)
+                op.check_auth(user)
+                op.check_precond()
+            except:
+                pass  # unavailable
+            else:
+                yield op
 
-def register_operation(target_cls, op_cls, op_id=None):
+
+def register_operation(op_cls, op_id=None, target_cls=None):
     """Register the specified operation with the target class.
 
     You can optionally specify an ID to be used for the registration;
     otherwise, the operation class' 'id' attribute will be used.
     """
     if op_id is None:
-        op_id = op_cls.id
+        try:
+            op_id = op_cls.id
+        except AttributeError:
+            raise NotImplementedError("Operations should specify an 'id' "
+                                      "attribute designating the name the "
+                                      "operation can be called by on its "
+                                      "host. Alternatively, provide the name "
+                                      "in the 'op_id' parameter to this call.")
+
+    if target_cls is None:
+        try:
+            target_cls = op_cls.host_cls
+        except AttributeError:
+            raise NotImplementedError("Operations should specify a 'host_cls' "
+                                      "attribute designating the host class "
+                                      "the operation should be registered to. "
+                                      "Alternatively, provide the host class "
+                                      "in the 'target_cls' parameter to this "
+                                      "call.")
 
     if not issubclass(target_cls, OperatedMixin):
         raise TypeError("%r is not a subclass of %r" %

@@ -40,54 +40,8 @@
 {% endif %}
 <div class="body-content">
   <div class="page-header">
-    <div class="pull-right" style="padding-top: 15px;">
-      <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
-        {% csrf_token %}
-        <input type="hidden" name="sleep" />
-        <button title="{% trans "Sleep" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-moon"></i></button>
-      </form>
-      <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}" id="vm-details-button-deploy">
-        {% csrf_token %}
-        <input type="hidden" name="deploy" />
-        <button title="{% trans "Deploy" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-play"></i></button>
-      </form>
-      <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
-        {% csrf_token %}
-        <input type="hidden" name="wake_up" />
-        <button title="{% trans "Wake up" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-sun"></i></button>
-      </form>
-      <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
-        {% csrf_token %}
-        <input type="hidden" name="shut_down" />
-        <button title="{% trans "Shut down" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-off"></i></button>
-      </form>
-      <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
-        {% csrf_token %}
-        <input type="hidden" name="reboot" />
-        <button title="{% trans "Reboot (ctrl + alt + del)" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-refresh"></i></button>
-      </form>
-      <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
-        {% csrf_token %}
-        <input type="hidden" name="reset" />
-        <button title="{% trans "Reset (power cycle)" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-bolt"></i></button>
-      </form>
-      <form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
-        {% csrf_token %}
-        <input type="hidden" name="shut_off"/>
-        <button title="{% trans "Shut off" %}" class="btn btn-default btn-xs" type="submit">
-          <i class="icon-ban-circle"></i>
-        </button>
-      </form>
-      <a title="Migrate" data-vm-pk="{{ instance.pk }}" href="{% url "dashboard.views.vm-migrate" pk=instance.pk %}" class="btn btn-default btn-xs vm-migrate">
-        <i class="icon-truck"></i>
-      </a>
-      <form style="display: inline;" class="vm-details-button-save-as" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
-        {% csrf_token %}
-        <input type="hidden" name="save_as" />
-        <button title="{% trans "Save as template" %}" class="btn btn-default btn-xs" type="submit"><i class="icon-save"></i></button>
-      </form>
-      <a title="{% trans "Destroy" %}" href="{% url "dashboard.views.delete-vm" pk=instance.pk %}" class="btn btn-default btn-xs vm-delete" data-vm-pk="{{ instance.pk }}"><i class="icon-remove"></i></a>
-      <a title="{% trans "Help" %}" href="#" class="btn btn-default btn-xs vm-details-help-button"><i class="icon-question"></i></a>
+    <div class="pull-right" style="padding-top: 15px;" id="ops">
+      {% include "dashboard/vm-detail/_operations.html" %}
     </div>
     <h1>
       <div id="vm-details-rename">
@@ -102,46 +56,6 @@
       </div>
       <small>{{ instance.primary_host.get_fqdn }}</small>
     </h1>
-    <div class="vm-details-help js-hidden">
-      <ul style="list-style: none;">
-        <li>
-          <strong>{% trans "Sleep" %}:</strong>
-          {% trans "Suspend virtual machine with memory dump." %}
-        </li>
-        <li>
-          <strong>{% trans "Wake up" %}:</strong>
-          {% trans "Wake up suspended machine." %}
-        </li>
-        <li>
-          <strong>{% trans "Shutdown" %}:</strong>
-          {% trans "Shutdown virtual machine with ACPI signal." %}
-        </li>
-        <li>
-          <strong>{% trans "Reboot (ctrl + alt + del)" %}:</strong>
-          {% trans "Reboot virtual machine with Ctrl+Alt+Del signal." %}
-        </li>
-        <li>
-          <strong>{% trans "Reset (power cycle)" %}:</strong>
-          {% trans "Reset virtual machine (reset button)" %}
-        </li>
-        <li>
-          <strong>{% trans "Shut off" %}:</strong>
-          {% trans "Shut off VM. (plug-out)" %}
-        </li>
-        <li>
-          <strong>{% trans "Migrate" %}:</strong>
-          {% trans "Live migrate running vm to another node." %}
-        </li>
-        <li>
-          <strong>{% trans "Save as template" %}:</strong>
-          {% trans "Shut down the virtual machine, and save it as a new template." %}
-        </li>
-        <li>
-          <strong>{% trans "Destroy" %}:</strong>
-          {% trans "Remove virtual machine and its networks." %}
-        </li>
-      </ul>
-    </div>
     <div style="clear: both;"></div>
   </div>
   <div class="row">

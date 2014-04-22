@@ -27,7 +27,11 @@ coverage.xml
 *.mo
 
 # saml
-circle/attribute-maps/
+circle/attribute-maps
 circle/remote_metadata.xml
-circle/samlcert.key
-circle/samlcert.pem
+circle/*.key
+circle/*.pem
+
+# collected static files:
+circle/static
+circle/static_collected

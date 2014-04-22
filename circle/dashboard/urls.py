@@ -1,4 +1,5 @@
-from django.conf.urls import patterns, url
+from __future__ import absolute_import
+from django.conf.urls import patterns, url, include
 
 from vm.models import Instance
 from .views import (
@@ -40,6 +41,7 @@ urlpatterns = patterns(
     url(r"^template/clone/(?P<pk>\d+)/$", TemplateClone.as_view(),
         name="dashboard.views.template-clone"),
 
+    url(r'^vm/(?P<pk>\d+)/op/', include('dashboard.vm.urls')),
     url(r'^vm/(?P<pk>\d+)/remove_port/(?P<rule>\d+)/$', PortDelete.as_view(),
         name='dashboard.views.remove-port'),
     url(r'^vm/(?P<pk>\d+)/$', VmDetailView.as_view(),

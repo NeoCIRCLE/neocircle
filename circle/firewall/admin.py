@@ -38,7 +38,7 @@ class HostAdmin(admin.ModelAdmin):
 
 class HostInline(contrib.admin.TabularInline):
     model = Host
-    fields = ('hostname', 'ipv4', 'ipv6', 'pub_ipv4', 'mac', 'shared_ip',
+    fields = ('hostname', 'ipv4', 'ipv6', 'external_ipv4', 'mac', 'shared_ip',
               'owner', 'reverse')
 
 

@@ -5,6 +5,7 @@ from os.path import abspath, basename, dirname, join, normpath, isfile
 from sys import path
 
 from django.core.exceptions import ImproperlyConfigured
+from django.utils.translation import ugettext_lazy as _
 from json import loads
 
 
@@ -93,7 +94,13 @@ except:
 TIME_ZONE = get_env_variable('DJANGO_TIME_ZONE', default=systz)
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#language-code
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = get_env_variable("DJANGO_LANGUAGE_CODE", "en")
+
+# https://docs.djangoproject.com/en/dev/ref/settings/#languages
+LANGUAGES = (
+    ('en', _('English')),
+    ('hu', _('Hungarian')),
+)
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#site-id
 SITE_ID = 1
@@ -124,11 +131,6 @@ STATIC_ROOT = normpath(join(SITE_ROOT, 'static_collected'))
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-url
 STATIC_URL = get_env_variable('DJANGO_STATIC_URL', default='/static/')
-
-# See: https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#std:setting-STATICFILES_DIRS
-STATICFILES_DIRS = (
-    normpath(join(SITE_ROOT, 'static')),
-)
 
 # See: https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#staticfiles-finders
 STATICFILES_FINDERS = (
