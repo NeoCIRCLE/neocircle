@@ -1002,7 +1002,21 @@ class GroupList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
                 content_type="application/json",
             )
         else:
-            return super(VmList, self).get(*args, **kwargs)
+            return super(GroupList, self).get(*args, **kwargs)
+
+    def get_queryset(self):
+        user = self.request.user
+        logger.debug('GroupList.get_queryset() called. User: %s',
+                     unicode(self.request.user))
+        groups = []
+        if user.has_module_perms('auth'):
+            pks = [i[0] for i in GroupProfile.get_objects_with_level(
+                'operator', user).values_list('pk')]
+            groups = Group.objects.filter(groupprofile__in=pks)
+        s = self.request.GET.get("s")
+        if s:
+            groups = groups.filter(name__icontains=s)
+        return groups
 
 
 class GroupUserDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
