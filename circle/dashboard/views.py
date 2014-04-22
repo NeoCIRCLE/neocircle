@@ -2271,7 +2271,7 @@ class InterfaceDeleteView(DeleteView):
         self.object = self.get_object()
         instance = self.object.instance
 
-        if not instance.has_level(request.user, 'operator'):
+        if not instance.has_level(request.user, "owner"):
             raise PermissionDenied()
 
         instance.remove_interface(interface=self.object, user=request.user)
