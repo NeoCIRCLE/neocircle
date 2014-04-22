@@ -290,8 +290,9 @@ function generateVmHTML(pk, name, host, icon, _status, fav) {
 }
 
 function generateGroupHTML(url, name) {
-  return name+url +
-      '';
+  return '<a href="' + url + '" class="list-group-item real-link">'+
+         '<i class="icon-group"></i> '+ name +
+         '</a>';
 }
 
 /* copare vm-s by fav, pk order */
