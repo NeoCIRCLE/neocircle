@@ -90,7 +90,7 @@ class IndexView(LoginRequiredMixin, TemplateView):
         # instances
         favs = Instance.objects.filter(favourite__user=self.request.user)
         instances = Instance.get_objects_with_level(
-            'user', user).filter(destroyed_at=None)
+            'user', user, disregard_superuser=True).filter(destroyed_at=None)
         display = list(favs) + list(set(instances) - set(favs))
         for d in display:
             d.fav = True if d in favs else False

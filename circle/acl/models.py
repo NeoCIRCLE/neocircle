@@ -177,12 +177,13 @@ class AclBase(Model):
 
     @classmethod
     def get_objects_with_level(cls, level, user,
-                               group_also=True, owner_also=False):
+                               group_also=True, owner_also=False,
+                               disregard_superuser=False):
         logger.debug('%s.get_objects_with_level(%s,%s) called',
                      unicode(cls), unicode(level), unicode(user))
         if user is None or not user.is_authenticated():
             return cls.objects.none()
-        if getattr(user, 'is_superuser', False):
+        if getattr(user, 'is_superuser', False) and not disregard_superuser:
             logger.debug('- superuser granted')
             return cls.objects
         if isinstance(level, basestring):
