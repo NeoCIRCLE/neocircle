@@ -1,6 +1,6 @@
-Django==1.5.2
 bpython==0.12
 celery==3.0.23
+Django==1.5.2
 django-braces==1.2.2
 django-celery==3.0.23
 django-crispy-forms==1.4.0
@@ -10,7 +10,7 @@ django-tables2==0.14.0
 django-taggit==0.11.2
 logutils==0.3.3
 netaddr==0.7.10
-requests==2.2.1
-South==0.8.1
 psycopg2==2.5.1
 pylibmc
+requests==2.2.1
+South==0.8.1
