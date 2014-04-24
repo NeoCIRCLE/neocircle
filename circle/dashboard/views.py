@@ -30,9 +30,8 @@ from django.template import RequestContext
 
 from django.forms.models import inlineformset_factory
 from django_tables2 import SingleTableView
-from braces.views import (
-    LoginRequiredMixin, SuperuserRequiredMixin, AccessMixin
-)
+from braces.views import LoginRequiredMixin, SuperuserRequiredMixin
+from braces.views._access import AccessMixin
 
 from .forms import (
     CircleAuthenticationForm, DiskAddForm, HostForm, LeaseForm, MyProfileForm,
@@ -504,6 +503,7 @@ class OperationView(DetailView):
 class VmOperationView(OperationView):
 
     model = Instance
+    context_object_name = 'instance'  # much simpler to mock object
 
 
 class VmMigrateView(VmOperationView):
@@ -2274,6 +2274,7 @@ def get_disk_download_status(request, pk):
 
 class InstanceActivityDetail(SuperuserRequiredMixin, DetailView):
     model = InstanceActivity
+    context_object_name = 'instanceactivity'  # much simpler to mock object
     template_name = 'dashboard/instanceactivity_detail.html'
 
     def get_context_data(self, **kwargs):
