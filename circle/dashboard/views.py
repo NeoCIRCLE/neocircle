@@ -216,7 +216,7 @@ class VmDetailView(CheckedDetailView):
 
         context['vlans'] = Vlan.get_objects_with_level(
             'user', self.request.user
-        ).exclude(
+        ).exclude(  # exclude already added interfaces
             pk__in=Interface.objects.filter(
                 instance=self.get_object()).values_list("vlan", flat=True)
         ).all()
@@ -239,6 +239,7 @@ class VmDetailView(CheckedDetailView):
         options = {
             'change_password': self.__change_password,
             'new_name': self.__set_name,
+            'new_description': self.__set_description,
             'new_tag': self.__add_tag,
             'to_remove': self.__remove_tag,
             'port': self.__add_port,
@@ -309,8 +310,30 @@ class VmDetailView(CheckedDetailView):
             )
         else:
             messages.success(request, success_message)
-            return redirect(reverse_lazy("dashboard.views.detail",
-                                         kwargs={'pk': self.object.pk}))
+            return redirect(self.object.get_absolute_url())
+
+    def __set_description(self, request):
+        self.object = self.get_object()
+        if not self.object.has_level(request.user, 'owner'):
+            raise PermissionDenied()
+
+        new_description = request.POST.get("new_description")
+        Instance.objects.filter(pk=self.object.pk).update(
+            **{'description': new_description})
+
+        success_message = _("VM description successfully updated!")
+        if request.is_ajax():
+            response = {
+                'message': success_message,
+                'new_description': new_description,
+            }
+            return HttpResponse(
+                json.dumps(response),
+                content_type="application/json"
+            )
+        else:
+            messages.success(request, success_message)
+            return redirect(self.object.get_absolute_url())
 
     def __add_tag(self, request):
         new_tag = request.POST.get('new_tag')
@@ -393,7 +416,7 @@ class VmDetailView(CheckedDetailView):
         if not self.object.has_level(request.user, 'owner'):
             raise PermissionDenied()
 
-        vlan = Vlan.objects.get(pk=request.POST.get("new_network_vlan"))
+        vlan = get_object_or_404(Vlan, pk=request.POST.get("new_network_vlan"))
         if not vlan.has_level(request.user, 'user'):
             raise PermissionDenied()
         try:
@@ -2260,3 +2283,53 @@ class InstanceActivityDetail(SuperuserRequiredMixin, DetailView):
             order_by('-started').select_related('user').
             prefetch_related('children'))
         return ctx
+
+
+class InterfaceDeleteView(DeleteView):
+    model = Interface
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/confirm/ajax-delete.html']
+        else:
+            return ['dashboard/confirm/base-delete.html']
+
+    def get_context_data(self, **kwargs):
+        context = super(InterfaceDeleteView, self).get_context_data(**kwargs)
+        interface = self.get_object()
+        context['text'] = _("Are you sure you want to remove this interface "
+                            "from <strong>%(vm)s</strong>?" %
+                            {'vm': interface.instance.name})
+        return context
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        instance = self.object.instance
+
+        if not instance.has_level(request.user, "owner"):
+            raise PermissionDenied()
+
+        instance.remove_interface(interface=self.object, user=request.user)
+        success_url = self.get_success_url()
+        success_message = _("Interface successfully deleted!")
+
+        if request.is_ajax():
+            return HttpResponse(
+                json.dumps(
+                    {'message': success_message,
+                     'removed_network': {
+                         'vlan': self.object.vlan.name,
+                         'vlan_pk': self.object.vlan.pk,
+                         'managed': self.object.host is not None,
+                     }}),
+                content_type="application/json",
+            )
+        else:
+            messages.success(request, success_message)
+            return HttpResponseRedirect("%s#network" % success_url)
+
+    def get_success_url(self):
+        redirect = self.request.POST.get("next")
+        if redirect:
+            return redirect
+        self.object.instance.get_absolute_url()

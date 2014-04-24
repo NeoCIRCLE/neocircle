@@ -4,8 +4,46 @@
     <dl>
       <dt>{% trans "System" %}:</dt>
       <dd><i class="icon-{{ os_type_icon }}"></i> {{ instance.system }}</dd>
-      <dt style="margin-top: 5px;">{% trans "Description" %}:</dt>
-      <dd><small>{{ instance.description }}</small></dd>
+      <dt style="margin-top: 5px;">
+        {% trans "Name" %}:
+        <a href="#" class="vm-details-home-edit-name-click"><i class="icon-pencil"></i></a>
+      </dt>
+      <dd>
+        <div class="vm-details-home-edit-name-click">
+          <small class="vm-details-home-edit-name">{{ instance.name }}</small>
+        </div>
+        <div class="js-hidden vm-details-home-rename-form-div" id="vm-details-home-rename">
+          <form method="POST">
+            {% csrf_token %}
+            <div class="input-group">
+              <input type="text" name="new_name" value="{{ instance.name }}" class="form-control input-sm"/>
+              <span class="input-group-btn">
+                <button type="submit" class="btn btn-success btn-sm vm-details-rename-submit">
+                  <i class="icon-pencil"></i> {% trans "Rename" %}
+                </button>
+              </span>
+            </div>
+          </form>
+        </div>
+      </dd>
+      <dt style="margin-top: 5px;">
+        {% trans "Description" %}: 
+        <a href="#" class="vm-details-home-edit-description-click"><i class="icon-pencil"></i></a>
+      </dt>
+      <dd>
+        {% csrf_token %}
+        <div class="vm-details-home-edit-description-click">
+          <small class="vm-details-home-edit-description">{{ instance.description|linebreaks }}</small>
+        </div>
+        <div id="vm-details-home-description" class="js-hidden">
+          <form method="POST">
+            <textarea name="new_description" class="form-control">{{ instance.description }}</textarea>
+            <button type="submit" class="btn btn-xs btn-success vm-details-description-submit">
+              <i class="icon-pencil"></i> {% trans "Update" %}
+            </button>
+          </form>
+        </div>
+      </dd>
     </dl>
 
     <h4>{% trans "Expiration" %} {% if instance.is_expiring %}<i class="icon-warning-sign text-danger"></i>{% endif %}
