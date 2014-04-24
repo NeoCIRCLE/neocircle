@@ -185,7 +185,7 @@ class AclBase(Model):
             return cls.objects.none()
         if getattr(user, 'is_superuser', False) and not disregard_superuser:
             logger.debug('- superuser granted')
-            return cls.objects
+            return cls.objects.all()
         if isinstance(level, basestring):
             level = cls.get_level_object(level)
             logger.debug("- level set by str: %s", unicode(level))
