@@ -3,7 +3,6 @@ anyjson==0.3.3
 billiard==3.3.0.17
 bpython==0.12
 celery==3.1.11
-distribute==0.7.3
 django-braces==1.4.0
 django-celery==3.1.10
 django-crispy-forms==1.4.0
