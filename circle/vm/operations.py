@@ -89,7 +89,7 @@ class DeployOperation(InstanceOperation):
     def on_commit(self, activity):
         activity.resultant_state = 'RUNNING'
 
-    def _operation(self, activity, user, system, timeout=15):
+    def _operation(self, activity, timeout=15):
         # Allocate VNC port and host node
         self.instance.allocate_vnc_port()
         self.instance.allocate_node()
@@ -125,7 +125,7 @@ class DestroyOperation(InstanceOperation):
     def on_commit(self, activity):
         activity.resultant_state = 'DESTROYED'
 
-    def _operation(self, activity, user, system):
+    def _operation(self, activity):
         if self.instance.node:
             # Destroy networks
             with activity.sub_activity('destroying_net'):
@@ -163,7 +163,7 @@ class MigrateOperation(InstanceOperation):
     name = _("migrate")
     description = _("Live migrate running VM to another node.")
 
-    def _operation(self, activity, user, system, to_node=None, timeout=120):
+    def _operation(self, activity, to_node=None, timeout=120):
         if not to_node:
             with activity.sub_activity('scheduling') as sa:
                 to_node = self.instance.select_node()
@@ -193,7 +193,7 @@ class RebootOperation(InstanceOperation):
     name = _("reboot")
     description = _("Reboot virtual machine with Ctrl+Alt+Del signal.")
 
-    def _operation(self, activity, user, system, timeout=5):
+    def _operation(self, timeout=5):
         self.instance.reboot_vm(timeout=timeout)
 
 
@@ -223,7 +223,7 @@ class ResetOperation(InstanceOperation):
     name = _("reset")
     description = _("Reset virtual machine (reset button).")
 
-    def _operation(self, activity, user, system, timeout=5):
+    def _operation(self, timeout=5):
         self.instance.reset_vm(timeout=timeout)
 
 register_operation(ResetOperation)
@@ -328,7 +328,7 @@ class ShutdownOperation(InstanceOperation):
     def on_commit(self, activity):
         activity.resultant_state = 'STOPPED'
 
-    def _operation(self, activity, user, system, timeout=120):
+    def _operation(self, timeout=120):
         self.instance.shutdown_vm(timeout=timeout)
         self.instance.yield_node()
         self.instance.yield_vnc_port()
@@ -346,7 +346,7 @@ class ShutOffOperation(InstanceOperation):
     def on_commit(self, activity):
         activity.resultant_state = 'STOPPED'
 
-    def _operation(self, activity, user, system):
+    def _operation(self, activity):
         # Shutdown networks
         with activity.sub_activity('shutdown_net'):
             self.instance.shutdown_net()
@@ -383,7 +383,7 @@ class SleepOperation(InstanceOperation):
     def on_commit(self, activity):
         activity.resultant_state = 'SUSPENDED'
 
-    def _operation(self, activity, user, system, timeout=60):
+    def _operation(self, activity, timeout=60):
         # Destroy networks
         with activity.sub_activity('shutdown_net'):
             self.instance.shutdown_net()
@@ -419,7 +419,7 @@ class WakeUpOperation(InstanceOperation):
     def on_commit(self, activity):
         activity.resultant_state = 'RUNNING'
 
-    def _operation(self, activity, user, system, timeout=60):
+    def _operation(self, activity, timeout=60):
         # Schedule vm
         self.instance.allocate_vnc_port()
         self.instance.allocate_node()
@@ -470,7 +470,7 @@ class FlushOperation(NodeOperation):
     name = _("flush")
     description = _("Disable node and move all instances to other ones.")
 
-    def _operation(self, activity, user, system):
+    def _operation(self, activity, user):
         self.node.disable(user, activity)
         for i in self.node.instance_set.all():
             with activity.sub_activity('migrate_instance_%d' % i.pk):
