@@ -9,7 +9,9 @@ from django.utils.translation import ugettext_lazy as _
 from celery.exceptions import TimeLimitExceeded
 
 from common.operations import Operation, register_operation
-from .tasks.local_tasks import async_instance_operation, async_node_operation
+from .tasks.local_tasks import (
+    abortable_async_instance_operation, abortable_async_node_operation,
+)
 from .models import (
     Instance, InstanceActivity, InstanceTemplate, Interface, Node,
     NodeActivity,
@@ -21,7 +23,7 @@ logger = getLogger(__name__)
 
 class InstanceOperation(Operation):
     acl_level = 'owner'
-    async_operation = async_instance_operation
+    async_operation = abortable_async_instance_operation
     host_cls = Instance
 
     def __init__(self, instance):
@@ -440,7 +442,7 @@ register_operation(WakeUpOperation)
 
 
 class NodeOperation(Operation):
-    async_operation = async_node_operation
+    async_operation = abortable_async_node_operation
     host_cls = Node
 
     def __init__(self, node):
