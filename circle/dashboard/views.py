@@ -239,6 +239,7 @@ class VmDetailView(CheckedDetailView):
             'change_password': self.__change_password,
             'new_name': self.__set_name,
             'new_tag': self.__add_tag,
+            'deploy_local': self.__deploy_local,
             'to_remove': self.__remove_tag,
             'port': self.__add_port,
             'new_network_vlan': self.__new_network,
@@ -246,6 +247,15 @@ class VmDetailView(CheckedDetailView):
         for k, v in options.iteritems():
             if request.POST.get(k) is not None:
                 return v(request)
+
+    def __deploy_local(self, request):
+        self.object = self.get_object()
+        if not self.object.has_level(request.user, 'owner'):
+            raise PermissionDenied()
+
+        return HttpResponse(
+            json.dumps(self.object.deploy_local(request.user)),
+            content_type="application/json")
 
     def __change_password(self, request):
         self.object = self.get_object()

@@ -6,8 +6,16 @@
 {% block content %}
 <div class="body-content">
   <div class="page-header">
-    <div class="pull-right" style="padding-top: 15px;" id="ops">
-      {% include "dashboard/vm-detail/_operations.html" %}
+    <div class="pull-right" style="padding-top: 15px;" >    
+  	<form style="display: inline;" method="POST" action="{% url "dashboard.views.detail" pk=instance.pk %}">
+         {% csrf_token %}
+        	<input type="hidden" name="deploy_local" />
+        	<button title="{% trans "Deploy on Local PC" %}" class="btn btn-default
+btn-xs" type="submit"><i class="icon-chevron-right"></i></button>
+      	</form>
+     <div id="ops">
+     {% include "dashboard/vm-detail/_operations.html" %}
+    </div>
     </div>
     <h1>
       <div id="vm-details-rename">
@@ -111,5 +119,6 @@
   <script src="{{ STATIC_URL }}dashboard/vm-details.js"></script>
   <script src="{{ STATIC_URL }}dashboard/vm-common.js"></script>
   <script src="{{ STATIC_URL }}dashboard/vm-console.js"></script>
+  <script src="{{ STATIC_URL }}dashboard/client-gui.js"></script>
   <script src="{{ STATIC_URL }}dashboard/disk-list.js"></script>
 {% endblock %}

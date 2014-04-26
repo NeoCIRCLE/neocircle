@@ -29,6 +29,10 @@ from .common import BaseResourceConfigModel, Lease
 from .network import Interface
 from .node import Node, Trait
 
+import os
+import random
+import string
+
 logger = getLogger(__name__)
 pre_state_changed = Signal(providing_args=["new_state"])
 post_state_changed = Signal(providing_args=["new_state"])
@@ -180,6 +184,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         ('NOSTATE', _('no state')),
         ('RUNNING', _('running')),
         ('STOPPED', _('stopped')),
+        ('LOCAL_RUNNING', _('local_running')),
         ('SUSPENDED', _('suspended')),
         ('ERROR', _('error')),
         ('PENDING', _('pending')),
@@ -787,6 +792,50 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         return vm_tasks.deploy.apply_async(args=[self.get_vm_desc()],
                                            queue=queue_name
                                            ).get(timeout=timeout)
+
+    def __deploy_local_vm(self, act, timeout=15):
+        """Local deploy the virtual machine.
+
+        :param self: The virtual machine.
+
+        :param act: Parent activity.
+        """
+        descriptor = self.get_vm_desc()
+        # create hardlink
+        hlinkname = ''.join(random.choice(string.ascii_uppercase +
+                                          string.digits) for _ in range(20))
+        remotedest = '/mnt/vmdisks/' + hlinkname
+        localdest = '/home/cloud/nfs/' + hlinkname
+        localsrc = '/home/cloud' + descriptor['disk_list'][0]['source']
+        os.link(localsrc, localdest)
+        descriptor['disk_list'][0]['source'] = remotedest
+        return descriptor
+
+    def deploy_local(self, user=None, task_uuid=None):
+        """Deploy new virtual machine with network
+
+        :param self: The virtual machine to deploy.
+        :type self: vm.models.Instance
+
+        :param user: The user who's issuing the command.
+        :type user: django.contrib.auth.models.User
+
+        :param task_uuid: The task's UUID, if the command is being ex
+ecuted
+                          asynchronously.
+        :type task_uuid: str
+        """
+        if self.destroyed_at:
+            raise self.InstanceDestroyedError(self)
+
+        def __on_commit(activity):
+            activity.resultant_state = 'LOCAL_RUNNING'
+
+        with instance_activity(code_suffix='local_deploy', instance=self,
+                               on_commit=__on_commit, task_uuid=task_uuid,
+                               user=user) as act:
+
+            return self.__deploy_local_vm(act)
 
     def migrate_vm(self, to_node, timeout=120):
         queue_name = self.get_remote_queue_name('vm')
