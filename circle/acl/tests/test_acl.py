@@ -161,6 +161,20 @@ class AclUserTest(TestCase):
         self.assertItemsEqual(
             TestModel.get_objects_with_level('alfa', self.u2), [i2])
 
+    def test_get_objects_with_level_for_superuser(self):
+        i1 = TestModel.objects.create(normal_field='Hello1')
+        i2 = TestModel.objects.create(normal_field='Hello2')
+        i1.set_level(self.u1, 'alfa')
+        i2.set_level(self.us, 'alfa')
+
+        self.assertItemsEqual(
+            TestModel.get_objects_with_level('alfa', self.u1), [i1])
+        self.assertItemsEqual(
+            TestModel.get_objects_with_level('alfa', self.us), [i1, i2])
+        self.assertItemsEqual(
+            TestModel.get_objects_with_level('alfa', self.us,
+                                             disregard_superuser=True), [i2])
+
     def test_get_objects_with_level_for_group(self):
         i1 = TestModel.objects.create(normal_field='Hello1')
         i2 = TestModel.objects.create(normal_field='Hello2')

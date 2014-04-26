@@ -6,13 +6,50 @@
   {% trans "Interfaces" %}
 </h2>
 
-<div class="row" id="vm-details-network-add-for-form">
-
+<div class="js-hidden row" id="vm-details-network-add-form">
+  <div class="col-md-12">
+    <div>
+      <hr />
+      <h3>
+        {% trans "Add new network interface!" %}
+      </h3>
+      <form method="POST" action="">
+        {% csrf_token %}
+        <div class="input-group" style="max-width: 330px;">
+          <select name="new_network_vlan" class="form-control font-awesome-font">
+            {% for v in vlans %}
+              <option value="{{ v.pk }}">
+                {% if v.managed %}
+                  &#xf0ac;
+                {% else %}
+                  &#xf0c1;
+                {% endif %}
+                {{ v.name }}
+              </option>
+              {% empty %}
+              <option value="-1">No more networks!</option>
+            {% endfor %}
+          </select>
+          <div class="input-group-btn">
+            <button {% if vlans|length == 0 %}disabled{% endif %}
+              type="submit" class="btn btn-success"><i class="icon-plus-sign"></i></button>
+          </div>
+        </div>
+      </form>
+      <hr />
+    </div> 
+  </div>
 </div>
+
 {% for i in instance.interface_set.all %}
+<div>
   <h3 class="list-group-item-heading dashboard-vm-details-network-h3">
     <i class="icon-{% if i.host %}globe{% else %}link{% endif %}"></i> {{ i.vlan.name }} 
-    {% if not i.host %}(unmanaged) <a href="#" class="btn btn-danger btn-xs">{% trans "remove" %}</a>{% endif %}
+    {% if not i.host%}({% trans "unmanaged" %}){% endif %}
+    <a href="{% url "dashboard.views.interface-delete" pk=i.pk %}?next={{ request.path }}" class="btn btn-danger btn-xs interface-remove"
+      data-interface-pk="{{ i.pk }}">
+      {% trans "remove" %}
+    </a>
   </h3>
   {% if i.host %}
     <div class="row">
@@ -109,31 +146,5 @@
       </div>
     </div>
   {% endif %}
-{% endfor %}
-<div class="js-hidden row" id="vm-details-network-add-form">
-  <div class="col-md-12">
-    <div>
-      <hr />
-      <h3>
-        {% trans "Add new network interface!" %}
-      </h3>
-      <form method="POST" action="">
-        {% csrf_token %}
-        <div class="input-group" style="max-width: 330px;">
-          <select name="new_network_vlan" class="form-control">
-            {% if vlans|length == 0 %} 
-              <option value="-1">No more networks!</option>
-            {% endif %}
-            {% for v in vlans %}
-              <option value="{{ v.pk }}">{{ v.name }}</option>
-            {% endfor %}
-          </select>
-          <div class="input-group-btn">
-            <button type="submit" class="btn btn-success"><i class="icon-plus-sign"></i></button>
-          </div>
-        </div>
-      </form>
-      <hr />
-    </div> 
-  </div>
 </div>
+{% endfor %}

@@ -1,3 +1,5 @@
+import json
+
 from unittest import skip
 from django.test import TestCase
 from django.test.client import Client
@@ -5,6 +7,7 @@ from django.contrib.auth.models import User, Group
 from django.core.exceptions import SuspiciousOperation
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import Permission
+from django.contrib.auth import authenticate
 
 from vm.models import Instance, InstanceTemplate, Lease, Node, Trait
 from vm.operations import WakeUpOperation
@@ -172,6 +175,46 @@ class VmDetailTest(LoginMixin, TestCase):
                           {'new_network_vlan': 1})
         self.assertEqual(response.status_code, 302)
         self.assertEqual(inst.interface_set.count(), interface_count + 1)
+
+    def test_permitted_network_delete(self):
+        c = Client()
+        self.login(c, "user1")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u1, 'owner')
+        inst.add_interface(vlan=Vlan.objects.get(pk=1), user=self.us)
+
+        iface_count = inst.interface_set.count()
+        c.post("/dashboard/interface/1/delete/")
+        self.assertEqual(inst.interface_set.count(), iface_count - 1)
+
+    def test_permitted_network_delete_w_ajax(self):
+        c = Client()
+        self.login(c, "user1")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u1, 'owner')
+        vlan = Vlan.objects.get(pk=1)
+        inst.add_interface(vlan=vlan, user=self.us)
+
+        iface_count = inst.interface_set.count()
+        response = c.post("/dashboard/interface/1/delete/",
+                          HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        removed_network = json.loads(response.content)['removed_network']
+        self.assertEqual(removed_network['vlan'], vlan.name)
+        self.assertEqual(removed_network['vlan_pk'], vlan.pk)
+        self.assertEqual(removed_network['managed'], vlan.managed)
+        self.assertEqual(inst.interface_set.count(), iface_count - 1)
+
+    def test_unpermitted_network_delete(self):
+        c = Client()
+        self.login(c, "user1")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u1, 'user')
+        inst.add_interface(vlan=Vlan.objects.get(pk=1), user=self.us)
+        iface_count = inst.interface_set.count()
+
+        response = c.post("/dashboard/interface/1/delete/")
+        self.assertEqual(iface_count, inst.interface_set.count())
+        self.assertEqual(response.status_code, 403)
 
     def test_create_vm_w_unpermitted_network(self):
         c = Client()
@@ -557,6 +600,41 @@ class VmDetailTest(LoginMixin, TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(instance_count + 2, Instance.objects.all().count())
+
+    def test_unpermitted_description_update(self):
+        c = Client()
+        self.login(c, "user1")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u2, 'owner')
+        inst.set_level(self.u1, 'user')
+        old_desc = inst.description
+        response = c.post("/dashboard/vm/1/", {'new_description': 'test1234'})
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Instance.objects.get(pk=1).description, old_desc)
+
+    def test_permitted_description_update_w_ajax(self):
+        c = Client()
+        self.login(c, "user1")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u1, 'owner')
+        response = c.post("/dashboard/vm/1/", {'new_description': "naonyo"},
+                          HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.content)['new_description'],
+                         "naonyo")
+        self.assertEqual(Instance.objects.get(pk=1).description, "naonyo")
+
+    def test_permitted_description_update(self):
+        c = Client()
+        self.login(c, "user1")
+        inst = Instance.objects.get(pk=1)
+        inst.set_level(self.u1, 'owner')
+        response = c.post("/dashboard/vm/1/", {'new_description': "naonyo"})
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Instance.objects.get(pk=1).description, "naonyo")
 
 
 class NodeDetailTest(LoginMixin, TestCase):
@@ -991,3 +1069,68 @@ class IndexViewTest(LoginMixin, TestCase):
         self.u1.profile.notify("urgent", "dashboard/test_message.txt", )
         response = c.get("/dashboard/")
         self.assertEqual(response.context['NEW_NOTIFICATIONS_COUNT'], 1)
+
+
+class ProfileViewTest(LoginMixin, TestCase):
+
+    def setUp(self):
+        self.u1 = User.objects.create(username='user1')
+        self.u1.set_password('password')
+        self.u1.save()
+        self.p1 = Profile.objects.create(user=self.u1)
+        self.p1.save()
+
+    def test_permitted_language_change(self):
+        c = Client()
+        self.login(c, "user1")
+        old_language_cookie_value = c.cookies['django_language'].value
+        old_language_db_value = self.u1.profile.preferred_language
+        response = c.post("/dashboard/profile/", {
+            'preferred_language': "hu",
+        })
+
+        self.assertEqual(response.status_code, 302)
+        self.assertNotEqual(old_language_cookie_value,
+                            c.cookies['django_language'].value)
+        self.assertNotEqual(old_language_db_value,
+                            User.objects.get(
+                                username="user1").profile.preferred_language)
+
+    def test_permitted_valid_password_change(self):
+        c = Client()
+        self.login(c, "user1")
+
+        c.post("/dashboard/profile/", {
+            'old_password': "password",
+            'new_password1': "asd",
+            'new_password2': "asd",
+        })
+
+        self.assertIsNone(authenticate(username="user1", password="password"))
+        self.assertIsNotNone(authenticate(username="user1", password="asd"))
+
+    def test_permitted_invalid_password_changes(self):
+        c = Client()
+        self.login(c, "user1")
+
+        # wrong current password
+        c.post("/dashboard/profile/", {
+            'old_password': "password1",
+            'new_password1': "asd",
+            'new_password2': "asd",
+        })
+
+        self.assertIsNotNone(authenticate(username="user1",
+                                          password="password"))
+        self.assertIsNone(authenticate(username="user1", password="asd"))
+
+        # wrong pw confirmation
+        c.post("/dashboard/profile/", {
+            'old_password': "password",
+            'new_password1': "asd",
+            'new_password2': "asd1",
+        })
+
+        self.assertIsNotNone(authenticate(username="user1",
+                                          password="password"))
+        self.assertIsNone(authenticate(username="user1", password="asd"))

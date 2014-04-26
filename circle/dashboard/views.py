@@ -37,6 +37,7 @@ from braces.views import (
 from .forms import (
     CircleAuthenticationForm, DiskAddForm, HostForm, LeaseForm, MyProfileForm,
     NodeForm, TemplateForm, TraitForm, VmCustomizeForm,
+    CirclePasswordChangeForm
 )
 from .tables import (NodeListTable, NodeVmListTable,
                      TemplateListTable, LeaseListTable, GroupListTable,)
@@ -89,7 +90,7 @@ class IndexView(LoginRequiredMixin, TemplateView):
         # instances
         favs = Instance.objects.filter(favourite__user=self.request.user)
         instances = Instance.get_objects_with_level(
-            'user', user).filter(destroyed_at=None)
+            'user', user, disregard_superuser=True).filter(destroyed_at=None)
         display = list(favs) + list(set(instances) - set(favs))
         for d in display:
             d.fav = True if d in favs else False
@@ -215,7 +216,7 @@ class VmDetailView(CheckedDetailView):
 
         context['vlans'] = Vlan.get_objects_with_level(
             'user', self.request.user
-        ).exclude(
+        ).exclude(  # exclude already added interfaces
             pk__in=Interface.objects.filter(
                 instance=self.get_object()).values_list("vlan", flat=True)
         ).all()
@@ -238,6 +239,7 @@ class VmDetailView(CheckedDetailView):
         options = {
             'change_password': self.__change_password,
             'new_name': self.__set_name,
+            'new_description': self.__set_description,
             'new_tag': self.__add_tag,
             'deploy_local': self.__deploy_local,
             'to_remove': self.__remove_tag,
@@ -318,8 +320,30 @@ class VmDetailView(CheckedDetailView):
             )
         else:
             messages.success(request, success_message)
-            return redirect(reverse_lazy("dashboard.views.detail",
-                                         kwargs={'pk': self.object.pk}))
+            return redirect(self.object.get_absolute_url())
+
+    def __set_description(self, request):
+        self.object = self.get_object()
+        if not self.object.has_level(request.user, 'owner'):
+            raise PermissionDenied()
+
+        new_description = request.POST.get("new_description")
+        Instance.objects.filter(pk=self.object.pk).update(
+            **{'description': new_description})
+
+        success_message = _("VM description successfully updated!")
+        if request.is_ajax():
+            response = {
+                'message': success_message,
+                'new_description': new_description,
+            }
+            return HttpResponse(
+                json.dumps(response),
+                content_type="application/json"
+            )
+        else:
+            messages.success(request, success_message)
+            return redirect(self.object.get_absolute_url())
 
     def __add_tag(self, request):
         new_tag = request.POST.get('new_tag')
@@ -402,12 +426,11 @@ class VmDetailView(CheckedDetailView):
         if not self.object.has_level(request.user, 'owner'):
             raise PermissionDenied()
 
-        vlan = Vlan.objects.get(pk=request.POST.get("new_network_vlan"))
+        vlan = get_object_or_404(Vlan, pk=request.POST.get("new_network_vlan"))
         if not vlan.has_level(request.user, 'user'):
             raise PermissionDenied()
         try:
-            Interface.create(vlan=vlan, instance=self.object,
-                             managed=vlan.managed, owner=request.user)
+            self.object.add_interface(vlan=vlan, user=request.user)
             messages.success(request, _("Successfully added new interface!"))
         except Exception, e:
             error = u' '.join(e.messages)
@@ -2135,9 +2158,17 @@ class DiskAddView(TemplateView):
 
 
 class MyPreferencesView(UpdateView):
-
     model = Profile
-    form_class = MyProfileForm
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(MyPreferencesView, self).get_context_data(*args,
+                                                                  **kwargs)
+        context['forms'] = {
+            'change_password': CirclePasswordChangeForm(
+                user=self.request.user),
+            'change_language': MyProfileForm(instance=self.get_object()),
+        }
+        return context
 
     def get_object(self, queryset=None):
         if self.request.user.is_anonymous():
@@ -2147,10 +2178,36 @@ class MyPreferencesView(UpdateView):
         except Profile.DoesNotExist:
             raise Http404(_("You don't have a profile."))
 
-    def form_valid(self, form):
-        response = super(MyPreferencesView, self).form_valid(form)
-        set_language_cookie(self.request, response)
-        return response
+    def post(self, request, *args, **kwargs):
+        self.ojbect = self.get_object()
+        redirect_response = HttpResponseRedirect(
+            reverse("dashboard.views.profile"))
+        if "preferred_language" in request.POST:
+            form = MyProfileForm(request.POST, instance=self.get_object())
+            if form.is_valid():
+                lang = form.cleaned_data.get("preferred_language")
+                set_language_cookie(self.request, redirect_response, lang)
+                form.save()
+        else:
+            form = CirclePasswordChangeForm(user=request.user,
+                                            data=request.POST)
+            if form.is_valid():
+                form.save()
+
+        if form.is_valid():
+            return redirect_response
+        else:
+            return self.get(request, form=form, *args, **kwargs)
+
+    def get(self, request, form=None, *args, **kwargs):
+        # if this is not here, it won't work
+        self.object = self.get_object()
+        context = self.get_context_data(*args, **kwargs)
+        if form is not None:
+            # a little cheating, users can't post invalid
+            # language selection forms (without modifying the HTML)
+            context['forms']['change_password'] = form
+        return self.render_to_response(context)
 
 
 def set_language_cookie(request, response, lang=None):
@@ -2236,3 +2293,53 @@ class InstanceActivityDetail(SuperuserRequiredMixin, DetailView):
             order_by('-started').select_related('user').
             prefetch_related('children'))
         return ctx
+
+
+class InterfaceDeleteView(DeleteView):
+    model = Interface
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/confirm/ajax-delete.html']
+        else:
+            return ['dashboard/confirm/base-delete.html']
+
+    def get_context_data(self, **kwargs):
+        context = super(InterfaceDeleteView, self).get_context_data(**kwargs)
+        interface = self.get_object()
+        context['text'] = _("Are you sure you want to remove this interface "
+                            "from <strong>%(vm)s</strong>?" %
+                            {'vm': interface.instance.name})
+        return context
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        instance = self.object.instance
+
+        if not instance.has_level(request.user, "owner"):
+            raise PermissionDenied()
+
+        instance.remove_interface(interface=self.object, user=request.user)
+        success_url = self.get_success_url()
+        success_message = _("Interface successfully deleted!")
+
+        if request.is_ajax():
+            return HttpResponse(
+                json.dumps(
+                    {'message': success_message,
+                     'removed_network': {
+                         'vlan': self.object.vlan.name,
+                         'vlan_pk': self.object.vlan.pk,
+                         'managed': self.object.host is not None,
+                     }}),
+                content_type="application/json",
+            )
+        else:
+            messages.success(request, success_message)
+            return HttpResponseRedirect("%s#network" % success_url)
+
+    def get_success_url(self):
+        redirect = self.request.POST.get("next")
+        if redirect:
+            return redirect
+        self.object.instance.get_absolute_url()

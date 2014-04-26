@@ -187,7 +187,7 @@ html {
     height: 300px;
 }
 
-#vm-details-rename, #vm-details-rename *, #vm-details-h1-name, #vm-list-rename, #vm-list-rename *,
+#vm-details-rename, #vm-details-h1-name, #vm-details-rename ,
 #node-details-rename, #node-details-rename *, #node-details-h1-name, #node-list-rename, #node-list-rename *#group-details-rename, #group-details-rename *, #group-details-h1-name, #group-list-rename, #group-list-rename * {
  
   display: inline;
@@ -197,7 +197,11 @@ html {
   display: none;
 }
 
-#vm-details-rename-name, #node-details-rename-name, #group-details-rename-name {
+.vm-details-home-name {
+  max-width: 401px;
+}
+
+#node-details-rename-name, #group-details-rename-name {
   max-width: 160px;
 }
 
@@ -466,4 +470,24 @@ footer a, footer a:hover, footer a:visited {
   white-space: nowrap;
   overflow: hidden;
   padding-left: 10px;
+}
+
+#vm-details-home-description {
+  display: inline-block; 
+  position: relative;
+}
+
+#vm-details-home-description textarea {
+  min-width: 240px;
+  min-height: 250px;
+}
+
+.vm-details-home-edit-description-click, .vm-details-home-edit-name-click {
+  cursor: pointer;
+}
+
+.vm-details-description-submit {
+  position: absolute; 
+  bottom: 10px; 
+  right: 20px;
 }

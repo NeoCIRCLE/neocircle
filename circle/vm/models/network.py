@@ -53,13 +53,10 @@ class Interface(Model):
     class Meta:
         app_label = 'vm'
         db_table = 'vm_interface'
+        ordering = ("-vlan__managed", )
 
     def __unicode__(self):
         return 'cloud-' + str(self.instance.id) + '-' + str(self.vlan.vid)
-
-    @property
-    def destroyed(self):
-        return self.instance.destroyed_at
 
     @property
     def mac(self):
@@ -138,34 +135,16 @@ class Interface(Model):
         return iface
 
     def deploy(self):
-        if self.destroyed:
-            from .instance import Instance
-            raise Instance.InstanceDestroyedError(self.instance,
-                                                  "The associated instance "
-                                                  "(%s) has already been "
-                                                  "destroyed" % self.instance)
-
-        net_tasks.create.apply_async(
-            args=[self.get_vmnetwork_desc()],
-            queue=self.instance.get_remote_queue_name('net'))
+        queue_name = self.instance.get_remote_queue_name('net')
+        return net_tasks.create.apply_async(args=[self.get_vmnetwork_desc()],
+                                            queue=queue_name).get()
 
     def shutdown(self):
-        if self.destroyed:
-            from .instance import Instance
-            raise Instance.InstanceDestroyedError(self.instance,
-                                                  "The associated instance "
-                                                  "(%s) has already been "
-                                                  "destroyed" % self.instance)
-
         queue_name = self.instance.get_remote_queue_name('net')
-        net_tasks.destroy.apply_async(args=[self.get_vmnetwork_desc()],
-                                      queue=queue_name)
+        return net_tasks.destroy.apply_async(args=[self.get_vmnetwork_desc()],
+                                             queue=queue_name).get()
 
     def destroy(self):
-        if self.destroyed:
-            return
-
-        self.shutdown()
         if self.host is not None:
             self.host.delete()
 

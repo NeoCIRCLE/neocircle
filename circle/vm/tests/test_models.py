@@ -1,5 +1,6 @@
 from datetime import datetime
 from mock import Mock, MagicMock, patch, call
+import types
 
 from django.contrib.auth.models import User
 from django.test import TestCase
@@ -180,14 +181,18 @@ class InstanceActivityTestCase(TestCase):
     def test_create_no_concurrency_check(self):
         instance = MagicMock(spec=Instance)
         instance.activity_log.filter.return_value.exists.return_value = True
+        mock_instance_activity_cls = MagicMock(spec=InstanceActivity,
+                                               ACTIVITY_CODE_BASE='test')
 
-        with patch.object(InstanceActivity, '__new__'):
-            try:
-                InstanceActivity.create('test', instance,
-                                        concurrency_check=False)
-            except ActivityInProgressError:
-                raise AssertionError("'create' method checked for concurrent "
-                                     "activities.")
+        original_create = InstanceActivity.create
+        mocked_create = types.MethodType(original_create.im_func,
+                                         mock_instance_activity_cls,
+                                         original_create.im_class)
+        try:
+            mocked_create('test', instance, concurrency_check=False)
+        except ActivityInProgressError:
+            raise AssertionError("'create' method checked for concurrent "
+                                 "activities.")
 
     def test_create_sub_concurrency_check(self):
         iaobj = MagicMock(spec=InstanceActivity)
@@ -201,10 +206,10 @@ class InstanceActivityTestCase(TestCase):
         iaobj.activity_code = 'test'
         iaobj.children.filter.return_value.exists.return_value = True
 
-        with patch.object(InstanceActivity, '__new__'):
+        create_sub_func = InstanceActivity.create_sub
+        with patch('vm.models.activity.InstanceActivity'):
             try:
-                InstanceActivity.create_sub(iaobj, 'test',
-                                            concurrency_check=False)
+                create_sub_func(iaobj, 'test', concurrency_check=False)
             except ActivityInProgressError:
                 raise AssertionError("'create_sub' method checked for "
                                      "concurrent activities.")
