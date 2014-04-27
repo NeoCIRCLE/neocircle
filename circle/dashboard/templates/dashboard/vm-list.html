@@ -32,11 +32,26 @@
       <div class="panel-body">
         <table class="table table-bordered table-striped table-hover vm-list-table">
           <thead><tr>
-              <th class="orderable pk sortable vm-list-table-thin"><a href="?sort=pk">{% trans "ID" %}</a></th>
-              <th class="name orderable sortable"><a href="?sort=name">{% trans "Name" %}</a></th>
-              <th>{% trans "State" %}</th>
-              <th class="orderable sortable"><a href="?sort=owner">{% trans "Owner" %}</a></th>
-              {% if user.is_superuser %}<th class="orderable sortable"><a href="?sort=node">{% trans "Node" %}</a></th>{% endif %}
+              <th data-sort="int" class="orderable pk sortable vm-list-table-thin">
+                {% trans "ID" as t %}
+                {% include "dashboard/vm-list/header-link.html" with name=t sort="pk" %}
+              </th>
+              <th data-sort="string" class="name orderable sortable">
+                {% trans "Name" as t %}
+                {% include "dashboard/vm-list/header-link.html" with name=t sort="name" %}
+              </th>
+              <th data-sort="string">
+                {% trans "State" as t %}
+                {% include "dashboard/vm-list/header-link.html" with name=t sort="status" %}
+              </th>
+              <th data-sort="string" class="orderable sortable">
+                {% trans "Owner" as t %}
+                {% include "dashboard/vm-list/header-link.html" with name=t sort="owner" %}
+              </th>
+              {% if user.is_superuser %}<th data-sort="string" class="orderable sortable">
+                {% trans "Node" as t %}
+                {% include "dashboard/vm-list/header-link.html" with name=t sort="node" %}
+              </th>{% endif %}
           </tr></thead><tbody>
           {% for i in object_list %}
           <tr class="{% cycle 'odd' 'even' %}">

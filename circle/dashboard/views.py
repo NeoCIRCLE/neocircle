@@ -989,6 +989,14 @@ class VmList(LoginRequiredMixin, ListView):
         s = self.request.GET.get("s")
         if s:
             queryset = queryset.filter(name__icontains=s)
+
+        sort = self.request.GET.get("sort")
+        # remove "-" that means descending order
+        # also check if the column name is valid
+        if (sort and
+            sort.replace("-", "")
+                in [i.name for i in Instance._meta.fields] + ["pk"]):
+            queryset = queryset.order_by(sort)
         return queryset.select_related('owner', 'node')
 
 
