@@ -4,7 +4,6 @@ from unittest import skip
 from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User, Group
-from django.core.exceptions import SuspiciousOperation
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import Permission
 from django.contrib.auth import authenticate
@@ -897,8 +896,8 @@ class TransferOwnershipViewTest(LoginMixin, TestCase):
         c2 = self.u2.notification_set.count()
         c = Client()
         self.login(c, 'user2')
-        with self.assertRaises(SuspiciousOperation):
-            c.post('/dashboard/vm/1/tx/')
+        response = c.post('/dashboard/vm/1/tx/')
+        assert response.status_code == 400
         self.assertEqual(self.u2.notification_set.count(), c2)
 
     def test_owned_offer(self):
