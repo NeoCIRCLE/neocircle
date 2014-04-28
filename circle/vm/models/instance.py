@@ -5,6 +5,8 @@ from logging import getLogger
 from string import ascii_lowercase
 from warnings import warn
 
+from celery.exceptions import TimeoutError
+from celery.contrib.abortable import AbortableAsyncResult
 import django.conf
 from django.contrib.auth.models import User
 from django.core import signing
@@ -22,6 +24,7 @@ from taggit.managers import TaggableManager
 
 from acl.models import AclBase
 from common.operations import OperatedMixin
+from manager.mancelery import celery
 from ..tasks import vm_tasks, agent_tasks
 from .activity import (ActivityInProgressError, instance_activity,
                        InstanceActivity)
@@ -813,13 +816,21 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                                            queue=queue_name
                                            ).get(timeout=timeout)
 
-    def shutdown_vm(self, timeout=120):
+    def shutdown_vm(self, task=None, step=5):
         queue_name = self.get_remote_queue_name('vm')
         logger.debug("RPC Shutdown at queue: %s, for vm: %s.", queue_name,
                      self.vm_name)
-        return vm_tasks.shutdown.apply_async(kwargs={'name': self.vm_name},
-                                             queue=queue_name
-                                             ).get(timeout=timeout)
+        remote = vm_tasks.shutdown.apply_async(kwargs={'name': self.vm_name},
+                                               queue=queue_name)
+
+        while True:
+            try:
+                return remote.get(timeout=step)
+            except TimeoutError:
+                if task is not None and task.is_aborted():
+                    AbortableAsyncResult(remote.id,
+                                         backend=celery.backend).abort()
+                    raise Exception("Shutdown aborted by user.")
 
     def suspend_vm(self, timeout=60):
         queue_name = self.get_remote_queue_name('vm')
