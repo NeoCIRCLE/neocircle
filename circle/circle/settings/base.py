@@ -400,3 +400,6 @@ LOGIN_REDIRECT_URL = "/"
 
 LOCALE_PATHS = (join(SITE_ROOT, 'locale'), )
 COMPANY_NAME = "BME IK 2014"
+SOUTH_MIGRATION_MODULES = {
+    'taggit': 'taggit.south_migrations',
+}
