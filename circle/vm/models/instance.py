@@ -24,7 +24,6 @@ from taggit.managers import TaggableManager
 
 from acl.models import AclBase
 from common.operations import OperatedMixin
-from manager.mancelery import celery
 from ..tasks import vm_tasks, agent_tasks
 from .activity import (ActivityInProgressError, instance_activity,
                        InstanceActivity)
@@ -828,8 +827,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                 return remote.get(timeout=step)
             except TimeoutError:
                 if task is not None and task.is_aborted():
-                    AbortableAsyncResult(remote.id,
-                                         backend=celery.backend).abort()
+                    AbortableAsyncResult(remote.id).abort()
                     raise Exception("Shutdown aborted by user.")
 
     def suspend_vm(self, timeout=60):
