@@ -165,6 +165,9 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
     def get_absolute_url(self):
         return ('dashboard.views.template-detail', None, {'pk': self.pk})
 
+    def remove_disk(self, disk, **kwargs):
+        self.disks.remove(disk)
+
 
 class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                TimeStampedModel):

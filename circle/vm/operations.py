@@ -80,6 +80,26 @@ class AddInterfaceOperation(InstanceOperation):
 register_operation(AddInterfaceOperation)
 
 
+class AddDiskOperation(InstanceOperation):
+    activity_code_suffix = 'add_disk'
+    id = 'add_disk'
+    name = _("add disk")
+    description = _("Add the specified disk to the VM.")
+
+    def check_precond(self):
+        super(AddDiskOperation, self).check_precond()
+        # TODO remove check when hot-attach is implemented
+        if self.instance.status not in ['STOPPED']:
+            raise self.instance.WrongStateError(self.instance)
+
+    def _operation(self, activity, user, system, disk):
+        # TODO implement with hot-attach when it'll be available
+        return self.instance.disks.add(disk)
+
+
+register_operation(AddDiskOperation)
+
+
 class DeployOperation(InstanceOperation):
     activity_code_suffix = 'deploy'
     id = 'deploy'
@@ -215,6 +235,26 @@ class RemoveInterfaceOperation(InstanceOperation):
 
 
 register_operation(RemoveInterfaceOperation)
+
+
+class RemoveDiskOperation(InstanceOperation):
+    activity_code_suffix = 'remove_disk'
+    id = 'remove_disk'
+    name = _("remove disk")
+    description = _("Remove the specified disk from the VM.")
+
+    def check_precond(self):
+        super(RemoveDiskOperation, self).check_precond()
+        # TODO remove check when hot-detach is implemented
+        if self.instance.status not in ['STOPPED']:
+            raise self.instance.WrongStateError(self.instance)
+
+    def _operation(self, activity, user, system, disk):
+        # TODO implement with hot-detach when it'll be available
+        return self.instance.disks.remove(disk)
+
+
+register_operation(RemoveDiskOperation)
 
 
 class ResetOperation(InstanceOperation):
