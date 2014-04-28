@@ -58,3 +58,41 @@ class OperationTestCase(TestCase):
                     patch.object(Operation, 'create_activity'), \
                     patch.object(Operation, '_exec_op'):
                 op.call(system=True)
+
+    def test_no_exception_for_more_arguments_when_operation_takes_kwargs(self):
+        class KwargOp(Operation):
+            activity_code_suffix = 'test'
+            id = 'test'
+
+            def _operation(self, **kwargs):
+                pass
+
+        op = KwargOp(MagicMock())
+        with patch.object(KwargOp, 'create_activity'), \
+                patch.object(KwargOp, '_exec_op'):
+            op.call(system=True, foo=42)
+
+    def test_exception_for_unexpected_arguments(self):
+        class TestOp(Operation):
+            activity_code_suffix = 'test'
+            id = 'test'
+
+            def _operation(self):
+                pass
+
+        op = TestOp(MagicMock())
+        with patch.object(TestOp, 'create_activity'), \
+                patch.object(TestOp, '_exec_op'):
+            self.assertRaises(TypeError, op.call, system=True, foo=42)
+
+    def test_exception_for_missing_arguments(self):
+        class TestOp(Operation):
+            activity_code_suffix = 'test'
+            id = 'test'
+
+            def _operation(self, foo):
+                pass
+
+        op = TestOp(MagicMock())
+        with patch.object(TestOp, 'create_activity'):
+            self.assertRaises(TypeError, op.call, system=True)

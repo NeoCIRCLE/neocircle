@@ -44,8 +44,7 @@ class Operation(object):
         # check for unexpected keyword arguments
         argspec = getargspec(self._operation)
         if argspec.keywords is None:  # _operation doesn't take ** args
-            unexpected_kwargs = set(arg for arg in auxargs
-                                    if arg not in argspec.args)
+            unexpected_kwargs = set(auxargs) - set(argspec.args)
             if unexpected_kwargs:
                 raise TypeError("Operation got unexpected keyword arguments: "
                                 "%s" % ", ".join(unexpected_kwargs))
