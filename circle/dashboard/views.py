@@ -2160,10 +2160,7 @@ class DiskRemoveView(DeleteView):
         disk = self.get_object()
         app = disk.get_appliance()
 
-        if isinstance(app, Instance):
-            app.remove_disk(disk=disk, user=request.user)
-        else:  # isinstance(app, InstanceTemplate)
-            app.disks.remove(disk)
+        app.remove_disk(disk=disk, user=request.user)
         disk.destroy()
 
         next_url = request.POST.get("next")
