@@ -27,7 +27,7 @@ def garbage_collector(timeout=15):
     now = timezone.now()
     for i in Instance.objects.filter(destroyed_at=None).all():
         if i.time_of_delete and now > i.time_of_delete:
-            i.destroy.async()
+            i.destroy.async(system=True)
             logger.info("Expired instance %d destroyed.", i.pk)
             try:
                 i.owner.profile.notify(
@@ -39,7 +39,7 @@ def garbage_collector(timeout=15):
                              i.pk, unicode(e))
         elif (i.time_of_suspend and now > i.time_of_suspend and
               i.state == 'RUNNING'):
-            i.sleep.async()
+            i.sleep.async(system=True)
             logger.info("Expired instance %d suspended." % i.pk)
             try:
                 i.owner.profile.notify(
