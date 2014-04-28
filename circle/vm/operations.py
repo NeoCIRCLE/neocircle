@@ -315,6 +315,7 @@ class ShutdownOperation(InstanceOperation):
     id = 'shutdown'
     name = _("shutdown")
     description = _("Shutdown virtual machine with ACPI signal.")
+    abortable = True
 
     def check_precond(self):
         super(ShutdownOperation, self).check_precond()

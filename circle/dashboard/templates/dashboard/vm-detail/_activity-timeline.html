@@ -9,6 +9,14 @@
     {{ a.get_readable_name }}{% if user.is_superuser %}</a>{% endif %}
 </strong>
 {{ a.started|date:"Y-m-d H:i" }}{% if a.user %}, {{ a.user }}{% endif %}
+{% if user.is_superuser and a.is_abortable %}
+<form action="" method="POST" class="pull-right">
+  {% csrf_token %}
+  <input type="hidden" name="abort_shutdown"/>
+  <input type="hidden" name="activity" value="{{ a.pk }}"/>
+  <button class="btn btn-danger btn-xs"><i class="icon-bolt"></i> {% trans "Abort shutdown" %}</button>
+</form>
+{% endif %}
   {% if a.children.count > 0 %}
     <div class="sub-timeline">
       {% for s in a.children.all %}

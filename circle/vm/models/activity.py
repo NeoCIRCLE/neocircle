@@ -2,6 +2,8 @@ from __future__ import absolute_import, unicode_literals
 from contextlib import contextmanager
 from logging import getLogger
 
+from celery.contrib.abortable import AbortableAsyncResult
+
 from django.core.urlresolvers import reverse
 from django.db.models import CharField, ForeignKey
 from django.utils import timezone
@@ -10,6 +12,8 @@ from django.utils.translation import ugettext_lazy as _
 from common.models import (
     ActivityModel, activitycontextimpl, join_activity_code,
 )
+
+from manager.mancelery import celery
 
 
 logger = getLogger(__name__)
@@ -102,6 +106,13 @@ class InstanceActivity(ActivityModel):
         ret = super(InstanceActivity, self).save(*args, **kwargs)
         self.instance._update_status()
         return ret
+
+    def is_abortable(self):
+        op = self.instance.get_operation_from_activity_code(self.activity_code)
+        return False if op is None else (op.abortable and not self.finished)
+
+    def abort(self):
+        AbortableAsyncResult(self.task_uuid, backend=celery.backend).abort()
 
 
 @contextmanager

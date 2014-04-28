@@ -15,6 +15,7 @@ class Operation(object):
     async_queue = 'localhost.man'
     required_perms = ()
     do_not_call_in_templates = True
+    abortable = False
 
     def __call__(self, **kwargs):
         return self.call(**kwargs)

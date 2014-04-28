@@ -243,6 +243,7 @@ class VmDetailView(CheckedDetailView):
             'to_remove': self.__remove_tag,
             'port': self.__add_port,
             'new_network_vlan': self.__new_network,
+            'abort_shutdown': self.__abort_shutdown,
         }
         for k, v in options.iteritems():
             if request.POST.get(k) is not None:
@@ -427,6 +428,16 @@ class VmDetailView(CheckedDetailView):
 
         return redirect("%s#network" % reverse_lazy(
             "dashboard.views.detail", kwargs={'pk': self.object.pk}))
+
+    def __abort_shutdown(self, request):
+        self.object = self.get_object()
+        if not request.user.is_superuser:
+            raise PermissionDenied()
+
+        activity = get_object_or_404(InstanceActivity,
+                                     pk=request.POST.get("activity"))
+        activity.abort()
+        return redirect("%s#activity" % self.object.get_absolute_url())
 
 
 class OperationView(DetailView):
