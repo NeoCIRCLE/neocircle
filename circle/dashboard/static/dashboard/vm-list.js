@@ -17,14 +17,14 @@ $(function() {
     if (ctrlDown) {
       setRowColor($(this));
       if(!$(this).hasClass('vm-list-selected')) {
-        selected.splice(selected.indexOf($(this).index()), 1);
+        selected.splice(getSelectedIndex($(this).index()), 1);
       } else {
-        selected.push($(this).index());
+        selected.push({'index': $(this).index(), 'vm': $(this).data("vm-pk")});
       }
       retval = false;
     } else if(shiftDown) {
       if(selected.length > 0) {
-        start = selected[selected.length - 1] + 1;
+        start = selected[selected.length - 1]['index'] + 1;
         end = $(this).index();
 
         if(start > end) {
@@ -32,8 +32,9 @@ $(function() {
         }
 
         for(var i = start; i <= end; i++) {
-          if(selected.indexOf(i) < 0) {
-            selected.push(i);
+          var vm = $(".vm-list-table tbody tr").eq(i).data("vm-pk");
+          if(!isAlreadySelected(vm)) {
+            selected.push({'index': i, 'vm': vm});
             setRowColor($('.vm-list-table tbody tr').eq(i));
             }
         }
@@ -42,7 +43,7 @@ $(function() {
     } else {
       $('.vm-list-selected').removeClass('vm-list-selected');
       $(this).addClass('vm-list-selected');
-      selected = [$(this).index()];
+      selected = [{'index': $(this).index(), 'vm': $(this).data("vm-pk")}];
     }
 
     // reset btn disables
@@ -61,7 +62,7 @@ $(function() {
 
     
   $('#vm-list-group-migrate').click(function() {
-    console.log(collectIds(selected));
+    // pass?
   });
 
   $('.vm-list-details').popover({
@@ -131,8 +132,9 @@ $(function() {
   $('#vm-list-group-select-all').click(function() {
     $('.vm-list-table tbody tr').each(function() {
       var index = $(this).index();
-      if(selected.indexOf(index) < 0) {
-        selected.push(index);
+      var vm = $(this).data("vm-pk");
+      if(!isAlreadySelected(vm)) {
+        selected.push({'index': index, 'vm': vm});
         $(this).addClass('vm-list-selected');
       }
     });
@@ -177,11 +179,24 @@ $(function() {
   $(".vm-list-table thead th").css("cursor", "pointer");
 });
 
+function isAlreadySelected(vm) {
+  for(var i=0; i<selected.length; i++)
+    if(selected[i].vm == vm)
+      return true;
+  return false;
+}
+
+function getSelectedIndex(index) {
+  for(var i=0; i<selected.length; i++)
+    if(selected[i].index == index)
+      return i;
+  return -1;
+}
+
 function collectIds(rows) {
   var ids = [];
   for(var i = 0; i < rows.length; i++) {
-    var div = $('td:first-child div', $('.vm-list-table tbody tr').eq(rows[i]));
-    ids.push(div.prop('id').replace('vm-', ''));
+    ids.push(rows[i].vm);
   }
   return ids;  
 }
