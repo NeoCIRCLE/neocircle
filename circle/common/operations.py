@@ -1,7 +1,7 @@
 from inspect import getargspec
 from logging import getLogger
 
-from .models import activity_context
+from .models import activity_context, activity_code_separator
 
 from django.core.exceptions import PermissionDenied
 
@@ -169,6 +169,15 @@ class OperatedMixin(object):
                 pass  # unavailable
             else:
                 yield op
+
+    def get_operation_from_activity_code(self, activity_code):
+        sep = activity_code_separator
+        ops = getattr(self, operation_registry_name, {}).values()
+        for op in ops:
+            if activity_code.endswith(sep + op.activity_code_suffix):
+                return op
+        else:
+            return None
 
 
 def register_operation(op_cls, op_id=None, target_cls=None):
