@@ -996,7 +996,9 @@ class VmList(LoginRequiredMixin, ListView):
         if (sort and
             sort.replace("-", "")
                 in [i.name for i in Instance._meta.fields] + ["pk"]):
-            queryset = queryset.order_by(sort)
+            queryset = queryset.order_by(
+                # we order nodes by the normalized_name
+                sort.replace("node", "node__normalized_name"))
         return queryset.select_related('owner', 'node')
 
 

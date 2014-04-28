@@ -491,3 +491,7 @@ footer a, footer a:hover, footer a:visited {
   bottom: 10px; 
   right: 20px;
 }
+
+.vm-list-table th i {
+  margin-top: 3px;
+}

@@ -154,6 +154,27 @@ $(function() {
     );
     return false;
   });
+
+  /* table sort */
+  var table = $(".vm-list-table").stupidtable();
+
+  table.on("beforetablesort", function(event, data) {
+    return false;
+  });
+
+  table.on("aftertablesort", function(event, data) {
+    // this didn't work ;;
+    // var th = $("this").find("th");
+    
+    $(".vm-list-table thead th i").remove();
+
+    var icon_html = '<i class="icon-sort-' + (data.direction == "desc" ? "up" : "down") + ' pull-right"></i>';
+    $(".vm-list-table thead th").eq(data.column).append(icon_html);
+  });
+
+  //$(".vm-list-table thead th a").attr("href", "#");
+  // only if js is enabled
+  $(".vm-list-table thead th").css("cursor", "pointer");
 });
 
 function collectIds(rows) {
