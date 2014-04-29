@@ -289,7 +289,7 @@ class SaveAsTemplateOperation(InstanceOperation):
             v = 1
         return "%s v%d" % (name, v)
 
-    def _operation(self, activity, user, system, timeout=300,
+    def _operation(self, activity, user, system, timeout=300, name=None,
                    with_shutdown=True, **kwargs):
         if with_shutdown:
             try:
@@ -306,7 +306,7 @@ class SaveAsTemplateOperation(InstanceOperation):
             'description': self.instance.description,
             'lease': self.instance.lease,  # Can be problem in new VM
             'max_ram_size': self.instance.max_ram_size,
-            'name': self._rename(self.instance.name),
+            'name': name or self._rename(self.instance.name),
             'num_cores': self.instance.num_cores,
             'owner': user,
             'parent': self.instance.template,  # Can be problem
