@@ -52,29 +52,8 @@ class InstanceActivity(ActivityModel):
             return '{}({})'.format(self.activity_code,
                                    self.instance)
 
-    def get_absolute_url(self):
-        return reverse('dashboard.views.vm-activity', args=[self.pk])
-
-    def get_readable_name(self):
-        activity_code_last_suffix = split_activity_code(self.activity_code)[-1]
-        return activity_code_last_suffix.replace('_', ' ').capitalize()
-
-    def get_status_id(self):
-        if self.succeeded is None:
-            return 'wait'
-        elif self.succeeded:
-            return 'success'
-        else:
-            return 'failed'
-
-    @property
-    def is_abortable(self):
-        """Can the activity be aborted?
-
-        :returns: True if the activity can be aborted; otherwise, False.
-        """
-        op = self.instance.get_operation_from_activity_code(self.activity_code)
-        return self.task_uuid and op and op.abortable and not self.finished
+    def abort(self):
+        AbortableAsyncResult(self.task_uuid, backend=celery.backend).abort()
 
     @classmethod
     def create(cls, code_suffix, instance, task_uuid=None, user=None,
@@ -104,6 +83,35 @@ class InstanceActivity(ActivityModel):
         act.save()
         return act
 
+    def get_absolute_url(self):
+        return reverse('dashboard.views.vm-activity', args=[self.pk])
+
+    def get_readable_name(self):
+        activity_code_last_suffix = split_activity_code(self.activity_code)[-1]
+        return activity_code_last_suffix.replace('_', ' ').capitalize()
+
+    def get_status_id(self):
+        if self.succeeded is None:
+            return 'wait'
+        elif self.succeeded:
+            return 'success'
+        else:
+            return 'failed'
+
+    @property
+    def is_abortable(self):
+        """Can the activity be aborted?
+
+        :returns: True if the activity can be aborted; otherwise, False.
+        """
+        op = self.instance.get_operation_from_activity_code(self.activity_code)
+        return self.task_uuid and op and op.abortable and not self.finished
+
+    def save(self, *args, **kwargs):
+        ret = super(InstanceActivity, self).save(*args, **kwargs)
+        self.instance._update_status()
+        return ret
+
     @contextmanager
     def sub_activity(self, code_suffix, on_abort=None, on_commit=None,
                      task_uuid=None, concurrency_check=True):
@@ -111,14 +119,6 @@ class InstanceActivity(ActivityModel):
         """
         act = self.create_sub(code_suffix, task_uuid, concurrency_check)
         return activitycontextimpl(act, on_abort=on_abort, on_commit=on_commit)
-
-    def save(self, *args, **kwargs):
-        ret = super(InstanceActivity, self).save(*args, **kwargs)
-        self.instance._update_status()
-        return ret
-
-    def abort(self):
-        AbortableAsyncResult(self.task_uuid, backend=celery.backend).abort()
 
 
 @contextmanager
