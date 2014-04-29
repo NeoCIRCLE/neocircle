@@ -49,7 +49,7 @@ $(function() {
     // reset btn disables
     $('.vm-list-table tbody tr .btn').attr('disabled', false);
     // show/hide group controls
-    if(selected.length > 1) {
+    if(selected.length > 0) {
       $('.vm-list-group-control a').attr('disabled', false);
       for(var i = 0; i < selected.length; i++) {
         $('.vm-list-table tbody tr').eq(selected[i]).find('.btn').attr('disabled', true);
