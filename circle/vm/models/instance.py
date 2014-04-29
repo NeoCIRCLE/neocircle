@@ -110,8 +110,7 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
         ('operator', _('operator')),
         ('owner', _('owner')),        # superuser, can delete, delegate perms
     )
-    name = CharField(max_length=100, unique=True,
-                     verbose_name=_('name'),
+    name = CharField(max_length=100, verbose_name=_('name'),
                      help_text=_('Human readable name of template.'))
     description = TextField(verbose_name=_('description'), blank=True)
     parent = ForeignKey('self', null=True, blank=True,
