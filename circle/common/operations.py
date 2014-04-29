@@ -134,8 +134,8 @@ class OperatedMixin(object):
         """Yield Operations that match permissions of user and preconditions.
         """
         for name in getattr(self, operation_registry_name, {}):
+            op = getattr(self, name)
             try:
-                op = getattr(self, name)
                 op.check_auth(user)
                 op.check_precond()
             except:
