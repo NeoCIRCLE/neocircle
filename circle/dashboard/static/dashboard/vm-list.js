@@ -175,9 +175,12 @@ $(function() {
     $(".vm-list-table thead th").eq(data.column).append(icon_html);
   });
 
-  //$(".vm-list-table thead th a").attr("href", "#");
   // only if js is enabled
   $(".vm-list-table thead th").css("cursor", "pointer");
+
+  $(".vm-list-table th a").on("click", function(event) {
+    event.preventDefault();
+  });
 });
 
 function isAlreadySelected(vm) {

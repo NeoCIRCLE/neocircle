@@ -37,6 +37,10 @@ $(function() {
 
   // only if js is enabled
   $(".template-list-table thead th").css("cursor", "pointer");
+  
+  $(".template-list-table th a").on("click", function(event) {
+    event.preventDefault();
+  });
 });
 
 
