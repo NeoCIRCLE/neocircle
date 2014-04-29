@@ -218,6 +218,7 @@ class TemplateListTable(Table):
         verbose_name=_("Actions"),
         template_name="dashboard/template-list/column-template-actions.html",
         attrs={'th': {'class': 'template-list-table-thin'}},
+        orderable=False,
     )
 
     class Meta:
@@ -226,6 +227,8 @@ class TemplateListTable(Table):
                            ' template-list-table')}
         fields = ('name', 'num_cores', 'ram_size', 'arch',
                   'system', 'access_method', 'lease', 'actions', )
+
+        prefix = "template-"
 
 
 class LeaseListTable(Table):
@@ -244,7 +247,8 @@ class LeaseListTable(Table):
 
     actions = TemplateColumn(
         verbose_name=_("Actions"),
-        template_name="dashboard/template-list/column-lease-actions.html"
+        template_name="dashboard/template-list/column-lease-actions.html",
+        orderable=False,
     )
 
     class Meta:
@@ -252,3 +256,4 @@ class LeaseListTable(Table):
         attrs = {'class': ('table table-bordered table-striped table-hover'
                            ' lease-list-table')}
         fields = ('name', 'suspend_in', 'delete_in', )
+        prefix = "lease-"
