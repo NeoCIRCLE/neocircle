@@ -1,0 +1,21 @@
+{% extends "dashboard/operate.html" %}
+{% load i18n %}
+{% load sizefieldtags %}
+
+{% block question %}
+<p>
+{% blocktrans %}
+Choose a name for the new template.
+{% endblocktrans %}
+</p>
+<p class="text-info">{{op.name}}: {{op.description}}</p>
+{% endblock %}
+
+{% block formfields %}
+<div class="form-group">
+  <label for="input-name" class="col-sm-4">{% trans "Name of template" %}</label>
+  <div class="col-sm-8">
+    <input type="text" value="{{name}}" name="name" class="form-control" />
+  </div>
+</div>
+{% endblock %}

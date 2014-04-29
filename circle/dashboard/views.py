@@ -513,7 +513,7 @@ class VmMigrateView(VmOperationView):
     template_name = 'dashboard/_vm-migrate.html'
 
     def get_context_data(self, **kwargs):
-        ctx = super(VmOperationView, self).get_context_data(**kwargs)
+        ctx = super(VmMigrateView, self).get_context_data(**kwargs)
         ctx['nodes'] = [n for n in Node.objects.filter(enabled=True)
                         if n.state == "ONLINE"]
         return ctx
@@ -528,6 +528,26 @@ class VmMigrateView(VmOperationView):
         return super(VmMigrateView, self).post(request, extra, *args, **kwargs)
 
 
+class VmSaveView(VmOperationView):
+
+    op = 'save_as_template'
+    icon = 'save'
+    template_name = 'dashboard/_vm-save.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super(VmSaveView, self).get_context_data(**kwargs)
+        ctx['name'] = self.get_op()._rename(self.object.name)
+        return ctx
+
+    def post(self, request, extra=None, *args, **kwargs):
+        if extra is None:
+            extra = {}
+        name = self.request.POST.get("name")
+        if name:
+            extra["name"] = name
+        return super(VmSaveView, self).post(request, extra, *args, **kwargs)
+
+
 vm_ops = {
     'reset': VmOperationView.factory(op='reset', icon='bolt'),
     'deploy': VmOperationView.factory(op='deploy', icon='play'),
@@ -535,8 +555,7 @@ vm_ops = {
     'reboot': VmOperationView.factory(op='reboot', icon='refresh'),
     'shut_off': VmOperationView.factory(op='shut_off', icon='ban-circle'),
     'shutdown': VmOperationView.factory(op='shutdown', icon='off'),
-    'save_as_template': VmOperationView.factory(
-        op='save_as_template', icon='save'),
+    'save_as_template': VmSaveView,
     'destroy': VmOperationView.factory(op='destroy', icon='remove'),
     'sleep': VmOperationView.factory(op='sleep', icon='moon'),
     'wake_up': VmOperationView.factory(op='wake_up', icon='sun'),
