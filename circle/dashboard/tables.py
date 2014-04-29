@@ -250,11 +250,11 @@ class LeaseListTable(Table):
         args=[A('pk')],
     )
 
-    suspend_in = TemplateColumn(
+    suspend_interval_seconds = TemplateColumn(
         "{{ record.get_readable_suspend_time }}"
     )
 
-    delete_in = TemplateColumn(
+    delete_interval_seconds = TemplateColumn(
         "{{ record.get_readable_delete_time }}"
     )
 
@@ -268,5 +268,6 @@ class LeaseListTable(Table):
         model = Lease
         attrs = {'class': ('table table-bordered table-striped table-hover'
                            ' lease-list-table')}
-        fields = ('name', 'suspend_in', 'delete_in', )
+        fields = ('name', 'suspend_interval_seconds',
+                  'delete_interval_seconds', )
         prefix = "lease-"

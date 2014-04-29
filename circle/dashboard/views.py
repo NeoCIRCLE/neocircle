@@ -916,7 +916,8 @@ class TemplateList(LoginRequiredMixin, SingleTableView):
 
     def get_context_data(self, *args, **kwargs):
         context = super(TemplateList, self).get_context_data(*args, **kwargs)
-        context['lease_table'] = LeaseListTable(Lease.objects.all())
+        context['lease_table'] = LeaseListTable(Lease.objects.all(),
+                                                request=self.request)
         return context
 
     def get_queryset(self):
