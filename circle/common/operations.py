@@ -1,7 +1,7 @@
 from inspect import getargspec
 from logging import getLogger
 
-from .models import activity_context, activity_code_separator
+from .models import activity_context, has_suffix
 
 from django.core.exceptions import PermissionDenied
 
@@ -172,11 +172,15 @@ class OperatedMixin(object):
                 yield op
 
     def get_operation_from_activity_code(self, activity_code):
-        sep = activity_code_separator
-        ops = getattr(self, operation_registry_name, {}).values()
-        for op in ops:
-            if activity_code.endswith(sep + op.activity_code_suffix):
-                return op
+        """Get an instance of the Operation corresponding to the specified
+           activity code.
+
+        :returns: A bound instance of an operation, or None if no matching
+                  operation could be found.
+        """
+        for op in getattr(self, operation_registry_name, {}).itervalues():
+            if has_suffix(activity_code, op.activity_code_suffix):
+                return op(self)
         else:
             return None
 

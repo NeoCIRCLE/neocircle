@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from common.models import (
-    ActivityModel, activitycontextimpl, join_activity_code,
+    ActivityModel, activitycontextimpl, join_activity_code, split_activity_code
 )
 
 from manager.mancelery import celery
@@ -56,7 +56,8 @@ class InstanceActivity(ActivityModel):
         return reverse('dashboard.views.vm-activity', args=[self.pk])
 
     def get_readable_name(self):
-        return self.activity_code.split('.')[-1].replace('_', ' ').capitalize()
+        activity_code_last_suffix = split_activity_code(self.activity_code)[-1]
+        return activity_code_last_suffix.replace('_', ' ').capitalize()
 
     def get_status_id(self):
         if self.succeeded is None:
