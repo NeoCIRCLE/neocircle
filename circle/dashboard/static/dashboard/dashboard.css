@@ -495,3 +495,7 @@ footer a, footer a:hover, footer a:visited {
 .vm-list-table th i {
   margin-top: 3px;
 }
+
+.table-sorting {
+  display: none;
+}

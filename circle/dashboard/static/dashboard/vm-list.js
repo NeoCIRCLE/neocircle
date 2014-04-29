@@ -161,12 +161,13 @@ $(function() {
   var table = $(".vm-list-table").stupidtable();
 
   table.on("beforetablesort", function(event, data) {
-    return false;
+    $(".table-sorting").show();
   });
 
   table.on("aftertablesort", function(event, data) {
     // this didn't work ;;
     // var th = $("this").find("th");
+    $(".table-sorting").hide();
     
     $(".vm-list-table thead th i").remove();
 
