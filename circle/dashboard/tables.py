@@ -225,8 +225,7 @@ class TemplateListTable(Table):
         attrs = {'class': ('table table-bordered table-striped table-hover'
                            ' template-list-table')}
         fields = ('name', 'num_cores', 'ram_size', 'arch',
-                  'system', 'access_method', 'lease', 'state',
-                  'actions', )
+                  'system', 'access_method', 'lease', 'actions', )
 
 
 class LeaseListTable(Table):
