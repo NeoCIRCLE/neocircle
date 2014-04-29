@@ -67,6 +67,15 @@ class InstanceActivity(ActivityModel):
         else:
             return 'failed'
 
+    @property
+    def is_abortable(self):
+        """Can the activity be aborted?
+
+        :returns: True if the activity can be aborted; otherwise, False.
+        """
+        op = self.instance.get_operation_from_activity_code(self.activity_code)
+        return self.task_uuid and op and op.abortable and not self.finished
+
     @classmethod
     def create(cls, code_suffix, instance, task_uuid=None, user=None,
                concurrency_check=True):
@@ -107,10 +116,6 @@ class InstanceActivity(ActivityModel):
         ret = super(InstanceActivity, self).save(*args, **kwargs)
         self.instance._update_status()
         return ret
-
-    def is_abortable(self):
-        op = self.instance.get_operation_from_activity_code(self.activity_code)
-        return False if op is None else (op.abortable and not self.finished)
 
     def abort(self):
         AbortableAsyncResult(self.task_uuid, backend=celery.backend).abort()
