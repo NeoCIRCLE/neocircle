@@ -107,6 +107,15 @@ class InstanceActivity(ActivityModel):
         op = self.instance.get_operation_from_activity_code(self.activity_code)
         return self.task_uuid and op and op.abortable and not self.finished
 
+    @property
+    def is_aborted(self):
+        """Has the activity been aborted?
+
+        :returns: True if the activity has been aborted; otherwise, False.
+        """
+        return self.task_uuid and AbortableAsyncResult(self.task_uuid
+                                                       ).is_aborted()
+
     def save(self, *args, **kwargs):
         ret = super(InstanceActivity, self).save(*args, **kwargs)
         self.instance._update_status()
