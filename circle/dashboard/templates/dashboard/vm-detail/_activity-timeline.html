@@ -12,9 +12,9 @@
 {% if user.is_superuser and a.is_abortable %}
 <form action="" method="POST" class="pull-right">
   {% csrf_token %}
-  <input type="hidden" name="abort_shutdown"/>
+  <input type="hidden" name="abort_operation"/>
   <input type="hidden" name="activity" value="{{ a.pk }}"/>
-  <button class="btn btn-danger btn-xs"><i class="icon-bolt"></i> {% trans "Abort shutdown" %}</button>
+  <button class="btn btn-danger btn-xs"><i class="icon-bolt"></i> {% trans "Abort" %}</button>
 </form>
 {% endif %}
   {% if a.children.count > 0 %}
