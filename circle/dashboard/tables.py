@@ -203,16 +203,29 @@ class TemplateListTable(Table):
     name = LinkColumn(
         'dashboard.views.template-detail',
         args=[A('pk')],
+        attrs={'th': {'data-sort': "string"}}
     )
     num_cores = Column(
         verbose_name=_("Cores"),
+        attrs={'th': {'data-sort': "int"}}
     )
     ram_size = TemplateColumn(
         "{{ record.ram_size }} Mb",
+        attrs={'th': {'data-sort': "string"}}
     )
     lease = TemplateColumn(
         "{{ record.lease.name }}",
         verbose_name=_("Lease"),
+        attrs={'th': {'data-sort': "string"}}
+    )
+    arch = Column(
+        attrs={'th': {'data-sort': "string"}}
+    )
+    system = Column(
+        attrs={'th': {'data-sort': "string"}}
+    )
+    access_method = Column(
+        attrs={'th': {'data-sort': "string"}}
     )
     actions = TemplateColumn(
         verbose_name=_("Actions"),
