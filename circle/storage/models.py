@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # Copyright 2014 Budapest University of Technology and Economics (BME IK)
 #
 # This file is part of CIRCLE Cloud.
@@ -15,7 +17,6 @@
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
-# -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
 from contextlib import contextmanager
