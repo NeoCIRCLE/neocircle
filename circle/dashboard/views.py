@@ -878,8 +878,6 @@ class TemplateClone(CreateView):
 class TemplateCreate(SuccessMessageMixin, CreateView):
     model = InstanceTemplate
     form_class = TemplateForm
-    template_name = "dashboard/template-create.html"
-    success_message = _("Successfully created a new template!")
 
     def get_template_names(self):
         if self.request.is_ajax():
@@ -894,6 +892,7 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
             'box_title': _("Create a new base VM"),
             'ajax_title': False,
             'template': "dashboard/_template-create-2.html",
+            'leases': Lease.objects.count()
         })
         return context
 

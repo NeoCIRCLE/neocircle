@@ -1,6 +1,13 @@
 {% load i18n %}
 {% load crispy_forms_tags %} 
 
+{% if leases < 1 %}
+  <div class="alert alert-warning">
+    {% trans "You haven't created any leases yet, but you need one ot create a template!" %}
+    <a href="{% url "dashboard.views.lease-create" %}">{% trans "Create a new lease now." %}</a>
+  </div>
+{% endif %}
+
 {% with form=form %}
   {% include "display-form-errors.html" %}
 {% endwith %}
