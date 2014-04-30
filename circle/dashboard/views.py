@@ -1761,8 +1761,25 @@ class LeaseDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
         else:
             return ['dashboard/confirm/base-delete.html']
 
+    def get_context_data(self, *args, **kwargs):
+        c = super(LeaseDelete, self).get_context_data(*args, **kwargs)
+        lease = self.get_object()
+        templates = lease.instancetemplate_set
+        if templates.count() > 0:
+            text = _("You can't delete this lease because some templates "
+                     "are still using it, modify these to proceed: ")
+
+            c['text'] = text + ", ".join("<strong>%s (#%d)</strong>"
+                                         "" % (o.name, o.pk)
+                                         for o in templates.all())
+            c['disable_submit'] = True
+        return c
+
     def delete(self, request, *args, **kwargs):
         object = self.get_object()
+
+        if (object.instancetemplate_set.count() > 0):
+            raise SuspiciousOperation()
 
         object.delete()
         success_url = self.get_success_url()
