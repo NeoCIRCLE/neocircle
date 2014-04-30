@@ -288,11 +288,21 @@ class VmDetailTest(LoginMixin, TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(InstanceTemplate.objects.get(id=1).raw_data, 'tst2')
 
-    def test_permitted_lease_delete(self):
+    def test_permitted_lease_delete_w_template_using_it(self):
         c = Client()
         self.login(c, 'superuser')
         leases = Lease.objects.count()
         response = c.post("/dashboard/lease/delete/1/")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(leases, Lease.objects.count())
+
+    def test_permitted_lease_delete_w_template_not_using_it(self):
+        c = Client()
+        self.login(c, 'superuser')
+        lease = Lease.objects.create(name="yay")
+        leases = Lease.objects.count()
+
+        response = c.post("/dashboard/lease/delete/%d/" % lease.pk)
         self.assertEqual(response.status_code, 302)
         self.assertEqual(leases - 1, Lease.objects.count())
 
