@@ -52,6 +52,8 @@
             <ul class="nav navbar-nav">
              {% include "network/menu.html" %}
             </ul>
+            <a class="navbar-brand pull-right" href="{% url "dashboard.index" %}"
+                style="color: white; font-size: 10px;"><i class="icon-dashboard"></i> {% trans "dashboard" %}</a>
         </div><!-- .collapse .navbar-collapse -->
     </div><!-- navbar navbar-inverse navbar-fixed-top -->
     <div class="container">
@@ -75,7 +77,7 @@
     <div class="footer-container container">
         <footer>
             <p class="pull-right"><a href="#">Vissza az oldal tetejére</a></p>
-            <p>&copy; 2013 BME Közigazgatási Informatikai Központ
+            <p>&copy; {{ COMPANY_NAME }}
         </footer>
     </div><!-- .footer-container .container -->
 

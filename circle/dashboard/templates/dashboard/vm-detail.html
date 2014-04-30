@@ -36,14 +36,18 @@
       {% include "dashboard/vm-detail/_operations.html" %}
     </div>
     <h1>
-      <div id="vm-details-rename">
+      <div id="vm-details-rename" class="vm-details-home-rename-form-div">
         <form action="" method="POST" id="vm-details-rename-form">
           {% csrf_token %}
-          <input id="vm-details-rename-name" class="form-control" name="new_name" type="text" value="{{ instance.name }}"/> 
-          <button type="submit" id="vm-details-rename-submit" class="btn">{% trans "Rename" %}</button>
+          <div class="input-group vm-details-home-name">
+            <input id="vm-details-rename-name" class="form-control input-sm" name="new_name" type="text" value="{{ instance.name }}"/> 
+            <span class="input-group-btn">
+              <button type="submit" class="btn btn-sm vm-details-rename-submit">{% trans "Rename" %}</button>
+            </span>
+          </div>
         </form>
       </div>
-      <div id="vm-details-h1-name">
+      <div id="vm-details-h1-name" class="vm-details-home-edit-name">
         {{ instance.name }} 
       </div>
       <small>{{ instance.primary_host.get_fqdn }}</small>

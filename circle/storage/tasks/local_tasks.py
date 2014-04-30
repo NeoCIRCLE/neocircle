@@ -46,18 +46,13 @@ def restore(disk, user):
     disk.restore(task_uuid=restore.request.id, user=user)
 
 
-class CreateFromURLTask(AbortableTask):
-
-    def __init__(self):
-        self.bind(celery)
-
-    def run(self, **kwargs):
-        Disk = kwargs.pop('cls')
-        Disk.create_from_url(url=kwargs.pop('url'),
-                             task_uuid=create_from_url.request.id,
-                             abortable_task=self,
-                             **kwargs)
-create_from_url = CreateFromURLTask()
+@celery.task(base=AbortableTask, bind=True)
+def create_from_url(self, **kwargs):
+    Disk = kwargs.pop('cls')
+    Disk.create_from_url(url=kwargs.pop('url'),
+                         task_uuid=self.request.id,
+                         abortable_task=self,
+                         **kwargs)
 
 
 @celery.task

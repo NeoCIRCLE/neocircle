@@ -85,7 +85,6 @@ class DeployOperation(InstanceOperation):
     id = 'deploy'
     name = _("deploy")
     description = _("Deploy new virtual machine with network.")
-    icon = 'play'
 
     def on_commit(self, activity):
         activity.resultant_state = 'RUNNING'
@@ -122,7 +121,6 @@ class DestroyOperation(InstanceOperation):
     id = 'destroy'
     name = _("destroy")
     description = _("Destroy virtual machine and its networks.")
-    icon = 'remove'
 
     def on_commit(self, activity):
         activity.resultant_state = 'DESTROYED'
@@ -164,7 +162,6 @@ class MigrateOperation(InstanceOperation):
     id = 'migrate'
     name = _("migrate")
     description = _("Live migrate running VM to another node.")
-    icon = 'truck'
 
     def _operation(self, activity, user, system, to_node=None, timeout=120):
         if not to_node:
@@ -195,7 +192,6 @@ class RebootOperation(InstanceOperation):
     id = 'reboot'
     name = _("reboot")
     description = _("Reboot virtual machine with Ctrl+Alt+Del signal.")
-    icon = 'refresh'
 
     def _operation(self, activity, user, system, timeout=5):
         self.instance.reboot_vm(timeout=timeout)
@@ -226,7 +222,6 @@ class ResetOperation(InstanceOperation):
     id = 'reset'
     name = _("reset")
     description = _("Reset virtual machine (reset button).")
-    icon = 'bolt'
 
     def _operation(self, activity, user, system, timeout=5):
         self.instance.reset_vm(timeout=timeout)
@@ -243,7 +238,6 @@ class SaveAsTemplateOperation(InstanceOperation):
         Template can be shared with groups and users.
         Users can instantiate Virtual Machines from Templates.
         """)
-    icon = 'save'
 
     @staticmethod
     def _rename(name):
@@ -319,7 +313,6 @@ class ShutdownOperation(InstanceOperation):
     id = 'shutdown'
     name = _("shutdown")
     description = _("Shutdown virtual machine with ACPI signal.")
-    icon = 'off'
 
     def check_precond(self):
         super(ShutdownOperation, self).check_precond()
@@ -349,7 +342,6 @@ class ShutOffOperation(InstanceOperation):
     id = 'shut_off'
     name = _("shut off")
     description = _("Shut off VM (plug-out).")
-    icon = 'ban-circle'
 
     def on_commit(self, activity):
         activity.resultant_state = 'STOPPED'
@@ -376,7 +368,6 @@ class SleepOperation(InstanceOperation):
     id = 'sleep'
     name = _("sleep")
     description = _("Suspend virtual machine with memory dump.")
-    icon = 'moon'
 
     def check_precond(self):
         super(SleepOperation, self).check_precond()
@@ -416,7 +407,6 @@ class WakeUpOperation(InstanceOperation):
 
         Power on Virtual Machine and load its memory from dump.
         """)
-    icon = 'sun'
 
     def check_precond(self):
         super(WakeUpOperation, self).check_precond()

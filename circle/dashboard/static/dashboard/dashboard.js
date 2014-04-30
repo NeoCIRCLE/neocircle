@@ -321,7 +321,8 @@ function deleteObject(data) {
           // no need to remove them from DOM
           $('a[data-disk-pk="' + data.pk + '"]').parent("li").fadeOut();
           $('a[data-disk-pk="' + data.pk + '"]').parent("h4").fadeOut();
-        } else { 
+        } 
+        else { 
           $('a[data-'+data['type']+'-pk="' + data['pk'] + '"]').closest('tr').fadeOut(function() {
             $(this).remove();  
           });
