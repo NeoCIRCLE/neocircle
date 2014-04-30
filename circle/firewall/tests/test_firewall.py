@@ -231,6 +231,9 @@ class ReloadTestCase(TestCase):
         self.rm.save()
         self.rt.save()
 
+    def tearDown(self):
+        settings["default_host_groups"] = []
+
     def test_bad_aaaa_record(self):
         self.assertRaises(AddrFormatError, ipv6_to_octal, self.rb.address)
 

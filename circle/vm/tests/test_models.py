@@ -39,8 +39,8 @@ class TemplateTestCase(TestCase):
 class InstanceTestCase(TestCase):
 
     def test_is_running(self):
-        inst = Mock(state='RUNNING')
-        assert Instance.is_running.getter(inst)
+        inst = MagicMock(status='RUNNING')
+        self.assertTrue(Instance.is_running.fget(inst))
 
     def test_mon_stopped_while_activity_running(self):
         node = Mock()
