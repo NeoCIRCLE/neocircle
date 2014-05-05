@@ -1,6 +1,3 @@
-/* TODO i18n
- * https://docs.djangoproject.com/en/1.5/topics/i18n/translation/#internationalization-in-javascript-code
- */
 $(function() {
   $(".vm-details-start-template-tour").click(function() {
     ttour = createTemplateTour();
@@ -101,8 +98,8 @@ function createTemplateTour() {
 
 
   ttour.addStep({
-    element: ".operation-deploy",
-    title: gettext("Deploy"),
+    element: "#ops",
+    title: '<i class="icon-play"></i> ' + gettext("Deploy"),
     placement: "left",
     backdrop: true,
     content: gettext("Deploy the virtual machine."),
@@ -125,8 +122,8 @@ function createTemplateTour() {
   });
 
   ttour.addStep({
-    element: ".operation-save_as_template",
-    title: gettext("Save as"),
+    element: "#ops",
+    title: '<i class="icon-save"></i> ' + gettext("Save as"),
     placement: "left",
     backdrop: true,
     content: gettext('Press the "Save as template" button and wait until the activity finishes.'),

@@ -548,3 +548,7 @@ footer a, footer a:hover, footer a:visited {
 .table-sorting {
   display: none;
 }
+
+#ops {
+  padding: 15px 0 15px 15px;
+}
