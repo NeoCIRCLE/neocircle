@@ -936,7 +936,8 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
         else:
             post = form.cleaned_data
 
-            networks = self.__create_networks(post.pop("networks"))
+            networks = self.__create_networks(post.pop("networks"),
+                                              request.user)
             post.pop("parent")
             parent_type = post.pop("parent_type")
             post['max_ram_size'] = post['ram_size']
@@ -970,9 +971,11 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
 
         return super(TemplateCreate, self).post(self, request, args, kwargs)
 
-    def __create_networks(self, vlans):
+    def __create_networks(self, vlans, user):
         networks = []
         for v in vlans:
+            if not v.has_level(user, "user"):
+                raise PermissionDenied()
             networks.append(InterfaceTemplate(vlan=v, managed=v.managed))
         return networks
 
@@ -1036,6 +1039,9 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
             raise PermissionDenied()
         for disk in self.get_object().disks.all():
             if not disk.has_level(request.user, 'user'):
+                raise PermissionDenied()
+        for network in self.get_object().interface_set.all():
+            if not network.vlan.has_level(request.user, "user"):
                 raise PermissionDenied()
         return super(TemplateDetail, self).post(self, request, args, kwargs)
 
