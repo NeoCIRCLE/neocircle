@@ -183,6 +183,7 @@ $(function() {
     $("#vm-details-h1-name").hide();
     $("#vm-details-rename").css('display', 'inline');
     $("#vm-details-rename-name").focus();
+    return false;
   });
 
   /* rename in home tab */
@@ -190,6 +191,7 @@ $(function() {
     $(".vm-details-home-edit-name-click").hide();
     $("#vm-details-home-rename").show();
     $("input", $("#vm-details-home-rename")).focus();
+    return false;
   });
 
   /* rename ajax */
@@ -219,6 +221,11 @@ $(function() {
   $(".vm-details-home-edit-description-click").click(function() {
     $(".vm-details-home-edit-description-click").hide();
     $("#vm-details-home-description").show();
+    var ta = $("#vm-details-home-description textarea");
+    var tmp = ta.val();
+    ta.val("");
+    ta.focus();
+    ta.val(tmp)
     return false;
   });
   
