@@ -188,6 +188,8 @@ def cleanup(conf=None, **kwargs):
     for i in InstanceActivity.objects.filter(finished__isnull=True):
         i.finish(False, "Manager is restarted, activity is cleaned up. "
                  "You can try again now.")
+        logger.error('Forced finishing stale activity %s', i)
     for i in NodeActivity.objects.filter(finished__isnull=True):
         i.finish(False, "Manager is restarted, activity is cleaned up. "
                  "You can try again now.")
+        logger.error('Forced finishing stale activity %s', i)
