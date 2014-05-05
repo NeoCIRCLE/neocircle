@@ -46,6 +46,16 @@ $(function () {
         $('#create-modal').on('hidden.bs.modal', function() {
           $('#create-modal').remove();
         });
+        // check if user selected anything
+        $("#template-choose-next-button").click(function() {
+          var radio = $('input[type="radio"]:checked', "#template-choose-form").val();
+          if(!radio) {
+            $("#template-choose-alert").addClass("alert-warning")
+            .text(gettext("Select an option to proceed!"));
+            return false;
+          }
+          return true;
+        });
       }
     });
     return false;

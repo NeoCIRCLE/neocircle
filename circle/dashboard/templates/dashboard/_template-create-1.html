@@ -1,10 +1,11 @@
 {% load i18n %}
 
-<div class="alert alert-info">
+<div class="alert alert-info" id="template-choose-alert">
   {% trans "Customize an existing template or create a brand new one from scratch!" %}
 </div>
 
-<form action="{% url "dashboard.views.template-choose" %}" method="POST">
+<form action="{% url "dashboard.views.template-choose" %}" method="POST"
+  id="template-choose-form">
   {% csrf_token %}
   <div class="template-choose-list">
     {% for t in templates %}
@@ -19,7 +20,7 @@
       <input type="radio" name="parent" value="base_vm"/>
       {% trans "Create a new base VM without disk" %}
     </div>
-    <button type="submit" class="btn btn-success pull-right">{% trans "Next" %}</button>
+    <button type="submit" id="template-choose-next-button" class="btn btn-success pull-right">{% trans "Next" %}</button>
     <div class="clearfix"></div>
   </div>
 </form>

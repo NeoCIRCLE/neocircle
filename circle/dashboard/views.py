@@ -853,6 +853,9 @@ class TemplateChoose(TemplateView):
         template = request.POST.get("parent")
         if template == "base_vm":
             return redirect(reverse("dashboard.views.template-create"))
+        elif template is None:
+            messages.warning(request, _("Select an option to proceed!"))
+            return redirect(reverse("dashboard.views.template-choose"))
         else:
             template = get_object_or_404(InstanceTemplate, pk=template)
 
