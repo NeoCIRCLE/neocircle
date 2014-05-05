@@ -952,7 +952,8 @@ class TemplateList(LoginRequiredMixin, SingleTableView):
 
     def get_context_data(self, *args, **kwargs):
         context = super(TemplateList, self).get_context_data(*args, **kwargs)
-        context['lease_table'] = LeaseListTable(Lease.objects.all())
+        context['lease_table'] = LeaseListTable(Lease.objects.all(),
+                                                request=self.request)
         return context
 
     def get_queryset(self):
@@ -1025,6 +1026,14 @@ class VmList(LoginRequiredMixin, ListView):
         s = self.request.GET.get("s")
         if s:
             queryset = queryset.filter(name__icontains=s)
+
+        sort = self.request.GET.get("sort")
+        # remove "-" that means descending order
+        # also check if the column name is valid
+        if (sort and
+            (sort[1:] if sort[0] == "-" else sort)
+                in [i.name for i in Instance._meta.fields] + ["pk"]):
+            queryset = queryset.order_by(sort)
         return queryset.select_related('owner', 'node')
 
 

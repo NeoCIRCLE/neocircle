@@ -220,21 +220,35 @@ class TemplateListTable(Table):
     name = LinkColumn(
         'dashboard.views.template-detail',
         args=[A('pk')],
+        attrs={'th': {'data-sort': "string"}}
     )
     num_cores = Column(
         verbose_name=_("Cores"),
+        attrs={'th': {'data-sort': "int"}}
     )
     ram_size = TemplateColumn(
         "{{ record.ram_size }} Mb",
+        attrs={'th': {'data-sort': "string"}}
     )
     lease = TemplateColumn(
         "{{ record.lease.name }}",
         verbose_name=_("Lease"),
+        attrs={'th': {'data-sort': "string"}}
+    )
+    arch = Column(
+        attrs={'th': {'data-sort': "string"}}
+    )
+    system = Column(
+        attrs={'th': {'data-sort': "string"}}
+    )
+    access_method = Column(
+        attrs={'th': {'data-sort': "string"}}
     )
     actions = TemplateColumn(
         verbose_name=_("Actions"),
         template_name="dashboard/template-list/column-template-actions.html",
         attrs={'th': {'class': 'template-list-table-thin'}},
+        orderable=False,
     )
 
     class Meta:
@@ -242,8 +256,9 @@ class TemplateListTable(Table):
         attrs = {'class': ('table table-bordered table-striped table-hover'
                            ' template-list-table')}
         fields = ('name', 'num_cores', 'ram_size', 'arch',
-                  'system', 'access_method', 'lease', 'state',
-                  'actions', )
+                  'system', 'access_method', 'lease', 'actions', )
+
+        prefix = "template-"
 
 
 class LeaseListTable(Table):
@@ -252,21 +267,24 @@ class LeaseListTable(Table):
         args=[A('pk')],
     )
 
-    suspend_in = TemplateColumn(
+    suspend_interval_seconds = TemplateColumn(
         "{{ record.get_readable_suspend_time }}"
     )
 
-    delete_in = TemplateColumn(
+    delete_interval_seconds = TemplateColumn(
         "{{ record.get_readable_delete_time }}"
     )
 
     actions = TemplateColumn(
         verbose_name=_("Actions"),
-        template_name="dashboard/template-list/column-lease-actions.html"
+        template_name="dashboard/template-list/column-lease-actions.html",
+        orderable=False,
     )
 
     class Meta:
         model = Lease
         attrs = {'class': ('table table-bordered table-striped table-hover'
                            ' lease-list-table')}
-        fields = ('name', 'suspend_in', 'delete_in', )
+        fields = ('name', 'suspend_interval_seconds',
+                  'delete_interval_seconds', )
+        prefix = "lease-"
