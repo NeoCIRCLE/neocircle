@@ -289,6 +289,7 @@ class VmDetailTest(LoginMixin, TestCase):
         tmpl = InstanceTemplate.objects.get(id=1)
         tmpl.set_level(self.u1, 'owner')
         tmpl.disks.get().set_level(self.u1, 'owner')
+        Vlan.objects.get(id=1).set_level(self.u1, 'user')
         kwargs = tmpl.__dict__.copy()
         kwargs.update(name='t1', lease=1, disks=1, raw_data='tst1')
         response = c.post('/dashboard/template/1/', kwargs)
