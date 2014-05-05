@@ -981,7 +981,7 @@ class NodeList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
 
 class GroupList(LoginRequiredMixin, SingleTableView):
     template_name = "dashboard/group-list.html"
-    modul = Group
+    model = Group
     table_class = GroupListTable
     table_pagination = False
 
