@@ -321,7 +321,7 @@ a.hover-black {
 }
 
 .template-list-table-thin {
-  width: 95px;
+  width: 100px;
 }
 
 
@@ -539,4 +539,12 @@ footer a, footer a:hover, footer a:visited {
   position: absolute; 
   bottom: 10px; 
   right: 20px;
+}
+
+.vm-list-table th i {
+  margin-top: 3px;
+}
+
+.table-sorting {
+  display: none;
 }
