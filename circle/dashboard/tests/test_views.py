@@ -766,6 +766,49 @@ class NodeDetailTest(LoginMixin, TestCase):
         self.assertEqual(node_enabled, not Node.objects.get(pk=1).enabled)
 
 
+class GroupListTest(LoginMixin, TestCase):
+    fixtures = ['test-vm-fixture.json', 'node.json']
+
+    def setUp(self):
+        self.u1 = User.objects.create(username='user1')
+        self.u1.set_password('password')
+        self.u1.save()
+        permlist = Permission.objects.all()
+        self.u1.user_permissions.add(
+            filter(lambda element: 'group' in element.name and
+                   'add' in element.name, permlist)[0])
+        self.u2 = User.objects.create(username='user2')
+        self.u2.set_password('password')
+        self.u2.save()
+        self.g1 = Group.objects.create(name='group1')
+        self.g1.profile.set_user_level(self.u1, 'owner')
+        self.g1.save()
+        self.g2 = Group.objects.create(name='group2')
+        self.g2.profile.set_user_level(self.u1, 'owner')
+        self.g2.save()
+        self.g3 = Group.objects.create(name='group3')
+        self.g3.profile.set_user_level(self.u1, 'owner')
+        self.g3.save()
+
+    def test_anon_filter(self):
+        c = Client()
+        response = c.get('/dashboard/group/list/?s="3"')
+        self.assertEqual(response.status_code, 302)
+
+    def test_permitteduser_filter(self):
+        c = Client()
+        self.login(c, 'user1')
+        response = c.get('/dashboard/group/list/?s="3"')
+        self.assertEqual(response.status_code, 200)
+
+    def tearDown(self):
+        super(GroupListTest, self).tearDown()
+        self.u1.delete()
+        self.u2.delete()
+        self.g1.delete()
+        self.g2.delete()
+
+
 class VmDetailVncTest(LoginMixin, TestCase):
     fixtures = ['test-vm-fixture.json', 'node.json']
 
