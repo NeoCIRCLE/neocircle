@@ -1,7 +1,25 @@
+# Copyright 2014 Budapest University of Technology and Economics (BME IK)
+#
+# This file is part of CIRCLE Cloud.
+#
+# CIRCLE is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your option)
+# any later version.
+#
+# CIRCLE is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along
+# with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
+
 from __future__ import absolute_import, unicode_literals
 from contextlib import contextmanager
 from logging import getLogger
 
+from celery.signals import worker_ready
 from django.core.urlresolvers import reverse
 from django.db.models import CharField, ForeignKey
 from django.utils import timezone
@@ -162,3 +180,16 @@ class NodeActivity(ActivityModel):
 def node_activity(code_suffix, node, task_uuid=None, user=None):
     act = NodeActivity.create(code_suffix, node, task_uuid, user)
     return activitycontextimpl(act)
+
+
+@worker_ready.connect()
+def cleanup(conf=None, **kwargs):
+    # TODO check if other manager workers are running
+    for i in InstanceActivity.objects.filter(finished__isnull=True):
+        i.finish(False, "Manager is restarted, activity is cleaned up. "
+                 "You can try again now.")
+        logger.error('Forced finishing stale activity %s', i)
+    for i in NodeActivity.objects.filter(finished__isnull=True):
+        i.finish(False, "Manager is restarted, activity is cleaned up. "
+                 "You can try again now.")
+        logger.error('Forced finishing stale activity %s', i)
