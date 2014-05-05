@@ -101,7 +101,7 @@ function createTemplateTour() {
 
 
   ttour.addStep({
-    element: "#vm-details-button-deploy",
+    element: ".operation-deploy",
     title: gettext("Deploy"),
     placement: "left",
     backdrop: true,
