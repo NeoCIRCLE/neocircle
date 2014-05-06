@@ -207,11 +207,7 @@ class VmDetailView(CheckedDetailView):
         })
 
         # activity data
-        context['activities'] = (
-            InstanceActivity.objects.filter(
-                instance=self.object, parent=None).
-            order_by('-started').
-            select_related('user').prefetch_related('children'))
+        context['activities'] = self.object.get_activities(self.request.user)
 
         context['vlans'] = Vlan.get_objects_with_level(
             'user', self.request.user
@@ -1683,9 +1679,7 @@ def vm_activity(request, pk):
     if only_status == "false":  # instance activity
         context = {
             'instance': instance,
-            'activities': InstanceActivity.objects.filter(
-                instance=instance, parent=None
-            ).order_by('-started').select_related(),
+            'activities': instance.get_activities(request.user),
             'ops': get_operations(instance, request.user),
         }
 
@@ -2290,10 +2284,8 @@ class InstanceActivityDetail(SuperuserRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         ctx = super(InstanceActivityDetail, self).get_context_data(**kwargs)
-        ctx['activities'] = (
-            self.object.instance.activity_log.filter(parent=None).
-            order_by('-started').select_related('user').
-            prefetch_related('children'))
+        ctx['activities'] = self.object.instance.get_activities(
+            self.request.user)
         return ctx
 
 

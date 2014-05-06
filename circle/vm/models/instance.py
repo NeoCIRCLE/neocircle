@@ -881,3 +881,9 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             'PENDING': 'icon-rocket',
             'DESTROYED': 'icon-trash',
             'MIGRATING': 'icon-truck'}.get(self.status, 'icon-question-sign')
+
+    def get_activities(self, user=None):
+        acts = (self.activity_log.filter(parent=None).
+                order_by('-started').
+                select_related('user').prefetch_related('children'))
+        return acts
