@@ -30,7 +30,7 @@ from .views import (
     TransferOwnershipView, vm_activity, VmCreate, VmDelete, VmDetailView,
     VmDetailVncTokenView, VmGraphView, VmList, VmMassDelete, VmMigrateView,
     VmRenewView, DiskRemoveView, get_disk_download_status, InterfaceDeleteView,
-    TemplateChoose, TemplateClone,
+    TemplateChoose,
 )
 
 urlpatterns = patterns(
@@ -55,8 +55,6 @@ urlpatterns = patterns(
         name="dashboard.views.template-list"),
     url(r"^template/delete/(?P<pk>\d+)/$", TemplateDelete.as_view(),
         name="dashboard.views.template-delete"),
-    url(r"^template/clone/(?P<pk>\d+)/$", TemplateClone.as_view(),
-        name="dashboard.views.template-clone"),
 
     url(r'^vm/(?P<pk>\d+)/op/', include('dashboard.vm.urls')),
     url(r'^vm/(?P<pk>\d+)/remove_port/(?P<rule>\d+)/$', PortDelete.as_view(),

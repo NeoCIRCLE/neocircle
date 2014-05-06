@@ -52,7 +52,7 @@ from braces.views._access import AccessMixin
 
 from .forms import (
     CircleAuthenticationForm, DiskAddForm, HostForm, LeaseForm, MyProfileForm,
-    NodeForm, TemplateForm, TraitForm, VmCustomizeForm, TemplateCloneForm,
+    NodeForm, TemplateForm, TraitForm, VmCustomizeForm,
     CirclePasswordChangeForm
 )
 from .tables import (NodeListTable, NodeVmListTable,
@@ -863,36 +863,6 @@ class TemplateChoose(TemplateView):
             template=template, owner=request.user, is_base=True)
 
         return redirect(instance.get_absolute_url())
-
-
-class TemplateClone(CreateView):
-    template_name = "dashboard/template-clone.html"
-    form_class = TemplateCloneForm
-    model = InstanceTemplate
-
-    def get_form_kwargs(self):
-        kwargs = super(TemplateClone, self).get_form_kwargs()
-        kwargs['clone_from'] = self.kwargs['pk']
-        kwargs['user'] = self.request.user
-        return kwargs
-
-    def get(self, *args, **kwargs):
-        if not self.request.user.has_perm('vm.create_template'):
-            raise PermissionDenied()
-
-        return super(TemplateClone, self).get(*args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        if not self.request.user.has_perm('vm.create_template'):
-            raise PermissionDenied()
-
-        form = self.form_class(request.POST, clone_from=kwargs['pk'],
-                               user=request.user)
-        if not form.is_valid():
-            return self.get(request, form, *args, **kwargs)
-        else:
-            # clone template
-            return redirect("/")  # temp
 
 
 class TemplateCreate(SuccessMessageMixin, CreateView):
