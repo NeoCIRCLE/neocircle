@@ -29,7 +29,7 @@ function createTemplateTour() {
   });
 
   ttour.addStep({
-    element: ".alert-new-template",
+    element: "#vm-details-template-tour-button",
     title: gettext("Template Tutorial Tour"),
     content: "<p>" + gettext("Welcome to the template tutorial. In this quick tour, we gonna show you how to do the steps described above.") + "</p>" +
              "<p>" + gettext('For the next tour step press the "Next" button or the right arrow (or "Back" button/left arrow for the previous step).') + "</p>" +
@@ -118,7 +118,7 @@ function createTemplateTour() {
     element: "#vm-info-pane",
     placement: "top",
     title: gettext("Customize the virtual machine"),
-    content: gettext("After you have connected to the virtual machine do you modifications then log off."),
+    content: gettext("After you have connected to the virtual machine do your modifications then log off."),
   });
 
   ttour.addStep({
