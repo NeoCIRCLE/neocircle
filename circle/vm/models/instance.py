@@ -1,5 +1,6 @@
 from __future__ import absolute_import, unicode_literals
 from datetime import timedelta
+from functools import partial
 from importlib import import_module
 from logging import getLogger
 from string import ascii_lowercase
@@ -886,4 +887,8 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         acts = (self.activity_log.filter(parent=None).
                 order_by('-started').
                 select_related('user').prefetch_related('children'))
+        if user is not None:
+            for i in acts:
+                i.is_abortable_for_user = partial(i.is_abortable_for,
+                                                  user=user)
         return acts

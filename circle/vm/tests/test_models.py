@@ -262,6 +262,45 @@ class InstanceActivityTestCase(TestCase):
             self.assertEquals(expected,
                               InstanceActivity.is_aborted.fget(iaobj))
 
+    def test_is_abortable_for_activity_owner_if_not_abortable(self):
+        iaobj = MagicMock(spec=InstanceActivity, is_abortable=False,
+                          user=MagicMock(spec=User, is_superuser=False))
+        self.assertFalse(InstanceActivity.is_abortable_for(iaobj, iaobj.user))
+
+    def test_is_abortable_for_instance_owner(self):
+        get_op = MagicMock(return_value=MagicMock(abortable=True))
+        instance = MagicMock(get_operation_from_activity_code=get_op,
+                             owner=MagicMock(spec=User, is_superuser=False))
+        iaobj = MagicMock(spec=InstanceActivity, activity_code='test',
+                          finished=False, instance=instance, task_uuid='test',
+                          user=MagicMock(spec=User, is_superuser=False))
+        self.assertTrue(
+            InstanceActivity.is_abortable_for(iaobj, iaobj.instance.owner))
+
+    def test_is_abortable_for_activity_owner(self):
+        get_op = MagicMock(return_value=MagicMock(abortable=True))
+        instance = MagicMock(get_operation_from_activity_code=get_op)
+        iaobj = MagicMock(spec=InstanceActivity, activity_code='test',
+                          finished=False, instance=instance, task_uuid='test',
+                          user=MagicMock(spec=User, is_superuser=False))
+        self.assertTrue(InstanceActivity.is_abortable_for(iaobj, iaobj.user))
+
+    def test_not_abortable_for_foreign(self):
+        get_op = MagicMock(return_value=MagicMock(abortable=True))
+        instance = MagicMock(get_operation_from_activity_code=get_op)
+        iaobj = MagicMock(spec=InstanceActivity, activity_code='test',
+                          finished=False, instance=instance, task_uuid='test')
+        self.assertFalse(InstanceActivity.is_abortable_for(
+            iaobj, MagicMock(spec=User, is_superuser=False)))
+
+    def test_is_abortable_for_superuser(self):
+        get_op = MagicMock(return_value=MagicMock(abortable=True))
+        instance = MagicMock(get_operation_from_activity_code=get_op)
+        iaobj = MagicMock(spec=InstanceActivity, activity_code='test',
+                          finished=False, instance=instance, task_uuid='test')
+        su = MagicMock(spec=User, is_superuser=True)
+        self.assertTrue(InstanceActivity.is_abortable_for(iaobj, su))
+
     def test_disable_enabled(self):
         node = MagicMock(spec=Node, enabled=True)
         with patch('vm.models.node.node_activity') as nac:

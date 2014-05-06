@@ -427,11 +427,11 @@ class VmDetailView(CheckedDetailView):
 
     def __abort_operation(self, request):
         self.object = self.get_object()
-        if not request.user.is_superuser:
-            raise PermissionDenied()
 
         activity = get_object_or_404(InstanceActivity,
                                      pk=request.POST.get("activity"))
+        if not activity.is_abortable_for(request.user):
+            raise PermissionDenied()
         activity.abort()
         return redirect("%s#activity" % self.object.get_absolute_url())
 

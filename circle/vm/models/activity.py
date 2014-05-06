@@ -107,6 +107,13 @@ class InstanceActivity(ActivityModel):
         op = self.instance.get_operation_from_activity_code(self.activity_code)
         return self.task_uuid and op and op.abortable and not self.finished
 
+    def is_abortable_for(self, user):
+        """Can the given user abort the activity?
+        """
+
+        return self.is_abortable and (
+            user.is_superuser or user in (self.instance.owner, self.user))
+
     @property
     def is_aborted(self):
         """Has the activity been aborted?

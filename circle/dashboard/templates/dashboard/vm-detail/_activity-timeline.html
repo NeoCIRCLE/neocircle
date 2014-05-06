@@ -9,8 +9,8 @@
     {{ a.get_readable_name }}{% if user.is_superuser %}</a>{% endif %}
 </strong>
 {{ a.started|date:"Y-m-d H:i" }}{% if a.user %}, {{ a.user }}{% endif %}
-{% if user.is_superuser and a.is_abortable %}
-<form action="" method="POST" class="pull-right">
+{% if a.is_abortable_for_user %}
+<form action="{{ a.instance.get_absolute_url }}" method="POST" class="pull-right">
   {% csrf_token %}
   <input type="hidden" name="abort_operation"/>
   <input type="hidden" name="activity" value="{{ a.pk }}"/>
