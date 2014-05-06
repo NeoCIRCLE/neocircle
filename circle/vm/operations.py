@@ -240,6 +240,7 @@ class SaveAsTemplateOperation(InstanceOperation):
         Template can be shared with groups and users.
         Users can instantiate Virtual Machines from Templates.
         """)
+    abortable = True
 
     @staticmethod
     def _rename(name):
@@ -252,11 +253,11 @@ class SaveAsTemplateOperation(InstanceOperation):
         return "%s v%d" % (name, v)
 
     def _operation(self, activity, user, system, timeout=300,
-                   with_shutdown=True, **kwargs):
+                   with_shutdown=True, task=None, **kwargs):
         if with_shutdown:
             try:
                 ShutdownOperation(self.instance).call(parent_activity=activity,
-                                                      user=user)
+                                                      user=user, task=task)
             except Instance.WrongStateError:
                 pass
 
