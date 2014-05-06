@@ -38,12 +38,12 @@
     var dir = window.location.pathname.indexOf('list') == -1;
     addModalConfirmation(removeMember,
       { 'url': href,
-	'data': [],
-	'tr': tr,
-	'group_pk': group,
-	'member_pk': member,
-	'type': "user",
-	'redirect': dir});
+        'data': [],
+        'tr': tr,
+        'group_pk': group,
+        'member_pk': member,
+        'type': "user",
+        'redirect': dir});
 
     return false;
   });
