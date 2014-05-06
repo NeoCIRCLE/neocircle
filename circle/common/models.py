@@ -66,7 +66,7 @@ def has_suffix(activity_code, *suffixes):
     """
     equal = lambda a, b: a == b
     act_code_parts = split_activity_code(activity_code)
-    suffixes = chain(*imap(split_activity_code, suffixes))
+    suffixes = list(chain(*imap(split_activity_code, suffixes)))
     return all(imap(equal, reversed(act_code_parts), reversed(suffixes)))
 
 
