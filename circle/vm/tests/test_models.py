@@ -19,6 +19,7 @@ from datetime import datetime
 from mock import Mock, MagicMock, patch, call
 import types
 
+from celery.contrib.abortable import AbortableAsyncResult
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.utils.translation import ugettext_lazy as _
@@ -230,6 +231,92 @@ class InstanceActivityTestCase(TestCase):
             except ActivityInProgressError:
                 raise AssertionError("'create_sub' method checked for "
                                      "concurrent activities.")
+
+    def test_is_abortable(self):
+        get_op = MagicMock(return_value=MagicMock(abortable=True))
+        instance = MagicMock(get_operation_from_activity_code=get_op)
+        iaobj = MagicMock(spec=InstanceActivity, activity_code='test',
+                          finished=False, instance=instance, task_uuid='test')
+        self.assertTrue(InstanceActivity.is_abortable.fget(iaobj))
+
+    def test_not_abortable_when_not_associated_with_task(self):
+        get_op = MagicMock(return_value=MagicMock(abortable=True))
+        instance = MagicMock(get_operation_from_activity_code=get_op)
+        iaobj = MagicMock(spec=InstanceActivity, activity_code='test',
+                          finished=False, instance=instance, task_uuid=None)
+        self.assertFalse(InstanceActivity.is_abortable.fget(iaobj))
+
+    def test_not_abortable_when_finished(self):
+        get_op = MagicMock(return_value=MagicMock(abortable=True))
+        instance = MagicMock(get_operation_from_activity_code=get_op)
+        iaobj = MagicMock(spec=InstanceActivity, activity_code='test',
+                          finished=True, instance=instance, task_uuid='test')
+        self.assertFalse(InstanceActivity.is_abortable.fget(iaobj))
+
+    def test_not_abortable_when_operation_not_abortable(self):
+        get_op = MagicMock(return_value=MagicMock(abortable=False))
+        instance = MagicMock(get_operation_from_activity_code=get_op)
+        iaobj = MagicMock(spec=InstanceActivity, activity_code='test',
+                          finished=False, instance=instance, task_uuid='test')
+        self.assertFalse(InstanceActivity.is_abortable.fget(iaobj))
+
+    def test_not_abortable_when_no_matching_operation(self):
+        get_op = MagicMock(return_value=None)
+        instance = MagicMock(get_operation_from_activity_code=get_op)
+        iaobj = MagicMock(spec=InstanceActivity, activity_code='test',
+                          finished=False, instance=instance, task_uuid='test')
+        self.assertFalse(InstanceActivity.is_abortable.fget(iaobj))
+
+    def test_not_aborted_when_not_associated_with_task(self):
+        iaobj = MagicMock(task_uuid=None)
+        self.assertFalse(InstanceActivity.is_aborted.fget(iaobj))
+
+    def test_is_aborted_when_associated_task_is_aborted(self):
+        expected = object()
+        iaobj = MagicMock(task_uuid='test')
+        with patch.object(AbortableAsyncResult, 'is_aborted',
+                          return_value=expected):
+            self.assertEquals(expected,
+                              InstanceActivity.is_aborted.fget(iaobj))
+
+    def test_is_abortable_for_activity_owner_if_not_abortable(self):
+        iaobj = MagicMock(spec=InstanceActivity, is_abortable=False,
+                          user=MagicMock(spec=User, is_superuser=False))
+        self.assertFalse(InstanceActivity.is_abortable_for(iaobj, iaobj.user))
+
+    def test_is_abortable_for_instance_owner(self):
+        get_op = MagicMock(return_value=MagicMock(abortable=True))
+        instance = MagicMock(get_operation_from_activity_code=get_op,
+                             owner=MagicMock(spec=User, is_superuser=False))
+        iaobj = MagicMock(spec=InstanceActivity, activity_code='test',
+                          finished=False, instance=instance, task_uuid='test',
+                          user=MagicMock(spec=User, is_superuser=False))
+        self.assertTrue(
+            InstanceActivity.is_abortable_for(iaobj, iaobj.instance.owner))
+
+    def test_is_abortable_for_activity_owner(self):
+        get_op = MagicMock(return_value=MagicMock(abortable=True))
+        instance = MagicMock(get_operation_from_activity_code=get_op)
+        iaobj = MagicMock(spec=InstanceActivity, activity_code='test',
+                          finished=False, instance=instance, task_uuid='test',
+                          user=MagicMock(spec=User, is_superuser=False))
+        self.assertTrue(InstanceActivity.is_abortable_for(iaobj, iaobj.user))
+
+    def test_not_abortable_for_foreign(self):
+        get_op = MagicMock(return_value=MagicMock(abortable=True))
+        instance = MagicMock(get_operation_from_activity_code=get_op)
+        iaobj = MagicMock(spec=InstanceActivity, activity_code='test',
+                          finished=False, instance=instance, task_uuid='test')
+        self.assertFalse(InstanceActivity.is_abortable_for(
+            iaobj, MagicMock(spec=User, is_superuser=False)))
+
+    def test_is_abortable_for_superuser(self):
+        get_op = MagicMock(return_value=MagicMock(abortable=True))
+        instance = MagicMock(get_operation_from_activity_code=get_op)
+        iaobj = MagicMock(spec=InstanceActivity, activity_code='test',
+                          finished=False, instance=instance, task_uuid='test')
+        su = MagicMock(spec=User, is_superuser=True)
+        self.assertTrue(InstanceActivity.is_abortable_for(iaobj, su))
 
     def test_disable_enabled(self):
         node = MagicMock(spec=Node, enabled=True)

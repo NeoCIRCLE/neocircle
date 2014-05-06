@@ -224,11 +224,7 @@ class VmDetailView(CheckedDetailView):
         })
 
         # activity data
-        context['activities'] = (
-            InstanceActivity.objects.filter(
-                instance=self.object, parent=None).
-            order_by('-started').
-            select_related('user').prefetch_related('children'))
+        context['activities'] = self.object.get_activities(self.request.user)
 
         context['vlans'] = Vlan.get_objects_with_level(
             'user', self.request.user
@@ -260,6 +256,7 @@ class VmDetailView(CheckedDetailView):
             'to_remove': self.__remove_tag,
             'port': self.__add_port,
             'new_network_vlan': self.__new_network,
+            'abort_operation': self.__abort_operation,
         }
         for k, v in options.iteritems():
             if request.POST.get(k) is not None:
@@ -444,6 +441,16 @@ class VmDetailView(CheckedDetailView):
 
         return redirect("%s#network" % reverse_lazy(
             "dashboard.views.detail", kwargs={'pk': self.object.pk}))
+
+    def __abort_operation(self, request):
+        self.object = self.get_object()
+
+        activity = get_object_or_404(InstanceActivity,
+                                     pk=request.POST.get("activity"))
+        if not activity.is_abortable_for(request.user):
+            raise PermissionDenied()
+        activity.abort()
+        return redirect("%s#activity" % self.object.get_absolute_url())
 
 
 class OperationView(DetailView):
@@ -1736,9 +1743,7 @@ def vm_activity(request, pk):
     if only_status == "false":  # instance activity
         context = {
             'instance': instance,
-            'activities': InstanceActivity.objects.filter(
-                instance=instance, parent=None
-            ).order_by('-started').select_related(),
+            'activities': instance.get_activities(request.user),
             'ops': get_operations(instance, request.user),
         }
 
@@ -2343,10 +2348,8 @@ class InstanceActivityDetail(SuperuserRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         ctx = super(InstanceActivityDetail, self).get_context_data(**kwargs)
-        ctx['activities'] = (
-            self.object.instance.activity_log.filter(parent=None).
-            order_by('-started').select_related('user').
-            prefetch_related('children'))
+        ctx['activities'] = self.object.instance.get_activities(
+            self.request.user)
         return ctx
 
 

@@ -17,11 +17,14 @@
 
 from __future__ import absolute_import, unicode_literals
 from datetime import timedelta
+from functools import partial
 from importlib import import_module
 from logging import getLogger
 from string import ascii_lowercase
 from warnings import warn
 
+from celery.exceptions import TimeoutError
+from celery.contrib.abortable import AbortableAsyncResult
 import django.conf
 from django.contrib.auth.models import User
 from django.core import signing
@@ -832,13 +835,20 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                                            queue=queue_name
                                            ).get(timeout=timeout)
 
-    def shutdown_vm(self, timeout=120):
+    def shutdown_vm(self, task=None, step=5):
         queue_name = self.get_remote_queue_name('vm')
         logger.debug("RPC Shutdown at queue: %s, for vm: %s.", queue_name,
                      self.vm_name)
-        return vm_tasks.shutdown.apply_async(kwargs={'name': self.vm_name},
-                                             queue=queue_name
-                                             ).get(timeout=timeout)
+        remote = vm_tasks.shutdown.apply_async(kwargs={'name': self.vm_name},
+                                               queue=queue_name)
+
+        while True:
+            try:
+                return remote.get(timeout=step)
+            except TimeoutError:
+                if task is not None and task.is_aborted():
+                    AbortableAsyncResult(remote.id).abort()
+                    raise Exception("Shutdown aborted by user.")
 
     def suspend_vm(self, timeout=60):
         queue_name = self.get_remote_queue_name('vm')
@@ -891,3 +901,13 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             'PENDING': 'icon-rocket',
             'DESTROYED': 'icon-trash',
             'MIGRATING': 'icon-truck'}.get(self.status, 'icon-question-sign')
+
+    def get_activities(self, user=None):
+        acts = (self.activity_log.filter(parent=None).
+                order_by('-started').
+                select_related('user').prefetch_related('children'))
+        if user is not None:
+            for i in acts:
+                i.is_abortable_for_user = partial(i.is_abortable_for,
+                                                  user=user)
+        return acts
