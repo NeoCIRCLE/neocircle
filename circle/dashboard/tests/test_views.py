@@ -1150,3 +1150,121 @@ class ProfileViewTest(LoginMixin, TestCase):
         self.assertIsNotNone(authenticate(username="user1",
                                           password="password"))
         self.assertIsNone(authenticate(username="user1", password="asd"))
+
+
+class AclViewTest(LoginMixin, TestCase):
+    fixtures = ['test-vm-fixture.json', 'node.json']
+
+    def setUp(self):
+        Instance.get_remote_queue_name = Mock(return_value='test')
+        self.u1 = User.objects.create(username='user1')
+        self.u1.set_password('password')
+        self.u1.save()
+        self.u2 = User.objects.create(username='user2', is_staff=True)
+        self.u2.set_password('password')
+        self.u2.save()
+        self.us = User.objects.create(username='superuser', is_superuser=True)
+        self.us.set_password('password')
+        self.us.save()
+        self.ut = User.objects.get(username="test")
+        self.g1 = Group.objects.create(name='group1')
+        self.g1.user_set.add(self.u1)
+        self.g1.user_set.add(self.u2)
+        self.g1.save()
+        settings["default_vlangroup"] = 'public'
+        VlanGroup.objects.create(name='public')
+
+    def tearDown(self):
+        super(AclViewTest, self).tearDown()
+        self.u1.delete()
+        self.u2.delete()
+        self.us.delete()
+        self.g1.delete()
+
+    def test_permitted_instance_access_revoke(self):
+        c = Client()
+        # this is from the fixtures
+        self.login(c, "test", "test")
+        inst = Instance.objects.get(id=1)
+        inst.set_level(self.u1, "user")
+
+        resp = c.post("/dashboard/vm/1/acl/", {
+            'remove-u-%d' % self.u1.pk: "",
+            'perm-new-name': "",
+            'perm-new': "",
+        })
+        self.assertFalse((self.u1, "user") in inst.get_users_with_level())
+        self.assertEqual(resp.status_code, 302)
+
+    def test_unpermitted_instance_access_revoke(self):
+        c = Client()
+        self.login(c, self.u2)
+        inst = Instance.objects.get(id=1)
+        inst.set_level(self.u1, "user")
+
+        resp = c.post("/dashboard/vm/1/acl/", {
+            'remove-u-%d' % self.u1.pk: "",
+            'perm-new-name': "",
+            'perm-new': "",
+        })
+        self.assertTrue((self.u1, "user") in inst.get_users_with_level())
+        self.assertEqual(resp.status_code, 403)
+
+    def test_instance_original_owner_access_revoke(self):
+        c = Client()
+        self.login(c, self.u1)
+        inst = Instance.objects.get(id=1)
+        inst.set_level(self.u1, "owner")
+        inst.set_level(self.ut, "owner")
+        resp = c.post("/dashboard/vm/1/acl/", {
+            'remove-u-%d' % self.ut.pk: "",
+            'perm-new-name': "",
+            'perm-new': "",
+        })
+        self.assertEqual(self.ut, Instance.objects.get(id=1).owner)
+        self.assertTrue((self.ut, "owner") in inst.get_users_with_level())
+        self.assertEqual(resp.status_code, 302)
+
+    def test_permitted_template_access_revoke(self):
+        c = Client()
+        # this is from the fixtures
+        self.login(c, "test", "test")
+        tmpl = InstanceTemplate.objects.get(id=1)
+        tmpl.set_level(self.u1, "user")
+
+        resp = c.post("/dashboard/template/1/acl/", {
+            'remove-u-%d' % self.u1.pk: "",
+            'perm-new-name': "",
+            'perm-new': "",
+        })
+        self.assertFalse((self.u1, "user") in tmpl.get_users_with_level())
+        self.assertEqual(resp.status_code, 302)
+
+    def test_unpermitted_template_access_revoke(self):
+        c = Client()
+        self.login(c, self.u2)
+        tmpl = InstanceTemplate.objects.get(id=1)
+        tmpl.set_level(self.u1, "user")
+
+        resp = c.post("/dashboard/template/1/acl/", {
+            'remove-u-%d' % self.u1.pk: "",
+            'perm-new-name': "",
+            'perm-new': "",
+        })
+        self.assertTrue((self.u1, "user") in tmpl.get_users_with_level())
+        self.assertEqual(resp.status_code, 403)
+
+    def test_template_original_owner_access_revoke(self):
+        c = Client()
+        self.login(c, self.u1)
+        tmpl = InstanceTemplate.objects.get(id=1)
+        tmpl.set_level(self.u1, "owner")
+        tmpl.set_level(self.ut, "owner")
+        resp = c.post("/dashboard/template/1/acl/", {
+            'remove-u-%d' % self.ut.pk: "",
+            'perm-new-name': "",
+            'perm-new': "",
+        })
+        self.assertEqual(self.ut, InstanceTemplate.objects.get(id=1).owner)
+        self.assertTrue((self.ut, "owner") in tmpl.get_users_with_level())
+        self.assertEqual(resp.status_code, 302)
