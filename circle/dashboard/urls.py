@@ -21,7 +21,7 @@ from django.conf.urls import patterns, url, include
 from vm.models import Instance
 from .views import (
     AclUpdateView, DiskAddView, FavouriteView, GroupAclUpdateView, GroupDelete,
-    GroupDetailView, GroupList, GroupUserDelete, IndexView,
+    GroupDetailView, GroupList, IndexView,
     InstanceActivityDetail, LeaseCreate, LeaseDelete, LeaseDetail,
     MyPreferencesView, NodeAddTraitView, NodeCreate, NodeDelete,
     NodeDetailView, NodeFlushView, NodeGraphView, NodeList, NodeStatus,
@@ -30,6 +30,8 @@ from .views import (
     TransferOwnershipView, vm_activity, VmCreate, VmDelete, VmDetailView,
     VmDetailVncTokenView, VmGraphView, VmList, VmMassDelete, VmMigrateView,
     VmRenewView, DiskRemoveView, get_disk_download_status, InterfaceDeleteView,
+    GroupRemoveAclUserView, GroupRemoveAclGroupView, GroupRemoveUserView,
+    GroupCreate,
 )
 
 urlpatterns = patterns(
@@ -112,9 +114,6 @@ urlpatterns = patterns(
         name='dashboard.views.group-detail'),
     url(r'^group/(?P<pk>\d+)/acl/$', GroupAclUpdateView.as_view(),
         name='dashboard.views.group-acl'),
-    url(r'^groupuser/delete/(?P<pk>\d+)/$', GroupUserDelete.as_view(),
-        name="dashboard.views.delete-groupuser"),
-
     url(r'^notifications/$', NotificationView.as_view(),
         name="dashboard.views.notifications"),
 
@@ -130,4 +129,15 @@ urlpatterns = patterns(
 
     url(r'^profile/$', MyPreferencesView.as_view(),
         name="dashboard.views.profile"),
+    url(r'^group/(?P<group_pk>\d+)/remove/acl/user/(?P<member_pk>\d+)/$',
+        GroupRemoveAclUserView.as_view(),
+        name="dashboard.views.remove-acluser"),
+    url(r'^group/(?P<group_pk>\d+)/remove/acl/group/(?P<member_pk>\d+)/$',
+        GroupRemoveAclGroupView.as_view(),
+        name="dashboard.views.remove-aclgroup"),
+    url(r'^group/(?P<group_pk>\d+)/remove/user/(?P<member_pk>\d+)/$',
+        GroupRemoveUserView.as_view(),
+        name="dashboard.views.remove-user"),
+    url(r'^group/create/$', GroupCreate.as_view(),
+        name='dashboard.views.group-create'),
 )
