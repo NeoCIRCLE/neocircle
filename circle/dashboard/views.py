@@ -714,8 +714,9 @@ class AclUpdateView(LoginRequiredMixin, View, SingleObjectMixin):
                            unicode(instance), unicode(request.user))
             raise PermissionDenied()
         self.set_levels(request, instance)
+        self.remove_levels(request, instance)
         self.add_levels(request, instance)
-        return redirect(instance)
+        return redirect("%s#access" % instance.get_absolute_url())
 
     def set_levels(self, request, instance):
         for key, value in request.POST.items():
@@ -731,6 +732,24 @@ class AclUpdateView(LoginRequiredMixin, View, SingleObjectMixin):
                 logger.info("Set %s's acl level for %s to %s by %s.",
                             unicode(entity), unicode(instance),
                             value, unicode(request.user))
+
+    def remove_levels(self, request, instance):
+        for key, value in request.POST.items():
+            if key.startswith("remove"):
+                typ = key[7:8]  # len("remove-")
+                id = key[9:]  # len("remove-x-")
+                entity = {'u': User, 'g': Group}[typ].objects.get(id=id)
+                if getattr(instance, "owner", None) == entity:
+                    logger.info("Tried to remove owner from %s by %s.",
+                                unicode(instance), unicode(request.user))
+                    msg = _("The original owner cannot be removed, however "
+                            "you can transfer ownership!")
+                    messages.warning(request, msg)
+                    continue
+                instance.set_level(entity, None)
+                logger.info("Revoked %s's access to %s by %s.",
+                            unicode(entity), unicode(instance),
+                            unicode(request.user))
 
     def add_levels(self, request, instance):
         name = request.POST['perm-new-name']
@@ -772,6 +791,7 @@ class TemplateAclUpdateView(AclUpdateView):
         else:
             self.set_levels(request, template)
             self.add_levels(request, template)
+            self.remove_levels(request, template)
 
             post_for_disk = request.POST.copy()
             post_for_disk['perm-new'] = 'user'
@@ -779,8 +799,7 @@ class TemplateAclUpdateView(AclUpdateView):
             for d in template.disks.all():
                 self.add_levels(request, d)
 
-        return redirect(reverse("dashboard.views.template-detail",
-                                kwargs=self.kwargs))
+        return redirect(template)
 
 
 class GroupAclUpdateView(AclUpdateView):

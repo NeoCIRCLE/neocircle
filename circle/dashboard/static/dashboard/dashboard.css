@@ -499,3 +499,8 @@ footer a, footer a:hover, footer a:visited {
 .table-sorting {
   display: none;
 }
+
+#vm-access-table th:last-child, #vm-access-table td:last-child,
+#template-access-table th:last-child, #template-access-table td:last-child {
+  text-align: center;
+}
