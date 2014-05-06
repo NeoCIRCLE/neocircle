@@ -46,9 +46,6 @@ from vm.models import (
 )
 from .models import Profile
 
-VLANS = Vlan.objects.all()
-DISKS = Disk.objects.exclude(type="qcow2-snap")
-
 
 class VmCustomizeForm(forms.Form):
     name = forms.CharField()
