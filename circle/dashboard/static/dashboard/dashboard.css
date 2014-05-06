@@ -23,6 +23,46 @@ html {
   padding-right: 15px;
 }
 
+/* values for 45px tall navbar */
+.navbar {
+  min-height: 45px;
+}
+
+.navbar-brand {
+  height: 45px;
+  padding: 12.5px 12.5px;
+}
+
+.navbar-toggle {
+  margin-top: 5.5px;
+  margin-bottom: 5.5px;
+}
+
+.navbar-form {
+  margin-top: 5.5px;
+  margin-bottom: 5.5px;
+}
+
+.navbar-btn {
+  margin-top: 5.5px;
+  margin-bottom: 5.5px;
+}
+
+.navbar-btn.btn-sm {
+  margin-top: 7.5px;
+  margin-bottom: 7.5px;
+}
+.navbar-btn.btn-xs {
+  margin-top: 11.5px;
+  margin-bottom: 11.5px;
+}
+.navbar-text {
+  margin-top: 12.5px;
+  margin-bottom: 12.5px;
+}
+
+/* --- */
+
 /* Responsive: Portrait tablets and up */
 @media screen and (min-width: 768px) {
   /* Let the jumbotron breathe */
@@ -33,6 +73,12 @@ html {
   .body-content {
     padding: 0;
   }
+
+  .navbar-nav > li > a {
+    padding-top: 12.5px;
+    padding-bottom: 12.5px;
+  }
+
 }
 .no-margin {
   margin: 0!important;
@@ -503,4 +549,8 @@ footer a, footer a:hover, footer a:visited {
 #vm-access-table th:last-child, #vm-access-table td:last-child,
 #template-access-table th:last-child, #template-access-table td:last-child {
   text-align: center;
+}
+
+#notifications-button {
+  margin: 0;
 }
