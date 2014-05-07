@@ -35,3 +35,6 @@ circle/*.pem
 # collected static files:
 circle/static
 circle/static_collected
+
+# jsi18n files
+jsi18n
