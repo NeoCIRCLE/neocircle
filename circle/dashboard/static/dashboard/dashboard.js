@@ -355,10 +355,10 @@ function massDeleteVm(data) {
       type: 'POST',                                                         
       data: {'vms': data['data']['v']},                                  
       success: function(re, textStatus, xhr) {                            
-        for(var i=0; i< selected.length; i++)                               
-          $('.vm-list-table tbody tr').eq(data['data']['selected'][i]).fadeOut(500, function() {
+        for(var i=0; i< data['data']['v'].length; i++)                               
+          $('.vm-list-table tbody tr[data-vm-pk="' + data['data']['v'][i] + '"]').fadeOut(500, function() {
+            selected = [];                                                  
             // reset group buttons                                          
-            selected = []                                                   
             $('.vm-list-group-control a').attr('disabled', true);           
             $(this).remove();                                               
           }); 
