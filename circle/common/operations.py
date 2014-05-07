@@ -15,9 +15,10 @@
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
+from inspect import getargspec
 from logging import getLogger
 
-from .models import activity_context
+from .models import activity_context, has_suffix
 
 from django.core.exceptions import PermissionDenied
 
@@ -31,6 +32,7 @@ class Operation(object):
     async_queue = 'localhost.man'
     required_perms = ()
     do_not_call_in_templates = True
+    abortable = False
 
     def __call__(self, **kwargs):
         return self.call(**kwargs)
@@ -46,23 +48,50 @@ class Operation(object):
     def __prelude(self, kwargs):
         """This method contains the shared prelude of call and async.
         """
-        skip_auth_check = kwargs.setdefault('system', False)
-        user = kwargs.setdefault('user', None)
-        parent_activity = kwargs.pop('parent_activity', None)
+        defaults = {'parent_activity': None, 'system': False, 'user': None}
+
+        allargs = dict(defaults, **kwargs)  # all arguments
+        auxargs = allargs.copy()  # auxiliary (i.e. only for _operation) args
+        # NOTE: consumed items should be removed from auxargs, and no new items
+        # should be added to it
+
+        skip_auth_check = auxargs.pop('system')
+        user = auxargs.pop('user')
+        parent_activity = auxargs.pop('parent_activity')
+
+        # check for unexpected keyword arguments
+        argspec = getargspec(self._operation)
+        if argspec.keywords is None:  # _operation doesn't take ** args
+            unexpected_kwargs = set(auxargs) - set(argspec.args)
+            if unexpected_kwargs:
+                raise TypeError("Operation got unexpected keyword arguments: "
+                                "%s" % ", ".join(unexpected_kwargs))
 
         if not skip_auth_check:
             self.check_auth(user)
         self.check_precond()
-        return self.create_activity(parent=parent_activity, user=user)
 
-    def _exec_op(self, activity, user, **kwargs):
+        activity = self.create_activity(parent=parent_activity, user=user)
+
+        return activity, allargs, auxargs
+
+    def _exec_op(self, allargs, auxargs):
         """Execute the operation inside the specified activity's context.
         """
-        with activity_context(activity, on_abort=self.on_abort,
-                              on_commit=self.on_commit):
-            return self._operation(activity=activity, user=user, **kwargs)
+        # compile arguments for _operation
+        argspec = getargspec(self._operation)
+        if argspec.keywords is not None:  # _operation takes ** args
+            arguments = allargs.copy()
+        else:  # _operation doesn't take ** args
+            arguments = {k: v for (k, v) in allargs.iteritems()
+                         if k in argspec.args}
+        arguments.update(auxargs)
 
-    def _operation(self, activity, user, system, **kwargs):
+        with activity_context(allargs['activity'], on_abort=self.on_abort,
+                              on_commit=self.on_commit):
+            return self._operation(**arguments)
+
+    def _operation(self, **kwargs):
         """This method is the operation's particular implementation.
 
         Deriving classes should implement this method.
@@ -82,12 +111,10 @@ class Operation(object):
         logger.info("%s called asynchronously on %s with the following "
                     "parameters: %r", self.__class__.__name__, self.subject,
                     kwargs)
-        activity = self.__prelude(kwargs)
-        return self.async_operation.apply_async(args=(self.id,
-                                                      self.subject.pk,
-                                                      activity.pk),
-                                                kwargs=kwargs,
-                                                queue=self.async_queue)
+        activity, allargs, auxargs = self.__prelude(kwargs)
+        return self.async_operation.apply_async(
+            args=(self.id, self.subject.pk, activity.pk, allargs, auxargs, ),
+            queue=self.async_queue)
 
     def call(self, **kwargs):
         """Execute the operation (synchronously).
@@ -105,8 +132,9 @@ class Operation(object):
         logger.info("%s called (synchronously) on %s with the following "
                     "parameters: %r", self.__class__.__name__, self.subject,
                     kwargs)
-        activity = self.__prelude(kwargs)
-        return self._exec_op(activity=activity, **kwargs)
+        activity, allargs, auxargs = self.__prelude(kwargs)
+        allargs['activity'] = activity
+        return self._exec_op(allargs, auxargs)
 
     def check_precond(self):
         pass
@@ -159,6 +187,19 @@ class OperatedMixin(object):
                 pass  # unavailable
             else:
                 yield op
+
+    def get_operation_from_activity_code(self, activity_code):
+        """Get an instance of the Operation corresponding to the specified
+           activity code.
+
+        :returns: A bound instance of an operation, or None if no matching
+                  operation could be found.
+        """
+        for op in getattr(self, operation_registry_name, {}).itervalues():
+            if has_suffix(activity_code, op.activity_code_suffix):
+                return op(self)
+        else:
+            return None
 
 
 def register_operation(op_cls, op_id=None, target_cls=None):

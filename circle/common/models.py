@@ -18,6 +18,7 @@
 from collections import deque
 from contextlib import contextmanager
 from hashlib import sha224
+from itertools import chain, imap
 from logging import getLogger
 from time import time
 
@@ -56,10 +57,50 @@ activity_context = contextmanager(activitycontextimpl)
 activity_code_separator = '.'
 
 
+def has_prefix(activity_code, *prefixes):
+    """Determine whether the activity code has the specified prefix.
+
+    E.g.: has_prefix('foo.bar.buz', 'foo.bar') == True
+          has_prefix('foo.bar.buz', 'foo', 'bar') == True
+          has_prefix('foo.bar.buz', 'foo.bar', 'buz') == True
+          has_prefix('foo.bar.buz', 'foo', 'bar', 'buz') == True
+          has_prefix('foo.bar.buz', 'foo', 'buz') == False
+    """
+    equal = lambda a, b: a == b
+    act_code_parts = split_activity_code(activity_code)
+    prefixes = chain(*imap(split_activity_code, prefixes))
+    return all(imap(equal, act_code_parts, prefixes))
+
+
+def has_suffix(activity_code, *suffixes):
+    """Determine whether the activity code has the specified suffix.
+
+    E.g.: has_suffix('foo.bar.buz', 'bar.buz') == True
+          has_suffix('foo.bar.buz', 'bar', 'buz') == True
+          has_suffix('foo.bar.buz', 'foo.bar', 'buz') == True
+          has_suffix('foo.bar.buz', 'foo', 'bar', 'buz') == True
+          has_suffix('foo.bar.buz', 'foo', 'buz') == False
+    """
+    equal = lambda a, b: a == b
+    act_code_parts = split_activity_code(activity_code)
+    suffixes = list(chain(*imap(split_activity_code, suffixes)))
+    return all(imap(equal, reversed(act_code_parts), reversed(suffixes)))
+
+
 def join_activity_code(*args):
     """Join the specified parts into an activity code.
+
+    :returns: Activity code string.
     """
     return activity_code_separator.join(args)
+
+
+def split_activity_code(activity_code):
+    """Split the specified activity code into its parts.
+
+    :returns: A list of activity code parts.
+    """
+    return activity_code.split(activity_code_separator)
 
 
 class ActivityModel(TimeStampedModel):

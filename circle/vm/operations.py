@@ -26,7 +26,9 @@ from django.utils.translation import ugettext_lazy as _
 from celery.exceptions import TimeLimitExceeded
 
 from common.operations import Operation, register_operation
-from .tasks.local_tasks import async_instance_operation, async_node_operation
+from .tasks.local_tasks import (
+    abortable_async_instance_operation, abortable_async_node_operation,
+)
 from .models import (
     Instance, InstanceActivity, InstanceTemplate, Interface, Node,
     NodeActivity,
@@ -38,7 +40,7 @@ logger = getLogger(__name__)
 
 class InstanceOperation(Operation):
     acl_level = 'owner'
-    async_operation = async_instance_operation
+    async_operation = abortable_async_instance_operation
     host_cls = Instance
 
     def __init__(self, instance):
@@ -126,7 +128,7 @@ class DeployOperation(InstanceOperation):
     def on_commit(self, activity):
         activity.resultant_state = 'RUNNING'
 
-    def _operation(self, activity, user, system, timeout=15):
+    def _operation(self, activity, timeout=15):
         # Allocate VNC port and host node
         self.instance.allocate_vnc_port()
         self.instance.allocate_node()
@@ -162,7 +164,7 @@ class DestroyOperation(InstanceOperation):
     def on_commit(self, activity):
         activity.resultant_state = 'DESTROYED'
 
-    def _operation(self, activity, user, system):
+    def _operation(self, activity):
         if self.instance.node:
             # Destroy networks
             with activity.sub_activity('destroying_net'):
@@ -200,7 +202,7 @@ class MigrateOperation(InstanceOperation):
     name = _("migrate")
     description = _("Live migrate running VM to another node.")
 
-    def _operation(self, activity, user, system, to_node=None, timeout=120):
+    def _operation(self, activity, to_node=None, timeout=120):
         if not to_node:
             with activity.sub_activity('scheduling') as sa:
                 to_node = self.instance.select_node()
@@ -230,7 +232,7 @@ class RebootOperation(InstanceOperation):
     name = _("reboot")
     description = _("Reboot virtual machine with Ctrl+Alt+Del signal.")
 
-    def _operation(self, activity, user, system, timeout=5):
+    def _operation(self, timeout=5):
         self.instance.reboot_vm(timeout=timeout)
 
 
@@ -280,7 +282,7 @@ class ResetOperation(InstanceOperation):
     name = _("reset")
     description = _("Reset virtual machine (reset button).")
 
-    def _operation(self, activity, user, system, timeout=5):
+    def _operation(self, timeout=5):
         self.instance.reset_vm(timeout=timeout)
 
 register_operation(ResetOperation)
@@ -295,6 +297,7 @@ class SaveAsTemplateOperation(InstanceOperation):
         Template can be shared with groups and users.
         Users can instantiate Virtual Machines from Templates.
         """)
+    abortable = True
 
     @staticmethod
     def _rename(name):
@@ -307,11 +310,11 @@ class SaveAsTemplateOperation(InstanceOperation):
         return "%s v%d" % (name, v)
 
     def _operation(self, activity, user, system, timeout=300, name=None,
-                   with_shutdown=True, **kwargs):
+                   with_shutdown=True, task=None, **kwargs):
         if with_shutdown:
             try:
                 ShutdownOperation(self.instance).call(parent_activity=activity,
-                                                      user=user)
+                                                      user=user, task=task)
             except Instance.WrongStateError:
                 pass
 
@@ -370,23 +373,18 @@ class ShutdownOperation(InstanceOperation):
     id = 'shutdown'
     name = _("shutdown")
     description = _("Shutdown virtual machine with ACPI signal.")
+    abortable = True
 
     def check_precond(self):
         super(ShutdownOperation, self).check_precond()
         if self.instance.status not in ['RUNNING']:
             raise self.instance.WrongStateError(self.instance)
 
-    def on_abort(self, activity, error):
-        if isinstance(error, TimeLimitExceeded):
-            activity.resultant_state = None
-        else:
-            activity.resultant_state = 'ERROR'
-
     def on_commit(self, activity):
         activity.resultant_state = 'STOPPED'
 
-    def _operation(self, activity, user, system, timeout=120):
-        self.instance.shutdown_vm(timeout=timeout)
+    def _operation(self, task=None):
+        self.instance.shutdown_vm(task=task)
         self.instance.yield_node()
         self.instance.yield_vnc_port()
 
@@ -403,7 +401,7 @@ class ShutOffOperation(InstanceOperation):
     def on_commit(self, activity):
         activity.resultant_state = 'STOPPED'
 
-    def _operation(self, activity, user, system):
+    def _operation(self, activity):
         # Shutdown networks
         with activity.sub_activity('shutdown_net'):
             self.instance.shutdown_net()
@@ -440,7 +438,7 @@ class SleepOperation(InstanceOperation):
     def on_commit(self, activity):
         activity.resultant_state = 'SUSPENDED'
 
-    def _operation(self, activity, user, system, timeout=60):
+    def _operation(self, activity, timeout=60):
         # Destroy networks
         with activity.sub_activity('shutdown_net'):
             self.instance.shutdown_net()
@@ -476,7 +474,7 @@ class WakeUpOperation(InstanceOperation):
     def on_commit(self, activity):
         activity.resultant_state = 'RUNNING'
 
-    def _operation(self, activity, user, system, timeout=60):
+    def _operation(self, activity, timeout=60):
         # Schedule vm
         self.instance.allocate_vnc_port()
         self.instance.allocate_node()
@@ -497,7 +495,7 @@ register_operation(WakeUpOperation)
 
 
 class NodeOperation(Operation):
-    async_operation = async_node_operation
+    async_operation = abortable_async_node_operation
     host_cls = Node
 
     def __init__(self, node):
@@ -527,7 +525,7 @@ class FlushOperation(NodeOperation):
     name = _("flush")
     description = _("Disable node and move all instances to other ones.")
 
-    def _operation(self, activity, user, system):
+    def _operation(self, activity, user):
         self.node.disable(user, activity)
         for i in self.node.instance_set.all():
             with activity.sub_activity('migrate_instance_%d' % i.pk):

@@ -224,11 +224,7 @@ class VmDetailView(CheckedDetailView):
         })
 
         # activity data
-        context['activities'] = (
-            InstanceActivity.objects.filter(
-                instance=self.object, parent=None).
-            order_by('-started').
-            select_related('user').prefetch_related('children'))
+        context['activities'] = self.object.get_activities(self.request.user)
 
         context['vlans'] = Vlan.get_objects_with_level(
             'user', self.request.user
@@ -260,6 +256,7 @@ class VmDetailView(CheckedDetailView):
             'to_remove': self.__remove_tag,
             'port': self.__add_port,
             'new_network_vlan': self.__new_network,
+            'abort_operation': self.__abort_operation,
         }
         for k, v in options.iteritems():
             if request.POST.get(k) is not None:
@@ -444,6 +441,16 @@ class VmDetailView(CheckedDetailView):
 
         return redirect("%s#network" % reverse_lazy(
             "dashboard.views.detail", kwargs={'pk': self.object.pk}))
+
+    def __abort_operation(self, request):
+        self.object = self.get_object()
+
+        activity = get_object_or_404(InstanceActivity,
+                                     pk=request.POST.get("activity"))
+        if not activity.is_abortable_for(request.user):
+            raise PermissionDenied()
+        activity.abort()
+        return redirect("%s#activity" % self.object.get_absolute_url())
 
 
 class OperationView(DetailView):
@@ -714,8 +721,9 @@ class AclUpdateView(LoginRequiredMixin, View, SingleObjectMixin):
                            unicode(instance), unicode(request.user))
             raise PermissionDenied()
         self.set_levels(request, instance)
+        self.remove_levels(request, instance)
         self.add_levels(request, instance)
-        return redirect(instance)
+        return redirect("%s#access" % instance.get_absolute_url())
 
     def set_levels(self, request, instance):
         for key, value in request.POST.items():
@@ -731,6 +739,24 @@ class AclUpdateView(LoginRequiredMixin, View, SingleObjectMixin):
                 logger.info("Set %s's acl level for %s to %s by %s.",
                             unicode(entity), unicode(instance),
                             value, unicode(request.user))
+
+    def remove_levels(self, request, instance):
+        for key, value in request.POST.items():
+            if key.startswith("remove"):
+                typ = key[7:8]  # len("remove-")
+                id = key[9:]  # len("remove-x-")
+                entity = {'u': User, 'g': Group}[typ].objects.get(id=id)
+                if getattr(instance, "owner", None) == entity:
+                    logger.info("Tried to remove owner from %s by %s.",
+                                unicode(instance), unicode(request.user))
+                    msg = _("The original owner cannot be removed, however "
+                            "you can transfer ownership!")
+                    messages.warning(request, msg)
+                    continue
+                instance.set_level(entity, None)
+                logger.info("Revoked %s's access to %s by %s.",
+                            unicode(entity), unicode(instance),
+                            unicode(request.user))
 
     def add_levels(self, request, instance):
         name = request.POST['perm-new-name']
@@ -772,6 +798,7 @@ class TemplateAclUpdateView(AclUpdateView):
         else:
             self.set_levels(request, template)
             self.add_levels(request, template)
+            self.remove_levels(request, template)
 
             post_for_disk = request.POST.copy()
             post_for_disk['perm-new'] = 'user'
@@ -779,8 +806,7 @@ class TemplateAclUpdateView(AclUpdateView):
             for d in template.disks.all():
                 self.add_levels(request, d)
 
-        return redirect(reverse("dashboard.views.template-detail",
-                                kwargs=self.kwargs))
+        return redirect(template)
 
 
 class GroupAclUpdateView(AclUpdateView):
@@ -1791,9 +1817,7 @@ def vm_activity(request, pk):
     if only_status == "false":  # instance activity
         context = {
             'instance': instance,
-            'activities': InstanceActivity.objects.filter(
-                instance=instance, parent=None
-            ).order_by('-started').select_related(),
+            'activities': instance.get_activities(request.user),
             'ops': get_operations(instance, request.user),
         }
 
@@ -2398,10 +2422,8 @@ class InstanceActivityDetail(SuperuserRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         ctx = super(InstanceActivityDetail, self).get_context_data(**kwargs)
-        ctx['activities'] = (
-            self.object.instance.activity_log.filter(parent=None).
-            order_by('-started').select_related('user').
-            prefetch_related('children'))
+        ctx['activities'] = self.object.instance.get_activities(
+            self.request.user)
         return ctx
 
 
