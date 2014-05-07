@@ -836,13 +836,13 @@ class TemplateChoose(TemplateView):
 
     def get_context_data(self, *args, **kwargs):
         context = super(TemplateChoose, self).get_context_data(*args, **kwargs)
-        templates = InstanceTemplate.get_objects_with_level("operator",
+        templates = InstanceTemplate.get_objects_with_level("user",
                                                             self.request.user)
         context.update({
             'box_title': _('Choose template'),
             'ajax_title': False,
             'template': "dashboard/_template-choose.html",
-            'templates': templates.all(),  # TODO acl?
+            'templates': templates.all(),
         })
         return context
 
