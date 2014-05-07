@@ -253,6 +253,7 @@ THIRD_PARTY_APPS = (
     'djcelery',
     'sizefield',
     'taggit',
+    'statici18n',
 )
 
 # Apps specific for this project go here.
