@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-04-16 08:59+0200\n"
+"POT-Creation-Date: 2014-05-07 14:25+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,141 +18,148 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: dashboard/static/dashboard/vm-tour.js:23
+#: dashboard/static/dashboard/dashboard.js:54
+msgid "Select an option to proceed!"
+msgstr ""
+
+#: dashboard/static/dashboard/vm-tour.js:20
 msgid "Prev"
 msgstr "Előző"
 
-#: dashboard/static/dashboard/vm-tour.js:25
+#: dashboard/static/dashboard/vm-tour.js:22
 msgid "Next"
 msgstr "Következő"
 
-#: dashboard/static/dashboard/vm-tour.js:29
+#: dashboard/static/dashboard/vm-tour.js:26
 msgid "End tour"
 msgstr ""
 
-#: dashboard/static/dashboard/vm-tour.js:36
+#: dashboard/static/dashboard/vm-tour.js:33
 msgid "Template Tutorial Tour"
 msgstr ""
 
-#: dashboard/static/dashboard/vm-tour.js:37
+#: dashboard/static/dashboard/vm-tour.js:34
 msgid ""
 "Welcome to the template tutorial. In this quick tour, we gonna show you how "
 "to do the steps described above."
 msgstr ""
 
-#: dashboard/static/dashboard/vm-tour.js:38
+#: dashboard/static/dashboard/vm-tour.js:35
 msgid ""
 "For the next tour step press the \"Next\" button or the right arrow (or "
 "\"Back\" button/left arrow for the previous step)."
 msgstr ""
 
-#: dashboard/static/dashboard/vm-tour.js:39
+#: dashboard/static/dashboard/vm-tour.js:36
 msgid ""
 "During the tour please don't try the functions because it may lead to "
 "graphical glitches, however "
 msgstr ""
 
-#: dashboard/static/dashboard/vm-tour.js:48
+#: dashboard/static/dashboard/vm-tour.js:45
 msgid "Home tab"
 msgstr ""
 
-#: dashboard/static/dashboard/vm-tour.js:49
+#: dashboard/static/dashboard/vm-tour.js:46
 msgid ""
-"In this tab you can tag your virtual machine and modify the description."
+"In this tab you can tag your virtual machine and modify the name and "
+"description."
 msgstr ""
 
-#: dashboard/static/dashboard/vm-tour.js:58
+#: dashboard/static/dashboard/vm-tour.js:55
 msgid "Resources tab"
 msgstr ""
 
-#: dashboard/static/dashboard/vm-tour.js:61
+#: dashboard/static/dashboard/vm-tour.js:58
 msgid ""
 "On the resources tab you can edit the CPU/RAM options and add/remove disks!"
 msgstr ""
 
-#: dashboard/static/dashboard/vm-tour.js:71
+#: dashboard/static/dashboard/vm-tour.js:68
 msgid "Resources"
 msgstr ""
 
-#: dashboard/static/dashboard/vm-tour.js:72
+#: dashboard/static/dashboard/vm-tour.js:69
 msgid "CPU priority"
 msgstr ""
 
-#: dashboard/static/dashboard/vm-tour.js:72
-msgid "higher (or lower?) is better"
+#: dashboard/static/dashboard/vm-tour.js:69
+msgid "higher is better"
 msgstr ""
 
-#: dashboard/static/dashboard/vm-tour.js:73
+#: dashboard/static/dashboard/vm-tour.js:70
 msgid "CPU count"
 msgstr ""
 
-#: dashboard/static/dashboard/vm-tour.js:73
+#: dashboard/static/dashboard/vm-tour.js:70
 msgid "number of CPU cores."
 msgstr ""
 
-#: dashboard/static/dashboard/vm-tour.js:74
+#: dashboard/static/dashboard/vm-tour.js:71
 msgid "RAM amount"
 msgstr ""
 
-#: dashboard/static/dashboard/vm-tour.js:74
+#: dashboard/static/dashboard/vm-tour.js:71
 msgid "amount of RAM."
 msgstr ""
 
-#: dashboard/static/dashboard/vm-tour.js:84
+#: dashboard/static/dashboard/vm-tour.js:81
 msgid "Disks"
 msgstr ""
 
-#: dashboard/static/dashboard/vm-tour.js:85
+#: dashboard/static/dashboard/vm-tour.js:82
 msgid ""
 "You can add empty disks, download new ones and remove existing ones here."
 msgstr ""
 
-#: dashboard/static/dashboard/vm-tour.js:95
+#: dashboard/static/dashboard/vm-tour.js:92
 msgid "Network tab"
 msgstr ""
 
-#: dashboard/static/dashboard/vm-tour.js:96
+#: dashboard/static/dashboard/vm-tour.js:93
 msgid "You can add new network interfaces or remove existing ones here."
 msgstr ""
 
-#: dashboard/static/dashboard/vm-tour.js:105
+#: dashboard/static/dashboard/vm-tour.js:102
 msgid "Deploy"
 msgstr ""
 
-#: dashboard/static/dashboard/vm-tour.js:108
+#: dashboard/static/dashboard/vm-tour.js:105
 msgid "Deploy the virtual machine."
 msgstr ""
 
-#: dashboard/static/dashboard/vm-tour.js:113
+#: dashboard/static/dashboard/vm-tour.js:110
 msgid "Connect"
 msgstr ""
 
-#: dashboard/static/dashboard/vm-tour.js:116
+#: dashboard/static/dashboard/vm-tour.js:113
 msgid "Use the connection string or connect with your choice of client!"
 msgstr ""
 
-#: dashboard/static/dashboard/vm-tour.js:123
+#: dashboard/static/dashboard/vm-tour.js:120
 msgid "Customize the virtual machine"
 msgstr ""
 
-#: dashboard/static/dashboard/vm-tour.js:124
-msgid "After you have connected to the virtual do you modifications."
+#: dashboard/static/dashboard/vm-tour.js:121
+msgid ""
+"After you have connected to the virtual machine do your modifications then "
+"log off."
 msgstr ""
 
-#: dashboard/static/dashboard/vm-tour.js:129
+#: dashboard/static/dashboard/vm-tour.js:126
 msgid "Save as"
 msgstr ""
 
-#: dashboard/static/dashboard/vm-tour.js:132
+#: dashboard/static/dashboard/vm-tour.js:129
 msgid ""
 "Press the \"Save as template\" button and wait until the activity finishes."
 msgstr ""
 
-#: dashboard/static/dashboard/vm-tour.js:138
-msgid "Finisih"
+#: dashboard/static/dashboard/vm-tour.js:135
+msgid "Finish"
 msgstr ""
 
-#: dashboard/static/dashboard/vm-tour.js:141
+#: dashboard/static/dashboard/vm-tour.js:138
 msgid ""
 "This is the last message, if something is not clear you can do the the tour "
 "again!"
