@@ -30,7 +30,6 @@ from crispy_forms.layout import (
     Layout, Div, BaseInput, Field, HTML, Submit, Fieldset, TEMPLATE_PACK,
 )
 
-from django.shortcuts import get_object_or_404
 from crispy_forms.utils import render_field
 from django import forms
 from django.forms.widgets import TextInput
@@ -479,10 +478,8 @@ class NodeForm(forms.ModelForm):
 class TemplateForm(forms.ModelForm):
     networks = forms.ModelMultipleChoiceField(
         queryset=None, required=False, label=_("Networks"))
-    parent_type = forms.CharField(required=False)
 
     def __init__(self, *args, **kwargs):
-        self.parent = kwargs.pop("parent", None)
         self.user = kwargs.pop("user", None)
         super(TemplateForm, self).__init__(*args, **kwargs)
 
@@ -492,25 +489,9 @@ class TemplateForm(forms.ModelForm):
         data = self.data.copy()
         data['owner'] = self.user.pk
         self.data = data
-        self.initial['parent_type'] = self.parent
 
-        if self.parent is not None and self.parent.isdigit():
-            template = get_object_or_404(InstanceTemplate, pk=self.parent)
-            parent = template.__dict__
-            fields = ["system", "name", "num_cores", "boot_menu", "ram_size",
-                      "priority", "access_method", "raw_data",
-                      "arch", "description"]
-            for f in fields:
-                self.initial[f] = parent[f]
-            self.initial['lease'] = parent['lease_id']
-            self.initial['parent'] = template
-            self.initial['name'] = "Clone of %s" % self.initial['name']
-            self.for_networks = template
-        else:
-            self.for_networks = self.instance
-
-        if self.instance.pk or self.parent is not None:
-            n = self.for_networks.interface_set.values_list("vlan", flat=True)
+        if self.instance.pk:
+            n = self.instance.interface_set.values_list("vlan", flat=True)
             self.initial['networks'] = n
 
         if not self.instance.pk and len(self.errors) < 1:
@@ -561,7 +542,6 @@ class TemplateForm(forms.ModelForm):
 
         helper = FormHelper()
         helper.layout = Layout(
-            Field("parent_type", type="hidden"),
             Field("name"),
             Fieldset(
                 _("Resource configuration"),

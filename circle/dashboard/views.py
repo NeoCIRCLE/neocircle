@@ -841,7 +841,7 @@ class TemplateChoose(TemplateView):
         context.update({
             'box_title': _('Choose template'),
             'ajax_title': False,
-            'template': "dashboard/_template-create-1.html",
+            'template': "dashboard/_template-choose.html",
             'templates': templates.all(),  # TODO acl?
         })
         return context
@@ -871,7 +871,7 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
 
     def get_template_names(self):
         if self.request.is_ajax():
-            return ['dashboard/modal-wrapper.html']
+            pass
         else:
             return ['dashboard/nojs-wrapper.html']
 
@@ -880,8 +880,7 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
 
         context.update({
             'box_title': _("Create a new base VM"),
-            'ajax_title': False,
-            'template': "dashboard/_template-create-2.html",
+            'template': "dashboard/_template-create.html",
             'leases': Lease.objects.count()
         })
         return context
@@ -890,12 +889,10 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
         if not self.request.user.has_perm('vm.create_template'):
             raise PermissionDenied()
 
-        self.parent = self.request.GET.get("parent")
         return super(TemplateCreate, self).get(*args, **kwargs)
 
     def get_form_kwargs(self):
         kwargs = super(TemplateCreate, self).get_form_kwargs()
-        kwargs['parent'] = getattr(self, "parent", None)
         kwargs['user'] = self.request.user
         return kwargs
 
@@ -908,37 +905,17 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
             return self.get(request, form, *args, **kwargs)
         else:
             post = form.cleaned_data
-
             networks = self.__create_networks(post.pop("networks"),
                                               request.user)
             post.pop("parent")
-            parent_type = post.pop("parent_type")
             post['max_ram_size'] = post['ram_size']
-
-            # if it's not a base vm we need to add disks and deploy it
-            if parent_type != "base_vm":
-                template = get_object_or_404(InstanceTemplate, pk=parent_type)
-                inst = Instance.create_from_template(template=template,
-                                                     networks=networks,
-                                                     **post)
-                inst.deploy_async()
-                messages.info(request, _("Your instance has been created, "
-                                         "modify it then press the save as "
-                                         "button to save it as a new template!"
-                                         ))
-
-            else:
-                req_traits = post.pop("req_traits")
-                tags = post.pop("tags")
-                post['pw'] = User.objects.make_random_password()
-                inst = Instance.create(params=post, disks=[],
-                                       networks=networks,
-                                       tags=tags, req_traits=req_traits)
-                messages.info(request, _("Your new base vm has been created, "
-                                         "add disks, make modifications, then"
-                                         " use the save as button to save it"
-                                         " as a new template!"
-                                         ))
+            req_traits = post.pop("req_traits")
+            tags = post.pop("tags")
+            post['pw'] = User.objects.make_random_password()
+            post['is_base'] = True
+            inst = Instance.create(params=post, disks=[],
+                                   networks=networks,
+                                   tags=tags, req_traits=req_traits)
 
             return redirect("%s#resources" % inst.get_absolute_url())
 
