@@ -33,6 +33,34 @@ $(function () {
     });
     return false;
   });
+
+  $('.template-choose').click(function(e) {
+    $.ajax({
+      type: 'GET',
+      url: '/dashboard/template/choose/', 
+      success: function(data) { 
+        $('body').append(data);
+        vmCreateLoaded();
+        addSliderMiscs();
+        $('#create-modal').modal('show');
+        $('#create-modal').on('hidden.bs.modal', function() {
+          $('#create-modal').remove();
+        });
+        // check if user selected anything
+        $("#template-choose-next-button").click(function() {
+          var radio = $('input[type="radio"]:checked', "#template-choose-form").val();
+          if(!radio) {
+            $("#template-choose-alert").addClass("alert-warning")
+            .text(gettext("Select an option to proceed!"));
+            return false;
+          }
+          return true;
+        });
+      }
+    });
+    return false;
+  });
+
   $('[href=#index-graph-view]').click(function (e) {
     var box = $(this).data('index-box');
     $("#" + box + "-list-view").hide();
@@ -327,10 +355,10 @@ function massDeleteVm(data) {
       type: 'POST',                                                         
       data: {'vms': data['data']['v']},                                  
       success: function(re, textStatus, xhr) {                            
-        for(var i=0; i< selected.length; i++)                               
-          $('.vm-list-table tbody tr').eq(data['data']['selected'][i]).fadeOut(500, function() {
+        for(var i=0; i< data['data']['v'].length; i++)                               
+          $('.vm-list-table tbody tr[data-vm-pk="' + data['data']['v'][i] + '"]').fadeOut(500, function() {
+            selected = [];                                                  
             // reset group buttons                                          
-            selected = []                                                   
             $('.vm-list-group-control a').attr('disabled', true);           
             $(this).remove();                                               
           }); 

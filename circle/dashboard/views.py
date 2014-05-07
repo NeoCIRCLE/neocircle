@@ -852,22 +852,73 @@ class GroupAclUpdateView(AclUpdateView):
                                 kwargs=self.kwargs))
 
 
+class TemplateChoose(TemplateView):
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/modal-wrapper.html']
+        else:
+            return ['dashboard/nojs-wrapper.html']
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(TemplateChoose, self).get_context_data(*args, **kwargs)
+        templates = InstanceTemplate.get_objects_with_level("user",
+                                                            self.request.user)
+        context.update({
+            'box_title': _('Choose template'),
+            'ajax_title': False,
+            'template': "dashboard/_template-choose.html",
+            'templates': templates.all(),
+        })
+        return context
+
+    def post(self, request, *args, **kwargs):
+        if not request.user.has_perm('vm.create_template'):
+            raise PermissionDenied()
+
+        template = request.POST.get("parent")
+        if template == "base_vm":
+            return redirect(reverse("dashboard.views.template-create"))
+        elif template is None:
+            messages.warning(request, _("Select an option to proceed!"))
+            return redirect(reverse("dashboard.views.template-choose"))
+        else:
+            template = get_object_or_404(InstanceTemplate, pk=template)
+
+        instance = Instance.create_from_template(
+            template=template, owner=request.user, is_base=True)
+
+        return redirect(instance.get_absolute_url())
+
+
 class TemplateCreate(SuccessMessageMixin, CreateView):
     model = InstanceTemplate
     form_class = TemplateForm
-    template_name = "dashboard/template-create.html"
-    success_message = _("Successfully created a new template!")
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            pass
+        else:
+            return ['dashboard/nojs-wrapper.html']
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(TemplateCreate, self).get_context_data(*args, **kwargs)
+
+        context.update({
+            'box_title': _("Create a new base VM"),
+            'template': "dashboard/_template-create.html",
+            'leases': Lease.objects.count()
+        })
+        return context
 
     def get(self, *args, **kwargs):
         if not self.request.user.has_perm('vm.create_template'):
             raise PermissionDenied()
 
-        self.parent = self.request.GET.get("parent")
         return super(TemplateCreate, self).get(*args, **kwargs)
 
     def get_form_kwargs(self):
         kwargs = super(TemplateCreate, self).get_form_kwargs()
-        kwargs['parent'] = getattr(self, "parent", None)
         kwargs['user'] = self.request.user
         return kwargs
 
@@ -880,24 +931,27 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
             return self.get(request, form, *args, **kwargs)
         else:
             post = form.cleaned_data
-
-            networks = self.__create_networks(post.pop("networks"))
+            networks = self.__create_networks(post.pop("networks"),
+                                              request.user)
+            post.pop("parent")
+            post['max_ram_size'] = post['ram_size']
             req_traits = post.pop("req_traits")
             tags = post.pop("tags")
             post['pw'] = User.objects.make_random_password()
-            post.pop("parent")
-            post['max_ram_size'] = post['ram_size']
-            inst = Instance.create(params=post, disks=[], networks=networks,
+            post['is_base'] = True
+            inst = Instance.create(params=post, disks=[],
+                                   networks=networks,
                                    tags=tags, req_traits=req_traits)
-            messages.success(request, _("The template has been created, "
-                                        "you can now add disks to it!"))
+
             return redirect("%s#resources" % inst.get_absolute_url())
 
         return super(TemplateCreate, self).post(self, request, args, kwargs)
 
-    def __create_networks(self, vlans):
+    def __create_networks(self, vlans, user):
         networks = []
         for v in vlans:
+            if not v.has_level(user, "user"):
+                raise PermissionDenied()
             networks.append(InterfaceTemplate(vlan=v, managed=v.managed))
         return networks
 
@@ -961,6 +1015,9 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
             raise PermissionDenied()
         for disk in self.get_object().disks.all():
             if not disk.has_level(request.user, 'user'):
+                raise PermissionDenied()
+        for network in self.get_object().interface_set.all():
+            if not network.vlan.has_level(request.user, "user"):
                 raise PermissionDenied()
         return super(TemplateDetail, self).post(self, request, args, kwargs)
 
@@ -1711,8 +1768,25 @@ class LeaseDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
         else:
             return ['dashboard/confirm/base-delete.html']
 
+    def get_context_data(self, *args, **kwargs):
+        c = super(LeaseDelete, self).get_context_data(*args, **kwargs)
+        lease = self.get_object()
+        templates = lease.instancetemplate_set
+        if templates.count() > 0:
+            text = _("You can't delete this lease because some templates "
+                     "are still using it, modify these to proceed: ")
+
+            c['text'] = text + ", ".join("<strong>%s (#%d)</strong>"
+                                         "" % (o.name, o.pk)
+                                         for o in templates.all())
+            c['disable_submit'] = True
+        return c
+
     def delete(self, request, *args, **kwargs):
         object = self.get_object()
+
+        if (object.instancetemplate_set.count() > 0):
+            raise SuspiciousOperation()
 
         object.delete()
         success_url = self.get_success_url()

@@ -27,8 +27,9 @@ from django.contrib.auth.forms import (
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import (
-    Layout, Div, BaseInput, Field, HTML, Submit, Fieldset, TEMPLATE_PACK
+    Layout, Div, BaseInput, Field, HTML, Submit, Fieldset, TEMPLATE_PACK,
 )
+
 from crispy_forms.utils import render_field
 from django import forms
 from django.forms.widgets import TextInput
@@ -43,9 +44,6 @@ from vm.models import (
     InstanceTemplate, Lease, InterfaceTemplate, Node, Trait, Instance
 )
 from .models import Profile
-
-VLANS = Vlan.objects.all()
-DISKS = Disk.objects.exclude(type="qcow2-snap")
 
 
 class VmCustomizeForm(forms.Form):
@@ -479,35 +477,21 @@ class NodeForm(forms.ModelForm):
 
 class TemplateForm(forms.ModelForm):
     networks = forms.ModelMultipleChoiceField(
-        queryset=VLANS, required=False)
-    system = forms.CharField(widget=forms.TextInput)
+        queryset=None, required=False, label=_("Networks"))
 
     def __init__(self, *args, **kwargs):
-        parent = kwargs.pop("parent", None)
         self.user = kwargs.pop("user", None)
         super(TemplateForm, self).__init__(*args, **kwargs)
+
+        self.fields['networks'].queryset = Vlan.get_objects_with_level(
+            'user', self.user)
 
         data = self.data.copy()
         data['owner'] = self.user.pk
         self.data = data
 
-        if parent is not None:
-            template = InstanceTemplate.objects.get(pk=parent)
-            parent = template.__dict__
-            fields = ["system", "name", "num_cores", "boot_menu", "ram_size",
-                      "priority", "access_method", "raw_data",
-                      "arch", "description"]
-            for f in fields:
-                self.initial[f] = parent[f]
-            self.initial['lease'] = parent['lease_id']
-            self.initial['parent'] = template
-            self.initial['name'] = "Clone of %s" % self.initial['name']
-            self.for_networks = template
-        else:
-            self.for_networks = self.instance
-
-        if self.instance.pk or parent is not None:
-            n = self.for_networks.interface_set.values_list("vlan", flat=True)
+        if self.instance.pk:
+            n = self.instance.interface_set.values_list("vlan", flat=True)
             self.initial['networks'] = n
 
         if not self.instance.pk and len(self.errors) < 1:
@@ -604,7 +588,7 @@ class TemplateForm(forms.ModelForm):
                 Field('arch'),
             ),
             Fieldset(
-                "stuff",
+                _("Virtual machine settings"),
                 Field('access_method'),
                 Field('boot_menu'),
                 Field('raw_data', **kwargs_raw_data),
@@ -614,7 +598,7 @@ class TemplateForm(forms.ModelForm):
                 Field("system"),
             ),
             Fieldset(
-                _("External"),
+                _("External resources"),
                 Field("networks"),
                 Field("lease"),
                 Field("tags"),
@@ -626,6 +610,9 @@ class TemplateForm(forms.ModelForm):
     class Meta:
         model = InstanceTemplate
         exclude = ('state', 'disks', )
+        widgets = {
+            'system': forms.TextInput
+        }
 
 
 class LeaseForm(forms.ModelForm):

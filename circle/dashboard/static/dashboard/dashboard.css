@@ -486,6 +486,55 @@ footer a, footer a:hover, footer a:visited {
   margin-bottom: 20px;
 }
 
+.template-choose-list {
+  max-width: 600px;
+}
+
+.template-choose-list-element small {
+  display: none;
+  float: right;
+  padding-right: 50px;
+}
+
+.template-choose-list-element {
+  padding: 6px 10px;
+  cursor: pointer;
+  margin-bottom: 15px; /* bootstrap panel default is 20px */
+}
+
+.template-choose-list input[type="radio"] {
+  float: right;
+}
+
+/* template create vm help */
+.alert-new-template {                                                       
+  background: #3071a9;                                                      
+  color: white;                                                             
+  font-size: 22px;                                                          
+}                                                                           
+                                                                            
+.alert-new-template ol {                                                    
+  margin-left: 25px;
+} 
+
+/* bootstrap tour */
+.tour-template {
+  max-width: 400px;
+  min-width: 270px;
+  font-size: 16px;
+}
+
+.tour-template {
+  text-align: justify;
+}
+.tour-template .popover-title {
+  font-weight: bold;
+}
+
+#vm-details-resources-form {
+  padding: 5px; /* it's nice this way in the tour */
+}
+
 .index-vm-list-name {
   display: inline-block; 
   max-width: 70%; 
@@ -544,6 +593,10 @@ footer a, footer a:hover, footer a:visited {
 
 .table-sorting {
   display: none;
+}
+
+#ops {
+  padding: 15px 0 15px 15px;
 }
 
 #vm-access-table th:last-child, #vm-access-table td:last-child,

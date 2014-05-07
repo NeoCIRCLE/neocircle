@@ -1,0 +1,42 @@
+{% load i18n %}
+
+<div class="alert alert-info" id="template-choose-alert">
+  {% trans "Customize an existing template or create a brand new one from scratch!" %}
+</div>
+
+<form action="{% url "dashboard.views.template-choose" %}" method="POST"
+  id="template-choose-form">
+  {% csrf_token %}
+  <div class="template-choose-list">
+    {% for t in templates %}
+    <div class="panel panel-default template-choose-list-element">
+      <input type="radio" name="parent" value="{{ t.pk }}"/>
+      {{ t.name }} - {{ t.system }}
+      <small>Cores: {{ t.num_cores }} RAM: {{ t.ram_size }}</small>
+      <div class="clearfix"></div>
+    </div>
+    {% endfor %}
+    <div class="panel panel-default template-choose-list-element">
+      <input type="radio" name="parent" value="base_vm"/>
+      {% trans "Create a new base VM without disk" %}
+    </div>
+    <button type="submit" id="template-choose-next-button" class="btn btn-success pull-right">{% trans "Next" %}</button>
+    <div class="clearfix"></div>
+  </div>
+</form>
+
+<script>
+  $(function() {
+    $(".template-choose-list-element").click(function() {
+      $("input", $(this)).prop("checked", true);
+    });
+    $(".template-choose-list-element").hover(
+      function() {
+        $("small", $(this)).stop().fadeIn(200);
+      },
+      function() {
+        $("small", $(this)).stop().fadeOut(200);
+      }
+    );
+  });
+</script>

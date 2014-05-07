@@ -26,9 +26,12 @@
             {% csrf_token %}
             <a class="btn btn-default">{% trans "Cancel" %}</a>
             <input type="hidden" name="next" value="{{ request.GET.next }}"/>
-            <button class="btn btn-danger">{% trans "Yes" %}</button>
+            <button class="btn btn-danger"
+              {% if disable_submit %}disabled{% endif %}
+              >{% trans "Yes" %}</button>
           </form>
         </div>
       </div>
+    </div>
   </div>
 {% endblock %}

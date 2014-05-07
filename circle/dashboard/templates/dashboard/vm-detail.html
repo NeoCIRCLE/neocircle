@@ -4,9 +4,40 @@
 {% block title-page %}{{ instance.name }} | vm{% endblock %}
 
 {% block content %}
+
+{% if instance.is_base %}
+<div class="alert alert-info alert-new-template">
+  <strong>{% trans "This is the master vm of your new template" %}</strong>
+  <div id="vm-details-template-tour-button" class="pull-right">
+    <a href="#" class="btn btn-default btn-lg pull-right vm-details-start-template-tour">
+      <i class="icon-play"></i> {% trans "Start template tutorial" %}
+    </a>
+  </div>
+  <ol>
+    <li>{% trans "Modify the virtual machine to suit your needs <strong>(optional)</strong>" %}
+      <ul>
+        <li>{% trans "Change the name and description" %}</li>
+        <li>{% trans "Change the resources (CPU and RAM)" %}</li>
+        <li>{% trans "Attach or detach disks" %}</li>
+        <li>{% trans "Add or remove network interfaces" %}</li>
+      </ul>
+    </li>
+    <li>{% trans "Deploy the virtual machine" %}</li>
+    <li>{% trans "Connect to the machine" %}</li>
+    <li>{% trans "Do all the needed installations/customizations" %}</li>
+    <li>{% trans "Log off from the machine" %}</li>
+    <li>
+      {% trans "Press the Save as template button" %}
+    </li>
+    <li>
+      {% trans "Delete this virtual machine <strong>(optional)</strong>" %}
+    </li>
+  </ol>
+</div>
+{% endif %}
 <div class="body-content">
   <div class="page-header">
-    <div class="pull-right" style="padding-top: 15px;" id="ops">
+    <div class="pull-right" id="ops">
       {% include "dashboard/vm-detail/_operations.html" %}
     </div>
     <h1>
@@ -112,8 +143,10 @@
 {% endblock %}
 
 {% block extra_js %}
+  <script src="{{ STATIC_URL }}dashboard/bootstrap-tour.min.js"></script>
   <script src="{{ STATIC_URL }}dashboard/vm-details.js"></script>
   <script src="{{ STATIC_URL }}dashboard/vm-common.js"></script>
   <script src="{{ STATIC_URL }}dashboard/vm-console.js"></script>
   <script src="{{ STATIC_URL }}dashboard/disk-list.js"></script>
+  <script src="{{ STATIC_URL }}dashboard/vm-tour.js"></script>
 {% endblock %}

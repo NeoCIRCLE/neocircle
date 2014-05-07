@@ -103,7 +103,8 @@ class VirtualMachineDescModel(BaseResourceConfigModel):
     boot_menu = BooleanField(verbose_name=_('boot menu'), default=False,
                              help_text=_(
                                  'Show boot device selection menu on boot.'))
-    lease = ForeignKey(Lease, help_text=_("Preferred expiration periods."))
+    lease = ForeignKey(Lease, help_text=_("Preferred expiration periods."),
+                       verbose_name=_("Lease"))
     raw_data = TextField(verbose_name=_('raw_data'), blank=True, help_text=_(
         'Additional libvirt domain parameters in XML format.'))
     req_traits = ManyToManyField(Trait, blank=True,
@@ -238,6 +239,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
     vnc_port = IntegerField(blank=True, default=None, null=True,
                             help_text=_("TCP port where VNC console listens."),
                             unique=True, verbose_name=_('vnc_port'))
+    is_base = BooleanField(default=False)
     owner = ForeignKey(User)
     destroyed_at = DateTimeField(blank=True, null=True,
                                  help_text=_("The virtual machine's time of "

@@ -22,15 +22,16 @@
         <p>
           {% trans "You don't have any templates, however you can still start virtual machines and even save them as new templates!" %}
         </p>
-        <p>
-          {% trans "The new button below creates a new base vm, please use only if necessary!" %}
-        </p>
       </div>
     {% endfor %}
     <div href="#" class="list-group-item list-group-footer text-right">
       <p>
-        <a href="{% url "dashboard.views.template-list" %}" class="btn btn-primary btn-xs"><i class="icon-chevron-sign-right"></i> {% trans "show all" %}</a>
-        <a href="{% url "dashboard.views.template-create" %}" class="btn btn-success btn-xs"><i class="icon-plus-sign"></i> {% trans "new" %}</a>
+        <a href="{% url "dashboard.views.template-list" %}" class="btn btn-primary btn-xs">
+          <i class="icon-chevron-sign-right"></i> {% trans "show all" %}
+        </a>
+        <a href="{% url "dashboard.views.template-choose" %}" class="btn btn-success btn-xs template-choose">
+          <i class="icon-plus-sign"></i> {% trans "new" %}
+        </a>
       </p>
     </div>
   </div>
