@@ -607,3 +607,7 @@ footer a, footer a:hover, footer a:visited {
 #notifications-button {
   margin: 0;
 }
+
+#dashboard-vm-list {
+  min-height: 204px;
+}

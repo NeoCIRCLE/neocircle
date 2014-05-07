@@ -237,9 +237,10 @@ $(function () {
     for(var i=0; i<5 && i<search_result.length; i++)
       html += generateVmHTML(search_result[i].pk, search_result[i].name, 
                              search_result[i].host, search_result[i].icon,
-                             search_result[i].status, search_result[i].fav);
+                             search_result[i].status, search_result[i].fav,
+                             (search_result.length < 5));
     if(search_result.length == 0)
-      html += '<div class="list-group-item">No result</div>';
+      html += '<div class="list-group-item list-group-item-last">' + gettext("No result") + '</div>';
     $("#dashboard-vm-list").html(html);
     $('.title-favourite').tooltip({'placement': 'right'});
 
@@ -263,8 +264,9 @@ $(function () {
   });
 });
 
-function generateVmHTML(pk, name, host, icon, _status, fav) {
-  return '<a href="/dashboard/vm/' + pk + '/" class="list-group-item">' +      
+function generateVmHTML(pk, name, host, icon, _status, fav, is_last) {
+  return '<a href="/dashboard/vm/' + pk + '/" class="list-group-item' +
+         (is_last ? ' list-group-item-last' : '') + '">' +      
         '<span class="index-vm-list-name">' + 
           '<i class="' + icon + '" title="' + _status + '"></i> ' + name +
         '</span>' + 
