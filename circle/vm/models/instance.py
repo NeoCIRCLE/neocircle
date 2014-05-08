@@ -29,7 +29,6 @@ from .common import BaseResourceConfigModel, Lease
 from .network import Interface
 from .node import Node, Trait
 
-import os
 import random
 import string
 
@@ -804,10 +803,9 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         # create hardlink
         hlinkname = ''.join(random.choice(string.ascii_uppercase +
                                           string.digits) for _ in range(20))
-        remotedest = '/mnt/vmdisks/' + hlinkname
-        localdest = '/home/cloud/nfs/' + hlinkname
-        localsrc = '/home/cloud' + descriptor['disk_list'][0]['source']
-        os.link(localsrc, localdest)
+        return pass
+        remotedest = '/home/gergo/vmdisks/' + hlinkname
+        localsrc = descriptor['disk_list'][0]['source']
         descriptor['disk_list'][0]['source'] = remotedest
         return descriptor
 
