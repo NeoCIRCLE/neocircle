@@ -241,7 +241,7 @@ class VmDetailView(CheckedDetailView):
             'new_name': self.__set_name,
             'new_description': self.__set_description,
             'new_tag': self.__add_tag,
-            'deploy_local': self.__deploy_local,
+            'deploy_locall': self.donothing,
             'to_remove': self.__remove_tag,
             'port': self.__add_port,
             'new_network_vlan': self.__new_network,
@@ -249,6 +249,9 @@ class VmDetailView(CheckedDetailView):
         for k, v in options.iteritems():
             if request.POST.get(k) is not None:
                 return v(request)
+
+    def donothing(self, request):
+        pass
 
     def __deploy_local(self, request):
         self.object = self.get_object()
