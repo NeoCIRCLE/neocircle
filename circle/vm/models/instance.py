@@ -792,7 +792,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                                            queue=queue_name
                                            ).get(timeout=timeout)
 
-    def __deploy_local_vm(self, act, timeout=15):
+    def __deployii_local_vm(self, act, timeout=15):
         """Local deploy the virtual machine.
 
         :param self: The virtual machine.
@@ -803,11 +803,10 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         # create hardlink
         hlinkname = ''.join(random.choice(string.ascii_uppercase +
                                           string.digits) for _ in range(20))
-        return pass
         remotedest = '/home/gergo/vmdisks/' + hlinkname
         localsrc = descriptor['disk_list'][0]['source']
         descriptor['disk_list'][0]['source'] = remotedest
-        return descriptor
+        return ""
 
     def deploy_local(self, user=None, task_uuid=None):
         """Deploy new virtual machine with network
@@ -832,8 +831,8 @@ ecuted
         with instance_activity(code_suffix='local_deploy', instance=self,
                                on_commit=__on_commit, task_uuid=task_uuid,
                                user=user) as act:
-
-            return self.__deploy_local_vm(act)
+            return ""
+#            return self.__deploy_local_vm(act)
 
     def migrate_vm(self, to_node, timeout=120):
         queue_name = self.get_remote_queue_name('vm')
