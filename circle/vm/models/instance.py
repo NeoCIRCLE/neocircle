@@ -31,6 +31,7 @@ from .node import Node, Trait
 
 import random
 import string
+import socket
 
 logger = getLogger(__name__)
 pre_state_changed = Signal(providing_args=["new_state"])
@@ -792,7 +793,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                                            queue=queue_name
                                            ).get(timeout=timeout)
 
-    def __deployii_local_vm(self, act, timeout=15):
+    def __deploy_local_vm(self, act, timeout=15):
         """Local deploy the virtual machine.
 
         :param self: The virtual machine.
@@ -803,10 +804,15 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         # create hardlink
         hlinkname = ''.join(random.choice(string.ascii_uppercase +
                                           string.digits) for _ in range(20))
-        remotedest = '/home/gergo/vmdisks/' + hlinkname
+        remotedest = hlinkname
         localsrc = descriptor['disk_list'][0]['source']
         descriptor['disk_list'][0]['source'] = remotedest
-        return ""
+        originalname = localsrc.split("/")
+        originalname = originalname[len(originalname)-1]
+        hlmakersocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        hlmakersocket.connect(('localhost', 40000))
+        hlmakersocket.send(originalname + "/" + hlinkname)
+        return descriptor
 
     def deploy_local(self, user=None, task_uuid=None):
         """Deploy new virtual machine with network
@@ -831,8 +837,7 @@ ecuted
         with instance_activity(code_suffix='local_deploy', instance=self,
                                on_commit=__on_commit, task_uuid=task_uuid,
                                user=user) as act:
-            return ""
-#            return self.__deploy_local_vm(act)
+            return self.__deploy_local_vm(act)
 
     def migrate_vm(self, to_node, timeout=120):
         queue_name = self.get_remote_queue_name('vm')
