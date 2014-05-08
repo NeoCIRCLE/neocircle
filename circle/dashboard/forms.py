@@ -19,11 +19,11 @@ from __future__ import absolute_import
 
 from datetime import timedelta
 
-from django.contrib.auth.models import User
 from django.contrib.auth.forms import (
     AuthenticationForm, PasswordResetForm, SetPasswordForm,
     PasswordChangeForm,
 )
+from django.contrib.auth.models import User, Group
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import (
@@ -310,6 +310,55 @@ class VmCustomizeForm(forms.Form):
                 css_class="row"
             ),  # end of network
         )
+
+
+class GroupCreateForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super(GroupCreateForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_show_labels = False
+        self.helper.layout = Layout(
+            Div(
+                Div(
+                    AnyTag(
+                        'h4',
+                        HTML(_("Name")),
+                    ),
+                    css_class="col-sm-10",
+                ),
+                css_class="row",
+            ),
+            Div(
+                Div(
+                    Field('name', id="group-create-name"),
+                    css_class="col-sm-10",
+                ),
+                css_class="row",
+            ),
+
+            Div(  # buttons
+                Div(
+                    AnyTag(  # tip: don't try to use Button class
+                        "button",
+                        AnyTag(
+                            "i",
+                            css_class="icon-play"
+                        ),
+                        HTML(" Create"),
+                        css_id="vm-create-submit",
+                        css_class="btn btn-success",
+
+                    ),
+                    css_class="col-sm-5",
+                ),
+                css_class="row",
+            ),
+        )
+
+    class Meta:
+        model = Group
+        fields = ['name', ]
 
 
 class HostForm(forms.ModelForm):

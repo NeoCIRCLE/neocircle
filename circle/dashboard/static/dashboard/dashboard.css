@@ -607,3 +607,26 @@ footer a, footer a:hover, footer a:visited {
 #notifications-button {
   margin: 0;
 }
+
+#group-detail-user-table td:first-child, #group-detail-user-table th:last-child,
+#group-detail-user-table td:last-child,
+#group-detail-perm-table td:first-child, #group-detail-perm-table th:last-child,
+#group-detail-perm-table td:last-child {
+  text-align: center;
+  width: 100px;
+}
+
+#group-detail-perm-header {
+  margin-top: 25px;
+}
+
+textarea[name="list-new-namelist"] {
+  max-width: 500px;
+  min-height: 80px;
+  margin-bottom: 10px;
+}
+
+/* 2px border bottom for all bootstrap tables */
+.table thead>tr>th {
+  border-bottom: 1px;
+}

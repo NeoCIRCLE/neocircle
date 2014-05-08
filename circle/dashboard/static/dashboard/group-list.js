@@ -99,7 +99,7 @@ $(function() {
         $("#group-list-column-name", row).html(
           $("<a/>", {
             'class': "real-link",
-            href: "/dashboard/group/" + data['node_pk'] + "/",
+            href: "/dashboard/group/" + data['group_pk'] + "/",
             text: data['new_name']
           })
         ).show();
