@@ -6,7 +6,7 @@ Installation of a development machine
 This tutorial describes the installation of a development environment. To
 have a fully working environment, you have to set up the other components
 as well. The full procedure is included in the :doc:`Puppet recipes
-<puppet>` available for CIRCLE Cloud.
+</puppet>` available for CIRCLE Cloud.
 
 Preparation
 -----------
