@@ -18,17 +18,24 @@
 # -*- coding: utf-8 -*-
 
 from django import contrib
-from django.contrib.auth.admin import UserAdmin
-from django.contrib.auth.models import User
+from django.contrib.auth.admin import UserAdmin, GroupAdmin
+from django.contrib.auth.models import User, Group
 
-from dashboard.models import Profile
+from dashboard.models import Profile, GroupProfile
 
 
 class ProfileInline(contrib.admin.TabularInline):
     model = Profile
 
 
+class GroupProfileInline(contrib.admin.TabularInline):
+    model = GroupProfile
+
+
 UserAdmin.inlines = (ProfileInline, )
+GroupAdmin.inlines = (GroupProfileInline, )
 
 contrib.admin.site.unregister(User)
 contrib.admin.site.register(User, UserAdmin)
+contrib.admin.site.unregister(Group)
+contrib.admin.site.register(Group, GroupAdmin)
