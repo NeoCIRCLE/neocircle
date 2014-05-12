@@ -31,6 +31,10 @@
         </div>
       <div style="clear: both;"></div>
       </a>
+      {% empty %}
+        <div class="list-group-item list-group-item-last">
+          {% trans "You have no virtual machines." %}
+        </div>
       {% endfor %}
     </div>
     <style>
