@@ -42,6 +42,7 @@ urlpatterns = patterns(
     url(r'^admin/', include(admin.site.urls)),
     url(r'^network/', include('network.urls')),
     url(r'^dashboard/', include('dashboard.urls')),
+    url(r'^occi/', include('occi.urls')),
 
     url((r'^accounts/reset/(?P<uidb36>[0-9A-Za-z]{1,13})-'
          '(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$'),
