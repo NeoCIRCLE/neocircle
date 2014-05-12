@@ -34,6 +34,22 @@ $(function () {
     return false;
   });
 
+  $('.group-create').click(function(e) {
+    $.ajax({
+      type: 'GET',
+      url: '/dashboard/group/create/',
+      success: function(data) {
+        $('body').append(data);
+        addSliderMiscs();
+        $('#create-modal').modal('show');
+        $('#create-modal').on('hidden.bs.modal', function() {
+          $('#create-modal').remove();
+        });
+      }
+    });
+    return false;
+  });
+
   $('.template-choose').click(function(e) {
     $.ajax({
       type: 'GET',

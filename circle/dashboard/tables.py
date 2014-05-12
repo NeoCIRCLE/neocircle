@@ -134,16 +134,19 @@ class GroupListTable(Table):
     )
 
     number_of_users = TemplateColumn(
+        orderable=False,
         template_name='dashboard/group-list/column-users.html',
         attrs={'th': {'class': 'group-list-table-admin'}},
     )
 
     admin = TemplateColumn(
+        orderable=False,
         template_name='dashboard/group-list/column-admin.html',
         attrs={'th': {'class': 'group-list-table-admin'}},
     )
 
     actions = TemplateColumn(
+        orderable=False,
         attrs={'th': {'class': 'group-list-table-thin'}},
         template_code=('{% include "dashboard/group-list/column-'
                        'actions.html" with btn_size="btn-xs" %}'),
