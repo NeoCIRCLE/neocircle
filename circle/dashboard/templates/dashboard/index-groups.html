@@ -24,7 +24,11 @@
           <a class="btn btn-primary btn-xs" href="{% url "dashboard.views.group-list" %}">
             <i class="icon-chevron-sign-right"></i> 
 	    {% if more_groups > 0 %}
-              {% blocktrans with more=more_groups %}<strong>{{ more }}</strong>  more{% endblocktrans %}
+              {% blocktrans count more=more_groups %}
+                <strong>{{ more }}</strong>  more
+              {% plural %}
+                <strong>{{ more }}</strong>  more
+              {% endblocktrans %}
             {% else %}
               {% trans "list" %} 
             {% endif %}

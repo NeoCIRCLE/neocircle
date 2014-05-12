@@ -54,7 +54,11 @@
           <a class="btn btn-primary btn-xs" href="{% url "dashboard.views.vm-list" %}">
             <i class="icon-chevron-sign-right"></i>
             {% if more_instances > 0 %}
-              {% blocktrans with count=more_instances %}<strong>{{ count }}</strong>  more{% endblocktrans %}
+            {% blocktrans count counter=more_instances %}
+              <strong>{{ counter }}</strong>  more
+              {% plural %}
+              <strong>{{ counter }}</strong>  more
+            {% endblocktrans %}
             {% else %}
               {% trans "list" %}
             {% endif %}
@@ -84,7 +88,11 @@
     <div>
       <a style="float: right; margin-top: 17px;" href="{% url "dashboard.views.vm-list" %}" class="btn btn-primary btn-xs">
         <i class="icon-chevron-sign-right"></i> 
-        {% blocktrans with count=instances|length|add:more_instances %}<strong>{{ count }}</strong> machines total{% endblocktrans %}
+        {% blocktrans count counter=instances|length|add:more_instances %}
+          <strong>{{ counter }}</strong> machine total
+          {% plural %}
+          <strong>{{ counter }}</strong> machines total
+        {% endblocktrans %}
       </a> 
       <p class="big text-warning">{% blocktrans with count=stopped_vm_num %}<big>{{ count }}</big> stopped{% endblocktrans %}</p>
     </div>
