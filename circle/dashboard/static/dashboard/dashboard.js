@@ -276,7 +276,8 @@ $(function () {
   });
 
   $("#notification-button a").click(function() {
-      $('.notification-messages').load("/dashboard/notifications/");
+    $('.notification-messages').load("/dashboard/notifications/");
+    $('#notification-button a span[class*="badge-pulse"]').remove();  
   });
 });
 

@@ -40,7 +40,7 @@
           <ul class="nav navbar-nav pull-right">
             <li class="dropdown" id="notification-button">                            
               <a href="{% url "dashboard.views.notifications" %}" style="color: white; font-size: 12px;" class="dropdown-toggle" data-toggle="dropdown">
-                {% trans "Notifications" %}{% if NEW_NOTIFICATIONS_COUNT > 0 %} <span class="badge">{{ NEW_NOTIFICATIONS_COUNT }}</span>{% endif %}
+                {% trans "Notifications" %}{% if NEW_NOTIFICATIONS_COUNT > 0 %} <span class="badge badge-pulse">{{ NEW_NOTIFICATIONS_COUNT }}</span>{% endif %}
               </a>                                                                    
               <ul class="dropdown-menu notification-messages">                        
                   <li>{% trans "Loading..." %}</li>                                   
