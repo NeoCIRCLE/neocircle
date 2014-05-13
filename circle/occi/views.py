@@ -3,13 +3,20 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.base import View
 
+from .occi import (
+    COMPUTE_KIND,
+    COMPUTE_ACTIONS,
+)
+
 
 class QueryInterface(View):
 
     def get(self, request, *args, **kwargs):
-        response = HttpResponse("Hai!")
-        response['yo'] = "as"
-        return response
+        response = "Category: %s\n" % COMPUTE_KIND.render_values()
+        for c in COMPUTE_ACTIONS:
+            response += "Category: %s\n" % c.render_values()
+
+        return HttpResponse(response)
 
     def post(self, request, *args, **kwargs):
         response = HttpResponse(status=501)
