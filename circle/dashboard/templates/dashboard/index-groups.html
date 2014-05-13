@@ -7,11 +7,14 @@
     <h3 class="no-margin"><i class="icon-group"></i> {% trans "Groups" %}</h3>
   </div>
   <div class="list-group" id="vm-list-view">
-    {% for i in groups %}
-      <a href="{% url "dashboard.views.group-detail" pk=i.pk %}" class="list-group-item real-link">
+    <div id="dashboard-group-list">
+      {% for i in groups %}
+      <a href="{% url "dashboard.views.group-detail" pk=i.pk %}" class="list-group-item real-link
+      {% if forloop.last and groups|length < 5 %} list-group-item-last{% endif %}">
         <i class="icon-group"></i> {{ i.name }}
       </a>
-    {% endfor %}
+      {% endfor %}
+    </div>
     <div href="#" class="list-group-item list-group-footer text-right">
       <div class="row">
         <div class="col-sm-6 col-xs-6 input-group input-group-sm">

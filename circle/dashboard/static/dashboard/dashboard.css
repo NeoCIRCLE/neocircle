@@ -608,7 +608,8 @@ footer a, footer a:hover, footer a:visited {
   margin: 0;
 }
 
-#dashboard-vm-list {
+#dashboard-vm-list, #dashboard-node-list, #dashboard-group-list,
+#dashboard-template-list {
   min-height: 204px;
 }
 
