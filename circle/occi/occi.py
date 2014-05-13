@@ -1,3 +1,10 @@
+from django.contrib.auth.models import User
+
+from vm.models import Instance, Lease
+from vm.models.common import ARCHITECTURES
+from vm.models.instance import ACCESS_METHODS
+
+
 class Category():
     """Represents a Category object
 
@@ -56,10 +63,62 @@ class Action(Category):
     def render(self):
         return "%s%s" % (self.scheme, self.term)
 
-# TODO Entity
-# TODO   ^ Resource
-# TODO        ^ Compute
 
+class Entity():
+    def __init__(self, id, title, kind):
+        self.id = id
+        self.title = title
+        self.kind = kind
+
+
+class Resource(Entity):
+    def __init__(self, id, title, kind, summary, links):
+        super(Resource, self).__init__(id, title, kind)
+        self.summary = summary
+        self.links = links
+
+
+class Compute(Resource):
+    # TODO better init, for new resources
+
+    def __init__(self, instance=None, attrs=None, **kwargs):
+        if instance:
+            self.location = "http://10.7.0.103:8080/occi/vm/%d" % instance.pk
+        elif attrs:
+            self.attrs = attrs
+            self._create_object()
+
+    translate = {
+        'occi.compute.architecture': "arch",
+        'occi.compute.cores': "num_cores",
+        'occi.compute.hostname': "???",
+        'occi.compute.speed': "priority",
+        'occi.compute.memory': "ram_size",
+    }
+
+    def _create_object(self):
+        params = {}
+        for a in self.attrs:
+            t = a.split("=")
+            params[self.translate.get(t[0])] = t[1]
+
+        print params
+        params['lease'] = Lease.objects.all()[0]
+        params['priority'] = 10
+        params['max_ram_size'] = params['ram_size']
+        params['system'] = "welp"
+        params['pw'] = "killmenow"
+        params['arch'] = (ARCHITECTURES[0][0] if "64" in params['arch'] else
+                          ARCHITECTURES[1][0])
+        params['access_method'] = ACCESS_METHODS[0][0]
+        params['owner'] = User.objects.get(username="test")
+        params['name'] = "from occi yo"
+        i = Instance.create(params=params, disks=[], networks=[],
+                            req_traits=[], tags=[])
+        self.location = "http://10.7.0.103:8080/occi/vm/%d" % i.pk
+
+    def render_location(self):
+        return "X-OCCI-Location: %s" % self.location
 
 """predefined stuffs
 

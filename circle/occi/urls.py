@@ -18,9 +18,10 @@
 from __future__ import absolute_import
 from django.conf.urls import url, patterns
 
-from occi.views import QueryInterface
+from occi.views import QueryInterface, ComputeInterface
 
 urlpatterns = patterns(
     '',
     url(r'^-/$', QueryInterface.as_view(), name="occi.query"),
+    url(r'^compute/$', ComputeInterface.as_view(), name="occi.compute"),
 )
