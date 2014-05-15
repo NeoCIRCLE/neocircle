@@ -41,6 +41,7 @@ from django.views.generic import (TemplateView, DetailView, View, DeleteView,
                                   UpdateView, CreateView, ListView)
 from django.contrib import messages
 from django.utils.translation import ugettext as _
+from django.utils.translation import ungettext as __
 from django.template.defaultfilters import title as title_filter
 from django.template.loader import render_to_string
 from django.template import RequestContext
@@ -273,9 +274,9 @@ class VmDetailView(CheckedDetailView):
             raise PermissionDenied()
 
         self.object.change_password(user=request.user)
-        messages.success(request, _("Password changed!"))
+        messages.success(request, _("Password changed."))
         if request.is_ajax():
-            return HttpResponse("Success!")
+            return HttpResponse("Success.")
         else:
             return redirect(reverse_lazy("dashboard.views.detail",
                                          kwargs={'pk': self.object.pk}))
@@ -295,7 +296,7 @@ class VmDetailView(CheckedDetailView):
         }
         Instance.objects.filter(pk=self.object.pk).update(**resources)
 
-        success_message = _("Resources successfully updated!")
+        success_message = _("Resources successfully updated.")
         if request.is_ajax():
             response = {'message': success_message}
             return HttpResponse(
@@ -315,7 +316,7 @@ class VmDetailView(CheckedDetailView):
         Instance.objects.filter(pk=self.object.pk).update(
             **{'name': new_name})
 
-        success_message = _("VM successfully renamed!")
+        success_message = _("VM successfully renamed.")
         if request.is_ajax():
             response = {
                 'message': success_message,
@@ -339,7 +340,7 @@ class VmDetailView(CheckedDetailView):
         Instance.objects.filter(pk=self.object.pk).update(
             **{'description': new_description})
 
-        success_message = _("VM description successfully updated!")
+        success_message = _("VM description successfully updated.")
         if request.is_ajax():
             response = {
                 'message': success_message,
@@ -360,9 +361,9 @@ class VmDetailView(CheckedDetailView):
             raise PermissionDenied()
 
         if len(new_tag) < 1:
-            message = u"Please input something!"
+            message = u"Please input something."
         elif len(new_tag) > 20:
-            message = u"Tag name is too long!"
+            message = u"Tag name is too long."
         else:
             self.object.tags.add(new_tag)
 
@@ -416,7 +417,7 @@ class VmDetailView(CheckedDetailView):
                          unicode(request.user), object)
             raise PermissionDenied()
         except ValueError:
-            error = _("There is a problem with your input!")
+            error = _("There is a problem with your input.")
         except Exception as e:
             error = _("Unknown error.")
             logger.error(e)
@@ -439,7 +440,7 @@ class VmDetailView(CheckedDetailView):
             raise PermissionDenied()
         try:
             self.object.add_interface(vlan=vlan, user=request.user)
-            messages.success(request, _("Successfully added new interface!"))
+            messages.success(request, _("Successfully added new interface."))
         except Exception, e:
             error = u' '.join(e.messages)
             messages.error(request, error)
@@ -640,7 +641,7 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
         Node.objects.filter(pk=self.object.pk).update(
             **{'name': new_name})
 
-        success_message = _("Node successfully renamed!")
+        success_message = _("Node successfully renamed.")
         if request.is_ajax():
             response = {
                 'message': success_message,
@@ -733,7 +734,7 @@ class GroupDetailView(CheckedDetailView):
         Group.objects.filter(pk=self.object.pk).update(
             **{'name': new_name})
 
-        success_message = _("Group successfully renamed!")
+        success_message = _("Group successfully renamed.")
         if request.is_ajax():
             response = {
                 'message': success_message,
@@ -789,7 +790,7 @@ class AclUpdateView(LoginRequiredMixin, View, SingleObjectMixin):
                     logger.info("Tried to remove owner from %s by %s.",
                                 unicode(instance), unicode(request.user))
                     msg = _("The original owner cannot be removed, however "
-                            "you can transfer ownership!")
+                            "you can transfer ownership.")
                     messages.warning(request, msg)
                     continue
                 instance.set_level(entity, None)
@@ -898,7 +899,7 @@ class TemplateChoose(TemplateView):
         if template == "base_vm":
             return redirect(reverse("dashboard.views.template-create"))
         elif template is None:
-            messages.warning(request, _("Select an option to proceed!"))
+            messages.warning(request, _("Select an option to proceed."))
             return redirect(reverse("dashboard.views.template-choose"))
         else:
             template = get_object_or_404(InstanceTemplate, pk=template)
@@ -981,7 +982,7 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = InstanceTemplate
     template_name = "dashboard/template-edit.html"
     form_class = TemplateForm
-    success_message = _("Successfully modified template!")
+    success_message = _("Successfully modified template.")
 
     def get(self, request, *args, **kwargs):
         template = self.get_object()
@@ -1083,7 +1084,7 @@ class TemplateDelete(LoginRequiredMixin, DeleteView):
 
         object.delete()
         success_url = self.get_success_url()
-        success_message = _("Template successfully deleted!")
+        success_message = _("Template successfully deleted.")
 
         if request.is_ajax():
             return HttpResponse(
@@ -1159,7 +1160,7 @@ class GroupList(LoginRequiredMixin, SingleTableView):
             groups = [{
                 'url': reverse("dashboard.views.group-detail",
                                kwargs={'pk': i.pk}),
-                'name': i.name} for i in self.queryset]
+                'name': i.name} for i in self.get_queryset()]
             return HttpResponse(
                 json.dumps(list(groups)),
                 content_type="application/json",
@@ -1219,7 +1220,7 @@ class GroupRemoveUserView(CheckedDetailView, DeleteView):
         container.user_set.remove(User.objects.get(pk=pk))
 
     def get_success_message(self):
-        return _("Member successfully removed from group!")
+        return _("Member successfully removed from group.")
 
     def delete(self, request, *args, **kwargs):
         object = self.get_object()
@@ -1245,7 +1246,7 @@ class GroupRemoveAclUserView(GroupRemoveUserView):
         container.set_level(User.objects.get(pk=pk), None)
 
     def get_success_message(self):
-        return _("Acl user successfully removed from group!")
+        return _("Acl user successfully removed from group.")
 
 
 class GroupRemoveAclGroupView(GroupRemoveUserView):
@@ -1263,7 +1264,7 @@ class GroupRemoveAclGroupView(GroupRemoveUserView):
         container.set_level(Group.objects.get(pk=pk), None)
 
     def get_success_message(self):
-        return _("Acl group successfully removed from group!")
+        return _("Acl group successfully removed from group.")
 
 
 class GroupDelete(CheckedDetailView, DeleteView):
@@ -1290,7 +1291,7 @@ class GroupDelete(CheckedDetailView, DeleteView):
             raise PermissionDenied()
         object.delete()
         success_url = self.get_success_url()
-        success_message = _("Group successfully deleted!")
+        success_message = _("Group successfully deleted.")
 
         if request.is_ajax():
             if request.POST.get('redirect').lower() == "true":
@@ -1410,11 +1411,13 @@ class VmCreate(LoginRequiredMixin, TemplateView):
             i.deploy.async(user=request.user)
 
         if len(instances) > 1:
-            messages.success(request, _("Successfully created %d VMs!" %
-                                        len(instances)))
+            messages.success(request, __(
+                "Successfully created %(count)d VM.",  # this should not happen
+                "Successfully created %(count)d VMs.", len(instances)) % {
+                'count': len(instances)})
             path = reverse("dashboard.index")
         else:
-            messages.success(request, _("VM successfully created!"))
+            messages.success(request, _("VM successfully created."))
             path = instances[0].get_absolute_url()
 
         if request.is_ajax():
@@ -1504,7 +1507,7 @@ class NodeCreate(LoginRequiredMixin, SuperuserRequiredMixin, TemplateView):
 
         savedform.save()
         nodemodel = formset.save()
-        messages.success(request, _('Node successfully created!'))
+        messages.success(request, _('Node successfully created.'))
         path = nodemodel[0].get_absolute_url()
         if request.is_ajax():
             return HttpResponse(json.dumps({'redirect': path}),
@@ -1547,7 +1550,7 @@ class GroupCreate(LoginRequiredMixin, TemplateView):
         form.cleaned_data
         savedform = form.save()
         savedform.profile.set_level(request.user, 'owner')
-        messages.success(request, _('Group successfully created!'))
+        messages.success(request, _('Group successfully created.'))
         if request.is_ajax():
             return HttpResponse(json.dumps({'redirect':
                                 savedform.profile.get_absolute_url()}),
@@ -1590,7 +1593,7 @@ class VmDelete(LoginRequiredMixin, DeleteView):
 
         object.destroy.async(user=request.user)
         success_url = self.get_success_url()
-        success_message = _("VM successfully deleted!")
+        success_message = _("VM successfully deleted.")
 
         if request.is_ajax():
             if request.POST.get('redirect').lower() == "true":
@@ -1629,7 +1632,7 @@ class NodeDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
 
         object.delete()
         success_url = self.get_success_url()
-        success_message = _("Node successfully deleted!")
+        success_message = _("Node successfully deleted.")
 
         if request.is_ajax():
             if request.POST.get('redirect').lower() == "true":
@@ -1721,7 +1724,7 @@ class NodeStatus(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
             self.object.enable(user=request.user)
         else:
             self.object.disable(user=request.user)
-        success_message = _("Node successfully changed status!")
+        success_message = _("Node successfully changed status.")
 
         if request.is_ajax():
             response = {
@@ -1768,7 +1771,7 @@ class NodeFlushView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
     def __flush(self, request):
         self.object = self.get_object()
         self.object.flush.async(user=request.user)
-        success_message = _("Node successfully flushed!")
+        success_message = _("Node successfully flushed.")
         messages.success(request, success_message)
         return redirect(self.get_success_url())
 
@@ -1803,7 +1806,7 @@ class PortDelete(LoginRequiredMixin, DeleteView):
         super(PortDelete, self).delete(request, *args, **kwargs)
 
         success_url = self.get_success_url()
-        success_message = _("Port successfully removed!")
+        success_message = _("Port successfully removed.")
 
         if request.is_ajax():
             return HttpResponse(
@@ -1844,8 +1847,10 @@ class VmMassDelete(LoginRequiredMixin, View):
                 except Exception as e:
                     logger.error(e)
 
-        success_message = _("Mass delete complete, the following VMs were "
-                            "deleted: %s!") % u', '.join(names)
+        success_message = __(
+            "Mass delete complete, the following VM was deleted: %s.",
+            "Mass delete complete, the following VMs were deleted: %s.",
+            len(names)) % u', '.join(names)
 
         # we can get this only via AJAX ...
         if request.is_ajax():
@@ -1864,7 +1869,7 @@ class LeaseCreate(LoginRequiredMixin, SuperuserRequiredMixin,
     model = Lease
     form_class = LeaseForm
     template_name = "dashboard/lease-create.html"
-    success_message = _("Successfully created a new lease!")
+    success_message = _("Successfully created a new lease.")
 
     def get_success_url(self):
         return reverse_lazy("dashboard.views.template-list")
@@ -1875,7 +1880,7 @@ class LeaseDetail(LoginRequiredMixin, SuperuserRequiredMixin,
     model = Lease
     form_class = LeaseForm
     template_name = "dashboard/lease-edit.html"
-    success_message = _("Successfully modified lease!")
+    success_message = _("Successfully modified lease.")
 
     def get_success_url(self):
         return reverse_lazy("dashboard.views.lease-detail", kwargs=self.kwargs)
@@ -1915,7 +1920,7 @@ class LeaseDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
 
         object.delete()
         success_url = self.get_success_url()
-        success_message = _("Lease successfully deleted!")
+        success_message = _("Lease successfully deleted.")
 
         if request.is_ajax():
             return HttpResponse(
@@ -1968,10 +1973,10 @@ class FavouriteView(TemplateView):
         vm = Instance.objects.get(pk=self.request.POST.get("vm"))
         try:
             Favourite.objects.get(instance=vm, user=user).delete()
-            return HttpResponse("Deleted!")
+            return HttpResponse("Deleted.")
         except Favourite.DoesNotExist:
             Favourite(instance=vm, user=user).save()
-            return HttpResponse("Added!")
+            return HttpResponse("Added.")
 
 
 class TransferOwnershipView(LoginRequiredMixin, DetailView):
@@ -2397,9 +2402,9 @@ class DiskAddView(TemplateView):
 
         if form.is_valid():
             if form.cleaned_data.get("size"):
-                messages.success(self.request, _("Disk successfully added!"))
+                messages.success(self.request, _("Disk successfully added."))
             else:
-                messages.success(self.request, _("Disk download started!"))
+                messages.success(self.request, _("Disk download started."))
             form.save()
         else:
             error = "<br /> ".join(["<strong>%s</strong>: %s" %
@@ -2513,7 +2518,7 @@ class DiskRemoveView(DeleteView):
 
         next_url = request.POST.get("next")
         success_url = next_url if next_url else app.get_absolute_url()
-        success_message = _("Disk successfully removed!")
+        success_message = _("Disk successfully removed.")
 
         if request.is_ajax():
             return HttpResponse(
@@ -2578,7 +2583,7 @@ class InterfaceDeleteView(DeleteView):
 
         instance.remove_interface(interface=self.object, user=request.user)
         success_url = self.get_success_url()
-        success_message = _("Interface successfully deleted!")
+        success_message = _("Interface successfully deleted.")
 
         if request.is_ajax():
             return HttpResponse(

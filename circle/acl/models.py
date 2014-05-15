@@ -217,7 +217,7 @@ class AclBase(Model):
         clsfilter = Q(object_level_set__in=ols.all())
         if owner_also:
             clsfilter |= Q(owner=user)
-        return cls.objects.filter(clsfilter)
+        return cls.objects.filter(clsfilter).distinct()
 
     @classmethod
     def get_objects_with_group_level(cls, level, group):

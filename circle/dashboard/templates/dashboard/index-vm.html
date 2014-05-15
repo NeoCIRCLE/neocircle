@@ -6,7 +6,7 @@
         <a href="#index-graph-view" data-index-box="vm" class="btn btn-default btn-xs"><i class="icon-dashboard"></i></a>
         <a href="#index-list-view" data-index-box="vm" class="btn btn-default btn-xs disabled"><i class="icon-list"></i></a>
       </div>
-      <span class="btn btn-default btn-xs infobtn" title="{% trans "Help" %}"><i class="icon-info-sign"></i></span>
+      <span class="btn btn-default btn-xs infobtn" title="{% trans "List of your current virtual machines. Favourited ones are ahead of others." %}"><i class="icon-info-sign"></i></span>
     </div>
     <h3 class="no-margin">
       <i class="icon-desktop"></i> {% trans "Virtual machines" %}
@@ -15,7 +15,8 @@
   <div class="list-group" id="vm-list-view">
     <div id="dashboard-vm-list">
       {% for i in instances %}
-      <a href="{{ i.get_absolute_url }}" class="list-group-item">
+      <a href="{{ i.get_absolute_url }}" class="list-group-item
+        {% if forloop.last and instances|length < 5 %} list-group-item-last{% endif %}">
         <span class="index-vm-list-name">
           <i class="{{ i.get_status_icon }}" title="{{ i.get_status_display }}"></i>
           {{ i.name }}
@@ -30,29 +31,47 @@
         </div>
       <div style="clear: both;"></div>
       </a>
+      {% empty %}
+        <div class="list-group-item list-group-item-last">
+          {% trans "You have no virtual machines." %}
+        </div>
       {% endfor %}
     </div>
+    <style>
+      .list-group-item-last {
+        border-bottom: 1px solid #ddd !important;
+      }
+    </style>
     <div href="#" class="list-group-item list-group-footer">
       <div class="row">
         <div class="col-sm-6 col-xs-6 input-group input-group-sm">
           <input id="dashboard-vm-search-input" type="text" class="form-control" placeholder="{% trans "Search..." %}" />
           <div class="input-group-btn">
-            <button type="submit" class="form-control btn btn-primary" title="search"><i class="icon-search"></i></button>
+            <button type="submit" class="form-control btn btn-primary"><i class="icon-search"></i></button>
           </div>
         </div>
         <div class="col-sm-6 text-right">
-          {% if more_instances > 0 %}
           <a class="btn btn-primary btn-xs" href="{% url "dashboard.views.vm-list" %}">
-            <i class="icon-chevron-sign-right"></i> {% blocktrans with count=more_instances %}<strong>{{ count }}</strong>  more{% endblocktrans %}
+            <i class="icon-chevron-sign-right"></i>
+            {% if more_instances > 0 %}
+            {% blocktrans count counter=more_instances %}
+              <strong>{{ counter }}</strong>  more
+              {% plural %}
+              <strong>{{ counter }}</strong>  more
+            {% endblocktrans %}
+            {% else %}
+              {% trans "list" %}
+            {% endif %}
           </a>
-          {% endif %}
           <a class="btn btn-success btn-xs vm-create" href="{% url "dashboard.views.vm-create" %}"><i class="icon-plus-sign"></i> {% trans "new" %}</a>
         </div>
       </div>
     </div>
   </div>
   <div class="panel-body" id="vm-graph-view" style="display: none">
-    <p class="pull-right">  <input class="knob" data-fgColor="chartreuse" data-thickness=".4" data-max="{{ request.user.profile.instance_limit }}" data-width="100" data-height="100" data-readOnly="true" value="{{ instances|length|add:more_instances }}"></p>
+    <p class="pull-right">
+    <input class="knob" data-fgColor="chartreuse" data-thickness=".4" data-max="{{ request.user.profile.instance_limit }}" data-width="100" data-height="100" data-readOnly="true" value="{{ instances|length|add:more_instances }}">
+    </p>
     <p><span class="bigbig">{% blocktrans with count=running_vm_num %}<big>{{ count }}</big> running{% endblocktrans %}</span>
       <ul class="list-inline" style="max-height: 95px; overflow: hidden;">
         {% for vm in running_vms %}
@@ -69,7 +88,11 @@
     <div>
       <a style="float: right; margin-top: 17px;" href="{% url "dashboard.views.vm-list" %}" class="btn btn-primary btn-xs">
         <i class="icon-chevron-sign-right"></i> 
-        <strong>{{ instances|length|add:more_instances }}</strong>  machines  total
+        {% blocktrans count counter=instances|length|add:more_instances %}
+          <strong>{{ counter }}</strong> machine total
+          {% plural %}
+          <strong>{{ counter }}</strong> machines total
+        {% endblocktrans %}
       </a> 
       <p class="big text-warning">{% blocktrans with count=stopped_vm_num %}<big>{{ count }}</big> stopped{% endblocktrans %}</p>
     </div>
