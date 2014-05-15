@@ -336,6 +336,7 @@ class SaveAsTemplateOperation(InstanceOperation):
             'system': self.instance.system,
         }
         params.update(kwargs)
+        params.pop("parent_activity", None)
 
         from storage.models import Disk
 
