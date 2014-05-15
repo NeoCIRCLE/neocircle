@@ -1160,7 +1160,7 @@ class GroupList(LoginRequiredMixin, SingleTableView):
             groups = [{
                 'url': reverse("dashboard.views.group-detail",
                                kwargs={'pk': i.pk}),
-                'name': i.name} for i in self.queryset]
+                'name': i.name} for i in self.get_queryset()]
             return HttpResponse(
                 json.dumps(list(groups)),
                 content_type="application/json",
