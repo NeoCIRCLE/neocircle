@@ -264,6 +264,19 @@ $(function() {
     return false;
   });
 
+  // screenshot
+  $("#getScreenshotButton").click(function() {
+    var vm = $(this).data("vm-pk");
+    var ct = $("#vm-console-screenshot");
+    ct.slideDown();
+    var img = $("img", ct).prop("src", '/dashboard/vm/' + vm + '/screenshot/');
+  });
+  
+  // screenshot close
+  $("#vm-console-screenshot button").click(function() {
+    $(this).parent("div").slideUp();
+  });
+
 });
 
 

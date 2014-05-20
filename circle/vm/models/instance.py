@@ -913,3 +913,9 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                 i.is_abortable_for_user = partial(i.is_abortable_for,
                                                   user=user)
         return acts
+
+    def get_screenshot(self, timeout=5):
+        queue_name = self.get_remote_queue_name('vm')
+        return vm_tasks.screenshot.apply_async(args=[self.vm_name],
+                                               queue=queue_name
+                                               ).get(timeout=timeout)

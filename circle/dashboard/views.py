@@ -2590,3 +2590,16 @@ class InterfaceDeleteView(DeleteView):
         if redirect:
             return redirect
         self.object.instance.get_absolute_url()
+
+
+@require_GET
+def get_vm_screenshot(request, pk):
+    instance = get_object_or_404(Instance, pk=pk)
+    try:
+        image = instance.screenshot(instance=instance,
+                                    user=request.user).getvalue()
+    except:
+        # TODO handle this better
+        raise Http404()
+
+    return HttpResponse(image, mimetype="image/png")

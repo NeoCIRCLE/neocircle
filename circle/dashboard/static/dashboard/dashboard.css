@@ -654,3 +654,12 @@ textarea[name="list-new-namelist"] {
   80% { -webkit-transform: scale(1); }
   100% { -webkit-transform: scale(1); }
 }
+
+.btn-toolbar {
+  margin-bottom: 5px;
+}
+
+#vm-console-screenshot {
+  display: none;
+}
+

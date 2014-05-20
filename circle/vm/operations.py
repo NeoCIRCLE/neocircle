@@ -534,3 +534,22 @@ class FlushOperation(NodeOperation):
 
 
 register_operation(FlushOperation)
+
+
+class ScreenshotOperation(InstanceOperation):
+    activity_code_suffix = 'screenshot'
+    id = 'screenshot'
+    name = _("screenshot")
+    description = _("Get screenshot")
+    acl_level = "owner"
+
+    def check_precond(self):
+        super(ScreenshotOperation, self).check_precond()
+        if self.instance.status not in ['RUNNING']:
+            raise self.instance.WrongStateError(self.instance)
+
+    def _operation(self, instance, user):
+        return self.instance.get_screenshot(timeout=20)
+
+
+register_operation(ScreenshotOperation)

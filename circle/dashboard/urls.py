@@ -33,6 +33,7 @@ from .views import (
     GroupRemoveAclUserView, GroupRemoveAclGroupView, GroupRemoveUserView,
     GroupCreate,
     TemplateChoose,
+    get_vm_screenshot
 )
 
 urlpatterns = patterns(
@@ -83,6 +84,8 @@ urlpatterns = patterns(
         name='dashboard.views.vm-renew'),
     url(r'^vm/activity/(?P<pk>\d+)/$', InstanceActivityDetail.as_view(),
         name='dashboard.views.vm-activity'),
+    url(r'^vm/(?P<pk>\d+)/screenshot/$', get_vm_screenshot,
+        name='dashboard.views.vm-get-screenshot'),
 
     url(r'^node/list/$', NodeList.as_view(), name='dashboard.views.node-list'),
     url(r'^node/(?P<pk>\d+)/$', NodeDetailView.as_view(),
