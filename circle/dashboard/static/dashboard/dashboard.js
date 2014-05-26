@@ -159,8 +159,8 @@ $(function () {
       { 'url': '/dashboard/vm/delete/' + vm_pk + '/',
         'data': [],
         'pk': vm_pk,
-	'type': "vm",
-	'redirect': dir});
+        'type': "vm",
+        'redirect': dir});
     return false;
   });
   
@@ -171,7 +171,7 @@ $(function () {
       { 'url': '/dashboard/disk/' + disk_pk + '/remove/',
         'data': [],
         'pk': disk_pk,
-	'type': "disk",
+        'type': "disk",
       });
     return false;
   });
@@ -184,7 +184,7 @@ $(function () {
       { 'url': '/dashboard/node/delete/' + node_pk + '/',
         'data': [],
         'pk': node_pk,
-  	'type': "node",
+        'type': "node",
         'redirect': dir});
     
     return false;
@@ -212,7 +212,7 @@ $(function () {
     addModalConfirmation(deleteObject, 
       { 'url': '/dashboard/group/delete/' + group_pk + '/',
         'data': [],
-	'type': "group",
+        'type': "group",
         'pk': group_pk,
         'redirect': dir});
     
@@ -266,6 +266,62 @@ $(function () {
     }
     if(e.keyCode == 13 && search_result.length > 1 && input.length > 0) {
       window.location.href = "/dashboard/vm/list/?s=" + input;
+    }
+  });
+
+  /* search for nodes */
+  var my_nodes = []
+  $("#dashboard-node-search-input").keyup(function(e) {
+    // if my_nodes is empty get a list of our nodes
+    if(my_nodes.length < 1) {
+      $.ajaxSetup( { "async": false } );
+      $.get("/dashboard/node/list/", function(result) {
+        for(var i in result) {
+          my_nodes.push({
+            'name': result[i].name.toLowerCase(),
+            'icon': result[i].icon,
+            'status': result[i].status,
+            'label': result[i].label,
+            'url': result[i].url,
+          });
+        }
+      });
+      $.ajaxSetup( { "async": true } );
+    }
+
+    input = $("#dashboard-node-search-input").val().toLowerCase();
+    var search_result = []
+    var html = '';
+    for(var i in my_nodes) {
+      if(my_nodes[i].name.indexOf(input) != -1) {
+        search_result.push(my_nodes[i]);
+      }
+    }
+    for(var i=0; i<5 && i<search_result.length; i++)
+      html += generateNodeHTML(search_result[i].name,
+                             search_result[i].icon, search_result[i].status,
+                             search_result[i].url,
+                             (search_result.length < 5));
+    if(search_result.length == 0)
+      html += '<div class="list-group-item list-group-item-last">' + gettext("No result") + '</div>';
+    $("#dashboard-node-list").html(html);
+
+    html = '';
+
+    for(var i=0; i<5 && i<search_result.length; i++)
+      html += generateNodeTagHTML(search_result[i].name,
+                             search_result[i].icon, search_result[i].status,
+                             search_result[i].label, search_result[i].url);
+    if(search_result.length == 0)
+      html += '<div class="list-group-item list-group-item-last">' + gettext("No result") + '</div>';
+    $("#dashboard-node-taglist").html(html);
+
+    // if there is only one result and ENTER is pressed redirect
+    if(e.keyCode == 13 && search_result.length == 1) {
+      window.location.href = search_result[0].url;
+    }
+    if(e.keyCode == 13 && search_result.length > 1 && input.length > 0) {
+      window.location.href = "/dashboard/node/list/?s=" + input;
     }
   });
 
@@ -340,6 +396,21 @@ function generateGroupHTML(url, name) {
   return '<a href="' + url + '" class="list-group-item real-link">'+
          '<i class="icon-group"></i> '+ name +
          '</a>';
+}
+
+function generateNodeHTML(name, icon, _status, url, is_last) {
+  return '<a href="' + url + '" class="list-group-item real-link' + (is_last ? ' list-group-item-last' : '') + '">' +
+        '<span class="index-node-list-name">' +
+        '<i class="' + icon + '" title="' + _status + '"></i> ' + name +
+        '</span>' +
+        '<div style="clear: both;"></div>' +
+        '</a>';
+}
+
+function generateNodeTagHTML(name, icon, _status, label , url) {
+  return '<a href="' + url + '" class="label ' + label + '" >' +
+        '<i class="' + icon + '" title="' + _status + '"></i> ' + name +
+        '</a> ';
 }
 
 /* copare vm-s by fav, pk order */

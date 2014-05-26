@@ -16,26 +16,33 @@
   <div class="list-group" id="node-list-view">
     <div id="dashboard-node-list">
       {% for i in nodes %}
-      <a href="{% url "dashboard.views.node-detail" pk=i.pk %}" class="list-group-item
+      <a href="{{ i.get_absolute_url }}" class="list-group-item real-link
         {% if forloop.last and nodes|length < 5 %} list-group-item-last{% endif %}">
-      <i class="icon-{% if i.enabled == True %}play-sign{% else %}pause{% endif %}"></i> {{ i.name }} 
-        </a>
+        <span class="index-node-list-name">
+          <i class="{{ i.get_status_icon }}" title="{{ i.get_status_display }}"></i>
+           {{ i.name }}
+        </span>
+        <div style="clear: both;"></div>
+      </a>
       {% endfor %}
     </div>
     <div href="#" class="list-group-item list-group-footer">
       <div class="row">
         <div class="col-sm-6 col-xs-6 input-group input-group-sm">
-          <input type="text" class="form-control" placeholder="{% trans "Search..." %}" />
+          <input id="dashboard-node-search-input" type="text" class="form-control" placeholder="{% trans "Search..." %}" />
           <div class="input-group-btn">
             <button type="submit" class="form-control btn btn-primary" title="search"><i class="icon-search"></i></button>
           </div>
         </div>
         <div class="col-sm-6 text-right">
-          {% if more_nodes > 0 %}
           <a class="btn btn-primary btn-xs" href="{% url "dashboard.views.node-list" %}">
-            <i class="icon-chevron-sign-right"></i> <strong>{{ more_nodes }}</strong>  more  
+            <i class="icon-chevron-sign-right"></i>
+            {% if more_nodes > 0 %}
+                {% blocktrans with count=more_nodes %}<strong>{{count}}</strong>  more{% endblocktrans %}
+            {% else %}
+                {% trans "list" %}
+            {% endif %}
           </a>
-          {% endif %}
           <a class="btn btn-success btn-xs node-create" href="{% url "dashboard.views.node-create" %}"><i class="icon-plus-sign"></i> {% trans "new" %}</a>
         </div>
       </div>
@@ -43,35 +50,26 @@
   </div>
  
   <div class="panel-body" id="node-graph-view" style="display: none">
-	  <p class="pull-right">  <input class="knob" data-fgColor="chartreuse" data-thickness=".4" data-width="60" data-height="60" data-readOnly="true" value="{% widthratio node_num.running sum_node_num 100 %}"></p>
+    <p class="pull-right">  <input class="knob" data-fgColor="chartreuse" data-thickness=".4" data-width="60" data-height="60" data-readOnly="true" value="{% widthratio node_num.running sum_node_num 100 %}"></p>
     <p><span class="big"><big>{{ node_num.running }}</big> running </span>
     + <big>{{ node_num.missing }}</big> missing + <br><big>{{ node_num.disabled }}</big> disabled + <big>{{ node_num.offline }}</big> offline</p>
-      <ul class="list-inline">
-	      {% for i in nodes %}
-      <a class="label {% if i.state == 'ONLINE' %}label-success
-                        {% elif i.state == 'MISSING' %}label-danger
-                        {% elif i.state == 'DISABLED' %}label-warning
-                        {% elif i.state == 'OFFLINE' %}label-warning
-                        {% endif %}" href="{% url "dashboard.views.node-detail" pk=i.pk %}"><i class="icon-{% if i.enabled == True %}play-sign{% else %}pause{% endif %}"></i> {{ i.name}}</a>
-   {% endfor %}
-   </ul>
+      <ul class="list-inline" id="dashboard-node-taglist">
+        {% for i in nodes %}
+        <a href="{{ i.get_absolute_url }}" class="label {{i.get_status_label}}" >
+        <i class="{{ i.get_status_icon }}" title="{{ i.get_status_display }}"></i> {{ i.name }}</a>
+        {% endfor %}
+      </ul>
 
     <div class="clearfix"></div>
  <div class="row">
-	<div class="col-sm-6 col-xs-6 input-group input-group-sm">
-          <input type="text" class="form-control" placeholder="{% trans "Search..." %}" />
-            <div class="input-group-btn">
-            	<button type="submit" class="form-control btn btn-primary" title="search"><i class="icon-search"></i></button>
-	    </div>
-        </div>
-        <div class="col-sm-6 text-right">
-		{% if more_nodes >= 0  %}
+        <div class="col-sm-6 text-right pull-right">
+         {% if more_nodes >= 0  %}
           <a class="btn btn-primary btn-xs" href="{% url "dashboard.views.node-list" %}">
             <i class="icon-chevron-sign-right"></i> {% blocktrans with count=more_nodes %}<strong>{{count}}</strong>  more{% endblocktrans %}
           </a>
          {% endif %}
          <a class="btn btn-success btn-xs node-create" href="{% url "dashboard.views.node-create" %}"><i class="icon-plus-sign"></i> {% trans "new" %}</a>
-    	</div>
+        </div>
 </div>
 </div>
 </div>

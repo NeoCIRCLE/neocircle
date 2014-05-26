@@ -1144,6 +1144,23 @@ class NodeList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
     table_class = NodeListTable
     table_pagination = False
 
+    def get(self, *args, **kwargs):
+        if self.request.is_ajax():
+            nodes = Node.objects.all()
+            nodes = [{
+                'name': i.name,
+                'icon': i.get_status_icon(),
+                'url': i.get_absolute_url(),
+                'label': i.get_status_label(),
+                'status': i.state.lower()} for i in nodes]
+
+            return HttpResponse(
+                json.dumps(list(nodes)),
+                content_type="application/json",
+            )
+        else:
+            return super(NodeList, self).get(*args, **kwargs)
+
     def get_queryset(self):
         return Node.objects.annotate(
             number_of_VMs=Count('instance_set')).select_related('host')

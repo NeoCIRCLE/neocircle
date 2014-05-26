@@ -285,6 +285,22 @@ class Node(OperatedMixin, TimeStampedModel):
     def byte_ram_usage(self):
         return self.ram_usage * self.ram_size
 
+    def get_status_icon(self):
+        return {
+            'OFFLINE': 'icon-minus-sign',
+            'DISABLED': 'icon-moon',
+            'MISSING': 'icon-warning-sign',
+            'ONLINE': 'icon-play-sign'}.get(self.get_state(),
+                                            'icon-question-sign')
+
+    def get_status_label(self):
+        return {
+            'OFFLINE': 'label-warning',
+            'DISABLED': 'label-warning',
+            'MISSING': 'label-danger',
+            'ONLINE': 'label-success'}.get(self.get_state(),
+                                           'label-danger')
+
     @node_available
     def update_vm_states(self):
         """Update state of Instances running on this Node.
