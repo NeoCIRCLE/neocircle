@@ -32,6 +32,7 @@ from crispy_forms.layout import (
 
 from crispy_forms.utils import render_field
 from django import forms
+from django.contrib.auth.forms import UserCreationForm as OrgUserCreationForm
 from django.forms.widgets import TextInput
 from django.template import Context
 from django.template.loader import render_to_string
@@ -1086,3 +1087,25 @@ class CirclePasswordChangeForm(PasswordChangeForm):
                                 css_class="btn btn-primary",
                                 css_id="submit-password-button"))
         return helper
+
+
+class UserCreationForm(OrgUserCreationForm):
+
+    class Meta:
+        model = User
+        fields = ("username", 'email', 'first_name', 'last_name')
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.layout = Layout('username', 'password1', 'password2', 'email',
+                               'first_name', 'last_name')
+        helper.add_input(Submit("submit", _("Save")))
+        return helper
+
+    def save(self, commit=True):
+        user = super(UserCreationForm, self).save(commit=False)
+        user.set_password(self.cleaned_data["password1"])
+        if commit:
+            user.save()
+        return user

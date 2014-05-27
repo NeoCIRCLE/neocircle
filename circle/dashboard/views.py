@@ -54,6 +54,7 @@ from braces.views._access import AccessMixin
 from .forms import (
     CircleAuthenticationForm, DiskAddForm, HostForm, LeaseForm, MyProfileForm,
     NodeForm, TemplateForm, TraitForm, VmCustomizeForm, GroupCreateForm,
+    UserCreationForm,
     CirclePasswordChangeForm
 )
 
@@ -2574,6 +2575,36 @@ class InstanceActivityDetail(SuperuserRequiredMixin, DetailView):
         ctx['activities'] = self.object.instance.get_activities(
             self.request.user)
         return ctx
+
+
+class UserCreationView(CreateView):
+    form_class = UserCreationForm
+    model = User
+    template_name = 'dashboard/user-create.html'
+
+    def get_group(self, group_pk):
+        self.group = get_object_or_404(Group, pk=group_pk)
+        if not self.group.profile.has_level(self.request.user, 'owner'):
+            raise PermissionDenied()
+
+    def get(self, *args, **kwargs):
+        if not self.request.user.has_perm('auth.add_user'):
+            raise PermissionDenied()
+        self.get_group(kwargs.pop('group_pk'))
+        return super(UserCreationView, self).get(*args, **kwargs)
+
+    def post(self, *args, **kwargs):
+        if not self.request.user.has_perm('auth.add_user'):
+            raise PermissionDenied()
+        group_pk = kwargs.pop('group_pk')
+        self.get_group(group_pk)
+        ret = super(UserCreationView, self).post(*args, **kwargs)
+        if self.object:
+            self.object.groups.add(self.group)
+            return redirect(
+                reverse('dashboard.views.group-detail', args=[group_pk]))
+        else:
+            return ret
 
 
 class InterfaceDeleteView(DeleteView):

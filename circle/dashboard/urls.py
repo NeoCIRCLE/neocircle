@@ -33,6 +33,7 @@ from .views import (
     GroupRemoveAclUserView, GroupRemoveAclGroupView, GroupRemoveUserView,
     GroupCreate,
     TemplateChoose,
+    UserCreationView,
 )
 
 urlpatterns = patterns(
@@ -144,4 +145,7 @@ urlpatterns = patterns(
         name="dashboard.views.remove-user"),
     url(r'^group/create/$', GroupCreate.as_view(),
         name='dashboard.views.group-create'),
+    url(r'^group/(?P<group_pk>\d+)/create/$',
+        UserCreationView.as_view(),
+        name="dashboard.views.create-user"),
 )
