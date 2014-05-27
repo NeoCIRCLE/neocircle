@@ -1988,6 +1988,8 @@ class FavouriteView(TemplateView):
     def post(self, *args, **kwargs):
         user = self.request.user
         vm = Instance.objects.get(pk=self.request.POST.get("vm"))
+        if not vm.has_level(user, 'user'):
+            raise PermissionDenied()
         try:
             Favourite.objects.get(instance=vm, user=user).delete()
             return HttpResponse("Deleted.")
