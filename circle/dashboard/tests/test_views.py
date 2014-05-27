@@ -1475,6 +1475,41 @@ class GroupDetailTest(LoginMixin, TestCase):
         self.assertEqual(acl_groups - 1, len(gp.get_groups_with_level()))
         self.assertEqual(response.status_code, 302)
 
+    def test_unpermitted_user_add_wo_group_perm(self):
+        user_count = self.g1.user_set.count()
+        c = Client()
+        self.login(c, 'user1')
+        response = c.post('/dashboard/group/%d/create/' % self.g1.pk,
+                          {'username': 'userx1',
+                           'password1': 'test123',
+                           'password2': 'test123'})
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(user_count, self.g1.user_set.count())
+
+    def test_permitted_user_add_wo_can_add_user_perm(self):
+        user_count = self.g1.user_set.count()
+        c = Client()
+        self.login(c, 'user0')
+        response = c.post('/dashboard/group/%d/create/' % self.g1.pk,
+                          {'username': 'userx2',
+                           'password1': 'test123',
+                           'password2': 'test123'})
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(user_count, self.g1.user_set.count())
+
+    def test_permitted_user_add(self):
+        user_count = self.g1.user_set.count()
+        self.u0.user_permissions.add(Permission.objects.get(
+            name='Can add user'))
+        c = Client()
+        self.login(c, 'user0')
+        response = c.post('/dashboard/group/%d/create/' % self.g1.pk,
+                          {'username': 'userx2',
+                           'password1': 'test123',
+                           'password2': 'test123'})
+        self.assertEqual(user_count + 1, self.g1.user_set.count())
+        self.assertEqual(response.status_code, 302)
+
 
 class GroupListTest(LoginMixin, TestCase):
     fixtures = ['test-vm-fixture.json', 'node.json']
