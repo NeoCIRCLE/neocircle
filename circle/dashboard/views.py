@@ -48,7 +48,8 @@ from django.template import RequestContext
 
 from django.forms.models import inlineformset_factory
 from django_tables2 import SingleTableView
-from braces.views import LoginRequiredMixin, SuperuserRequiredMixin
+from braces.views import (LoginRequiredMixin, SuperuserRequiredMixin,
+                          PermissionRequiredMixin)
 from braces.views._access import AccessMixin
 
 from .forms import (
@@ -2577,10 +2578,12 @@ class InstanceActivityDetail(SuperuserRequiredMixin, DetailView):
         return ctx
 
 
-class UserCreationView(CreateView):
+class UserCreationView(LoginRequiredMixin, PermissionRequiredMixin,
+                       CreateView):
     form_class = UserCreationForm
     model = User
     template_name = 'dashboard/user-create.html'
+    permission_required = "auth.add_user"
 
     def get_group(self, group_pk):
         self.group = get_object_or_404(Group, pk=group_pk)
@@ -2588,14 +2591,10 @@ class UserCreationView(CreateView):
             raise PermissionDenied()
 
     def get(self, *args, **kwargs):
-        if not self.request.user.has_perm('auth.add_user'):
-            raise PermissionDenied()
         self.get_group(kwargs.pop('group_pk'))
         return super(UserCreationView, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
-        if not self.request.user.has_perm('auth.add_user'):
-            raise PermissionDenied()
         group_pk = kwargs.pop('group_pk')
         self.get_group(group_pk)
         ret = super(UserCreationView, self).post(*args, **kwargs)
