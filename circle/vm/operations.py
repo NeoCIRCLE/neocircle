@@ -202,6 +202,10 @@ class MigrateOperation(InstanceOperation):
     name = _("migrate")
     description = _("Live migrate running VM to another node.")
 
+    def rollback(self, activity):
+        with activity.sub_activity('rollback_net'):
+            self.instance.deploy_net()
+
     def _operation(self, activity, to_node=None, timeout=120):
         if not to_node:
             with activity.sub_activity('scheduling') as sa:
@@ -212,8 +216,13 @@ class MigrateOperation(InstanceOperation):
         with activity.sub_activity('shutdown_net'):
             self.instance.shutdown_net()
 
-        with activity.sub_activity('migrate_vm'):
-            self.instance.migrate_vm(to_node=to_node, timeout=timeout)
+        try:
+            with activity.sub_activity('migrate_vm'):
+                self.instance.migrate_vm(to_node=to_node, timeout=timeout)
+        except Exception as e:
+            if hasattr(e, 'libvirtError'):
+                self.rollback(activity)
+                raise
 
         # Refresh node information
         self.instance.node = to_node
