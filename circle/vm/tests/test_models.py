@@ -129,6 +129,25 @@ class InstanceTestCase(TestCase):
             migr.apply_async.assert_called()
             self.assertNotIn(call.sub_activity(u'scheduling'), act.mock_calls)
 
+    def test_migrate_with_error(self):
+        inst = Mock(destroyed_at=None, spec=Instance)
+        inst.interface_set.all.return_value = []
+        inst.node = MagicMock(spec=Node)
+        e = Exception('abc')
+        setattr(e, 'libvirtError', '')
+        inst.migrate_vm.side_effect = e
+        migrate_op = MigrateOperation(inst)
+        with patch('vm.models.instance.vm_tasks.migrate') as migr:
+            act = MagicMock()
+            with patch.object(MigrateOperation, 'create_activity',
+                              return_value=act):
+                self.assertRaises(Exception, migrate_op, system=True)
+
+            migr.apply_async.assert_called()
+            self.assertIn(call.sub_activity(u'scheduling'), act.mock_calls)
+            self.assertIn(call.sub_activity(u'rollback_net'), act.mock_calls)
+            inst.select_node.assert_called()
+
     def test_status_icon(self):
         inst = MagicMock(spec=Instance)
         inst.status = 'dummy-value'
