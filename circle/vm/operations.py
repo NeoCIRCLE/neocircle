@@ -222,7 +222,7 @@ class MigrateOperation(InstanceOperation):
         except Exception as e:
             if hasattr(e, 'libvirtError'):
                 self.rollback(activity)
-                raise
+            raise
 
         # Refresh node information
         self.instance.node = to_node
