@@ -861,14 +861,9 @@ class GroupAclUpdateView(AclUpdateView):
             logger.warning('Tried to set permissions of %s by non-owner %s.',
                            unicode(instance), unicode(request.user))
             raise PermissionDenied()
-        name = request.POST['perm-new-name']
-        if (User.objects.filter(username=name).count() +
-                Group.objects.filter(name=name).count() < 1
-                and len(name) > 0):
-            warning(request, _('User or group "%s" not found.') % name)
-        else:
-            self.set_levels(request, instance)
-            self.add_levels(request, instance)
+
+        self.set_levels(request, instance)
+        self.add_levels(request, instance)
         return redirect(reverse("dashboard.views.group-detail",
                                 kwargs=self.kwargs))
 
