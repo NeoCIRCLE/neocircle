@@ -62,7 +62,9 @@
             <td class="pk"><div id="vm-{{i.pk}}">{{i.pk}}</div> </td>
             <td class="name"><a class="real-link" href="{% url "dashboard.views.detail" i.pk %}">{{ i.name }}</a>  </td>
             <td class="state">{{ i.get_status_display }}</td>
-            <td>{{ i.owner }}</td>
+            <td>
+              {% include "dashboard/_display-name.html" with user=i.owner show_org=True %}
+            </td>
             {% if user.is_superuser %}
             <td data-sort-value="{{ i.node.normalized_name }}">{{ i.node.name|default:"-" }}</td>
             {% endif %}

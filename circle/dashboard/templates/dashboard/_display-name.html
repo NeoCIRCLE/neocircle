@@ -1,0 +1,10 @@
+{% if user.get_full_name|length > 0 %}
+  {{ user.get_full_name }}
+{% else %}
+  {{ user.username }}
+{% endif %}
+{% if show_org %}
+    {% if user.profile %}
+      ({{ user.profile.org_id }})
+    {% endif %}
+{% endif %}

@@ -50,7 +50,13 @@
       <thead><tr><th></th><th>{% trans "Who" %}</th><th>{% trans "Remove" %}</th></tr></thead>
         {% for i in users %}
 	  <tr>
-            <td><i class="icon-user"></i></td><td>{{i.username}}</td>
+            <td>
+              <i class="icon-user"></i>
+            </td>
+            <td>
+              <strong>{{i.username}}</strong>,
+              {% include "dashboard/_display-name.html" with user=i show_org=True %}
+            </td>
 	    <td>
               <a data-group_pk="{{ group.pk }}" data-member_pk="{{i.pk}}" href="{% url "dashboard.views.remove-user" member_pk=i.pk group_pk=group.pk %}" class="real-link delete-from-group btn btn-link btn-xs"><i class="icon-remove"><span class="sr-only">{% trans "remove" %}</span></i></a>
             </td>
@@ -83,7 +89,13 @@
     <tbody>
     {% for i in acl.users %}
     <tr>
-      <td><i class="icon-user"></i></td><td>{{i.user}}</td>
+      <td>
+        <i class="icon-user"></i>
+      </td>
+      <td>
+        <strong>{{i.user}}</strong>,
+        {% include "dashboard/_display-name.html" with user=i.user show_org=True %}
+      </td>
       <td>
         <select class="form-control" name="perm-u-{{i.user.id}}">
         {% for id, name in acl.levels %}
