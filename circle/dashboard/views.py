@@ -1102,6 +1102,7 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
         'node': "node__name__icontains",
         'status': "status__iexact",
         'tags': "tags__name__in",  # note: use it as ?tags[]=a,b
+        'owner': "owner__username",
     }
 
     def get(self, *args, **kwargs):
@@ -1130,10 +1131,8 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
                      unicode(self.request.user))
         queryset = Instance.get_objects_with_level(
             'user', self.request.user).filter(destroyed_at=None)
-        s = self.request.GET.get("s")
-        if s:
-            queryset = queryset.filter(name__icontains=s)
 
+        self.create_fake_get_for_filter()
         sort = self.request.GET.get("sort")
         # remove "-" that means descending order
         # also check if the column name is valid
@@ -1143,6 +1142,29 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
             queryset = queryset.order_by(sort)
         return queryset.filter(**self.get_queryset_filters()
                                ).select_related('owner', 'node')
+
+    def create_fake_get_for_filter(self):
+        s = self.request.GET.get("s")
+        if s:
+            s = s.split(":")
+            if len(s) < 2:
+                got = {'name': "".join(s)}
+            else:
+                latest = s.pop(0)
+                got = {'%s' % latest: None}
+                for i in s[:-1]:
+                    new = i.rsplit(" ", 1)
+                    got[latest] = new[0]
+                    latest = new[1] if len(new) > 1 else None
+                got[latest] = s[-1]
+
+            # generate a new GET request, that is kinda fake
+            fake = self.request.GET.copy()
+            for k, v in got.iteritems():
+                fake["%s%s" % (
+                    k, "[]" if len(v.split(",")) > 1 else "")] = v
+
+            self.request.GET = fake
 
 
 class NodeList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
