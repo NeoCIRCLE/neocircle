@@ -27,6 +27,7 @@ from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.views import login, redirect_to_login
 from django.contrib.messages import warning
+from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import (
     PermissionDenied, SuspiciousOperation,
 )
@@ -82,24 +83,6 @@ def search_user(keyword):
             return User.objects.get(profile__org_id=keyword)
         except User.DoesNotExist:
             return User.objects.get(email=keyword)
-
-
-# github.com/django/django/blob/stable/1.6.x/django/contrib/messages/views.py
-class SuccessMessageMixin(object):
-    """
-    Adds a success message on successful form submission.
-    """
-    success_message = ''
-
-    def form_valid(self, form):
-        response = super(SuccessMessageMixin, self).form_valid(form)
-        success_message = self.get_success_message(form.cleaned_data)
-        if success_message:
-            messages.success(self.request, success_message)
-        return response
-
-    def get_success_message(self, cleaned_data):
-        return self.success_message % cleaned_data
 
 
 class FilterMixin(object):
