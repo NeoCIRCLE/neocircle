@@ -102,6 +102,20 @@ class SuccessMessageMixin(object):
         return self.success_message % cleaned_data
 
 
+class FilterMixin(object):
+
+    def get_queryset_filters(self):
+        filters = {}
+        for item in self.allowed_filters:
+            if item in self.request.GET:
+                filters[self.allowed_filters[item]] = self.request.GET[item]
+        return filters
+
+    def get_queryset(self):
+        return super(FilterMixin,
+                     self).get_queryset().filter(**self.get_queryset_filters())
+
+
 class IndexView(LoginRequiredMixin, TemplateView):
     template_name = "dashboard/index.html"
 
@@ -1098,8 +1112,14 @@ class TemplateDelete(LoginRequiredMixin, DeleteView):
             return HttpResponseRedirect(success_url)
 
 
-class VmList(LoginRequiredMixin, ListView):
+class VmList(LoginRequiredMixin, FilterMixin, ListView):
     template_name = "dashboard/vm-list.html"
+    allowed_filters = {
+        'name': "name__icontains",
+        'node': "node__name__icontains",
+        'status': "status__iexact",
+        'tags': "tags__name__in",  # note: use it as ?tags[]=a,b
+    }
 
     def get(self, *args, **kwargs):
         if self.request.is_ajax():
@@ -1138,7 +1158,8 @@ class VmList(LoginRequiredMixin, ListView):
             (sort[1:] if sort[0] == "-" else sort)
                 in [i.name for i in Instance._meta.fields] + ["pk"]):
             queryset = queryset.order_by(sort)
-        return queryset.select_related('owner', 'node')
+        return queryset.filter(**self.get_queryset_filters()
+                               ).select_related('owner', 'node')
 
 
 class NodeList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
