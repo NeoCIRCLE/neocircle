@@ -87,35 +87,10 @@
 
 
 <div class="alert alert-info">
-	{% trans "You can select multiple vm instances while holding down the <strong>CTRL</strong> key." %}
-	{% trans "If you want to select multiple instances by one click select an instance then hold down <strong>SHIFT</strong> key and select another one!" %}
+  {% trans "You can select multiple vm instances while holding down the <strong>CTRL</strong> key." %}
+  {% trans "If you want to select multiple instances by one click select an instance then hold down <strong>SHIFT</strong> key and select another one!" %}
 </div>
 
-<style>
-  .popover {
-    max-width: 600px;
-  }
-
-  .vm-list-selected, .vm-list-selected td {
-    background-color: #e8e8e8 !important;
-  }
-
-  .vm-list-selected:hover, .vm-list-selected:hover td {
-    background-color: #d0d0d0 !important;
-  }
-
-  .vm-list-selected td:first-child {
-    font-weight: bold;
-  }
-
-  .vm-list-table-thin {
-    width: 10px;
-  }
-
-  .vm-list-table-admin {
-    width: 130px;
-  }
-</style>
 {% endblock %}
 
 {% block extra_js %}
