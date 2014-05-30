@@ -315,6 +315,9 @@ class VmCustomizeForm(forms.Form):
 
 class GroupCreateForm(forms.ModelForm):
 
+    description = forms.CharField(label=_("Description"), required=False,
+                                  widget=forms.Textarea(attrs={'rows': 3}))
+
     def __init__(self, *args, **kwargs):
         new_groups = kwargs.pop('new_groups', None)
         super(GroupCreateForm, self).__init__(*args, **kwargs)
@@ -332,11 +335,11 @@ class GroupCreateForm(forms.ModelForm):
             raise AttributeError('Committing is mandatory.')
         group = super(GroupCreateForm, self).save()
 
-        orgid = self.cleaned_data['org_id']
-        if orgid:
-            profile = group.profile
-            profile.org_id = orgid
-            profile.save()
+        profile = group.profile
+        # multiple blanks were not be unique unlike NULLs are
+        profile.org_id = self.cleaned_data['org_id'] or None
+        profile.description = self.cleaned_data['description']
+        profile.save()
 
         return group
 
