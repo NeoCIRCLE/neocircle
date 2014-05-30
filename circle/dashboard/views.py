@@ -1541,6 +1541,40 @@ class GroupCreate(LoginRequiredMixin, TemplateView):
     form_class = GroupCreateForm
     form = None
 
+    def get_available_group_codes(self, request):
+        newgroups = []
+        if saml_available:
+            from djangosaml2.cache import StateCache, IdentityCache
+            from djangosaml2.conf import get_config
+            from djangosaml2.views import _get_subject_id
+            from saml2.client import Saml2Client
+
+            state = StateCache(request.session)
+            conf = get_config(None, request)
+            client = Saml2Client(conf, state_cache=state,
+                                 identity_cache=IdentityCache(request.session),
+                                 logger=logger)
+            subject_id = _get_subject_id(request.session)
+            identity = client.users.get_identity(subject_id,
+                                                 check_not_on_or_after=False)
+            if identity:
+                attributes = identity[0]
+                owneratrs = getattr(
+                    settings, 'SAML_GROUP_OWNER_ATTRIBUTES', [])
+                groups = []
+                for i in owneratrs:
+                    try:
+                        groups += attributes[i]
+                    except KeyError:
+                        pass
+                for group in groups:
+                    try:
+                        GroupProfile.search(group)
+                    except Group.DoesNotExist:
+                        newgroups.append(group)
+
+        return newgroups
+
     def get_template_names(self):
         if self.request.is_ajax():
             return ['dashboard/modal-wrapper.html']
@@ -1551,7 +1585,8 @@ class GroupCreate(LoginRequiredMixin, TemplateView):
         if not request.user.has_module_perms('auth'):
             raise PermissionDenied()
         if form is None:
-            form = self.form_class()
+            form = self.form_class(
+                new_groups=self.get_available_group_codes(request))
         context = self.get_context_data(**kwargs)
         context.update({
             'template': 'dashboard/group-create.html',
@@ -1564,7 +1599,8 @@ class GroupCreate(LoginRequiredMixin, TemplateView):
     def post(self, request, *args, **kwargs):
         if not request.user.has_module_perms('auth'):
             raise PermissionDenied()
-        form = self.form_class(request.POST)
+        form = self.form_class(
+            request.POST, new_groups=self.get_available_group_codes(request))
         if not form.is_valid():
             return self.get(request, form, *args, **kwargs)
         form.cleaned_data

@@ -19,6 +19,9 @@
       </div>
       <div id="group-details-h1-name">
         {{ group.name }} 
+        {% if group.groupprofile.org_id %}
+        <small>{{group.groupprofile.org_id}}</small>
+        {% endif %}
       </div>
     </h1>
     <div class="group-details-help js-hidden">

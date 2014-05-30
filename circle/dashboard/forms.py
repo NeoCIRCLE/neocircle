@@ -33,7 +33,7 @@ from crispy_forms.layout import (
 from crispy_forms.utils import render_field
 from django import forms
 from django.contrib.auth.forms import UserCreationForm as OrgUserCreationForm
-from django.forms.widgets import TextInput
+from django.forms.widgets import TextInput, HiddenInput
 from django.template import Context
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext as _
@@ -316,50 +316,40 @@ class VmCustomizeForm(forms.Form):
 class GroupCreateForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
+        new_groups = kwargs.pop('new_groups', None)
         super(GroupCreateForm, self).__init__(*args, **kwargs)
-        self.helper = FormHelper(self)
-        self.helper.form_show_labels = False
-        self.helper.layout = Layout(
-            Div(
-                Div(
-                    AnyTag(
-                        'h4',
-                        HTML(_("Name")),
-                    ),
-                    css_class="col-sm-10",
-                ),
-                css_class="row",
-            ),
-            Div(
-                Div(
-                    Field('name', id="group-create-name"),
-                    css_class="col-sm-10",
-                ),
-                css_class="row",
-            ),
+        choices = [('', '--')]
+        if new_groups:
+            choices += [(g, g) for g in new_groups if len(g) <= 64]
+        self.fields['org_id'] = forms.ChoiceField(
+            # TRANSLATORS: directory like in LDAP
+            choices=choices, required=False, label=_('Directory identifier'))
+        if not new_groups:
+            self.fields['org_id'].widget = HiddenInput()
 
-            Div(  # buttons
-                Div(
-                    AnyTag(  # tip: don't try to use Button class
-                        "button",
-                        AnyTag(
-                            "i",
-                            css_class="icon-play"
-                        ),
-                        HTML(" Create"),
-                        css_id="vm-create-submit",
-                        css_class="btn btn-success",
+    def save(self, commit=True):
+        if not commit:
+            raise AttributeError('Committing is mandatory.')
+        group = super(GroupCreateForm, self).save()
 
-                    ),
-                    css_class="col-sm-5",
-                ),
-                css_class="row",
-            ),
-        )
+        orgid = self.cleaned_data['org_id']
+        if orgid:
+            profile = group.profile
+            profile.org_id = orgid
+            profile.save()
+
+        return group
+
+    @property
+    def helper(self):
+        helper = FormHelper(self)
+        helper.add_input(Submit("submit", _("Create")))
+        helper.form_tag = False
+        return helper
 
     class Meta:
         model = Group
-        fields = ['name', ]
+        fields = ('name', )
 
 
 class HostForm(forms.ModelForm):
