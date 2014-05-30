@@ -72,6 +72,7 @@ from firewall.models import Vlan, Host, Rule
 from .models import Favourite, Profile, GroupProfile
 
 logger = logging.getLogger(__name__)
+saml_available = hasattr(settings, "SAML_CONFIG")
 
 
 def search_user(keyword):
@@ -2392,7 +2393,7 @@ class NotificationView(LoginRequiredMixin, TemplateView):
 def circle_login(request):
     authentication_form = CircleAuthenticationForm
     extra_context = {
-        'saml2': hasattr(settings, "SAML_CONFIG")
+        'saml2': saml_available,
     }
     response = login(request, authentication_form=authentication_form,
                      extra_context=extra_context)
