@@ -539,7 +539,7 @@ class FlushOperation(NodeOperation):
         self.node.disable(user, activity)
         for i in self.node.instance_set.all():
             with activity.sub_activity('migrate_instance_%d' % i.pk):
-                i.migrate()
+                i.migrate(user=user)
 
 
 register_operation(FlushOperation)
