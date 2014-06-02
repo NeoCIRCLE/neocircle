@@ -102,7 +102,12 @@ class GroupProfile(AclBase):
     org_id = CharField(
         unique=True, blank=True, null=True, max_length=64,
         help_text=_('Unique identifier of the group at the organization.'))
-    description = TextField()
+    description = TextField(blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.org_id:
+            self.org_id = None
+        super(GroupProfile, self).save(*args, **kwargs)
 
     @classmethod
     def search(cls, name):
