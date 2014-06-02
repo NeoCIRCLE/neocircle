@@ -44,7 +44,7 @@ from storage.models import Disk, DataStore
 from vm.models import (
     InstanceTemplate, Lease, InterfaceTemplate, Node, Trait, Instance
 )
-from .models import Profile
+from .models import Profile, GroupProfile
 
 
 class VmCustomizeForm(forms.Form):
@@ -353,6 +353,39 @@ class GroupCreateForm(forms.ModelForm):
     class Meta:
         model = Group
         fields = ('name', )
+
+
+class GroupProfileUpdateForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        new_groups = kwargs.pop('new_groups', None)
+        super(GroupProfileUpdateForm, self).__init__(*args, **kwargs)
+        choices = [('', '--')]
+        if new_groups:
+            choices += [(g, g) for g in new_groups if len(g) <= 64]
+        self.fields['org_id'] = forms.ChoiceField(
+            choices=choices, required=False, label=_('Directory identifier'))
+        if not new_groups:
+            self.fields['org_id'].widget = HiddenInput()
+        self.fields['description'].widget = forms.Textarea(attrs={'rows': 3})
+
+    @property
+    def helper(self):
+        helper = FormHelper(self)
+        helper.add_input(Submit("submit", _("Save")))
+        helper.form_tag = False
+        return helper
+
+    def save(self, commit=True):
+        profile = super(GroupProfileUpdateForm, self).save(commit=False)
+        profile.org_id = self.cleaned_data['org_id'] or None
+        if commit:
+            profile.save()
+        return profile
+
+    class Meta:
+        model = GroupProfile
+        fields = ('description', 'org_id')
 
 
 class HostForm(forms.ModelForm):
