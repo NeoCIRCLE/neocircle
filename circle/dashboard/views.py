@@ -55,7 +55,7 @@ from braces.views._access import AccessMixin
 from .forms import (
     CircleAuthenticationForm, DiskAddForm, HostForm, LeaseForm, MyProfileForm,
     NodeForm, TemplateForm, TraitForm, VmCustomizeForm, GroupCreateForm,
-    UserCreationForm,
+    UserCreationForm, GroupProfileUpdateForm,
     CirclePasswordChangeForm
 )
 
@@ -83,6 +83,44 @@ def search_user(keyword):
             return User.objects.get(profile__org_id=keyword)
         except User.DoesNotExist:
             return User.objects.get(email=keyword)
+
+
+class GroupCodeMixin(object):
+
+    @classmethod
+    def get_available_group_codes(cls, request):
+        newgroups = []
+        if saml_available:
+            from djangosaml2.cache import StateCache, IdentityCache
+            from djangosaml2.conf import get_config
+            from djangosaml2.views import _get_subject_id
+            from saml2.client import Saml2Client
+
+            state = StateCache(request.session)
+            conf = get_config(None, request)
+            client = Saml2Client(conf, state_cache=state,
+                                 identity_cache=IdentityCache(request.session),
+                                 logger=logger)
+            subject_id = _get_subject_id(request.session)
+            identity = client.users.get_identity(subject_id,
+                                                 check_not_on_or_after=False)
+            if identity:
+                attributes = identity[0]
+                owneratrs = getattr(
+                    settings, 'SAML_GROUP_OWNER_ATTRIBUTES', [])
+                groups = []
+                for i in owneratrs:
+                    try:
+                        groups += attributes[i]
+                    except KeyError:
+                        pass
+                for group in groups:
+                    try:
+                        GroupProfile.search(group)
+                    except Group.DoesNotExist:
+                        newgroups.append(group)
+
+        return newgroups
 
 
 # github.com/django/django/blob/stable/1.6.x/django/contrib/messages/views.py
@@ -691,6 +729,8 @@ class GroupDetailView(CheckedDetailView):
         context['group'] = self.object
         context['users'] = self.object.user_set.all()
         context['acl'] = get_group_acl_data(self.object)
+        context['group_profile_form'] = GroupProfileUpdate.get_form_object(
+            self.request, self.object.profile)
         return context
 
     def post(self, request, *args, **kwargs):
@@ -1536,44 +1576,9 @@ class NodeCreate(LoginRequiredMixin, SuperuserRequiredMixin, TemplateView):
             return redirect(path)
 
 
-class GroupCreate(LoginRequiredMixin, TemplateView):
+class GroupCreate(GroupCodeMixin, LoginRequiredMixin, TemplateView):
 
     form_class = GroupCreateForm
-    form = None
-
-    def get_available_group_codes(self, request):
-        newgroups = []
-        if saml_available:
-            from djangosaml2.cache import StateCache, IdentityCache
-            from djangosaml2.conf import get_config
-            from djangosaml2.views import _get_subject_id
-            from saml2.client import Saml2Client
-
-            state = StateCache(request.session)
-            conf = get_config(None, request)
-            client = Saml2Client(conf, state_cache=state,
-                                 identity_cache=IdentityCache(request.session),
-                                 logger=logger)
-            subject_id = _get_subject_id(request.session)
-            identity = client.users.get_identity(subject_id,
-                                                 check_not_on_or_after=False)
-            if identity:
-                attributes = identity[0]
-                owneratrs = getattr(
-                    settings, 'SAML_GROUP_OWNER_ATTRIBUTES', [])
-                groups = []
-                for i in owneratrs:
-                    try:
-                        groups += attributes[i]
-                    except KeyError:
-                        pass
-                for group in groups:
-                    try:
-                        GroupProfile.search(group)
-                    except Group.DoesNotExist:
-                        newgroups.append(group)
-
-        return newgroups
 
     def get_template_names(self):
         if self.request.is_ajax():
@@ -1613,6 +1618,52 @@ class GroupCreate(LoginRequiredMixin, TemplateView):
                                 content_type="application/json")
         else:
             return redirect(savedform.profile.get_absolute_url())
+
+
+class GroupProfileUpdate(GroupCodeMixin, LoginRequiredMixin, UpdateView):
+
+    form_class = GroupProfileUpdateForm
+    model = Group
+
+    @classmethod
+    def get_available_group_codes(cls, request, extra=None):
+        result = super(GroupProfileUpdate, cls).get_available_group_codes(
+            request)
+        if extra and not extra in result:
+            result += [extra]
+        return result
+
+    def get_object(self):
+        group = super(GroupProfileUpdate, self).get_object()
+        profile = group.profile
+        if not profile.has_level(self.request.user, 'owner'):
+            raise PermissionDenied
+        else:
+            return profile
+
+    @classmethod
+    def get_form_object(cls, request, instance, *args, **kwargs):
+        kwargs['instance'] = instance
+        kwargs['new_groups'] = cls.get_available_group_codes(
+            request, instance.org_id)
+        return cls.form_class(*args, **kwargs)
+
+    def get(self, request, form=None, *args, **kwargs):
+        self.object = self.get_object()
+        if form is None:
+            form = self.get_form_object(request, self.object)
+        return super(GroupProfileUpdate, self).get(
+            request, form, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        if not request.user.has_module_perms('auth'):
+            raise PermissionDenied()
+        self.object = self.get_object()
+        form = self.get_form_object(request, self.object, self.request.POST)
+        if not form.is_valid():
+            return self.get(request, form, *args, **kwargs)
+        form.save()
+        return redirect(self.object.get_absolute_url())
 
 
 class VmDelete(LoginRequiredMixin, DeleteView):
