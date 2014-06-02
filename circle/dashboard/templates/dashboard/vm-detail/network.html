@@ -1,4 +1,5 @@
 {% load i18n %}
+{% load network_tags %} 
 <h2>
   <a href="#" id="vm-details-network-add" class="btn btn-success pull-right no-js-hidden">
     <i class="icon-plus"></i> {% trans "add interface" %}
@@ -91,7 +92,7 @@
                   {% if l.ipv4 %}
                     <tr>
                       <td>
-                        {{ l.ipv4.host }}:{{ l.ipv4.port }}
+                        {% display_portforward l %}
                       </td>
                       <td><i class="icon-long-arrow-right"></i></td>
                       <td>
@@ -123,7 +124,7 @@
                   {% if l.ipv6 %}
                     <tr>
                       <td>
-                        {{ l.ipv6.host }}:{{ l.ipv6.port }}
+                        {% display_portforward l %}
                       </td>
                       <td><i class="icon-long-arrow-right"></i></td>
                       <td>
