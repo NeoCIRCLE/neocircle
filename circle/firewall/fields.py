@@ -36,12 +36,12 @@ ipv6_template_re = re.compile(r'^(%\([abcd]\)[dxX]|[A-Za-z0-9:-])+$')
 
 class MACAddressFormField(forms.Field):
     default_error_messages = {
-        'invalid': _(u'Enter a valid MAC address.'),
+        'invalid': _(u'Enter a valid MAC address. %s'),
     }
 
     def validate(self, value):
         try:
-            return EUI.from_str(value)
+            return MACAddressField.from_str(value)
         except (AddrFormatError, TypeError), e:
             raise ValidationError(self.default_error_messages['invalid']
                                   % unicode(e))
