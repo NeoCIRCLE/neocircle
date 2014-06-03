@@ -1,13 +1,13 @@
 {% load i18n %}
 
-{% if user.get_full_name|length > 0 %}
+{% if user.get_full_name %}
   {{ user.get_full_name }}
 {% else %}
   {{ user.username }}
 {% endif %}
 
 {% if show_org %}
-  {% if user.profile and user.profile.org_id|length > 0 %}
+  {% if user.profile and user.profile.org_id %}
     ({{ user.profile.org_id }})
   {% else %}
     ({% trans "username" %}: {{ user.username }})
