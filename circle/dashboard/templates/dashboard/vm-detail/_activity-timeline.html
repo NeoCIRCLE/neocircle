@@ -8,9 +8,10 @@
   {% if user.is_superuser %}<a href="{{ a.get_absolute_url }}">{% endif %}
     {{ a.get_readable_name }}{% if user.is_superuser %}</a>{% endif %}
 </strong>
-{{ a.started|date:"Y-m-d H:i" }}
-{% if a.user %}, 
-  {% include "dashboard/_display-name.html" with user=a.user show_org=True %}
+{{ a.started|date:"Y-m-d H:i" }}{% if a.user %}, 
+  <a class="no-style-link" href="{% url "dashboard.views.profile" pk=a.user.pk %}">
+    {% include "dashboard/_display-name.html" with user=a.user show_org=True %}
+  </a>
 {% endif %}
 {% if a.is_abortable_for_user %}
 <form action="{{ a.instance.get_absolute_url }}" method="POST" class="pull-right">

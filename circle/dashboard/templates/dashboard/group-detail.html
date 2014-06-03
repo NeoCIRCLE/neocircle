@@ -54,8 +54,8 @@
               <i class="icon-user"></i>
             </td>
             <td>
-              <strong>{{i.username}}</strong>,
-              {% include "dashboard/_display-name.html" with user=i show_org=True %}
+              <a href="{% url "dashboard.views.profile" pk=i.pk %}" title="{{ i.username }}"
+                >{% include "dashboard/_display-name.html" with user=i show_org=True %}</a>
             </td>
 	    <td>
               <a data-group_pk="{{ group.pk }}" data-member_pk="{{i.pk}}" href="{% url "dashboard.views.remove-user" member_pk=i.pk group_pk=group.pk %}" class="real-link delete-from-group btn btn-link btn-xs"><i class="icon-remove"><span class="sr-only">{% trans "remove" %}</span></i></a>
@@ -93,8 +93,8 @@
         <i class="icon-user"></i>
       </td>
       <td>
-        <strong>{{i.user}}</strong>,
-        {% include "dashboard/_display-name.html" with user=i.user show_org=True %}
+        <a href="{% url "dashboard.views.profile" pk=i.user.pk %}" title="{{ i.user.username }}"
+          >{% include "dashboard/_display-name.html" with user=i.user show_org=True %}</a>
       </td>
       <td>
         <select class="form-control" name="perm-u-{{i.user.id}}">
@@ -109,7 +109,12 @@
     
     {% for i in acl.groups %}
       <tr>
-        <td><i class="icon-group"></i></td><td>{{ i.group }}</td>
+        <td>
+          <i class="icon-group"></i>
+        </td>
+        <td>
+          <a href="{% url "dashboard.views.group-detail" pk=i.group.pk %}">{{ i.group }}</a>
+        </td>
         <td>
           <select class="form-control" name="perm-g-{{ i.group.pk }}">
           {% for id, name in acl.levels %}
