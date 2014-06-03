@@ -1148,7 +1148,7 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
         if s:
             s = s.split(":")
             if len(s) < 2:
-                got = {'name': "".join(s)}
+                got = {'name': s[0]}
             else:
                 latest = s.pop(0)
                 got = {'%s' % latest: None}
