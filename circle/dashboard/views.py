@@ -21,6 +21,7 @@ from os import getenv
 import json
 import logging
 import re
+from hashlib import md5
 import requests
 
 from django.conf import settings
@@ -2649,3 +2650,36 @@ class InterfaceDeleteView(DeleteView):
         if redirect:
             return redirect
         self.object.instance.get_absolute_url()
+
+
+class ProfileView(DetailView):
+    template_name = "dashboard/profile.html"
+    model = User
+
+    def get_context_data(self, **kwargs):
+        context = super(ProfileView, self).get_context_data(**kwargs)
+        context['profile'] = self.get_object()
+        context['avatar_url'] = self.get_avatar_url()
+        context['instances_owned'] = Instance.get_objects_with_level(
+            "owner", self.get_object(), disregard_superuser=True
+        ).filter(destroyed_at=None)
+        context['instances_with_access'] = [
+            inst for inst in Instance.get_objects_with_level(
+                "user", self.get_object(), disregard_superuser=True
+            ).filter(destroyed_at=None)
+            if inst not in context['instances_owned']
+        ]
+
+        group_profiles = GroupProfile.get_objects_with_level(
+            "operator", self.request.user)
+        groups = Group.objects.filter(groupprofile__in=group_profiles)
+        context['groups'] = [
+            g for g in self.get_object().groups.all() if g in groups
+        ]
+
+        return context
+
+    def get_avatar_url(self):
+        user = self.get_object()
+        gravatar_hash = md5(user.email).hexdigest()
+        return "https://gravatar.com/avatar/%s" % gravatar_hash

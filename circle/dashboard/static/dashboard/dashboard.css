@@ -654,3 +654,13 @@ textarea[name="list-new-namelist"] {
   80% { -webkit-transform: scale(1); }
   100% { -webkit-transform: scale(1); }
 }
+
+.dashboard-profile-vm-list, .dashboard-profile-group-list {
+  list-style: none;
+  padding-left: 28px;
+}
+
+.dashboard-profile-vm-list a, .dashboard-profile-vm-list a:hover {
+  text-decoration: none;
+  color: #555;
+}

@@ -49,7 +49,7 @@
           </ul>
           {% if user.is_authenticated %}
             <a class="navbar-brand pull-right" href="{% url "logout" %}?next={% url "login" %}" style="color: white; font-size: 10px;"><i class="icon-signout icon-sign-out"></i> {% trans "Log out" %}</a>
-            <a class="navbar-brand pull-right" href="{% url "dashboard.views.profile" %}" title="{% trans "User profile" %}" style="color: white; font-size: 10px;"><i class="icon-user "></i> {{user}}</a>
+            <a class="navbar-brand pull-right" href="{% url "dashboard.views.profile" pk=user.pk %}" title="{% trans "User profile" %}" style="color: white; font-size: 10px;"><i class="icon-user "></i> {{user}}</a>
             {% if user.is_superuser %}
               <a class="navbar-brand pull-right" href="/network/" style="color: white; font-size: 10px;"><i class="icon-globe"></i> {% trans "Network" %}</a>
               <a class="navbar-brand pull-right" href="/admin/" style="color: white; font-size: 10px;"><i class="icon-cogs"></i> {% trans "Admin" %}</a>
