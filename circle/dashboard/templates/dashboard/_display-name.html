@@ -1,0 +1,15 @@
+{% load i18n %}
+
+{% if user.get_full_name|length > 0 %}
+  {{ user.get_full_name }}
+{% else %}
+  {{ user.username }}
+{% endif %}
+
+{% if show_org %}
+  {% if user.profile and user.profile.org_id|length > 0 %}
+    ({{ user.profile.org_id }})
+  {% else %}
+    ({% trans "username" %}: {{ user.username }})
+  {% endif %}
+{% endif %}
