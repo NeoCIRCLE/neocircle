@@ -133,6 +133,8 @@ urlpatterns = patterns(
     url(r'^interface/(?P<pk>\d+)/delete/$', InterfaceDeleteView.as_view(),
         name="dashboard.views.interface-delete"),
 
+    url(r'^profile/$', MyPreferencesView.as_view(),
+        name="dashboard.views.profile-preferences"),
     url(r'^profile/(?P<pk>\d+)/$', ProfileView.as_view(),
         name="dashboard.views.profile"),
     url(r'^profile/(?P<pk>\d+)/use_gravatar/$', toggle_use_gravatar),

@@ -2462,7 +2462,7 @@ class MyPreferencesView(UpdateView):
     def post(self, request, *args, **kwargs):
         self.ojbect = self.get_object()
         redirect_response = HttpResponseRedirect(
-            reverse("dashboard.views.profile"))
+            reverse("dashboard.views.profile-preferences"))
         if "preferred_language" in request.POST:
             form = MyProfileForm(request.POST, instance=self.get_object())
             if form.is_valid():
