@@ -90,7 +90,7 @@ class Profile(Model):
                                  valid_until)
 
     def get_absolute_url(self):
-        return reverse("dashboard.views.profile")
+        return reverse("dashboard.views.profile", kwargs={'pk': self.user.pk})
 
 
 class GroupProfile(AclBase):
