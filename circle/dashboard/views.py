@@ -2297,7 +2297,8 @@ class GraphViewBase(LoginRequiredMixin, View):
                   'title': title.encode('UTF-8'),
                   'width': '500',
                   'height': '200'}
-        response = requests.post('%s/render/' % graphite_url, data=params)
+        logger.debug('%s %s', graphite_url, params)
+        response = requests.get('%s/render/' % graphite_url, params=params)
         return HttpResponse(response.content, mimetype="image/png")
 
     def get_prefix(self, instance):
