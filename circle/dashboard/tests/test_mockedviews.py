@@ -49,6 +49,7 @@ class ViewUserTestCase(unittest.TestCase):
         with patch.object(InstanceActivityDetail, 'get_object') as go:
             act = MagicMock(spec=InstanceActivity)
             act._meta.object_name = "InstanceActivity"
+            act.user.pk = 1
             go.return_value = act
             view = InstanceActivityDetail.as_view()
             self.assertEquals(view(request, pk=1234).render().status_code, 200)

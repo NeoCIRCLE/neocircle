@@ -47,7 +47,7 @@
               </ul>                                                                   
             </li>               
           </ul>
-          {% if user.is_authenticated %}
+          {% if user.is_authenticated and user.pk %}
             <a class="navbar-brand pull-right" href="{% url "logout" %}?next={% url "login" %}" style="color: white; font-size: 10px;"><i class="icon-signout icon-sign-out"></i> {% trans "Log out" %}</a>
             <a class="navbar-brand pull-right" href="{% url "dashboard.views.profile" pk=user.pk %}" title="{% trans "User profile" %}" style="color: white; font-size: 10px;"><i class="icon-user "></i> {{user}}</a>
             {% if user.is_superuser %}
