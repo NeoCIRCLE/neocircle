@@ -170,7 +170,7 @@ configure vim like we do::
   
   $ mkdir -p ~/.vim/autoload ~/.vim/bundle
   $ curl -Sso ~/.vim/autoload/pathogen.vim \
-        https://raw.github.com/tpope/vim-pathogen/master/autoload/pathogen.vim
+          https://raw.githubusercontent.com/tpope/vim-pathogen/master/autoload/pathogen.vim
   $ cd ~/.vim; mkdir -p bundle; cd bundle && git clone \
         git://github.com/klen/python-mode.git
   $ cat >>~/.vimrc <<END
