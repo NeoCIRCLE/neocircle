@@ -22,19 +22,19 @@
             <img id="dashboard-profile-avatar" src="{{ avatar_url }}" class="img-rounded"/>
           </div>
           <div class="" style="padding-left: 215px;">
-            <p>Username: {{ profile.username }}</p>
-            <p>Organisation ID: {{ profile.profile.org_id|default:"-" }}</p>
-            <p>First name: {{ profile.first_name|default:"-" }}</p>
-            <p>Last name: {{ profile.last_name|default:"-" }}</p>
-            <p>Email address: {{ profile.email }}</p>
+            <p>{% trans "Username" %}: {{ profile.username }}</p>
+            <p>{% trans "Organisation ID" %}: {{ profile.profile.org_id|default:"-" }}</p>
+            <p>{% trans "First name" %}: {{ profile.first_name|default:"-" }}</p>
+            <p>{% trans "Last name" %}: {{ profile.last_name|default:"-" }}</p>
+            <p>{% trans "Email address" %}: {{ profile.email }}</p>
             {% if request.user == profile %}
             <p>
-              Use email address as Gravatar profile image:
+              {% trans "Use email address as Gravatar profile image" %}:
               <input id="dashboard-profile-use-gravatar" data-user="{{ profile.pk }}"
               {% if profile.profile.use_gravatar %}checked="checked"{% endif %}
-              type="checkbox"/> <a href="https://gravatar.com">What's Gravatar?</a>
+              type="checkbox"/> <a href="https://gravatar.com">{% trans "What's Gravatar?" %}</a>
             </p>
-            <a href="{% url "dashboard.views.profile-preferences" %}">Change password or language</a>
+            <a href="{% url "dashboard.views.profile-preferences" %}">{% trans "Change password and language" %}</a>
             {% endif %}
           </div>
           <div class="clearfix"></div>
@@ -43,7 +43,7 @@
         {% if perm_group_list %}
           <hr />
           <h4>
-            <i class="icon-group"></i> Groups
+            <i class="icon-group"></i> {% trans "Groups" %}
           </h4>
           <ul class="dashboard-profile-group-list">
           {% for g in groups %}
@@ -58,7 +58,7 @@
 
         <h4>
           <i class="icon-desktop"></i>
-          Virtual machines owned by the user ({{ instances_owned|length }})
+          {% trans "Virtual machines owned by the user" %} ({{ instances_owned|length }})
         </h4>
         <ul class="dashboard-profile-vm-list">
         {% for i in instances_owned %}
@@ -79,7 +79,7 @@
 
         <h4>
           <i class="icon-desktop"></i> 
-          Virtual machines with access ({{ instances_with_access|length }})
+          {% trans "Virtual machines with access" %} ({{ instances_with_access|length }})
         </h4>
         <ul class="dashboard-profile-vm-list">
         {% for i in instances_with_access %}
