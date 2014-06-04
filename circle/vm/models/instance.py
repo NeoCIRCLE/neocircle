@@ -607,12 +607,12 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             'raw_data': "" if not self.raw_data else self.raw_data
         }
 
-    def get_remote_queue_name(self, queue_id):
+    def get_remote_queue_name(self, queue_id, priority=None):
         """Get the remote worker queue name of this instance with the specified
            queue ID.
         """
         if self.node:
-            return self.node.get_remote_queue_name(queue_id)
+            return self.node.get_remote_queue_name(queue_id, priority)
         else:
             raise Node.DoesNotExist()
 
@@ -773,7 +773,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             net.shutdown()
 
     def delete_vm(self, timeout=15):
-        queue_name = self.get_remote_queue_name('vm')
+        queue_name = self.get_remote_queue_name('vm', 'fast')
         try:
             return vm_tasks.destroy.apply_async(args=[self.vm_name],
                                                 queue=queue_name
@@ -786,38 +786,38 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                 raise
 
     def deploy_vm(self, timeout=15):
-        queue_name = self.get_remote_queue_name('vm')
+        queue_name = self.get_remote_queue_name('vm', 'slow')
         return vm_tasks.deploy.apply_async(args=[self.get_vm_desc()],
                                            queue=queue_name
                                            ).get(timeout=timeout)
 
     def migrate_vm(self, to_node, timeout=120):
-        queue_name = self.get_remote_queue_name('vm')
+        queue_name = self.get_remote_queue_name('vm', 'slow')
         return vm_tasks.migrate.apply_async(args=[self.vm_name,
                                                   to_node.host.hostname],
                                             queue=queue_name
                                             ).get(timeout=timeout)
 
     def reboot_vm(self, timeout=5):
-        queue_name = self.get_remote_queue_name('vm')
+        queue_name = self.get_remote_queue_name('vm', 'fast')
         return vm_tasks.reboot.apply_async(args=[self.vm_name],
                                            queue=queue_name
                                            ).get(timeout=timeout)
 
     def reset_vm(self, timeout=5):
-        queue_name = self.get_remote_queue_name('vm')
+        queue_name = self.get_remote_queue_name('vm', 'fast')
         return vm_tasks.reset.apply_async(args=[self.vm_name],
                                           queue=queue_name
                                           ).get(timeout=timeout)
 
     def resume_vm(self, timeout=15):
-        queue_name = self.get_remote_queue_name('vm')
+        queue_name = self.get_remote_queue_name('vm', 'slow')
         return vm_tasks.resume.apply_async(args=[self.vm_name],
                                            queue=queue_name
                                            ).get(timeout=timeout)
 
     def shutdown_vm(self, timeout=120):
-        queue_name = self.get_remote_queue_name('vm')
+        queue_name = self.get_remote_queue_name('vm', 'slow')
         logger.debug("RPC Shutdown at queue: %s, for vm: %s.", queue_name,
                      self.vm_name)
         return vm_tasks.shutdown.apply_async(kwargs={'name': self.vm_name},
@@ -825,14 +825,14 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                                              ).get(timeout=timeout)
 
     def suspend_vm(self, timeout=60):
-        queue_name = self.get_remote_queue_name('vm')
+        queue_name = self.get_remote_queue_name('vm', 'slow')
         return vm_tasks.sleep.apply_async(args=[self.vm_name,
                                                 self.mem_dump['path']],
                                           queue=queue_name
                                           ).get(timeout=timeout)
 
     def wake_up_vm(self, timeout=60):
-        queue_name = self.get_remote_queue_name('vm')
+        queue_name = self.get_remote_queue_name('vm', 'slow')
         return vm_tasks.wake_up.apply_async(args=[self.vm_name,
                                                   self.mem_dump['path']],
                                             queue=queue_name
