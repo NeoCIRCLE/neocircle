@@ -2663,12 +2663,9 @@ class ProfileView(DetailView):
         context['instances_owned'] = Instance.get_objects_with_level(
             "owner", self.get_object(), disregard_superuser=True
         ).filter(destroyed_at=None)
-        context['instances_with_access'] = [
-            inst for inst in Instance.get_objects_with_level(
-                "user", self.get_object(), disregard_superuser=True
-            ).filter(destroyed_at=None)
-            if inst not in context['instances_owned']
-        ]
+        context['instances_with_access'] = Instance.get_objects_with_level(
+            "user", self.get_object(), disregard_superuser=True
+        ).filter(destroyed_at=None).exclude(pk__in=context['instances_owned'])
 
         group_profiles = GroupProfile.get_objects_with_level(
             "operator", self.request.user)
@@ -2677,6 +2674,24 @@ class ProfileView(DetailView):
             g for g in self.get_object().groups.all() if g in groups
         ]
 
+        # permissions
+        # show groups only if the user is superuser, or have access
+        # to any of the groups the user belongs to
+        context['perm_group_list'] = (
+            self.request.user.is_superuser or len(context['groups']) > 0)
+
+        # filter the virtual machine list
+        # if the logged in user is not superuser or not the user itself
+        # filter the list so only those virtual machines are shown that are
+        # originated from templates the logged in user is operator or higher
+        if (not (self.request.user.is_superuser
+                 or self.request.user == self.get_object())):
+            it = InstanceTemplate.get_objects_with_level("operator",
+                                                         self.request.user)
+            context['instances_owned'] = context['instances_owned'].filter(
+                template__in=it)
+            context['instances_with_access'] = context[
+                'instances_with_access'].filter(template__in=it)
         return context
 
     def get_avatar_url(self):

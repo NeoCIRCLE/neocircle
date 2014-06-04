@@ -35,17 +35,19 @@
           <div class="clearfix"></div>
         </div>
 
-        <hr />
-        <h4>
-          <i class="icon-group"></i> Groups
-        </h4>
-        <ul class="dashboard-profile-group-list">
-        {% for g in groups %}
-          <li>{{ g.name }}</li>
-          {% empty %}
-          {% trans "This user is not in any group." %}
-        {% endfor %}
-        </ul>
+        {% if perm_group_list %}
+          <hr />
+          <h4>
+            <i class="icon-group"></i> Groups
+          </h4>
+          <ul class="dashboard-profile-group-list">
+          {% for g in groups %}
+            <li>{{ g.name }}</li>
+            {% empty %}
+            {% trans "This user is not in any group." %}
+          {% endfor %}
+          </ul>
+        {% endif %}
 
         <hr />
 
