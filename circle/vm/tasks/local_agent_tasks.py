@@ -17,13 +17,16 @@
 
 from manager.mancelery import celery
 from vm.tasks.agent_tasks import (restart_networking, change_password,
-                                  set_time, set_hostname)
+                                  set_time, set_hostname, start_ssh,
+                                  cleanup)
 import time
 
 
 def send_init_commands(instance, act, vm):
     queue = instance.get_remote_queue_name("agent")
 
+    with act.sub_activity('cleanup'):
+        cleanup.apply_async(queue=queue, args=(vm, ))
     with act.sub_activity('restart_networking'):
         restart_networking.apply_async(queue=queue, args=(vm, ))
     with act.sub_activity('change_password'):
@@ -47,6 +50,10 @@ def agent_started(vm):
             pass
         if not initialized:
             send_init_commands(instance, act, vm)
+        with act.sub_activity('start_ssh'):
+            queue = instance.get_remote_queue_name("agent")
+            start_ssh.apply_async(
+                queue=queue, args=(vm, ))
 
 
 @celery.task
