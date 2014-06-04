@@ -19,7 +19,7 @@
       <div class="panel-body">
         <div>
           <div class="" style="float: left">
-            <img src="{{ avatar_url }}?s=200" class="img-rounded"/>
+            <img id="dashboard-profile-avatar" src="{{ avatar_url }}" class="img-rounded"/>
           </div>
           <div class="" style="padding-left: 215px;">
             <p>Username: {{ profile.username }}</p>
@@ -27,10 +27,14 @@
             <p>First name: {{ profile.first_name|default:"-" }}</p>
             <p>Last name: {{ profile.last_name|default:"-" }}</p>
             <p>Email address: {{ profile.email }}</p>
+            {% if request.user == profile %}
             <p>
               Use email address as Gravatar profile image:
-              <input type="checkbox"/> <a href="https://gravatar.com">What's Gravatar?</a>
-            </p> 
+              <input id="dashboard-profile-use-gravatar" data-user="{{ profile.pk }}"
+              {% if profile.profile.use_gravatar %}checked="checked"{% endif %}
+              type="checkbox"/> <a href="https://gravatar.com">What's Gravatar?</a>
+            </p>
+            {% endif %}
           </div>
           <div class="clearfix"></div>
         </div>
@@ -95,4 +99,8 @@
   </div>
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{{ STATIC_URL }}dashboard/profile.js"></script>
 {% endblock %}

@@ -34,7 +34,7 @@ from .views import (
     GroupCreate,
     TemplateChoose,
     UserCreationView,
-    ProfileView,
+    ProfileView, toggle_use_gravatar,
 )
 
 urlpatterns = patterns(
@@ -133,8 +133,9 @@ urlpatterns = patterns(
     url(r'^interface/(?P<pk>\d+)/delete/$', InterfaceDeleteView.as_view(),
         name="dashboard.views.interface-delete"),
 
-    url(r'^profile/(?P<pk>\d+)$', ProfileView.as_view(),
+    url(r'^profile/(?P<pk>\d+)/$', ProfileView.as_view(),
         name="dashboard.views.profile"),
+    url(r'^profile/(?P<pk>\d+)/use_gravatar/$', toggle_use_gravatar),
 
     url(r'^group/(?P<group_pk>\d+)/remove/acl/user/(?P<member_pk>\d+)/$',
         GroupRemoveAclUserView.as_view(),
