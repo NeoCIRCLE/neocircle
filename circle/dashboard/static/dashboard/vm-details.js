@@ -264,6 +264,31 @@ $(function() {
     return false;
   });
 
+  // screenshot
+  $("#getScreenshotButton").click(function() {
+    var vm = $(this).data("vm-pk");
+    var ct = $("#vm-console-screenshot");
+    $("i", this).addClass("icon-spinner icon-spin");
+    $(this).prop("disabled", true);
+    ct.slideDown();
+    var img = $("img", ct).prop("src", '/dashboard/vm/' + vm + '/screenshot/');
+  });
+
+  // if the image is loaded remove the spinning stuff
+  // note: this should not work if the image is cached, but it's not
+  // see: http://stackoverflow.com/a/3877079/1112653
+  $("#vm-console-screenshot img").load(function(e) {
+    $("#getScreenshotButton").prop("disabled", false)
+    .find("i").removeClass("icon-spinner icon-spin");
+
+  });
+    
+  
+  // screenshot close
+  $("#vm-console-screenshot button").click(function() {
+    $(this).parent("div").slideUp();
+  });
+
 });
 
 

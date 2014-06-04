@@ -1496,14 +1496,6 @@ class NodeCreate(LoginRequiredMixin, SuperuserRequiredMixin, TemplateView):
         })
         return self.render_to_response(context)
 
-    def get_context_data(self, **kwargs):
-        context = super(NodeCreate, self).get_context_data(**kwargs)
-        # TODO acl
-        context.update({
-        })
-
-        return context
-
     # TODO handle not ajax posts
     def post(self, request, *args, **kwargs):
         if not self.request.user.is_authenticated():
@@ -1594,8 +1586,7 @@ class VmDelete(LoginRequiredMixin, DeleteView):
         object = self.get_object()
         if not object.has_level(self.request.user, 'owner'):
             raise PermissionDenied()
-        # this is redundant now, but if we wanna add more to print
-        # we'll need this
+
         context = super(VmDelete, self).get_context_data(**kwargs)
         return context
 
@@ -1633,12 +1624,6 @@ class NodeDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
             return ['dashboard/confirm/ajax-delete.html']
         else:
             return ['dashboard/confirm/base-delete.html']
-
-    def get_context_data(self, **kwargs):
-        # this is redundant now, but if we wanna add more to print
-        # we'll need this
-        context = super(NodeDelete, self).get_context_data(**kwargs)
-        return context
 
     # github.com/django/django/blob/master/django/views/generic/edit.py#L245
     def delete(self, request, *args, **kwargs):
@@ -2650,3 +2635,16 @@ class InterfaceDeleteView(DeleteView):
         if redirect:
             return redirect
         self.object.instance.get_absolute_url()
+
+
+@require_GET
+def get_vm_screenshot(request, pk):
+    instance = get_object_or_404(Instance, pk=pk)
+    try:
+        image = instance.screenshot(instance=instance,
+                                    user=request.user).getvalue()
+    except:
+        # TODO handle this better
+        raise Http404()
+
+    return HttpResponse(image, mimetype="image/png")

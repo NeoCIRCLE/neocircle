@@ -1,9 +1,17 @@
 {% load i18n %}
 <div class="btn-toolbar">
-  <button id="sendCtrlAltDelButton" class="btn btn-danger small">{% trans "Send Ctrl+Alt+Del" %}</button>
-  <button id="sendPasswordButton" class="btn btn-default small">{% trans "Type password" %}</button>
+  <button id="sendCtrlAltDelButton" class="btn btn-danger btn-sm">{% trans "Send Ctrl+Alt+Del" %}</button>
+  <button id="sendPasswordButton" class="btn btn-default btn-sm">{% trans "Type password" %}</button>
+  <button id="getScreenshotButton" class="btn btn-info btn-sm pull-right" data-vm-pk="{{ instance.pk }}"><i class="icon-picture"></i> {% trans "Screenshot" %}</button>
 </div>
 <div class="alert alert-info" id="noVNC_status">
+</div>
+
+<div id="vm-console-screenshot">
+  <button class="btn btn-danger btn-sm pull-right">{% trans "Close" %}</button>
+  <h3>{% trans "Screenshot" %}</h3>
+  <img />
+  <hr />
 </div>
 
 <canvas id="noVNC_canvas" width="640px" height="20px">Canvas not supported.
