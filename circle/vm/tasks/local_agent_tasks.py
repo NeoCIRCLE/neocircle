@@ -17,7 +17,7 @@
 
 from manager.mancelery import celery
 from vm.tasks.agent_tasks import (restart_networking, change_password,
-                                  set_time, set_hostname, start_ssh,
+                                  set_time, set_hostname, start_access_server,
                                   cleanup)
 import time
 
@@ -50,9 +50,9 @@ def agent_started(vm):
             pass
         if not initialized:
             send_init_commands(instance, act, vm)
-        with act.sub_activity('start_ssh'):
+        with act.sub_activity('start_access_server'):
             queue = instance.get_remote_queue_name("agent")
-            start_ssh.apply_async(
+            start_access_server.apply_async(
                 queue=queue, args=(vm, ))
 
 

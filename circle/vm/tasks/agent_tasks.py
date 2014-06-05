@@ -48,6 +48,6 @@ def cleanup(vm):
     pass
 
 
-@celery.task(name='agent.start_ssh')
-def start_ssh(vm):
+@celery.task(name='agent.start_access_server')
+def start_access_server(vm):
     pass
