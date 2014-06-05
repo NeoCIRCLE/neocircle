@@ -138,9 +138,9 @@ urlpatterns = patterns(
 
     url(r'^profile/$', MyPreferencesView.as_view(),
         name="dashboard.views.profile-preferences"),
-    url(r'^profile/(?P<username>\w+)/$', ProfileView.as_view(),
+    url(r'^profile/(?P<username>[^/]+)/$', ProfileView.as_view(),
         name="dashboard.views.profile"),
-    url(r'^profile/(?P<username>\w+)/use_gravatar/$', toggle_use_gravatar),
+    url(r'^profile/(?P<username>[^/]+)/use_gravatar/$', toggle_use_gravatar),
 
     url(r'^group/(?P<group_pk>\d+)/remove/acl/user/(?P<member_pk>\d+)/$',
         GroupRemoveAclUserView.as_view(),
