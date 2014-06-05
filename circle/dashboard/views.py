@@ -1629,7 +1629,7 @@ class GroupProfileUpdate(GroupCodeMixin, LoginRequiredMixin, UpdateView):
     def get_available_group_codes(cls, request, extra=None):
         result = super(GroupProfileUpdate, cls).get_available_group_codes(
             request)
-        if extra and not extra in result:
+        if extra and extra not in result:
             result += [extra]
         return result
 
