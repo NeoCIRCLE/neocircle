@@ -2661,20 +2661,19 @@ class ProfileView(LoginRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(ProfileView, self).get_context_data(**kwargs)
-        context['profile'] = self.get_object()
-        context['avatar_url'] = get_user_avatar_url(context['profile'])
+        user = self.get_object()
+        context['profile'] = user
+        context['avatar_url'] = get_user_avatar_url(user)
         context['instances_owned'] = Instance.get_objects_with_level(
-            "owner", self.get_object(), disregard_superuser=True
-        ).filter(destroyed_at=None)
+            "owner", user, disregard_superuser=True).filter(destroyed_at=None)
         context['instances_with_access'] = Instance.get_objects_with_level(
-            "user", self.get_object(), disregard_superuser=True
+            "user", user, disregard_superuser=True
         ).filter(destroyed_at=None).exclude(pk__in=context['instances_owned'])
 
         group_profiles = GroupProfile.get_objects_with_level(
             "operator", self.request.user)
         groups = Group.objects.filter(groupprofile__in=group_profiles)
-        context['groups'] = self.get_object().groups.filter(
-            pk__in=groups)
+        context['groups'] = user.groups.filter(pk__in=groups)
 
         # permissions
         # show groups only if the user is superuser, or have access
@@ -2686,8 +2685,7 @@ class ProfileView(LoginRequiredMixin, DetailView):
         # if the logged in user is not superuser or not the user itself
         # filter the list so only those virtual machines are shown that are
         # originated from templates the logged in user is operator or higher
-        if (not (self.request.user.is_superuser
-                 or self.request.user == self.get_object())):
+        if not (self.request.user.is_superuser or self.request.user == user):
             it = InstanceTemplate.get_objects_with_level("operator",
                                                          self.request.user)
             context['instances_owned'] = context['instances_owned'].filter(
