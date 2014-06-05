@@ -93,7 +93,7 @@ class Node(OperatedMixin, TimeStampedModel):
         Check if node is online by queue is available.
         """
         try:
-            self.get_remote_queue_name("vm")
+            self.get_remote_queue_name("vm", "fast")
         except:
             return False
         else:
@@ -105,6 +105,7 @@ class Node(OperatedMixin, TimeStampedModel):
     @method_cache(300)
     def get_info(self):
         return self.remote_query(vm_tasks.get_info,
+                                 priority='fast',
                                  default={'core_num': '',
                                           'ram_size': '0',
                                           'architecture': ''})
@@ -163,16 +164,19 @@ class Node(OperatedMixin, TimeStampedModel):
         return self.ram_size * self.overcommit
 
     @method_cache(30)
-    def get_remote_queue_name(self, queue_id):
+    def get_remote_queue_name(self, queue_id, priority=None):
         """Returns the name of the remote celery queue for this node.
 
         Throws Exception if there is no worker on the queue.
         The result may include dead queues because of caching.
         """
 
-        if vm_tasks.check_queue(self.host.hostname, queue_id):
+        if vm_tasks.check_queue(self.host.hostname, queue_id, priority):
+            queue_name = self.host.hostname + "." + queue_id
+            if priority is not None:
+                queue_name = queue_name + "." + priority
             self.node_online()
-            return self.host.hostname + "." + queue_id
+            return queue_name
         else:
             if self.enabled:
                 self.node_offline()
@@ -222,7 +226,8 @@ class Node(OperatedMixin, TimeStampedModel):
                         ", but enabled" if self.enabled else "")
         # TODO: check if we should reschedule any VMs?
 
-    def remote_query(self, task, timeout=30, raise_=False, default=None):
+    def remote_query(self, task, timeout=30, priority=None, raise_=False,
+                     default=None):
         """Query the given task, and get the result.
 
         If the result is not ready or worker not reachable
@@ -231,7 +236,8 @@ class Node(OperatedMixin, TimeStampedModel):
         """
         try:
             r = task.apply_async(
-                queue=self.get_remote_queue_name('vm'), expires=timeout + 60)
+                queue=self.get_remote_queue_name('vm', priority),
+                expires=timeout + 60)
             return r.get(timeout=timeout)
         except (TimeoutError, WorkerNotFound):
             if raise_:
@@ -244,7 +250,8 @@ class Node(OperatedMixin, TimeStampedModel):
         try:
             handler = GraphiteHandler()
         except RuntimeError:
-            return self.remote_query(vm_tasks.get_node_metrics, 30)
+            return self.remote_query(vm_tasks.get_node_metrics, timeout=30,
+                                     priority="fast")
 
         query = Query()
         query.set_target(self.host.hostname + ".circle")
@@ -309,7 +316,8 @@ class Node(OperatedMixin, TimeStampedModel):
         vm_state_changed hook.
         """
         domains = {}
-        domain_list = self.remote_query(vm_tasks.list_domains_info, timeout=5)
+        domain_list = self.remote_query(vm_tasks.list_domains_info, timeout=5,
+                                        priority="fast")
         if domain_list is None:
             logger.info("Monitoring failed at: %s", self.name)
             return

@@ -23,16 +23,19 @@ from manager.mancelery import celery
 logger = getLogger(__name__)
 
 
-def check_queue(node_hostname, queue_id):
+def check_queue(node_hostname, queue_id, priority=None):
     """True if the queue is alive.
 
-    Example: check_queue('node01', 'vm'):
+    Example: check_queue('node01', 'vm', 'slow'):
     :param node_hostname: Short hostname of the node.
     :param queue_id: Queue identifier (eg. vm).
+    :param priority: can be 'slow', 'fast' or None
     """
     # drivers = ['vmdriver', 'netdriver', 'agentdriver']
     # worker_list = [node_hostname + "." + d for d in drivers]
     queue_name = node_hostname + "." + queue_id
+    if priority is not None:
+        queue_name = queue_name + "." + priority
     active_queues = get_queues()
     if active_queues is None:
         return False

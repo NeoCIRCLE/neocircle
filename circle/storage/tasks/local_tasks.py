@@ -20,14 +20,16 @@ from celery.contrib.abortable import AbortableTask
 
 
 @celery.task
-def check_queue(storage, queue_id):
+def check_queue(storage, queue_id, priority):
     ''' Celery inspect job to check for active workers at queue_id
         return True/False
     '''
-    drivers = ['storage', 'download']
-    worker_list = [storage + "." + d for d in drivers]
     queue_name = storage + "." + queue_id
-    active_queues = celery.control.inspect(worker_list).active_queues()
+    if priority is not None:
+        queue_name = queue_name + "." + priority
+    inspect = celery.control.inspect()
+    inspect.timeout = 0.1
+    active_queues = inspect.active_queues()
     if active_queues is None:
         return False
 

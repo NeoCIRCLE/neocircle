@@ -59,11 +59,12 @@ class DataStore(Model):
     def __unicode__(self):
         return u'%s (%s)' % (self.name, self.path)
 
-    def get_remote_queue_name(self, queue_id, check_worker=True):
+    def get_remote_queue_name(self, queue_id, priority=None,
+                              check_worker=True):
         logger.debug("Checking for storage queue %s.%s",
                      self.hostname, queue_id)
         if not check_worker or local_tasks.check_queue(self.hostname,
-                                                       queue_id):
+                                                       queue_id, priority):
             return self.hostname + '.' + queue_id
         else:
             raise WorkerNotFound()
@@ -292,11 +293,13 @@ class Disk(AclBase, TimeStampedModel):
             'type': 'snapshot' if self.base else 'normal'
         }
 
-    def get_remote_queue_name(self, queue_id='storage', check_worker=True):
+    def get_remote_queue_name(self, queue_id='storage', priority=None,
+                              check_worker=True):
         """Returns the proper queue name based on the datastore.
         """
         if self.datastore:
-            return self.datastore.get_remote_queue_name(queue_id, check_worker)
+            return self.datastore.get_remote_queue_name(queue_id, priority,
+                                                        check_worker)
         else:
             return None
 
