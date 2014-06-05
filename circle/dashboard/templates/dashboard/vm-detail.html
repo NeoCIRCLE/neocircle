@@ -71,8 +71,20 @@
       <dl class="dl-horizontal vm-details-connection">
         <dt>{% trans "Protocol" %}</dt>
         <dd>{{ instance.access_method|upper }}</dd>
-        <dt>{% trans "Host" %}</dt>
-        <dd>{{ instance.get_connect_host }}:<strong>{{ instance.get_connect_port }}</strong></dd>
+          <dt>{% trans "Host" %}</dt>
+          <dd>
+            {% if instance.get_connect_port %}
+              {{ instance.get_connect_host }}:<strong>{{ instance.get_connect_port }}</strong>
+            {% else %}
+              <strong>{% trans "The required port for this protocol is not forwarded." %}</strong> 
+            {% endif %}
+          </dd>
+
+        {% if instance.ipv6 %}
+          <dt>{% trans "Host (IPv6)" %}</dt>
+          <dd>{{ ipv6_host }}:<strong>{{ instance.ipv6_port }}</strong></dd>
+        {% endif %}
+
         <dt>{% trans "Username" %}</dt>
         <dd>cloud</dd>
         <dt>{% trans "Password" %}</dt>
@@ -100,7 +112,10 @@
 
       <div class="input-group">
         <span class="input-group-addon input-tags">{% trans "Command" %}</span>
-        <input type="text" value="{{ instance.get_connect_command }}" id="vm-details-connection-string" class="form-control input-tags" />
+        <input type="text" 
+        value="{% if instance.get_connect_command %}{{ instance.get_connect_command }}
+        {% else %}{% trans "Connection is not possible." %}{% endif %}" 
+        id="vm-details-connection-string" class="form-control input-tags" />
         <span class="input-group-addon input-tags" id="vm-details-connection-string-copy">
           <i class="icon-copy" title="{% trans "Select all" %}"></i>
         </span>
