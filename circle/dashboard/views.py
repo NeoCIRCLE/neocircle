@@ -1132,7 +1132,7 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
         queryset = Instance.get_objects_with_level(
             'user', self.request.user).filter(destroyed_at=None)
 
-        self.create_fake_get_for_filter()
+        self.create_fake_get()
         sort = self.request.GET.get("sort")
         # remove "-" that means descending order
         # also check if the column name is valid
@@ -1143,11 +1143,23 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
         return queryset.filter(**self.get_queryset_filters()
                                ).select_related('owner', 'node')
 
-    def create_fake_get_for_filter(self):
+    def create_fake_get(self):
+        """
+        Updates the request's GET dict to filter the vm list
+        For example: "name:xy node:1" updates the GET dict
+                     to resemble this URL ?name=xy&node=1
+
+        "name:xy node:1".split(":") becomes ["name", "xy node", "1"]
+        we pop the the first element and use it as the first dict key
+        then we iterate over the rest of the list and split by the last
+        whitespace, the first part of this list will be the previous key's
+        value, then last part of the list will be the next key.
+        The final dict looks like this: {'name': xy, 'node':1}
+        """
         s = self.request.GET.get("s")
         if s:
             s = s.split(":")
-            if len(s) < 2:
+            if len(s) < 2:  # if there is no ':' in the string, filter by name
                 got = {'name': s[0]}
             else:
                 latest = s.pop(0)
