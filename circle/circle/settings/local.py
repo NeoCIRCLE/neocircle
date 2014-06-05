@@ -95,3 +95,8 @@ for i in LOCAL_APPS:
     LOGGING['loggers'][i] = {'handlers': ['console'], 'level': 'DEBUG'}
 
 CRISPY_FAIL_SILENTLY = not DEBUG
+
+# propagate exceptions from signals
+if DEBUG:
+    from django.dispatch import Signal
+    Signal.send_robust = Signal.send
