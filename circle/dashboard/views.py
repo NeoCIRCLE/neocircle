@@ -21,6 +21,7 @@ from os import getenv
 import json
 import logging
 import re
+from hashlib import md5
 import requests
 
 from django.conf import settings
@@ -36,7 +37,7 @@ from django.core.urlresolvers import reverse, reverse_lazy
 from django.db.models import Count
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import redirect, render, get_object_or_404
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_GET, require_POST
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import (TemplateView, DetailView, View, DeleteView,
                                   UpdateView, CreateView, ListView)
@@ -46,6 +47,7 @@ from django.utils.translation import ungettext as __
 from django.template.defaultfilters import title as title_filter
 from django.template.loader import render_to_string
 from django.template import RequestContext
+from django.templatetags.static import static
 
 from django.forms.models import inlineformset_factory
 from django_tables2 import SingleTableView
@@ -2487,7 +2489,7 @@ class MyPreferencesView(UpdateView):
     def post(self, request, *args, **kwargs):
         self.ojbect = self.get_object()
         redirect_response = HttpResponseRedirect(
-            reverse("dashboard.views.profile"))
+            reverse("dashboard.views.profile-preferences"))
         if "preferred_language" in request.POST:
             form = MyProfileForm(request.POST, instance=self.get_object())
             if form.is_valid():
@@ -2689,3 +2691,70 @@ def get_vm_screenshot(request, pk):
         raise Http404()
 
     return HttpResponse(image, mimetype="image/png")
+
+
+class ProfileView(LoginRequiredMixin, DetailView):
+    template_name = "dashboard/profile.html"
+    model = User
+    slug_field = "username"
+    slug_url_kwarg = "username"
+
+    def get_context_data(self, **kwargs):
+        context = super(ProfileView, self).get_context_data(**kwargs)
+        user = self.get_object()
+        context['profile'] = user
+        context['avatar_url'] = get_user_avatar_url(user)
+        context['instances_owned'] = Instance.get_objects_with_level(
+            "owner", user, disregard_superuser=True).filter(destroyed_at=None)
+        context['instances_with_access'] = Instance.get_objects_with_level(
+            "user", user, disregard_superuser=True
+        ).filter(destroyed_at=None).exclude(pk__in=context['instances_owned'])
+
+        group_profiles = GroupProfile.get_objects_with_level(
+            "operator", self.request.user)
+        groups = Group.objects.filter(groupprofile__in=group_profiles)
+        context['groups'] = user.groups.filter(pk__in=groups)
+
+        # permissions
+        # show groups only if the user is superuser, or have access
+        # to any of the groups the user belongs to
+        context['perm_group_list'] = (
+            self.request.user.is_superuser or len(context['groups']) > 0)
+
+        # filter the virtual machine list
+        # if the logged in user is not superuser or not the user itself
+        # filter the list so only those virtual machines are shown that are
+        # originated from templates the logged in user is operator or higher
+        if not (self.request.user.is_superuser or self.request.user == user):
+            it = InstanceTemplate.get_objects_with_level("operator",
+                                                         self.request.user)
+            context['instances_owned'] = context['instances_owned'].filter(
+                template__in=it)
+            context['instances_with_access'] = context[
+                'instances_with_access'].filter(template__in=it)
+        return context
+
+
+@require_POST
+def toggle_use_gravatar(request, **kwargs):
+    user = get_object_or_404(User, username=kwargs['username'])
+    if not request.user == user:
+        raise PermissionDenied()
+
+    profile = user.profile
+    profile.use_gravatar = not profile.use_gravatar
+    profile.save()
+
+    new_avatar_url = get_user_avatar_url(user)
+    return HttpResponse(
+        json.dumps({'new_avatar_url': new_avatar_url}),
+        content_type="application/json",
+    )
+
+
+def get_user_avatar_url(user):
+    if user.profile.use_gravatar:
+        gravatar_hash = md5(user.email).hexdigest()
+        return "https://secure.gravatar.com/avatar/%s?s=200" % gravatar_hash
+    else:
+        return static("dashboard/img/avatar.png")

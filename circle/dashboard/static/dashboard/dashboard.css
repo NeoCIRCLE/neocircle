@@ -692,3 +692,25 @@ textarea[name="list-new-namelist"] {
 #vm-details-connection-string-copy {
   cursor: pointer;
 }
+
+.dashboard-profile-vm-list, .dashboard-profile-group-list {
+  list-style: none;
+  padding-left: 28px;
+}
+
+.dashboard-profile-vm-list a, .dashboard-profile-vm-list a:hover {
+  text-decoration: none;
+  color: #555;
+}
+
+#group-detail-user-table td:nth-child(2) a,
+#group-detail-perm-table td:nth-child(2) a, 
+#vm-access-table td:nth-child(2) a, 
+.no-style-link, .no-style-link:hover {
+  color: #555 !important;
+  text-decoration: none;
+}
+
+#dashboard-profile-avatar {
+  max-width: 200px;
+}

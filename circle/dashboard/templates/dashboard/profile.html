@@ -1,0 +1,114 @@
+{% extends "dashboard/base.html" %}
+{% load i18n %}
+{% load crispy_forms_tags %} 
+
+{% block title-page %}{{ profile.username}} | {% trans "Profile" %}{% endblock %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <a class="pull-right btn btn-default btn-xs" href="{% url "dashboard.index" %}">{% trans "Back" %}</a>
+        <h3 class="no-margin">
+          <i class="icon-user"></i> 
+          {% include "dashboard/_display-name.html" with user=profile show_org=True %}
+        </h3>
+      </div>
+      <div class="panel-body">
+        <div>
+          <div class="" style="float: left">
+            <img id="dashboard-profile-avatar" src="{{ avatar_url }}" class="img-rounded"/>
+          </div>
+          <div class="" style="padding-left: 215px;">
+            <p>{% trans "Username" %}: {{ profile.username }}</p>
+            <p>{% trans "Organization ID" %}: {{ profile.profile.org_id|default:"-" }}</p>
+            <p>{% trans "First name" %}: {{ profile.first_name|default:"-" }}</p>
+            <p>{% trans "Last name" %}: {{ profile.last_name|default:"-" }}</p>
+            <p>
+              {# if the group list is not empty the logged in user is somewhat related to the user #}
+              {% if perm_group_list %} 
+                {% trans "Email address" %}: {{ profile.email }}
+              {% else %}
+                -
+              {% endif %}
+            </p>
+            {% if request.user == profile %}
+            <p>
+              {% trans "Use email address as Gravatar profile image" %}:
+              <input id="dashboard-profile-use-gravatar" data-user="{{ profile.username }}"
+              {% if profile.profile.use_gravatar %}checked="checked"{% endif %}
+              type="checkbox"/> <a href="https://gravatar.com">{% trans "What's Gravatar?" %}</a>
+            </p>
+            <a href="{% url "dashboard.views.profile-preferences" %}">{% trans "Change password and language" %}</a>
+            {% endif %}
+          </div>
+          <div class="clearfix"></div>
+        </div>
+
+        {% if perm_group_list %}
+          <hr />
+          <h4>
+            <i class="icon-group"></i> {% trans "Groups" %}
+          </h4>
+          <ul class="dashboard-profile-group-list">
+          {% for g in groups %}
+            <li>{{ g.name }}</li>
+            {% empty %}
+            {% trans "This user is not in any group." %}
+          {% endfor %}
+          </ul>
+        {% endif %}
+
+        <hr />
+
+        <h4>
+          <i class="icon-desktop"></i>
+          {% trans "Virtual machines owned by the user" %} ({{ instances_owned|length }})
+        </h4>
+        <ul class="dashboard-profile-vm-list">
+        {% for i in instances_owned %}
+          <li>
+            <a href="{{ i.get_absolute_url }}">
+              <i class="icon-li {{ i.get_status_icon }}"></i>
+              {{ i }}
+            </a>
+          </li>
+          {% empty %}
+          <li>
+            {% trans "This user have no virtual machines." %}
+          </li>
+        {% endfor %}
+        </ul>
+
+        <hr />
+
+        <h4>
+          <i class="icon-desktop"></i> 
+          {% trans "Virtual machines with access" %} ({{ instances_with_access|length }})
+        </h4>
+        <ul class="dashboard-profile-vm-list">
+        {% for i in instances_with_access %}
+          <li>
+            <a href="{{ i.get_absolute_url }}">
+              <i class="icon-li {{ i.get_status_icon }}"></i>
+              {{ i }}
+            </a>
+          </li>
+          {% empty %}
+          <li>
+            {% trans "This user have no access to any virtual machine." %}
+          </li>
+        {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{{ STATIC_URL }}dashboard/profile.js"></script>
+{% endblock %}

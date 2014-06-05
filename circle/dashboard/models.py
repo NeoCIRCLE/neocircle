@@ -26,7 +26,7 @@ from django.contrib.auth.signals import user_logged_in
 from django.core.urlresolvers import reverse
 from django.db.models import (
     Model, ForeignKey, OneToOneField, CharField, IntegerField, TextField,
-    DateTimeField, permalink,
+    DateTimeField, permalink, BooleanField
 )
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _, override, ugettext
@@ -83,13 +83,15 @@ class Profile(Model):
         unique=True, blank=True, null=True, max_length=64,
         help_text=_('Unique identifier of the person, e.g. a student number.'))
     instance_limit = IntegerField(default=5)
+    use_gravatar = BooleanField(default=False)
 
     def notify(self, subject, template, context={}, valid_until=None):
         return Notification.send(self.user, subject, template, context,
                                  valid_until)
 
     def get_absolute_url(self):
-        return reverse("dashboard.views.profile")
+        return reverse("dashboard.views.profile",
+                       kwargs={'username': self.user.username})
 
 
 class GroupProfile(AclBase):
