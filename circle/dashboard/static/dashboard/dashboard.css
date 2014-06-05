@@ -663,3 +663,23 @@ textarea[name="list-new-namelist"] {
   display: none;
 }
 
+/* vm list css */
+.vm-list-selected, .vm-list-selected td {                                 
+  background-color: #e8e8e8 !important;                                   
+}                                                                         
+                                                                          
+.vm-list-selected:hover, .vm-list-selected:hover td {                     
+  background-color: #d0d0d0 !important;                                   
+}                                                                         
+                                                                          
+.vm-list-selected td:first-child {                                        
+  font-weight: bold;                                                      
+}                                                                         
+                                                                          
+.vm-list-table-thin {                                                     
+  width: 10px;                                                            
+}                                                                         
+                                                                          
+.vm-list-table-admin {                                                    
+  width: 130px;                                                           
+} 

@@ -27,6 +27,7 @@ from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.views import login, redirect_to_login
 from django.contrib.messages import warning
+from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import (
     PermissionDenied, SuspiciousOperation,
 )
@@ -84,22 +85,18 @@ def search_user(keyword):
             return User.objects.get(email=keyword)
 
 
-# github.com/django/django/blob/stable/1.6.x/django/contrib/messages/views.py
-class SuccessMessageMixin(object):
-    """
-    Adds a success message on successful form submission.
-    """
-    success_message = ''
+class FilterMixin(object):
 
-    def form_valid(self, form):
-        response = super(SuccessMessageMixin, self).form_valid(form)
-        success_message = self.get_success_message(form.cleaned_data)
-        if success_message:
-            messages.success(self.request, success_message)
-        return response
+    def get_queryset_filters(self):
+        filters = {}
+        for item in self.allowed_filters:
+            if item in self.request.GET:
+                filters[self.allowed_filters[item]] = self.request.GET[item]
+        return filters
 
-    def get_success_message(self, cleaned_data):
-        return self.success_message % cleaned_data
+    def get_queryset(self):
+        return super(FilterMixin,
+                     self).get_queryset().filter(**self.get_queryset_filters())
 
 
 class IndexView(LoginRequiredMixin, TemplateView):
@@ -1093,8 +1090,15 @@ class TemplateDelete(LoginRequiredMixin, DeleteView):
             return HttpResponseRedirect(success_url)
 
 
-class VmList(LoginRequiredMixin, ListView):
+class VmList(LoginRequiredMixin, FilterMixin, ListView):
     template_name = "dashboard/vm-list.html"
+    allowed_filters = {
+        'name': "name__icontains",
+        'node': "node__name__icontains",
+        'status': "status__iexact",
+        'tags': "tags__name__in",  # note: use it as ?tags[]=a,b
+        'owner': "owner__username",
+    }
 
     def get(self, *args, **kwargs):
         if self.request.is_ajax():
@@ -1122,10 +1126,8 @@ class VmList(LoginRequiredMixin, ListView):
                      unicode(self.request.user))
         queryset = Instance.get_objects_with_level(
             'user', self.request.user).filter(destroyed_at=None)
-        s = self.request.GET.get("s")
-        if s:
-            queryset = queryset.filter(name__icontains=s)
 
+        self.create_fake_get()
         sort = self.request.GET.get("sort")
         # remove "-" that means descending order
         # also check if the column name is valid
@@ -1133,7 +1135,43 @@ class VmList(LoginRequiredMixin, ListView):
             (sort[1:] if sort[0] == "-" else sort)
                 in [i.name for i in Instance._meta.fields] + ["pk"]):
             queryset = queryset.order_by(sort)
-        return queryset.select_related('owner', 'node')
+        return queryset.filter(**self.get_queryset_filters()
+                               ).select_related('owner', 'node')
+
+    def create_fake_get(self):
+        """
+        Updates the request's GET dict to filter the vm list
+        For example: "name:xy node:1" updates the GET dict
+                     to resemble this URL ?name=xy&node=1
+
+        "name:xy node:1".split(":") becomes ["name", "xy node", "1"]
+        we pop the the first element and use it as the first dict key
+        then we iterate over the rest of the list and split by the last
+        whitespace, the first part of this list will be the previous key's
+        value, then last part of the list will be the next key.
+        The final dict looks like this: {'name': xy, 'node':1}
+        """
+        s = self.request.GET.get("s")
+        if s:
+            s = s.split(":")
+            if len(s) < 2:  # if there is no ':' in the string, filter by name
+                got = {'name': s[0]}
+            else:
+                latest = s.pop(0)
+                got = {'%s' % latest: None}
+                for i in s[:-1]:
+                    new = i.rsplit(" ", 1)
+                    got[latest] = new[0]
+                    latest = new[1] if len(new) > 1 else None
+                got[latest] = s[-1]
+
+            # generate a new GET request, that is kinda fake
+            fake = self.request.GET.copy()
+            for k, v in got.iteritems():
+                fake["%s%s" % (
+                    k, "[]" if len(v.split(",")) > 1 else "")] = v
+
+            self.request.GET = fake
 
 
 class NodeList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):

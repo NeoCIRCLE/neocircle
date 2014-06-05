@@ -1968,3 +1968,26 @@ class AclViewTest(LoginMixin, TestCase):
         self.assertEqual(self.ut, InstanceTemplate.objects.get(id=1).owner)
         self.assertTrue((self.ut, "owner") in tmpl.get_users_with_level())
         self.assertEqual(resp.status_code, 302)
+
+
+class VmListTest(LoginMixin, TestCase):
+    fixtures = ['test-vm-fixture.json', 'node.json']
+
+    def setUp(self):
+        Instance.get_remote_queue_name = Mock(return_value='test')
+        self.u1 = User.objects.create(username='user1')
+        self.u1.set_password('password')
+        self.u1.save()
+
+    def tearDown(self):
+        super(VmListTest, self).tearDown()
+        self.u1.delete()
+
+    def test_filter_w_invalid_input(self):
+        c = Client()
+        self.login(c, self.u1)
+
+        resp = c.get("/dashboard/vm/list/", {
+            's': "A:B:C:D:"
+        })
+        self.assertEqual(200, resp.status_code)
