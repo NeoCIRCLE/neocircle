@@ -2671,9 +2671,8 @@ class ProfileView(LoginRequiredMixin, DetailView):
         group_profiles = GroupProfile.get_objects_with_level(
             "operator", self.request.user)
         groups = Group.objects.filter(groupprofile__in=group_profiles)
-        context['groups'] = [
-            g for g in self.get_object().groups.all() if g in groups
-        ]
+        context['groups'] = self.get_object().groups.filter(
+            pk__in=groups)
 
         # permissions
         # show groups only if the user is superuser, or have access
