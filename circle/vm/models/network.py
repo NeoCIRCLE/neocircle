@@ -152,12 +152,12 @@ class Interface(Model):
         return iface
 
     def deploy(self):
-        queue_name = self.instance.get_remote_queue_name('net')
+        queue_name = self.instance.get_remote_queue_name('net', 'fast')
         return net_tasks.create.apply_async(args=[self.get_vmnetwork_desc()],
                                             queue=queue_name).get()
 
     def shutdown(self):
-        queue_name = self.instance.get_remote_queue_name('net')
+        queue_name = self.instance.get_remote_queue_name('net', 'fast')
         return net_tasks.destroy.apply_async(args=[self.get_vmnetwork_desc()],
                                              queue=queue_name).get()
 
