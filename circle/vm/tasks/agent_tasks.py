@@ -41,3 +41,13 @@ def set_hostname(vm, time):
 @celery.task(name='agent.mount_store')
 def mount_store(vm, host, username, password):
     pass
+
+
+@celery.task(name='agent.cleanup')
+def cleanup(vm):
+    pass
+
+
+@celery.task(name='agent.start_access_server')
+def start_access_server(vm):
+    pass
