@@ -27,3 +27,7 @@ function getURLParameter(name) {
         (RegExp(name + '=' + '(.+?)(&|$)').exec(location.search)||[,null])[1]
     );
 }
+
+$(function() {
+  $("[title]").tooltip();
+});

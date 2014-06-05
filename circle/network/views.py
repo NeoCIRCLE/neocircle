@@ -41,6 +41,7 @@ from braces.views import LoginRequiredMixin, SuperuserRequiredMixin
 from operator import itemgetter
 from itertools import chain
 import json
+from dashboard.views import AclUpdateView
 
 
 class SuccessMessageMixin(FormMixin):
@@ -628,6 +629,21 @@ class VlanList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
     table_pagination = False
 
 
+def get_vlan_acl_data(obj):
+    levels = obj.ACL_LEVELS
+    users = obj.get_users_with_level()
+    users = [{'user': u, 'level': l} for u, l in users]
+    groups = obj.get_groups_with_level()
+    groups = [{'group': g, 'level': l} for g, l in groups]
+    return {'users': users, 'groups': groups, 'levels': levels}
+
+
+class VlanAclUpdateView(AclUpdateView):
+    model = Vlan
+    slug_field = "vid"
+    slug_url_kwarg = "vid"
+
+
 class VlanDetail(LoginRequiredMixin, SuperuserRequiredMixin,
                  SuccessMessageMixin, UpdateView):
     model = Vlan
@@ -646,6 +662,7 @@ class VlanDetail(LoginRequiredMixin, SuperuserRequiredMixin,
 
         context['host_list'] = SmallHostTable(q)
         context['vlan_vid'] = self.kwargs.get('vid')
+        context['acl'] = get_vlan_acl_data(self.get_object())
         return context
 
     success_url = reverse_lazy('network.vlan_list')
