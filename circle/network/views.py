@@ -351,8 +351,8 @@ class HostDetail(LoginRequiredMixin, SuperuserRequiredMixin,
             host = Host.objects.get(pk=kwargs['pk'])
             host = {
                 'hostname': host.hostname,
-                'ipv4': host.ipv4,
-                'ipv6': host.ipv6,
+                'ipv4': str(host.ipv4),
+                'ipv6': str(host.ipv6),
                 'fqdn': host.get_fqdn()
             }
             return HttpResponse(json.dumps(host),
