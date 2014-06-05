@@ -334,17 +334,23 @@ a.hover-black {
 }
 
 /* vm details connection */
-.vm-details-pw dd {
-  margin-left: 155px;
+.vm-details-connection dd {
+  padding-top: 8px;
 }
 
-.vm-details-pw dt {
-  width: 140px;
+.vm-details-connection dt {
+  text-align: left;
+  padding-top: 8px;
+  padding-left: 15px;
 }
 
 #vm-details-pw-confirm {
   margin-top: 10px;
   display: none;
+}
+
+#vm-details-pw-confirm dt {
+  text-align: right;
 }
 
 .dashboard-vm-details-network-h3 {
@@ -663,3 +669,6 @@ textarea[name="list-new-namelist"] {
   display: none;
 }
 
+#vm-details-connection-string-copy {
+  cursor: pointer;
+}

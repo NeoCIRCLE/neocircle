@@ -289,6 +289,11 @@ $(function() {
     $(this).parent("div").slideUp();
   });
 
+  // select connection string
+  $("#vm-details-connection-string-copy").click(function() {
+    $("#vm-details-connection-string").focus();
+  });
+
 });
 
 
