@@ -43,7 +43,7 @@ def agent_started(vm):
     from vm.models import Instance, instance_activity, InstanceActivity
     instance = Instance.objects.get(id=int(vm.split('-')[-1]))
     initialized = InstanceActivity.objects.filter(
-        instance=instance, activity_code='vm.Instance.agent').count()
+        instance=instance, activity_code='vm.Instance.agent').exists()
 
     with instance_activity(code_suffix='agent', instance=instance) as act:
         with act.sub_activity('starting'):
