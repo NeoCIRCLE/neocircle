@@ -26,7 +26,14 @@
             <p>{% trans "Organisation ID" %}: {{ profile.profile.org_id|default:"-" }}</p>
             <p>{% trans "First name" %}: {{ profile.first_name|default:"-" }}</p>
             <p>{% trans "Last name" %}: {{ profile.last_name|default:"-" }}</p>
-            <p>{% trans "Email address" %}: {{ profile.email }}</p>
+            <p>
+              {# if the group list is not empty the logged in user is somewhat related to the user #}
+              {% if perm_group_list %} 
+                {% trans "Email address" %}: {{ profile.email }}
+              {% else %}
+                -
+              {% endif %}
+            </p>
             {% if request.user == profile %}
             <p>
               {% trans "Use email address as Gravatar profile image" %}:
