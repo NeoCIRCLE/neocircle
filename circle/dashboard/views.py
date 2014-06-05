@@ -2656,6 +2656,8 @@ class InterfaceDeleteView(DeleteView):
 class ProfileView(LoginRequiredMixin, DetailView):
     template_name = "dashboard/profile.html"
     model = User
+    slug_field = "username"
+    slug_url_kwarg = "username"
 
     def get_context_data(self, **kwargs):
         context = super(ProfileView, self).get_context_data(**kwargs)
@@ -2697,7 +2699,7 @@ class ProfileView(LoginRequiredMixin, DetailView):
 
 @require_POST
 def toggle_use_gravatar(request, **kwargs):
-    user = get_object_or_404(User, pk=kwargs['pk'])
+    user = get_object_or_404(User, username=kwargs['username'])
     if not request.user == user:
         raise PermissionDenied()
 

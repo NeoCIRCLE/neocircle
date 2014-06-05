@@ -54,7 +54,7 @@
               <i class="icon-user"></i>
             </td>
             <td>
-              <a href="{% url "dashboard.views.profile" pk=i.pk %}" title="{{ i.username }}"
+              <a href="{% url "dashboard.views.profile" username=i.username %}" title="{{ i.username }}"
                 >{% include "dashboard/_display-name.html" with user=i show_org=True %}</a>
             </td>
 	    <td>
@@ -93,7 +93,7 @@
         <i class="icon-user"></i>
       </td>
       <td>
-        <a href="{% url "dashboard.views.profile" pk=i.user.pk %}" title="{{ i.user.username }}"
+        <a href="{% url "dashboard.views.profile" username=i.user.username %}" title="{{ i.user.username }}"
           >{% include "dashboard/_display-name.html" with user=i.user show_org=True %}</a>
       </td>
       <td>

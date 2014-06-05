@@ -30,7 +30,7 @@
             {% if request.user == profile %}
             <p>
               {% trans "Use email address as Gravatar profile image" %}:
-              <input id="dashboard-profile-use-gravatar" data-user="{{ profile.pk }}"
+              <input id="dashboard-profile-use-gravatar" data-user="{{ profile.username }}"
               {% if profile.profile.use_gravatar %}checked="checked"{% endif %}
               type="checkbox"/> <a href="https://gravatar.com">{% trans "What's Gravatar?" %}</a>
             </p>
