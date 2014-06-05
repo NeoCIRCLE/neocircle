@@ -246,6 +246,9 @@ class VmDetailView(CheckedDetailView):
         }
         context['os_type_icon'] = instance.os_type.replace("unknown",
                                                            "question")
+        # ipv6 infos
+        context['ipv6_host'] = instance.get_connect_host(use_ipv6=True)
+        context['ipv6_port'] = instance.get_connect_port(use_ipv6=True)
         return context
 
     def post(self, request, *args, **kwargs):
