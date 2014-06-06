@@ -47,6 +47,14 @@
     <h3>
       {% trans "Disks" %}
       <div class="pull-right">
+	<a href="{{op.download_disk.get_url}}" class="btn btn-success btn-xs
+		operation operation-{{op.download_disk.op}} btn btn-default
+		btn-xs"><i class="icon-{{op.download_disk.icon}}"></i>
+		{{op.download_disk.name}} </a>
+	<a href="{{op.create_disk.get_url}}" class="btn btn-success btn-xs
+		operation operation-{{op.create_disk.op}} btn btn-default
+		btn-xs"><i class="icon-{{op.create_disk.icon}}"></i>
+		{{op.create_disk.name}} </a>
       </div>
     </h3>
 
