@@ -26,6 +26,7 @@ from django.utils.translation import ugettext_lazy as _
 from celery.exceptions import TimeLimitExceeded
 
 from common.operations import Operation, register_operation
+from storage.models import Disk
 from .tasks.local_tasks import (
     abortable_async_instance_operation, abortable_async_node_operation,
 )
@@ -117,6 +118,47 @@ class AddDiskOperation(InstanceOperation):
 
 
 register_operation(AddDiskOperation)
+
+
+class CreateDiskOperation(InstanceOperation):
+    activity_code_suffix = 'create_disk'
+    id = 'create_disk'
+    name = _("create disk")
+    description = _("Create empty disk for the VM.")
+
+    def check_precond(self):
+        super(AddDiskOperation, self).check_precond()
+        # TODO remove check when hot-attach is implemented
+        if self.instance.status not in ['STOPPED']:
+            raise self.instance.WrongStateError(self.instance)
+
+    def _operation(self, user, size):
+        # TODO implement with hot-attach when it'll be available
+        disk = Disk.create(owner=user, size=size)
+        self.instance.disks.add(disk)
+
+register_operation(CreateDiskOperation)
+
+
+class DownloadDiskOperation(InstanceOperation):
+    activity_code_suffix = 'download_disk'
+    id = 'download_disk'
+    name = _("download disk")
+    description = _("Download disk for the VM.")
+    abortable = True
+
+    def check_precond(self):
+        super(AddDiskOperation, self).check_precond()
+        # TODO remove check when hot-attach is implemented
+        if self.instance.status not in ['STOPPED']:
+            raise self.instance.WrongStateError(self.instance)
+
+    def _operation(self, user, url):
+        # TODO implement with hot-attach when it'll be available
+        disk = Disk.download(owner=user, url=url)
+        self.instance.disks.add(disk)
+
+register_operation(DownloadDiskOperation)
 
 
 class DeployOperation(InstanceOperation):
