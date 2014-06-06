@@ -2720,6 +2720,8 @@ class ProfileView(LoginRequiredMixin, DetailView):
         # to any of the groups the user belongs to
         context['perm_group_list'] = (
             self.request.user.is_superuser or len(context['groups']) > 0)
+        context['perm_email'] = (
+            context['perm_group_list'] or self.request.user == user)
 
         # filter the virtual machine list
         # if the logged in user is not superuser or not the user itself
