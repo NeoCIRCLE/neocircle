@@ -1662,9 +1662,9 @@ class GroupProfileUpdate(GroupCodeMixin, LoginRequiredMixin, UpdateView):
         self.object = self.get_object()
         form = self.get_form_object(request, self.object, self.request.POST)
         if not form.is_valid():
-            return self.get(request, form, *args, **kwargs)
+            return self.form_invalid(form)
         form.save()
-        return redirect(self.object.get_absolute_url())
+        return self.form_valid(form)
 
 
 class VmDelete(LoginRequiredMixin, DeleteView):
