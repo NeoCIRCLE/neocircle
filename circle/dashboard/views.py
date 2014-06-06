@@ -1620,10 +1620,12 @@ class GroupCreate(GroupCodeMixin, LoginRequiredMixin, TemplateView):
             return redirect(savedform.profile.get_absolute_url())
 
 
-class GroupProfileUpdate(GroupCodeMixin, LoginRequiredMixin, UpdateView):
+class GroupProfileUpdate(SuccessMessageMixin, GroupCodeMixin,
+                         LoginRequiredMixin, UpdateView):
 
     form_class = GroupProfileUpdateForm
     model = Group
+    success_message = _('Group is successfully updated.')
 
     @classmethod
     def get_available_group_codes(cls, request, extra=None):
