@@ -1646,6 +1646,7 @@ class GroupProfileUpdate(GroupCodeMixin, LoginRequiredMixin, UpdateView):
         kwargs['instance'] = instance
         kwargs['new_groups'] = cls.get_available_group_codes(
             request, instance.org_id)
+        kwargs['superuser'] = request.user.is_superuser
         return cls.form_class(*args, **kwargs)
 
     def get(self, request, form=None, *args, **kwargs):

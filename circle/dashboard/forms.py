@@ -359,14 +359,17 @@ class GroupProfileUpdateForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         new_groups = kwargs.pop('new_groups', None)
+        superuser = kwargs.pop('superuser', False)
         super(GroupProfileUpdateForm, self).__init__(*args, **kwargs)
-        choices = [('', '--')]
-        if new_groups:
-            choices += [(g, g) for g in new_groups if len(g) <= 64]
-        self.fields['org_id'] = forms.ChoiceField(
-            choices=choices, required=False, label=_('Directory identifier'))
-        if not new_groups:
-            self.fields['org_id'].widget = HiddenInput()
+        if not superuser:
+            choices = [('', '--')]
+            if new_groups:
+                choices += [(g, g) for g in new_groups if len(g) <= 64]
+            self.fields['org_id'] = forms.ChoiceField(
+                choices=choices, required=False,
+                label=_('Directory identifier'))
+            if not new_groups:
+                self.fields['org_id'].widget = HiddenInput()
         self.fields['description'].widget = forms.Textarea(attrs={'rows': 3})
 
     @property
