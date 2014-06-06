@@ -5,7 +5,7 @@
   }
 </style>
 
-<form method="POST" action="/dashboard/group/create/">
+<form method="POST" action="{% url "dashboard.views.group-create" %}">
 {% csrf_token %}
 {% crispy form %}
 </form>

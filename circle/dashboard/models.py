@@ -104,7 +104,12 @@ class GroupProfile(AclBase):
     org_id = CharField(
         unique=True, blank=True, null=True, max_length=64,
         help_text=_('Unique identifier of the group at the organization.'))
-    description = TextField()
+    description = TextField(blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.org_id:
+            self.org_id = None
+        super(GroupProfile, self).save(*args, **kwargs)
 
     @classmethod
     def search(cls, name):
@@ -162,7 +167,8 @@ if hasattr(settings, 'SAML_ORG_ID_ATTRIBUTE'):
             logger.debug("org_id of %s already added to user %s's profile",
                          value, sender.username)
         memberatrs = getattr(settings, 'SAML_GROUP_ATTRIBUTES', [])
-        for group in chain(*[attributes[i] for i in memberatrs]):
+        for group in chain(*[attributes[i]
+                             for i in memberatrs if i in attributes]):
             try:
                 g = GroupProfile.search(group)
             except Group.DoesNotExist:
@@ -173,7 +179,8 @@ if hasattr(settings, 'SAML_ORG_ID_ATTRIBUTE'):
                 g.user_set.add(sender)
 
         owneratrs = getattr(settings, 'SAML_GROUP_OWNER_ATTRIBUTES', [])
-        for group in chain(*[attributes[i] for i in owneratrs]):
+        for group in chain(*[attributes[i]
+                             for i in owneratrs if i in attributes]):
             try:
                 g = GroupProfile.search(group)
             except Group.DoesNotExist:

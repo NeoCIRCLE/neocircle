@@ -17,6 +17,7 @@
 
 from __future__ import unicode_literals, absolute_import
 
+from itertools import chain
 from os import getenv
 import json
 import logging
@@ -58,7 +59,7 @@ from braces.views._access import AccessMixin
 from .forms import (
     CircleAuthenticationForm, DiskAddForm, HostForm, LeaseForm, MyProfileForm,
     NodeForm, TemplateForm, TraitForm, VmCustomizeForm, GroupCreateForm,
-    UserCreationForm,
+    UserCreationForm, GroupProfileUpdateForm,
     CirclePasswordChangeForm
 )
 
@@ -75,6 +76,7 @@ from firewall.models import Vlan, Host, Rule
 from .models import Favourite, Profile, GroupProfile
 
 logger = logging.getLogger(__name__)
+saml_available = hasattr(settings, "SAML_CONFIG")
 
 
 def search_user(keyword):
@@ -85,6 +87,39 @@ def search_user(keyword):
             return User.objects.get(profile__org_id=keyword)
         except User.DoesNotExist:
             return User.objects.get(email=keyword)
+
+
+class GroupCodeMixin(object):
+
+    @classmethod
+    def get_available_group_codes(cls, request):
+        newgroups = []
+        if saml_available:
+            from djangosaml2.cache import StateCache, IdentityCache
+            from djangosaml2.conf import get_config
+            from djangosaml2.views import _get_subject_id
+            from saml2.client import Saml2Client
+
+            state = StateCache(request.session)
+            conf = get_config(None, request)
+            client = Saml2Client(conf, state_cache=state,
+                                 identity_cache=IdentityCache(request.session),
+                                 logger=logger)
+            subject_id = _get_subject_id(request.session)
+            identity = client.users.get_identity(subject_id,
+                                                 check_not_on_or_after=False)
+            if identity:
+                attributes = identity[0]
+                owneratrs = getattr(
+                    settings, 'SAML_GROUP_OWNER_ATTRIBUTES', [])
+                for group in chain(*[attributes[i]
+                                     for i in owneratrs if i in attributes]):
+                    try:
+                        GroupProfile.search(group)
+                    except Group.DoesNotExist:
+                        newgroups.append(group)
+
+        return newgroups
 
 
 class FilterMixin(object):
@@ -692,6 +727,8 @@ class GroupDetailView(CheckedDetailView):
         context['group'] = self.object
         context['users'] = self.object.user_set.all()
         context['acl'] = get_group_acl_data(self.object)
+        context['group_profile_form'] = GroupProfileUpdate.get_form_object(
+            self.request, self.object.profile)
         return context
 
     def post(self, request, *args, **kwargs):
@@ -1565,10 +1602,9 @@ class NodeCreate(LoginRequiredMixin, SuperuserRequiredMixin, TemplateView):
             return redirect(path)
 
 
-class GroupCreate(LoginRequiredMixin, TemplateView):
+class GroupCreate(GroupCodeMixin, LoginRequiredMixin, TemplateView):
 
     form_class = GroupCreateForm
-    form = None
 
     def get_template_names(self):
         if self.request.is_ajax():
@@ -1580,7 +1616,8 @@ class GroupCreate(LoginRequiredMixin, TemplateView):
         if not request.user.has_module_perms('auth'):
             raise PermissionDenied()
         if form is None:
-            form = self.form_class()
+            form = self.form_class(
+                new_groups=self.get_available_group_codes(request))
         context = self.get_context_data(**kwargs)
         context.update({
             'template': 'dashboard/group-create.html',
@@ -1593,7 +1630,8 @@ class GroupCreate(LoginRequiredMixin, TemplateView):
     def post(self, request, *args, **kwargs):
         if not request.user.has_module_perms('auth'):
             raise PermissionDenied()
-        form = self.form_class(request.POST)
+        form = self.form_class(
+            request.POST, new_groups=self.get_available_group_codes(request))
         if not form.is_valid():
             return self.get(request, form, *args, **kwargs)
         form.cleaned_data
@@ -1606,6 +1644,55 @@ class GroupCreate(LoginRequiredMixin, TemplateView):
                                 content_type="application/json")
         else:
             return redirect(savedform.profile.get_absolute_url())
+
+
+class GroupProfileUpdate(SuccessMessageMixin, GroupCodeMixin,
+                         LoginRequiredMixin, UpdateView):
+
+    form_class = GroupProfileUpdateForm
+    model = Group
+    success_message = _('Group is successfully updated.')
+
+    @classmethod
+    def get_available_group_codes(cls, request, extra=None):
+        result = super(GroupProfileUpdate, cls).get_available_group_codes(
+            request)
+        if extra and extra not in result:
+            result += [extra]
+        return result
+
+    def get_object(self):
+        group = super(GroupProfileUpdate, self).get_object()
+        profile = group.profile
+        if not profile.has_level(self.request.user, 'owner'):
+            raise PermissionDenied
+        else:
+            return profile
+
+    @classmethod
+    def get_form_object(cls, request, instance, *args, **kwargs):
+        kwargs['instance'] = instance
+        kwargs['new_groups'] = cls.get_available_group_codes(
+            request, instance.org_id)
+        kwargs['superuser'] = request.user.is_superuser
+        return cls.form_class(*args, **kwargs)
+
+    def get(self, request, form=None, *args, **kwargs):
+        self.object = self.get_object()
+        if form is None:
+            form = self.get_form_object(request, self.object)
+        return super(GroupProfileUpdate, self).get(
+            request, form, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        if not request.user.has_module_perms('auth'):
+            raise PermissionDenied()
+        self.object = self.get_object()
+        form = self.get_form_object(request, self.object, self.request.POST)
+        if not form.is_valid():
+            return self.form_invalid(form)
+        form.save()
+        return self.form_valid(form)
 
 
 class VmDelete(LoginRequiredMixin, DeleteView):
@@ -1880,9 +1967,9 @@ class VmMassDelete(LoginRequiredMixin, View):
                     logger.info('Tried to delete instance #%d without owner '
                                 'permission by %s.', i.pk,
                                 unicode(request.user))
-                    raise PermissionDenied()  # no need for rollback or proper
-                                            # error message, this can't
-                                            # normally happen.
+                    # no need for rollback or proper error message, this can't
+                    # normally happen:
+                    raise PermissionDenied()
                 try:
                     i.destroy.async(user=request.user)
                     names.append(i.name)
@@ -2416,7 +2503,7 @@ class NotificationView(LoginRequiredMixin, TemplateView):
 def circle_login(request):
     authentication_form = CircleAuthenticationForm
     extra_context = {
-        'saml2': hasattr(settings, "SAML_CONFIG")
+        'saml2': saml_available,
     }
     response = login(request, authentication_form=authentication_form,
                      extra_context=extra_context)

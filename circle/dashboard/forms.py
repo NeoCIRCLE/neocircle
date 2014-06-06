@@ -33,7 +33,7 @@ from crispy_forms.layout import (
 from crispy_forms.utils import render_field
 from django import forms
 from django.contrib.auth.forms import UserCreationForm as OrgUserCreationForm
-from django.forms.widgets import TextInput
+from django.forms.widgets import TextInput, HiddenInput
 from django.template import Context
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext as _
@@ -44,7 +44,7 @@ from storage.models import Disk, DataStore
 from vm.models import (
     InstanceTemplate, Lease, InterfaceTemplate, Node, Trait, Instance
 )
-from .models import Profile
+from .models import Profile, GroupProfile
 
 
 class VmCustomizeForm(forms.Form):
@@ -315,51 +315,80 @@ class VmCustomizeForm(forms.Form):
 
 class GroupCreateForm(forms.ModelForm):
 
+    description = forms.CharField(label=_("Description"), required=False,
+                                  widget=forms.Textarea(attrs={'rows': 3}))
+
     def __init__(self, *args, **kwargs):
+        new_groups = kwargs.pop('new_groups', None)
         super(GroupCreateForm, self).__init__(*args, **kwargs)
-        self.helper = FormHelper(self)
-        self.helper.form_show_labels = False
-        self.helper.layout = Layout(
-            Div(
-                Div(
-                    AnyTag(
-                        'h4',
-                        HTML(_("Name")),
-                    ),
-                    css_class="col-sm-10",
-                ),
-                css_class="row",
-            ),
-            Div(
-                Div(
-                    Field('name', id="group-create-name"),
-                    css_class="col-sm-10",
-                ),
-                css_class="row",
-            ),
+        choices = [('', '--')]
+        if new_groups:
+            choices += [(g, g) for g in new_groups if len(g) <= 64]
+        self.fields['org_id'] = forms.ChoiceField(
+            # TRANSLATORS: directory like in LDAP
+            choices=choices, required=False, label=_('Directory identifier'))
+        if not new_groups:
+            self.fields['org_id'].widget = HiddenInput()
 
-            Div(  # buttons
-                Div(
-                    AnyTag(  # tip: don't try to use Button class
-                        "button",
-                        AnyTag(
-                            "i",
-                            css_class="icon-play"
-                        ),
-                        HTML(" Create"),
-                        css_id="vm-create-submit",
-                        css_class="btn btn-success",
+    def save(self, commit=True):
+        if not commit:
+            raise AttributeError('Committing is mandatory.')
+        group = super(GroupCreateForm, self).save()
 
-                    ),
-                    css_class="col-sm-5",
-                ),
-                css_class="row",
-            ),
-        )
+        profile = group.profile
+        # multiple blanks were not be unique unlike NULLs are
+        profile.org_id = self.cleaned_data['org_id'] or None
+        profile.description = self.cleaned_data['description']
+        profile.save()
+
+        return group
+
+    @property
+    def helper(self):
+        helper = FormHelper(self)
+        helper.add_input(Submit("submit", _("Create")))
+        helper.form_tag = False
+        return helper
 
     class Meta:
         model = Group
-        fields = ['name', ]
+        fields = ('name', )
+
+
+class GroupProfileUpdateForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        new_groups = kwargs.pop('new_groups', None)
+        superuser = kwargs.pop('superuser', False)
+        super(GroupProfileUpdateForm, self).__init__(*args, **kwargs)
+        if not superuser:
+            choices = [('', '--')]
+            if new_groups:
+                choices += [(g, g) for g in new_groups if len(g) <= 64]
+            self.fields['org_id'] = forms.ChoiceField(
+                choices=choices, required=False,
+                label=_('Directory identifier'))
+            if not new_groups:
+                self.fields['org_id'].widget = HiddenInput()
+        self.fields['description'].widget = forms.Textarea(attrs={'rows': 3})
+
+    @property
+    def helper(self):
+        helper = FormHelper(self)
+        helper.add_input(Submit("submit", _("Save")))
+        helper.form_tag = False
+        return helper
+
+    def save(self, commit=True):
+        profile = super(GroupProfileUpdateForm, self).save(commit=False)
+        profile.org_id = self.cleaned_data['org_id'] or None
+        if commit:
+            profile.save()
+        return profile
+
+    class Meta:
+        model = GroupProfile
+        fields = ('description', 'org_id')
 
 
 class HostForm(forms.ModelForm):
