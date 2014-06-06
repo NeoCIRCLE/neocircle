@@ -258,11 +258,13 @@ class VmDetailView(CheckedDetailView):
     def get_context_data(self, **kwargs):
         context = super(VmDetailView, self).get_context_data(**kwargs)
         instance = context['instance']
+        ops = get_operations(instance, self.request.user)
         context.update({
             'graphite_enabled': VmGraphView.get_graphite_url() is not None,
             'vnc_url': reverse_lazy("dashboard.views.detail-vnc",
                                     kwargs={'pk': self.object.pk}),
-            'ops': get_operations(instance, self.request.user),
+            'ops': ops,
+            'op': {i.op: i for i in ops},
         })
 
         # activity data
@@ -501,6 +503,7 @@ class VmDetailView(CheckedDetailView):
 class OperationView(DetailView):
 
     template_name = 'dashboard/operate.html'
+    show_in_toolbar = True
 
     @property
     def name(self):
@@ -575,6 +578,30 @@ class VmOperationView(OperationView):
     context_object_name = 'instance'  # much simpler to mock object
 
 
+class FormOperationMixin(object):
+
+    form_class = None
+
+    def get_context_data(self, **kwargs):
+        ctx = super(FormOperationMixin, self).get_context_data(**kwargs)
+        if self.request.method == 'POST':
+            ctx['form'] = self.form_class(self.request.POST)
+        else:
+            ctx['form'] = self.form_class()
+        return ctx
+
+    def post(self, request, extra=None, *args, **kwargs):
+        if extra is None:
+            extra = {}
+        form = self.form_class(self.request.POST)
+        if form.is_valid():
+            extra.update(form.cleaned_data)
+            return super(FormOperationMixin, self).post(
+                request, extra, *args, **kwargs)
+        else:
+            return self.get(request)
+
+
 class VmMigrateView(VmOperationView):
 
     op = 'migrate'
@@ -638,8 +665,9 @@ def get_operations(instance, user):
             op = v.get_op_by_object(instance)
             op.check_auth(user)
             op.check_precond()
-        except:
-            pass  # unavailable
+        except Exception as e:
+            logger.debug('Not showing operation %s for %s: %s',
+                         k, instance, unicode(e))
         else:
             ops.append(v.bind_to_object(instance))
     return ops
