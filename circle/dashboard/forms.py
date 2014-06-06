@@ -1092,7 +1092,7 @@ class TraitForm(forms.ModelForm):
 class MyProfileForm(forms.ModelForm):
 
     class Meta:
-        fields = ('preferred_language', )
+        fields = ('preferred_language', 'email_notifications', )
         model = Profile
 
     @property

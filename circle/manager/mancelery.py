@@ -63,6 +63,12 @@ celery.conf.update(
             'schedule': timedelta(hours=1),
             'options': {'queue': 'localhost.man'}
         },
+        'dashboard.local_periodic_tasks': {
+            'task': 'dashboard.tasks.local_periodic_tasks.'
+            'send_email_notifications',
+            'schedule': timedelta(hours=24),
+            'options': {'queue': 'localhost.man'}
+        },
     }
 
 )
