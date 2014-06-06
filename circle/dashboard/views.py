@@ -17,6 +17,7 @@
 
 from __future__ import unicode_literals, absolute_import
 
+from itertools import chain
 from os import getenv
 import json
 import logging
@@ -108,13 +109,8 @@ class GroupCodeMixin(object):
                 attributes = identity[0]
                 owneratrs = getattr(
                     settings, 'SAML_GROUP_OWNER_ATTRIBUTES', [])
-                groups = []
-                for i in owneratrs:
-                    try:
-                        groups += attributes[i]
-                    except KeyError:
-                        pass
-                for group in groups:
+                for group in chain(*[attributes[i]
+                                     for i in owneratrs if i in attributes]):
                     try:
                         GroupProfile.search(group)
                     except Group.DoesNotExist:
