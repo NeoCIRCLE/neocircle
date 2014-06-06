@@ -1946,9 +1946,9 @@ class VmMassDelete(LoginRequiredMixin, View):
                     logger.info('Tried to delete instance #%d without owner '
                                 'permission by %s.', i.pk,
                                 unicode(request.user))
-                    raise PermissionDenied()  # no need for rollback or proper
-                                            # error message, this can't
-                                            # normally happen.
+                    # no need for rollback or proper error message, this can't
+                    # normally happen:
+                    raise PermissionDenied()
                 try:
                     i.destroy.async(user=request.user)
                     names.append(i.name)
