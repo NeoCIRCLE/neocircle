@@ -59,7 +59,8 @@ from .forms import (
     CircleAuthenticationForm, HostForm, LeaseForm, MyProfileForm,
     NodeForm, TemplateForm, TraitForm, VmCustomizeForm, GroupCreateForm,
     UserCreationForm, GroupProfileUpdateForm, UnsubscribeForm,
-    CirclePasswordChangeForm, VmSaveForm,
+    VmSaveForm,
+    CirclePasswordChangeForm, VmCreateDiskForm, VmDownloadDiskForm,
 )
 
 from .tables import (
@@ -595,6 +596,22 @@ class FormOperationMixin(object):
             return self.get(request)
 
 
+class VmCreateDiskView(FormOperationMixin, VmOperationView):
+
+    op = 'create_disk'
+    form_class = VmCreateDiskForm
+    show_in_toolbar = False
+    icon = 'hdd'
+
+
+class VmDownloadDiskView(FormOperationMixin, VmOperationView):
+
+    op = 'download_disk'
+    form_class = VmDownloadDiskForm
+    show_in_toolbar = False
+    icon = 'download'
+
+
 class VmMigrateView(VmOperationView):
 
     op = 'migrate'
@@ -634,6 +651,8 @@ vm_ops = {
     'destroy': VmOperationView.factory(op='destroy', icon='remove'),
     'sleep': VmOperationView.factory(op='sleep', icon='moon'),
     'wake_up': VmOperationView.factory(op='wake_up', icon='sun'),
+    'create_disk': VmCreateDiskView,
+    'download_disk': VmDownloadDiskView,
 }
 
 
