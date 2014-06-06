@@ -47,6 +47,11 @@ from vm.models import (
 from .models import Profile, GroupProfile
 
 
+class VmSaveForm(forms.Form):
+    name = forms.CharField(max_length=100, label=_('Name'),
+                           help_text=_('Human readable name of template.'))
+
+
 class VmCustomizeForm(forms.Form):
     name = forms.CharField()
     cpu_priority = forms.IntegerField()

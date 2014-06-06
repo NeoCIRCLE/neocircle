@@ -60,7 +60,7 @@ from .forms import (
     CircleAuthenticationForm, DiskAddForm, HostForm, LeaseForm, MyProfileForm,
     NodeForm, TemplateForm, TraitForm, VmCustomizeForm, GroupCreateForm,
     UserCreationForm, GroupProfileUpdateForm,
-    CirclePasswordChangeForm
+    CirclePasswordChangeForm, VmSaveForm,
 )
 
 from .tables import (
@@ -624,25 +624,11 @@ class VmMigrateView(VmOperationView):
         return super(VmMigrateView, self).post(request, extra, *args, **kwargs)
 
 
-class VmSaveView(VmOperationView):
+class VmSaveView(FormOperationMixin, VmOperationView):
 
     op = 'save_as_template'
     icon = 'save'
-    template_name = 'dashboard/_vm-save.html'
-
-    def get_context_data(self, **kwargs):
-        ctx = super(VmSaveView, self).get_context_data(**kwargs)
-        ctx['name'] = self.get_op()._rename(self.object.name)
-        return ctx
-
-    def post(self, request, extra=None, *args, **kwargs):
-        if extra is None:
-            extra = {}
-        name = self.request.POST.get("name")
-        if name:
-            extra["name"] = name
-        return super(VmSaveView, self).post(request, extra, *args, **kwargs)
-
+    form_class = VmSaveForm
 
 vm_ops = {
     'reset': VmOperationView.factory(op='reset', icon='bolt'),
