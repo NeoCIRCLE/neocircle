@@ -20,7 +20,7 @@ from django.conf.urls import patterns, url, include
 
 from vm.models import Instance
 from .views import (
-    AclUpdateView, DiskAddView, FavouriteView, GroupAclUpdateView, GroupDelete,
+    AclUpdateView, FavouriteView, GroupAclUpdateView, GroupDelete,
     GroupDetailView, GroupList, IndexView,
     InstanceActivityDetail, LeaseCreate, LeaseDelete, LeaseDetail,
     MyPreferencesView, NodeAddTraitView, NodeCreate, NodeDelete,
@@ -128,8 +128,6 @@ urlpatterns = patterns(
     url(r'^notifications/$', NotificationView.as_view(),
         name="dashboard.views.notifications"),
 
-    url(r'^disk/add/$', DiskAddView.as_view(),
-        name="dashboard.views.disk-add"),
     url(r'^disk/(?P<pk>\d+)/remove/$', DiskRemoveView.as_view(),
         name="dashboard.views.disk-remove"),
     url(r'^disk/(?P<pk>\d+)/status/$', get_disk_download_status,

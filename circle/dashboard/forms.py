@@ -40,9 +40,9 @@ from django.utils.translation import ugettext as _
 from sizefield.widgets import FileSizeWidget
 
 from firewall.models import Vlan, Host
-from storage.models import Disk, DataStore
+from storage.models import Disk
 from vm.models import (
-    InstanceTemplate, Lease, InterfaceTemplate, Node, Trait, Instance
+    InstanceTemplate, Lease, InterfaceTemplate, Node, Trait
 )
 from .models import Profile, GroupProfile
 
@@ -846,20 +846,6 @@ class LeaseForm(forms.ModelForm):
         model = Lease
 
 
-class DiskAddForm(forms.Form):
-    name = forms.CharField()
-    size = forms.CharField(widget=FileSizeWidget, required=False)
-    url = forms.CharField(required=False)
-    is_template = forms.CharField()
-    object_pk = forms.CharField()
-
-    def __init__(self, *args, **kwargs):
-        self.is_template = kwargs.pop("is_template")
-        self.object_pk = kwargs.pop("object_pk")
-        self.user = kwargs.pop("user")
-        super(DiskAddForm, self).__init__(*args, **kwargs)
-        self.initial['is_template'] = 1 if self.is_template else 0
-        self.initial['object_pk'] = self.object_pk
 
     def clean_size(self):
         size_in_bytes = self.cleaned_data.get("size")
