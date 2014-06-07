@@ -1,0 +1,13 @@
+{% load i18n %}
+{% blocktrans with u=user %}Dear {{u}},{% endblocktrans %}
+
+
+{% blocktrans with n=messages|length %}You have {{n}} new notifications:{% endblocktrans %}
+
+{% for msg in messages %} * {{msg.subject}}
+{% endfor %}
+
+{% blocktrans with url=url %}See them in detail on <{{url}}>.{% endblocktrans %}
+
+-- 
+{{site}} CIRCLE Cloud
