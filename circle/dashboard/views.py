@@ -2611,6 +2611,12 @@ class UnsubscribeFormView(SuccessMessageMixin, UpdateView):
     template_name = "dashboard/unsubscribe.html"
     success_message = _("Successfully modified subscription.")
 
+    def get_success_url(self):
+        if self.request.user.is_authenticated():
+            return super(UnsubscribeFormView, self).get_success_url()
+        else:
+            return self.request.path
+
     @classmethod
     def get_salt(cls):
         return unicode(cls)
