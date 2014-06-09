@@ -35,7 +35,7 @@ from .views import (
     TemplateChoose,
     UserCreationView,
     get_vm_screenshot,
-    ProfileView, toggle_use_gravatar,
+    ProfileView, toggle_use_gravatar, UnsubscribeFormView,
 )
 
 urlpatterns = patterns(
@@ -140,6 +140,8 @@ urlpatterns = patterns(
 
     url(r'^profile/$', MyPreferencesView.as_view(),
         name="dashboard.views.profile-preferences"),
+    url(r'^subscribe/(?P<token>.*)/$', UnsubscribeFormView.as_view(),
+        name="dashboard.views.unsubscribe"),
     url(r'^profile/(?P<username>[^/]+)/$', ProfileView.as_view(),
         name="dashboard.views.profile"),
     url(r'^profile/(?P<username>[^/]+)/use_gravatar/$', toggle_use_gravatar),

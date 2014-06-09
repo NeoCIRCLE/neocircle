@@ -26,6 +26,7 @@ from django.utils.translation import ungettext, override
 
 from manager.mancelery import celery
 from ..models import Notification
+from ..views import UnsubscribeFormView
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +51,9 @@ def send_email_notifications():
             context = {'user': user.profile, 'messages': msgs,
                        'url': (settings.DJANGO_URL.rstrip("/") +
                                reverse("dashboard.views.notifications")),
+                       'unsub': (settings.DJANGO_URL.rstrip("/") + reverse(
+                           "dashboard.views.unsubscribe",
+                           args=[UnsubscribeFormView.get_token(user)])),
                        'site': settings.COMPANY_NAME}
             subject = settings.EMAIL_SUBJECT_PREFIX + ungettext(
                 "%d new notification",

@@ -11,3 +11,6 @@
 
 -- 
 {{site}} CIRCLE Cloud
+
+{% trans "You can change your subscription without logging in:" %}
+{{unsub}}

@@ -1107,6 +1107,19 @@ class MyProfileForm(forms.ModelForm):
         return value
 
 
+class UnsubscribeForm(forms.ModelForm):
+
+    class Meta:
+        fields = ('email_notifications', )
+        model = Profile
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.add_input(Submit("submit", _("Change language")))
+        return helper
+
+
 class CirclePasswordChangeForm(PasswordChangeForm):
 
     @property
