@@ -59,28 +59,19 @@ class ViewUserTestCase(unittest.TestCase):
             self.assertEquals(view(request, pk=1234).render().status_code, 200)
 
 
-
 class ExpiredSigner(TimestampSigner):
     def timestamp(self):
         return baseconv.base62.encode(1)
 
     @classmethod
-    def dumps(cls, obj, key=None, salt='django.core.signing', serializer=JSONSerializer, compress=False):
+    def dumps(cls, obj, key=None, salt='django.core.signing',
+              serializer=JSONSerializer, compress=False):
             data = serializer().dumps(obj)
             base64d = b64_encode(data)
             return cls(key, salt=salt).sign(base64d)
 
 
-
 class SubscribeTestCase(unittest.TestCase):
-
-    @patch.object(UnsubscribeFormView, 'get_object')
-    def test_change(self, go):
-        go.return_value = MagicMock(spec=Profile)
-        UnsubscribeFormView.get_token(1)
-        request = FakeRequestFactory(POST={'email_notifications': 'on'})
-        view(request)
-        self.assertTrue(go.return_value.email_notifications)
 
     @patch.object(views.UnsubscribeFormView, 'get_queryset')
     @patch.object(views.UnsubscribeFormView, 'form_valid')
@@ -121,6 +112,7 @@ class SubscribeTestCase(unittest.TestCase):
         view = UnsubscribeFormView.as_view()
         request = FakeRequestFactory(POST={})
         assert view(request, token=oldtoken)['location']
+
 
 class VmOperationViewTestCase(unittest.TestCase):
 
