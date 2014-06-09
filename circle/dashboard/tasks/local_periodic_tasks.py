@@ -62,7 +62,7 @@ def send_email_notifications():
             logger.error("Failed to send mail to %s", user, exc_info=True)
         else:
             logger.info("Delivered notifications %s",
-                        " ".join(j.pk for j in i))
+                        " ".join(unicode(j.pk) for j in i))
             for j in i:
                 j.status = j.STATUS.delivered
                 j.save()
