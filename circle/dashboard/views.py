@@ -2173,7 +2173,7 @@ class AbstractVmFunctionView(AccessMixin, View):
     @classmethod
     def get_token(cls, instance, user, *args):
         t = tuple([getattr(i, 'pk', i) for i in [instance, user] + list(args)])
-        return signing.dumps(t, salt=cls.get_salt())
+        return signing.dumps(t, salt=cls.get_salt(), compress=True)
 
     @classmethod
     def get_token_url(cls, instance, user, *args):
@@ -2623,12 +2623,27 @@ class UnsubscribeFormView(SuccessMessageMixin, UpdateView):
 
     @classmethod
     def get_token(cls, user):
-        return signing.dumps(user.pk, salt=cls.get_salt())
+        return signing.dumps(user.pk, salt=cls.get_salt(), compress=True)
 
     def get_object(self, queryset=None):
-        pk = signing.loads(self.kwargs['token'], salt=self.get_salt(),
-                           max_age=48*3600)
-        return (queryset or self.get_queryset()).get(user_id=pk)
+        key = self.kwargs['token']
+        try:
+            pk = signing.loads(key, salt=self.get_salt(), max_age=48*3600)
+        except signing.SignatureExpired:
+            raise
+        except (signing.BadSignature, ValueError, TypeError) as e:
+            logger.warning('Tried invalid token. Token: %s, user: %s. %s',
+                           key, unicode(self.request.user), unicode(e))
+            raise Http404
+        else:
+            return (queryset or self.get_queryset()).get(user_id=pk)
+
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            return super(UnsubscribeFormView, self).dispatch(
+                request, *args, **kwargs)
+        except signing.SignatureExpired:
+            return redirect('dashboard.views.profile-preferences')
 
 
 def set_language_cookie(request, response, lang=None):
