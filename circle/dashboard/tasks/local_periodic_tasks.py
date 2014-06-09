@@ -32,28 +32,27 @@ logger = logging.getLogger(__name__)
 
 @celery.task(ignore_result=True)
 def send_email_notifications():
-    msgs = {}
     q = Q(status=Notification.STATUS.new) & (
         Q(valid_until__lt=timezone.now()) | Q(valid_until=None))
-    for i in Notification.objects.filter(q):
-        if i.to not in msgs:
-            msgs[i.to] = []
-        msgs[i.to].append(i)
-
     from_email = settings.DEFAULT_FROM_EMAIL
 
-    for user, i in msgs.iteritems():
+    recipients = {}
+    for i in Notification.objects.filter(q):
+        recipients.setdefault(i.to, [])
+        recipients[i.to].append(i)
+
+    for user, msgs in recipients.iteritems():
         if (not user.profile or not user.email or not
                 user.profile.email_notifications):
             logger.debug("%s gets no notifications", unicode(user))
             continue
         with override(user.profile.preferred_language):
-            context = {'user': user.profile, 'messages': i,
+            context = {'user': user.profile, 'messages': msgs,
                        'url': (settings.DJANGO_URL.rstrip("/") +
                                reverse("dashboard.views.notifications")),
                        'site': settings.COMPANY_NAME}
             subject = ungettext("%d new notification",
-                                "%d new notifications", len(i)) % len(i)
+                                "%d new notifications", len(msgs)) % len(msgs)
             body = render_to_string('dashboard/notifications/email.txt',
                                     context)
         try:
@@ -62,7 +61,7 @@ def send_email_notifications():
             logger.error("Failed to send mail to %s", user, exc_info=True)
         else:
             logger.info("Delivered notifications %s",
-                        " ".join(unicode(j.pk) for j in i))
-            for j in i:
-                j.status = j.STATUS.delivered
-                j.save()
+                        " ".join(unicode(i.pk) for i in msgs))
+            for i in msgs:
+                i.status = i.STATUS.delivered
+                i.save()
