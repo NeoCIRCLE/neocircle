@@ -86,7 +86,7 @@ class Profile(Model):
     use_gravatar = BooleanField(default=False)
     email_notifications = BooleanField(
         verbose_name=_("Email notifications"), default=True,
-        help_text=_('Wether user wants to get digested email notifications.'))
+        help_text=_('Whether user wants to get digested email notifications.'))
 
     def notify(self, subject, template, context={}, valid_until=None):
         return Notification.send(self.user, subject, template, context,

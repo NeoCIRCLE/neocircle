@@ -51,8 +51,9 @@ def send_email_notifications():
                        'url': (settings.DJANGO_URL.rstrip("/") +
                                reverse("dashboard.views.notifications")),
                        'site': settings.COMPANY_NAME}
-            subject = ungettext("%d new notification",
-                                "%d new notifications", len(msgs)) % len(msgs)
+            subject = settings.EMAIL_SUBJECT_PREFIX + ungettext(
+                "%d new notification",
+                "%d new notifications", len(msgs)) % len(msgs)
             body = render_to_string('dashboard/notifications/email.txt',
                                     context)
         try:
