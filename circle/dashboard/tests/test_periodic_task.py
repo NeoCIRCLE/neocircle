@@ -10,9 +10,13 @@ from ..tasks import local_periodic_tasks
 @patch.object(local_periodic_tasks, 'send_mail')
 @patch.object(Notification, 'objects')
 class EmailNotificationTestCase(unittest.TestCase):
+
+    nextpk = 0
+
     def get_fake_notification(self, user=None, **kwargs):
+        self.nextpk += 1
         if user is None:
-            user = MagicMock(spec=User)
+            user = MagicMock(spec=User, pk=self.nextpk)
             user.profile.__unicode__.return_value = "user"
             user.email = "mail"
             user.profile.email_notifications = True
