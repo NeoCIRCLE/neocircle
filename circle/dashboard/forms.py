@@ -1098,8 +1098,7 @@ class MyProfileForm(forms.ModelForm):
     @property
     def helper(self):
         helper = FormHelper()
-        helper.layout = Layout('preferred_language', )
-        helper.add_input(Submit("submit", _("Change language")))
+        helper.add_input(Submit("submit", _("Save")))
         return helper
 
     def save(self, *args, **kwargs):
@@ -1116,7 +1115,7 @@ class UnsubscribeForm(forms.ModelForm):
     @property
     def helper(self):
         helper = FormHelper()
-        helper.add_input(Submit("submit", _("Change language")))
+        helper.add_input(Submit("submit", _("Save")))
         return helper
 
 
