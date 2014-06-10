@@ -51,6 +51,12 @@ class VmSaveForm(forms.Form):
     name = forms.CharField(max_length=100, label=_('Name'),
                            help_text=_('Human readable name of template.'))
 
+    @property
+    def helper(self):
+        helper = FormHelper(self)
+        helper.form_tag = False
+        return helper
+
 
 class VmCustomizeForm(forms.Form):
     name = forms.CharField()
