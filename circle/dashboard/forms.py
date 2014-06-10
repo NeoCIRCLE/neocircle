@@ -1092,19 +1092,31 @@ class TraitForm(forms.ModelForm):
 class MyProfileForm(forms.ModelForm):
 
     class Meta:
-        fields = ('preferred_language', )
+        fields = ('preferred_language', 'email_notifications', )
         model = Profile
 
     @property
     def helper(self):
         helper = FormHelper()
-        helper.layout = Layout('preferred_language', )
-        helper.add_input(Submit("submit", _("Change language")))
+        helper.add_input(Submit("submit", _("Save")))
         return helper
 
     def save(self, *args, **kwargs):
         value = super(MyProfileForm, self).save(*args, **kwargs)
         return value
+
+
+class UnsubscribeForm(forms.ModelForm):
+
+    class Meta:
+        fields = ('email_notifications', )
+        model = Profile
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.add_input(Submit("submit", _("Save")))
+        return helper
 
 
 class CirclePasswordChangeForm(PasswordChangeForm):

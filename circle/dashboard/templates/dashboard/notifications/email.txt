@@ -1,0 +1,16 @@
+{% load i18n %}
+{% blocktrans with u=user %}Dear {{u}},{% endblocktrans %}
+
+
+{% blocktrans count n=messages|length %}You have a new notification:{% plural %}You have {{n}} new notifications:{% endblocktrans %}
+
+{% for msg in messages %} * {{msg.subject}}
+{% endfor %}
+
+{% blocktrans with url=url count n=messages|length %}See it in detail on <{{url}}>.{% plural %} See them in detail on <{{url}}>.{% endblocktrans %}
+
+-- 
+{{site}} CIRCLE Cloud
+
+{% trans "You can change your subscription without logging in:" %}
+{{unsub}}

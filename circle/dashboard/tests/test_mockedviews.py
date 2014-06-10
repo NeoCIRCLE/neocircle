@@ -21,10 +21,14 @@ from mock import patch, MagicMock
 
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
+from django.core.signing import TimestampSigner, JSONSerializer, b64_encode
 from django.http import HttpRequest, Http404
+from django.utils import baseconv
 
+from ..models import Profile
 from ..views import InstanceActivityDetail, InstanceActivity
-from ..views import vm_ops, Instance
+from ..views import vm_ops, Instance, UnsubscribeFormView
+from .. import views
 
 
 class ViewUserTestCase(unittest.TestCase):
@@ -53,6 +57,61 @@ class ViewUserTestCase(unittest.TestCase):
             go.return_value = act
             view = InstanceActivityDetail.as_view()
             self.assertEquals(view(request, pk=1234).render().status_code, 200)
+
+
+class ExpiredSigner(TimestampSigner):
+    def timestamp(self):
+        return baseconv.base62.encode(1)
+
+    @classmethod
+    def dumps(cls, obj, key=None, salt='django.core.signing',
+              serializer=JSONSerializer, compress=False):
+            data = serializer().dumps(obj)
+            base64d = b64_encode(data)
+            return cls(key, salt=salt).sign(base64d)
+
+
+class SubscribeTestCase(unittest.TestCase):
+
+    @patch.object(views.UnsubscribeFormView, 'get_queryset')
+    @patch.object(views.UnsubscribeFormView, 'form_valid')
+    def test_change(self, iv, gq):
+            view = views.UnsubscribeFormView.as_view()
+            p = MagicMock(spec=Profile, email_notifications=True)
+            gq.return_value.get.return_value = p
+            token = UnsubscribeFormView.get_token(MagicMock(pk=1))
+            request = FakeRequestFactory(POST={})
+            self.assertEquals(view(request, token=token), iv.return_value)
+            gq.return_value.get.assert_called_with(user_id=1)
+
+    @patch.object(views.UnsubscribeFormView, 'get_queryset')
+    @patch.object(views.UnsubscribeFormView, 'form_valid')
+    def test_change_to_true(self, iv, gq):
+            view = views.UnsubscribeFormView.as_view()
+            p = MagicMock(spec=Profile, email_notifications=False)
+            gq.return_value.get.return_value = p
+            token = UnsubscribeFormView.get_token(MagicMock(pk=1))
+            request = FakeRequestFactory(POST={'email_notifications': 'on'})
+            self.assertEquals(view(request, token=token), iv.return_value)
+            gq.return_value.get.assert_called_with(user_id=1)
+
+    def test_404_for_invalid_token(self):
+        view = UnsubscribeFormView.as_view()
+        request = FakeRequestFactory()
+        with self.assertRaises(Http404):
+            view(request, token="foo:bar")
+
+    def test_redirect_for_old_token(self):
+        oldtoken = ExpiredSigner.dumps(1, salt=UnsubscribeFormView.get_salt())
+        view = UnsubscribeFormView.as_view()
+        request = FakeRequestFactory()
+        assert view(request, token=oldtoken)['location']
+
+    def test_post_redirect_for_old_token(self):
+        oldtoken = ExpiredSigner.dumps(1, salt=UnsubscribeFormView.get_salt())
+        view = UnsubscribeFormView.as_view()
+        request = FakeRequestFactory(POST={})
+        assert view(request, token=oldtoken)['location']
 
 
 class VmOperationViewTestCase(unittest.TestCase):

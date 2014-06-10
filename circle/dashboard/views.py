@@ -59,7 +59,7 @@ from braces.views._access import AccessMixin
 from .forms import (
     CircleAuthenticationForm, DiskAddForm, HostForm, LeaseForm, MyProfileForm,
     NodeForm, TemplateForm, TraitForm, VmCustomizeForm, GroupCreateForm,
-    UserCreationForm, GroupProfileUpdateForm,
+    UserCreationForm, GroupProfileUpdateForm, UnsubscribeForm,
     CirclePasswordChangeForm
 )
 
@@ -2173,7 +2173,7 @@ class AbstractVmFunctionView(AccessMixin, View):
     @classmethod
     def get_token(cls, instance, user, *args):
         t = tuple([getattr(i, 'pk', i) for i in [instance, user] + list(args)])
-        return signing.dumps(t, salt=cls.get_salt())
+        return signing.dumps(t, salt=cls.get_salt(), compress=True)
 
     @classmethod
     def get_token_url(cls, instance, user, *args):
@@ -2603,6 +2603,47 @@ class MyPreferencesView(UpdateView):
             # language selection forms (without modifying the HTML)
             context['forms']['change_password'] = form
         return self.render_to_response(context)
+
+
+class UnsubscribeFormView(SuccessMessageMixin, UpdateView):
+    model = Profile
+    form_class = UnsubscribeForm
+    template_name = "dashboard/unsubscribe.html"
+    success_message = _("Successfully modified subscription.")
+
+    def get_success_url(self):
+        if self.request.user.is_authenticated():
+            return super(UnsubscribeFormView, self).get_success_url()
+        else:
+            return self.request.path
+
+    @classmethod
+    def get_salt(cls):
+        return unicode(cls)
+
+    @classmethod
+    def get_token(cls, user):
+        return signing.dumps(user.pk, salt=cls.get_salt(), compress=True)
+
+    def get_object(self, queryset=None):
+        key = self.kwargs['token']
+        try:
+            pk = signing.loads(key, salt=self.get_salt(), max_age=48*3600)
+        except signing.SignatureExpired:
+            raise
+        except (signing.BadSignature, ValueError, TypeError) as e:
+            logger.warning('Tried invalid token. Token: %s, user: %s. %s',
+                           key, unicode(self.request.user), unicode(e))
+            raise Http404
+        else:
+            return (queryset or self.get_queryset()).get(user_id=pk)
+
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            return super(UnsubscribeFormView, self).dispatch(
+                request, *args, **kwargs)
+        except signing.SignatureExpired:
+            return redirect('dashboard.views.profile-preferences')
 
 
 def set_language_cookie(request, response, lang=None):
