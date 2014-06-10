@@ -13,6 +13,9 @@
     {% include "dashboard/_display-name.html" with user=a.user show_org=True %}
   </a>
 {% endif %}
+{% if a.has_percent %}
+  {{ a.percentage }}
+{% endif %}
 {% if a.is_abortable_for_user %}
 <form action="{{ a.instance.get_absolute_url }}" method="POST" class="pull-right">
   {% csrf_token %}
