@@ -107,14 +107,16 @@ class CreateDiskOperation(InstanceOperation):
     description = _("Create empty disk for the VM.")
 
     def check_precond(self):
-        super(AddDiskOperation, self).check_precond()
+        super(CreateDiskOperation, self).check_precond()
         # TODO remove check when hot-attach is implemented
         if self.instance.status not in ['STOPPED']:
             raise self.instance.WrongStateError(self.instance)
 
-    def _operation(self, user, size):
+    def _operation(self, user, size, name=None):
         # TODO implement with hot-attach when it'll be available
-        disk = Disk.create(owner=user, size=size)
+        if not name:
+            name = "new disk"
+        disk = Disk.create(size=size, name=name, type="qcow2-norm")
         self.instance.disks.add(disk)
 
 register_operation(CreateDiskOperation)
@@ -126,16 +128,17 @@ class DownloadDiskOperation(InstanceOperation):
     name = _("download disk")
     description = _("Download disk for the VM.")
     abortable = True
+    has_percentage = True
 
     def check_precond(self):
-        super(AddDiskOperation, self).check_precond()
+        super(DownloadDiskOperation, self).check_precond()
         # TODO remove check when hot-attach is implemented
         if self.instance.status not in ['STOPPED']:
             raise self.instance.WrongStateError(self.instance)
 
-    def _operation(self, user, url):
+    def _operation(self, user, url, task, name=None):
         # TODO implement with hot-attach when it'll be available
-        disk = Disk.download(owner=user, url=url)
+        disk = Disk.download(url=url, name=name, task=task)
         self.instance.disks.add(disk)
 
 register_operation(DownloadDiskOperation)
