@@ -24,6 +24,7 @@ from django.contrib.auth.forms import (
     PasswordChangeForm,
 )
 from django.contrib.auth.models import User, Group
+from django.core.validators import URLValidator
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import (
@@ -849,7 +850,7 @@ class LeaseForm(forms.ModelForm):
 class VmCreateDiskForm(forms.Form):
     name = forms.CharField(max_length=100, label=_("Name"))
     size = forms.CharField(
-        widget=FileSizeWidget, initial=10<<30, label=_('Size'),
+        widget=FileSizeWidget, initial=(10 << 30), label=_('Size'),
         help_text=_('Size of disk to create in bytes or with units '
                     'like MB or GB.'))
 
@@ -869,7 +870,7 @@ class VmCreateDiskForm(forms.Form):
 
 class VmDownloadDiskForm(forms.Form):
     name = forms.CharField(max_length=100, label=_("Name"))
-    url = forms.CharField()
+    url = forms.CharField(label=_('URL'), validators=[URLValidator(), ])
 
     @property
     def helper(self):
