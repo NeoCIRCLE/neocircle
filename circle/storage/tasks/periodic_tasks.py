@@ -34,11 +34,11 @@ def garbage_collector(timeout=15):
     :type timeout: int
     """
     for ds in DataStore.objects.all():
-        queue_name = ds.get_remote_queue_name('storage')
+        queue_name = ds.get_remote_queue_name('storage', priority='fast')
         files = set(remote_tasks.list_files.apply_async(
             args=[ds.path], queue=queue_name).get(timeout=timeout))
         disks = set(ds.get_deletable_disks())
-        queue_name = ds.get_remote_queue_name('storage')
+        queue_name = ds.get_remote_queue_name('storage', priority='slow')
         for i in disks & files:
             logger.info("Image: %s at Datastore: %s moved to trash folder." %
                         (i, ds.path))
