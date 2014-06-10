@@ -350,10 +350,12 @@ class Disk(AclBase, TimeStampedModel):
         :rtype: Disk
         """
         params.setdefault('name', url.split('/')[-1])
-        disk = cls.__create(type="iso", user=user, size=None, **params)
+        params.setdefault('type', 'iso')
+        params.setdefault('size', None)
+        disk = cls.__create(params=params, user=user)
         queue_name = disk.get_remote_queue_name('storage', priority='slow')
         remote = storage_tasks.download.apply_async(
-            kwargs={'url': url, 'parent_id': task.id,
+            kwargs={'url': url, 'parent_id': task.request.id,
                     'disk': disk.get_disk_desc()},
             queue=queue_name)
         while True:
