@@ -124,8 +124,11 @@ class InstanceActivity(ActivityModel):
     def get_percentage(self):
         """Returns the percentage of the running operation if available.
         """
-        if self.has_percentage():
-            celery.AsyncResult(id=self.task_uuid).info.get("percent")
+        result = celery.AsyncResult(id=self.task_uuid)
+        if self.has_percentage() and result.info is not None:
+            return result.info.get("percent")
+        else:
+            return 0
 
     @property
     def is_abortable(self):
