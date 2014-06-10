@@ -314,6 +314,8 @@ class Disk(AclBase, TimeStampedModel):
                                              queue=queue_name
                                              ).get(timeout=timeout)
 
+        self.is_ready = True
+        self.save()
         return True
 
     @classmethod
@@ -363,6 +365,7 @@ class Disk(AclBase, TimeStampedModel):
                     AbortableAsyncResult(remote.id).abort()
                     raise Exception("Download aborted by user.")
         disk.size = size
+        disk.is_ready = True
         disk.save()
         return disk
 
