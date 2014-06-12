@@ -85,7 +85,9 @@ class Profile(Model):
         unique=True, blank=True, null=True, max_length=64,
         help_text=_('Unique identifier of the person, e.g. a student number.'))
     instance_limit = IntegerField(default=5)
-    use_gravatar = BooleanField(default=False)
+    use_gravatar = BooleanField(
+        verbose_name=_("Use Gravatar"), default=False,
+        help_text=_("Whether to use email address as Gravatar profile image"))
     email_notifications = BooleanField(
         verbose_name=_("Email notifications"), default=True,
         help_text=_('Whether user wants to get digested email notifications.'))
