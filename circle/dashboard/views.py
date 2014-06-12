@@ -22,7 +22,6 @@ from os import getenv
 import json
 import logging
 import re
-from hashlib import md5
 import requests
 
 from django.conf import settings
@@ -48,7 +47,6 @@ from django.utils.translation import ungettext as __
 from django.template.defaultfilters import title as title_filter
 from django.template.loader import render_to_string
 from django.template import RequestContext
-from django.templatetags.static import static
 
 from django.forms.models import inlineformset_factory
 from django_tables2 import SingleTableView
@@ -2845,7 +2843,7 @@ class ProfileView(LoginRequiredMixin, DetailView):
         context = super(ProfileView, self).get_context_data(**kwargs)
         user = self.get_object()
         context['profile'] = user
-        context['avatar_url'] = get_user_avatar_url(user)
+        context['avatar_url'] = user.profile.get_avatar_url()
         context['instances_owned'] = Instance.get_objects_with_level(
             "owner", user, disregard_superuser=True).filter(destroyed_at=None)
         context['instances_with_access'] = Instance.get_objects_with_level(
@@ -2889,16 +2887,8 @@ def toggle_use_gravatar(request, **kwargs):
     profile.use_gravatar = not profile.use_gravatar
     profile.save()
 
-    new_avatar_url = get_user_avatar_url(user)
+    new_avatar_url = user.profile.get_avatar_url()
     return HttpResponse(
         json.dumps({'new_avatar_url': new_avatar_url}),
         content_type="application/json",
     )
-
-
-def get_user_avatar_url(user):
-    if user.profile.use_gravatar:
-        gravatar_hash = md5(user.email).hexdigest()
-        return "https://secure.gravatar.com/avatar/%s?s=200" % gravatar_hash
-    else:
-        return static("dashboard/img/avatar.png")

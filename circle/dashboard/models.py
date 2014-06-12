@@ -18,6 +18,7 @@
 from __future__ import absolute_import
 
 from itertools import chain
+from hashlib import md5
 from logging import getLogger
 
 from django.conf import settings
@@ -29,6 +30,7 @@ from django.db.models import (
     DateTimeField, permalink, BooleanField
 )
 from django.template.loader import render_to_string
+from django.templatetags.static import static
 from django.utils.translation import ugettext_lazy as _, override, ugettext
 
 from model_utils.models import TimeStampedModel
@@ -95,6 +97,14 @@ class Profile(Model):
     def get_absolute_url(self):
         return reverse("dashboard.views.profile",
                        kwargs={'username': self.user.username})
+
+    def get_avatar_url(self):
+        if self.use_gravatar:
+            gravatar_hash = md5(self.user.email).hexdigest()
+            return ("https://secure.gravatar.com/avatar/%s"
+                    "?s=200" % gravatar_hash)
+        else:
+            return static("dashboard/img/avatar.png")
 
 
 class GroupProfile(AclBase):
