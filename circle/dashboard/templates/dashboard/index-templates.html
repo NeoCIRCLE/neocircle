@@ -11,7 +11,7 @@
     <div id="dashboard-template-list">
       {% for t in templates %}
       <a href="{% url "dashboard.views.template-detail" pk=t.pk %}" class="list-group-item
-        {% if forloop.last and nodes|length < 5 %} list-group-item-last{% endif %}">
+        {% if forloop.last and templates|length < 5 %} list-group-item-last{% endif %}">
         <span class="index-template-list-name">
           <i class="icon-{{ t.os_type }}"></i> {{ t.name }} 
         </span>
