@@ -106,6 +106,19 @@ class Profile(Model):
         else:
             return static("dashboard/img/avatar.png")
 
+    def get_display_name(self):
+        if self.user.get_full_name():
+            name = self.user.get_full_name()
+        else:
+            name = self.user.username
+
+        if self.org_id:
+            name = "%s (%s)" % (name, self.org_id)
+        return name
+
+    def __unicode__(self):
+        return self.get_display_name()
+
 
 class GroupProfile(AclBase):
     ACL_LEVELS = (
