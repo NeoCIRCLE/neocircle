@@ -705,6 +705,7 @@ textarea[name="list-new-namelist"] {
 
 #group-detail-user-table td:nth-child(2) a,
 #group-detail-perm-table td:nth-child(2) a, 
+#template-access-table td:nth-child(2) a, 
 #vm-access-table td:nth-child(2) a, 
 .no-style-link, .no-style-link:hover {
   color: #555 !important;
