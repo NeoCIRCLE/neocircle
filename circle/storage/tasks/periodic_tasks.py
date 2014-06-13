@@ -18,7 +18,7 @@
 from storage.models import DataStore
 from manager.mancelery import celery
 import logging
-from storage.tasks import remote_tasks
+from storage.tasks import storage_tasks
 
 logger = logging.getLogger(__name__)
 
@@ -35,17 +35,17 @@ def garbage_collector(timeout=15):
     """
     for ds in DataStore.objects.all():
         queue_name = ds.get_remote_queue_name('storage', priority='fast')
-        files = set(remote_tasks.list_files.apply_async(
+        files = set(storage_tasks.list_files.apply_async(
             args=[ds.path], queue=queue_name).get(timeout=timeout))
         disks = set(ds.get_deletable_disks())
         queue_name = ds.get_remote_queue_name('storage', priority='slow')
         for i in disks & files:
             logger.info("Image: %s at Datastore: %s moved to trash folder." %
                         (i, ds.path))
-            remote_tasks.move_to_trash.apply_async(
+            storage_tasks.move_to_trash.apply_async(
                 args=[ds.path, i], queue=queue_name).get(timeout=timeout)
         try:
-            remote_tasks.make_free_space.apply_async(
+            storage_tasks.make_free_space.apply_async(
                 args=[ds.path], queue=queue_name).get(timeout=timeout)
         except Exception as e:
             logger.warning(str(e))
@@ -63,7 +63,7 @@ def list_orphan_disks(timeout=15):
     import re
     for ds in DataStore.objects.all():
         queue_name = ds.get_remote_queue_name('storage')
-        files = set(remote_tasks.list_files.apply_async(
+        files = set(storage_tasks.list_files.apply_async(
             args=[ds.path], queue=queue_name).get(timeout=timeout))
         disks = set([disk.filename for disk in ds.disk_set.all()])
         for i in files - disks:
@@ -80,7 +80,7 @@ def list_missing_disks(timeout=15):
     """
     for ds in DataStore.objects.all():
         queue_name = ds.get_remote_queue_name('storage')
-        files = set(remote_tasks.list_files.apply_async(
+        files = set(storage_tasks.list_files.apply_async(
             args=[ds.path], queue=queue_name).get(timeout=timeout))
         disks = set([disk.filename for disk in
                      ds.disk_set.filter(destroyed__isnull=True)])
