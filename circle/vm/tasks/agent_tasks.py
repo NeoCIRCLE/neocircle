@@ -51,3 +51,8 @@ def cleanup(vm):
 @celery.task(name='agent.start_access_server')
 def start_access_server(vm):
     pass
+
+
+@celery.task(name='agent.update')
+def update(vm, data):
+    pass

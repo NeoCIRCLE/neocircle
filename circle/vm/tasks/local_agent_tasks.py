@@ -18,8 +18,13 @@
 from manager.mancelery import celery
 from vm.tasks.agent_tasks import (restart_networking, change_password,
                                   set_time, set_hostname, start_access_server,
-                                  cleanup)
+                                  cleanup, update)
 import time
+from base64 import encodestring
+from StringIO import StringIO
+from tarfile import TarFile, TarInfo
+from django.conf import settings
+from celery.result import TimeoutError
 
 
 def send_init_commands(instance, act, vm):
@@ -38,22 +43,53 @@ def send_init_commands(instance, act, vm):
             queue=queue, args=(vm, instance.primary_host.hostname))
 
 
+def create_agent_tar():
+    def exclude(tarinfo):
+        if tarinfo.name.startswith('./.git'):
+            return None
+        else:
+            return tarinfo
+
+    f = StringIO()
+
+    with TarFile.open(fileobj=f, mode='w|gz') as tar:
+        tar.add(settings.AGENT_DIR, arcname='.', filter=exclude)
+
+        version_fileobj = StringIO(settings.AGENT_VERSION)
+        version_info = TarInfo(name='version.txt')
+        version_info.size = len(version_fileobj.buf)
+        tar.addfile(version_info, version_fileobj)
+
+    return encodestring(f.getvalue()).replace('\n', '')
+
+
 @celery.task
-def agent_started(vm):
+def agent_started(vm, version=None):
     from vm.models import Instance, instance_activity, InstanceActivity
     instance = Instance.objects.get(id=int(vm.split('-')[-1]))
+    queue = instance.get_remote_queue_name("agent")
     initialized = InstanceActivity.objects.filter(
-        instance=instance, activity_code='vm.Instance.agent').exists()
+        instance=instance, activity_code='vm.Instance.agent.cleanup').exists()
 
     with instance_activity(code_suffix='agent', instance=instance) as act:
         with act.sub_activity('starting'):
             pass
+
+        if version and version != settings.AGENT_VERSION:
+            try:
+                with act.sub_activity('update'):
+                    update.apply_async(
+                        queue=queue,
+                        args=(vm, create_agent_tar())).get(timeout=10)
+                    return
+            except TimeoutError:
+                pass
+
         if not initialized:
             send_init_commands(instance, act, vm)
+
         with act.sub_activity('start_access_server'):
-            queue = instance.get_remote_queue_name("agent")
-            start_access_server.apply_async(
-                queue=queue, args=(vm, ))
+            start_access_server.apply_async(queue=queue, args=(vm, ))
 
 
 @celery.task

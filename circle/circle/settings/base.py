@@ -18,8 +18,10 @@
 """Common settings and globals."""
 # flake8: noqa
 from os import environ
-from os.path import abspath, basename, dirname, join, normpath, isfile
+from os.path import (abspath, basename, dirname, join, normpath, isfile,
+                     expanduser)
 from sys import path
+from subprocess import check_output
 
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import ugettext_lazy as _
@@ -417,6 +419,16 @@ if get_env_variable('DJANGO_SAML', 'FALSE') == 'TRUE':
             'DJANGO_SAML_ORG_ID_ATTRIBUTE')
 
 LOGIN_REDIRECT_URL = "/"
+
+AGENT_DIR = get_env_variable(
+    'DJANGO_AGENT_DIR', join(unicode(expanduser("~")), 'agent'))
+
+try:
+    git_env = {'GIT_DIR': join(AGENT_DIR, '.git')}
+    AGENT_VERSION = check_output(
+        ('git', 'log', '-1', r'--pretty=format:%h', 'HEAD'), env=git_env)
+except:
+    AGENT_VERSION = None
 
 LOCALE_PATHS = (join(SITE_ROOT, 'locale'), )
 COMPANY_NAME = "BME IK 2014"
