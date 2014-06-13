@@ -915,7 +915,9 @@ class TemplateAclUpdateView(AclUpdateView):
             post_for_disk['perm-new'] = 'user'
             request.POST = post_for_disk
             for d in template.disks.all():
+                self.set_levels(request, d)
                 self.add_levels(request, d)
+                self.remove_levels(request, d)
 
         return redirect(template)
 
