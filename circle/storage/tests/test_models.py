@@ -99,11 +99,6 @@ class DiskTestCase(TestCase):
         with self.assertRaises(MockException):
             Disk.save_as(d)
 
-    def test_download_percentage_no_download(self):
-        d = MagicMock(spec=Disk)
-        d.is_downloading = Mock(return_value=False)
-        assert Disk.get_download_percentage(d) is None
-
     def test_undeployed_disk_ready(self):
         d = self._disk()
         assert not d.is_ready
