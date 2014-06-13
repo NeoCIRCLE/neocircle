@@ -14,7 +14,7 @@
   </a>
 {% endif %}
 {% if a.has_percent %}
-  {{ a.percentage }}
+  {{ a.percentage }}%
 {% endif %}
 {% if a.is_abortable_for_user %}
 <form action="{{ a.instance.get_absolute_url }}" method="POST" class="pull-right">
