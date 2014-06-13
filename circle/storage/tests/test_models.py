@@ -19,7 +19,7 @@ from datetime import timedelta
 
 from django.test import TestCase
 from django.utils import timezone
-from mock import MagicMock, Mock
+from mock import MagicMock
 
 from ..models import Disk, DataStore
 
