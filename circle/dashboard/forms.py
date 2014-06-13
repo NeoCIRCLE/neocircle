@@ -45,6 +45,12 @@ from vm.models import (
     InstanceTemplate, Lease, InterfaceTemplate, Node, Trait, Instance
 )
 from .models import Profile, GroupProfile
+from circle.settings.base import LANGUAGES
+from django.utils.translation import string_concat
+
+
+LANGUAGES_WITH_CODE = ((l[0], string_concat(l[1], " (", l[0], ")"))
+                       for l in LANGUAGES)
 
 
 class VmSaveForm(forms.Form):
@@ -1101,6 +1107,7 @@ class TraitForm(forms.ModelForm):
 
 
 class MyProfileForm(forms.ModelForm):
+    preferred_language = forms.ChoiceField(LANGUAGES_WITH_CODE)
 
     class Meta:
         fields = ('preferred_language', 'email_notifications',
