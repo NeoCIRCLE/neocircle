@@ -33,6 +33,7 @@ class Operation(object):
     required_perms = ()
     do_not_call_in_templates = True
     abortable = False
+    has_percentage = False
 
     def __call__(self, **kwargs):
         return self.call(**kwargs)

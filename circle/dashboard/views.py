@@ -45,7 +45,6 @@ from django.views.generic import (TemplateView, DetailView, View, DeleteView,
 from django.contrib import messages
 from django.utils.translation import ugettext as _
 from django.utils.translation import ungettext as __
-from django.template.defaultfilters import title as title_filter
 from django.template.loader import render_to_string
 from django.template import RequestContext
 from django.templatetags.static import static
@@ -57,10 +56,11 @@ from braces.views import (LoginRequiredMixin, SuperuserRequiredMixin,
 from braces.views._access import AccessMixin
 
 from .forms import (
-    CircleAuthenticationForm, DiskAddForm, HostForm, LeaseForm, MyProfileForm,
+    CircleAuthenticationForm, HostForm, LeaseForm, MyProfileForm,
     NodeForm, TemplateForm, TraitForm, VmCustomizeForm, GroupCreateForm,
     UserCreationForm, GroupProfileUpdateForm, UnsubscribeForm,
-    CirclePasswordChangeForm, VmSaveForm,
+    VmSaveForm,
+    CirclePasswordChangeForm, VmCreateDiskForm, VmDownloadDiskForm,
 )
 
 from .tables import (
@@ -277,12 +277,6 @@ class VmDetailView(CheckedDetailView):
                 instance=self.get_object()).values_list("vlan", flat=True)
         ).all()
         context['acl'] = get_vm_acl_data(instance)
-        context['forms'] = {
-            'disk_add_form': DiskAddForm(
-                user=self.request.user,
-                is_template=False, object_pk=self.get_object().pk,
-                prefix="disk"),
-        }
         context['os_type_icon'] = instance.os_type.replace("unknown",
                                                            "question")
         # ipv6 infos
@@ -602,6 +596,22 @@ class FormOperationMixin(object):
             return self.get(request)
 
 
+class VmCreateDiskView(FormOperationMixin, VmOperationView):
+
+    op = 'create_disk'
+    form_class = VmCreateDiskForm
+    show_in_toolbar = False
+    icon = 'hdd'
+
+
+class VmDownloadDiskView(FormOperationMixin, VmOperationView):
+
+    op = 'download_disk'
+    form_class = VmDownloadDiskForm
+    show_in_toolbar = False
+    icon = 'download'
+
+
 class VmMigrateView(VmOperationView):
 
     op = 'migrate'
@@ -641,6 +651,8 @@ vm_ops = {
     'destroy': VmOperationView.factory(op='destroy', icon='remove'),
     'sleep': VmOperationView.factory(op='sleep', icon='moon'),
     'wake_up': VmOperationView.factory(op='wake_up', icon='sun'),
+    'create_disk': VmCreateDiskView,
+    'download_disk': VmDownloadDiskView,
 }
 
 
@@ -1066,12 +1078,6 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         context = super(TemplateDetail, self).get_context_data(**kwargs)
         context['acl'] = get_vm_acl_data(obj)
         context['disks'] = obj.disks.all()
-        context['disk_add_form'] = DiskAddForm(
-            user=self.request.user,
-            is_template=True,
-            object_pk=obj.pk,
-            prefix="disk",
-        )
         return context
 
     def get_success_url(self):
@@ -2523,47 +2529,6 @@ def circle_login(request):
                      extra_context=extra_context)
     set_language_cookie(request, response)
     return response
-
-
-class DiskAddView(TemplateView):
-
-    def post(self, *args, **kwargs):
-        is_template = self.request.POST.get("disk-is_template")
-        object_pk = self.request.POST.get("disk-object_pk")
-        is_template = int(is_template) == 1
-        if is_template:
-            obj = InstanceTemplate.objects.get(pk=object_pk)
-        else:
-            obj = Instance.objects.get(pk=object_pk)
-
-        if not obj.has_level(self.request.user, 'owner'):
-            raise PermissionDenied()
-
-        form = DiskAddForm(
-            self.request.POST,
-            user=self.request.user,
-            is_template=is_template, object_pk=object_pk,
-            prefix="disk"
-        )
-
-        if form.is_valid():
-            if form.cleaned_data.get("size"):
-                messages.success(self.request, _("Disk successfully added."))
-            else:
-                messages.success(self.request, _("Disk download started."))
-            form.save()
-        else:
-            error = "<br /> ".join(["<strong>%s</strong>: %s" %
-                                    (title_filter(i[0]), i[1][0])
-                                    for i in form.errors.items()])
-            messages.error(self.request, error)
-
-        if is_template:
-            r = obj.get_absolute_url()
-        else:
-            r = obj.get_absolute_url()
-            r = "%s#resources" % r
-        return redirect(r)
 
 
 class MyPreferencesView(UpdateView):

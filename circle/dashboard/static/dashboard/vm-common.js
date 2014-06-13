@@ -3,7 +3,7 @@
 $(function() {
 
   /* vm operations */
-  $('#ops').on('click', '.operation.btn', function(e) {
+  $('#ops, #vm-details-resources-disk').on('click', '.operation.btn', function(e) {
     var icon = $(this).children("i").addClass('icon-spinner icon-spin');
 
     $.ajax({

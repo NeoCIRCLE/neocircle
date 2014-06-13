@@ -910,6 +910,11 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         acts = (self.activity_log.filter(parent=None).
                 order_by('-started').
                 select_related('user').prefetch_related('children'))
+        # Check latest activity for percentage
+        for i in acts:
+            if i.has_percentage():
+                i.has_percent = True
+                i.percentage = i.get_percentage()
         if user is not None:
             for i in acts:
                 i.is_abortable_for_user = partial(i.is_abortable_for,
