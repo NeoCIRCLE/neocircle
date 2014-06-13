@@ -128,7 +128,11 @@ class FilterMixin(object):
         filters = {}
         for item in self.allowed_filters:
             if item in self.request.GET:
-                filters[self.allowed_filters[item]] = self.request.GET[item]
+                filters[self.allowed_filters[item]] = (
+                    self.request.GET[item].split(",")
+                    if self.allowed_filters[item].endswith("__in") else
+                    self.request.GET[item])
+
         return filters
 
     def get_queryset(self):
@@ -1158,7 +1162,8 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
         'name': "name__icontains",
         'node': "node__name__icontains",
         'status': "status__iexact",
-        'tags': "tags__name__in",  # note: use it as ?tags[]=a,b
+        'tags[]': "tags__name__in",
+        'tags': "tags__name__in",  # for search string
         'owner': "owner__username",
     }
 
@@ -1197,8 +1202,10 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
             (sort[1:] if sort[0] == "-" else sort)
                 in [i.name for i in Instance._meta.fields] + ["pk"]):
             queryset = queryset.order_by(sort)
-        return queryset.filter(**self.get_queryset_filters()
-                               ).select_related('owner', 'node')
+
+        return queryset.filter(
+            **self.get_queryset_filters()).select_related('owner', 'node'
+                                                          ).distinct()
 
     def create_fake_get(self):
         """
@@ -1230,8 +1237,7 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
             # generate a new GET request, that is kinda fake
             fake = self.request.GET.copy()
             for k, v in got.iteritems():
-                fake["%s%s" % (
-                    k, "[]" if len(v.split(",")) > 1 else "")] = v
+                fake[k] = v
 
             self.request.GET = fake
 
