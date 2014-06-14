@@ -116,6 +116,20 @@ class InstanceActivity(ActivityModel):
         else:
             return 'failed'
 
+    def has_percentage(self):
+        op = self.instance.get_operation_from_activity_code(self.activity_code)
+        return (self.task_uuid and op and op.has_percentage
+                and not self.finished)
+
+    def get_percentage(self):
+        """Returns the percentage of the running operation if available.
+        """
+        result = celery.AsyncResult(id=self.task_uuid)
+        if self.has_percentage() and result.info is not None:
+            return result.info.get("percent")
+        else:
+            return 0
+
     @property
     def is_abortable(self):
         """Can the activity be aborted?

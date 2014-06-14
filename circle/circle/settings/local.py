@@ -16,6 +16,7 @@
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
 """Development settings and globals."""
+# flake8: noqa
 
 
 from base import *  # noqa

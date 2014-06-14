@@ -26,6 +26,7 @@ from django.utils.translation import ugettext_lazy as _
 from celery.exceptions import TimeLimitExceeded
 
 from common.operations import Operation, register_operation
+from storage.models import Disk
 from .tasks.local_tasks import (
     abortable_async_instance_operation, abortable_async_node_operation,
 )
@@ -99,24 +100,48 @@ class AddInterfaceOperation(InstanceOperation):
 register_operation(AddInterfaceOperation)
 
 
-class AddDiskOperation(InstanceOperation):
-    activity_code_suffix = 'add_disk'
-    id = 'add_disk'
-    name = _("add disk")
-    description = _("Add the specified disk to the VM.")
+class CreateDiskOperation(InstanceOperation):
+    activity_code_suffix = 'create_disk'
+    id = 'create_disk'
+    name = _("create disk")
+    description = _("Create empty disk for the VM.")
 
     def check_precond(self):
-        super(AddDiskOperation, self).check_precond()
+        super(CreateDiskOperation, self).check_precond()
         # TODO remove check when hot-attach is implemented
         if self.instance.status not in ['STOPPED']:
             raise self.instance.WrongStateError(self.instance)
 
-    def _operation(self, activity, user, system, disk):
+    def _operation(self, user, size, name=None):
         # TODO implement with hot-attach when it'll be available
-        return self.instance.disks.add(disk)
+        if not name:
+            name = "new disk"
+        disk = Disk.create(size=size, name=name, type="qcow2-norm")
+        self.instance.disks.add(disk)
+
+register_operation(CreateDiskOperation)
 
 
-register_operation(AddDiskOperation)
+class DownloadDiskOperation(InstanceOperation):
+    activity_code_suffix = 'download_disk'
+    id = 'download_disk'
+    name = _("download disk")
+    description = _("Download disk for the VM.")
+    abortable = True
+    has_percentage = True
+
+    def check_precond(self):
+        super(DownloadDiskOperation, self).check_precond()
+        # TODO remove check when hot-attach is implemented
+        if self.instance.status not in ['STOPPED']:
+            raise self.instance.WrongStateError(self.instance)
+
+    def _operation(self, user, url, task, name=None):
+        # TODO implement with hot-attach when it'll be available
+        disk = Disk.download(url=url, name=name, task=task)
+        self.instance.disks.add(disk)
+
+register_operation(DownloadDiskOperation)
 
 
 class DeployOperation(InstanceOperation):

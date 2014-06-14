@@ -19,7 +19,7 @@ from datetime import timedelta
 
 from django.test import TestCase
 from django.utils import timezone
-from mock import MagicMock, Mock
+from mock import MagicMock
 
 from ..models import Disk, DataStore
 
@@ -98,11 +98,6 @@ class DiskTestCase(TestCase):
         d.is_ready = False
         with self.assertRaises(MockException):
             Disk.save_as(d)
-
-    def test_download_percentage_no_download(self):
-        d = MagicMock(spec=Disk)
-        d.is_downloading = Mock(return_value=False)
-        assert Disk.get_download_percentage(d) is None
 
     def test_undeployed_disk_ready(self):
         d = self._disk()

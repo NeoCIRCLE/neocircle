@@ -37,48 +37,62 @@
                 <th>{% trans "Who" %}</th>
                 <th>{% trans "What" %}</th>
                 <th><i class="icon-remove"></i></th>
-            </tr></thead>
+              </tr>
+            </thead>
             <tbody>
-                {% for i in acl.users %}
-                <tr>
-                  <td><i class="icon-user"></i></td><td>{{i.user}}</td>
-                  <td>
-                    <select class="form-control" name="perm-u-{{i.user.id}}">
-                      {% for id, name in acl.levels %}
-                      <option{%if id = i.level%} selected="selected"{%endif%} value="{{id}}">{{name}}</option>
-                      {% endfor %}
-                    </select>
-                  </td>
-                  <td>
-                    <input type="checkbox" name="remove-u-{{i.user.id}}" title="{% trans "Remove" %}"/>
-                  </td>
-                </tr>
-                {% endfor %}
-                {% for i in acl.groups %}
-                <tr>
-                  <td><i class="icon-group"></i></td><td>{{i.group}}</td>
-                  <td>
-                    <select class="form-control" name="perm-g-{{i.group.id}}">
-                      {% for id, name in acl.levels %}
-                      <option{%if id = i.level%} selected="selected"{%endif%} value="{{id}}">{{name}}</option>
-                      {% endfor %}
-                    </select>
-                  </td>
-                  <td>
-                    <input type="checkbox" name="remove-g-{{i.group.id}}" title="{% trans "Remove" %}"/>
-                  </td>
-                </tr>
-                {% endfor %}
-                <tr><td><i class="icon-plus"></i></td>
-                    <td><input type="text" class="form-control" name="perm-new-name"
-                        placeholder="{% trans "Name of group or user" %}"></td>
-                    <td><select class="form-control" name="perm-new">
-                            {% for id, name in acl.levels %}
-                            <option value="{{id}}">{{name}}</option>
-                            {% endfor %}
-                    </select></td><td></td>
-                </tr>
-          </tbody>
+              {% for i in acl.users %}
+              <tr>
+                <td>
+                  <i class="icon-user"></i>
+                </td>
+                <td>
+                  <a href="{% url "dashboard.views.profile" username=i.user.username %}"
+                    title="{{ i.user.username }}">
+                    {% include "dashboard/_display-name.html" with user=i.user show_org=True %}
+                  </a>
+                </td>
+                <td>
+                  <select class="form-control" name="perm-u-{{i.user.id}}">
+                    {% for id, name in acl.levels %}
+                    <option{%if id = i.level%} selected="selected"{%endif%} value="{{id}}">{{name}}</option>
+                    {% endfor %}
+                  </select>
+                </td>
+                <td>
+                  <input type="checkbox" name="remove-u-{{i.user.id}}" title="{% trans "Remove" %}"/>
+                </td>
+              </tr>
+              {% endfor %}
+              {% for i in acl.groups %}
+              <tr>
+                <td><i class="icon-group"></i></td>
+                <td>
+                  <a href="{% url "dashboard.views.group-detail" pk=i.group.pk %}">
+                    {{i.group}}
+                  </a>
+                </td>
+                <td>
+                  <select class="form-control" name="perm-g-{{i.group.id}}">
+                    {% for id, name in acl.levels %}
+                    <option{%if id = i.level%} selected="selected"{%endif%} value="{{id}}">{{name}}</option>
+                    {% endfor %}
+                  </select>
+                </td>
+                <td>
+                  <input type="checkbox" name="remove-g-{{i.group.id}}" title="{% trans "Remove" %}"/>
+                </td>
+              </tr>
+              {% endfor %}
+              <tr><td><i class="icon-plus"></i></td>
+                  <td><input type="text" class="form-control" name="perm-new-name"
+                      placeholder="{% trans "Name of group or user" %}"></td>
+                  <td><select class="form-control" name="perm-new">
+                          {% for id, name in acl.levels %}
+                          <option value="{{id}}">{{name}}</option>
+                          {% endfor %}
+                  </select></td><td></td>
+              </tr>
+            </tbody>
           </table>
           <div class="form-actions">
             <button type="submit" class="btn btn-success">{% trans "Save" %}</button>
@@ -103,17 +117,6 @@
           </li>
         {% endfor %}
         </ul>
-      </div>
-    </div>
-        
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h4 class="no-margin"><i class="icon-folder-open"></i> {% trans "Create new disk" %}</h4>
-      </div>
-      <div class="panel-body">
-        <form action="{% url "dashboard.views.disk-add" %}" method="POST">
-          {% crispy disk_add_form %} 
-        </form>
       </div>
     </div>
   </div><!-- .col-md-4 -->

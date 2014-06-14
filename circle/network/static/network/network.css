@@ -1,0 +1,8 @@
+.table-with-form-fields tbody tr td {
+  line-height: 34px;
+}
+
+#vlan-access-table th:last-child, #vlan-access-table td:last-child {
+  text-align: center;
+}
+

@@ -201,7 +201,7 @@ class IPNetworkField(models.Field):
         return super(IPNetworkField, self).formfield(**defaults)
 
 
-add_introspection_rules([], ["firewall\.fields\.MACAddressField"])
+add_introspection_rules([], ["firewall\.fields\."])
 
 
 def val_alfanum(value):

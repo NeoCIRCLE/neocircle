@@ -19,13 +19,12 @@
 
 from __future__ import unicode_literals
 
-from contextlib import contextmanager
 import logging
 from os.path import join
 import uuid
 
-from celery.signals import worker_ready
-from django.db.models import (Model, CharField, DateTimeField,
+from celery.contrib.abortable import AbortableAsyncResult
+from django.db.models import (Model, BooleanField, CharField, DateTimeField,
                               ForeignKey)
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -33,11 +32,9 @@ from model_utils.models import TimeStampedModel
 from sizefield.models import FileSizeField
 
 from acl.models import AclBase
-from .tasks import local_tasks, remote_tasks
+from .tasks import local_tasks, storage_tasks
 from celery.exceptions import TimeoutError
-from manager.mancelery import celery
-from common.models import (ActivityModel, activitycontextimpl,
-                           WorkerNotFound)
+from common.models import WorkerNotFound
 
 logger = logging.getLogger(__name__)
 
@@ -64,8 +61,12 @@ class DataStore(Model):
         logger.debug("Checking for storage queue %s.%s",
                      self.hostname, queue_id)
         if not check_worker or local_tasks.check_queue(self.hostname,
-                                                       queue_id, priority):
-            return self.hostname + '.' + queue_id
+                                                       queue_id,
+                                                       priority):
+            queue_name = self.hostname + '.' + queue_id
+            if priority is not None:
+                queue_name = queue_name + '.' + priority
+            return queue_name
         else:
             raise WorkerNotFound()
 
@@ -98,6 +99,8 @@ class Disk(AclBase, TimeStampedModel):
     dev_num = CharField(default='a', max_length=1,
                         verbose_name=_("device number"))
     destroyed = DateTimeField(blank=True, default=None, null=True)
+
+    is_ready = BooleanField(default=False)
 
     class Meta:
         ordering = ['name']
@@ -142,22 +145,6 @@ class Disk(AclBase, TimeStampedModel):
             self.disk = disk
 
     @property
-    def is_ready(self):
-        """ Returns True if the disk is physically ready on the storage.
-
-        It needs at least 1 successfull deploy action.
-        """
-        return self.activity_log.filter(activity_code__endswith="deploy",
-                                        succeeded=True)
-
-    @property
-    def failed(self):
-        """ Returns True if the last activity on the disk is failed.
-        """
-        result = self.activity_log.all().order_by('-id')[0].succeeded
-        return not (result is None) and not result
-
-    @property
     def path(self):
         """The path where the files are stored.
         """
@@ -198,24 +185,6 @@ class Disk(AclBase, TimeStampedModel):
             'raw-ro': 'vd',
             'raw-rw': 'vd',
         }[self.type]
-
-    def is_downloading(self):
-        return self.size is None and not self.failed
-
-    def get_download_percentage(self):
-        if not self.is_downloading():
-            return None
-        try:
-            task = self.activity_log.filter(
-                activity_code__endswith="deploy",
-                succeeded__isnull=True)[0].task_uuid
-            result = celery.AsyncResult(id=task)
-            return result.info.get("percent")
-        except:
-            return 0
-
-    def get_latest_activity_result(self):
-        return self.activity_log.latest("pk").result
 
     @property
     def is_deletable(self):
@@ -334,92 +303,38 @@ class Disk(AclBase, TimeStampedModel):
 
         if self.is_ready:
             return True
-        with disk_activity(code_suffix='deploy', disk=self,
-                           task_uuid=task_uuid, user=user) as act:
+        queue_name = self.get_remote_queue_name('storage', priority="fast")
+        disk_desc = self.get_disk_desc()
+        if self.base is not None:
+            storage_tasks.snapshot.apply_async(args=[disk_desc],
+                                               queue=queue_name
+                                               ).get(timeout=timeout)
+        else:
+            storage_tasks.create.apply_async(args=[disk_desc],
+                                             queue=queue_name
+                                             ).get(timeout=timeout)
 
-            # Delegate create / snapshot jobs
-            queue_name = self.get_remote_queue_name('storage')
-            disk_desc = self.get_disk_desc()
-            if self.base is not None:
-                with act.sub_activity('creating_snapshot'):
-                    remote_tasks.snapshot.apply_async(args=[disk_desc],
-                                                      queue=queue_name
-                                                      ).get(timeout=timeout)
-            else:
-                with act.sub_activity('creating_disk'):
-                    remote_tasks.create.apply_async(args=[disk_desc],
-                                                    queue=queue_name
-                                                    ).get(timeout=timeout)
-
-            return True
-
-    def deploy_async(self, user=None):
-        """Execute deploy asynchronously.
-        """
-        return local_tasks.deploy.apply_async(args=[self, user],
-                                              queue="localhost.man")
+        self.is_ready = True
+        self.save()
+        return True
 
     @classmethod
-    def create(cls, instance=None, user=None, **params):
-        """Create disk with activity.
-        """
-        datastore = params.pop('datastore', DataStore.objects.get())
-        filename = params.pop('filename', str(uuid.uuid4()))
-        disk = cls(filename=filename, datastore=datastore, **params)
+    def create(cls, user=None, **params):
+        disk = cls.__create(user, params)
         disk.clean()
         disk.save()
         logger.debug("Disk created: %s", params)
-        with disk_activity(code_suffix="create",
-                           user=user,
-                           disk=disk):
-            if instance:
-                instance.disks.add(disk)
         return disk
 
     @classmethod
-    def create_empty_async(cls, instance=None, user=None, **kwargs):
-        """Execute deploy asynchronously.
-        """
-        return local_tasks.create_empty.apply_async(
-            args=[cls, instance, user, kwargs], queue="localhost.man")
-
-    @classmethod
-    def create_empty(cls, instance=None, user=None, task_uuid=None, **kwargs):
-        """Create empty Disk object.
-
-        :param instance: Instance or template attach the Disk to.
-        :type instance: vm.models.Instance or InstanceTemplate or NoneType
-        :param user: Creator of the disk.
-        :type user: django.contrib.auth.User
-
-        :return: Disk object without a real image, to be .deploy()ed later.
-        """
-        disk = Disk.create(instance, user, **kwargs)
-        disk.deploy(user=user, task_uuid=task_uuid)
+    def __create(cls, user, params):
+        datastore = params.pop('datastore', DataStore.objects.get())
+        filename = params.pop('filename', str(uuid.uuid4()))
+        disk = cls(filename=filename, datastore=datastore, **params)
         return disk
 
     @classmethod
-    def create_from_url_async(cls, url, instance=None, user=None, **kwargs):
-        """Create disk object and download data from url asynchrnously.
-
-        :param url: URL of image to download.
-        :type url: string
-        :param instance: Instance or template attach the Disk to.
-        :type instance: vm.models.Instance or InstanceTemplate or NoneType
-        :param user: owner of the disk
-        :type user: django.contrib.auth.User
-
-        :return: Task
-        :rtype: AsyncResult
-        """
-        kwargs.update({'cls': cls, 'url': url,
-                       'instance': instance, 'user': user})
-        return local_tasks.create_from_url.apply_async(
-            kwargs=kwargs, queue='localhost.man')
-
-    @classmethod
-    def create_from_url(cls, url, instance=None, user=None,
-                        task_uuid=None, abortable_task=None, **kwargs):
+    def download(cls, url, task, user=None, **params):
         """Create disk object and download data from url synchronusly.
 
         :param url: image url to download.
@@ -434,119 +349,41 @@ class Disk(AclBase, TimeStampedModel):
         :return: The created Disk object
         :rtype: Disk
         """
-        kwargs.setdefault('name', url.split('/')[-1])
-        disk = Disk.create(type="iso", instance=instance, user=user,
-                           size=None, **kwargs)
-        queue_name = disk.get_remote_queue_name('storage')
-
-        def __on_abort(activity, error):
-            activity.disk.destroyed = timezone.now()
-            activity.disk.save()
-
-        if abortable_task:
-            from celery.contrib.abortable import AbortableAsyncResult
-
-            class AbortException(Exception):
-                pass
-
-        with disk_activity(code_suffix='deploy', disk=disk,
-                           task_uuid=task_uuid, user=user,
-                           on_abort=__on_abort) as act:
-            with act.sub_activity('downloading_disk'):
-                result = remote_tasks.download.apply_async(
-                    kwargs={'url': url, 'parent_id': task_uuid,
-                            'disk': disk.get_disk_desc()},
-                    queue=queue_name)
-                while True:
-                    try:
-                        size = result.get(timeout=5)
-                        break
-                    except TimeoutError:
-                        if abortable_task and abortable_task.is_aborted():
-                            AbortableAsyncResult(result.id).abort()
-                            raise AbortException("Download aborted by user.")
-                disk.size = size
-                disk.save()
+        params.setdefault('name', url.split('/')[-1])
+        params.setdefault('type', 'iso')
+        params.setdefault('size', None)
+        disk = cls.__create(params=params, user=user)
+        queue_name = disk.get_remote_queue_name('storage', priority='slow')
+        remote = storage_tasks.download.apply_async(
+            kwargs={'url': url, 'parent_id': task.request.id,
+                    'disk': disk.get_disk_desc()},
+            queue=queue_name)
+        while True:
+            try:
+                size = remote.get(timeout=5)
+                break
+            except TimeoutError:
+                if task is not None and task.is_aborted():
+                    AbortableAsyncResult(remote.id).abort()
+                    raise Exception("Download aborted by user.")
+        disk.size = size
+        disk.is_ready = True
+        disk.save()
         return disk
 
     def destroy(self, user=None, task_uuid=None):
         if self.destroyed:
             return False
 
-        with disk_activity(code_suffix='destroy', disk=self,
-                           task_uuid=task_uuid, user=user):
-            self.destroyed = timezone.now()
-            self.save()
-
-            return True
-
-    def destroy_async(self, user=None):
-        """Execute destroy asynchronously.
-        """
-        return local_tasks.destroy.apply_async(args=[self, user],
-                                               queue='localhost.man')
+        self.destroyed = timezone.now()
+        self.save()
+        return True
 
     def restore(self, user=None, task_uuid=None):
         """Recover destroyed disk from trash if possible.
         """
         # TODO
         pass
-
-    def restore_async(self, user=None):
-        local_tasks.restore.apply_async(args=[self, user],
-                                        queue='localhost.man')
-
-    def clone_async(self, new_disk=None, timeout=300, user=None):
-        """Clone a Disk to another Disk
-
-        :param new_disk: optional, the new Disk object to clone in
-        :type new_disk: storage.models.Disk
-        :param user: Creator of the disk.
-        :type user: django.contrib.auth.User
-
-        :return: AsyncResult
-        """
-        return local_tasks.clone.apply_async(args=[self, new_disk,
-                                                   timeout, user],
-                                             queue="localhost.man")
-
-    def clone(self, disk=None, user=None, task_uuid=None, timeout=300):
-        """Cloning Disk into another Disk.
-
-        The Disk.type can'T be snapshot.
-
-        :param new_disk: optional, the new Disk object to clone in
-        :type new_disk: storage.models.Disk
-        :param user: Creator of the disk.
-        :type user: django.contrib.auth.User
-
-        :return: the cloned Disk object.
-        """
-        banned_types = ['qcow2-snap']
-        if self.type in banned_types:
-            raise self.WrongDiskTypeError(self.type)
-        if self.is_in_use:
-            raise self.DiskInUseError(self)
-        if not self.is_ready:
-            raise self.DiskIsNotReady(self)
-        if not disk:
-            base = None
-            if self.type == "iso":
-                base = self
-            disk = Disk.create(datastore=self.datastore,
-                               name=self.name, size=self.size,
-                               type=self.type, base=base)
-
-        with disk_activity(code_suffix="clone", disk=self,
-                           user=user, task_uuid=task_uuid):
-            with disk_activity(code_suffix="deploy", disk=disk,
-                               user=user, task_uuid=task_uuid):
-                queue_name = self.get_remote_queue_name('storage')
-                remote_tasks.merge.apply_async(args=[self.get_disk_desc(),
-                                                     disk.get_disk_desc()],
-                                               queue=queue_name
-                                               ).get()  # Timeout
-            return disk
 
     def save_as(self, user=None, task_uuid=None, timeout=300):
         """Save VM as template.
@@ -582,65 +419,11 @@ class Disk(AclBase, TimeStampedModel):
                            name=self.name, size=self.size,
                            type=new_type)
 
-        with disk_activity(code_suffix="save_as", disk=self,
-                           user=user, task_uuid=task_uuid):
-            with disk_activity(code_suffix="deploy", disk=disk,
-                               user=user, task_uuid=task_uuid):
-                queue_name = self.get_remote_queue_name('storage')
-                remote_tasks.merge.apply_async(args=[self.get_disk_desc(),
-                                                     disk.get_disk_desc()],
-                                               queue=queue_name
-                                               ).get()  # Timeout
-            return disk
-
-
-class DiskActivity(ActivityModel):
-    disk = ForeignKey(Disk, related_name='activity_log',
-                      help_text=_('Disk this activity works on.'),
-                      verbose_name=_('disk'))
-
-    @classmethod
-    def create(cls, code_suffix, disk, task_uuid=None, user=None):
-        act = cls(activity_code='storage.Disk.' + code_suffix,
-                  disk=disk, parent=None, started=timezone.now(),
-                  task_uuid=task_uuid, user=user)
-        act.save()
-        return act
-
-    def __unicode__(self):
-        if self.parent:
-            return '{}({})->{}'.format(self.parent.activity_code,
-                                       self.disk,
-                                       self.activity_code)
-        else:
-            return '{}({})'.format(self.activity_code,
-                                   self.disk)
-
-    def create_sub(self, code_suffix, task_uuid=None):
-        act = DiskActivity(
-            activity_code=self.activity_code + '.' + code_suffix,
-            disk=self.disk, parent=self, started=timezone.now(),
-            task_uuid=task_uuid, user=self.user)
-        act.save()
-        return act
-
-    @contextmanager
-    def sub_activity(self, code_suffix, task_uuid=None):
-        act = self.create_sub(code_suffix, task_uuid)
-        return activitycontextimpl(act)
-
-
-@contextmanager
-def disk_activity(code_suffix, disk, task_uuid=None, user=None,
-                  on_abort=None, on_commit=None):
-    act = DiskActivity.create(code_suffix, disk, task_uuid, user)
-    return activitycontextimpl(act, on_abort=on_abort, on_commit=on_commit)
-
-
-@worker_ready.connect()
-def cleanup(conf=None, **kwargs):
-    # TODO check if other manager workers are running
-    for i in DiskActivity.objects.filter(finished__isnull=True):
-        i.finish(False, "Manager is restarted, activity is cleaned up. "
-                 "You can try again now.")
-        logger.error('Forced finishing stale activity %s', i)
+        queue_name = self.get_remote_queue_name("storage", priority="slow")
+        storage_tasks.merge.apply_async(args=[self.get_disk_desc(),
+                                              disk.get_disk_desc()],
+                                        queue=queue_name
+                                        ).get()  # Timeout
+        disk.is_ready = True
+        disk.save()
+        return disk

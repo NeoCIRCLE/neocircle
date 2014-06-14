@@ -17,7 +17,7 @@
 
 import json
 
-from unittest import skip
+# from unittest import skip
 from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User, Group
@@ -332,38 +332,6 @@ class VmDetailTest(LoginMixin, TestCase):
         # redirect to the login page
         self.assertEqual(response.status_code, 302)
         self.assertEqual(leases, Lease.objects.count())
-
-    def test_unpermitted_vm_disk_add(self):
-        c = Client()
-        self.login(c, "user2")
-        inst = Instance.objects.get(pk=1)
-        inst.set_level(self.u1, 'owner')
-        disks = inst.disks.count()
-        response = c.post("/dashboard/disk/add/", {
-            'disk-name': "a",
-            'disk-size': 1,
-            'disk-is_template': 0,
-            'disk-object_pk': 1,
-        })
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(disks, inst.disks.count())
-
-    @skip("until fix merged")
-    def test_permitted_vm_disk_add(self):
-        c = Client()
-        self.login(c, "user1")
-        inst = Instance.objects.get(pk=1)
-        inst.set_level(self.u1, 'owner')
-        # disks = inst.disks.count()
-        response = c.post("/dashboard/disk/add/", {
-            'disk-name': "a",
-            'disk-size': 1,
-            'disk-is_template': 0,
-            'disk-object_pk': 1,
-        })
-        self.assertEqual(response.status_code, 302)
-        # mancelery is needed TODO
-        # self.assertEqual(disks + 1, inst.disks.count())
 
     def test_notification_read(self):
         c = Client()
