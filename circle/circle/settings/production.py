@@ -16,6 +16,7 @@
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
 """Production settings and globals."""
+# flake8: noqa
 
 
 from os import environ

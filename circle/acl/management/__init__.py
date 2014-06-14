@@ -31,13 +31,13 @@ def create_levels(app, created_models, verbosity, db=DEFAULT_DB_ALIAS,
     for klass in app_models:
         # Force looking up the content types in the current database
         # before creating foreign keys to them.
-        ctype = ContentType.objects.db_manager(db).get_for_model(klass)
-        ctypes.add(ctype)
+        ctype1 = ContentType.objects.db_manager(db).get_for_model(klass)
+        ctypes.add(ctype1)
         weight = 0
         try:
             for codename, name in klass.ACL_LEVELS:
-                searched_levels.append((ctype, (codename, name)))
-                level_weights.append((ctype, codename, weight))
+                searched_levels.append((ctype1, (codename, name)))
+                level_weights.append((ctype1, codename, weight))
                 weight += 1
         except AttributeError:
             raise ImproperlyConfigured(

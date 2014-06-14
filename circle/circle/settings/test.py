@@ -17,6 +17,8 @@
 
 from .base import *  # noqa
 
+# flake8: noqa
+
 ########## IN-MEMORY TEST DATABASE
 DATABASES = {
     "default": {
