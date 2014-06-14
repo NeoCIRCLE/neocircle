@@ -319,7 +319,7 @@ class ReloadTestCase(TestCase):
                           'tcp', public=1000, private=22)
 
     def test_periodic_task(self):
-        #TODO
+        # TODO
         with patch('firewall.tasks.local_tasks.cache') as cache:
             self.test_host_add_port()
             self.test_host_add_port2()

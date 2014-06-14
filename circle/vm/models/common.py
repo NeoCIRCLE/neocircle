@@ -55,8 +55,8 @@ class NamedBaseResourceConfig(BaseResourceConfigModel, TimeStampedModel):
     """Pre-created, named base resource configurations.
     """
     name = CharField(max_length=50, unique=True,
-                     verbose_name=_('name'), help_text=
-                     _('Name of base resource configuration.'))
+                     verbose_name=_('name'),
+                     help_text=_('Name of base resource configuration.'))
 
     class Meta:
         app_label = 'vm'

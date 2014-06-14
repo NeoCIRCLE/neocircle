@@ -52,7 +52,7 @@ class Rule(models.Model):
     Others set address translation or other free-form iptables parameters.
     """
     CHOICES_type = (('host', 'host'), ('firewall', 'firewall'),
-                   ('vlan', 'vlan'))
+                    ('vlan', 'vlan'))
     CHOICES_proto = (('tcp', 'tcp'), ('udp', 'udp'), ('icmp', 'icmp'))
     CHOICES_dir = (('out', _('out')), ('in', _('in')))
     CHOICES_action = (('accept', _('accept')), ('drop', _('drop')),
@@ -820,7 +820,7 @@ class Domain(models.Model):
 
 class Record(models.Model):
     CHOICES_type = (('A', 'A'), ('CNAME', 'CNAME'), ('AAAA', 'AAAA'),
-                   ('MX', 'MX'), ('NS', 'NS'), ('PTR', 'PTR'), ('TXT', 'TXT'))
+                    ('MX', 'MX'), ('NS', 'NS'), ('PTR', 'PTR'), ('TXT', 'TXT'))
     name = models.CharField(max_length=40, validators=[val_domain],
                             blank=True, null=True, verbose_name=_('name'))
     domain = models.ForeignKey('Domain', verbose_name=_('domain'))

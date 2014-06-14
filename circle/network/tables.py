@@ -120,7 +120,7 @@ class RecordTable(Table):
         fields = ('type', 'fqdn', 'host', 'address', 'ttl', 'host',
                   'owner', )
         sequence = ('type', 'fqdn', )
-        #order_by = 'name'
+        # order_by = 'name'
 
 
 class SmallRecordTable(Table):
@@ -131,7 +131,7 @@ class SmallRecordTable(Table):
         attrs = {'class': 'table table-striped table-bordered'}
         fields = ('type', 'fqdn', 'host', 'address', )
         sequence = ('type', 'fqdn', )
-        #order_by = '-type'
+        # order_by = '-type'
         orderable = False
 
 
