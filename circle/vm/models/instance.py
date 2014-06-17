@@ -190,6 +190,12 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
     def remove_disk(self, disk, **kwargs):
         self.disks.remove(disk)
 
+    def destroy_disks(self):
+        """Destroy all associated disks.
+        """
+        for disk in self.disks.all():
+            disk.destroy()
+
 
 class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                TimeStampedModel):

@@ -1142,6 +1142,7 @@ class TemplateDelete(LoginRequiredMixin, DeleteView):
         if not object.has_level(request.user, 'owner'):
             raise PermissionDenied()
 
+        object.destroy_disks()
         object.delete()
         success_url = self.get_success_url()
         success_message = _("Template successfully deleted.")
@@ -1262,6 +1263,8 @@ class NodeList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
                 content_type="application/json",
             )
         else:
+            for node in Node.objects.all():
+                print node.byte_ram_usage
             return super(NodeList, self).get(*args, **kwargs)
 
     def get_queryset(self):
