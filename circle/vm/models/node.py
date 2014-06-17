@@ -269,6 +269,8 @@ class Node(OperatedMixin, TimeStampedModel):
                     metric = target['target']
                     if metric.startswith(prefix):
                         metric = metric[len(prefix):]
+                    else:
+                        continue
                     value = target['datapoints'][-2][0]
                     retval[metric] = float(value)
                 except (KeyError, IndexError, ValueError):
