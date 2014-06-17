@@ -18,6 +18,7 @@
 from __future__ import absolute_import
 
 from itertools import chain
+from hashlib import md5
 from logging import getLogger
 
 from django.conf import settings
@@ -29,6 +30,7 @@ from django.db.models import (
     DateTimeField, permalink, BooleanField
 )
 from django.template.loader import render_to_string
+from django.templatetags.static import static
 from django.utils.translation import ugettext_lazy as _, override, ugettext
 
 from model_utils.models import TimeStampedModel
@@ -83,7 +85,9 @@ class Profile(Model):
         unique=True, blank=True, null=True, max_length=64,
         help_text=_('Unique identifier of the person, e.g. a student number.'))
     instance_limit = IntegerField(default=5)
-    use_gravatar = BooleanField(default=False)
+    use_gravatar = BooleanField(
+        verbose_name=_("Use Gravatar"), default=True,
+        help_text=_("Whether to use email address as Gravatar profile image"))
     email_notifications = BooleanField(
         verbose_name=_("Email notifications"), default=True,
         help_text=_('Whether user wants to get digested email notifications.'))
@@ -95,6 +99,27 @@ class Profile(Model):
     def get_absolute_url(self):
         return reverse("dashboard.views.profile",
                        kwargs={'username': self.user.username})
+
+    def get_avatar_url(self):
+        if self.use_gravatar:
+            gravatar_hash = md5(self.user.email).hexdigest()
+            return ("https://secure.gravatar.com/avatar/%s"
+                    "?s=200" % gravatar_hash)
+        else:
+            return static("dashboard/img/avatar.png")
+
+    def get_display_name(self):
+        if self.user.get_full_name():
+            name = self.user.get_full_name()
+        else:
+            name = self.user.username
+
+        if self.org_id:
+            name = "%s (%s)" % (name, self.org_id)
+        return name
+
+    def __unicode__(self):
+        return self.get_display_name()
 
 
 class GroupProfile(AclBase):
