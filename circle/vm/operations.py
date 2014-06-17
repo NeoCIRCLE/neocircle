@@ -26,7 +26,6 @@ from django.utils.translation import ugettext_lazy as _
 from celery.exceptions import TimeLimitExceeded
 
 from common.operations import Operation, register_operation
-from storage.models import Disk
 from .tasks.local_tasks import (
     abortable_async_instance_operation, abortable_async_node_operation,
 )
@@ -114,6 +113,8 @@ class CreateDiskOperation(InstanceOperation):
 
     def _operation(self, user, size, name=None):
         # TODO implement with hot-attach when it'll be available
+        from storage.models import Disk
+
         if not name:
             name = "new disk"
         disk = Disk.create(size=size, name=name, type="qcow2-norm")
@@ -138,6 +139,8 @@ class DownloadDiskOperation(InstanceOperation):
 
     def _operation(self, user, url, task, name=None):
         # TODO implement with hot-attach when it'll be available
+        from storage.models import Disk
+
         disk = Disk.download(url=url, name=name, task=task)
         self.instance.disks.add(disk)
 
