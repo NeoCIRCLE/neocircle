@@ -1263,8 +1263,6 @@ class NodeList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
                 content_type="application/json",
             )
         else:
-            for node in Node.objects.all():
-                print node.byte_ram_usage
             return super(NodeList, self).get(*args, **kwargs)
 
     def get_queryset(self):
