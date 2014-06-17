@@ -436,8 +436,8 @@ SOUTH_MIGRATION_MODULES = {
     'taggit': 'taggit.south_migrations',
 }
 
-graphite_host = get_env_variable("GRAPHITE_HOST")
-graphite_port = get_env_variable("GRAPHITE_PORT")
+graphite_host = environ.get("GRAPHITE_HOST", None)
+graphite_port = environ.get("GRAPHITE_PORT", None)
 if graphite_host and graphite_port:
     GRAPHITE_URL = 'http://%s:%s/render/' % (graphite_host, graphite_port)
 else:
