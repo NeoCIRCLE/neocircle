@@ -343,6 +343,11 @@ class SaveAsTemplateOperation(InstanceOperation):
             v = 1
         return "%s v%d" % (name, v)
 
+    def on_abort(self, activity, error):
+        if getattr(self, 'disks'):
+            for disk in self.disks:
+                disk.destroy()
+
     def _operation(self, activity, user, system, timeout=300, name=None,
                    with_shutdown=True, task=None, **kwargs):
         if with_shutdown:
@@ -380,16 +385,20 @@ class SaveAsTemplateOperation(InstanceOperation):
             except Disk.WrongDiskTypeError:
                 return disk
 
+        self.disks = []
         with activity.sub_activity('saving_disks'):
-            disks = [__try_save_disk(disk)
-                     for disk in self.instance.disks.all()]
+            for disk in self.instance.disks.all():
+                self.disks.append(__try_save_disk(disk))
+
+        for disk in self.disks:
+            disk.set_level(user, 'owner')
 
         # create template and do additional setup
         tmpl = InstanceTemplate(**params)
         tmpl.full_clean()  # Avoiding database errors.
         tmpl.save()
         try:
-            tmpl.disks.add(*disks)
+            tmpl.disks.add(*self.disks)
             # create interface templates
             for i in self.instance.interface_set.all():
                 i.save_as_template(tmpl)
