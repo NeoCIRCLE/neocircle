@@ -336,6 +336,7 @@ a.hover-black {
 /* vm details connection */
 .vm-details-connection dd {
   padding: 4px 0 4px 0;
+  margin-left: 160px;
 }
 
 .vm-details-connection dt {
