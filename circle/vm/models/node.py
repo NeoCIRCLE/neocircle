@@ -18,7 +18,9 @@
 from __future__ import absolute_import, unicode_literals
 from logging import getLogger
 from warnings import warn
+import requests
 
+from django.conf import settings
 from django.db.models import (
     CharField, IntegerField, ForeignKey, BooleanField, ManyToManyField,
     FloatField, permalink,
@@ -33,8 +35,6 @@ from taggit.managers import TaggableManager
 from common.models import method_cache, WorkerNotFound, HumanSortField
 from common.operations import OperatedMixin
 from firewall.models import Host
-from monitor.calvin.calvin import Query
-from monitor.calvin.calvin import GraphiteHandler
 from ..tasks import vm_tasks
 from .activity import node_activity, NodeActivity
 from .common import Trait
@@ -245,48 +245,50 @@ class Node(OperatedMixin, TimeStampedModel):
             else:
                 return default
 
+    @property
     @node_available
     @method_cache(10)
-    def get_monitor_info(self):
+    def monitor_info(self):
+        metrics = ('cpu.usage', 'memory.usage')
+        prefix = 'circle.%s.' % self.name
+        params = [('target', '%s%s' % (prefix, metric))
+                  for metric in metrics]
+        params.append(('from', '-5min'))
+        params.append(('format', 'json'))
+
         try:
-            handler = GraphiteHandler()
-        except RuntimeError:
+            logger.info('%s %s', settings.GRAPHITE_URL, params)
+            response = requests.get(settings.GRAPHITE_URL, params=params)
+
+            retval = {}
+            for target in response.json():
+                # Example:
+                # {"target": "circle.szianode.cpu.usage",
+                #  "datapoints": [[0.6, 1403045700], [0.5, 1403045760]
+                try:
+                    metric = target['target']
+                    if metric.startswith(prefix):
+                        metric = metric[len(prefix):]
+                    value = target['datapoints'][-2][0]
+                    retval[metric] = float(value)
+                except (KeyError, IndexError, ValueError):
+                    continue
+
+            return retval
+        except:
+            logger.exception('Unhandled exception: ')
             return self.remote_query(vm_tasks.get_node_metrics, timeout=30,
                                      priority="fast")
-
-        query = Query()
-        query.set_target(self.host.hostname + ".circle")
-        query.set_format("json")
-        query.set_relative_start(5, "minutes")
-
-        metrics = ["cpu.usage", "memory.usage"]
-        for metric in metrics:
-            query.set_metric(metric)
-            query.generate()
-            handler.put(query)
-            handler.send()
-
-        collected = {}
-        for metric in metrics:
-            response = handler.pop()
-            try:
-                cache = response[0]["datapoints"][-2][0]
-            except (IndexError, KeyError):
-                cache = 0
-            if cache is None:
-                cache = 0
-            collected[metric] = cache
-        return collected
 
     @property
     @node_available
     def cpu_usage(self):
-        return float(self.get_monitor_info()["cpu.usage"]) / 100
+        return self.monitor_info.get('cpu.usage') / 100
 
     @property
     @node_available
     def ram_usage(self):
-        return float(self.get_monitor_info()["memory.usage"]) / 100
+        return self.monitor_info.get('memory.usage') / 100
 
     @property
     @node_available

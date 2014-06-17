@@ -262,7 +262,7 @@ class VmDetailView(CheckedDetailView):
         instance = context['instance']
         ops = get_operations(instance, self.request.user)
         context.update({
-            'graphite_enabled': VmGraphView.get_graphite_url() is not None,
+            'graphite_enabled': settings.GRAPHITE_URL is not None,
             'vnc_url': reverse_lazy("dashboard.views.detail-vnc",
                                     kwargs={'pk': self.object.pk}),
             'ops': ops,
@@ -691,7 +691,7 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
         context['activities'] = na
         context['trait_form'] = form
         context['graphite_enabled'] = (
-            NodeGraphView.get_graphite_url() is not None)
+            settings.GRAPHITE_URL is not None)
         return context
 
     def post(self, request, *args, **kwargs):
@@ -2407,19 +2407,8 @@ class TransferOwnershipConfirmView(LoginRequiredMixin, View):
 
 
 class GraphViewBase(LoginRequiredMixin, View):
-    @staticmethod
-    def get_graphite_url():
-        graphite_host = getenv("GRAPHITE_HOST", None)
-        graphite_port = getenv("GRAPHITE_PORT", None)
-
-        if (graphite_host in ['', None] or graphite_port in ['', None]):
-            logger.debug('GRAPHITE_HOST is empty.')
-            return None
-
-        return 'http://%s:%s' % (graphite_host, graphite_port)
-
     def get(self, request, pk, metric, time, *args, **kwargs):
-        graphite_url = GraphViewBase.get_graphite_url()
+        graphite_url = settings.GRAPHITE_URL
         if graphite_url is None:
             raise Http404()
 
