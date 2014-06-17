@@ -108,7 +108,7 @@ class CreateDiskOperation(InstanceOperation):
     def check_precond(self):
         super(CreateDiskOperation, self).check_precond()
         # TODO remove check when hot-attach is implemented
-        if self.instance.status not in ['STOPPED']:
+        if self.instance.status not in ['STOPPED', 'PENDING']:
             raise self.instance.WrongStateError(self.instance)
 
     def _operation(self, user, size, name=None):
@@ -134,7 +134,7 @@ class DownloadDiskOperation(InstanceOperation):
     def check_precond(self):
         super(DownloadDiskOperation, self).check_precond()
         # TODO remove check when hot-attach is implemented
-        if self.instance.status not in ['STOPPED']:
+        if self.instance.status not in ['STOPPED', 'PENDING']:
             raise self.instance.WrongStateError(self.instance)
 
     def _operation(self, user, url, task, name=None):
