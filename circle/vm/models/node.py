@@ -246,6 +246,7 @@ class Node(OperatedMixin, TimeStampedModel):
                 return default
 
     @node_available
+    @method_cache(10)
     def get_monitor_info(self):
         try:
             handler = GraphiteHandler()
@@ -269,7 +270,7 @@ class Node(OperatedMixin, TimeStampedModel):
         for metric in metrics:
             response = handler.pop()
             try:
-                cache = response[0]["datapoints"][-1][0]
+                cache = response[0]["datapoints"][-2][0]
             except (IndexError, KeyError):
                 cache = 0
             if cache is None:
