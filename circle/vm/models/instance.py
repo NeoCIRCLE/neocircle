@@ -928,7 +928,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         return acts
 
     def get_merged_activities(self, user=None):
-        acts = list(self.get_activities(user))
+        acts = self.get_activities(user)
         merged_acts = []
         latest = None
 
