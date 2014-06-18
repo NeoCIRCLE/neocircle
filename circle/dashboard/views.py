@@ -592,8 +592,15 @@ class FormOperationMixin(object):
         form = self.form_class(self.request.POST)
         if form.is_valid():
             extra.update(form.cleaned_data)
-            return super(FormOperationMixin, self).post(
+            resp = super(FormOperationMixin, self).post(
                 request, extra, *args, **kwargs)
+            if request.is_ajax():
+                return HttpResponse(
+                    json.dumps({'redirect': resp.url}),
+                    content_type="application=json"
+                )
+            else:
+                return resp
         else:
             return self.get(request)
 
