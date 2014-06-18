@@ -927,6 +927,23 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                                                   user=user)
         return acts
 
+    def get_merged_activities(self, user=None):
+        acts = list(self.get_activities(user))
+        merged_acts = []
+        latest = None
+
+        for a in acts:
+            if (latest == a.activity_code and
+                    merged_acts[-1].result == a.result and
+                    (merged_acts[-1].finished - a.finished).days < 7):
+                merged_acts[-1].times += 1
+            else:
+                merged_acts.append(a)
+                merged_acts[-1].times = 1
+            latest = a.activity_code
+
+        return merged_acts
+
     def get_screenshot(self, timeout=5):
         queue_name = self.get_remote_queue_name('vm')
         return vm_tasks.screenshot.apply_async(args=[self.vm_name],

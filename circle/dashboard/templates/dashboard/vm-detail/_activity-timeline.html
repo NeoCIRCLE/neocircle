@@ -6,6 +6,7 @@
 </span> 
 <strong{% if user.is_superuser and a.result %} title="{{ a.result }}"{% endif %}>
   {% if user.is_superuser %}<a href="{{ a.get_absolute_url }}">{% endif %}
+    {% if a.times > 1 %}({{ a.times }}x){% endif %}
     {{ a.get_readable_name }}{% if user.is_superuser %}</a>{% endif %}
 </strong>
 {{ a.started|date:"Y-m-d H:i" }}{% if a.user %}, 

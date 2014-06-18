@@ -270,7 +270,8 @@ class VmDetailView(CheckedDetailView):
         })
 
         # activity data
-        context['activities'] = self.object.get_activities(self.request.user)
+        context['activities'] = self.object.get_merged_activities(
+            self.request.user)
 
         context['vlans'] = Vlan.get_objects_with_level(
             'user', self.request.user
@@ -2103,7 +2104,7 @@ def vm_activity(request, pk):
     if only_status == "false":  # instance activity
         context = {
             'instance': instance,
-            'activities': instance.get_activities(request.user),
+            'activities': instance.get_merged_activities(request.user),
             'ops': get_operations(instance, request.user),
         }
 
