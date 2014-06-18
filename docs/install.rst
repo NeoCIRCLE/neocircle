@@ -12,7 +12,7 @@ Preparation
 -----------
 
 To get the project running on a development machine, launch a new Ubuntu
-12.04 or 14.04 machine, and log in to it over SSH.
+14.04 machine, and log in to it over SSH.
 
 
 To use *git* over *SSH*, we advise enabling SSH *agent forwarding*.
