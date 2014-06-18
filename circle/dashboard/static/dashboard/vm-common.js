@@ -40,17 +40,18 @@ $(function() {
       type: 'POST',
       data: $(this).closest('form').serialize(),
       success: function(data, textStatus, xhr) {
-        var r = $('#confirmation-modal'); r.next('div').remove(); r.remove();
+        $('#confirmation-modal').modal("hide");
 
         if(data.redirect) {
-            $('a[href="#activity"]').trigger("click");
+          $('a[href="#activity"]').trigger("click");
         }
         else {
-            $('body').append(data);
-            $('#confirmation-modal').modal('show');
-            $('#confirmation-modal').on('hidden.bs.modal', function() {
-                $('#confirmation-modal').remove();
-            });
+          var r = $('#confirmation-modal'); r.next('div').remove(); r.remove();
+          $('body').append(data);
+          $('#confirmation-modal').modal('show');
+          $('#confirmation-modal').on('hidden.bs.modal', function() {
+              $('#confirmation-modal').remove();
+          });
         }
       },
       error: function(xhr, textStatus, error) {
