@@ -15,20 +15,24 @@ To get the project running on a development machine, launch a new Ubuntu
 14.04 machine, and log in to it over SSH.
 
 
-To use *git* over *SSH*, we advise enabling SSH *agent forwarding*.
-On your terminal computer check if *ssh-agent* is running (the command
-should print a process id)::
-  
-  $ echo $SSH_AGENT_PID
-  1234
+.. info::
+    To use *git* over *SSH*, we advise enabling SSH *agent forwarding*.
+    On your terminal computer check if *ssh-agent* is running (the command
+    should print a process id)::
+      
+      $ echo $SSH_AGENT_PID
+      1234
 
-If it is not running, you can configure your dektop environment to
-automatically launch it.
+    If it is not running, you can configure your dektop environment to
+    automatically launch it.
 
-Add your private key to the agent (if it is not added by your desktop
-environment)::
+    Add your private key to the agent (if it is not added by your desktop
+    environment)::
 
-  ssh-add [~/.ssh/path_to_id_rsa]
+      ssh-add [~/.ssh/path_to_id_rsa]
+
+    You can read and write all repositories over https, but you will have to
+    provide username and password for every push command.
 
 Log in to the new vm. The :kbd:`-A` switch enables agent forwarding::
 
@@ -105,7 +109,13 @@ Setting up Circle itself
 
 Clone the git repository::
 
-  git clone git@git.cloud.ik.bme.hu:circle/cloud.git circle
+  git clone https://git.ik.bme.hu/circle/cloud.git circle
+
+If you want to push back any modifications, it is possible to set SSH as the
+push protocol::
+
+  cd circle
+  git remote set-url --push origin git@git.ik.bme.hu:circle/cloud.git
 
 Set up *virtualenvwrapper* and the *virtual Python environment* for the
 project::
