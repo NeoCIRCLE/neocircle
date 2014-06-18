@@ -5,7 +5,7 @@ $(function() {
   }
   $('a[href="#activity"]').click(function(){
     $('a[href="#activity"] i').addClass('icon-spin');
-    checkNewActivity(false,0);
+    checkNewActivity(false, 1);
   });
 
   /* save resources */
