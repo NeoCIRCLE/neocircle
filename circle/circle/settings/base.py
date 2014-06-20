@@ -258,6 +258,7 @@ THIRD_PARTY_APPS = (
     'sizefield',
     'taggit',
     'statici18n',
+    'django_sshkey',
 )
 
 # Apps specific for this project go here.

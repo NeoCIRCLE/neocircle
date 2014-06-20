@@ -24,6 +24,7 @@ from django_tables2.columns import (TemplateColumn, Column, BooleanColumn,
 
 from vm.models import Instance, Node, InstanceTemplate, Lease
 from django.utils.translation import ugettext_lazy as _
+from django_sshkey.models import UserKey
 
 
 class VmListTable(Table):
@@ -291,3 +292,33 @@ class LeaseListTable(Table):
         fields = ('name', 'suspend_interval_seconds',
                   'delete_interval_seconds', )
         prefix = "lease-"
+
+
+class UserKeyListTable(Table):
+    name = LinkColumn(
+        'dashboard.views.userkey-detail',
+        args=[A('pk')],
+        verbose_name=_("Name"),
+        attrs={'th': {'data-sort': "string"}}
+    )
+
+    fingerprint = Column(
+        verbose_name=_("Fingerprint"),
+        attrs={'th': {'data-sort': "string"}}
+    )
+
+    created = Column(
+        verbose_name=_("Created at"),
+        attrs={'th': {'data-sort': "string"}}
+    )
+
+    actions = TemplateColumn(
+        verbose_name=_("Actions"),
+        template_name="dashboard/userkey-list/column-userkey-actions.html",
+        orderable=False,
+    )
+
+    class Meta:
+        model = UserKey
+        attrs = {'class': ('table table-bordered table-striped table-hover')}
+        fields = ('name', 'fingerprint', 'created', 'actions')
