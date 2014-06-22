@@ -224,7 +224,10 @@ class Share(models.Model):
             return running.count()
 
     def get_instance_pc(self):
-        return float(self.get_running()) / self.instance_limit * 100
+        try:
+            return float(self.get_running()) / self.instance_limit * 100
+        except ZeroDivisionError:
+            return 100
 
     def __unicode__(self):
         return u"%(group)s: %(tpl)s %(owner)s" % {

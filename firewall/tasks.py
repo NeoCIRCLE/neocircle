@@ -55,7 +55,7 @@ class Periodic(PeriodicTask):
 
         if cache.get('dhcp_lock'):
             cache.delete("dhcp_lock")
-            reload_dhcp_task.delay(dhcp())
+            reload_dhcp.apply_async(args=[dhcp()], queue='dhcp')
             reload_dhcp.apply_async(args=[dhcp()], queue='dhcp2')
             print "dhcp ujratoltese kesz"
 
@@ -63,25 +63,21 @@ class Periodic(PeriodicTask):
             cache.delete("firewall_lock")
             ipv4 = Firewall().get()
             ipv6 = Firewall(True).get()
-            # old
-            reload_firewall_task.apply_async((ipv4, ipv6), queue='firewall')
-            # new
+            reload_firewall.apply_async(args=[ipv4, ipv6], queue='firewall')
             reload_firewall.apply_async(args=[ipv4, ipv6], queue='firewall2')
             print "firewall ujratoltese kesz"
 
         if cache.get('firewall_vlan_lock'):
              cache.delete("firewall_vlan_lock")
              data = vlan()
-#             reload_firewall_vlan.apply_async(args=[data], queue='firewall')
+             reload_firewall_vlan.apply_async(args=[data], queue='firewall')
              reload_firewall_vlan.apply_async(args=[data], queue='firewall2')
              print "firewall_vlan ujratoltese kesz"
 
 
         if cache.get('blacklist_lock'):
             cache.delete("blacklist_lock")
-            # old
-            reload_blacklist_task.delay(list(ipset()))
-            # new
+            reload_blacklist.apply_async(args=[list(ipset())], queue='firewall')
             reload_blacklist.apply_async(args=[list(ipset())], queue='firewall2')
             print "blacklist ujratoltese kesz"
 

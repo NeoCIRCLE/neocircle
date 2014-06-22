@@ -45,7 +45,13 @@ def login(request):
         user.set_unusable_password()
     user.first_name = request.META['givenName']
     user.last_name = request.META['sn']
-    user.email = request.META['email']
+    try:
+        user.email = request.META['email']
+    except KeyError:
+        messages.error(request, _('E-mail address is required, '
+                                  'but the directory does not send any.'))
+        return redirect('/')
+
     user.save()
     p, created = Person.objects.get_or_create(code=user.username)
     p.user_id = user.id

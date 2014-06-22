@@ -87,9 +87,10 @@ class TemplateAdmin(contrib.admin.ModelAdmin):
 class InstanceAdmin(contrib.admin.ModelAdmin):
     model=models.Instance
     actions = [update_state, submit_vm, delete_vm, suspend_vm, resume_vm]
-    list_display = ('id', 'name', owner_person, 'state')
+    list_display = ('id', 'name', owner_person, 'state', 'ip')
     readonly_fields = ('ip', 'active_since', 'pw', )
-    list_filter = ('owner', 'template', 'state')
+    list_filter = ('state', 'owner', 'template')
+    search_fields = ('ip', 'name')
     def queryset(self, request):
         return super(InstanceAdmin, self).queryset(request)
 

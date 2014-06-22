@@ -138,14 +138,16 @@ class Firewall:
 
         self.iptables('-N PUB_OUT')
 
-        self.iptables('-A FORWARD -m set --match-set blacklist src,dst -j DROP')
+        if not self.IPV6:
+            self.iptables('-A FORWARD -m set --match-set blacklist src,dst -j DROP')
 #        self.iptables('-A FORWARD -m state --state INVALID -g LOG_DROP')
         self.iptables('-A FORWARD -m state --state ESTABLISHED,RELATED '
                 '-j ACCEPT')
         self.iptables('-A FORWARD -p icmp --icmp-type echo-request '
                 '-g LOG_ACC')
 
-        self.iptables('-A INPUT -m set --match-set blacklist src -j DROP')
+        if not self.IPV6:
+            self.iptables('-A INPUT -m set --match-set blacklist src -j DROP')
         self.iptables('-A INPUT -m state --state INVALID -g LOG_DROP')
         self.iptables('-A INPUT -i lo -j ACCEPT')
         self.iptables('-A INPUT -m state --state ESTABLISHED,RELATED '
@@ -213,9 +215,9 @@ class Firewall:
 
         # hard-wired rules
         self.iptablesnat('-A POSTROUTING -s 10.5.0.0/16 -o vlan0003 -j SNAT '
-                '--to-source 10.3.255.254') # man elerheto legyen
+                '--to-source 10.3.255.254') # man elerheto legyen az eszkozok def gw-je nelkul is
         self.iptablesnat('-A POSTROUTING -s 10.3.0.0/16 -p udp --dport 53 -o vlan0002 -j SNAT '
-                '--to-source %s' % self.pub.ipv4) # kulonben nem megy a dns man-ban
+                '--to-source %s' % self.pub.ipv4) # kulonben nem megy a dns man-ban (ket interfesze van a monitornak)
         self.iptablesnat('-A PREROUTING -d 152.66.243.130/32 -p udp --dport 1194 -j DNAT --to-destination 10.12.255.253')
 
 
