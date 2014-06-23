@@ -29,15 +29,19 @@ from django.db.models import (
     Model, ForeignKey, OneToOneField, CharField, IntegerField, TextField,
     DateTimeField, permalink, BooleanField
 )
+from django.db.models.signals import post_save, pre_delete
 from django.template.loader import render_to_string
 from django.templatetags.static import static
 from django.utils.translation import ugettext_lazy as _, override, ugettext
+from django_sshkey.models import UserKey
 
 from model_utils.models import TimeStampedModel
 from model_utils.fields import StatusField
 from model_utils import Choices
 
 from acl.models import AclBase
+
+from vm.tasks.agent_tasks import add_keys, del_keys
 
 logger = getLogger(__name__)
 
@@ -224,3 +228,33 @@ if hasattr(settings, 'SAML_ORG_ID_ATTRIBUTE'):
 
 else:
     logger.debug("Do not register save_org_id to djangosaml2 pre_user_save")
+
+
+def add_ssh_keys(sender, **kwargs):
+    from vm.models import Instance
+
+    userkey = kwargs.get('instance')
+    instances = Instance.get_objects_with_level(
+        'user', userkey.user).filter(status='RUNNING')
+    for i in instances:
+        logger.info('called add_keys(%s, %s)', i, userkey)
+        queue = i.get_remote_queue_name("agent")
+        add_keys.apply_async(args=(i.vm_name, [userkey.key]),
+                             queue=queue)
+
+
+def del_ssh_keys(sender, **kwargs):
+    from vm.models import Instance
+
+    userkey = kwargs.get('instance')
+    instances = Instance.get_objects_with_level(
+        'user', userkey.user).filter(status='RUNNING')
+    for i in instances:
+        logger.info('called del_keys(%s, %s)', i, userkey)
+        queue = i.get_remote_queue_name("agent")
+        del_keys.apply_async(args=(i.vm_name, [userkey.key]),
+                             queue=queue)
+
+
+post_save.connect(add_ssh_keys, sender=UserKey)
+pre_delete.connect(del_ssh_keys, sender=UserKey)

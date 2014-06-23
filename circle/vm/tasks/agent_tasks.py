@@ -56,3 +56,18 @@ def start_access_server(vm):
 @celery.task(name='agent.update')
 def update(vm, data):
     pass
+
+
+@celery.task(name='agent.add_keys')
+def add_keys(vm, keys):
+    pass
+
+
+@celery.task(name='agent.del_keys')
+def del_keys(vm, keys):
+    pass
+
+
+@celery.task(name='agent.get_keys')
+def get_keys(vm):
+    pass
