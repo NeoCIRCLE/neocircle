@@ -32,6 +32,7 @@ from ..views import VmRenewView
 from storage.models import Disk
 from firewall.models import Vlan, Host, VlanGroup
 from mock import Mock, patch
+from django_sshkey.models import UserKey
 
 import django.conf
 settings = django.conf.settings.FIREWALL_SETTINGS
@@ -1959,3 +1960,61 @@ class VmListTest(LoginMixin, TestCase):
             's': "A:B:C:D:"
         })
         self.assertEqual(200, resp.status_code)
+
+
+class SshKeyTest(LoginMixin, TestCase):
+    def setUp(self):
+        self.u1 = User.objects.create(username='user1')
+        self.u1.set_password('password')
+        self.u1.save()
+        self.u2 = User.objects.create(username='user2')
+        self.u2.set_password('password')
+        self.u2.save()
+        self.k1 = UserKey(key='ssh-rsa AAAAB3NzaC1yc2EC asd', user=self.u1)
+        self.k1.save()
+
+    def tearDown(self):
+        super(SshKeyTest, self).tearDown()
+        self.k1.delete()
+        self.u1.delete()
+
+    def test_permitted_edit(self):
+        c = Client()
+        self.login(c, self.u1)
+
+        resp = c.post("/dashboard/sshkey/1/",
+                      {'key': 'ssh-rsa AAAAB3NzaC1yc2EC'})
+        self.assertEqual(UserKey.objects.get(id=1).user, self.u1)
+        self.assertEqual(200, resp.status_code)
+
+    def test_unpermitted_edit(self):
+        c = Client()
+        self.login(c, self.u2)
+
+        resp = c.post("/dashboard/sshkey/1/",
+                      {'key': 'ssh-rsa AAAAB3NzaC1yc2EC'})
+        self.assertEqual(UserKey.objects.get(id=1).user, self.u1)
+        self.assertEqual(403, resp.status_code)
+
+    def test_permitted_add(self):
+        c = Client()
+        self.login(c, self.u1)
+
+        resp = c.post("/dashboard/sshkey/create/",
+                      {'name': 'asd', 'key': 'ssh-rsa AAAAB3NzaC1yc2EC'})
+        self.assertEqual(UserKey.objects.get(id=2).user, self.u1)
+        self.assertEqual(302, resp.status_code)
+
+    def test_permitted_delete(self):
+        c = Client()
+        self.login(c, self.u1)
+
+        resp = c.post("/dashboard/sshkey/delete/1/")
+        self.assertEqual(302, resp.status_code)
+
+    def test_unpermitted_delete(self):
+        c = Client()
+        self.login(c, self.u2)
+
+        resp = c.post("/dashboard/sshkey/delete/1/")
+        self.assertEqual(403, resp.status_code)
