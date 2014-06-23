@@ -433,6 +433,8 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                 for cps in customized_params]
 
     def clean(self, *args, **kwargs):
+        if self.time_of_suspend is None:
+            self._do_renew(which='suspend')
         if self.time_of_delete is None:
             self._do_renew(which='delete')
         super(Instance, self).clean(*args, **kwargs)
