@@ -928,6 +928,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         return acts
 
     def get_merged_activities(self, user=None):
+        whitelist = ("create_disk", "download_disk")
         acts = self.get_activities(user)
         merged_acts = []
         latest = None
@@ -935,7 +936,9 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         for a in acts:
             if (latest == a.activity_code and
                     merged_acts[-1].result == a.result and
-                    (merged_acts[-1].finished - a.finished).days < 7):
+                    a.finished and merged_acts[-1].finished and
+                    (merged_acts[-1].finished - a.finished).days < 7 and
+                    not a.activity_code.endswith(whitelist)):
                 merged_acts[-1].times += 1
             else:
                 merged_acts.append(a)
