@@ -328,6 +328,17 @@ function decideActivityRefresh() {
   return check;
 }
 
+/* unescapes html got via the request, also removes whitespaces and replaces all ' with " */
+function unescapeHTML(html) {
+  return html.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&').replace(/&ndash;/g, "–").replace(/\//g, "").replace(/'/g, '"').replace(/ /g, '');
+}
+
+/* the html page contains some tags that were modified via js (titles for example), we delete these
+   also some html tags are closed with / */
+function changeHTML(html) {
+  return html.replace(/data-original-title/g, "title").replace(/title=""/g, "").replace(/\//g, '').replace(/ /g, '');
+}
+
 function checkNewActivity(only_status, runs) {
   // set default only_status to false
   only_status = typeof only_status !== 'undefined' ? only_status : false;
@@ -339,7 +350,10 @@ function checkNewActivity(only_status, runs) {
     data: {'only_status': only_status},
     success: function(data) {
       if(!only_status) {
-        $("#activity-timeline").html(data['activities']);
+        a = unescapeHTML(data['activities']);
+        b = changeHTML($("#activity-timeline").html());
+        if(a != b)
+          $("#activity-timeline").html(data['activities']);
         $("#ops").html(data['ops']);
         $("[title]").tooltip();
       }
