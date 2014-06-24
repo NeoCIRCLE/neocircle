@@ -30,7 +30,9 @@ celery = Celery('manager',
                          'vm.tasks.local_agent_tasks',
                          'storage.tasks.local_tasks',
                          'storage.tasks.periodic_tasks',
-                         'firewall.tasks.local_tasks', ])
+                         'firewall.tasks.local_tasks',
+                         'monitor.tasks.local_periodic_tasks',
+                         ])
 
 celery.conf.update(
     CELERY_RESULT_BACKEND='cache',
@@ -67,6 +69,12 @@ celery.conf.update(
             'task': 'dashboard.tasks.local_periodic_tasks.'
             'send_email_notifications',
             'schedule': timedelta(hours=24),
+            'options': {'queue': 'localhost.man'}
+        },
+        'monitor.measure_response_time': {
+            'task': 'monitor.tasks.local_periodic_tasks.'
+                    'measure_response_time',
+            'schedule': timedelta(seconds=5),
             'options': {'queue': 'localhost.man'}
         },
     }
