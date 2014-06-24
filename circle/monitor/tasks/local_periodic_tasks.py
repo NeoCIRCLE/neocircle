@@ -23,7 +23,7 @@ from django.conf import settings
 from manager.mancelery import celery
 
 from vm.tasks.vm_tasks import check_queue
-from vm.models import Node
+from vm.models import Node, InstanceTemplate
 from storage.models import DataStore
 from monitor.client import Client
 
@@ -66,5 +66,24 @@ def check_celery_queues():
 
             metrics.append(graphite_string("storage", ds.hostname,
                                            "vm-" + s, is_queue_alive, time()))
+
+    Client().send(metrics)
+
+
+@celery.task(ignore_result=True)
+def instance_per_template():
+    graphite_string = lambda pk, state, val, time: (
+        "template.%d.instances.%s %d %s" % (
+            pk, state, val, time)
+    )
+
+    metrics = []
+    for t in InstanceTemplate.objects.all():
+        base = t.instance_set.filter(destroyed_at=None)
+        running = base.filter(status="RUNNING").count()
+        not_running = base.exclude(status="RUNNING").count()
+        metrics.append(graphite_string(t.pk, "running", running, time()))
+        metrics.append(graphite_string(t.pk, "not_running", not_running,
+                                       time()))
 
     Client().send(metrics)
