@@ -22,6 +22,9 @@ from time import time
 from django.conf import settings
 from manager.mancelery import celery
 
+from vm.tasks.vm_tasks import check_queue
+from vm.models import Node
+from storage.models import DataStore
 from monitor.client import Client
 
 logger = logging.getLogger(__name__)
@@ -41,3 +44,27 @@ def measure_response_time():
             'time': time(),
         }
     ])
+
+
+@celery.task(ignore_result=True)
+def check_celery_queues():
+    graphite_string = lambda component, hostname, celery, is_alive, time: (
+        "%s.%s.celery-queues.%s %d %s" % (
+            component, hostname, celery, 1 if is_alive else 0, time)
+    )
+
+    metrics = []
+    for n in Node.objects.all():  # disabled, offline nodes?
+        for s in ["fast", "slow"]:
+            is_queue_alive = check_queue(n.host.hostname, "vm", s)
+
+            metrics.append(graphite_string("circle", n.host.hostname,
+                                           "vm-" + s, is_queue_alive, time()))
+    for ds in DataStore.objects.all():
+        for s in ["fast", "slow"]:
+            is_queue_alive = check_queue(ds.hostname, "vm", s)
+
+            metrics.append(graphite_string("storage", ds.hostname,
+                                           "vm-" + s, is_queue_alive, time()))
+
+    Client().send(metrics)

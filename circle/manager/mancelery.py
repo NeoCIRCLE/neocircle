@@ -77,6 +77,12 @@ celery.conf.update(
             'schedule': timedelta(seconds=5),
             'options': {'queue': 'localhost.man'}
         },
+        'monitor.check_celery_queues': {
+            'task': 'monitor.tasks.local_periodic_tasks.'
+                    'check_celeries',
+            'schedule': timedelta(seconds=5),
+            'options': {'queue': 'localhost.man'}
+        },
     }
 
 )
