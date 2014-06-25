@@ -53,17 +53,19 @@ from braces.views import (LoginRequiredMixin, SuperuserRequiredMixin,
                           PermissionRequiredMixin)
 from braces.views._access import AccessMixin
 
+from django_sshkey.models import UserKey
+
 from .forms import (
     CircleAuthenticationForm, HostForm, LeaseForm, MyProfileForm,
     NodeForm, TemplateForm, TraitForm, VmCustomizeForm, GroupCreateForm,
     UserCreationForm, GroupProfileUpdateForm, UnsubscribeForm,
-    VmSaveForm,
+    VmSaveForm, UserKeyForm,
     CirclePasswordChangeForm, VmCreateDiskForm, VmDownloadDiskForm,
 )
 
 from .tables import (
     NodeListTable, NodeVmListTable, TemplateListTable, LeaseListTable,
-    GroupListTable,
+    GroupListTable, UserKeyListTable
 )
 from vm.models import (
     Instance, instance_activity, InstanceActivity, InstanceTemplate, Interface,
@@ -2538,6 +2540,11 @@ class MyPreferencesView(UpdateView):
                 user=self.request.user),
             'change_language': MyProfileForm(instance=self.get_object()),
         }
+        table = UserKeyListTable(
+            UserKey.objects.filter(user=self.request.user),
+            request=self.request)
+        table.page = None
+        context['userkey_table'] = table
         return context
 
     def get_object(self, queryset=None):
@@ -2855,3 +2862,72 @@ def toggle_use_gravatar(request, **kwargs):
         json.dumps({'new_avatar_url': new_avatar_url}),
         content_type="application/json",
     )
+
+
+class UserKeyDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+    model = UserKey
+    template_name = "dashboard/userkey-edit.html"
+    form_class = UserKeyForm
+    success_message = _("Successfully modified SSH key.")
+
+    def get(self, request, *args, **kwargs):
+        object = self.get_object()
+        if object.user != request.user:
+            raise PermissionDenied()
+        return super(UserKeyDetail, self).get(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy("dashboard.views.userkey-detail",
+                            kwargs=self.kwargs)
+
+    def post(self, request, *args, **kwargs):
+        object = self.get_object()
+        if object.user != request.user:
+            raise PermissionDenied()
+        return super(UserKeyDetail, self).post(self, request, args, kwargs)
+
+
+class UserKeyDelete(LoginRequiredMixin, DeleteView):
+    model = UserKey
+
+    def get_success_url(self):
+        return reverse("dashboard.views.profile-preferences")
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/confirm/ajax-delete.html']
+        else:
+            return ['dashboard/confirm/base-delete.html']
+
+    def delete(self, request, *args, **kwargs):
+        object = self.get_object()
+        if object.user != request.user:
+            raise PermissionDenied()
+
+        object.delete()
+        success_url = self.get_success_url()
+        success_message = _("SSH key successfully deleted.")
+
+        if request.is_ajax():
+            return HttpResponse(
+                json.dumps({'message': success_message}),
+                content_type="application/json",
+            )
+        else:
+            messages.success(request, success_message)
+            return HttpResponseRedirect(success_url)
+
+
+class UserKeyCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+    model = UserKey
+    form_class = UserKeyForm
+    template_name = "dashboard/userkey-create.html"
+    success_message = _("Successfully created a new SSH key.")
+
+    def get_success_url(self):
+        return reverse_lazy("dashboard.views.profile-preferences")
+
+    def get_form_kwargs(self):
+        kwargs = super(UserKeyCreate, self).get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs

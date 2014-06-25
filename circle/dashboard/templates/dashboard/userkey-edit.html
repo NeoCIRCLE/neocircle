@@ -1,0 +1,24 @@
+{% extends "dashboard/base.html" %}
+{% load i18n %}
+{% load sizefieldtags %}
+{% load crispy_forms_tags %} 
+
+{% block title-page %}{% trans "Edit SSH public key" %}{% endblock %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <a class="pull-right btn btn-default btn-xs" href="{% url "dashboard.views.profile-preferences" %}">{% trans "Back" %}</a>
+        <h3 class="no-margin"><i class="icon-key"></i> {% trans "Edit SSH public key" %}</h3>
+      </div>
+      <div class="panel-body">
+        {% crispy form %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

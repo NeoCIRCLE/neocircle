@@ -36,6 +36,7 @@ from .views import (
     UserCreationView,
     get_vm_screenshot,
     ProfileView, toggle_use_gravatar, UnsubscribeFormView,
+    UserKeyDelete, UserKeyDetail, UserKeyCreate,
 )
 
 urlpatterns = patterns(
@@ -158,4 +159,14 @@ urlpatterns = patterns(
     url(r'^group/(?P<group_pk>\d+)/create/$',
         UserCreationView.as_view(),
         name="dashboard.views.create-user"),
+
+    url(r'^sshkey/delete/(?P<pk>\d+)/$',
+        UserKeyDelete.as_view(),
+        name="dashboard.views.userkey-delete"),
+    url(r'^sshkey/(?P<pk>\d+)/$',
+        UserKeyDetail.as_view(),
+        name="dashboard.views.userkey-detail"),
+    url(r'^sshkey/create/$',
+        UserKeyCreate.as_view(),
+        name="dashboard.views.userkey-create"),
 )

@@ -40,6 +40,7 @@ from django.template.loader import render_to_string
 from django.utils.translation import ugettext as _
 from sizefield.widgets import FileSizeWidget
 
+from django_sshkey.models import UserKey
 from firewall.models import Vlan, Host
 from storage.models import Disk
 from vm.models import (
@@ -1119,3 +1120,30 @@ class UserCreationForm(OrgUserCreationForm):
         if commit:
             user.save()
         return user
+
+
+class UserKeyForm(forms.ModelForm):
+    name = forms.CharField(required=True, label=_('Name'))
+    key = forms.CharField(
+        label=_('Key'), required=True,
+        help_text=_('For example: ssh-rsa AAAAB3NzaC1yc2ED...'),
+        widget=forms.Textarea(attrs={'rows': 5}))
+
+    class Meta:
+        fields = ('name', 'key')
+        model = UserKey
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.add_input(Submit("submit", _("Save")))
+        return helper
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
+        super(UserKeyForm, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        if self.user:
+            self.instance.user = self.user
+        return super(UserKeyForm, self).clean()
