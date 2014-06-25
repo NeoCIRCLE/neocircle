@@ -47,18 +47,9 @@
     <h3>
       {% trans "Disks" %}
       <div class="pull-right">
-        {% if op.download_disk %}
-	<a href="{{op.download_disk.get_url}}" class="btn btn-success btn-xs
-		operation operation-{{op.download_disk.op}} btn btn-default">
-	  <i class="icon-{{op.download_disk.icon}}"></i>
-		{{op.download_disk.name}} </a>
-	{% endif %}
-        {% if op.create_disk %}
-	<a href="{{op.create_disk.get_url}}" class="btn btn-success btn-xs
-		operation operation-{{op.create_disk.op}} btn btn-default">
-	  <i class="icon-{{op.create_disk.icon}}"></i>
-		{{op.create_disk.name}} </a>
-	{% endif %}
+        <div id="disk-ops">
+          {% include "dashboard/vm-detail/_disk-operations.html" %}
+        </div> 
       </div>
     </h3>
 

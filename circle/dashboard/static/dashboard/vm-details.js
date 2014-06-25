@@ -341,6 +341,7 @@ function checkNewActivity(only_status, runs) {
       if(!only_status) {
         $("#activity-timeline").html(data['activities']);
         $("#ops").html(data['ops']);
+        $("#disk-ops").html(data['disk_ops']);
         $("[title]").tooltip();
       }
 

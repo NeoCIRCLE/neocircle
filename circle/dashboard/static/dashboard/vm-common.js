@@ -43,10 +43,10 @@ $(function() {
       success: function(data, textStatus, xhr) {
         $('#confirmation-modal').modal("hide");
 
-        if(data.redirect) {
+        if(data.success) {
           $('a[href="#activity"]').trigger("click");
 
-          if(data.messages.length > 0) {
+          if(data.messages && data.messages.length > 0) {
             addMessage(data.messages.join("<br />"), "danger");
           }
         }
