@@ -51,10 +51,12 @@ $(function() {
           }
         }
         else {
-          $('body').append(data);
-          $('#confirmation-modal').modal('show');
           $('#confirmation-modal').on('hidden.bs.modal', function() {
-              $('#confirmation-modal').remove();
+            $('body').append(data);
+            $('#confirmation-modal').modal('show');
+            $('#confirmation-modal').on('hidden.bs.modal', function() {
+                $('#confirmation-modal').remove();
+            });
           });
         }
       },
