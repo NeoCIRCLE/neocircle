@@ -13,7 +13,7 @@
   - {{ a.percentage }}%
 {% endif %}
 </strong>
-{{ a.started|date:"Y-m-d H:i" }}{% if a.user %}, 
+{% if a.times < 2%}{{ a.started|date:"Y-m-d H:i" }}{% endif %}{% if a.user %}, 
   <a class="no-style-link" href="{% url "dashboard.views.profile" username=a.user.username %}">
     {% include "dashboard/_display-name.html" with user=a.user show_org=True %}
   </a>
