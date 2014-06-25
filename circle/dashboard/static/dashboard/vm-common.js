@@ -41,16 +41,25 @@ $(function() {
       type: 'POST',
       data: $(this).closest('form').serialize(),
       success: function(data, textStatus, xhr) {
+        /* hide the modal we just submitted */
         $('#confirmation-modal').modal("hide");
 
+        /* if it was successful trigger a click event on activity, this will
+         *      - go to that tab
+         *      - starts refreshing the activity
+         */
         if(data.success) {
           $('a[href="#activity"]').trigger("click");
 
+          /* if there are messages display them */
           if(data.messages && data.messages.length > 0) {
             addMessage(data.messages.join("<br />"), "danger");
           }
         }
         else {
+          /* if the post was not successful wait for the modal to disappear
+           * then append the new modal
+           */
           $('#confirmation-modal').on('hidden.bs.modal', function() {
             $('body').append(data);
             $('#confirmation-modal').modal('show');
@@ -61,7 +70,7 @@ $(function() {
         }
       },
       error: function(xhr, textStatus, error) {
-        var r = $('#create-modal'); r.next('div').remove(); r.remove();
+        $('#confirmation-modal').modal("hide");
         
         if (xhr.status == 500) {
           addMessage("500 Internal Server Error", "danger");
