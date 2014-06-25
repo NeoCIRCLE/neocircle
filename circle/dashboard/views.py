@@ -2092,7 +2092,7 @@ class LeaseDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
 @require_GET
 def vm_activity(request, pk):
     instance = Instance.objects.get(pk=pk)
-    if not instance.has_level(request.user, 'owner'):
+    if not instance.has_level(request.user, 'user'):
         raise PermissionDenied()
 
     response = {}

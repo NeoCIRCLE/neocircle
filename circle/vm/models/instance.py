@@ -937,6 +937,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             if (latest == a.activity_code and
                     merged_acts[-1].result == a.result and
                     a.finished and merged_acts[-1].finished and
+                    a.user == merged_acts[-1].user and
                     (merged_acts[-1].finished - a.finished).days < 7 and
                     not a.activity_code.endswith(whitelist)):
                 merged_acts[-1].times += 1
