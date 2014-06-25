@@ -360,13 +360,14 @@ class Disk(AclBase, TimeStampedModel):
             queue=queue_name)
         while True:
             try:
-                size = remote.get(timeout=5)
+                result = remote.get(timeout=5)
                 break
             except TimeoutError:
                 if task is not None and task.is_aborted():
                     AbortableAsyncResult(remote.id).abort()
                     raise Exception("Download aborted by user.")
-        disk.size = size
+        disk.size = result['size']
+        disk.type = result['type']
         disk.is_ready = True
         disk.save()
         return disk
