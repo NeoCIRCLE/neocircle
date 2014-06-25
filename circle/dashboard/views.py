@@ -573,6 +573,19 @@ class VmOperationView(OperationView):
     model = Instance
     context_object_name = 'instance'  # much simpler to mock object
 
+    def post(self, request, *args, **kwargs):
+        resp = super(VmOperationView, self).post(request, *args, **kwargs)
+        if request.is_ajax():
+            store = messages.get_messages(request)
+            store.used = True
+            return HttpResponse(
+                json.dumps({'redirect': resp.url,
+                            'messages': [unicode(m) for m in store]}),
+                content_type="application=json"
+            )
+        else:
+            return resp
+
 
 class FormOperationMixin(object):
 

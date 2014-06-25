@@ -34,6 +34,7 @@ $(function() {
   /* if the operation fails show the modal again */
   $("body").on("click", "#op-form-send", function() {
     var url = $(this).closest("form").prop("action");
+
     $.ajax({
       url: url,
       headers: {"X-CSRFToken": getCookie('csrftoken')},
@@ -44,9 +45,12 @@ $(function() {
 
         if(data.redirect) {
           $('a[href="#activity"]').trigger("click");
+
+          if(data.messages.length > 0) {
+            addMessage(data.messages.join("<br />"), "danger");
+          }
         }
         else {
-          var r = $('#confirmation-modal'); r.next('div').remove(); r.remove();
           $('body').append(data);
           $('#confirmation-modal').modal('show');
           $('#confirmation-modal').on('hidden.bs.modal', function() {
