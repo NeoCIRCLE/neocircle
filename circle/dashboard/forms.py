@@ -882,8 +882,6 @@ class VmDownloadDiskForm(forms.Form):
     @property
     def helper(self):
         helper = FormHelper(self)
-        helper.add_input(Submit("submit", _("Create"),
-                                css_class="btn btn-success"))
         helper.form_tag = False
         return helper
 

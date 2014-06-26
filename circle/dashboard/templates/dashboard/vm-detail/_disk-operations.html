@@ -1,0 +1,10 @@
+{% load i18n %}
+
+{% for op in ops %}
+{% if op.is_disk_operation %}
+    <a href="{{op.get_url}}" class="btn btn-success btn-xs
+            operation operation-{{op.op}} btn btn-default">
+      <i class="icon-{{op.icon}}"></i>
+            {{op.name}} </a>
+{% endif %}
+{% endfor %}

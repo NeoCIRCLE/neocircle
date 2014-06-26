@@ -5,7 +5,7 @@ $(function() {
   }
   $('a[href="#activity"]').click(function(){
     $('a[href="#activity"] i').addClass('icon-spin');
-    checkNewActivity(false,0);
+    checkNewActivity(false, 1);
   });
 
   /* save resources */
@@ -341,6 +341,7 @@ function checkNewActivity(only_status, runs) {
       if(!only_status) {
         $("#activity-timeline").html(data['activities']);
         $("#ops").html(data['ops']);
+        $("#disk-ops").html(data['disk_ops']);
         $("[title]").tooltip();
       }
 

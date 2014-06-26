@@ -575,6 +575,19 @@ class VmOperationView(OperationView):
     model = Instance
     context_object_name = 'instance'  # much simpler to mock object
 
+    def post(self, request, *args, **kwargs):
+        resp = super(VmOperationView, self).post(request, *args, **kwargs)
+        if request.is_ajax():
+            store = messages.get_messages(request)
+            store.used = True
+            return HttpResponse(
+                json.dumps({'success': True,
+                            'messages': [unicode(m) for m in store]}),
+                content_type="application=json"
+            )
+        else:
+            return resp
+
 
 class FormOperationMixin(object):
 
@@ -594,8 +607,15 @@ class FormOperationMixin(object):
         form = self.form_class(self.request.POST)
         if form.is_valid():
             extra.update(form.cleaned_data)
-            return super(FormOperationMixin, self).post(
+            resp = super(FormOperationMixin, self).post(
                 request, extra, *args, **kwargs)
+            if request.is_ajax():
+                return HttpResponse(
+                    json.dumps({'success': True}),
+                    content_type="application=json"
+                )
+            else:
+                return resp
         else:
             return self.get(request)
 
@@ -606,6 +626,7 @@ class VmCreateDiskView(FormOperationMixin, VmOperationView):
     form_class = VmCreateDiskForm
     show_in_toolbar = False
     icon = 'hdd'
+    is_disk_operation = True
 
 
 class VmDownloadDiskView(FormOperationMixin, VmOperationView):
@@ -614,6 +635,7 @@ class VmDownloadDiskView(FormOperationMixin, VmOperationView):
     form_class = VmDownloadDiskForm
     show_in_toolbar = False
     icon = 'download'
+    is_disk_operation = True
 
 
 class VmMigrateView(VmOperationView):
@@ -2115,6 +2137,10 @@ def vm_activity(request, pk):
         )
         response['ops'] = render_to_string(
             "dashboard/vm-detail/_operations.html",
+            RequestContext(request, context),
+        )
+        response['disk_ops'] = render_to_string(
+            "dashboard/vm-detail/_disk-operations.html",
             RequestContext(request, context),
         )
 

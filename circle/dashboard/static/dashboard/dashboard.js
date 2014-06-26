@@ -511,7 +511,10 @@ function addMessage(text, type) {
   $('body').animate({scrollTop: 0});
   div = '<div style="display: none;" class="alert alert-' + type + '">' + text + '</div>';
   $('.messagelist').html('').append(div);
-  $('.messagelist div').fadeIn();
+  var div = $('.messagelist div').fadeIn();
+  setTimeout(function() {
+    $(div).fadeOut();
+  }, 9000);
 }
 
 
