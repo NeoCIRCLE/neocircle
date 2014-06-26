@@ -19,6 +19,6 @@ Do you want to do the following operation on {{obj}}:
   <div class="pull-right">
     <a class="btn btn-default" href="{{object.get_absolute_url}}"
         data-dismiss="modal">{% trans "Cancel" %}</a>
-      <button class="btn btn-danger" type="submit">{% if op.icon %}<i class="icon-{{op.icon}}"></i> {% endif %}{{ op|capfirst }}</button>
+      <button class="btn btn-danger" type="submit">{% if opview.icon %}<i class="icon-{{opview.icon}}"></i> {% endif %}{{ op|capfirst }}</button>
   </div>
 </form>
