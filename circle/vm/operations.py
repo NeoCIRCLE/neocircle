@@ -137,7 +137,8 @@ class DownloadDiskOperation(InstanceOperation):
         if self.instance.status not in ['STOPPED', 'PENDING']:
             raise self.instance.WrongStateError(self.instance)
 
-    def _operation(self, user, url, task, name=None):
+    def _operation(self, user, url, task, activity, name=None):
+        activity.result = url
         # TODO implement with hot-attach when it'll be available
         from storage.models import Disk
 
