@@ -648,11 +648,9 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             raise Node.DoesNotExist()
 
     def _is_notified_about_expiration(self):
-        renews = self.activity_log.filter(activity_code__endswith='renew')
-        cond = {'activity_code__endswith': 'notification_about_expiration'}
-        if len(renews) > 0:
-            cond['finished__gt'] = renews[0].started
-        return self.activity_log.filter(**cond).exists()
+        last_activity = self.activity_log.latest('pk')
+        return (last_activity.activity_code ==
+                'vm.Instance.notification_about_expiration')
 
     def notify_owners_about_expiration(self, again=False):
         """Notify owners about vm expiring soon if they aren't already.
