@@ -272,7 +272,8 @@ class VmDetailView(CheckedDetailView):
         })
 
         # activity data
-        context['activities'] = self.object.get_activities(self.request.user)
+        context['activities'] = self.object.get_merged_activities(
+            self.request.user)
 
         context['vlans'] = Vlan.get_objects_with_level(
             'user', self.request.user
@@ -2115,7 +2116,7 @@ class LeaseDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
 @require_GET
 def vm_activity(request, pk):
     instance = Instance.objects.get(pk=pk)
-    if not instance.has_level(request.user, 'owner'):
+    if not instance.has_level(request.user, 'user'):
         raise PermissionDenied()
 
     response = {}
@@ -2127,7 +2128,7 @@ def vm_activity(request, pk):
     if only_status == "false":  # instance activity
         context = {
             'instance': instance,
-            'activities': instance.get_activities(request.user),
+            'activities': instance.get_merged_activities(request.user),
             'ops': get_operations(instance, request.user),
         }
 
