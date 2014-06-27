@@ -537,6 +537,7 @@ class OperationView(DetailView):
     def get_context_data(self, **kwargs):
         ctx = super(OperationView, self).get_context_data(**kwargs)
         ctx['op'] = self.get_op()
+        ctx['opview'] = self
         ctx['url'] = self.request.path
         return ctx
 
