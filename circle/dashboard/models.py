@@ -134,9 +134,9 @@ class FutureMember(Model):
     class Meta:
         unique_together = ('org_id', 'group')
 
-
     def __unicode__(self):
         return u"%s (%s)" % (self.org_id, self.group)
+
 
 class GroupProfile(AclBase):
     ACL_LEVELS = (
