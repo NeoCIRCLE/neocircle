@@ -271,6 +271,7 @@ LOCAL_APPS = (
     'dashboard',
     'manager',
     'acl',
+    'cloudstore',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -443,3 +444,14 @@ if graphite_host and graphite_port:
     GRAPHITE_URL = 'http://%s:%s/render/' % (graphite_host, graphite_port)
 else:
     GRAPHITE_URL = None
+
+STORE_SETTINGS = {
+    "basic_auth": "False",
+    "verify_ssl": "False",
+    "ssl_auth": "False",
+    "store_client_pass":  "IQu8Eice",
+    "store_client_user":  "admin",
+    "store_client_key": "/opt/webadmin/cloud/client.key",
+    "store_client_cert": "/opt/webadmin/cloud/client.crt",
+    "store_url": "http://pc3.szgt.uni-miskolc.hu:14505",
+}
