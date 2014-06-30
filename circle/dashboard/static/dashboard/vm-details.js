@@ -370,8 +370,10 @@ function checkNewActivity(only_status, runs) {
 
       if(data['status'] == "STOPPED") {
         $(".enabled-when-stopped").prop("disabled", false);
+        $(".hide-when-stopped").hide();
       } else {
         $(".enabled-when-stopped").prop("disabled", true);
+        $(".hide-when-stopped").show();
       }
 
       if(runs > 0 && decideActivityRefresh()) {

@@ -41,6 +41,9 @@
       {% if not op.resources_change %}disabled{% endif %}>
       <i class="icon-save"></i> {% trans "Save resources" %}
     </button>
+    <span class="hide-when-stopped"
+      {% if op.resources_change %}style="display: none;"{% endif %}
+      >{% trans "Stop your VM to change resources." %}</span>
   </div>
 </p>
 {% endif %}
