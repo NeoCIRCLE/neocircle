@@ -33,6 +33,7 @@
   </div>
 </p>
 
+{% if can_change_resources %}
 <p class="row">
   <div class="col-sm-12">
     <button type="submit" class="btn btn-success btn-sm enabled-when-stopped" id="vm-details-resources-save"
@@ -42,6 +43,7 @@
     </button>
   </div>
 </p>
+{% endif %}
 </form>
 
 <hr />
