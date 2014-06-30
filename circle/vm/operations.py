@@ -615,9 +615,13 @@ class ResourcesOperation(InstanceOperation):
         if self.instance.status in ['RUNNING']:
             raise self.instance.WrongStateError(self.instance)
 
-    def _operation(self, user, num_cores, ram_size, max_ram_size, priority):
+    def check_auth(self, user):
         if not user.has_perm('vm.change_resources'):
             raise PermissionDenied()
+
+        super(InstanceOperation, self).check_auth(user=user)
+
+    def _operation(self, user, num_cores, ram_size, max_ram_size, priority):
 
         self.instance.num_cores = num_cores
         self.instance.ram_size = ram_size
