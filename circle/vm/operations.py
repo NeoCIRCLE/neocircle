@@ -600,3 +600,31 @@ class ScreenshotOperation(InstanceOperation):
 
 
 register_operation(ScreenshotOperation)
+
+
+class ResourcesOperation(InstanceOperation):
+    activity_code_suffix = 'Resources change'
+    id = 'resources_change'
+    name = _("resources change")
+    description = _("Change resources")
+    acl_level = "owner"
+    concurrency_check = False
+
+    def check_precond(self):
+        super(ResourcesOperation, self).check_precond()
+        if self.instance.status in ['RUNNING']:
+            raise self.instance.WrongStateError(self.instance)
+
+    def _operation(self, user, num_cores, ram_size, max_ram_size, priority):
+        if not user.has_perm('vm.change_resources'):
+            raise PermissionDenied()
+
+        self.instance.num_cores = num_cores
+        self.instance.ram_size = ram_size
+        self.instance.max_ram_size = max_ram_size
+        self.instance.priority = priority
+
+        self.instance.save()
+
+
+register_operation(ResourcesOperation)

@@ -11,13 +11,14 @@ $(function() {
   /* save resources */
   $('#vm-details-resources-save').click(function() {
     $('i.icon-save', this).removeClass("icon-save").addClass("icon-refresh icon-spin");
+    var vm = $(this).data("vm");
     $.ajax({
       type: 'POST',
-      url: location.href,
+      url: "/dashboard/vm/" + vm + "/op/resources_change/", 
       data: $('#vm-details-resources-form').serialize(),
       success: function(data, textStatus, xhr) {
-        addMessage(data['message'], 'success');
         $("#vm-details-resources-save i").removeClass('icon-refresh icon-spin').addClass("icon-save");
+        $('a[href="#activity"]').trigger("click");
       },
       error: function(xhr, textStatus, error) {
         $("#vm-details-resources-save i").removeClass('icon-refresh icon-spin').addClass("icon-save");
@@ -365,6 +366,12 @@ function checkNewActivity(only_status, runs) {
         $("[data-target=#_console]").attr("data-toggle", "pill").attr("href", "#console").parent("li").removeClass("disabled");
       } else {
         $("[data-target=#_console]").attr("data-toggle", "_pill").attr("href", "#").parent("li").addClass("disabled");
+      }
+
+      if(data['status'] == "STOPPED") {
+        $(".enabled-when-stopped").prop("disabled", false);
+      } else {
+        $(".enabled-when-stopped").prop("disabled", true);
       }
 
       if(runs > 0 && decideActivityRefresh()) {
