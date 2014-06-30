@@ -95,6 +95,16 @@ class Profile(Model):
     email_notifications = BooleanField(
         verbose_name=_("Email notifications"), default=True,
         help_text=_('Whether user wants to get digested email notifications.'))
+    smb_password = CharField(
+        max_length=20,
+        verbose_name=_('Samba password'),
+        help_text=_(
+            'Generated password for accessing store from '
+            'Windows.'))
+    disk_quota = IntegerField(
+        verbose_name=_('disk quota'),
+        default=2048,
+        help_text=_('Disk quota in mebibytes.'))
 
     def notify(self, subject, template, context={}, valid_until=None):
         return Notification.send(self.user, subject, template, context,
