@@ -42,6 +42,7 @@ class InstanceOperation(Operation):
     acl_level = 'owner'
     async_operation = abortable_async_instance_operation
     host_cls = Instance
+    concurrency_check = True
 
     def __init__(self, instance):
         super(InstanceOperation, self).__init__(subject=instance)
@@ -73,7 +74,7 @@ class InstanceOperation(Operation):
         else:
             return InstanceActivity.create(
                 code_suffix=self.activity_code_suffix, instance=self.instance,
-                user=user)
+                user=user, concurrency_check=self.concurrency_check)
 
 
 class AddInterfaceOperation(InstanceOperation):
