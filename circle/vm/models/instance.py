@@ -949,7 +949,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         return merged_acts
 
     def get_screenshot(self, timeout=5):
-        queue_name = self.get_remote_queue_name('vm')
+        queue_name = self.get_remote_queue_name("vm", "fast")
         return vm_tasks.screenshot.apply_async(args=[self.vm_name],
                                                queue=queue_name
                                                ).get(timeout=timeout)

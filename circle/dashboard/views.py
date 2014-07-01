@@ -2822,8 +2822,7 @@ class InterfaceDeleteView(DeleteView):
 def get_vm_screenshot(request, pk):
     instance = get_object_or_404(Instance, pk=pk)
     try:
-        image = instance.screenshot(instance=instance,
-                                    user=request.user).getvalue()
+        image = instance.screenshot(user=request.user).getvalue()
     except:
         # TODO handle this better
         raise Http404()

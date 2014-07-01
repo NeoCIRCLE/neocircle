@@ -594,7 +594,7 @@ class ScreenshotOperation(InstanceOperation):
         if self.instance.status not in ['RUNNING']:
             raise self.instance.WrongStateError(self.instance)
 
-    def _operation(self, instance, user):
+    def _operation(self):
         return self.instance.get_screenshot(timeout=20)
 
 
