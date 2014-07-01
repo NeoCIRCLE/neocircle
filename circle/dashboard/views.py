@@ -61,6 +61,7 @@ from .forms import (
     UserCreationForm, GroupProfileUpdateForm, UnsubscribeForm,
     VmSaveForm, UserKeyForm,
     CirclePasswordChangeForm, VmCreateDiskForm, VmDownloadDiskForm,
+    TraitsForm, RawDataForm
 )
 
 from .tables import (
@@ -287,6 +288,11 @@ class VmDetailView(CheckedDetailView):
         # ipv6 infos
         context['ipv6_host'] = instance.get_connect_host(use_ipv6=True)
         context['ipv6_port'] = instance.get_connect_port(use_ipv6=True)
+
+        # resources forms
+        if self.request.user.is_superuser:
+            context['traits_form'] = TraitsForm(instance=instance)
+            context['raw_data_form'] = RawDataForm(instance=instance)
         return context
 
     def post(self, request, *args, **kwargs):
@@ -497,6 +503,22 @@ class VmDetailView(CheckedDetailView):
             raise PermissionDenied()
         activity.abort()
         return redirect("%s#activity" % self.object.get_absolute_url())
+
+
+class VmTraitsUpdate(UpdateView):
+    form_class = TraitsForm
+    model = Instance
+
+    def get_success_url(self):
+        return self.get_object().get_absolute_url() + "#resources"
+
+
+class VmRawDataUpdate(UpdateView):
+    form_class = RawDataForm
+    model = Instance
+
+    def get_success_url(self):
+        return self.get_object().get_absolute_url() + "#resources"
 
 
 class OperationView(DetailView):

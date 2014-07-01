@@ -39,12 +39,13 @@ from django.template import Context
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext as _
 from sizefield.widgets import FileSizeWidget
+from django.core.urlresolvers import reverse_lazy
 
 from django_sshkey.models import UserKey
 from firewall.models import Vlan, Host
 from storage.models import Disk
 from vm.models import (
-    InstanceTemplate, Lease, InterfaceTemplate, Node, Trait
+    InstanceTemplate, Lease, InterfaceTemplate, Node, Trait, Instance
 )
 from .models import Profile, GroupProfile
 from circle.settings.base import LANGUAGES
@@ -1145,3 +1146,38 @@ class UserKeyForm(forms.ModelForm):
         if self.user:
             self.instance.user = self.user
         return super(UserKeyForm, self).clean()
+
+
+class TraitsForm(forms.ModelForm):
+
+    class Meta:
+        model = Instance
+        fields = ('req_traits', )
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.form_show_labels = False
+        helper.form_action = reverse_lazy("dashboard.views.vm-traits",
+                                          kwargs={'pk': self.instance.pk})
+        helper.add_input(Submit("submit", _("Save"),
+                                css_class="btn btn-success", ))
+        return helper
+
+
+class RawDataForm(forms.ModelForm):
+
+    class Meta:
+        model = Instance
+        fields = ('raw_data', )
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.form_show_labels = False
+        helper.form_action = reverse_lazy("dashboard.views.vm-raw-data",
+                                          kwargs={'pk': self.instance.pk})
+        helper.add_input(Submit("submit", _("Save"),
+                                css_class="btn btn-success",
+                                css_id="submit-password-button"))
+        return helper
