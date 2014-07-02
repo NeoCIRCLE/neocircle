@@ -82,9 +82,7 @@ def listfolder(neptun, path):
     r = post_request(url, payload)
     if r.status_code == requests.codes.ok:
         tupplelist = json.loads(r.content)
-        for item in tupplelist:
-            item['MTIME'] = time.ctime(item['MTIME'])
-            return tupplelist
+        return tupplelist
     else:
         raise Http404
 

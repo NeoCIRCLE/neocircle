@@ -75,6 +75,8 @@ from storage.models import Disk
 from firewall.models import Vlan, Host, Rule
 from .models import Favourite, Profile, GroupProfile
 
+from dashboard import store_api
+
 logger = logging.getLogger(__name__)
 saml_available = hasattr(settings, "SAML_CONFIG")
 
@@ -2931,3 +2933,15 @@ class UserKeyCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         kwargs = super(UserKeyCreate, self).get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
+
+
+class StoreList(LoginRequiredMixin, TemplateView):
+    template_name = "dashboard/store/list.html"
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(StoreList, self).get_context_data(*args, **kwargs)
+
+        files = store_api.listfolder("test", "/")
+        dirs_first = sorted(files, key=lambda k: k['TYPE'])
+        context['root'] = dirs_first
+        return context

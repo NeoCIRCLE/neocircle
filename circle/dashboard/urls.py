@@ -37,6 +37,7 @@ from .views import (
     get_vm_screenshot,
     ProfileView, toggle_use_gravatar, UnsubscribeFormView,
     UserKeyDelete, UserKeyDetail, UserKeyCreate,
+    StoreList
 )
 
 urlpatterns = patterns(
@@ -169,4 +170,7 @@ urlpatterns = patterns(
     url(r'^sshkey/create/$',
         UserKeyCreate.as_view(),
         name="dashboard.views.userkey-create"),
+
+    url(r"^store/list/$", StoreList.as_view(),
+        name="dashboard.views.store-list")
 )

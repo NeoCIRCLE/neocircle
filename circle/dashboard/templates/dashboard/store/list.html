@@ -1,0 +1,81 @@
+{% extends "dashboard/base.html" %}
+{% load i18n %}
+{% load store_tags %}
+
+{% block title-page %}{% trans "Virtual machines" %}{% endblock %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-md-12">
+    <ul id="store-list-list">
+    {% for f in root %}
+      <li class="store-list-item">
+      <div class="store-list-item-icon">
+      <i class="icon-{% if f.TYPE == "D" %}folder-open-alt{% else %}file-alt{% endif %}"></i>
+      </div>
+      {{ f.NAME }} 
+      
+      <div class="store-list-item-size">
+        {% if f.TYPE == "D" %}{% trans "directory" %}{% else %}{% bytes_to_megabytes f.SIZE %}MB{% endif %}
+      </div>
+
+      <div class="store-list-item-actions">
+        <span title="{% trans "Last modified:" %} {% timestamp_to_date f.MTIME %}" 
+          class="btn btn-default btn-xs">
+          <i class="icon-time"></i>
+        </span>
+        <span class="btn btn-default btn-xs">
+          <i class="icon-cloud-download"></i>
+        </span>
+      </div>
+
+      <div class="clearfix"></div>
+      </li>
+    {% endfor %}
+    </ul>
+  </div>
+</div>
+
+<style>
+  #store-list-list {
+    list-style: none;
+  }
+
+  .store-list-item {
+    padding: 0 8px 0 8px;
+    cursor: pointer;
+    line-height: 35px;
+    height: 35px;
+  }
+
+  .store-list-item:hover {
+    background: rgba(0, 0, 0, 0.1);
+  }
+
+  .store-list-item-icon {
+    width: 20px;
+    display: inline-block;
+    text-align: center;
+  }
+
+  .store-list-item-size {
+    display: inline-block;
+    width: 70px;
+    text-align: right;
+    float: right;
+  }
+
+  .store-list-item-actions {
+    display: inline-block;
+    width: 100px;
+    text-align: center;
+    float: right;
+  }
+</style>
+
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{{ STATIC_URL}}dashboard/store.js"></script>
+{% endblock %}

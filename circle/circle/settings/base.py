@@ -271,7 +271,6 @@ LOCAL_APPS = (
     'dashboard',
     'manager',
     'acl',
-    'cloudstore',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
