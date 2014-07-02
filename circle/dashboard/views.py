@@ -505,7 +505,7 @@ class VmDetailView(CheckedDetailView):
         return redirect("%s#activity" % self.object.get_absolute_url())
 
 
-class VmTraitsUpdate(UpdateView):
+class VmTraitsUpdate(SuperuserRequiredMixin, UpdateView):
     form_class = TraitsForm
     model = Instance
 
@@ -513,7 +513,7 @@ class VmTraitsUpdate(UpdateView):
         return self.get_object().get_absolute_url() + "#resources"
 
 
-class VmRawDataUpdate(UpdateView):
+class VmRawDataUpdate(SuperuserRequiredMixin, UpdateView):
     form_class = RawDataForm
     model = Instance
 
