@@ -612,7 +612,7 @@ class ResourcesOperation(InstanceOperation):
 
     def check_precond(self):
         super(ResourcesOperation, self).check_precond()
-        if self.instance.status in ['RUNNING']:
+        if self.instance.status not in ["STOPPED", "PENDING"]:
             raise self.instance.WrongStateError(self.instance)
 
     def check_auth(self, user):
