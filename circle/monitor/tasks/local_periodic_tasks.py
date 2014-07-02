@@ -60,12 +60,21 @@ def check_celery_queues():
 
             metrics.append(graphite_string("circle", n.host.hostname,
                                            "vm-" + s, is_queue_alive, time()))
+        is_net_queue_alive = check_queue(n.host.hostname, "net", "fast")
+        metrics.append(graphite_string("circle", n.host.hostname,
+                                       "net-fast", is_net_queue_alive, time()))
+
+        is_agent_queue_alive = check_queue(n.host.hostname, "agent")
+        metrics.append(graphite_string("circle", n.host.hostname, "agent",
+                                       is_agent_queue_alive, time()))
+
     for ds in DataStore.objects.all():
         for s in ["fast", "slow"]:
             is_queue_alive = check_queue(ds.hostname, "vm", s)
 
             metrics.append(graphite_string("storage", ds.hostname,
-                                           "vm-" + s, is_queue_alive, time()))
+                                           "storage-" + s, is_queue_alive,
+                                           time()))
 
     Client().send(metrics)
 
