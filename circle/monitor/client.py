@@ -11,7 +11,7 @@ class Client:
 
     env_config = {
         "server_address": "GRAPHITE_HOST",
-        "server_port": "AMQP_PORT",
+        "server_port": "GRAPHITE_AMQP_PORT",
         "amqp_user": "GRAPHITE_AMQP_USER",
         "amqp_pass": "GRAPHITE_AMQP_PASSWORD",
         "amqp_queue": "GRAPHITE_AMQP_QUEUE",
