@@ -27,6 +27,7 @@ from django.forms import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from firewall.fields import (MACAddressField, val_alfanum, val_reverse_domain,
                              val_ipv6_template, val_domain, val_ipv4,
+                             val_domain_wildcard,
                              val_ipv6, val_mx, convert_ipv4_to_ipv6,
                              IPNetworkField, IPAddressField)
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -821,7 +822,7 @@ class Domain(models.Model):
 class Record(models.Model):
     CHOICES_type = (('A', 'A'), ('CNAME', 'CNAME'), ('AAAA', 'AAAA'),
                     ('MX', 'MX'), ('NS', 'NS'), ('PTR', 'PTR'), ('TXT', 'TXT'))
-    name = models.CharField(max_length=40, validators=[val_domain],
+    name = models.CharField(max_length=40, validators=[val_domain_wildcard],
                             blank=True, null=True, verbose_name=_('name'))
     domain = models.ForeignKey('Domain', verbose_name=_('domain'))
     host = models.ForeignKey('Host', blank=True, null=True,

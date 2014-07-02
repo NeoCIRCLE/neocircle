@@ -28,6 +28,7 @@ import re
 
 alfanum_re = re.compile(r'^[A-Za-z0-9_-]+$')
 domain_re = re.compile(r'^([A-Za-z0-9_-]\.?)+$')
+domain_wildcard_re = re.compile(r'^(\*\.)?([A-Za-z0-9_-]\.?)+$')
 ipv4_re = re.compile('^([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)$')
 reverse_domain_re = re.compile(r'^(%\([abcd]\)d|[a-z0-9.-])+$')
 ipv6_template_re = re.compile(r'^(%\([abcd]\)[dxX]|[A-Za-z0-9:-])+$')
@@ -216,9 +217,20 @@ def is_valid_domain(value):
     return domain_re.match(value) is not None
 
 
+def is_valid_domain_wildcard(value):
+    """Check whether the parameter is a valid domain name."""
+    return domain_wildcard_re.match(value) is not None
+
+
 def val_domain(value):
     """Validate whether the parameter is a valid domin name."""
     if not is_valid_domain(value):
+        raise ValidationError(_(u'%s - invalid domain name') % value)
+
+
+def val_domain_wildcard(value):
+    """Validate whether the parameter is a valid domin name."""
+    if not is_valid_domain_wildcard(value):
         raise ValidationError(_(u'%s - invalid domain name') % value)
 
 
