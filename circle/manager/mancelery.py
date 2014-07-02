@@ -74,19 +74,19 @@ celery.conf.update(
         'monitor.measure_response_time': {
             'task': 'monitor.tasks.local_periodic_tasks.'
                     'measure_response_time',
-            'schedule': timedelta(seconds=5),
+            'schedule': timedelta(seconds=30),
             'options': {'queue': 'localhost.man'}
         },
         'monitor.check_celery_queues': {
             'task': 'monitor.tasks.local_periodic_tasks.'
                     'check_celery_queues',
-            'schedule': timedelta(seconds=5),
+            'schedule': timedelta(seconds=60),
             'options': {'queue': 'localhost.man'}
         },
         'monitor.instance_per_template': {
             'task': 'monitor.tasks.local_periodic_tasks.'
                     'instance_per_template',
-            'schedule': timedelta(seconds=5),
+            'schedule': timedelta(seconds=30),
             'options': {'queue': 'localhost.man'}
         },
     }
