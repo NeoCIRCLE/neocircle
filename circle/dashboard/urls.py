@@ -37,6 +37,7 @@ from .views import (
     get_vm_screenshot,
     ProfileView, toggle_use_gravatar, UnsubscribeFormView,
     UserKeyDelete, UserKeyDetail, UserKeyCreate,
+    VmTraitsUpdate, VmRawDataUpdate
 )
 
 urlpatterns = patterns(
@@ -89,6 +90,10 @@ urlpatterns = patterns(
         name='dashboard.views.vm-activity'),
     url(r'^vm/(?P<pk>\d+)/screenshot/$', get_vm_screenshot,
         name='dashboard.views.vm-get-screenshot'),
+    url(r'^vm/(?P<pk>\d+)/traits/$', VmTraitsUpdate.as_view(),
+        name='dashboard.views.vm-traits'),
+    url(r'^vm/(?P<pk>\d+)/raw_data/$', VmRawDataUpdate.as_view(),
+        name='dashboard.views.vm-raw-data'),
 
     url(r'^node/list/$', NodeList.as_view(), name='dashboard.views.node-list'),
     url(r'^node/(?P<pk>\d+)/$', NodeDetailView.as_view(),

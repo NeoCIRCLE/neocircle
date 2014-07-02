@@ -68,6 +68,32 @@
   </div>
 </div>
 
+{% if user.is_superuser %}
+<hr/>
+
+<div class="row" id="">
+  <div class="col-sm-12">
+    <h3>
+      {% trans "Required traits" %}
+    </h3>
+
+    {% crispy traits_form %}
+  </div>
+</div>
+
+<hr/>
+
+<div class="row" id="">
+  <div class="col-sm-12">
+    <h3>
+      {% trans "Raw data" %}
+    </h3>
+
+    {% crispy raw_data_form %}
+  </div>
+</div>
+
+{% endif %}
 
 {% block extra_js %}
   <style>
