@@ -696,8 +696,7 @@ class Host(models.Model):
         :param private: Port number of host in subject.
         """
 
-        self.rules.filter(owner=self.owner, proto=proto, host=self,
-                          dport=private).delete()
+        self.rules.filter(proto=proto, dport=private).delete()
 
     def get_hostname(self, proto, public=True):
         """
@@ -729,7 +728,7 @@ class Host(models.Model):
         Return a list of ports with forwarding rules set.
         """
         retval = []
-        for rule in self.rules.filter(owner=self.owner):
+        for rule in self.rules.all():
             forward = {
                 'proto': rule.proto,
                 'private': rule.dport,
@@ -771,9 +770,7 @@ class Host(models.Model):
                              if public_port else
                              None)
         # IPv6
-        blocked = self.incoming_rules.exclude(
-            action='accept').filter(dport=port, proto=protocol).exists()
-        endpoints['ipv6'] = (self.ipv6, port) if not blocked else None
+        endpoints['ipv6'] = (self.ipv6, port) if public_port else None
         return endpoints
 
     @models.permalink
