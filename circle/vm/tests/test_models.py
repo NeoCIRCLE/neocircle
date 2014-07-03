@@ -103,6 +103,7 @@ class InstanceTestCase(TestCase):
         inst = Mock(destroyed_at=None, spec=Instance)
         inst.interface_set.all.return_value = []
         inst.node = MagicMock(spec=Node)
+        inst.status = 'RUNNING'
         migrate_op = MigrateOperation(inst)
         with patch('vm.models.instance.vm_tasks.migrate') as migr:
             act = MagicMock()
@@ -118,6 +119,7 @@ class InstanceTestCase(TestCase):
         inst = MagicMock(destroyed_at=None, spec=Instance)
         inst.interface_set.all.return_value = []
         inst.node = MagicMock(spec=Node)
+        inst.status = 'RUNNING'
         migrate_op = MigrateOperation(inst)
         with patch('vm.models.instance.vm_tasks.migrate') as migr:
             inst.select_node.side_effect = AssertionError
@@ -133,6 +135,7 @@ class InstanceTestCase(TestCase):
         inst = Mock(destroyed_at=None, spec=Instance)
         inst.interface_set.all.return_value = []
         inst.node = MagicMock(spec=Node)
+        inst.status = 'RUNNING'
         e = Exception('abc')
         setattr(e, 'libvirtError', '')
         inst.migrate_vm.side_effect = e

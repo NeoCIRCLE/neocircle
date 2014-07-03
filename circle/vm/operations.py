@@ -157,6 +157,11 @@ class DeployOperation(InstanceOperation):
     name = _("deploy")
     description = _("Deploy new virtual machine with network.")
 
+    def check_precond(self):
+        super(DeployOperation, self).check_precond()
+        if self.instance.status in ['RUNNING', 'SUSPENDED']:
+            raise self.instance.WrongStateError(self.instance)
+
     def on_commit(self, activity):
         activity.resultant_state = 'RUNNING'
 
@@ -238,6 +243,11 @@ class MigrateOperation(InstanceOperation):
         with activity.sub_activity('rollback_net'):
             self.instance.deploy_net()
 
+    def check_precond(self):
+        super(MigrateOperation, self).check_precond()
+        if self.instance.status not in ['RUNNING']:
+            raise self.instance.WrongStateError(self.instance)
+
     def check_auth(self, user):
         if not user.is_superuser:
             raise PermissionDenied()
@@ -278,6 +288,11 @@ class RebootOperation(InstanceOperation):
     id = 'reboot'
     name = _("reboot")
     description = _("Reboot virtual machine with Ctrl+Alt+Del signal.")
+
+    def check_precond(self):
+        super(RebootOperation, self).check_precond()
+        if self.instance.status not in ['RUNNING']:
+            raise self.instance.WrongStateError(self.instance)
 
     def _operation(self, timeout=5):
         self.instance.reboot_vm(timeout=timeout)
@@ -329,6 +344,11 @@ class ResetOperation(InstanceOperation):
     name = _("reset")
     description = _("Reset virtual machine (reset button).")
 
+    def check_precond(self):
+        super(ResetOperation, self).check_precond()
+        if self.instance.status not in ['RUNNING']:
+            raise self.instance.WrongStateError(self.instance)
+
     def _operation(self, timeout=5):
         self.instance.reset_vm(timeout=timeout)
 
@@ -361,6 +381,11 @@ class SaveAsTemplateOperation(InstanceOperation):
         if getattr(self, 'disks'):
             for disk in self.disks:
                 disk.destroy()
+
+    def check_precond(self):
+        super(SaveAsTemplateOperation, self).check_precond()
+        if self.instance.status not in ['RUNNING', 'PENDING', 'STOPPED']:
+            raise self.instance.WrongStateError(self.instance)
 
     def _operation(self, activity, user, system, timeout=300, name=None,
                    with_shutdown=True, task=None, **kwargs):
@@ -455,6 +480,11 @@ class ShutOffOperation(InstanceOperation):
     id = 'shut_off'
     name = _("shut off")
     description = _("Shut off VM (plug-out).")
+
+    def check_precond(self):
+        super(ShutOffOperation, self).check_precond()
+        if self.instance.status not in ['RUNNING']:
+            raise self.instance.WrongStateError(self.instance)
 
     def on_commit(self, activity):
         activity.resultant_state = 'STOPPED'
