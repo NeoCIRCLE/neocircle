@@ -120,6 +120,7 @@ class CreateDiskOperation(InstanceOperation):
         if not name:
             name = "new disk"
         disk = Disk.create(size=size, name=name, type="qcow2-norm")
+        disk.full_clean()
         self.instance.disks.add(disk)
 
 register_operation(CreateDiskOperation)
@@ -146,6 +147,7 @@ class DownloadDiskOperation(InstanceOperation):
         from storage.models import Disk
 
         disk = Disk.download(url=url, name=name, task=task)
+        disk.full_clean()
         self.instance.disks.add(disk)
 
 register_operation(DownloadDiskOperation)
@@ -663,6 +665,7 @@ class ResourcesOperation(InstanceOperation):
         self.instance.max_ram_size = max_ram_size
         self.instance.priority = priority
 
+        self.instance.full_clean()
         self.instance.save()
 
 
