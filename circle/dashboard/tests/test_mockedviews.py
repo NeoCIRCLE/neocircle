@@ -159,7 +159,7 @@ class VmOperationViewTestCase(unittest.TestCase):
             assert not msg.error.called
 
     def test_migrate_failed(self):
-        request = FakeRequestFactory(POST={'node': 1})
+        request = FakeRequestFactory(POST={'node': 1}, superuser=True)
         view = vm_ops['migrate']
 
         with patch.object(view, 'get_object') as go, \
@@ -177,7 +177,7 @@ class VmOperationViewTestCase(unittest.TestCase):
             assert msg.error.called
 
     def test_migrate_template(self):
-        request = FakeRequestFactory()
+        request = FakeRequestFactory(superuser=True)
         view = vm_ops['migrate']
 
         with patch.object(view, 'get_object') as go:
@@ -190,7 +190,7 @@ class VmOperationViewTestCase(unittest.TestCase):
                 view.as_view()(request, pk=1234).render().status_code, 200)
 
     def test_save_as_wo_name(self):
-        request = FakeRequestFactory(POST={})
+        request = FakeRequestFactory(POST={}, has_perms_mock=True)
         view = vm_ops['save_as_template']
 
         with patch.object(view, 'get_object') as go, \
@@ -224,7 +224,7 @@ class VmOperationViewTestCase(unittest.TestCase):
             assert not msg.error.called
 
     def test_save_as_template(self):
-        request = FakeRequestFactory()
+        request = FakeRequestFactory(has_perms_mock=True)
         view = vm_ops['save_as_template']
 
         with patch.object(view, 'get_object') as go:
@@ -246,6 +246,8 @@ def FakeRequestFactory(*args, **kwargs):
     user = UserFactory()
     user.is_authenticated = lambda: kwargs.get('authenticated', True)
     user.is_superuser = kwargs.get('superuser', False)
+    if kwargs.get('has_perms_mock', False):
+        user.has_perms = MagicMock(return_value=True)
 
     request = HttpRequest()
     request.user = user
