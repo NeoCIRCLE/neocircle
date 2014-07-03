@@ -243,6 +243,8 @@ class VmDetailVncTokenView(CheckedDetailView):
         self.object = self.get_object()
         if not self.object.has_level(request.user, 'operator'):
             raise PermissionDenied()
+        if not request.user.has_perm('vm.access_console'):
+            raise PermissionDenied()
         if self.object.node:
             with instance_activity(code_suffix='console-accessed',
                                    instance=self.object, user=request.user,
@@ -637,7 +639,7 @@ class VmDownloadDiskView(FormOperationMixin, VmOperationView):
     is_disk_operation = True
 
 
-class VmMigrateView(VmOperationView):
+class VmMigrateView(SuperuserRequiredMixin, VmOperationView):
 
     op = 'migrate'
     icon = 'truck'
@@ -984,7 +986,7 @@ class GroupAclUpdateView(AclUpdateView):
                                 kwargs=self.kwargs))
 
 
-class TemplateChoose(TemplateView):
+class TemplateChoose(LoginRequiredMixin, TemplateView):
 
     def get_template_names(self):
         if self.request.is_ajax():
@@ -1016,6 +1018,9 @@ class TemplateChoose(TemplateView):
             return redirect(reverse("dashboard.views.template-choose"))
         else:
             template = get_object_or_404(InstanceTemplate, pk=template)
+
+        if not template.has_level(user, "user"):
+            raise PermissionDenied()
 
         instance = Instance.create_from_template(
             template=template, owner=request.user, is_base=True)
@@ -1055,7 +1060,7 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
         return kwargs
 
     def post(self, request, *args, **kwargs):
-        if not self.request.user.has_perm('vm.create_template'):
+        if not self.request.user.has_perm('vm.create_base_template'):
             raise PermissionDenied()
 
         form = self.form_class(request.POST, user=request.user)
@@ -1492,6 +1497,9 @@ class VmCreate(LoginRequiredMixin, TemplateView):
             return ['dashboard/nojs-wrapper.html']
 
     def get(self, request, form=None, *args, **kwargs):
+        if not request.user.has_perm('vm.create_vm'):
+            raise PermissionDenied()
+
         form_error = form is not None
         template = (form.template.pk if form_error
                     else request.GET.get("template"))
@@ -1596,6 +1604,9 @@ class VmCreate(LoginRequiredMixin, TemplateView):
 
     def post(self, request, *args, **kwargs):
         user = request.user
+
+        if not request.user.has_perm('vm.create_vm'):
+            raise PermissionDenied()
 
         # limit chekcs
         try:

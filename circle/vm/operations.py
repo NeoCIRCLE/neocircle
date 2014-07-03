@@ -105,6 +105,7 @@ class CreateDiskOperation(InstanceOperation):
     id = 'create_disk'
     name = _("create disk")
     description = _("Create empty disk for the VM.")
+    required_perms = ('storage.create_empty_disk', )
 
     def check_precond(self):
         super(CreateDiskOperation, self).check_precond()
@@ -131,6 +132,7 @@ class DownloadDiskOperation(InstanceOperation):
     description = _("Download disk for the VM.")
     abortable = True
     has_percentage = True
+    required_perms = ('storage.download_disk', )
 
     def check_precond(self):
         super(DownloadDiskOperation, self).check_precond()
@@ -236,6 +238,12 @@ class MigrateOperation(InstanceOperation):
         with activity.sub_activity('rollback_net'):
             self.instance.deploy_net()
 
+    def check_auth(self, user):
+        if not user.is_superuser:
+            raise PermissionDenied()
+
+        super(MigrateOperation, self).check_auth(user=user)
+
     def _operation(self, activity, to_node=None, timeout=120):
         if not to_node:
             with activity.sub_activity('scheduling') as sa:
@@ -337,6 +345,7 @@ class SaveAsTemplateOperation(InstanceOperation):
         Users can instantiate Virtual Machines from Templates.
         """)
     abortable = True
+    required_perms = ('vm.create_template', )
 
     @staticmethod
     def _rename(name):
@@ -610,17 +619,12 @@ class ResourcesOperation(InstanceOperation):
     description = _("Change resources")
     acl_level = "owner"
     concurrency_check = False
+    required_perms = ('vm.change_resources', )
 
     def check_precond(self):
         super(ResourcesOperation, self).check_precond()
         if self.instance.status not in ["STOPPED", "PENDING"]:
             raise self.instance.WrongStateError(self.instance)
-
-    def check_auth(self, user):
-        if not user.has_perm('vm.change_resources'):
-            raise PermissionDenied()
-
-        super(InstanceOperation, self).check_auth(user=user)
 
     def _operation(self, user, num_cores, ram_size, max_ram_size, priority):
 

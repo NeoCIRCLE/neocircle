@@ -106,6 +106,9 @@ class Disk(AclBase, TimeStampedModel):
         ordering = ['name']
         verbose_name = _('disk')
         verbose_name_plural = _('disks')
+        permissions = (
+            ('create_empty_disk', _('Can create an empty disk.')),
+            ('download_disk', _('Can download a disk.')))
 
     class WrongDiskTypeError(Exception):
 

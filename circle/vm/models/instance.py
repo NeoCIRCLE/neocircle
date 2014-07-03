@@ -151,6 +151,9 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
         ordering = ('name', )
         permissions = (
             ('create_template', _('Can create an instance template.')),
+            ('create_base_template',
+             _('Can create an instance template (base).')),
+            ('change_resources', _('Can change resources of a template.')),
         )
         verbose_name = _('template')
         verbose_name_plural = _('templates')
@@ -263,6 +266,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             ('access_console', _('Can access the graphical console of a VM.')),
             ('change_resources', _('Can change resources of a running VM.')),
             ('set_resources', _('Can change resources of a new VM.')),
+            ('create_vm', _('Can create a new VM.')),
             ('config_ports', _('Can configure port forwards.')),
         )
         verbose_name = _('instance')
