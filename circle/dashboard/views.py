@@ -293,13 +293,14 @@ class VmDetailView(CheckedDetailView):
         if self.request.user.is_superuser:
             context['traits_form'] = TraitsForm(instance=instance)
             context['raw_data_form'] = RawDataForm(instance=instance)
+
+        # resources change perm
+        context['can_change_resources'] = self.request.user.has_perm(
+            "vm.change_resources")
+
         return context
 
     def post(self, request, *args, **kwargs):
-        if (request.POST.get('ram-size') and request.POST.get('cpu-count')
-                and request.POST.get('cpu-priority')):
-            return self.__set_resources(request)
-
         options = {
             'change_password': self.__change_password,
             'new_name': self.__set_name,
@@ -324,33 +325,6 @@ class VmDetailView(CheckedDetailView):
         if request.is_ajax():
             return HttpResponse("Success.")
         else:
-            return redirect(reverse_lazy("dashboard.views.detail",
-                                         kwargs={'pk': self.object.pk}))
-
-    def __set_resources(self, request):
-        self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-        if not request.user.has_perm('vm.change_resources'):
-            raise PermissionDenied()
-
-        resources = {
-            'num_cores': request.POST.get('cpu-count'),
-            'ram_size': request.POST.get('ram-size'),
-            'max_ram_size': request.POST.get('ram-size'),  # TODO: max_ram
-            'priority': request.POST.get('cpu-priority')
-        }
-        Instance.objects.filter(pk=self.object.pk).update(**resources)
-
-        success_message = _("Resources successfully updated.")
-        if request.is_ajax():
-            response = {'message': success_message}
-            return HttpResponse(
-                json.dumps(response),
-                content_type="application/json"
-            )
-        else:
-            messages.success(request, success_message)
             return redirect(reverse_lazy("dashboard.views.detail",
                                          kwargs={'pk': self.object.pk}))
 
@@ -599,8 +573,9 @@ class VmOperationView(OperationView):
     model = Instance
     context_object_name = 'instance'  # much simpler to mock object
 
-    def post(self, request, *args, **kwargs):
-        resp = super(VmOperationView, self).post(request, *args, **kwargs)
+    def post(self, request, extra=None, *args, **kwargs):
+        resp = super(VmOperationView, self).post(request, extra, *args,
+                                                 **kwargs)
         if request.is_ajax():
             store = messages.get_messages(request)
             store.used = True
@@ -690,6 +665,29 @@ class VmSaveView(FormOperationMixin, VmOperationView):
     icon = 'save'
     form_class = VmSaveForm
 
+
+class VmResourcesChangeView(VmOperationView):
+    op = 'resources_change'
+    icon = "save"
+    show_in_toolbar = False
+
+    def post(self, request, extra=None, *args, **kwargs):
+        if extra is None:
+            extra = {}
+
+        resources = {
+            'num_cores': "cpu-count",
+            'priority': "cpu-priority",
+            'ram_size': "ram-size",
+            "max_ram_size": "ram-size",  # TODO
+        }
+        for k, v in resources.iteritems():
+            extra[k] = request.POST.get(v)
+
+        return super(VmResourcesChangeView, self).post(request, extra,
+                                                       *args, **kwargs)
+
+
 vm_ops = {
     'reset': VmOperationView.factory(op='reset', icon='bolt'),
     'deploy': VmOperationView.factory(op='deploy', icon='play'),
@@ -703,6 +701,7 @@ vm_ops = {
     'wake_up': VmOperationView.factory(op='wake_up', icon='sun'),
     'create_disk': VmCreateDiskView,
     'download_disk': VmDownloadDiskView,
+    'resources_change': VmResourcesChangeView,
 }
 
 

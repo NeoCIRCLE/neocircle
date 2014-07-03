@@ -42,6 +42,7 @@ class InstanceOperation(Operation):
     acl_level = 'owner'
     async_operation = abortable_async_instance_operation
     host_cls = Instance
+    concurrency_check = True
 
     def __init__(self, instance):
         super(InstanceOperation, self).__init__(subject=instance)
@@ -73,7 +74,7 @@ class InstanceOperation(Operation):
         else:
             return InstanceActivity.create(
                 code_suffix=self.activity_code_suffix, instance=self.instance,
-                user=user)
+                user=user, concurrency_check=self.concurrency_check)
 
 
 class AddInterfaceOperation(InstanceOperation):
@@ -600,3 +601,35 @@ class ScreenshotOperation(InstanceOperation):
 
 
 register_operation(ScreenshotOperation)
+
+
+class ResourcesOperation(InstanceOperation):
+    activity_code_suffix = 'Resources change'
+    id = 'resources_change'
+    name = _("resources change")
+    description = _("Change resources")
+    acl_level = "owner"
+    concurrency_check = False
+
+    def check_precond(self):
+        super(ResourcesOperation, self).check_precond()
+        if self.instance.status not in ["STOPPED", "PENDING"]:
+            raise self.instance.WrongStateError(self.instance)
+
+    def check_auth(self, user):
+        if not user.has_perm('vm.change_resources'):
+            raise PermissionDenied()
+
+        super(InstanceOperation, self).check_auth(user=user)
+
+    def _operation(self, user, num_cores, ram_size, max_ram_size, priority):
+
+        self.instance.num_cores = num_cores
+        self.instance.ram_size = ram_size
+        self.instance.max_ram_size = max_ram_size
+        self.instance.priority = priority
+
+        self.instance.save()
+
+
+register_operation(ResourcesOperation)

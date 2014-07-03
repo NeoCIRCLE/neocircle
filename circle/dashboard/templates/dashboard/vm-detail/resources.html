@@ -33,11 +33,20 @@
   </div>
 </p>
 
+{% if can_change_resources %}
 <p class="row">
   <div class="col-sm-12">
-    <button type="submit" class="btn btn-success btn-sm" id="vm-details-resources-save"><i class="icon-save"></i> {% trans "Save resources" %}</button>
+    <button type="submit" class="btn btn-success btn-sm enabled-when-stopped" id="vm-details-resources-save"
+      data-vm="{{ instance.pk }}"
+      {% if not op.resources_change %}disabled{% endif %}>
+      <i class="icon-save"></i> {% trans "Save resources" %}
+    </button>
+    <span class="hide-when-stopped"
+      {% if op.resources_change %}style="display: none;"{% endif %}
+      >{% trans "Stop your VM to change resources." %}</span>
   </div>
 </p>
+{% endif %}
 </form>
 
 <hr />
