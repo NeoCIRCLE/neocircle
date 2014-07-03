@@ -8,32 +8,62 @@
 
 <div class="row">
   <div class="col-md-12">
-    <ul id="store-list-list">
+    <div class="list-group" id="store-list-list">
+      <a href="?directory={{ up_url }}" class="list-group-item store-list-item" data-item-type="D">
+        <i class="icon-reply store-list-item-icon"></i>
+        ..
+        <div class="pull-right">
+          {{ current }}
+        </div>
+      </a>
     {% for f in root %}
-      <li class="store-list-item">
+    <a class="list-group-item store-list-item" data-item-type="{{ f.TYPE }}"
+      href="{% if f.TYPE == "D" %}?directory={{ f.path }}{% else %}
+      {# url "dashboard.views.store-download" #}?path={{ f.path }}{% endif %}">
       <div class="store-list-item-icon">
-      <i class="icon-{% if f.TYPE == "D" %}folder-open-alt{% else %}file-alt{% endif %}"></i>
-      </div>
-      {{ f.NAME }} 
-      
+      <i class="
+        icon-{% if f.TYPE == "D" %}folder-open-alt{% else %}file-alt{% endif %}"
+        ></i>
+    </div>
+      {{ f.NAME }}
       <div class="store-list-item-size">
-        {% if f.TYPE == "D" %}{% trans "directory" %}{% else %}{% bytes_to_megabytes f.SIZE %}MB{% endif %}
+        {{ f.human_readable_size }}
       </div>
-
-      <div class="store-list-item-actions">
-        <span title="{% trans "Last modified:" %} {% timestamp_to_date f.MTIME %}" 
-          class="btn btn-default btn-xs">
-          <i class="icon-time"></i>
-        </span>
-        <span class="btn btn-default btn-xs">
-          <i class="icon-cloud-download"></i>
-        </span>
-      </div>
-
       <div class="clearfix"></div>
-      </li>
+    </a>
+      <div class="infos" style="position: relative;">
+        <a href="{% url "dashboard.views.store-download" %}?path={{ f.path }}" 
+          class="btn btn-primary" style="position: absolute; right: 15px; top: 32px;">
+          <i class="icon-download"></i>
+          Download
+        </a>
+        <dl class="dl-horizontal" style="margin: 0; padding: 0;">
+          <dt>Filename</dt>
+          <dd>{{ f.NAME }}</dd>
+
+          <dt>Size</dt>
+          <dd>{{ f.human_readable_size }}</dd>
+
+          <dt>Latest modification</dt>
+          <dd>{{ f.human_readable_date }}</dd>
+        </dl>
+      </div>
+      {% empty %}
+      <a class="list-group-item">
+        {% trans "This folder is empty." %}
+      </a>
     {% endfor %}
-    </ul>
+    <div class="list-group-item">
+      Upload file to this folder
+      <form action="" data-action="{% url "dashboard.views.store-upload" %}" 
+        method="POST" enctype="multipart/form-data" class="pull-right">
+        {% csrf_token %}
+        <input type="hidden" name="current_dir" value="{{ current }}"></a>
+        <input type="file" name="data"/>
+        <input type="submit"/>
+      </form>
+    </div>
+    </div>
   </div>
 </div>
 
@@ -43,36 +73,72 @@
   }
 
   .store-list-item {
-    padding: 0 8px 0 8px;
     cursor: pointer;
-    line-height: 35px;
-    height: 35px;
   }
 
   .store-list-item:hover {
-    background: rgba(0, 0, 0, 0.1);
+    background: rgba(0, 0, 0, 0.6);
   }
 
   .store-list-item-icon {
     width: 20px;
-    display: inline-block;
     text-align: center;
+    display: inline-block;
+    margin-right: 15px;
   }
 
   .store-list-item-size {
-    display: inline-block;
     width: 70px;
     text-align: right;
     float: right;
   }
 
-  .store-list-item-actions {
-    display: inline-block;
-    width: 100px;
-    text-align: center;
-    float: right;
+  .infos {
+    padding: 20px;
+    display: none;
+    border-left: 1px solid #ddd;
+    border-right: 1px solid #ddd;
   }
+
 </style>
+<script>
+$(function() {
+  $(".store-list-item").click(function() {
+    if($(this).data("item-type") == "D") return true;
+    $(this).next(".infos").stop().slideToggle();
+    return false;
+  });
+
+  /* less js way, but at least works, tho redirection is bad */
+  $('form input[type="submit"]').click(function() {
+    var current_dir = $("form").find('[name="current_dir"]').val();
+    $.get($("form").data("action") + "?current_dir=" + current_dir, function(result) {
+      $("form").get(0).setAttribute("action", result['url']);
+      $("form").submit();
+    });
+
+    return false;
+  });
+  
+  /* this does not work 
+  $('form input[type="submit"]').click(function() {
+    var current_dir = $("form").find('[name="current_dir"]').val();
+    $.get($("form").data("action") + "?current_dir=" + current_dir, function(result) {
+      $.ajax({
+        method: "POST",
+        url: result['url'],
+        data: $("form").serialize(),
+        success: function(re) {
+          console.log(re);
+        }
+      });
+    });
+
+    return false;
+  }); */
+    
+});
+</script>
 
 {% endblock %}
 

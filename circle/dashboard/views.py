@@ -2940,8 +2940,54 @@ class StoreList(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, *args, **kwargs):
         context = super(StoreList, self).get_context_data(*args, **kwargs)
+        directory = self.request.GET.get("directory", "/")
+        directory = "/" if not len(directory) else directory
 
-        files = store_api.listfolder("test", "/")
-        dirs_first = sorted(files, key=lambda k: k['TYPE'])
-        context['root'] = dirs_first
+        context['root'] = self.clean_directory_list(directory)
+        context['up_url'] = self.create_up_directory(directory)
+        context['current'] = directory
         return context
+
+    def create_up_directory(self, directory):
+        cut = -2 if directory.endswith("/") else -1
+        return "/".join(directory.split("/")[:cut]) + "/"
+
+    def clean_directory_list(self, directory):
+        from datetime import datetime
+        from sizefield.utils import filesizeformat
+
+        content = store_api.listfolder("test", directory)
+
+        for d in content:
+            d['human_readable_date'] = datetime.fromtimestamp(float(
+                d['MTIME']))
+            d['human_readable_size'] = (
+                "directory" if d['TYPE'] == "D" else
+                filesizeformat(float(d['SIZE'])))
+
+            d['path'] = d['DIR']
+            if len(d['path']) == 1 and d['path'][0] == ".":
+                d['path'] = "/"
+            else:
+                d['path'] = "/" + d['path'] + "/"
+
+            d['path'] += d['NAME']
+            if d['TYPE'] == "D":
+                d['path'] += "/"
+
+        return sorted(content, key=lambda k: k['TYPE'])
+
+
+@require_GET
+def store_download(request):
+    path = request.GET.get("path")
+    url = store_api.requestdownload("test", path)
+    return redirect(url)
+
+
+@require_GET
+def store_upload(request):
+    current_dir = request.GET.get("current_dir")
+    url = store_api.requestupload("test", current_dir)
+    return HttpResponse(
+        json.dumps({'url': url}), content_type="application/json", )
