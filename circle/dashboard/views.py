@@ -639,7 +639,7 @@ class VmDownloadDiskView(FormOperationMixin, VmOperationView):
     is_disk_operation = True
 
 
-class VmMigrateView(SuperuserRequiredMixin, VmOperationView):
+class VmMigrateView(VmOperationView):
 
     op = 'migrate'
     icon = 'truck'
