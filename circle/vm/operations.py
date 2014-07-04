@@ -83,6 +83,7 @@ class AddInterfaceOperation(InstanceOperation):
     name = _("add interface")
     description = _("Add a new network interface for the specified VLAN to "
                     "the VM.")
+    required_perms = ()
 
     def _operation(self, activity, user, system, vlan, managed=None):
         if managed is None:
@@ -158,6 +159,7 @@ class DeployOperation(InstanceOperation):
     id = 'deploy'
     name = _("deploy")
     description = _("Deploy new virtual machine with network.")
+    required_perms = ()
 
     def check_precond(self):
         super(DeployOperation, self).check_precond()
@@ -199,6 +201,7 @@ class DestroyOperation(InstanceOperation):
     id = 'destroy'
     name = _("destroy")
     description = _("Destroy virtual machine and its networks.")
+    required_perms = ()
 
     def on_commit(self, activity):
         activity.resultant_state = 'DESTROYED'
@@ -240,6 +243,7 @@ class MigrateOperation(InstanceOperation):
     id = 'migrate'
     name = _("migrate")
     description = _("Live migrate running VM to another node.")
+    required_perms = ()
 
     def rollback(self, activity):
         with activity.sub_activity('rollback_net'):
@@ -290,6 +294,7 @@ class RebootOperation(InstanceOperation):
     id = 'reboot'
     name = _("reboot")
     description = _("Reboot virtual machine with Ctrl+Alt+Del signal.")
+    required_perms = ()
 
     def check_precond(self):
         super(RebootOperation, self).check_precond()
@@ -308,6 +313,7 @@ class RemoveInterfaceOperation(InstanceOperation):
     id = 'remove_interface'
     name = _("remove interface")
     description = _("Remove the specified network interface from the VM.")
+    required_perms = ()
 
     def _operation(self, activity, user, system, interface):
         if self.instance.is_running:
@@ -325,6 +331,7 @@ class RemoveDiskOperation(InstanceOperation):
     id = 'remove_disk'
     name = _("remove disk")
     description = _("Remove the specified disk from the VM.")
+    required_perms = ()
 
     def check_precond(self):
         super(RemoveDiskOperation, self).check_precond()
@@ -345,6 +352,7 @@ class ResetOperation(InstanceOperation):
     id = 'reset'
     name = _("reset")
     description = _("Reset virtual machine (reset button).")
+    required_perms = ()
 
     def check_precond(self):
         super(ResetOperation, self).check_precond()
@@ -459,6 +467,7 @@ class ShutdownOperation(InstanceOperation):
     name = _("shutdown")
     description = _("Shutdown virtual machine with ACPI signal.")
     abortable = True
+    required_perms = ()
 
     def check_precond(self):
         super(ShutdownOperation, self).check_precond()
@@ -482,6 +491,7 @@ class ShutOffOperation(InstanceOperation):
     id = 'shut_off'
     name = _("shut off")
     description = _("Shut off VM (plug-out).")
+    required_perms = ()
 
     def check_precond(self):
         super(ShutOffOperation, self).check_precond()
@@ -513,6 +523,7 @@ class SleepOperation(InstanceOperation):
     id = 'sleep'
     name = _("sleep")
     description = _("Suspend virtual machine with memory dump.")
+    required_perms = ()
 
     def check_precond(self):
         super(SleepOperation, self).check_precond()
@@ -552,6 +563,7 @@ class WakeUpOperation(InstanceOperation):
 
         Power on Virtual Machine and load its memory from dump.
         """)
+    required_perms = ()
 
     def check_precond(self):
         super(WakeUpOperation, self).check_precond()
@@ -614,6 +626,7 @@ class FlushOperation(NodeOperation):
     id = 'flush'
     name = _("flush")
     description = _("Disable node and move all instances to other ones.")
+    required_perms = ()
 
     def _operation(self, activity, user):
         self.node.disable(user, activity)
@@ -631,6 +644,7 @@ class ScreenshotOperation(InstanceOperation):
     name = _("screenshot")
     description = _("Get screenshot")
     acl_level = "owner"
+    required_perms = ()
 
     def check_precond(self):
         super(ScreenshotOperation, self).check_precond()
