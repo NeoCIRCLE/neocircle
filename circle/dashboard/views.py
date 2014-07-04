@@ -74,7 +74,7 @@ from vm.models import (
 )
 from storage.models import Disk
 from firewall.models import Vlan, Host, Rule
-from .models import Favourite, Profile, GroupProfile
+from .models import Favourite, Profile, GroupProfile, FutureMember
 
 logger = logging.getLogger(__name__)
 saml_available = hasattr(settings, "SAML_CONFIG")
@@ -802,6 +802,8 @@ class GroupDetailView(CheckedDetailView):
         context = super(GroupDetailView, self).get_context_data(**kwargs)
         context['group'] = self.object
         context['users'] = self.object.user_set.all()
+        context['future_users'] = FutureMember.objects.filter(
+            group=self.object)
         context['acl'] = get_group_acl_data(self.object)
         context['group_profile_form'] = GroupProfileUpdate.get_form_object(
             self.request, self.object.profile)
@@ -835,7 +837,11 @@ class GroupDetailView(CheckedDetailView):
             entity = User.objects.get(username=name)
             self.object.user_set.add(entity)
         except User.DoesNotExist:
-            warning(request, _('User "%s" not found.') % name)
+            if saml_available:
+                FutureMember.objects.get_or_create(org_id=name,
+                                                   group=self.object)
+            else:
+                warning(request, _('User "%s" not found.') % name)
 
     def __add_list(self, request):
         if not self.get_has_level()(request.user, 'operator'):
@@ -1354,6 +1360,7 @@ class GroupRemoveUserView(CheckedDetailView, DeleteView):
     slug_field = 'pk'
     slug_url_kwarg = 'group_pk'
     read_level = 'operator'
+    member_key = 'member_pk'
 
     def get_has_level(self):
         return self.object.profile.has_level
@@ -1395,7 +1402,7 @@ class GroupRemoveUserView(CheckedDetailView, DeleteView):
         object = self.get_object()
         if not object.profile.has_level(request.user, 'operator'):
             raise PermissionDenied()
-        self.remove_member(kwargs["member_pk"])
+        self.remove_member(kwargs[self.member_key])
         success_url = self.get_success_url()
         success_message = self.get_success_message()
         if request.is_ajax():
@@ -1406,6 +1413,31 @@ class GroupRemoveUserView(CheckedDetailView, DeleteView):
         else:
             messages.success(request, success_message)
             return HttpResponseRedirect(success_url)
+
+
+class GroupRemoveFutureUserView(GroupRemoveUserView):
+
+    member_key = 'member_org_id'
+
+    def get(self, request, member_org_id, *args, **kwargs):
+        self.member_org_id = member_org_id
+        return super(GroupRemoveUserView, self).get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(GroupRemoveUserView, self).get_context_data(**kwargs)
+        try:
+            context['member'] = FutureMember.objects.get(
+                org_id=self.member_org_id, group=self.get_object())
+        except FutureMember.DoesNotExist:
+            raise Http404()
+        return context
+
+    def remove_member(self, org_id):
+        FutureMember.objects.filter(org_id=org_id,
+                                    group=self.get_object()).delete()
+
+    def get_success_message(self):
+        return _("Future user successfully removed from group.")
 
 
 class GroupRemoveAclUserView(GroupRemoveUserView):
