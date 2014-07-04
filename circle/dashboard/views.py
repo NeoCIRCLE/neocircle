@@ -593,9 +593,11 @@ class OperationView(DetailView):
                     (cls, ), {'op': op, 'icon': icon, 'effect': effect})
 
     @classmethod
-    def bind_to_object(cls, instance):
+    def bind_to_object(cls, instance, **kwargs):
         v = cls()
         v.get_object = lambda: instance
+        for key, value in kwargs.iteritems():
+            setattr(v, key, value)
         return v
 
 
@@ -728,9 +730,11 @@ def get_operations(instance, user):
             op = v.get_op_by_object(instance)
             op.check_auth(user)
             op.check_precond()
-        except Exception as e:
+        except PermissionDenied as e:
             logger.debug('Not showing operation %s for %s: %s',
                          k, instance, unicode(e))
+        except Exception:
+            ops.append(v.bind_to_object(instance, disabled=True))
         else:
             ops.append(v.bind_to_object(instance))
     return ops
