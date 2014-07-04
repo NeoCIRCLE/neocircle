@@ -1142,12 +1142,6 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         template = self.get_object()
         if not template.has_level(request.user, 'owner'):
             raise PermissionDenied()
-        for disk in self.get_object().disks.all():
-            if not disk.has_level(request.user, 'user'):
-                raise PermissionDenied()
-        for network in self.get_object().interface_set.all():
-            if not network.vlan.has_level(request.user, "user"):
-                raise PermissionDenied()
         return super(TemplateDetail, self).post(self, request, args, kwargs)
 
     def get_form_kwargs(self):

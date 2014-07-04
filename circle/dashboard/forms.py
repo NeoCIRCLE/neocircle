@@ -25,6 +25,7 @@ from django.contrib.auth.forms import (
 )
 from django.contrib.auth.models import User, Group
 from django.core.validators import URLValidator
+from django.core.exceptions import PermissionDenied
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import (
@@ -624,6 +625,8 @@ class TemplateForm(forms.ModelForm):
         networks = InterfaceTemplate.objects.filter(
             template=self.instance).values_list("vlan", flat=True)
         for m in data['networks']:
+            if not m.has_level(self.user, "user"):
+                raise PermissionDenied()
             if m.pk not in networks:
                 InterfaceTemplate(vlan=m, managed=m.managed,
                                   template=self.instance).save()
