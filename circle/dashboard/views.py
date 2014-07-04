@@ -17,6 +17,7 @@
 
 from __future__ import unicode_literals, absolute_import
 
+from collections import OrderedDict
 from itertools import chain
 from os import getenv
 import json
@@ -691,22 +692,31 @@ class VmSaveView(FormOperationMixin, VmOperationView):
 
     op = 'save_as_template'
     icon = 'save'
+    effect = 'info'
     form_class = VmSaveForm
 
-vm_ops = {
-    'reset': VmOperationView.factory(op='reset', icon='bolt'),
-    'deploy': VmOperationView.factory(op='deploy', icon='play'),
-    'migrate': VmMigrateView,
-    'reboot': VmOperationView.factory(op='reboot', icon='refresh'),
-    'shut_off': VmOperationView.factory(op='shut_off', icon='ban-circle'),
-    'shutdown': VmOperationView.factory(op='shutdown', icon='off'),
-    'save_as_template': VmSaveView,
-    'destroy': VmOperationView.factory(op='destroy', icon='remove'),
-    'sleep': VmOperationView.factory(op='sleep', icon='moon'),
-    'wake_up': VmOperationView.factory(op='wake_up', icon='sun'),
-    'create_disk': VmCreateDiskView,
-    'download_disk': VmDownloadDiskView,
-}
+vm_ops = OrderedDict([
+    ('deploy', VmOperationView.factory(
+        op='deploy', icon='play')),
+    ('wake_up', VmOperationView.factory(
+        op='wake_up', icon='sun')),
+    ('sleep', VmOperationView.factory(
+        op='sleep', icon='moon')),
+    ('migrate', VmMigrateView),
+    ('save_as_template', VmSaveView),
+    ('reboot', VmOperationView.factory(
+        op='reboot', icon='refresh')),
+    ('reset', VmOperationView.factory(
+        op='reset', icon='bolt')),
+    ('shutdown', VmOperationView.factory(
+        op='shutdown', icon='off')),
+    ('shut_off', VmOperationView.factory(
+        op='shut_off', icon='ban-circle')),
+    ('destroy', VmOperationView.factory(
+        op='destroy', icon='remove')),
+    ('create_disk', VmCreateDiskView),
+    ('download_disk', VmDownloadDiskView),
+])
 
 
 def get_operations(instance, user):
