@@ -567,11 +567,11 @@ class OperationView(DetailView):
 
     @classmethod
     def bind_to_object(cls, instance, **kwargs):
-        v = cls()
-        v.get_object = lambda: instance
+        me = cls()
+        me.get_object = lambda: instance
         for key, value in kwargs.iteritems():
-            setattr(v, key, value)
-        return v
+            setattr(me, key, value)
+        return me
 
 
 class VmOperationView(OperationView):
