@@ -526,6 +526,7 @@ class OperationView(DetailView):
 
     template_name = 'dashboard/operate.html'
     show_in_toolbar = True
+    effect = None
 
     @property
     def name(self):
@@ -587,9 +588,9 @@ class OperationView(DetailView):
         return redirect("%s#activity" % self.object.get_absolute_url())
 
     @classmethod
-    def factory(cls, op, icon='cog'):
+    def factory(cls, op, icon='cog', effect='info'):
         return type(str(cls.__name__ + op),
-                    (cls, ), {'op': op, 'icon': icon})
+                    (cls, ), {'op': op, 'icon': icon, 'effect': effect})
 
     @classmethod
     def bind_to_object(cls, instance):
@@ -670,6 +671,7 @@ class VmMigrateView(VmOperationView):
 
     op = 'migrate'
     icon = 'truck'
+    effect = 'info'
     template_name = 'dashboard/_vm-migrate.html'
 
     def get_context_data(self, **kwargs):
@@ -697,23 +699,23 @@ class VmSaveView(FormOperationMixin, VmOperationView):
 
 vm_ops = OrderedDict([
     ('deploy', VmOperationView.factory(
-        op='deploy', icon='play')),
+        op='deploy', icon='play', effect='success')),
     ('wake_up', VmOperationView.factory(
-        op='wake_up', icon='sun')),
+        op='wake_up', icon='sun', effect='success')),
     ('sleep', VmOperationView.factory(
-        op='sleep', icon='moon')),
+        op='sleep', icon='moon', effect='info')),
     ('migrate', VmMigrateView),
     ('save_as_template', VmSaveView),
     ('reboot', VmOperationView.factory(
-        op='reboot', icon='refresh')),
+        op='reboot', icon='refresh', effect='warning')),
     ('reset', VmOperationView.factory(
-        op='reset', icon='bolt')),
+        op='reset', icon='bolt', effect='warning')),
     ('shutdown', VmOperationView.factory(
-        op='shutdown', icon='off')),
+        op='shutdown', icon='off', effect='warning')),
     ('shut_off', VmOperationView.factory(
-        op='shut_off', icon='ban-circle')),
+        op='shut_off', icon='ban-circle', effect='warning')),
     ('destroy', VmOperationView.factory(
-        op='destroy', icon='remove')),
+        op='destroy', icon='remove', effect='danger')),
     ('create_disk', VmCreateDiskView),
     ('download_disk', VmDownloadDiskView),
 ])
