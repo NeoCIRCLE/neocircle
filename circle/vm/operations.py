@@ -75,6 +75,11 @@ class InstanceOperation(Operation):
                 code_suffix=self.activity_code_suffix, instance=self.instance,
                 user=user)
 
+    def is_preferred(self):
+        """If this is the recommended op in the current state of the instance.
+        """
+        return False
+
 
 class AddInterfaceOperation(InstanceOperation):
     activity_code_suffix = 'add_interface'
@@ -153,6 +158,10 @@ class DeployOperation(InstanceOperation):
     id = 'deploy'
     name = _("deploy")
     description = _("Deploy new virtual machine with network.")
+
+    def is_preferred(self):
+        return self.instance.status in (self.instance.STATUS.STOPPED,
+                                        self.instance.STATUS.ERROR)
 
     def on_commit(self, activity):
         activity.resultant_state = 'RUNNING'
@@ -337,6 +346,10 @@ class SaveAsTemplateOperation(InstanceOperation):
         """)
     abortable = True
 
+    def is_preferred(self):
+        return (self.instance.is_base and
+                self.instance.status == self.instance.STATUS.RUNNING)
+
     @staticmethod
     def _rename(name):
         m = search(r" v(\d+)$", name)
@@ -472,6 +485,10 @@ class SleepOperation(InstanceOperation):
     name = _("sleep")
     description = _("Suspend virtual machine with memory dump.")
 
+    def is_preferred(self):
+        return (not self.instance.is_base and
+                self.instance.status == self.instance.STATUS.RUNNING)
+
     def check_precond(self):
         super(SleepOperation, self).check_precond()
         if self.instance.status not in ['RUNNING']:
@@ -510,6 +527,10 @@ class WakeUpOperation(InstanceOperation):
 
         Power on Virtual Machine and load its memory from dump.
         """)
+
+    def is_preferred(self):
+        return (self.instance.is_base and
+                self.instance.status == self.instance.STATUS.SUSPENDED)
 
     def check_precond(self):
         super(WakeUpOperation, self).check_precond()

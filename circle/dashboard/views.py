@@ -17,6 +17,7 @@
 
 from __future__ import unicode_literals, absolute_import
 
+from collections import OrderedDict
 from itertools import chain
 from os import getenv
 import json
@@ -525,6 +526,7 @@ class OperationView(DetailView):
 
     template_name = 'dashboard/operate.html'
     show_in_toolbar = True
+    effect = None
 
     @property
     def name(self):
@@ -533,6 +535,9 @@ class OperationView(DetailView):
     @property
     def description(self):
         return self.get_op().description
+
+    def is_preferred(self):
+        return self.get_op().is_preferred()
 
     @classmethod
     def get_urlname(cls):
@@ -583,14 +588,16 @@ class OperationView(DetailView):
         return redirect("%s#activity" % self.object.get_absolute_url())
 
     @classmethod
-    def factory(cls, op, icon='cog'):
+    def factory(cls, op, icon='cog', effect='info'):
         return type(str(cls.__name__ + op),
-                    (cls, ), {'op': op, 'icon': icon})
+                    (cls, ), {'op': op, 'icon': icon, 'effect': effect})
 
     @classmethod
-    def bind_to_object(cls, instance):
+    def bind_to_object(cls, instance, **kwargs):
         v = cls()
         v.get_object = lambda: instance
+        for key, value in kwargs.iteritems():
+            setattr(v, key, value)
         return v
 
 
@@ -666,6 +673,7 @@ class VmMigrateView(VmOperationView):
 
     op = 'migrate'
     icon = 'truck'
+    effect = 'info'
     template_name = 'dashboard/_vm-migrate.html'
 
     def get_context_data(self, **kwargs):
@@ -688,22 +696,31 @@ class VmSaveView(FormOperationMixin, VmOperationView):
 
     op = 'save_as_template'
     icon = 'save'
+    effect = 'info'
     form_class = VmSaveForm
 
-vm_ops = {
-    'reset': VmOperationView.factory(op='reset', icon='bolt'),
-    'deploy': VmOperationView.factory(op='deploy', icon='play'),
-    'migrate': VmMigrateView,
-    'reboot': VmOperationView.factory(op='reboot', icon='refresh'),
-    'shut_off': VmOperationView.factory(op='shut_off', icon='ban-circle'),
-    'shutdown': VmOperationView.factory(op='shutdown', icon='off'),
-    'save_as_template': VmSaveView,
-    'destroy': VmOperationView.factory(op='destroy', icon='remove'),
-    'sleep': VmOperationView.factory(op='sleep', icon='moon'),
-    'wake_up': VmOperationView.factory(op='wake_up', icon='sun'),
-    'create_disk': VmCreateDiskView,
-    'download_disk': VmDownloadDiskView,
-}
+vm_ops = OrderedDict([
+    ('deploy', VmOperationView.factory(
+        op='deploy', icon='play', effect='success')),
+    ('wake_up', VmOperationView.factory(
+        op='wake_up', icon='sun', effect='success')),
+    ('sleep', VmOperationView.factory(
+        op='sleep', icon='moon', effect='info')),
+    ('migrate', VmMigrateView),
+    ('save_as_template', VmSaveView),
+    ('reboot', VmOperationView.factory(
+        op='reboot', icon='refresh', effect='warning')),
+    ('reset', VmOperationView.factory(
+        op='reset', icon='bolt', effect='warning')),
+    ('shutdown', VmOperationView.factory(
+        op='shutdown', icon='off', effect='warning')),
+    ('shut_off', VmOperationView.factory(
+        op='shut_off', icon='ban-circle', effect='warning')),
+    ('destroy', VmOperationView.factory(
+        op='destroy', icon='remove', effect='danger')),
+    ('create_disk', VmCreateDiskView),
+    ('download_disk', VmDownloadDiskView),
+])
 
 
 def get_operations(instance, user):
@@ -713,9 +730,11 @@ def get_operations(instance, user):
             op = v.get_op_by_object(instance)
             op.check_auth(user)
             op.check_precond()
-        except Exception as e:
+        except PermissionDenied as e:
             logger.debug('Not showing operation %s for %s: %s',
                          k, instance, unicode(e))
+        except Exception:
+            ops.append(v.bind_to_object(instance, disabled=True))
         else:
             ops.append(v.bind_to_object(instance))
     return ops
