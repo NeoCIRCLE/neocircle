@@ -1019,7 +1019,7 @@ class TemplateChoose(LoginRequiredMixin, TemplateView):
         else:
             template = get_object_or_404(InstanceTemplate, pk=template)
 
-        if not template.has_level(user, "user"):
+        if not template.has_level(request.user, "user"):
             raise PermissionDenied()
 
         instance = Instance.create_from_template(
@@ -1049,7 +1049,7 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
         return context
 
     def get(self, *args, **kwargs):
-        if not self.request.user.has_perm('vm.create_template'):
+        if not self.request.user.has_perm('vm.create_base_template'):
             raise PermissionDenied()
 
         return super(TemplateCreate, self).get(*args, **kwargs)
@@ -1081,8 +1081,6 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
                                    tags=tags, req_traits=req_traits)
 
             return redirect("%s#resources" % inst.get_absolute_url())
-
-        return super(TemplateCreate, self).post(self, request, args, kwargs)
 
     def __create_networks(self, vlans, user):
         networks = []
