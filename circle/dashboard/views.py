@@ -534,6 +534,9 @@ class OperationView(DetailView):
     def description(self):
         return self.get_op().description
 
+    def is_preferred(self):
+        return self.get_op().is_preferred()
+
     @classmethod
     def get_urlname(cls):
         return 'dashboard.vm.op.%s' % cls.op
