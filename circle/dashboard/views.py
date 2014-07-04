@@ -522,11 +522,11 @@ class OperationView(DetailView):
     def get_url(self):
         return reverse(self.get_urlname(), args=(self.get_object().pk, ))
 
-    def get_wrapper_template_name(self):
+    def get_template_names(self):
         if self.request.is_ajax():
-            return 'dashboard/_modal.html'
+            return ['dashboard/_modal.html']
         else:
-            return 'dashboard/_base.html'
+            return ['dashboard/_base.html']
 
     @classmethod
     def get_op_by_object(cls, obj):
@@ -542,15 +542,12 @@ class OperationView(DetailView):
         ctx['op'] = self.get_op()
         ctx['opview'] = self
         ctx['url'] = self.request.path
+        ctx['template'] = super(OperationView, self).get_template_names()[0]
         return ctx
 
     def get(self, request, *args, **kwargs):
         self.get_op().check_auth(request.user)
-        response = super(OperationView, self).get(request, *args, **kwargs)
-        response.render()
-        response.content = render_to_string(self.get_wrapper_template_name(),
-                                            {'body': response.content})
-        return response
+        return super(OperationView, self).get(request, *args, **kwargs)
 
     def post(self, request, extra=None, *args, **kwargs):
         self.object = self.get_object()

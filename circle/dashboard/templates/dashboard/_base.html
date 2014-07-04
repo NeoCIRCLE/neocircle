@@ -14,7 +14,12 @@
         </h3>
       </div>
       <div class="panel-body">
-        {{ body|safe|default:"(body missing from context.)" }}
+        {% if template %}
+          {% include template %}
+        {% else %}
+          {{ body|safe|default:"(body missing from context.)" }}
+        {% endif %}
       </div>
+    </div>
   </div>
 {% endblock %}
