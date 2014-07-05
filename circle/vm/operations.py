@@ -275,10 +275,6 @@ class MigrateOperation(InstanceOperation):
                 to_node = self.instance.select_node()
                 sa.result = to_node
 
-        # Shutdown networks
-        with activity.sub_activity('shutdown_net'):
-            self.instance.shutdown_net()
-
         try:
             with activity.sub_activity('migrate_vm'):
                 self.instance.migrate_vm(to_node=to_node, timeout=timeout)
@@ -286,6 +282,10 @@ class MigrateOperation(InstanceOperation):
             if hasattr(e, 'libvirtError'):
                 self.rollback(activity)
             raise
+
+        # Shutdown networks
+        with activity.sub_activity('shutdown_net'):
+            self.instance.shutdown_net()
 
         # Refresh node information
         self.instance.node = to_node
@@ -556,7 +556,7 @@ class SleepOperation(InstanceOperation):
     def on_commit(self, activity):
         activity.resultant_state = 'SUSPENDED'
 
-    def _operation(self, activity, timeout=60):
+    def _operation(self, activity, timeout=240):
         # Destroy networks
         with activity.sub_activity('shutdown_net'):
             self.instance.shutdown_net()

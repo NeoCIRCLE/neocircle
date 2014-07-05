@@ -827,7 +827,8 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
     def migrate_vm(self, to_node, timeout=120):
         queue_name = self.get_remote_queue_name('vm', 'slow')
         return vm_tasks.migrate.apply_async(args=[self.vm_name,
-                                                  to_node.host.hostname],
+                                                  to_node.host.hostname,
+                                                  True],
                                             queue=queue_name
                                             ).get(timeout=timeout)
 
@@ -864,7 +865,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                     AbortableAsyncResult(remote.id).abort()
                     raise Exception("Shutdown aborted by user.")
 
-    def suspend_vm(self, timeout=60):
+    def suspend_vm(self, timeout=230):
         queue_name = self.get_remote_queue_name('vm', 'slow')
         return vm_tasks.sleep.apply_async(args=[self.vm_name,
                                                 self.mem_dump['path']],
