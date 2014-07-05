@@ -649,7 +649,14 @@ class FlushOperation(NodeOperation):
     description = _("Disable node and move all instances to other ones.")
     required_perms = ()
 
+    def on_abort(self, activity, error):
+        from manager.scheduler import TraitsUnsatisfiableException
+        if isinstance(error, TraitsUnsatisfiableException):
+            if self.node_enabled:
+                self.node.enable(activity.user, activity)
+
     def _operation(self, activity, user):
+        self.node_enabled = self.node.enabled
         self.node.disable(user, activity)
         for i in self.node.instance_set.all():
             with activity.sub_activity('migrate_instance_%d' % i.pk):

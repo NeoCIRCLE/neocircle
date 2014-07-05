@@ -4,7 +4,7 @@
 {% if op.show_in_toolbar %}
 
 {% if op.disabled %}
-<span class="operation operation-{{op.op}} btn btn-{{op.effect}} disabled btn-xs">
+<span class="operation operation-{{op.op}} btn btn-default disabled btn-xs">
 {% else %}
 <a href="{{op.get_url}}" class="operation operation-{{op.op}} btn
     btn-{{op.effect}} btn-xs" title="{{op.name}}: {{op.description}}">
