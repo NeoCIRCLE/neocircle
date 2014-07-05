@@ -148,10 +148,14 @@ class Node(OperatedMixin, TimeStampedModel):
                 self.enabled = False
                 self.save()
 
-    def enable(self, user=None):
+    def enable(self, user=None, base_activity=None):
         ''' Enable the node. '''
         if self.enabled is not True:
-            with node_activity(code_suffix='enable', node=self, user=user):
+            if base_activity:
+                act_ctx = base_activity.sub_activity('enable')
+            else:
+                act_ctx = node_activity('enable', node=self, user=user)
+            with act_ctx:
                 self.enabled = True
                 self.save()
             self.get_info(invalidate_cache=True)
