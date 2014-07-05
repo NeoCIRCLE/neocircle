@@ -80,9 +80,9 @@
             {% endif %}
           </dd>
 
-        {% if instance.ipv6 %}
+        {% if instance.ipv6 and instance.get_connect_port %}
           <dt>{% trans "Host (IPv6)" %}</dt>
-          <dd>{{ ipv6_host }}:<strong>{{ instance.ipv6_port }}</strong></dd>
+          <dd>{{ ipv6_host }}:<strong>{{ ipv6_port }}</strong></dd>
         {% endif %}
 
         <dt>{% trans "Username" %}</dt>

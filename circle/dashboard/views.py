@@ -17,6 +17,7 @@
 
 from __future__ import unicode_literals, absolute_import
 
+from collections import OrderedDict
 from itertools import chain
 from os import getenv
 import json
@@ -74,7 +75,7 @@ from vm.models import (
 )
 from storage.models import Disk
 from firewall.models import Vlan, Host, Rule
-from .models import Favourite, Profile, GroupProfile
+from .models import Favourite, Profile, GroupProfile, FutureMember
 
 logger = logging.getLogger(__name__)
 saml_available = hasattr(settings, "SAML_CONFIG")
@@ -501,6 +502,7 @@ class OperationView(DetailView):
 
     template_name = 'dashboard/operate.html'
     show_in_toolbar = True
+    effect = None
 
     @property
     def name(self):
@@ -509,6 +511,9 @@ class OperationView(DetailView):
     @property
     def description(self):
         return self.get_op().description
+
+    def is_preferred(self):
+        return self.get_op().is_preferred()
 
     @classmethod
     def get_urlname(cls):
@@ -559,14 +564,16 @@ class OperationView(DetailView):
         return redirect("%s#activity" % self.object.get_absolute_url())
 
     @classmethod
-    def factory(cls, op, icon='cog'):
+    def factory(cls, op, icon='cog', effect='info'):
         return type(str(cls.__name__ + op),
-                    (cls, ), {'op': op, 'icon': icon})
+                    (cls, ), {'op': op, 'icon': icon, 'effect': effect})
 
     @classmethod
-    def bind_to_object(cls, instance):
+    def bind_to_object(cls, instance, **kwargs):
         v = cls()
         v.get_object = lambda: instance
+        for key, value in kwargs.iteritems():
+            setattr(v, key, value)
         return v
 
 
@@ -643,6 +650,7 @@ class VmMigrateView(VmOperationView):
 
     op = 'migrate'
     icon = 'truck'
+    effect = 'info'
     template_name = 'dashboard/_vm-migrate.html'
 
     def get_context_data(self, **kwargs):
@@ -665,6 +673,7 @@ class VmSaveView(FormOperationMixin, VmOperationView):
 
     op = 'save_as_template'
     icon = 'save'
+    effect = 'info'
     form_class = VmSaveForm
 
 
@@ -690,21 +699,28 @@ class VmResourcesChangeView(VmOperationView):
                                                        *args, **kwargs)
 
 
-vm_ops = {
-    'reset': VmOperationView.factory(op='reset', icon='bolt'),
-    'deploy': VmOperationView.factory(op='deploy', icon='play'),
-    'migrate': VmMigrateView,
-    'reboot': VmOperationView.factory(op='reboot', icon='refresh'),
-    'shut_off': VmOperationView.factory(op='shut_off', icon='ban-circle'),
-    'shutdown': VmOperationView.factory(op='shutdown', icon='off'),
-    'save_as_template': VmSaveView,
-    'destroy': VmOperationView.factory(op='destroy', icon='remove'),
-    'sleep': VmOperationView.factory(op='sleep', icon='moon'),
-    'wake_up': VmOperationView.factory(op='wake_up', icon='sun'),
-    'create_disk': VmCreateDiskView,
-    'download_disk': VmDownloadDiskView,
-    'resources_change': VmResourcesChangeView,
-}
+vm_ops = OrderedDict([
+    ('deploy', VmOperationView.factory(
+        op='deploy', icon='play', effect='success')),
+    ('wake_up', VmOperationView.factory(
+        op='wake_up', icon='sun', effect='success')),
+    ('sleep', VmOperationView.factory(
+        op='sleep', icon='moon', effect='info')),
+    ('migrate', VmMigrateView),
+    ('save_as_template', VmSaveView),
+    ('reboot', VmOperationView.factory(
+        op='reboot', icon='refresh', effect='warning')),
+    ('reset', VmOperationView.factory(
+        op='reset', icon='bolt', effect='warning')),
+    ('shutdown', VmOperationView.factory(
+        op='shutdown', icon='off', effect='warning')),
+    ('shut_off', VmOperationView.factory(
+        op='shut_off', icon='ban-circle', effect='warning')),
+    ('destroy', VmOperationView.factory(
+        op='destroy', icon='remove', effect='danger')),
+    ('create_disk', VmCreateDiskView),
+    ('download_disk', VmDownloadDiskView),
+])
 
 
 def get_operations(instance, user):
@@ -714,9 +730,11 @@ def get_operations(instance, user):
             op = v.get_op_by_object(instance)
             op.check_auth(user)
             op.check_precond()
-        except Exception as e:
+        except PermissionDenied as e:
             logger.debug('Not showing operation %s for %s: %s',
                          k, instance, unicode(e))
+        except Exception:
+            ops.append(v.bind_to_object(instance, disabled=True))
         else:
             ops.append(v.bind_to_object(instance))
     return ops
@@ -803,6 +821,8 @@ class GroupDetailView(CheckedDetailView):
         context = super(GroupDetailView, self).get_context_data(**kwargs)
         context['group'] = self.object
         context['users'] = self.object.user_set.all()
+        context['future_users'] = FutureMember.objects.filter(
+            group=self.object)
         context['acl'] = get_group_acl_data(self.object)
         context['group_profile_form'] = GroupProfileUpdate.get_form_object(
             self.request, self.object.profile)
@@ -836,7 +856,11 @@ class GroupDetailView(CheckedDetailView):
             entity = User.objects.get(username=name)
             self.object.user_set.add(entity)
         except User.DoesNotExist:
-            warning(request, _('User "%s" not found.') % name)
+            if saml_available:
+                FutureMember.objects.get_or_create(org_id=name,
+                                                   group=self.object)
+            else:
+                warning(request, _('User "%s" not found.') % name)
 
     def __add_list(self, request):
         if not self.get_has_level()(request.user, 'operator'):
@@ -1350,6 +1374,7 @@ class GroupRemoveUserView(CheckedDetailView, DeleteView):
     slug_field = 'pk'
     slug_url_kwarg = 'group_pk'
     read_level = 'operator'
+    member_key = 'member_pk'
 
     def get_has_level(self):
         return self.object.profile.has_level
@@ -1391,7 +1416,7 @@ class GroupRemoveUserView(CheckedDetailView, DeleteView):
         object = self.get_object()
         if not object.profile.has_level(request.user, 'operator'):
             raise PermissionDenied()
-        self.remove_member(kwargs["member_pk"])
+        self.remove_member(kwargs[self.member_key])
         success_url = self.get_success_url()
         success_message = self.get_success_message()
         if request.is_ajax():
@@ -1402,6 +1427,31 @@ class GroupRemoveUserView(CheckedDetailView, DeleteView):
         else:
             messages.success(request, success_message)
             return HttpResponseRedirect(success_url)
+
+
+class GroupRemoveFutureUserView(GroupRemoveUserView):
+
+    member_key = 'member_org_id'
+
+    def get(self, request, member_org_id, *args, **kwargs):
+        self.member_org_id = member_org_id
+        return super(GroupRemoveUserView, self).get(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(GroupRemoveUserView, self).get_context_data(**kwargs)
+        try:
+            context['member'] = FutureMember.objects.get(
+                org_id=self.member_org_id, group=self.get_object())
+        except FutureMember.DoesNotExist:
+            raise Http404()
+        return context
+
+    def remove_member(self, org_id):
+        FutureMember.objects.filter(org_id=org_id,
+                                    group=self.get_object()).delete()
+
+    def get_success_message(self):
+        return _("Future user successfully removed from group.")
 
 
 class GroupRemoveAclUserView(GroupRemoveUserView):

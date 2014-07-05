@@ -579,11 +579,10 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
     def get_connect_host(self, use_ipv6=False):
         """Get public hostname.
         """
-        if not self.interface_set.exclude(host=None):
-            return _('None')
+        if not self.primary_host:
+            return None
         proto = 'ipv6' if use_ipv6 else 'ipv4'
-        return self.interface_set.exclude(host=None)[0].host.get_hostname(
-            proto=proto)
+        return self.primary_host.get_hostname(proto=proto)
 
     def get_connect_command(self, use_ipv6=False):
         """Returns a formatted connect string.

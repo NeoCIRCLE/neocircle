@@ -27,6 +27,7 @@ from django.forms import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from firewall.fields import (MACAddressField, val_alfanum, val_reverse_domain,
                              val_ipv6_template, val_domain, val_ipv4,
+                             val_domain_wildcard,
                              val_ipv6, val_mx, convert_ipv4_to_ipv6,
                              IPNetworkField, IPAddressField)
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -695,8 +696,7 @@ class Host(models.Model):
         :param private: Port number of host in subject.
         """
 
-        self.rules.filter(owner=self.owner, proto=proto, host=self,
-                          dport=private).delete()
+        self.rules.filter(proto=proto, dport=private).delete()
 
     def get_hostname(self, proto, public=True):
         """
@@ -728,7 +728,7 @@ class Host(models.Model):
         Return a list of ports with forwarding rules set.
         """
         retval = []
-        for rule in self.rules.filter(owner=self.owner):
+        for rule in self.rules.all():
             forward = {
                 'proto': rule.proto,
                 'private': rule.dport,
@@ -770,9 +770,7 @@ class Host(models.Model):
                              if public_port else
                              None)
         # IPv6
-        blocked = self.incoming_rules.exclude(
-            action='accept').filter(dport=port, proto=protocol).exists()
-        endpoints['ipv6'] = (self.ipv6, port) if not blocked else None
+        endpoints['ipv6'] = (self.ipv6, port) if public_port else None
         return endpoints
 
     @models.permalink
@@ -821,7 +819,7 @@ class Domain(models.Model):
 class Record(models.Model):
     CHOICES_type = (('A', 'A'), ('CNAME', 'CNAME'), ('AAAA', 'AAAA'),
                     ('MX', 'MX'), ('NS', 'NS'), ('PTR', 'PTR'), ('TXT', 'TXT'))
-    name = models.CharField(max_length=40, validators=[val_domain],
+    name = models.CharField(max_length=40, validators=[val_domain_wildcard],
                             blank=True, null=True, verbose_name=_('name'))
     domain = models.ForeignKey('Domain', verbose_name=_('domain'))
     host = models.ForeignKey('Host', blank=True, null=True,
