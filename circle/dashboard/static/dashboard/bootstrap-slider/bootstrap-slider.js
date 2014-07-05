@@ -192,6 +192,9 @@
 		},
 
 		mousedown: function(ev) {
+                        if (this.element[0].disabled) {
+                            return false;
+                        }
 
 			// Touch: Get the original event:
 			if (this.touchCapable && ev.type === 'touchstart') {

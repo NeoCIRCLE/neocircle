@@ -153,7 +153,8 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
             ('create_template', _('Can create an instance template.')),
             ('create_base_template',
              _('Can create an instance template (base).')),
-            ('change_resources', _('Can change resources of a template.')),
+            ('change_template_resources',
+             _('Can change resources of a template.')),
         )
         verbose_name = _('template')
         verbose_name_plural = _('templates')
