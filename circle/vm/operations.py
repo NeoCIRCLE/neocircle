@@ -619,6 +619,22 @@ class WakeUpOperation(InstanceOperation):
 register_operation(WakeUpOperation)
 
 
+class RenewOperation(InstanceOperation):
+    activity_code_suffix = 'renew'
+    id = 'renew'
+    name = _("renew")
+    description = _("Renew expiration times")
+    acl_level = "operator"
+
+    def _operation(self, lease=None):
+        (self.instance.time_of_suspend,
+         self.instance.time_of_delete) = self.instance.get_renew_times(lease)
+        self.save()
+
+
+register_operation(RenewOperation)
+
+
 class NodeOperation(Operation):
     async_operation = abortable_async_node_operation
     host_cls = Node
