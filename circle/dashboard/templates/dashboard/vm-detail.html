@@ -135,7 +135,7 @@
               <i class="icon-tasks icon-2x"></i><br>
               {% trans "Resources" %}</a>
           </li>
-          <li{% if not instance.is_console_available or not perms.vm.access_console %} class="disabled"{% endif %}>
+          <li{% if not instance.is_console_available %} class="disabled"{% endif %}>
             <a href="#console" data-toggle="pill" data-target="#_console" class="text-center">
               <i class="icon-desktop icon-2x"></i><br>
               {% trans "Console" %}</a></li>
