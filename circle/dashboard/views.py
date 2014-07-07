@@ -887,7 +887,7 @@ class GroupPermissionsView(SuperuserRequiredMixin, UpdateView):
     slug_url_kwarg = "group_pk"
 
     def get_success_url(self):
-        return "%s#group-detail-permission" % (
+        return "%s#group-detail-permissions" % (
             self.get_object().groupprofile.get_absolute_url())
 
 
