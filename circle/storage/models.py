@@ -380,11 +380,16 @@ class Disk(AclBase, TimeStampedModel):
         self.save()
         return True
 
-    def restore(self, user=None, task_uuid=None):
+    def restore(self, user=None, task_uuid=None, timeout=15):
         """Recover destroyed disk from trash if possible.
         """
-        # TODO
-        pass
+        queue_name = self.datastore.get_remote_queue_name(
+            'storage', priority='slow')
+        logger.info("Image: %s at Datastore: %s recovered from trash." %
+                    (self.filename, self.datastore.path))
+        storage_tasks.recover_from_trash.apply_async(
+            args=[self.datastore.path, self.filename],
+            queue=queue_name).get(timeout=timeout)
 
     def save_as(self, user=None, task_uuid=None, timeout=300):
         """Save VM as template.
