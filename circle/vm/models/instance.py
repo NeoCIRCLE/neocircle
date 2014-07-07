@@ -264,6 +264,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             ('change_resources', _('Can change resources of a running VM.')),
             ('set_resources', _('Can change resources of a new VM.')),
             ('config_ports', _('Can configure port forwards.')),
+            ('recover', _('Can recover a destroyed VM.')),
         )
         verbose_name = _('instance')
         verbose_name_plural = _('instances')

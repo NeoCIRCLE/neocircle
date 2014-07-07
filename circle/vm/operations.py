@@ -628,3 +628,30 @@ class ScreenshotOperation(InstanceOperation):
 
 
 register_operation(ScreenshotOperation)
+
+
+class RecoverOperation(InstanceOperation):
+    activity_code_suffix = 'recover'
+    id = 'recover'
+    name = _("recover")
+    description = _("Recover virtual machine from destroyed state.")
+    acl_level = "owner"
+    required_perms = ('vm.recover', )
+
+    def check_precond(self):
+        if not self.instance.destroyed_at:
+            raise self.instance.WrongStateError(self.instance)
+
+    def on_commit(self, activity):
+        activity.resultant_state = 'PENDING'
+
+    def _operation(self):
+        for disk in self.instance.disks.all():
+            disk.destroyed = None
+            disk.restore()
+            disk.save()
+        self.instance.destroyed_at = None
+        self.instance.save()
+
+
+register_operation(RecoverOperation)
