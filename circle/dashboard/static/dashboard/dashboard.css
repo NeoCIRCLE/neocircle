@@ -722,3 +722,35 @@ textarea[name="list-new-namelist"] {
   margin-bottom: 20px;
 
 }
+
+#store-list-list {
+  list-style: none;
+}
+
+.store-list-item {
+  cursor: pointer;
+}
+
+.store-list-item:hover {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.store-list-item-icon {
+  width: 20px;
+  text-align: center;
+  display: inline-block;
+  margin-right: 15px;
+}
+
+.store-list-item-size {
+  width: 70px;
+  text-align: right;
+  float: right;
+}
+
+.store-list-file-infos {
+  padding: 20px;
+  display: none;
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+}
