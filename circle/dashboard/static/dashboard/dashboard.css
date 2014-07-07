@@ -723,7 +723,7 @@ textarea[name="list-new-namelist"] {
 
 }
 
-#group-detail-permission .filtered {
+#group-detail-permissions .filtered {
   margin: 2px 0;
   padding: 2px 3px;
   vertical-align: middle;
@@ -733,8 +733,8 @@ textarea[name="list-new-namelist"] {
   border: 1px solid #ccc;
 }
 
-#group-detail-permission .selector-available h2, 
-#group-detail-permission .selector-chosen h2 {
+#group-detail-permissions .selector-available h2, 
+#group-detail-permissions .selector-chosen h2 {
   margin: 0;
   padding: 5px 8px 5px 8px;
   font-size: 12px;
@@ -746,4 +746,8 @@ textarea[name="list-new-namelist"] {
 
 #group-detail-user-table {
   margin-top: 20px;
+}
+
+#group-detail-permissions input[type="submit"]{
+  margin-top: -6px;  
 }
