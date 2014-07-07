@@ -655,6 +655,12 @@ class FlushOperation(NodeOperation):
             if self.node_enabled:
                 self.node.enable(activity.user, activity)
 
+    def check_auth(self, user):
+        if not user.is_superuser:
+            raise PermissionDenied()
+
+        super(FlushOperation, self).check_auth(user=user)
+
     def _operation(self, activity, user):
         self.node_enabled = self.node.enabled
         self.node.disable(user, activity)
