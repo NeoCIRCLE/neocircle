@@ -38,7 +38,8 @@ from .views import (
     get_vm_screenshot,
     ProfileView, toggle_use_gravatar, UnsubscribeFormView,
     UserKeyDelete, UserKeyDetail, UserKeyCreate,
-    VmTraitsUpdate, VmRawDataUpdate
+    VmTraitsUpdate, VmRawDataUpdate,
+    GroupPermissionsView,
 )
 
 urlpatterns = patterns(
@@ -168,6 +169,9 @@ urlpatterns = patterns(
     url(r'^group/(?P<group_pk>\d+)/create/$',
         UserCreationView.as_view(),
         name="dashboard.views.create-user"),
+    url(r'^group/(?P<group_pk>\d+)/permissions/$',
+        GroupPermissionsView.as_view(),
+        name="dashboard.views.group-permissions"),
 
     url(r'^sshkey/delete/(?P<pk>\d+)/$',
         UserKeyDelete.as_view(),

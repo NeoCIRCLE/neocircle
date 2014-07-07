@@ -61,7 +61,7 @@ from .forms import (
     UserCreationForm, GroupProfileUpdateForm, UnsubscribeForm,
     VmSaveForm, UserKeyForm,
     CirclePasswordChangeForm, VmCreateDiskForm, VmDownloadDiskForm,
-    TraitsForm, RawDataForm
+    TraitsForm, RawDataForm, GroupPermissionForm
 )
 
 from .tables import (
@@ -807,12 +807,18 @@ class GroupDetailView(CheckedDetailView):
         context['acl'] = get_group_acl_data(self.object)
         context['group_profile_form'] = GroupProfileUpdate.get_form_object(
             self.request, self.object.profile)
+
+        if self.request.user.is_superuser:
+            context['group_perm_form'] = GroupPermissionForm(
+                instance=self.object)
+
         return context
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         if not self.get_has_level()(request.user, 'operator'):
             raise PermissionDenied()
+
         if request.POST.get('new_name'):
             return self.__set_name(request)
         if request.POST.get('list-new-name'):
@@ -872,6 +878,17 @@ class GroupDetailView(CheckedDetailView):
             messages.success(request, success_message)
             return redirect(reverse_lazy("dashboard.views.group-detail",
                                          kwargs={'pk': self.object.pk}))
+
+
+class GroupPermissionsView(SuperuserRequiredMixin, UpdateView):
+    model = Group
+    form_class = GroupPermissionForm
+    slug_field = "pk"
+    slug_url_kwarg = "group_pk"
+
+    def get_success_url(self):
+        return "%s#group-detail-permission" % (
+            self.get_object().groupprofile.get_absolute_url())
 
 
 class AclUpdateView(LoginRequiredMixin, View, SingleObjectMixin):

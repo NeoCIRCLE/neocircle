@@ -47,6 +47,8 @@ from storage.models import Disk
 from vm.models import (
     InstanceTemplate, Lease, InterfaceTemplate, Node, Trait, Instance
 )
+from django.contrib.admin.widgets import FilteredSelectMultiple
+from django.contrib.auth.models import Permission
 from .models import Profile, GroupProfile
 from circle.settings.base import LANGUAGES
 from django.utils.translation import string_concat
@@ -1180,4 +1182,32 @@ class RawDataForm(forms.ModelForm):
         helper.add_input(Submit("submit", _("Save"),
                                 css_class="btn btn-success",
                                 css_id="submit-password-button"))
+        return helper
+
+
+permissions_filtered = Permission.objects.exclude(
+    codename__startswith="add_").exclude(
+    codename__startswith="delete_").exclude(
+    codename__startswith="change_")
+
+
+class GroupPermissionForm(forms.ModelForm):
+    permissions = forms.ModelMultipleChoiceField(
+        queryset=permissions_filtered,
+        widget=FilteredSelectMultiple(_("permissions"), is_stacked=False)
+    )
+
+    class Meta:
+        model = Group
+        fields = ('permissions', )
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.form_show_labels = False
+        helper.form_action = reverse_lazy(
+            "dashboard.views.group-permissions",
+            kwargs={'group_pk': self.instance.pk})
+        helper.add_input(Submit("submit", _("Save"),
+                                css_class="btn btn-success", ))
         return helper
