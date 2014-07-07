@@ -716,6 +716,8 @@ vm_ops = OrderedDict([
         op='shutdown', icon='off', effect='warning')),
     ('shut_off', VmOperationView.factory(
         op='shut_off', icon='ban-circle', effect='warning')),
+    ('recover', VmOperationView.factory(
+        op='recover', icon='medkit', effect='warning')),
     ('destroy', VmOperationView.factory(
         op='destroy', icon='remove', effect='danger')),
     ('create_disk', VmCreateDiskView),
