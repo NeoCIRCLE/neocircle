@@ -48,6 +48,8 @@
 {% crispy group_profile_form %}
 </form>
 
+<hr />
+
 <h3>{% trans "User list"|capfirst %}
     {% if perms.auth.add_user %}
         <a href="{% url "dashboard.views.create-user" group.pk %}" class="btn btn-success pull-right">{% trans "Create user" %}</a>
@@ -100,8 +102,8 @@
   </div>
   </form>
 
-
-<h3 id="group-detail-perm-header">{% trans "Permissions"|capfirst %}</h3>
+  <hr />
+<h3 id="group-detail-perm-header">{% trans "Access permissions"|capfirst %}</h3>
   <form action="{{acl.url}}" method="post">{% csrf_token %}
   <table class="table table-striped table-with-form-fields table-bordered" id="group-detail-perm-table">
     <thead>
@@ -172,11 +174,25 @@
   </div>
   </form>
 
+{% if user.is_superuser %}
+  <hr />
 
+<script type="text/javascript" src="/static/admin/js/jquery.min.js"></script>
+<script type="text/javascript" src="/static/admin/js/jquery.init.js"></script>
+{{ group_perm_form.media }}
+
+<h3>{% trans "Group permissions" %}</h3>
+
+<div id="group-detail-permissions">
+{% crispy group_perm_form %}
+</div>
+
+<link rel="stylesheet" type="text/css" href="/static/admin/css/widgets.css" />
+
+{% endif %}
 	</div>
      </div>
     </div>
   </div>
 </div>
-<script src="{{ STATIC_URL}}dashboard/group-details.js"></script>
 {% endblock %}

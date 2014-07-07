@@ -722,3 +722,32 @@ textarea[name="list-new-namelist"] {
   margin-bottom: 20px;
 
 }
+
+#group-detail-permissions .filtered {
+  margin: 2px 0;
+  padding: 2px 3px;
+  vertical-align: middle;
+  font-family: "Lucida Grande", Verdana, Arial, sans-serif;
+  font-weight: normal;
+  font-size: 11px;
+  border: 1px solid #ccc;
+}
+
+#group-detail-permissions .selector-available h2, 
+#group-detail-permissions .selector-chosen h2 {
+  margin: 0;
+  padding: 5px 8px 5px 8px;
+  font-size: 12px;
+  text-align: left;
+  font-weight: bold;
+  background: #7CA0C7;
+  color: white;
+}
+
+#group-detail-user-table {
+  margin-top: 20px;
+}
+
+#group-detail-permissions input[type="submit"]{
+  margin-top: -6px;  
+}
