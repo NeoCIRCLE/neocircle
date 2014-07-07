@@ -31,3 +31,4 @@ simplejson==3.4.0
 six==1.6.1
 South==0.8.4
 sqlparse==0.1.11
+pika==0.9.13
