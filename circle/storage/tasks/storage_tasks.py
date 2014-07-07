@@ -72,9 +72,11 @@ def make_free_space(datastore, percent):
 def move_to_trash(datastore, disk_path):
     pass
 
+
 @celery.task(name='storagedriver.recover_from_trash')
 def recover_from_trash(datastore, disk_path):
     pass
+
 
 @celery.task(name='storagedriver.get_storage_stat')
 def get_storage_stat(path):
