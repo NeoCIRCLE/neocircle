@@ -244,6 +244,8 @@ class VmDetailVncTokenView(CheckedDetailView):
         self.object = self.get_object()
         if not self.object.has_level(request.user, 'operator'):
             raise PermissionDenied()
+        if not request.user.has_perm('vm.access_console'):
+            raise PermissionDenied()
         if self.object.node:
             with instance_activity(code_suffix='console-accessed',
                                    instance=self.object, user=request.user,
@@ -294,13 +296,14 @@ class VmDetailView(CheckedDetailView):
         if self.request.user.is_superuser:
             context['traits_form'] = TraitsForm(instance=instance)
             context['raw_data_form'] = RawDataForm(instance=instance)
+
+        # resources change perm
+        context['can_change_resources'] = self.request.user.has_perm(
+            "vm.change_resources")
+
         return context
 
     def post(self, request, *args, **kwargs):
-        if (request.POST.get('ram-size') and request.POST.get('cpu-count')
-                and request.POST.get('cpu-priority')):
-            return self.__set_resources(request)
-
         options = {
             'change_password': self.__change_password,
             'new_name': self.__set_name,
@@ -325,33 +328,6 @@ class VmDetailView(CheckedDetailView):
         if request.is_ajax():
             return HttpResponse("Success.")
         else:
-            return redirect(reverse_lazy("dashboard.views.detail",
-                                         kwargs={'pk': self.object.pk}))
-
-    def __set_resources(self, request):
-        self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-        if not request.user.has_perm('vm.change_resources'):
-            raise PermissionDenied()
-
-        resources = {
-            'num_cores': request.POST.get('cpu-count'),
-            'ram_size': request.POST.get('ram-size'),
-            'max_ram_size': request.POST.get('ram-size'),  # TODO: max_ram
-            'priority': request.POST.get('cpu-priority')
-        }
-        Instance.objects.filter(pk=self.object.pk).update(**resources)
-
-        success_message = _("Resources successfully updated.")
-        if request.is_ajax():
-            response = {'message': success_message}
-            return HttpResponse(
-                json.dumps(response),
-                content_type="application/json"
-            )
-        else:
-            messages.success(request, success_message)
             return redirect(reverse_lazy("dashboard.views.detail",
                                          kwargs={'pk': self.object.pk}))
 
@@ -606,8 +582,9 @@ class VmOperationView(OperationView):
     model = Instance
     context_object_name = 'instance'  # much simpler to mock object
 
-    def post(self, request, *args, **kwargs):
-        resp = super(VmOperationView, self).post(request, *args, **kwargs)
+    def post(self, request, extra=None, *args, **kwargs):
+        resp = super(VmOperationView, self).post(request, extra, *args,
+                                                 **kwargs)
         if request.is_ajax():
             store = messages.get_messages(request)
             store.used = True
@@ -698,6 +675,29 @@ class VmSaveView(FormOperationMixin, VmOperationView):
     icon = 'save'
     effect = 'info'
     form_class = VmSaveForm
+
+
+class VmResourcesChangeView(VmOperationView):
+    op = 'resources_change'
+    icon = "save"
+    show_in_toolbar = False
+
+    def post(self, request, extra=None, *args, **kwargs):
+        if extra is None:
+            extra = {}
+
+        resources = {
+            'num_cores': "cpu-count",
+            'priority': "cpu-priority",
+            'ram_size': "ram-size",
+            "max_ram_size": "ram-size",  # TODO
+        }
+        for k, v in resources.iteritems():
+            extra[k] = request.POST.get(v)
+
+        return super(VmResourcesChangeView, self).post(request, extra,
+                                                       *args, **kwargs)
+
 
 vm_ops = OrderedDict([
     ('deploy', VmOperationView.factory(
@@ -1012,7 +1012,7 @@ class GroupAclUpdateView(AclUpdateView):
                                 kwargs=self.kwargs))
 
 
-class TemplateChoose(TemplateView):
+class TemplateChoose(LoginRequiredMixin, TemplateView):
 
     def get_template_names(self):
         if self.request.is_ajax():
@@ -1045,6 +1045,9 @@ class TemplateChoose(TemplateView):
         else:
             template = get_object_or_404(InstanceTemplate, pk=template)
 
+        if not template.has_level(request.user, "user"):
+            raise PermissionDenied()
+
         instance = Instance.create_from_template(
             template=template, owner=request.user, is_base=True)
 
@@ -1072,7 +1075,7 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
         return context
 
     def get(self, *args, **kwargs):
-        if not self.request.user.has_perm('vm.create_template'):
+        if not self.request.user.has_perm('vm.create_base_template'):
             raise PermissionDenied()
 
         return super(TemplateCreate, self).get(*args, **kwargs)
@@ -1083,7 +1086,7 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
         return kwargs
 
     def post(self, request, *args, **kwargs):
-        if not self.request.user.has_perm('vm.create_template'):
+        if not self.request.user.has_perm('vm.create_base_template'):
             raise PermissionDenied()
 
         form = self.form_class(request.POST, user=request.user)
@@ -1104,8 +1107,6 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
                                    tags=tags, req_traits=req_traits)
 
             return redirect("%s#resources" % inst.get_absolute_url())
-
-        return super(TemplateCreate, self).post(self, request, args, kwargs)
 
     def __create_networks(self, vlans, user):
         networks = []
@@ -1167,12 +1168,6 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         template = self.get_object()
         if not template.has_level(request.user, 'owner'):
             raise PermissionDenied()
-        for disk in self.get_object().disks.all():
-            if not disk.has_level(request.user, 'user'):
-                raise PermissionDenied()
-        for network in self.get_object().interface_set.all():
-            if not network.vlan.has_level(request.user, "user"):
-                raise PermissionDenied()
         return super(TemplateDetail, self).post(self, request, args, kwargs)
 
     def get_form_kwargs(self):
@@ -1546,6 +1541,9 @@ class VmCreate(LoginRequiredMixin, TemplateView):
             return ['dashboard/nojs-wrapper.html']
 
     def get(self, request, form=None, *args, **kwargs):
+        if not request.user.has_perm('vm.create_vm'):
+            raise PermissionDenied()
+
         form_error = form is not None
         template = (form.template.pk if form_error
                     else request.GET.get("template"))
@@ -1650,6 +1648,9 @@ class VmCreate(LoginRequiredMixin, TemplateView):
 
     def post(self, request, *args, **kwargs):
         user = request.user
+
+        if not request.user.has_perm('vm.create_vm'):
+            raise PermissionDenied()
 
         # limit chekcs
         try:

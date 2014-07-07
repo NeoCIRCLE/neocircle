@@ -63,6 +63,8 @@ class VmDetailTest(LoginMixin, TestCase):
         self.g1.user_set.add(self.u1)
         self.g1.user_set.add(self.u2)
         self.g1.save()
+        self.u1.user_permissions.add(Permission.objects.get(
+            codename='create_vm'))
         settings["default_vlangroup"] = 'public'
         VlanGroup.objects.create(name='public')
 
@@ -1544,6 +1546,8 @@ class VmDetailVncTest(LoginMixin, TestCase):
         inst.node = Node.objects.all()[0]
         inst.save()
         inst.set_level(self.u1, 'operator')
+        self.u1.user_permissions.add(Permission.objects.get(
+            codename='access_console'))
         response = c.get('/dashboard/vm/1/vnctoken/')
         self.assertEqual(response.status_code, 200)
 
@@ -1554,6 +1558,8 @@ class VmDetailVncTest(LoginMixin, TestCase):
         inst.node = Node.objects.all()[0]
         inst.save()
         inst.set_level(self.u1, 'user')
+        self.u1.user_permissions.add(Permission.objects.get(
+            codename='access_console'))
         response = c.get('/dashboard/vm/1/vnctoken/')
         self.assertEqual(response.status_code, 403)
 

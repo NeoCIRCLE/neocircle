@@ -42,6 +42,7 @@ class InstanceOperation(Operation):
     acl_level = 'owner'
     async_operation = abortable_async_instance_operation
     host_cls = Instance
+    concurrency_check = True
 
     def __init__(self, instance):
         super(InstanceOperation, self).__init__(subject=instance)
@@ -73,7 +74,7 @@ class InstanceOperation(Operation):
         else:
             return InstanceActivity.create(
                 code_suffix=self.activity_code_suffix, instance=self.instance,
-                user=user)
+                user=user, concurrency_check=self.concurrency_check)
 
     def is_preferred(self):
         """If this is the recommended op in the current state of the instance.
@@ -87,6 +88,7 @@ class AddInterfaceOperation(InstanceOperation):
     name = _("add interface")
     description = _("Add a new network interface for the specified VLAN to "
                     "the VM.")
+    required_perms = ()
 
     def _operation(self, activity, user, system, vlan, managed=None):
         if managed is None:
@@ -109,6 +111,7 @@ class CreateDiskOperation(InstanceOperation):
     id = 'create_disk'
     name = _("create disk")
     description = _("Create empty disk for the VM.")
+    required_perms = ('storage.create_empty_disk', )
 
     def check_precond(self):
         super(CreateDiskOperation, self).check_precond()
@@ -123,6 +126,7 @@ class CreateDiskOperation(InstanceOperation):
         if not name:
             name = "new disk"
         disk = Disk.create(size=size, name=name, type="qcow2-norm")
+        disk.full_clean()
         self.instance.disks.add(disk)
 
 register_operation(CreateDiskOperation)
@@ -135,6 +139,7 @@ class DownloadDiskOperation(InstanceOperation):
     description = _("Download disk for the VM.")
     abortable = True
     has_percentage = True
+    required_perms = ('storage.download_disk', )
 
     def check_precond(self):
         super(DownloadDiskOperation, self).check_precond()
@@ -148,6 +153,7 @@ class DownloadDiskOperation(InstanceOperation):
         from storage.models import Disk
 
         disk = Disk.download(url=url, name=name, task=task)
+        disk.full_clean()
         self.instance.disks.add(disk)
 
 register_operation(DownloadDiskOperation)
@@ -158,6 +164,12 @@ class DeployOperation(InstanceOperation):
     id = 'deploy'
     name = _("deploy")
     description = _("Deploy new virtual machine with network.")
+    required_perms = ()
+
+    def check_precond(self):
+        super(DeployOperation, self).check_precond()
+        if self.instance.status in ['RUNNING', 'SUSPENDED']:
+            raise self.instance.WrongStateError(self.instance)
 
     def is_preferred(self):
         return self.instance.status in (self.instance.STATUS.STOPPED,
@@ -198,6 +210,7 @@ class DestroyOperation(InstanceOperation):
     id = 'destroy'
     name = _("destroy")
     description = _("Destroy virtual machine and its networks.")
+    required_perms = ()
 
     def on_commit(self, activity):
         activity.resultant_state = 'DESTROYED'
@@ -239,10 +252,22 @@ class MigrateOperation(InstanceOperation):
     id = 'migrate'
     name = _("migrate")
     description = _("Live migrate running VM to another node.")
+    required_perms = ()
 
     def rollback(self, activity):
         with activity.sub_activity('rollback_net'):
             self.instance.deploy_net()
+
+    def check_precond(self):
+        super(MigrateOperation, self).check_precond()
+        if self.instance.status not in ['RUNNING']:
+            raise self.instance.WrongStateError(self.instance)
+
+    def check_auth(self, user):
+        if not user.is_superuser:
+            raise PermissionDenied()
+
+        super(MigrateOperation, self).check_auth(user=user)
 
     def _operation(self, activity, to_node=None, timeout=120):
         if not to_node:
@@ -278,6 +303,12 @@ class RebootOperation(InstanceOperation):
     id = 'reboot'
     name = _("reboot")
     description = _("Reboot virtual machine with Ctrl+Alt+Del signal.")
+    required_perms = ()
+
+    def check_precond(self):
+        super(RebootOperation, self).check_precond()
+        if self.instance.status not in ['RUNNING']:
+            raise self.instance.WrongStateError(self.instance)
 
     def _operation(self, timeout=5):
         self.instance.reboot_vm(timeout=timeout)
@@ -291,6 +322,7 @@ class RemoveInterfaceOperation(InstanceOperation):
     id = 'remove_interface'
     name = _("remove interface")
     description = _("Remove the specified network interface from the VM.")
+    required_perms = ()
 
     def _operation(self, activity, user, system, interface):
         if self.instance.is_running:
@@ -308,6 +340,7 @@ class RemoveDiskOperation(InstanceOperation):
     id = 'remove_disk'
     name = _("remove disk")
     description = _("Remove the specified disk from the VM.")
+    required_perms = ()
 
     def check_precond(self):
         super(RemoveDiskOperation, self).check_precond()
@@ -328,6 +361,12 @@ class ResetOperation(InstanceOperation):
     id = 'reset'
     name = _("reset")
     description = _("Reset virtual machine (reset button).")
+    required_perms = ()
+
+    def check_precond(self):
+        super(ResetOperation, self).check_precond()
+        if self.instance.status not in ['RUNNING']:
+            raise self.instance.WrongStateError(self.instance)
 
     def _operation(self, timeout=5):
         self.instance.reset_vm(timeout=timeout)
@@ -345,6 +384,7 @@ class SaveAsTemplateOperation(InstanceOperation):
         Users can instantiate Virtual Machines from Templates.
         """)
     abortable = True
+    required_perms = ('vm.create_template', )
 
     def is_preferred(self):
         return (self.instance.is_base and
@@ -364,6 +404,11 @@ class SaveAsTemplateOperation(InstanceOperation):
         if getattr(self, 'disks'):
             for disk in self.disks:
                 disk.destroy()
+
+    def check_precond(self):
+        super(SaveAsTemplateOperation, self).check_precond()
+        if self.instance.status not in ['RUNNING', 'PENDING', 'STOPPED']:
+            raise self.instance.WrongStateError(self.instance)
 
     def _operation(self, activity, user, system, timeout=300, name=None,
                    with_shutdown=True, task=None, **kwargs):
@@ -435,6 +480,7 @@ class ShutdownOperation(InstanceOperation):
     name = _("shutdown")
     description = _("Shutdown virtual machine with ACPI signal.")
     abortable = True
+    required_perms = ()
 
     def check_precond(self):
         super(ShutdownOperation, self).check_precond()
@@ -458,6 +504,12 @@ class ShutOffOperation(InstanceOperation):
     id = 'shut_off'
     name = _("shut off")
     description = _("Shut off VM (plug-out).")
+    required_perms = ()
+
+    def check_precond(self):
+        super(ShutOffOperation, self).check_precond()
+        if self.instance.status not in ['RUNNING']:
+            raise self.instance.WrongStateError(self.instance)
 
     def on_commit(self, activity):
         activity.resultant_state = 'STOPPED'
@@ -484,6 +536,7 @@ class SleepOperation(InstanceOperation):
     id = 'sleep'
     name = _("sleep")
     description = _("Suspend virtual machine with memory dump.")
+    required_perms = ()
 
     def is_preferred(self):
         return (not self.instance.is_base and
@@ -527,6 +580,7 @@ class WakeUpOperation(InstanceOperation):
 
         Power on Virtual Machine and load its memory from dump.
         """)
+    required_perms = ()
 
     def is_preferred(self):
         return (self.instance.is_base and
@@ -593,12 +647,19 @@ class FlushOperation(NodeOperation):
     id = 'flush'
     name = _("flush")
     description = _("Disable node and move all instances to other ones.")
+    required_perms = ()
 
     def on_abort(self, activity, error):
         from manager.scheduler import TraitsUnsatisfiableException
         if isinstance(error, TraitsUnsatisfiableException):
             if self.node_enabled:
                 self.node.enable(activity.user, activity)
+
+    def check_auth(self, user):
+        if not user.is_superuser:
+            raise PermissionDenied()
+
+        super(FlushOperation, self).check_auth(user=user)
 
     def _operation(self, activity, user):
         self.node_enabled = self.node.enabled
@@ -617,6 +678,7 @@ class ScreenshotOperation(InstanceOperation):
     name = _("screenshot")
     description = _("Get screenshot")
     acl_level = "owner"
+    required_perms = ()
 
     def check_precond(self):
         super(ScreenshotOperation, self).check_precond()
@@ -655,3 +717,31 @@ class RecoverOperation(InstanceOperation):
 
 
 register_operation(RecoverOperation)
+
+
+class ResourcesOperation(InstanceOperation):
+    activity_code_suffix = 'Resources change'
+    id = 'resources_change'
+    name = _("resources change")
+    description = _("Change resources")
+    acl_level = "owner"
+    concurrency_check = False
+    required_perms = ('vm.change_resources', )
+
+    def check_precond(self):
+        super(ResourcesOperation, self).check_precond()
+        if self.instance.status not in ["STOPPED", "PENDING"]:
+            raise self.instance.WrongStateError(self.instance)
+
+    def _operation(self, user, num_cores, ram_size, max_ram_size, priority):
+
+        self.instance.num_cores = num_cores
+        self.instance.ram_size = ram_size
+        self.instance.max_ram_size = max_ram_size
+        self.instance.priority = priority
+
+        self.instance.full_clean()
+        self.instance.save()
+
+
+register_operation(ResourcesOperation)

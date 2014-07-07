@@ -16,10 +16,12 @@
       <div class="clearfix"></div>
     </div>
     {% endfor %}
+    {% if perms.vm.create_base_template %}
     <div class="panel panel-default template-choose-list-element">
       <input type="radio" name="parent" value="base_vm"/>
       {% trans "Create a new base VM without disk" %}
     </div>
+    {% endif %}
     <button type="submit" id="template-choose-next-button" class="btn btn-success pull-right">{% trans "Next" %}</button>
     <div class="clearfix"></div>
   </div>

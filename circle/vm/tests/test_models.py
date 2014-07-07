@@ -103,6 +103,7 @@ class InstanceTestCase(TestCase):
         inst = Mock(destroyed_at=None, spec=Instance)
         inst.interface_set.all.return_value = []
         inst.node = MagicMock(spec=Node)
+        inst.status = 'RUNNING'
         migrate_op = MigrateOperation(inst)
         with patch('vm.models.instance.vm_tasks.migrate') as migr:
             act = MagicMock()
@@ -118,6 +119,7 @@ class InstanceTestCase(TestCase):
         inst = MagicMock(destroyed_at=None, spec=Instance)
         inst.interface_set.all.return_value = []
         inst.node = MagicMock(spec=Node)
+        inst.status = 'RUNNING'
         migrate_op = MigrateOperation(inst)
         with patch('vm.models.instance.vm_tasks.migrate') as migr:
             inst.select_node.side_effect = AssertionError
@@ -133,6 +135,7 @@ class InstanceTestCase(TestCase):
         inst = Mock(destroyed_at=None, spec=Instance)
         inst.interface_set.all.return_value = []
         inst.node = MagicMock(spec=Node)
+        inst.status = 'RUNNING'
         e = Exception('abc')
         setattr(e, 'libvirtError', '')
         inst.migrate_vm.side_effect = e
@@ -372,6 +375,7 @@ class InstanceActivityTestCase(TestCase):
         node = MagicMock(spec=Node, enabled=True)
         node.instance_set.all.return_value = insts
         user = MagicMock(spec=User)
+        user.is_superuser = MagicMock(return_value=True)
         flush_op = FlushOperation(node)
 
         with patch.object(FlushOperation, 'create_activity') as create_act:
@@ -383,6 +387,7 @@ class InstanceActivityTestCase(TestCase):
             node.disable.assert_called_with(user, act)
             for i in insts:
                 i.migrate.assert_called()
+        user.is_superuser.assert_called()
 
     def test_flush_disabled_wo_user(self):
         insts = [MagicMock(spec=Instance, migrate=MagicMock()),
