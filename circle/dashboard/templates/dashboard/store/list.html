@@ -53,7 +53,7 @@
         {% trans "This folder is empty." %}
       </a>
     {% endfor %}
-    <div class="list-group-item" style="height: 50px;">
+    <div class="list-group-item">
       Upload file to this folder
       <form action="" data-action="{% url "dashboard.views.store-upload" %}" 
         method="POST" enctype="multipart/form-data" class="pull-right"
@@ -62,14 +62,14 @@
         <input type="hidden" name="current_dir" value="{{ current }}"/>
         <div class="input-group" style="max-width: 400px;">
           <span class="input-group-btn" id="store-upload-browse">
-            <span class="btn btn-primary btn-sm">
+            <span class="btn btn-primary btn-xs">
               {% trans "Browse..." %}
             </span>     
           </span>
-          <input type="text" class="input-sm form-control" 
+          <input type="text" class="form-control input-tags" 
            id="store-upload-filename"/>
           <span class="input-group-btn">
-            <input type="submit" class="btn btn-primary btn-sm"
+            <input type="submit" class="btn btn-primary btn-xs"
             value="{% trans "Upload" %}"/>
           </span>
         </div>
