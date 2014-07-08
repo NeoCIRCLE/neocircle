@@ -728,6 +728,81 @@ class VmResourcesChangeView(VmOperationView):
                                                        *args, **kwargs)
 
 
+class TokenOperationView(OperationView):
+    """Abstract operation view with token support.
+
+    User can do the action with a valid token instead of logging in.
+    """
+    token_max_age = 3 * 24 * 3600
+
+    @classmethod
+    def get_salt(cls):
+        return unicode(cls)
+
+    @classmethod
+    def get_token(cls, instance, user):
+        t = tuple([getattr(i, 'pk', i) for i in [instance, user]])
+        return signing.dumps(t, salt=cls.get_salt(), compress=True)
+
+    @classmethod
+    def get_token_url(cls, instance, user):
+        key = cls.get_token(instance, user)
+        return cls.get_instance_url(instance.pk, key)
+
+    def check_auth(self):
+        if 'k' in self.request.GET:
+            try:  # check if token is needed at all
+                return super(TokenOperationView, self).check_auth()
+            except Exception:
+                op = self.get_op()
+                pk = op.instance.pk
+                key = self.request.GET.get('k')
+
+                logger.debug("checking token supplied to %s",
+                             self.request.get_full_path())
+                try:
+                    user = self.validate_key(pk, key)
+                except signing.SignatureExpired:
+                    messages.error(self.request, _('The token has expired.'))
+                else:
+                    logger.info("Request user changed to %s at %s",
+                                user, self.request.get_full_path())
+                    self.request.user = user
+        else:
+            logger.debug("no token supplied to %s",
+                         self.request.get_full_path())
+
+        return super(TokenOperationView, self).check_auth()
+
+    def validate_key(self, pk, key):
+        """Get object based on signed token.
+        """
+        try:
+            data = signing.loads(key, salt=self.get_salt())
+            logger.debug('Token data: %s', unicode(data))
+            instance, user = data
+            logger.debug('Extracted token data: instance: %s, user: %s',
+                         unicode(instance), unicode(user))
+        except (signing.BadSignature, ValueError, TypeError) as e:
+            logger.warning('Tried invalid token. Token: %s, user: %s. %s',
+                           key, unicode(self.request.user), unicode(e))
+            raise SuspiciousOperation()
+
+        try:
+            instance, user = signing.loads(key, max_age=self.token_max_age,
+                                           salt=self.get_salt())
+            logger.debug('Extracted non-expired token data: %s, %s',
+                         unicode(instance), unicode(user))
+        except signing.BadSignature as e:
+            raise signing.SignatureExpired()
+
+        if pk != instance:
+            logger.debug('pk (%d) != instance (%d)', pk, instance)
+            raise SuspiciousOperation()
+        user = User.objects.get(pk=user)
+        return user
+
+
 vm_ops = OrderedDict([
     ('deploy', VmOperationView.factory(
         op='deploy', icon='play', effect='success')),
@@ -751,6 +826,9 @@ vm_ops = OrderedDict([
         op='destroy', icon='remove', effect='danger')),
     ('create_disk', VmCreateDiskView),
     ('download_disk', VmDownloadDiskView),
+    ('renew', VmOperationView.factory(
+        op='renew', icon='calendar', extra_bases=[TokenOperationView],
+        show_in_toolbar=False)),
 ])
 
 
