@@ -534,8 +534,16 @@ class OperationView(RedirectToLoginMixin, DetailView):
     def get_urlname(cls):
         return 'dashboard.vm.op.%s' % cls.op
 
-    def get_url(self):
-        return reverse(self.get_urlname(), args=(self.get_object().pk, ))
+    @classmethod
+    def get_instance_url(cls, pk, key=None, *args, **kwargs):
+        url = reverse(cls.get_urlname(), args=(pk, ) + args, kwargs=kwargs)
+        if key is None:
+            return url
+        else:
+            return "%s?k=%s" % (url, key)
+
+    def get_url(self, **kwargs):
+        return self.get_instance_url(self.get_object().pk, **kwargs)
 
     def get_template_names(self):
         if self.request.is_ajax():
@@ -556,15 +564,23 @@ class OperationView(RedirectToLoginMixin, DetailView):
         ctx = super(OperationView, self).get_context_data(**kwargs)
         ctx['op'] = self.get_op()
         ctx['opview'] = self
-        ctx['url'] = self.request.path
+        url = self.request.path
+        if self.request.GET:
+            url += '?' + self.request.GET.urlencode()
+        ctx['url'] = url
         ctx['template'] = super(OperationView, self).get_template_names()[0]
         return ctx
 
+    def check_auth(self):
+        logger.debug("OperationView.check_auth(%s)", unicode(self))
+        self.get_op().check_auth(self.request.user)
+
     def get(self, request, *args, **kwargs):
-        self.get_op().check_auth(request.user)
+        self.check_auth()
         return super(OperationView, self).get(request, *args, **kwargs)
 
     def post(self, request, extra=None, *args, **kwargs):
+        self.check_auth()
         self.object = self.get_object()
         if extra is None:
             extra = {}
@@ -576,9 +592,10 @@ class OperationView(RedirectToLoginMixin, DetailView):
         return redirect("%s#activity" % self.object.get_absolute_url())
 
     @classmethod
-    def factory(cls, op, icon='cog', effect='info'):
+    def factory(cls, op, icon='cog', effect='info', extra_bases=(), **kwargs):
+        kwargs.update({'op': op, 'icon': icon, 'effect': effect})
         return type(str(cls.__name__ + op),
-                    (cls, ), {'op': op, 'icon': icon, 'effect': effect})
+                    tuple(list(extra_bases) + [cls]), kwargs)
 
     @classmethod
     def bind_to_object(cls, instance, **kwargs):
