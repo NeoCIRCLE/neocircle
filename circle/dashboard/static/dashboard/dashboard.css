@@ -770,3 +770,6 @@ textarea[name="list-new-namelist"] {
   right: 15px; 
   top: 32px;
 }
+.store-list-item-icon-directory {
+  color: #ff8c00;
+}

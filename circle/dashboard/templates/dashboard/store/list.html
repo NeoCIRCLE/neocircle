@@ -5,7 +5,6 @@
 {% block title-page %}{% trans "Virtual machines" %}{% endblock %}
 
 {% block content %}
-
 <div class="row">
   <div class="col-md-12">
     <div class="list-group" id="store-list-list">
@@ -23,7 +22,7 @@
       >
       <div class="store-list-item-icon">
         <i class="
-          icon-{% if f.TYPE == "D" %}folder-open-alt{% else %}file-alt{% endif %}"
+          icon-{% if f.TYPE == "D" %}folder-open-alt store-list-item-icon-directory{% else %}file-alt{% endif %}"
           ></i>
       </div>
       {{ f.NAME }}
