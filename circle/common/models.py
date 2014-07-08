@@ -110,6 +110,10 @@ def split_activity_code(activity_code):
 
 class ActivityModel(TimeStampedModel):
     activity_code = CharField(max_length=100, verbose_name=_('activity code'))
+    readable_name_data = JSONField(blank=True, null=True,
+                                   verbose_name=_('human readable name'),
+                                   help_text=_('Human readable name of '
+                                               'activity.'))
     parent = ForeignKey('self', blank=True, null=True, related_name='children')
     task_uuid = CharField(blank=True, max_length=50, null=True, unique=True,
                           help_text=_('Celery task unique identifier.'),
@@ -154,6 +158,14 @@ class ActivityModel(TimeStampedModel):
     @property
     def has_failed(self):
         return self.finished and not self.succeeded
+
+    @property
+    def readable_name(self):
+        return HumanReadableObject.from_dict(self.readable_name_data)
+
+    @readable_name.setter
+    def set_readable_name(self, value):
+        self.readable_name_data = None if value is None else value.to_dict()
 
     @property
     def result(self):

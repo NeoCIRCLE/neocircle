@@ -105,10 +105,6 @@ class InstanceActivity(ActivityModel):
     def get_absolute_url(self):
         return reverse('dashboard.views.vm-activity', args=[self.pk])
 
-    def get_readable_name(self):
-        activity_code_last_suffix = split_activity_code(self.activity_code)[-1]
-        return activity_code_last_suffix.replace('_', ' ').capitalize()
-
     def get_status_id(self):
         if self.succeeded is None:
             return 'wait'
@@ -198,9 +194,6 @@ class NodeActivity(ActivityModel):
         else:
             return '{}({})'.format(self.activity_code,
                                    self.node)
-
-    def get_readable_name(self):
-        return self.activity_code.split('.')[-1].replace('_', ' ').capitalize()
 
     @classmethod
     def create(cls, code_suffix, node, task_uuid=None, user=None):

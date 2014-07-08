@@ -7,7 +7,7 @@
 <strong{% if user.is_superuser and a.result %} title="{{ a.result.get_admin_text }}"{% endif %}>
   {% if user.is_superuser %}<a href="{{ a.get_absolute_url }}">{% endif %}
     {% if a.times > 1 %}({{ a.times }}x){% endif %}
-    {{ a.get_readable_name }}{% if user.is_superuser %}</a>{% endif %}
+    {{ a.readable_name.get_user_text }}{% if user.is_superuser %}</a>{% endif %}
 
 {% if a.has_percent %}
   - {{ a.percentage }}%
@@ -32,7 +32,7 @@
       <div data-activity-id="{{ s.pk }}" class="sub-activity{% if s.has_failed %} sub-activity-failed{% endif %}{% if s.pk == active.pk %} sub-activity-active{% endif %}">
         <span{% if user.is_superuser and s.result %} title="{{ s.result.get_admin_text }}"{% endif %}>
           {% if user.is_superuser %}<a href="{{ s.get_absolute_url }}">{% endif %}
-              {{ s.get_readable_name }}{% if user.is_superuser %}</a>{% endif %}</span> &ndash;
+              {{ s.readable_name.get_user_text }}{% if user.is_superuser %}</a>{% endif %}</span> &ndash;
         {% if s.finished %}
           {{ s.finished|time:"H:i:s" }}
         {% else %}
