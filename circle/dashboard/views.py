@@ -858,7 +858,7 @@ class GroupDetailView(CheckedDetailView):
         if not name:
             return
         try:
-            entity = User.objects.get(username=name)
+            entity = search_user(name)
             self.object.user_set.add(entity)
         except User.DoesNotExist:
             if saml_available:
@@ -962,7 +962,7 @@ class AclUpdateView(LoginRequiredMixin, View, SingleObjectMixin):
         if not name:
             return
         try:
-            entity = User.objects.get(username=name)
+            entity = search_user(name)
         except User.DoesNotExist:
             entity = None
             try:
