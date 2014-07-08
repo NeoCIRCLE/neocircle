@@ -173,6 +173,7 @@ class DeployOperation(InstanceOperation):
 
     def is_preferred(self):
         return self.instance.status in (self.instance.STATUS.STOPPED,
+                                        self.instance.STATUS.PENDING,
                                         self.instance.STATUS.ERROR)
 
     def on_commit(self, activity):
