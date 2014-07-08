@@ -59,6 +59,8 @@ class Operation(object):
         skip_auth_check = auxargs.pop('system')
         user = auxargs.pop('user')
         parent_activity = auxargs.pop('parent_activity')
+        if parent_activity and user is None and not skip_auth_check:
+            user = parent_activity.user
 
         # check for unexpected keyword arguments
         argspec = getargspec(self._operation)
