@@ -4,7 +4,7 @@
   <span class="timeline-icon{% if a.has_failed %} timeline-icon-failed{% endif %}">
   <i class="{% if not a.finished %} icon-refresh icon-spin {% else %}icon-plus{% endif %}"></i>
 </span> 
-<strong{% if user.is_superuser and a.result %} title="{{ a.result }}"{% endif %}>
+<strong{% if user.is_superuser and a.result %} title="{{ a.result.get_admin_text }}"{% endif %}>
   {% if user.is_superuser %}<a href="{{ a.get_absolute_url }}">{% endif %}
     {% if a.times > 1 %}({{ a.times }}x){% endif %}
     {{ a.get_readable_name }}{% if user.is_superuser %}</a>{% endif %}
@@ -30,7 +30,7 @@
     <div class="sub-timeline">
       {% for s in a.children.all %}
       <div data-activity-id="{{ s.pk }}" class="sub-activity{% if s.has_failed %} sub-activity-failed{% endif %}{% if s.pk == active.pk %} sub-activity-active{% endif %}">
-        <span{% if user.is_superuser and s.result %} title="{{ s.result }}"{% endif %}>
+        <span{% if user.is_superuser and s.result %} title="{{ s.result.get_admin_text }}"{% endif %}>
           {% if user.is_superuser %}<a href="{{ s.get_absolute_url }}">{% endif %}
               {{ s.get_readable_name }}{% if user.is_superuser %}</a>{% endif %}</span> &ndash;
         {% if s.finished %}

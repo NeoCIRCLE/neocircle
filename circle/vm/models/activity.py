@@ -25,10 +25,11 @@ from celery.contrib.abortable import AbortableAsyncResult
 from django.core.urlresolvers import reverse
 from django.db.models import CharField, ForeignKey
 from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _, ugettext_noop
 
 from common.models import (
-    ActivityModel, activitycontextimpl, join_activity_code, split_activity_code
+    ActivityModel, activitycontextimpl, create_readable, join_activity_code,
+    split_activity_code
 )
 
 from manager.mancelery import celery
@@ -232,11 +233,12 @@ def node_activity(code_suffix, node, task_uuid=None, user=None):
 @worker_ready.connect()
 def cleanup(conf=None, **kwargs):
     # TODO check if other manager workers are running
+    msg_txt = ugettext_noop("Manager is restarted, activity is cleaned up. "
+                            "You can try again now.")
+    message = create_readable(msg_txt, msg_txt)
     for i in InstanceActivity.objects.filter(finished__isnull=True):
-        i.finish(False, "Manager is restarted, activity is cleaned up. "
-                 "You can try again now.")
+        i.finish(False, result=message)
         logger.error('Forced finishing stale activity %s', i)
     for i in NodeActivity.objects.filter(finished__isnull=True):
-        i.finish(False, "Manager is restarted, activity is cleaned up. "
-                 "You can try again now.")
+        i.finish(False, result=message)
         logger.error('Forced finishing stale activity %s', i)

@@ -27,7 +27,8 @@ from django.core.cache import cache
 from django.db.models import (CharField, DateTimeField, ForeignKey,
                               NullBooleanField, TextField)
 from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _, ugettext_noop
+from jsonfield import JSONField
 
 from model_utils.models import TimeStampedModel
 
@@ -45,7 +46,11 @@ def activitycontextimpl(act, on_abort=None, on_commit=None):
         # BaseException is the common parent of Exception and
         # system-exiting exceptions, e.g. KeyboardInterrupt
         handler = None if on_abort is None else lambda a: on_abort(a, e)
-        act.finish(succeeded=False, result=str(e), event_handler=handler)
+        result = create_readable(ugettext_noop("Failure."),
+                                 ugettext_noop("Unhandled exception: "
+                                               "%(error)s"),
+                                 error=unicode(e))
+        act.finish(succeeded=False, result=result, event_handler=handler)
         raise e
     else:
         act.finish(succeeded=True, event_handler=on_commit)
@@ -120,8 +125,8 @@ class ActivityModel(TimeStampedModel):
     succeeded = NullBooleanField(blank=True, null=True,
                                  help_text=_('True, if the activity has '
                                              'finished successfully.'))
-    result = TextField(verbose_name=_('result'), blank=True, null=True,
-                       help_text=_('Human readable result of activity.'))
+    result_data = JSONField(verbose_name=_('result'), blank=True, null=True,
+                            help_text=_('Human readable result of activity.'))
 
     def __unicode__(self):
         if self.parent:
@@ -149,6 +154,14 @@ class ActivityModel(TimeStampedModel):
     @property
     def has_failed(self):
         return self.finished and not self.succeeded
+
+    @property
+    def result(self):
+        return HumanReadableObject.from_dict(self.result_data)
+
+    @result.setter
+    def set_result(self, value):
+        self.result_data = None if value is None else value.to_dict()
 
 
 def method_cache(memcached_seconds=60, instance_seconds=5):  # noqa
