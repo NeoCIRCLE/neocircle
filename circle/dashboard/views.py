@@ -2962,8 +2962,11 @@ class StoreList(LoginRequiredMixin, TemplateView):
         content = store_api.listfolder("test", directory)
 
         for d in content:
-            d['human_readable_date'] = datetime.fromtimestamp(float(
+            d['human_readable_date'] = datetime.utcfromtimestamp(float(
                 d['MTIME']))
+            delta = (datetime.utcnow() - d['human_readable_date']
+                     ).total_seconds()
+            d['is_new'] = delta < 5 and delta > 0
             d['human_readable_size'] = (
                 "directory" if d['TYPE'] == "D" else
                 filesizeformat(float(d['SIZE'])))

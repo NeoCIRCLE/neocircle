@@ -753,4 +753,20 @@ textarea[name="list-new-namelist"] {
   display: none;
   border-left: 1px solid #ddd;
   border-right: 1px solid #ddd;
+  position: relative;
+}
+
+.store-list-item-new {
+  display: inline-block;
+}
+
+.store-list-item-new .badge {
+  margin-left: 5px;
+  background: #5bc0dc;
+}
+
+.store-download-button {
+  position: absolute; 
+  right: 15px; 
+  top: 32px;
 }

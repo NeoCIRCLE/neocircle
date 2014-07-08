@@ -19,21 +19,28 @@
     {% for f in root %}
     <a class="list-group-item store-list-item" data-item-type="{{ f.TYPE }}"
       href="{% if f.TYPE == "D" %}?directory={{ f.path }}{% else %}
-      {% url "dashboard.views.store-download" %}?path={{ f.path }}{% endif %}">
+      {% url "dashboard.views.store-download" %}?path={{ f.path }}{% endif %}"
+      >
       <div class="store-list-item-icon">
-      <i class="
-        icon-{% if f.TYPE == "D" %}folder-open-alt{% else %}file-alt{% endif %}"
-        ></i>
-    </div>
+        <i class="
+          icon-{% if f.TYPE == "D" %}folder-open-alt{% else %}file-alt{% endif %}"
+          ></i>
+      </div>
       {{ f.NAME }}
+      <div class="store-list-item-new">
+        {% if f.is_new %}
+          <span class="badge badge-pulse">{% trans "new" %}</span>
+        {% endif %}
+      </div>
+      
       <div class="store-list-item-size">
         {{ f.human_readable_size }}
       </div>
       <div class="clearfix"></div>
     </a>
-      <div class="store-list-file-infos" style="position: relative;">
+      <div class="store-list-file-infos">
         <a href="{% url "dashboard.views.store-download" %}?path={{ f.path }}" 
-          class="btn btn-primary" style="position: absolute; right: 15px; top: 32px;">
+          class="btn btn-primary btn-sm store-download-button">
           <i class="icon-download"></i>
           Download
         </a>
