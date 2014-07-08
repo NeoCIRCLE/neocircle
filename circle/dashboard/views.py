@@ -2946,6 +2946,9 @@ class StoreList(LoginRequiredMixin, TemplateView):
         context['root'] = self.clean_directory_list(directory)
         context['up_url'] = self.create_up_directory(directory)
         context['current'] = directory
+        context['next_url'] = "%s%s?directory=%s" % (
+            settings.DJANGO_URL[:-1], reverse("dashboard.views.store-list"),
+            directory)
         return context
 
     def create_up_directory(self, directory):
@@ -2987,7 +2990,20 @@ def store_download(request):
 
 @require_GET
 def store_upload(request):
+    directory = request.GET.get("directory")
+    action = store_api.requestupload("test", directory)
+    next_url = "%s%s?directory=%s" % (
+        settings.DJANGO_URL[:-1], reverse("dashboard.views.store-list"),
+        directory)
+
+    return render(request, "dashboard/store/upload.html",
+                  {'directory': directory, 'action': action,
+                   'next_url': next_url})
+
+
+@require_GET
+def store_get_upload_url(request):
     current_dir = request.GET.get("current_dir")
     url = store_api.requestupload("test", current_dir)
     return HttpResponse(
-        json.dumps({'url': url}), content_type="application/json", )
+        json.dumps({'url': url}), content_type="application/json")

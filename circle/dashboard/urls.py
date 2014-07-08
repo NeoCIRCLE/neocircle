@@ -37,7 +37,7 @@ from .views import (
     get_vm_screenshot,
     ProfileView, toggle_use_gravatar, UnsubscribeFormView,
     UserKeyDelete, UserKeyDetail, UserKeyCreate,
-    StoreList, store_download, store_upload,
+    StoreList, store_download, store_upload, store_get_upload_url,
 )
 
 urlpatterns = patterns(
@@ -175,6 +175,8 @@ urlpatterns = patterns(
         name="dashboard.views.store-list"),
     url(r"^store/download/$", store_download,
         name="dashboard.views.store-download"),
+    url(r"^store/upload/url$", store_get_upload_url,
+        name="dashboard.views.store-upload-url"),
     url(r"^store/upload/$", store_upload,
         name="dashboard.views.store-upload"),
 )

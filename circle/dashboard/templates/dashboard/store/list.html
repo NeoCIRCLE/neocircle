@@ -19,7 +19,7 @@
     {% for f in root %}
     <a class="list-group-item store-list-item" data-item-type="{{ f.TYPE }}"
       href="{% if f.TYPE == "D" %}?directory={{ f.path }}{% else %}
-      {# url "dashboard.views.store-download" #}?path={{ f.path }}{% endif %}">
+      {% url "dashboard.views.store-download" %}?path={{ f.path }}{% endif %}">
       <div class="store-list-item-icon">
       <i class="
         icon-{% if f.TYPE == "D" %}folder-open-alt{% else %}file-alt{% endif %}"
@@ -55,11 +55,16 @@
     {% endfor %}
     <div class="list-group-item">
       Upload file to this folder
-      <form action="" data-action="{% url "dashboard.views.store-upload" %}" 
-        method="POST" enctype="multipart/form-data" class="pull-right"
+      <a href="{% url "dashboard.views.store-upload"%}?directory={{ current }}"
+        class="btn btn-info btn-xs pull-right js-hidden">
+        {% trans "Upload" %}
+      </a>
+      <form action="" data-action="{% url "dashboard.views.store-upload-url" %}" 
+        method="POST" enctype="multipart/form-data" class="pull-right no-js-hidden"
         id="store-upload-form">
         {% csrf_token %}
         <input type="hidden" name="current_dir" value="{{ current }}"/>
+        <input type="hidden" name="next" value="{{ next_url }}"/>
         <div class="input-group" style="max-width: 400px;">
           <span class="input-group-btn" id="store-upload-browse">
             <span class="btn btn-primary btn-xs">
@@ -69,7 +74,7 @@
           <input type="text" class="form-control input-tags" 
            id="store-upload-filename"/>
           <span class="input-group-btn">
-            <input type="submit" class="btn btn-primary btn-xs"
+            <input type="submit" class="btn btn-primary btn-xs" disabled
             value="{% trans "Upload" %}"/>
           </span>
         </div>

@@ -6,11 +6,12 @@ $(function() {
   });
 
   /* less js way, but at least works, tho redirection is bad */
-  $('form input[type="submit"]').click(function() {
-    var current_dir = $("form").find('[name="current_dir"]').val();
-    $.get($("form").data("action") + "?current_dir=" + current_dir, function(result) {
-      $("form").get(0).setAttribute("action", result['url']);
-      $("form").submit();
+  $('#store-upload-form input[type="submit"]').click(function() {
+    var current_dir = $("#store-upload-form").find('[name="current_dir"]').val();
+    $.get($("#store-upload-form").data("action") + "?current_dir=" + current_dir, function(result) {
+      $("#store-upload-form").get(0).setAttribute("action", result['url']);
+      console.log($("#store-upload-form").prop("action"));
+      $("#store-upload-form").submit();
     });
 
     return false;
@@ -31,9 +32,14 @@ $(function() {
   $("#store-upload-file").on("fileselect", function(event, numFiles, label)  {
         var input = $("#store-upload-filename");
         var log = numFiles > 1 ? numFiles + ' files selected' : label;
-        
         if(input.length) {
             input.val(log);
+        }
+        if(log) {
+          $('#store-upload-form input[type="submit"]').prop("disabled", false);
+
+        } else {
+          $('#store-upload-form input[type="submit"]').prop("disabled", true);
         }
   });
 
