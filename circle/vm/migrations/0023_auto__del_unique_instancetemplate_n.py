@@ -11,8 +11,14 @@ class Migration(SchemaMigration):
         # Removing unique constraint on 'InstanceTemplate', fields ['name']
         db.delete_unique(u'vm_instancetemplate', ['name'])
 
+
+        # Changing field 'InstanceTemplate.parent'
+        db.alter_column(u'vm_instancetemplate', 'parent_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['vm.InstanceTemplate'], null=True, on_delete=models.SET_NULL))
+
     def backwards(self, orm):
 
+        # Changing field 'InstanceTemplate.parent'
+        db.alter_column(u'vm_instancetemplate', 'parent_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['vm.InstanceTemplate'], null=True))
         # Adding unique constraint on 'InstanceTemplate', fields ['name']
         db.create_unique(u'vm_instancetemplate', ['name'])
 
@@ -131,6 +137,7 @@ class Migration(SchemaMigration):
             'dev_num': ('django.db.models.fields.CharField', [], {'default': "u'a'", 'max_length': '1'}),
             'filename': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '256'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'is_ready': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'modified': ('model_utils.fields.AutoLastModifiedField', [], {'default': 'datetime.datetime.now'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
             'size': ('sizefield.models.FileSizeField', [], {'default': 'None', 'null': 'True'}),
@@ -147,6 +154,7 @@ class Migration(SchemaMigration):
             'destroyed_at': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'disks': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "u'instance_set'", 'symmetrical': 'False', 'to': u"orm['storage.Disk']"}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'is_base': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'lease': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['vm.Lease']"}),
             'max_ram_size': ('django.db.models.fields.IntegerField', [], {}),
             'modified': ('model_utils.fields.AutoLastModifiedField', [], {'default': 'datetime.datetime.now'}),
