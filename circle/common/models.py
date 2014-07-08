@@ -299,3 +299,31 @@ try:
     ], patterns=['common\.models\.'])
 except ImportError:
     pass
+
+
+class HumanReadableObject(object):
+    def __init__(self, user_text_template, admin_text_template, params):
+        self.user_text_template = user_text_template
+        self.admin_text_template = admin_text_template
+        self.params = params
+
+    @classmethod
+    def create(cls, user_text_template, admin_text_template, **params):
+        return cls(user_text_template, admin_text_template, params)
+
+    @classmethod
+    def from_dict(cls, d):
+        return None if d is None else cls(**d)
+
+    def get_admin_text(self):
+        return _(self.admin_text_template) % self.params
+
+    def get_user_text(self):
+        return _(self.user_text_template) % self.params
+
+    def to_dict(self):
+        return {"user_text_template": self.user_text_template,
+                "admin_text_template": self.admin_text_template,
+                "params": self.params}
+
+create_readable = HumanReadableObject.create
