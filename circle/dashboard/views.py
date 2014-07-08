@@ -557,7 +557,7 @@ class OperationView(DetailView):
             self.get_op().async(user=request.user, **extra)
         except Exception as e:
             messages.error(request, _('Could not start operation.'))
-            logger.error(e)
+            logger.exception(e)
         return redirect("%s#activity" % self.object.get_absolute_url())
 
     @classmethod
