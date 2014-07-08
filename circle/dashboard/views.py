@@ -91,6 +91,21 @@ def search_user(keyword):
             return User.objects.get(email=keyword)
 
 
+class RedirectToLoginMixin(AccessMixin):
+
+    redirect_exception_classes = (PermissionDenied, )
+
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            return super(RedirectToLoginMixin, self).dispatch(
+                request, *args, **kwargs)
+        except self.redirect_exception_classes:
+            if not request.user.is_authenticated():
+                return redirect_to_login(request.get_full_path(),
+                                         self.get_login_url(),
+                                         self.get_redirect_field_name())
+
+
 class GroupCodeMixin(object):
 
     @classmethod
@@ -498,7 +513,7 @@ class VmRawDataUpdate(SuperuserRequiredMixin, UpdateView):
         return self.get_object().get_absolute_url() + "#resources"
 
 
-class OperationView(DetailView):
+class OperationView(RedirectToLoginMixin, DetailView):
 
     template_name = 'dashboard/operate.html'
     show_in_toolbar = True
