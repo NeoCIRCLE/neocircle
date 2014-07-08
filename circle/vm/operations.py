@@ -444,7 +444,7 @@ class SaveAsTemplateOperation(InstanceOperation):
 
         def __try_save_disk(disk):
             try:
-                return disk.save_as()
+                return disk.save_as(task)
             except Disk.WrongDiskTypeError:
                 return disk
 
