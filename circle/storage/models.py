@@ -395,7 +395,7 @@ class Disk(AclBase, TimeStampedModel):
             args=[self.datastore.path, self.filename],
             queue=queue_name).get(timeout=timeout)
 
-    def save_as(self, task, user=None, task_uuid=None, timeout=300):
+    def save_as(self, task=None, user=None, task_uuid=None, timeout=300):
         """Save VM as template.
 
         Based on disk type:
