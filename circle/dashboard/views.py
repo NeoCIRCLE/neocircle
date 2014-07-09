@@ -3051,3 +3051,14 @@ class StoreRemove(LoginRequiredMixin, TemplateView):
                 reverse("dashboard.views.store-list"),
                 os.path.dirname(path),
             ))
+
+
+@require_POST
+@login_required
+def store_new_directory(request):
+    path = request.POST.get("path")
+    name = request.POST.get("name")
+
+    store_api.requestnewfolder("test", path + name)
+    return redirect("%s?directory=%s" % (
+        reverse("dashboard.views.store-list"), path))

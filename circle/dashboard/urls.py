@@ -38,6 +38,7 @@ from .views import (
     ProfileView, toggle_use_gravatar, UnsubscribeFormView,
     UserKeyDelete, UserKeyDetail, UserKeyCreate,
     StoreList, store_download, store_upload, store_get_upload_url, StoreRemove,
+    store_new_directory,
 )
 
 urlpatterns = patterns(
@@ -181,4 +182,6 @@ urlpatterns = patterns(
         name="dashboard.views.store-upload"),
     url(r"^store/remove/$", StoreRemove.as_view(),
         name="dashboard.views.store-remove"),
+    url(r"^store/new_directory/$", store_new_directory,
+        name="dashboard.views.store-new-directory"),
 )

@@ -1,97 +1,13 @@
 {% extends "dashboard/base.html" %}
 {% load i18n %}
-{% load store_tags %}
 
 {% block title-page %}{% trans "Virtual machines" %}{% endblock %}
 
 {% block content %}
 <div class="row">
   <div class="col-md-12">
-    <div class="list-group" id="store-list-list">
-      <a href="?directory={{ up_url }}" class="list-group-item store-list-item" data-item-type="D">
-        <i class="icon-reply store-list-item-icon"></i>
-        ..
-        <div class="pull-right">
-          {{ current }}
-        </div>
-      </a>
-    {% for f in root %}
-    <a class="list-group-item store-list-item" data-item-type="{{ f.TYPE }}"
-      href="{% if f.TYPE == "D" %}?directory={{ f.path }}{% else %}
-      {% url "dashboard.views.store-download" %}?path={{ f.path }}{% endif %}"
-      >
-      <div class="store-list-item-icon">
-        <i class="
-          icon-{% if f.TYPE == "D" %}folder-open-alt store-list-item-icon-directory{% else %}file-alt{% endif %}"
-          ></i>
-      </div>
-      {{ f.NAME }}
-      <div class="store-list-item-new">
-        {% if f.is_new %}
-          <span class="badge badge-pulse">{% trans "new" %}</span>
-        {% endif %}
-      </div>
-      
-      <div class="store-list-item-size">
-        {{ f.human_readable_size }}
-      </div>
-      <div class="clearfix"></div>
-    </a>
-      <div class="store-list-file-infos">
-        <a href="{% url "dashboard.views.store-download" %}?path={{ f.path }}" 
-          class="btn btn-primary btn-sm store-download-button">
-          <i class="icon-download"></i>
-          {% trans "Download" %}
-        </a>
-        <a href="{% url "dashboard.views.store-remove" %}?path={{ f.path }}" 
-          class="btn btn-danger btn-xs store-remove-button">
-          <i class="icon-remove"></i>
-          {% trans "Remove" %}
-        </a>
-        <dl class="dl-horizontal" style="margin: 0; padding: 0;">
-          <dt>{% trans "Filename" %}</dt>
-          <dd>{{ f.NAME }}</dd>
-
-          <dt>{% trans "Size" %}</dt>
-          <dd>{{ f.human_readable_size }}</dd>
-
-          <dt>{% trans "Latest modification" %}</dt>
-          <dd>{{ f.human_readable_date }}</dd>
-        </dl>
-      </div>
-      {% empty %}
-      <a class="list-group-item">
-        {% trans "This folder is empty." %}
-      </a>
-    {% endfor %}
-    <div class="list-group-item">
-      Upload file to this folder
-      <a href="{% url "dashboard.views.store-upload"%}?directory={{ current }}"
-        class="btn btn-info btn-xs pull-right js-hidden">
-        {% trans "Upload" %}
-      </a>
-      <form action="" data-action="{% url "dashboard.views.store-upload-url" %}" 
-        method="POST" enctype="multipart/form-data" class="pull-right no-js-hidden"
-        id="store-upload-form">
-        {% csrf_token %}
-        <input type="hidden" name="current_dir" value="{{ current }}"/>
-        <input type="hidden" name="next" value="{{ next_url }}"/>
-        <div class="input-group" style="max-width: 400px;">
-          <span class="input-group-btn" id="store-upload-browse">
-            <span class="btn btn-primary btn-xs">
-              {% trans "Browse..." %}
-            </span>     
-          </span>
-          <input type="text" class="form-control input-tags" 
-           id="store-upload-filename"/>
-          <span class="input-group-btn">
-            <input type="submit" class="btn btn-primary btn-xs" disabled
-            value="{% trans "Upload" %}"/>
-          </span>
-        </div>
-        <input id="store-upload-file" name="data" type="file" style="display:none" multiple>
-      </form>
-    </div>
+    <div>
+      {% include "dashboard/store/_list-box.html" %}
     </div>
   </div>
 </div>
