@@ -1,0 +1,45 @@
+{% load i18n %}
+
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <span class="btn btn-default btn-xs infobtn pull-right" 
+      title="itten van valami">
+      <i class="icon-info-sign"></i>
+    </span>
+    <h3 class="no-margin"><i class="icon-briefcase"></i> Files
+    </h3>
+  </div>
+  <div class="list-group" id="vm-list-view">
+    {% for t in toplist %}
+    {% if t.TYPE == "F" %}
+      <div class="list-group-item">
+        <i class="icon-file"></i> {{ t.NAME }}
+        <a href="{% url "dashboard.views.store-download" %}?path={{ t.path }}" 
+          class="pull-right btn btn-xs" style="color: black;">
+          <i class="icon-cloud-download" title="{% trans "Download" %}"></i>
+        </a>
+      </div>
+    {% else %}
+    <a href="{% url "dashboard.views.store-list" %}?directory={{ t.path }}" class="list-group-item">
+      <i class="icon-folder-open"></i> {{ t.NAME }}
+    </a>
+    {% endif %}
+    {% endfor %}
+    <div class="list-group-item list-group-footer text-right">
+      <p>
+      <form class="pull-left" method="POST" action="{% url "dashboard.views.store-refresh-toplist" %}">
+        {% csrf_token %}
+        <button class="btn btn-success btn-xs" type="submit" title="{% trans "Refresh" %}"/>
+          <i class="icon-refresh"></i>
+        </button>
+      </form>
+      <a href="{% url "dashboard.views.store-list" %}" class="btn btn-primary btn-xs">
+        <i class="icon-chevron-sign-right"></i> {% trans "show my files" %}  
+      </a>
+      <a href="{% url "dashboard.views.store-upload" %}" class="btn btn-success btn-xs">
+        <i class="icon-upload-alt"></i> {% trans "upload" %}  
+      </a>
+      </p>
+    </div>
+  </div>
+</div>

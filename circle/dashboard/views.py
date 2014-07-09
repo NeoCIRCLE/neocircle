@@ -35,6 +35,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import (
     PermissionDenied, SuspiciousOperation,
 )
+from django.core.cache import get_cache
 from django.core import signing
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db.models import Count
@@ -203,6 +204,15 @@ class IndexView(LoginRequiredMixin, TemplateView):
         if user.has_perm('vm.create_template'):
             context['templates'] = InstanceTemplate.get_objects_with_level(
                 'operator', user).all()[:5]
+
+        # toplist
+        cache = get_cache("default")
+        toplist = cache.get("toplist-test")
+        if not toplist:
+            toplist = store_api.process_list(store_api.toplist("test"))
+            cache.set("toplist-test", toplist, 300)
+
+        context['toplist'] = toplist
 
         return context
 
@@ -2948,7 +2958,8 @@ class StoreList(LoginRequiredMixin, TemplateView):
         directory = self.request.GET.get("directory", "/")
         directory = "/" if not len(directory) else directory
 
-        context['root'] = self.clean_directory_list(directory)
+        content = store_api.listfolder("test", directory)
+        context['root'] = store_api.process_list(content)
         context['up_url'] = self.create_up_directory(directory)
         context['current'] = directory
         context['next_url'] = "%s%s?directory=%s" % (
@@ -2970,34 +2981,6 @@ class StoreList(LoginRequiredMixin, TemplateView):
         cut = -2 if directory.endswith("/") else -1
         return "/".join(directory.split("/")[:cut]) + "/"
 
-    def clean_directory_list(self, directory):
-        from datetime import datetime
-        from sizefield.utils import filesizeformat
-
-        content = store_api.listfolder("test", directory)
-
-        for d in content:
-            d['human_readable_date'] = datetime.utcfromtimestamp(float(
-                d['MTIME']))
-            delta = (datetime.utcnow() - d['human_readable_date']
-                     ).total_seconds()
-            d['is_new'] = delta < 5 and delta > 0
-            d['human_readable_size'] = (
-                "directory" if d['TYPE'] == "D" else
-                filesizeformat(float(d['SIZE'])))
-
-            d['path'] = d['DIR']
-            if len(d['path']) == 1 and d['path'][0] == ".":
-                d['path'] = "/"
-            else:
-                d['path'] = "/" + d['path'] + "/"
-
-            d['path'] += d['NAME']
-            if d['TYPE'] == "D":
-                d['path'] += "/"
-
-        return sorted(content, key=lambda k: k['TYPE'])
-
 
 @require_GET
 @login_required
@@ -3010,7 +2993,7 @@ def store_download(request):
 @require_GET
 @login_required
 def store_upload(request):
-    directory = request.GET.get("directory")
+    directory = request.GET.get("directory", "/")
     action = store_api.requestupload("test", directory)
     next_url = "%s%s?directory=%s" % (
         settings.DJANGO_URL[:-1], reverse("dashboard.views.store-list"),
@@ -3074,3 +3057,12 @@ def store_new_directory(request):
     store_api.requestnewfolder("test", path + name)
     return redirect("%s?directory=%s" % (
         reverse("dashboard.views.store-list"), path))
+
+@require_POST
+@login_required
+def store_refresh_toplist(request):
+    cache = get_cache("default")
+    toplist = store_api.process_list(store_api.toplist("test"))
+    cache.set("toplist-test", toplist, 300)
+
+    return redirect(reverse("dashboard.index"))

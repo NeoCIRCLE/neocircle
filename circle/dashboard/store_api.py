@@ -1,8 +1,12 @@
 from django.http import Http404
 import json
 import requests
-import time
 import django.conf
+
+from datetime import datetime
+from sizefield.utils import filesizeformat
+
+from common.models import method_cache
 
 settings = django.conf.settings.STORE_SETTINGS
 
@@ -93,9 +97,7 @@ def toplist(neptun):
     r = post_request(url, payload)
     if r.status_code == requests.codes.ok:
         tupplelist = json.loads(r.content)
-        for item in tupplelist:
-            item['MTIME'] = time.ctime(item['MTIME'])
-            return tupplelist
+        return tupplelist
     else:
         raise Http404
 
@@ -197,3 +199,26 @@ def updateauthorizationinfo(neptun, password, key_list):
         return True
     else:
         return False
+
+
+def process_list(content):
+    for d in content:
+        d['human_readable_date'] = datetime.utcfromtimestamp(float(
+            d['MTIME']))
+        delta = (datetime.utcnow() - d['human_readable_date']).total_seconds()
+        d['is_new'] = delta < 5 and delta > 0
+        d['human_readable_size'] = (
+            "directory" if d['TYPE'] == "D" else
+            filesizeformat(float(d['SIZE'])))
+
+        d['path'] = d['DIR']
+        if len(d['path']) == 1 and d['path'][0] == ".":
+            d['path'] = "/"
+        else:
+            d['path'] = "/" + d['path'] + "/"
+
+        d['path'] += d['NAME']
+        if d['TYPE'] == "D":
+            d['path'] += "/"
+
+    return sorted(content, key=lambda k: k['TYPE'])
