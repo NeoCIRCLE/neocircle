@@ -402,7 +402,7 @@ class SaveAsTemplateOperation(InstanceOperation):
         return "%s v%d" % (name, v)
 
     def on_abort(self, activity, error):
-        if getattr(self, 'disks'):
+        if hasattr(self, 'disks'):
             for disk in self.disks:
                 disk.destroy()
 
