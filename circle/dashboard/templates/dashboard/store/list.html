@@ -41,16 +41,21 @@
         <a href="{% url "dashboard.views.store-download" %}?path={{ f.path }}" 
           class="btn btn-primary btn-sm store-download-button">
           <i class="icon-download"></i>
-          Download
+          {% trans "Download" %}
+        </a>
+        <a href="{% url "dashboard.views.store-remove" %}?path={{ f.path }}" 
+          class="btn btn-danger btn-xs store-remove-button">
+          <i class="icon-remove"></i>
+          {% trans "Remove" %}
         </a>
         <dl class="dl-horizontal" style="margin: 0; padding: 0;">
-          <dt>Filename</dt>
+          <dt>{% trans "Filename" %}</dt>
           <dd>{{ f.NAME }}</dd>
 
-          <dt>Size</dt>
+          <dt>{% trans "Size" %}</dt>
           <dd>{{ f.human_readable_size }}</dd>
 
-          <dt>Latest modification</dt>
+          <dt>{% trans "Latest modification" %}</dt>
           <dd>{{ f.human_readable_date }}</dd>
         </dl>
       </div>

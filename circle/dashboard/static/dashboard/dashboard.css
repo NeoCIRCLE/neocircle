@@ -749,7 +749,7 @@ textarea[name="list-new-namelist"] {
 }
 
 .store-list-file-infos {
-  padding: 20px;
+  padding: 15px;
   display: none;
   border-left: 1px solid #ddd;
   border-right: 1px solid #ddd;
@@ -768,8 +768,15 @@ textarea[name="list-new-namelist"] {
 .store-download-button {
   position: absolute; 
   right: 15px; 
-  top: 32px;
+  top: 18px;
 }
+
+.store-remove-button {
+  position: absolute; 
+  right: 15px; 
+  top: 55px;
+}
+
 .store-list-item-icon-directory {
   color: #ff8c00;
 }

@@ -1,4 +1,5 @@
 # Copyright 2014 Budapest University of Technology and Economics (BME IK)
+
 #
 # This file is part of CIRCLE Cloud.
 #
@@ -19,6 +20,7 @@ from __future__ import unicode_literals, absolute_import
 
 from itertools import chain
 from os import getenv
+import os
 import json
 import logging
 import re
@@ -27,6 +29,7 @@ import requests
 from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.views import login, redirect_to_login
+from django.contrib.auth.decorators import login_required
 from django.contrib.messages import warning
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import (
@@ -2985,6 +2988,7 @@ class StoreList(LoginRequiredMixin, TemplateView):
 
 
 @require_GET
+@login_required
 def store_download(request):
     path = request.GET.get("path")
     url = store_api.requestdownload("test", path)
@@ -2992,6 +2996,7 @@ def store_download(request):
 
 
 @require_GET
+@login_required
 def store_upload(request):
     directory = request.GET.get("directory")
     action = store_api.requestupload("test", directory)
@@ -3005,8 +3010,44 @@ def store_upload(request):
 
 
 @require_GET
+@login_required
 def store_get_upload_url(request):
     current_dir = request.GET.get("current_dir")
     url = store_api.requestupload("test", current_dir)
     return HttpResponse(
         json.dumps({'url': url}), content_type="application/json")
+
+
+class StoreRemove(LoginRequiredMixin, TemplateView):
+    template_name = "dashboard/store/remove.html"
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(StoreRemove, self).get_context_data(*args, **kwargs)
+        path = self.request.GET.get("path", "/")
+        if path == "/":
+            SuspiciousOperation()
+
+        context['path'] = path
+        context['is_dir'] = path.endswith("/")
+        if context['is_dir']:
+            context['directory'] = path
+        else:
+            context['directory'] = os.path.dirname(path)
+            context['name'] = os.path.basename(path)
+
+        return context
+
+    def post(self, *args, **kwargs):
+        path = self.request.POST.get("path")
+        store_api.requestremove("test", path)
+
+        if path.endswith("/"):
+            return redirect("%s?directory=%s" % (
+                reverse("dashboard.views.store-list"),
+                os.path.dirname(os.path.dirname(path)),
+            ))
+        else:
+            return redirect("%s?directory=%s" % (
+                reverse("dashboard.views.store-list"),
+                os.path.dirname(path),
+            ))
