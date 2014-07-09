@@ -803,6 +803,13 @@ class TokenOperationView(OperationView):
         return user
 
 
+class VmRenewView(TokenOperationView, VmOperationView):
+    op = 'renew'
+    icon = 'calendar'
+    effect = 'info'
+    show_in_toolbar = False
+
+
 vm_ops = OrderedDict([
     ('deploy', VmOperationView.factory(
         op='deploy', icon='play', effect='success')),
@@ -826,9 +833,7 @@ vm_ops = OrderedDict([
         op='destroy', icon='remove', effect='danger')),
     ('create_disk', VmCreateDiskView),
     ('download_disk', VmDownloadDiskView),
-    ('renew', VmOperationView.factory(
-        op='renew', icon='calendar', extra_bases=[TokenOperationView],
-        show_in_toolbar=False)),
+    ('renew', VmRenewView),
 ])
 
 
