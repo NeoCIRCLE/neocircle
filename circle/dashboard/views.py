@@ -819,6 +819,7 @@ vm_ops = OrderedDict([
     ('wake_up', VmOperationView.factory(
         op='wake_up', icon='sun', effect='success')),
     ('sleep', VmOperationView.factory(
+        extra_bases=[TokenOperationView],
         op='sleep', icon='moon', effect='info')),
     ('migrate', VmMigrateView),
     ('save_as_template', VmSaveView),
@@ -833,6 +834,7 @@ vm_ops = OrderedDict([
     ('recover', VmOperationView.factory(
         op='recover', icon='medkit', effect='warning')),
     ('destroy', VmOperationView.factory(
+        extra_bases=[TokenOperationView],
         op='destroy', icon='remove', effect='danger')),
     ('create_disk', VmCreateDiskView),
     ('download_disk', VmDownloadDiskView),
