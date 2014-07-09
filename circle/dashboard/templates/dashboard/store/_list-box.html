@@ -81,8 +81,9 @@
         <input type="text" class="form-control input-tags" 
          id="store-upload-filename"/>
         <span class="input-group-btn">
-          <input type="submit" class="btn btn-primary btn-xs" disabled
-          value="{% trans "Upload" %}"/>
+          <button type="submit" class="btn btn-primary btn-xs" disabled>
+            <i class="icon-cloud-upload"></i> {% trans "Upload" %}
+          </button>
         </span>
       </div>
       <input id="store-upload-file" name="data" type="file" style="display:none" multiple>

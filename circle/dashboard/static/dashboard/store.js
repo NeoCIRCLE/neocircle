@@ -15,9 +15,10 @@ $(function() {
   });
 
   /* less js way, but at least works, tho redirection is bad */
-  $("#store-list-container").on("click", '#store-upload-form input[type="submit"]', function() {
+  $("#store-list-container").on("click", '#store-upload-form button[type="submit"]', function() {
     var current_dir = $("#store-upload-form").find('[name="current_dir"]').val();
     $.get($("#store-upload-form").data("action") + "?current_dir=" + current_dir, function(result) {
+      $('#store-upload-form button[type="submit"] i').addClass("icon-spinner icon-spin");
       $("#store-upload-form").get(0).setAttribute("action", result['url']);
       $("#store-upload-form").submit();
     });
@@ -44,10 +45,10 @@ $(function() {
             input.val(log);
         }
         if(log) {
-          $('#store-upload-form input[type="submit"]').prop("disabled", false);
+          $('#store-upload-form button[type="submit"]').prop("disabled", false);
 
         } else {
-          $('#store-upload-form input[type="submit"]').prop("disabled", true);
+          $('#store-upload-form button[type="submit"]').prop("disabled", true);
         }
   });
 
