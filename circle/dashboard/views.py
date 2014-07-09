@@ -589,6 +589,8 @@ class OperationView(RedirectToLoginMixin, DetailView):
         except Exception as e:
             messages.error(request, _('Could not start operation.'))
             logger.exception(e)
+        else:
+            messages.success(request, _('Operation is started.'))
         return redirect("%s#activity" % self.object.get_absolute_url())
 
     @classmethod
@@ -734,6 +736,7 @@ class TokenOperationView(OperationView):
     User can do the action with a valid token instead of logging in.
     """
     token_max_age = 3 * 24 * 3600
+    redirect_exception_classes = (PermissionDenied, SuspiciousOperation, )
 
     @classmethod
     def get_salt(cls):
