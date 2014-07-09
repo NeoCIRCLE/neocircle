@@ -632,18 +632,22 @@ class FormOperationMixin(object):
 
     form_class = None
 
+    def get_form_kwargs(self):
+        return {}
+
     def get_context_data(self, **kwargs):
         ctx = super(FormOperationMixin, self).get_context_data(**kwargs)
         if self.request.method == 'POST':
-            ctx['form'] = self.form_class(self.request.POST)
+            ctx['form'] = self.form_class(self.request.POST,
+                                          **self.get_form_kwargs())
         else:
-            ctx['form'] = self.form_class()
+            ctx['form'] = self.form_class(**self.get_form_kwargs())
         return ctx
 
     def post(self, request, extra=None, *args, **kwargs):
         if extra is None:
             extra = {}
-        form = self.form_class(self.request.POST)
+        form = self.form_class(self.request.POST, **self.get_form_kwargs())
         if form.is_valid():
             extra.update(form.cleaned_data)
             resp = super(FormOperationMixin, self).post(
@@ -657,6 +661,14 @@ class FormOperationMixin(object):
                 return resp
         else:
             return self.get(request)
+
+
+class RequestFormOperationMixin(FormOperationMixin):
+
+    def get_form_kwargs(self):
+        val = super(FormOperationMixin, self).get_form_kwargs()
+        val.update({'request': self.request})
+        return val
 
 
 class VmCreateDiskView(FormOperationMixin, VmOperationView):
