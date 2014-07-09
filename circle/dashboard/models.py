@@ -45,6 +45,8 @@ from vm.tasks.agent_tasks import add_keys, del_keys
 
 logger = getLogger(__name__)
 
+pwgen = User.objects.make_random_password
+
 
 class Favourite(Model):
     instance = ForeignKey("vm.Instance")
@@ -100,7 +102,9 @@ class Profile(Model):
         verbose_name=_('Samba password'),
         help_text=_(
             'Generated password for accessing store from '
-            'Windows.'))
+            'Windows.'),
+        default=pwgen,
+    )
     disk_quota = IntegerField(
         verbose_name=_('disk quota'),
         default=2048,
