@@ -217,12 +217,13 @@ class DestroyOperation(InstanceOperation):
         activity.resultant_state = 'DESTROYED'
 
     def _operation(self, activity):
-        if self.instance.node:
-            # Destroy networks
-            with activity.sub_activity('destroying_net'):
+        # Destroy networks
+        with activity.sub_activity('destroying_net'):
+            if self.instance.node:
                 self.instance.shutdown_net()
-                self.instance.destroy_net()
+            self.instance.destroy_net()
 
+        if self.instance.node:
             # Delete virtual machine
             with activity.sub_activity('destroying_vm'):
                 self.instance.delete_vm()
