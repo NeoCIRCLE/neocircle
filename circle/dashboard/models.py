@@ -102,7 +102,7 @@ class Profile(Model):
         verbose_name=_('Samba password'),
         help_text=_(
             'Generated password for accessing store from '
-            'Windows.'),
+            'virtual machines.'),
         default=pwgen,
     )
     disk_quota = IntegerField(
