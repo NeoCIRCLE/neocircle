@@ -24,6 +24,8 @@ from django.utils.timesince import timeuntil
 
 from model_utils.models import TimeStampedModel
 
+from acl.models import AclBase
+
 
 ARCHITECTURES = (('x86_64', 'x86-64 (64 bit)'),
                  ('i686', 'x86 (32 bit)'))
@@ -66,13 +68,17 @@ class NamedBaseResourceConfig(BaseResourceConfigModel, TimeStampedModel):
         return self.name
 
 
-class Lease(Model):
+class Lease(AclBase):
 
     """Lease times for VM instances.
 
     Specifies a time duration until suspension and deletion of a VM
     instance.
     """
+    ACL_LEVELS = (
+        ('user', _('user')),          # use this lease
+        ('owner', _('owner')),        # change this lease
+    )
     name = CharField(max_length=100, unique=True,
                      verbose_name=_('name'))
     suspend_interval_seconds = IntegerField(
@@ -88,6 +94,10 @@ class Lease(Model):
         app_label = 'vm'
         db_table = 'vm_lease'
         ordering = ['name', ]
+        permissions = (
+            ('create_leases', _('Can create new leases.')),
+            ('bypass_leases', _('Can set arbitrary expiration times.')),
+        )
 
     @property
     def suspend_interval(self):
