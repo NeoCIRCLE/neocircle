@@ -32,7 +32,11 @@ logger = logging.getLogger(__name__)
 
 @celery.task(ignore_result=True)
 def measure_response_time():
-    r = requests.get(settings.DJANGO_URL, verify=False)
+    try:
+        r = requests.get(settings.DJANGO_URL, verify=False,
+                         timeout=0.5)
+    except requests.exceptions.Timeout:
+        return
     total_miliseconds = (
         r.elapsed.seconds * 10**6 +
         r.elapsed.microseconds) / 1000
