@@ -1,7 +1,8 @@
 {% load i18n %}
 
 <div class="list-group" id="store-list-list">
-  <a href="?directory={{ up_url }}" class="list-group-item store-list-item" data-item-type="D">
+  <a href="{% url "dashboard.views.store-list" %}?directory={{ up_url }}" 
+    class="list-group-item store-list-item" data-item-type="D">
     <i class="icon-reply store-list-item-icon"></i>
     ..
     <div class="pull-right">
@@ -11,7 +12,7 @@
 
   {% for f in root %}
   <a class="list-group-item store-list-item" data-item-type="{{ f.TYPE }}"
-    href="{% if f.TYPE == "D" %}?directory={{ f.path }}{% else %}
+    href="{% if f.TYPE == "D" %}{% url "dashboard.views.store-list" %}?directory={{ f.path }}{% else %}
     {% url "dashboard.views.store-download" %}?path={{ f.path }}{% endif %}"
     >
     <div class="store-list-item-icon">

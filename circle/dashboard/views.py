@@ -39,7 +39,9 @@ from django.core import signing
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db.models import Count
 from django.http import HttpResponse, HttpResponseRedirect, Http404
-from django.shortcuts import redirect, render, get_object_or_404
+from django.shortcuts import (
+    redirect, render, get_object_or_404, render_to_response,
+)
 from django.views.decorators.http import require_GET, require_POST
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import (TemplateView, DetailView, View, DeleteView,
@@ -2941,8 +2943,8 @@ class UserKeyCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 class StoreList(LoginRequiredMixin, TemplateView):
     template_name = "dashboard/store/list.html"
 
-    def get_context_data(self, *args, **kwargs):
-        context = super(StoreList, self).get_context_data(*args, **kwargs)
+    def get_context_data(self, **kwargs):
+        context = super(StoreList, self).get_context_data(**kwargs)
         directory = self.request.GET.get("directory", "/")
         directory = "/" if not len(directory) else directory
 
@@ -2953,6 +2955,16 @@ class StoreList(LoginRequiredMixin, TemplateView):
             settings.DJANGO_URL[:-1], reverse("dashboard.views.store-list"),
             directory)
         return context
+
+    def get(self, *args, **kwargs):
+        if self.request.is_ajax():
+            context = self.get_context_data(**kwargs)
+            return render_to_response(
+                "dashboard/store/_list-box.html",
+                RequestContext(self.request, context),
+            )
+        else:
+            return super(StoreList, self).get(*args, **kwargs)
 
     def create_up_directory(self, directory):
         cut = -2 if directory.endswith("/") else -1

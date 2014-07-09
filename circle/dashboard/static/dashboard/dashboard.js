@@ -114,6 +114,7 @@ $(function () {
 
 
   /* no js compatibility */
+  noJS();
   $('.no-js-hidden').show();
   $('.js-hidden').hide();
 
@@ -554,4 +555,11 @@ function getCookie(name) {
     }                                                                       
   }                                                                         
   return cookieValue;                                                       
+}
+
+
+/* no js compatibility */
+function noJS() {
+  $('.no-js-hidden').show();
+  $('.js-hidden').hide();
 }
