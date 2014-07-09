@@ -60,7 +60,7 @@ from .forms import (
     CircleAuthenticationForm, HostForm, LeaseForm, MyProfileForm,
     NodeForm, TemplateForm, TraitForm, VmCustomizeForm, GroupCreateForm,
     UserCreationForm, GroupProfileUpdateForm, UnsubscribeForm,
-    VmSaveForm, UserKeyForm,
+    VmSaveForm, UserKeyForm, VmRenewForm,
     CirclePasswordChangeForm, VmCreateDiskForm, VmDownloadDiskForm,
     TraitsForm, RawDataForm, GroupPermissionForm
 )
@@ -818,11 +818,23 @@ class TokenOperationView(OperationView):
         return user
 
 
-class VmRenewView(TokenOperationView, VmOperationView):
+class VmRenewView(FormOperationMixin, TokenOperationView, VmOperationView):
+
     op = 'renew'
     icon = 'calendar'
     effect = 'info'
     show_in_toolbar = False
+    form_class = VmRenewForm
+
+    def get_form_kwargs(self):
+        choices = Lease.get_objects_with_level("user", self.request.user)
+        default = self.get_op().instance.lease
+        if default and default not in choices:
+            choices |= Lease.objects.filter(pk=default.pk)
+
+        val = super(VmRenewView, self).get_form_kwargs()
+        val.update({'choices': choices, 'default': default})
+        return val
 
 
 vm_ops = OrderedDict([

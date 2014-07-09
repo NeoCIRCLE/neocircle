@@ -888,6 +888,34 @@ class LeaseForm(forms.ModelForm):
         model = Lease
 
 
+class VmRenewForm(forms.Form):
+
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('choices')
+        default = kwargs.pop('default')
+        super(VmRenewForm, self).__init__(*args, **kwargs)
+
+        self.fields['lease'] = forms.ModelChoiceField(queryset=choices,
+                                                      initial=default,
+                                                      required=True,
+                                                      label=_('Length'))
+        if len(choices) < 2:
+            self.fields['lease'].widget = HiddenInput()
+
+    def clean_size(self):
+        size_in_bytes = self.cleaned_data.get("size")
+        if not size_in_bytes.isdigit() and len(size_in_bytes) > 0:
+            raise forms.ValidationError(_("Invalid format, you can use "
+                                          " GB or MB!"))
+        return size_in_bytes
+
+    @property
+    def helper(self):
+        helper = FormHelper(self)
+        helper.form_tag = False
+        return helper
+
+
 class VmCreateDiskForm(forms.Form):
     name = forms.CharField(max_length=100, label=_("Name"))
     size = forms.CharField(
