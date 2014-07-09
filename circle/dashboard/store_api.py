@@ -6,8 +6,6 @@ import django.conf
 from datetime import datetime
 from sizefield.utils import filesizeformat
 
-from common.models import method_cache
-
 settings = django.conf.settings.STORE_SETTINGS
 
 
