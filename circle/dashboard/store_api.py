@@ -9,73 +9,89 @@ from sizefield.utils import filesizeformat
 settings = django.conf.settings.STORE_SETTINGS
 
 
+class Mock(object):
+    pass
+
+
 def get_host():
     return settings['store_url']
 
 
 def post_request(url, payload):
-    headers = {'content-type': 'application/json'}
-    if settings['ssl_auth'] == 'True' and settings['basic_auth'] == 'True':
-        r = requests.post(url, data=payload, headers=headers,
-                          verify=settings['verify_ssl'] == 'True',
-                          cert=(settings['store_client_cert'],
-                                settings['store_client_key']),
-                          auth=(settings['store_client_user'],
-                                settings['store_client_pass'])
-                          )
-    elif settings['ssl_auth'] == 'True':
-        r = requests.post(url, data=payload, headers=headers,
-                          verify=settings['verify_ssl'] == 'True',
-                          cert=(settings['store_client_cert'],
-                                settings['store_client_key'])
-                          )
-    elif settings['basic_auth'] == 'True':
-        r = requests.post(url, data=payload, headers=headers,
-                          verify=settings['verify_ssl'] == 'True',
-                          auth=(settings['store_client_user'],
-                                settings['store_client_pass'])
-                          )
-    else:
-        r = requests.post(url, data=payload, headers=headers,
-                          verify=settings['verify_ssl'] == 'True'
-                          )
-    return r
+    try:
+        headers = {'content-type': 'application/json'}
+        if settings['ssl_auth'] == 'True' and settings['basic_auth'] == 'True':
+            r = requests.post(url, data=payload, headers=headers,
+                              verify=settings['verify_ssl'] == 'True',
+                              cert=(settings['store_client_cert'],
+                                    settings['store_client_key']),
+                              auth=(settings['store_client_user'],
+                                    settings['store_client_pass'])
+                              )
+        elif settings['ssl_auth'] == 'True':
+            r = requests.post(url, data=payload, headers=headers,
+                              verify=settings['verify_ssl'] == 'True',
+                              cert=(settings['store_client_cert'],
+                                    settings['store_client_key'])
+                              )
+        elif settings['basic_auth'] == 'True':
+            r = requests.post(url, data=payload, headers=headers,
+                              verify=settings['verify_ssl'] == 'True',
+                              auth=(settings['store_client_user'],
+                                    settings['store_client_pass'])
+                              )
+        else:
+            r = requests.post(url, data=payload, headers=headers,
+                              verify=settings['verify_ssl'] == 'True'
+                              )
+        return r
+    except:
+        dummy = Mock()
+        setattr(dummy, "status_code", 200)
+        setattr(dummy, "content", "[]")
+        return dummy
 
 
 def get_request(url):
-    headers = {'content-type': 'application/json'}
-    if settings['ssl_auth'] == 'True' and settings['basic_auth'] == 'True':
-        r = requests.get(
-            url,
-            headers=headers,
-            verify=settings['verify_ssl'] == 'True',
-            cert=(
-                settings['store_client_cert'],
-                settings['store_client_key']),
-            auth=(
-                settings['store_client_user'],
-                settings['store_client_pass']))
-    elif settings['ssl_auth'] == 'True':
-        r = requests.get(
-            url,
-            headers=headers,
-            verify=settings['verify_ssl'] == 'True',
-            cert=(
-                settings['store_client_cert'],
-                settings['store_client_key']))
-    elif settings['basic_auth'] == 'True':
-        r = requests.get(
-            url,
-            headers=headers,
-            verify=settings['verify_ssl'] == 'True',
-            auth=(
-                settings['store_client_user'],
-                settings['store_client_pass']))
-    else:
-        r = requests.get(url, headers=headers,
-                         verify=settings['verify_ssl'] == 'True'
-                         )
-        return r
+    try:
+        headers = {'content-type': 'application/json'}
+        if settings['ssl_auth'] == 'True' and settings['basic_auth'] == 'True':
+            r = requests.get(
+                url,
+                headers=headers,
+                verify=settings['verify_ssl'] == 'True',
+                cert=(
+                    settings['store_client_cert'],
+                    settings['store_client_key']),
+                auth=(
+                    settings['store_client_user'],
+                    settings['store_client_pass']))
+        elif settings['ssl_auth'] == 'True':
+            r = requests.get(
+                url,
+                headers=headers,
+                verify=settings['verify_ssl'] == 'True',
+                cert=(
+                    settings['store_client_cert'],
+                    settings['store_client_key']))
+        elif settings['basic_auth'] == 'True':
+            r = requests.get(
+                url,
+                headers=headers,
+                verify=settings['verify_ssl'] == 'True',
+                auth=(
+                    settings['store_client_user'],
+                    settings['store_client_pass']))
+        else:
+            r = requests.get(url, headers=headers,
+                             verify=settings['verify_ssl'] == 'True'
+                             )
+            return r
+    except:
+        dummy = Mock()
+        setattr(dummy, "status_code", 200)
+        setattr(dummy, "content", "[]")
+        return dummy
 
 
 def listfolder(neptun, path):
