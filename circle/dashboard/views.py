@@ -209,14 +209,15 @@ class IndexView(LoginRequiredMixin, TemplateView):
 
         # toplist
         user_home = "u-%d" % user.pk
+        cache_key = "toplist-%s" % user_home
         cache = get_cache("default")
-        toplist = cache.get("toplist-%s" % user_home)
+        toplist = cache.get(cache_key)
         if not toplist:
             try:
                 toplist = store_api.process_list(store_api.toplist(user_home))
             except Http404:
                 toplist = []
-            cache.set("toplist-%s" % user_home, toplist, 300)
+            cache.set(cache_key, toplist, 300)
 
         context['toplist'] = toplist
 
@@ -3190,12 +3191,12 @@ def store_new_directory(request):
 @login_required
 def store_refresh_toplist(request):
     user_home = "u-%d" % request.user.pk
+    cache_key = "toplist-%s" % user_home
     cache = get_cache("default")
     try:
         toplist = store_api.process_list(store_api.toplist(user_home))
     except Http404:
         toplist = []
-    cache.set("toplist-test", toplist, 300)
+    cache.set(cache_key, toplist, 300)
 
-    user_home = "u-%d" % request.user.pk
     return redirect(reverse("dashboard.index"))
