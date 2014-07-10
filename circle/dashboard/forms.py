@@ -902,13 +902,6 @@ class VmRenewForm(forms.Form):
         if len(choices) < 2:
             self.fields['lease'].widget = HiddenInput()
 
-    def clean_size(self):
-        size_in_bytes = self.cleaned_data.get("size")
-        if not size_in_bytes.isdigit() and len(size_in_bytes) > 0:
-            raise forms.ValidationError(_("Invalid format, you can use "
-                                          " GB or MB!"))
-        return size_in_bytes
-
     @property
     def helper(self):
         helper = FormHelper(self)
