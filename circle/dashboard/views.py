@@ -104,6 +104,8 @@ class RedirectToLoginMixin(AccessMixin):
                 return redirect_to_login(request.get_full_path(),
                                          self.get_login_url(),
                                          self.get_redirect_field_name())
+            else:
+                raise
 
 
 class GroupCodeMixin(object):
