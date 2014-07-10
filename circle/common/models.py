@@ -21,6 +21,7 @@ from hashlib import sha224
 from itertools import chain, imap
 from logging import getLogger
 from time import time
+from warnings import warn
 
 from django.contrib.auth.models import User
 from django.core.cache import cache
@@ -173,6 +174,12 @@ class ActivityModel(TimeStampedModel):
 
     @result.setter
     def set_result(self, value):
+        if isinstance(value, basestring):
+            warn("Using string as result value is deprecated. Use "
+                 "HumanReadableObject instead.", DeprecationWarning)
+            value = create_readable(user_text_template="",
+                                    admin_text_template=value)
+
         self.result_data = None if value is None else value.to_dict()
 
 
