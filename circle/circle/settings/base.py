@@ -448,8 +448,8 @@ else:
 STORE_BASIC_AUTH = get_env_variable("STORE_BASIC_AUTH") == "True"
 STORE_VERIFY_SSL = get_env_variable("STORE_VERIFY_SSL") == "True"
 STORE_SSL_AUTH = get_env_variable("STORE_SSL_AUTH") == "True"
-STORE_CLIENT_USER = get_env_variable("STORE_CLIENT_USER")
-STORE_CLIENT_PASSWORD = get_env_variable("STORE_CLIENT_PASSWORD")
-STORE_CLIENT_KEY = get_env_variable("STORE_CLIENT_KEY")
-STORE_CLIENT_CERT = get_env_variable("STORE_CLIENT_CERT")
+STORE_CLIENT_USER = get_env_variable("STORE_CLIENT_USER", "")
+STORE_CLIENT_PASSWORD = get_env_variable("STORE_CLIENT_PASSWORD", "")
+STORE_CLIENT_KEY = get_env_variable("STORE_CLIENT_KEY", "")
+STORE_CLIENT_CERT = get_env_variable("STORE_CLIENT_CERT", "")
 STORE_URL = get_env_variable("STORE_URL")
