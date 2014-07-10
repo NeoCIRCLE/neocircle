@@ -189,18 +189,30 @@ class Rule(models.Model):
     def get_absolute_url(self):
         return ('network.rule', None, {'pk': self.pk})
 
-    @staticmethod
-    def get_chain_name(local, remote, direction):
-        if direction == 'in':
-            # remote -> local
-            return '%s_%s' % (remote, local)
+    def get_chain_name(self, local, remote):
+        if local:  # host or vlan
+            if self.direction == 'in':
+                # remote -> local
+                return '%s_%s' % (remote.name, local.name)
+            else:
+                # local -> remote
+                return '%s_%s' % (local.name, remote.name)
+            # firewall rule
+        elif self.firewall_id:
+            return 'INPUT' if self.direction == 'in' else 'OUTPUT'
+
+    def get_dport_sport(self):
+        if self.direction == 'in':
+            return self.dport, self.sport
         else:
-            # local -> remote
-            return '%s_%s' % (local, remote)
+            return self.sport, self.dport
 
     def get_ipt_rules(self, host=None):
         # action
         action = 'LOG_ACC' if self.action == 'accept' else 'LOG_DROP'
+
+        # 'chain_name': rule dict
+        retval = {}
 
         # src and dst addresses
         src = None
@@ -212,34 +224,28 @@ class Rule(models.Model):
                 dst = ip
             else:
                 src = ip
+            vlan = host.vlan
+        elif self.vlan_id:
+            vlan = self.vlan
+        else:
+            vlan = None
+
+        if vlan and not vlan.managed:
+            return retval
 
         # src and dst ports
-        if self.direction == 'in':
-            dport = self.dport
-            sport = self.sport
-        else:
-            dport = self.sport
-            sport = self.dport
-
-        # 'chain_name': rule dict
-        retval = {}
+        dport, sport = self.get_dport_sport()
 
         # process foreign vlans
         for foreign_vlan in self.foreign_network.vlans.all():
+            if not foreign_vlan.managed:
+                continue
+
             r = IptRule(priority=self.weight, action=action,
                         proto=self.proto, extra=self.extra,
                         comment='Rule #%s' % self.pk,
                         src=src, dst=dst, dport=dport, sport=sport)
-            # host, hostgroup or vlan rule
-            if host or self.vlan_id:
-                local_vlan = host.vlan.name if host else self.vlan.name
-                chain_name = Rule.get_chain_name(local=local_vlan,
-                                                 remote=foreign_vlan.name,
-                                                 direction=self.direction)
-            # firewall rule
-            elif self.firewall_id:
-                chain_name = 'INPUT' if self.direction == 'in' else 'OUTPUT'
-
+            chain_name = self.get_chain_name(local=vlan, remote=foreign_vlan)
             retval[chain_name] = r
 
         return retval
