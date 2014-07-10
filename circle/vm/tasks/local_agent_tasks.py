@@ -24,7 +24,9 @@ from base64 import encodestring
 from StringIO import StringIO
 from tarfile import TarFile, TarInfo
 from django.conf import settings
+from django.utils import timezone
 from celery.result import TimeoutError
+from monitor.client import Client
 
 
 def send_init_commands(instance, act, vm):
@@ -86,10 +88,31 @@ def agent_started(vm, version=None):
                 pass
 
         if not initialized:
+            measure_boot_time(instance)
             send_init_commands(instance, act, vm)
 
         with act.sub_activity('start_access_server'):
             start_access_server.apply_async(queue=queue, args=(vm, ))
+
+
+def measure_boot_time(instance):
+    if not instance.template:
+        return
+
+    from vm.models import InstanceActivity
+    deploy_time = InstanceActivity.objects.filter(
+        instance=instance, activity_code="vm.Instance.deploy"
+    ).latest("finished").finished
+
+    total_boot_time = (timezone.now() - deploy_time).total_seconds()
+
+    Client().send([
+        "template.%(pk)d.boot_time %(val)f %(time)s" % {
+            'pk': instance.template.pk,
+            'val': total_boot_time,
+            'time': time.time(),
+        }
+    ])
 
 
 @celery.task

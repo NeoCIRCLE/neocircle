@@ -1240,6 +1240,24 @@
   }
 },
 {
+  "pk": 1367,
+  "model": "auth.permission",
+  "fields": {
+    "codename": "create_vm",
+    "name": "Can create a new VM.",
+    "content_type": 28
+  }
+},
+{
+  "pk": 1368,
+  "model": "auth.permission",
+  "fields": {
+    "codename": "access_console",
+    "name": "Can access the graphical console of a VM.",
+    "content_type": 28
+  }
+},
+{
   "pk": 1, 
   "model": "auth.group", 
   "fields": {

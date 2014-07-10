@@ -151,6 +151,10 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
         ordering = ('name', )
         permissions = (
             ('create_template', _('Can create an instance template.')),
+            ('create_base_template',
+             _('Can create an instance template (base).')),
+            ('change_template_resources',
+             _('Can change resources of a template.')),
         )
         verbose_name = _('template')
         verbose_name_plural = _('templates')
@@ -263,7 +267,9 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             ('access_console', _('Can access the graphical console of a VM.')),
             ('change_resources', _('Can change resources of a running VM.')),
             ('set_resources', _('Can change resources of a new VM.')),
+            ('create_vm', _('Can create a new VM.')),
             ('config_ports', _('Can configure port forwards.')),
+            ('recover', _('Can recover a destroyed VM.')),
         )
         verbose_name = _('instance')
         verbose_name_plural = _('instances')
@@ -574,11 +580,10 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
     def get_connect_host(self, use_ipv6=False):
         """Get public hostname.
         """
-        if not self.interface_set.exclude(host=None):
-            return _('None')
+        if not self.primary_host:
+            return None
         proto = 'ipv6' if use_ipv6 else 'ipv4'
-        return self.interface_set.exclude(host=None)[0].host.get_hostname(
-            proto=proto)
+        return self.primary_host.get_hostname(proto=proto)
 
     def get_connect_command(self, use_ipv6=False):
         """Returns a formatted connect string.
@@ -648,11 +653,9 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             raise Node.DoesNotExist()
 
     def _is_notified_about_expiration(self):
-        renews = self.activity_log.filter(activity_code__endswith='renew')
-        cond = {'activity_code__endswith': 'notification_about_expiration'}
-        if len(renews) > 0:
-            cond['finished__gt'] = renews[0].started
-        return self.activity_log.filter(**cond).exists()
+        last_activity = self.activity_log.latest('pk')
+        return (last_activity.activity_code ==
+                'vm.Instance.notification_about_expiration')
 
     def notify_owners_about_expiration(self, again=False):
         """Notify owners about vm expiring soon if they aren't already.
@@ -825,7 +828,8 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
     def migrate_vm(self, to_node, timeout=120):
         queue_name = self.get_remote_queue_name('vm', 'slow')
         return vm_tasks.migrate.apply_async(args=[self.vm_name,
-                                                  to_node.host.hostname],
+                                                  to_node.host.hostname,
+                                                  True],
                                             queue=queue_name
                                             ).get(timeout=timeout)
 
@@ -862,7 +866,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                     AbortableAsyncResult(remote.id).abort()
                     raise Exception("Shutdown aborted by user.")
 
-    def suspend_vm(self, timeout=60):
+    def suspend_vm(self, timeout=230):
         queue_name = self.get_remote_queue_name('vm', 'slow')
         return vm_tasks.sleep.apply_async(args=[self.vm_name,
                                                 self.mem_dump['path']],
@@ -929,8 +933,29 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                                                   user=user)
         return acts
 
+    def get_merged_activities(self, user=None):
+        whitelist = ("create_disk", "download_disk")
+        acts = self.get_activities(user)
+        merged_acts = []
+        latest = None
+
+        for a in acts:
+            if (latest == a.activity_code and
+                    merged_acts[-1].result == a.result and
+                    a.finished and merged_acts[-1].finished and
+                    a.user == merged_acts[-1].user and
+                    (merged_acts[-1].finished - a.finished).days < 7 and
+                    not a.activity_code.endswith(whitelist)):
+                merged_acts[-1].times += 1
+            else:
+                merged_acts.append(a)
+                merged_acts[-1].times = 1
+            latest = a.activity_code
+
+        return merged_acts
+
     def get_screenshot(self, timeout=5):
-        queue_name = self.get_remote_queue_name('vm')
+        queue_name = self.get_remote_queue_name("vm", "fast")
         return vm_tasks.screenshot.apply_async(args=[self.vm_name],
                                                queue=queue_name
                                                ).get(timeout=timeout)

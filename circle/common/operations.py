@@ -20,7 +20,7 @@ from logging import getLogger
 
 from .models import activity_context, has_suffix
 
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ImproperlyConfigured
 
 
 logger = getLogger(__name__)
@@ -30,7 +30,7 @@ class Operation(object):
     """Base class for VM operations.
     """
     async_queue = 'localhost.man'
-    required_perms = ()
+    required_perms = None
     do_not_call_in_templates = True
     abortable = False
     has_percentage = False
@@ -141,6 +141,9 @@ class Operation(object):
         pass
 
     def check_auth(self, user):
+        if self.required_perms is None:
+            raise ImproperlyConfigured(
+                "Set required_perms to () if none needed.")
         if not user.has_perms(self.required_perms):
             raise PermissionDenied("%s doesn't have the required permissions."
                                    % user)

@@ -140,6 +140,18 @@ class Profile(Model):
         return self.get_display_name()
 
 
+class FutureMember(Model):
+    org_id = CharField(max_length=64, help_text=_(
+        'Unique identifier of the person, e.g. a student number.'))
+    group = ForeignKey(Group)
+
+    class Meta:
+        unique_together = ('org_id', 'group')
+
+    def __unicode__(self):
+        return u"%s (%s)" % (self.org_id, self.group)
+
+
 class GroupProfile(AclBase):
     ACL_LEVELS = (
         ('operator', _('operator')),
@@ -223,6 +235,10 @@ if hasattr(settings, 'SAML_ORG_ID_ATTRIBUTE'):
                 logger.debug('could find membergroup %s (%s)',
                              group, unicode(g))
                 g.user_set.add(sender)
+
+        for i in FutureMember.objects.filter(org_id=value):
+            i.group.user_set.add(sender)
+            i.delete()
 
         owneratrs = getattr(settings, 'SAML_GROUP_OWNER_ATTRIBUTES', [])
         for group in chain(*[attributes[i]

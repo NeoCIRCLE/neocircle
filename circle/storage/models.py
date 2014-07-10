@@ -106,6 +106,9 @@ class Disk(AclBase, TimeStampedModel):
         ordering = ['name']
         verbose_name = _('disk')
         verbose_name_plural = _('disks')
+        permissions = (
+            ('create_empty_disk', _('Can create an empty disk.')),
+            ('download_disk', _('Can download a disk.')))
 
     class WrongDiskTypeError(Exception):
 
@@ -131,6 +134,7 @@ class Disk(AclBase, TimeStampedModel):
             self.disk = disk
 
     class DiskIsNotReady(Exception):
+
         """ Exception for operations that need a deployed disk.
         """
 
@@ -380,13 +384,18 @@ class Disk(AclBase, TimeStampedModel):
         self.save()
         return True
 
-    def restore(self, user=None, task_uuid=None):
+    def restore(self, user=None, task_uuid=None, timeout=15):
         """Recover destroyed disk from trash if possible.
         """
-        # TODO
-        pass
+        queue_name = self.datastore.get_remote_queue_name(
+            'storage', priority='slow')
+        logger.info("Image: %s at Datastore: %s recovered from trash." %
+                    (self.filename, self.datastore.path))
+        storage_tasks.recover_from_trash.apply_async(
+            args=[self.datastore.path, self.filename],
+            queue=queue_name).get(timeout=timeout)
 
-    def save_as(self, user=None, task_uuid=None, timeout=300):
+    def save_as(self, task=None, user=None, task_uuid=None, timeout=300):
         """Save VM as template.
 
         Based on disk type:
@@ -421,10 +430,18 @@ class Disk(AclBase, TimeStampedModel):
                            type=new_type)
 
         queue_name = self.get_remote_queue_name("storage", priority="slow")
-        storage_tasks.merge.apply_async(args=[self.get_disk_desc(),
-                                              disk.get_disk_desc()],
-                                        queue=queue_name
-                                        ).get()  # Timeout
-        disk.is_ready = True
-        disk.save()
+        remote = storage_tasks.merge.apply_async(kwargs={
+            "old_json": self.get_disk_desc(),
+            "new_json": disk.get_disk_desc()},
+            queue=queue_name
+        )  # Timeout
+        while True:
+            try:
+                remote.get(timeout=5)
+                break
+            except TimeoutError:
+                if task is not None and task.is_aborted():
+                    AbortableAsyncResult(remote.id).abort()
+                    disk.destroy()
+                    raise Exception("Save as aborted by use.")
         return disk

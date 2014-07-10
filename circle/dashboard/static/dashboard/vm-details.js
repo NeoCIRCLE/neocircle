@@ -5,19 +5,20 @@ $(function() {
   }
   $('a[href="#activity"]').click(function(){
     $('a[href="#activity"] i').addClass('icon-spin');
-    checkNewActivity(false,0);
+    checkNewActivity(false, 1);
   });
 
   /* save resources */
   $('#vm-details-resources-save').click(function() {
     $('i.icon-save', this).removeClass("icon-save").addClass("icon-refresh icon-spin");
+    var vm = $(this).data("vm");
     $.ajax({
       type: 'POST',
-      url: location.href,
+      url: "/dashboard/vm/" + vm + "/op/resources_change/", 
       data: $('#vm-details-resources-form').serialize(),
       success: function(data, textStatus, xhr) {
-        addMessage(data['message'], 'success');
         $("#vm-details-resources-save i").removeClass('icon-refresh icon-spin').addClass("icon-save");
+        $('a[href="#activity"]').trigger("click");
       },
       error: function(xhr, textStatus, error) {
         $("#vm-details-resources-save i").removeClass('icon-refresh icon-spin').addClass("icon-save");
@@ -328,6 +329,17 @@ function decideActivityRefresh() {
   return check;
 }
 
+/* unescapes html got via the request, also removes whitespaces and replaces all ' with " */
+function unescapeHTML(html) {
+  return html.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&').replace(/&ndash;/g, "–").replace(/\//g, "").replace(/'/g, '"').replace(/&#39;/g, "'").replace(/ /g, '');
+}
+
+/* the html page contains some tags that were modified via js (titles for example), we delete these
+   also some html tags are closed with / */
+function changeHTML(html) {
+  return html.replace(/data-original-title/g, "title").replace(/title=""/g, "").replace(/\//g, '').replace(/ /g, '');
+}
+
 function checkNewActivity(only_status, runs) {
   // set default only_status to false
   only_status = typeof only_status !== 'undefined' ? only_status : false;
@@ -339,8 +351,12 @@ function checkNewActivity(only_status, runs) {
     data: {'only_status': only_status},
     success: function(data) {
       if(!only_status) {
-        $("#activity-timeline").html(data['activities']);
+        a = unescapeHTML(data['activities']);
+        b = changeHTML($("#activity-timeline").html());
+        if(a != b)
+          $("#activity-timeline").html(data['activities']);
         $("#ops").html(data['ops']);
+        $("#disk-ops").html(data['disk_ops']);
         $("[title]").tooltip();
       }
 
@@ -350,6 +366,14 @@ function checkNewActivity(only_status, runs) {
         $("[data-target=#_console]").attr("data-toggle", "pill").attr("href", "#console").parent("li").removeClass("disabled");
       } else {
         $("[data-target=#_console]").attr("data-toggle", "_pill").attr("href", "#").parent("li").addClass("disabled");
+      }
+
+      if(data['status'] == "STOPPED") {
+        $(".enabled-when-stopped").prop("disabled", false);
+        $(".hide-when-stopped").hide();
+      } else {
+        $(".enabled-when-stopped").prop("disabled", true);
+        $(".hide-when-stopped").show();
       }
 
       if(runs > 0 && decideActivityRefresh()) {

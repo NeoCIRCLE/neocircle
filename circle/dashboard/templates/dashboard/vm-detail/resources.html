@@ -33,11 +33,20 @@
   </div>
 </p>
 
+{% if can_change_resources %}
 <p class="row">
   <div class="col-sm-12">
-    <button type="submit" class="btn btn-success btn-sm" id="vm-details-resources-save"><i class="icon-save"></i> {% trans "Save resources" %}</button>
+    <button type="submit" class="btn btn-success btn-sm enabled-when-stopped" id="vm-details-resources-save"
+      data-vm="{{ instance.pk }}"
+      {% if not op.resources_change %}disabled{% endif %}>
+      <i class="icon-save"></i> {% trans "Save resources" %}
+    </button>
+    <span class="hide-when-stopped"
+      {% if op.resources_change %}style="display: none;"{% endif %}
+      >{% trans "Stop your VM to change resources." %}</span>
   </div>
 </p>
+{% endif %}
 </form>
 
 <hr />
@@ -47,18 +56,9 @@
     <h3>
       {% trans "Disks" %}
       <div class="pull-right">
-        {% if op.download_disk %}
-	<a href="{{op.download_disk.get_url}}" class="btn btn-success btn-xs
-		operation operation-{{op.download_disk.op}} btn btn-default">
-	  <i class="icon-{{op.download_disk.icon}}"></i>
-		{{op.download_disk.name}} </a>
-	{% endif %}
-        {% if op.create_disk %}
-	<a href="{{op.create_disk.get_url}}" class="btn btn-success btn-xs
-		operation operation-{{op.create_disk.op}} btn btn-default">
-	  <i class="icon-{{op.create_disk.icon}}"></i>
-		{{op.create_disk.name}} </a>
-	{% endif %}
+        <div id="disk-ops">
+          {% include "dashboard/vm-detail/_disk-operations.html" %}
+        </div> 
       </div>
     </h3>
 
@@ -77,6 +77,32 @@
   </div>
 </div>
 
+{% if user.is_superuser %}
+<hr/>
+
+<div class="row" id="">
+  <div class="col-sm-12">
+    <h3>
+      {% trans "Required traits" %}
+    </h3>
+
+    {% crispy traits_form %}
+  </div>
+</div>
+
+<hr/>
+
+<div class="row" id="">
+  <div class="col-sm-12">
+    <h3>
+      {% trans "Raw data" %}
+    </h3>
+
+    {% crispy raw_data_form %}
+  </div>
+</div>
+
+{% endif %}
 
 {% block extra_js %}
   <style>

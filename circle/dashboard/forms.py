@@ -25,6 +25,7 @@ from django.contrib.auth.forms import (
 )
 from django.contrib.auth.models import User, Group
 from django.core.validators import URLValidator
+from django.core.exceptions import PermissionDenied, ValidationError
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import (
@@ -39,13 +40,16 @@ from django.template import Context
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext as _
 from sizefield.widgets import FileSizeWidget
+from django.core.urlresolvers import reverse_lazy
 
 from django_sshkey.models import UserKey
 from firewall.models import Vlan, Host
 from storage.models import Disk
 from vm.models import (
-    InstanceTemplate, Lease, InterfaceTemplate, Node, Trait
+    InstanceTemplate, Lease, InterfaceTemplate, Node, Trait, Instance
 )
+from django.contrib.admin.widgets import FilteredSelectMultiple
+from django.contrib.auth.models import Permission
 from .models import Profile, GroupProfile
 from circle.settings.base import LANGUAGES
 from django.utils.translation import string_concat
@@ -592,6 +596,17 @@ class TemplateForm(forms.ModelForm):
             n = self.instance.interface_set.values_list("vlan", flat=True)
             self.initial['networks'] = n
 
+        self.allowed_fields = (
+            'name', 'access_method', 'description', 'system', 'tags')
+        if self.user.has_perm('vm.change_template_resources'):
+            self.allowed_fields += tuple(set(self.fields.keys()) -
+                                         set(['raw_data']))
+        if self.user.is_superuser:
+            self.allowed_fields += ('raw_data', )
+        for name, field in self.fields.items():
+            if name not in self.allowed_fields:
+                field.widget.attrs['disabled'] = 'disabled'
+
         if not self.instance.pk and len(self.errors) < 1:
             self.instance.priority = 20
             self.instance.ram_size = 512
@@ -602,14 +617,35 @@ class TemplateForm(forms.ModelForm):
             return User.objects.get(pk=self.instance.owner.pk)
         return self.user
 
-    def clean_raw_data(self):
-        # if raw_data has changed and the user is not superuser
-        if "raw_data" in self.changed_data and not self.user.is_superuser:
-            old_raw_data = InstanceTemplate.objects.get(
-                pk=self.instance.pk).raw_data
-            return old_raw_data
-        else:
-            return self.cleaned_data['raw_data']
+    def _clean_fields(self):
+        try:
+            old = InstanceTemplate.objects.get(pk=self.instance.pk)
+        except InstanceTemplate.DoesNotExist:
+            old = None
+        for name, field in self.fields.items():
+            if name in self.allowed_fields:
+                value = field.widget.value_from_datadict(
+                    self.data, self.files, self.add_prefix(name))
+                try:
+                    if isinstance(field, forms.FileField):
+                        initial = self.initial.get(name, field.initial)
+                        value = field.clean(value, initial)
+                    else:
+                        value = field.clean(value)
+                    self.cleaned_data[name] = value
+                    if hasattr(self, 'clean_%s' % name):
+                        value = getattr(self, 'clean_%s' % name)()
+                        self.cleaned_data[name] = value
+                except ValidationError as e:
+                    self._errors[name] = self.error_class(e.messages)
+                    if name in self.cleaned_data:
+                        del self.cleaned_data[name]
+            elif old:
+                if name == 'networks':
+                    self.cleaned_data[name] = [
+                        i.vlan for i in self.instance.interface_set.all()]
+                else:
+                    self.cleaned_data[name] = getattr(old, name)
 
     def save(self, commit=True):
         data = self.cleaned_data
@@ -623,6 +659,8 @@ class TemplateForm(forms.ModelForm):
         networks = InterfaceTemplate.objects.filter(
             template=self.instance).values_list("vlan", flat=True)
         for m in data['networks']:
+            if not m.has_level(self.user, "user"):
+                raise PermissionDenied()
             if m.pk not in networks:
                 InterfaceTemplate(vlan=m, managed=m.managed,
                                   template=self.instance).save()
@@ -634,10 +672,6 @@ class TemplateForm(forms.ModelForm):
 
     @property
     def helper(self):
-        kwargs_raw_data = {}
-        if not self.user.is_superuser:
-            kwargs_raw_data['readonly'] = None
-
         helper = FormHelper()
         helper.layout = Layout(
             Field("name"),
@@ -689,7 +723,7 @@ class TemplateForm(forms.ModelForm):
                 _("Virtual machine settings"),
                 Field('access_method'),
                 Field('boot_menu'),
-                Field('raw_data', **kwargs_raw_data),
+                Field('raw_data'),
                 Field('req_traits'),
                 Field('description'),
                 Field("parent", type="hidden"),
@@ -882,8 +916,6 @@ class VmDownloadDiskForm(forms.Form):
     @property
     def helper(self):
         helper = FormHelper(self)
-        helper.add_input(Submit("submit", _("Create"),
-                                css_class="btn btn-success"))
         helper.form_tag = False
         return helper
 
@@ -1147,3 +1179,66 @@ class UserKeyForm(forms.ModelForm):
         if self.user:
             self.instance.user = self.user
         return super(UserKeyForm, self).clean()
+
+
+class TraitsForm(forms.ModelForm):
+
+    class Meta:
+        model = Instance
+        fields = ('req_traits', )
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.form_show_labels = False
+        helper.form_action = reverse_lazy("dashboard.views.vm-traits",
+                                          kwargs={'pk': self.instance.pk})
+        helper.add_input(Submit("submit", _("Save"),
+                                css_class="btn btn-success", ))
+        return helper
+
+
+class RawDataForm(forms.ModelForm):
+
+    class Meta:
+        model = Instance
+        fields = ('raw_data', )
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.form_show_labels = False
+        helper.form_action = reverse_lazy("dashboard.views.vm-raw-data",
+                                          kwargs={'pk': self.instance.pk})
+        helper.add_input(Submit("submit", _("Save"),
+                                css_class="btn btn-success",
+                                css_id="submit-password-button"))
+        return helper
+
+
+permissions_filtered = Permission.objects.exclude(
+    codename__startswith="add_").exclude(
+    codename__startswith="delete_").exclude(
+    codename__startswith="change_")
+
+
+class GroupPermissionForm(forms.ModelForm):
+    permissions = forms.ModelMultipleChoiceField(
+        queryset=permissions_filtered,
+        widget=FilteredSelectMultiple(_("permissions"), is_stacked=False)
+    )
+
+    class Meta:
+        model = Group
+        fields = ('permissions', )
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.form_show_labels = False
+        helper.form_action = reverse_lazy(
+            "dashboard.views.group-permissions",
+            kwargs={'group_pk': self.instance.pk})
+        helper.add_input(Submit("submit", _("Save"),
+                                css_class="btn btn-success", ))
+        return helper
