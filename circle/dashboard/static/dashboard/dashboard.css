@@ -780,3 +780,15 @@ textarea[name="list-new-namelist"] {
 .store-list-item-icon-directory {
   color: #ff8c00;
 }
+
+#dashboard-files-toplist div.list-group-item {
+  color: #555;
+}
+
+#dashboard-files-toplist div.list-group-item:hover {
+  background: #eee;
+}
+
+.no-hover:hover {
+  background: none !important;
+}

@@ -452,5 +452,5 @@ STORE_SETTINGS = {
     "store_client_user":  "admin",
     "store_client_key": "/opt/webadmin/cloud/client.key",
     "store_client_cert": "/opt/webadmin/cloud/client.crt",
-    "store_url": "http://pc3.szgt.uni-miskolc.hu:14505",
+    "store_url": "http://pc3.szgt.uni-miskolc.hu:17719",
 }

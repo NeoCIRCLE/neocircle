@@ -225,12 +225,12 @@ def process_list(content):
             "directory" if d['TYPE'] == "D" else
             filesizeformat(float(d['SIZE'])))
 
-        d['path'] = d['DIR']
-        if len(d['path']) == 1 and d['path'][0] == ".":
-            d['path'] = "/"
+        if len(d['DIR']) == 1 and d['DIR'][0] == ".":
+            d['directory'] = "/"
         else:
-            d['path'] = "/" + d['path'] + "/"
+            d['directory'] = "/" + d['DIR'] + "/"
 
+        d['path'] = d['directory']
         d['path'] += d['NAME']
         if d['TYPE'] == "D":
             d['path'] += "/"
