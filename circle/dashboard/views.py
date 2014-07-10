@@ -3175,6 +3175,7 @@ def store_new_directory(request):
     return redirect("%s?directory=%s" % (
         reverse("dashboard.views.store-list"), path))
 
+
 @require_POST
 @login_required
 def store_refresh_toplist(request):

@@ -95,7 +95,7 @@
   <div class="list-group-item">
     <a href="{% url "dashboard.views.store-remove" %}?path={{ current }}" 
       class="btn btn-danger btn-xs pull-right">
-      <i class="icon-remove"></i> {% trans "Remove" %}
+      <i class="icon-remove"></i> {% trans "Remove directory" %}
     </a>
     <form method="POST" action="{% url "dashboard.views.store-new-directory" %}">
       {% csrf_token %}
