@@ -1,11 +1,14 @@
 from django.http import Http404
 import json
+import logging
 import requests
 
 from datetime import datetime
 from sizefield.utils import filesizeformat
 
 from django.conf import settings
+
+logger = logging.getLogger(__name__)
 
 
 class Mock(object):
@@ -42,7 +45,8 @@ def post_request(url, payload, timeout=None):
                           **get_request_arguments(settings.STORE_SSL_AUTH,
                                                   settings.STORE_BASIC_AUTH))
         return r
-    except Exception:
+    except Exception as e:
+        logger.error("Error in store POST: %s" % e)
         dummy = Mock()
         setattr(dummy, "status_code", 200)
         setattr(dummy, "content", "[]")
@@ -56,7 +60,8 @@ def get_request(url, timeout=None):
                          **get_request_arguments(settings.STORE_SSL_AUTH,
                                                  settings.STORE_BASIC_AUTH))
         return r
-    except Exception:
+    except Exception as e:
+        logger.error("Error in store GET: %s" % e)
         dummy = Mock()
         setattr(dummy, "status_code", 200)
         setattr(dummy, "content", "[]")
