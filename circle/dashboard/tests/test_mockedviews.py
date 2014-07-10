@@ -144,7 +144,7 @@ class VmOperationViewTestCase(unittest.TestCase):
                 view.as_view()(request, pk=1234).render()
 
     def test_migrate(self):
-        request = FakeRequestFactory(POST={'node': 1})
+        request = FakeRequestFactory(POST={'node': 1}, superuser=True)
         view = vm_ops['migrate']
 
         with patch.object(view, 'get_object') as go, \
@@ -178,7 +178,24 @@ class VmOperationViewTestCase(unittest.TestCase):
             assert view.as_view()(request, pk=1234)['location']
             assert msg.error.called
 
+    def test_migrate_wo_permission(self):
+        request = FakeRequestFactory(POST={'node': 1}, superuser=False)
+        view = vm_ops['migrate']
+
+        with patch.object(view, 'get_object') as go, \
+                patch('dashboard.views.get_object_or_404') as go4:
+            inst = MagicMock(spec=Instance)
+            inst._meta.object_name = "Instance"
+            inst.migrate = Instance._ops['migrate'](inst)
+            inst.migrate.async = MagicMock()
+            inst.has_level.return_value = True
+            go.return_value = inst
+            go4.return_value = MagicMock()
+            with self.assertRaises(PermissionDenied):
+                assert view.as_view()(request, pk=1234)['location']
+
     def test_migrate_template(self):
+        """check if GET dialog's template can be rendered"""
         request = FakeRequestFactory(superuser=True)
         view = vm_ops['migrate']
 
@@ -209,7 +226,8 @@ class VmOperationViewTestCase(unittest.TestCase):
             assert not msg.error.called
 
     def test_save_as_w_name(self):
-        request = FakeRequestFactory(POST={'name': 'foobar'})
+        request = FakeRequestFactory(POST={'name': 'foobar'},
+                                     has_perms_mock=True)
         view = vm_ops['save_as_template']
 
         with patch.object(view, 'get_object') as go, \
@@ -238,6 +256,177 @@ class VmOperationViewTestCase(unittest.TestCase):
             go.return_value = inst
             rend = view.as_view()(request, pk=1234).render()
             self.assertEquals(rend.status_code, 200)
+
+
+class RenewViewTest(unittest.TestCase):
+
+    def test_renew_template(self):
+        request = FakeRequestFactory(has_perms_mock=True)
+        view = vm_ops['renew']
+
+        with patch.object(view, 'get_object') as go:
+            inst = MagicMock(spec=Instance)
+            inst._meta.object_name = "Instance"
+            inst.name = 'foo'
+            inst.renew = Instance._ops['renew'](inst)
+            inst.has_level.return_value = True
+            go.return_value = inst
+            rend = view.as_view()(request, pk=1234).render()
+            self.assertEquals(rend.status_code, 200)
+
+    def test_renew_by_owner_wo_param(self):
+        request = FakeRequestFactory(POST={}, has_perms_mock=True)
+        view = vm_ops['renew']
+
+        with patch.object(view, 'get_object') as go, \
+                patch('dashboard.views.get_object_or_404') as go4:
+            inst = MagicMock(spec=Instance)
+            inst._meta.object_name = "Instance"
+            inst.renew = Instance._ops['renew'](inst)
+            inst.renew.async = MagicMock()
+            inst.has_level.return_value = True
+            go.return_value = inst
+            go4.return_value = MagicMock()
+            assert view.as_view()(request, pk=1234).render().status_code == 200
+            # success would redirect
+
+    def test_renew_by_owner_w_param(self):
+        request = FakeRequestFactory(POST={'length': 1}, has_perms_mock=True)
+        view = vm_ops['renew']
+
+        with patch.object(view, 'get_object') as go, \
+                patch('dashboard.views.messages') as msg, \
+                patch('dashboard.views.get_object_or_404') as go4:
+            inst = MagicMock(spec=Instance)
+            inst._meta.object_name = "Instance"
+            inst.renew = Instance._ops['renew'](inst)
+            inst.renew.async = MagicMock()
+            inst.has_level.return_value = True
+            go.return_value = inst
+            go4.return_value = MagicMock()
+            assert view.as_view()(request, pk=1234)
+            assert not msg.error.called
+
+    def test_renew_get_by_anon_wo_key(self):
+        request = FakeRequestFactory(authenticated=False)
+        view = vm_ops['renew']
+
+        with patch.object(view, 'get_object') as go, \
+                patch('dashboard.views.get_object_or_404') as go4:
+            inst = MagicMock(spec=Instance)
+            inst._meta.object_name = "Instance"
+            inst.renew = Instance._ops['renew'](inst)
+            inst.renew.async = MagicMock()
+            inst.has_level.return_value = False
+            go.return_value = inst
+            go4.return_value = MagicMock()
+            self.assertIn('login',
+                          view.as_view()(request, pk=1234)['location'])
+
+    def test_renew_get_by_nonowner_wo_key(self):
+        request = FakeRequestFactory(has_perms_mock=True)
+        view = vm_ops['renew']
+
+        with patch.object(view, 'get_object') as go, \
+                patch('dashboard.views.get_object_or_404') as go4:
+            inst = MagicMock(spec=Instance)
+            inst._meta.object_name = "Instance"
+            inst.renew = Instance._ops['renew'](inst)
+            inst.renew.async = MagicMock()
+            inst.has_level.return_value = False
+            go.return_value = inst
+            go4.return_value = MagicMock()
+            with self.assertRaises(PermissionDenied):
+                assert view.as_view()(request, pk=1234)
+
+    def test_renew_post_by_nonowner_wo_key(self):
+        request = FakeRequestFactory(POST={'length': 1}, has_perms_mock=True)
+        view = vm_ops['renew']
+
+        with patch.object(view, 'get_object') as go, \
+                patch('dashboard.views.get_object_or_404') as go4:
+            inst = MagicMock(spec=Instance, pk=11)
+            inst._meta.object_name = "Instance"
+            inst.renew = Instance._ops['renew'](inst)
+            inst.renew.async = MagicMock()
+            inst.has_level.return_value = False
+            go.return_value = inst
+            go4.return_value = MagicMock()
+            with self.assertRaises(PermissionDenied):
+                assert view.as_view()(request, pk=1234)
+
+    def test_renew_get_by_nonowner_w_key(self):
+        user = FakeRequestFactory(superuser=True).user
+        view = vm_ops['renew']
+        inst = MagicMock(spec=Instance, pk=11)
+        inst._meta.object_name = "Instance"
+        inst.renew = Instance._ops['renew'](inst)
+        inst.renew.async = MagicMock()
+        key = view.get_token_url(inst, user).split('?')[1].split('=')[1]
+        request = FakeRequestFactory(GET={'k': key})  # other user!
+
+        with patch.object(view, 'get_object') as go, \
+                patch('dashboard.views.User.objects') as gu, \
+                patch('dashboard.views.Lease.get_objects_with_level') as gol:
+            gol.return_value = views.Lease.objects.all()
+            gu.get.return_value = user
+            go.return_value = inst
+            assert view.as_view()(request, pk=1234).render().status_code == 200
+
+    def test_renew_post_by_anon_w_key(self):
+        user = FakeRequestFactory(authenticated=True).user
+        view = vm_ops['renew']
+        inst = MagicMock(spec=Instance, pk=11)
+        inst._meta.object_name = "Instance"
+        inst.renew = Instance._ops['renew'](inst)
+        inst.renew.async = MagicMock()
+        inst.has_level = lambda user, level: user.is_authenticated()
+        key = view.get_token_url(inst, user).split('?')[1].split('=')[1]
+        request = FakeRequestFactory(GET={'k': key}, authenticated=False)
+
+        with patch.object(view, 'get_object') as go, \
+                patch('dashboard.views.Lease.get_objects_with_level') as gol:
+            go.return_value = inst
+            gol.return_value = views.Lease.objects.all()
+            assert view.as_view()(request, pk=1234).render().status_code == 200
+
+    def test_renew_post_by_anon_w_invalid_key(self):
+        view = vm_ops['renew']
+        key = "invalid"
+        inst = MagicMock(spec=Instance, pk=11)
+        inst._meta.object_name = "Instance"
+        inst.renew = Instance._ops['renew'](inst)
+        inst.renew.async = MagicMock()
+        inst.has_level.return_value = False
+        request = FakeRequestFactory(GET={'k': key}, authenticated=False)
+        with patch.object(view, 'get_object') as go:
+            go.return_value = inst
+            self.assertIn('login',
+                          view.as_view()(request, pk=1234)['location'])
+
+    def test_renew_post_by_anon_w_expired_key(self):
+
+        def side(max_age=None, *args, **kwargs):
+            if max_age:
+                raise views.signing.BadSignature
+
+        user = FakeRequestFactory(authenticated=False).user
+        view = vm_ops['renew']
+        inst = MagicMock(spec=Instance, pk=11)
+        inst._meta.object_name = "Instance"
+        inst.renew = Instance._ops['renew'](inst)
+        inst.renew.async = MagicMock()
+        inst.has_level.return_value = False
+        key = view.get_token_url(inst, user).split('?')[1].split('=')[1]
+        with patch('dashboard.views.signing.loads') as loader, \
+                patch.object(view, 'get_object') as go:
+            loader.return_value = (inst.pk, user.pk)
+
+            loader.side_effect = side
+            request = FakeRequestFactory(GET={'k': key}, user=user)
+            go.return_value = inst
+            self.assertIn('login',
+                          view.as_view()(request, pk=1234)['location'])
 
 
 def FakeRequestFactory(user=None, **kwargs):
