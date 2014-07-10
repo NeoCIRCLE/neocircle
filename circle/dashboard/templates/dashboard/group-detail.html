@@ -6,9 +6,9 @@
 <div class="body-content">
   <div class="page-header">
     <div class="pull-right" style="padding-top: 15px;">
-      <a title="{% trans "Rename" %}" href="#" class="btn btn-default btn-xs group-details-rename-button"><i class="icon-pencil"></i></a>
-      <a title="{% trans "Delete" %}" data-group-pk="{{ group.pk }}" class="btn btn-default btn-xs real-link group-delete" href="{% url "dashboard.views.delete-group" pk=group.pk %}"><i class="icon-trash"></i></a>
-      <a title="{% trans "Help" %}" href="#" class="btn btn-default btn-xs group-details-help-button"><i class="icon-question"></i></a>
+      <a title="{% trans "Rename" %}" href="#" class="btn btn-default btn-xs group-details-rename-button"><i class="fa fa-pencil"></i></a>
+      <a title="{% trans "Delete" %}" data-group-pk="{{ group.pk }}" class="btn btn-default btn-xs real-link group-delete" href="{% url "dashboard.views.delete-group" pk=group.pk %}"><i class="fa fa-trash"></i></a>
+      <a title="{% trans "Help" %}" href="#" class="btn btn-default btn-xs group-details-help-button"><i class="fa fa-question"></i></a>
     </div>
    <h1>
       <div id="group-details-rename">
@@ -62,32 +62,32 @@
         {% for i in users %}
 	  <tr>
             <td>
-              <i class="icon-user"></i>
+              <i class="fa fa-user"></i>
             </td>
             <td>
               <a href="{% url "dashboard.views.profile" username=i.username %}" title="{{ i.username }}"
                 >{% include "dashboard/_display-name.html" with user=i show_org=True %}</a>
             </td>
 	    <td>
-              <a data-group_pk="{{ group.pk }}" data-member_pk="{{i.pk}}" href="{% url "dashboard.views.remove-user" member_pk=i.pk group_pk=group.pk %}" class="real-link delete-from-group btn btn-link btn-xs"><i class="icon-remove"><span class="sr-only">{% trans "remove" %}</span></i></a>
+              <a data-group_pk="{{ group.pk }}" data-member_pk="{{i.pk}}" href="{% url "dashboard.views.remove-user" member_pk=i.pk group_pk=group.pk %}" class="real-link delete-from-group btn btn-link btn-xs"><i class="fa fa-times"><span class="sr-only">{% trans "remove" %}</span></i></a>
             </td>
           </tr>
         {% endfor %}
         {% for i in future_users %}
 	  <tr>
             <td>
-              <i class="icon-user text-muted"></i>
+              <i class="fa fa-user text-muted"></i>
             </td>
             <td> {{ i.org_id }} </td>
 	    <td>
               <a href="{% url "dashboard.views.remove-future-user" member_org_id=i.org_id group_pk=group.pk %}"
                   class="real-link btn-link btn-xs">
-                  <i class="icon-remove"><span class="sr-only">{% trans "remove" %}</span></i></a>
+                  <i class="fa fa-times"><span class="sr-only">{% trans "remove" %}</span></i></a>
             </td>
           </tr>
         {% endfor %}
         <tr>
-          <td><i class="icon-plus"></i></td>
+          <td><i class="fa fa-plus"></i></td>
           <td colspan="2">
             <input type="text" class="form-control" name="list-new-name"
             placeholder="{% trans "Name of user" %}">
@@ -115,7 +115,7 @@
     {% for i in acl.users %}
     <tr>
       <td>
-        <i class="icon-user"></i>
+        <i class="fa fa-user"></i>
       </td>
       <td>
         <a href="{% url "dashboard.views.profile" username=i.user.username %}" title="{{ i.user.username }}"
@@ -128,14 +128,14 @@
         {% endfor %}
         </select>
       </td>
-      <td class="user-remove"><a data-group_pk="{{ group.pk }}" data-member_pk="{{i.user.pk }}" href="{% url "dashboard.views.remove-acluser" member_pk=i.user.pk group_pk=group.pk %}" class="real-link delete-from-group btn btn-link btn-xs"><i class="icon-remove"><span class="sr-only">{% trans "remove" %}</span></i></a></td>
+      <td class="user-remove"><a data-group_pk="{{ group.pk }}" data-member_pk="{{i.user.pk }}" href="{% url "dashboard.views.remove-acluser" member_pk=i.user.pk group_pk=group.pk %}" class="real-link delete-from-group btn btn-link btn-xs"><i class="fa fa-times"><span class="sr-only">{% trans "remove" %}</span></i></a></td>
     </tr>
     {% endfor %}
     
     {% for i in acl.groups %}
       <tr>
         <td>
-          <i class="icon-group"></i>
+          <i class="fa fa-group"></i>
         </td>
         <td>
           <a href="{% url "dashboard.views.group-detail" pk=i.group.pk %}">{{ i.group }}</a>
@@ -147,12 +147,12 @@
           {% endfor %}
           </select>
         </td>
-        <td class="user-remove"><a data-group_pk="{{ i.pk }}"data-member_pk="{{i.group.pk }}" href="{% url "dashboard.views.remove-aclgroup" member_pk=i.group.pk group_pk=group.pk %}" class="real-link delete-from-group btn btn-link btn-xs"><i class="icon-remove"><span class="sr-only">{% trans "remove" %}</span></i></a>
+        <td class="user-remove"><a data-group_pk="{{ i.pk }}"data-member_pk="{{i.group.pk }}" href="{% url "dashboard.views.remove-aclgroup" member_pk=i.group.pk group_pk=group.pk %}" class="real-link delete-from-group btn btn-link btn-xs"><i class="fa fa-times"><span class="sr-only">{% trans "remove" %}</span></i></a>
         </td>
       </tr>
       {% endfor %}
       <tr>
-        <td><i class="icon-plus"></i></td>
+        <td><i class="fa fa-plus"></i></td>
         <td>
           <input type="text" class="form-control" name="perm-new-name"
           placeholder="{% trans "Name of group or user" %}">

@@ -700,9 +700,9 @@ vm_ops = OrderedDict([
     ('deploy', VmOperationView.factory(
         op='deploy', icon='play', effect='success')),
     ('wake_up', VmOperationView.factory(
-        op='wake_up', icon='sun', effect='success')),
+        op='wake_up', icon='sun-o', effect='success')),
     ('sleep', VmOperationView.factory(
-        op='sleep', icon='moon', effect='info')),
+        op='sleep', icon='moon-o', effect='info')),
     ('migrate', VmMigrateView),
     ('save_as_template', VmSaveView),
     ('reboot', VmOperationView.factory(
@@ -710,13 +710,13 @@ vm_ops = OrderedDict([
     ('reset', VmOperationView.factory(
         op='reset', icon='bolt', effect='warning')),
     ('shutdown', VmOperationView.factory(
-        op='shutdown', icon='off', effect='warning')),
+        op='shutdown', icon='power-off', effect='warning')),
     ('shut_off', VmOperationView.factory(
-        op='shut_off', icon='ban-circle', effect='warning')),
+        op='shut_off', icon='ban', effect='warning')),
     ('recover', VmOperationView.factory(
         op='recover', icon='medkit', effect='warning')),
     ('destroy', VmOperationView.factory(
-        op='destroy', icon='remove', effect='danger')),
+        op='destroy', icon='times', effect='danger')),
     ('create_disk', VmCreateDiskView),
     ('download_disk', VmDownloadDiskView),
 ])

@@ -36,19 +36,19 @@
 
 {% if user.is_authenticated and user.pk %}
   <a class="navbar-brand pull-right" href="{% url "logout" %}?next={% url "login" %}" style="color: white; font-size: 10px;">
-    <i class="icon-signout icon-sign-out"></i> {% trans "Log out" %}
+    <i class="fa fa-sign-out icon-sign-out"></i> {% trans "Log out" %}
   </a>
   <a class="navbar-brand pull-right" href="{% url "dashboard.views.profile-preferences" %}" title="{% trans "User profile" %}" style="color: white; font-size: 10px;">
-    <i class="icon-user"></i>
+    <i class="fa fa-user"></i>
     {% include "dashboard/_display-name.html" with user=user show_org=True %}
   </a>
 
   {% if user.is_superuser %}
-    <a class="navbar-brand pull-right" href="/network/" style="color: white; font-size: 10px;"><i class="icon-globe"></i> {% trans "Network" %}</a>
-    <a class="navbar-brand pull-right" href="/admin/" style="color: white; font-size: 10px;"><i class="icon-cogs"></i> {% trans "Admin" %}</a>
+    <a class="navbar-brand pull-right" href="/network/" style="color: white; font-size: 10px;"><i class="fa fa-globe"></i> {% trans "Network" %}</a>
+    <a class="navbar-brand pull-right" href="/admin/" style="color: white; font-size: 10px;"><i class="fa fa-cogs"></i> {% trans "Admin" %}</a>
   {% endif %}
 {% else %}
-  <a class="navbar-brand pull-right" href="{% url "login" %}?next={% url "dashboard.index" %}" style="color: white; font-size: 10px;"><i class="icon-sign-in"></i> {% trans "Log in " %}</a>
+  <a class="navbar-brand pull-right" href="{% url "login" %}?next={% url "dashboard.index" %}" style="color: white; font-size: 10px;"><i class="fa fa-sign-in"></i> {% trans "Log in " %}</a>
 {% endif %}
 
 {% endblock %}

@@ -11,15 +11,15 @@
       <div class="panel-heading">
         <div class="pull-right table-sorting">
           {% trans "Sorting ... " %}
-          <!--<i class="icon-refresh icon-spin icon-2x"></i>-->
+          <!--<i class="fa fa-refresh icon-spin icon-2x"></i>-->
         </div>
-        <h3 class="no-margin"><i class="icon-desktop"></i> {% trans "Virtual machines" %}</h3>
+        <h3 class="no-margin"><i class="fa fa-desktop"></i> {% trans "Virtual machines" %}</h3>
       </div>
       <div class="pull-right" style="max-width: 250px; margin-top: 15px; margin-right: 15px;">
         <form action="" method="GET" class="input-group">
           <input type="text" name="s"{% if request.GET.s %} value="{{ request.GET.s }}"{% endif %} class="form-control input-tags" placeholder="{% trans "Search..."%}" />
           <div class="input-group-btn">
-            <button type="submit" class="form-control btn btn-primary input-tags" title="search"><i class="icon-search"></i></button>
+            <button type="submit" class="form-control btn btn-primary input-tags" title="search"><i class="fa fa-search"></i></button>
           </div>
         </form>
       </div>
@@ -27,10 +27,10 @@
         <p>
         <strong>{% trans "Group actions" %}</strong>
         <button id="vm-list-group-select-all" class="btn btn-info btn-xs">{% trans "Select all" %}</button>
-        <a class="btn btn-default btn-xs" id="vm-list-group-migrate" disabled><i class="icon-truck"></i> {% trans "Migrate" %}</a>
-        <a disabled href="#" class="btn btn-default btn-xs"><i class="icon-refresh"></i> {% trans "Reboot" %}</a>
-        <a disabled href="#" class="btn btn-default btn-xs"><i class="icon-off"></i> {% trans "Shutdown" %}</a>
-        <a id="vm-list-group-delete" disabled href="#" class="btn btn-danger btn-xs"><i class="icon-remove"></i> {% trans "Destroy" %}</a>
+        <a class="btn btn-default btn-xs" id="vm-list-group-migrate" disabled><i class="fa fa-truck"></i> {% trans "Migrate" %}</a>
+        <a disabled href="#" class="btn btn-default btn-xs"><i class="fa fa-refresh"></i> {% trans "Reboot" %}</a>
+        <a disabled href="#" class="btn btn-default btn-xs"><i class="fa fa-off"></i> {% trans "Shutdown" %}</a>
+        <a id="vm-list-group-delete" disabled href="#" class="btn btn-danger btn-xs"><i class="fa fa-times"></i> {% trans "Destroy" %}</a>
         </p>
       </div>
       <div class="panel-body">

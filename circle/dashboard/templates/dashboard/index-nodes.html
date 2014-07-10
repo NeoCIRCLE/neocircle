@@ -3,14 +3,14 @@
   <div class="panel-heading">
     <div class="pull-right toolbar">
       <div class="btn-group">
-        <a href="#index-graph-view" data-index-box="node" class="btn btn-default btn-xs"><i class="icon-dashboard"></i></a>
-        <a href="#index-list-view" data-index-box="node" class="btn btn-default btn-xs disabled"><i class="icon-list"></i></a>
+        <a href="#index-graph-view" data-index-box="node" class="btn btn-default btn-xs"><i class="fa fa-dashboard"></i></a>
+        <a href="#index-list-view" data-index-box="node" class="btn btn-default btn-xs disabled"><i class="fa fa-list"></i></a>
 
       </div>
-      <span class="btn btn-default btn-xs infobtn" title="{% trans "List of compute nodes, also called worker nodes or hypervisors, which run the virtual machines." %}"><i class="icon-info-sign"></i></span>
+      <span class="btn btn-default btn-xs infobtn" title="{% trans "List of compute nodes, also called worker nodes or hypervisors, which run the virtual machines." %}"><i class="fa fa-info-circle"></i></span>
     </div>
     <h3 class="no-margin">
-      <i class="icon-sitemap"></i> {% trans "Nodes" %}
+      <i class="fa fa-sitemap"></i> {% trans "Nodes" %}
     </h3>
   </div >
   <div class="list-group" id="node-list-view">
@@ -19,7 +19,7 @@
       <a href="{{ i.get_absolute_url }}" class="list-group-item real-link
         {% if forloop.last and nodes|length < 5 %} list-group-item-last{% endif %}">
         <span class="index-node-list-name">
-          <i class="{{ i.get_status_icon }}" title="{{ i.get_status_display }}"></i>
+          <i class="fa {{ i.get_status_icon }}" title="{{ i.get_status_display }}"></i>
            {{ i.name }}
         </span>
         <div style="clear: both;"></div>
@@ -31,19 +31,19 @@
         <div class="col-sm-6 col-xs-6 input-group input-group-sm">
           <input id="dashboard-node-search-input" type="text" class="form-control" placeholder="{% trans "Search..." %}" />
           <div class="input-group-btn">
-            <button type="submit" class="form-control btn btn-primary" title="search"><i class="icon-search"></i></button>
+            <button type="submit" class="form-control btn btn-primary" title="search"><i class="fa fa-search"></i></button>
           </div>
         </div>
         <div class="col-sm-6 text-right">
           <a class="btn btn-primary btn-xs" href="{% url "dashboard.views.node-list" %}">
-            <i class="icon-chevron-sign-right"></i>
+            <i class="fa fa-chevron-circle-right"></i>
             {% if more_nodes > 0 %}
                 {% blocktrans with count=more_nodes %}<strong>{{count}}</strong>  more{% endblocktrans %}
             {% else %}
                 {% trans "list" %}
             {% endif %}
           </a>
-          <a class="btn btn-success btn-xs node-create" href="{% url "dashboard.views.node-create" %}"><i class="icon-plus-sign"></i> {% trans "new" %}</a>
+          <a class="btn btn-success btn-xs node-create" href="{% url "dashboard.views.node-create" %}"><i class="fa fa-plus-circle"></i> {% trans "new" %}</a>
         </div>
       </div>
     </div>
@@ -56,7 +56,7 @@
       <ul class="list-inline" id="dashboard-node-taglist">
         {% for i in nodes %}
         <a href="{{ i.get_absolute_url }}" class="label {{i.get_status_label}}" >
-        <i class="{{ i.get_status_icon }}" title="{{ i.get_status_display }}"></i> {{ i.name }}</a>
+        <i class="fa {{ i.get_status_icon }}" title="{{ i.get_status_display }}"></i> {{ i.name }}</a>
         {% endfor %}
       </ul>
 
@@ -65,10 +65,10 @@
         <div class="col-sm-6 text-right pull-right">
          {% if more_nodes >= 0  %}
           <a class="btn btn-primary btn-xs" href="{% url "dashboard.views.node-list" %}">
-            <i class="icon-chevron-sign-right"></i> {% blocktrans with count=more_nodes %}<strong>{{count}}</strong>  more{% endblocktrans %}
+            <i class="fa fa-chevron-circle-right"></i> {% blocktrans with count=more_nodes %}<strong>{{count}}</strong>  more{% endblocktrans %}
           </a>
          {% endif %}
-         <a class="btn btn-success btn-xs node-create" href="{% url "dashboard.views.node-create" %}"><i class="icon-plus-sign"></i> {% trans "new" %}</a>
+         <a class="btn btn-success btn-xs node-create" href="{% url "dashboard.views.node-create" %}"><i class="fa fa-plus-circle"></i> {% trans "new" %}</a>
         </div>
 </div>
 </div>

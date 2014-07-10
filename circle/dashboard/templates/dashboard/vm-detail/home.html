@@ -3,10 +3,10 @@
   <div class="col-md-4">
     <dl>
       <dt>{% trans "System" %}:</dt>
-      <dd><i class="icon-{{ os_type_icon }}"></i> {{ instance.system }}</dd>
+      <dd><i class="fa fa-{{ os_type_icon }}"></i> {{ instance.system }}</dd>
       <dt style="margin-top: 5px;">
         {% trans "Name" %}:
-        <a href="#" class="vm-details-home-edit-name-click"><i class="icon-pencil"></i></a>
+        <a href="#" class="vm-details-home-edit-name-click"><i class="fa fa-pencil"></i></a>
       </dt>
       <dd>
         <div class="vm-details-home-edit-name-click">
@@ -19,7 +19,7 @@
               <input type="text" name="new_name" value="{{ instance.name }}" class="form-control input-sm"/>
               <span class="input-group-btn">
                 <button type="submit" class="btn btn-success btn-sm vm-details-rename-submit">
-                  <i class="icon-pencil"></i> {% trans "Rename" %}
+                  <i class="fa fa-pencil"></i> {% trans "Rename" %}
                 </button>
               </span>
             </div>
@@ -28,7 +28,7 @@
       </dd>
       <dt style="margin-top: 5px;">
         {% trans "Description" %}: 
-        <a href="#" class="vm-details-home-edit-description-click"><i class="icon-pencil"></i></a>
+        <a href="#" class="vm-details-home-edit-description-click"><i class="fa fa-pencil"></i></a>
       </dt>
       <dd>
         {% csrf_token %}
@@ -39,21 +39,21 @@
           <form method="POST">
             <textarea name="new_description" class="form-control">{{ instance.description }}</textarea>
             <button type="submit" class="btn btn-xs btn-success vm-details-description-submit">
-              <i class="icon-pencil"></i> {% trans "Update" %}
+              <i class="fa fa-pencil"></i> {% trans "Update" %}
             </button>
           </form>
         </div>
       </dd>
     </dl>
 
-    <h4>{% trans "Expiration" %} {% if instance.is_expiring %}<i class="icon-warning-sign text-danger"></i>{% endif %}
+    <h4>{% trans "Expiration" %} {% if instance.is_expiring %}<i class="fa fa-warning-sign text-danger"></i>{% endif %}
       <a href="{% url "dashboard.views.vm-renew" instance.pk "" %}" class="btn btn-success btn-xs pull-right">{% trans "renew" %}</a>
     </h4>
     <dl>
       <dt>{% trans "Suspended at:" %}</dt>
-      <dd><i class="icon-moon"></i> {{ instance.time_of_suspend|timeuntil }}</dd>
+      <dd><i class="fa fa-moon"></i> {{ instance.time_of_suspend|timeuntil }}</dd>
       <dt>{% trans "Destroyed at:" %}</dt>
-      <dd><i class="icon-remove"></i> {{ instance.time_of_delete|timeuntil }}</dd>
+      <dd><i class="fa fa-times"></i> {{ instance.time_of_delete|timeuntil }}</dd>
     </dl>
 
     <div style="font-weight: bold;">{% trans "Tags" %}</div>
@@ -63,7 +63,7 @@
           {% for t in instance.tags.all %}
             <div class="label label-primary label-tag" style="display: inline-block">
               {{ t }}
-              <a href="#" class="vm-details-remove-tag"><i class="icon-remove"></i></a>
+              <a href="#" class="vm-details-remove-tag"><i class="fa fa-times"></i></a>
             </div>
           {% endfor %}
         {% else %}
@@ -75,7 +75,7 @@
         <div class="input-group" id="vm-details-tags-form">
           <input type="text" class="form-control input-sm input-tags" name="new_tag" id="vm-details-tags-input"/>
           <!--<div class="input-group-addon">
-            <i class="icon-question"></i>
+            <i class="fa fa-question"></i>
           </div>-->
           <div class="input-group-btn">
             <input type="submit" class="btn btn-default btn-sm input-tags" value="{% trans "Add tag" %}"/>

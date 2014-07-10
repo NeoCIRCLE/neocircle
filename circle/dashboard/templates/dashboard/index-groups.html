@@ -2,16 +2,16 @@
 <div class="panel panel-default">
   <div class="panel-heading">
     <div class="pull-right toolbar">
-      <span class="btn btn-default btn-xs infobtn" title="{% trans "List of groups that you have access to." %}"><i class="icon-info-sign"></i></span>
+      <span class="btn btn-default btn-xs infobtn" title="{% trans "List of groups that you have access to." %}"><i class="fa fa-info-circle"></i></span>
     </div> 
-    <h3 class="no-margin"><i class="icon-group"></i> {% trans "Groups" %}</h3>
+    <h3 class="no-margin"><i class="fa fa-group"></i> {% trans "Groups" %}</h3>
   </div>
   <div class="list-group" id="vm-list-view">
     <div id="dashboard-group-list">
       {% for i in groups %}
       <a href="{% url "dashboard.views.group-detail" pk=i.pk %}" class="list-group-item real-link
       {% if forloop.last and groups|length < 5 %} list-group-item-last{% endif %}">
-        <i class="icon-group"></i> {{ i.name }}
+        <i class="fa fa-group"></i> {{ i.name }}
       </a>
       {% endfor %}
     </div>
@@ -20,12 +20,12 @@
         <div class="col-sm-6 col-xs-6 input-group input-group-sm">
           <input id="dashboard-group-search-input" type="text" class="form-control" placeholder="{% trans "Search..." %}" />
           <div class="input-group-btn">
-            <button type="submit" class="form-control btn btn-primary"><i class="icon-search"></i></button>
+            <button type="submit" class="form-control btn btn-primary"><i class="fa fa-search"></i></button>
           </div>
         </div>
         <div class="col-sm-6 text-right">
           <a class="btn btn-primary btn-xs" href="{% url "dashboard.views.group-list" %}">
-            <i class="icon-chevron-sign-right"></i> 
+            <i class="fa fa-chevron-circle-right"></i> 
 	    {% if more_groups > 0 %}
               {% blocktrans count more=more_groups %}
                 <strong>{{ more }}</strong>  more
@@ -36,7 +36,7 @@
               {% trans "list" %} 
             {% endif %}
           </a>
-          <a class="btn btn-success btn-xs group-create" href="{% url "dashboard.views.group-create" %}"><i class="icon-plus-sign"></i> {% trans "new" %} </a>
+          <a class="btn btn-success btn-xs group-create" href="{% url "dashboard.views.group-create" %}"><i class="fa fa-plus-circle"></i> {% trans "new" %} </a>
         </div>
       </div>
     </div>

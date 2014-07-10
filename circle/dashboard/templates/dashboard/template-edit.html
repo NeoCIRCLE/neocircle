@@ -12,7 +12,7 @@
     <div class="panel panel-default">
       <div class="panel-heading">
         <a class="pull-right btn btn-default btn-xs" href="{% url "dashboard.views.template-list" %}">{% trans "Back" %}</a>
-        <h3 class="no-margin"><i class="icon-puzzle-piece"></i> {% trans "Edit template" %}</h3>
+        <h3 class="no-margin"><i class="fa fa-puzzle-piece"></i> {% trans "Edit template" %}</h3>
       </div>
       <div class="panel-body">
         {% with form=form %}
@@ -26,7 +26,7 @@
   <div class="col-md-5">
     <div class="panel panel-default">
       <div class="panel-heading">
-        <h4 class="no-margin"><i class="icon-group"></i> {% trans "Manage access"  %}</h4>
+        <h4 class="no-margin"><i class="fa fa-group"></i> {% trans "Manage access"  %}</h4>
       </div>
       <div class="panel-body">
         <form action="{% url "dashboard.views.template-acl" pk=object.pk %}" method="post">{% csrf_token %}
@@ -36,14 +36,14 @@
                 <th></th>
                 <th>{% trans "Who" %}</th>
                 <th>{% trans "What" %}</th>
-                <th><i class="icon-remove"></i></th>
+                <th><i class="fa fa-times"></i></th>
               </tr>
             </thead>
             <tbody>
               {% for i in acl.users %}
               <tr>
                 <td>
-                  <i class="icon-user"></i>
+                  <i class="fa fa-user"></i>
                 </td>
                 <td>
                   <a href="{% url "dashboard.views.profile" username=i.user.username %}"
@@ -65,7 +65,7 @@
               {% endfor %}
               {% for i in acl.groups %}
               <tr>
-                <td><i class="icon-group"></i></td>
+                <td><i class="fa fa-group"></i></td>
                 <td>
                   <a href="{% url "dashboard.views.group-detail" pk=i.group.pk %}">
                     {{i.group}}
@@ -83,7 +83,7 @@
                 </td>
               </tr>
               {% endfor %}
-              <tr><td><i class="icon-plus"></i></td>
+              <tr><td><i class="fa fa-plus"></i></td>
                   <td><input type="text" class="form-control" name="perm-new-name"
                       placeholder="{% trans "Name of group or user" %}"></td>
                   <td><select class="form-control" name="perm-new">
@@ -104,7 +104,7 @@
         
     <div class="panel panel-default">
       <div class="panel-heading">
-        <h4 class="no-margin"><i class="icon-file"></i> {% trans "Disk list" %}</h4>
+        <h4 class="no-margin"><i class="fa fa-file"></i> {% trans "Disk list" %}</h4>
       </div>
       <div class="panel-body">
         <ul class="template-disk-list">

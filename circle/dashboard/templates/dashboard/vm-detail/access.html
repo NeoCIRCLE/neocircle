@@ -25,7 +25,7 @@
     <tbody>
         {% for i in acl.users %}
         <tr>
-          <td><i class="icon-user"></i></td>
+          <td><i class="fa fa-user"></i></td>
           <td>
             <a href="{% url "dashboard.views.profile" username=i.user.username %}" title="{{ i.user.username }}"
               >{% include "dashboard/_display-name.html" with user=i.user show_org=True %}</a>
@@ -44,7 +44,7 @@
         {% endfor %}
         {% for i in acl.groups %}
         <tr>
-          <td><i class="icon-group"></i></td>
+          <td><i class="fa fa-group"></i></td>
           <td>
             <a href="{% url "dashboard.views.group-detail" pk=i.group.pk %}"
               >{{ i.group.name }}</a>
@@ -60,7 +60,7 @@
           </td>
         </tr>
         {% endfor %}
-        <tr><td><i class="icon-plus"></i></td>
+        <tr><td><i class="fa fa-plus"></i></td>
             <td><input type="text" class="form-control" name="perm-new-name"
                 placeholder="{% trans "Name of group or user" %}"></td>
             <td><select class="form-control" name="perm-new">

@@ -2,7 +2,7 @@
 {% load network_tags %} 
 <h2>
   <a href="#" id="vm-details-network-add" class="btn btn-success pull-right no-js-hidden">
-    <i class="icon-plus"></i> {% trans "add interface" %}
+    <i class="fa fa-plus"></i> {% trans "add interface" %}
   </a>
   {% trans "Interfaces" %}
 </h2>
@@ -33,7 +33,7 @@
           </select>
           <div class="input-group-btn">
             <button {% if vlans|length == 0 %}disabled{% endif %}
-              type="submit" class="btn btn-success"><i class="icon-plus-sign"></i></button>
+              type="submit" class="btn btn-success"><i class="fa fa-plus-circle"></i></button>
           </div>
         </div>
       </form>
@@ -45,7 +45,7 @@
 {% for i in instance.interface_set.all %}
 <div>
   <h3 class="list-group-item-heading dashboard-vm-details-network-h3">
-    <i class="icon-{% if i.host %}globe{% else %}link{% endif %}"></i> {{ i.vlan.name }} 
+    <i class="fa fa-{% if i.host %}globe{% else %}link{% endif %}"></i> {{ i.vlan.name }} 
     {% if not i.host%}({% trans "unmanaged" %}){% endif %}
     {% if user.is_superuser %}
       <a href="{{ i.host.get_absolute_url }}" 
@@ -85,13 +85,13 @@
             <table class="table table-striped rule-table">
               <thead>
                 <tr><th>
-                  <i class="icon-globe icon-2x"></i>
-                  <i class="icon-long-arrow-right icon-2x"></i>
+                  <i class="fa fa-globe icon-2x"></i>
+                  <i class="fa fa-long-arrow-right icon-2x"></i>
                   </th><th>
-                  <i class="icon-shield icon-2x"></i>
+                  <i class="fa fa-shield icon-2x"></i>
                   </th><th colspan="2">
-                  <i class="icon-long-arrow-right icon-2x"></i>
-                  <i class="icon-desktop icon-2x"></i>
+                  <i class="fa fa-long-arrow-right icon-2x"></i>
+                  <i class="fa fa-desktop icon-2x"></i>
                 </th></tr>
               </thead>
               <tbody>
@@ -101,12 +101,12 @@
                       <td>
                         {% display_portforward4 l %}
                       </td>
-                      <td><i class="icon-long-arrow-right"></i></td>
+                      <td><i class="fa fa-long-arrow-right"></i></td>
                       <td>
                         {{ l.private }}/{{ l.proto }}
                       </td>
                       <td>
-                        <a href="{% url "dashboard.views.remove-port" pk=instance.pk rule=l.ipv4.pk %}" class="btn btn-link btn-xs vm-details-remove-port" data-rule="{{ l.ipv4.pk }}" title="{% trans "Remove" %}"><i class="icon-remove"><span class="sr-only">{% trans "Remove" %}</span></i></a>
+                        <a href="{% url "dashboard.views.remove-port" pk=instance.pk rule=l.ipv4.pk %}" class="btn btn-link btn-xs vm-details-remove-port" data-rule="{{ l.ipv4.pk }}" title="{% trans "Remove" %}"><i class="fa fa-times"><span class="sr-only">{% trans "Remove" %}</span></i></a>
                       </td>
                     </tr>
                   {% endif %}
@@ -119,11 +119,11 @@
             <table class="table table-striped rule-table">
               <thead>
                 <tr><th>
-                  <i class="icon-globe icon-2x"></i>
+                  <i class="fa fa-globe icon-2x"></i>
                 </th><th>
-                  <i class="icon-long-arrow-right icon-2x"></i>
+                  <i class="fa fa-long-arrow-right icon-2x"></i>
                 </th><th colspan="2">
-                  <i class="icon-desktop icon-2x"></i>
+                  <i class="fa fa-desktop icon-2x"></i>
                 </th></tr>
               </thead>
               <tbody>
@@ -133,12 +133,12 @@
                       <td>
                         {% display_portforward6 l %}
                       </td>
-                      <td><i class="icon-long-arrow-right"></i></td>
+                      <td><i class="fa fa-long-arrow-right"></i></td>
                       <td>
                         {{ l.private }}/{{ l.proto }}
                       </td>
                       <td>
-                        <a href="{% url "dashboard.views.remove-port" pk=instance.pk rule=l.ipv4.pk %}" class="btn btn-link btn-xs vm-details-remove-port" data-rule="{{ l.ipv6.pk }}" title="{% trans "Remove" %}"><i class="icon-remove"><span class="sr-only">{% trans "Remove" %}</span></i></a>
+                        <a href="{% url "dashboard.views.remove-port" pk=instance.pk rule=l.ipv4.pk %}" class="btn btn-link btn-xs vm-details-remove-port" data-rule="{{ l.ipv6.pk }}" title="{% trans "Remove" %}"><i class="fa fa-times"><span class="sr-only">{% trans "Remove" %}</span></i></a>
                       </td>
                     </tr>
                   {% endif %}

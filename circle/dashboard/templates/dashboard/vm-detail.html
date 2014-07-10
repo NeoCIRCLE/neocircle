@@ -10,7 +10,7 @@
   <strong>{% trans "This is the master vm of your new template" %}</strong>
   <div id="vm-details-template-tour-button" class="pull-right">
     <a href="#" class="btn btn-default btn-lg pull-right vm-details-start-template-tour">
-      <i class="icon-play"></i> {% trans "Start template tutorial" %}
+      <i class="fa fa-play"></i> {% trans "Start template tutorial" %}
     </a>
   </div>
   <ol>
@@ -93,7 +93,7 @@
             <input type="text" id="vm-details-pw-input" class="form-control input-sm input-tags" 
             value="{{ instance.pw }}" spellcheck="false"/>
             <span class="input-group-addon input-tags" id="vm-details-pw-show">
-              <i class="icon-eye-open" id="vm-details-pw-eye" title="Show password"></i>
+              <i class="fa fa-eye" id="vm-details-pw-eye" title="Show password"></i>
             </span>
           </div>
         </dd>
@@ -118,7 +118,7 @@
         {% trans "Connection is not possible." %}{% endif %}" 
         id="vm-details-connection-string" class="form-control input-tags" />
         <span class="input-group-addon input-tags" id="vm-details-connection-string-copy">
-          <i class="icon-copy" title="{% trans "Select all" %}"></i>
+          <i class="fa fa-copy" title="{% trans "Select all" %}"></i>
         </span>
       </div>
     </div>
@@ -127,31 +127,31 @@
         <ul class="nav nav-pills panel-heading">
           <li class="active">
             <a href="#home" data-toggle="pill" data-target="#_home" class="text-center">
-              <i class="icon-compass icon-2x"></i><br>
+              <i class="fa fa-compass icon-2x"></i><br>
               {% trans "Home" %}</a>
           </li>
           <li>
             <a href="#resources" data-toggle="pill" data-target="#_resources" class="text-center">
-              <i class="icon-tasks icon-2x"></i><br>
+              <i class="fa fa-tasks icon-2x"></i><br>
               {% trans "Resources" %}</a>
           </li>
           <li{% if not instance.is_console_available %} class="disabled"{% endif %}>
             <a href="#console" data-toggle="pill" data-target="#_console" class="text-center">
-              <i class="icon-desktop icon-2x"></i><br>
+              <i class="fa fa-desktop icon-2x"></i><br>
               {% trans "Console" %}</a></li>
           <li>
             <a href="#access" data-toggle="pill" data-target="#_access" class="text-center">
-              <i class="icon-group icon-2x"></i><br>
+              <i class="fa fa-group icon-2x"></i><br>
               {% trans "Access" %}</a>
           </li>
           <li>
             <a href="#network" data-toggle="pill" data-target="#_network" class="text-center">
-              <i class="icon-globe icon-2x"></i><br>
+              <i class="fa fa-globe icon-2x"></i><br>
               {% trans "Network" %}</a>
           </li>
           <li>
             <a href="#activity" data-toggle="pill" data-target="#_activity" class="text-center">
-              <i class="icon-time icon-2x"></i><br>
+              <i class="fa fa-time icon-2x"></i><br>
               {% trans "Activity" %}</a>
           </li>
         </ul>
