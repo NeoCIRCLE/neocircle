@@ -1,12 +1,11 @@
 from django.http import Http404
 import json
 import requests
-import django.conf
 
 from datetime import datetime
 from sizefield.utils import filesizeformat
 
-settings = django.conf.settings.STORE_SETTINGS
+from django.conf import settings
 
 
 class Mock(object):
@@ -14,41 +13,36 @@ class Mock(object):
 
 
 def get_host():
-    return settings['store_url']
+    return settings.STORE_URL
+
+
+def get_request_arguments(ssl_auth, basic_auth):
+    args = {
+        'verify': settings.STORE_VERIFY_SSL,
+        'cert': (settings.STORE_CLIENT_CERT, settings.STORE_CLIENT_KEY),
+        'auth': (settings.STORE_CLIENT_USER, settings.STORE_CLIENT_PASSWORD),
+    }
+    if ssl_auth and basic_auth:
+        pass
+    elif ssl_auth:
+        del args['auth']
+    elif basic_auth:
+        del args['cert']
+    else:
+        del args['cert']
+        del args['auth']
+
+    return args
 
 
 def post_request(url, payload, timeout=None):
     try:
         headers = {'content-type': 'application/json'}
-        if settings['ssl_auth'] == 'True' and settings['basic_auth'] == 'True':
-            r = requests.post(url, data=payload, headers=headers,
-                              verify=settings['verify_ssl'] == 'True',
-                              cert=(settings['store_client_cert'],
-                                    settings['store_client_key']),
-                              auth=(settings['store_client_user'],
-                                    settings['store_client_pass']),
-                              timeout=timeout,
-                              )
-        elif settings['ssl_auth'] == 'True':
-            r = requests.post(url, data=payload, headers=headers,
-                              verify=settings['verify_ssl'] == 'True',
-                              cert=(settings['store_client_cert'],
-                                    settings['store_client_key']),
-                              timeout=timeout,
-                              )
-        elif settings['basic_auth'] == 'True':
-            r = requests.post(url, data=payload, headers=headers,
-                              verify=settings['verify_ssl'] == 'True',
-                              auth=(settings['store_client_user'],
-                                    settings['store_client_pass']),
-                              timeout=timeout,
-                              )
-        else:
-            r = requests.post(url, data=payload, headers=headers,
-                              verify=settings['verify_ssl'] == 'True',
-                              timeout=timeout)
+        r = requests.post(url, data=payload, headers=headers, timeout=timeout,
+                          **get_request_arguments(settings.STORE_SSL_AUTH,
+                                                  settings.STORE_BASIC_AUTH))
         return r
-    except:
+    except Exception:
         dummy = Mock()
         setattr(dummy, "status_code", 200)
         setattr(dummy, "content", "[]")
@@ -58,46 +52,11 @@ def post_request(url, payload, timeout=None):
 def get_request(url, timeout=None):
     try:
         headers = {'content-type': 'application/json'}
-        if settings['ssl_auth'] == 'True' and settings['basic_auth'] == 'True':
-            r = requests.get(
-                url,
-                headers=headers,
-                verify=settings['verify_ssl'] == 'True',
-                cert=(
-                    settings['store_client_cert'],
-                    settings['store_client_key']),
-                auth=(
-                    settings['store_client_user'],
-                    settings['store_client_pass']),
-                timeout=timeout,
-            )
-        elif settings['ssl_auth'] == 'True':
-            r = requests.get(
-                url,
-                headers=headers,
-                verify=settings['verify_ssl'] == 'True',
-                cert=(
-                    settings['store_client_cert'],
-                    settings['store_client_key']),
-                timeout=timeout,
-            )
-        elif settings['basic_auth'] == 'True':
-            r = requests.get(
-                url,
-                headers=headers,
-                verify=settings['verify_ssl'] == 'True',
-                auth=(
-                    settings['store_client_user'],
-                    settings['store_client_pass']),
-                timeout=timeout,
-            )
-        else:
-            r = requests.get(url, headers=headers,
-                             verify=settings['verify_ssl'] == 'True',
-                             timeout=timeout,
-                             )
-            return r
-    except:
+        r = requests.get(url, headers=headers, timeout=timeout,
+                         **get_request_arguments(settings.STORE_SSL_AUTH,
+                                                 settings.STORE_BASIC_AUTH))
+        return r
+    except Exception:
         dummy = Mock()
         setattr(dummy, "status_code", 200)
         setattr(dummy, "content", "[]")
@@ -105,7 +64,7 @@ def get_request(url, timeout=None):
 
 
 def listfolder(neptun, path):
-    url = settings['store_url']+'/'+neptun
+    url = settings.STORE_URL + '/' + neptun
     payload = json.dumps({'CMD': 'LIST', 'PATH': path})
     r = post_request(url, payload, timeout=5)
     if r.status_code == requests.codes.ok:
@@ -116,7 +75,7 @@ def listfolder(neptun, path):
 
 
 def toplist(neptun):
-    url = settings['store_url']+'/'+neptun
+    url = settings.STORE_URL + '/' + neptun
     payload = json.dumps({'CMD': 'TOPLIST'})
     r = post_request(url, payload, timeout=2)
     if r.status_code == requests.codes.ok:
@@ -127,7 +86,7 @@ def toplist(neptun):
 
 
 def requestdownload(neptun, path):
-    url = settings['store_url']+'/'+neptun
+    url = settings.STORE_URL + '/' + neptun
     payload = json.dumps({'CMD': 'DOWNLOAD', 'PATH': path})
     r = post_request(url, payload)
     response = json.loads(r.content)
@@ -135,10 +94,11 @@ def requestdownload(neptun, path):
 
 
 def requestupload(neptun, path):
-    url = settings['store_url']+'/'+neptun
+    url = settings.STORE_URL+'/'+neptun
     payload = json.dumps({'CMD': 'UPLOAD', 'PATH': path})
     r = post_request(url, payload)
     response = json.loads(r.content)
+    print response
     if r.status_code == requests.codes.ok:
         return response['LINK']
     else:
@@ -146,7 +106,7 @@ def requestupload(neptun, path):
 
 
 def requestremove(neptun, path):
-    url = settings['store_url']+'/'+neptun
+    url = settings.STORE_URL+'/'+neptun
     payload = json.dumps({'CMD': 'REMOVE', 'PATH': path})
     r = post_request(url, payload)
     if r.status_code == requests.codes.ok:
@@ -156,7 +116,7 @@ def requestremove(neptun, path):
 
 
 def requestnewfolder(neptun, path):
-    url = settings['store_url']+'/'+neptun
+    url = settings.STORE_URL+'/'+neptun
     payload = json.dumps({'CMD': 'NEW_FOLDER', 'PATH': path})
     r = post_request(url, payload)
     if r.status_code == requests.codes.ok:
@@ -166,7 +126,7 @@ def requestnewfolder(neptun, path):
 
 
 def requestrename(neptun, old_path, new_name):
-    url = settings['store_url']+'/'+neptun
+    url = settings.STORE_URL+'/'+neptun
     payload = json.dumps(
         {'CMD': 'RENAME', 'NEW_NAME': new_name, 'PATH': old_path})
     r = post_request(url, payload)
@@ -177,7 +137,7 @@ def requestrename(neptun, old_path, new_name):
 
 
 def requestquota(neptun):
-    url = settings['store_url']+'/'+neptun
+    url = settings.STORE_URL+'/'+neptun
     r = get_request(url)
     if r.status_code == requests.codes.ok:
         return json.loads(r.content)
@@ -186,7 +146,7 @@ def requestquota(neptun):
 
 
 def set_quota(neptun, quota):
-    url = settings['store_url']+'/quota/'+neptun
+    url = settings.STORE_URL+'/quota/'+neptun
     payload = json.dumps({'QUOTA': quota})
     r = post_request(url, payload)
     if r.status_code == requests.codes.ok:
@@ -196,7 +156,7 @@ def set_quota(neptun, quota):
 
 
 def userexist(neptun):
-    url = settings['store_url']+'/'+neptun
+    url = settings.STORE_URL+'/'+neptun
     r = get_request(url, timeout=5)
     if r.status_code == requests.codes.ok:
         return True
@@ -205,7 +165,7 @@ def userexist(neptun):
 
 
 def createuser(neptun, password, key_list, quota):
-    url = settings['store_url']+'/new/'+neptun
+    url = settings.STORE_URL+'/new/'+neptun
     payload = json.dumps(
         {'SMBPASSWD': password, 'KEYS': key_list, 'QUOTA': quota})
     r = post_request(url, payload, timeout=5)
@@ -216,7 +176,7 @@ def createuser(neptun, password, key_list, quota):
 
 
 def updateauthorizationinfo(neptun, password, key_list):
-    url = settings['store_url']+'/set/'+neptun
+    url = settings.STORE_URL+'/set/'+neptun
     payload = json.dumps({'SMBPASSWD': password, 'KEYS': key_list})
     r = post_request(url, payload)
     if r.status_code == requests.codes.ok:
