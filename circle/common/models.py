@@ -165,7 +165,7 @@ class ActivityModel(TimeStampedModel):
         return HumanReadableObject.from_dict(self.readable_name_data)
 
     @readable_name.setter
-    def set_readable_name(self, value):
+    def readable_name(self, value):
         self.readable_name_data = None if value is None else value.to_dict()
 
     @property
@@ -173,7 +173,7 @@ class ActivityModel(TimeStampedModel):
         return HumanReadableObject.from_dict(self.result_data)
 
     @result.setter
-    def set_result(self, value):
+    def result(self, value):
         if isinstance(value, basestring):
             warn("Using string as result value is deprecated. Use "
                  "HumanReadableObject instead.", DeprecationWarning)
