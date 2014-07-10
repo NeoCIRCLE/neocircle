@@ -43,6 +43,8 @@ from acl.models import AclBase
 
 from vm.tasks.agent_tasks import add_keys, del_keys
 
+from dashboard import store_api
+
 logger = getLogger(__name__)
 
 pwgen = User.objects.make_random_password
@@ -193,6 +195,13 @@ def create_profile(sender, user, request, **kwargs):
     if not user.pk:
         return False
     profile, created = Profile.objects.get_or_create(user=user)
+
+    if created:
+        user_home = "u-%d" % user.pk
+        if not store_api.userexist(user_home):
+            store_api.createuser(user_home, profile.smb_password, None,
+                                 profile.disk_quota)
+
     return created
 
 user_logged_in.connect(create_profile)

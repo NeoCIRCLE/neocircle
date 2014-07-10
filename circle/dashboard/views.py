@@ -208,11 +208,15 @@ class IndexView(LoginRequiredMixin, TemplateView):
                 'operator', user).all()[:5]
 
         # toplist
+        user_home = "u-%d" % user.pk
         cache = get_cache("default")
-        toplist = cache.get("toplist-test")
+        toplist = cache.get("toplist-%s" % user_home)
         if not toplist:
-            toplist = store_api.process_list(store_api.toplist("test"))
-            cache.set("toplist-test", toplist, 300)
+            try:
+                toplist = store_api.process_list(store_api.toplist(user_home))
+            except Http404:
+                toplist = []
+            cache.set("toplist-%s" % user_home, toplist, 300)
 
         context['toplist'] = toplist
 
@@ -3075,7 +3079,8 @@ class StoreList(LoginRequiredMixin, TemplateView):
         directory = self.request.GET.get("directory", "/")
         directory = "/" if not len(directory) else directory
 
-        content = store_api.listfolder("test", directory)
+        user_home = "u-%d" % self.request.user.pk
+        content = store_api.listfolder(user_home, directory)
         context['root'] = store_api.process_list(content)
         context['up_url'] = self.create_up_directory(directory)
         context['current'] = directory
@@ -3102,16 +3107,18 @@ class StoreList(LoginRequiredMixin, TemplateView):
 @require_GET
 @login_required
 def store_download(request):
+    user_home = "u-%d" % request.user.pk
     path = request.GET.get("path")
-    url = store_api.requestdownload("test", path)
+    url = store_api.requestdownload(user_home, path)
     return redirect(url)
 
 
 @require_GET
 @login_required
 def store_upload(request):
+    user_home = "u-%d" % request.user.pk
     directory = request.GET.get("directory", "/")
-    action = store_api.requestupload("test", directory)
+    action = store_api.requestupload(user_home, directory)
     next_url = "%s%s?directory=%s" % (
         settings.DJANGO_URL[:-1], reverse("dashboard.views.store-list"),
         directory)
@@ -3124,8 +3131,9 @@ def store_upload(request):
 @require_GET
 @login_required
 def store_get_upload_url(request):
+    user_home = "u-%d" % request.user.pk
     current_dir = request.GET.get("current_dir")
-    url = store_api.requestupload("test", current_dir)
+    url = store_api.requestupload(user_home, current_dir)
     return HttpResponse(
         json.dumps({'url': url}), content_type="application/json")
 
@@ -3150,8 +3158,9 @@ class StoreRemove(LoginRequiredMixin, TemplateView):
         return context
 
     def post(self, *args, **kwargs):
+        user_home = "u-%d" % self.request.user.pk
         path = self.request.POST.get("path")
-        store_api.requestremove("test", path)
+        store_api.requestremove(user_home, path)
 
         if path.endswith("/"):
             return redirect("%s?directory=%s" % (
@@ -3168,10 +3177,11 @@ class StoreRemove(LoginRequiredMixin, TemplateView):
 @require_POST
 @login_required
 def store_new_directory(request):
+    user_home = "u-%d" % request.user.pk
     path = request.POST.get("path")
     name = request.POST.get("name")
 
-    store_api.requestnewfolder("test", path + name)
+    store_api.requestnewfolder(user_home, path + name)
     return redirect("%s?directory=%s" % (
         reverse("dashboard.views.store-list"), path))
 
@@ -3179,8 +3189,13 @@ def store_new_directory(request):
 @require_POST
 @login_required
 def store_refresh_toplist(request):
+    user_home = "u-%d" % request.user.pk
     cache = get_cache("default")
-    toplist = store_api.process_list(store_api.toplist("test"))
+    try:
+        toplist = store_api.process_list(store_api.toplist(user_home))
+    except Http404:
+        toplist = []
     cache.set("toplist-test", toplist, 300)
 
+    user_home = "u-%d" % request.user.pk
     return redirect(reverse("dashboard.index"))
