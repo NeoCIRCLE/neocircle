@@ -17,7 +17,7 @@ def get_host():
     return settings['store_url']
 
 
-def post_request(url, payload):
+def post_request(url, payload, timeout=None):
     try:
         headers = {'content-type': 'application/json'}
         if settings['ssl_auth'] == 'True' and settings['basic_auth'] == 'True':
@@ -26,24 +26,27 @@ def post_request(url, payload):
                               cert=(settings['store_client_cert'],
                                     settings['store_client_key']),
                               auth=(settings['store_client_user'],
-                                    settings['store_client_pass'])
+                                    settings['store_client_pass']),
+                              timeout=timeout,
                               )
         elif settings['ssl_auth'] == 'True':
             r = requests.post(url, data=payload, headers=headers,
                               verify=settings['verify_ssl'] == 'True',
                               cert=(settings['store_client_cert'],
-                                    settings['store_client_key'])
+                                    settings['store_client_key']),
+                              timeout=timeout,
                               )
         elif settings['basic_auth'] == 'True':
             r = requests.post(url, data=payload, headers=headers,
                               verify=settings['verify_ssl'] == 'True',
                               auth=(settings['store_client_user'],
-                                    settings['store_client_pass'])
+                                    settings['store_client_pass']),
+                              timeout=timeout,
                               )
         else:
             r = requests.post(url, data=payload, headers=headers,
-                              verify=settings['verify_ssl'] == 'True'
-                              )
+                              verify=settings['verify_ssl'] == 'True',
+                              timeout=timeout)
         return r
     except:
         dummy = Mock()
@@ -52,7 +55,7 @@ def post_request(url, payload):
         return dummy
 
 
-def get_request(url):
+def get_request(url, timeout=None):
     try:
         headers = {'content-type': 'application/json'}
         if settings['ssl_auth'] == 'True' and settings['basic_auth'] == 'True':
@@ -65,7 +68,9 @@ def get_request(url):
                     settings['store_client_key']),
                 auth=(
                     settings['store_client_user'],
-                    settings['store_client_pass']))
+                    settings['store_client_pass']),
+                timeout=timeout,
+            )
         elif settings['ssl_auth'] == 'True':
             r = requests.get(
                 url,
@@ -73,7 +78,9 @@ def get_request(url):
                 verify=settings['verify_ssl'] == 'True',
                 cert=(
                     settings['store_client_cert'],
-                    settings['store_client_key']))
+                    settings['store_client_key']),
+                timeout=timeout,
+            )
         elif settings['basic_auth'] == 'True':
             r = requests.get(
                 url,
@@ -81,10 +88,13 @@ def get_request(url):
                 verify=settings['verify_ssl'] == 'True',
                 auth=(
                     settings['store_client_user'],
-                    settings['store_client_pass']))
+                    settings['store_client_pass']),
+                timeout=timeout,
+            )
         else:
             r = requests.get(url, headers=headers,
-                             verify=settings['verify_ssl'] == 'True'
+                             verify=settings['verify_ssl'] == 'True',
+                             timeout=timeout,
                              )
             return r
     except:
@@ -97,7 +107,7 @@ def get_request(url):
 def listfolder(neptun, path):
     url = settings['store_url']+'/'+neptun
     payload = json.dumps({'CMD': 'LIST', 'PATH': path})
-    r = post_request(url, payload)
+    r = post_request(url, payload, timeout=5)
     if r.status_code == requests.codes.ok:
         tupplelist = json.loads(r.content)
         return tupplelist
@@ -108,7 +118,7 @@ def listfolder(neptun, path):
 def toplist(neptun):
     url = settings['store_url']+'/'+neptun
     payload = json.dumps({'CMD': 'TOPLIST'})
-    r = post_request(url, payload)
+    r = post_request(url, payload, timeout=2)
     if r.status_code == requests.codes.ok:
         tupplelist = json.loads(r.content)
         return tupplelist
@@ -187,7 +197,7 @@ def set_quota(neptun, quota):
 
 def userexist(neptun):
     url = settings['store_url']+'/'+neptun
-    r = get_request(url)
+    r = get_request(url, timeout=5)
     if r.status_code == requests.codes.ok:
         return True
     else:
@@ -198,7 +208,7 @@ def createuser(neptun, password, key_list, quota):
     url = settings['store_url']+'/new/'+neptun
     payload = json.dumps(
         {'SMBPASSWD': password, 'KEYS': key_list, 'QUOTA': quota})
-    r = post_request(url, payload)
+    r = post_request(url, payload, timeout=5)
     if r.status_code == requests.codes.ok:
         return True
     else:
