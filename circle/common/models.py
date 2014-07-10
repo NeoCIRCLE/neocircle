@@ -25,8 +25,9 @@ from warnings import warn
 
 from django.contrib.auth.models import User
 from django.core.cache import cache
-from django.db.models import (CharField, DateTimeField, ForeignKey,
-                              NullBooleanField, TextField)
+from django.db.models import (
+    CharField, DateTimeField, ForeignKey, NullBooleanField
+)
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _, ugettext_noop
 from jsonfield import JSONField

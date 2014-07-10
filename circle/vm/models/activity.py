@@ -28,8 +28,7 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _, ugettext_noop
 
 from common.models import (
-    ActivityModel, activitycontextimpl, create_readable, join_activity_code,
-    split_activity_code
+    ActivityModel, activitycontextimpl, create_readable, join_activity_code
 )
 
 from manager.mancelery import celery
