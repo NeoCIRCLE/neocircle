@@ -1,0 +1,221 @@
+/* Move down content because we have a fixed navbar that is 50px tall */
+body {
+  padding-top: 50px;
+  padding-bottom: 20px;
+  margin-bottom: 30px; /* sticky footer */
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+/* Set widths on the navbar form inputs since otherwise they're 100% wide */
+.navbar-form input[type="text"],
+.navbar-form input[type="password"] {
+  width: 180px;
+}
+
+/* Wrapping element */
+/* Set some basic padding to keep content from hitting the edges */
+.body-content {
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+/* values for 45px tall navbar */
+.navbar {
+  min-height: 45px;
+}
+
+.navbar-brand {
+  height: 45px;
+  padding: 12.5px 12.5px;
+}
+
+.navbar-toggle {
+  margin-top: 5.5px;
+  margin-bottom: 5.5px;
+}
+
+.navbar-form {
+  margin-top: 5.5px;
+  margin-bottom: 5.5px;
+}
+
+.navbar-btn {
+  margin-top: 5.5px;
+  margin-bottom: 5.5px;
+}
+
+.navbar-btn.btn-sm {
+  margin-top: 7.5px;
+  margin-bottom: 7.5px;
+}
+.navbar-btn.btn-xs {
+  margin-top: 11.5px;
+  margin-bottom: 11.5px;
+}
+.navbar-text {
+  margin-top: 12.5px;
+  margin-bottom: 12.5px;
+}
+
+/* --- */
+
+/* Responsive: Portrait tablets and up */
+@media screen and (min-width: 768px) {
+  /* Let the jumbotron breathe */
+  .container > :first-child {
+    margin-top: 20px;
+  }
+  /* Remove padding from wrapping element since we kick in the grid classes here */
+  .body-content {
+    padding: 0;
+  }
+
+  .navbar-nav > li > a {
+    padding-top: 12.5px;
+    padding-bottom: 12.5px;
+  }
+
+}
+.no-margin {
+  margin: 0!important;
+}
+
+.list-group .list-group-footer {
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.big {
+  font-size: 2em;
+}
+.bigbig {
+  font-size: 3em;
+}
+/* small buttons for tags, copied from Bootstraps input-sm, bnt-sm */
+.btn-tags, .btn-traits {
+  padding: 3px 6px;
+  font-size: 11px;
+  line-height: 1.5;
+  border-radius: 3px;
+}
+
+.input-tags, .input-tratis {
+  height: 22px;
+  padding: 2px 8px;
+  font-size: 11px;
+  line-height: 1.5;
+  border-radius: 3px;
+}
+/* font awesome font */
+.font-awesome-font {
+  font-family: "FontAwesome";
+}
+
+.nojs-dropdown-menu
+{
+  position:absolute;
+  display:none;
+  z-index: 1;
+}
+
+
+.nojs-dropdown-toggle:focus + .nojs-dropdown-menu
+{
+  display: block;
+}
+
+.nojs-dropdown-toggle:focus
+{
+  outline:none;
+}
+
+.nojs-dropdown-menu:hover
+{
+  display: block;
+}
+
+.notification-messages {
+  padding: 10px 8px;
+  width: 350px;
+}
+
+.notification-message {
+  margin-bottom: 10px;
+  padding: 0 0 4px 0;
+  border-bottom: 1px dotted #D3D3D3;
+}
+
+.notification-messages .notification-message:last-child {
+  margin-bottom: 0px;
+  padding: 0px;
+  border-bottom: none;
+}
+
+.notification-message-text {
+  padding: 8px 15px;
+  display: none;
+}
+
+.notification-message .notification-message-subject {
+  cursor: pointer;
+}
+
+/* footer */
+footer {                                                             
+  position: absolute;                                               
+  bottom: 0;                                                        
+  width: 100%;                                                      
+  /* Set the fixed height of the footer here */                     
+  height: 30px;                                                     
+  background-color: #101010;                                        
+  color: white;                                                               
+  font-size: 13px;                                                            
+  padding: 5px 5px 0 5px;                                                     
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);                          
+  text-align: center;                                                     
+}
+                                                                
+footer a, footer a:hover, footer a:visited {                        
+  color: white;                                                     
+  text-decoration: underline;
+}
+
+.table-sorting {
+  display: none;
+}
+
+#notifications-button {
+  margin: 0;
+}
+
+/* 2px border bottom for all bootstrap tables */
+.table thead>tr>th {
+  border-bottom: 1px;
+}
+
+.badge-pulse {
+  -webkit-animation-name: 'pulse_animation';
+  -webkit-animation-duration: 1000ms;
+  -webkit-transform-origin: 70% 70%;
+  -webkit-animation-iteration-count: infinite;
+  -webkit-animation-timing-function: linear;
+}
+
+@-webkit-keyframes pulse_animation {
+  0% { -webkit-transform: scale(1); }
+  30% { -webkit-transform: scale(1); }
+  40% { -webkit-transform: scale(1.18); }
+  50% { -webkit-transform: scale(1); }
+  60% { -webkit-transform: scale(1); }
+  70% { -webkit-transform: scale(1.08); }
+  80% { -webkit-transform: scale(1); }
+  100% { -webkit-transform: scale(1); }
+}
+
+.btn-toolbar {
+  margin-bottom: 5px;
+}

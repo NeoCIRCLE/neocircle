@@ -1,96 +1,51 @@
+{% extends "base.html" %}
 {% load i18n %}
 {% load l10n %}
 {% load staticfiles %}
 {% get_current_language as lang %}
-<!DOCTYPE html>
-<html lang="{{lang}}">
-  <head>
-    <meta charset="utf-8">
-    <title>{% block title %}Firewall GUI{% endblock %}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:200,400&amp;subset=latin,latin-ext' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css">
-    <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet" />
-    <link href="{% static "network/network.css" %}" rel="stylesheet">
-    <style type="text/css">
-    body {
-      padding-top:40px;
-    }
 
-    /* note: this doesn't really work */
-    a i:hover {
-        text-decoration: none;
-    }
+{% block extra_link %}
+  <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:200,400&amp;subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+  <link href="{% static "network/network.css" %}" rel="stylesheet">
+{% endblock %}
 
-    footer {
-        margin-top: 45px;
-    }
+{% block extra_css %}
+<style type="text/css">
+  body {
+    padding-top:40px;
+  }
 
-    .messagelist {
-        margin-top: 25px;
-    }
-    </style>
+  /* note: this doesn't really work */
+  a i:hover {
+      text-decoration: none;
+  }
 
-    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
-    <!--[if lt IE 9]>
-      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    {% block extra_css %}{% endblock %}
-  </head>
-  <body>
-    <div class="navbar navbar-inverse navbar-fixed-top">
-        <div class="navbar-header">  
-          <a class="navbar-brand" href="{% url "network.index" %}">CIRCLE Network</a>
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-        </div><!-- .navbar-header -->
-        <div class="collapse navbar-collapse">
-            <ul class="nav navbar-nav">
-             {% include "network/menu.html" %}
-            </ul>
-            <a class="navbar-brand pull-right" href="{% url "dashboard.index" %}"
-                style="color: white; font-size: 10px;"><i class="icon-dashboard"></i> {% trans "dashboard" %}</a>
-        </div><!-- .collapse .navbar-collapse -->
-    </div><!-- navbar navbar-inverse navbar-fixed-top -->
-    <div class="container">
-        {% block messages %}
-        {% if messages %}
-        <div class="messagelist">
-        {% for message in messages %}
-        <div class="alert
-            {% if message.tags %} alert-{% if message.tags == "error" %}danger{% else %}{{ message.tags }}{% endif %}{% endif %}">
-            {{ message }}
-        </div>
-        {% endfor %}
-        </div>
-        {% endif %}
-        {% endblock messages %}
-        {% block content %}
-        <div class="alert-block">This is an abstract base template.</div>
-        {% endblock %}
-    </div><!-- .container -->
+  footer {
+      margin-top: 45px;
+  }
 
-    <div class="footer-container container">
-        <footer>
-            <p class="pull-right"><a href="#">Vissza az oldal tetejére</a></p>
-            <p>&copy; {{ COMPANY_NAME }}
-        </footer>
-    </div><!-- .footer-container .container -->
+  .messagelist {
+      margin-top: 25px;
+  }
+</style>
+{% endblock %}
 
-    <script src="//code.jquery.com/jquery-latest.js"></script>
-    <script src="{{ STATIC_URL }}jsi18n/{{ LANGUAGE_CODE }}/djangojs.js"></script>
-    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
-    <script src="{% static "js/bootbox.min.js" %}"></script>
-    <script src="{% static "js/network.js" %}"></script>
-    <script>
-    {% block extra_js %}
-    {% endblock %}
-    </script>
-    {% block extra_etc %}
-    {% endblock %}
-  </body>
-</html>
+{% block navbar-brand %}
+  <a class="navbar-brand" href="{% url "network.index" %}">CIRCLE Network</a>
+{% endblock %}
+
+{% block navbar %}
+  <ul class="nav navbar-nav">
+   {% include "network/menu.html" %}
+  </ul>
+  <a class="navbar-brand pull-right" href="{% url "dashboard.index" %}"
+      style="color: white; font-size: 10px;">
+    <i class="icon-dashboard"></i> 
+    {% trans "dashboard" %}
+  </a>
+{% endblock %}
+
+{% block extra_script %}
+  <script src="{% static "js/bootbox.min.js" %}"></script>
+  <script src="{% static "js/network.js" %}"></script>
+{% endblock %}
