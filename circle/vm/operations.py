@@ -626,6 +626,7 @@ class RenewOperation(InstanceOperation):
     description = _("Renew expiration times")
     acl_level = "operator"
     required_perms = ()
+    concurrency_check = False
 
     def _operation(self, lease=None):
         (self.instance.time_of_suspend,
