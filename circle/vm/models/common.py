@@ -18,7 +18,7 @@
 from __future__ import absolute_import, unicode_literals
 from datetime import timedelta, datetime
 
-from django.db.models import Model, CharField, IntegerField
+from django.db.models import Model, CharField, IntegerField, permalink
 from django.utils.translation import ugettext_lazy as _
 from django.utils.timesince import timeuntil
 
@@ -150,6 +150,10 @@ class Lease(AclBase):
             'name': self.name,
             's': self.get_readable_suspend_time(),
             'r': self.get_readable_delete_time()}
+
+    @permalink
+    def get_absolute_url(self):
+        return ('dashboard.views.lease-detail', None, {'pk': self.pk})
 
 
 class Trait(Model):

@@ -40,6 +40,7 @@ from .views import (
     UserKeyDelete, UserKeyDetail, UserKeyCreate,
     VmTraitsUpdate, VmRawDataUpdate,
     GroupPermissionsView,
+    LeaseAclUpdateView,
 )
 
 urlpatterns = patterns(
@@ -51,6 +52,8 @@ urlpatterns = patterns(
         name="dashboard.views.lease-create"),
     url(r'^lease/delete/(?P<pk>\d+)/$', LeaseDelete.as_view(),
         name="dashboard.views.lease-delete"),
+    url(r'^lease/(?P<pk>\d+)/acl/$', LeaseAclUpdateView.as_view(),
+        name="dashboard.views.lease-acl"),
 
     url(r'^template/create/$', TemplateCreate.as_view(),
         name="dashboard.views.template-create"),

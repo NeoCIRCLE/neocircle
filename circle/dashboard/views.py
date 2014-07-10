@@ -2296,12 +2296,22 @@ class LeaseCreate(LoginRequiredMixin, SuperuserRequiredMixin,
         return reverse_lazy("dashboard.views.template-list")
 
 
+class LeaseAclUpdateView(AclUpdateView):
+    model = Lease
+
+
 class LeaseDetail(LoginRequiredMixin, SuperuserRequiredMixin,
                   SuccessMessageMixin, UpdateView):
     model = Lease
     form_class = LeaseForm
     template_name = "dashboard/lease-edit.html"
     success_message = _("Successfully modified lease.")
+
+    def get_context_data(self, *args, **kwargs):
+        obj = self.get_object()
+        context = super(LeaseDetail, self).get_context_data(*args, **kwargs)
+        context['acl'] = get_vm_acl_data(obj)
+        return context
 
     def get_success_url(self):
         return reverse_lazy("dashboard.views.lease-detail", kwargs=self.kwargs)
