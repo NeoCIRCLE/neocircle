@@ -35,10 +35,12 @@ import django.conf
 from django.db.models.signals import post_save, post_delete
 import random
 
-from common.models import HumanSortField
+from common.models import method_cache, WorkerNotFound, HumanSortField
 from firewall.tasks.local_tasks import reloadtask
 from .iptables import IptRule
 from acl.models import AclBase
+
+
 logger = logging.getLogger(__name__)
 settings = django.conf.settings.FIREWALL_SETTINGS
 
@@ -801,6 +803,20 @@ class Firewall(models.Model):
 
     def __unicode__(self):
         return self.name
+
+    @method_cache(30)
+    def get_remote_queue_name(self, queue_id):
+        """Returns the name of the remote celery queue for this node.
+
+        Throws Exception if there is no worker on the queue.
+        The result may include dead queues because of caching.
+        """
+        from .tasks.remote_tasks import check_queue
+
+        if check_queue(self.name, queue_id, None):
+            return self.name + "." + queue_id
+        else:
+            raise WorkerNotFound()
 
 
 class Domain(models.Model):

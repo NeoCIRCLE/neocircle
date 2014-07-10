@@ -45,11 +45,6 @@ celery.conf.update(
               routing_key="monitor"),
     ),
     CELERYBEAT_SCHEDULE={
-        'firewall.periodic_task': {
-            'task': 'firewall.tasks.local_tasks.periodic_task',
-            'schedule': timedelta(seconds=5),
-            'options': {'queue': 'localhost.man'}
-        },
         'vm.update_domain_states': {
             'task': 'vm.tasks.local_periodic_tasks.update_domain_states',
             'schedule': timedelta(seconds=10),
