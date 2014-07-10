@@ -16,13 +16,15 @@
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
+import warnings
+
 from factory import Factory, Sequence
 from mock import patch, MagicMock
 
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.core.signing import TimestampSigner, JSONSerializer, b64_encode
-from django.http import HttpRequest, Http404
+from django.http import HttpRequest, Http404, QueryDict
 from django.utils import baseconv
 
 from ..models import Profile
@@ -238,26 +240,33 @@ class VmOperationViewTestCase(unittest.TestCase):
             self.assertEquals(rend.status_code, 200)
 
 
-def FakeRequestFactory(*args, **kwargs):
+def FakeRequestFactory(user=None, **kwargs):
     ''' FakeRequestFactory, FakeMessages and FakeRequestContext are good for
     mocking out django views; they are MUCH faster than the Django test client.
     '''
 
-    user = UserFactory()
-    user.is_authenticated = lambda: kwargs.get('authenticated', True)
-    user.is_superuser = kwargs.get('superuser', False)
-    if kwargs.get('has_perms_mock', False):
-        user.has_perms = MagicMock(return_value=True)
+    if user is None:
+        user = UserFactory()
+        user.is_authenticated = lambda: kwargs.pop('authenticated', True)
+        user.is_superuser = kwargs.pop('superuser', False)
+        if kwargs.pop('has_perms_mock', False):
+            user.has_perms = MagicMock(return_value=True)
+        user.save()
 
     request = HttpRequest()
     request.user = user
-    request.session = kwargs.get('session', {})
+    request.session = kwargs.pop('session', {})
     if kwargs.get('POST') is not None:
         request.method = 'POST'
-        request.POST = kwargs.get('POST')
+        request.POST = QueryDict('', mutable=True)
+        request.POST.update(kwargs.pop('POST'))
     else:
         request.method = 'GET'
-        request.GET = kwargs.get('GET', {})
+    request.GET = QueryDict('', mutable=True)
+    request.GET.update(kwargs.pop('GET', {}))
+
+    if len(kwargs):
+        warnings.warn("FakeRequestFactory kwargs unused: " + unicode(kwargs))
 
     return request
 
