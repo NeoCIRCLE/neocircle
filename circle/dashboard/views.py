@@ -608,14 +608,11 @@ class OperationView(RedirectToLoginMixin, DetailView):
         return me
 
 
-class VmOperationView(OperationView):
-
-    model = Instance
-    context_object_name = 'instance'  # much simpler to mock object
+class AjaxOperationMixin(object):
 
     def post(self, request, extra=None, *args, **kwargs):
-        resp = super(VmOperationView, self).post(request, extra, *args,
-                                                 **kwargs)
+        resp = super(AjaxOperationMixin, self).post(
+            request, extra, *args, **kwargs)
         if request.is_ajax():
             store = messages.get_messages(request)
             store.used = True
@@ -626,6 +623,12 @@ class VmOperationView(OperationView):
             )
         else:
             return resp
+
+
+class VmOperationView(AjaxOperationMixin, OperationView):
+
+    model = Instance
+    context_object_name = 'instance'  # much simpler to mock object
 
 
 class FormOperationMixin(object):
