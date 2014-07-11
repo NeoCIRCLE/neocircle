@@ -630,7 +630,7 @@ class VmCreateDiskView(FormOperationMixin, VmOperationView):
     op = 'create_disk'
     form_class = VmCreateDiskForm
     show_in_toolbar = False
-    icon = 'hdd'
+    icon = 'hdd-o'
     is_disk_operation = True
 
 

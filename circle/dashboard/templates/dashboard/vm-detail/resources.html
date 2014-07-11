@@ -39,7 +39,7 @@
     <button type="submit" class="btn btn-success btn-sm enabled-when-stopped" id="vm-details-resources-save"
       data-vm="{{ instance.pk }}"
       {% if not op.resources_change %}disabled{% endif %}>
-      <i class="fa fa-save"></i> {% trans "Save resources" %}
+      <i class="fa fa-floppy-o"></i> {% trans "Save resources" %}
     </button>
     <span class="hide-when-stopped"
       {% if op.resources_change %}style="display: none;"{% endif %}
