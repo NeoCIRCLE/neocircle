@@ -23,7 +23,9 @@ from django.conf import settings
 from manager.mancelery import celery
 
 from vm.tasks.vm_tasks import check_queue
+from firewall.tasks.remote_tasks import check_queue as check_queue_fw
 from vm.models import Node, InstanceTemplate
+from firewall.models import Firewall
 from storage.models import DataStore
 from monitor.client import Client
 
@@ -79,6 +81,11 @@ def check_celery_queues():
             metrics.append(graphite_string("storage", ds.hostname,
                                            "storage-" + s, is_queue_alive,
                                            time()))
+
+    for fw in Firewall.objects.all():
+        is_queue_alive = check_queue_fw(fw.name, "firewall", None)
+        metrics.append(graphite_string(
+            "firewall", fw.name, "firewall", is_queue_alive, time()))
 
     Client().send(metrics)
 
