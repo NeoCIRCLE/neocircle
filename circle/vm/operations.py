@@ -200,7 +200,7 @@ class DeployOperation(InstanceOperation):
         with activity.sub_activity('booting'):
             self.instance.resume_vm(timeout=timeout)
 
-        self.instance.renew(which='both', base_activity=activity)
+        self.instance.renew(parent_activity=activity)
 
 
 register_operation(DeployOperation)
@@ -613,10 +613,28 @@ class WakeUpOperation(InstanceOperation):
             self.instance.deploy_net()
 
         # Renew vm
-        self.instance.renew(which='both', base_activity=activity)
+        self.instance.renew(parent_activity=activity)
 
 
 register_operation(WakeUpOperation)
+
+
+class RenewOperation(InstanceOperation):
+    activity_code_suffix = 'renew'
+    id = 'renew'
+    name = _("renew")
+    description = _("Renew expiration times")
+    acl_level = "operator"
+    required_perms = ()
+    concurrency_check = False
+
+    def _operation(self, lease=None):
+        (self.instance.time_of_suspend,
+         self.instance.time_of_delete) = self.instance.get_renew_times(lease)
+        self.instance.save()
+
+
+register_operation(RenewOperation)
 
 
 class NodeOperation(Operation):

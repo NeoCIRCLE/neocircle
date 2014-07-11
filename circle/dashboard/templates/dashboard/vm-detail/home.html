@@ -47,7 +47,12 @@
     </dl>
 
     <h4>{% trans "Expiration" %} {% if instance.is_expiring %}<i class="icon-warning-sign text-danger"></i>{% endif %}
-      <a href="{% url "dashboard.views.vm-renew" instance.pk "" %}" class="btn btn-success btn-xs pull-right">{% trans "renew" %}</a>
+        {% with op=op.renew %}
+          <a href="{{op.get_url}}" class="btn btn-success btn-xs
+                  operation operation-{{op.op}} btn btn-default">
+            <i class="icon-{{op.icon}}"></i>
+                  {{op.name}} </a>
+        {% endwith %}
     </h4>
     <dl>
       <dt>{% trans "Suspended at:" %}</dt>
