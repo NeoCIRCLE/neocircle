@@ -77,6 +77,7 @@ class Lease(AclBase):
     """
     ACL_LEVELS = (
         ('user', _('user')),          # use this lease
+        ('operator', _('operator')),  # share this lease
         ('owner', _('owner')),        # change this lease
     )
     name = CharField(max_length=100, unique=True,
