@@ -97,7 +97,6 @@ class Lease(AclBase):
         ordering = ['name', ]
         permissions = (
             ('create_leases', _('Can create new leases.')),
-            ('bypass_leases', _('Can set arbitrary expiration times.')),
         )
 
     @property

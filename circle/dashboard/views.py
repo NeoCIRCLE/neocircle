@@ -2285,10 +2285,11 @@ class VmMassDelete(LoginRequiredMixin, View):
             return redirect(next if next else reverse_lazy('dashboard.index'))
 
 
-class LeaseCreate(LoginRequiredMixin, SuperuserRequiredMixin,
+class LeaseCreate(LoginRequiredMixin, PermissionRequiredMixin,
                   SuccessMessageMixin, CreateView):
     model = Lease
     form_class = LeaseForm
+    permission_required = 'vm.create_leases'
     template_name = "dashboard/lease-create.html"
     success_message = _("Successfully created a new lease.")
 
