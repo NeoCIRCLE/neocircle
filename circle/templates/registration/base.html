@@ -1,15 +1,9 @@
+{% extends "base.html" %}
 {% load i18n %}
 {% load staticfiles %}
 {% get_current_language as LANGUAGE_CODE %}
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>{% block title %}{% endblock %} | CIRCLE</title>
-  <meta name="description" content="">
-  <meta name="author" content="">
 
-  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
-  <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
+{% block extra_css %}
 <style type="text/css">
     html, body {
       background-color: #eee;
@@ -77,12 +71,11 @@
       display: none;
     }
   </style>
-</head>
-<body>
-  <div class="container">
-    <div class="content">
-      {% block content %}{% endblock %}
-    </div>
-  </div> <!-- /container -->
-</body>
-</html>
+{% endblock %}
+
+
+{% block navbar-brand %}
+  <a class="navbar-brand" href="{% url "dashboard.index" %}" style="padding: 10px 15px;">
+    <img src="{{ STATIC_URL}}dashboard/img/logo.png" style="height: 25px;"/>
+  </a>
+{% endblock %}
