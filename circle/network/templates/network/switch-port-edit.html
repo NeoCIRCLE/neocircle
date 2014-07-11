@@ -7,7 +7,7 @@
 
 {% block content %}
 <div class="page-header">
-  <a href="{% url "network.switch_port_delete" pk=switch_port_pk %}" class="btn btn-danger pull-right"><i class="icon-remove-sign"></i> {% trans "Delete this switchport" %}</a>
+  <a href="{% url "network.switch_port_delete" pk=switch_port_pk %}" class="btn btn-danger pull-right"><i class="fa fa-times-circle"></i> {% trans "Delete this switchport" %}</a>
   <h2>Welp <small>dunno what to write here</small></h2>
 </div>
 <div class="row">
@@ -28,7 +28,7 @@
           <tr>
             <td>{{ i }}</td>
             <td>
-              <a href="{% url "network.remove_switch_port_device" pk=switch_port_pk device_pk=i.pk %}"><i class="icon-remove"></i></a> 
+              <a href="{% url "network.remove_switch_port_device" pk=switch_port_pk device_pk=i.pk %}"><i class="fa fa-times"></i></a> 
             </td>
           </tr>
         {% endfor %}
