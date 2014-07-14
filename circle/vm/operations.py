@@ -189,8 +189,9 @@ class DeployOperation(InstanceOperation):
             self.instance.deploy_disks()
 
         # Deploy VM on remote machine
-        with activity.sub_activity('deploying_vm') as deploy_act:
-            deploy_act.result = self.instance.deploy_vm(timeout=timeout)
+        if self.instance.state not in ['PAUSED']:
+            with activity.sub_activity('deploying_vm') as deploy_act:
+                deploy_act.result = self.instance.deploy_vm(timeout=timeout)
 
         # Establish network connection (vmdriver)
         with activity.sub_activity('deploying_net'):
