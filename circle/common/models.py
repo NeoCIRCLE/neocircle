@@ -342,8 +342,9 @@ class HumanReadableObject(object):
         self.params = params
 
     @classmethod
-    def create(cls, user_text_template, admin_text_template, **params):
-        return cls(user_text_template, admin_text_template, params)
+    def create(cls, user_text_template, admin_text_template=None, **params):
+        return cls(user_text_template,
+                   admin_text_template or user_text_template, params)
 
     @classmethod
     def from_dict(cls, d):
