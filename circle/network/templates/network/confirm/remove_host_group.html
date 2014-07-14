@@ -1,16 +1,16 @@
-{% extends "network/base.html" %}                                           
-{% load i18n %}                                                             
-{% load l10n %}                                                             
+{% extends "network/base.html" %}
+{% load i18n %}
+{% load l10n %}
 {% block content %}
 
 <div class="page-header">
-    <h1>Remove <small></small></h1>                           
-</div> 
+    <h1>Remove <small></small></h1>
+</div>
 <form action="" method="post">{% csrf_token %}
     <p>Are you sure you want to remove host group <strong>"{{ group }}"</strong>
     from <strong>"{{ host }}"</strong>?</p>
     <input type="hidden" value="{{ request.GET.from }}" name="next" />
-    <a href="{{ request.GET.from }}" class="btn btn-info">Back</a>         
+    <a href="{{ request.GET.from }}" class="btn btn-info">Back</a>
     <input type="submit" class="btn btn-danger" value="Confirm" />
 </form>
 {% endblock %}

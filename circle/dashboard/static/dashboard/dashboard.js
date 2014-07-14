@@ -121,11 +121,11 @@ $(function () {
   $("#dashboard-vm-list").on('click', '.dashboard-vm-favourite', function(e) {
     var star = $(this).children("i");
     var pk = $(this).data("vm");
-    if(star.hasClass("icon-star-empty")) {
-      star.removeClass("icon-star-empty").addClass("icon-star");
+    if(star.hasClass("fa-star-o")) {
+      star.removeClass("fa-star-o").addClass("fa-star");
       star.prop("title", "Unfavourite");
     } else {
-      star.removeClass("icon-star").addClass("icon-star-empty");
+      star.removeClass("fa-star").addClass("fa-star-o");
       star.prop("title", "Mark as favourite");
     }
     $.ajax({
@@ -381,12 +381,12 @@ function generateVmHTML(pk, name, host, icon, _status, fav, is_last) {
   return '<a href="/dashboard/vm/' + pk + '/" class="list-group-item' +
          (is_last ? ' list-group-item-last' : '') + '">' +      
         '<span class="index-vm-list-name">' + 
-          '<i class="' + icon + '" title="' + _status + '"></i> ' + name +
+          '<i class="fa ' + icon + '" title="' + _status + '"></i> ' + name +
         '</span>' + 
         '<small class="text-muted"> ' + host + '</small>' +
         '<div class="pull-right dashboard-vm-favourite" data-vm="' + pk + '">' +  
-          (fav ? '<i class="icon-star text-primary title-favourite" title="Unfavourite"></i>' :
-          '<i class="icon-star-empty text-primary title-favourite" title="Mark as favorite"></i>' ) +
+          (fav ? '<i class="fa fa-star text-primary title-favourite" title="Unfavourite"></i>' :
+          '<i class="fa fa-star-o text-primary title-favourite" title="Mark as favorite"></i>' ) +
         '</div>' +                                                               
       '<div style="clear: both;"></div>' +                                       
       '</a>';     
@@ -394,14 +394,14 @@ function generateVmHTML(pk, name, host, icon, _status, fav, is_last) {
 
 function generateGroupHTML(url, name) {
   return '<a href="' + url + '" class="list-group-item real-link">'+
-         '<i class="icon-group"></i> '+ name +
+         '<i class="fa fa-users"></i> '+ name +
          '</a>';
 }
 
 function generateNodeHTML(name, icon, _status, url, is_last) {
   return '<a href="' + url + '" class="list-group-item real-link' + (is_last ? ' list-group-item-last' : '') + '">' +
         '<span class="index-node-list-name">' +
-        '<i class="' + icon + '" title="' + _status + '"></i> ' + name +
+        '<i class="fa ' + icon + '" title="' + _status + '"></i> ' + name +
         '</span>' +
         '<div style="clear: both;"></div>' +
         '</a>';

@@ -131,7 +131,7 @@ class VmCustomizeForm(forms.Form):
                         "button",
                         AnyTag(
                             "i",
-                            css_class="icon-play"
+                            css_class="fa fa-play"
                         ),
                         HTML(" Start"),
                         css_id="vm-create-customized-start",
@@ -163,7 +163,7 @@ class VmCustomizeForm(forms.Form):
             Div(  # cpu priority
                 Div(
                     HTML('<label for="vm-cpu-priority-slider">'
-                         '<i class="icon-trophy"></i> CPU priority'
+                         '<i class="fa fa-trophy"></i> CPU priority'
                          '</label>'),
                     css_class="col-sm-3"
                 ),
@@ -182,7 +182,7 @@ class VmCustomizeForm(forms.Form):
             Div(  # cpu count
                 Div(
                     HTML('<label for="cpu-count-slider">'
-                         '<i class="icon-cogs"></i> CPU count'
+                         '<i class="fa fa-cogs"></i> CPU count'
                          '</label>'),
                     css_class="col-sm-3"
                 ),
@@ -201,7 +201,7 @@ class VmCustomizeForm(forms.Form):
             Div(  # ram size
                 Div(
                     HTML('<label for="ram-slider">'
-                         '<i class="icon-ticket"></i> RAM amount'
+                         '<i class="fa fa-ticket"></i> RAM amount'
                          '</label>'),
                     css_class="col-sm-3"
                 ),
@@ -313,7 +313,7 @@ class VmCustomizeForm(forms.Form):
                                         "a",
                                         AnyTag(
                                             "i",
-                                            css_class="icon-plus-sign",
+                                            css_class="fa fa-plus-circle",
                                         ),
                                         css_id=("vm-create-network-add"
                                                 "-button"),
@@ -556,7 +556,7 @@ class NodeForm(forms.ModelForm):
                                 "button",
                                 AnyTag(
                                     "i",
-                                    css_class="icon-play"
+                                    css_class="fa fa-play"
                                 ),
                                 HTML("Start"),
                                 css_id="node-create-submit",
@@ -958,7 +958,7 @@ class CircleAuthenticationForm(AuthenticationForm):
                     "span",
                     AnyTag(
                         "i",
-                        css_class="icon-user",
+                        css_class="fa fa-user",
                     ),
                     css_class="input-group-addon",
                 ),
@@ -972,7 +972,7 @@ class CircleAuthenticationForm(AuthenticationForm):
                     "span",
                     AnyTag(
                         "i",
-                        css_class="icon-lock",
+                        css_class="fa fa-lock",
                     ),
                     css_class="input-group-addon",
                 ),
@@ -1000,7 +1000,7 @@ class CirclePasswordResetForm(PasswordResetForm):
                     "span",
                     AnyTag(
                         "i",
-                        css_class="icon-envelope",
+                        css_class="fa fa-envelope",
                     ),
                     css_class="input-group-addon",
                 ),

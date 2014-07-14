@@ -1,4 +1,4 @@
-{% load i18n %} 
+{% load i18n %}
 
 <div id="group-list-column-users">
   <a class="real-link" href="{% url "dashboard.views.group-detail" pk=record.pk %}">{{ record.user_set.count }}</a>

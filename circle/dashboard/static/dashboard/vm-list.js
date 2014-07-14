@@ -171,7 +171,7 @@ $(function() {
     
     $(".vm-list-table thead th i").remove();
 
-    var icon_html = '<i class="icon-sort-' + (data.direction == "desc" ? "up" : "down") + ' pull-right"></i>';
+    var icon_html = '<i class="fa fa-sort-' + (data.direction == "desc" ? "desc" : "asc") + ' pull-right"></i>';
     $(".vm-list-table thead th").eq(data.column).append(icon_html);
   });
 

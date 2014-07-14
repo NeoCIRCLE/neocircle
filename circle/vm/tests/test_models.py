@@ -154,9 +154,9 @@ class InstanceTestCase(TestCase):
     def test_status_icon(self):
         inst = MagicMock(spec=Instance)
         inst.status = 'dummy-value'
-        self.assertEqual(Instance.get_status_icon(inst), 'icon-question-sign')
+        self.assertEqual(Instance.get_status_icon(inst), 'fa-question')
         inst.status = 'RUNNING'
-        self.assertEqual(Instance.get_status_icon(inst), 'icon-play')
+        self.assertEqual(Instance.get_status_icon(inst), 'fa-play')
 
 
 class InterfaceTestCase(TestCase):

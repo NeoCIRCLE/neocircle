@@ -1,6 +1,6 @@
 {% extends "dashboard/base.html" %}
 {% load i18n %}
-{% load crispy_forms_tags %} 
+{% load crispy_forms_tags %}
 {% load render_table from django_tables2 %}
 
 {% block title-page %}{% trans "Profile" %}{% endblock %}
@@ -11,10 +11,10 @@
   <div class="col-md-12">
     <div class="panel panel-default">
       <div class="panel-heading">
-        <a class="pull-right btn btn-default btn-xs" 
+        <a class="pull-right btn btn-default btn-xs"
           href="{% url "dashboard.views.profile" username=object.user.username %}">
           {% trans "Go to my profile" %}</a>
-        <h3 class="no-margin"><i class="icon-desktop"></i> {% trans "My profile" %}</h3>
+        <h3 class="no-margin"><i class="fa fa-desktop"></i> {% trans "My profile" %}</h3>
       </div>
       <div class="panel-body">
         <div class="row">
@@ -34,7 +34,7 @@
             <fieldset>
               <legend>{% trans "Current avatar" %}</legend>
               <p>
-                <img id="dashboard-profile-avatar" 
+                <img id="dashboard-profile-avatar"
                  class="img-rounded" src="{{ object.get_avatar_url }}"/>
               </p>
               <p>
@@ -55,9 +55,9 @@
     <div class="panel panel-default">
       <div class="panel-heading">
         <a href="{% url "dashboard.views.userkey-create" %}" class="pull-right btn btn-success btn-xs" style="margin-right: 10px;">
-          <i class="icon-plus"></i> {% trans "add SSH key" %}
+          <i class="fa fa-plus"></i> {% trans "add SSH key" %}
         </a>
-        <h3 class="no-margin"><i class="icon-key"></i> {% trans "SSH public keys" %}</h3>
+        <h3 class="no-margin"><i class="fa fa-key"></i> {% trans "SSH public keys" %}</h3>
       </div>
       <div class="panel-body">
         {% render_table userkey_table %}

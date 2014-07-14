@@ -2,9 +2,9 @@
 {%blocktrans with instance=instance.name url=instance.get_absolute_url suspend=instance.time_of_suspend delete=instance.time_of_delete %}
 Your instance <a href="{{url}}">{{instance}}</a> is going to expire.
 It will be suspended at {{suspend}} and destroyed at {{delete}}.
-{%endblocktrans%} 
+{%endblocktrans%}
 
 {%blocktrans with token=token url=instance.get_absolute_url %}
 Please, either <a href="{{token}}">renew</a> or <a href="{{url}}">destroy</a>
 it now.
-{%endblocktrans%} 
+{%endblocktrans%}

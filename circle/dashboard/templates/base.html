@@ -1,4 +1,5 @@
-{% load i18n %}<!DOCTYPE html>
+{% load i18n %}
+<!DOCTYPE html>
 <html lang="{{lang}}">
   <head>
     <meta charset="utf-8">
@@ -9,83 +10,73 @@
 
     <title>{% block title %}{% block title-page %}{% endblock %} | {% block title-site %}CIRCLE{% endblock %}{% endblock %}</title>
 
-    <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
-    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css">
-    <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
-    <script src="{{ STATIC_URL }}dashboard/js/jquery.knob.js"></script>
-    <script src="{{ STATIC_URL}}dashboard/bootstrap-slider/bootstrap-slider.js"></script>
-    <link rel="stylesheet" href="{{ STATIC_URL }}dashboard/bootstrap-slider/slider.css"/>
-    <link href="{{ STATIC_URL }}dashboard/bootstrap-tour.min.css" rel="stylesheet">
-    <link href="{{ STATIC_URL }}dashboard/dashboard.css" rel="stylesheet">
-    <script src="{{ STATIC_URL }}dashboard/dashboard.js"></script>
-    <script src="{{ STATIC_URL }}jsi18n/{{ LANGUAGE_CODE }}/djangojs.js"></script>
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ STATIC_URL }}/template.css">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    {% block extra_link %}{% endblock %}
+
+    {% block extra_css %}{% endblock %}
   </head>
 
   <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
-        <div class="navbar-header">  
-          <a class="navbar-brand" href="{% url "dashboard.index" %}" style="padding: 10px 15px;">
-            <img src="{{ STATIC_URL}}dashboard/img/logo.png" style="height: 25px;"/>
-          </a>
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-        </div><!-- .navbar-header -->
-        <div class="collapse navbar-collapse">
-          <ul class="nav navbar-nav pull-right">
-            <li class="dropdown" id="notification-button">                            
-              <a href="{% url "dashboard.views.notifications" %}" style="color: white; font-size: 12px;" class="dropdown-toggle" data-toggle="dropdown">
-                {% trans "Notifications" %}{% if NEW_NOTIFICATIONS_COUNT > 0 %} <span class="badge badge-pulse">{{ NEW_NOTIFICATIONS_COUNT }}</span>{% endif %}
-              </a>                                                                    
-              <ul class="dropdown-menu notification-messages">                        
-                  <li>{% trans "Loading..." %}</li>                                   
-              </ul>                                                                   
-            </li>               
-          </ul>
-          {% if user.is_authenticated and user.pk %}
-            <a class="navbar-brand pull-right" href="{% url "logout" %}?next={% url "login" %}" style="color: white; font-size: 10px;"><i class="icon-signout icon-sign-out"></i> {% trans "Log out" %}</a>
-            <a class="navbar-brand pull-right" href="{% url "dashboard.views.profile-preferences" %}" 
-              title="{% trans "User profile" %}" style="color: white; font-size: 10px;">
-              <i class="icon-user"></i>
-              {% include "dashboard/_display-name.html" with user=user show_org=True %}
-            </a>
-            {% if user.is_superuser %}
-              <a class="navbar-brand pull-right" href="/network/" style="color: white; font-size: 10px;"><i class="icon-globe"></i> {% trans "Network" %}</a>
-              <a class="navbar-brand pull-right" href="/admin/" style="color: white; font-size: 10px;"><i class="icon-cogs"></i> {% trans "Admin" %}</a>
-            {% endif %}
-          {% else %}
-            <a class="navbar-brand pull-right" href="{% url "login" %}?next={% url "dashboard.index" %}" style="color: white; font-size: 10px;"><i class="icon-sign-in"></i> {% trans "Log in " %}</a>
-          {% endif %}
-        </div><!-- .collapse .navbar-collapse -->
+      <div class="navbar-header">
+        {% block navbar-brand %}{% endblock %}
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+      </div><!-- .navbar-header -->
+      <div class="collapse navbar-collapse">
+        {% block navbar %}{% endblock %}
+      </div><!-- .collapse .navbar-collapse -->
     </div><!-- navbar navbar-inverse navbar-fixed-top -->
 
     <div class="container">
       {% block messages %}
-      <div class="messagelist">
-      {% if messages %}
-      {% for message in messages %}
-      <div class="alert
-          {% if message.tags %} alert-{% if message.tags == "error" %}danger{% else %}{{ message.tags }}{% endif %}{% endif %}">
+        <div class="messagelist">
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert
+              {% if message.tags %} alert-{% if message.tags == "error" %}danger{% else %}{{ message.tags }}{% endif %}{% endif %}">
           {{ message|safe }}
-      </div>
-      {% endfor %}
-      {% endif %}
+            </div>
+          {% endfor %}
+        {% endif %}
       </div>
       {% endblock messages %}
       {% block content %}
         <h1 class="alert alert-error">Please override "content" block.</h1>
       {% endblock %}
     </div> <!-- /container -->
+
     <footer>
-      <a href="#">{% trans "Legal notice" %}</a> | <a href="#">{% trans "Policy" %}</a> | <a href="#">{% trans "Help" %}</a> |
+      <a href="#">{% trans "Legal notice" %}</a> |
+      <a href="#">{% trans "Policy" %}</a> |
+      <a href="#">{% trans "Help" %}</a> |
       <a href="#">{% trans "Support" %}</a>
       <span class="pull-right">{{ COMPANY_NAME }}</span>
     </footer>
   </body>
-{% block extra_js %}
-{% endblock %}
+
+  <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+  <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+  <script src="{{ STATIC_URL }}jsi18n/{{ LANGUAGE_CODE }}/djangojs.js"></script>
+
+  {% block extra_script %}
+  {% endblock %}
+
+  {% block extra_js %}
+  {% endblock %}
+
+  {% block extra_etc %}
+  {% endblock %}
 </html>

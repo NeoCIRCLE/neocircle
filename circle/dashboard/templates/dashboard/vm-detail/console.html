@@ -4,7 +4,7 @@
   <button id="sendCtrlAltDelButton" class="btn btn-danger btn-sm">{% trans "Send Ctrl+Alt+Del" %}</button>
   <button id="sendPasswordButton" class="btn btn-default btn-sm">{% trans "Type password" %}</button>
 {% endif %}
-  <button id="getScreenshotButton" class="btn btn-info btn-sm pull-right" data-vm-pk="{{ instance.pk }}"><i class="icon-picture"></i> {% trans "Screenshot" %}</button>
+  <button id="getScreenshotButton" class="btn btn-info btn-sm pull-right" data-vm-pk="{{ instance.pk }}"><i class="fa fa-picture"></i> {% trans "Screenshot" %}</button>
 </div>
 {% if perms.vm.access_console %}
 <div class="alert alert-info" id="noVNC_status">

@@ -19,7 +19,7 @@ To get the project running on a development machine, launch a new Ubuntu
     To use *git* over *SSH*, we advise enabling SSH *agent forwarding*.
     On your terminal computer check if *ssh-agent* is running (the command
     should print a process id)::
-      
+
       $ echo $SSH_AGENT_PID
       1234
 
@@ -46,7 +46,7 @@ You can check agent forwarding on the vm::
 .. warning::
   If the first character of the hostname of the vm is a digit, you have to
   change it, because RabbitMQ won't work with it. ::
- 
+
     old=$(hostname)
     new=c-${old}
     sudo tee /etc/hostname <<<$new
@@ -146,7 +146,7 @@ Sync the database and create a superuser::
 
   circle/manage.py syncdb --all --noinput
   circle/manage.py migrate --fake
-  circle/manage.py createsuperuser --username=test --email=test@example.org 
+  circle/manage.py createsuperuser --username=test --email=test@example.org
 
 You can now start the development server::
 
@@ -182,7 +182,7 @@ Configuring vim
 
 To follow the coding style of the project more easily, you might want to
 configure vim like we do::
-  
+
   mkdir -p ~/.vim/autoload ~/.vim/bundle
   curl -Sso ~/.vim/autoload/pathogen.vim \
       https://raw.github.com/tpope/vim-pathogen/master/autoload/pathogen.vim

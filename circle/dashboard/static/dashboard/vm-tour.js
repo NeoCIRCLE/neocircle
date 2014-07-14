@@ -17,13 +17,13 @@ function createTemplateTour() {
                   "<div class='popover-navigation'>" +
                     "<div class='btn-group'>" +
                       "<button class='btn btn-sm btn-default' data-role='prev'>" +
-                        '<i class="icon-chevron-left"></i> ' + gettext("Prev") + "</button> " +
+                        '<i class="fa fa-chevron-left"></i> ' + gettext("Prev") + "</button> " +
                       "<button class='btn btn-sm btn-default' data-role='next'>" +
-                        gettext("Next") + ' <i class="icon-chevron-right"></i></button> ' +
+                        gettext("Next") + ' <i class="fa fa-chevron-right"></i></button> ' +
                       "<button class='btn btn-sm btn-default' data-role='pause-resume' data-pause-text='Pause' data-resume-text='Resume'>Pause</button> " +
                     "</div>" +
                     "<button class='btn btn-sm btn-default' data-role='end'>" +
-                      gettext("End tour") + ' <i class="icon-flag-checkered"></i></button>' +
+                      gettext("End tour") + ' <i class="fa fa-flag-checkered"></i></button>' +
                   "</div>" +
                 "</div>",
   });
@@ -99,7 +99,7 @@ function createTemplateTour() {
 
   ttour.addStep({
     element: "#ops",
-    title: '<i class="icon-play"></i> ' + gettext("Deploy"),
+    title: '<i class="fa fa-play"></i> ' + gettext("Deploy"),
     placement: "left",
     backdrop: true,
     content: gettext("Deploy the virtual machine."),
@@ -123,7 +123,7 @@ function createTemplateTour() {
 
   ttour.addStep({
     element: "#ops",
-    title: '<i class="icon-save"></i> ' + gettext("Save as"),
+    title: '<i class="fa fa-floppy-o"></i> ' + gettext("Save as"),
     placement: "left",
     backdrop: true,
     content: gettext('Press the "Save as template" button and wait until the activity finishes.'),
