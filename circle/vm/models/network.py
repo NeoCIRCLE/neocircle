@@ -21,8 +21,9 @@ from logging import getLogger
 from netaddr import EUI, mac_unix
 
 from django.db.models import Model, ForeignKey, BooleanField
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _, ugettext_noop
 
+from common.models import create_readable
 from firewall.models import Vlan, Host
 from ..tasks import net_tasks
 from .activity import instance_activity
@@ -127,10 +128,13 @@ class Interface(Model):
                 addresses = vlan.get_new_address()
                 host.ipv4 = addresses['ipv4']
                 host.ipv6 = addresses['ipv6']
-                act.result = ('new addresses: ipv4: %(ip4)s, ipv6: %(ip6)s, '
-                              'vlan: %(vlan)s' % {'ip4': host.ipv4,
-                                                  'ip6': host.ipv6,
-                                                  'vlan': vlan.name})
+                act.result = create_readable(
+                    ugettext_noop("Interface successfully created."),
+                    ugettext_noop("Interface successfully created. "
+                                  "New addresses: ipv4: %(ip4)s, "
+                                  "ipv6: %(ip6)s, vlan: %(vlan)s."),
+                    ip4=unicode(host.ipv4), ip6=unicode(host.ipv6),
+                    vlan=vlan.name)
             host.owner = owner
             if vlan.network_type == 'public':
                 host.shared_ip = False
