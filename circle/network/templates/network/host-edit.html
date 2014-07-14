@@ -25,14 +25,14 @@
         {% else %}
             {% trans "No rules associated with this host!" %}
         {% endif %}
-        
+
         <div class="page-header">
             <h3>{% trans "Groups" %}</h3>
         </div>
         {% if group_rule_list|length > 0 %}
             {% for group in group_rule_list %}
             <div>
-                <h4 id="{{ group.pk }}_group_pk">{{ group.name }} 
+                <h4 id="{{ group.pk }}_group_pk">{{ group.name }}
                     <a href="{% url "network.remove_host_group" pk=host_pk group_pk=group.pk %}?from={{ request.path }}">
                         <i class="fa fa-times" style="vertical-align: middle;"></i></a>
                 <a href="{% url "network.group" group.pk %}">

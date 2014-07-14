@@ -8,7 +8,7 @@
     {% elif record.type == "MX" %}
         {{ record.host.get_fqdn }}
     {% else %}
-       This should not appear! 
+       This should not appear!
     {% endif %}
 {% else %}
     {{ record.address }}

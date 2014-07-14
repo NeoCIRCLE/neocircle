@@ -13,7 +13,7 @@
         <li>
           <i class="fa fa-gears"></i> {% trans "CPU" %}
           <div class="progress pull-right">
-            <div class="progress-bar progress-bar-success" role="progressbar" 
+            <div class="progress-bar progress-bar-success" role="progressbar"
               aria-valuenow="{{ t.num_cores }}" aria-valuemin="0" aria-valuemax="8" style="width: 80%">
               <span class="progress-bar-text">{{ t.num_cores }} cores</span>
             </div>
@@ -22,15 +22,15 @@
         <li>
           <i class="fa fa-ticket"></i> {% trans "Memory" %}
           <div class="progress pull-right">
-            <div class="progress-bar progress-bar-info" role="progressbar" 
-              aria-valuenow="{{ t.ram_size }}" aria-valuemin="0" aria-valuemax="4096" 
+            <div class="progress-bar progress-bar-info" role="progressbar"
+              aria-valuenow="{{ t.ram_size }}" aria-valuemin="0" aria-valuemax="4096"
               style="width: 80%">
               <span class="progress-bar-text">{{ t.ram_size }} MB</span>
             </div>
           </div>
         </li>
         <li>
-          <i class="fa fa-file"></i> {% trans "Disks" %} 
+          <i class="fa fa-file"></i> {% trans "Disks" %}
           <span style="float: right; text-align: right;">
             {% for d in t.disks.all %}{{ d.name }} ({% if d.size %}{{ d.size|filesize }}{% endif %}){% if not forloop.last %}, {% endif %}{% endfor %}
           </span>
@@ -131,11 +131,11 @@
     width: 100%;
     color: white;
     /* outline */
-    text-shadow:  
+    text-shadow:
       -1px -1px 0 #000,
       1px -1px 0 #000,
       -1px 1px 0 #000,
-      1px 1px 0 #000;  
+      1px 1px 0 #000;
     font-size: 10px;
   }
 </style>

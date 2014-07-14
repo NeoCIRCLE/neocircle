@@ -1,6 +1,6 @@
 {% extends "dashboard/base.html" %}
 {% load i18n %}
-{% load crispy_forms_tags %} 
+{% load crispy_forms_tags %}
 
 {% block title-page %}{{ profile.username}} | {% trans "Profile" %}{% endblock %}
 
@@ -12,7 +12,7 @@
       <div class="panel-heading">
         <a class="pull-right btn btn-default btn-xs" href="{% url "dashboard.index" %}">{% trans "Back" %}</a>
         <h3 class="no-margin">
-          <i class="fa fa-user"></i> 
+          <i class="fa fa-user"></i>
           {% include "dashboard/_display-name.html" with user=profile show_org=True %}
         </h3>
       </div>
@@ -27,7 +27,7 @@
             <p>{% trans "First name" %}: {{ profile.first_name|default:"-" }}</p>
             <p>{% trans "Last name" %}: {{ profile.last_name|default:"-" }}</p>
             <p>
-              {% if perm_email %} 
+              {% if perm_email %}
                 {% trans "Email address" %}: {{ profile.email }}
               {% endif %}
             </p>
@@ -82,7 +82,7 @@
         <hr />
 
         <h4>
-          <i class="fa fa-desktop"></i> 
+          <i class="fa fa-desktop"></i>
           {% trans "Virtual machines with access" %} ({{ instances_with_access|length }})
         </h4>
         <ul class="dashboard-profile-vm-list">

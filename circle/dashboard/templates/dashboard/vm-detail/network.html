@@ -1,5 +1,5 @@
 {% load i18n %}
-{% load network_tags %} 
+{% load network_tags %}
 <h2>
   <a href="#" id="vm-details-network-add" class="btn btn-success pull-right no-js-hidden">
     <i class="fa fa-plus"></i> {% trans "add interface" %}
@@ -38,20 +38,20 @@
         </div>
       </form>
       <hr />
-    </div> 
+    </div>
   </div>
 </div>
 
 {% for i in instance.interface_set.all %}
 <div>
   <h3 class="list-group-item-heading dashboard-vm-details-network-h3">
-    <i class="fa fa-{% if i.host %}globe{% else %}link{% endif %}"></i> {{ i.vlan.name }} 
+    <i class="fa fa-{% if i.host %}globe{% else %}link{% endif %}"></i> {{ i.vlan.name }}
     {% if not i.host%}({% trans "unmanaged" %}){% endif %}
     {% if user.is_superuser %}
-      <a href="{{ i.host.get_absolute_url }}" 
+      <a href="{{ i.host.get_absolute_url }}"
         class="btn btn-default btn-xs">{% trans "edit" %}</a>
     {% endif %}
-    <a href="{% url "dashboard.views.interface-delete" pk=i.pk %}?next={{ request.path }}" 
+    <a href="{% url "dashboard.views.interface-delete" pk=i.pk %}?next={{ request.path }}"
       class="btn btn-danger btn-xs interface-remove"
       data-interface-pk="{{ i.pk }}">
       {% trans "remove" %}
@@ -115,7 +115,7 @@
             </table>
           </div> <!-- /ipv4 -->
           <div class="tab-pane" id="ipv6_{{ i.host.vlan.pk }}">
-            {% if i.host.ipv6 %} 
+            {% if i.host.ipv6 %}
             <table class="table table-striped rule-table">
               <thead>
                 <tr><th>

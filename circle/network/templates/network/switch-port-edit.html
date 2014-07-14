@@ -28,7 +28,7 @@
           <tr>
             <td>{{ i }}</td>
             <td>
-              <a href="{% url "network.remove_switch_port_device" pk=switch_port_pk device_pk=i.pk %}"><i class="fa fa-times"></i></a> 
+              <a href="{% url "network.remove_switch_port_device" pk=switch_port_pk device_pk=i.pk %}"><i class="fa fa-times"></i></a>
             </td>
           </tr>
         {% endfor %}
@@ -38,14 +38,14 @@
       {% endif %}
       <hr />
       <form action="{% url "network.add_switch_port_device" pk=switch_port_pk %}" method="POST">
-        {% csrf_token %}                                                    
-          <div class="input-group">                                       
+        {% csrf_token %}
+          <div class="input-group">
             <input type="text" class="form-control" name="device_name" placeholder="{% trans "Name" %}"/>
-              <div class="input-group-btn">                               
+              <div class="input-group-btn">
                 <input type="submit" value="{% trans "Add new Ethernet Device" %}" class="btn btn-default"></input>
-              </div>                                                      
-            </div><!-- input-group -->                                      
-        </form>                     
+              </div>
+            </div><!-- input-group -->
+        </form>
   </div>
 </div>
 {% endblock %}

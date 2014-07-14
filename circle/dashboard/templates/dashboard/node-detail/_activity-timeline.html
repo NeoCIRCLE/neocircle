@@ -11,7 +11,7 @@
     <div class="sub-timeline">
       {% for s in a.children.all %}
       <div data-activity-id="{{ s.pk }}" class="sub-activity{% if s.has_failed %} sub-activity-failed{% endif %}">
-        {{ s.get_readable_name }} - 
+        {{ s.get_readable_name }} -
         {% if s.finished %}
           {{ s.finished|time:"H:i:s" }}
         {% else %}

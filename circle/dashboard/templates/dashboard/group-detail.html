@@ -14,12 +14,12 @@
       <div id="group-details-rename">
         <form action="" method="POST" id="group-details-rename-form">
           {% csrf_token %}
-          <input id="group-details-rename-name" class="form-control" name="new_name" type="text" value="{{ group.name }}"/> 
+          <input id="group-details-rename-name" class="form-control" name="new_name" type="text" value="{{ group.name }}"/>
           <button type="submit" id="group-details-rename-submit" class="btn">{% trans "Rename" %}</button>
         </form>
       </div>
       <div id="group-details-h1-name">
-        {{ group.name }} 
+        {{ group.name }}
         {% if group.groupprofile.org_id %}
         <small>{{group.groupprofile.org_id}}</small>
         {% endif %}
@@ -95,7 +95,7 @@
         </tr>
   </tbody>
   </table>
-  <textarea name="list-new-namelist" class="form-control" 
+  <textarea name="list-new-namelist" class="form-control"
     placeholder="{% trans "Add multiple users at once (one identifier per line)." %}"></textarea>
   <div class="form-actions">
     <button type="submit" class="btn btn-success">{% trans "Save" %}</button>
@@ -131,7 +131,7 @@
       <td class="user-remove"><a data-group_pk="{{ group.pk }}" data-member_pk="{{i.user.pk }}" href="{% url "dashboard.views.remove-acluser" member_pk=i.user.pk group_pk=group.pk %}" class="real-link delete-from-group btn btn-link btn-xs"><i class="fa fa-times"><span class="sr-only">{% trans "remove" %}</span></i></a></td>
     </tr>
     {% endfor %}
-    
+
     {% for i in acl.groups %}
       <tr>
         <td>

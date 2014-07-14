@@ -165,22 +165,22 @@ html {
 }
 
 /* footer */
-footer {                                                             
-  position: absolute;                                               
-  bottom: 0;                                                        
-  width: 100%;                                                      
-  /* Set the fixed height of the footer here */                     
-  height: 30px;                                                     
-  background-color: #101010;                                        
-  color: white;                                                               
-  font-size: 13px;                                                            
-  padding: 5px 5px 0 5px;                                                     
-  box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);                          
-  text-align: center;                                                     
+footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 30px;
+  background-color: #101010;
+  color: white;
+  font-size: 13px;
+  padding: 5px 5px 0 5px;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);
+  text-align: center;
 }
-                                                                
-footer a, footer a:hover, footer a:visited {                        
-  color: white;                                                     
+
+footer a, footer a:hover, footer a:visited {
+  color: white;
   text-decoration: underline;
 }
 

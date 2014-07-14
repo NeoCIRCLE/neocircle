@@ -87,13 +87,13 @@
     <div class="clearfix"></div>
     <div>
       <a style="float: right; margin-top: 17px;" href="{% url "dashboard.views.vm-list" %}" class="btn btn-primary btn-xs">
-        <i class="fa fa-chevron-circle-right"></i> 
+        <i class="fa fa-chevron-circle-right"></i>
         {% blocktrans count counter=instances|length|add:more_instances %}
           <strong>{{ counter }}</strong> machine total
           {% plural %}
           <strong>{{ counter }}</strong> machines total
         {% endblocktrans %}
-      </a> 
+      </a>
       <p class="big text-warning">{% blocktrans with count=stopped_vm_num %}<big>{{ count }}</big> stopped{% endblocktrans %}</p>
     </div>
   </div>

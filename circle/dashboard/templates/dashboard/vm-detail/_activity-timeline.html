@@ -3,7 +3,7 @@
 <div class="activity{% if a.pk == active.pk %} activity-active{%endif%}" data-activity-id="{{ a.pk }}">
   <span class="timeline-icon{% if a.has_failed %} timeline-icon-failed{% endif %}">
   <i class="fa {% if not a.finished %}fa-refresh fa-spin {% else %}fa-plus{% endif %}"></i>
-</span> 
+</span>
 <strong{% if user.is_superuser and a.result %} title="{{ a.result }}"{% endif %}>
   {% if user.is_superuser %}<a href="{{ a.get_absolute_url }}">{% endif %}
     {% if a.times > 1 %}({{ a.times }}x){% endif %}
@@ -13,7 +13,7 @@
   - {{ a.percentage }}%
 {% endif %}
 </strong>
-{% if a.times < 2%}{{ a.started|date:"Y-m-d H:i" }}{% endif %}{% if a.user %}, 
+{% if a.times < 2%}{{ a.started|date:"Y-m-d H:i" }}{% endif %}{% if a.user %},
   <a class="no-style-link" href="{% url "dashboard.views.profile" username=a.user.username %}">
     {% include "dashboard/_display-name.html" with user=a.user show_org=True %}
   </a>

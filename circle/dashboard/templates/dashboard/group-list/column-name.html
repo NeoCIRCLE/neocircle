@@ -1,9 +1,9 @@
-{% load i18n %} 
+{% load i18n %}
 
 <div id="group-list-rename">
   <form action="{% url "dashboard.views.group-detail" pk=record.pk %}" method="POST" id="group-list-rename-form">
     {% csrf_token %}
-    <input id="group-list-rename-name" class="form-control input-sm" name="new_name" type="text" value="{{ record.name }}"/> 
+    <input id="group-list-rename-name" class="form-control input-sm" name="new_name" type="text" value="{{ record.name }}"/>
     <button type="submit" class="group-list-rename-submit btn btn-sm">{% trans "Rename" %}</button>
   </form>
 </div>

@@ -146,10 +146,10 @@
     height: 26px;
     margin-top: -4px!important;
     margin-left: -6px !important;
-  
+
      border-radius: 0px;
     -moz-border-radius: 0px;
-    -webkit-border-radius: 0px;    
+    -webkit-border-radius: 0px;
 
     text-shadow: 0 1px 0 #fff;
     background-image: -webkit-gradient(linear, left 0%, left 100%, from(#428bca), to(#3071a9));
@@ -196,10 +196,10 @@
 }
 
 .vm-slider {
-    width: 300px;   
+    width: 300px;
 }
 
 .output {
   padding-left: 10px;
   font-weight: bold;
-} 
+}

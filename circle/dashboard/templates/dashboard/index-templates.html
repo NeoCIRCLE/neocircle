@@ -13,7 +13,7 @@
       <a href="{% url "dashboard.views.template-detail" pk=t.pk %}" class="list-group-item
         {% if forloop.last and templates|length < 5 %} list-group-item-last{% endif %}">
         <span class="index-template-list-name">
-          <i class="fa fa-{{ t.os_type }}"></i> {{ t.name }} 
+          <i class="fa fa-{{ t.os_type }}"></i> {{ t.name }}
         </span>
         <small class="text-muted index-template-list-system">{{ t.system }}</small>
         <div class="pull-right vm-create" data-template="{{ t.pk }}"><i title="{% trans "Start vm instance" %}" class="fa fa-play"></i></div>

@@ -1,6 +1,6 @@
 {% extends "dashboard/base.html" %}
 {% load i18n %}
-{% load crispy_forms_tags %} 
+{% load crispy_forms_tags %}
 {% load render_table from django_tables2 %}
 
 {% block title-page %}{% trans "Profile" %}{% endblock %}
@@ -11,7 +11,7 @@
   <div class="col-md-12">
     <div class="panel panel-default">
       <div class="panel-heading">
-        <a class="pull-right btn btn-default btn-xs" 
+        <a class="pull-right btn btn-default btn-xs"
           href="{% url "dashboard.views.profile" username=object.user.username %}">
           {% trans "Go to my profile" %}</a>
         <h3 class="no-margin"><i class="fa fa-desktop"></i> {% trans "My profile" %}</h3>
@@ -34,7 +34,7 @@
             <fieldset>
               <legend>{% trans "Current avatar" %}</legend>
               <p>
-                <img id="dashboard-profile-avatar" 
+                <img id="dashboard-profile-avatar"
                  class="img-rounded" src="{{ object.get_avatar_url }}"/>
               </p>
               <p>
