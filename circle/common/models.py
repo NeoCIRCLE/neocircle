@@ -177,7 +177,8 @@ class ActivityModel(TimeStampedModel):
     def result(self, value):
         if isinstance(value, basestring):
             warn("Using string as result value is deprecated. Use "
-                 "HumanReadableObject instead.", DeprecationWarning)
+                 "HumanReadableObject instead.",
+                 DeprecationWarning, stacklevel=2)
             value = create_readable(user_text_template="",
                                     admin_text_template=value)
 
