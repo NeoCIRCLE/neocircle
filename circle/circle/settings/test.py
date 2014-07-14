@@ -46,8 +46,9 @@ CACHES = {
 LOGGING['loggers']['djangosaml2'] = {'handlers': ['console'],
                                      'level': 'CRITICAL'}
 
-LOGGING['handlers']['console'] = {'level': 'WARNING',
+level = environ.get('LOGLEVEL', 'CRITICAL')
+LOGGING['handlers']['console'] = {'level': level,
                                   'class': 'logging.StreamHandler',
                                   'formatter': 'simple'}
 for i in LOCAL_APPS:
-    LOGGING['loggers'][i] = {'handlers': ['console'], 'level': 'CRITICAL'}
+    LOGGING['loggers'][i] = {'handlers': ['console'], 'level': level}

@@ -225,6 +225,8 @@ def node_activity(code_suffix, node, task_uuid=None, user=None):
 @worker_ready.connect()
 def cleanup(conf=None, **kwargs):
     # TODO check if other manager workers are running
+    from celery.task.control import discard_all
+    discard_all()
     msg_txt = ugettext_noop("Manager is restarted, activity is cleaned up. "
                             "You can try again now.")
     message = create_readable(msg_txt, msg_txt)
