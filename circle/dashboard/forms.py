@@ -612,6 +612,9 @@ class TemplateForm(forms.ModelForm):
             self.instance.ram_size = 512
             self.instance.num_cores = 2
 
+        self.fields["lease"].queryset = Lease.get_objects_with_level(
+            "operator", self.user)
+
     def clean_owner(self):
         if self.instance.pk is not None:
             return User.objects.get(pk=self.instance.owner.pk)
@@ -886,6 +889,27 @@ class LeaseForm(forms.ModelForm):
 
     class Meta:
         model = Lease
+
+
+class VmRenewForm(forms.Form):
+
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('choices')
+        default = kwargs.pop('default')
+        super(VmRenewForm, self).__init__(*args, **kwargs)
+
+        self.fields['lease'] = forms.ModelChoiceField(queryset=choices,
+                                                      initial=default,
+                                                      required=True,
+                                                      label=_('Length'))
+        if len(choices) < 2:
+            self.fields['lease'].widget = HiddenInput()
+
+    @property
+    def helper(self):
+        helper = FormHelper(self)
+        helper.form_tag = False
+        return helper
 
 
 class VmCreateDiskForm(forms.Form):

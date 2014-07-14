@@ -439,10 +439,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                 for cps in customized_params]
 
     def clean(self, *args, **kwargs):
-        if self.time_of_suspend is None:
-            self._do_renew(which='suspend')
-        if self.time_of_delete is None:
-            self._do_renew(which='delete')
+        self.time_of_suspend, self.time_of_delete = self.get_renew_times()
         super(Instance, self).clean(*args, **kwargs)
 
     def manual_state_change(self, new_state="NOSTATE", reason=None, user=None):
@@ -715,36 +712,14 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         else:
             return False
 
-    def get_renew_times(self):
+    def get_renew_times(self, lease=None):
         """Returns new suspend and delete times if renew would be called.
         """
+        if lease is None:
+            lease = self.lease
         return (
-            timezone.now() + self.lease.suspend_interval,
-            timezone.now() + self.lease.delete_interval)
-
-    def _do_renew(self, which='both'):
-        """Set expiration times to renewed values.
-        """
-        time_of_suspend, time_of_delete = self.get_renew_times()
-        if which in ('suspend', 'both'):
-            self.time_of_suspend = time_of_suspend
-        if which in ('delete', 'both'):
-            self.time_of_delete = time_of_delete
-
-    def renew(self, which='both', base_activity=None, user=None):
-        """Renew virtual machine instance leases.
-        """
-        if base_activity is None:
-            act_ctx = instance_activity(code_suffix='renew', instance=self,
-                                        user=user)
-        else:
-            act_ctx = base_activity.sub_activity('renew')
-
-        with act_ctx:
-            if which not in ('suspend', 'delete', 'both'):
-                raise ValueError('No such expiration type.')
-            self._do_renew(which)
-            self.save()
+            timezone.now() + lease.suspend_interval,
+            timezone.now() + lease.delete_interval)
 
     def change_password(self, user=None):
         """Generate new password for the vm

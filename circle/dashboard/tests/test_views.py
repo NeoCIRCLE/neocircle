@@ -21,14 +21,12 @@ import json
 from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User, Group
-from django.core.urlresolvers import reverse
 from django.contrib.auth.models import Permission
 from django.contrib.auth import authenticate
 
 from vm.models import Instance, InstanceTemplate, Lease, Node, Trait
 from vm.operations import WakeUpOperation
 from ..models import Profile
-from ..views import VmRenewView
 from storage.models import Disk
 from firewall.models import Vlan, Host, VlanGroup
 from mock import Mock, patch
@@ -568,10 +566,8 @@ class VmDetailTest(LoginMixin, TestCase):
         inst = Instance.objects.get(pk=1)
         inst.manual_state_change('SUSPENDED')
         inst.set_level(self.u2, 'user')
-        with patch('dashboard.views.messages') as msg:
-            response = c.post("/dashboard/vm/1/op/wake_up/")
-            assert msg.error.called
-            self.assertEqual(response.status_code, 302)
+        response = c.post("/dashboard/vm/1/op/wake_up/")
+        self.assertEqual(response.status_code, 403)
         inst = Instance.objects.get(pk=1)
         self.assertEqual(inst.status, 'SUSPENDED')
 
@@ -1629,100 +1625,6 @@ class TransferOwnershipViewTest(LoginMixin, TestCase):
         self.login(c, 'user2')
         response = c.post(url)
         self.assertEquals(Instance.objects.get(pk=1).owner.pk, self.u2.pk)
-
-
-class RenewViewTest(LoginMixin, TestCase):
-    fixtures = ['test-vm-fixture.json']
-
-    def setUp(self):
-        self.u1 = User.objects.create(username='user1')
-        self.u1.set_password('password')
-        self.u1.save()
-        Profile.objects.create(user=self.u1)
-        self.u2 = User.objects.create(username='user2', is_staff=True)
-        self.u2.set_password('password')
-        self.u2.save()
-        Profile.objects.create(user=self.u2)
-        self.us = User.objects.create(username='superuser', is_superuser=True)
-        self.us.set_password('password')
-        self.us.save()
-        Profile.objects.create(user=self.us)
-        inst = Instance.objects.get(pk=1)
-        inst.owner = self.u1
-        inst.save()
-
-    def test_renew_by_owner(self):
-        c = Client()
-        ct = Instance.objects.get(pk=1).activity_log.\
-            filter(activity_code__endswith='renew').count()
-        self.login(c, 'user1')
-        response = c.get('/dashboard/vm/1/renew/')
-        self.assertEquals(response.status_code, 200)
-        response = c.post('/dashboard/vm/1/renew/')
-        self.assertEquals(response.status_code, 302)
-        ct2 = Instance.objects.get(pk=1).activity_log.\
-            filter(activity_code__endswith='renew').count()
-        self.assertEquals(ct + 1, ct2)
-
-    def test_renew_get_by_nonowner_wo_key(self):
-        c = Client()
-        self.login(c, 'user2')
-        response = c.get('/dashboard/vm/1/renew/')
-        self.assertEquals(response.status_code, 403)
-
-    def test_renew_post_by_nonowner_wo_key(self):
-        c = Client()
-        self.login(c, 'user2')
-        response = c.post('/dashboard/vm/1/renew/')
-        self.assertEquals(response.status_code, 403)
-
-    def test_renew_get_by_nonowner_w_key(self):
-        key = VmRenewView.get_token_url(Instance.objects.get(pk=1), self.u2)
-        c = Client()
-        response = c.get(key)
-        self.assertEquals(response.status_code, 200)
-
-    def test_renew_post_by_anon_w_key(self):
-        key = VmRenewView.get_token_url(Instance.objects.get(pk=1), self.u2)
-        ct = Instance.objects.get(pk=1).activity_log.\
-            filter(activity_code__endswith='renew').count()
-        c = Client()
-        response = c.post(key)
-        self.assertEquals(response.status_code, 302)
-        ct2 = Instance.objects.get(pk=1).activity_log.\
-            filter(activity_code__endswith='renew').count()
-        self.assertEquals(ct + 1, ct2)
-
-    def test_renew_post_by_anon_w_invalid_key(self):
-        class Mockinst(object):
-            pk = 2
-        key = VmRenewView.get_token_url(Mockinst(), self.u2)
-        ct = Instance.objects.get(pk=1).activity_log.\
-            filter(activity_code__endswith='renew').count()
-        c = Client()
-        self.login(c, 'user2')
-        response = c.get(key)
-        self.assertEquals(response.status_code, 404)
-        response = c.post(key)
-        self.assertEquals(response.status_code, 404)
-        ct2 = Instance.objects.get(pk=1).activity_log.\
-            filter(activity_code__endswith='renew').count()
-        self.assertEquals(ct, ct2)
-
-    def test_renew_post_by_anon_w_expired_key(self):
-        key = reverse(VmRenewView.url_name, args=(
-            12, 'WzEyLDFd:1WLbSi:2zIb8SUNAIRIOMTmSmKSSit2gpY'))
-        ct = Instance.objects.get(pk=12).activity_log.\
-            filter(activity_code__endswith='renew').count()
-        c = Client()
-        self.login(c, 'user2')
-        response = c.get(key)
-        self.assertEquals(response.status_code, 302)
-        response = c.post(key)
-        self.assertEquals(response.status_code, 403)
-        ct2 = Instance.objects.get(pk=12).activity_log.\
-            filter(activity_code__endswith='renew').count()
-        self.assertEquals(ct, ct2)
 
 
 class IndexViewTest(LoginMixin, TestCase):

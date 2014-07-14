@@ -59,10 +59,10 @@ def create_levels(app, created_models, verbosity, db=DEFAULT_DB_ALIAS,
     ]
     Level.objects.using(db).bulk_create(levels)
     if verbosity >= 2:
-        print("Adding levels [%s]." % ", ".join(levels))
+        print("Adding levels [%s]." % ", ".join(unicode(l) for l in levels))
         print("Searched: [%s]." % ", ".join(
-            [unicode(l) for l in searched_levels]))
-        print("All: [%s]." % ", ".join([unicode(l) for l in all_levels]))
+            unicode(l) for l in searched_levels))
+        print("All: [%s]." % ", ".join(unicode(l) for l in all_levels))
 
     # set weights
     for ctype, codename, weight in level_weights:

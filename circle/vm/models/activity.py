@@ -232,6 +232,8 @@ def node_activity(code_suffix, node, task_uuid=None, user=None):
 @worker_ready.connect()
 def cleanup(conf=None, **kwargs):
     # TODO check if other manager workers are running
+    from celery.task.control import discard_all
+    discard_all()
     for i in InstanceActivity.objects.filter(finished__isnull=True):
         i.finish(False, "Manager is restarted, activity is cleaned up. "
                  "You can try again now.")
