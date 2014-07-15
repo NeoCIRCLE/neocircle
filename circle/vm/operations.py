@@ -103,7 +103,8 @@ class AddInterfaceOperation(InstanceOperation):
                                managed=managed, owner=user, vlan=vlan)
 
         if self.instance.is_running:
-            self.instance.attach_network(net)
+            with activity.sub_activity('attach_network'):
+                self.instance.attach_network(net)
             net.deploy()
 
         return net
@@ -356,7 +357,8 @@ class RemoveInterfaceOperation(InstanceOperation):
 
     def _operation(self, activity, user, system, interface):
         if self.instance.is_running:
-            self.instance.detach_network(interface)
+            with activity.sub_activity('detach_network'):
+                self.instance.detach_network(interface)
             interface.shutdown()
 
         interface.destroy()
