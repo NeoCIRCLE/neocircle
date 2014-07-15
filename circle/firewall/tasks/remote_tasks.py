@@ -18,6 +18,24 @@
 from manager.mancelery import celery
 
 
+def check_queue(firewall, queue_id, priority):
+    ''' Celery inspect job to check for active workers at queue_id
+        return True/False
+    '''
+    queue_name = firewall + "." + queue_id
+    if priority is not None:
+        queue_name = queue_name + "." + priority
+    inspect = celery.control.inspect()
+    inspect.timeout = 0.1
+    active_queues = inspect.active_queues()
+    if active_queues is None:
+        return False
+
+    queue_names = (queue['name'] for worker in active_queues.itervalues()
+                   for queue in worker)
+    return queue_name in queue_names
+
+
 @celery.task(name='firewall.reload_dns')
 def reload_dns(data):
     pass
