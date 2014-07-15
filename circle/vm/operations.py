@@ -90,6 +90,11 @@ class AddInterfaceOperation(InstanceOperation):
                     "the VM.")
     required_perms = ()
 
+    def check_precond(self):
+        super(AddInterfaceOperation, self).check_precond()
+        if self.instance.status not in ['STOPPED', 'PENDING', 'RUNNING']:
+            raise self.instance.WrongStateError(self.instance)
+
     def _operation(self, activity, user, system, vlan, managed=None):
         if managed is None:
             managed = vlan.managed
@@ -344,6 +349,11 @@ class RemoveInterfaceOperation(InstanceOperation):
     description = _("Remove the specified network interface from the VM.")
     required_perms = ()
 
+    def check_precond(self):
+        super(RemoveInterfaceOperation, self).check_precond()
+        if self.instance.status not in ['STOPPED', 'PENDING', 'RUNNING']:
+            raise self.instance.WrongStateError(self.instance)
+
     def _operation(self, activity, user, system, interface):
         if self.instance.is_running:
             self.instance.detach_network(interface)
@@ -365,7 +375,7 @@ class RemoveDiskOperation(InstanceOperation):
 
     def check_precond(self):
         super(RemoveDiskOperation, self).check_precond()
-        if self.instance.status not in ['STOPPED', 'RUNNING']:
+        if self.instance.status not in ['STOPPED', 'PENDING', 'RUNNING']:
             raise self.instance.WrongStateError(self.instance)
 
     def _operation(self, activity, user, system, disk):
