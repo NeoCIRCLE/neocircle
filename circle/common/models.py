@@ -361,4 +361,8 @@ class HumanReadableObject(object):
                 "admin_text_template": self.admin_text_template,
                 "params": self.params}
 
+    def __unicode__(self):
+        return self.get_user_text()
+
+
 create_readable = HumanReadableObject.create
