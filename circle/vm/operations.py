@@ -33,7 +33,7 @@ from .models import (
     Instance, InstanceActivity, InstanceTemplate, Interface, Node,
     NodeActivity,
 )
-
+from string import ascii_lowercase
 
 logger = getLogger(__name__)
 
@@ -98,6 +98,7 @@ class AddInterfaceOperation(InstanceOperation):
                                managed=managed, owner=user, vlan=vlan)
 
         if self.instance.is_running:
+            self.instance.attach_network(net)
             net.deploy()
 
         return net
@@ -107,6 +108,7 @@ register_operation(AddInterfaceOperation)
 
 
 class CreateDiskOperation(InstanceOperation):
+
     activity_code_suffix = 'create_disk'
     id = 'create_disk'
     name = _("create disk")
@@ -115,19 +117,27 @@ class CreateDiskOperation(InstanceOperation):
 
     def check_precond(self):
         super(CreateDiskOperation, self).check_precond()
-        # TODO remove check when hot-attach is implemented
-        if self.instance.status not in ['STOPPED', 'PENDING']:
+        if self.instance.status not in ['STOPPED', 'PENDING', 'RUNNING']:
             raise self.instance.WrongStateError(self.instance)
 
-    def _operation(self, user, size, name=None):
-        # TODO implement with hot-attach when it'll be available
+    def _operation(self, user, size, activity, name=None):
         from storage.models import Disk
 
         if not name:
             name = "new disk"
         disk = Disk.create(size=size, name=name, type="qcow2-norm")
         disk.full_clean()
+        devnums = list(ascii_lowercase)
+        for d in self.instance.disks.all():
+            devnums.remove(d.dev_num)
+        disk.dev_num = devnums.pop(0)
         self.instance.disks.add(disk)
+
+        if self.instance.is_running:
+            with activity.sub_activity('deploying_disk'):
+                disk.deploy()
+            with activity.sub_activity('attach_disk'):
+                self.instance.attach_disk(disk)
 
 register_operation(CreateDiskOperation)
 
@@ -143,18 +153,25 @@ class DownloadDiskOperation(InstanceOperation):
 
     def check_precond(self):
         super(DownloadDiskOperation, self).check_precond()
-        # TODO remove check when hot-attach is implemented
-        if self.instance.status not in ['STOPPED', 'PENDING']:
+        if self.instance.status not in ['STOPPED', 'PENDING', 'RUNNING']:
             raise self.instance.WrongStateError(self.instance)
 
     def _operation(self, user, url, task, activity, name=None):
         activity.result = url
-        # TODO implement with hot-attach when it'll be available
         from storage.models import Disk
 
         disk = Disk.download(url=url, name=name, task=task)
+        devnums = list(ascii_lowercase)
+        for d in self.instance.disks.all():
+            devnums.remove(d.dev_num)
+        disk.dev_num = devnums.pop(0)
         disk.full_clean()
+        disk.save()
         self.instance.disks.add(disk)
+
+        if self.instance.is_running and disk.type not in ["iso"]:
+            with activity.sub_activity('attach_disk'):
+                self.instance.attach_disk(disk)
 
 register_operation(DownloadDiskOperation)
 
@@ -329,6 +346,7 @@ class RemoveInterfaceOperation(InstanceOperation):
 
     def _operation(self, activity, user, system, interface):
         if self.instance.is_running:
+            self.instance.detach_network(interface)
             interface.shutdown()
 
         interface.destroy()
@@ -347,12 +365,13 @@ class RemoveDiskOperation(InstanceOperation):
 
     def check_precond(self):
         super(RemoveDiskOperation, self).check_precond()
-        # TODO remove check when hot-detach is implemented
-        if self.instance.status not in ['STOPPED']:
+        if self.instance.status not in ['STOPPED', 'RUNNING']:
             raise self.instance.WrongStateError(self.instance)
 
     def _operation(self, activity, user, system, disk):
-        # TODO implement with hot-detach when it'll be available
+        if self.instance.is_running and disk.type not in ["iso"]:
+            with activity.sub_activity('detach_disk'):
+                self.instance.detach_disk(disk)
         return self.instance.disks.remove(disk)
 
 
