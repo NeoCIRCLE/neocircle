@@ -18,6 +18,7 @@
 from __future__ import absolute_import, unicode_literals
 from contextlib import contextmanager
 from logging import getLogger
+from warnings import warn
 
 from celery.signals import worker_ready
 from celery.contrib.abortable import AbortableAsyncResult
@@ -28,7 +29,8 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _, ugettext_noop
 
 from common.models import (
-    ActivityModel, activitycontextimpl, create_readable, join_activity_code
+    ActivityModel, activitycontextimpl, create_readable, join_activity_code,
+    HumanReadableObject,
 )
 
 from manager.mancelery import celery
@@ -47,6 +49,18 @@ class ActivityInProgressError(Exception):
             Exception.__init__(self, message)
 
             self.activity = activity
+
+
+def _normalize_readable_name(name, default=None):
+    if name is None:
+        warn("Set readable_name to a HumanReadableObject",
+             DeprecationWarning, 3)
+        name = default.replace(".", " ")
+
+    if not isinstance(name, HumanReadableObject):
+        name = create_readable(name)
+
+    return name
 
 
 class InstanceActivity(ActivityModel):
@@ -75,7 +89,9 @@ class InstanceActivity(ActivityModel):
 
     @classmethod
     def create(cls, code_suffix, instance, task_uuid=None, user=None,
-               concurrency_check=True):
+               concurrency_check=True, readable_name=None):
+
+        readable_name = _normalize_readable_name(readable_name, code_suffix)
         # Check for concurrent activities
         active_activities = instance.activity_log.filter(finished__isnull=True)
         if concurrency_check and active_activities.exists():
@@ -84,11 +100,15 @@ class InstanceActivity(ActivityModel):
         activity_code = join_activity_code(cls.ACTIVITY_CODE_BASE, code_suffix)
         act = cls(activity_code=activity_code, instance=instance, parent=None,
                   resultant_state=None, started=timezone.now(),
+                  readable_name_data=readable_name.to_dict(),
                   task_uuid=task_uuid, user=user)
         act.save()
         return act
 
-    def create_sub(self, code_suffix, task_uuid=None, concurrency_check=True):
+    def create_sub(self, code_suffix, task_uuid=None, concurrency_check=True,
+                   readable_name=None):
+
+        readable_name = _normalize_readable_name(readable_name, code_suffix)
         # Check for concurrent activities
         active_children = self.children.filter(finished__isnull=True)
         if concurrency_check and active_children.exists():
@@ -97,7 +117,8 @@ class InstanceActivity(ActivityModel):
         act = InstanceActivity(
             activity_code=join_activity_code(self.activity_code, code_suffix),
             instance=self.instance, parent=self, resultant_state=None,
-            started=timezone.now(), task_uuid=task_uuid, user=self.user)
+            readable_name_data=readable_name.to_dict(), started=timezone.now(),
+            task_uuid=task_uuid, user=self.user)
         act.save()
         return act
 
@@ -158,10 +179,12 @@ class InstanceActivity(ActivityModel):
 
     @contextmanager
     def sub_activity(self, code_suffix, on_abort=None, on_commit=None,
-                     task_uuid=None, concurrency_check=True):
+                     readable_name=None, task_uuid=None,
+                     concurrency_check=True):
         """Create a transactional context for a nested instance activity.
         """
-        act = self.create_sub(code_suffix, task_uuid, concurrency_check)
+        act = self.create_sub(code_suffix, task_uuid, concurrency_check,
+                              readable_name=readable_name)
         return activitycontextimpl(act, on_abort=on_abort, on_commit=on_commit)
 
 
@@ -195,24 +218,32 @@ class NodeActivity(ActivityModel):
                                    self.node)
 
     @classmethod
-    def create(cls, code_suffix, node, task_uuid=None, user=None):
+    def create(cls, code_suffix, node, task_uuid=None, user=None,
+               readable_name=None):
+
+        readable_name = _normalize_readable_name(readable_name, code_suffix)
         activity_code = join_activity_code(cls.ACTIVITY_CODE_BASE, code_suffix)
         act = cls(activity_code=activity_code, node=node, parent=None,
+                  readable_name_data=readable_name.to_dict(),
                   started=timezone.now(), task_uuid=task_uuid, user=user)
         act.save()
         return act
 
-    def create_sub(self, code_suffix, task_uuid=None):
+    def create_sub(self, code_suffix, task_uuid=None, readable_name=None):
+
+        readable_name = _normalize_readable_name(readable_name, code_suffix)
         act = NodeActivity(
             activity_code=join_activity_code(self.activity_code, code_suffix),
             node=self.node, parent=self, started=timezone.now(),
-            task_uuid=task_uuid, user=self.user)
+            readable_name_data=readable_name.to_dict(), task_uuid=task_uuid,
+            user=self.user)
         act.save()
         return act
 
     @contextmanager
-    def sub_activity(self, code_suffix, task_uuid=None):
-        act = self.create_sub(code_suffix, task_uuid)
+    def sub_activity(self, code_suffix, task_uuid=None, readable_name=None):
+        act = self.create_sub(code_suffix, task_uuid,
+                              readable_name=readable_name)
         return activitycontextimpl(act)
 
 

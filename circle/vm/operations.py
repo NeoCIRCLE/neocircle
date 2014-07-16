@@ -21,10 +21,11 @@ from re import search
 
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _, ugettext_noop
 
 from celery.exceptions import TimeLimitExceeded
 
+from common.models import create_readable
 from common.operations import Operation, register_operation
 from .tasks.local_tasks import (
     abortable_async_instance_operation, abortable_async_node_operation,
@@ -59,7 +60,8 @@ class InstanceOperation(Operation):
 
         super(InstanceOperation, self).check_auth(user=user)
 
-    def create_activity(self, parent, user):
+    def create_activity(self, parent, user, kwargs):
+        name = self.get_activity_name(kwargs)
         if parent:
             if parent.instance != self.instance:
                 raise ValueError("The instance associated with the specified "
@@ -70,11 +72,13 @@ class InstanceOperation(Operation):
                                  "parent activity does not match the user "
                                  "provided as parameter.")
 
-            return parent.create_sub(code_suffix=self.activity_code_suffix)
+            return parent.create_sub(code_suffix=self.activity_code_suffix,
+                                     readable_name=name)
         else:
             return InstanceActivity.create(
                 code_suffix=self.activity_code_suffix, instance=self.instance,
-                user=user, concurrency_check=self.concurrency_check)
+                readable_name=name, user=user,
+                concurrency_check=self.concurrency_check)
 
     def is_preferred(self):
         """If this is the recommended op in the current state of the instance.
@@ -101,6 +105,10 @@ class AddInterfaceOperation(InstanceOperation):
             net.deploy()
 
         return net
+
+    def get_activity_name(self, kwargs):
+        return create_readable(ugettext_noop("add %(vlan)s interface"),
+                               vlan=kwargs['vlan'])
 
 
 register_operation(AddInterfaceOperation)
@@ -646,7 +654,8 @@ class NodeOperation(Operation):
         super(NodeOperation, self).__init__(subject=node)
         self.node = node
 
-    def create_activity(self, parent, user):
+    def create_activity(self, parent, user, kwargs):
+        name = self.get_activity_name(kwargs)
         if parent:
             if parent.node != self.node:
                 raise ValueError("The node associated with the specified "
@@ -657,10 +666,12 @@ class NodeOperation(Operation):
                                  "parent activity does not match the user "
                                  "provided as parameter.")
 
-            return parent.create_sub(code_suffix=self.activity_code_suffix)
+            return parent.create_sub(code_suffix=self.activity_code_suffix,
+                                     readable_name=name)
         else:
             return NodeActivity.create(code_suffix=self.activity_code_suffix,
-                                       node=self.node, user=user)
+                                       node=self.node, user=user,
+                                       readable_name=name)
 
 
 class FlushOperation(NodeOperation):
