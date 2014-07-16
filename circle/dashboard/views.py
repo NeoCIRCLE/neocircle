@@ -219,25 +219,14 @@ class IndexView(LoginRequiredMixin, TemplateView):
         return context
 
 
-def get_vm_acl_data(obj):
+def get_acl_data(obj, url):
     levels = obj.ACL_LEVELS
     users = obj.get_users_with_level()
     users = [{'user': u, 'level': l} for u, l in users]
     groups = obj.get_groups_with_level()
     groups = [{'group': g, 'level': l} for g, l in groups]
     return {'users': users, 'groups': groups, 'levels': levels,
-            'url': reverse('dashboard.views.vm-acl', args=[obj.pk])}
-
-
-def get_group_acl_data(obj):
-    aclobj = obj.profile
-    levels = aclobj.ACL_LEVELS
-    users = aclobj.get_users_with_level()
-    users = [{'user': u, 'level': l} for u, l in users]
-    groups = aclobj.get_groups_with_level()
-    groups = [{'group': g, 'level': l} for g, l in groups]
-    return {'users': users, 'groups': groups, 'levels': levels,
-            'url': reverse('dashboard.views.group-acl', args=[obj.pk])}
+            'url': reverse(url, args=[obj.pk])}
 
 
 class CheckedDetailView(LoginRequiredMixin, DetailView):
@@ -303,7 +292,7 @@ class VmDetailView(CheckedDetailView):
             pk__in=Interface.objects.filter(
                 instance=self.get_object()).values_list("vlan", flat=True)
         ).all()
-        context['acl'] = get_vm_acl_data(instance)
+        context['acl'] = get_acl_data(instance, 'dashboard.views.vm-acl')
         context['os_type_icon'] = instance.os_type.replace("unknown",
                                                            "question")
         # ipv6 infos
@@ -976,7 +965,8 @@ class GroupDetailView(CheckedDetailView):
         context['users'] = self.object.user_set.all()
         context['future_users'] = FutureMember.objects.filter(
             group=self.object)
-        context['acl'] = get_group_acl_data(self.object)
+        context['acl'] = get_acl_data(self.object.profile,
+                                      'dashboard.views.group-acl')
         context['group_profile_form'] = GroupProfileUpdate.get_form_object(
             self.request, self.object.profile)
 
@@ -1301,7 +1291,7 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     def get_context_data(self, **kwargs):
         obj = self.get_object()
         context = super(TemplateDetail, self).get_context_data(**kwargs)
-        context['acl'] = get_vm_acl_data(obj)
+        context['acl'] = get_acl_data(obj, 'dashboard.views.template-acl')
         context['disks'] = obj.disks.all()
         context['is_owner'] = obj.has_level(self.request.user, 'owner')
         return context
@@ -2294,7 +2284,7 @@ class LeaseDetail(LoginRequiredMixin, SuperuserRequiredMixin,
     def get_context_data(self, *args, **kwargs):
         obj = self.get_object()
         context = super(LeaseDetail, self).get_context_data(*args, **kwargs)
-        context['acl'] = get_vm_acl_data(obj)
+        context['acl'] = get_acl_data(obj, 'dashboard.views.lease-acl')
         return context
 
     def get_success_url(self):
