@@ -1135,49 +1135,26 @@ class TemplateAclUpdateView(AclUpdateView):
     model = InstanceTemplate
 
     def post(self, request, *args, **kwargs):
+        retval = super(TemplateAclUpdateView,
+                       self).post(request, *args, **kwargs)
         template = self.get_object()
-        if not (template.has_level(request.user, "owner") or
-                getattr(template, 'owner', None) == request.user):
-            logger.warning('Tried to set permissions of %s by non-owner %s.',
-                           unicode(template), unicode(request.user))
-            raise PermissionDenied()
 
-        name = request.POST['perm-new-name']
-        if (User.objects.filter(username=name).count() +
-                Group.objects.filter(name=name).count() < 1
-                and len(name) > 0):
-            warning(request, _('User or group "%s" not found.') % name)
-        else:
-            self.set_levels(request, template)
-            self.add_levels(request, template)
-            self.remove_levels(request, template)
+        post_for_disk = request.POST.copy()
+        post_for_disk['perm-new'] = 'user'
+        request.POST = post_for_disk
+        for d in template.disks.all():
+            self.set_levels(request, d)
+            self.add_levels(request, d)
+            self.remove_levels(request, d)
 
-            post_for_disk = request.POST.copy()
-            post_for_disk['perm-new'] = 'user'
-            request.POST = post_for_disk
-            for d in template.disks.all():
-                self.set_levels(request, d)
-                self.add_levels(request, d)
-                self.remove_levels(request, d)
-
-        return redirect(template)
+        return retval
 
 
 class GroupAclUpdateView(AclUpdateView):
     model = Group
 
-    def post(self, request, *args, **kwargs):
-        instance = self.get_object().profile
-        if not (instance.has_level(request.user, "owner") or
-                getattr(instance, 'owner', None) == request.user):
-            logger.warning('Tried to set permissions of %s by non-owner %s.',
-                           unicode(instance), unicode(request.user))
-            raise PermissionDenied()
-
-        self.set_levels(request, instance)
-        self.add_levels(request, instance)
-        return redirect(reverse("dashboard.views.group-detail",
-                                kwargs=self.kwargs))
+    def get_object(self):
+        return super(GroupAclUpdateView, self).get_object().profile
 
 
 class TemplateChoose(LoginRequiredMixin, TemplateView):
