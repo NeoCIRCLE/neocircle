@@ -137,6 +137,11 @@ class CreateDiskOperation(InstanceOperation):
         disk.full_clean()
         self.instance.disks.add(disk)
 
+    def get_activity_name(self, kwargs):
+        return create_readable(ugettext_noop("create %(size)s disk"),
+                               size=kwargs['size'])
+
+
 register_operation(CreateDiskOperation)
 
 
@@ -163,6 +168,8 @@ class DownloadDiskOperation(InstanceOperation):
         disk = Disk.download(url=url, name=name, task=task)
         disk.full_clean()
         self.instance.disks.add(disk)
+        activity.readable_name = create_readable(
+            ugettext_noop("download %(name)s"), name=disk.name)
 
 register_operation(DownloadDiskOperation)
 
@@ -193,20 +200,28 @@ class DeployOperation(InstanceOperation):
         self.instance.allocate_node()
 
         # Deploy virtual images
-        with activity.sub_activity('deploying_disks'):
+        with activity.sub_activity(
+            'deploying_disks', readable_name=ugettext_noop(
+                "deploy disks")):
             self.instance.deploy_disks()
 
         # Deploy VM on remote machine
         if self.instance.state not in ['PAUSED']:
-            with activity.sub_activity('deploying_vm') as deploy_act:
+            with activity.sub_activity(
+                'deploying_vm', readable_name=ugettext_noop(
+                    "deploy virtual machine")) as deploy_act:
                 deploy_act.result = self.instance.deploy_vm(timeout=timeout)
 
         # Establish network connection (vmdriver)
-        with activity.sub_activity('deploying_net'):
+        with activity.sub_activity(
+            'deploying_net', readable_name=ugettext_noop(
+                "deploy network")):
             self.instance.deploy_net()
 
         # Resume vm
-        with activity.sub_activity('booting'):
+        with activity.sub_activity(
+            'booting', readable_name=ugettext_noop(
+                "boot virtual machine")):
             self.instance.resume_vm(timeout=timeout)
 
         self.instance.renew(parent_activity=activity)
@@ -287,7 +302,9 @@ class MigrateOperation(InstanceOperation):
                 sa.result = to_node
 
         try:
-            with activity.sub_activity('migrate_vm'):
+            with activity.sub_activity(
+                'migrate_vm', readable_name=create_readable(
+                    ugettext_noop("migrate to %(node)s"), node=to_node)):
                 self.instance.migrate_vm(to_node=to_node, timeout=timeout)
         except Exception as e:
             if hasattr(e, 'libvirtError'):
@@ -302,7 +319,9 @@ class MigrateOperation(InstanceOperation):
         self.instance.node = to_node
         self.instance.save()
         # Estabilish network connection (vmdriver)
-        with activity.sub_activity('deploying_net'):
+        with activity.sub_activity(
+            'deploying_net', readable_name=ugettext_noop(
+                "deploy network")):
             self.instance.deploy_net()
 
 
@@ -697,7 +716,10 @@ class FlushOperation(NodeOperation):
         self.node_enabled = self.node.enabled
         self.node.disable(user, activity)
         for i in self.node.instance_set.all():
-            with activity.sub_activity('migrate_instance_%d' % i.pk):
+            name = create_readable(ugettext_noop(
+                "migrate %(instance)s (%(pk)s)"), instance=i.name, pk=i.pk)
+            with activity.sub_activity('migrate_instance_%d' % i.pk,
+                                       readable_name=name):
                 i.migrate(user=user)
 
 
