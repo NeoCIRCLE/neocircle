@@ -18,6 +18,11 @@ class Migration(SchemaMigration):
                       self.gf('jsonfield.fields.JSONField')(null=True, blank=True),
                       keep_default=False)
 
+        for i in orm.NodeActivity.objects.all():
+            result = i.activity_code.replace(".", " ")
+            i.result_data = {"user_text_template": result,
+                             "admin_text_template": result, "params": {}}
+            i.save()
 
     def backwards(self, orm):
         # Deleting field 'InstanceActivity.readable_name_data'
