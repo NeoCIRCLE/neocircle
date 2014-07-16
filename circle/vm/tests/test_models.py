@@ -370,9 +370,10 @@ class InstanceActivityTestCase(TestCase):
         subact.__enter__.assert_called()
 
     def test_flush(self):
-        insts = [MagicMock(spec=Instance, migrate=MagicMock()),
-                 MagicMock(spec=Instance, migrate=MagicMock())]
-        node = MagicMock(spec=Node, enabled=True)
+        insts = [MagicMock(spec=Instance, migrate=MagicMock(), name="1"),
+                 MagicMock(spec=Instance, migrate=MagicMock(), name="2")]
+        print insts[0].name
+        node = MagicMock(spec=Node, enabled=True, name="node1")
         node.instance_set.all.return_value = insts
         user = MagicMock(spec=User)
         user.is_superuser = MagicMock(return_value=True)
@@ -390,8 +391,8 @@ class InstanceActivityTestCase(TestCase):
         user.is_superuser.assert_called()
 
     def test_flush_disabled_wo_user(self):
-        insts = [MagicMock(spec=Instance, migrate=MagicMock()),
-                 MagicMock(spec=Instance, migrate=MagicMock())]
+        insts = [MagicMock(spec=Instance, migrate=MagicMock(), name="1"),
+                 MagicMock(spec=Instance, migrate=MagicMock(), name="2")]
         node = MagicMock(spec=Node, enabled=False)
         node.instance_set.all.return_value = insts
         flush_op = FlushOperation(node)

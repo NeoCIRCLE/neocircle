@@ -47,7 +47,7 @@ class ViewUserTestCase(unittest.TestCase):
             go.return_value = MagicMock(spec=InstanceActivity)
             go.return_value._meta.object_name = "InstanceActivity"
             view = InstanceActivityDetail.as_view()
-            self.assertEquals(view(request, pk=1234).status_code, 302)
+            self.assertEquals(view(request, pk=1234).status_code, 200)
 
     def test_found(self):
         request = FakeRequestFactory(superuser=True)
