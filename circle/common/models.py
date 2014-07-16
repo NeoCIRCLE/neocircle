@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
 from collections import deque
 from contextlib import contextmanager
 from hashlib import sha224
@@ -25,10 +26,13 @@ from warnings import warn
 
 from django.contrib.auth.models import User
 from django.core.cache import cache
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import (
     CharField, DateTimeField, ForeignKey, NullBooleanField
 )
 from django.utils import timezone
+from django.utils.encoding import force_text
+from django.utils.functional import Promise
 from django.utils.translation import ugettext_lazy as _, ugettext_noop
 from jsonfield import JSONField
 
@@ -110,9 +114,20 @@ def split_activity_code(activity_code):
     return activity_code.split(activity_code_separator)
 
 
+class Encoder(DjangoJSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Promise):
+            obj = force_text(obj)
+        try:
+            return super(Encoder, self).default(obj)
+        except TypeError:
+            return unicode(obj)
+
+
 class ActivityModel(TimeStampedModel):
     activity_code = CharField(max_length=100, verbose_name=_('activity code'))
     readable_name_data = JSONField(blank=True, null=True,
+                                   dump_kwargs={"cls": Encoder},
                                    verbose_name=_('human readable name'),
                                    help_text=_('Human readable name of '
                                                'activity.'))
@@ -132,6 +147,7 @@ class ActivityModel(TimeStampedModel):
                                  help_text=_('True, if the activity has '
                                              'finished successfully.'))
     result_data = JSONField(verbose_name=_('result'), blank=True, null=True,
+                            dump_kwargs={"cls": Encoder},
                             help_text=_('Human readable result of activity.'))
 
     def __unicode__(self):
