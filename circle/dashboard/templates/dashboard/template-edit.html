@@ -95,7 +95,7 @@
             </tbody>
           </table>
           <div class="form-actions">
-            <button type="submit" class="btn btn-success">{% trans "Save" %}</button>
+            <button type="submit" class="btn btn-success {% if not is_owner %}disabled{% endif %}">{% trans "Save" %}</button>
           </div>
         </form>
       </div>

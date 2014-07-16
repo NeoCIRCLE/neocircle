@@ -10,10 +10,12 @@
   <div class="label label-danger"{% if user.is_superuser %} title="{{ d.get_latest_activity_result }}"{% endif %}>{% trans "failed" %}</div>
   {% endif %}
 {% else %}<span class="disk-list-disk-percentage" data-disk-pk="{{ d.pk }}">{{ d.get_download_percentage }}</span>%{% endif %}
+{% if is_owner != False %}
 <a href="{% url "dashboard.views.disk-remove" pk=d.pk %}?next={{ request.path }}"
-  data-disk-pk="{{ d.pk }}" class="btn btn-xs btn-danger pull-right disk-remove"
+  data-disk-pk="{{ d.pk }}" class="btn btn-xs btn-danger pull-right disk-remove "
   {% if not long_remove %}title="{% trans "Remove" %}"{% endif %}
   >
   <i class="fa fa-times"></i>{% if long_remove %} {% trans "Remove" %}{% endif %}
 </a>
+{% endif %}
 <div style="clear: both;"></div>

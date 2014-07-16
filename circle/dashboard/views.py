@@ -1326,6 +1326,7 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         context = super(TemplateDetail, self).get_context_data(**kwargs)
         context['acl'] = get_vm_acl_data(obj)
         context['disks'] = obj.disks.all()
+        context['is_owner'] = obj.has_level(self.request.user, 'owner')
         return context
 
     def get_success_url(self):

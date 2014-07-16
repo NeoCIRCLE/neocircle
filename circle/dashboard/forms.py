@@ -596,8 +596,12 @@ class TemplateForm(forms.ModelForm):
             n = self.instance.interface_set.values_list("vlan", flat=True)
             self.initial['networks'] = n
 
-        self.allowed_fields = (
-            'name', 'access_method', 'description', 'system', 'tags')
+        if self.instance.pk and not self.instance.has_level(self.user,
+                                                            'owner'):
+            self.allowed_fields = ()
+        else:
+            self.allowed_fields = (
+                'name', 'access_method', 'description', 'system', 'tags')
         if self.user.has_perm('vm.change_template_resources'):
             self.allowed_fields += tuple(set(self.fields.keys()) -
                                          set(['raw_data']))
@@ -675,6 +679,11 @@ class TemplateForm(forms.ModelForm):
 
     @property
     def helper(self):
+        submit_kwargs = {}
+        if self.instance.pk and not self.instance.has_level(self.user,
+                                                            'owner'):
+            submit_kwargs['disabled'] = None
+
         helper = FormHelper()
         helper.layout = Layout(
             Field("name"),
@@ -739,7 +748,7 @@ class TemplateForm(forms.ModelForm):
                 Field("tags"),
             ),
         )
-        helper.add_input(Submit('submit', 'Save changes'))
+        helper.add_input(Submit('submit', 'Save changes', **submit_kwargs))
         return helper
 
     class Meta:
