@@ -2822,10 +2822,13 @@ def get_disk_download_status(request, pk):
     )
 
 
-class InstanceActivityDetail(SuperuserRequiredMixin, DetailView):
+class InstanceActivityDetail(CheckedDetailView):
     model = InstanceActivity
     context_object_name = 'instanceactivity'  # much simpler to mock object
     template_name = 'dashboard/instanceactivity_detail.html'
+
+    def get_has_level(self):
+        return self.object.instance.has_level
 
     def get_context_data(self, **kwargs):
         ctx = super(InstanceActivityDetail, self).get_context_data(**kwargs)

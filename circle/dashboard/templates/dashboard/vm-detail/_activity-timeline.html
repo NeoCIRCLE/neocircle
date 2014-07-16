@@ -4,10 +4,10 @@
   <span class="timeline-icon{% if a.has_failed %} timeline-icon-failed{% endif %}">
   <i class="fa {% if not a.finished %}fa-refresh fa-spin {% else %}fa-plus{% endif %}"></i>
 </span>
-<strong{% if user.is_superuser and a.result %} title="{{ a.result.get_admin_text }}"{% endif %}>
-  {% if user.is_superuser %}<a href="{{ a.get_absolute_url }}">{% endif %}
+<strong{% if a.result %} title="{{ a.result.get_user_text }}"{% endif %}>
+  <a href="{{ a.get_absolute_url }}">
     {% if a.times > 1 %}({{ a.times }}x){% endif %}
-    {{ a.readable_name.get_user_text }}{% if user.is_superuser %}</a>{% endif %}
+    {{ a.readable_name.get_user_text }}</a>
 
 {% if a.has_percent %}
   - {{ a.percentage }}%
@@ -30,9 +30,9 @@
     <div class="sub-timeline">
       {% for s in a.children.all %}
       <div data-activity-id="{{ s.pk }}" class="sub-activity{% if s.has_failed %} sub-activity-failed{% endif %}{% if s.pk == active.pk %} sub-activity-active{% endif %}">
-        <span{% if user.is_superuser and s.result %} title="{{ s.result.get_admin_text }}"{% endif %}>
-          {% if user.is_superuser %}<a href="{{ s.get_absolute_url }}">{% endif %}
-              {{ s.readable_name.get_user_text }}{% if user.is_superuser %}</a>{% endif %}</span> &ndash;
+        <span{% if s.result %} title="{{ s.result.get_user_text }}"{% endif %}>
+          <a href="{{ s.get_absolute_url }}">
+              {{ s.readable_name.get_user_text }}</a></span> &ndash;
         {% if s.finished %}
           {{ s.finished|time:"H:i:s" }}
         {% else %}

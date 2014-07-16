@@ -5,13 +5,20 @@
   <span class="timeline-icon{% if a.has_failed %} timeline-icon-failed{% endif %}">
   <i class="fa{% if not a.finished %}fa-refresh fa-spin {% else %}fa fa-plus{% endif %}"></i>
 </span>
-<strong>{{ a.readable_name.get_user_text }}</strong>
+<strong>{% if user.is_superuser %}
+    {{ a.readable_name.get_admin_text }}
+    {% else %}
+    {{ a.readable_name.get_user_text }}{% endif %}</strong>
 {{ a.started|date:"Y-m-d H:i" }}, {{ a.user }}
   {% if a.children.count > 0 %}
     <div class="sub-timeline">
       {% for s in a.children.all %}
       <div data-activity-id="{{ s.pk }}" class="sub-activity{% if s.has_failed %} sub-activity-failed{% endif %}">
-        {{ s.readable_name.get_user_text }} - 
+    {% if user.is_superuser %}
+    {{ s.readable_name.get_admin_text }}
+    {% else %}
+    {{ s.readable_name.get_user_text }}{% endif %}
+         &ndash;
         {% if s.finished %}
           {{ s.finished|time:"H:i:s" }}
         {% else %}
