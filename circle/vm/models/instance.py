@@ -34,13 +34,14 @@ from django.db.models import (BooleanField, CharField, DateTimeField,
                               ManyToManyField, permalink, SET_NULL, TextField)
 from django.dispatch import Signal
 from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _, ugettext_noop
 
 from model_utils import Choices
 from model_utils.models import TimeStampedModel, StatusModel
 from taggit.managers import TaggableManager
 
 from acl.models import AclBase
+from common.models import create_readable
 from common.operations import OperatedMixin
 from ..tasks import vm_tasks, agent_tasks
 from .activity import (ActivityInProgressError, instance_activity,
@@ -664,7 +665,20 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         success, failed = [], []
 
         def on_commit(act):
-            act.result = {'failed': failed, 'success': success}
+            if failed:
+                act.result = create_readable(ugettext_noop(
+                    "%(failed)s notifications failed and %(success) succeeded."
+                    " Failed ones are: %(faileds)s."), ugettext_noop(
+                    "%(failed)s notifications failed and %(success) succeeded."
+                    " Failed ones are: %(faileds_ex)s."),
+                    failed=len(failed), success=len(success),
+                    faileds=", ".join(a for a, e in failed),
+                    faileds_ex=", ".join("%s (%s)" % (a, unicode(e))
+                                         for a, e in failed))
+            else:
+                act.result = create_readable(ugettext_noop(
+                    "%(success)s notifications succeeded."),
+                    success=len(success), successes=success)
 
         with instance_activity('notification_about_expiration', instance=self,
                                on_commit=on_commit):

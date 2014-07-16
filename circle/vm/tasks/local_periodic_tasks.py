@@ -17,7 +17,7 @@
 
 import logging
 from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext_noop
 
 from manager.mancelery import celery
 from vm.models import Node, Instance
@@ -48,9 +48,10 @@ def garbage_collector(timeout=15):
             logger.info("Expired instance %d destroyed.", i.pk)
             try:
                 i.owner.profile.notify(
-                    _('%s destroyed') % unicode(i),
-                    'dashboard/notifications/vm-destroyed.html',
-                    {'instance': i})
+                    ugettext_noop('%s destroyed'), ugettext_noop(
+                        'Your instance <a href="%(url)s">%(instance)s</a> '
+                        'has been destroyed due to expiration.'),
+                    instance=i.name, url=i.get_absolute_url())
             except Exception as e:
                 logger.debug('Could not notify owner of instance %d .%s',
                              i.pk, unicode(e))
@@ -60,9 +61,12 @@ def garbage_collector(timeout=15):
             logger.info("Expired instance %d suspended." % i.pk)
             try:
                 i.owner.profile.notify(
-                    _('%s suspended') % unicode(i),
-                    'dashboard/notifications/vm-suspended.html',
-                    {'instance': i})
+                    ugettext_noop('%(instance)s suspended'),
+                    ugettext_noop('%s destroyed'), ugettext_noop(
+                        'Your instance <a href="%(url)s">%(instance)s</a> '
+                        'has been suspended due to expiration. '
+                        'You can resume or destroy it.'),
+                    instance=i.name, url=i.get_absolute_url())
             except Exception as e:
                 logger.debug('Could not notify owner of instance %d .%s',
                              i.pk, unicode(e))

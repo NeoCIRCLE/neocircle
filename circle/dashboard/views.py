@@ -43,7 +43,7 @@ from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import (TemplateView, DetailView, View, DeleteView,
                                   UpdateView, CreateView, ListView)
 from django.contrib import messages
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext_noop
 from django.utils.translation import ungettext as __
 from django.template.loader import render_to_string
 from django.template import RequestContext
@@ -2441,8 +2441,11 @@ class TransferOwnershipView(LoginRequiredMixin, DetailView):
             'dashboard.views.vm-transfer-ownership-confirm', args=[token])
         try:
             new_owner.profile.notify(
-                _('Ownership offer'),
-                'dashboard/notifications/ownership-offer.html',
+                ugettext_noop('Ownership offer'),
+                ugettext_noop('%(user)s offered you to take the ownership of '
+                              'his/her virtual machine called %(instance)s. '
+                              '<a href="%(token)s" '
+                              'class="btn btn-success btn-small">Accept</a>'),
                 {'instance': obj, 'token': token_path})
         except Profile.DoesNotExist:
             messages.error(request, _('Can not notify selected user.'))
@@ -2497,8 +2500,9 @@ class TransferOwnershipConfirmView(LoginRequiredMixin, View):
                     unicode(instance), unicode(old), unicode(request.user))
         if old.profile:
             old.profile.notify(
-                _('Ownership accepted'),
-                'dashboard/notifications/ownership-accepted.html',
+                ugettext_noop('Ownership accepted'),
+                ugettext_noop('Your ownership offer of %(instance)s has been '
+                              'accepted by %(user)s.'),
                 {'instance': instance})
         return HttpResponseRedirect(instance.get_absolute_url())
 
