@@ -6,9 +6,9 @@ class Migration(DataMigration):
 
     def forwards(self, orm):
         for n in orm.Notification.objects.all():
-            n.subject_data = {"user_text_template": n.subject,
+            n.subject_data = {"user_text_template": n.subject.replace("%", "%%"),
                               "admin_text_template": "", "params": {}}
-            n.message_data = {"user_text_template": n.message,
+            n.message_data = {"user_text_template": n.message.replace("%", "%%"),
                               "admin_text_template": "", "params": {}}
             n.save()
 
