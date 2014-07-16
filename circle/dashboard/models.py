@@ -30,16 +30,17 @@ from django.db.models import (
     DateTimeField, permalink, BooleanField
 )
 from django.db.models.signals import post_save, pre_delete
-from django.template.loader import render_to_string
 from django.templatetags.static import static
-from django.utils.translation import ugettext_lazy as _, override, ugettext
+from django.utils.translation import ugettext_lazy as _
 from django_sshkey.models import UserKey
 
+from jsonfield import JSONField
 from model_utils.models import TimeStampedModel
 from model_utils.fields import StatusField
 from model_utils import Choices
 
 from acl.models import AclBase
+from common.models import HumanReadableObject, create_readable, Encoder
 
 from vm.tasks.agent_tasks import add_keys, del_keys
 
@@ -58,25 +59,38 @@ class Notification(TimeStampedModel):
 
     status = StatusField()
     to = ForeignKey(User)
-    subject = CharField(max_length=128)
-    message = TextField()
+    subject_data = JSONField(null=True, dump_kwargs={"cls": Encoder})
+    message_data = JSONField(null=True, dump_kwargs={"cls": Encoder})
     valid_until = DateTimeField(null=True, default=None)
 
     class Meta:
         ordering = ['-created']
 
     @classmethod
-    def send(cls, user, subject, template, context={}, valid_until=None):
-        try:
-            language = user.profile.preferred_language
-        except:
-            language = None
-        with override(language):
-            context['user'] = user
-            rendered = render_to_string(template, context)
-            subject = ugettext(unicode(subject))
-        return cls.objects.create(to=user, subject=subject, message=rendered,
+    def send(cls, user, subject, template, context,
+             valid_until=None, subject_context=None):
+        hro = create_readable(template, user=user, **context)
+        subject = create_readable(subject, subject_context or context)
+        return cls.objects.create(to=user,
+                                  subject_data=subject.to_dict(),
+                                  message_data=hro.to_dict(),
                                   valid_until=valid_until)
+
+    @property
+    def subject(self):
+        return HumanReadableObject.from_dict(self.subject_data)
+
+    @subject.setter
+    def subject(self, value):
+        self.subject_data = None if value is None else value.to_dict()
+
+    @property
+    def message(self):
+        return HumanReadableObject.from_dict(self.message_data)
+
+    @message.setter
+    def message(self, value):
+        self.message_data = None if value is None else value.to_dict()
 
 
 class Profile(Model):
@@ -96,8 +110,11 @@ class Profile(Model):
         verbose_name=_("Email notifications"), default=True,
         help_text=_('Whether user wants to get digested email notifications.'))
 
-    def notify(self, subject, template, context={}, valid_until=None):
-        return Notification.send(self.user, subject, template, context,
+    def notify(self, subject, template, context=None, valid_until=None,
+               **kwargs):
+        if context is not None:
+            kwargs.update(context)
+        return Notification.send(self.user, subject, template, kwargs,
                                  valid_until)
 
     def get_absolute_url(self):
