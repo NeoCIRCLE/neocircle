@@ -20,8 +20,10 @@ from socket import gethostname
 
 import django.conf
 from django.core.cache import cache
+from celery.exceptions import TimeoutError
 
 from manager.mancelery import celery
+from common.models import WorkerNotFound
 
 settings = django.conf.settings.FIREWALL_SETTINGS
 logger = getLogger(__name__)
@@ -36,19 +38,37 @@ def _apply_once(name, queues, task, data):
         return
     cache.delete(lockname)
 
+    data = data()
     for queue in queues:
-        task.apply_async(args=data(), queue=queue)
-    logger.info("%s configuration is reloaded.", name)
+        try:
+            task.apply_async(args=data, queue=queue, expires=60).get(timeout=5)
+            logger.info("%s configuration is reloaded. (queue: %s)",
+                        name, queue)
+        except TimeoutError as e:
+            logger.critical('%s (queue: %s)', e, queue)
+        except:
+            logger.critical('Unhandled exception: queue: %s data: %s',
+                            queue, data, exc_info=True)
+
+
+def get_firewall_queues():
+    from firewall.models import Firewall
+    retval = []
+    for fw in Firewall.objects.all():
+        try:
+            retval.append(fw.get_remote_queue_name('firewall'))
+        except WorkerNotFound:
+            logger.critical('Firewall %s is offline', fw.name)
+    return list(retval)
 
 
 @celery.task(ignore_result=True)
-def periodic_task():
+def reloadtask_worker():
     from firewall.fw import BuildFirewall, dhcp, dns, ipset, vlan
     from remote_tasks import (reload_dns, reload_dhcp, reload_firewall,
                               reload_firewall_vlan, reload_blacklist)
 
-    firewall_queues = [("%s.firewall" % i) for i in
-                       settings.get('firewall_queues', [gethostname()])]
+    firewall_queues = get_firewall_queues()
     dns_queues = [("%s.dns" % i) for i in
                   settings.get('dns_queues', [gethostname()])]
 
@@ -78,5 +98,5 @@ def reloadtask(type='Host', timeout=15):
     }[type]
     logger.info("Reload %s on next periodic iteration applying change to %s.",
                 ", ".join(reload), type)
-    for i in reload:
-        cache.add("%s_lock" % i, "true", 30)
+    if all(cache.add("%s_lock" % i, True, 30) for i in reload):
+        reloadtask_worker.apply_async(queue='localhost.man', countdown=5)

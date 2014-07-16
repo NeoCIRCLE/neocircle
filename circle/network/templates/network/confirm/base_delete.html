@@ -1,16 +1,16 @@
-{% extends "network/base.html" %}                                           
-{% load i18n %}                                                             
-{% load l10n %}                                                             
+{% extends "network/base.html" %}
+{% load i18n %}
+{% load l10n %}
 {% block content %}
 
-<div class="page-header">                                                  
+<div class="page-header">
     <h2>
         {% blocktrans with object=object %}
-            Are you sure you want to delete 
+            Are you sure you want to delete
             <strong>"{{ object }}"</strong>?
         {% endblocktrans %}
     </h2>
-</div> 
+</div>
 
 <form action="" method="post">{% csrf_token %}
 {% if deps %}
@@ -36,7 +36,7 @@
         <label><p>
             {% trans "If you are really sure, type in the object's name!" %}
         <input type="text" name="confirm" class="form-control" placeholder="{{ object }}"/>
-        </p></label>    
+        </p></label>
     {% else %}
     {% endif %}
     <input type="submit" class="btn btn-danger btn-lg pull-right" value="{% trans "Yes, delete it!" %}"/>

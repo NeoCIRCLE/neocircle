@@ -681,7 +681,7 @@ class VmCreateDiskView(FormOperationMixin, VmOperationView):
     op = 'create_disk'
     form_class = VmCreateDiskForm
     show_in_toolbar = False
-    icon = 'hdd'
+    icon = 'hdd-o'
     is_disk_operation = True
 
 
@@ -846,10 +846,10 @@ vm_ops = OrderedDict([
     ('deploy', VmOperationView.factory(
         op='deploy', icon='play', effect='success')),
     ('wake_up', VmOperationView.factory(
-        op='wake_up', icon='sun', effect='success')),
+        op='wake_up', icon='sun-o', effect='success')),
     ('sleep', VmOperationView.factory(
         extra_bases=[TokenOperationView],
-        op='sleep', icon='moon', effect='info')),
+        op='sleep', icon='moon-o', effect='info')),
     ('migrate', VmMigrateView),
     ('save_as_template', VmSaveView),
     ('reboot', VmOperationView.factory(
@@ -857,14 +857,14 @@ vm_ops = OrderedDict([
     ('reset', VmOperationView.factory(
         op='reset', icon='bolt', effect='warning')),
     ('shutdown', VmOperationView.factory(
-        op='shutdown', icon='off', effect='warning')),
+        op='shutdown', icon='power-off', effect='warning')),
     ('shut_off', VmOperationView.factory(
-        op='shut_off', icon='ban-circle', effect='warning')),
+        op='shut_off', icon='ban', effect='warning')),
     ('recover', VmOperationView.factory(
         op='recover', icon='medkit', effect='warning')),
     ('destroy', VmOperationView.factory(
         extra_bases=[TokenOperationView],
-        op='destroy', icon='remove', effect='danger')),
+        op='destroy', icon='times', effect='danger')),
     ('create_disk', VmCreateDiskView),
     ('download_disk', VmDownloadDiskView),
     ('renew', VmRenewView),

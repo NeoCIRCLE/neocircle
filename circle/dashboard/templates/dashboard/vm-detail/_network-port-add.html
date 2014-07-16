@@ -1,18 +1,18 @@
 {% load i18n %}
-<div class="vm-details-network-port-add pull-right">                                   
-  <form action="" method="POST">                                              
-    {% csrf_token %}                                                          
-    <input type="hidden" name="host_pk" value="{{ i.host.pk }}"/>             
-    <div class="input-group input-group-sm">                                  
-      <span class="input-group-addon">                                        
-        <i class="icon-plus"></i> <i class="icon-long-arrow-right"></i>       
-      </span>                                                                 
+<div class="vm-details-network-port-add pull-right">
+  <form action="" method="POST">
+    {% csrf_token %}
+    <input type="hidden" name="host_pk" value="{{ i.host.pk }}"/>
+    <div class="input-group input-group-sm">
+      <span class="input-group-addon">
+        <i class="fa fa-plus"></i> <i class="fa fa-long-arrow-right"></i>
+      </span>
       <input type="text" class="form-control" size="5" style="width: 80px;" name="port"/>
-      <span class="input-group-addon">/</span>                                
+      <span class="input-group-addon">/</span>
       <select class="form-control" name="proto" style="width: 70px;"><option>tcp</option><option>udp</option></select>
-      <div class="input-group-btn">                                           
-        <button type="submit" class="btn btn-success btn-sm">{% trans "Add" %}</button>     
-      </div>                                                                  
-    </div>                                                                    
-  </form>                                   
-</div>                                        
+      <div class="input-group-btn">
+        <button type="submit" class="btn btn-success btn-sm">{% trans "Add" %}</button>
+      </div>
+    </div>
+  </form>
+</div>

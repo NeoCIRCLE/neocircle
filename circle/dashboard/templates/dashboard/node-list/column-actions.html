@@ -1,11 +1,11 @@
 {% load i18n %}
 <div class="btn-group">
-	<button type="button" class="btn {{ btn_size }} btn-warning nojs-dropdown-toogle dropdown-toggle" data-toggle="dropdown">Action <i class="icon-caret-down"></i></button>
+	<button type="button" class="btn {{ btn_size }} btn-warning nojs-dropdown-toogle dropdown-toggle" data-toggle="dropdown">Action <i class="fa fa-caret-down"></i></button>
   <ul class="dropdown-menu nojs-dropdown-toogle" role="menu">
- <li><a href="#" class="node-details-rename-button"><i class="icon-pencil"></i> {% trans "Rename" %}</a></li>
- <li><a data-node-pk="{{ record.pk }}" class="real-link node-flush" href="{% url "dashboard.views.flush-node" pk=record.pk %}"><i class="icon-cloud-upload"></i>{% trans "Flush" %}</a>
-    <li><a style={% if record.enabled %}"display:none"{% else %}"display:block"{% endif %} data-node-pk="{{ record.pk }}" class="real-link node-enable" href="{% url "dashboard.views.status-node" pk=record.pk %}?next={{ request.path }}"><i class="icon-check"></i>{% trans "Enable" %}</a>
-  <a style={% if record.enabled %}"display:block"{% else %}"display:none"{% endif %} data-node-pk="{{ record.pk }}" class="real-link node-enable" href="{% url "dashboard.views.status-node" pk=record.pk %}?next={{ request.path }}"><i class="icon-remove"></i>{% trans "Disable" %}</a></li>
-  <li><a data-node-pk="{{ record.pk }}" class="real-link node-delete" href="{% url "dashboard.views.delete-node" pk=record.pk %}?next={{ request.path }}"><i class="icon-trash"></i>{% trans "Delete" %}</a></li>
+ <li><a href="#" class="node-details-rename-button"><i class="fa fa-pencil"></i> {% trans "Rename" %}</a></li>
+ <li><a data-node-pk="{{ record.pk }}" class="real-link node-flush" href="{% url "dashboard.views.flush-node" pk=record.pk %}"><i class="fa fa-cloud-upload"></i>{% trans "Flush" %}</a>
+    <li><a style={% if record.enabled %}"display:none"{% else %}"display:block"{% endif %} data-node-pk="{{ record.pk }}" class="real-link node-enable" href="{% url "dashboard.views.status-node" pk=record.pk %}?next={{ request.path }}"><i class="fa fa-check"></i>{% trans "Enable" %}</a>
+  <a style={% if record.enabled %}"display:block"{% else %}"display:none"{% endif %} data-node-pk="{{ record.pk }}" class="real-link node-enable" href="{% url "dashboard.views.status-node" pk=record.pk %}?next={{ request.path }}"><i class="fa fa-times"></i>{% trans "Disable" %}</a></li>
+  <li><a data-node-pk="{{ record.pk }}" class="real-link node-delete" href="{% url "dashboard.views.delete-node" pk=record.pk %}?next={{ request.path }}"><i class="fa fa-trash"></i>{% trans "Delete" %}</a></li>
     </ul>
 </div>

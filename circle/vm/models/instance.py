@@ -898,14 +898,14 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
 
     def get_status_icon(self):
         return {
-            'NOSTATE': 'icon-rocket',
-            'RUNNING': 'icon-play',
-            'STOPPED': 'icon-stop',
-            'SUSPENDED': 'icon-pause',
-            'ERROR': 'icon-warning-sign',
-            'PENDING': 'icon-rocket',
-            'DESTROYED': 'icon-trash',
-            'MIGRATING': 'icon-truck'}.get(self.status, 'icon-question-sign')
+            'NOSTATE': 'fa-rocket',
+            'RUNNING': 'fa-play',
+            'STOPPED': 'fa-stop',
+            'SUSPENDED': 'fa-pause',
+            'ERROR': 'fa-warning',
+            'PENDING': 'fa-rocket',
+            'DESTROYED': 'fa-trash-o',
+            'MIGRATING': 'fa-truck'}.get(self.status, 'fa-question')
 
     def get_activities(self, user=None):
         acts = (self.activity_log.filter(parent=None).

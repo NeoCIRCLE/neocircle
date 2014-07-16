@@ -1,9 +1,9 @@
 
 <div class="btn-group">
-  <button type="button" class="btn btn-xs btn-warning nojs-dropdown-toogle dropdown-toggle" data-toggle="dropdown">Action <i class="icon-caret-down"></i></button>
+  <button type="button" class="btn btn-xs btn-warning nojs-dropdown-toogle dropdown-toggle" data-toggle="dropdown">Action <i class="fa fa-caret-down"></i></button>
   <ul class="nojs-dropdown-toogle dropdown-menu" role="menu">
-    <li><a href="#"><i class="icon-refresh"></i> Reboot</a></li>
-    <li><a href="#"><i class="icon-off"></i> Shutdown</a></li>
-    <li><a data-vm-pk="{{ record.pk }}" class="real-link vm-delete" href="{% url "dashboard.views.delete-vm" pk=record.pk %}?next={{ request.path }}"><i class="icon-remove"></i> Discard</a></li>
+    <li><a href="#"><i class="fa fa-refresh"></i> Reboot</a></li>
+    <li><a href="#"><i class="fa fa-off"></i> Shutdown</a></li>
+    <li><a data-vm-pk="{{ record.pk }}" class="real-link vm-delete" href="{% url "dashboard.views.delete-vm" pk=record.pk %}?next={{ request.path }}"><i class="fa fa-times"></i> Discard</a></li>
   </ul>
 </div>

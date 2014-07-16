@@ -3,7 +3,7 @@
 {% for a in activities %}
 <div class="activity" data-activity-id="{{ a.pk }}">
   <span class="timeline-icon{% if a.has_failed %} timeline-icon-failed{% endif %}">
-  <i class="{% if not a.finished %} icon-refresh icon-spin {% else %}icon-plus{% endif %}"></i>
+  <i class="fa{% if not a.finished %}fa-refresh fa-spin {% else %}fa fa-plus{% endif %}"></i>
 </span>
 <strong>{{ a.readable_name.get_user_text }}</strong>
 {{ a.started|date:"Y-m-d H:i" }}, {{ a.user }}
@@ -15,7 +15,7 @@
         {% if s.finished %}
           {{ s.finished|time:"H:i:s" }}
         {% else %}
-          <i class="icon-refresh icon-spin" class="sub-activity-loading-icon"></i>
+          <i class="fa fa-refresh fa-spin" class="sub-activity-loading-icon"></i>
         {% endif %}
         {% if s.has_failed %}
           <div class="label label-danger">{% trans "failed" %}</div>

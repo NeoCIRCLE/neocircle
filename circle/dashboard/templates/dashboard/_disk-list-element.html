@@ -1,8 +1,8 @@
 {% load i18n %}
 {% load sizefieldtags %}
 
-<i class="{% if d.is_downloading %}icon-refresh icon-spin{% else %}icon-file{% if d.failed %}" style="color: #d9534f;{% endif %}{% endif %}"></i> 
-{{ d.name }} (#{{ d.id }}) - 
+<i class="fa {% if d.is_downloading %}fa-refresh fa-spin{% else %}fa-file{% if d.failed %}" style="color: #d9534f;{% endif %}{% endif %}"></i>
+{{ d.name }} (#{{ d.id }}) -
 {% if not d.is_downloading %}
   {% if not d.failed %}
     {% if d.size %}{{ d.size|filesize }}{% endif %}
@@ -10,10 +10,10 @@
   <div class="label label-danger"{% if user.is_superuser %} title="{{ d.get_latest_activity_result }}"{% endif %}>{% trans "failed" %}</div>
   {% endif %}
 {% else %}<span class="disk-list-disk-percentage" data-disk-pk="{{ d.pk }}">{{ d.get_download_percentage }}</span>%{% endif %}
-<a href="{% url "dashboard.views.disk-remove" pk=d.pk %}?next={{ request.path }}" 
+<a href="{% url "dashboard.views.disk-remove" pk=d.pk %}?next={{ request.path }}"
   data-disk-pk="{{ d.pk }}" class="btn btn-xs btn-danger pull-right disk-remove"
   {% if not long_remove %}title="{% trans "Remove" %}"{% endif %}
   >
-  <i class="icon-remove"></i>{% if long_remove %} {% trans "Remove" %}{% endif %}
+  <i class="fa fa-times"></i>{% if long_remove %} {% trans "Remove" %}{% endif %}
 </a>
 <div style="clear: both;"></div>
