@@ -2626,12 +2626,9 @@ class NotificationView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, *args, **kwargs):
         context = super(NotificationView, self).get_context_data(
             *args, **kwargs)
-        # we need to convert it to list, otherwise it's gonna be
-        # similar to a QuerySet and update everything to
-        # read status after get
         n = 10 if self.request.is_ajax() else 1000
         context['notifications'] = list(
-            self.request.user.notification_set.values()[:n])
+            self.request.user.notification_set.all()[:n])
         return context
 
     def get(self, *args, **kwargs):
