@@ -22,6 +22,7 @@ from os.path import (abspath, basename, dirname, join, normpath, isfile,
                      expanduser)
 from sys import path
 from subprocess import check_output
+from uuid import getnode
 
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import ugettext_lazy as _
@@ -444,3 +445,6 @@ if graphite_host and graphite_port:
     GRAPHITE_URL = 'http://%s:%s/render/' % (graphite_host, graphite_port)
 else:
     GRAPHITE_URL = None
+
+SESSION_COOKIE_NAME = "csessid%x" % (((getnode() // 139) ^
+                                      (getnode() % 983)) & 0xffff)
