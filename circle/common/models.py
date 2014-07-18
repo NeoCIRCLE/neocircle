@@ -373,9 +373,13 @@ class HumanReadableObject(object):
         return None if d is None else cls(**d)
 
     def get_admin_text(self):
+        if self.admin_text_template == "":
+            return ""
         return _(self.admin_text_template) % self.params
 
     def get_user_text(self):
+        if self.user_text_template == "":
+            return ""
         return _(self.user_text_template) % self.params
 
     def to_dict(self):
