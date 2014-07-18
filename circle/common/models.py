@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals
 from collections import deque
 from contextlib import contextmanager
 from hashlib import sha224
@@ -389,3 +388,25 @@ class HumanReadableObject(object):
 
 
 create_readable = HumanReadableObject.create
+
+
+class HumanReadableException(HumanReadableObject, Exception):
+    """HumanReadableObject that is an Exception so can used in except clause.
+    """
+    pass
+
+
+def humanize_exception(message, exception=None, **params):
+    """Return new dynamic-class exception which is based on
+    HumanReadableException and the original class with the dict of exception.
+
+    >>> try: raise humanize_exception("Welcome!", TypeError("hello"))
+    ... except HumanReadableException as e: print e.get_admin_text()
+    ...
+    Welcome!
+    """
+
+    Ex = type("HumanReadable" + type(exception).__name__,
+              (HumanReadableException, type(exception)),
+              exception.__dict__)
+    return Ex.create(message, **params)
