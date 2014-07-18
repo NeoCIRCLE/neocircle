@@ -48,7 +48,8 @@ def garbage_collector(timeout=15):
             logger.info("Expired instance %d destroyed.", i.pk)
             try:
                 i.owner.profile.notify(
-                    ugettext_noop('%s destroyed'), ugettext_noop(
+                    ugettext_noop('%(instance)s destroyed'),
+                    ugettext_noop(
                         'Your instance <a href="%(url)s">%(instance)s</a> '
                         'has been destroyed due to expiration.'),
                     instance=i.name, url=i.get_absolute_url())
@@ -62,7 +63,7 @@ def garbage_collector(timeout=15):
             try:
                 i.owner.profile.notify(
                     ugettext_noop('%(instance)s suspended'),
-                    ugettext_noop('%s destroyed'), ugettext_noop(
+                    ugettext_noop(
                         'Your instance <a href="%(url)s">%(instance)s</a> '
                         'has been suspended due to expiration. '
                         'You can resume or destroy it.'),
