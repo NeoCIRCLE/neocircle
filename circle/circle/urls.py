@@ -64,3 +64,5 @@ if get_env_variable('DJANGO_SAML', 'FALSE') == 'TRUE':
         '',
         (r'^saml2/', include('djangosaml2.urls')),
     )
+
+handler500 = 'common.views.handler500'
