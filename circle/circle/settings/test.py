@@ -35,7 +35,9 @@ SOUTH_TESTS_MIGRATE = False
 
 INSTALLED_APPS += (
     'acl.tests',
+    'django_nose',
 )
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 CACHES = {
     'default': {
