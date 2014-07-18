@@ -264,9 +264,10 @@ class VmDetailVncTokenView(CheckedDetailView):
         if not request.user.has_perm('vm.access_console'):
             raise PermissionDenied()
         if self.object.node:
-            with instance_activity(code_suffix='console-accessed',
-                                   instance=self.object, user=request.user,
-                                   concurrency_check=False):
+            with instance_activity(
+                    code_suffix='console-accessed', instance=self.object,
+                    user=request.user, readable_name=ugettext_noop(
+                        "console access"), concurrency_check=False):
                 port = self.object.vnc_port
                 host = str(self.object.node.host.ipv4)
                 value = signing.dumps({'host': host, 'port': port},

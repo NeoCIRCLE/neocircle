@@ -183,6 +183,8 @@ class InstanceActivity(ActivityModel):
                      concurrency_check=True):
         """Create a transactional context for a nested instance activity.
         """
+        if not readable_name:
+            warn("Set readable_name", stacklevel=3)
         act = self.create_sub(code_suffix, task_uuid, concurrency_check,
                               readable_name=readable_name)
         return activitycontextimpl(act, on_abort=on_abort, on_commit=on_commit)
@@ -190,11 +192,15 @@ class InstanceActivity(ActivityModel):
 
 @contextmanager
 def instance_activity(code_suffix, instance, on_abort=None, on_commit=None,
-                      task_uuid=None, user=None, concurrency_check=True):
+                      task_uuid=None, user=None, concurrency_check=True,
+                      readable_name=None):
     """Create a transactional context for an instance activity.
     """
+    if not readable_name:
+        warn("Set readable_name", stacklevel=3)
     act = InstanceActivity.create(code_suffix, instance, task_uuid, user,
-                                  concurrency_check)
+                                  concurrency_check,
+                                  readable_name=readable_name)
     return activitycontextimpl(act, on_abort=on_abort, on_commit=on_commit)
 
 
@@ -248,8 +254,10 @@ class NodeActivity(ActivityModel):
 
 
 @contextmanager
-def node_activity(code_suffix, node, task_uuid=None, user=None):
-    act = NodeActivity.create(code_suffix, node, task_uuid, user)
+def node_activity(code_suffix, node, task_uuid=None, user=None,
+                  readable_name=None):
+    act = NodeActivity.create(code_suffix, node, task_uuid, user,
+                              readable_name=readable_name)
     return activitycontextimpl(act)
 
 

@@ -112,7 +112,8 @@ class InstanceTestCase(TestCase):
                 migrate_op(system=True)
 
             migr.apply_async.assert_called()
-            self.assertIn(call.sub_activity(u'scheduling'), act.mock_calls)
+            self.assertIn(call.sub_activity(
+                u'scheduling', readable_name=u'schedule'), act.mock_calls)
             inst.select_node.assert_called()
 
     def test_migrate_wo_scheduling(self):
@@ -147,8 +148,11 @@ class InstanceTestCase(TestCase):
                 self.assertRaises(Exception, migrate_op, system=True)
 
             migr.apply_async.assert_called()
-            self.assertIn(call.sub_activity(u'scheduling'), act.mock_calls)
-            self.assertIn(call.sub_activity(u'rollback_net'), act.mock_calls)
+            self.assertIn(call.sub_activity(
+                u'scheduling', readable_name=u'schedule'), act.mock_calls)
+            self.assertIn(call.sub_activity(
+                u'rollback_net', readable_name=u'redeploy network (rollback)'),
+                act.mock_calls)
             inst.select_node.assert_called()
 
     def test_status_icon(self):
@@ -216,7 +220,8 @@ class InstanceActivityTestCase(TestCase):
         instance.activity_log.filter.return_value.exists.return_value = True
 
         with self.assertRaises(ActivityInProgressError):
-            InstanceActivity.create('test', instance, concurrency_check=True)
+            InstanceActivity.create('test', instance, readable_name="test",
+                                    concurrency_check=True)
 
     def test_create_no_concurrency_check(self):
         instance = MagicMock(spec=Instance)
@@ -229,7 +234,8 @@ class InstanceActivityTestCase(TestCase):
                                          mock_instance_activity_cls,
                                          original_create.im_class)
         try:
-            mocked_create('test', instance, concurrency_check=False)
+            mocked_create('test', instance, readable_name="test",
+                          concurrency_check=False)
         except ActivityInProgressError:
             raise AssertionError("'create' method checked for concurrent "
                                  "activities.")
@@ -239,7 +245,8 @@ class InstanceActivityTestCase(TestCase):
         iaobj.children.filter.return_value.exists.return_value = True
 
         with self.assertRaises(ActivityInProgressError):
-            InstanceActivity.create_sub(iaobj, "test", concurrency_check=True)
+            InstanceActivity.create_sub(iaobj, "test", readable_name="test",
+                                        concurrency_check=True)
 
     def test_create_sub_no_concurrency_check(self):
         iaobj = MagicMock(spec=InstanceActivity)
@@ -249,7 +256,8 @@ class InstanceActivityTestCase(TestCase):
         create_sub_func = InstanceActivity.create_sub
         with patch('vm.models.activity.InstanceActivity'):
             try:
-                create_sub_func(iaobj, 'test', concurrency_check=False)
+                create_sub_func(iaobj, 'test', readable_name="test",
+                                concurrency_check=False)
             except ActivityInProgressError:
                 raise AssertionError("'create_sub' method checked for "
                                      "concurrent activities.")

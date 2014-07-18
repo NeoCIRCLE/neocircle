@@ -120,10 +120,14 @@ class Interface(Model):
             host.hostname = instance.vm_name
             # Get addresses from firewall
             if base_activity is None:
-                act_ctx = instance_activity(code_suffix='allocating_ip',
-                                            instance=instance, user=owner)
+                act_ctx = instance_activity(
+                    code_suffix='allocating_ip',
+                    readable_name=ugettext_noop("allocate IP address"),
+                    instance=instance, user=owner)
             else:
-                act_ctx = base_activity.sub_activity('allocating_ip')
+                act_ctx = base_activity.sub_activity(
+                    'allocating_ip',
+                    readable_name=ugettext_noop("allocate IP address"))
             with act_ctx as act:
                 addresses = vlan.get_new_address()
                 host.ipv4 = addresses['ipv4']

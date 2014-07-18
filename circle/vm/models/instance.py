@@ -365,6 +365,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             activity.resultant_state = 'PENDING'
 
         with instance_activity(code_suffix='create', instance=inst,
+                               readable_name=ugettext_noop("create instance"),
                                on_commit=__on_commit, user=inst.owner) as act:
             # create related entities
             inst.disks.add(*[disk.get_exclusive() for disk in disks])
@@ -449,8 +450,10 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         Can be used to recover VM after administrator fixed problems.
         """
         # TODO cancel concurrent activity (if exists)
-        act = InstanceActivity.create(code_suffix='manual_state_change',
-                                      instance=self, user=user)
+        act = InstanceActivity.create(
+            code_suffix='manual_state_change', instance=self, user=user,
+            readable_name=create_readable(ugettext_noop(
+                "force %(state)s state"), state=new_state))
         act.finished = act.started
         act.result = reason
         act.resultant_state = new_state
@@ -681,6 +684,8 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                     success=len(success), successes=success)
 
         with instance_activity('notification_about_expiration', instance=self,
+                               readable_name=ugettext_noop(
+                                   "notify owner about expiration"),
                                on_commit=on_commit):
             from dashboard.views import VmRenewView
             level = self.get_level_object("owner")
@@ -745,6 +750,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
 
         self.pw = pwgen()
         with instance_activity(code_suffix='change_password', instance=self,
+                               readable_name=ugettext_noop("change password"),
                                user=user):
             queue = self.get_remote_queue_name("agent")
             agent_tasks.change_password.apply_async(queue=queue,

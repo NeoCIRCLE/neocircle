@@ -242,18 +242,24 @@ class DestroyOperation(InstanceOperation):
 
     def _operation(self, activity):
         # Destroy networks
-        with activity.sub_activity('destroying_net'):
+        with activity.sub_activity(
+                'destroying_net',
+                readable_name=ugettext_noop("destroy network")):
             if self.instance.node:
                 self.instance.shutdown_net()
             self.instance.destroy_net()
 
         if self.instance.node:
             # Delete virtual machine
-            with activity.sub_activity('destroying_vm'):
+            with activity.sub_activity(
+                    'destroying_vm',
+                    readable_name=ugettext_noop("destroy virtual machine")):
                 self.instance.delete_vm()
 
         # Destroy disks
-        with activity.sub_activity('destroying_disks'):
+        with activity.sub_activity(
+                'destroying_disks',
+                readable_name=ugettext_noop("destroy disks")):
             self.instance.destroy_disks()
 
         # Delete mem. dump if exists
@@ -281,7 +287,9 @@ class MigrateOperation(InstanceOperation):
     required_perms = ()
 
     def rollback(self, activity):
-        with activity.sub_activity('rollback_net'):
+        with activity.sub_activity(
+            'rollback_net', readable_name=ugettext_noop(
+                "redeploy network (rollback)")):
             self.instance.deploy_net()
 
     def check_precond(self):
@@ -297,7 +305,9 @@ class MigrateOperation(InstanceOperation):
 
     def _operation(self, activity, to_node=None, timeout=120):
         if not to_node:
-            with activity.sub_activity('scheduling') as sa:
+            with activity.sub_activity('scheduling',
+                                       readable_name=ugettext_noop(
+                                           "schedule")) as sa:
                 to_node = self.instance.select_node()
                 sa.result = to_node
 
@@ -312,7 +322,9 @@ class MigrateOperation(InstanceOperation):
             raise
 
         # Shutdown networks
-        with activity.sub_activity('shutdown_net'):
+        with activity.sub_activity(
+            'shutdown_net', readable_name=ugettext_noop(
+                "shutdown network")):
             self.instance.shutdown_net()
 
         # Refresh node information
@@ -478,7 +490,8 @@ class SaveAsTemplateOperation(InstanceOperation):
                 return disk
 
         self.disks = []
-        with activity.sub_activity('saving_disks'):
+        with activity.sub_activity('saving_disks',
+                                   readable_name=ugettext_noop("save disks")):
             for disk in self.instance.disks.all():
                 self.disks.append(__try_save_disk(disk))
 
@@ -588,11 +601,14 @@ class SleepOperation(InstanceOperation):
 
     def _operation(self, activity, timeout=240):
         # Destroy networks
-        with activity.sub_activity('shutdown_net'):
+        with activity.sub_activity('shutdown_net', readable_name=ugettext_noop(
+                "shutdown network")):
             self.instance.shutdown_net()
 
         # Suspend vm
-        with activity.sub_activity('suspending'):
+        with activity.sub_activity('suspending',
+                                   readable_name=ugettext_noop(
+                                       "suspend virtual machine")):
             self.instance.suspend_vm(timeout=timeout)
 
         self.instance.yield_node()
@@ -633,11 +649,15 @@ class WakeUpOperation(InstanceOperation):
         self.instance.allocate_node()
 
         # Resume vm
-        with activity.sub_activity('resuming'):
+        with activity.sub_activity(
+            'resuming', readable_name=ugettext_noop(
+                "resume virtual machine")):
             self.instance.wake_up_vm(timeout=timeout)
 
         # Estabilish network connection (vmdriver)
-        with activity.sub_activity('deploying_net'):
+        with activity.sub_activity(
+            'deploying_net', readable_name=ugettext_noop(
+                "deploy network")):
             self.instance.deploy_net()
 
         # Renew vm
