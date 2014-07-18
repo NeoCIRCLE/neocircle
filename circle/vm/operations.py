@@ -137,6 +137,7 @@ class CreateDiskOperation(InstanceOperation):
         for d in self.instance.disks.all():
             devnums.remove(d.dev_num)
         disk.dev_num = devnums.pop(0)
+        disk.save()
         self.instance.disks.add(disk)
 
         if self.instance.is_running:
