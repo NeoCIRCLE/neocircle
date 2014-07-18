@@ -436,7 +436,8 @@ def FakeRequestFactory(user=None, **kwargs):
 
     if user is None:
         user = UserFactory()
-        user.is_authenticated = lambda: kwargs.pop('authenticated', True)
+        auth = kwargs.pop('authenticated', True)
+        user.is_authenticated = lambda: auth
         user.is_superuser = kwargs.pop('superuser', False)
         if kwargs.pop('has_perms_mock', False):
             user.has_perms = MagicMock(return_value=True)
@@ -455,7 +456,8 @@ def FakeRequestFactory(user=None, **kwargs):
     request.GET.update(kwargs.pop('GET', {}))
 
     if len(kwargs):
-        warnings.warn("FakeRequestFactory kwargs unused: " + unicode(kwargs))
+        warnings.warn("FakeRequestFactory kwargs unused: " + unicode(kwargs),
+                      stacklevel=2)
 
     return request
 
