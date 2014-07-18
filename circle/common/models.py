@@ -353,6 +353,9 @@ except ImportError:
 
 class HumanReadableObject(object):
     def __init__(self, user_text_template, admin_text_template, params):
+        self._set_values(user_text_template, admin_text_template, params)
+
+    def _set_values(self, user_text_template, admin_text_template, params):
         self.user_text_template = user_text_template
         self.admin_text_template = admin_text_template
         self.params = params
@@ -361,6 +364,10 @@ class HumanReadableObject(object):
     def create(cls, user_text_template, admin_text_template=None, **params):
         return cls(user_text_template,
                    admin_text_template or user_text_template, params)
+
+    def set(self, user_text_template, admin_text_template=None, **params):
+        self._set_values(user_text_template,
+                         admin_text_template or user_text_template, params)
 
     @classmethod
     def from_dict(cls, d):
