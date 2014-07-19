@@ -43,8 +43,9 @@ urlpatterns = patterns(
     url(r'^network/', include('network.urls')),
     url(r'^dashboard/', include('dashboard.urls')),
 
-    url((r'^accounts/reset/(?P<uidb36>[0-9A-Za-z]{1,13})-'
-         '(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$'),
+    # django/contrib/auth/urls.py (care when new version)
+    url((r'^accounts/reset/(?P<uidb64>[0-9A-Za-z_\-]+)/'
+         r'(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$'),
         'django.contrib.auth.views.password_reset_confirm',
         {'set_password_form': CircleSetPasswordForm},
         name='accounts.password_reset_confirm'
