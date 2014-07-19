@@ -53,7 +53,7 @@ $(function() {
 
           /* if there are messages display them */
           if(data.messages && data.messages.length > 0) {
-            addMessage(data.messages.join("<br />"), "danger");
+            addMessage(data.messages.join("<br />"), data.success ? "success" : "danger");
           }
         }
         else {
