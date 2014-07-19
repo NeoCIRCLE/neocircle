@@ -836,7 +836,7 @@ class VmRenewView(FormOperationMixin, TokenOperationView, VmOperationView):
         choices = Lease.get_objects_with_level("user", self.request.user)
         default = self.get_op().instance.lease
         if default and default not in choices:
-            choices = list(choices) + [default]
+            choices = choices | Lease.objects.filter(pk=default.pk).distinct()
 
         val = super(VmRenewView, self).get_form_kwargs()
         val.update({'choices': choices, 'default': default})
