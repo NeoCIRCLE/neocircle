@@ -336,6 +336,8 @@ class VmDetailView(CheckedDetailView):
             if request.POST.get(k) is not None:
                 return v(request)
 
+        raise Http404()
+
     def __change_password(self, request):
         self.object = self.get_object()
         if not self.object.has_level(request.user, 'owner'):
@@ -870,6 +872,7 @@ vm_ops = OrderedDict([
     ('create_disk', VmCreateDiskView),
     ('download_disk', VmDownloadDiskView),
     ('renew', VmRenewView),
+    ('resources_change', VmResourcesChangeView),
 ])
 
 
