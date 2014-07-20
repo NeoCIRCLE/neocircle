@@ -1263,7 +1263,7 @@ class GroupDetailTest(LoginMixin, TestCase):
                           str(self.g1.pk) + '/acl/',
                           {'perm-new-name': 'user3', 'perm-new': 'owner'})
         self.assertEqual(acl_users, len(gp.get_users_with_level()))
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 302)
 
     def test_superuser_add_acluser_to_group(self):
         c = Client()
@@ -1306,7 +1306,7 @@ class GroupDetailTest(LoginMixin, TestCase):
                           str(self.g1.pk) + '/acl/',
                           {'perm-new-name': 'group2', 'perm-new': 'owner'})
         self.assertEqual(acl_groups, len(gp.get_groups_with_level()))
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 302)
 
     def test_superuser_add_aclgroup_to_group(self):
         c = Client()
@@ -1792,7 +1792,7 @@ class AclViewTest(LoginMixin, TestCase):
             'perm-new': "",
         })
         self.assertTrue((self.u1, "user") in inst.get_users_with_level())
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_instance_original_owner_access_revoke(self):
         c = Client()
@@ -1836,7 +1836,7 @@ class AclViewTest(LoginMixin, TestCase):
             'perm-new': "",
         })
         self.assertTrue((self.u1, "user") in tmpl.get_users_with_level())
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_template_original_owner_access_revoke(self):
         c = Client()

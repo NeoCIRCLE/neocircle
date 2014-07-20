@@ -52,9 +52,11 @@
                   </a>
                 </td>
                 <td>
-                  <select class="form-control" name="perm-u-{{i.user.id}}">
+                  <select class="form-control" name="perm-u-{{i.user.id}}"{% if i.level not in acl.allowed_levels %} disabled{% endif %}>
                     {% for id, name in acl.levels %}
-                    <option{%if id = i.level%} selected="selected"{%endif%} value="{{id}}">{{name}}</option>
+                    <option{%if id = i.level%} selected="selected"{%endif%}
+                    {% if id not in acl.allowed_levels %} disabled{% endif %}
+                     value="{{id}}">{{name}}</option>
                     {% endfor %}
                   </select>
                 </td>
@@ -72,9 +74,11 @@
                   </a>
                 </td>
                 <td>
-                  <select class="form-control" name="perm-g-{{i.group.id}}">
+                  <select class="form-control" name="perm-g-{{i.group.id}}{% if i.level not in acl.allowed_levels %} disabled{% endif %}">
                     {% for id, name in acl.levels %}
-                    <option{%if id = i.level%} selected="selected"{%endif%} value="{{id}}">{{name}}</option>
+                    <option{%if id = i.level%} selected="selected"{%endif%}
+                    {% if id not in acl.allowed_levels %} disabled{% endif %}
+                     value="{{id}}">{{name}}</option>
                     {% endfor %}
                   </select>
                 </td>
@@ -87,7 +91,7 @@
                   <td><input type="text" class="form-control" name="perm-new-name"
                       placeholder="{% trans "Name of group or user" %}"></td>
                   <td><select class="form-control" name="perm-new">
-                          {% for id, name in acl.levels %}
+                          {% for id, name in acl.allowed_levels %}
                           <option value="{{id}}">{{name}}</option>
                           {% endfor %}
                   </select></td><td></td>
@@ -95,7 +99,7 @@
             </tbody>
           </table>
           <div class="form-actions">
-            <button type="submit" class="btn btn-success {% if not is_owner %}disabled{% endif %}">{% trans "Save" %}</button>
+            <button type="submit" class="btn btn-success">{% trans "Save" %}</button>
           </div>
         </form>
       </div>
