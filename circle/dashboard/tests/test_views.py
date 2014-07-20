@@ -199,6 +199,8 @@ class VmDetailTest(LoginMixin, TestCase):
         inst = Instance.objects.get(pk=1)
         inst.set_level(self.u1, 'owner')
         inst.add_interface(vlan=Vlan.objects.get(pk=1), user=self.us)
+        inst.status = 'RUNNING'
+        inst.save()
 
         iface_count = inst.interface_set.count()
         c.post("/dashboard/interface/1/delete/")
@@ -211,6 +213,8 @@ class VmDetailTest(LoginMixin, TestCase):
         inst.set_level(self.u1, 'owner')
         vlan = Vlan.objects.get(pk=1)
         inst.add_interface(vlan=vlan, user=self.us)
+        inst.status = 'RUNNING'
+        inst.save()
 
         iface_count = inst.interface_set.count()
         response = c.post("/dashboard/interface/1/delete/",

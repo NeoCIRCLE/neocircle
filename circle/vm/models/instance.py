@@ -763,6 +763,52 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         """
         return scheduler.select_node(self, Node.objects.all())
 
+    def attach_disk(self, disk, timeout=15):
+        queue_name = self.get_remote_queue_name('vm', 'fast')
+        return vm_tasks.attach_disk.apply_async(
+            args=[self.vm_name,
+                  disk.get_vmdisk_desc()],
+            queue=queue_name
+        ).get(timeout=timeout)
+
+    def detach_disk(self, disk, timeout=15):
+        try:
+            queue_name = self.get_remote_queue_name('vm', 'fast')
+            return vm_tasks.detach_disk.apply_async(
+                args=[self.vm_name,
+                      disk.get_vmdisk_desc()],
+                queue=queue_name
+            ).get(timeout=timeout)
+        except Exception as e:
+            if e.libvirtError and "not found" in str(e):
+                logger.debug("Disk %s was not found."
+                             % disk.name)
+            else:
+                raise
+
+    def attach_network(self, network, timeout=15):
+        queue_name = self.get_remote_queue_name('vm', 'fast')
+        return vm_tasks.attach_network.apply_async(
+            args=[self.vm_name,
+                  network.get_vmnetwork_desc()],
+            queue=queue_name
+        ).get(timeout=timeout)
+
+    def detach_network(self, network, timeout=15):
+        try:
+            queue_name = self.get_remote_queue_name('vm', 'fast')
+            return vm_tasks.detach_network.apply_async(
+                args=[self.vm_name,
+                      network.get_vmnetwork_desc()],
+                queue=queue_name
+            ).get(timeout=timeout)
+        except Exception as e:
+            if e.libvirtError and "not found" in str(e):
+                logger.debug("Interface %s was not found."
+                             % (network.__unicode__()))
+            else:
+                raise
+
     def deploy_disks(self):
         """Deploy all associated disks.
         """
