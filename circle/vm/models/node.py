@@ -26,7 +26,7 @@ from django.db.models import (
     FloatField, permalink,
 )
 from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _, ugettext_noop
 
 from celery.exceptions import TimeoutError
 from model_utils.models import TimeStampedModel
@@ -141,9 +141,12 @@ class Node(OperatedMixin, TimeStampedModel):
         ''' Disable the node.'''
         if self.enabled:
             if base_activity:
-                act_ctx = base_activity.sub_activity('disable')
+                act_ctx = base_activity.sub_activity(
+                    'disable', readable_name=ugettext_noop("disable node"))
             else:
-                act_ctx = node_activity('disable', node=self, user=user)
+                act_ctx = node_activity(
+                    'disable', node=self, user=user,
+                    readable_name=ugettext_noop("disable node"))
             with act_ctx:
                 self.enabled = False
                 self.save()
@@ -303,11 +306,11 @@ class Node(OperatedMixin, TimeStampedModel):
 
     def get_status_icon(self):
         return {
-            'OFFLINE': 'icon-minus-sign',
-            'DISABLED': 'icon-moon',
-            'MISSING': 'icon-warning-sign',
-            'ONLINE': 'icon-play-sign'}.get(self.get_state(),
-                                            'icon-question-sign')
+            'OFFLINE': 'fa-minus-circle',
+            'DISABLED': 'fa-moon',
+            'MISSING': 'fa-warning',
+            'ONLINE': 'fa-play-circle'}.get(self.get_state(),
+                                            'fa-question-circle')
 
     def get_status_label(self):
         return {

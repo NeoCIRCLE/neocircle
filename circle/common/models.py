@@ -21,13 +21,19 @@ from hashlib import sha224
 from itertools import chain, imap
 from logging import getLogger
 from time import time
+from warnings import warn
 
 from django.contrib.auth.models import User
 from django.core.cache import cache
-from django.db.models import (CharField, DateTimeField, ForeignKey,
-                              NullBooleanField, TextField)
+from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models import (
+    CharField, DateTimeField, ForeignKey, NullBooleanField
+)
 from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _
+from django.utils.encoding import force_text
+from django.utils.functional import Promise
+from django.utils.translation import ugettext_lazy as _, ugettext_noop
+from jsonfield import JSONField
 
 from model_utils.models import TimeStampedModel
 
@@ -45,7 +51,11 @@ def activitycontextimpl(act, on_abort=None, on_commit=None):
         # BaseException is the common parent of Exception and
         # system-exiting exceptions, e.g. KeyboardInterrupt
         handler = None if on_abort is None else lambda a: on_abort(a, e)
-        act.finish(succeeded=False, result=str(e), event_handler=handler)
+        result = create_readable(ugettext_noop("Failure."),
+                                 ugettext_noop("Unhandled exception: "
+                                               "%(error)s"),
+                                 error=unicode(e))
+        act.finish(succeeded=False, result=result, event_handler=handler)
         raise e
     else:
         act.finish(succeeded=True, event_handler=on_commit)
@@ -103,8 +113,23 @@ def split_activity_code(activity_code):
     return activity_code.split(activity_code_separator)
 
 
+class Encoder(DjangoJSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Promise):
+            obj = force_text(obj)
+        try:
+            return super(Encoder, self).default(obj)
+        except TypeError:
+            return unicode(obj)
+
+
 class ActivityModel(TimeStampedModel):
     activity_code = CharField(max_length=100, verbose_name=_('activity code'))
+    readable_name_data = JSONField(blank=True, null=True,
+                                   dump_kwargs={"cls": Encoder},
+                                   verbose_name=_('human readable name'),
+                                   help_text=_('Human readable name of '
+                                               'activity.'))
     parent = ForeignKey('self', blank=True, null=True, related_name='children')
     task_uuid = CharField(blank=True, max_length=50, null=True, unique=True,
                           help_text=_('Celery task unique identifier.'),
@@ -120,8 +145,9 @@ class ActivityModel(TimeStampedModel):
     succeeded = NullBooleanField(blank=True, null=True,
                                  help_text=_('True, if the activity has '
                                              'finished successfully.'))
-    result = TextField(verbose_name=_('result'), blank=True, null=True,
-                       help_text=_('Human readable result of activity.'))
+    result_data = JSONField(verbose_name=_('result'), blank=True, null=True,
+                            dump_kwargs={"cls": Encoder},
+                            help_text=_('Human readable result of activity.'))
 
     def __unicode__(self):
         if self.parent:
@@ -149,6 +175,29 @@ class ActivityModel(TimeStampedModel):
     @property
     def has_failed(self):
         return self.finished and not self.succeeded
+
+    @property
+    def readable_name(self):
+        return HumanReadableObject.from_dict(self.readable_name_data)
+
+    @readable_name.setter
+    def readable_name(self, value):
+        self.readable_name_data = None if value is None else value.to_dict()
+
+    @property
+    def result(self):
+        return HumanReadableObject.from_dict(self.result_data)
+
+    @result.setter
+    def result(self, value):
+        if isinstance(value, basestring):
+            warn("Using string as result value is deprecated. Use "
+                 "HumanReadableObject instead.",
+                 DeprecationWarning, stacklevel=2)
+            value = create_readable(user_text_template="",
+                                    admin_text_template=value)
+
+        self.result_data = None if value is None else value.to_dict()
 
 
 def method_cache(memcached_seconds=60, instance_seconds=5):  # noqa
@@ -299,3 +348,69 @@ try:
     ], patterns=['common\.models\.'])
 except ImportError:
     pass
+
+
+class HumanReadableObject(object):
+    def __init__(self, user_text_template, admin_text_template, params):
+        self._set_values(user_text_template, admin_text_template, params)
+
+    def _set_values(self, user_text_template, admin_text_template, params):
+        self.user_text_template = user_text_template
+        self.admin_text_template = admin_text_template
+        self.params = params
+
+    @classmethod
+    def create(cls, user_text_template, admin_text_template=None, **params):
+        return cls(user_text_template,
+                   admin_text_template or user_text_template, params)
+
+    def set(self, user_text_template, admin_text_template=None, **params):
+        self._set_values(user_text_template,
+                         admin_text_template or user_text_template, params)
+
+    @classmethod
+    def from_dict(cls, d):
+        return None if d is None else cls(**d)
+
+    def get_admin_text(self):
+        if self.admin_text_template == "":
+            return ""
+        return _(self.admin_text_template) % self.params
+
+    def get_user_text(self):
+        if self.user_text_template == "":
+            return ""
+        return _(self.user_text_template) % self.params
+
+    def to_dict(self):
+        return {"user_text_template": self.user_text_template,
+                "admin_text_template": self.admin_text_template,
+                "params": self.params}
+
+    def __unicode__(self):
+        return self.get_user_text()
+
+
+create_readable = HumanReadableObject.create
+
+
+class HumanReadableException(HumanReadableObject, Exception):
+    """HumanReadableObject that is an Exception so can used in except clause.
+    """
+    pass
+
+
+def humanize_exception(message, exception=None, **params):
+    """Return new dynamic-class exception which is based on
+    HumanReadableException and the original class with the dict of exception.
+
+    >>> try: raise humanize_exception("Welcome!", TypeError("hello"))
+    ... except HumanReadableException as e: print e.get_admin_text()
+    ...
+    Welcome!
+    """
+
+    Ex = type("HumanReadable" + type(exception).__name__,
+              (HumanReadableException, type(exception)),
+              exception.__dict__)
+    return Ex.create(message, **params)

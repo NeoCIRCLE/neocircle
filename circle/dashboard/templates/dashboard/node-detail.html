@@ -7,23 +7,23 @@
 <div class="body-content">
   <div class="page-header">
      <div class="pull-right" style="padding-top: 15px;">
-      <a title="{% trans "Rename" %}" href="#" class="btn btn-default btn-xs node-details-rename-button"><i class="icon-pencil"></i></a>
-      <a title="{% trans "Flush" %}" data-node-pk="{{ node.pk }}" class="btn btn-default btn-xs real-link node-flush" href="{% url "dashboard.views.flush-node" pk=node.pk %}"><i class="icon-cloud-upload"></i></a>
-      <a title="{% trans "Enable" %}" style="display:{% if node.enabled %}none{% else %}inline-block{% endif %}" data-node-pk="{{ node.pk }}" class="btn btn-default btn-xs real-link node-enable" href="{% url "dashboard.views.status-node" pk=node.pk %}?next={{ request.path }}"><i class="icon-check"></i></a>
-      <a title="{% trans "Disable" %}" style="display:{% if not node.enabled %}none{% else %}inline-block{% endif %}" data-node-pk="{{ node.pk }}" class="btn btn-default btn-xs real-link node-enable" href="{% url "dashboard.views.status-node" pk=node.pk %}?next={{ request.path }}"><i class="icon-ban-circle"></i></a>
-      <a title="{% trans "Delete" %}" data-node-pk="{{ node.pk }}" class="btn btn-default btn-xs real-link node-delete" href="{% url "dashboard.views.delete-node" pk=node.pk %}"><i class="icon-trash"></i></a>
-      <a title="{% trans "Help" %}" href="#" class="btn btn-default btn-xs node-details-help-button"><i class="icon-question"></i></a>
+      <a title="{% trans "Rename" %}" href="#" class="btn btn-default btn-xs node-details-rename-button"><i class="fa fa-pencil"></i></a>
+      <a title="{% trans "Flush" %}" data-node-pk="{{ node.pk }}" class="btn btn-default btn-xs real-link node-flush" href="{% url "dashboard.views.flush-node" pk=node.pk %}"><i class="fa fa-cloud-upload"></i></a>
+      <a title="{% trans "Enable" %}" style="display:{% if node.enabled %}none{% else %}inline-block{% endif %}" data-node-pk="{{ node.pk }}" class="btn btn-default btn-xs real-link node-enable" href="{% url "dashboard.views.status-node" pk=node.pk %}?next={{ request.path }}"><i class="fa fa-check"></i></a>
+      <a title="{% trans "Disable" %}" style="display:{% if not node.enabled %}none{% else %}inline-block{% endif %}" data-node-pk="{{ node.pk }}" class="btn btn-default btn-xs real-link node-enable" href="{% url "dashboard.views.status-node" pk=node.pk %}?next={{ request.path }}"><i class="fa fa-ban"></i></a>
+      <a title="{% trans "Delete" %}" data-node-pk="{{ node.pk }}" class="btn btn-default btn-xs real-link node-delete" href="{% url "dashboard.views.delete-node" pk=node.pk %}"><i class="fa fa-trash-o"></i></a>
+      <a title="{% trans "Help" %}" href="#" class="btn btn-default btn-xs node-details-help-button"><i class="fa fa-question"></i></a>
     </div>
-   <h1>	  
+   <h1>
       <div id="node-details-rename">
        <form action="" method="POST" id="node-details-rename-form">
          {% csrf_token %}
-         <input id="node-details-rename-name" class="form-control" name="new_name" type="text" value="{{ node.name }}"/> 
+         <input id="node-details-rename-name" class="form-control" name="new_name" type="text" value="{{ node.name }}"/>
          <button type="submit" id="node-details-rename-submit" class="btn">{% trans "Rename" %}</button>
        </form>
       </div>
-      <div id="node-details-h1-name">    
-      {{ node.name }} 
+      <div id="node-details-h1-name">
+      {{ node.name }}
       </div>
     </h1>
     <div class="node-details-help js-hidden">
@@ -66,19 +66,19 @@
         <ul class="nav nav-pills panel-heading">
           <li class="active">
             <a href="#home" data-toggle="pill" class="text-center">
-              <i class="icon-compass icon-2x"></i><br>
+              <i class="fa fa-compass fa-2x"></i><br>
               {% trans "Home" %}</a></li>
           <li>
             <a href="#resources" data-toggle="pill" class="text-center">
-              <i class="icon-tasks icon-2x"></i><br>
+              <i class="fa fa-tasks fa-2x"></i><br>
               {% trans "Resources" %}</a></li>
 	  <li>
             <a href="#virtualmachines" data-toggle="pill" class="text-center">
-              <i class="icon-desktop icon-2x"></i><br>
+              <i class="fa fa-desktop fa-2x"></i><br>
               {% trans "Virtual Machines" %}</a></li>
  	  <li>
             <a href="#activity" data-toggle="pill" class="text-center">
-              <i class="icon-time icon-2x"></i><br>
+              <i class="fa fa-clock-o fa-2x"></i><br>
               {% trans "Activity" %}</a></li>
 	</ul>
 

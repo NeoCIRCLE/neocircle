@@ -1,7 +1,7 @@
 {% load sizefieldtags %}
 {% load i18n %}
 
-<i class="icon-gears"></i> {% trans "CPU" %}
+<i class="fa fa-gears"></i> {% trans "CPU" %}
  <div class="progress pull-right">
   <div class="progress-bar progress-bar-success" role="progressbar"
     aria-valuenow="{{ record.cpu_usage|stringformat:"f" }}"
@@ -17,7 +17,7 @@
   </div>
  </div>
 <br>
-<i class="icon-ticket"></i> {% trans "Memory" %}
+<i class="fa fa-ticket"></i> {% trans "Memory" %}
  <div class="progress pull-right">
   <div class="progress-bar" role="progressbar"
     aria-valuenow="{{ record.ram_usage|stringformat:"f" }}"

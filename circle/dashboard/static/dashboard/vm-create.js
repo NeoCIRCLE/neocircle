@@ -288,11 +288,11 @@ function vmCustomizeLoaded() {
 
 
 function vmCreateNetworkLabel(pk, name, managed) {
-  return '<span id="vlan-' + pk + '" class="label label-' +  (managed ? 'primary' : 'default')  + '"><i class="icon-' + (managed ? 'globe' : 'link') + '"></i> ' + name + ' <a href="#" class="hover-black vm-create-remove-network"><i class="icon-remove-sign"></i></a></span> ';
+  return '<span id="vlan-' + pk + '" class="label label-' +  (managed ? 'primary' : 'default')  + '"><i class="fa fa-' + (managed ? 'globe' : 'link') + '"></i> ' + name + ' <a href="#" class="hover-black vm-create-remove-network"><i class="fa fa-times-circle"></i></a></span> ';
 }
 
 
 function vmCreateDiskLabel(pk, name) {
   var style = "float: left; margin: 5px 5px 5px 0;";
-  return '<span id="disk-' + pk + '" class="label label-primary" style="' + style + '"><i class="icon-file"></i> ' + name + ' <a href="#" class="hover-black vm-create-remove-disk"><i class="icon-remove-sign"></i></a></span> ';
+  return '<span id="disk-' + pk + '" class="label label-primary" style="' + style + '"><i class="fa fa-file"></i> ' + name + ' <a href="#" class="hover-black vm-create-remove-disk"><i class="fa fa-times-circle"></i></a></span> ';
 }

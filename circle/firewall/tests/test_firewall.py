@@ -23,7 +23,7 @@ from ..admin import HostAdmin
 from firewall.models import (Vlan, Domain, Record, Host, VlanGroup, Group,
                              Rule, Firewall)
 from firewall.fw import dns, ipv6_to_octal
-from firewall.tasks.local_tasks import periodic_task, reloadtask
+from firewall.tasks.local_tasks import reloadtask_worker, reloadtask
 from django.forms import ValidationError
 from ..iptables import IptRule, IptChain, InvalidRuleExcepion
 from mock import patch
@@ -323,6 +323,6 @@ class ReloadTestCase(TestCase):
         with patch('firewall.tasks.local_tasks.cache') as cache:
             self.test_host_add_port()
             self.test_host_add_port2()
-            periodic_task()
+            reloadtask_worker()
             reloadtask()
             assert cache.delete.called

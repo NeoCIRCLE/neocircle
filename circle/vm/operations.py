@@ -21,10 +21,11 @@ from re import search
 
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _, ugettext_noop
 
 from celery.exceptions import TimeLimitExceeded
 
+from common.models import create_readable
 from common.operations import Operation, register_operation
 from .tasks.local_tasks import (
     abortable_async_instance_operation, abortable_async_node_operation,
@@ -59,7 +60,8 @@ class InstanceOperation(Operation):
 
         super(InstanceOperation, self).check_auth(user=user)
 
-    def create_activity(self, parent, user):
+    def create_activity(self, parent, user, kwargs):
+        name = self.get_activity_name(kwargs)
         if parent:
             if parent.instance != self.instance:
                 raise ValueError("The instance associated with the specified "
@@ -70,11 +72,13 @@ class InstanceOperation(Operation):
                                  "parent activity does not match the user "
                                  "provided as parameter.")
 
-            return parent.create_sub(code_suffix=self.activity_code_suffix)
+            return parent.create_sub(code_suffix=self.activity_code_suffix,
+                                     readable_name=name)
         else:
             return InstanceActivity.create(
                 code_suffix=self.activity_code_suffix, instance=self.instance,
-                user=user, concurrency_check=self.concurrency_check)
+                readable_name=name, user=user,
+                concurrency_check=self.concurrency_check)
 
     def is_preferred(self):
         """If this is the recommended op in the current state of the instance.
@@ -108,6 +112,10 @@ class AddInterfaceOperation(InstanceOperation):
             net.deploy()
 
         return net
+
+    def get_activity_name(self, kwargs):
+        return create_readable(ugettext_noop("add %(vlan)s interface"),
+                               vlan=kwargs['vlan'])
 
 
 register_operation(AddInterfaceOperation)
@@ -146,6 +154,11 @@ class CreateDiskOperation(InstanceOperation):
             with activity.sub_activity('attach_disk'):
                 self.instance.attach_disk(disk)
 
+    def get_activity_name(self, kwargs):
+        return create_readable(ugettext_noop("create %(size)s disk"),
+                               size=kwargs['size'])
+
+
 register_operation(CreateDiskOperation)
 
 
@@ -175,6 +188,8 @@ class DownloadDiskOperation(InstanceOperation):
         disk.full_clean()
         disk.save()
         self.instance.disks.add(disk)
+        activity.readable_name = create_readable(
+            ugettext_noop("download %(name)s"), name=disk.name)
 
         if self.instance.is_running and disk.type not in ["iso"]:
             with activity.sub_activity('attach_disk'):
@@ -209,20 +224,28 @@ class DeployOperation(InstanceOperation):
         self.instance.allocate_node()
 
         # Deploy virtual images
-        with activity.sub_activity('deploying_disks'):
+        with activity.sub_activity(
+            'deploying_disks', readable_name=ugettext_noop(
+                "deploy disks")):
             self.instance.deploy_disks()
 
         # Deploy VM on remote machine
         if self.instance.state not in ['PAUSED']:
-            with activity.sub_activity('deploying_vm') as deploy_act:
+            with activity.sub_activity(
+                'deploying_vm', readable_name=ugettext_noop(
+                    "deploy virtual machine")) as deploy_act:
                 deploy_act.result = self.instance.deploy_vm(timeout=timeout)
 
         # Establish network connection (vmdriver)
-        with activity.sub_activity('deploying_net'):
+        with activity.sub_activity(
+            'deploying_net', readable_name=ugettext_noop(
+                "deploy network")):
             self.instance.deploy_net()
 
         # Resume vm
-        with activity.sub_activity('booting'):
+        with activity.sub_activity(
+            'booting', readable_name=ugettext_noop(
+                "boot virtual machine")):
             self.instance.resume_vm(timeout=timeout)
 
         self.instance.renew(parent_activity=activity)
@@ -243,18 +266,24 @@ class DestroyOperation(InstanceOperation):
 
     def _operation(self, activity):
         # Destroy networks
-        with activity.sub_activity('destroying_net'):
+        with activity.sub_activity(
+                'destroying_net',
+                readable_name=ugettext_noop("destroy network")):
             if self.instance.node:
                 self.instance.shutdown_net()
             self.instance.destroy_net()
 
         if self.instance.node:
             # Delete virtual machine
-            with activity.sub_activity('destroying_vm'):
+            with activity.sub_activity(
+                    'destroying_vm',
+                    readable_name=ugettext_noop("destroy virtual machine")):
                 self.instance.delete_vm()
 
         # Destroy disks
-        with activity.sub_activity('destroying_disks'):
+        with activity.sub_activity(
+                'destroying_disks',
+                readable_name=ugettext_noop("destroy disks")):
             self.instance.destroy_disks()
 
         # Delete mem. dump if exists
@@ -282,7 +311,9 @@ class MigrateOperation(InstanceOperation):
     required_perms = ()
 
     def rollback(self, activity):
-        with activity.sub_activity('rollback_net'):
+        with activity.sub_activity(
+            'rollback_net', readable_name=ugettext_noop(
+                "redeploy network (rollback)")):
             self.instance.deploy_net()
 
     def check_precond(self):
@@ -298,12 +329,16 @@ class MigrateOperation(InstanceOperation):
 
     def _operation(self, activity, to_node=None, timeout=120):
         if not to_node:
-            with activity.sub_activity('scheduling') as sa:
+            with activity.sub_activity('scheduling',
+                                       readable_name=ugettext_noop(
+                                           "schedule")) as sa:
                 to_node = self.instance.select_node()
                 sa.result = to_node
 
         try:
-            with activity.sub_activity('migrate_vm'):
+            with activity.sub_activity(
+                'migrate_vm', readable_name=create_readable(
+                    ugettext_noop("migrate to %(node)s"), node=to_node)):
                 self.instance.migrate_vm(to_node=to_node, timeout=timeout)
         except Exception as e:
             if hasattr(e, 'libvirtError'):
@@ -311,14 +346,18 @@ class MigrateOperation(InstanceOperation):
             raise
 
         # Shutdown networks
-        with activity.sub_activity('shutdown_net'):
+        with activity.sub_activity(
+            'shutdown_net', readable_name=ugettext_noop(
+                "shutdown network")):
             self.instance.shutdown_net()
 
         # Refresh node information
         self.instance.node = to_node
         self.instance.save()
         # Estabilish network connection (vmdriver)
-        with activity.sub_activity('deploying_net'):
+        with activity.sub_activity(
+            'deploying_net', readable_name=ugettext_noop(
+                "deploy network")):
             self.instance.deploy_net()
 
 
@@ -483,7 +522,8 @@ class SaveAsTemplateOperation(InstanceOperation):
                 return disk
 
         self.disks = []
-        with activity.sub_activity('saving_disks'):
+        with activity.sub_activity('saving_disks',
+                                   readable_name=ugettext_noop("save disks")):
             for disk in self.instance.disks.all():
                 self.disks.append(__try_save_disk(disk))
 
@@ -593,11 +633,14 @@ class SleepOperation(InstanceOperation):
 
     def _operation(self, activity, timeout=240):
         # Destroy networks
-        with activity.sub_activity('shutdown_net'):
+        with activity.sub_activity('shutdown_net', readable_name=ugettext_noop(
+                "shutdown network")):
             self.instance.shutdown_net()
 
         # Suspend vm
-        with activity.sub_activity('suspending'):
+        with activity.sub_activity('suspending',
+                                   readable_name=ugettext_noop(
+                                       "suspend virtual machine")):
             self.instance.suspend_vm(timeout=timeout)
 
         self.instance.yield_node()
@@ -638,11 +681,15 @@ class WakeUpOperation(InstanceOperation):
         self.instance.allocate_node()
 
         # Resume vm
-        with activity.sub_activity('resuming'):
+        with activity.sub_activity(
+            'resuming', readable_name=ugettext_noop(
+                "resume virtual machine")):
             self.instance.wake_up_vm(timeout=timeout)
 
         # Estabilish network connection (vmdriver)
-        with activity.sub_activity('deploying_net'):
+        with activity.sub_activity(
+            'deploying_net', readable_name=ugettext_noop(
+                "deploy network")):
             self.instance.deploy_net()
 
         # Renew vm
@@ -678,7 +725,8 @@ class NodeOperation(Operation):
         super(NodeOperation, self).__init__(subject=node)
         self.node = node
 
-    def create_activity(self, parent, user):
+    def create_activity(self, parent, user, kwargs):
+        name = self.get_activity_name(kwargs)
         if parent:
             if parent.node != self.node:
                 raise ValueError("The node associated with the specified "
@@ -689,10 +737,12 @@ class NodeOperation(Operation):
                                  "parent activity does not match the user "
                                  "provided as parameter.")
 
-            return parent.create_sub(code_suffix=self.activity_code_suffix)
+            return parent.create_sub(code_suffix=self.activity_code_suffix,
+                                     readable_name=name)
         else:
             return NodeActivity.create(code_suffix=self.activity_code_suffix,
-                                       node=self.node, user=user)
+                                       node=self.node, user=user,
+                                       readable_name=name)
 
 
 class FlushOperation(NodeOperation):
@@ -718,7 +768,10 @@ class FlushOperation(NodeOperation):
         self.node_enabled = self.node.enabled
         self.node.disable(user, activity)
         for i in self.node.instance_set.all():
-            with activity.sub_activity('migrate_instance_%d' % i.pk):
+            name = create_readable(ugettext_noop(
+                "migrate %(instance)s (%(pk)s)"), instance=i.name, pk=i.pk)
+            with activity.sub_activity('migrate_instance_%d' % i.pk,
+                                       readable_name=name):
                 i.migrate(user=user)
 
 

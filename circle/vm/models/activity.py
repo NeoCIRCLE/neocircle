@@ -18,6 +18,7 @@
 from __future__ import absolute_import, unicode_literals
 from contextlib import contextmanager
 from logging import getLogger
+from warnings import warn
 
 from celery.signals import worker_ready
 from celery.contrib.abortable import AbortableAsyncResult
@@ -25,10 +26,11 @@ from celery.contrib.abortable import AbortableAsyncResult
 from django.core.urlresolvers import reverse
 from django.db.models import CharField, ForeignKey
 from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _, ugettext_noop
 
 from common.models import (
-    ActivityModel, activitycontextimpl, join_activity_code, split_activity_code
+    ActivityModel, activitycontextimpl, create_readable, join_activity_code,
+    HumanReadableObject,
 )
 
 from manager.mancelery import celery
@@ -47,6 +49,18 @@ class ActivityInProgressError(Exception):
             Exception.__init__(self, message)
 
             self.activity = activity
+
+
+def _normalize_readable_name(name, default=None):
+    if name is None:
+        warn("Set readable_name to a HumanReadableObject",
+             DeprecationWarning, 3)
+        name = default.replace(".", " ")
+
+    if not isinstance(name, HumanReadableObject):
+        name = create_readable(name)
+
+    return name
 
 
 class InstanceActivity(ActivityModel):
@@ -75,7 +89,9 @@ class InstanceActivity(ActivityModel):
 
     @classmethod
     def create(cls, code_suffix, instance, task_uuid=None, user=None,
-               concurrency_check=True):
+               concurrency_check=True, readable_name=None):
+
+        readable_name = _normalize_readable_name(readable_name, code_suffix)
         # Check for concurrent activities
         active_activities = instance.activity_log.filter(finished__isnull=True)
         if concurrency_check and active_activities.exists():
@@ -84,11 +100,15 @@ class InstanceActivity(ActivityModel):
         activity_code = join_activity_code(cls.ACTIVITY_CODE_BASE, code_suffix)
         act = cls(activity_code=activity_code, instance=instance, parent=None,
                   resultant_state=None, started=timezone.now(),
+                  readable_name_data=readable_name.to_dict(),
                   task_uuid=task_uuid, user=user)
         act.save()
         return act
 
-    def create_sub(self, code_suffix, task_uuid=None, concurrency_check=True):
+    def create_sub(self, code_suffix, task_uuid=None, concurrency_check=True,
+                   readable_name=None):
+
+        readable_name = _normalize_readable_name(readable_name, code_suffix)
         # Check for concurrent activities
         active_children = self.children.filter(finished__isnull=True)
         if concurrency_check and active_children.exists():
@@ -97,16 +117,13 @@ class InstanceActivity(ActivityModel):
         act = InstanceActivity(
             activity_code=join_activity_code(self.activity_code, code_suffix),
             instance=self.instance, parent=self, resultant_state=None,
-            started=timezone.now(), task_uuid=task_uuid, user=self.user)
+            readable_name_data=readable_name.to_dict(), started=timezone.now(),
+            task_uuid=task_uuid, user=self.user)
         act.save()
         return act
 
     def get_absolute_url(self):
         return reverse('dashboard.views.vm-activity', args=[self.pk])
-
-    def get_readable_name(self):
-        activity_code_last_suffix = split_activity_code(self.activity_code)[-1]
-        return activity_code_last_suffix.replace('_', ' ').capitalize()
 
     def get_status_id(self):
         if self.succeeded is None:
@@ -162,20 +179,28 @@ class InstanceActivity(ActivityModel):
 
     @contextmanager
     def sub_activity(self, code_suffix, on_abort=None, on_commit=None,
-                     task_uuid=None, concurrency_check=True):
+                     readable_name=None, task_uuid=None,
+                     concurrency_check=True):
         """Create a transactional context for a nested instance activity.
         """
-        act = self.create_sub(code_suffix, task_uuid, concurrency_check)
+        if not readable_name:
+            warn("Set readable_name", stacklevel=3)
+        act = self.create_sub(code_suffix, task_uuid, concurrency_check,
+                              readable_name=readable_name)
         return activitycontextimpl(act, on_abort=on_abort, on_commit=on_commit)
 
 
 @contextmanager
 def instance_activity(code_suffix, instance, on_abort=None, on_commit=None,
-                      task_uuid=None, user=None, concurrency_check=True):
+                      task_uuid=None, user=None, concurrency_check=True,
+                      readable_name=None):
     """Create a transactional context for an instance activity.
     """
+    if not readable_name:
+        warn("Set readable_name", stacklevel=3)
     act = InstanceActivity.create(code_suffix, instance, task_uuid, user,
-                                  concurrency_check)
+                                  concurrency_check,
+                                  readable_name=readable_name)
     return activitycontextimpl(act, on_abort=on_abort, on_commit=on_commit)
 
 
@@ -198,34 +223,41 @@ class NodeActivity(ActivityModel):
             return '{}({})'.format(self.activity_code,
                                    self.node)
 
-    def get_readable_name(self):
-        return self.activity_code.split('.')[-1].replace('_', ' ').capitalize()
-
     @classmethod
-    def create(cls, code_suffix, node, task_uuid=None, user=None):
+    def create(cls, code_suffix, node, task_uuid=None, user=None,
+               readable_name=None):
+
+        readable_name = _normalize_readable_name(readable_name, code_suffix)
         activity_code = join_activity_code(cls.ACTIVITY_CODE_BASE, code_suffix)
         act = cls(activity_code=activity_code, node=node, parent=None,
+                  readable_name_data=readable_name.to_dict(),
                   started=timezone.now(), task_uuid=task_uuid, user=user)
         act.save()
         return act
 
-    def create_sub(self, code_suffix, task_uuid=None):
+    def create_sub(self, code_suffix, task_uuid=None, readable_name=None):
+
+        readable_name = _normalize_readable_name(readable_name, code_suffix)
         act = NodeActivity(
             activity_code=join_activity_code(self.activity_code, code_suffix),
             node=self.node, parent=self, started=timezone.now(),
-            task_uuid=task_uuid, user=self.user)
+            readable_name_data=readable_name.to_dict(), task_uuid=task_uuid,
+            user=self.user)
         act.save()
         return act
 
     @contextmanager
-    def sub_activity(self, code_suffix, task_uuid=None):
-        act = self.create_sub(code_suffix, task_uuid)
+    def sub_activity(self, code_suffix, task_uuid=None, readable_name=None):
+        act = self.create_sub(code_suffix, task_uuid,
+                              readable_name=readable_name)
         return activitycontextimpl(act)
 
 
 @contextmanager
-def node_activity(code_suffix, node, task_uuid=None, user=None):
-    act = NodeActivity.create(code_suffix, node, task_uuid, user)
+def node_activity(code_suffix, node, task_uuid=None, user=None,
+                  readable_name=None):
+    act = NodeActivity.create(code_suffix, node, task_uuid, user,
+                              readable_name=readable_name)
     return activitycontextimpl(act)
 
 
@@ -234,11 +266,12 @@ def cleanup(conf=None, **kwargs):
     # TODO check if other manager workers are running
     from celery.task.control import discard_all
     discard_all()
+    msg_txt = ugettext_noop("Manager is restarted, activity is cleaned up. "
+                            "You can try again now.")
+    message = create_readable(msg_txt, msg_txt)
     for i in InstanceActivity.objects.filter(finished__isnull=True):
-        i.finish(False, "Manager is restarted, activity is cleaned up. "
-                 "You can try again now.")
+        i.finish(False, result=message)
         logger.error('Forced finishing stale activity %s', i)
     for i in NodeActivity.objects.filter(finished__isnull=True):
-        i.finish(False, "Manager is restarted, activity is cleaned up. "
-                 "You can try again now.")
+        i.finish(False, result=message)
         logger.error('Forced finishing stale activity %s', i)

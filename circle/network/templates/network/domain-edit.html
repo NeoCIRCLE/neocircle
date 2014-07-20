@@ -7,7 +7,7 @@
 
 {% block content %}
 <div class="page-header">
-    <a href="{% url "network.domain_delete" pk=domain_pk %}" class="btn btn-danger pull-right"><i class="icon-remove-sign"></i> {% trans "Delete this domain" %}</a>
+    <a href="{% url "network.domain_delete" pk=domain_pk %}" class="btn btn-danger pull-right"><i class="fa fa-times-circle"></i> {% trans "Delete this domain" %}</a>
     <h2>{{ form.name.value }} <small></small></h2>
 </div>
 
@@ -17,7 +17,7 @@
     </div>
     <div class="col-sm-6 col-sm-offset-1">
         <div class="page-header">
-            <a href="{% url "network.record_create" %}?domain={{ domain_pk }}" class="btn btn-success pull-right btn-xs"><i class="icon-plus-sign"></i> {% trans "Add new record" %}</a>
+            <a href="{% url "network.record_create" %}?domain={{ domain_pk }}" class="btn btn-success pull-right btn-xs"><i class="fa fa-plus-circle"></i> {% trans "Add new record" %}</a>
             <h3>{% trans "List of this domain's records" %}</h3>
         </div>
         <div class="table-responsive">

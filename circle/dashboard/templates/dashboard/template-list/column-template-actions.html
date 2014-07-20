@@ -1,7 +1,7 @@
 {% load i18n %}
 <a href="{% url "dashboard.views.template-detail" pk=record.pk%}" id="template-list-edit-button" class="btn btn-default btn-xs" title="{% trans "Edit" %}">
-  <i class="icon-edit"></i>
+  <i class="fa fa-edit"></i>
 </a>
 <a data-template-pk="{{ record.pk }}" href="{% url "dashboard.views.template-delete" pk=record.pk %}" class="btn btn-danger btn-xs template-delete" title="{% trans "Delete" %}">
-  <i class="icon-remove"></i>
+  <i class="fa fa-times"></i>
 </a>

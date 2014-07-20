@@ -15,6 +15,7 @@ django-tables2==0.15.0
 django-taggit==0.12
 docutils==0.11
 Jinja2==2.7.2
+jsonfield==0.9.20
 kombu==3.0.15
 logutils==0.3.3
 MarkupSafe==0.21

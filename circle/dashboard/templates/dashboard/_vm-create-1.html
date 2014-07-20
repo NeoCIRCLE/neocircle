@@ -6,51 +6,51 @@
   <div class="vm-create-template">
     <div class="vm-create-template-summary">
       {{ t.name }}
-      <span class="pull-right"><i class="icon-{{ t.os_type }}"></i> {{ t.system }}</span>
+      <span class="pull-right"><i class="fa fa-{{ t.os_type }}"></i> {{ t.system }}</span>
     </div>
     <div class="vm-create-template-details">
       <ul>
         <li>
-          <i class="icon-gears"></i> {% trans "CPU" %}
+          <i class="fa fa-gears"></i> {% trans "CPU" %}
           <div class="progress pull-right">
-            <div class="progress-bar progress-bar-success" role="progressbar" 
+            <div class="progress-bar progress-bar-success" role="progressbar"
               aria-valuenow="{{ t.num_cores }}" aria-valuemin="0" aria-valuemax="8" style="width: 80%">
               <span class="progress-bar-text">{{ t.num_cores }} cores</span>
             </div>
           </div>
         </li>
         <li>
-          <i class="icon-ticket"></i> {% trans "Memory" %}
+          <i class="fa fa-ticket"></i> {% trans "Memory" %}
           <div class="progress pull-right">
-            <div class="progress-bar progress-bar-info" role="progressbar" 
-              aria-valuenow="{{ t.ram_size }}" aria-valuemin="0" aria-valuemax="4096" 
+            <div class="progress-bar progress-bar-info" role="progressbar"
+              aria-valuenow="{{ t.ram_size }}" aria-valuemin="0" aria-valuemax="4096"
               style="width: 80%">
               <span class="progress-bar-text">{{ t.ram_size }} MB</span>
             </div>
           </div>
         </li>
         <li>
-          <i class="icon-file"></i> {% trans "Disks" %} 
+          <i class="fa fa-file"></i> {% trans "Disks" %}
           <span style="float: right; text-align: right;">
             {% for d in t.disks.all %}{{ d.name }} ({% if d.size %}{{ d.size|filesize }}{% endif %}){% if not forloop.last %}, {% endif %}{% endfor %}
           </span>
           <div style="clear: both;"></div>
         </li>
         <li>
-          <i class="icon-globe"></i> {% trans "Network" %}
+          <i class="fa fa-globe"></i> {% trans "Network" %}
           <span style="float: right;">
             {% for i in t.interface_set.all %}{{ i.vlan.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
           </span>
         </li>
         <li>
-          <i class="icon-tag"></i> {% trans "Type" %}: {{ t.lease.name }}
+          <i class="fa fa-tag"></i> {% trans "Type" %}: {{ t.lease.name }}
           <span style="float: right;">
-            <i class="icon-pause"></i> {{ t.lease.get_readable_suspend_time }}
-            <i class="icon-remove"></i> {{ t.lease.get_readable_delete_time }}
+            <i class="fa fa-pause"></i> {{ t.lease.get_readable_suspend_time }}
+            <i class="fa fa-times"></i> {{ t.lease.get_readable_delete_time }}
           </span>
         </li>
         <li>
-          <i class="icon-hand-right"></i> {% trans "Description" %}:
+          <i class="fa fa-hand-right"></i> {% trans "Description" %}:
           <span style="float: right; max-width: 350px;">
             {{ t.description }}
           </span>
@@ -59,13 +59,13 @@
       </ul>
       <div style="margin-top: 20px; padding: 0 15px; width: 100%">
         {% if perms.vm_set_resources %}
-        <a class="btn btn-primary btn-xs customize-vm" data-template-pk="{{ t.pk }}" href="{% url "dashboard.views.vm-create" %}?template={{ t.pk }}"><i class="icon-wrench"></i> {% trans "Customize" %}</a>
+        <a class="btn btn-primary btn-xs customize-vm" data-template-pk="{{ t.pk }}" href="{% url "dashboard.views.vm-create" %}?template={{ t.pk }}"><i class="fa fa-wrench"></i> {% trans "Customize" %}</a>
         {% endif %}
         <form class="pull-right text-right" method="POST" action="{% url "dashboard.views.vm-create" %}">
           {% csrf_token %}
           <input type="hidden" name="template" value="{{ t.pk }}"/>
           <button class="btn btn-success btn-xs vm-create-start" data-template-pk="{{ t.pk }}" type="submit">
-            <i class="icon-play"></i> {% trans "Start" %}
+            <i class="fa fa-play"></i> {% trans "Start" %}
           </button>
         </form>
         <div style="clear: both;"></div>
@@ -131,11 +131,11 @@
     width: 100%;
     color: white;
     /* outline */
-    text-shadow:  
+    text-shadow:
       -1px -1px 0 #000,
       1px -1px 0 #000,
       -1px 1px 0 #000,
-      1px 1px 0 #000;  
+      1px 1px 0 #000;
     font-size: 10px;
   }
 </style>

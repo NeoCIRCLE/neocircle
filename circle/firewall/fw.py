@@ -319,7 +319,8 @@ def dhcp():
 
 
 def vlan():
-    obj = Vlan.objects.values('vid', 'name', 'network4', 'network6')
+    obj = Vlan.objects.filter(managed=True).values(
+        'vid', 'name', 'network4', 'network6')
     retval = {x['name']: {'tag': x['vid'],
                           'type': 'internal',
                           'interfaces': [x['name']],

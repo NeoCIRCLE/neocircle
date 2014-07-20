@@ -4,13 +4,13 @@ $(function() {
 
   /* vm operations */
   $('#ops, #vm-details-resources-disk').on('click', '.operation.btn', function(e) {
-    var icon = $(this).children("i").addClass('icon-spinner icon-spin');
+    var icon = $(this).children("i").addClass('fa-spinner fa-spin');
 
     $.ajax({
       type: 'GET',
       url: $(this).attr('href'),
       success: function(data) {
-        icon.removeClass("icon-spinner icon-spin");
+        icon.removeClass("fa-spinner fa-spin");
         $('body').append(data);
         $('#confirmation-modal').modal('show');
         $('#confirmation-modal').on('hidden.bs.modal', function() {
@@ -53,7 +53,7 @@ $(function() {
 
           /* if there are messages display them */
           if(data.messages && data.messages.length > 0) {
-            addMessage(data.messages.join("<br />"), "danger");
+            addMessage(data.messages.join("<br />"), data.success ? "success" : "danger");
           }
         }
         else {

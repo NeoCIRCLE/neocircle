@@ -25,7 +25,7 @@ log in to it over SSH.
   which shoud be correctly printed by :kbd:`hostname -f`. You can achieve
   this with an IP address (e.g. 127.0.1.1) in :file:`/etc/hosts` having the
   short hostname as first, and the fqdn as second alias).
- 
+
 
 Setting up required software
 ----------------------------
@@ -145,7 +145,3 @@ the portal application server::
   sudo start mancelery
   sudo cp miscellaneous/portal-uwsgi.conf /etc/init/
   sudo start portal-uwsgi
-
-
-
-

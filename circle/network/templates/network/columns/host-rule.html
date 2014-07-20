@@ -13,7 +13,7 @@
 {% endif %}
 {#<span style="color: #0000FF;"> ▸ </span>#}
 
-<i class="icon-arrow-right"></i>                                            
+<i class="fa fa-arrow-right"></i>
 {% if record.direction == "0" %}
   {{ record.foreign_network }}
 {% else %}
@@ -33,6 +33,6 @@
 
 {% if record.nat %}
     <span class="label label-success">NAT
-        [ {{ record.dport }} <i class="icon-arrow-right"></i>
+        [ {{ record.dport }} <i class="fa fa-arrow-right"></i>
         {{record.nat_external_port}} ]</span>
 {% endif %}

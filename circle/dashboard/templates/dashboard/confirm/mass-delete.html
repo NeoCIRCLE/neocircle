@@ -1,18 +1,18 @@
 {% load i18n %}
-<div class="modal fade" id="confirmation-modal" tabindex="-1" role="dialog"> 
-  <div class="modal-dialog"> 
-    <div class="modal-content"> 
-      <div class="modal-body">  
+<div class="modal fade" id="confirmation-modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body">
         {% trans "Are you sure you want to delete the following objects?" %}<br />
         {% for o in objects %}
-          <strong>{{ o }}</strong>{% if not forloop.last %},{% endif %} 
-        {% endfor %}  
+          <strong>{{ o }}</strong>{% if not forloop.last %},{% endif %}
+        {% endfor %}
         <div class="pull-right" style="margin-top: 40px;">
-          <button type="button" class="btn btn-default" data-dismiss="modal">{% trans "Cancel" %}</button> 
-          <button id="confirmation-modal-button" type="button" class="btn btn-danger">{% trans "Delete" %}</button> 
+          <button type="button" class="btn btn-default" data-dismiss="modal">{% trans "Cancel" %}</button>
+          <button id="confirmation-modal-button" type="button" class="btn btn-danger">{% trans "Delete" %}</button>
         </div>
         <div class="clearfix"></div>
       </div>
-    </div><!-- /.modal-content --> 
-  </div><!-- /.modal-dialog --> 
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
 </div>
