@@ -18,6 +18,7 @@
 from __future__ import absolute_import, unicode_literals
 from logging import getLogger
 from re import search
+from string import ascii_lowercase
 
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
@@ -34,7 +35,6 @@ from .models import (
     Instance, InstanceActivity, InstanceTemplate, Interface, Node,
     NodeActivity,
 )
-from string import ascii_lowercase
 
 logger = getLogger(__name__)
 
@@ -191,6 +191,7 @@ class DownloadDiskOperation(InstanceOperation):
         activity.readable_name = create_readable(
             ugettext_noop("download %(name)s"), name=disk.name)
 
+        # TODO iso (cd) hot-plug is not supported by kvm/guests
         if self.instance.is_running and disk.type not in ["iso"]:
             with activity.sub_activity('attach_disk'):
                 self.instance.attach_disk(disk)
