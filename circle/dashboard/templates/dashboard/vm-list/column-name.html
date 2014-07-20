@@ -1,9 +1,9 @@
-{% load i18n %} 
+{% load i18n %}
 
 <div id="vm-list-rename">
   <form action="{% url "dashboard.views.detail" pk=record.pk %}" method="POST" id="vm-list-rename-form">
     {% csrf_token %}
-    <input id="vm-list-rename-name" class="form-control input-sm" name="new_name" type="text" value="{{ record.name }}"/> 
+    <input id="vm-list-rename-name" class="form-control input-sm" name="new_name" type="text" value="{{ record.name }}"/>
     <button type="submit" class="vm-list-rename-submit btn btn-sm">{% trans "Rename" %}</button>
   </form>
 </div>

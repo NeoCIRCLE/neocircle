@@ -7,7 +7,7 @@
 
 {% block content %}
 <div class="page-header">
-    <a href="{% url "network.blacklist_delete" pk=blacklist_pk %}" class="btn btn-danger pull-right"><i class="icon-remove-sign"></i> {% trans "Delete this blaclist item" %}</a>
+    <a href="{% url "network.blacklist_delete" pk=blacklist_pk %}" class="btn btn-danger pull-right"><i class="fa fa-times-circle"></i> {% trans "Delete this blaclist item" %}</a>
     <h2>{{ form.ipv4.value }} <small>{{ form.type.value }}</small></h2>
 </div>
 <div class="row">

@@ -22,6 +22,7 @@ from os.path import (abspath, basename, dirname, join, normpath, isfile,
                      expanduser)
 from sys import path
 from subprocess import check_output
+from uuid import getnode
 
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import ugettext_lazy as _
@@ -453,3 +454,6 @@ STORE_CLIENT_PASSWORD = get_env_variable("STORE_CLIENT_PASSWORD", "")
 STORE_CLIENT_KEY = get_env_variable("STORE_CLIENT_KEY", "")
 STORE_CLIENT_CERT = get_env_variable("STORE_CLIENT_CERT", "")
 STORE_URL = get_env_variable("STORE_URL")
+
+SESSION_COOKIE_NAME = "csessid%x" % (((getnode() // 139) ^
+                                      (getnode() % 983)) & 0xffff)

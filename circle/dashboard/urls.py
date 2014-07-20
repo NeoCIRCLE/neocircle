@@ -29,7 +29,7 @@ from .views import (
     TemplateDelete, TemplateDetail, TemplateList, TransferOwnershipConfirmView,
     TransferOwnershipView, vm_activity, VmCreate, VmDelete, VmDetailView,
     VmDetailVncTokenView, VmGraphView, VmList, VmMassDelete,
-    VmRenewView, DiskRemoveView, get_disk_download_status, InterfaceDeleteView,
+    DiskRemoveView, get_disk_download_status, InterfaceDeleteView,
     GroupRemoveAclUserView, GroupRemoveAclGroupView, GroupRemoveUserView,
     GroupRemoveFutureUserView,
     GroupCreate, GroupProfileUpdate,
@@ -42,6 +42,7 @@ from .views import (
     store_new_directory, store_refresh_toplist,
     VmTraitsUpdate, VmRawDataUpdate,
     GroupPermissionsView,
+    LeaseAclUpdateView,
 )
 
 urlpatterns = patterns(
@@ -53,6 +54,8 @@ urlpatterns = patterns(
         name="dashboard.views.lease-create"),
     url(r'^lease/delete/(?P<pk>\d+)/$', LeaseDelete.as_view(),
         name="dashboard.views.lease-delete"),
+    url(r'^lease/(?P<pk>\d+)/acl/$', LeaseAclUpdateView.as_view(),
+        name="dashboard.views.lease-acl"),
 
     url(r'^template/create/$', TemplateCreate.as_view(),
         name="dashboard.views.template-create"),
@@ -86,8 +89,6 @@ urlpatterns = patterns(
     url(r'^vm/mass-delete/', VmMassDelete.as_view(),
         name='dashboard.view.mass-delete-vm'),
     url(r'^vm/(?P<pk>\d+)/activity/$', vm_activity),
-    url(r'^vm/(?P<pk>\d+)/renew/((?P<key>.*)/?)$', VmRenewView.as_view(),
-        name='dashboard.views.vm-renew'),
     url(r'^vm/activity/(?P<pk>\d+)/$', InstanceActivityDetail.as_view(),
         name='dashboard.views.vm-activity'),
     url(r'^vm/(?P<pk>\d+)/screenshot/$', get_vm_screenshot,

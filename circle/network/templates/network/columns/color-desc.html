@@ -4,9 +4,9 @@
 {# <span style="color: #FF0000;">[{{ record.r_type }}]</span> #}
 {% if record.direction == "1" %}{{ record.foreign_network }}{% else %}{{ record.r_type }}{% endif %}
 {#<span style="color: #0000FF;"> ▸ </span>#}
-<i class="icon-arrow-right"></i>
+<i class="fa fa-arrow-right"></i>
 {% if record.direction == "0" %}{{ record.foreign_network }}{% else %}{{ record.r_type }}{% endif %}
-<span style="color: #00FF00;">            
+<span style="color: #00FF00;">
     {% if record.proto %}
         proto={{ record.proto }}
     {% endif %}
@@ -16,4 +16,4 @@
     {% if record.dport %}
         dport={{ record.dport }}
     {% endif %}
-{{ record.description }}  
+{{ record.description }}

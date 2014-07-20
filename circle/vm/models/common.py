@@ -18,11 +18,13 @@
 from __future__ import absolute_import, unicode_literals
 from datetime import timedelta, datetime
 
-from django.db.models import Model, CharField, IntegerField
+from django.db.models import Model, CharField, IntegerField, permalink
 from django.utils.translation import ugettext_lazy as _
 from django.utils.timesince import timeuntil
 
 from model_utils.models import TimeStampedModel
+
+from acl.models import AclBase
 
 
 ARCHITECTURES = (('x86_64', 'x86-64 (64 bit)'),
@@ -66,13 +68,18 @@ class NamedBaseResourceConfig(BaseResourceConfigModel, TimeStampedModel):
         return self.name
 
 
-class Lease(Model):
+class Lease(AclBase):
 
     """Lease times for VM instances.
 
     Specifies a time duration until suspension and deletion of a VM
     instance.
     """
+    ACL_LEVELS = (
+        ('user', _('user')),          # use this lease
+        ('operator', _('operator')),  # share this lease
+        ('owner', _('owner')),        # change this lease
+    )
     name = CharField(max_length=100, unique=True,
                      verbose_name=_('name'))
     suspend_interval_seconds = IntegerField(
@@ -88,6 +95,9 @@ class Lease(Model):
         app_label = 'vm'
         db_table = 'vm_lease'
         ordering = ['name', ]
+        permissions = (
+            ('create_leases', _('Can create new leases.')),
+        )
 
     @property
     def suspend_interval(self):
@@ -140,6 +150,10 @@ class Lease(Model):
             'name': self.name,
             's': self.get_readable_suspend_time(),
             'r': self.get_readable_delete_time()}
+
+    @permalink
+    def get_absolute_url(self):
+        return ('dashboard.views.lease-detail', None, {'pk': self.pk})
 
 
 class Trait(Model):

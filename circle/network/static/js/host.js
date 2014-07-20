@@ -1,4 +1,4 @@
-$('i[class="icon-remove"]').click(function() {
+$('i[class="fa fa-times"]').click(function() {
     href = $(this).parent('a').attr('href');
     csrf = getCookie('csrftoken');
     var click_this = this;

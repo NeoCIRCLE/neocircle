@@ -2,18 +2,18 @@
 {% for a in activities %}
 <div class="activity{% if a.pk == active.pk %} activity-active{%endif%}" data-activity-id="{{ a.pk }}">
   <span class="timeline-icon{% if a.has_failed %} timeline-icon-failed{% endif %}">
-  <i class="{% if not a.finished %} icon-refresh icon-spin {% else %}icon-plus{% endif %}"></i>
-</span> 
-<strong{% if user.is_superuser and a.result %} title="{{ a.result }}"{% endif %}>
-  {% if user.is_superuser %}<a href="{{ a.get_absolute_url }}">{% endif %}
+  <i class="fa {% if not a.finished %}fa-refresh fa-spin {% else %}fa-plus{% endif %}"></i>
+</span>
+<strong{% if a.result %} title="{{ a.result.get_user_text }}"{% endif %}>
+  <a href="{{ a.get_absolute_url }}">
     {% if a.times > 1 %}({{ a.times }}x){% endif %}
-    {{ a.get_readable_name }}{% if user.is_superuser %}</a>{% endif %}
+    {{ a.readable_name.get_user_text }}</a>
 
 {% if a.has_percent %}
   - {{ a.percentage }}%
 {% endif %}
 </strong>
-{% if a.times < 2%}{{ a.started|date:"Y-m-d H:i" }}{% endif %}{% if a.user %}, 
+{% if a.times < 2%}{{ a.started|date:"Y-m-d H:i" }}{% endif %}{% if a.user %},
   <a class="no-style-link" href="{% url "dashboard.views.profile" username=a.user.username %}">
     {% include "dashboard/_display-name.html" with user=a.user show_org=True %}
   </a>
@@ -23,20 +23,20 @@
   {% csrf_token %}
   <input type="hidden" name="abort_operation"/>
   <input type="hidden" name="activity" value="{{ a.pk }}"/>
-  <button class="btn btn-danger btn-xs"><i class="icon-bolt"></i> {% trans "Abort" %}</button>
+  <button class="btn btn-danger btn-xs"><i class="fa fa-bolt"></i> {% trans "Abort" %}</button>
 </form>
 {% endif %}
   {% if a.children.count > 0 %}
     <div class="sub-timeline">
       {% for s in a.children.all %}
       <div data-activity-id="{{ s.pk }}" class="sub-activity{% if s.has_failed %} sub-activity-failed{% endif %}{% if s.pk == active.pk %} sub-activity-active{% endif %}">
-        <span{% if user.is_superuser and s.result %} title="{{ s.result }}"{% endif %}>
-          {% if user.is_superuser %}<a href="{{ s.get_absolute_url }}">{% endif %}
-              {{ s.get_readable_name }}{% if user.is_superuser %}</a>{% endif %}</span> &ndash;
+        <span{% if s.result %} title="{{ s.result.get_user_text }}"{% endif %}>
+          <a href="{{ s.get_absolute_url }}">
+              {{ s.readable_name.get_user_text }}</a></span> &ndash;
         {% if s.finished %}
           {{ s.finished|time:"H:i:s" }}
         {% else %}
-          <i class="icon-refresh icon-spin" class="sub-activity-loading-icon"></i>
+          <i class="fa fa-refresh fa-spin" class="sub-activity-loading-icon"></i>
         {% endif %}
         {% if s.has_failed %}
           <div class="label label-danger">{% trans "failed" %}</div>

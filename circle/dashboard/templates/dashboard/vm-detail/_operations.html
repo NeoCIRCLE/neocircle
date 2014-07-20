@@ -9,7 +9,7 @@
 <a href="{{op.get_url}}" class="operation operation-{{op.op}} btn
     btn-{{op.effect}} btn-xs" title="{{op.name}}: {{op.description}}">
 {% endif %}
-    <i class="icon-{{op.icon}}"></i>
+    <i class="fa fa-{{op.icon}}"></i>
     <span{% if not op.is_preferred %} class="sr-only"{% endif %}>{{op.name}}</span>
 {% if op.disabled %}
 </span>

@@ -59,6 +59,8 @@ class Operation(object):
         skip_auth_check = auxargs.pop('system')
         user = auxargs.pop('user')
         parent_activity = auxargs.pop('parent_activity')
+        if parent_activity and user is None and not skip_auth_check:
+            user = parent_activity.user
 
         # check for unexpected keyword arguments
         argspec = getargspec(self._operation)
@@ -72,7 +74,8 @@ class Operation(object):
             self.check_auth(user)
         self.check_precond()
 
-        activity = self.create_activity(parent=parent_activity, user=user)
+        activity = self.create_activity(
+            parent=parent_activity, user=user, kwargs=kwargs)
 
         return activity, allargs, auxargs
 
@@ -148,7 +151,7 @@ class Operation(object):
             raise PermissionDenied("%s doesn't have the required permissions."
                                    % user)
 
-    def create_activity(self, parent, user):
+    def create_activity(self, parent, user, kwargs):
         raise NotImplementedError
 
     def on_abort(self, activity, error):
@@ -156,6 +159,18 @@ class Operation(object):
         exception).
         """
         pass
+
+    def get_activity_name(self, kwargs):
+        try:
+            return self.activity_name
+        except AttributeError:
+            try:
+                return self.name._proxy____args[0]  # ewww!
+            except AttributeError:
+                raise ImproperlyConfigured(
+                    "Set Operation.activity_name to an ugettext_nooped "
+                    "string or a create_readable call, or override "
+                    "get_activity_name to create a name dynamically")
 
     def on_commit(self, activity):
         """This method is called when the operation executes successfully.

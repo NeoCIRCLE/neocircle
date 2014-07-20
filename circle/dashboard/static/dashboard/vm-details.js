@@ -4,24 +4,24 @@ $(function() {
     checkNewActivity(false, 1);
   }
   $('a[href="#activity"]').click(function(){
-    $('a[href="#activity"] i').addClass('icon-spin');
+    $('a[href="#activity"] i').addClass('fa-spin');
     checkNewActivity(false, 1);
   });
 
   /* save resources */
   $('#vm-details-resources-save').click(function() {
-    $('i.icon-save', this).removeClass("icon-save").addClass("icon-refresh icon-spin");
+    $('i.fa-floppy-o', this).removeClass("fa-floppy-o").addClass("fa-refresh fa-spin");
     var vm = $(this).data("vm");
     $.ajax({
       type: 'POST',
       url: "/dashboard/vm/" + vm + "/op/resources_change/", 
       data: $('#vm-details-resources-form').serialize(),
       success: function(data, textStatus, xhr) {
-        $("#vm-details-resources-save i").removeClass('icon-refresh icon-spin').addClass("icon-save");
+        $("#vm-details-resources-save i").removeClass('fa-refresh fa-spin').addClass("fa-floppy-o");
         $('a[href="#activity"]').trigger("click");
       },
       error: function(xhr, textStatus, error) {
-        $("#vm-details-resources-save i").removeClass('icon-refresh icon-spin').addClass("icon-save");
+        $("#vm-details-resources-save i").removeClass('fa-refresh fa-spin').addClass("fa-floppy-o");
         if (xhr.status == 500) {
           addMessage("500 Internal Server Error", "danger");
         } else {
@@ -76,13 +76,13 @@ $(function() {
     var eye = $(this).children("#vm-details-pw-eye");
     
     eye.tooltip("destroy")
-    if(eye.hasClass("icon-eye-open")) {
-      eye.removeClass("icon-eye-open").addClass("icon-eye-close");
+    if(eye.hasClass("fa-eye")) {
+      eye.removeClass("fa-eye").addClass("fa-eye-slash");
       input.prop("type", "text");
       input.focus();
       eye.prop("title", "Hide password");
     } else {
-      eye.removeClass("icon-eye-close").addClass("icon-eye-open");
+      eye.removeClass("fa-eye-slash").addClass("fa-eye");
       input.prop("type", "password");
       eye.prop("title", "Show password");
     }
@@ -269,7 +269,7 @@ $(function() {
   $("#getScreenshotButton").click(function() {
     var vm = $(this).data("vm-pk");
     var ct = $("#vm-console-screenshot");
-    $("i", this).addClass("icon-spinner icon-spin");
+    $("i", this).addClass("fa-spinner fa-spin");
     $(this).prop("disabled", true);
     ct.slideDown();
     var img = $("img", ct).prop("src", '/dashboard/vm/' + vm + '/screenshot/');
@@ -280,7 +280,7 @@ $(function() {
   // see: http://stackoverflow.com/a/3877079/1112653
   $("#vm-console-screenshot img").load(function(e) {
     $("#getScreenshotButton").prop("disabled", false)
-    .find("i").removeClass("icon-spinner icon-spin");
+    .find("i").removeClass("fa-spinner fa-spin");
 
   });
     
@@ -320,7 +320,7 @@ function removePort(data) {
 function decideActivityRefresh() {
   var check = false;
   /* if something is still spinning */
-  if($('.timeline .activity:first i:first').hasClass('icon-spin'))
+  if($('.timeline .activity:first i:first').hasClass('fa-spin'))
     check = true;
   /* if there is only one activity */
   if($('#activity-timeline div[class="activity"]').length < 2)
@@ -360,7 +360,7 @@ function checkNewActivity(only_status, runs) {
         $("[title]").tooltip();
       }
 
-      $("#vm-details-state i").prop("class", data['icon']);
+      $("#vm-details-state i").prop("class", "fa " + data['icon']);
       $("#vm-details-state span").html(data['human_readable_status'].toUpperCase());
       if(data['status'] == "RUNNING") {
         $("[data-target=#_console]").attr("data-toggle", "pill").attr("href", "#console").parent("li").removeClass("disabled");
@@ -382,7 +382,7 @@ function checkNewActivity(only_status, runs) {
           1000 + Math.exp(runs * 0.05)
         );
       }
-      $('a[href="#activity"] i').removeClass('icon-spin');
+      $('a[href="#activity"] i').removeClass('fa-spin');
     },
     error: function() {
 

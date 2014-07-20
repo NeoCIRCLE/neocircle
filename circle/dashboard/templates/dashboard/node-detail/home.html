@@ -8,7 +8,7 @@
           {% for t in node.traits.all %}
             <div class="label label-success label-tag" style="display: inline-block">
               {{ t }}
-	      <a data-trait-pk="{{ t.pk }}" href="#" class="node-details-remove-trait"><i class="icon-remove"></i></a>
+	      <a data-trait-pk="{{ t.pk }}" href="#" class="node-details-remove-trait"><i class="fa fa-times"></i></a>
             </div>
           {% endfor %}
         {% else %}
@@ -25,7 +25,7 @@
   <form action="{% url "dashboard.views.node-addtrait" node.pk %}" method="POST">
   {% csrf_token %}
   {% crispy trait_form %}
-  </form>     
+  </form>
     </div><!-- id:node-details-traits -->
   </div>
   <div class="col-md-8">

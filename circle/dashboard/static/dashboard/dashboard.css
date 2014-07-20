@@ -145,13 +145,13 @@ html {
   background-color: transparent;
 }
 
-.sub-timeline {                                                           
-}   
+.sub-timeline {
+}
 
 .sub-activity {
   margin-left: 30px;
   padding-left: 10px;
-  border-left: 3px solid green;                                           
+  border-left: 3px solid green;
 }
 
 .sub-activity-active {
@@ -235,7 +235,7 @@ html {
 
 #vm-details-rename, #vm-details-h1-name, #vm-details-rename ,
 #node-details-rename, #node-details-rename *, #node-details-h1-name, #node-list-rename, #node-list-rename *#group-details-rename, #group-details-rename *, #group-details-h1-name, #group-list-rename, #group-list-rename * {
- 
+
   display: inline;
 }
 
@@ -302,8 +302,8 @@ html {
 }
 
 /* port add buttons */
-.vm-details-network-port-add .input-group-addon, .vm-details-network-port-add .input-group-btn {                         
-  width: inherit ; 
+.vm-details-network-port-add .input-group-addon, .vm-details-network-port-add .input-group-btn {
+  width: inherit ;
 }
 
 /* vm-create */
@@ -426,12 +426,12 @@ a.hover-black {
   cursor: pointer;
 }
 
-#vm-migrate-node-list {                                                   
-  list-style: none;                                                       
-}                                                                         
-                                                                          
-#vm-migrate-node-list li {                                                
-  padding-bottom: 10px;                                                   
+#vm-migrate-node-list {
+  list-style: none;
+}
+
+#vm-migrate-node-list li {
+  padding-bottom: 10px;
 }
 
 .vm-migrate-node-property {
@@ -446,7 +446,7 @@ a.hover-black {
   /*  fancy stuff
   border: 1px solid #ccc;
   box-shadow: 0 0 10px rgba(0,0,0,0.2);
-  border-radius: 8px; 
+  border-radius: 8px;
   */
 }
 
@@ -460,25 +460,25 @@ a.hover-black {
 
 
 /* footer */
-footer {                                                             
-  position: absolute;                                               
-  bottom: 0;                                                        
-  width: 100%;                                                      
-  /* Set the fixed height of the footer here */                     
-  height: 30px;                                                     
-  background-color: #101010;                                        
-  color: white;                                                               
-  font-size: 13px;                                                            
-  padding: 5px 5px 0 5px;                                                     
-  box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);                          
-  text-align: center;                                                     
+footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 30px;
+  background-color: #101010;
+  color: white;
+  font-size: 13px;
+  padding: 5px 5px 0 5px;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);
+  text-align: center;
 }
-                                                                
-footer a, footer a:hover, footer a:visited {                        
-  color: white;                                                     
+
+footer a, footer a:hover, footer a:visited {
+  color: white;
   text-decoration: underline;
 }
-  
+
 .template-disk-list {
   list-style: none;
   padding-left: 0;
@@ -513,15 +513,15 @@ footer a, footer a:hover, footer a:visited {
 }
 
 /* template create vm help */
-.alert-new-template {                                                       
-  background: #3071a9;                                                      
-  color: white;                                                             
-  font-size: 22px;                                                          
-}                                                                           
-                                                                            
-.alert-new-template ol {                                                    
+.alert-new-template {
+  background: #3071a9;
+  color: white;
+  font-size: 22px;
+}
+
+.alert-new-template ol {
   margin-left: 25px;
-} 
+}
 
 /* bootstrap tour */
 .tour-template {
@@ -542,11 +542,11 @@ footer a, footer a:hover, footer a:visited {
 }
 
 .index-vm-list-name {
-  display: inline-block; 
-  max-width: 70%; 
-  text-overflow: ellipsis; 
-  white-space: nowrap; 
-  overflow: hidden; 
+  display: inline-block;
+  max-width: 70%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
   float: left;
 }
 
@@ -555,11 +555,11 @@ footer a, footer a:hover, footer a:visited {
 }
 
 .index-template-list-name {
-  display: inline-block; 
-  max-width: 50%; 
-  text-overflow: ellipsis; 
-  white-space: nowrap; 
-  overflow: hidden; 
+  display: inline-block;
+  max-width: 50%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
   float: left;
 }
 
@@ -574,7 +574,7 @@ footer a, footer a:hover, footer a:visited {
 }
 
 #vm-details-home-description {
-  display: inline-block; 
+  display: inline-block;
   position: relative;
 }
 
@@ -588,8 +588,8 @@ footer a, footer a:hover, footer a:visited {
 }
 
 .vm-details-description-submit {
-  position: absolute; 
-  bottom: 10px; 
+  position: absolute;
+  bottom: 10px;
   right: 20px;
 }
 
@@ -670,25 +670,25 @@ textarea[name="list-new-namelist"] {
 }
 
 /* vm list css */
-.vm-list-selected, .vm-list-selected td {                                 
-  background-color: #e8e8e8 !important;                                   
-}                                                                         
-                                                                          
-.vm-list-selected:hover, .vm-list-selected:hover td {                     
-  background-color: #d0d0d0 !important;                                   
-}                                                                         
-                                                                          
-.vm-list-selected td:first-child {                                        
-  font-weight: bold;                                                      
-}                                                                         
-                                                                          
-.vm-list-table-thin {                                                     
-  width: 10px;                                                            
-}                                                                         
-                                                                          
-.vm-list-table-admin {                                                    
-  width: 130px;                                                           
-} 
+.vm-list-selected, .vm-list-selected td {
+  background-color: #e8e8e8 !important;
+}
+
+.vm-list-selected:hover, .vm-list-selected:hover td {
+  background-color: #d0d0d0 !important;
+}
+
+.vm-list-selected td:first-child {
+  font-weight: bold;
+}
+
+.vm-list-table-thin {
+  width: 10px;
+}
+
+.vm-list-table-admin {
+  width: 130px;
+}
 
 #vm-details-connection-string-copy {
   cursor: pointer;
@@ -705,9 +705,9 @@ textarea[name="list-new-namelist"] {
 }
 
 #group-detail-user-table td:nth-child(2) a,
-#group-detail-perm-table td:nth-child(2) a, 
-#template-access-table td:nth-child(2) a, 
-#vm-access-table td:nth-child(2) a, 
+#group-detail-perm-table td:nth-child(2) a,
+#template-access-table td:nth-child(2) a,
+#vm-access-table td:nth-child(2) a,
 .no-style-link, .no-style-link:hover {
   color: #555 !important;
   text-decoration: none;
@@ -803,7 +803,7 @@ textarea[name="list-new-namelist"] {
   border: 1px solid #ccc;
 }
 
-#group-detail-permissions .selector-available h2, 
+#group-detail-permissions .selector-available h2,
 #group-detail-permissions .selector-chosen h2 {
   margin: 0;
   padding: 5px 8px 5px 8px;
@@ -819,5 +819,5 @@ textarea[name="list-new-namelist"] {
 }
 
 #group-detail-permissions input[type="submit"]{
-  margin-top: -6px;  
+  margin-top: -6px;
 }

@@ -49,7 +49,7 @@ from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import (TemplateView, DetailView, View, DeleteView,
                                   UpdateView, CreateView, ListView)
 from django.contrib import messages
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext_noop
 from django.utils.translation import ungettext as __
 from django.template.loader import render_to_string
 from django.template import RequestContext
@@ -66,7 +66,7 @@ from .forms import (
     CircleAuthenticationForm, HostForm, LeaseForm, MyProfileForm,
     NodeForm, TemplateForm, TraitForm, VmCustomizeForm, GroupCreateForm,
     UserCreationForm, GroupProfileUpdateForm, UnsubscribeForm,
-    VmSaveForm, UserKeyForm,
+    VmSaveForm, UserKeyForm, VmRenewForm,
     CirclePasswordChangeForm, VmCreateDiskForm, VmDownloadDiskForm,
     TraitsForm, RawDataForm, GroupPermissionForm
 )
@@ -97,6 +97,23 @@ def search_user(keyword):
             return User.objects.get(profile__org_id=keyword)
         except User.DoesNotExist:
             return User.objects.get(email=keyword)
+
+
+class RedirectToLoginMixin(AccessMixin):
+
+    redirect_exception_classes = (PermissionDenied, )
+
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            return super(RedirectToLoginMixin, self).dispatch(
+                request, *args, **kwargs)
+        except self.redirect_exception_classes:
+            if not request.user.is_authenticated():
+                return redirect_to_login(request.get_full_path(),
+                                         self.get_login_url(),
+                                         self.get_redirect_field_name())
+            else:
+                raise
 
 
 class GroupCodeMixin(object):
@@ -269,9 +286,10 @@ class VmDetailVncTokenView(CheckedDetailView):
         if not request.user.has_perm('vm.access_console'):
             raise PermissionDenied()
         if self.object.node:
-            with instance_activity(code_suffix='console-accessed',
-                                   instance=self.object, user=request.user,
-                                   concurrency_check=False):
+            with instance_activity(
+                    code_suffix='console-accessed', instance=self.object,
+                    user=request.user, readable_name=ugettext_noop(
+                        "console access"), concurrency_check=False):
                 port = self.object.vnc_port
                 host = str(self.object.node.host.ipv4)
                 value = signing.dumps({'host': host, 'port': port},
@@ -339,6 +357,8 @@ class VmDetailView(CheckedDetailView):
         for k, v in options.iteritems():
             if request.POST.get(k) is not None:
                 return v(request)
+
+        raise Http404()
 
     def __change_password(self, request):
         self.object = self.get_object()
@@ -520,7 +540,7 @@ class VmRawDataUpdate(SuperuserRequiredMixin, UpdateView):
         return self.get_object().get_absolute_url() + "#resources"
 
 
-class OperationView(DetailView):
+class OperationView(RedirectToLoginMixin, DetailView):
 
     template_name = 'dashboard/operate.html'
     show_in_toolbar = True
@@ -541,8 +561,16 @@ class OperationView(DetailView):
     def get_urlname(cls):
         return 'dashboard.vm.op.%s' % cls.op
 
-    def get_url(self):
-        return reverse(self.get_urlname(), args=(self.get_object().pk, ))
+    @classmethod
+    def get_instance_url(cls, pk, key=None, *args, **kwargs):
+        url = reverse(cls.get_urlname(), args=(pk, ) + args, kwargs=kwargs)
+        if key is None:
+            return url
+        else:
+            return "%s?k=%s" % (url, key)
+
+    def get_url(self, **kwargs):
+        return self.get_instance_url(self.get_object().pk, **kwargs)
 
     def get_template_names(self):
         if self.request.is_ajax():
@@ -563,15 +591,23 @@ class OperationView(DetailView):
         ctx = super(OperationView, self).get_context_data(**kwargs)
         ctx['op'] = self.get_op()
         ctx['opview'] = self
-        ctx['url'] = self.request.path
+        url = self.request.path
+        if self.request.GET:
+            url += '?' + self.request.GET.urlencode()
+        ctx['url'] = url
         ctx['template'] = super(OperationView, self).get_template_names()[0]
         return ctx
 
+    def check_auth(self):
+        logger.debug("OperationView.check_auth(%s)", unicode(self))
+        self.get_op().check_auth(self.request.user)
+
     def get(self, request, *args, **kwargs):
-        self.get_op().check_auth(request.user)
+        self.check_auth()
         return super(OperationView, self).get(request, *args, **kwargs)
 
     def post(self, request, extra=None, *args, **kwargs):
+        self.check_auth()
         self.object = self.get_object()
         if extra is None:
             extra = {}
@@ -579,31 +615,31 @@ class OperationView(DetailView):
             self.get_op().async(user=request.user, **extra)
         except Exception as e:
             messages.error(request, _('Could not start operation.'))
-            logger.error(e)
+            logger.exception(e)
+        else:
+            messages.success(request, _('Operation is started.'))
         return redirect("%s#activity" % self.object.get_absolute_url())
 
     @classmethod
-    def factory(cls, op, icon='cog', effect='info'):
+    def factory(cls, op, icon='cog', effect='info', extra_bases=(), **kwargs):
+        kwargs.update({'op': op, 'icon': icon, 'effect': effect})
         return type(str(cls.__name__ + op),
-                    (cls, ), {'op': op, 'icon': icon, 'effect': effect})
+                    tuple(list(extra_bases) + [cls]), kwargs)
 
     @classmethod
     def bind_to_object(cls, instance, **kwargs):
-        v = cls()
-        v.get_object = lambda: instance
+        me = cls()
+        me.get_object = lambda: instance
         for key, value in kwargs.iteritems():
-            setattr(v, key, value)
-        return v
+            setattr(me, key, value)
+        return me
 
 
-class VmOperationView(OperationView):
-
-    model = Instance
-    context_object_name = 'instance'  # much simpler to mock object
+class AjaxOperationMixin(object):
 
     def post(self, request, extra=None, *args, **kwargs):
-        resp = super(VmOperationView, self).post(request, extra, *args,
-                                                 **kwargs)
+        resp = super(AjaxOperationMixin, self).post(
+            request, extra, *args, **kwargs)
         if request.is_ajax():
             store = messages.get_messages(request)
             store.used = True
@@ -616,22 +652,32 @@ class VmOperationView(OperationView):
             return resp
 
 
+class VmOperationView(AjaxOperationMixin, OperationView):
+
+    model = Instance
+    context_object_name = 'instance'  # much simpler to mock object
+
+
 class FormOperationMixin(object):
 
     form_class = None
 
+    def get_form_kwargs(self):
+        return {}
+
     def get_context_data(self, **kwargs):
         ctx = super(FormOperationMixin, self).get_context_data(**kwargs)
         if self.request.method == 'POST':
-            ctx['form'] = self.form_class(self.request.POST)
+            ctx['form'] = self.form_class(self.request.POST,
+                                          **self.get_form_kwargs())
         else:
-            ctx['form'] = self.form_class()
+            ctx['form'] = self.form_class(**self.get_form_kwargs())
         return ctx
 
     def post(self, request, extra=None, *args, **kwargs):
         if extra is None:
             extra = {}
-        form = self.form_class(self.request.POST)
+        form = self.form_class(self.request.POST, **self.get_form_kwargs())
         if form.is_valid():
             extra.update(form.cleaned_data)
             resp = super(FormOperationMixin, self).post(
@@ -647,12 +693,20 @@ class FormOperationMixin(object):
             return self.get(request)
 
 
+class RequestFormOperationMixin(FormOperationMixin):
+
+    def get_form_kwargs(self):
+        val = super(FormOperationMixin, self).get_form_kwargs()
+        val.update({'request': self.request})
+        return val
+
+
 class VmCreateDiskView(FormOperationMixin, VmOperationView):
 
     op = 'create_disk'
     form_class = VmCreateDiskForm
     show_in_toolbar = False
-    icon = 'hdd'
+    icon = 'hdd-o'
     is_disk_operation = True
 
 
@@ -718,13 +772,110 @@ class VmResourcesChangeView(VmOperationView):
                                                        *args, **kwargs)
 
 
+class TokenOperationView(OperationView):
+    """Abstract operation view with token support.
+
+    User can do the action with a valid token instead of logging in.
+    """
+    token_max_age = 3 * 24 * 3600
+    redirect_exception_classes = (PermissionDenied, SuspiciousOperation, )
+
+    @classmethod
+    def get_salt(cls):
+        return unicode(cls)
+
+    @classmethod
+    def get_token(cls, instance, user):
+        t = tuple([getattr(i, 'pk', i) for i in [instance, user]])
+        return signing.dumps(t, salt=cls.get_salt(), compress=True)
+
+    @classmethod
+    def get_token_url(cls, instance, user):
+        key = cls.get_token(instance, user)
+        return cls.get_instance_url(instance.pk, key)
+
+    def check_auth(self):
+        if 'k' in self.request.GET:
+            try:  # check if token is needed at all
+                return super(TokenOperationView, self).check_auth()
+            except Exception:
+                op = self.get_op()
+                pk = op.instance.pk
+                key = self.request.GET.get('k')
+
+                logger.debug("checking token supplied to %s",
+                             self.request.get_full_path())
+                try:
+                    user = self.validate_key(pk, key)
+                except signing.SignatureExpired:
+                    messages.error(self.request, _('The token has expired.'))
+                else:
+                    logger.info("Request user changed to %s at %s",
+                                user, self.request.get_full_path())
+                    self.request.user = user
+        else:
+            logger.debug("no token supplied to %s",
+                         self.request.get_full_path())
+
+        return super(TokenOperationView, self).check_auth()
+
+    def validate_key(self, pk, key):
+        """Get object based on signed token.
+        """
+        try:
+            data = signing.loads(key, salt=self.get_salt())
+            logger.debug('Token data: %s', unicode(data))
+            instance, user = data
+            logger.debug('Extracted token data: instance: %s, user: %s',
+                         unicode(instance), unicode(user))
+        except (signing.BadSignature, ValueError, TypeError) as e:
+            logger.warning('Tried invalid token. Token: %s, user: %s. %s',
+                           key, unicode(self.request.user), unicode(e))
+            raise SuspiciousOperation()
+
+        try:
+            instance, user = signing.loads(key, max_age=self.token_max_age,
+                                           salt=self.get_salt())
+            logger.debug('Extracted non-expired token data: %s, %s',
+                         unicode(instance), unicode(user))
+        except signing.BadSignature as e:
+            raise signing.SignatureExpired()
+
+        if pk != instance:
+            logger.debug('pk (%d) != instance (%d)', pk, instance)
+            raise SuspiciousOperation()
+        user = User.objects.get(pk=user)
+        return user
+
+
+class VmRenewView(FormOperationMixin, TokenOperationView, VmOperationView):
+
+    op = 'renew'
+    icon = 'calendar'
+    effect = 'info'
+    show_in_toolbar = False
+    form_class = VmRenewForm
+
+    def get_form_kwargs(self):
+        choices = Lease.get_objects_with_level("user", self.request.user)
+        default = self.get_op().instance.lease
+        if default and default not in choices:
+            choices = (choices.distinct() |
+                       Lease.objects.filter(pk=default.pk).distinct())
+
+        val = super(VmRenewView, self).get_form_kwargs()
+        val.update({'choices': choices, 'default': default})
+        return val
+
+
 vm_ops = OrderedDict([
     ('deploy', VmOperationView.factory(
         op='deploy', icon='play', effect='success')),
     ('wake_up', VmOperationView.factory(
-        op='wake_up', icon='sun', effect='success')),
+        op='wake_up', icon='sun-o', effect='success')),
     ('sleep', VmOperationView.factory(
-        op='sleep', icon='moon', effect='info')),
+        extra_bases=[TokenOperationView],
+        op='sleep', icon='moon-o', effect='info')),
     ('migrate', VmMigrateView),
     ('save_as_template', VmSaveView),
     ('reboot', VmOperationView.factory(
@@ -732,15 +883,18 @@ vm_ops = OrderedDict([
     ('reset', VmOperationView.factory(
         op='reset', icon='bolt', effect='warning')),
     ('shutdown', VmOperationView.factory(
-        op='shutdown', icon='off', effect='warning')),
+        op='shutdown', icon='power-off', effect='warning')),
     ('shut_off', VmOperationView.factory(
-        op='shut_off', icon='ban-circle', effect='warning')),
+        op='shut_off', icon='ban', effect='warning')),
     ('recover', VmOperationView.factory(
         op='recover', icon='medkit', effect='warning')),
     ('destroy', VmOperationView.factory(
-        op='destroy', icon='remove', effect='danger')),
+        extra_bases=[TokenOperationView],
+        op='destroy', icon='times', effect='danger')),
     ('create_disk', VmCreateDiskView),
     ('download_disk', VmDownloadDiskView),
+    ('renew', VmRenewView),
+    ('resources_change', VmResourcesChangeView),
 ])
 
 
@@ -2158,15 +2312,20 @@ class VmMassDelete(LoginRequiredMixin, View):
             return redirect(next if next else reverse_lazy('dashboard.index'))
 
 
-class LeaseCreate(LoginRequiredMixin, SuperuserRequiredMixin,
+class LeaseCreate(LoginRequiredMixin, PermissionRequiredMixin,
                   SuccessMessageMixin, CreateView):
     model = Lease
     form_class = LeaseForm
+    permission_required = 'vm.create_leases'
     template_name = "dashboard/lease-create.html"
     success_message = _("Successfully created a new lease.")
 
     def get_success_url(self):
         return reverse_lazy("dashboard.views.template-list")
+
+
+class LeaseAclUpdateView(AclUpdateView):
+    model = Lease
 
 
 class LeaseDetail(LoginRequiredMixin, SuperuserRequiredMixin,
@@ -2175,6 +2334,12 @@ class LeaseDetail(LoginRequiredMixin, SuperuserRequiredMixin,
     form_class = LeaseForm
     template_name = "dashboard/lease-edit.html"
     success_message = _("Successfully modified lease.")
+
+    def get_context_data(self, *args, **kwargs):
+        obj = self.get_object()
+        context = super(LeaseDetail, self).get_context_data(*args, **kwargs)
+        context['acl'] = get_vm_acl_data(obj)
+        return context
 
     def get_success_url(self):
         return reverse_lazy("dashboard.views.lease-detail", kwargs=self.kwargs)
@@ -2303,8 +2468,11 @@ class TransferOwnershipView(LoginRequiredMixin, DetailView):
             'dashboard.views.vm-transfer-ownership-confirm', args=[token])
         try:
             new_owner.profile.notify(
-                _('Ownership offer'),
-                'dashboard/notifications/ownership-offer.html',
+                ugettext_noop('Ownership offer'),
+                ugettext_noop('%(user)s offered you to take the ownership of '
+                              'his/her virtual machine called %(instance)s. '
+                              '<a href="%(token)s" '
+                              'class="btn btn-success btn-small">Accept</a>'),
                 {'instance': obj, 'token': token_path})
         except Profile.DoesNotExist:
             messages.error(request, _('Can not notify selected user.'))
@@ -2315,163 +2483,6 @@ class TransferOwnershipView(LoginRequiredMixin, DetailView):
 
         return redirect(reverse_lazy("dashboard.views.detail",
                                      kwargs={'pk': obj.pk}))
-
-
-class AbstractVmFunctionView(AccessMixin, View):
-    """Abstract instance-action view.
-
-    User can do the action with a valid token or if has at least required_level
-    ACL level for the instance.
-
-    Children should at least implement/add template_name, success_message,
-    url_name, and do_action().
-    """
-    token_max_age = 3 * 24 * 3600
-    required_level = 'owner'
-    success_message = _("Failed to perform requested action.")
-
-    @classmethod
-    def check_acl(cls, instance, user):
-        if not instance.has_level(user, cls.required_level):
-            raise PermissionDenied()
-
-    @classmethod
-    def get_salt(cls):
-        return unicode(cls)
-
-    @classmethod
-    def get_token(cls, instance, user, *args):
-        t = tuple([getattr(i, 'pk', i) for i in [instance, user] + list(args)])
-        return signing.dumps(t, salt=cls.get_salt(), compress=True)
-
-    @classmethod
-    def get_token_url(cls, instance, user, *args):
-        key = cls.get_token(instance, user, *args)
-        args = (instance.pk, key) + args
-        return reverse(cls.url_name, args=args)
-        # this wont work, CBVs suck: reverse(cls.as_view(), args=args)
-
-    def get_template_names(self):
-        return [self.template_name]
-
-    def get(self, request, pk, key=None, *args, **kwargs):
-        class LoginNeeded(Exception):
-            pass
-        pk = int(pk)
-        instance = get_object_or_404(Instance, pk=pk)
-        try:
-            if key:
-                logger.debug('Confirm dialog for token %s.', key)
-                try:
-                    self.validate_key(pk, key)
-                except signing.SignatureExpired:
-                    messages.error(request, _(
-                        'The token has expired, please log in.'))
-                    raise LoginNeeded()
-                self.key = key
-            else:
-                if not request.user.is_authenticated():
-                    raise LoginNeeded()
-                self.check_acl(instance, request.user)
-        except LoginNeeded:
-            return redirect_to_login(request.get_full_path(),
-                                     self.get_login_url(),
-                                     self.get_redirect_field_name())
-        except SuspiciousOperation as e:
-            messages.error(request, _('This token is invalid.'))
-            logger.warning('This token %s is invalid. %s', key, unicode(e))
-            raise PermissionDenied()
-        return render(request, self.get_template_names(),
-                      self.get_context(instance))
-
-    def post(self, request, pk, key=None, *args, **kwargs):
-        class LoginNeeded(Exception):
-            pass
-        pk = int(pk)
-        instance = get_object_or_404(Instance, pk=pk)
-
-        try:
-            if not request.user.is_authenticated() and key:
-                try:
-                    user = self.validate_key(pk, key)
-                except signing.SignatureExpired:
-                    messages.error(request, _(
-                        'The token has expired, please log in.'))
-                    raise LoginNeeded()
-                self.key = key
-            else:
-                user = request.user
-                self.check_acl(instance, request.user)
-        except LoginNeeded:
-            return redirect_to_login(request.get_full_path(),
-                                     self.get_login_url(),
-                                     self.get_redirect_field_name())
-        except SuspiciousOperation as e:
-            messages.error(request, _('This token is invalid.'))
-            logger.warning('This token %s is invalid. %s', key, unicode(e))
-            raise PermissionDenied()
-
-        if self.do_action(instance, user):
-            messages.success(request, self.success_message)
-        else:
-            messages.error(request, self.fail_message)
-        return HttpResponseRedirect(instance.get_absolute_url())
-
-    def validate_key(self, pk, key):
-        """Get object based on signed token.
-        """
-        try:
-            data = signing.loads(key, salt=self.get_salt())
-            logger.debug('Token data: %s', unicode(data))
-            instance, user = data
-            logger.debug('Extracted token data: instance: %s, user: %s',
-                         unicode(instance), unicode(user))
-        except (signing.BadSignature, ValueError, TypeError) as e:
-            logger.warning('Tried invalid token. Token: %s, user: %s. %s',
-                           key, unicode(self.request.user), unicode(e))
-            raise SuspiciousOperation()
-
-        try:
-            instance, user = signing.loads(key, max_age=self.token_max_age,
-                                           salt=self.get_salt())
-            logger.debug('Extracted non-expired token data: %s, %s',
-                         unicode(instance), unicode(user))
-        except signing.BadSignature as e:
-            raise signing.SignatureExpired()
-
-        if pk != instance:
-            logger.debug('pk (%d) != instance (%d)', pk, instance)
-            raise SuspiciousOperation()
-        user = User.objects.get(pk=user)
-        return user
-
-    def do_action(self, instance, user):  # noqa
-        raise NotImplementedError('Please override do_action(instance, user)')
-
-    def get_context(self, instance):
-        context = {'instance': instance}
-        if getattr(self, 'key', None) is not None:
-            context['key'] = self.key
-        return context
-
-
-class VmRenewView(AbstractVmFunctionView):
-    """User can renew an instance."""
-    template_name = 'dashboard/confirm/base-renew.html'
-    success_message = _("Virtual machine is successfully renewed.")
-    url_name = 'dashboard.views.vm-renew'
-
-    def get_context(self, instance):
-        context = super(VmRenewView, self).get_context(instance)
-        (context['time_of_suspend'],
-         context['time_of_delete']) = instance.get_renew_times()
-        return context
-
-    def do_action(self, instance, user):
-        instance.renew(user=user)
-        logger.info('Instance %s renewed by %s.', unicode(instance),
-                    unicode(user))
-        return True
 
 
 class TransferOwnershipConfirmView(LoginRequiredMixin, View):
@@ -2516,8 +2527,9 @@ class TransferOwnershipConfirmView(LoginRequiredMixin, View):
                     unicode(instance), unicode(old), unicode(request.user))
         if old.profile:
             old.profile.notify(
-                _('Ownership accepted'),
-                'dashboard/notifications/ownership-accepted.html',
+                ugettext_noop('Ownership accepted'),
+                ugettext_noop('Your ownership offer of %(instance)s has been '
+                              'accepted by %(user)s.'),
                 {'instance': instance})
         return HttpResponseRedirect(instance.get_absolute_url())
 
@@ -2641,12 +2653,9 @@ class NotificationView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, *args, **kwargs):
         context = super(NotificationView, self).get_context_data(
             *args, **kwargs)
-        # we need to convert it to list, otherwise it's gonna be
-        # similar to a QuerySet and update everything to
-        # read status after get
         n = 10 if self.request.is_ajax() else 1000
         context['notifications'] = list(
-            self.request.user.notification_set.values()[:n])
+            self.request.user.notification_set.all()[:n])
         return context
 
     def get(self, *args, **kwargs):
@@ -2840,10 +2849,13 @@ def get_disk_download_status(request, pk):
     )
 
 
-class InstanceActivityDetail(SuperuserRequiredMixin, DetailView):
+class InstanceActivityDetail(CheckedDetailView):
     model = InstanceActivity
     context_object_name = 'instanceactivity'  # much simpler to mock object
     template_name = 'dashboard/instanceactivity_detail.html'
+
+    def get_has_level(self):
+        return self.object.instance.has_level
 
     def get_context_data(self, **kwargs):
         ctx = super(InstanceActivityDetail, self).get_context_data(**kwargs)

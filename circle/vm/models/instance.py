@@ -34,13 +34,14 @@ from django.db.models import (BooleanField, CharField, DateTimeField,
                               ManyToManyField, permalink, SET_NULL, TextField)
 from django.dispatch import Signal
 from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _, ugettext_noop
 
 from model_utils import Choices
 from model_utils.models import TimeStampedModel, StatusModel
 from taggit.managers import TaggableManager
 
 from acl.models import AclBase
+from common.models import create_readable
 from common.operations import OperatedMixin
 from ..tasks import vm_tasks, agent_tasks
 from .activity import (ActivityInProgressError, instance_activity,
@@ -364,6 +365,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             activity.resultant_state = 'PENDING'
 
         with instance_activity(code_suffix='create', instance=inst,
+                               readable_name=ugettext_noop("create instance"),
                                on_commit=__on_commit, user=inst.owner) as act:
             # create related entities
             inst.disks.add(*[disk.get_exclusive() for disk in disks])
@@ -439,10 +441,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                 for cps in customized_params]
 
     def clean(self, *args, **kwargs):
-        if self.time_of_suspend is None:
-            self._do_renew(which='suspend')
-        if self.time_of_delete is None:
-            self._do_renew(which='delete')
+        self.time_of_suspend, self.time_of_delete = self.get_renew_times()
         super(Instance, self).clean(*args, **kwargs)
 
     def manual_state_change(self, new_state="NOSTATE", reason=None, user=None):
@@ -451,8 +450,10 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         Can be used to recover VM after administrator fixed problems.
         """
         # TODO cancel concurrent activity (if exists)
-        act = InstanceActivity.create(code_suffix='manual_state_change',
-                                      instance=self, user=user)
+        act = InstanceActivity.create(
+            code_suffix='manual_state_change', instance=self, user=user,
+            readable_name=create_readable(ugettext_noop(
+                "force %(state)s state"), state=new_state))
         act.finished = act.started
         act.result = reason
         act.resultant_state = new_state
@@ -667,9 +668,24 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         success, failed = [], []
 
         def on_commit(act):
-            act.result = {'failed': failed, 'success': success}
+            if failed:
+                act.result = create_readable(ugettext_noop(
+                    "%(failed)s notifications failed and %(success) succeeded."
+                    " Failed ones are: %(faileds)s."), ugettext_noop(
+                    "%(failed)s notifications failed and %(success) succeeded."
+                    " Failed ones are: %(faileds_ex)s."),
+                    failed=len(failed), success=len(success),
+                    faileds=", ".join(a for a, e in failed),
+                    faileds_ex=", ".join("%s (%s)" % (a, unicode(e))
+                                         for a, e in failed))
+            else:
+                act.result = create_readable(ugettext_noop(
+                    "%(success)s notifications succeeded."),
+                    success=len(success), successes=success)
 
         with instance_activity('notification_about_expiration', instance=self,
+                               readable_name=ugettext_noop(
+                                   "notify owner about expiration"),
                                on_commit=on_commit):
             from dashboard.views import VmRenewView
             level = self.get_level_object("owner")
@@ -715,36 +731,14 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         else:
             return False
 
-    def get_renew_times(self):
+    def get_renew_times(self, lease=None):
         """Returns new suspend and delete times if renew would be called.
         """
+        if lease is None:
+            lease = self.lease
         return (
-            timezone.now() + self.lease.suspend_interval,
-            timezone.now() + self.lease.delete_interval)
-
-    def _do_renew(self, which='both'):
-        """Set expiration times to renewed values.
-        """
-        time_of_suspend, time_of_delete = self.get_renew_times()
-        if which in ('suspend', 'both'):
-            self.time_of_suspend = time_of_suspend
-        if which in ('delete', 'both'):
-            self.time_of_delete = time_of_delete
-
-    def renew(self, which='both', base_activity=None, user=None):
-        """Renew virtual machine instance leases.
-        """
-        if base_activity is None:
-            act_ctx = instance_activity(code_suffix='renew', instance=self,
-                                        user=user)
-        else:
-            act_ctx = base_activity.sub_activity('renew')
-
-        with act_ctx:
-            if which not in ('suspend', 'delete', 'both'):
-                raise ValueError('No such expiration type.')
-            self._do_renew(which)
-            self.save()
+            timezone.now() + lease.suspend_interval,
+            timezone.now() + lease.delete_interval)
 
     def change_password(self, user=None):
         """Generate new password for the vm
@@ -756,6 +750,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
 
         self.pw = pwgen()
         with instance_activity(code_suffix='change_password', instance=self,
+                               readable_name=ugettext_noop("change password"),
                                user=user):
             queue = self.get_remote_queue_name("agent")
             agent_tasks.change_password.apply_async(queue=queue,
@@ -909,14 +904,14 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
 
     def get_status_icon(self):
         return {
-            'NOSTATE': 'icon-rocket',
-            'RUNNING': 'icon-play',
-            'STOPPED': 'icon-stop',
-            'SUSPENDED': 'icon-pause',
-            'ERROR': 'icon-warning-sign',
-            'PENDING': 'icon-rocket',
-            'DESTROYED': 'icon-trash',
-            'MIGRATING': 'icon-truck'}.get(self.status, 'icon-question-sign')
+            'NOSTATE': 'fa-rocket',
+            'RUNNING': 'fa-play',
+            'STOPPED': 'fa-stop',
+            'SUSPENDED': 'fa-pause',
+            'ERROR': 'fa-warning',
+            'PENDING': 'fa-rocket',
+            'DESTROYED': 'fa-trash-o',
+            'MIGRATING': 'fa-truck'}.get(self.status, 'fa-question')
 
     def get_activities(self, user=None):
         acts = (self.activity_log.filter(parent=None).

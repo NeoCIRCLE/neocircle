@@ -10,7 +10,7 @@
   <strong>{% trans "This is the master vm of your new template" %}</strong>
   <div id="vm-details-template-tour-button" class="pull-right">
     <a href="#" class="btn btn-default btn-lg pull-right vm-details-start-template-tour">
-      <i class="icon-play"></i> {% trans "Start template tutorial" %}
+      <i class="fa fa-play"></i> {% trans "Start template tutorial" %}
     </a>
   </div>
   <ol>
@@ -45,7 +45,7 @@
         <form action="" method="POST" id="vm-details-rename-form">
           {% csrf_token %}
           <div class="input-group vm-details-home-name">
-            <input id="vm-details-rename-name" class="form-control input-sm" name="new_name" type="text" value="{{ instance.name }}"/> 
+            <input id="vm-details-rename-name" class="form-control input-sm" name="new_name" type="text" value="{{ instance.name }}"/>
             <span class="input-group-btn">
               <button type="submit" class="btn btn-sm vm-details-rename-submit">{% trans "Rename" %}</button>
             </span>
@@ -53,7 +53,7 @@
         </form>
       </div>
       <div id="vm-details-h1-name" class="vm-details-home-edit-name">
-        {{ instance.name }} 
+        {{ instance.name }}
       </div>
       <small>{{ instance.primary_host.get_fqdn }}</small>
     </h1>
@@ -63,7 +63,7 @@
     <div class="col-md-4" id="vm-info-pane">
       <div class="big">
         <span id="vm-details-state" class="label label-success">
-          <i class="{{ instance.get_status_icon }}"></i> 
+          <i class="fa {{ instance.get_status_icon }}"></i>
           <span>{{ instance.get_status_display|upper }}</span>
         </span>
       </div>
@@ -76,7 +76,7 @@
             {% if instance.get_connect_port %}
               {{ instance.get_connect_host }}:<strong>{{ instance.get_connect_port }}</strong>
             {% else %}
-              <strong>{% trans "The required port for this protocol is not forwarded." %}</strong> 
+              <strong>{% trans "The required port for this protocol is not forwarded." %}</strong>
             {% endif %}
           </dd>
 
@@ -90,10 +90,10 @@
         <dt>{% trans "Password" %}</dt>
         <dd>
           <div class="input-group">
-            <input type="text" id="vm-details-pw-input" class="form-control input-sm input-tags" 
+            <input type="text" id="vm-details-pw-input" class="form-control input-sm input-tags"
             value="{{ instance.pw }}" spellcheck="false"/>
             <span class="input-group-addon input-tags" id="vm-details-pw-show">
-              <i class="icon-eye-open" id="vm-details-pw-eye" title="Show password"></i>
+              <i class="fa fa-eye" id="vm-details-pw-eye" title="Show password"></i>
             </span>
           </div>
         </dd>
@@ -105,7 +105,7 @@
             {% trans "Are you sure?" %}
           </dt>
           <dd>
-            <a href="#" class="vm-details-pw-confirm-choice label label-success" data-choice="1" data-vm="{{ instance.pk }}">{% trans "Yes" %}</a> / 
+            <a href="#" class="vm-details-pw-confirm-choice label label-success" data-choice="1" data-vm="{{ instance.pk }}">{% trans "Yes" %}</a> /
             <a href="#" class="vm-details-pw-confirm-choice label label-danger" data-choice="0">{% trans "No" %}</a>
           </dd>
         </div>
@@ -113,12 +113,12 @@
 
       <div class="input-group" id="dashboard-vm-details-connect-command">
         <span class="input-group-addon input-tags">{% trans "Command" %}</span>
-        <input type="text" spellcheck="false" 
+        <input type="text" spellcheck="false"
         value="{% if instance.get_connect_command %}{{ instance.get_connect_command }}{% else %}
-        {% trans "Connection is not possible." %}{% endif %}" 
+        {% trans "Connection is not possible." %}{% endif %}"
         id="vm-details-connection-string" class="form-control input-tags" />
         <span class="input-group-addon input-tags" id="vm-details-connection-string-copy">
-          <i class="icon-copy" title="{% trans "Select all" %}"></i>
+          <i class="fa fa-copy" title="{% trans "Select all" %}"></i>
         </span>
       </div>
     </div>
@@ -127,31 +127,31 @@
         <ul class="nav nav-pills panel-heading">
           <li class="active">
             <a href="#home" data-toggle="pill" data-target="#_home" class="text-center">
-              <i class="icon-compass icon-2x"></i><br>
+              <i class="fa fa-compass fa-2x"></i><br>
               {% trans "Home" %}</a>
           </li>
           <li>
             <a href="#resources" data-toggle="pill" data-target="#_resources" class="text-center">
-              <i class="icon-tasks icon-2x"></i><br>
+              <i class="fa fa-tasks fa-2x"></i><br>
               {% trans "Resources" %}</a>
           </li>
           <li{% if not instance.is_console_available %} class="disabled"{% endif %}>
             <a href="#console" data-toggle="pill" data-target="#_console" class="text-center">
-              <i class="icon-desktop icon-2x"></i><br>
+              <i class="fa fa-desktop fa-2x"></i><br>
               {% trans "Console" %}</a></li>
           <li>
             <a href="#access" data-toggle="pill" data-target="#_access" class="text-center">
-              <i class="icon-group icon-2x"></i><br>
+              <i class="fa fa-group fa-2x"></i><br>
               {% trans "Access" %}</a>
           </li>
           <li>
             <a href="#network" data-toggle="pill" data-target="#_network" class="text-center">
-              <i class="icon-globe icon-2x"></i><br>
+              <i class="fa fa-globe fa-2x"></i><br>
               {% trans "Network" %}</a>
           </li>
           <li>
             <a href="#activity" data-toggle="pill" data-target="#_activity" class="text-center">
-              <i class="icon-time icon-2x"></i><br>
+              <i class="fa fa-clock-o fa-2x"></i><br>
               {% trans "Activity" %}</a>
           </li>
         </ul>

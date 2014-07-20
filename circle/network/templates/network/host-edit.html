@@ -7,7 +7,7 @@
 
 {% block content %}
 <div class="page-header">
-    <a href="{% url "network.host_delete" pk=host_pk%}" class="btn btn-danger pull-right"><i class="icon-remove-sign"></i> {% trans "Delete this host" %}</a>
+    <a href="{% url "network.host_delete" pk=host_pk%}" class="btn btn-danger pull-right"><i class="fa fa-times-circle"></i> {% trans "Delete this host" %}</a>
     <h2>{{ form.hostname.value }}</h2>
 </div>
 
@@ -17,7 +17,7 @@
     </div>
     <div class="col-sm-5">
         <div class="page-header">
-            <a href="{% url "network.rule_create" %}?host={{ host_pk }}" class="btn btn-success pull-right btn-xs"><i class="icon-plus-sign"></i> {% trans "Add new rule" %}</a>
+            <a href="{% url "network.rule_create" %}?host={{ host_pk }}" class="btn btn-success pull-right btn-xs"><i class="fa fa-plus-circle"></i> {% trans "Add new rule" %}</a>
             <h3>{% trans "Rules" %}</h3>
         </div>
         {% if rule_list.data.data.count > 0 %}
@@ -25,18 +25,18 @@
         {% else %}
             {% trans "No rules associated with this host!" %}
         {% endif %}
-        
+
         <div class="page-header">
             <h3>{% trans "Groups" %}</h3>
         </div>
         {% if group_rule_list|length > 0 %}
             {% for group in group_rule_list %}
             <div>
-                <h4 id="{{ group.pk }}_group_pk">{{ group.name }} 
+                <h4 id="{{ group.pk }}_group_pk">{{ group.name }}
                     <a href="{% url "network.remove_host_group" pk=host_pk group_pk=group.pk %}?from={{ request.path }}">
-                        <i class="icon-remove" style="vertical-align: middle;"></i></a>
+                        <i class="fa fa-times" style="vertical-align: middle;"></i></a>
                 <a href="{% url "network.group" group.pk %}">
-                    <i class="icon-pencil" style="vertical-align: middle;"></i></a>
+                    <i class="fa fa-pencil" style="vertical-align: middle;"></i></a>
                 </h4>
             </div>
             {% endfor %}
