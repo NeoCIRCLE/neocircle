@@ -19,22 +19,14 @@ def get_host():
     return settings.STORE_URL
 
 
-def get_request_arguments(ssl_auth, basic_auth):
-    args = {
-        'verify': settings.STORE_VERIFY_SSL,
-        'cert': (settings.STORE_CLIENT_CERT, settings.STORE_CLIENT_KEY),
-        'auth': (settings.STORE_CLIENT_USER, settings.STORE_CLIENT_PASSWORD),
-    }
-    if ssl_auth and basic_auth:
-        pass
-    elif ssl_auth:
-        del args['auth']
-    elif basic_auth:
-        del args['cert']
-    else:
-        del args['cert']
-        del args['auth']
+def get_request_arguments():
+    args = {'verify': settings.STORE_VERIFY_SSL}
 
+    if settings.STORE_SSL_AUTH:
+        args['cert'] = (settings.STORE_CLIENT_CERT, settings.STORE_CLIENT_KEY)
+    if settings.STORE_BASIC_AUTH:
+        args['auth'] = (settings.STORE_CLIENT_USER,
+                        settings.STORE_CLIENT_PASSWORD)
     return args
 
 
@@ -42,8 +34,7 @@ def post_request(url, payload, timeout=None):
     try:
         headers = {'content-type': 'application/json'}
         r = requests.post(url, data=payload, headers=headers, timeout=timeout,
-                          **get_request_arguments(settings.STORE_SSL_AUTH,
-                                                  settings.STORE_BASIC_AUTH))
+                          **get_request_arguments())
         return r
     except Exception as e:
         logger.error("Error in store POST: %s" % e)
@@ -57,8 +48,7 @@ def get_request(url, timeout=None):
     try:
         headers = {'content-type': 'application/json'}
         r = requests.get(url, headers=headers, timeout=timeout,
-                         **get_request_arguments(settings.STORE_SSL_AUTH,
-                                                 settings.STORE_BASIC_AUTH))
+                         **get_request_arguments())
         return r
     except Exception as e:
         logger.error("Error in store GET: %s" % e)
