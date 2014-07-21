@@ -41,8 +41,9 @@ class ActivityInProgressError(Exception):
 
         def __init__(self, activity, message=None):
             if message is None:
-                message = ("Another activity is currently in progress: '%s'."
-                           % activity.activity_code)
+                message = ("Another activity is currently in progress: '%s' "
+                           "(%s)."
+                           % (activity.activity_code, activity.pk))
 
             Exception.__init__(self, message)
 
