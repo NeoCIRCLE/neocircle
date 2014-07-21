@@ -58,7 +58,7 @@ class Store(object):
             return response
 
     def _request_cmd(self, cmd, **kwargs):
-        return self._request(self.username, post, CMD=cmd)
+        return self._request(self.username, post, CMD=cmd, **kwargs)
 
     def list(self, path, process=True):
         r = self._request_cmd("LIST", PATH=path)
