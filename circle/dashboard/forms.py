@@ -54,6 +54,7 @@ from .models import Profile, GroupProfile
 from circle.settings.base import LANGUAGES
 from django.utils.translation import string_concat
 
+from .virtvalidator import domain_validator
 
 LANGUAGES_WITH_CODE = ((l[0], string_concat(l[1], " (", l[0], ")"))
                        for l in LANGUAGES)
@@ -1256,6 +1257,9 @@ class TraitsForm(forms.ModelForm):
 
 
 class RawDataForm(forms.ModelForm):
+    raw_data = forms.CharField(validators=[domain_validator],
+                               widget=forms.Textarea(attrs={'rows': 5}),
+                               required=False)
 
     class Meta:
         model = Instance
