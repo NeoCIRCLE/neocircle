@@ -9,7 +9,10 @@ class Migration(SchemaMigration):
 
     def forwards(self, orm):
         # Removing unique constraint on 'InstanceTemplate', fields ['name']
-        db.delete_unique(u'vm_instancetemplate', ['name'])
+        try:
+            db.delete_unique(u'vm_instancetemplate', ['name'])
+        except Exception as e:
+            print unicode(e)
 
 
         # Changing field 'InstanceTemplate.parent'
