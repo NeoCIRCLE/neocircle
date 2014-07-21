@@ -1,7 +1,11 @@
 {% load i18n %}
 
 <div class="alert alert-info" id="template-choose-alert">
-  {% trans "Customize an existing template or create a brand new one from scratch!" %}
+  {% if perms.vm.create_base_template %}
+    {% trans "Customize an existing template or create a brand new one from scratch." %}
+  {% else %}
+    {% trans "Customize an existing template." %}
+  {% endif %}
 </div>
 
 <form action="{% url "dashboard.views.template-choose" %}" method="POST"
