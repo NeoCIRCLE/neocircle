@@ -62,6 +62,26 @@ def get_queues():
     return result
 
 
+@celery.task(name='vmdriver.attach_disk')
+def attach_disk(vm, disk):
+    pass
+
+
+@celery.task(name='vmdriver.detach_disk')
+def detach_disk(vm, disk):
+    pass
+
+
+@celery.task(name='vmdriver.attach_network')
+def attach_network(vm, net):
+    pass
+
+
+@celery.task(name='vmdriver.detach_network')
+def detach_network(vm, net):
+    pass
+
+
 @celery.task(name='vmdriver.create')
 def deploy(params):
     pass

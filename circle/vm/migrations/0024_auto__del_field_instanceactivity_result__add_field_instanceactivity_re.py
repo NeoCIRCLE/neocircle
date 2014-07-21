@@ -7,10 +7,19 @@ class Migration(SchemaMigration):
 
     def forwards(self, orm):
 
+        db.start_transaction()
         # Adding field 'InstanceActivity.result_data'
         db.add_column(u'vm_instanceactivity', 'result_data',
                       self.gf('jsonfield.fields.JSONField')(null=True, blank=True),
                       keep_default=False)
+
+        # Adding field 'NodeActivity.result_data'
+        db.add_column(u'vm_nodeactivity', 'result_data',
+                      self.gf('jsonfield.fields.JSONField')(null=True, blank=True),
+                      keep_default=False)
+
+        db.commit_transaction()
+        db.start_transaction()
 
         for i in orm.InstanceActivity.objects.all():
             result = i.result.replace("%", "%%") if i.result else ""
@@ -18,22 +27,24 @@ class Migration(SchemaMigration):
                              "admin_text_template": result, "params": {}}
             i.save()
 
-        # Deleting field 'InstanceActivity.result'
-        db.delete_column(u'vm_instanceactivity', 'result')
-
-        # Adding field 'NodeActivity.result_data'
-        db.add_column(u'vm_nodeactivity', 'result_data',
-                      self.gf('jsonfield.fields.JSONField')(null=True, blank=True),
-                      keep_default=False)
-
         for i in orm.NodeActivity.objects.all():
             result = i.result.replace("%", "%%") if i.result else ""
             i.result_data = {"user_text_template": "",
                              "admin_text_template": result, "params": {}}
             i.save()
 
+        db.commit_transaction()
+        db.start_transaction()
+
+        # Deleting field 'InstanceActivity.result'
+        db.delete_column(u'vm_instanceactivity', 'result')
+
+
+
         # Deleting field 'NodeActivity.result'
         db.delete_column(u'vm_nodeactivity', 'result')
+
+        db.commit_transaction()
 
 
     def backwards(self, orm):
