@@ -4,7 +4,7 @@
   <div class="panel-heading">
     <span class="btn btn-default btn-xs infobtn pull-right" 
       title="A list of your most recent files!">
-      <i class="icon-info-sign"></i>
+      <i class="fa fa-info-circle"></i>
     </span>
     <h3 class="no-margin"><i class="icon-briefcase"></i> Files
     </h3>
@@ -13,19 +13,19 @@
     {% for t in toplist %}
     {% if t.TYPE == "F" %}
       <div class="list-group-item">
-        <i class="icon-file"></i> {{ t.NAME }}
+        <i class="fa fa-file"></i> {{ t.NAME }}
         <a href="{% url "dashboard.views.store-download" %}?path={{ t.path }}" 
           class="pull-right btn btn-xs" style="color: black;">
-          <i class="icon-cloud-download" title="{% trans "Download" %}"></i>
+          <i class="fa fa-cloud-download" title="{% trans "Download" %}"></i>
         </a>
         <a href="{% url "dashboard.views.store-list" %}?directory={{ t.directory }}" 
           class="pull-right btn btn-xs" style="color: black;">
-          <i class="icon-folder-open" title="{% trans "Show in directory" %}"></i>
+          <i class="fa fa-folder-open" title="{% trans "Show in directory" %}"></i>
         </a>
       </div>
     {% else %}
     <a href="{% url "dashboard.views.store-list" %}?directory={{ t.path }}" class="list-group-item">
-      <i class="icon-folder-open"></i> {{ t.NAME }}
+      <i class="fa fa-folder-open"></i> {{ t.NAME }}
     </a>
     {% endif %}
     {% endfor %}
@@ -33,14 +33,14 @@
       <form class="pull-left" method="POST" action="{% url "dashboard.views.store-refresh-toplist" %}">
         {% csrf_token %}
         <button class="btn btn-success btn-xs" type="submit" title="{% trans "Refresh" %}"/>
-          <i class="icon-refresh"></i>
+          <i class="fa fa-refresh"></i>
         </button>
       </form>
       <a href="{% url "dashboard.views.store-list" %}" class="btn btn-primary btn-xs">
-        <i class="icon-chevron-sign-right"></i> {% trans "show my files" %}  
+        <i class="fa fa-chevron-circle-right"></i> {% trans "show my files" %}  
       </a>
       <a href="{% url "dashboard.views.store-upload" %}" class="btn btn-success btn-xs">
-        <i class="icon-cloud-upload"></i> {% trans "upload" %}  
+        <i class="fa fa-cloud-upload"></i> {% trans "upload" %}  
       </a>
     </div>
   </div>

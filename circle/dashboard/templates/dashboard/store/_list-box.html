@@ -3,7 +3,7 @@
 <div class="list-group" id="store-list-list">
   <a href="{% url "dashboard.views.store-list" %}?directory={{ up_url }}" 
     class="list-group-item store-list-item" data-item-type="D">
-    <i class="icon-reply store-list-item-icon"></i>
+    <i class="fa fa-reply store-list-item-icon"></i>
     ..
     <div class="pull-right">
       {{ current }}
@@ -17,7 +17,7 @@
     >
     <div class="store-list-item-icon">
       <i class="
-        icon-{% if f.TYPE == "D" %}folder-open-alt store-list-item-icon-directory{% else %}file-alt{% endif %}"
+        fa fa-{% if f.TYPE == "D" %}folder-open store-list-item-icon-directory{% else %}file{% endif %}"
         ></i>
     </div>
     {{ f.NAME }}
@@ -35,12 +35,12 @@
   <div class="store-list-file-infos">
     <a href="{% url "dashboard.views.store-download" %}?path={{ f.path }}" 
       class="btn btn-primary btn-sm store-download-button">
-      <i class="icon-download"></i>
+      <i class="fa fa-download"></i>
       {% trans "Download" %}
     </a>
     <a href="{% url "dashboard.views.store-remove" %}?path={{ f.path }}" 
       class="btn btn-danger btn-xs store-remove-button">
-      <i class="icon-remove"></i>
+      <i class="fa fa-times"></i>
       {% trans "Remove" %}
     </a>
     <dl class="dl-horizontal" style="margin: 0; padding: 0;">
@@ -82,7 +82,7 @@
          id="store-upload-filename"/>
         <span class="input-group-btn">
           <button type="submit" class="btn btn-primary btn-xs" disabled>
-            <i class="icon-cloud-upload"></i> {% trans "Upload" %}
+            <i class="fa fa-cloud-upload"></i> {% trans "Upload" %}
           </button>
         </span>
       </div>
@@ -95,14 +95,14 @@
   <div class="list-group-item">
     <a href="{% url "dashboard.views.store-remove" %}?path={{ current }}" 
       class="btn btn-danger btn-xs pull-right">
-      <i class="icon-remove"></i> {% trans "Remove directory" %}
+      <i class="fa fa-times"></i> {% trans "Remove directory" %}
     </a>
     <form method="POST" action="{% url "dashboard.views.store-new-directory" %}">
       {% csrf_token %}
       <input type="hidden" name="path" value="{{ current }}"/>
       <div class="input-group" style="max-width: 350px;">
         <span class="input-group-addon input-tags" title="{% trans "New directory" %}">
-          <i class="icon-folder-open-alt"></i>
+          <i class="fa fa-folder-open-alt"></i>
         </span>
         <input type="text" class="form-control input-tags" name="name"
          placeholder="{% trans "Name "%}"/>
