@@ -638,6 +638,22 @@ class RenewOperation(InstanceOperation):
 register_operation(RenewOperation)
 
 
+class ChangeStateOperation(InstanceOperation):
+    activity_code_suffix = 'change_state'
+    id = 'change_state'
+    name = _("change state")
+    description = _("Change the virtual machine state to NOSTATE")
+    acl_level = "owner"
+    required_perms = ('vm.change_state', )
+
+    def _operation(self, user, activity, new_state="NOSTATE",
+                   reason=None, lease=None):
+        activity.resultant_state = new_state
+
+
+register_operation(ChangeStateOperation)
+
+
 class NodeOperation(Operation):
     async_operation = abortable_async_node_operation
     host_cls = Node
