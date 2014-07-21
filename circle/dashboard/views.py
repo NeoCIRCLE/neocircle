@@ -334,6 +334,7 @@ class VmDetailView(CheckedDetailView):
         for k, v in options.iteritems():
             if request.POST.get(k) is not None:
                 return v(request)
+        raise Http404()
 
     def __change_password(self, request):
         self.object = self.get_object()
@@ -513,6 +514,10 @@ class VmRawDataUpdate(SuperuserRequiredMixin, UpdateView):
 
     def get_success_url(self):
         return self.get_object().get_absolute_url() + "#resources"
+
+    def post(self, request, **kwargs):
+        messages.error(request, "%s"  % request.POST.get("raw_data"))
+        return redirect(self.get_object().get_absolute_url() + "#resources")
 
 
 class OperationView(RedirectToLoginMixin, DetailView):
@@ -862,12 +867,15 @@ vm_ops = OrderedDict([
         op='shut_off', icon='ban', effect='warning')),
     ('recover', VmOperationView.factory(
         op='recover', icon='medkit', effect='warning')),
+    ('nostate', VmOperationView.factory(
+        op='change_state', icon='legal', effect='danger')),
     ('destroy', VmOperationView.factory(
         extra_bases=[TokenOperationView],
         op='destroy', icon='times', effect='danger')),
     ('create_disk', VmCreateDiskView),
     ('download_disk', VmDownloadDiskView),
     ('renew', VmRenewView),
+    ('resources_change', VmResourcesChangeView),
 ])
 
 
