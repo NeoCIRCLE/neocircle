@@ -21,6 +21,7 @@ from __future__ import unicode_literals, absolute_import
 from collections import OrderedDict
 from itertools import chain
 from os import getenv
+from os.path import join, normpath, dirname
 import os
 import json
 import logging
@@ -83,7 +84,7 @@ from storage.models import Disk
 from firewall.models import Vlan, Host, Rule
 from .models import Favourite, Profile, GroupProfile, FutureMember
 
-from dashboard import store_api
+from .store_api import Store
 
 logger = logging.getLogger(__name__)
 saml_available = hasattr(settings, "SAML_CONFIG")
@@ -225,14 +226,15 @@ class IndexView(LoginRequiredMixin, TemplateView):
                 'operator', user).all()[:5]
 
         # toplist
-        user_home = "u-%d" % user.pk
-        cache_key = "toplist-%s" % user_home
+        cache_key = "toplist-%d" % self.request.user.pk
         cache = get_cache("default")
         toplist = cache.get(cache_key)
         if not toplist:
             try:
-                toplist = store_api.process_list(store_api.toplist(user_home))
-            except Http404:
+                toplist = Store(self.request.user).toplist()
+            except Exception:
+                logger.exception("Unable to get tolist for %s",
+                                 unicode(self.request.user))
                 toplist = []
             cache.set(cache_key, toplist, 300)
 
@@ -3092,14 +3094,12 @@ class StoreList(LoginRequiredMixin, TemplateView):
         directory = self.request.GET.get("directory", "/")
         directory = "/" if not len(directory) else directory
 
-        user_home = "u-%d" % self.request.user.pk
-        content = store_api.listfolder(user_home, directory)
-        context['root'] = store_api.process_list(content)
+        context['root'] = Store(self.request.user).list(directory)
         context['up_url'] = self.create_up_directory(directory)
         context['current'] = directory
         context['next_url'] = "%s%s?directory=%s" % (
-            settings.DJANGO_URL[:-1], reverse("dashboard.views.store-list"),
-            directory)
+            settings.DJANGO_URL.rstrip("/"),
+            reverse("dashboard.views.store-list"), directory)
         return context
 
     def get(self, *args, **kwargs):
@@ -3113,28 +3113,31 @@ class StoreList(LoginRequiredMixin, TemplateView):
             return super(StoreList, self).get(*args, **kwargs)
 
     def create_up_directory(self, directory):
-        cut = -2 if directory.endswith("/") else -1
-        return "/".join(directory.split("/")[:cut]) + "/"
+        return normpath(join('/', directory, '..'))
 
 
 @require_GET
 @login_required
 def store_download(request):
-    user_home = "u-%d" % request.user.pk
     path = request.GET.get("path")
-    url = store_api.requestdownload(user_home, path)
+    url = Store(request.user).request_download(path)
     return redirect(url)
 
 
 @require_GET
 @login_required
 def store_upload(request):
-    user_home = "u-%d" % request.user.pk
     directory = request.GET.get("directory", "/")
-    action = store_api.requestupload(user_home, directory)
+    try:
+        action = Store(request.user).request_upload(directory)
+    except Exception:
+        logger.exception("Unable to upload")
+        messages.error(request, _("Unable to upload file."))
+        return redirect("/")
+
     next_url = "%s%s?directory=%s" % (
-        settings.DJANGO_URL[:-1], reverse("dashboard.views.store-list"),
-        directory)
+        settings.DJANGO_URL.rstrip("/"),
+        reverse("dashboard.views.store-list"), directory)
 
     return render(request, "dashboard/store/upload.html",
                   {'directory': directory, 'action': action,
@@ -3144,9 +3147,13 @@ def store_upload(request):
 @require_GET
 @login_required
 def store_get_upload_url(request):
-    user_home = "u-%d" % request.user.pk
     current_dir = request.GET.get("current_dir")
-    url = store_api.requestupload(user_home, current_dir)
+    try:
+        url = Store(request.user).request_upload(current_dir)
+    except Exception:
+        logger.exception("Unable to upload")
+        messages.error(request, _("Unable to upload file."))
+        return redirect("/")
     return HttpResponse(
         json.dumps({'url': url}), content_type="application/json")
 
@@ -3171,30 +3178,31 @@ class StoreRemove(LoginRequiredMixin, TemplateView):
         return context
 
     def post(self, *args, **kwargs):
-        user_home = "u-%d" % self.request.user.pk
         path = self.request.POST.get("path")
-        store_api.requestremove(user_home, path)
+        try:
+            Store(self.request.user).remove(path)
+        except Exception:
+            logger.exception("Unable to remove %s", path)
+            messages.error(self.request, _("Unable to remove %s.") % path)
 
-        if path.endswith("/"):
-            return redirect("%s?directory=%s" % (
-                reverse("dashboard.views.store-list"),
-                os.path.dirname(os.path.dirname(path)),
-            ))
-        else:
-            return redirect("%s?directory=%s" % (
-                reverse("dashboard.views.store-list"),
-                os.path.dirname(path),
-            ))
+        return redirect("%s?directory=%s" % (
+            reverse("dashboard.views.store-list"),
+            dirname(dirname(path)),
+        ))
 
 
 @require_POST
 @login_required
 def store_new_directory(request):
-    user_home = "u-%d" % request.user.pk
     path = request.POST.get("path")
     name = request.POST.get("name")
 
-    store_api.requestnewfolder(user_home, path + name)
+    try:
+        Store(request.user).new_folder(join(path, name))
+    except Exception:
+        logger.exception("Unable to create folder %s in %s for %s",
+                         name, path, unicode(request.user))
+        messages.error(request, _("Unable to create folder."))
     return redirect("%s?directory=%s" % (
         reverse("dashboard.views.store-list"), path))
 
@@ -3202,12 +3210,12 @@ def store_new_directory(request):
 @require_POST
 @login_required
 def store_refresh_toplist(request):
-    user_home = "u-%d" % request.user.pk
-    cache_key = "toplist-%s" % user_home
+    cache_key = "toplist-%d" % request.user.pk
     cache = get_cache("default")
     try:
-        toplist = store_api.process_list(store_api.toplist(user_home))
-    except Http404:
+        toplist = Store(request.user).toplist()
+    except Exception:
+        logger.exception("Can't get toplist of %s", unicode(request.user))
         toplist = []
     cache.set(cache_key, toplist, 300)
 

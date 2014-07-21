@@ -44,7 +44,7 @@ from common.models import HumanReadableObject, create_readable, Encoder
 
 from vm.tasks.agent_tasks import add_keys, del_keys
 
-from dashboard import store_api
+from .store_api import Store
 
 logger = getLogger(__name__)
 
@@ -213,12 +213,10 @@ def create_profile(sender, user, request, **kwargs):
         return False
     profile, created = Profile.objects.get_or_create(user=user)
 
-    if created:
-        user_home = "u-%d" % user.pk
-        if not store_api.userexist(user_home):
-            store_api.createuser(user_home, profile.smb_password, None,
-                                 profile.disk_quota)
-
+    try:
+        Store(user).create_user(profile.smb_password, None, profile.disk_quota)
+    except:
+        logger.exception("Can't create user %s", unicode(user))
     return created
 
 user_logged_in.connect(create_profile)

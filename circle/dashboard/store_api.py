@@ -1,203 +1,136 @@
-from django.http import Http404
 import json
 import logging
-import requests
-
+from urlparse import urljoin
 from datetime import datetime
-from sizefield.utils import filesizeformat
 
+from django.http import Http404
 from django.conf import settings
+from requests import get, post, codes
+from sizefield.utils import filesizeformat
 
 logger = logging.getLogger(__name__)
 
 
-class Mock(object):
+class StoreApiException(Exception):
     pass
 
 
-def get_host():
-    return settings.STORE_URL
+class NotOkException(StoreApiException):
+    def __init__(self, status, *args, **kwargs):
+        self.status = status
+        super(NotOkException, self).__init__(*args, **kwargs)
 
 
-def get_request_arguments():
-    args = {'verify': settings.STORE_VERIFY_SSL}
+class Store(object):
 
-    if settings.STORE_SSL_AUTH:
-        args['cert'] = (settings.STORE_CLIENT_CERT, settings.STORE_CLIENT_KEY)
-    if settings.STORE_BASIC_AUTH:
-        args['auth'] = (settings.STORE_CLIENT_USER,
-                        settings.STORE_CLIENT_PASSWORD)
-    return args
+    def __init__(self, user, default_timeout=0.5):
+        self.request_args = {'verify': settings.STORE_VERIFY_SSL}
+        if settings.STORE_SSL_AUTH:
+            self.request_args['cert'] = (settings.STORE_CLIENT_CERT,
+                                         settings.STORE_CLIENT_KEY)
+        if settings.STORE_BASIC_AUTH:
+            self.request_args['auth'] = (settings.STORE_CLIENT_USER,
+                                         settings.STORE_CLIENT_PASSWORD)
+        self.username = "u-%d" % user.pk
+        self.default_timeout = default_timeout
+        self.store_url = settings.STORE_URL
 
-
-def post_request(url, payload, timeout=None):
-    try:
-        headers = {'content-type': 'application/json'}
-        r = requests.post(url, data=payload, headers=headers, timeout=timeout,
-                          **get_request_arguments())
-        return r
-    except Exception as e:
-        logger.error("Error in store POST: %s" % e)
-        dummy = Mock()
-        setattr(dummy, "status_code", 200)
-        setattr(dummy, "content", "[]")
-        return dummy
-
-
-def get_request(url, timeout=None):
-    try:
-        headers = {'content-type': 'application/json'}
-        r = requests.get(url, headers=headers, timeout=timeout,
-                         **get_request_arguments())
-        return r
-    except Exception as e:
-        logger.error("Error in store GET: %s" % e)
-        dummy = Mock()
-        setattr(dummy, "status_code", 200)
-        setattr(dummy, "content", "[]")
-        return dummy
-
-
-def listfolder(neptun, path):
-    url = settings.STORE_URL + '/' + neptun
-    payload = json.dumps({'CMD': 'LIST', 'PATH': path})
-    r = post_request(url, payload, timeout=5)
-    if r.status_code == requests.codes.ok:
-        tupplelist = json.loads(r.content)
-        return tupplelist
-    else:
-        raise Http404
-
-
-def toplist(neptun):
-    url = settings.STORE_URL + '/' + neptun
-    payload = json.dumps({'CMD': 'TOPLIST'})
-    r = post_request(url, payload, timeout=2)
-    if r.status_code == requests.codes.ok:
-        tupplelist = json.loads(r.content)
-        return tupplelist
-    else:
-        raise Http404
-
-
-def requestdownload(neptun, path):
-    url = settings.STORE_URL + '/' + neptun
-    payload = json.dumps({'CMD': 'DOWNLOAD', 'PATH': path})
-    r = post_request(url, payload)
-    response = json.loads(r.content)
-    return response['LINK']
-
-
-def requestupload(neptun, path):
-    url = settings.STORE_URL+'/'+neptun
-    payload = json.dumps({'CMD': 'UPLOAD', 'PATH': path})
-    r = post_request(url, payload)
-    response = json.loads(r.content)
-    print response
-    if r.status_code == requests.codes.ok:
-        return response['LINK']
-    else:
-        raise Http404
-
-
-def requestremove(neptun, path):
-    url = settings.STORE_URL+'/'+neptun
-    payload = json.dumps({'CMD': 'REMOVE', 'PATH': path})
-    r = post_request(url, payload)
-    if r.status_code == requests.codes.ok:
-        return True
-    else:
-        return False
-
-
-def requestnewfolder(neptun, path):
-    url = settings.STORE_URL+'/'+neptun
-    payload = json.dumps({'CMD': 'NEW_FOLDER', 'PATH': path})
-    r = post_request(url, payload)
-    if r.status_code == requests.codes.ok:
-        return True
-    else:
-        return False
-
-
-def requestrename(neptun, old_path, new_name):
-    url = settings.STORE_URL+'/'+neptun
-    payload = json.dumps(
-        {'CMD': 'RENAME', 'NEW_NAME': new_name, 'PATH': old_path})
-    r = post_request(url, payload)
-    if r.status_code == requests.codes.ok:
-        return True
-    else:
-        return False
-
-
-def requestquota(neptun):
-    url = settings.STORE_URL+'/'+neptun
-    r = get_request(url)
-    if r.status_code == requests.codes.ok:
-        return json.loads(r.content)
-    else:
-        return False
-
-
-def set_quota(neptun, quota):
-    url = settings.STORE_URL+'/quota/'+neptun
-    payload = json.dumps({'QUOTA': quota})
-    r = post_request(url, payload)
-    if r.status_code == requests.codes.ok:
-        return True
-    else:
-        return False
-
-
-def userexist(neptun):
-    url = settings.STORE_URL+'/'+neptun
-    r = get_request(url, timeout=5)
-    if r.status_code == requests.codes.ok:
-        return True
-    else:
-        return False
-
-
-def createuser(neptun, password, key_list, quota):
-    url = settings.STORE_URL+'/new/'+neptun
-    payload = json.dumps(
-        {'SMBPASSWD': password, 'KEYS': key_list, 'QUOTA': quota})
-    r = post_request(url, payload, timeout=5)
-    if r.status_code == requests.codes.ok:
-        return True
-    else:
-        return False
-
-
-def updateauthorizationinfo(neptun, password, key_list):
-    url = settings.STORE_URL+'/set/'+neptun
-    payload = json.dumps({'SMBPASSWD': password, 'KEYS': key_list})
-    r = post_request(url, payload)
-    if r.status_code == requests.codes.ok:
-        return True
-    else:
-        return False
-
-
-def process_list(content):
-    for d in content:
-        d['human_readable_date'] = datetime.utcfromtimestamp(float(
-            d['MTIME']))
-        delta = (datetime.utcnow() - d['human_readable_date']).total_seconds()
-        d['is_new'] = delta < 5 and delta > 0
-        d['human_readable_size'] = (
-            "directory" if d['TYPE'] == "D" else
-            filesizeformat(float(d['SIZE'])))
-
-        if len(d['DIR']) == 1 and d['DIR'][0] == ".":
-            d['directory'] = "/"
+    def _request(self, url, method=get, timeout=None,
+                 raise_status_code=True, **kwargs):
+        url = urljoin(self.store_url, url)
+        if timeout is None:
+            timeout = self.default_timeout
+        payload = json.dumps(kwargs)
+        try:
+            headers = {'content-type': 'application/json'}
+            response = method(url, data=payload, headers=headers,
+                              timeout=timeout, **self.request_args)
+        except Exception:
+            logger.exception("Error in store %s loading %s",
+                             unicode(method), url)
+            raise
         else:
-            d['directory'] = "/" + d['DIR'] + "/"
+            if raise_status_code and response.status_code != codes.ok:
+                if response.status_code == 404:
+                    raise Http404()
+                else:
+                    raise NotOkException(response.status_code)
+            return response
 
-        d['path'] = d['directory']
-        d['path'] += d['NAME']
-        if d['TYPE'] == "D":
-            d['path'] += "/"
+    def _request_cmd(self, cmd, **kwargs):
+        return self._request(self.username, post, CMD=cmd)
 
-    return sorted(content, key=lambda k: k['TYPE'])
+    def list(self, path, process=True):
+        r = self._request_cmd("LIST", PATH=path)
+        result = r.json()
+        if process:
+            return self._process_list(result)
+        else:
+            return result
+
+    def toplist(self, process=True):
+        r = self._request_cmd("TOPLIST")
+        result = r.json()
+        if process:
+            return self._process_list(result)
+        else:
+            return result
+
+    def request_download(self, path):
+            r = self._request_cmd("DOWNLOAD", PATH=path)
+            return r.json()['LINK']
+
+    def request_upload(self, path):
+            r = self._request_cmd("UPLOAD", PATH=path)
+            return r.json()['LINK']
+
+    def remove(self, path):
+        self._request_cmd("REMOVE", PATH=path)
+
+    def new_folder(self, path):
+        self._request_cmd("NEW_FOLDER", PATH=path)
+
+    def rename(self, old_path, new_name):
+        self._request_cmd("RENAME", PATH=old_path, NEW_NAME=new_name)
+
+    def get_quota(self):  # no CMD? :o
+        r = self._request(self.username)
+        return r.json()
+
+    def set_quota(self, quota):
+        self._request(self.username + "/quota/", post, QUOTA=quota)
+
+    def user_exist(self):
+        try:
+            self._request(self.username)
+            return True
+        except NotOkException:
+            return False
+
+    def create_user(self, password, keys, quota):
+        self._request("/new/" + self.username, SMBPASSWD=password, KEYS=keys,
+                      QUOTA=quota)
+
+    @staticmethod
+    def _process_list(content):
+        for d in content:
+            d['human_readable_date'] = datetime.utcfromtimestamp(float(
+                d['MTIME']))
+            delta = (datetime.utcnow() -
+                     d['human_readable_date']).total_seconds()
+            d['is_new'] = 0 < delta < 5
+            d['human_readable_size'] = (
+                "directory" if d['TYPE'] == "D" else
+                filesizeformat(float(d['SIZE'])))
+
+            if len(d['DIR']) == 1 and d['DIR'][0] == ".":
+                d['directory'] = "/"
+            else:
+                d['directory'] = "/" + d['DIR'] + "/"
+
+            d['path'] = d['directory']
+            d['path'] += d['NAME']
+            if d['TYPE'] == "D":
+                d['path'] += "/"
+
+        return sorted(content, key=lambda k: k['TYPE'])
