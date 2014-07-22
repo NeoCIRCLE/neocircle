@@ -445,14 +445,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         self.time_of_suspend, self.time_of_delete = self.get_renew_times()
         super(Instance, self).clean(*args, **kwargs)
 
-    def manual_state_change(self, activity, new_state="NOSTATE",
-                            reason=None, user=None):
-        """ Manually change state of an Instance.
-
-        Can be used to recover VM after administrator fixed problems.
-        """
-        activity.resultant_state = new_state
-
     def vm_state_changed(self, new_state):
         # log state change
         try:
