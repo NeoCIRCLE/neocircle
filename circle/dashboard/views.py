@@ -1118,10 +1118,12 @@ class AclUpdateView(LoginRequiredMixin, View, SingleObjectMixin):
 
     def check_auth(self, whom, old_level, new_level):
         if isinstance(whom, Group):
-            if whom not in AclUpdateView.get_allowed_groups(self.request.user):
+            if (not self.is_owner and whom not in
+                    AclUpdateView.get_allowed_groups(self.request.user)):
                 return False
         elif isinstance(whom, User):
-            if whom not in AclUpdateView.get_allowed_users(self.request.user):
+            if (not self.is_owner and whom not in
+                    AclUpdateView.get_allowed_users(self.request.user)):
                 return False
         return (
             AclUpdateView.has_next_level(self.request.user,
@@ -1184,6 +1186,7 @@ class AclUpdateView(LoginRequiredMixin, View, SingleObjectMixin):
 
     def post(self, request, *args, **kwargs):
         self.instance = self.get_object()
+        self.is_owner = self.instance.has_level(request.user, 'owner')
         self.acl_data = (self.instance.get_users_with_level() +
                          self.instance.get_groups_with_level())
         self.set_or_remove_levels()
