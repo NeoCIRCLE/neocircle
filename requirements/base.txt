@@ -33,3 +33,4 @@ six==1.6.1
 South==0.8.4
 sqlparse==0.1.11
 pika==0.9.13
+Fabric==1.9.0
