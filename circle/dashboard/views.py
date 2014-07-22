@@ -868,7 +868,7 @@ vm_ops = OrderedDict([
     ('recover', VmOperationView.factory(
         op='recover', icon='medkit', effect='warning')),
     ('nostate', VmOperationView.factory(
-        op='change_state', icon='legal', effect='danger')),
+        op='emergency_change_state', icon='legal', effect='danger')),
     ('destroy', VmOperationView.factory(
         extra_bases=[TokenOperationView],
         op='destroy', icon='times', effect='danger')),
