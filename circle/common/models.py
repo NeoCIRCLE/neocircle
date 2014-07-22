@@ -375,12 +375,22 @@ class HumanReadableObject(object):
     def get_admin_text(self):
         if self.admin_text_template == "":
             return ""
-        return _(self.admin_text_template) % self.params
+        try:
+            return _(self.admin_text_template) % self.params
+        except KeyError:
+            logger.exception("Can't render admin_text_template '%s' %% %s",
+                             self.admin_text_template, unicode(self.params))
+            return self.get_user_text()
 
     def get_user_text(self):
         if self.user_text_template == "":
             return ""
-        return _(self.user_text_template) % self.params
+        try:
+            return _(self.user_text_template) % self.params
+        except KeyError:
+            logger.exception("Can't render user_text_template '%s' %% %s",
+                             self.user_text_template, unicode(self.params))
+            return self.user_text_template
 
     def to_dict(self):
         return {"user_text_template": self.user_text_template,
