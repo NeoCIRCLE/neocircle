@@ -719,15 +719,14 @@ register_operation(RenewOperation)
 
 
 class ChangeStateOperation(InstanceOperation):
-    activity_code_suffix = 'change_state'
-    id = 'change_state'
-    name = _("change state")
+    activity_code_suffix = 'emergency_change_state'
+    id = 'emergency_change_state'
+    name = _("emergency change state")
     description = _("Change the virtual machine state to NOSTATE")
     acl_level = "owner"
-    required_perms = ('vm.change_state', )
+    required_perms = ('vm.emergency_change_state', )
 
-    def _operation(self, user, activity, new_state="NOSTATE",
-                   reason=None, lease=None):
+    def _operation(self, user, activity, new_state="NOSTATE"):
         activity.resultant_state = new_state
 
 
