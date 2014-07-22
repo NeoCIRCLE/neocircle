@@ -123,7 +123,7 @@ class Store(object):
                 "directory" if d['TYPE'] == "D" else
                 filesizeformat(float(d['SIZE'])))
 
-            if len(d['DIR']) == 1 and d['DIR'][0] == ".":
+            if d['DIR'] == ".":
                 d['directory'] = "/"
             else:
                 d['directory'] = "/" + d['DIR'] + "/"
