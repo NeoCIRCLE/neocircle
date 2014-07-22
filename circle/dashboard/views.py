@@ -518,10 +518,6 @@ class VmRawDataUpdate(SuperuserRequiredMixin, UpdateView):
     def get_success_url(self):
         return self.get_object().get_absolute_url() + "#resources"
 
-    def post(self, request, **kwargs):
-        messages.error(request, "%s"  % request.POST.get("raw_data"))
-        return redirect(self.get_object().get_absolute_url() + "#resources")
-
 
 class OperationView(RedirectToLoginMixin, DetailView):
 
