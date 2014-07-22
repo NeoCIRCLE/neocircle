@@ -662,8 +662,7 @@ class WakeUpOperation(InstanceOperation):
     required_perms = ()
 
     def is_preferred(self):
-        return (self.instance.is_base and
-                self.instance.status == self.instance.STATUS.SUSPENDED)
+        return self.instance.status == self.instance.STATUS.SUSPENDED
 
     def check_precond(self):
         super(WakeUpOperation, self).check_precond()
