@@ -271,7 +271,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             ('create_vm', _('Can create a new VM.')),
             ('config_ports', _('Can configure port forwards.')),
             ('recover', _('Can recover a destroyed VM.')),
-            ('change_state', _('Can change VM state to NOSTATE.')),
+            ('emergency_change_state', _('Can change VM state to NOSTATE.')),
         )
         verbose_name = _('instance')
         verbose_name_plural = _('instances')
