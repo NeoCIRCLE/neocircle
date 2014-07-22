@@ -468,6 +468,7 @@ class VmTraitsUpdate(SuperuserRequiredMixin, UpdateView):
 class VmRawDataUpdate(SuperuserRequiredMixin, UpdateView):
     form_class = RawDataForm
     model = Instance
+    template_name = 'dashboard/vm-detail/raw_data.html'
 
     def get_success_url(self):
         return self.get_object().get_absolute_url() + "#resources"

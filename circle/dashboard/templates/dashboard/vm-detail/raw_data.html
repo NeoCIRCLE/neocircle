@@ -1,0 +1,24 @@
+{% extends "dashboard/base.html" %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block title-page %}{% trans "Edit raw data" %}{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-7">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="no-margin"><i class="fa fa-time"></i> {% trans "Edit raw data" %}</h3>
+      </div>
+      <div class="panel-body">
+        {% with form=form %}
+        {% include "display-form-errors.html" %}
+        {% endwith %}
+        {% crispy form %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
