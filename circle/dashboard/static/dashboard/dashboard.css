@@ -740,6 +740,7 @@ textarea[name="list-new-namelist"] {
   text-align: center;
   display: inline-block;
   margin-right: 15px;
+  float: left;
 }
 
 .store-list-item-size {
@@ -765,20 +766,12 @@ textarea[name="list-new-namelist"] {
   background: #5bc0dc;
 }
 
-.store-download-button {
-  position: absolute; 
-  right: 15px; 
-  top: 18px;
+.store-list-item-icon-directory {
+  color: #ff8c00;
 }
 
 .store-remove-button {
-  position: absolute; 
-  right: 15px; 
-  top: 55px;
-}
-
-.store-list-item-icon-directory {
-  color: #ff8c00;
+  margin-top: 8px;
 }
 
 #dashboard-files-toplist div.list-group-item {
@@ -787,6 +780,19 @@ textarea[name="list-new-namelist"] {
 
 #dashboard-files-toplist div.list-group-item:hover {
   background: #eee;
+}
+
+.store-list-item-name {
+  max-width: 70%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  float: left;
+}
+
+.dashboard-toplist-icon {
+  float: left;
+  padding: 2px 5px 0 0;
 }
 
 .no-hover:hover {

@@ -20,7 +20,9 @@
         fa fa-{% if f.TYPE == "D" %}folder-open store-list-item-icon-directory{% else %}file{% endif %}"
         ></i>
     </div>
-    {{ f.NAME }}
+    <div class="store-list-item-name">
+      {{ f.NAME }}
+    </div>
     <div class="store-list-item-new">
       {% if f.is_new and f.TYPE == "F" %}
         <span class="badge badge-pulse">{% trans "new" %}</span>
@@ -33,26 +35,32 @@
     <div class="clearfix"></div>
   </a>
   <div class="store-list-file-infos">
-    <a href="{% url "dashboard.views.store-download" %}?path={{ f.path }}" 
-      class="btn btn-primary btn-sm store-download-button">
-      <i class="fa fa-download"></i>
-      {% trans "Download" %}
-    </a>
-    <a href="{% url "dashboard.views.store-remove" %}?path={{ f.path }}" 
-      class="btn btn-danger btn-xs store-remove-button">
-      <i class="fa fa-times"></i>
-      {% trans "Remove" %}
-    </a>
-    <dl class="dl-horizontal" style="margin: 0; padding: 0;">
-      <dt>{% trans "Filename" %}</dt>
-      <dd>{{ f.NAME }}</dd>
+    <div class="row">
+      <div class="col-sm-10">
+        <dl class="dl-horizontal" style="margin: 0; padding: 0;">
+          <dt>{% trans "Filename" %}</dt>
+          <dd>{{ f.NAME }}</dd>
 
-      <dt>{% trans "Size" %}</dt>
-      <dd>{{ f.human_readable_size }}</dd>
+          <dt>{% trans "Size" %}</dt>
+          <dd>{{ f.human_readable_size }}</dd>
 
-      <dt>{% trans "Latest modification" %}</dt>
-      <dd>{{ f.human_readable_date }}</dd>
-    </dl>
+          <dt>{% trans "Latest modification" %}</dt>
+          <dd>{{ f.human_readable_date }}</dd>
+        </dl>
+      </div>
+      <div class="col-sm-2" style="text-align: right;">
+        <a href="{% url "dashboard.views.store-download" %}?path={{ f.path }}" 
+          class="btn btn-primary btn-sm store-download-button">
+          <i class="fa fa-download"></i>
+          {% trans "Download" %}
+        </a>
+        <a href="{% url "dashboard.views.store-remove" %}?path={{ f.path }}" 
+          class="btn btn-danger btn-xs store-remove-button">
+          <i class="fa fa-times"></i>
+          {% trans "Remove" %}
+        </a>
+      </div>
+    </div><!-- .row -->
   </div>
   {% empty %}
   <a class="list-group-item">

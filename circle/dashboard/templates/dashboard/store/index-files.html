@@ -13,7 +13,10 @@
     {% for t in toplist %}
     {% if t.TYPE == "F" %}
       <div class="list-group-item">
-        <i class="fa fa-file"></i> {{ t.NAME }}
+        <i class="fa fa-file dashboard-toplist-icon"></i> 
+        <div class="store-list-item-name">
+          {{ t.NAME }}
+        </div>
         <a href="{% url "dashboard.views.store-download" %}?path={{ t.path }}" 
           class="pull-right btn btn-xs" style="color: black;">
           <i class="fa fa-cloud-download" title="{% trans "Download" %}"></i>
@@ -22,10 +25,16 @@
           class="pull-right btn btn-xs" style="color: black;">
           <i class="fa fa-folder-open" title="{% trans "Show in directory" %}"></i>
         </a>
+        <div style="clear: both;"></div> 
       </div>
     {% else %}
-    <a href="{% url "dashboard.views.store-list" %}?directory={{ t.path }}" class="list-group-item">
-      <i class="fa fa-folder-open"></i> {{ t.NAME }}
+    <a href="{% url "dashboard.views.store-list" %}?directory={{ t.path }}" 
+      class="list-group-item">
+      <i class="fa fa-folder-open dashboard-toplist-icon"></i>
+        <div class="store-list-item-name">
+        {{ t.NAME }}
+      </div>
+      <div style="clear: both;"></div>
     </a>
     {% endif %}
     {% endfor %}
