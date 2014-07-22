@@ -44,7 +44,6 @@ from django.core.urlresolvers import reverse_lazy
 
 from django_sshkey.models import UserKey
 from firewall.models import Vlan, Host
-from storage.models import Disk
 from vm.models import (
     InstanceTemplate, Lease, InterfaceTemplate, Node, Trait, Instance
 )
@@ -78,7 +77,7 @@ class VmCustomizeForm(forms.Form):
     amount = forms.IntegerField(min_value=0, initial=1)
 
     disks = forms.ModelMultipleChoiceField(
-        queryset=None, required=True)
+        queryset=None, required=False)
     networks = forms.ModelMultipleChoiceField(
         queryset=None, required=False)
 
@@ -91,8 +90,7 @@ class VmCustomizeForm(forms.Form):
         super(VmCustomizeForm, self).__init__(*args, **kwargs)
 
         # set displayed disk and network list
-        self.fields['disks'].queryset = Disk.get_objects_with_level(
-            'user', self.user).exclude(type="qcow2-snap")
+        self.fields['disks'].queryset = self.template.disks.all()
         self.fields['networks'].queryset = Vlan.get_objects_with_level(
             'user', self.user)
 

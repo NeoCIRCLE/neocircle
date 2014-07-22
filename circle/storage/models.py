@@ -31,7 +31,6 @@ from django.utils.translation import ugettext_lazy as _
 from model_utils.models import TimeStampedModel
 from sizefield.models import FileSizeField
 
-from acl.models import AclBase
 from .tasks import local_tasks, storage_tasks
 from celery.exceptions import TimeoutError
 from common.models import WorkerNotFound
@@ -76,15 +75,10 @@ class DataStore(Model):
                     destroyed__isnull=False) if disk.is_deletable]
 
 
-class Disk(AclBase, TimeStampedModel):
+class Disk(TimeStampedModel):
 
     """A virtual disk.
     """
-    ACL_LEVELS = (
-        ('user', _('user')),          # see all details
-        ('operator', _('operator')),
-        ('owner', _('owner')),        # superuser, can delete, delegate perms
-    )
     TYPES = [('qcow2-norm', 'qcow2 normal'), ('qcow2-snap', 'qcow2 snapshot'),
              ('iso', 'iso'), ('raw-ro', 'raw read-only'), ('raw-rw', 'raw')]
     name = CharField(blank=True, max_length=100, verbose_name=_("name"))
@@ -225,15 +219,14 @@ class Disk(AclBase, TimeStampedModel):
         return any(i.state != 'STOPPED' for i in self.instance_set.all())
 
     def get_appliance(self):
-        """Return an Instance or InstanceTemplate object where the disk is used
+        """Return the Instance or InstanceTemplate object where the disk
+        is used
         """
-        instance = self.instance_set.all()
-        template = self.template_set.all()
-        app = list(instance) + list(template)
-        if len(app) > 0:
-            return app[0]
-        else:
-            return None
+        from vm.models import Instance
+        try:
+            return self.instance_set.get()
+        except Instance.DoesNotExist:
+            return self.template_set.get()
 
     def get_exclusive(self):
         """Get an instance of the disk for exclusive usage.

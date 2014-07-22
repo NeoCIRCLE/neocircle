@@ -1180,35 +1180,21 @@ class AclUpdateView(LoginRequiredMixin, View, SingleObjectMixin):
                 entity = Group.objects.get(name=name)
             except Group.DoesNotExist:
                 messages.warning(
-                    request, _('User or group "%s" not found.') % name)
+                    self.request, _('User or group "%s" not found.') % name)
                 return
-        self.set_level(request, instance, entity, value)
+        self.set_level(entity, value)
 
     def post(self, request, *args, **kwargs):
-        instance = self.get_object()
-        self.acl_data = (instance.get_users_with_level() +
-                         instance.get_groups_with_level())
-        self.set_or_remove_levels(request, instance)
-        self.add_levels(request, instance)
-        return redirect("%s#access" % instance.get_absolute_url())
+        self.instance = self.get_object()
+        self.acl_data = (self.instance.get_users_with_level() +
+                         self.instance.get_groups_with_level())
+        self.set_or_remove_levels()
+        self.add_levels()
+        return redirect("%s#access" % self.instance.get_absolute_url())
 
 
 class TemplateAclUpdateView(AclUpdateView):
     model = InstanceTemplate
-
-    def post(self, request, *args, **kwargs):
-        retval = super(TemplateAclUpdateView,
-                       self).post(request, *args, **kwargs)
-        template = self.get_object()
-
-        post_for_disk = request.POST.copy()
-        post_for_disk['perm-new'] = 'user'
-        request.POST = post_for_disk
-        for d in template.disks.all():
-            self.set_or_remove_levels(request, d)
-            self.add_levels(request, d)
-
-        return retval
 
 
 class GroupAclUpdateView(AclUpdateView):
@@ -1818,13 +1804,12 @@ class VmCreate(LoginRequiredMixin, TemplateView):
             }
             networks = [InterfaceTemplate(vlan=l, managed=l.managed)
                         for l in post['networks']]
-            disks = post['disks']
 
             ikwargs.update({
                 'template': template,
                 'owner': user,
                 'networks': networks,
-                'disks': disks,
+                'disks': list(template.disks.all()),
             })
 
             amount = post['amount']
@@ -2830,11 +2815,10 @@ class DiskRemoveView(DeleteView):
 
     def delete(self, request, *args, **kwargs):
         disk = self.get_object()
-        if not disk.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-
-        disk = self.get_object()
         app = disk.get_appliance()
+
+        if not app.has_level(request.user, 'owner'):
+            raise PermissionDenied()
 
         app.remove_disk(disk=disk, user=request.user)
         disk.destroy()
@@ -2856,7 +2840,7 @@ class DiskRemoveView(DeleteView):
 @require_GET
 def get_disk_download_status(request, pk):
     disk = Disk.objects.get(pk=pk)
-    if not disk.has_level(request.user, 'owner'):
+    if not disk.get_appliance().has_level(request.user, 'owner'):
         raise PermissionDenied()
 
     return HttpResponse(
