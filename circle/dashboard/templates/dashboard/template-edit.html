@@ -88,11 +88,12 @@
               </tr>
               {% endfor %}
               <tr><td><i class="fa fa-plus"></i></td>
-                  <td><input type="text" class="form-control" name="perm-new-name"
-                      placeholder="{% trans "Name of group or user" %}"></td>
-                  <td><select class="form-control" name="perm-new">
-                          {% for id, name in acl.allowed_levels %}
+                  <td>{{aclform.name }}</td>
+                  <td><select class="form-control" name="level">
+                          {% for id, name in acl.levels %}
+                          {% if id in acl.allowed_levels %}
                           <option value="{{id}}">{{name}}</option>
+                          {% endif %}
                           {% endfor %}
                   </select></td><td></td>
               </tr>

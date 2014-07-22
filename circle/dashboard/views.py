@@ -61,7 +61,7 @@ from .forms import (
     UserCreationForm, GroupProfileUpdateForm, UnsubscribeForm,
     VmSaveForm, UserKeyForm, VmRenewForm,
     CirclePasswordChangeForm, VmCreateDiskForm, VmDownloadDiskForm,
-    TraitsForm, RawDataForm, GroupPermissionForm
+    TraitsForm, RawDataForm, GroupPermissionForm, AclUserAddForm
 )
 
 from .tables import (
@@ -1068,8 +1068,8 @@ class AclUpdateView(LoginRequiredMixin, View, SingleObjectMixin):
                               if cls.has_next_level(user, obj, l[0]))
         is_owner = 'owner' in allowed_levels
 
-        allowed_users = cls.get_allowed_users(user, is_owner)
-        allowed_groups = cls.get_allowed_groups(user, is_owner)
+        allowed_users = cls.get_allowed_users(user)
+        allowed_groups = cls.get_allowed_groups(user)
 
         user_levels = list(
             {'user': u, 'level': l} for u, l in obj.get_users_with_level()
@@ -1100,30 +1100,28 @@ class AclUpdateView(LoginRequiredMixin, View, SingleObjectMixin):
         return instance.has_level(user, next_level)
 
     @classmethod
-    def get_allowed_groups(cls, user, is_owner):
-        if is_owner:
+    def get_allowed_groups(cls, user):
+        if user.has_perm('dashboard.use_autocomplete'):
             return Group.objects.all()
         else:
             profiles = GroupProfile.get_objects_with_level('owner', user)
             return Group.objects.filter(groupprofile__in=profiles).distinct()
 
     @classmethod
-    def get_allowed_users(cls, user, is_owner):
-        if is_owner:
+    def get_allowed_users(cls, user):
+        if user.has_perm('dashboard.use_autocomplete'):
             return User.objects.all()
         else:
-            groups = cls.get_allowed_groups(user, is_owner)
+            groups = cls.get_allowed_groups(user)
             return User.objects.filter(
                 Q(groups__in=groups) | Q(pk=user.pk)).distinct()
 
     def check_auth(self, whom, old_level, new_level):
         if isinstance(whom, Group):
-            if whom not in AclUpdateView.get_allowed_groups(self.request.user,
-                                                            self.is_owner):
+            if whom not in AclUpdateView.get_allowed_groups(self.request.user):
                 return False
         elif isinstance(whom, User):
-            if whom not in AclUpdateView.get_allowed_users(self.request.user,
-                                                           self.is_owner):
+            if whom not in AclUpdateView.get_allowed_users(self.request.user):
                 return False
         return (
             AclUpdateView.has_next_level(self.request.user,
@@ -1168,9 +1166,9 @@ class AclUpdateView(LoginRequiredMixin, View, SingleObjectMixin):
                 self.set_level(entity, value)
 
     def add_levels(self):
-        name = self.request.POST.get('perm-new-name', None)
-        value = self.request.POST.get('perm-new', None)
-        if not name or not value:
+        name = self.request.POST.get('name', None)
+        level = self.request.POST.get('level', None)
+        if not name or not level:
             return
         try:
             entity = search_user(name)
@@ -1182,7 +1180,7 @@ class AclUpdateView(LoginRequiredMixin, View, SingleObjectMixin):
                 messages.warning(
                     self.request, _('User or group "%s" not found.') % name)
                 return
-        self.set_level(entity, value)
+        self.set_level(entity, level)
 
     def post(self, request, *args, **kwargs):
         self.instance = self.get_object()
@@ -1352,6 +1350,7 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
             obj, self.request.user, 'dashboard.views.template-acl')
         context['disks'] = obj.disks.all()
         context['is_owner'] = obj.has_level(self.request.user, 'owner')
+        context['aclform'] = AclUserAddForm()
         return context
 
     def get_success_url(self):

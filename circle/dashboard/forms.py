@@ -27,6 +27,7 @@ from django.contrib.auth.models import User, Group
 from django.core.validators import URLValidator
 from django.core.exceptions import PermissionDenied, ValidationError
 
+import autocomplete_light
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import (
     Layout, Div, BaseInput, Field, HTML, Submit, Fieldset, TEMPLATE_PACK,
@@ -1183,6 +1184,11 @@ class UserCreationForm(OrgUserCreationForm):
         if commit:
             user.save()
         return user
+
+
+class AclUserAddForm(forms.Form):
+    name = forms.CharField(widget=autocomplete_light.TextWidget(
+        'AclUserAutocomplete', attrs={'class': 'form-control'}))
 
 
 class UserKeyForm(forms.ModelForm):

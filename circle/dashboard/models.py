@@ -142,6 +142,11 @@ class Profile(Model):
     def __unicode__(self):
         return self.get_display_name()
 
+    class Meta:
+        permissions = (
+            ('use_autocomplete', _('Can use autocomplete.')),
+        )
+
 
 class FutureMember(Model):
     org_id = CharField(max_length=64, help_text=_(
