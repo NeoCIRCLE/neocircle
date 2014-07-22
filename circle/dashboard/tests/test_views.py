@@ -249,7 +249,6 @@ class VmDetailTest(LoginMixin, TestCase):
     def test_use_unpermitted_template(self):
         c = Client()
         self.login(c, 'user1')
-        Disk.objects.get(id=1).set_level(self.u1, 'user')
         Vlan.objects.get(id=1).set_level(self.u1, 'user')
         response = c.post('/dashboard/vm/create/',
                           {'template': 1,
@@ -261,7 +260,6 @@ class VmDetailTest(LoginMixin, TestCase):
     def test_use_permitted_template(self):
         c = Client()
         self.login(c, 'user1')
-        Disk.objects.get(id=1).set_level(self.u1, 'user')
         InstanceTemplate.objects.get(id=1).set_level(self.u1, 'user')
         Vlan.objects.get(id=1).set_level(self.u1, 'user')
         response = c.post('/dashboard/vm/create/',
@@ -293,7 +291,6 @@ class VmDetailTest(LoginMixin, TestCase):
         self.login(c, 'user1')
         tmpl = InstanceTemplate.objects.get(id=1)
         tmpl.set_level(self.u1, 'owner')
-        tmpl.disks.get().set_level(self.u1, 'owner')
         Vlan.objects.get(id=1).set_level(self.u1, 'user')
         kwargs = tmpl.__dict__.copy()
         kwargs.update(name='t1', lease=1, disks=1, raw_data='tst1')
@@ -593,7 +590,6 @@ class VmDetailTest(LoginMixin, TestCase):
             'template': 1,
             'cpu_priority': 1, 'cpu_count': 1, 'ram_size': 1,
             'network': [],
-            'disks': [Disk.objects.get(id=1).pk],
         })
 
         self.assertEqual(response.status_code, 302)
