@@ -1,3 +1,4 @@
+from os.path import splitext
 import json
 import logging
 from urlparse import urljoin
@@ -133,4 +134,50 @@ class Store(object):
             if d['TYPE'] == "D":
                 d['path'] += "/"
 
+            d['ext'] = splitext(d['path'])[1]
+            d['icon'] = ("folder-open" if not d['ext']
+                         else file_icons.get(d['ext'], "file-o"))
+
         return sorted(content, key=lambda k: k['TYPE'])
+
+
+file_icons = {
+    '.txt': "file-text-o",
+    '.pdf': "file-pdf-o",
+
+    '.jpg': "file-image-o",
+    '.jpeg': "file-image-o",
+    '.png': "file-image-o",
+    '.gif': "file-image-o",
+
+    '.avi': "file-video-o",
+    '.mkv': "file-video-o",
+    '.mp4': "file-video-o",
+    '.mov': "file-video-o",
+
+    '.mp3': "file-sound-o",
+    '.flac': "file-sound-o",
+    '.wma': "file-sound-o",
+
+    '.pptx': "file-powerpoint-o",
+    '.ppt': "file-powerpoint-o",
+    '.doc': "file-word-o",
+    '.docx': "file-word-o",
+    '.xlsx': "file-excel-o",
+    '.xls': "file-excel-o",
+
+    '.rar': "file-archive-o",
+    '.zip': "file-archive-o",
+    '.7z': "file-archive-o",
+    '.tar': "file-archive-o",
+    '.gz': "file-archive-o",
+
+    '.py': "file-code-o",
+    '.html': "file-code-o",
+    '.js': "file-code-o",
+    '.css': "file-code-o",
+    '.c': "file-code-o",
+    '.cpp': "file-code-o",
+    '.h': "file-code-o",
+    '.sh': "file-code-o",
+}

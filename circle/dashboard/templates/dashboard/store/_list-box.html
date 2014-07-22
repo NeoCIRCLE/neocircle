@@ -17,7 +17,7 @@
     >
     <div class="store-list-item-icon">
       <i class="
-        fa fa-{% if f.TYPE == "D" %}folder-open store-list-item-icon-directory{% else %}file{% endif %}"
+        fa fa-{{ f.icon }}{% if f.TYPE == "D" %} store-list-item-icon-directory{% endif %}"
         ></i>
     </div>
     <div class="store-list-item-name">

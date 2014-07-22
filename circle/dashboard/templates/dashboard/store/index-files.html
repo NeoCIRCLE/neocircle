@@ -13,7 +13,7 @@
     {% for t in toplist %}
     {% if t.TYPE == "F" %}
       <div class="list-group-item">
-        <i class="fa fa-file dashboard-toplist-icon"></i> 
+        <i class="fa fa-{{ t.icon }} dashboard-toplist-icon"></i> 
         <div class="store-list-item-name">
           {{ t.NAME }}
         </div>
@@ -30,7 +30,7 @@
     {% else %}
     <a href="{% url "dashboard.views.store-list" %}?directory={{ t.path }}" 
       class="list-group-item">
-      <i class="fa fa-folder-open dashboard-toplist-icon"></i>
+      <i class="fa fa-{{ t.icon }} dashboard-toplist-icon"></i>
         <div class="store-list-item-name">
         {{ t.NAME }}
       </div>
