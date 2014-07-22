@@ -22,6 +22,12 @@ def update_all():
     execute(update_portal)
 
 
+def pip(env, req):
+    "Install pip requirements"
+    with _workon(env):
+        run("pip install -r %s" % req)
+
+
 @roles('portal')
 def migrate():
     "Run db migrations"
@@ -88,6 +94,7 @@ def update_portal(test=False):
     "Update and restart portal+manager"
     with _stopped("portal", "mancelery"):
         pull()
+        pip("circle", "~/circle/requirements.txt")
         migrate()
         compile_things()
         if test:
@@ -106,7 +113,9 @@ def update_node():
     "Update and restart nodes"
     with _stopped("node", "agent"):
         pull("~/vmdriver")
+        pip("vmdriver", "~/vmdriver/requirements/production.txt")
         pull("~/agentdriver")
+        pip("agentdriver", "~/agentdriver/requirements.txt")
 
 
 @parallel
@@ -115,6 +124,7 @@ def update_storage():
     "Update and restart storagedriver"
     with _stopped("storage"):
         pull("~/storagedriver")
+        pip("storage", "~/storagedriver/requirements/production.txt")
 
 
 @parallel
