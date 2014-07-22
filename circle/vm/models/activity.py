@@ -30,7 +30,7 @@ from django.utils.translation import ugettext_lazy as _, ugettext_noop
 
 from common.models import (
     ActivityModel, activitycontextimpl, create_readable, join_activity_code,
-    HumanReadableObject,
+    HumanReadableObject, HumanReadableException,
 )
 
 from manager.mancelery import celery
@@ -39,17 +39,17 @@ from manager.mancelery import celery
 logger = getLogger(__name__)
 
 
-class ActivityInProgressError(Exception):
+class ActivityInProgressError(HumanReadableException):
 
-        def __init__(self, activity, message=None):
-            if message is None:
-                message = ("Another activity is currently in progress: '%s' "
-                           "(%s)."
-                           % (activity.activity_code, activity.pk))
-
-            Exception.__init__(self, message)
-
-            self.activity = activity
+    @classmethod
+    def create(cls, activity):
+        obj = super(ActivityInProgressError, cls).create(
+            ugettext_noop("%(activity)s activity is currently in progress."),
+            ugettext_noop("%(activity)s (%(pk)s) activity is currently "
+                          "in progress."),
+            activity=activity.readable_name, pk=activity.pk)
+        obj.activity = activity
+        return obj
 
 
 def _normalize_readable_name(name, default=None):
@@ -96,7 +96,7 @@ class InstanceActivity(ActivityModel):
         # Check for concurrent activities
         active_activities = instance.activity_log.filter(finished__isnull=True)
         if concurrency_check and active_activities.exists():
-            raise ActivityInProgressError(active_activities[0])
+            raise ActivityInProgressError.create(active_activities[0])
 
         activity_code = join_activity_code(cls.ACTIVITY_CODE_BASE, code_suffix)
         act = cls(activity_code=activity_code, instance=instance, parent=None,
@@ -113,7 +113,7 @@ class InstanceActivity(ActivityModel):
         # Check for concurrent activities
         active_children = self.children.filter(finished__isnull=True)
         if concurrency_check and active_children.exists():
-            raise ActivityInProgressError(active_children[0])
+            raise ActivityInProgressError.create(active_children[0])
 
         act = InstanceActivity(
             activity_code=join_activity_code(self.activity_code, code_suffix),
