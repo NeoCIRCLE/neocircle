@@ -449,7 +449,8 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         # log state change
         try:
             act = InstanceActivity.create(code_suffix='vm_state_changed',
-                                          instance=self)
+                                          instance=self,
+                                          readable_name="vm state changed")
         except ActivityInProgressError:
             pass  # discard state change if another activity is in progress.
         else:
