@@ -27,7 +27,6 @@ from django.contrib.auth import authenticate
 from vm.models import Instance, InstanceTemplate, Lease, Node, Trait
 from vm.operations import WakeUpOperation
 from ..models import Profile
-from storage.models import Disk
 from firewall.models import Vlan, Host, VlanGroup
 from mock import Mock, patch
 from django_sshkey.models import UserKey
