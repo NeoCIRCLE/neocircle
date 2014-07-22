@@ -84,7 +84,7 @@ from storage.models import Disk
 from firewall.models import Vlan, Host, Rule
 from .models import Favourite, Profile, GroupProfile, FutureMember
 
-from .store_api import Store
+from .store_api import Store, NotOkException
 
 logger = logging.getLogger(__name__)
 saml_available = hasattr(settings, "SAML_CONFIG")
@@ -3120,7 +3120,13 @@ class StoreList(LoginRequiredMixin, TemplateView):
 @login_required
 def store_download(request):
     path = request.GET.get("path")
-    url = Store(request.user).request_download(path)
+    try:
+        url = Store(request.user).request_download(path)
+    except NotOkException:
+        messages.error(request, _("Something went wrong during download."))
+        logger.exception("Unable to download, "
+                         "maybe it is already deleted")
+        return redirect(reverse("dashboard.views.store-list"))
     return redirect(url)
 
 
