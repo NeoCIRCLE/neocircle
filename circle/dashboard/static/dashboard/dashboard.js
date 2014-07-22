@@ -56,8 +56,6 @@ $(function () {
       url: '/dashboard/template/choose/', 
       success: function(data) { 
         $('body').append(data);
-        vmCreateLoaded();
-        addSliderMiscs();
         $('#create-modal').modal('show');
         $('#create-modal').on('hidden.bs.modal', function() {
           $('#create-modal').remove();

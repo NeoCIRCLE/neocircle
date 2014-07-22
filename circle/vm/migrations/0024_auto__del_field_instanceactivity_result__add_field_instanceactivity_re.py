@@ -1,29 +1,80 @@
 # -*- coding: utf-8 -*-
-from south.utils import datetime_utils as datetime
 from south.db import db
 from south.v2 import SchemaMigration
-from django.db import models
 
 
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Removing unique constraint on 'InstanceTemplate', fields ['name']
-        try:
-            db.delete_unique(u'vm_instancetemplate', ['name'])
-        except Exception as e:
-            print unicode(e)
+
+        db.start_transaction()
+        # Adding field 'InstanceActivity.result_data'
+        db.add_column(u'vm_instanceactivity', 'result_data',
+                      self.gf('jsonfield.fields.JSONField')(null=True, blank=True),
+                      keep_default=False)
+
+        # Adding field 'NodeActivity.result_data'
+        db.add_column(u'vm_nodeactivity', 'result_data',
+                      self.gf('jsonfield.fields.JSONField')(null=True, blank=True),
+                      keep_default=False)
+
+        db.commit_transaction()
+        db.start_transaction()
+
+        for i in orm.InstanceActivity.objects.all():
+            result = i.result.replace("%", "%%") if i.result else ""
+            i.result_data = {"user_text_template": "",
+                             "admin_text_template": result, "params": {}}
+            i.save()
+
+        for i in orm.NodeActivity.objects.all():
+            result = i.result.replace("%", "%%") if i.result else ""
+            i.result_data = {"user_text_template": "",
+                             "admin_text_template": result, "params": {}}
+            i.save()
+
+        db.commit_transaction()
+        db.start_transaction()
+
+        # Deleting field 'InstanceActivity.result'
+        db.delete_column(u'vm_instanceactivity', 'result')
 
 
-        # Changing field 'InstanceTemplate.parent'
-        db.alter_column(u'vm_instancetemplate', 'parent_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['vm.InstanceTemplate'], null=True, on_delete=models.SET_NULL))
+
+        # Deleting field 'NodeActivity.result'
+        db.delete_column(u'vm_nodeactivity', 'result')
+
+        db.commit_transaction()
+
 
     def backwards(self, orm):
+        # Adding field 'InstanceActivity.result'
+        db.add_column(u'vm_instanceactivity', 'result',
+                      self.gf('django.db.models.fields.TextField')(null=True, blank=True),
+                      keep_default=False)
 
-        # Changing field 'InstanceTemplate.parent'
-        db.alter_column(u'vm_instancetemplate', 'parent_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['vm.InstanceTemplate'], null=True))
-        # Adding unique constraint on 'InstanceTemplate', fields ['name']
-        db.create_unique(u'vm_instancetemplate', ['name'])
+        # wont work unless columns added and removed are in different
+        # migrations
+        #for i in orm.InstanceActivity.objects.all():
+            #print i.__dict__
+            #i.result = i.result_data["admin_text_template"] % i.result_data["params"]
+            #i.save()
+
+        # Deleting field 'InstanceActivity.result_data'
+        db.delete_column(u'vm_instanceactivity', 'result_data')
+
+        # Adding field 'NodeActivity.result'
+        db.add_column(u'vm_nodeactivity', 'result',
+                      self.gf('django.db.models.fields.TextField')(null=True, blank=True),
+                      keep_default=False)
+
+        #for i in orm.NodeActivity.objects.all():
+            #print i.__dict__
+            #i.result = i.result_data["admin_text_template"] % i.result_data["params"]
+            #i.save()
+
+        # Deleting field 'NodeActivity.result_data'
+        db.delete_column(u'vm_nodeactivity', 'result_data')
 
 
     models = {
@@ -187,7 +238,8 @@ class Migration(SchemaMigration):
             'instance': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "u'activity_log'", 'to': u"orm['vm.Instance']"}),
             'modified': ('model_utils.fields.AutoLastModifiedField', [], {'default': 'datetime.datetime.now'}),
             'parent': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'children'", 'null': 'True', 'to': u"orm['vm.InstanceActivity']"}),
-            'result': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'result': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),  # dummy
+            'result_data': ('jsonfield.fields.JSONField', [], {'null': 'True', 'blank': 'True'}),
             'resultant_state': ('django.db.models.fields.CharField', [], {'max_length': '20', 'null': 'True', 'blank': 'True'}),
             'started': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'succeeded': ('django.db.models.fields.NullBooleanField', [], {'null': 'True', 'blank': 'True'}),
@@ -271,7 +323,8 @@ class Migration(SchemaMigration):
             'modified': ('model_utils.fields.AutoLastModifiedField', [], {'default': 'datetime.datetime.now'}),
             'node': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "u'activity_log'", 'to': u"orm['vm.Node']"}),
             'parent': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'children'", 'null': 'True', 'to': u"orm['vm.NodeActivity']"}),
-            'result': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'result_data': ('jsonfield.fields.JSONField', [], {'null': 'True', 'blank': 'True'}),
+            'result': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),  # dummy
             'started': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'succeeded': ('django.db.models.fields.NullBooleanField', [], {'null': 'True', 'blank': 'True'}),
             'task_uuid': ('django.db.models.fields.CharField', [], {'max_length': '50', 'unique': 'True', 'null': 'True', 'blank': 'True'}),

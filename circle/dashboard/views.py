@@ -43,7 +43,7 @@ from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import (TemplateView, DetailView, View, DeleteView,
                                   UpdateView, CreateView, ListView)
 from django.contrib import messages
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext_noop
 from django.utils.translation import ungettext as __
 from django.template.loader import render_to_string
 from django.template import RequestContext
@@ -264,9 +264,10 @@ class VmDetailVncTokenView(CheckedDetailView):
         if not request.user.has_perm('vm.access_console'):
             raise PermissionDenied()
         if self.object.node:
-            with instance_activity(code_suffix='console-accessed',
-                                   instance=self.object, user=request.user,
-                                   concurrency_check=False):
+            with instance_activity(
+                    code_suffix='console-accessed', instance=self.object,
+                    user=request.user, readable_name=ugettext_noop(
+                        "console access"), concurrency_check=False):
                 port = self.object.vnc_port
                 host = str(self.object.node.host.ipv4)
                 value = signing.dumps({'host': host, 'port': port},
@@ -334,6 +335,8 @@ class VmDetailView(CheckedDetailView):
         for k, v in options.iteritems():
             if request.POST.get(k) is not None:
                 return v(request)
+        raise Http404()
+
         raise Http404()
 
     def __change_password(self, request):
@@ -840,7 +843,8 @@ class VmRenewView(FormOperationMixin, TokenOperationView, VmOperationView):
         choices = Lease.get_objects_with_level("user", self.request.user)
         default = self.get_op().instance.lease
         if default and default not in choices:
-            choices = list(choices) + [default]
+            choices = (choices.distinct() |
+                       Lease.objects.filter(pk=default.pk).distinct())
 
         val = super(VmRenewView, self).get_form_kwargs()
         val.update({'choices': choices, 'default': default})
@@ -2449,8 +2453,11 @@ class TransferOwnershipView(LoginRequiredMixin, DetailView):
             'dashboard.views.vm-transfer-ownership-confirm', args=[token])
         try:
             new_owner.profile.notify(
-                _('Ownership offer'),
-                'dashboard/notifications/ownership-offer.html',
+                ugettext_noop('Ownership offer'),
+                ugettext_noop('%(user)s offered you to take the ownership of '
+                              'his/her virtual machine called %(instance)s. '
+                              '<a href="%(token)s" '
+                              'class="btn btn-success btn-small">Accept</a>'),
                 {'instance': obj, 'token': token_path})
         except Profile.DoesNotExist:
             messages.error(request, _('Can not notify selected user.'))
@@ -2505,8 +2512,9 @@ class TransferOwnershipConfirmView(LoginRequiredMixin, View):
                     unicode(instance), unicode(old), unicode(request.user))
         if old.profile:
             old.profile.notify(
-                _('Ownership accepted'),
-                'dashboard/notifications/ownership-accepted.html',
+                ugettext_noop('Ownership accepted'),
+                ugettext_noop('Your ownership offer of %(instance)s has been '
+                              'accepted by %(user)s.'),
                 {'instance': instance})
         return HttpResponseRedirect(instance.get_absolute_url())
 
@@ -2630,12 +2638,9 @@ class NotificationView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, *args, **kwargs):
         context = super(NotificationView, self).get_context_data(
             *args, **kwargs)
-        # we need to convert it to list, otherwise it's gonna be
-        # similar to a QuerySet and update everything to
-        # read status after get
         n = 10 if self.request.is_ajax() else 1000
         context['notifications'] = list(
-            self.request.user.notification_set.values()[:n])
+            self.request.user.notification_set.all()[:n])
         return context
 
     def get(self, *args, **kwargs):
@@ -2829,10 +2834,13 @@ def get_disk_download_status(request, pk):
     )
 
 
-class InstanceActivityDetail(SuperuserRequiredMixin, DetailView):
+class InstanceActivityDetail(CheckedDetailView):
     model = InstanceActivity
     context_object_name = 'instanceactivity'  # much simpler to mock object
     template_name = 'dashboard/instanceactivity_detail.html'
+
+    def get_has_level(self):
+        return self.object.instance.has_level
 
     def get_context_data(self, **kwargs):
         ctx = super(InstanceActivityDetail, self).get_context_data(**kwargs)

@@ -8,22 +8,28 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Removing unique constraint on 'InstanceTemplate', fields ['name']
-        try:
-            db.delete_unique(u'vm_instancetemplate', ['name'])
-        except Exception as e:
-            print unicode(e)
+        # Adding field 'InstanceActivity.readable_name_data'
+        db.add_column(u'vm_instanceactivity', 'readable_name_data',
+                      self.gf('jsonfield.fields.JSONField')(null=True, blank=True),
+                      keep_default=False)
 
+        # Adding field 'NodeActivity.readable_name_data'
+        db.add_column(u'vm_nodeactivity', 'readable_name_data',
+                      self.gf('jsonfield.fields.JSONField')(null=True, blank=True),
+                      keep_default=False)
 
-        # Changing field 'InstanceTemplate.parent'
-        db.alter_column(u'vm_instancetemplate', 'parent_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['vm.InstanceTemplate'], null=True, on_delete=models.SET_NULL))
+        for i in orm.NodeActivity.objects.all():
+            result = i.activity_code.replace(".", " ")
+            i.result_data = {"user_text_template": result,
+                             "admin_text_template": result, "params": {}}
+            i.save()
 
     def backwards(self, orm):
+        # Deleting field 'InstanceActivity.readable_name_data'
+        db.delete_column(u'vm_instanceactivity', 'readable_name_data')
 
-        # Changing field 'InstanceTemplate.parent'
-        db.alter_column(u'vm_instancetemplate', 'parent_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['vm.InstanceTemplate'], null=True))
-        # Adding unique constraint on 'InstanceTemplate', fields ['name']
-        db.create_unique(u'vm_instancetemplate', ['name'])
+        # Deleting field 'NodeActivity.readable_name_data'
+        db.delete_column(u'vm_nodeactivity', 'readable_name_data')
 
 
     models = {
@@ -187,7 +193,8 @@ class Migration(SchemaMigration):
             'instance': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "u'activity_log'", 'to': u"orm['vm.Instance']"}),
             'modified': ('model_utils.fields.AutoLastModifiedField', [], {'default': 'datetime.datetime.now'}),
             'parent': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'children'", 'null': 'True', 'to': u"orm['vm.InstanceActivity']"}),
-            'result': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'readable_name_data': ('jsonfield.fields.JSONField', [], {'null': 'True', 'blank': 'True'}),
+            'result_data': ('jsonfield.fields.JSONField', [], {'null': 'True', 'blank': 'True'}),
             'resultant_state': ('django.db.models.fields.CharField', [], {'max_length': '20', 'null': 'True', 'blank': 'True'}),
             'started': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'succeeded': ('django.db.models.fields.NullBooleanField', [], {'null': 'True', 'blank': 'True'}),
@@ -271,7 +278,8 @@ class Migration(SchemaMigration):
             'modified': ('model_utils.fields.AutoLastModifiedField', [], {'default': 'datetime.datetime.now'}),
             'node': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "u'activity_log'", 'to': u"orm['vm.Node']"}),
             'parent': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'children'", 'null': 'True', 'to': u"orm['vm.NodeActivity']"}),
-            'result': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'readable_name_data': ('jsonfield.fields.JSONField', [], {'null': 'True', 'blank': 'True'}),
+            'result_data': ('jsonfield.fields.JSONField', [], {'null': 'True', 'blank': 'True'}),
             'started': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'succeeded': ('django.db.models.fields.NullBooleanField', [], {'null': 'True', 'blank': 'True'}),
             'task_uuid': ('django.db.models.fields.CharField', [], {'max_length': '50', 'unique': 'True', 'null': 'True', 'blank': 'True'}),

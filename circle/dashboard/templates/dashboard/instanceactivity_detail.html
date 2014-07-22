@@ -5,7 +5,12 @@
 <div class="body-content">
   <div class="page-header">
     <h1>
-        {{ object.instance.name }}: {{ object.get_readable_name }}
+        {{ object.instance.name }}:
+            {% if user.is_superuser %}
+            {{object.readable_name.get_admin_text}}
+            {% else %}
+            {{object.readable_name.get_user_text}}
+            {% endif %}
     </h1>
   </div>
   <div class="row">
@@ -53,7 +58,7 @@
 
 
             <dt>{% trans "result" %}</dt>
-            <dd><textarea class="form-control">{{object.result}}</textarea></dd>
+            <dd><textarea class="form-control">{% if user.is_superuser %}{{object.result.get_admin_text}}{% else %}{{object.result.get_admin_text}}{% endif %}</textarea></dd>
 
             <dt>{% trans "resultant state" %}</dt>
             <dd>{{object.resultant_state|default:'n/a'}}</dd>

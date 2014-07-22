@@ -185,9 +185,21 @@ class Disk(AclBase, TimeStampedModel):
         return {
             'qcow2-norm': 'vd',
             'qcow2-snap': 'vd',
-            'iso': 'hd',
+            'iso': 'sd',
             'raw-ro': 'vd',
             'raw-rw': 'vd',
+        }[self.type]
+
+    @property
+    def device_bus(self):
+        """Returns the proper device prefix for different types of images.
+        """
+        return {
+            'qcow2-norm': 'virtio',
+            'qcow2-snap': 'virtio',
+            'iso': 'scsi',
+            'raw-ro': 'virtio',
+            'raw-rw': 'virtio',
         }[self.type]
 
     @property
@@ -251,6 +263,7 @@ class Disk(AclBase, TimeStampedModel):
             'driver_type': self.vm_format,
             'driver_cache': 'none',
             'target_device': self.device_type + self.dev_num,
+            'target_bus': self.device_bus,
             'disk_device': 'cdrom' if self.type == 'iso' else 'disk'
         }
 

@@ -8,22 +8,23 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Removing unique constraint on 'InstanceTemplate', fields ['name']
-        try:
-            db.delete_unique(u'vm_instancetemplate', ['name'])
-        except Exception as e:
-            print unicode(e)
+        # Deleting field 'Notification.message'
+        db.delete_column(u'dashboard_notification', 'message')
 
+        # Deleting field 'Notification.subject'
+        db.delete_column(u'dashboard_notification', 'subject')
 
-        # Changing field 'InstanceTemplate.parent'
-        db.alter_column(u'vm_instancetemplate', 'parent_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['vm.InstanceTemplate'], null=True, on_delete=models.SET_NULL))
 
     def backwards(self, orm):
+        # Adding field 'Notification.message'
+        db.add_column(u'dashboard_notification', 'message',
+                      self.gf('django.db.models.fields.TextField')(default=''),
+                      keep_default=False)
 
-        # Changing field 'InstanceTemplate.parent'
-        db.alter_column(u'vm_instancetemplate', 'parent_id', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['vm.InstanceTemplate'], null=True))
-        # Adding unique constraint on 'InstanceTemplate', fields ['name']
-        db.create_unique(u'vm_instancetemplate', ['name'])
+        # Adding field 'Notification.subject'
+        db.add_column(u'dashboard_notification', 'subject',
+                      self.gf('django.db.models.fields.CharField')(default='', max_length=128),
+                      keep_default=False)
 
 
     models = {
@@ -62,6 +63,46 @@ class Migration(SchemaMigration):
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
+        },
+        u'dashboard.favourite': {
+            'Meta': {'object_name': 'Favourite'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'instance': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['vm.Instance']"}),
+            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"})
+        },
+        u'dashboard.futuremember': {
+            'Meta': {'unique_together': "(('org_id', 'group'),)", 'object_name': 'FutureMember'},
+            'group': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.Group']"}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'org_id': ('django.db.models.fields.CharField', [], {'max_length': '64'})
+        },
+        u'dashboard.groupprofile': {
+            'Meta': {'object_name': 'GroupProfile'},
+            'description': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'group': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['auth.Group']", 'unique': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'org_id': ('django.db.models.fields.CharField', [], {'max_length': '64', 'unique': 'True', 'null': 'True', 'blank': 'True'})
+        },
+        u'dashboard.notification': {
+            'Meta': {'ordering': "['-created']", 'object_name': 'Notification'},
+            'created': ('model_utils.fields.AutoCreatedField', [], {'default': 'datetime.datetime.now'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'message_data': ('jsonfield.fields.JSONField', [], {'null': 'True'}),
+            'modified': ('model_utils.fields.AutoLastModifiedField', [], {'default': 'datetime.datetime.now'}),
+            'status': ('model_utils.fields.StatusField', [], {'default': "'new'", 'max_length': '100', u'no_check_for_status': 'True'}),
+            'subject_data': ('jsonfield.fields.JSONField', [], {'null': 'True'}),
+            'to': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
+            'valid_until': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'})
+        },
+        u'dashboard.profile': {
+            'Meta': {'object_name': 'Profile'},
+            'email_notifications': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'instance_limit': ('django.db.models.fields.IntegerField', [], {'default': '5'}),
+            'org_id': ('django.db.models.fields.CharField', [], {'max_length': '64', 'unique': 'True', 'null': 'True', 'blank': 'True'}),
+            'preferred_language': ('django.db.models.fields.CharField', [], {'default': "'en'", 'max_length': '32'}),
+            'use_gravatar': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'user': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['auth.User']", 'unique': 'True'})
         },
         u'firewall.domain': {
             'Meta': {'object_name': 'Domain'},
@@ -178,22 +219,6 @@ class Migration(SchemaMigration):
             'time_of_suspend': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True', 'blank': 'True'}),
             'vnc_port': ('django.db.models.fields.IntegerField', [], {'default': 'None', 'unique': 'True', 'null': 'True', 'blank': 'True'})
         },
-        u'vm.instanceactivity': {
-            'Meta': {'ordering': "[u'-finished', u'-started', u'instance', u'-id']", 'object_name': 'InstanceActivity'},
-            'activity_code': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'created': ('model_utils.fields.AutoCreatedField', [], {'default': 'datetime.datetime.now'}),
-            'finished': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'instance': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "u'activity_log'", 'to': u"orm['vm.Instance']"}),
-            'modified': ('model_utils.fields.AutoLastModifiedField', [], {'default': 'datetime.datetime.now'}),
-            'parent': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'children'", 'null': 'True', 'to': u"orm['vm.InstanceActivity']"}),
-            'result': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            'resultant_state': ('django.db.models.fields.CharField', [], {'max_length': '20', 'null': 'True', 'blank': 'True'}),
-            'started': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'succeeded': ('django.db.models.fields.NullBooleanField', [], {'null': 'True', 'blank': 'True'}),
-            'task_uuid': ('django.db.models.fields.CharField', [], {'max_length': '50', 'unique': 'True', 'null': 'True', 'blank': 'True'}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']", 'null': 'True', 'blank': 'True'})
-        },
         u'vm.instancetemplate': {
             'Meta': {'ordering': "(u'name',)", 'object_name': 'InstanceTemplate'},
             'access_method': ('django.db.models.fields.CharField', [], {'max_length': '10'}),
@@ -216,38 +241,12 @@ class Migration(SchemaMigration):
             'req_traits': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['vm.Trait']", 'symmetrical': 'False', 'blank': 'True'}),
             'system': ('django.db.models.fields.TextField', [], {})
         },
-        u'vm.interface': {
-            'Meta': {'ordering': "(u'-vlan__managed',)", 'object_name': 'Interface'},
-            'host': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['firewall.Host']", 'null': 'True', 'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'instance': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "u'interface_set'", 'to': u"orm['vm.Instance']"}),
-            'vlan': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "u'vm_interface'", 'to': u"orm['firewall.Vlan']"})
-        },
-        u'vm.interfacetemplate': {
-            'Meta': {'object_name': 'InterfaceTemplate'},
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'managed': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'template': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "u'interface_set'", 'to': u"orm['vm.InstanceTemplate']"}),
-            'vlan': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['firewall.Vlan']"})
-        },
         u'vm.lease': {
             'Meta': {'ordering': "[u'name']", 'object_name': 'Lease'},
             'delete_interval_seconds': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '100'}),
             'suspend_interval_seconds': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'})
-        },
-        u'vm.namedbaseresourceconfig': {
-            'Meta': {'object_name': 'NamedBaseResourceConfig'},
-            'arch': ('django.db.models.fields.CharField', [], {'max_length': '10'}),
-            'created': ('model_utils.fields.AutoCreatedField', [], {'default': 'datetime.datetime.now'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'max_ram_size': ('django.db.models.fields.IntegerField', [], {}),
-            'modified': ('model_utils.fields.AutoLastModifiedField', [], {'default': 'datetime.datetime.now'}),
-            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '50'}),
-            'num_cores': ('django.db.models.fields.IntegerField', [], {}),
-            'priority': ('django.db.models.fields.IntegerField', [], {}),
-            'ram_size': ('django.db.models.fields.IntegerField', [], {})
         },
         u'vm.node': {
             'Meta': {'ordering': "(u'-enabled', u'normalized_name')", 'object_name': 'Node'},
@@ -262,21 +261,6 @@ class Migration(SchemaMigration):
             'priority': ('django.db.models.fields.IntegerField', [], {}),
             'traits': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['vm.Trait']", 'symmetrical': 'False', 'blank': 'True'})
         },
-        u'vm.nodeactivity': {
-            'Meta': {'object_name': 'NodeActivity'},
-            'activity_code': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'created': ('model_utils.fields.AutoCreatedField', [], {'default': 'datetime.datetime.now'}),
-            'finished': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'modified': ('model_utils.fields.AutoLastModifiedField', [], {'default': 'datetime.datetime.now'}),
-            'node': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "u'activity_log'", 'to': u"orm['vm.Node']"}),
-            'parent': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'children'", 'null': 'True', 'to': u"orm['vm.NodeActivity']"}),
-            'result': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            'started': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'succeeded': ('django.db.models.fields.NullBooleanField', [], {'null': 'True', 'blank': 'True'}),
-            'task_uuid': ('django.db.models.fields.CharField', [], {'max_length': '50', 'unique': 'True', 'null': 'True', 'blank': 'True'}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']", 'null': 'True', 'blank': 'True'})
-        },
         u'vm.trait': {
             'Meta': {'object_name': 'Trait'},
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -284,4 +268,4 @@ class Migration(SchemaMigration):
         }
     }
 
-    complete_apps = ['vm']
+    complete_apps = ['dashboard']

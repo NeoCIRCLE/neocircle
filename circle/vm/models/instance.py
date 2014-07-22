@@ -34,13 +34,14 @@ from django.db.models import (BooleanField, CharField, DateTimeField,
                               ManyToManyField, permalink, SET_NULL, TextField)
 from django.dispatch import Signal
 from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _, ugettext_noop
 
 from model_utils import Choices
 from model_utils.models import TimeStampedModel, StatusModel
 from taggit.managers import TaggableManager
 
 from acl.models import AclBase
+from common.models import create_readable
 from common.operations import OperatedMixin
 from ..tasks import vm_tasks, agent_tasks
 from .activity import (ActivityInProgressError, instance_activity,
@@ -365,6 +366,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             activity.resultant_state = 'PENDING'
 
         with instance_activity(code_suffix='create', instance=inst,
+                               readable_name=ugettext_noop("create instance"),
                                on_commit=__on_commit, user=inst.owner) as act:
             # create related entities
             inst.disks.add(*[disk.get_exclusive() for disk in disks])
@@ -659,9 +661,24 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         success, failed = [], []
 
         def on_commit(act):
-            act.result = {'failed': failed, 'success': success}
+            if failed:
+                act.result = create_readable(ugettext_noop(
+                    "%(failed)s notifications failed and %(success) succeeded."
+                    " Failed ones are: %(faileds)s."), ugettext_noop(
+                    "%(failed)s notifications failed and %(success) succeeded."
+                    " Failed ones are: %(faileds_ex)s."),
+                    failed=len(failed), success=len(success),
+                    faileds=", ".join(a for a, e in failed),
+                    faileds_ex=", ".join("%s (%s)" % (a, unicode(e))
+                                         for a, e in failed))
+            else:
+                act.result = create_readable(ugettext_noop(
+                    "%(success)s notifications succeeded."),
+                    success=len(success), successes=success)
 
         with instance_activity('notification_about_expiration', instance=self,
+                               readable_name=ugettext_noop(
+                                   "notify owner about expiration"),
                                on_commit=on_commit):
             from dashboard.views import VmRenewView
             level = self.get_level_object("owner")
@@ -726,6 +743,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
 
         self.pw = pwgen()
         with instance_activity(code_suffix='change_password', instance=self,
+                               readable_name=ugettext_noop("change password"),
                                user=user):
             queue = self.get_remote_queue_name("agent")
             agent_tasks.change_password.apply_async(queue=queue,
@@ -737,6 +755,52 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         """Returns the node the VM should be deployed or migrated to.
         """
         return scheduler.select_node(self, Node.objects.all())
+
+    def attach_disk(self, disk, timeout=15):
+        queue_name = self.get_remote_queue_name('vm', 'fast')
+        return vm_tasks.attach_disk.apply_async(
+            args=[self.vm_name,
+                  disk.get_vmdisk_desc()],
+            queue=queue_name
+        ).get(timeout=timeout)
+
+    def detach_disk(self, disk, timeout=15):
+        try:
+            queue_name = self.get_remote_queue_name('vm', 'fast')
+            return vm_tasks.detach_disk.apply_async(
+                args=[self.vm_name,
+                      disk.get_vmdisk_desc()],
+                queue=queue_name
+            ).get(timeout=timeout)
+        except Exception as e:
+            if e.libvirtError and "not found" in str(e):
+                logger.debug("Disk %s was not found."
+                             % disk.name)
+            else:
+                raise
+
+    def attach_network(self, network, timeout=15):
+        queue_name = self.get_remote_queue_name('vm', 'fast')
+        return vm_tasks.attach_network.apply_async(
+            args=[self.vm_name,
+                  network.get_vmnetwork_desc()],
+            queue=queue_name
+        ).get(timeout=timeout)
+
+    def detach_network(self, network, timeout=15):
+        try:
+            queue_name = self.get_remote_queue_name('vm', 'fast')
+            return vm_tasks.detach_network.apply_async(
+                args=[self.vm_name,
+                      network.get_vmnetwork_desc()],
+                queue=queue_name
+            ).get(timeout=timeout)
+        except Exception as e:
+            if e.libvirtError and "not found" in str(e):
+                logger.debug("Interface %s was not found."
+                             % (network.__unicode__()))
+            else:
+                raise
 
     def deploy_disks(self):
         """Deploy all associated disks.
