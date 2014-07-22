@@ -1,25 +1,23 @@
 import contextlib
 import datetime
 
-from fabric.api import env, run, settings, sudo, prefix, cd
-from fabric.decorators import roles
+from fabric.api import env, run, settings, sudo, prefix, cd, execute
+from fabric.decorators import roles, parallel
 
 from vm.models import Node
 from storage.models import DataStore
 
 
-def get_hosts():
-    env.roledefs['portal'] = ['localhost']
-
-    env.roledefs['nodes'] = [unicode(n.host.ipv4)
-                             for n in Node.objects.filter(enabled=True)]
-    env.roledefs['storage'] = [DataStore.objects.get().hostname]
-    print env.roledefs
+env.roledefs['portal'] = ['localhost']
+env.roledefs['node'] = [unicode(n.host.ipv4)
+                        for n in Node.objects.filter(enabled=True)]
+env.roledefs['storage'] = [DataStore.objects.get().hostname]
 
 
 def update_all():
-    update_node()
-    update_portal()
+    execute(stop_portal)
+    execute(update_node)
+    execute(update_portal)
 
 
 @roles('portal')
@@ -94,12 +92,28 @@ def update_portal(test=False):
             test()
 
 
+@roles('portal')
+def stop_portal(test=False):
+    _stop_services("portal", "mancelery")
+
+
+@parallel
 @roles('node')
 def update_node():
     "Update and restart nodes"
     with _stopped("node", "agent"):
-        pull("~/circle/vmdriver")
-        pull("~/circle/agentdriver")
+        pull("~/vmdriver")
+        pull("~/agentdriver")
+
+
+@parallel
+@roles('node')
+def checkout(vmdriver="master", agent="master"):
+    """Checkout specific branch on nodes"""
+    with settings(warn_only=True), cd("~/vmdriver"):
+        run("git checkout %s" % vmdriver)
+    with settings(warn_only=True), cd("~/agentdriver"):
+        run("git checkout %s" % agent)
 
 
 def _stop_services(*services):
@@ -122,7 +136,7 @@ def _restart_service(*services):
 
 @contextlib.contextmanager
 def _stopped(*services):
-    _stop_services(True, *services)
+    _stop_services(*services)
     yield
     _start_services(*services)
 
