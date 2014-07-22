@@ -2,6 +2,7 @@ import contextlib
 import datetime
 
 from fabric.api import env, run, settings, sudo, prefix, cd, execute
+from fabric.context_managers import shell_env
 from fabric.decorators import roles, parallel
 
 from vm.models import Node
@@ -17,7 +18,7 @@ env.roledefs['storage'] = [DataStore.objects.get().hostname]
 def update_all():
     "Update and restart portal+manager, nodes and storage"
     execute(stop_portal)
-    execute(update_node)
+    execute(parallel(update_node))
     execute(update_storage)
     execute(update_portal)
 
@@ -84,8 +85,11 @@ def test(test=""):
 def pull(dir="~/circle/circle"):
     "Pull from upstream branch (stash any changes)"
     now = unicode(datetime.datetime.now())
-    with cd(dir):
-        run("git status || git stash save update %s" % now)
+    with cd(dir), shell_env(GIT_AUTHOR_NAME="fabric",
+                            GIT_AUTHOR_EMAIL="fabric@local",
+                            GIT_COMMITTER_NAME="fabric",
+                            GIT_COMMITTER_EMAIL="fabric@local"):
+        run("git stash save update %s" % now)
         run("git pull --ff-only")
 
 
@@ -107,11 +111,10 @@ def stop_portal(test=False):
     _stop_services("portal", "mancelery")
 
 
-@parallel
 @roles('node')
 def update_node():
     "Update and restart nodes"
-    with _stopped("node", "agent"):
+    with _stopped("node", "agentdriver"):
         pull("~/vmdriver")
         pip("vmdriver", "~/vmdriver/requirements/production.txt")
         pull("~/agentdriver")
