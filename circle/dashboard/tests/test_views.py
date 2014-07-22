@@ -1245,7 +1245,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         acl_users = len(gp.get_users_with_level())
         response = c.post('/dashboard/group/' +
                           str(self.g1.pk) + '/acl/',
-                          {'perm-new-name': 'user3', 'perm-new': 'owner'})
+                          {'name': 'user3', 'level': 'owner'})
         self.assertEqual(acl_users, len(gp.get_users_with_level()))
         self.assertEqual(response.status_code, 302)
 
@@ -1256,7 +1256,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         acl_users = len(gp.get_users_with_level())
         response = c.post('/dashboard/group/' +
                           str(self.g1.pk) + '/acl/',
-                          {'perm-new-name': 'user3', 'perm-new': 'owner'})
+                          {'name': 'user3', 'level': 'owner'})
         self.assertEqual(acl_users, len(gp.get_users_with_level()))
         self.assertEqual(response.status_code, 302)
 
@@ -1267,7 +1267,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         acl_users = len(gp.get_users_with_level())
         response = c.post('/dashboard/group/' +
                           str(self.g1.pk) + '/acl/',
-                          {'perm-new-name': 'user3', 'perm-new': 'owner'})
+                          {'name': 'user3', 'level': 'owner'})
         self.assertEqual(acl_users + 1, len(gp.get_users_with_level()))
         self.assertEqual(response.status_code, 302)
 
@@ -1278,7 +1278,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         acl_users = len(gp.get_users_with_level())
         response = c.post('/dashboard/group/' +
                           str(self.g1.pk) + '/acl/',
-                          {'perm-new-name': 'user3', 'perm-new': 'owner'})
+                          {'name': 'user3', 'level': 'owner'})
         self.assertEqual(acl_users + 1, len(gp.get_users_with_level()))
         self.assertEqual(response.status_code, 302)
 
@@ -1288,7 +1288,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         acl_groups = len(gp.get_groups_with_level())
         response = c.post('/dashboard/group/' +
                           str(self.g1.pk) + '/acl/',
-                          {'perm-new-name': 'group2', 'perm-new': 'owner'})
+                          {'name': 'group2', 'level': 'owner'})
         self.assertEqual(acl_groups, len(gp.get_groups_with_level()))
         self.assertEqual(response.status_code, 302)
 
@@ -1299,7 +1299,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         acl_groups = len(gp.get_groups_with_level())
         response = c.post('/dashboard/group/' +
                           str(self.g1.pk) + '/acl/',
-                          {'perm-new-name': 'group2', 'perm-new': 'owner'})
+                          {'name': 'group2', 'level': 'owner'})
         self.assertEqual(acl_groups, len(gp.get_groups_with_level()))
         self.assertEqual(response.status_code, 302)
 
@@ -1310,7 +1310,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         acl_groups = len(gp.get_groups_with_level())
         response = c.post('/dashboard/group/' +
                           str(self.g1.pk) + '/acl/',
-                          {'perm-new-name': 'group2', 'perm-new': 'owner'})
+                          {'name': 'group2', 'level': 'owner'})
         self.assertEqual(acl_groups + 1, len(gp.get_groups_with_level()))
         self.assertEqual(response.status_code, 302)
 
@@ -1321,7 +1321,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         acl_groups = len(gp.get_groups_with_level())
         response = c.post('/dashboard/group/' +
                           str(self.g1.pk) + '/acl/',
-                          {'perm-new-name': 'group2', 'perm-new': 'owner'})
+                          {'name': 'group2', 'level': 'owner'})
         self.assertEqual(acl_groups + 1, len(gp.get_groups_with_level()))
         self.assertEqual(response.status_code, 302)
 
@@ -1769,8 +1769,8 @@ class AclViewTest(LoginMixin, TestCase):
 
         resp = c.post("/dashboard/vm/1/acl/", {
             'remove-u-%d' % self.u1.pk: "",
-            'perm-new-name': "",
-            'perm-new': "",
+            'name': "",
+            'level': "",
         })
         self.assertFalse((self.u1, "user") in inst.get_users_with_level())
         self.assertEqual(resp.status_code, 302)
@@ -1783,8 +1783,8 @@ class AclViewTest(LoginMixin, TestCase):
 
         resp = c.post("/dashboard/vm/1/acl/", {
             'remove-u-%d' % self.u1.pk: "",
-            'perm-new-name': "",
-            'perm-new': "",
+            'name': "",
+            'level': "",
         })
         self.assertTrue((self.u1, "user") in inst.get_users_with_level())
         self.assertEqual(resp.status_code, 302)
@@ -1797,8 +1797,8 @@ class AclViewTest(LoginMixin, TestCase):
         inst.set_level(self.ut, "owner")
         resp = c.post("/dashboard/vm/1/acl/", {
             'remove-u-%d' % self.ut.pk: "",
-            'perm-new-name': "",
-            'perm-new': "",
+            'name': "",
+            'level': "",
         })
         self.assertEqual(self.ut, Instance.objects.get(id=1).owner)
         self.assertTrue((self.ut, "owner") in inst.get_users_with_level())
@@ -1813,8 +1813,8 @@ class AclViewTest(LoginMixin, TestCase):
 
         resp = c.post("/dashboard/template/1/acl/", {
             'remove-u-%d' % self.u1.pk: "",
-            'perm-new-name': "",
-            'perm-new': "",
+            'name': "",
+            'level': "",
         })
         self.assertFalse((self.u1, "user") in tmpl.get_users_with_level())
         self.assertEqual(resp.status_code, 302)
@@ -1827,8 +1827,8 @@ class AclViewTest(LoginMixin, TestCase):
 
         resp = c.post("/dashboard/template/1/acl/", {
             'remove-u-%d' % self.u1.pk: "",
-            'perm-new-name': "",
-            'perm-new': "",
+            'name': "",
+            'level': "",
         })
         self.assertTrue((self.u1, "user") in tmpl.get_users_with_level())
         self.assertEqual(resp.status_code, 302)
@@ -1841,8 +1841,8 @@ class AclViewTest(LoginMixin, TestCase):
         tmpl.set_level(self.ut, "owner")
         resp = c.post("/dashboard/template/1/acl/", {
             'remove-u-%d' % self.ut.pk: "",
-            'perm-new-name': "",
-            'perm-new': "",
+            'name': "",
+            'level': "",
         })
         self.assertEqual(self.ut, InstanceTemplate.objects.get(id=1).owner)
         self.assertTrue((self.ut, "owner") in tmpl.get_users_with_level())

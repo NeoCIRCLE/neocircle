@@ -64,8 +64,8 @@ class VlanAclTest(LoginMixin, TestCase):
         self.assertEqual([], vlan.get_users_with_level())
 
         resp = c.post("/network/vlans/1/acl/", {
-            'perm-new-name': "user1",
-            'perm-new': "user",
+            'name': "user1",
+            'level': "user",
         })
 
         vlan = Vlan.objects.get(vid=1)
@@ -82,8 +82,8 @@ class VlanAclTest(LoginMixin, TestCase):
 
         resp = c.post("/network/vlans/1/acl/", {
             'perm-u-%d' % self.u1.pk: "operator",
-            'perm-new': "",
-            'perm-new-name': "",
+            'level': "",
+            'name': "",
         })
 
         self.assertTrue((self.u1, "operator") in vlan.get_users_with_level())
@@ -99,8 +99,8 @@ class VlanAclTest(LoginMixin, TestCase):
 
         resp = c.post("/network/vlans/1/acl/", {
             'remove-u-%d' % self.u1.pk: "",
-            'perm-new': "",
-            'perm-new-name': "",
+            'level': "",
+            'name': "",
         })
 
         self.assertTrue((self.u1, "user") not in vlan.get_users_with_level())
