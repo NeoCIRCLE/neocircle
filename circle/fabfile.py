@@ -15,8 +15,10 @@ env.roledefs['storage'] = [DataStore.objects.get().hostname]
 
 
 def update_all():
+    "Update and restart portal+manager, nodes and storage"
     execute(stop_portal)
     execute(update_node)
+    execute(update_storage)
     execute(update_portal)
 
 
@@ -94,6 +96,7 @@ def update_portal(test=False):
 
 @roles('portal')
 def stop_portal(test=False):
+    "Stop portal and manager"
     _stop_services("portal", "mancelery")
 
 
@@ -104,6 +107,14 @@ def update_node():
     with _stopped("node", "agent"):
         pull("~/vmdriver")
         pull("~/agentdriver")
+
+
+@parallel
+@roles('storage')
+def update_storage():
+    "Update and restart storagedriver"
+    with _stopped("storage"):
+        pull("~/storagedriver")
 
 
 @parallel
