@@ -831,7 +831,6 @@ class ResourcesOperation(InstanceOperation):
     name = _("resources change")
     description = _("Change resources")
     acl_level = "owner"
-    concurrency_check = False
     required_perms = ('vm.change_resources', )
 
     def check_precond(self):
