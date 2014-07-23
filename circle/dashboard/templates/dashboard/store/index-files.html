@@ -2,15 +2,22 @@
 
 <div class="panel panel-default">
   <div class="panel-heading">
-    <span class="btn btn-default btn-xs infobtn pull-right" 
-      title="A list of your most recent files!">
+    <span class="btn btn-default btn-xs infobtn pull-right store-action-button" 
+      title="{% trans "A list of your most recent files." %}">
       <i class="fa fa-info-circle"></i>
     </span>
-    <h3 class="no-margin"><i class="icon-briefcase"></i> Files
+    <span class="btn btn-default btn-xs infobtn pull-right" 
+      title="
+      {% blocktrans with used=files.quota.readable_used soft=files.quota.readable_soft hard=files.quota.readable_hard %}
+      You are currently using {{ used }}, your soft limit is {{ soft }}, your hard limit is {{ hard }}.
+      {% endblocktrans %}">
+      <i class="fa fa-adjust"></i>
+    </span>
+    <h3 class="no-margin"><i class="fa fa-briefcase"></i> {% trans "Files" %}
     </h3>
   </div>
   <div class="list-group" id="dashboard-files-toplist">
-    {% for t in toplist %}
+    {% for t in files.toplist %}
     {% if t.TYPE == "F" %}
       <div class="list-group-item">
         <i class="fa fa-{{ t.icon }} dashboard-toplist-icon"></i> 
@@ -46,10 +53,10 @@
         </button>
       </form>
       <a href="{% url "dashboard.views.store-list" %}" class="btn btn-primary btn-xs">
-        <i class="fa fa-chevron-circle-right"></i> {% trans "show my files" %}  
+        <i class="fa fa-chevron-circle-right"></i> {% trans "show my files" %}
       </a>
       <a href="{% url "dashboard.views.store-upload" %}" class="btn btn-success btn-xs">
-        <i class="fa fa-cloud-upload"></i> {% trans "upload" %}  
+        <i class="fa fa-cloud-upload"></i> {% trans "upload" %}
       </a>
     </div>
   </div>

@@ -227,19 +227,22 @@ class IndexView(LoginRequiredMixin, TemplateView):
 
         # toplist
         if settings.STORE_URL:
-            cache_key = "toplist-%d" % self.request.user.pk
+            cache_key = "files-%d" % self.request.user.pk
             cache = get_cache("default")
-            toplist = cache.get(cache_key)
-            if not toplist:
+            files = cache.get(cache_key)
+            if not files:
                 try:
-                    toplist = Store(self.request.user).toplist()
+                    store = Store(self.request.user)
+                    toplist = store.toplist()
+                    quota = store.get_quota()
+                    files = {'toplist': toplist, 'quota': quota}
                 except Exception:
                     logger.exception("Unable to get tolist for %s",
                                      unicode(self.request.user))
-                    toplist = []
-                cache.set(cache_key, toplist, 300)
+                    files = {'toplist': []}
+                cache.set(cache_key, files, 300)
 
-            context['toplist'] = toplist
+            context['files'] = files
         else:
             context['no_store'] = True
 
@@ -3232,13 +3235,16 @@ def store_new_directory(request):
 @require_POST
 @login_required
 def store_refresh_toplist(request):
-    cache_key = "toplist-%d" % request.user.pk
+    cache_key = "files-%d" % request.user.pk
     cache = get_cache("default")
     try:
-        toplist = Store(request.user).toplist()
+        store = Store(request.user)
+        toplist = store.toplist()
+        quota = store.get_quota()
+        files = {'toplist': toplist, 'quota': quota}
     except Exception:
         logger.exception("Can't get toplist of %s", unicode(request.user))
-        toplist = []
-    cache.set(cache_key, toplist, 300)
+        files = {'toplist': []}
+    cache.set(cache_key, files, 300)
 
     return redirect(reverse("dashboard.index"))

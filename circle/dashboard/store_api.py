@@ -47,7 +47,7 @@ class Store(object):
         url = urljoin(self.store_url, url)
         if timeout is None:
             timeout = self.default_timeout
-        payload = json.dumps(kwargs)
+        payload = json.dumps(kwargs) if kwargs else None
         try:
             headers = {'content-type': 'application/json'}
             response = method(url, data=payload, headers=headers,
@@ -84,7 +84,7 @@ class Store(object):
             return result
 
     def request_download(self, path):
-            r = self._request_cmd("DOWNLOAD", PATH=path, timeout=5)
+            r = self._request_cmd("DOWNLOAD", PATH=path, timeout=10)
             return r.json()['LINK']
 
     def request_upload(self, path):
@@ -102,7 +102,13 @@ class Store(object):
 
     def get_quota(self):  # no CMD? :o
         r = self._request(self.username)
-        return r.json()
+        quota = r.json()
+        quota.update({
+            'readable_used': filesizeformat(float(quota['Used'])),
+            'readable_soft': filesizeformat(float(quota['Soft'])),
+            'readable_hard': filesizeformat(float(quota['Hard'])),
+        })
+        return quota
 
     def set_quota(self, quota):
         self._request("/quota/" + self.username, post, QUOTA=quota)

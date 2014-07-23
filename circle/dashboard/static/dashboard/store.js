@@ -1,6 +1,7 @@
 $(function() {
   $("#store-list-container").on("click", ".store-list-item", function() {
     if($(this).data("item-type") == "D") {
+      $("#store-list-up-icon").removeClass("fa-reply").addClass("fa-refresh fa-spin");
       var url = $(this).prop("href");
       $.get(url, function(result) {
         $("#store-list-container").html(result);
