@@ -1662,34 +1662,6 @@ class GroupRemoveFutureUserView(GroupRemoveUserView):
         return _("Future user successfully removed from group.")
 
 
-class GroupRemoveAclUserView(GroupRemoveUserView):
-
-    def remove_member(self, pk):
-        container = self.get_object().profile
-        container.set_level(User.objects.get(pk=pk), None)
-
-    def get_success_message(self):
-        return _("Acl user successfully removed from group.")
-
-
-class GroupRemoveAclGroupView(GroupRemoveUserView):
-
-    def get_context_data(self, **kwargs):
-        context = super(GroupRemoveUserView, self).get_context_data(**kwargs)
-        try:
-            context['member'] = Group.objects.get(pk=self.member_pk)
-        except User.DoesNotExist:
-            raise Http404()
-        return context
-
-    def remove_member(self, pk):
-        container = self.get_object().profile
-        container.set_level(Group.objects.get(pk=pk), None)
-
-    def get_success_message(self):
-        return _("Acl group successfully removed from group.")
-
-
 class GroupDelete(CheckedDetailView, DeleteView):
 
     """This stuff deletes the group.
