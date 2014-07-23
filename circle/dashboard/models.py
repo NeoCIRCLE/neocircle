@@ -34,6 +34,8 @@ from django.templatetags.static import static
 from django.utils.translation import ugettext_lazy as _
 from django_sshkey.models import UserKey
 
+from sizefield.models import FileSizeField
+
 from jsonfield import JSONField
 from model_utils.models import TimeStampedModel
 from model_utils.fields import StatusField
@@ -121,9 +123,9 @@ class Profile(Model):
             'virtual machines.'),
         default=pwgen,
     )
-    disk_quota = IntegerField(
+    disk_quota = FileSizeField(
         verbose_name=_('disk quota'),
-        default=2048,
+        default=2048 * 1024 * 1024,
         help_text=_('Disk quota in mebibytes.'))
 
     def notify(self, subject, template, context=None, valid_until=None,
