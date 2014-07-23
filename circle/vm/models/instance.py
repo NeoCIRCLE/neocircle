@@ -448,9 +448,12 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
     def vm_state_changed(self, new_state):
         # log state change
         try:
-            act = InstanceActivity.create(code_suffix='vm_state_changed',
-                                          instance=self,
-                                          readable_name="vm state changed")
+            act = InstanceActivity.create(
+                code_suffix='vm_state_changed',
+                readable_name=create_readable(
+                    ugettext_noop("vm state changed to %(state)s"),
+                    state=new_state),
+                instance=self)
         except ActivityInProgressError:
             pass  # discard state change if another activity is in progress.
         else:
