@@ -1064,8 +1064,8 @@ class AclUpdateView(LoginRequiredMixin, View, SingleObjectMixin):
     @classmethod
     def get_acl_data(cls, obj, user, url):
         levels = obj.ACL_LEVELS
-        allowed_levels = list(l[0] for l in obj.ACL_LEVELS
-                              if cls.has_next_level(user, obj, l[0]))
+        allowed_levels = list(l for l in OrderedDict(levels)
+                              if cls.has_next_level(user, obj, l))
         is_owner = 'owner' in allowed_levels
 
         allowed_users = cls.get_allowed_users(user)
@@ -1087,16 +1087,11 @@ class AclUpdateView(LoginRequiredMixin, View, SingleObjectMixin):
 
     @classmethod
     def has_next_level(self, user, instance, level):
-        # TODO
-        levels = zip(*instance.ACL_LEVELS)[0]
-        try:
-            i = levels.index(level)
-        except ValueError:
-            i = 0
-        if i < (len(levels) - 1):
-            i += 1
-        next_level = levels[i]
-
+        levels = OrderedDict(instance.ACL_LEVELS).keys()
+        next_levels = dict(zip([None] + levels, levels + levels[-1:]))
+        # {None: 'user', 'user': 'operator', 'operator: 'owner',
+        #  'owner: 'owner'}
+        next_level = next_levels[level]
         return instance.has_level(user, next_level)
 
     @classmethod
