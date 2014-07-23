@@ -827,3 +827,7 @@ textarea[name="list-new-namelist"] {
 #group-detail-permissions input[type="submit"]{
   margin-top: -6px;
 }
+
+.store-action-button {
+  margin-left: 5px;
+}

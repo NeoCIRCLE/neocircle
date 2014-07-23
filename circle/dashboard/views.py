@@ -3222,7 +3222,6 @@ def store_new_directory(request):
         logger.exception("Unable to create folder %s in %s for %s",
                          name, path, unicode(request.user))
         messages.error(request, _("Unable to create folder."))
-        return redirect("/")
     return redirect("%s?directory=%s" % (
         reverse("dashboard.views.store-list"), path))
 

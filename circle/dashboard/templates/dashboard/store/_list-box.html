@@ -1,5 +1,69 @@
 {% load i18n %}
 
+
+<div class="list-group">
+  <div class="list-group-item">
+    <div class="row">
+      <div class="col-sm-6">
+        <a href="{% url "dashboard.views.store-upload"%}?directory={{ current }}"
+          class="btn btn-info btn-xs pull-right js-hidden">
+          {% trans "Upload" %}
+        </a>
+        <form action="" data-action="{% url "dashboard.views.store-upload-url" %}" 
+          method="POST" enctype="multipart/form-data" class="no-js-hidden"
+          id="store-upload-form">
+          {% csrf_token %}
+          <input type="hidden" name="current_dir" value="{{ current }}"/>
+          <input type="hidden" name="next" value="{{ next_url }}"/>
+          <div class="input-group" style="max-width: 350px;">
+            <span class="input-group-btn" id="store-upload-browse">
+              <span class="btn btn-primary btn-xs">
+                {% trans "Browse..." %}
+              </span>     
+            </span>
+            <input type="text" class="form-control input-tags" 
+             id="store-upload-filename"/>
+            <span class="input-group-btn">
+              <button type="submit" class="btn btn-primary btn-xs" disabled>
+                <i class="fa fa-cloud-upload"></i> {% trans "Upload" %}
+              </button>
+            </span>
+          </div>
+          <input id="store-upload-file" name="data" type="file" style="display:none">
+        </form>
+      </div><!-- .col-sm-6 upload -->
+
+      <div class="col-sm-6">
+        <a href="{% url "dashboard.views.store-remove" %}?path={{ current }}" 
+          class="btn btn-danger btn-xs pull-right store-action-button" 
+          title="{% trans "Remove directory" %}">
+          <i class="fa fa-times"></i>
+        </a>
+        <a href="{% url "dashboard.views.store-download" %}?path={{ current }}" 
+          class="btn btn-primary btn-xs pull-right store-action-button" 
+          title="{% trans "Download directory" %}">
+          <i class="fa fa-cloud-download"></i>
+        </a>
+
+        <form method="POST" action="{% url "dashboard.views.store-new-directory" %}">
+          {% csrf_token %}
+          <input type="hidden" name="path" value="{{ current }}"/>
+          <div class="input-group" style="max-width: 300px;">
+            <span class="input-group-addon input-tags" title="{% trans "New directory" %}">
+              <i class="fa fa-folder-open"></i>
+            </span>
+            <input type="text" class="form-control input-tags" name="name" 
+             placeholder="{% trans "Name "%}" required/>
+            <span class="input-group-btn">
+              <input type="submit" class="btn btn-success btn-xs" value="{% trans "Create" %}"/>
+            </span>
+          </div>
+        </form>
+      </div><!-- .col-sm-6 -->
+    </div><!-- .row -->
+  </div><!-- .list-group-item -->
+</div><!-- .list-group -->
+
 <div class="list-group" id="store-list-list">
   <a href="{% url "dashboard.views.store-list" %}?directory={{ up_url }}" 
     class="list-group-item store-list-item" data-item-type="D">
@@ -67,57 +131,4 @@
     {% trans "This folder is empty." %}
   </a>
   {% endfor %}
-
-  <div class="list-group-item">
-    {% trans "Upload file to this folder" %}
-    <a href="{% url "dashboard.views.store-upload"%}?directory={{ current }}"
-      class="btn btn-info btn-xs pull-right js-hidden">
-      {% trans "Upload" %}
-    </a>
-    <form action="" data-action="{% url "dashboard.views.store-upload-url" %}" 
-      method="POST" enctype="multipart/form-data" class="pull-right no-js-hidden"
-      id="store-upload-form">
-      {% csrf_token %}
-      <input type="hidden" name="current_dir" value="{{ current }}"/>
-      <input type="hidden" name="next" value="{{ next_url }}"/>
-      <div class="input-group" style="max-width: 350px;">
-        <span class="input-group-btn" id="store-upload-browse">
-          <span class="btn btn-primary btn-xs">
-            {% trans "Browse..." %}
-          </span>     
-        </span>
-        <input type="text" class="form-control input-tags" 
-         id="store-upload-filename"/>
-        <span class="input-group-btn">
-          <button type="submit" class="btn btn-primary btn-xs" disabled>
-            <i class="fa fa-cloud-upload"></i> {% trans "Upload" %}
-          </button>
-        </span>
-      </div>
-      <input id="store-upload-file" name="data" type="file" style="display:none">
-    </form>
-  </div>
 </div><!-- closing list-group -->
-
-<div class="list-group">
-  <div class="list-group-item">
-    <a href="{% url "dashboard.views.store-remove" %}?path={{ current }}" 
-      class="btn btn-danger btn-xs pull-right">
-      <i class="fa fa-times"></i> {% trans "Remove directory" %}
-    </a>
-    <form method="POST" action="{% url "dashboard.views.store-new-directory" %}">
-      {% csrf_token %}
-      <input type="hidden" name="path" value="{{ current }}"/>
-      <div class="input-group" style="max-width: 350px;">
-        <span class="input-group-addon input-tags" title="{% trans "New directory" %}">
-          <i class="fa fa-folder-open"></i>
-        </span>
-        <input type="text" class="form-control input-tags" name="name"
-         placeholder="{% trans "Name "%}"/>
-        <span class="input-group-btn">
-          <input type="submit" class="btn btn-success btn-xs" value="{% trans "Create" %}"/>
-        </span>
-      </div>
-    </form>
-  </div>
-</div>
