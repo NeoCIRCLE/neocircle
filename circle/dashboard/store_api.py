@@ -22,6 +22,10 @@ class NotOkException(StoreApiException):
         super(NotOkException, self).__init__(*args, **kwargs)
 
 
+class NoStoreException(StoreApiException):
+    pass
+
+
 class Store(object):
 
     def __init__(self, user, default_timeout=0.5):
@@ -35,6 +39,8 @@ class Store(object):
         self.username = "u-%d" % user.pk
         self.default_timeout = default_timeout
         self.store_url = settings.STORE_URL
+        if not self.store_url:
+            raise NoStoreException
 
     def _request(self, url, method=get, timeout=None,
                  raise_status_code=True, **kwargs):

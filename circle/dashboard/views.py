@@ -84,7 +84,7 @@ from storage.models import Disk
 from firewall.models import Vlan, Host, Rule
 from .models import Favourite, Profile, GroupProfile, FutureMember
 
-from .store_api import Store, NotOkException
+from .store_api import Store, NoStoreException
 
 logger = logging.getLogger(__name__)
 saml_available = hasattr(settings, "SAML_CONFIG")
@@ -226,19 +226,22 @@ class IndexView(LoginRequiredMixin, TemplateView):
                 'operator', user).all()[:5]
 
         # toplist
-        cache_key = "toplist-%d" % self.request.user.pk
-        cache = get_cache("default")
-        toplist = cache.get(cache_key)
-        if not toplist:
-            try:
-                toplist = Store(self.request.user).toplist()
-            except Exception:
-                logger.exception("Unable to get tolist for %s",
-                                 unicode(self.request.user))
-                toplist = []
-            cache.set(cache_key, toplist, 300)
+        if settings.STORE_URL:
+            cache_key = "toplist-%d" % self.request.user.pk
+            cache = get_cache("default")
+            toplist = cache.get(cache_key)
+            if not toplist:
+                try:
+                    toplist = Store(self.request.user).toplist()
+                except Exception:
+                    logger.exception("Unable to get tolist for %s",
+                                     unicode(self.request.user))
+                    toplist = []
+                cache.set(cache_key, toplist, 300)
 
-        context['toplist'] = toplist
+            context['toplist'] = toplist
+        else:
+            context['no_store'] = True
 
         return context
 
@@ -3103,14 +3106,18 @@ class StoreList(LoginRequiredMixin, TemplateView):
         return context
 
     def get(self, *args, **kwargs):
-        if self.request.is_ajax():
-            context = self.get_context_data(**kwargs)
-            return render_to_response(
-                "dashboard/store/_list-box.html",
-                RequestContext(self.request, context),
-            )
-        else:
-            return super(StoreList, self).get(*args, **kwargs)
+        try:
+            if self.request.is_ajax():
+                context = self.get_context_data(**kwargs)
+                return render_to_response(
+                    "dashboard/store/_list-box.html",
+                    RequestContext(self.request, context),
+                )
+            else:
+                return super(StoreList, self).get(*args, **kwargs)
+        except NoStoreException:
+            messages.warning(self.request, _("No store."))
+            return redirect("/")
 
     def create_up_directory(self, directory):
         return normpath(join('/', directory, '..'))
@@ -3122,7 +3129,7 @@ def store_download(request):
     path = request.GET.get("path")
     try:
         url = Store(request.user).request_download(path)
-    except NotOkException:
+    except Exception:
         messages.error(request, _("Something went wrong during download."))
         logger.exception("Unable to download, "
                          "maybe it is already deleted")
@@ -3183,6 +3190,12 @@ class StoreRemove(LoginRequiredMixin, TemplateView):
 
         return context
 
+    def get(self, *args, **kwargs):
+        try:
+            return super(StoreRemove, self).get(*args, **kwargs)
+        except NoStoreException:
+            return redirect("/")
+
     def post(self, *args, **kwargs):
         path = self.request.POST.get("path")
         try:
@@ -3209,6 +3222,7 @@ def store_new_directory(request):
         logger.exception("Unable to create folder %s in %s for %s",
                          name, path, unicode(request.user))
         messages.error(request, _("Unable to create folder."))
+        return redirect("/")
     return redirect("%s?directory=%s" % (
         reverse("dashboard.views.store-list"), path))
 
