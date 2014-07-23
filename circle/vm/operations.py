@@ -425,7 +425,7 @@ class RemoveInterfaceOperation(InstanceOperation):
 
     def get_activity_name(self, kwargs):
         return create_readable(ugettext_noop("remove %(vlan)s interface"),
-                               vlan=kwargs['vlan'])
+                               vlan=kwargs['interface'].vlan)
 
 
 register_operation(RemoveInterfaceOperation)
