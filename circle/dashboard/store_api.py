@@ -121,8 +121,8 @@ class Store(object):
             return False
 
     def create_user(self, password, keys, quota):
-        self._request("/new/" + self.username, SMBPASSWD=password, KEYS=keys,
-                      QUOTA=quota)
+        self._request("/new/" + self.username, method=post,
+                      SMBPASSWD=password, KEYS=keys, QUOTA=quota)
 
     @staticmethod
     def _process_list(content):
