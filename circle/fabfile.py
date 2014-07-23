@@ -5,14 +5,18 @@ from fabric.api import env, run, settings, sudo, prefix, cd, execute
 from fabric.context_managers import shell_env
 from fabric.decorators import roles, parallel
 
-from vm.models import Node
-from storage.models import DataStore
-
 
 env.roledefs['portal'] = ['localhost']
-env.roledefs['node'] = [unicode(n.host.ipv4)
-                        for n in Node.objects.filter(enabled=True)]
-env.roledefs['storage'] = [DataStore.objects.get().hostname]
+
+try:
+    from vm.models import Node
+    from storage.models import DataStore
+except Exception as e:
+    print e
+else:
+    env.roledefs['node'] = [unicode(n.host.ipv4)
+                            for n in Node.objects.filter(enabled=True)]
+    env.roledefs['storage'] = [DataStore.objects.get().hostname]
 
 
 def update_all():
