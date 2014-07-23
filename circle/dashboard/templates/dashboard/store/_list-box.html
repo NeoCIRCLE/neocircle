@@ -66,8 +66,18 @@
 <div class="list-group" id="store-list-list">
   <a href="{% url "dashboard.views.store-list" %}?directory={{ up_url }}" 
     class="list-group-item store-list-item" data-item-type="D">
-    <i class="fa fa-reply store-list-item-icon"></i>
-    ..
+    {% if current == "/" %}
+      <div class="store-list-item-icon">
+        <i class="fa fa-refresh"></i>
+      </div>
+      {% trans "Refresh" %}
+    {% else %}
+      <div class="store-list-item-icon">
+        <i class="fa fa-reply"></i>
+      </div>
+      ..
+    {% endif %}
+
     <div class="pull-right">
       {{ current }}
     </div>
