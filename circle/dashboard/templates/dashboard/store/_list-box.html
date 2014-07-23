@@ -1,12 +1,11 @@
 {% load i18n %}
 
-
 <div class="list-group">
   <div class="list-group-item">
     <div class="row">
       <div class="col-sm-6">
         <a href="{% url "dashboard.views.store-upload"%}?directory={{ current }}"
-          class="btn btn-info btn-xs pull-right js-hidden">
+          class="btn btn-info btn-xs js-hidden">
           {% trans "Upload" %}
         </a>
         <form action="" data-action="{% url "dashboard.views.store-upload-url" %}" 
