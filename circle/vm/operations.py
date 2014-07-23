@@ -708,6 +708,11 @@ class RenewOperation(InstanceOperation):
     required_perms = ()
     concurrency_check = False
 
+    def check_precond(self):
+        super(RenewOperation, self).check_precond()
+        if self.instance.status == 'DESTROYED':
+            raise self.instance.WrongStateError(self.instance)
+
     def _operation(self, lease=None):
         (self.instance.time_of_suspend,
          self.instance.time_of_delete) = self.instance.get_renew_times(lease)
