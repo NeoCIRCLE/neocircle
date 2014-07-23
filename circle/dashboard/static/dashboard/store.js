@@ -14,11 +14,16 @@ $(function() {
     return false;
   });
 
-  /* less js way, but at least works, tho redirection is bad */
+  /* how upload works
+   * - user clicks on a "fake" browse button, this triggers a click event on the file upload
+   * - if the file input changes it adds the name of the file to form (or number of files if multiple is enabled)
+   * - and finally when we click on the upload button (this event handler) it firsts ask the store api where to upload
+   *   then changes the form's action attr before sending the form itself
+   */
   $("#store-list-container").on("click", '#store-upload-form button[type="submit"]', function() {
     var current_dir = $("#store-upload-form").find('[name="current_dir"]').val();
     $.get($("#store-upload-form").data("action") + "?current_dir=" + current_dir, function(result) {
-      $('#store-upload-form button[type="submit"] i').addClass("icon-spinner icon-spin");
+      $('#store-upload-form button[type="submit"] i').addClass("fa-spinner fa-spin");
       $("#store-upload-form").get(0).setAttribute("action", result['url']);
       $("#store-upload-form").submit();
     });
@@ -26,7 +31,7 @@ $(function() {
     return false;
   });
   
-  /* click on the "fake" browse button will */
+  /* "fake" browse button */
   $("#store-list-container").on("click", "#store-upload-browse", function() {
     $('#store-upload-form input[type="file"]').click();
   });
@@ -38,36 +43,17 @@ $(function() {
     input.trigger('fileselect', [numFiles, label]);
   });
 
-  $("#store-list-container").on("fileselect", "#store-upload-file", function(event, numFiles, label)  {
-        var input = $("#store-upload-filename");
-        var log = numFiles > 1 ? numFiles + ' files selected' : label;
-        if(input.length) {
-            input.val(log);
-        }
-        if(log) {
-          $('#store-upload-form button[type="submit"]').prop("disabled", false);
+  $("#store-list-container").on("fileselect", "#store-upload-file", function(event, numFiles, label) {
+    var input = $("#store-upload-filename");
+    var log = numFiles > 1 ? numFiles + ' files selected' : label;
+    if(input.length) {
+      input.val(log);
+    }
+    if(log) {
+      $('#store-upload-form button[type="submit"]').prop("disabled", false);
+    } else {
+      $('#store-upload-form button[type="submit"]').prop("disabled", true);
+    }
 
-        } else {
-          $('#store-upload-form button[type="submit"]').prop("disabled", true);
-        }
   });
-
-
-  /* this does not work 
-  $('form input[type="submit"]').click(function() {
-    var current_dir = $("form").find('[name="current_dir"]').val();
-    $.get($("form").data("action") + "?current_dir=" + current_dir, function(result) {
-      $.ajax({
-        method: "POST",
-        url: result['url'],
-        data: $("form").serialize(),
-        success: function(re) {
-          console.log(re);
-        }
-      });
-    });
-
-    return false;
-  }); */
-    
 });
