@@ -18,6 +18,7 @@
 from __future__ import absolute_import
 from django.conf.urls import patterns, url, include
 
+import autocomplete_light
 from vm.models import Instance
 from .views import (
     AclUpdateView, FavouriteView, GroupAclUpdateView, GroupDelete,
@@ -30,7 +31,7 @@ from .views import (
     TransferOwnershipView, vm_activity, VmCreate, VmDelete, VmDetailView,
     VmDetailVncTokenView, VmGraphView, VmList, VmMassDelete,
     DiskRemoveView, get_disk_download_status, InterfaceDeleteView,
-    GroupRemoveAclUserView, GroupRemoveAclGroupView, GroupRemoveUserView,
+    GroupRemoveUserView,
     GroupRemoveFutureUserView,
     GroupCreate, GroupProfileUpdate,
     TemplateChoose,
@@ -43,7 +44,10 @@ from .views import (
     LeaseAclUpdateView,
 )
 
+autocomplete_light.autodiscover()
+
 urlpatterns = patterns(
+
     '',
     url(r'^$', IndexView.as_view(), name="dashboard.index"),
     url(r'^lease/(?P<pk>\d+)/$', LeaseDetail.as_view(),
@@ -151,12 +155,6 @@ urlpatterns = patterns(
         name="dashboard.views.profile"),
     url(r'^profile/(?P<username>[^/]+)/use_gravatar/$', toggle_use_gravatar),
 
-    url(r'^group/(?P<group_pk>\d+)/remove/acl/user/(?P<member_pk>\d+)/$',
-        GroupRemoveAclUserView.as_view(),
-        name="dashboard.views.remove-acluser"),
-    url(r'^group/(?P<group_pk>\d+)/remove/acl/group/(?P<member_pk>\d+)/$',
-        GroupRemoveAclGroupView.as_view(),
-        name="dashboard.views.remove-aclgroup"),
     url(r'^group/(?P<group_pk>\d+)/remove/user/(?P<member_pk>\d+)/$',
         GroupRemoveUserView.as_view(),
         name="dashboard.views.remove-user"),
@@ -181,4 +179,5 @@ urlpatterns = patterns(
     url(r'^sshkey/create/$',
         UserKeyCreate.as_view(),
         name="dashboard.views.userkey-create"),
+    url(r'^autocomplete/', include('autocomplete_light.urls')),
 )

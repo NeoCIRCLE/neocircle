@@ -28,14 +28,13 @@ import requests
 from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.views import login, redirect_to_login
-from django.contrib.messages import warning
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import (
     PermissionDenied, SuspiciousOperation,
 )
 from django.core import signing
 from django.core.urlresolvers import reverse, reverse_lazy
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import redirect, render, get_object_or_404
 from django.views.decorators.http import require_GET, require_POST
@@ -62,7 +61,7 @@ from .forms import (
     UserCreationForm, GroupProfileUpdateForm, UnsubscribeForm,
     VmSaveForm, UserKeyForm, VmRenewForm,
     CirclePasswordChangeForm, VmCreateDiskForm, VmDownloadDiskForm,
-    TraitsForm, RawDataForm, GroupPermissionForm
+    TraitsForm, RawDataForm, GroupPermissionForm, AclUserAddForm
 )
 
 from .tables import (
@@ -219,27 +218,6 @@ class IndexView(LoginRequiredMixin, TemplateView):
         return context
 
 
-def get_vm_acl_data(obj):
-    levels = obj.ACL_LEVELS
-    users = obj.get_users_with_level()
-    users = [{'user': u, 'level': l} for u, l in users]
-    groups = obj.get_groups_with_level()
-    groups = [{'group': g, 'level': l} for g, l in groups]
-    return {'users': users, 'groups': groups, 'levels': levels,
-            'url': reverse('dashboard.views.vm-acl', args=[obj.pk])}
-
-
-def get_group_acl_data(obj):
-    aclobj = obj.profile
-    levels = aclobj.ACL_LEVELS
-    users = aclobj.get_users_with_level()
-    users = [{'user': u, 'level': l} for u, l in users]
-    groups = aclobj.get_groups_with_level()
-    groups = [{'group': g, 'level': l} for g, l in groups]
-    return {'users': users, 'groups': groups, 'levels': levels,
-            'url': reverse('dashboard.views.group-acl', args=[obj.pk])}
-
-
 class CheckedDetailView(LoginRequiredMixin, DetailView):
     read_level = 'user'
 
@@ -303,7 +281,9 @@ class VmDetailView(CheckedDetailView):
             pk__in=Interface.objects.filter(
                 instance=self.get_object()).values_list("vlan", flat=True)
         ).all()
-        context['acl'] = get_vm_acl_data(instance)
+        context['acl'] = AclUpdateView.get_acl_data(
+            instance, self.request.user, 'dashboard.views.vm-acl')
+        context['aclform'] = AclUserAddForm()
         context['os_type_icon'] = instance.os_type.replace("unknown",
                                                            "question")
         # ipv6 infos
@@ -979,7 +959,10 @@ class GroupDetailView(CheckedDetailView):
         context['users'] = self.object.user_set.all()
         context['future_users'] = FutureMember.objects.filter(
             group=self.object)
-        context['acl'] = get_group_acl_data(self.object)
+        context['acl'] = AclUpdateView.get_acl_data(
+            self.object.profile, self.request.user,
+            'dashboard.views.group-acl')
+        context['aclform'] = AclUserAddForm()
         context['group_profile_form'] = GroupProfileUpdate.get_form_object(
             self.request, self.object.profile)
 
@@ -1022,7 +1005,7 @@ class GroupDetailView(CheckedDetailView):
                 FutureMember.objects.get_or_create(org_id=name,
                                                    group=self.object)
             else:
-                warning(request, _('User "%s" not found.') % name)
+                messages.warning(request, _('User "%s" not found.') % name)
 
     def __add_list(self, request):
         if not self.get_has_level()(request.user, 'operator'):
@@ -1067,120 +1050,169 @@ class GroupPermissionsView(SuperuserRequiredMixin, UpdateView):
 
 
 class AclUpdateView(LoginRequiredMixin, View, SingleObjectMixin):
+    def send_success_message(self, whom, old_level, new_level):
+        if old_level and new_level:
+            msg = _("Acl user/group %(w)s successfully modified.")
+        elif not old_level and new_level:
+            msg = _("Acl user/group %(w)s successfully added.")
+        elif old_level and not new_level:
+            msg = _("Acl user/group %(w)s successfully removed.")
+        if msg:
+            messages.success(self.request, msg % {'w': whom})
 
-    def post(self, request, *args, **kwargs):
-        instance = self.get_object()
-        if not (instance.has_level(request.user, "owner") or
-                getattr(instance, 'owner', None) == request.user):
-            logger.warning('Tried to set permissions of %s by non-owner %s.',
-                           unicode(instance), unicode(request.user))
-            raise PermissionDenied()
-        self.set_levels(request, instance)
-        self.remove_levels(request, instance)
-        self.add_levels(request, instance)
-        return redirect("%s#access" % instance.get_absolute_url())
+    def get_level(self, whom):
+        for u, level in self.acl_data:
+            if u == whom:
+                return level
+        return None
 
-    def set_levels(self, request, instance):
-        for key, value in request.POST.items():
-            m = re.match('perm-([ug])-(\d+)', key)
+    @classmethod
+    def get_acl_data(cls, obj, user, url):
+        levels = obj.ACL_LEVELS
+        allowed_levels = list(l for l in OrderedDict(levels)
+                              if cls.has_next_level(user, obj, l))
+        is_owner = 'owner' in allowed_levels
+
+        allowed_users = cls.get_allowed_users(user)
+        allowed_groups = cls.get_allowed_groups(user)
+
+        user_levels = list(
+            {'user': u, 'level': l} for u, l in obj.get_users_with_level()
+            if is_owner or u == user or u in allowed_users)
+
+        group_levels = list(
+            {'group': g, 'level': l} for g, l in obj.get_groups_with_level()
+            if is_owner or g in allowed_groups)
+
+        return {'users': user_levels,
+                'groups': group_levels,
+                'levels': levels,
+                'allowed_levels': allowed_levels,
+                'url': reverse(url, args=[obj.pk])}
+
+    @classmethod
+    def has_next_level(self, user, instance, level):
+        levels = OrderedDict(instance.ACL_LEVELS).keys()
+        next_levels = dict(zip([None] + levels, levels + levels[-1:]))
+        # {None: 'user', 'user': 'operator', 'operator: 'owner',
+        #  'owner: 'owner'}
+        next_level = next_levels[level]
+        return instance.has_level(user, next_level)
+
+    @classmethod
+    def get_allowed_groups(cls, user):
+        if user.has_perm('dashboard.use_autocomplete'):
+            return Group.objects.all()
+        else:
+            profiles = GroupProfile.get_objects_with_level('owner', user)
+            return Group.objects.filter(groupprofile__in=profiles).distinct()
+
+    @classmethod
+    def get_allowed_users(cls, user):
+        if user.has_perm('dashboard.use_autocomplete'):
+            return User.objects.all()
+        else:
+            groups = cls.get_allowed_groups(user)
+            return User.objects.filter(
+                Q(groups__in=groups) | Q(pk=user.pk)).distinct()
+
+    def check_auth(self, whom, old_level, new_level):
+        if isinstance(whom, Group):
+            if (not self.is_owner and whom not in
+                    AclUpdateView.get_allowed_groups(self.request.user)):
+                return False
+        elif isinstance(whom, User):
+            if (not self.is_owner and whom not in
+                    AclUpdateView.get_allowed_users(self.request.user)):
+                return False
+        return (
+            AclUpdateView.has_next_level(self.request.user,
+                                         self.instance, new_level) and
+            AclUpdateView.has_next_level(self.request.user,
+                                         self.instance, old_level))
+
+    def set_level(self, whom, new_level):
+        user = self.request.user
+        old_level = self.get_level(whom)
+        if old_level == new_level:
+            return
+
+        if getattr(self.instance, "owner", None) == whom:
+            logger.info("Tried to set owner's acl level for %s by %s.",
+                        unicode(self.instance), unicode(user))
+            msg = _("The original owner cannot be removed, however "
+                    "you can transfer ownership.")
+            if not getattr(self, 'hide_messages', False):
+                messages.warning(self.request, msg)
+        elif self.check_auth(whom, old_level, new_level):
+            logger.info(
+                u"Set %s's acl level for %s to %s by %s.", unicode(whom),
+                unicode(self.instance), new_level, unicode(user))
+            if not getattr(self, 'hide_messages', False):
+                self.send_success_message(whom, old_level, new_level)
+            self.instance.set_level(whom, new_level)
+        else:
+            logger.warning(
+                u"Tried to set %s's acl_level for %s (%s->%s) by %s.",
+                unicode(whom), unicode(self.instance), old_level, new_level,
+                unicode(user))
+
+    def set_or_remove_levels(self):
+        for key, value in self.request.POST.items():
+            m = re.match('(perm|remove)-([ug])-(\d+)', key)
             if m:
-                typ, id = m.groups()
+                cmd, typ, id = m.groups()
+                if cmd == 'remove':
+                    value = None
                 entity = {'u': User, 'g': Group}[typ].objects.get(id=id)
-                if getattr(instance, "owner", None) == entity:
-                    logger.info("Tried to set owner's acl level for %s by %s.",
-                                unicode(instance), unicode(request.user))
-                    continue
-                instance.set_level(entity, value)
-                logger.info("Set %s's acl level for %s to %s by %s.",
-                            unicode(entity), unicode(instance),
-                            value, unicode(request.user))
+                self.set_level(entity, value)
 
-    def remove_levels(self, request, instance):
-        for key, value in request.POST.items():
-            if key.startswith("remove"):
-                typ = key[7:8]  # len("remove-")
-                id = key[9:]  # len("remove-x-")
-                entity = {'u': User, 'g': Group}[typ].objects.get(id=id)
-                if getattr(instance, "owner", None) == entity:
-                    logger.info("Tried to remove owner from %s by %s.",
-                                unicode(instance), unicode(request.user))
-                    msg = _("The original owner cannot be removed, however "
-                            "you can transfer ownership.")
-                    messages.warning(request, msg)
-                    continue
-                instance.set_level(entity, None)
-                logger.info("Revoked %s's access to %s by %s.",
-                            unicode(entity), unicode(instance),
-                            unicode(request.user))
-
-    def add_levels(self, request, instance):
-        name = request.POST['perm-new-name']
-        value = request.POST['perm-new']
-        if not name:
+    def add_levels(self):
+        name = self.request.POST.get('name', None)
+        level = self.request.POST.get('level', None)
+        if not name or not level:
             return
         try:
             entity = search_user(name)
+            if self.instance.object_level_set.filter(users__in=[entity]):
+                messages.warning(
+                    self.request, _('User "%s" has already '
+                                    'access to this object.') % name)
+                return
         except User.DoesNotExist:
             entity = None
             try:
                 entity = Group.objects.get(name=name)
+                if self.instance.object_level_set.filter(groups__in=[entity]):
+                    messages.warning(
+                        self.request, _('Group "%s" has already '
+                                        'access to this object.') % name)
+                    return
             except Group.DoesNotExist:
-                warning(request, _('User or group "%s" not found.') % name)
+                messages.warning(
+                    self.request, _('User or group "%s" not found.') % name)
                 return
+        self.set_level(entity, level)
 
-        instance.set_level(entity, value)
-        logger.info("Set %s's new acl level for %s to %s by %s.",
-                    unicode(entity), unicode(instance),
-                    value, unicode(request.user))
+    def post(self, request, *args, **kwargs):
+        self.instance = self.get_object()
+        self.is_owner = self.instance.has_level(request.user, 'owner')
+        self.acl_data = (self.instance.get_users_with_level() +
+                         self.instance.get_groups_with_level())
+        self.set_or_remove_levels()
+        self.add_levels()
+        return redirect("%s#access" % self.instance.get_absolute_url())
 
 
 class TemplateAclUpdateView(AclUpdateView):
     model = InstanceTemplate
 
-    def post(self, request, *args, **kwargs):
-        template = self.get_object()
-        if not (template.has_level(request.user, "owner") or
-                getattr(template, 'owner', None) == request.user):
-            logger.warning('Tried to set permissions of %s by non-owner %s.',
-                           unicode(template), unicode(request.user))
-            raise PermissionDenied()
-
-        name = request.POST['perm-new-name']
-        if (User.objects.filter(username=name).count() +
-                Group.objects.filter(name=name).count() < 1
-                and len(name) > 0):
-            warning(request, _('User or group "%s" not found.') % name)
-        else:
-            self.set_levels(request, template)
-            self.add_levels(request, template)
-            self.remove_levels(request, template)
-
-            post_for_disk = request.POST.copy()
-            post_for_disk['perm-new'] = 'user'
-            request.POST = post_for_disk
-            for d in template.disks.all():
-                self.set_levels(request, d)
-                self.add_levels(request, d)
-                self.remove_levels(request, d)
-
-        return redirect(template)
-
 
 class GroupAclUpdateView(AclUpdateView):
     model = Group
 
-    def post(self, request, *args, **kwargs):
-        instance = self.get_object().profile
-        if not (instance.has_level(request.user, "owner") or
-                getattr(instance, 'owner', None) == request.user):
-            logger.warning('Tried to set permissions of %s by non-owner %s.',
-                           unicode(instance), unicode(request.user))
-            raise PermissionDenied()
-
-        self.set_levels(request, instance)
-        self.add_levels(request, instance)
-        return redirect(reverse("dashboard.views.group-detail",
-                                kwargs=self.kwargs))
+    def get_object(self):
+        return super(GroupAclUpdateView, self).get_object().profile
 
 
 class TemplateChoose(LoginRequiredMixin, TemplateView):
@@ -1327,8 +1359,11 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     def get_context_data(self, **kwargs):
         obj = self.get_object()
         context = super(TemplateDetail, self).get_context_data(**kwargs)
-        context['acl'] = get_vm_acl_data(obj)
+        context['acl'] = AclUpdateView.get_acl_data(
+            obj, self.request.user, 'dashboard.views.template-acl')
         context['disks'] = obj.disks.all()
+        context['is_owner'] = obj.has_level(self.request.user, 'owner')
+        context['aclform'] = AclUserAddForm()
         return context
 
     def get_success_url(self):
@@ -1627,34 +1662,6 @@ class GroupRemoveFutureUserView(GroupRemoveUserView):
         return _("Future user successfully removed from group.")
 
 
-class GroupRemoveAclUserView(GroupRemoveUserView):
-
-    def remove_member(self, pk):
-        container = self.get_object().profile
-        container.set_level(User.objects.get(pk=pk), None)
-
-    def get_success_message(self):
-        return _("Acl user successfully removed from group.")
-
-
-class GroupRemoveAclGroupView(GroupRemoveUserView):
-
-    def get_context_data(self, **kwargs):
-        context = super(GroupRemoveUserView, self).get_context_data(**kwargs)
-        try:
-            context['member'] = Group.objects.get(pk=self.member_pk)
-        except User.DoesNotExist:
-            raise Http404()
-        return context
-
-    def remove_member(self, pk):
-        container = self.get_object().profile
-        container.set_level(Group.objects.get(pk=pk), None)
-
-    def get_success_message(self):
-        return _("Acl group successfully removed from group.")
-
-
 class GroupDelete(CheckedDetailView, DeleteView):
 
     """This stuff deletes the group.
@@ -1781,13 +1788,12 @@ class VmCreate(LoginRequiredMixin, TemplateView):
             }
             networks = [InterfaceTemplate(vlan=l, managed=l.managed)
                         for l in post['networks']]
-            disks = post['disks']
 
             ikwargs.update({
                 'template': template,
                 'owner': user,
                 'networks': networks,
-                'disks': disks,
+                'disks': list(template.disks.all()),
             })
 
             amount = post['amount']
@@ -2319,7 +2325,8 @@ class LeaseDetail(LoginRequiredMixin, SuperuserRequiredMixin,
     def get_context_data(self, *args, **kwargs):
         obj = self.get_object()
         context = super(LeaseDetail, self).get_context_data(*args, **kwargs)
-        context['acl'] = get_vm_acl_data(obj)
+        context['acl'] = AclUpdateView.get_acl_data(
+            obj, self.request.user, 'dashboard.views.lease-acl')
         return context
 
     def get_success_url(self):
@@ -2792,11 +2799,10 @@ class DiskRemoveView(DeleteView):
 
     def delete(self, request, *args, **kwargs):
         disk = self.get_object()
-        if not disk.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-
-        disk = self.get_object()
         app = disk.get_appliance()
+
+        if not app.has_level(request.user, 'owner'):
+            raise PermissionDenied()
 
         app.remove_disk(disk=disk, user=request.user)
         disk.destroy()
@@ -2818,7 +2824,7 @@ class DiskRemoveView(DeleteView):
 @require_GET
 def get_disk_download_status(request, pk):
     disk = Disk.objects.get(pk=pk)
-    if not disk.has_level(request.user, 'owner'):
+    if not disk.get_appliance().has_level(request.user, 'owner'):
         raise PermissionDenied()
 
     return HttpResponse(

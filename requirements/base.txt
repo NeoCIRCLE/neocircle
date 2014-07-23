@@ -4,6 +4,7 @@ billiard==3.3.0.17
 bpython==0.12
 celery==3.1.11
 Django==1.6.3
+django-autocomplete-light==1.4.14
 django-braces==1.4.0
 django-celery==3.1.10
 django-crispy-forms==1.4.0

@@ -405,13 +405,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         """
         disks = template.disks.all() if disks is None else disks
 
-        for disk in disks:
-            if not disk.has_level(owner, 'user'):
-                raise PermissionDenied()
-            elif (disk.type == 'qcow2-snap'
-                  and not disk.has_level(owner, 'owner')):
-                raise PermissionDenied()
-
         networks = (template.interface_set.all() if networks is None
                     else networks)
 

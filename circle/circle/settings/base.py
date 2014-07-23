@@ -260,6 +260,7 @@ THIRD_PARTY_APPS = (
     'taggit',
     'statici18n',
     'django_sshkey',
+    'autocomplete_light',
 )
 
 # Apps specific for this project go here.
