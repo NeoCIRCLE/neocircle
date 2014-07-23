@@ -528,9 +528,6 @@ class SaveAsTemplateOperation(InstanceOperation):
             for disk in self.instance.disks.all():
                 self.disks.append(__try_save_disk(disk))
 
-        for disk in self.disks:
-            disk.set_level(user, 'owner')
-
         # create template and do additional setup
         tmpl = InstanceTemplate(**params)
         tmpl.full_clean()  # Avoiding database errors.
