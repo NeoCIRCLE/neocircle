@@ -105,7 +105,7 @@ class Store(object):
         return r.json()
 
     def set_quota(self, quota):
-        self._request(self.username + "/quota/", post, QUOTA=quota)
+        self._request("/quota/" + self.username, post, QUOTA=quota)
 
     def user_exist(self):
         try:
