@@ -84,7 +84,7 @@ urlpatterns = patterns(
     url('^vlans/$', VlanList.as_view(), name='network.vlan_list'),
     url('^vlans/create$', VlanCreate.as_view(), name='network.vlan_create'),
     url('^vlans/(?P<vid>\d+)/$', VlanDetail.as_view(), name='network.vlan'),
-    url('^vlans/(?P<vid>\d+)/acl/$', VlanAclUpdateView.as_view(),
+    url('^vlans/(?P<pk>\d+)/acl/$', VlanAclUpdateView.as_view(),
         name='network.vlan-acl'),
     url('^vlans/delete/(?P<vid>\d+)/$', VlanDelete.as_view(),
         name="network.vlan_delete"),

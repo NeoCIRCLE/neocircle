@@ -283,6 +283,7 @@ class VmDetailView(CheckedDetailView):
         ).all()
         context['acl'] = AclUpdateView.get_acl_data(
             instance, self.request.user, 'dashboard.views.vm-acl')
+        context['aclform'] = AclUserAddForm()
         context['os_type_icon'] = instance.os_type.replace("unknown",
                                                            "question")
         # ipv6 infos
@@ -958,6 +959,7 @@ class GroupDetailView(CheckedDetailView):
         context['acl'] = AclUpdateView.get_acl_data(
             self.object.profile, self.request.user,
             'dashboard.views.group-acl')
+        context['aclform'] = AclUserAddForm()
         context['group_profile_form'] = GroupProfileUpdate.get_form_object(
             self.request, self.object.profile)
 
