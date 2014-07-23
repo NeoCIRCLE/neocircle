@@ -1174,10 +1174,20 @@ class AclUpdateView(LoginRequiredMixin, View, SingleObjectMixin):
             return
         try:
             entity = search_user(name)
+            if self.instance.object_level_set.filter(users__in=[entity]):
+                messages.warning(
+                    self.request, _('User "%s" has already '
+                                    'access to this object.') % name)
+                return
         except User.DoesNotExist:
             entity = None
             try:
                 entity = Group.objects.get(name=name)
+                if self.instance.object_level_set.filter(groups__in=[entity]):
+                    messages.warning(
+                        self.request, _('Group "%s" has already '
+                                        'access to this object.') % name)
+                    return
             except Group.DoesNotExist:
                 messages.warning(
                     self.request, _('User or group "%s" not found.') % name)
