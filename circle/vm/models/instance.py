@@ -271,6 +271,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             ('create_vm', _('Can create a new VM.')),
             ('config_ports', _('Can configure port forwards.')),
             ('recover', _('Can recover a destroyed VM.')),
+            ('emergency_change_state', _('Can change VM state to NOSTATE.')),
         )
         verbose_name = _('instance')
         verbose_name_plural = _('instances')
@@ -444,27 +445,12 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         self.time_of_suspend, self.time_of_delete = self.get_renew_times()
         super(Instance, self).clean(*args, **kwargs)
 
-    def manual_state_change(self, new_state="NOSTATE", reason=None, user=None):
-        """ Manually change state of an Instance.
-
-        Can be used to recover VM after administrator fixed problems.
-        """
-        # TODO cancel concurrent activity (if exists)
-        act = InstanceActivity.create(
-            code_suffix='manual_state_change', instance=self, user=user,
-            readable_name=create_readable(ugettext_noop(
-                "force %(state)s state"), state=new_state))
-        act.finished = act.started
-        act.result = reason
-        act.resultant_state = new_state
-        act.succeeded = True
-        act.save()
-
     def vm_state_changed(self, new_state):
         # log state change
         try:
             act = InstanceActivity.create(code_suffix='vm_state_changed',
-                                          instance=self)
+                                          instance=self,
+                                          readable_name="vm state changed")
         except ActivityInProgressError:
             pass  # discard state change if another activity is in progress.
         else:

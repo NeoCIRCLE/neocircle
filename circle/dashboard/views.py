@@ -335,6 +335,7 @@ class VmDetailView(CheckedDetailView):
         for k, v in options.iteritems():
             if request.POST.get(k) is not None:
                 return v(request)
+        raise Http404()
 
         raise Http404()
 
@@ -866,6 +867,8 @@ vm_ops = OrderedDict([
         op='shut_off', icon='ban', effect='warning')),
     ('recover', VmOperationView.factory(
         op='recover', icon='medkit', effect='warning')),
+    ('nostate', VmOperationView.factory(
+        op='emergency_change_state', icon='legal', effect='danger')),
     ('destroy', VmOperationView.factory(
         extra_bases=[TokenOperationView],
         op='destroy', icon='times', effect='danger')),

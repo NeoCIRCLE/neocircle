@@ -536,7 +536,7 @@ class VmDetailTest(LoginMixin, TestCase):
         with patch.object(WakeUpOperation, 'async') as mock_method:
             inst = Instance.objects.get(pk=1)
             mock_method.side_effect = inst.wake_up
-            inst.manual_state_change('RUNNING')
+            inst.status = 'RUNNING'
             inst.set_level(self.u2, 'owner')
             with patch('dashboard.views.messages') as msg:
                 c.post("/dashboard/vm/1/op/wake_up/")
@@ -554,7 +554,7 @@ class VmDetailTest(LoginMixin, TestCase):
                     inst = Instance.objects.get(pk=1)
                     new_wake_up.side_effect = inst.wake_up
                     inst.get_remote_queue_name = Mock(return_value='test')
-                    inst.manual_state_change('SUSPENDED')
+                    inst.status = 'SUSPENDED'
                     inst.set_level(self.u2, 'owner')
                     with patch('dashboard.views.messages') as msg:
                         response = c.post("/dashboard/vm/1/op/wake_up/")
@@ -568,12 +568,10 @@ class VmDetailTest(LoginMixin, TestCase):
         c = Client()
         self.login(c, "user2")
         inst = Instance.objects.get(pk=1)
-        inst.manual_state_change('SUSPENDED')
+        inst.status = 'SUSPENDED'
         inst.set_level(self.u2, 'user')
         response = c.post("/dashboard/vm/1/op/wake_up/")
         self.assertEqual(response.status_code, 403)
-        inst = Instance.objects.get(pk=1)
-        self.assertEqual(inst.status, 'SUSPENDED')
 
     def test_non_existing_template_get(self):
         c = Client()
