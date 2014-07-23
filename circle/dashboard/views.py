@@ -3120,7 +3120,10 @@ class StoreList(LoginRequiredMixin, TemplateView):
             return redirect("/")
 
     def create_up_directory(self, directory):
-        return normpath(join('/', directory, '..'))
+        path = normpath(join('/', directory, '..'))
+        if not path.endswith("/"):
+            path += "/"
+        return path
 
 
 @require_GET
