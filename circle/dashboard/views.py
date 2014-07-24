@@ -52,6 +52,7 @@ from django_tables2 import SingleTableView
 from braces.views import (LoginRequiredMixin, SuperuserRequiredMixin,
                           PermissionRequiredMixin)
 from braces.views._access import AccessMixin
+from celery.exceptions import TimeoutError
 
 from django_sshkey.models import UserKey
 
@@ -583,13 +584,28 @@ class OperationView(RedirectToLoginMixin, DetailView):
             extra = {}
         result = None
         try:
-            self.get_op().async(user=request.user, **extra)
+            task = self.get_op().async(user=request.user, **extra)
         except Exception as e:
             messages.error(request, _('Could not start operation.'))
             logger.exception(e)
             result = e
         else:
-            messages.success(request, _('Operation is started.'))
+            wait = self.wait_for_result
+            if wait:
+                try:
+                    result = task.get(timeout=wait,
+                                      interval=min((wait / 5, .5)))
+                except TimeoutError:
+                    logger.debug("Result didn't arrive in %ss",
+                                 self.wait_for_result, exc_info=True)
+                except Exception as e:
+                    messages.error(request, _('Operation failed.'))
+                    logger.debug("Operation failed.", exc_info=True)
+                    result = e
+                else:
+                    messages.success(request, _('Operation succeeded.'))
+            if result is None:
+                messages.success(request, _('Operation is started.'))
 
         if "/json" in request.META.get("HTTP_ACCEPT", ""):
             data = self.get_response_data(result, post_extra=extra, **kwargs)
