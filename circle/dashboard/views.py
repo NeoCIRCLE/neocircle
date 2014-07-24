@@ -490,6 +490,7 @@ class OperationView(RedirectToLoginMixin, DetailView):
     template_name = 'dashboard/operate.html'
     show_in_toolbar = True
     effect = None
+    wait_for_result = None
 
     @property
     def name(self):
@@ -551,19 +552,37 @@ class OperationView(RedirectToLoginMixin, DetailView):
         self.check_auth()
         return super(OperationView, self).get(request, *args, **kwargs)
 
+    def get_response_data(self, result, extra=None, **kwargs):
+        """Return serializable data to return to agents requesting json
+        response to POST"""
+
+        if extra is None:
+            extra = {}
+        extra["success"] = not isinstance(result, Exception)
+        extra["done"] = result is not None
+        return extra
+
     def post(self, request, extra=None, *args, **kwargs):
         self.check_auth()
         self.object = self.get_object()
         if extra is None:
             extra = {}
+        result = None
         try:
             self.get_op().async(user=request.user, **extra)
         except Exception as e:
             messages.error(request, _('Could not start operation.'))
             logger.exception(e)
+            result = e
         else:
             messages.success(request, _('Operation is started.'))
-        return redirect("%s#activity" % self.object.get_absolute_url())
+
+        if "/json" in request.META.get("HTTP_ACCEPT", ""):
+            data = self.get_response_data(result, post_extra=extra, **kwargs)
+            return HttpResponse(json.dumps(data),
+                                content_type="application/json")
+        else:
+            return redirect("%s#activity" % self.object.get_absolute_url())
 
     @classmethod
     def factory(cls, op, icon='cog', effect='info', extra_bases=(), **kwargs):
