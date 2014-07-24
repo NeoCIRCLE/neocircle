@@ -369,6 +369,11 @@ $(function () {
     return false;
   });
 
+  /* don't close notifications window on missclick */
+  $(document).on("click", ".notification-messages", function() {
+    return false;
+  });
+
   $("#notification-button a").click(function() {
     $('.notification-messages').load("/dashboard/notifications/");
     $('#notification-button a span[class*="badge-pulse"]').remove();  
