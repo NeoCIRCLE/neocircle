@@ -12,24 +12,27 @@
   </div>
 </div>
 
-<div class="progress" style="position: relative; overflow: visible;">
-  <div class="progress-bar" role="progressbar" aria-valuenow="{{ quota.Used }}" aria-valuemin="0"
-    aria-valuemax="{{ quota.Hard }}" style="width:
-    {% if quota.Used > quota.Hard %}100{% else %}{% widthratio quota.Used quota.Hard 100 %}%{% endif %}%">
-    <div style="padding-top: 2px;">
-      {% blocktrans with used=quota.readable_used %}
-        {{ used }} used
-      {% endblocktrans %}
+<div style="position: relative;">
+  <div class="progress" style="width: 100%">
+    <div class="progress-bar" role="progressbar" 
+      aria-valuenow="{{ quota.Used }}" aria-valuemin="0" aria-valuemax="{{ quota.Hard }}" 
+      style="width: {% widthratio quota.Used quota.Hard 100 %}%; min-width: 150px;">
+      <div style="padding-top: 2px;">
+        {% blocktrans with used=quota.readable_used %}
+          {{ used }} used
+        {% endblocktrans %}
+      </div>
     </div>
-  </div>
+
     <div class="progress-marker" id="progress-marker-hard" data-placement="left"
       title="{% trans "Hard limit" %}: {{ quota.readable_hard }}">
     </div>
     <div class="progress-marker" id="progress-marker-soft" style="background: orange; 
       left: {% widthratio quota.Soft quota.Hard 100 %}%"
       title="{% trans "Soft limit" %}: {{ quota.readable_soft }}"
-      data-placement="left">
+      data-placement="top">
     </div>
+  </div>
 </div>
 
 {% endblock %}
