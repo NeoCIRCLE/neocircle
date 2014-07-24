@@ -147,7 +147,7 @@ class Store(object):
                 d['path'] += "/"
 
             d['ext'] = splitext(d['path'])[1]
-            d['icon'] = ("folder-open" if not d['ext']
+            d['icon'] = ("folder-open" if not d['TYPE'] == "F"
                          else file_icons.get(d['ext'], "file-o"))
 
         return sorted(content, key=lambda k: k['TYPE'])
