@@ -3100,7 +3100,9 @@ class StoreList(LoginRequiredMixin, TemplateView):
         directory = self.request.GET.get("directory", "/")
         directory = "/" if not len(directory) else directory
 
-        context['root'] = Store(self.request.user).list(directory)
+        store = Store(self.request.user)
+        context['root'] = store.list(directory)
+        context['quota'] = store.get_quota()
         context['up_url'] = self.create_up_directory(directory)
         context['current'] = directory
         context['next_url'] = "%s%s?directory=%s" % (

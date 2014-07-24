@@ -831,3 +831,21 @@ textarea[name="list-new-namelist"] {
 .store-action-button {
   margin-left: 5px;
 }
+
+.progress-bar {
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+
+#progress-marker-hard {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+  right: 0;
+  background: red;
+}
+
+.progress-marker {
+  width: 6px;
+  height: 20px;
+  position: absolute;
+}
