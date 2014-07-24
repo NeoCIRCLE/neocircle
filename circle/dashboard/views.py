@@ -849,6 +849,7 @@ class VmRenewView(FormOperationMixin, TokenOperationView, VmOperationView):
     effect = 'info'
     show_in_toolbar = False
     form_class = VmRenewForm
+    wait_for_result = 0.5
 
     def get_form_kwargs(self):
         choices = Lease.get_objects_with_level("user", self.request.user)
@@ -860,6 +861,13 @@ class VmRenewView(FormOperationMixin, TokenOperationView, VmOperationView):
         val = super(VmRenewView, self).get_form_kwargs()
         val.update({'choices': choices, 'default': default})
         return val
+
+    def get_response_data(self, result, extra, **kwargs):
+        extra = super(VmRenewView, self).get_response_data(result,
+                                                           extra, **kwargs)
+        extra["new_suspend_time"] = unicode(self.get_op().
+                                            instance.time_of_suspend)
+        return extra
 
 
 vm_ops = OrderedDict([
