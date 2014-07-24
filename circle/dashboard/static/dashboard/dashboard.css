@@ -751,3 +751,7 @@ textarea[name="list-new-namelist"] {
 #group-detail-permissions input[type="submit"]{
   margin-top: -6px;
 }
+
+#show-all-activities-container {
+  margin: 20px 0 0 10px;
+}

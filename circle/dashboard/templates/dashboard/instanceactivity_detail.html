@@ -20,9 +20,9 @@
           <span>{{ object.get_status_id|upper }}</span>
         </span>
       </div>
-      <div id="vm-activity-context" class="timeline">
-        {% include "dashboard/vm-detail/_activity-timeline.html" with active=object %}
-      </div>
+
+      {% include "dashboard/vm-detail/_activity-timeline.html" with active=object %}
+
     </div>
     <div class="col-md-8">
       <div class="panel panel-default">
