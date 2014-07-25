@@ -303,7 +303,6 @@ class VmDetailView(CheckedDetailView):
 
     def post(self, request, *args, **kwargs):
         options = {
-            'change_password': self.__change_password,
             'new_name': self.__set_name,
             'new_description': self.__set_description,
             'new_tag': self.__add_tag,
@@ -318,19 +317,6 @@ class VmDetailView(CheckedDetailView):
         raise Http404()
 
         raise Http404()
-
-    def __change_password(self, request):
-        self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-
-        self.object.change_password(user=request.user)
-        messages.success(request, _("Password changed."))
-        if request.is_ajax():
-            return HttpResponse("Success.")
-        else:
-            return redirect(reverse_lazy("dashboard.views.detail",
-                                         kwargs={'pk': self.object.pk}))
 
     def __set_name(self, request):
         self.object = self.get_object()
@@ -856,6 +842,9 @@ vm_ops = OrderedDict([
     ('download_disk', VmDownloadDiskView),
     ('renew', VmRenewView),
     ('resources_change', VmResourcesChangeView),
+    ('password_reset', VmOperationView.factory(
+        op='password_reset', icon='unlock', effect='warning',
+        show_in_toolbar=False)),
 ])
 
 

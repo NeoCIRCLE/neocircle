@@ -867,3 +867,23 @@ class ResourcesOperation(InstanceOperation):
 
 
 register_operation(ResourcesOperation)
+
+
+class PasswordResetOperation(InstanceOperation):
+    activity_code_suffix = 'Password reset'
+    id = 'password_reset'
+    name = _("password reset")
+    description = _("Password reset")
+    acl_level = "owner"
+    required_perms = ()
+
+    def check_precond(self):
+        super(PasswordResetOperation, self).check_precond()
+        if self.instance.status not in ["RUNNING"]:
+            raise self.instance.WrongStateError(self.instance)
+
+    def _operation(self):
+        self.instance.change_password()
+
+
+register_operation(PasswordResetOperation)

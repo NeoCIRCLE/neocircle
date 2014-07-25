@@ -719,22 +719,15 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             timezone.now() + lease.suspend_interval,
             timezone.now() + lease.delete_interval)
 
-    def change_password(self, user=None):
+    def change_password(self):
         """Generate new password for the vm
 
         :param self: The virtual machine.
-
-        :param user: The user who's issuing the command.
         """
-
         self.pw = pwgen()
-        with instance_activity(code_suffix='change_password', instance=self,
-                               readable_name=ugettext_noop("change password"),
-                               user=user):
-            queue = self.get_remote_queue_name("agent")
-            agent_tasks.change_password.apply_async(queue=queue,
-                                                    args=(self.vm_name,
-                                                          self.pw))
+        queue = self.get_remote_queue_name("agent")
+        agent_tasks.change_password.apply_async(
+            queue=queue, args=(self.vm_name, self.pw))
         self.save()
 
     def select_node(self):
