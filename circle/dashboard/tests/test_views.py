@@ -142,26 +142,13 @@ class VmDetailTest(LoginMixin, TestCase):
         response = c.post('/dashboard/vm/mass-delete/', {'vms': [1]})
         self.assertEqual(response.status_code, 302)
 
-    def test_permitted_password_change(self):
-        c = Client()
-        self.login(c, "user2")
-        inst = Instance.objects.get(pk=1)
-        inst.set_level(self.u2, 'owner')
-        inst.node = Node.objects.all()[0]
-        inst.save()
-        password = inst.pw
-        response = c.post("/dashboard/vm/1/", {'change_password': True})
-        self.assertTrue(Instance.get_remote_queue_name.called)
-        self.assertEqual(response.status_code, 302)
-        self.assertNotEqual(password, Instance.objects.get(pk=1).pw)
-
     def test_unpermitted_password_change(self):
         c = Client()
         self.login(c, "user2")
         inst = Instance.objects.get(pk=1)
         inst.set_level(self.u1, 'owner')
         password = inst.pw
-        response = c.post("/dashboard/vm/1/", {'change_password': True})
+        response = c.post("/dashboard/vm/1/op/password_reset/")
         self.assertEqual(response.status_code, 403)
         self.assertEqual(password, Instance.objects.get(pk=1).pw)
 
