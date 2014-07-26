@@ -952,6 +952,25 @@ class VmDownloadDiskForm(forms.Form):
         return helper
 
 
+class VmAddInterfaceForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('choices')
+        super(VmAddInterfaceForm, self).__init__(*args, **kwargs)
+
+        field = forms.ModelChoiceField(
+            queryset=choices, required=True, label=_('Vlan'))
+        if not choices:
+            field.widget.attrs['disabled'] = 'disabled'
+            field.empty_label = _('No more networks.')
+        self.fields['vlan'] = field
+
+    @property
+    def helper(self):
+        helper = FormHelper(self)
+        helper.form_tag = False
+        return helper
+
+
 class CircleAuthenticationForm(AuthenticationForm):
     # fields: username, password
 
