@@ -43,7 +43,7 @@ from taggit.managers import TaggableManager
 from acl.models import AclBase
 from common.models import create_readable
 from common.operations import OperatedMixin
-from ..tasks import vm_tasks, agent_tasks
+from ..tasks import vm_tasks
 from .activity import (ActivityInProgressError, instance_activity,
                        InstanceActivity)
 from .common import BaseResourceConfigModel, Lease
@@ -718,17 +718,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         return (
             timezone.now() + lease.suspend_interval,
             timezone.now() + lease.delete_interval)
-
-    def change_password(self):
-        """Generate new password for the vm
-
-        :param self: The virtual machine.
-        """
-        self.pw = pwgen()
-        queue = self.get_remote_queue_name("agent")
-        agent_tasks.change_password.apply_async(
-            queue=queue, args=(self.vm_name, self.pw))
-        self.save()
 
     def select_node(self):
         """Returns the node the VM should be deployed or migrated to.

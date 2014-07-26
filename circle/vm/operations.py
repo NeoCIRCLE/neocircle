@@ -33,8 +33,9 @@ from .tasks.local_tasks import (
 )
 from .models import (
     Instance, InstanceActivity, InstanceTemplate, Interface, Node,
-    NodeActivity,
+    NodeActivity, pwgen
 )
+from .tasks import agent_tasks
 
 logger = getLogger(__name__)
 
@@ -883,7 +884,11 @@ class PasswordResetOperation(InstanceOperation):
             raise self.instance.WrongStateError(self.instance)
 
     def _operation(self):
-        self.instance.change_password()
+        self.instance.pw = pwgen()
+        queue = self.instance.get_remote_queue_name("agent")
+        agent_tasks.change_password.apply_async(
+            queue=queue, args=(self.instance.vm_name, self.instance.pw))
+        self.instance.save()
 
 
 register_operation(PasswordResetOperation)

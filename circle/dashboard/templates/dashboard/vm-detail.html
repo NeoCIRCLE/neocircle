@@ -100,7 +100,7 @@
         <dd style="font-size: 10px; text-align: right; padding-top: 8px;">
           <div id="vm-details-pw-reset">
           {% with op=op.password_reset %}{% if op %}
-            <a href="{{op.get_url}}" class="operation btn btn-default btn-xs" {% if op.disabled %}disabled{% endif %}>{% trans "Generate new password!" %}</a>
+            <a href="{{op.get_url}}" class="btn btn-default btn-xs" {% if op.disabled %}disabled{% endif %}>{% trans "Generate new password!" %}</a>
           {% endif %}{% endwith %}
           </div>
         </dd>
