@@ -70,9 +70,7 @@ class Notification(TimeStampedModel):
     def send(cls, user, subject, template, context,
              valid_until=None, subject_context=None):
         hro = create_readable(template, user=user, **context)
-        if subject_context is None:
-            subject_context = context
-        subject = create_readable(subject, **subject_context)
+        subject = create_readable(subject, **(subject_context or context))
         return cls.objects.create(to=user,
                                   subject_data=subject.to_dict(),
                                   message_data=hro.to_dict(),
