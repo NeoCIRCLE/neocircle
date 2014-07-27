@@ -862,7 +862,7 @@ class VmRenewView(FormOperationMixin, TokenOperationView, VmOperationView):
         val.update({'choices': choices, 'default': default})
         return val
 
-    def get_response_data(self, result, extra, **kwargs):
+    def get_response_data(self, result, extra=None, **kwargs):
         extra = super(VmRenewView, self).get_response_data(result,
                                                            extra, **kwargs)
         extra["new_suspend_time"] = unicode(self.get_op().
