@@ -84,8 +84,8 @@ class Store(object):
             return result
 
     def request_download(self, path):
-            r = self._request_cmd("DOWNLOAD", PATH=path, timeout=10)
-            return r.json()['LINK']
+        r = self._request_cmd("DOWNLOAD", PATH=path, timeout=10)
+        return r.json()['LINK']
 
     def request_upload(self, path):
             r = self._request_cmd("UPLOAD", PATH=path)
