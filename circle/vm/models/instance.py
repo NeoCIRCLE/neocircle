@@ -642,6 +642,13 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
 
         :param again: Notify already notified owners.
         """
+
+        notification_msg = ugettext_noop(
+            'Your instance <a href="%(url)s">%(instance)s</a> is going to '
+            'expire. It will be suspended at %(suspend)s and destroyed at '
+            '%(delete)s. Please, either <a href="%(token)s">renew</a> '
+            'or <a href="%(url)s">destroy</a> it now.')
+
         if not again and self._is_notified_about_expiration():
             return False
         success, failed = [], []
@@ -672,10 +679,10 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                 try:
                     token = VmRenewView.get_token_url(self, u)
                     u.profile.notify(
-                        _('%s expiring soon') % unicode(self),
-                        'dashboard/notifications/vm-expiring.html',
-                        {'instance': self, 'token': token}, valid_until=min(
-                            self.time_of_delete, self.time_of_suspend))
+                        ugettext_noop('%(instance)s expiring soon'),
+                        notification_msg, url=self.get_absolute_url(),
+                        instance=self, suspend=self.time_of_suspend,
+                        token=token, delete=self.time_of_delete)
                 except Exception as e:
                     failed.append((u, e))
                 else:
