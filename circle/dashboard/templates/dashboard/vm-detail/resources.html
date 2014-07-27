@@ -2,6 +2,79 @@
 {% load sizefieldtags %}
 {% load crispy_forms_tags %}
 
+<hr />
+
+<div class="vm-resources-sliders">
+
+<div class="row">
+  <div class="col-sm-3" style="font-weight: bold;">
+    <i class="fa fa-trophy"></i> {% trans "CPU priority" %}
+  </div>
+  <div class="col-sm-6">
+    <input type="text" class="vm-slider cpu-priority-slider"
+     data-slider="true" data-slider-highlight="true" data-slider-range="10, 100"
+     data-slider-values="0, 10, 30, 80, 100" data-slider-snap="true"/>
+  </div>
+  <div class="col-sm-3">
+    <div class="input-group">
+    <select type="text" class="form-control input-tags cpu-priority-input">
+      <option value="0">idle</option>
+      <option value="1">normal</option>
+      <option value="2">server</option>
+      <option value="3">realtime</option>
+    </select>
+      <span class="input-group-addon input-tags">
+        <i class="fa fa-question" title="yo"></i>
+      </span>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-sm-3" style="font-weight: bold;">
+    <i class="fa fa-cogs"></i> {% trans "CPU count" %}
+  </div>
+  <div class="col-sm-6">
+    <input type="text" class="vm-slider cpu-count-slider"
+     data-slider="true" data-slider-highlight="true" data-slider-range="0, 10"
+     data-slider-step="true" data-slider-snap="true"/>
+  </div>
+  <div class="col-sm-3">
+    <div class="input-group">
+      <input type="number" min="1" max="10" value="1" class="form-control input-tags cpu-count-input"/>
+      <span class="input-group-addon input-tags">
+        <i class="fa fa-question" title="yo"></i>
+      </span>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-sm-3" style="font-weight: bold;">
+    <i class="fa fa-ticket"></i> {% trans "RAM amount" %}
+  </div>
+  <div class="col-sm-6">
+    <input type="text" class="vm-slider ram-slider" 
+     data-slider="true" data-slider-highlight="true" data-slider-range="0, 8192"
+     data-slider-step="128" data-slider-snap="true"/>
+  </div>
+  <div class="col-sm-3">
+    <div class="input-group">
+      <input type="text" class="form-control input-tags ram-input" value="512"/>
+      <span class="input-group-addon input-tags">
+        MiB
+      </span>
+      <span class="input-group-addon input-tags">
+        <i title="szia" class="fa fa-question"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<hr />
+
 <form id="vm-details-resources-form" method="POST" action="">
   {% csrf_token %}
 <p class="row">

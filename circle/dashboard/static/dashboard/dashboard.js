@@ -432,26 +432,58 @@ function compareVmByFav(a, b) {
 }
 
 function addSliderMiscs() {
-  $('.vm-slider').each(function() {  
-    $("<span>").addClass("output").html($(this).val()).insertAfter($(this));
-  });                                                                   
-                                                                            
-  $('.vm-slider').slider()                                              
-  .on('slide', function(e) {                                            
-    $(this).val(e.value);
-    $(this).parent('div').nextAll("span").html(e.value)                 
+  $(".vm-slider").simpleSlider();
+  $(".cpu-priority-slider").bind("slider:changed", function (event, data) {
+    value = data.value + 0;
+    switch(value) {
+      case 30: type = 1; break;
+      case 80: type = 2; break;
+      case 100: type = 3; break;
+      default: type = 0;
+    }
+
+    $(".cpu-priority-input option:eq(" + type + ")").attr("selected", "selected");
   });
 
-  refreshSliders();
+  var ram_fire = false;
+  $(".cpu-priority-input").change(function() {
+    var val = $(":selected", $(this)).val();
+    var slider_value = [10, 30, 80, 100][val]
+    $(".cpu-priority-slider").simpleSlider("setValue", slider_value);
+  });
+
+  $(".cpu-count-slider").bind("slider:changed", function (event, data) {
+    var value = data.value + 0;
+    $(".cpu-count-input").val(value);
+  });
+
+  $(".cpu-count-input").bind("input", function() {
+    var val = $(this).val();
+    $(".cpu-count-slider").simpleSlider("setValue", val);
+  });
+  
+
+  $(".ram-slider").bind("slider:changed", function (event, data) {
+    if(ram_fire) {
+      ram_fire = false;
+      return;
+    }
+
+    var value = data.value + 0;
+    $(".ram-input").val(value);
+  });
+
+  $(".ram-input").bind("input", function() {
+    var val = $(this).val();
+    ram_fire = true;
+    $(".ram-slider").simpleSlider("setValue", parseInt(val));
+  });
+
+
+  $(".cpu-priority-input").trigger("change");
+  $(".cpu-count-input, .ram-input").trigger("input");
 }
 
-// ehhh
-function refreshSliders() {
-  $('.vm-slider').each(function() {
-    $(this).val($(this).slider().data('slider').getValue());
-    $(this).parent('div').nextAll("span").html($(this).val());
-  });
-}
 
 /* deletes the VM with the pk
  * if dir is true, then redirect to the dashboard landing page
