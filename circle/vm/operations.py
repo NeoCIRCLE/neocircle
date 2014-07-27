@@ -125,7 +125,6 @@ class AddInterfaceOperation(InstanceOperation):
                 raise
             net.deploy()
 
-        return net
 
     def get_activity_name(self, kwargs):
         return create_readable(ugettext_noop("add %(vlan)s interface"),
