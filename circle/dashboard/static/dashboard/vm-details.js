@@ -19,6 +19,7 @@ $(function() {
   });
 
   $("#activity-refresh").on("click", "#show-all-activities", function() {
+    $(this).find("i").addClass("fa-spinner fa-spin");
     show_all = !show_all;
     $('a[href="#activity"]').trigger("click");
     return false;
@@ -359,10 +360,14 @@ function checkNewActivity(runs) {
     url: '/dashboard/vm/' + instance + '/activity/',
     data: {'show_all': show_all},
     success: function(data) {
-      a = unescapeHTML(data['activities']);
-      b = changeHTML($("#activity-refresh").html());
-      if(a != b)
+      if(show_all) { /* replace on longer string freezes the spinning stuff */
         $("#activity-refresh").html(data['activities']);
+      } else {
+        a = unescapeHTML(data['activities']);
+        b = changeHTML($("#activity-refresh").html());
+        if(a != b)
+          $("#activity-refresh").html(data['activities']);
+      }
       $("#ops").html(data['ops']);
       $("#disk-ops").html(data['disk_ops']);
       $("[title]").tooltip();

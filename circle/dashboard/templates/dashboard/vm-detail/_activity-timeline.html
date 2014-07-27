@@ -56,9 +56,9 @@
 <div id="show-all-activities-container">
   <a id="show-all-activities" href="#">
     {% if activities|length > 10 %}
-      <span>{% trans "Show less activities" %}</span>
+      {% trans "Show less activities" %} <i class="fa fa-angle-double-up"></i>
     {% else %}
-      <span>{% trans "Show all activities" %}</span>
+      {% trans "Show all activities" %} <i class="fa fa-angle-double-down"></i>
     {% endif %}
   </a>
 </div>
