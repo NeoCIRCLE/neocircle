@@ -21,8 +21,7 @@ from __future__ import unicode_literals, absolute_import
 from collections import OrderedDict
 from itertools import chain
 from os import getenv
-from os.path import join, normpath, dirname
-import os
+from os.path import join, normpath, dirname, basename
 import json
 import logging
 import re
@@ -3193,8 +3192,8 @@ class StoreRemove(LoginRequiredMixin, TemplateView):
         if context['is_dir']:
             context['directory'] = path
         else:
-            context['directory'] = os.path.dirname(path)
-            context['name'] = os.path.basename(path)
+            context['directory'] = dirname(path)
+            context['name'] = basename(path)
 
         return context
 
