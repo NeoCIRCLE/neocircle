@@ -908,7 +908,8 @@ class VmRenewForm(forms.Form):
 
         self.fields['lease'] = forms.ModelChoiceField(queryset=choices,
                                                       initial=default,
-                                                      required=True,
+                                                      required=False,
+                                                      empty_label=None,
                                                       label=_('Length'))
         if len(choices) < 2:
             self.fields['lease'].widget = HiddenInput()

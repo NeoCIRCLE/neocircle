@@ -52,6 +52,7 @@ from django_tables2 import SingleTableView
 from braces.views import (LoginRequiredMixin, SuperuserRequiredMixin,
                           PermissionRequiredMixin)
 from braces.views._access import AccessMixin
+from celery.exceptions import TimeoutError
 
 from django_sshkey.models import UserKey
 
@@ -69,6 +70,7 @@ from .tables import (
     NodeListTable, NodeVmListTable, TemplateListTable, LeaseListTable,
     GroupListTable, UserKeyListTable
 )
+from common.models import HumanReadableObject
 from vm.models import (
     Instance, instance_activity, InstanceActivity, InstanceTemplate, Interface,
     InterfaceTemplate, Lease, Node, NodeActivity, Trait,
@@ -486,6 +488,7 @@ class OperationView(RedirectToLoginMixin, DetailView):
     template_name = 'dashboard/operate.html'
     show_in_toolbar = True
     effect = None
+    wait_for_result = None
 
     @property
     def name(self):
@@ -547,19 +550,57 @@ class OperationView(RedirectToLoginMixin, DetailView):
         self.check_auth()
         return super(OperationView, self).get(request, *args, **kwargs)
 
+    def get_response_data(self, result, done, extra=None, **kwargs):
+        """Return serializable data to return to agents requesting json
+        response to POST"""
+
+        if extra is None:
+            extra = {}
+        extra["success"] = not isinstance(result, Exception)
+        extra["done"] = done
+        if isinstance(result, HumanReadableObject):
+            extra["message"] = result.get_user_text()
+        return extra
+
     def post(self, request, extra=None, *args, **kwargs):
         self.check_auth()
         self.object = self.get_object()
         if extra is None:
             extra = {}
+        result = None
+        done = False
         try:
-            self.get_op().async(user=request.user, **extra)
+            task = self.get_op().async(user=request.user, **extra)
         except Exception as e:
             messages.error(request, _('Could not start operation.'))
             logger.exception(e)
+            result = e
         else:
-            messages.success(request, _('Operation is started.'))
-        return redirect("%s#activity" % self.object.get_absolute_url())
+            wait = self.wait_for_result
+            if wait:
+                try:
+                    result = task.get(timeout=wait,
+                                      interval=min((wait / 5, .5)))
+                except TimeoutError:
+                    logger.debug("Result didn't arrive in %ss",
+                                 self.wait_for_result, exc_info=True)
+                except Exception as e:
+                    messages.error(request, _('Operation failed.'))
+                    logger.debug("Operation failed.", exc_info=True)
+                    result = e
+                else:
+                    done = True
+                    messages.success(request, _('Operation succeeded.'))
+            if result is None and not done:
+                messages.success(request, _('Operation is started.'))
+
+        if "/json" in request.META.get("HTTP_ACCEPT", ""):
+            data = self.get_response_data(result, done,
+                                          post_extra=extra, **kwargs)
+            return HttpResponse(json.dumps(data),
+                                content_type="application/json")
+        else:
+            return redirect("%s#activity" % self.object.get_absolute_url())
 
     @classmethod
     def factory(cls, op, icon='cog', effect='info', extra_bases=(), **kwargs):
@@ -817,6 +858,7 @@ class VmRenewView(FormOperationMixin, TokenOperationView, VmOperationView):
     effect = 'info'
     show_in_toolbar = False
     form_class = VmRenewForm
+    wait_for_result = 0.5
 
     def get_form_kwargs(self):
         choices = Lease.get_objects_with_level("user", self.request.user)
@@ -828,6 +870,13 @@ class VmRenewView(FormOperationMixin, TokenOperationView, VmOperationView):
         val = super(VmRenewView, self).get_form_kwargs()
         val.update({'choices': choices, 'default': default})
         return val
+
+    def get_response_data(self, result, done, extra=None, **kwargs):
+        extra = super(VmRenewView, self).get_response_data(result, done,
+                                                           extra, **kwargs)
+        extra["new_suspend_time"] = unicode(self.get_op().
+                                            instance.time_of_suspend)
+        return extra
 
 
 vm_ops = OrderedDict([

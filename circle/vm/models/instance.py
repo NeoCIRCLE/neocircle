@@ -687,6 +687,11 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                     failed.append((u, e))
                 else:
                     success.append(u)
+            if self.status == "RUNNING":
+                token = VmRenewView.get_token_url(self, self.owner)
+                queue = self.get_remote_queue_name("agent")
+                agent_tasks.send_expiration.apply_async(
+                    queue=queue, args=(self.vm_name, token))
         return True
 
     def is_expiring(self, threshold=0.1):
