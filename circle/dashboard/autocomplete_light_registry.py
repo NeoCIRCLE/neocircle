@@ -10,6 +10,18 @@ class AclUserAutocomplete(autocomplete_light.AutocompleteGenericBase):
         ('^name', 'groupprofile__org_id'),
     )
     autocomplete_js_attributes = {'placeholder': _("Name of group or user")}
+    choice_html_format = u'<span data-value="%s"><span>%s</span> %s</span>'
+
+    def choice_html(self, choice):
+        try:
+            name = choice.get_full_name()
+        except AttributeError:
+            name = _('group')
+        if name:
+            name = u'(%s)' % name
+
+        return self.choice_html_format % (
+            self.choice_value(choice), self.choice_label(choice), name)
 
     def choices_for_request(self):
         user = self.request.user

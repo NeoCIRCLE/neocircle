@@ -80,4 +80,11 @@
 
   {% block extra_etc %}
   {% endblock %}
+
+<script>
+yourlabs.TextWidget.prototype.getValue = function(choice) {
+    return choice.children().html();
+}
+</script>
+
 </html>
