@@ -280,6 +280,7 @@ class RenewViewTest(unittest.TestCase):
         view = vm_ops['renew']
 
         with patch.object(view, 'get_object') as go, \
+                patch('dashboard.views.messages') as msg, \
                 patch('dashboard.views.get_object_or_404') as go4:
             inst = MagicMock(spec=Instance)
             inst._meta.object_name = "Instance"
@@ -288,7 +289,10 @@ class RenewViewTest(unittest.TestCase):
             inst.has_level.return_value = True
             go.return_value = inst
             go4.return_value = MagicMock()
-            assert view.as_view()(request, pk=1234).render().status_code == 200
+            assert view.as_view()(request, pk=1234)
+            assert not msg.error.called
+            assert inst.renew.async.called_with(user=request.user, lease=None)
+            assert inst.renew.async.return_value.get.called
             # success would redirect
 
     def test_renew_by_owner_w_param(self):
