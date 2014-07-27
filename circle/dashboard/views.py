@@ -69,6 +69,7 @@ from .tables import (
     NodeListTable, NodeVmListTable, TemplateListTable, LeaseListTable,
     GroupListTable, UserKeyListTable
 )
+from common.models import HumanReadableObject
 from vm.models import (
     Instance, instance_activity, InstanceActivity, InstanceTemplate, Interface,
     InterfaceTemplate, Lease, Node, NodeActivity, Trait,
@@ -567,14 +568,16 @@ class OperationView(RedirectToLoginMixin, DetailView):
         self.check_auth()
         return super(OperationView, self).get(request, *args, **kwargs)
 
-    def get_response_data(self, result, extra=None, **kwargs):
+    def get_response_data(self, result, done, extra=None, **kwargs):
         """Return serializable data to return to agents requesting json
         response to POST"""
 
         if extra is None:
             extra = {}
         extra["success"] = not isinstance(result, Exception)
-        extra["done"] = result is not None
+        extra["done"] = done
+        if isinstance(result, HumanReadableObject):
+            extra["message"] = result.get_user_text()
         return extra
 
     def post(self, request, extra=None, *args, **kwargs):
@@ -583,6 +586,7 @@ class OperationView(RedirectToLoginMixin, DetailView):
         if extra is None:
             extra = {}
         result = None
+        done = False
         try:
             task = self.get_op().async(user=request.user, **extra)
         except Exception as e:
@@ -603,12 +607,14 @@ class OperationView(RedirectToLoginMixin, DetailView):
                     logger.debug("Operation failed.", exc_info=True)
                     result = e
                 else:
+                    done = True
                     messages.success(request, _('Operation succeeded.'))
-            if result is None:
+            if result is None and not done:
                 messages.success(request, _('Operation is started.'))
 
         if "/json" in request.META.get("HTTP_ACCEPT", ""):
-            data = self.get_response_data(result, post_extra=extra, **kwargs)
+            data = self.get_response_data(result, done,
+                                          post_extra=extra, **kwargs)
             return HttpResponse(json.dumps(data),
                                 content_type="application/json")
         else:
@@ -862,8 +868,8 @@ class VmRenewView(FormOperationMixin, TokenOperationView, VmOperationView):
         val.update({'choices': choices, 'default': default})
         return val
 
-    def get_response_data(self, result, extra=None, **kwargs):
-        extra = super(VmRenewView, self).get_response_data(result,
+    def get_response_data(self, result, done, extra=None, **kwargs):
+        extra = super(VmRenewView, self).get_response_data(result, done,
                                                            extra, **kwargs)
         extra["new_suspend_time"] = unicode(self.get_op().
                                             instance.time_of_suspend)
