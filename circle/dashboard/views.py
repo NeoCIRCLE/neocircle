@@ -61,7 +61,8 @@ from .forms import (
     UserCreationForm, GroupProfileUpdateForm, UnsubscribeForm,
     VmSaveForm, UserKeyForm, VmRenewForm,
     CirclePasswordChangeForm, VmCreateDiskForm, VmDownloadDiskForm,
-    TraitsForm, RawDataForm, GroupPermissionForm, AclUserAddForm
+    TraitsForm, RawDataForm, GroupPermissionForm, AclUserAddForm,
+    VmAddInterfaceForm,
 )
 
 from .tables import (
@@ -309,7 +310,6 @@ class VmDetailView(CheckedDetailView):
             'new_tag': self.__add_tag,
             'to_remove': self.__remove_tag,
             'port': self.__add_port,
-            'new_network_vlan': self.__new_network,
             'abort_operation': self.__abort_operation,
         }
         for k, v in options.iteritems():
@@ -453,24 +453,6 @@ class VmDetailView(CheckedDetailView):
                 messages.error(request, error)
             return redirect(reverse_lazy("dashboard.views.detail",
                                          kwargs={'pk': self.get_object().pk}))
-
-    def __new_network(self, request):
-        self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-
-        vlan = get_object_or_404(Vlan, pk=request.POST.get("new_network_vlan"))
-        if not vlan.has_level(request.user, 'user'):
-            raise PermissionDenied()
-        try:
-            self.object.add_interface(vlan=vlan, user=request.user)
-            messages.success(request, _("Successfully added new interface."))
-        except Exception, e:
-            error = u' '.join(e.messages)
-            messages.error(request, error)
-
-        return redirect("%s#network" % reverse_lazy(
-            "dashboard.views.detail", kwargs={'pk': self.object.pk}))
 
     def __abort_operation(self, request):
         self.object = self.get_object()
@@ -643,7 +625,9 @@ class FormOperationMixin(object):
                 request, extra, *args, **kwargs)
             if request.is_ajax():
                 return HttpResponse(
-                    json.dumps({'success': True}),
+                    json.dumps({
+                        'success': True,
+                        'with_reload': getattr(self, 'with_reload', False)}),
                     content_type="application=json"
                 )
             else:
@@ -657,6 +641,25 @@ class RequestFormOperationMixin(FormOperationMixin):
     def get_form_kwargs(self):
         val = super(FormOperationMixin, self).get_form_kwargs()
         val.update({'request': self.request})
+        return val
+
+
+class VmAddInterfaceView(FormOperationMixin, VmOperationView):
+
+    op = 'add_interface'
+    form_class = VmAddInterfaceForm
+    show_in_toolbar = False
+    icon = 'globe'
+    effect = 'success'
+    with_reload = True
+
+    def get_form_kwargs(self):
+        inst = self.get_op().instance
+        choices = Vlan.get_objects_with_level(
+            "user", self.request.user).exclude(
+            vm_interface__instance__in=[inst])
+        val = super(VmAddInterfaceView, self).get_form_kwargs()
+        val.update({'choices': choices})
         return val
 
 
@@ -854,6 +857,7 @@ vm_ops = OrderedDict([
         op='destroy', icon='times', effect='danger')),
     ('create_disk', VmCreateDiskView),
     ('download_disk', VmDownloadDiskView),
+    ('add_interface', VmAddInterfaceView),
     ('renew', VmRenewView),
     ('resources_change', VmResourcesChangeView),
 ])

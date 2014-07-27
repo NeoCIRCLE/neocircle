@@ -94,12 +94,21 @@ class AddInterfaceOperation(InstanceOperation):
                     "the VM.")
     required_perms = ()
 
+    def rollback(self, net, activity):
+        with activity.sub_activity(
+            'destroying_net',
+                readable_name=ugettext_noop("destroy network (rollback)")):
+            net.destroy()
+            net.delete()
+
     def check_precond(self):
         super(AddInterfaceOperation, self).check_precond()
         if self.instance.status not in ['STOPPED', 'PENDING', 'RUNNING']:
             raise self.instance.WrongStateError(self.instance)
 
     def _operation(self, activity, user, system, vlan, managed=None):
+        if not vlan.has_level(user, 'user'):
+            raise PermissionDenied()
         if managed is None:
             managed = vlan.managed
 
@@ -107,8 +116,13 @@ class AddInterfaceOperation(InstanceOperation):
                                managed=managed, owner=user, vlan=vlan)
 
         if self.instance.is_running:
-            with activity.sub_activity('attach_network'):
-                self.instance.attach_network(net)
+            try:
+                with activity.sub_activity('attach_network'):
+                    self.instance.attach_network(net)
+            except Exception as e:
+                if hasattr(e, 'libvirtError'):
+                    self.rollback(net, activity)
+                raise
             net.deploy()
 
         return net
