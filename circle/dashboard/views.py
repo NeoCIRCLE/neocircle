@@ -20,6 +20,7 @@ from __future__ import unicode_literals, absolute_import
 from collections import OrderedDict
 from itertools import chain
 from os import getenv
+from urlparse import urljoin
 import json
 import logging
 import re
@@ -3120,3 +3121,7 @@ class UserKeyCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         kwargs = super(UserKeyCreate, self).get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
+
+
+def absolute_url(url):
+    return urljoin(settings.DJANGO_URL, url)

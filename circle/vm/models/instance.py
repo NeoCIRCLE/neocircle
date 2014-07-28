@@ -673,7 +673,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                                readable_name=ugettext_noop(
                                    "notify owner about expiration"),
                                on_commit=on_commit):
-            from dashboard.views import VmRenewView
+            from dashboard.views import VmRenewView, absolute_url
             level = self.get_level_object("owner")
             for u, ulevel in self.get_users_with_level(level__pk=level.pk):
                 try:
@@ -688,7 +688,8 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                 else:
                     success.append(u)
             if self.status == "RUNNING":
-                token = VmRenewView.get_token_url(self, self.owner)
+                token = absolute_url(
+                    VmRenewView.get_token_url(self, self.owner))
                 queue = self.get_remote_queue_name("agent")
                 agent_tasks.send_expiration.apply_async(
                     queue=queue, args=(self.vm_name, token))
