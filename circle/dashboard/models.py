@@ -29,7 +29,7 @@ from django.db.models import (
     Model, ForeignKey, OneToOneField, CharField, IntegerField, TextField,
     DateTimeField, permalink, BooleanField
 )
-from django.db.models.signals import post_save, pre_delete
+from django.db.models.signals import post_save, pre_delete, post_delete
 from django.templatetags.static import static
 from django.utils.translation import ugettext_lazy as _
 from django_sshkey.models import UserKey
@@ -284,6 +284,29 @@ if hasattr(settings, 'SAML_ORG_ID_ATTRIBUTE'):
 
 else:
     logger.debug("Do not register save_org_id to djangosaml2 pre_user_save")
+
+
+def update_store_profile(sender, **kwargs):
+    profile = kwargs.get('instance')
+    s = Store(profile.user)
+    keys = [i.key for i in profile.user.userkey_set.all()]
+    s.create_user(profile.smb_password, keys,
+                  profile.disk_quota)
+
+post_save.connect(update_store_profile, sender=Profile)
+
+
+def update_store_keys(sender, **kwargs):
+    userkey = kwargs.get('instance')
+    profile = userkey.user.profile
+    keys = [i.key for i in profile.user.userkey_set.all()]
+    s = Store(userkey.user)
+    s.create_user(profile.smb_password, keys,
+                  profile.disk_quota)
+
+
+post_save.connect(update_store_keys, sender=UserKey)
+post_delete.connect(update_store_keys, sender=UserKey)
 
 
 def add_ssh_keys(sender, **kwargs):
