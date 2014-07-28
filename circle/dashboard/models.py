@@ -46,7 +46,7 @@ from common.models import HumanReadableObject, create_readable, Encoder
 
 from vm.tasks.agent_tasks import add_keys, del_keys
 
-from .store_api import Store
+from .store_api import Store, NoStoreException
 
 logger = getLogger(__name__)
 
@@ -288,10 +288,15 @@ else:
 
 def update_store_profile(sender, **kwargs):
     profile = kwargs.get('instance')
-    s = Store(profile.user)
     keys = [i.key for i in profile.user.userkey_set.all()]
-    s.create_user(profile.smb_password, keys,
-                  profile.disk_quota)
+    try:
+        s = Store(profile.user)
+        s.create_user(profile.smb_password, keys,
+                      profile.disk_quota)
+    except NoStoreException:
+        logger.debug("Store is not available.")
+        pass
+
 
 post_save.connect(update_store_profile, sender=Profile)
 
@@ -300,9 +305,13 @@ def update_store_keys(sender, **kwargs):
     userkey = kwargs.get('instance')
     profile = userkey.user.profile
     keys = [i.key for i in profile.user.userkey_set.all()]
-    s = Store(userkey.user)
-    s.create_user(profile.smb_password, keys,
-                  profile.disk_quota)
+    try:
+        s = Store(userkey.user)
+        s.create_user(profile.smb_password, keys,
+                      profile.disk_quota)
+    except NoStoreException:
+        logger.debug("Store is not available.")
+        pass
 
 
 post_save.connect(update_store_keys, sender=UserKey)
