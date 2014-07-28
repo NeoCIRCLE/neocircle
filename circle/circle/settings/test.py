@@ -52,3 +52,5 @@ LOGGING['handlers']['console'] = {'level': level,
                                   'formatter': 'simple'}
 for i in LOCAL_APPS:
     LOGGING['loggers'][i] = {'handlers': ['console'], 'level': level}
+# Forbid store usage
+STORE_URL = ""
