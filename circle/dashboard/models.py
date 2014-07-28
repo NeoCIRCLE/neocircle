@@ -33,6 +33,7 @@ from django.db.models.signals import post_save, pre_delete, post_delete
 from django.templatetags.static import static
 from django.utils.translation import ugettext_lazy as _
 from django_sshkey.models import UserKey
+from django.core.exceptions import ObjectDoesNotExist
 
 from sizefield.models import FileSizeField
 
@@ -295,7 +296,6 @@ def update_store_profile(sender, **kwargs):
                       profile.disk_quota)
     except NoStoreException:
         logger.debug("Store is not available.")
-        pass
 
 
 post_save.connect(update_store_profile, sender=Profile)
@@ -303,15 +303,18 @@ post_save.connect(update_store_profile, sender=Profile)
 
 def update_store_keys(sender, **kwargs):
     userkey = kwargs.get('instance')
-    profile = userkey.user.profile
-    keys = [i.key for i in profile.user.userkey_set.all()]
     try:
-        s = Store(userkey.user)
-        s.create_user(profile.smb_password, keys,
-                      profile.disk_quota)
-    except NoStoreException:
-        logger.debug("Store is not available.")
-        pass
+        profile = userkey.user.profile
+    except ObjectDoesNotExist:
+        pass  # If there is no profile the user is deleted
+    else:
+        keys = [i.key for i in profile.user.userkey_set.all()]
+        try:
+            s = Store(userkey.user)
+            s.create_user(profile.smb_password, keys,
+                          profile.disk_quota)
+        except NoStoreException:
+            logger.debug("Store is not available.")
 
 
 post_save.connect(update_store_keys, sender=UserKey)
