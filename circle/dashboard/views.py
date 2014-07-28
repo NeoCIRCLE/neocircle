@@ -275,8 +275,11 @@ class VmDetailView(CheckedDetailView):
         })
 
         # activity data
-        context['activities'] = self.object.get_merged_activities(
-            self.request.user)
+        activities = instance.get_merged_activities(self.request.user)
+        show_show_all = len(activities) > 10
+        activities = activities[:10]
+        context['activities'] = activities
+        context['show_show_all'] = show_show_all
 
         context['vlans'] = Vlan.get_objects_with_level(
             'user', self.request.user
@@ -2429,30 +2432,35 @@ def vm_activity(request, pk):
         raise PermissionDenied()
 
     response = {}
-    only_status = request.GET.get("only_status", "false")
+    show_all = request.GET.get("show_all", "false") == "true"
+    activities = instance.get_merged_activities(request.user)
+    show_show_all = len(activities) > 10
+    if not show_all:
+        activities = activities[:10]
 
     response['human_readable_status'] = instance.get_status_display()
     response['status'] = instance.status
     response['icon'] = instance.get_status_icon()
-    if only_status == "false":  # instance activity
-        context = {
-            'instance': instance,
-            'activities': instance.get_merged_activities(request.user),
-            'ops': get_operations(instance, request.user),
-        }
 
-        response['activities'] = render_to_string(
-            "dashboard/vm-detail/_activity-timeline.html",
-            RequestContext(request, context),
-        )
-        response['ops'] = render_to_string(
-            "dashboard/vm-detail/_operations.html",
-            RequestContext(request, context),
-        )
-        response['disk_ops'] = render_to_string(
-            "dashboard/vm-detail/_disk-operations.html",
-            RequestContext(request, context),
-        )
+    context = {
+        'instance': instance,
+        'activities': activities,
+        'show_show_all': show_show_all,
+        'ops': get_operations(instance, request.user),
+    }
+
+    response['activities'] = render_to_string(
+        "dashboard/vm-detail/_activity-timeline.html",
+        RequestContext(request, context),
+    )
+    response['ops'] = render_to_string(
+        "dashboard/vm-detail/_operations.html",
+        RequestContext(request, context),
+    )
+    response['disk_ops'] = render_to_string(
+        "dashboard/vm-detail/_disk-operations.html",
+        RequestContext(request, context),
+    )
 
     return HttpResponse(
         json.dumps(response),
