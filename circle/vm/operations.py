@@ -26,7 +26,7 @@ from django.utils.translation import ugettext_lazy as _, ugettext_noop
 
 from celery.exceptions import TimeLimitExceeded
 
-from common.models import create_readable
+from common.models import create_readable, humanize_exception
 from common.operations import Operation, register_operation
 from .tasks.local_tasks import (
     abortable_async_instance_operation, abortable_async_node_operation,
@@ -56,8 +56,9 @@ class InstanceOperation(Operation):
 
     def check_auth(self, user):
         if not self.instance.has_level(user, self.acl_level):
-            raise PermissionDenied("%s doesn't have the required ACL level." %
-                                   user)
+            raise humanize_exception(ugettext_noop(
+                "%(acl_level)s level is required for this operation."),
+                PermissionDenied(), acl_level=self.acl_level)
 
         super(InstanceOperation, self).check_auth(user=user)
 
@@ -109,7 +110,9 @@ class AddInterfaceOperation(InstanceOperation):
 
     def _operation(self, activity, user, system, vlan, managed=None):
         if not vlan.has_level(user, 'user'):
-            raise PermissionDenied()
+            raise humanize_exception(ugettext_noop(
+                "User acces to vlan %(vlan)s is required."),
+                PermissionDenied(), vlan=vlan)
         if managed is None:
             managed = vlan.managed
 
@@ -790,7 +793,8 @@ class FlushOperation(NodeOperation):
 
     def check_auth(self, user):
         if not user.is_superuser:
-            raise PermissionDenied()
+            raise humanize_exception(ugettext_noop(
+                "Superuser privileges are required."), PermissionDenied())
 
         super(FlushOperation, self).check_auth(user=user)
 
