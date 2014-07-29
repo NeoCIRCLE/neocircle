@@ -3,9 +3,10 @@
 {% load crispy_forms_tags %}
 
 <hr />
-
 <div class="vm-resources-sliders">
 
+<form method="POST" action="{{ op.resources_change.get_url }}">
+{% csrf_token %}
 <div class="row">
   <div class="col-sm-3" style="font-weight: bold;">
     <i class="fa fa-trophy"></i> {% trans "CPU priority" %}
@@ -17,19 +18,13 @@
   </div>
   <div class="col-sm-3">
     <div class="input-group">
-      <select type="text" class="form-control input-tags cpu-priority-input">
-        <option value="0">idle</option>
-        <option value="1">normal</option>
-        <option value="2">server</option>
-        <option value="3">realtime</option>
-      </select>
+      {{ resources_form.priority }}
       <span class="input-group-addon input-tags">
         <i class="fa fa-question" title="yo"></i>
       </span>
     </div>
   </div>
 </div>
-
 <div class="row">
   <div class="col-sm-3" style="font-weight: bold;">
     <i class="fa fa-cogs"></i> {% trans "CPU count" %}
@@ -41,7 +36,7 @@
   </div>
   <div class="col-sm-3">
     <div class="input-group">
-      <input type="number" min="1" max="10" value="1" class="form-control input-tags cpu-count-input"/>
+      {{ resources_form.num_cores }}
       <span class="input-group-addon input-tags">
         <i class="fa fa-question" title="yo"></i>
       </span>
@@ -60,7 +55,7 @@
   </div>
   <div class="col-sm-3">
     <div class="input-group">
-      <input type="text" class="form-control input-tags ram-input" value="512"/>
+      {{ resources_form.ram_size }}
       <span class="input-group-addon input-tags">
         MiB
       </span>
@@ -70,6 +65,17 @@
     </div>
   </div>
 </div>
+{% if can_change_resources %}
+    <button type="submit" class="btn btn-success btn-sm change-resources-button" id="vm-details-resources-savea"
+      data-vm="{{ instance.pk }}"
+      {% if not op.resources_change %}disabled{% endif %}>
+      <i class="fa fa-floppy-o"></i> {% trans "Save resources" %}
+    </button>
+    <span class="change-resources-help"
+      {% if op.resources_change %}style="display: none;"{% endif %}
+      >{% trans "Stop your VM to change resources." %}</span>
+{% endif %}
+</form>
 
 </div>
 

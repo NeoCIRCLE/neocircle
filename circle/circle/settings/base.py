@@ -449,3 +449,5 @@ else:
 
 SESSION_COOKIE_NAME = "csessid%x" % (((getnode() // 139) ^
                                       (getnode() % 983)) & 0xffff)
+
+MAX_NODE_RAM = get_env_variable("MAX_NODE_RAM", 1024)

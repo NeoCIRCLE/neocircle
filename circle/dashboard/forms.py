@@ -51,7 +51,7 @@ from vm.models import (
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth.models import Permission
 from .models import Profile, GroupProfile
-from circle.settings.base import LANGUAGES
+from circle.settings.base import LANGUAGES, MAX_NODE_RAM
 from django.utils.translation import string_concat
 
 
@@ -1279,3 +1279,34 @@ class GroupPermissionForm(forms.ModelForm):
         helper.add_input(Submit("submit", _("Save"),
                                 css_class="btn btn-success", ))
         return helper
+
+priority_choices = (
+    (10, _("idle")),
+    (30, _("normal")),
+    (80, _("server")),
+    (100, _("realtime")),
+)
+
+class VmResourcesForm(forms.ModelForm):
+    num_cores = forms.CharField(widget=forms.NumberInput(attrs={
+        'class': "form-control input-tags cpu-count-input",
+        'min': 1,
+        'max': 10,
+        'required': "",
+    }))
+
+    ram_size = forms.CharField(widget=forms.NumberInput(attrs={
+        'class': "form-control input-tags ram-input",
+        'min': 128,
+        'max': MAX_NODE_RAM,
+        'step': 128,
+        'required': "",
+    }))
+
+    priority = forms.ChoiceField(priority_choices, widget=forms.Select(attrs={
+        'class': "form-control input-tags cpu-priority-input",
+    }))
+
+    class Meta:
+        model = Instance
+        fields = ('num_cores', 'priority', 'ram_size', )

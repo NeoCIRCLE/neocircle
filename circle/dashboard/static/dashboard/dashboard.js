@@ -431,25 +431,28 @@ function compareVmByFav(a, b) {
     return a.pk < b.pk ? -1 : 1; 
 }
 
+$(document).on('shown.bs.tab', 'a[href="#resources"]', function (e) {
+  $(".cpu-priority-input").trigger("change");
+  $(".cpu-count-input, .ram-input").trigger("input");
+})
+
 function addSliderMiscs() {
+  // set max values based on inputs
+  var cpu_count_range = "0, " + $(".cpu-count-input").prop("max");
+  var ram_range = "0, " + $(".ram-input").prop("max");
+  $(".cpu-count-slider").data("slider-range", cpu_count_range);
+  $(".ram-slider").data("slider-range", ram_range);
+
   $(".vm-slider").simpleSlider();
   $(".cpu-priority-slider").bind("slider:changed", function (event, data) {
-    value = data.value + 0;
-    switch(value) {
-      case 30: type = 1; break;
-      case 80: type = 2; break;
-      case 100: type = 3; break;
-      default: type = 0;
-    }
+    var value = data.value + 0;
 
-    $(".cpu-priority-input option:eq(" + type + ")").attr("selected", "selected");
+    $('.cpu-priority-input option[value="' + value + '"]').attr("selected", "selected");
   });
 
-  var ram_fire = false;
   $(".cpu-priority-input").change(function() {
     var val = $(":selected", $(this)).val();
-    var slider_value = [10, 30, 80, 100][val]
-    $(".cpu-priority-slider").simpleSlider("setValue", slider_value);
+    $(".cpu-priority-slider").simpleSlider("setValue", val);
   });
 
   $(".cpu-count-slider").bind("slider:changed", function (event, data) {
@@ -463,6 +466,7 @@ function addSliderMiscs() {
   });
   
 
+  var ram_fire = false;
   $(".ram-slider").bind("slider:changed", function (event, data) {
     if(ram_fire) {
       ram_fire = false;
@@ -478,8 +482,6 @@ function addSliderMiscs() {
     ram_fire = true;
     $(".ram-slider").simpleSlider("setValue", parseInt(val));
   });
-
-
   $(".cpu-priority-input").trigger("change");
   $(".cpu-count-input, .ram-input").trigger("input");
 }

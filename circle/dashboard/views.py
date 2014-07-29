@@ -61,7 +61,8 @@ from .forms import (
     UserCreationForm, GroupProfileUpdateForm, UnsubscribeForm,
     VmSaveForm, UserKeyForm, VmRenewForm,
     CirclePasswordChangeForm, VmCreateDiskForm, VmDownloadDiskForm,
-    TraitsForm, RawDataForm, GroupPermissionForm, AclUserAddForm
+    TraitsForm, RawDataForm, GroupPermissionForm, AclUserAddForm,
+    VmResourcesForm,
 )
 
 from .tables import (
@@ -291,6 +292,8 @@ class VmDetailView(CheckedDetailView):
         context['ipv6_port'] = instance.get_connect_port(use_ipv6=True)
 
         # resources forms
+        context['resources_form'] = VmResourcesForm(instance=instance)
+
         if self.request.user.is_superuser:
             context['traits_form'] = TraitsForm(instance=instance)
             context['raw_data_form'] = RawDataForm(instance=instance)
@@ -315,8 +318,6 @@ class VmDetailView(CheckedDetailView):
         for k, v in options.iteritems():
             if request.POST.get(k) is not None:
                 return v(request)
-        raise Http404()
-
         raise Http404()
 
     def __change_password(self, request):
@@ -719,10 +720,10 @@ class VmResourcesChangeView(VmOperationView):
             extra = {}
 
         resources = {
-            'num_cores': "cpu-count",
-            'priority': "cpu-priority",
-            'ram_size': "ram-size",
-            "max_ram_size": "ram-size",  # TODO
+            'num_cores': "num_cores",
+            'priority': "priority",
+            'ram_size': "ram_size",
+            "max_ram_size": "ram_size",  # TODO
         }
         for k, v in resources.iteritems():
             extra[k] = request.POST.get(v)
