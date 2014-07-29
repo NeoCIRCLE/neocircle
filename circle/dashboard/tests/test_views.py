@@ -24,8 +24,9 @@ from django.contrib.auth.models import User, Group
 from django.contrib.auth.models import Permission
 from django.contrib.auth import authenticate
 
+from dashboard.views import VmAddInterfaceView
 from vm.models import Instance, InstanceTemplate, Lease, Node, Trait
-from vm.operations import WakeUpOperation
+from vm.operations import WakeUpOperation, AddInterfaceOperation
 from ..models import Profile
 from firewall.models import Vlan, Host, VlanGroup
 from mock import Mock, patch
@@ -142,33 +143,21 @@ class VmDetailTest(LoginMixin, TestCase):
         response = c.post('/dashboard/vm/mass-delete/', {'vms': [1]})
         self.assertEqual(response.status_code, 302)
 
-    def test_permitted_password_change(self):
-        c = Client()
-        self.login(c, "user2")
-        inst = Instance.objects.get(pk=1)
-        inst.set_level(self.u2, 'owner')
-        inst.node = Node.objects.all()[0]
-        inst.save()
-        password = inst.pw
-        response = c.post("/dashboard/vm/1/", {'change_password': True})
-        self.assertTrue(Instance.get_remote_queue_name.called)
-        self.assertEqual(response.status_code, 302)
-        self.assertNotEqual(password, Instance.objects.get(pk=1).pw)
-
     def test_unpermitted_password_change(self):
         c = Client()
         self.login(c, "user2")
         inst = Instance.objects.get(pk=1)
         inst.set_level(self.u1, 'owner')
         password = inst.pw
-        response = c.post("/dashboard/vm/1/", {'change_password': True})
+        response = c.post("/dashboard/vm/1/op/password_reset/")
         self.assertEqual(response.status_code, 403)
         self.assertEqual(password, Instance.objects.get(pk=1).pw)
 
     def test_unpermitted_network_add_wo_perm(self):
         c = Client()
         self.login(c, "user2")
-        response = c.post("/dashboard/vm/1/", {'new_network_vlan': 1})
+        response = c.post("/dashboard/vm/1/op/add_interface/",
+                          {'vlan': 1})
         self.assertEqual(response.status_code, 403)
 
     def test_unpermitted_network_add_wo_vlan_perm(self):
@@ -176,8 +165,18 @@ class VmDetailTest(LoginMixin, TestCase):
         self.login(c, "user2")
         inst = Instance.objects.get(pk=1)
         inst.set_level(self.u2, 'owner')
-        response = c.post("/dashboard/vm/1/", {'new_network_vlan': 1})
-        self.assertEqual(response.status_code, 403)
+        interface_count = inst.interface_set.count()
+
+        with patch.object(AddInterfaceOperation, 'async') as async:
+            async.side_effect = inst.add_interface.call
+            with patch.object(VmAddInterfaceView, 'get_form_kwargs',
+                              autospec=True) as get_form_kwargs:
+                get_form_kwargs.return_value = {'choices': Vlan.objects.all()}
+                response = c.post("/dashboard/vm/1/op/add_interface/",
+                                  {'vlan': 1})
+        self.assertEqual(response.status_code, 302)
+        assert async.called
+        self.assertEqual(inst.interface_set.count(), interface_count)
 
     def test_permitted_network_add(self):
         c = Client()
@@ -187,9 +186,12 @@ class VmDetailTest(LoginMixin, TestCase):
         vlan = Vlan.objects.get(id=1)
         vlan.set_level(self.u1, 'user')
         interface_count = inst.interface_set.count()
-        response = c.post("/dashboard/vm/1/",
-                          {'new_network_vlan': 1})
+        with patch.object(AddInterfaceOperation, 'async') as mock_method:
+            mock_method.side_effect = inst.add_interface
+            response = c.post("/dashboard/vm/1/op/add_interface/",
+                              {'vlan': 1})
         self.assertEqual(response.status_code, 302)
+        assert mock_method.called
         self.assertEqual(inst.interface_set.count(), interface_count + 1)
 
     def test_permitted_network_delete(self):
@@ -401,8 +403,7 @@ class VmDetailTest(LoginMixin, TestCase):
         inst.set_level(self.u2, 'owner')
         vlan = Vlan.objects.get(id=1)
         vlan.set_level(self.u2, 'user')
-        response = c.post("/dashboard/vm/1/",
-                          {'new_network_vlan': 1})
+        inst.add_interface(user=self.u2, vlan=vlan)
         host = Host.objects.get(
             interface__in=inst.interface_set.all())
         self.u2.user_permissions.add(Permission.objects.get(
@@ -421,8 +422,7 @@ class VmDetailTest(LoginMixin, TestCase):
         inst.set_level(self.u2, 'owner')
         vlan = Vlan.objects.get(id=1)
         vlan.set_level(self.u2, 'user')
-        response = c.post("/dashboard/vm/1/",
-                          {'new_network_vlan': 1})
+        inst.add_interface(user=self.u2, vlan=vlan)
         host = Host.objects.get(
             interface__in=inst.interface_set.all())
         self.u2.user_permissions.add(Permission.objects.get(

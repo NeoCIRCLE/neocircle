@@ -716,6 +716,10 @@ textarea[name="list-new-namelist"] {
   margin-top: -6px;
 }
 
+#show-all-activities-container {
+  margin: 20px 0 0 10px;
+}
+
 .vm-resources-sliders .row {
   margin-bottom: 15px;
 }

@@ -20,6 +20,7 @@ from __future__ import unicode_literals, absolute_import
 from collections import OrderedDict
 from itertools import chain
 from os import getenv
+from urlparse import urljoin
 import json
 import logging
 import re
@@ -52,6 +53,7 @@ from django_tables2 import SingleTableView
 from braces.views import (LoginRequiredMixin, SuperuserRequiredMixin,
                           PermissionRequiredMixin)
 from braces.views._access import AccessMixin
+from celery.exceptions import TimeoutError
 
 from django_sshkey.models import UserKey
 
@@ -62,13 +64,14 @@ from .forms import (
     VmSaveForm, UserKeyForm, VmRenewForm,
     CirclePasswordChangeForm, VmCreateDiskForm, VmDownloadDiskForm,
     TraitsForm, RawDataForm, GroupPermissionForm, AclUserAddForm,
-    VmResourcesForm,
+    VmResourcesForm, VmAddInterfaceForm,
 )
 
 from .tables import (
     NodeListTable, NodeVmListTable, TemplateListTable, LeaseListTable,
     GroupListTable, UserKeyListTable
 )
+from common.models import HumanReadableObject
 from vm.models import (
     Instance, instance_activity, InstanceActivity, InstanceTemplate, Interface,
     InterfaceTemplate, Lease, Node, NodeActivity, Trait,
@@ -273,8 +276,11 @@ class VmDetailView(CheckedDetailView):
         })
 
         # activity data
-        context['activities'] = self.object.get_merged_activities(
-            self.request.user)
+        activities = instance.get_merged_activities(self.request.user)
+        show_show_all = len(activities) > 10
+        activities = activities[:10]
+        context['activities'] = activities
+        context['show_show_all'] = show_show_all
 
         context['vlans'] = Vlan.get_objects_with_level(
             'user', self.request.user
@@ -306,32 +312,17 @@ class VmDetailView(CheckedDetailView):
 
     def post(self, request, *args, **kwargs):
         options = {
-            'change_password': self.__change_password,
             'new_name': self.__set_name,
             'new_description': self.__set_description,
             'new_tag': self.__add_tag,
             'to_remove': self.__remove_tag,
             'port': self.__add_port,
-            'new_network_vlan': self.__new_network,
             'abort_operation': self.__abort_operation,
         }
         for k, v in options.iteritems():
             if request.POST.get(k) is not None:
                 return v(request)
         raise Http404()
-
-    def __change_password(self, request):
-        self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-
-        self.object.change_password(user=request.user)
-        messages.success(request, _("Password changed."))
-        if request.is_ajax():
-            return HttpResponse("Success.")
-        else:
-            return redirect(reverse_lazy("dashboard.views.detail",
-                                         kwargs={'pk': self.object.pk}))
 
     def __set_name(self, request):
         self.object = self.get_object()
@@ -455,24 +446,6 @@ class VmDetailView(CheckedDetailView):
             return redirect(reverse_lazy("dashboard.views.detail",
                                          kwargs={'pk': self.get_object().pk}))
 
-    def __new_network(self, request):
-        self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-
-        vlan = get_object_or_404(Vlan, pk=request.POST.get("new_network_vlan"))
-        if not vlan.has_level(request.user, 'user'):
-            raise PermissionDenied()
-        try:
-            self.object.add_interface(vlan=vlan, user=request.user)
-            messages.success(request, _("Successfully added new interface."))
-        except Exception, e:
-            error = u' '.join(e.messages)
-            messages.error(request, error)
-
-        return redirect("%s#network" % reverse_lazy(
-            "dashboard.views.detail", kwargs={'pk': self.object.pk}))
-
     def __abort_operation(self, request):
         self.object = self.get_object()
 
@@ -495,6 +468,7 @@ class VmTraitsUpdate(SuperuserRequiredMixin, UpdateView):
 class VmRawDataUpdate(SuperuserRequiredMixin, UpdateView):
     form_class = RawDataForm
     model = Instance
+    template_name = 'dashboard/vm-detail/raw_data.html'
 
     def get_success_url(self):
         return self.get_object().get_absolute_url() + "#resources"
@@ -505,6 +479,7 @@ class OperationView(RedirectToLoginMixin, DetailView):
     template_name = 'dashboard/operate.html'
     show_in_toolbar = True
     effect = None
+    wait_for_result = None
 
     @property
     def name(self):
@@ -566,19 +541,57 @@ class OperationView(RedirectToLoginMixin, DetailView):
         self.check_auth()
         return super(OperationView, self).get(request, *args, **kwargs)
 
+    def get_response_data(self, result, done, extra=None, **kwargs):
+        """Return serializable data to return to agents requesting json
+        response to POST"""
+
+        if extra is None:
+            extra = {}
+        extra["success"] = not isinstance(result, Exception)
+        extra["done"] = done
+        if isinstance(result, HumanReadableObject):
+            extra["message"] = result.get_user_text()
+        return extra
+
     def post(self, request, extra=None, *args, **kwargs):
         self.check_auth()
         self.object = self.get_object()
         if extra is None:
             extra = {}
+        result = None
+        done = False
         try:
-            self.get_op().async(user=request.user, **extra)
+            task = self.get_op().async(user=request.user, **extra)
         except Exception as e:
             messages.error(request, _('Could not start operation.'))
             logger.exception(e)
+            result = e
         else:
-            messages.success(request, _('Operation is started.'))
-        return redirect("%s#activity" % self.object.get_absolute_url())
+            wait = self.wait_for_result
+            if wait:
+                try:
+                    result = task.get(timeout=wait,
+                                      interval=min((wait / 5, .5)))
+                except TimeoutError:
+                    logger.debug("Result didn't arrive in %ss",
+                                 self.wait_for_result, exc_info=True)
+                except Exception as e:
+                    messages.error(request, _('Operation failed.'))
+                    logger.debug("Operation failed.", exc_info=True)
+                    result = e
+                else:
+                    done = True
+                    messages.success(request, _('Operation succeeded.'))
+            if result is None and not done:
+                messages.success(request, _('Operation is started.'))
+
+        if "/json" in request.META.get("HTTP_ACCEPT", ""):
+            data = self.get_response_data(result, done,
+                                          post_extra=extra, **kwargs)
+            return HttpResponse(json.dumps(data),
+                                content_type="application/json")
+        else:
+            return redirect("%s#activity" % self.object.get_absolute_url())
 
     @classmethod
     def factory(cls, op, icon='cog', effect='info', extra_bases=(), **kwargs):
@@ -605,6 +618,7 @@ class AjaxOperationMixin(object):
             store.used = True
             return HttpResponse(
                 json.dumps({'success': True,
+                            'with_reload': getattr(self, 'with_reload', False),
                             'messages': [unicode(m) for m in store]}),
                 content_type="application=json"
             )
@@ -644,7 +658,9 @@ class FormOperationMixin(object):
                 request, extra, *args, **kwargs)
             if request.is_ajax():
                 return HttpResponse(
-                    json.dumps({'success': True}),
+                    json.dumps({
+                        'success': True,
+                        'with_reload': getattr(self, 'with_reload', False)}),
                     content_type="application=json"
                 )
             else:
@@ -661,12 +677,32 @@ class RequestFormOperationMixin(FormOperationMixin):
         return val
 
 
+class VmAddInterfaceView(FormOperationMixin, VmOperationView):
+
+    op = 'add_interface'
+    form_class = VmAddInterfaceForm
+    show_in_toolbar = False
+    icon = 'globe'
+    effect = 'success'
+    with_reload = True
+
+    def get_form_kwargs(self):
+        inst = self.get_op().instance
+        choices = Vlan.get_objects_with_level(
+            "user", self.request.user).exclude(
+            vm_interface__instance__in=[inst])
+        val = super(VmAddInterfaceView, self).get_form_kwargs()
+        val.update({'choices': choices})
+        return val
+
+
 class VmCreateDiskView(FormOperationMixin, VmOperationView):
 
     op = 'create_disk'
     form_class = VmCreateDiskForm
     show_in_toolbar = False
     icon = 'hdd-o'
+    effect = "success"
     is_disk_operation = True
 
 
@@ -676,6 +712,7 @@ class VmDownloadDiskView(FormOperationMixin, VmOperationView):
     form_class = VmDownloadDiskForm
     show_in_toolbar = False
     icon = 'download'
+    effect = "success"
     is_disk_operation = True
 
 
@@ -773,6 +810,7 @@ class TokenOperationView(OperationView):
                     logger.info("Request user changed to %s at %s",
                                 user, self.request.get_full_path())
                     self.request.user = user
+                    self.request.token_user = True
         else:
             logger.debug("no token supplied to %s",
                          self.request.get_full_path())
@@ -815,6 +853,7 @@ class VmRenewView(FormOperationMixin, TokenOperationView, VmOperationView):
     effect = 'info'
     show_in_toolbar = False
     form_class = VmRenewForm
+    wait_for_result = 0.5
 
     def get_form_kwargs(self):
         choices = Lease.get_objects_with_level("user", self.request.user)
@@ -826,6 +865,13 @@ class VmRenewView(FormOperationMixin, TokenOperationView, VmOperationView):
         val = super(VmRenewView, self).get_form_kwargs()
         val.update({'choices': choices, 'default': default})
         return val
+
+    def get_response_data(self, result, done, extra=None, **kwargs):
+        extra = super(VmRenewView, self).get_response_data(result, done,
+                                                           extra, **kwargs)
+        extra["new_suspend_time"] = unicode(self.get_op().
+                                            instance.time_of_suspend)
+        return extra
 
 
 vm_ops = OrderedDict([
@@ -855,8 +901,12 @@ vm_ops = OrderedDict([
         op='destroy', icon='times', effect='danger')),
     ('create_disk', VmCreateDiskView),
     ('download_disk', VmDownloadDiskView),
+    ('add_interface', VmAddInterfaceView),
     ('renew', VmRenewView),
     ('resources_change', VmResourcesChangeView),
+    ('password_reset', VmOperationView.factory(
+        op='password_reset', icon='unlock', effect='warning',
+        show_in_toolbar=False, wait_for_result=0.5, with_reload=True)),
 ])
 
 
@@ -2387,30 +2437,35 @@ def vm_activity(request, pk):
         raise PermissionDenied()
 
     response = {}
-    only_status = request.GET.get("only_status", "false")
+    show_all = request.GET.get("show_all", "false") == "true"
+    activities = instance.get_merged_activities(request.user)
+    show_show_all = len(activities) > 10
+    if not show_all:
+        activities = activities[:10]
 
     response['human_readable_status'] = instance.get_status_display()
     response['status'] = instance.status
     response['icon'] = instance.get_status_icon()
-    if only_status == "false":  # instance activity
-        context = {
-            'instance': instance,
-            'activities': instance.get_merged_activities(request.user),
-            'ops': get_operations(instance, request.user),
-        }
 
-        response['activities'] = render_to_string(
-            "dashboard/vm-detail/_activity-timeline.html",
-            RequestContext(request, context),
-        )
-        response['ops'] = render_to_string(
-            "dashboard/vm-detail/_operations.html",
-            RequestContext(request, context),
-        )
-        response['disk_ops'] = render_to_string(
-            "dashboard/vm-detail/_disk-operations.html",
-            RequestContext(request, context),
-        )
+    context = {
+        'instance': instance,
+        'activities': activities,
+        'show_show_all': show_show_all,
+        'ops': get_operations(instance, request.user),
+    }
+
+    response['activities'] = render_to_string(
+        "dashboard/vm-detail/_activity-timeline.html",
+        RequestContext(request, context),
+    )
+    response['ops'] = render_to_string(
+        "dashboard/vm-detail/_operations.html",
+        RequestContext(request, context),
+    )
+    response['disk_ops'] = render_to_string(
+        "dashboard/vm-detail/_disk-operations.html",
+        RequestContext(request, context),
+    )
 
     return HttpResponse(
         json.dumps(response),
@@ -3070,3 +3125,7 @@ class UserKeyCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         kwargs = super(UserKeyCreate, self).get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
+
+
+def absolute_url(url):
+    return urljoin(settings.DJANGO_URL, url)

@@ -98,17 +98,12 @@
           </div>
         </dd>
         <dd style="font-size: 10px; text-align: right; padding-top: 8px;">
-          <a id="vm-details-pw-change" href="#">{% trans "Generate new password!" %}</a>
+          <div id="vm-details-pw-reset">
+          {% with op=op.password_reset %}{% if op %}
+            <a href="{{op.get_url}}" class="btn operation btn-default btn-xs" {% if op.disabled %}disabled{% endif %}>{% trans "Generate new password!" %}</a>
+          {% endif %}{% endwith %}
+          </div>
         </dd>
-        <div id="vm-details-pw-confirm"> {% comment %} TODO Couldn't this use a modal? {% endcomment%}
-          <dt>
-            {% trans "Are you sure?" %}
-          </dt>
-          <dd>
-            <a href="#" class="vm-details-pw-confirm-choice label label-success" data-choice="1" data-vm="{{ instance.pk }}">{% trans "Yes" %}</a> /
-            <a href="#" class="vm-details-pw-confirm-choice label label-danger" data-choice="0">{% trans "No" %}</a>
-          </dd>
-        </div>
       </dl>
 
       <div class="input-group" id="dashboard-vm-details-connect-command">

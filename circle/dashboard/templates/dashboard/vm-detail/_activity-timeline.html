@@ -1,4 +1,7 @@
 {% load i18n %}
+
+<div id="activity-timeline" class="timeline">
+
 {% for a in activities %}
 <div class="activity{% if a.pk == active.pk %} activity-active{%endif%}" data-activity-id="{{ a.pk }}">
   <span class="timeline-icon{% if a.has_failed %} timeline-icon-failed{% endif %}">
@@ -7,7 +10,7 @@
 <strong{% if a.result %} title="{{ a.result.get_user_text }}"{% endif %}>
   <a href="{{ a.get_absolute_url }}">
     {% if a.times > 1 %}({{ a.times }}x){% endif %}
-    {{ a.readable_name.get_user_text }}</a>
+    {{ a.readable_name.get_user_text|capfirst }}</a>
 
 {% if a.has_percent %}
   - {{ a.percentage }}%
@@ -32,7 +35,7 @@
       <div data-activity-id="{{ s.pk }}" class="sub-activity{% if s.has_failed %} sub-activity-failed{% endif %}{% if s.pk == active.pk %} sub-activity-active{% endif %}">
         <span{% if s.result %} title="{{ s.result.get_user_text }}"{% endif %}>
           <a href="{{ s.get_absolute_url }}">
-              {{ s.readable_name.get_user_text }}</a></span> &ndash;
+              {{ s.readable_name.get_user_text|capfirst }}</a></span> &ndash;
         {% if s.finished %}
           {{ s.finished|time:"H:i:s" }}
         {% else %}
@@ -47,3 +50,16 @@
   {% endif %}
 </div>
 {% endfor %}
+</div>
+
+{% if show_show_all %}
+<div id="show-all-activities-container">
+  <a id="show-all-activities" href="#">
+    {% if activities|length > 10 %}
+      {% trans "Show less activities" %} <i class="fa fa-angle-double-up"></i>
+    {% else %}
+      {% trans "Show all activities" %} <i class="fa fa-angle-double-down"></i>
+    {% endif %}
+  </a>
+</div>
+{% endif %}

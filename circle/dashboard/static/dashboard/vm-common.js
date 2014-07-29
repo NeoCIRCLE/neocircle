@@ -3,7 +3,7 @@
 $(function() {
 
   /* vm operations */
-  $('#ops, #vm-details-resources-disk, #vm-details-renew-op').on('click', '.operation.btn', function(e) {
+  $('#ops, #vm-details-resources-disk, #vm-details-renew-op, #vm-details-pw-reset, #vm-details-add-interface').on('click', '.operation.btn', function(e) {
     var icon = $(this).children("i").addClass('fa-spinner fa-spin');
 
     $.ajax({
@@ -50,6 +50,9 @@ $(function() {
          */
         if(data.success) {
           $('a[href="#activity"]').trigger("click");
+          if(data.with_reload) {
+            location.reload();
+          }
 
           /* if there are messages display them */
           if(data.messages && data.messages.length > 0) {

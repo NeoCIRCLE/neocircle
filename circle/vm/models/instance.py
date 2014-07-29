@@ -642,6 +642,13 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
 
         :param again: Notify already notified owners.
         """
+
+        notification_msg = ugettext_noop(
+            'Your instance <a href="%(url)s">%(instance)s</a> is going to '
+            'expire. It will be suspended at %(suspend)s and destroyed at '
+            '%(delete)s. Please, either <a href="%(token)s">renew</a> '
+            'or <a href="%(url)s">destroy</a> it now.')
+
         if not again and self._is_notified_about_expiration():
             return False
         success, failed = [], []
@@ -666,20 +673,26 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                                readable_name=ugettext_noop(
                                    "notify owner about expiration"),
                                on_commit=on_commit):
-            from dashboard.views import VmRenewView
+            from dashboard.views import VmRenewView, absolute_url
             level = self.get_level_object("owner")
             for u, ulevel in self.get_users_with_level(level__pk=level.pk):
                 try:
                     token = VmRenewView.get_token_url(self, u)
                     u.profile.notify(
-                        _('%s expiring soon') % unicode(self),
-                        'dashboard/notifications/vm-expiring.html',
-                        {'instance': self, 'token': token}, valid_until=min(
-                            self.time_of_delete, self.time_of_suspend))
+                        ugettext_noop('%(instance)s expiring soon'),
+                        notification_msg, url=self.get_absolute_url(),
+                        instance=self, suspend=self.time_of_suspend,
+                        token=token, delete=self.time_of_delete)
                 except Exception as e:
                     failed.append((u, e))
                 else:
                     success.append(u)
+            if self.status == "RUNNING":
+                token = absolute_url(
+                    VmRenewView.get_token_url(self, self.owner))
+                queue = self.get_remote_queue_name("agent")
+                agent_tasks.send_expiration.apply_async(
+                    queue=queue, args=(self.vm_name, token))
         return True
 
     def is_expiring(self, threshold=0.1):
@@ -718,24 +731,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         return (
             timezone.now() + lease.suspend_interval,
             timezone.now() + lease.delete_interval)
-
-    def change_password(self, user=None):
-        """Generate new password for the vm
-
-        :param self: The virtual machine.
-
-        :param user: The user who's issuing the command.
-        """
-
-        self.pw = pwgen()
-        with instance_activity(code_suffix='change_password', instance=self,
-                               readable_name=ugettext_noop("change password"),
-                               user=user):
-            queue = self.get_remote_queue_name("agent")
-            agent_tasks.change_password.apply_async(queue=queue,
-                                                    args=(self.vm_name,
-                                                          self.pw))
-        self.save()
 
     def select_node(self):
         """Returns the node the VM should be deployed or migrated to.

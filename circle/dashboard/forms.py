@@ -54,6 +54,7 @@ from .models import Profile, GroupProfile
 from circle.settings.base import LANGUAGES, MAX_NODE_RAM
 from django.utils.translation import string_concat
 
+from .virtvalidator import domain_validator
 
 LANGUAGES_WITH_CODE = ((l[0], string_concat(l[1], " (", l[0], ")"))
                        for l in LANGUAGES)
@@ -908,7 +909,8 @@ class VmRenewForm(forms.Form):
 
         self.fields['lease'] = forms.ModelChoiceField(queryset=choices,
                                                       initial=default,
-                                                      required=True,
+                                                      required=False,
+                                                      empty_label=None,
                                                       label=_('Length'))
         if len(choices) < 2:
             self.fields['lease'].widget = HiddenInput()
@@ -944,6 +946,25 @@ class VmCreateDiskForm(forms.Form):
 class VmDownloadDiskForm(forms.Form):
     name = forms.CharField(max_length=100, label=_("Name"))
     url = forms.CharField(label=_('URL'), validators=[URLValidator(), ])
+
+    @property
+    def helper(self):
+        helper = FormHelper(self)
+        helper.form_tag = False
+        return helper
+
+
+class VmAddInterfaceForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('choices')
+        super(VmAddInterfaceForm, self).__init__(*args, **kwargs)
+
+        field = forms.ModelChoiceField(
+            queryset=choices, required=True, label=_('Vlan'))
+        if not choices:
+            field.widget.attrs['disabled'] = 'disabled'
+            field.empty_label = _('No more networks.')
+        self.fields['vlan'] = field
 
     @property
     def helper(self):
@@ -1236,6 +1257,9 @@ class TraitsForm(forms.ModelForm):
 
 
 class RawDataForm(forms.ModelForm):
+    raw_data = forms.CharField(validators=[domain_validator],
+                               widget=forms.Textarea(attrs={'rows': 5}),
+                               required=False)
 
     class Meta:
         model = Instance
