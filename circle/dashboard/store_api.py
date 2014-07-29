@@ -104,9 +104,9 @@ class Store(object):
         r = self._request(self.username)
         quota = r.json()
         quota.update({
-            'readable_used': filesizeformat(float(quota['Used'])),
-            'readable_soft': filesizeformat(float(quota['Soft'])),
-            'readable_hard': filesizeformat(float(quota['Hard'])),
+            'readable_used': filesizeformat(float(quota['used'])),
+            'readable_soft': filesizeformat(float(quota['soft'])),
+            'readable_hard': filesizeformat(float(quota['hard'])),
         })
         return quota
 

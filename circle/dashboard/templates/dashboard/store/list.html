@@ -15,8 +15,8 @@
 <div style="position: relative;">
   <div class="progress" style="width: 100%">
     <div class="progress-bar" role="progressbar" 
-      aria-valuenow="{{ quota.Used }}" aria-valuemin="0" aria-valuemax="{{ quota.Hard }}" 
-      style="width: {% widthratio quota.Used quota.Hard 100 %}%; min-width: 150px;">
+      aria-valuenow="{{ quota.used }}" aria-valuemin="0" aria-valuemax="{{ quota.hard }}" 
+      style="width: {% widthratio quota.used quota.hard 100 %}%; min-width: 150px;">
       <div style="padding-top: 2px;">
         {% blocktrans with used=quota.readable_used %}
           {{ used }} used
@@ -28,7 +28,7 @@
       title="{% trans "Hard limit" %}: {{ quota.readable_hard }}">
     </div>
     <div class="progress-marker" id="progress-marker-soft" style="background: orange; 
-      left: {% widthratio quota.Soft quota.Hard 100 %}%"
+      left: {% widthratio quota.soft quota.hard 100 %}%"
       title="{% trans "Soft limit" %}: {{ quota.readable_soft }}"
       data-placement="top">
     </div>
