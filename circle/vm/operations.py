@@ -45,6 +45,8 @@ class InstanceOperation(Operation):
     async_operation = abortable_async_instance_operation
     host_cls = Instance
     concurrency_check = True
+    accept_states = None
+    deny_states = None
 
     def __init__(self, instance):
         super(InstanceOperation, self).__init__(subject=instance)
@@ -53,6 +55,20 @@ class InstanceOperation(Operation):
     def check_precond(self):
         if self.instance.destroyed_at:
             raise self.instance.InstanceDestroyedError(self.instance)
+        if self.accept_states:
+            if self.instance.status not in self.accept_states:
+                logger.debug("precond failed for %s: %s not in %s",
+                             unicode(self.__class__),
+                             unicode(self.instance.status),
+                             unicode(self.accept_states))
+                raise self.instance.WrongStateError(self.instance)
+        if self.deny_states:
+            if self.instance.status in self.deny_states:
+                logger.debug("precond failed for %s: %s in %s",
+                             unicode(self.__class__),
+                             unicode(self.instance.status),
+                             unicode(self.accept_states))
+                raise self.instance.WrongStateError(self.instance)
 
     def check_auth(self, user):
         if not self.instance.has_level(user, self.acl_level):
@@ -95,6 +111,7 @@ class AddInterfaceOperation(InstanceOperation):
     description = _("Add a new network interface for the specified VLAN to "
                     "the VM.")
     required_perms = ()
+    accept_states = ('STOPPED', 'PENDING', 'RUNNING')
 
     def rollback(self, net, activity):
         with activity.sub_activity(
@@ -102,11 +119,6 @@ class AddInterfaceOperation(InstanceOperation):
                 readable_name=ugettext_noop("destroy network (rollback)")):
             net.destroy()
             net.delete()
-
-    def check_precond(self):
-        super(AddInterfaceOperation, self).check_precond()
-        if self.instance.status not in ['STOPPED', 'PENDING', 'RUNNING']:
-            raise self.instance.WrongStateError(self.instance)
 
     def _operation(self, activity, user, system, vlan, managed=None):
         if not vlan.has_level(user, 'user'):
@@ -144,11 +156,7 @@ class CreateDiskOperation(InstanceOperation):
     name = _("create disk")
     description = _("Create empty disk for the VM.")
     required_perms = ('storage.create_empty_disk', )
-
-    def check_precond(self):
-        super(CreateDiskOperation, self).check_precond()
-        if self.instance.status not in ['STOPPED', 'PENDING', 'RUNNING']:
-            raise self.instance.WrongStateError(self.instance)
+    accept_states = ('STOPPED', 'PENDING', 'RUNNING')
 
     def _operation(self, user, size, activity, name=None):
         from storage.models import Disk
@@ -186,11 +194,7 @@ class DownloadDiskOperation(InstanceOperation):
     abortable = True
     has_percentage = True
     required_perms = ('storage.download_disk', )
-
-    def check_precond(self):
-        super(DownloadDiskOperation, self).check_precond()
-        if self.instance.status not in ['STOPPED', 'PENDING', 'RUNNING']:
-            raise self.instance.WrongStateError(self.instance)
+    accept_states = ('STOPPED', 'PENDING', 'RUNNING')
 
     def _operation(self, user, url, task, activity, name=None):
         activity.result = url
@@ -221,11 +225,7 @@ class DeployOperation(InstanceOperation):
     name = _("deploy")
     description = _("Deploy new virtual machine with network.")
     required_perms = ()
-
-    def check_precond(self):
-        super(DeployOperation, self).check_precond()
-        if self.instance.status in ['RUNNING', 'SUSPENDED']:
-            raise self.instance.WrongStateError(self.instance)
+    deny_states = ('SUSPENDED', 'RUNNING')
 
     def is_preferred(self):
         return self.instance.status in (self.instance.STATUS.STOPPED,
@@ -326,17 +326,13 @@ class MigrateOperation(InstanceOperation):
     name = _("migrate")
     description = _("Live migrate running VM to another node.")
     required_perms = ()
+    accept_states = ('RUNNING', )
 
     def rollback(self, activity):
         with activity.sub_activity(
             'rollback_net', readable_name=ugettext_noop(
                 "redeploy network (rollback)")):
             self.instance.deploy_net()
-
-    def check_precond(self):
-        super(MigrateOperation, self).check_precond()
-        if self.instance.status not in ['RUNNING']:
-            raise self.instance.WrongStateError(self.instance)
 
     def check_auth(self, user):
         if not user.is_superuser:
@@ -387,11 +383,7 @@ class RebootOperation(InstanceOperation):
     name = _("reboot")
     description = _("Reboot virtual machine with Ctrl+Alt+Del signal.")
     required_perms = ()
-
-    def check_precond(self):
-        super(RebootOperation, self).check_precond()
-        if self.instance.status not in ['RUNNING']:
-            raise self.instance.WrongStateError(self.instance)
+    accept_states = ('RUNNING', )
 
     def _operation(self, timeout=5):
         self.instance.reboot_vm(timeout=timeout)
@@ -406,11 +398,7 @@ class RemoveInterfaceOperation(InstanceOperation):
     name = _("remove interface")
     description = _("Remove the specified network interface from the VM.")
     required_perms = ()
-
-    def check_precond(self):
-        super(RemoveInterfaceOperation, self).check_precond()
-        if self.instance.status not in ['STOPPED', 'PENDING', 'RUNNING']:
-            raise self.instance.WrongStateError(self.instance)
+    accept_states = ('STOPPED', 'PENDING', 'RUNNING')
 
     def _operation(self, activity, user, system, interface):
         if self.instance.is_running:
@@ -431,11 +419,7 @@ class RemoveDiskOperation(InstanceOperation):
     name = _("remove disk")
     description = _("Remove the specified disk from the VM.")
     required_perms = ()
-
-    def check_precond(self):
-        super(RemoveDiskOperation, self).check_precond()
-        if self.instance.status not in ['STOPPED', 'PENDING', 'RUNNING']:
-            raise self.instance.WrongStateError(self.instance)
+    accept_states = ('STOPPED', 'PENDING', 'RUNNING')
 
     def _operation(self, activity, user, system, disk):
         if self.instance.is_running and disk.type not in ["iso"]:
@@ -453,11 +437,7 @@ class ResetOperation(InstanceOperation):
     name = _("reset")
     description = _("Reset virtual machine (reset button).")
     required_perms = ()
-
-    def check_precond(self):
-        super(ResetOperation, self).check_precond()
-        if self.instance.status not in ['RUNNING']:
-            raise self.instance.WrongStateError(self.instance)
+    accept_states = ('RUNNING', )
 
     def _operation(self, timeout=5):
         self.instance.reset_vm(timeout=timeout)
@@ -476,6 +456,7 @@ class SaveAsTemplateOperation(InstanceOperation):
         """)
     abortable = True
     required_perms = ('vm.create_template', )
+    accept_states = ('RUNNING', 'PENDING', 'STOPPED')
 
     def is_preferred(self):
         return (self.instance.is_base and
@@ -495,11 +476,6 @@ class SaveAsTemplateOperation(InstanceOperation):
         if hasattr(self, 'disks'):
             for disk in self.disks:
                 disk.destroy()
-
-    def check_precond(self):
-        super(SaveAsTemplateOperation, self).check_precond()
-        if self.instance.status not in ['RUNNING', 'PENDING', 'STOPPED']:
-            raise self.instance.WrongStateError(self.instance)
 
     def _operation(self, activity, user, system, timeout=300, name=None,
                    with_shutdown=True, task=None, **kwargs):
@@ -570,11 +546,7 @@ class ShutdownOperation(InstanceOperation):
     description = _("Shutdown virtual machine with ACPI signal.")
     abortable = True
     required_perms = ()
-
-    def check_precond(self):
-        super(ShutdownOperation, self).check_precond()
-        if self.instance.status not in ['RUNNING']:
-            raise self.instance.WrongStateError(self.instance)
+    accept_states = ('RUNNING', )
 
     def on_commit(self, activity):
         activity.resultant_state = 'STOPPED'
@@ -594,11 +566,7 @@ class ShutOffOperation(InstanceOperation):
     name = _("shut off")
     description = _("Shut off VM (plug-out).")
     required_perms = ()
-
-    def check_precond(self):
-        super(ShutOffOperation, self).check_precond()
-        if self.instance.status not in ['RUNNING']:
-            raise self.instance.WrongStateError(self.instance)
+    accept_states = ('RUNNING', )
 
     def on_commit(self, activity):
         activity.resultant_state = 'STOPPED'
@@ -626,15 +594,11 @@ class SleepOperation(InstanceOperation):
     name = _("sleep")
     description = _("Suspend virtual machine with memory dump.")
     required_perms = ()
+    accept_states = ('RUNNING', )
 
     def is_preferred(self):
         return (not self.instance.is_base and
                 self.instance.status == self.instance.STATUS.RUNNING)
-
-    def check_precond(self):
-        super(SleepOperation, self).check_precond()
-        if self.instance.status not in ['RUNNING']:
-            raise self.instance.WrongStateError(self.instance)
 
     def on_abort(self, activity, error):
         if isinstance(error, TimeLimitExceeded):
@@ -673,14 +637,10 @@ class WakeUpOperation(InstanceOperation):
         Power on Virtual Machine and load its memory from dump.
         """)
     required_perms = ()
+    accept_states = ('SUSPENDED', )
 
     def is_preferred(self):
         return self.instance.status == self.instance.STATUS.SUSPENDED
-
-    def check_precond(self):
-        super(WakeUpOperation, self).check_precond()
-        if self.instance.status not in ['SUSPENDED']:
-            raise self.instance.WrongStateError(self.instance)
 
     def on_abort(self, activity, error):
         activity.resultant_state = 'ERROR'
@@ -720,11 +680,6 @@ class RenewOperation(InstanceOperation):
     acl_level = "operator"
     required_perms = ()
     concurrency_check = False
-
-    def check_precond(self):
-        super(RenewOperation, self).check_precond()
-        if self.instance.status == 'DESTROYED':
-            raise self.instance.WrongStateError(self.instance)
 
     def _operation(self, lease=None):
         (self.instance.time_of_suspend,
@@ -819,11 +774,7 @@ class ScreenshotOperation(InstanceOperation):
     description = _("Get screenshot")
     acl_level = "owner"
     required_perms = ()
-
-    def check_precond(self):
-        super(ScreenshotOperation, self).check_precond()
-        if self.instance.status not in ['RUNNING']:
-            raise self.instance.WrongStateError(self.instance)
+    accept_states = ('RUNNING', )
 
     def _operation(self):
         return self.instance.get_screenshot(timeout=20)
@@ -839,10 +790,13 @@ class RecoverOperation(InstanceOperation):
     description = _("Recover virtual machine from destroyed state.")
     acl_level = "owner"
     required_perms = ('vm.recover', )
+    accept_states = ('DESTROYED', )
 
     def check_precond(self):
-        if not self.instance.destroyed_at:
-            raise self.instance.WrongStateError(self.instance)
+        try:
+            super(RecoverOperation, self).check_precond()
+        except Instance.InstanceDestroyedError:
+            pass
 
     def on_commit(self, activity):
         activity.resultant_state = 'PENDING'
@@ -866,11 +820,7 @@ class ResourcesOperation(InstanceOperation):
     description = _("Change resources")
     acl_level = "owner"
     required_perms = ('vm.change_resources', )
-
-    def check_precond(self):
-        super(ResourcesOperation, self).check_precond()
-        if self.instance.status not in ["STOPPED", "PENDING"]:
-            raise self.instance.WrongStateError(self.instance)
+    accept_states = ('STOPPED', 'PENDING', )
 
     def _operation(self, user, num_cores, ram_size, max_ram_size, priority):
 
@@ -893,11 +843,7 @@ class PasswordResetOperation(InstanceOperation):
     description = _("Password reset")
     acl_level = "owner"
     required_perms = ()
-
-    def check_precond(self):
-        super(PasswordResetOperation, self).check_precond()
-        if self.instance.status not in ["RUNNING"]:
-            raise self.instance.WrongStateError(self.instance)
+    accept_states = ('RUNNING', )
 
     def _operation(self):
         self.instance.pw = pwgen()
