@@ -702,6 +702,7 @@ class VmCreateDiskView(FormOperationMixin, VmOperationView):
     form_class = VmCreateDiskForm
     show_in_toolbar = False
     icon = 'hdd-o'
+    effect = "success"
     is_disk_operation = True
 
 
@@ -711,6 +712,7 @@ class VmDownloadDiskView(FormOperationMixin, VmOperationView):
     form_class = VmDownloadDiskForm
     show_in_toolbar = False
     icon = 'download'
+    effect = "success"
     is_disk_operation = True
 
 
