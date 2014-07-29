@@ -808,6 +808,7 @@ class TokenOperationView(OperationView):
                     logger.info("Request user changed to %s at %s",
                                 user, self.request.get_full_path())
                     self.request.user = user
+                    self.request.token_user = True
         else:
             logger.debug("no token supplied to %s",
                          self.request.get_full_path())
