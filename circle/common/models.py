@@ -47,17 +47,24 @@ class WorkerNotFound(Exception):
 
 def activitycontextimpl(act, on_abort=None, on_commit=None):
     try:
-        yield act
-    except BaseException as e:
-        # BaseException is the common parent of Exception and
-        # system-exiting exceptions, e.g. KeyboardInterrupt
+        try:
+            yield act
+        except HumanReadableException as e:
+            result = e
+            raise
+        except BaseException as e:
+            # BaseException is the common parent of Exception and
+            # system-exiting exceptions, e.g. KeyboardInterrupt
+            result = create_readable(
+                ugettext_noop("Failure."),
+                ugettext_noop("Unhandled exception: %(error)s"),
+                error=unicode(e))
+            raise
+    except:
+        logger.exception("Failed activity %s" % unicode(act))
         handler = None if on_abort is None else lambda a: on_abort(a, e)
-        result = create_readable(ugettext_noop("Failure."),
-                                 ugettext_noop("Unhandled exception: "
-                                               "%(error)s"),
-                                 error=unicode(e))
         act.finish(succeeded=False, result=result, event_handler=handler)
-        raise e
+        raise
     else:
         act.finish(succeeded=True, event_handler=on_commit)
 
