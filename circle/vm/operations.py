@@ -904,3 +904,35 @@ class PasswordResetOperation(InstanceOperation):
 
 
 register_operation(PasswordResetOperation)
+
+
+class MountStoreOperation(InstanceOperation):
+    activity_code_suffix = 'mount_store'
+    id = 'mount_store'
+    name = _("mount store")
+    description = _(
+        "This operation exposes your personal files and your store"
+        "credentials to other users of this virtual machine (if any).")
+    acl_level = "owner"
+    required_perms = ()
+
+    def check_precond(self):
+        super(MountStoreOperation, self).check_precond()
+        if self.instance.status not in ["RUNNING"]:
+            raise self.instance.WrongStateError(self.instance)
+
+    def _operation(self):
+        inst = self.instance
+        queue = self.instance.get_remote_queue_name("agent")
+        # TODO
+        # host = urlsplit(settings.STORE_URL).netloc
+        host = '10.0.0.24'
+        # username = Store(inst.owner).username
+        username = 'u-1'
+        # password = inst.owner.profile.smb_password
+        password = 'asd'
+        agent_tasks.mount_store.apply_async(
+            queue=queue, args=(inst.vm_name, host, username, password))
+
+
+register_operation(MountStoreOperation)
