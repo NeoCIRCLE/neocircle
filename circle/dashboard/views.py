@@ -71,7 +71,7 @@ from .tables import (
     NodeListTable, NodeVmListTable, TemplateListTable, LeaseListTable,
     GroupListTable, UserKeyListTable
 )
-from common.models import HumanReadableObject
+from common.models import HumanReadableObject, HumanReadableException
 from vm.models import (
     Instance, instance_activity, InstanceActivity, InstanceTemplate, Interface,
     InterfaceTemplate, Lease, Node, NodeActivity, Trait,
@@ -562,9 +562,13 @@ class OperationView(RedirectToLoginMixin, DetailView):
         done = False
         try:
             task = self.get_op().async(user=request.user, **extra)
+        except HumanReadableException as e:
+            e.send_message(request)
+            logger.exception("Could not start operation")
+            result = e
         except Exception as e:
             messages.error(request, _('Could not start operation.'))
-            logger.exception(e)
+            logger.exception("Could not start operation")
             result = e
         else:
             wait = self.wait_for_result
@@ -575,6 +579,10 @@ class OperationView(RedirectToLoginMixin, DetailView):
                 except TimeoutError:
                     logger.debug("Result didn't arrive in %ss",
                                  self.wait_for_result, exc_info=True)
+                except HumanReadableException as e:
+                    e.send_message(request)
+                    logger.exception(e)
+                    result = e
                 except Exception as e:
                     messages.error(request, _('Operation failed.'))
                     logger.debug("Operation failed.", exc_info=True)
