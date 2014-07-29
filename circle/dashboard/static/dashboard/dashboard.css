@@ -720,6 +720,10 @@ textarea[name="list-new-namelist"] {
   margin: 20px 0 0 10px;
 }
 
-.vm-resources-sliders .row {
+#vm-details-resources-form {
+  margin-top: 15px;
+}
+
+#vm-details-resources-form .row {
   margin-bottom: 15px;
 }

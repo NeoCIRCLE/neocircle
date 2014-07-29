@@ -751,6 +751,7 @@ class VmResourcesChangeView(VmOperationView):
     op = 'resources_change'
     icon = "save"
     show_in_toolbar = False
+    wait_for_result = 0.5
 
     def post(self, request, extra=None, *args, **kwargs):
         if extra is None:

@@ -868,7 +868,8 @@ class ResourcesOperation(InstanceOperation):
         if self.instance.status not in ["STOPPED", "PENDING"]:
             raise self.instance.WrongStateError(self.instance)
 
-    def _operation(self, user, num_cores, ram_size, max_ram_size, priority):
+    def _operation(self, user, activity,
+                   num_cores, ram_size, max_ram_size, priority):
 
         self.instance.num_cores = num_cores
         self.instance.ram_size = ram_size
@@ -877,6 +878,12 @@ class ResourcesOperation(InstanceOperation):
 
         self.instance.full_clean()
         self.instance.save()
+
+        activity.result = create_readable(ugettext_noop(
+            "Priority: %(priority)s, Num cores: %(num_cores)s, "
+            "Ram size: %(ram_size)s"), priority=priority, num_cores=num_cores,
+            ram_size=ram_size
+        )
 
 
 register_operation(ResourcesOperation)

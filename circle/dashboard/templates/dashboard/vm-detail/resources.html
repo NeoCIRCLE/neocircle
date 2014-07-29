@@ -2,11 +2,8 @@
 {% load sizefieldtags %}
 {% load crispy_forms_tags %}
 
-<hr />
-<div class="vm-resources-sliders">
-
-<form method="POST" action="{{ op.resources_change.get_url }}">
-{% csrf_token %}
+<form method="POST" action="{{ op.resources_change.get_url }}" id="vm-details-resources-form">
+  {% csrf_token %}
 <div class="row">
   <div class="col-sm-3" style="font-weight: bold;">
     <i class="fa fa-trophy"></i> {% trans "CPU priority" %}
@@ -66,69 +63,20 @@
   </div>
 </div>
 {% if can_change_resources %}
-    <button type="submit" class="btn btn-success btn-sm change-resources-button" id="vm-details-resources-savea"
-      data-vm="{{ instance.pk }}"
-      {% if not op.resources_change %}disabled{% endif %}>
+    <button type="submit" class="btn btn-success btn-sm change-resources-button" 
+      id="vm-details-resources-save" data-vm="{{ instance.pk }}"
+      {% if op.resources_change.disabled %}disabled{% endif %}>
       <i class="fa fa-floppy-o"></i> {% trans "Save resources" %}
     </button>
     <span class="change-resources-help"
-      {% if op.resources_change %}style="display: none;"{% endif %}
+      {% if not op.resources_change.disabled %}style="display: none;"{% endif %}
       >{% trans "Stop your VM to change resources." %}</span>
 {% endif %}
 </form>
 
-</div>
 
 <hr />
 
-<form id="vm-details-resources-form" method="POST" action="">
-  {% csrf_token %}
-<p class="row">
-    <div class="col-sm-3">
-      <label for="vm-cpu-priority-slider"><i class="fa fa-trophy"></i> {% trans "CPU priority" %}</label>
-    </div>
-    <div class="col-sm-9">
-      <input name="cpu-priority" type="text" id="vm-cpu-priority-slider" class="vm-slider" value="{{ instance.priority }}" data-slider-min="0" data-slider-max="100" data-slider-step="1" data-slider-value="{{ instance.priority }}" data-slider-orientation="horizontal" data-slider-handle="square" data-slider-tooltip="hide"/>
-    </div>
-</p>
-
-
-<p class="row">
-    <div class="col-sm-3">
-      <label for="cpu-count-slider"><i class="fa fa-cogs"></i> {% trans "CPU count" %}</label>
-    </div>
-    <div class="col-sm-9">
-      <input name="cpu-count" type="text" id="vm-cpu-count-slider" class="vm-slider" value=" {{ instance.num_cores }}" data-slider-min="0" data-slider-max="8" data-slider-step="1" data-slider-value="{{ instance.num_cores }}" data-slider-orientation="horizontal" data-slider-handle="square" data-slider-tooltip="hide"/>
-    </div>
-</p>
-
-
-<p class="row">
-    <div class="col-sm-3">
-      <label for="ram-slider"><i class="fa fa-ticket"></i> {% trans "RAM amount" %}</label>
-    </div>
-    <div class="col-sm-9">
-      <input name="ram-size" type="text" id="vm-ram-size-slider" class="vm-slider" value="{{ instance.ram_size }}" data-slider-min="128" data-slider-max="4096" data-slider-step="128" data-slider-value="{{ instance.ram_size }}" data-slider-orientation="horizontal" data-slider-handle="square" data-slider-tooltip="hide"/>         MiB
-  </div>
-</p>
-
-{% if can_change_resources %}
-<p class="row">
-  <div class="col-sm-12">
-    <button type="submit" class="btn btn-success btn-sm enabled-when-stopped" id="vm-details-resources-save"
-      data-vm="{{ instance.pk }}"
-      {% if not op.resources_change %}disabled{% endif %}>
-      <i class="fa fa-floppy-o"></i> {% trans "Save resources" %}
-    </button>
-    <span class="hide-when-stopped"
-      {% if op.resources_change %}style="display: none;"{% endif %}
-      >{% trans "Stop your VM to change resources." %}</span>
-  </div>
-</p>
-{% endif %}
-</form>
-
-<hr />
 
 <div class="row" id="vm-details-resources-disk">
   <div class="col-sm-11">

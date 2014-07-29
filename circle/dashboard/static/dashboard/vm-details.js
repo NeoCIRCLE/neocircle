@@ -27,6 +27,15 @@ $(function() {
 
   /* save resources */
   $('#vm-details-resources-save').click(function() {
+    var error = false;
+    $(".cpu-count-input, .ram-input").each(function() {
+      if(!$(this)[0].checkValidity()) {
+        error = true;
+      }
+    });
+    if(error) return true;
+
+
     $('i.fa-floppy-o', this).removeClass("fa-floppy-o").addClass("fa-refresh fa-spin");
     var vm = $(this).data("vm");
     $.ajax({
