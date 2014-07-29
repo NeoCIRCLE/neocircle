@@ -307,6 +307,10 @@ $(function() {
     $("#vm-details-connection-string").focus();
   });
 
+  $("a.operation-password_reset").click(function() {
+    if(Boolean($(this).data("disabled"))) return false;
+  });
+
 });
 
 
@@ -327,6 +331,7 @@ function removePort(data) {
 
     }
   });
+
 }
 
 function decideActivityRefresh() {

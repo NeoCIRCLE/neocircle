@@ -3,7 +3,7 @@
 $(function() {
 
   /* vm operations */
-  $('#ops, #vm-details-resources-disk, #vm-details-renew-op, #vm-details-pw-reset, #vm-details-add-interface').on('click', '.operation.btn', function(e) {
+  $('#ops, #vm-details-resources-disk, #vm-details-renew-op, #vm-details-pw-reset, #vm-details-add-interface').on('click', '.operation', function(e) {
     var icon = $(this).children("i").addClass('fa-spinner fa-spin');
 
     $.ajax({
