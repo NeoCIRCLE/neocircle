@@ -43,8 +43,12 @@ $(function() {
       url: "/dashboard/vm/" + vm + "/op/resources_change/", 
       data: $('#vm-details-resources-form').serialize(),
       success: function(data, textStatus, xhr) {
+        if(data.success) {
+          $('a[href="#activity"]').trigger("click");
+        } else {
+          addMessage(data.messages.join("<br />"), "danger");
+        }
         $("#vm-details-resources-save i").removeClass('fa-refresh fa-spin').addClass("fa-floppy-o");
-        $('a[href="#activity"]').trigger("click");
       },
       error: function(xhr, textStatus, error) {
         $("#vm-details-resources-save i").removeClass('fa-refresh fa-spin').addClass("fa-floppy-o");

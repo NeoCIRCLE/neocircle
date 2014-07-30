@@ -85,21 +85,25 @@ class VmCustomizeForm(forms.Form):
         'required': "",
     }))
 
-    cpu_count = forms.CharField(widget=forms.NumberInput(attrs={
+    cpu_count = forms.IntegerField(widget=forms.NumberInput(attrs={
         'class': "form-control input-tags cpu-count-input",
         'min': 1,
         'max': 10,
         'required': "",
-    }))
+    }),
+        min_value=1, max_value=10,
+    )
 
-    ram_size = forms.CharField(widget=forms.TextInput(attrs={
+    ram_size = forms.IntegerField(widget=forms.TextInput(attrs={
         'class': "form-control input-tags ram-input",
         'min': 128,
         'pattern': "\d+",
         'max': MAX_NODE_RAM,
         'step': 128,
         'required': "",
-    }))
+    }),
+        min_value=128, max_value=MAX_NODE_RAM,
+    )
 
     cpu_priority = forms.ChoiceField(
         priority_choices, widget=forms.Select(attrs={
@@ -1134,20 +1138,24 @@ class GroupPermissionForm(forms.ModelForm):
 
 
 class VmResourcesForm(forms.ModelForm):
-    num_cores = forms.CharField(widget=forms.NumberInput(attrs={
+    num_cores = forms.IntegerField(widget=forms.NumberInput(attrs={
         'class': "form-control input-tags cpu-count-input",
         'min': 1,
         'max': 10,
         'required': "",
-    }))
+    }),
+        min_value=1, max_value=10,
+    )
 
-    ram_size = forms.CharField(widget=forms.NumberInput(attrs={
+    ram_size = forms.IntegerField(widget=forms.NumberInput(attrs={
         'class': "form-control input-tags ram-input",
         'min': 128,
         'max': MAX_NODE_RAM,
         'step': 128,
         'required': "",
-    }))
+    }),
+        min_value=128, max_value=MAX_NODE_RAM,
+    )
 
     priority = forms.ChoiceField(priority_choices, widget=forms.Select(attrs={
         'class': "form-control input-tags cpu-priority-input",

@@ -765,17 +765,35 @@ class VmResourcesChangeView(VmOperationView):
         if extra is None:
             extra = {}
 
-        resources = {
-            'num_cores': "num_cores",
-            'priority': "priority",
-            'ram_size': "ram_size",
-            "max_ram_size": "ram_size",  # TODO
-        }
-        for k, v in resources.iteritems():
-            extra[k] = request.POST.get(v)
+        instance = get_object_or_404(Instance, pk=kwargs['pk'])
 
-        return super(VmResourcesChangeView, self).post(request, extra,
-                                                       *args, **kwargs)
+        form = VmResourcesForm(request.POST, instance=instance)
+        if not form.is_valid():
+            for f in form.errors:
+                messages.error(request, "<strong>%s</strong>: %s" % (
+                    f, form.errors[f].as_text()
+                ))
+            if request.is_ajax():  # this is not too nice
+                store = messages.get_messages(request)
+                store.used = True
+                return HttpResponse(
+                    json.dumps({'success': False,
+                                'messages': [unicode(m) for m in store]}),
+                    content_type="application=json"
+                )
+            else:
+                return redirect(instance.get_absolute_url() + "#resources")
+        else:
+            resources = {
+                'num_cores': "num_cores",
+                'priority': "priority",
+                'ram_size': "ram_size",
+                'max_ram_size': "ram_size",  # TODO
+            }
+            for k, v in resources.iteritems():
+                extra[k] = request.POST.get(v)
+            return super(VmResourcesChangeView, self).post(request, extra,
+                                                           *args, **kwargs)
 
 
 class TokenOperationView(OperationView):
