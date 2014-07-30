@@ -27,13 +27,13 @@ from celery.contrib.abortable import AbortableAsyncResult
 from django.db.models import (Model, BooleanField, CharField, DateTimeField,
                               ForeignKey)
 from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _, ugettext_noop
 from model_utils.models import TimeStampedModel
 from sizefield.models import FileSizeField
 
 from .tasks import local_tasks, storage_tasks
 from celery.exceptions import TimeoutError
-from common.models import WorkerNotFound
+from common.models import WorkerNotFound, HumanReadableException
 
 logger = logging.getLogger(__name__)
 
@@ -104,43 +104,72 @@ class Disk(TimeStampedModel):
             ('create_empty_disk', _('Can create an empty disk.')),
             ('download_disk', _('Can download a disk.')))
 
-    class WrongDiskTypeError(Exception):
+    class DiskError(HumanReadableException):
+        admin_message = None
 
-        def __init__(self, type, message=None):
-            if message is None:
-                message = ("Operation can't be invoked on a disk of type '%s'."
-                           % type)
+        def __init__(self, disk, params=None, level=None, **kwargs):
+            kwargs.update(params or {})
+            self.disc = kwargs["disk"] = disk
+            super(Disk.DiskError, self).__init__(
+                level, self.message, self.admin_message or self.message,
+                kwargs)
 
-            Exception.__init__(self, message)
+    class WrongDiskTypeError(DiskError):
+        message = ugettext_noop("Operation can't be invoked on disk "
+                                "'%(name)s' of type '%(type)s'.")
 
-            self.type = type
+        admin_message = ugettext_noop(
+            "Operation can't be invoked on disk "
+            "'%(name)s' (%(pk)s) of type '%(type)s'.")
 
-    class DiskInUseError(Exception):
+        def __init__(self, disk, params=None, **kwargs):
+            super(Disk.WrongDiskTypeError, self).__init__(
+                disk, params, type=disk.type, name=disk.name, pk=disk.pk)
 
-        def __init__(self, disk, message=None):
-            if message is None:
-                message = ("The requested operation can't be performed on "
-                           "disk '%s (%s)' because it is in use." %
-                           (disk.name, disk.filename))
+    class DiskInUseError(DiskError):
+        message = ugettext_noop(
+            "The requested operation can't be performed on "
+            "disk '%(name)s' because it is in use.")
 
-            Exception.__init__(self, message)
+        admin_message = ugettext_noop(
+            "The requested operation can't be performed on "
+            "disk '%(name)s' (%(pk)s) because it is in use.")
 
-            self.disk = disk
+        def __init__(self, disk, params=None, **kwargs):
+            super(Disk.WrongDiskTypeError, self).__init__(
+                disk, params, name=disk.name, pk=disk.pk)
 
-    class DiskIsNotReady(Exception):
+    class DiskIsNotReady(DiskError):
+        message = ugettext_noop(
+            "The requested operation can't be performed on "
+            "disk '%(name)s' because it has never been deployed.")
 
-        """ Exception for operations that need a deployed disk.
-        """
+        admin_message = ugettext_noop(
+            "The requested operation can't be performed on "
+            "disk '%(name)s' (%(pk)s) [%(filename)s] because it has never been"
+            "deployed.")
 
-        def __init__(self, disk, message=None):
-            if message is None:
-                message = ("The requested operation can't be performed on "
-                           "disk '%s (%s)' because it has never been"
-                           "deployed." % (disk.name, disk.filename))
+        def __init__(self, disk, params=None, **kwargs):
+            super(Disk.WrongDiskTypeError, self).__init__(
+                disk, params, name=disk.name, pk=disk.pk,
+                filename=disk.filename)
 
-            Exception.__init__(self, message)
+    class DiskBaseIsNotReady(DiskError):
+        message = ugettext_noop(
+            "The requested operation can't be performed on "
+            "disk '%(name)s' because its base has never been deployed.")
 
-            self.disk = disk
+        admin_message = ugettext_noop(
+            "The requested operation can't be performed on "
+            "disk '%(name)s' (%(pk)s) [%(filename)s] because its base "
+            "'%(b_name)s' (%(b_pk)s) [%(b_filename)s] has never been"
+            "deployed.")
+
+        def __init__(self, disk, params=None, **kwargs):
+            super(Disk.WrongDiskTypeError, self).__init__(
+                disk, params, name=disk.name, pk=disk.pk,
+                filename=disk.filename, b_name=base.name,
+                b_pk=base.pk, b_filename=base.filename)
 
     @property
     def path(self):
@@ -240,7 +269,7 @@ class Disk(TimeStampedModel):
         }
 
         if self.type not in type_mapping.keys():
-            raise self.WrongDiskTypeError(self.type)
+            raise self.WrongDiskTypeError(self)
 
         new_type = type_mapping[self.type]
 
@@ -417,7 +446,7 @@ class Disk(TimeStampedModel):
             'iso': ("iso", self),
         }
         if self.type not in mapping.keys():
-            raise self.WrongDiskTypeError(self.type)
+            raise self.WrongDiskTypeError(self)
 
         if self.is_in_use:
             raise self.DiskInUseError(self)
