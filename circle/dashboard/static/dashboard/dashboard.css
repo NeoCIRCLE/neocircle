@@ -723,6 +723,82 @@ textarea[name="list-new-namelist"] {
 
 }
 
+#store-list-list {
+  list-style: none;
+}
+
+.store-list-item {
+  cursor: pointer;
+}
+
+.store-list-item:hover {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.store-list-item-icon {
+  width: 20px;
+  text-align: center;
+  display: inline-block;
+  margin-right: 15px;
+  float: left;
+}
+
+.store-list-item-size {
+  width: 70px;
+  text-align: right;
+  float: right;
+}
+
+.store-list-file-infos {
+  padding: 15px;
+  display: none;
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+  position: relative;
+}
+
+.store-list-item-new {
+  display: inline-block;
+}
+
+.store-list-item-new .badge {
+  margin-left: 5px;
+  background: #5bc0dc;
+}
+
+.store-list-item-icon-directory {
+  color: #ff8c00;
+}
+
+.store-remove-button {
+  margin-top: 8px;
+}
+
+#dashboard-files-toplist div.list-group-item {
+  color: #555;
+}
+
+#dashboard-files-toplist div.list-group-item:hover {
+  background: #eee;
+}
+
+.store-list-item-name {
+  max-width: 70%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  float: left;
+}
+
+.dashboard-toplist-icon {
+  float: left;
+  padding: 2px 5px 0 0;
+}
+
+.no-hover:hover {
+  background: none !important;
+}
+
 #group-detail-permissions .filtered {
   margin: 2px 0;
   padding: 2px 3px;
@@ -750,6 +826,23 @@ textarea[name="list-new-namelist"] {
 
 #group-detail-permissions input[type="submit"]{
   margin-top: -6px;
+}
+
+.store-action-button {
+  margin-left: 5px;
+}
+
+#progress-marker-hard {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+  right: 0;
+  background: red;
+}
+
+.progress-marker {
+  width: 6px;
+  height: 20px;
+  position: absolute;
 }
 
 #show-all-activities-container {

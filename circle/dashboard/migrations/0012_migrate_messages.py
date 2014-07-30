@@ -93,11 +93,13 @@ class Migration(DataMigration):
         },
         u'dashboard.profile': {
             'Meta': {'object_name': 'Profile'},
+            'disk_quota': ('django.db.models.fields.IntegerField', [], {'default': '2048'}),
             'email_notifications': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'instance_limit': ('django.db.models.fields.IntegerField', [], {'default': '5'}),
             'org_id': ('django.db.models.fields.CharField', [], {'max_length': '64', 'unique': 'True', 'null': 'True', 'blank': 'True'}),
             'preferred_language': ('django.db.models.fields.CharField', [], {'default': "'en'", 'max_length': '32'}),
+            'smb_password': ('django.db.models.fields.CharField', [], {'max_length': '20'}),
             'use_gravatar': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'user': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['auth.User']", 'unique': 'True'})
         },

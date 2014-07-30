@@ -8,23 +8,23 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding field 'Notification.subject_data'
-        db.add_column(u'dashboard_notification', 'subject_data',
-                      self.gf('jsonfield.fields.JSONField')(null=True),
+        # Adding field 'Profile.smb_password'
+        db.add_column(u'dashboard_profile', 'smb_password',
+                      self.gf('django.db.models.fields.CharField')(default='asdasd', max_length=20),
                       keep_default=False)
 
-        # Adding field 'Notification.message_data'
-        db.add_column(u'dashboard_notification', 'message_data',
-                      self.gf('jsonfield.fields.JSONField')(null=True),
+        # Adding field 'Profile.disk_quota'
+        db.add_column(u'dashboard_profile', 'disk_quota',
+                      self.gf('django.db.models.fields.IntegerField')(default=2048),
                       keep_default=False)
 
 
     def backwards(self, orm):
-        # Deleting field 'Notification.subject_data'
-        db.delete_column(u'dashboard_notification', 'subject_data')
+        # Deleting field 'Profile.smb_password'
+        db.delete_column(u'dashboard_profile', 'smb_password')
 
-        # Deleting field 'Notification.message_data'
-        db.delete_column(u'dashboard_notification', 'message_data')
+        # Deleting field 'Profile.disk_quota'
+        db.delete_column(u'dashboard_profile', 'disk_quota')
 
 
     models = {
@@ -70,12 +70,6 @@ class Migration(SchemaMigration):
             'instance': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['vm.Instance']"}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"})
         },
-        u'dashboard.futuremember': {
-            'Meta': {'unique_together': "(('org_id', 'group'),)", 'object_name': 'FutureMember'},
-            'group': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.Group']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'org_id': ('django.db.models.fields.CharField', [], {'max_length': '64'})
-        },
         u'dashboard.groupprofile': {
             'Meta': {'object_name': 'GroupProfile'},
             'description': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
@@ -88,11 +82,9 @@ class Migration(SchemaMigration):
             'created': ('model_utils.fields.AutoCreatedField', [], {'default': 'datetime.datetime.now'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'message': ('django.db.models.fields.TextField', [], {}),
-            'message_data': ('jsonfield.fields.JSONField', [], {'null': 'True'}),
             'modified': ('model_utils.fields.AutoLastModifiedField', [], {'default': 'datetime.datetime.now'}),
             'status': ('model_utils.fields.StatusField', [], {'default': "'new'", 'max_length': '100', u'no_check_for_status': 'True'}),
             'subject': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
-            'subject_data': ('jsonfield.fields.JSONField', [], {'null': 'True'}),
             'to': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
             'valid_until': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'})
         },

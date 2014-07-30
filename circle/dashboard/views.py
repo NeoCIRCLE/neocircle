@@ -1,4 +1,5 @@
 # Copyright 2014 Budapest University of Technology and Economics (BME IK)
+
 #
 # This file is part of CIRCLE Cloud.
 #
@@ -20,6 +21,7 @@ from __future__ import unicode_literals, absolute_import
 from collections import OrderedDict
 from itertools import chain
 from os import getenv
+from os.path import join, normpath, dirname, basename
 from urlparse import urljoin
 import json
 import logging
@@ -29,15 +31,19 @@ import requests
 from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.views import login, redirect_to_login
+from django.contrib.auth.decorators import login_required
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import (
     PermissionDenied, SuspiciousOperation,
 )
+from django.core.cache import get_cache
 from django.core import signing
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db.models import Count, Q
 from django.http import HttpResponse, HttpResponseRedirect, Http404
-from django.shortcuts import redirect, render, get_object_or_404
+from django.shortcuts import (
+    redirect, render, get_object_or_404, render_to_response,
+)
 from django.views.decorators.http import require_GET, require_POST
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import (TemplateView, DetailView, View, DeleteView,
@@ -79,6 +85,8 @@ from vm.models import (
 from storage.models import Disk
 from firewall.models import Vlan, Host, Rule
 from .models import Favourite, Profile, GroupProfile, FutureMember
+
+from .store_api import Store, NoStoreException
 
 logger = logging.getLogger(__name__)
 saml_available = hasattr(settings, "SAML_CONFIG")
@@ -218,6 +226,27 @@ class IndexView(LoginRequiredMixin, TemplateView):
         if user.has_perm('vm.create_template'):
             context['templates'] = InstanceTemplate.get_objects_with_level(
                 'operator', user).all()[:5]
+
+        # toplist
+        if settings.STORE_URL:
+            cache_key = "files-%d" % self.request.user.pk
+            cache = get_cache("default")
+            files = cache.get(cache_key)
+            if not files:
+                try:
+                    store = Store(self.request.user)
+                    toplist = store.toplist()
+                    quota = store.get_quota()
+                    files = {'toplist': toplist, 'quota': quota}
+                except Exception:
+                    logger.exception("Unable to get tolist for %s",
+                                     unicode(self.request.user))
+                    files = {'toplist': []}
+                cache.set(cache_key, files, 300)
+
+            context['files'] = files
+        else:
+            context['no_store'] = True
 
         return context
 
@@ -3090,6 +3119,166 @@ class UserKeyCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         kwargs = super(UserKeyCreate, self).get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
+
+
+class StoreList(LoginRequiredMixin, TemplateView):
+    template_name = "dashboard/store/list.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(StoreList, self).get_context_data(**kwargs)
+        directory = self.request.GET.get("directory", "/")
+        directory = "/" if not len(directory) else directory
+
+        store = Store(self.request.user)
+        context['root'] = store.list(directory)
+        context['quota'] = store.get_quota()
+        context['up_url'] = self.create_up_directory(directory)
+        context['current'] = directory
+        context['next_url'] = "%s%s?directory=%s" % (
+            settings.DJANGO_URL.rstrip("/"),
+            reverse("dashboard.views.store-list"), directory)
+        return context
+
+    def get(self, *args, **kwargs):
+        try:
+            if self.request.is_ajax():
+                context = self.get_context_data(**kwargs)
+                return render_to_response(
+                    "dashboard/store/_list-box.html",
+                    RequestContext(self.request, context),
+                )
+            else:
+                return super(StoreList, self).get(*args, **kwargs)
+        except NoStoreException:
+            messages.warning(self.request, _("No store."))
+            return redirect("/")
+
+    def create_up_directory(self, directory):
+        path = normpath(join('/', directory, '..'))
+        if not path.endswith("/"):
+            path += "/"
+        return path
+
+
+@require_GET
+@login_required
+def store_download(request):
+    path = request.GET.get("path")
+    try:
+        url = Store(request.user).request_download(path)
+    except Exception:
+        messages.error(request, _("Something went wrong during download."))
+        logger.exception("Unable to download, "
+                         "maybe it is already deleted")
+        return redirect(reverse("dashboard.views.store-list"))
+    return redirect(url)
+
+
+@require_GET
+@login_required
+def store_upload(request):
+    directory = request.GET.get("directory", "/")
+    try:
+        action = Store(request.user).request_upload(directory)
+    except Exception:
+        logger.exception("Unable to upload")
+        messages.error(request, _("Unable to upload file."))
+        return redirect("/")
+
+    next_url = "%s%s?directory=%s" % (
+        settings.DJANGO_URL.rstrip("/"),
+        reverse("dashboard.views.store-list"), directory)
+
+    return render(request, "dashboard/store/upload.html",
+                  {'directory': directory, 'action': action,
+                   'next_url': next_url})
+
+
+@require_GET
+@login_required
+def store_get_upload_url(request):
+    current_dir = request.GET.get("current_dir")
+    try:
+        url = Store(request.user).request_upload(current_dir)
+    except Exception:
+        logger.exception("Unable to upload")
+        messages.error(request, _("Unable to upload file."))
+        return redirect("/")
+    return HttpResponse(
+        json.dumps({'url': url}), content_type="application/json")
+
+
+class StoreRemove(LoginRequiredMixin, TemplateView):
+    template_name = "dashboard/store/remove.html"
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(StoreRemove, self).get_context_data(*args, **kwargs)
+        path = self.request.GET.get("path", "/")
+        if path == "/":
+            SuspiciousOperation()
+
+        context['path'] = path
+        context['is_dir'] = path.endswith("/")
+        if context['is_dir']:
+            context['directory'] = path
+        else:
+            context['directory'] = dirname(path)
+            context['name'] = basename(path)
+
+        return context
+
+    def get(self, *args, **kwargs):
+        try:
+            return super(StoreRemove, self).get(*args, **kwargs)
+        except NoStoreException:
+            return redirect("/")
+
+    def post(self, *args, **kwargs):
+        path = self.request.POST.get("path")
+        try:
+            Store(self.request.user).remove(path)
+        except Exception:
+            logger.exception("Unable to remove %s", path)
+            messages.error(self.request, _("Unable to remove %s.") % path)
+
+        return redirect("%s?directory=%s" % (
+            reverse("dashboard.views.store-list"),
+            dirname(dirname(path)),
+        ))
+
+
+@require_POST
+@login_required
+def store_new_directory(request):
+    path = request.POST.get("path")
+    name = request.POST.get("name")
+
+    try:
+        Store(request.user).new_folder(join(path, name))
+    except Exception:
+        logger.exception("Unable to create folder %s in %s for %s",
+                         name, path, unicode(request.user))
+        messages.error(request, _("Unable to create folder."))
+    return redirect("%s?directory=%s" % (
+        reverse("dashboard.views.store-list"), path))
+
+
+@require_POST
+@login_required
+def store_refresh_toplist(request):
+    cache_key = "files-%d" % request.user.pk
+    cache = get_cache("default")
+    try:
+        store = Store(request.user)
+        toplist = store.toplist()
+        quota = store.get_quota()
+        files = {'toplist': toplist, 'quota': quota}
+    except Exception:
+        logger.exception("Can't get toplist of %s", unicode(request.user))
+        files = {'toplist': []}
+    cache.set(cache_key, files, 300)
+
+    return redirect(reverse("dashboard.index"))
 
 
 def absolute_url(url):

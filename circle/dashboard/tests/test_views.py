@@ -1776,9 +1776,11 @@ class SshKeyTest(LoginMixin, TestCase):
     def setUp(self):
         self.u1 = User.objects.create(username='user1')
         self.u1.set_password('password')
+        self.u1.profile = Profile()
         self.u1.save()
         self.u2 = User.objects.create(username='user2')
         self.u2.set_password('password')
+        self.u2.profile = Profile()
         self.u2.save()
         self.k1 = UserKey(key='ssh-rsa AAAAB3NzaC1yc2EC asd', user=self.u1)
         self.k1.save()

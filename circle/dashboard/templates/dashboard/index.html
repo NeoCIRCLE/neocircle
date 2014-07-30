@@ -23,11 +23,11 @@
     </div>
     {% endif %}
 
-    {% comment %}
+    {% if not no_store %}
     <div class="col-lg-4 col-sm-6">
-      {% include "dashboard/index-files.html" %}
+      {% include "dashboard/store/index-files.html" %}
     </div>
-    {% endcomment %}
+    {% endif %}
 
     {% if perms.vm.create_template %}
     <div class="col-lg-4 col-sm-6">

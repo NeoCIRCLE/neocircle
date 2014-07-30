@@ -8,24 +8,14 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding field 'Notification.subject_data'
-        db.add_column(u'dashboard_notification', 'subject_data',
-                      self.gf('jsonfield.fields.JSONField')(null=True),
-                      keep_default=False)
 
-        # Adding field 'Notification.message_data'
-        db.add_column(u'dashboard_notification', 'message_data',
-                      self.gf('jsonfield.fields.JSONField')(null=True),
-                      keep_default=False)
-
+        # Changing field 'Profile.disk_quota'
+        db.alter_column(u'dashboard_profile', 'disk_quota', self.gf('sizefield.models.FileSizeField')())
 
     def backwards(self, orm):
-        # Deleting field 'Notification.subject_data'
-        db.delete_column(u'dashboard_notification', 'subject_data')
 
-        # Deleting field 'Notification.message_data'
-        db.delete_column(u'dashboard_notification', 'message_data')
-
+        # Changing field 'Profile.disk_quota'
+        db.alter_column(u'dashboard_profile', 'disk_quota', self.gf('django.db.models.fields.IntegerField')())
 
     models = {
         u'auth.group': {
@@ -87,24 +77,22 @@ class Migration(SchemaMigration):
             'Meta': {'ordering': "['-created']", 'object_name': 'Notification'},
             'created': ('model_utils.fields.AutoCreatedField', [], {'default': 'datetime.datetime.now'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'message': ('django.db.models.fields.TextField', [], {}),
             'message_data': ('jsonfield.fields.JSONField', [], {'null': 'True'}),
             'modified': ('model_utils.fields.AutoLastModifiedField', [], {'default': 'datetime.datetime.now'}),
             'status': ('model_utils.fields.StatusField', [], {'default': "'new'", 'max_length': '100', u'no_check_for_status': 'True'}),
-            'subject': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
             'subject_data': ('jsonfield.fields.JSONField', [], {'null': 'True'}),
             'to': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']"}),
             'valid_until': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'})
         },
         u'dashboard.profile': {
             'Meta': {'object_name': 'Profile'},
-            'disk_quota': ('django.db.models.fields.IntegerField', [], {'default': '2048'}),
+            'disk_quota': ('sizefield.models.FileSizeField', [], {'default': '2147483648'}),
             'email_notifications': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'instance_limit': ('django.db.models.fields.IntegerField', [], {'default': '5'}),
             'org_id': ('django.db.models.fields.CharField', [], {'max_length': '64', 'unique': 'True', 'null': 'True', 'blank': 'True'}),
             'preferred_language': ('django.db.models.fields.CharField', [], {'default': "'en'", 'max_length': '32'}),
-            'smb_password': ('django.db.models.fields.CharField', [], {'max_length': '20'}),
+            'smb_password': ('django.db.models.fields.CharField', [], {'default': "u'ztX9mwgeNM'", 'max_length': '20'}),
             'use_gravatar': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'user': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['auth.User']", 'unique': 'True'})
         },
