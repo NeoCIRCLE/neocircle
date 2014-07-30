@@ -107,28 +107,6 @@ class VmDetailTest(LoginMixin, TestCase):
         response = c.get('/dashboard/vm/1/')
         self.assertEqual(response.status_code, 200)
 
-    def test_permitted_vm_delete(self):
-        c = Client()
-        self.login(c, 'user2')
-        inst = Instance.objects.get(pk=1)
-        inst.set_level(self.u2, 'owner')
-        response = c.post('/dashboard/vm/delete/1/')
-        self.assertEqual(response.status_code, 302)
-
-    def test_not_permitted_vm_delete(self):
-        c = Client()
-        self.login(c, 'user2')
-        inst = Instance.objects.get(pk=1)
-        inst.set_level(self.u2, 'operator')
-        response = c.post('/dashboard/vm/delete/1/')
-        self.assertEqual(response.status_code, 403)
-
-    def test_unpermitted_vm_delete(self):
-        c = Client()
-        self.login(c, 'user1')
-        response = c.post('/dashboard/vm/delete/1/')
-        self.assertEqual(response.status_code, 403)
-
     def test_unpermitted_vm_mass_delete(self):
         c = Client()
         self.login(c, 'user1')
