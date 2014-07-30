@@ -2064,53 +2064,6 @@ class GroupProfileUpdate(SuccessMessageMixin, GroupCodeMixin,
         return self.form_valid(form)
 
 
-class VmDelete(LoginRequiredMixin, DeleteView):
-    model = Instance
-    template_name = "dashboard/confirm/base-delete.html"
-
-    def get_template_names(self):
-        if self.request.is_ajax():
-            return ['dashboard/confirm/ajax-delete.html']
-        else:
-            return ['dashboard/confirm/base-delete.html']
-
-    def get_success_url(self):
-        next = self.request.POST.get('next')
-        if next:
-            return next
-        else:
-            return reverse_lazy('dashboard.index')
-
-    def get_context_data(self, **kwargs):
-        object = self.get_object()
-        if not object.has_level(self.request.user, 'owner'):
-            raise PermissionDenied()
-
-        context = super(VmDelete, self).get_context_data(**kwargs)
-        return context
-
-    # github.com/django/django/blob/master/django/views/generic/edit.py#L245
-    def delete(self, request, *args, **kwargs):
-        object = self.get_object()
-        if not object.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-
-        object.destroy.async(user=request.user)
-        success_url = self.get_success_url()
-        success_message = _("VM successfully deleted.")
-
-        if request.is_ajax():
-            if request.POST.get('redirect').lower() == "true":
-                messages.success(request, success_message)
-            return HttpResponse(
-                json.dumps({'message': success_message}),
-                content_type="application/json",
-            )
-        else:
-            messages.success(request, success_message)
-            return HttpResponseRedirect(success_url)
-
-
 class NodeDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
 
     """This stuff deletes the node.
