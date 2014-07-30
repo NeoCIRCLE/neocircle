@@ -85,8 +85,11 @@ def agent_started(vm, version=None):
 
         if version and version != settings.AGENT_VERSION:
             try:
-                with act.sub_activity('update',
-                                      readable_name=ugettext_noop('update')):
+                with act.sub_activity(
+                    'update',
+                    readable_name=ugettext_noop('update to %(version)s'),
+                    version=settings.AGENT_VERSION
+                ):
                     update.apply_async(
                         queue=queue,
                         args=(vm, create_agent_tar())).get(timeout=10)
@@ -98,9 +101,10 @@ def agent_started(vm, version=None):
             measure_boot_time(instance)
             send_init_commands(instance, act, vm)
 
-        with act.sub_activity('start_access_server',
-                              readable_name=ugettext_noop('start acces server')
-                              ):
+        with act.sub_activity(
+            'start_access_server',
+            readable_name=ugettext_noop('start access server')
+        ):
             start_access_server.apply_async(queue=queue, args=(vm, ))
 
 
