@@ -1894,9 +1894,13 @@ class VmCreate(LoginRequiredMixin, TemplateView):
         except Exception as e:
             logger.debug('No profile or instance limit: %s', e)
         else:
+            try:
+                amount = int(request.POST.get("amount", 1))
+            except:
+                amount = limit  # TODO this should definitely use a Form
             current = Instance.active.filter(owner=user).count()
             logger.debug('current use: %d, limit: %d', current, limit)
-            if limit < current:
+            if current + amount > limit:
                 messages.error(request,
                                _('Instance limit (%d) exceeded.') % limit)
                 if request.is_ajax():
