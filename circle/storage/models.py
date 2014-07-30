@@ -166,6 +166,7 @@ class Disk(TimeStampedModel):
             "deployed.")
 
         def __init__(self, disk, params=None, **kwargs):
+            base = kwargs.get('base')
             super(Disk.WrongDiskTypeError, self).__init__(
                 disk, params, name=disk.name, pk=disk.pk,
                 filename=disk.filename, b_name=base.name,
@@ -343,7 +344,7 @@ class Disk(TimeStampedModel):
         if self.is_ready:
             return True
         if self.base and not self.base.is_ready:
-            raise self.DiskIsNotReady(self, base=self.base)
+            raise self.DiskBaseIsNotReady(self, base=self.base)
         queue_name = self.get_remote_queue_name('storage', priority="fast")
         disk_desc = self.get_disk_desc()
         if self.base is not None:
