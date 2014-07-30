@@ -47,7 +47,7 @@ from common.models import HumanReadableObject, create_readable, Encoder
 
 from vm.tasks.agent_tasks import add_keys, del_keys
 
-from .store_api import Store, NoStoreException
+from .store_api import Store, NoStoreException, NotOkException
 
 logger = getLogger(__name__)
 
@@ -296,6 +296,8 @@ def update_store_profile(sender, **kwargs):
                       profile.disk_quota)
     except NoStoreException:
         logger.debug("Store is not available.")
+    except NotOkException:
+        logger.critical("Store is not accepting connections.")
 
 
 post_save.connect(update_store_profile, sender=Profile)
@@ -315,6 +317,8 @@ def update_store_keys(sender, **kwargs):
                           profile.disk_quota)
         except NoStoreException:
             logger.debug("Store is not available.")
+        except NotOkException:
+            logger.critical("Store is not accepting connections.")
 
 
 post_save.connect(update_store_keys, sender=UserKey)
