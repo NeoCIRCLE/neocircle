@@ -342,6 +342,8 @@ class Disk(TimeStampedModel):
 
         if self.is_ready:
             return True
+        if self.base and not self.base.is_ready:
+            raise self.DiskIsNotReady(self, base=self.base)
         queue_name = self.get_remote_queue_name('storage', priority="fast")
         disk_desc = self.get_disk_desc()
         if self.base is not None:
@@ -462,7 +464,7 @@ class Disk(TimeStampedModel):
         disk = Disk.create(datastore=self.datastore,
                            base=new_base,
                            name=self.name, size=self.size,
-                           type=new_type)
+                           type=new_type, dev_num=self.dev_num)
 
         queue_name = self.get_remote_queue_name("storage", priority="slow")
         remote = storage_tasks.merge.apply_async(kwargs={
@@ -479,4 +481,6 @@ class Disk(TimeStampedModel):
                     AbortableAsyncResult(remote.id).abort()
                     disk.destroy()
                     raise Exception("Save as aborted by use.")
+        disk.is_ready = True
+        disk.save()
         return disk
