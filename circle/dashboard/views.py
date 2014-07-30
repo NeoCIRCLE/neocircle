@@ -32,7 +32,6 @@ from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.views import login, redirect_to_login
 from django.contrib.auth.decorators import login_required
-from django.contrib.messages import warning
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import (
     PermissionDenied, SuspiciousOperation,
