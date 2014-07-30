@@ -25,22 +25,25 @@ from StringIO import StringIO
 from tarfile import TarFile, TarInfo
 from django.conf import settings
 from django.utils import timezone
+from django.utils.translation import ugettext_noop
 from celery.result import TimeoutError
 from monitor.client import Client
 
 
 def send_init_commands(instance, act, vm):
     queue = instance.get_remote_queue_name("agent")
-
-    with act.sub_activity('cleanup'):
+    with act.sub_activity('cleanup', readable_name=ugettext_noop('cleanup')):
         cleanup.apply_async(queue=queue, args=(vm, ))
-    with act.sub_activity('restart_networking'):
+    with act.sub_activity('restart_networking',
+                          readable_name=ugettext_noop('restart networking')):
         restart_networking.apply_async(queue=queue, args=(vm, ))
-    with act.sub_activity('change_password'):
+    with act.sub_activity('change_password',
+                          readable_name=ugettext_noop('change password')):
         change_password.apply_async(queue=queue, args=(vm, instance.pw))
-    with act.sub_activity('set_time'):
+    with act.sub_activity('set_time', readable_name=ugettext_noop('set time')):
         set_time.apply_async(queue=queue, args=(vm, time.time()))
-    with act.sub_activity('set_hostname'):
+    with act.sub_activity('set_hostname',
+                          readable_name=ugettext_noop('set hostname')):
         set_hostname.apply_async(
             queue=queue, args=(vm, instance.primary_host.hostname))
 
@@ -73,13 +76,20 @@ def agent_started(vm, version=None):
     initialized = InstanceActivity.objects.filter(
         instance=instance, activity_code='vm.Instance.agent.cleanup').exists()
 
-    with instance_activity(code_suffix='agent', instance=instance) as act:
-        with act.sub_activity('starting'):
+    with instance_activity(code_suffix='agent',
+                           readable_name=ugettext_noop('agent'),
+                           instance=instance) as act:
+        with act.sub_activity('starting',
+                              readable_name=ugettext_noop('starting')):
             pass
 
         if version and version != settings.AGENT_VERSION:
             try:
-                with act.sub_activity('update'):
+                with act.sub_activity(
+                    'update',
+                    readable_name=ugettext_noop('update to %(version)s'),
+                    version=settings.AGENT_VERSION
+                ):
                     update.apply_async(
                         queue=queue,
                         args=(vm, create_agent_tar())).get(timeout=10)
@@ -91,7 +101,10 @@ def agent_started(vm, version=None):
             measure_boot_time(instance)
             send_init_commands(instance, act, vm)
 
-        with act.sub_activity('start_access_server'):
+        with act.sub_activity(
+            'start_access_server',
+            readable_name=ugettext_noop('start access server')
+        ):
             start_access_server.apply_async(queue=queue, args=(vm, ))
 
 
@@ -122,5 +135,5 @@ def agent_stopped(vm):
     qs = InstanceActivity.objects.filter(instance=instance,
                                          activity_code='vm.Instance.agent')
     act = qs.latest('id')
-    with act.sub_activity('stopping'):
+    with act.sub_activity('stopping', readable_name=ugettext_noop('stopping')):
         pass

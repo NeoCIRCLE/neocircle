@@ -24,6 +24,8 @@ from django.core.exceptions import PermissionDenied
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _, ugettext_noop
 
+from sizefield.utils import filesizeformat
+
 from celery.exceptions import TimeLimitExceeded
 
 from common.models import create_readable, humanize_exception
@@ -133,7 +135,9 @@ class AddInterfaceOperation(InstanceOperation):
 
         if self.instance.is_running:
             try:
-                with activity.sub_activity('attach_network'):
+                with activity.sub_activity(
+                    'attach_network',
+                        readable_name=ugettext_noop("attach network")):
                     self.instance.attach_network(net)
             except Exception as e:
                 if hasattr(e, 'libvirtError'):
@@ -173,14 +177,21 @@ class CreateDiskOperation(InstanceOperation):
         self.instance.disks.add(disk)
 
         if self.instance.is_running:
-            with activity.sub_activity('deploying_disk'):
+            with activity.sub_activity(
+                'deploying_disk',
+                readable_name=ugettext_noop("deploying disk")
+            ):
                 disk.deploy()
-            with activity.sub_activity('attach_disk'):
+            with activity.sub_activity(
+                'attach_disk',
+                readable_name=ugettext_noop("attach disk")
+            ):
                 self.instance.attach_disk(disk)
 
     def get_activity_name(self, kwargs):
-        return create_readable(ugettext_noop("create %(size)s disk"),
-                               size=kwargs['size'])
+        return create_readable(
+            ugettext_noop("create disk %(name)s (%(size)s)"),
+            size=filesizeformat(kwargs['size']), name=kwargs['name'])
 
 
 register_operation(CreateDiskOperation)
@@ -213,7 +224,10 @@ class DownloadDiskOperation(InstanceOperation):
 
         # TODO iso (cd) hot-plug is not supported by kvm/guests
         if self.instance.is_running and disk.type not in ["iso"]:
-            with activity.sub_activity('attach_disk'):
+            with activity.sub_activity(
+                'attach_disk',
+                readable_name=ugettext_noop("attach disk")
+            ):
                 self.instance.attach_disk(disk)
 
 register_operation(DownloadDiskOperation)
@@ -402,12 +416,19 @@ class RemoveInterfaceOperation(InstanceOperation):
 
     def _operation(self, activity, user, system, interface):
         if self.instance.is_running:
-            with activity.sub_activity('detach_network'):
+            with activity.sub_activity(
+                'detach_network',
+                readable_name=ugettext_noop("detach network")
+            ):
                 self.instance.detach_network(interface)
             interface.shutdown()
 
         interface.destroy()
         interface.delete()
+
+    def get_activity_name(self, kwargs):
+        return create_readable(ugettext_noop("remove %(vlan)s interface"),
+                               vlan=kwargs['interface'].vlan)
 
 
 register_operation(RemoveInterfaceOperation)
@@ -423,10 +444,20 @@ class RemoveDiskOperation(InstanceOperation):
 
     def _operation(self, activity, user, system, disk):
         if self.instance.is_running and disk.type not in ["iso"]:
-            with activity.sub_activity('detach_disk'):
+            with activity.sub_activity(
+                'detach_disk',
+                readable_name=ugettext_noop('detach disk')
+            ):
                 self.instance.detach_disk(disk)
-        return self.instance.disks.remove(disk)
+        with activity.sub_activity(
+            'destroy_disk',
+            readable_name=ugettext_noop('destroy disk')
+        ):
+            return self.instance.disks.remove(disk)
 
+    def get_activity_name(self, kwargs):
+        return create_readable(ugettext_noop('remove disk %(name)s'),
+                               name=kwargs["disk"].name)
 
 register_operation(RemoveDiskOperation)
 
@@ -515,9 +546,13 @@ class SaveAsTemplateOperation(InstanceOperation):
                 return disk
 
         self.disks = []
-        with activity.sub_activity('saving_disks',
-                                   readable_name=ugettext_noop("save disks")):
-            for disk in self.instance.disks.all():
+        for disk in self.instance.disks.all():
+            with activity.sub_activity(
+                'saving_disk',
+                readable_name=create_readable(
+                    ugettext_noop("saving disk %(name)s"),
+                    name=disk.name)
+            ):
                 self.disks.append(__try_save_disk(disk))
 
         # create template and do additional setup
