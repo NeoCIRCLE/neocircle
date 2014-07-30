@@ -41,7 +41,7 @@ from model_utils.models import TimeStampedModel, StatusModel
 from taggit.managers import TaggableManager
 
 from acl.models import AclBase
-from common.models import create_readable
+from common.models import create_readable, HumanReadableException
 from common.operations import OperatedMixin
 from ..tasks import vm_tasks, agent_tasks
 from .activity import (ActivityInProgressError, instance_activity,
@@ -276,28 +276,26 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         verbose_name = _('instance')
         verbose_name_plural = _('instances')
 
-    class InstanceDestroyedError(Exception):
+    class InstanceError(HumanReadableException):
 
-        def __init__(self, instance, message=None):
-            if message is None:
-                message = ("The instance (%s) has already been destroyed."
-                           % instance)
+        def __init__(self, instance, params=None, level=None, **kwargs):
+            kwargs.update(params or {})
+            self.instance = kwargs["instance"] = instance
+            super(Instance.InstanceError, self).__init__(
+                level, self.message, self.message, kwargs)
 
-            Exception.__init__(self, message)
+    class InstanceDestroyedError(InstanceError):
+        message = ugettext_noop(
+            "Instance %(instance)s has already been destroyed.")
 
-            self.instance = instance
+    class WrongStateError(InstanceError):
+        message = ugettext_noop(
+            "Current state (%(state)s) of instance %(instance)s is "
+            "inappropriate for the invoked operation.")
 
-    class WrongStateError(Exception):
-
-        def __init__(self, instance, message=None):
-            if message is None:
-                message = ("The instance's current state (%s) is "
-                           "inappropriate for the invoked operation."
-                           % instance.status)
-
-            Exception.__init__(self, message)
-
-            self.instance = instance
+        def __init__(self, instance, params=None, **kwargs):
+            super(Instance.WrongStateError, self).__init__(
+                instance, params, state=instance.status)
 
     def __unicode__(self):
         parts = (self.name, "(" + str(self.id) + ")")

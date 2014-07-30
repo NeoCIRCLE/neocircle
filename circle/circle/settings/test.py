@@ -35,7 +35,11 @@ SOUTH_TESTS_MIGRATE = False
 
 INSTALLED_APPS += (
     'acl.tests',
+    'django_nose',
 )
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+NOSE_ARGS = ['--with-doctest']
+PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']
 
 CACHES = {
     'default': {

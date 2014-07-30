@@ -47,17 +47,24 @@ class WorkerNotFound(Exception):
 
 def activitycontextimpl(act, on_abort=None, on_commit=None):
     try:
-        yield act
-    except BaseException as e:
-        # BaseException is the common parent of Exception and
-        # system-exiting exceptions, e.g. KeyboardInterrupt
+        try:
+            yield act
+        except HumanReadableException as e:
+            result = e
+            raise
+        except BaseException as e:
+            # BaseException is the common parent of Exception and
+            # system-exiting exceptions, e.g. KeyboardInterrupt
+            result = create_readable(
+                ugettext_noop("Failure."),
+                ugettext_noop("Unhandled exception: %(error)s"),
+                error=unicode(e))
+            raise
+    except:
+        logger.exception("Failed activity %s" % unicode(act))
         handler = None if on_abort is None else lambda a: on_abort(a, e)
-        result = create_readable(ugettext_noop("Failure."),
-                                 ugettext_noop("Unhandled exception: "
-                                               "%(error)s"),
-                                 error=unicode(e))
         act.finish(succeeded=False, result=result, event_handler=handler)
-        raise e
+        raise
     else:
         act.finish(succeeded=True, event_handler=on_commit)
 
@@ -71,11 +78,11 @@ activity_code_separator = '.'
 def has_prefix(activity_code, *prefixes):
     """Determine whether the activity code has the specified prefix.
 
-    E.g.: has_prefix('foo.bar.buz', 'foo.bar') == True
-          has_prefix('foo.bar.buz', 'foo', 'bar') == True
-          has_prefix('foo.bar.buz', 'foo.bar', 'buz') == True
-          has_prefix('foo.bar.buz', 'foo', 'bar', 'buz') == True
-          has_prefix('foo.bar.buz', 'foo', 'buz') == False
+    >>> assert has_prefix('foo.bar.buz', 'foo.bar')
+    >>> assert has_prefix('foo.bar.buz', 'foo', 'bar')
+    >>> assert has_prefix('foo.bar.buz', 'foo.bar', 'buz')
+    >>> assert has_prefix('foo.bar.buz', 'foo', 'bar', 'buz')
+    >>> assert not has_prefix('foo.bar.buz', 'foo', 'buz')
     """
     equal = lambda a, b: a == b
     act_code_parts = split_activity_code(activity_code)
@@ -86,11 +93,11 @@ def has_prefix(activity_code, *prefixes):
 def has_suffix(activity_code, *suffixes):
     """Determine whether the activity code has the specified suffix.
 
-    E.g.: has_suffix('foo.bar.buz', 'bar.buz') == True
-          has_suffix('foo.bar.buz', 'bar', 'buz') == True
-          has_suffix('foo.bar.buz', 'foo.bar', 'buz') == True
-          has_suffix('foo.bar.buz', 'foo', 'bar', 'buz') == True
-          has_suffix('foo.bar.buz', 'foo', 'buz') == False
+    >>> assert has_suffix('foo.bar.buz', 'bar.buz')
+    >>> assert has_suffix('foo.bar.buz', 'bar', 'buz')
+    >>> assert has_suffix('foo.bar.buz', 'foo.bar', 'buz')
+    >>> assert has_suffix('foo.bar.buz', 'foo', 'bar', 'buz')
+    >>> assert not has_suffix('foo.bar.buz', 'foo', 'buz')
     """
     equal = lambda a, b: a == b
     act_code_parts = split_activity_code(activity_code)
@@ -197,6 +204,10 @@ class ActivityModel(TimeStampedModel):
                  DeprecationWarning, stacklevel=2)
             value = create_readable(user_text_template="",
                                     admin_text_template=value)
+        elif not hasattr(value, "to_dict"):
+            warn("Use HumanReadableObject.", DeprecationWarning, stacklevel=2)
+            value = create_readable(user_text_template="",
+                                    admin_text_template=unicode(value))
 
         self.result_data = None if value is None else value.to_dict()
 
@@ -362,8 +373,9 @@ class HumanReadableObject(object):
 
     @classmethod
     def create(cls, user_text_template, admin_text_template=None, **params):
-        return cls(user_text_template,
-                   admin_text_template or user_text_template, params)
+        return cls(user_text_template=user_text_template,
+                   admin_text_template=(admin_text_template
+                                        or user_text_template), params=params)
 
     def set(self, user_text_template, admin_text_template=None, **params):
         self._set_values(user_text_template,
@@ -408,14 +420,26 @@ create_readable = HumanReadableObject.create
 class HumanReadableException(HumanReadableObject, Exception):
     """HumanReadableObject that is an Exception so can used in except clause.
     """
-    level = "error"
 
-    def send_message(self, request):
+    def __init__(self, level=None, *args, **kwargs):
+        super(HumanReadableException, self).__init__(*args, **kwargs)
+        if level is not None:
+            if hasattr(messages, level):
+                self.level = level
+            else:
+                raise ValueError(
+                    "Level should be the name of an attribute of django."
+                    "contrib.messages (and it should be callable with "
+                    "(request, message)). Like 'error', 'warning'.")
+        else:
+            self.level = "error"
+
+    def send_message(self, request, level=None):
         if request.user and request.user.is_superuser:
             msg = self.get_admin_text()
         else:
             msg = self.get_user_text()
-        getattr(messages, self.level)(request, msg)
+        getattr(messages, level or self.level)(request, msg)
 
 
 def humanize_exception(message, exception=None, level=None, **params):
@@ -428,10 +452,10 @@ def humanize_exception(message, exception=None, level=None, **params):
     Welcome!
     """
 
-    if level is not None:
-        exception.level = level
-
     Ex = type("HumanReadable" + type(exception).__name__,
               (HumanReadableException, type(exception)),
               exception.__dict__)
-    return Ex.create(message, **params)
+    ex = Ex.create(message, **params)
+    if level:
+        ex.level = level
+    return ex
