@@ -1,6 +1,97 @@
 {% load crispy_forms_tags %}
+{% load i18n %}
 {% load sizefieldtags %}
 
-{% crispy vm_create_form %}
+{% include "display-form-errors.html" with form=vm_create_form %}
+<form method="POST">
+{% csrf_token %}
 
-<script src="/static/dashboard/vm-create.js"></script>
+{{ vm_create_form.template }}
+{{ vm_create_form.customized }}
+
+<div class="row">
+  <div class="col-sm-12">
+    <div class="form-group">
+      <button id="vm-create-customized-start" class="btn btn-success"
+        style="float: right; margin-top: 24px;">
+        <i class="fa fa-play"></i>
+        {% trans "Start" %}
+      </button>
+      <label>{% trans "Name" %}*</label>
+      {{ vm_create_form.name }}
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-sm-10">
+    <div class="form-group">
+      <label>{% trans "Amount" %}*</label>
+      {{ vm_create_form.amount }}
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-sm-12">
+    <h2>{% trans "Resources" %}</h2>
+  </div>
+</div>
+
+<!-- resources -->
+<div class="resources-sliders" style="max-width: 720px;">
+{% include "dashboard/_resources-sliders.html" with field_priority=vm_create_form.cpu_priority field_num_cores=vm_create_form.cpu_count field_ram_size=vm_create_form.ram_size %}
+</div>
+
+<div class="row">
+  <div class="col-sm-4">
+    <h2>{% trans "Disks" %}</h2>
+  </div>
+  <div class="col-sm-8">
+    <div class="js-hidden">
+      {{ vm_create_form.disks }} 
+    </div>
+    <div class="no-js-hidden">
+      <h3 id="vm-create-disk-list">{% trans "No disks are added." %}</h3>
+      <div style="clear: both;"></div>
+    </div>
+  </div>
+</div>
+
+
+<div class="row">
+  <div class="col-sm-4">
+    <h2>{% trans "Network" %}</h2>
+  </div>
+  <div class="col-sm-8" style="padding-top: 3px;">
+    <div class="js-hidden" style="padding-top: 15px; max-width: 450px;">
+      {{ vm_create_form.networks }}
+    </div>
+    <div class="no-js-shidden">
+      <h3 id="vm-create-network-list">
+        {% trans "Not added to any network." %}
+      </h3>
+      <h3 id="vm-create-network-add">
+        <div class="input-group" style="max-width: 330px;">
+          <select class="form-control font-awesome-font" id="vm-create-network-add-select">
+          </select>
+          <div class="input-group-btn">
+            <a id="vm-create-network-add-button" class="btn btn-success">
+              <i class="fa fa-plus-circle"></i>
+            </a>
+          </div><!-- .input-group-btn -->
+        </div><!-- .input-group -->
+      </h3><!-- #vm-create-network-add -->
+    </div><!-- .no-js-hidden -->
+  </div><!-- .col-sm-8 -->
+</div><!-- .row -->
+
+</form>
+<script>
+try {
+  vmCustomizeLoaded();
+} catch(e) {}
+</script>
+<hr >
+{# crispy vm_create_form #}
+

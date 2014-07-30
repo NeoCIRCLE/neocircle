@@ -4,64 +4,8 @@
 
 <form method="POST" action="{{ op.resources_change.get_url }}" id="vm-details-resources-form">
   {% csrf_token %}
-<div class="row">
-  <div class="col-sm-3" style="font-weight: bold;">
-    <i class="fa fa-trophy"></i> {% trans "CPU priority" %}
-  </div>
-  <div class="col-sm-6">
-    <input type="text" class="vm-slider cpu-priority-slider"
-     data-slider="true" data-slider-highlight="true" data-slider-range="10, 100"
-     data-slider-values="0, 10, 30, 80, 100" data-slider-snap="true"/>
-  </div>
-  <div class="col-sm-3">
-    <div class="input-group">
-      {{ resources_form.priority }}
-      <span class="input-group-addon input-tags">
-        <i class="fa fa-question" title="yo"></i>
-      </span>
-    </div>
-  </div>
-</div>
-<div class="row">
-  <div class="col-sm-3" style="font-weight: bold;">
-    <i class="fa fa-cogs"></i> {% trans "CPU count" %}
-  </div>
-  <div class="col-sm-6">
-    <input type="text" class="vm-slider cpu-count-slider"
-     data-slider="true" data-slider-highlight="true" data-slider-range="0, 10"
-     data-slider-step="true" data-slider-snap="true"/>
-  </div>
-  <div class="col-sm-3">
-    <div class="input-group">
-      {{ resources_form.num_cores }}
-      <span class="input-group-addon input-tags">
-        <i class="fa fa-question" title="yo"></i>
-      </span>
-    </div>
-  </div>
-</div>
+  {% include "dashboard/_resources-sliders.html" with field_priority=resources_form.priority field_num_cores=resources_form.num_cores field_ram_size=resources_form.ram_size %}
 
-<div class="row">
-  <div class="col-sm-3" style="font-weight: bold;">
-    <i class="fa fa-ticket"></i> {% trans "RAM amount" %}
-  </div>
-  <div class="col-sm-6">
-    <input type="text" class="vm-slider ram-slider" 
-     data-slider="true" data-slider-highlight="true" data-slider-range="0, 8192"
-     data-slider-step="128" data-slider-snap="true"/>
-  </div>
-  <div class="col-sm-3">
-    <div class="input-group">
-      {{ resources_form.ram_size }}
-      <span class="input-group-addon input-tags">
-        MiB
-      </span>
-      <span class="input-group-addon input-tags">
-        <i title="szia" class="fa fa-question"></i>
-      </span>
-    </div>
-  </div>
-</div>
 {% if can_change_resources %}
     <button type="submit" class="btn btn-success btn-sm change-resources-button" 
       id="vm-details-resources-save" data-vm="{{ instance.pk }}"

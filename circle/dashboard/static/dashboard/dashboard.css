@@ -724,6 +724,11 @@ textarea[name="list-new-namelist"] {
   margin-top: 15px;
 }
 
-#vm-details-resources-form .row {
+#vm-details-resources-form .row, .resources-sliders .row {
   margin-bottom: 15px;
+}
+
+#vm-create-disk-add-form {
+  max-width: 450px;
+  margin-top: 15px;
 }

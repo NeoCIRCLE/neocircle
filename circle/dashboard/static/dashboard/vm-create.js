@@ -170,54 +170,6 @@ function vmCustomizeLoaded() {
 
   /* ----- end of networks thingies ----- */
 
-
-  /* add disk */
-  $('#vm-create-disk-add-button').click(function() {
-    var disk_pk = $('#vm-create-disk-add-select :selected').val();
-    var name = $('#vm-create-disk-add-select :selected').text();
-
-    if ($('#vm-create-disk-list').children('span').length < 1) { 
-      $('#vm-create-disk-list').html('');
-    }  
-    $('#vm-create-disk-list').append(
-      vmCreateDiskLabel(disk_pk, name)
-    );
-
-    /* select the disk from the multiple select */
-    $('#vm-create-disk-add-form option[value="' + disk_pk + '"]').prop('selected', true);
-
-    $('option:selected', $('#vm-create-disk-add-select')).remove();
-    
-    /* add dummy text if no more disks are available */
-    if($('#vm-create-disk-add-select option').length < 1) {
-      $('#vm-create-disk-add-button').attr('disabled', true);
-      $('#vm-create-disk-add-select').html('<option value="-1">We are out of &lt;options&gt; hehe</option>');
-    }
-
-    return false;
-  });
-
-
-  /* remove disk */
-  // event for disk remove button (icon, X)
-  $('body').on('click', '.vm-create-remove-disk', function() {
-    var disk_pk = ($(this).parent('span').prop('id')).replace('disk-', '')
-
-    $(this).parent('span').fadeOut(500, function() {
-      /* remove the disk label */
-      $(this).remove(); 
-
-      var disk_name = $(this).text();
-      
-      /* remove the selection from the multiple select */
-      $('#vm-create-disk-add-form option[value="' + disk_pk + '"]').prop('selected', false);
-      if ($('#vm-create-disk-list').children('span').length < 1) {
-        $('#vm-create-disk-list').append('No disks are added!');
-      }
-    });
-    return false;
-  });
-
   /* copy disks from hidden select */
   $('#vm-create-disk-add-form option').each(function() {
     var text = $(this).text();
@@ -244,6 +196,14 @@ function vmCustomizeLoaded() {
 
   /* start vm button clicks */
   $('#vm-create-customized-start').click(function() {
+    var error = false;
+    $(".cpu-count-input, .ram-input, #id_name, #id_amount ").each(function() {
+      if(!$(this)[0].checkValidity()) {
+        error = true;
+      }
+    });
+    if(error) return true;
+
     $.ajax({
       url: '/dashboard/vm/create/',
       headers: {"X-CSRFToken": getCookie('csrftoken')},
@@ -284,6 +244,7 @@ function vmCustomizeLoaded() {
   /* for no js stuff */
   $('.no-js-hidden').show();                                                
   $('.js-hidden').hide(); 
+
 }
 
 
@@ -294,5 +255,5 @@ function vmCreateNetworkLabel(pk, name, managed) {
 
 function vmCreateDiskLabel(pk, name) {
   var style = "float: left; margin: 5px 5px 5px 0;";
-  return '<span id="disk-' + pk + '" class="label label-primary" style="' + style + '"><i class="fa fa-file"></i> ' + name + ' <a href="#" class="hover-black vm-create-remove-disk"><i class="fa fa-times-circle"></i></a></span> ';
+  return '<span id="disk-' + pk + '" class="label label-primary" style="' + style + '"><i class="fa fa-file"></i> ' + name + '</span> ';
 }
