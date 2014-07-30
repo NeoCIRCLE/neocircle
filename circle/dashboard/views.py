@@ -21,11 +21,8 @@ from __future__ import unicode_literals, absolute_import
 from collections import OrderedDict
 from itertools import chain
 from os import getenv
-<<<<<<< HEAD
 from os.path import join, normpath, dirname, basename
-=======
 from urlparse import urljoin
->>>>>>> master
 import json
 import logging
 import re
@@ -34,11 +31,8 @@ import requests
 from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.views import login, redirect_to_login
-<<<<<<< HEAD
 from django.contrib.auth.decorators import login_required
 from django.contrib.messages import warning
-=======
->>>>>>> master
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import (
     PermissionDenied, SuspiciousOperation,
