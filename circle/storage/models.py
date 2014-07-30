@@ -136,7 +136,7 @@ class Disk(TimeStampedModel):
             "disk '%(name)s' (%(pk)s) because it is in use.")
 
         def __init__(self, disk, params=None, **kwargs):
-            super(Disk.WrongDiskTypeError, self).__init__(
+            super(Disk.DiskInUseError, self).__init__(
                 disk, params, name=disk.name, pk=disk.pk)
 
     class DiskIsNotReady(DiskError):
@@ -150,7 +150,7 @@ class Disk(TimeStampedModel):
             "deployed.")
 
         def __init__(self, disk, params=None, **kwargs):
-            super(Disk.WrongDiskTypeError, self).__init__(
+            super(Disk.DiskIsNotReady, self).__init__(
                 disk, params, name=disk.name, pk=disk.pk,
                 filename=disk.filename)
 
@@ -167,7 +167,7 @@ class Disk(TimeStampedModel):
 
         def __init__(self, disk, params=None, **kwargs):
             base = kwargs.get('base')
-            super(Disk.WrongDiskTypeError, self).__init__(
+            super(Disk.DiskBaseIsNotReady, self).__init__(
                 disk, params, name=disk.name, pk=disk.pk,
                 filename=disk.filename, b_name=base.name,
                 b_pk=base.pk, b_filename=base.filename)
