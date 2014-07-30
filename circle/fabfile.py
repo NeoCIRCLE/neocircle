@@ -132,7 +132,7 @@ def update_storage():
     "Update and restart storagedriver"
     with _stopped("storage"):
         pull("~/storagedriver")
-        pip("storage", "~/storagedriver/requirements/production.txt")
+        pip("storagedriver", "~/storagedriver/requirements/production.txt")
 
 
 @parallel
