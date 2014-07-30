@@ -67,6 +67,7 @@ function vmCreateLoaded() {
 }
 
 function vmCustomizeLoaded() {
+  $("[title]").tooltip();
   /* network thingies */
 
   /* add network */
@@ -92,7 +93,7 @@ function vmCustomizeLoaded() {
     /* add dummy text if no more networks are available */
     if($('#vm-create-network-add-select option').length < 1) {
       $('#vm-create-network-add-button').attr('disabled', true);
-      $('#vm-create-network-add-select').html('<option value="-1">No more networks!</option>');
+      $('#vm-create-network-add-select').html('<option value="-1">' + gettext("No more networks.") + '</option>');
     }
 
     return false;
@@ -124,7 +125,7 @@ function vmCustomizeLoaded() {
       /* remove the selection from the multiple select */
       $('#vm-create-network-add-vlan option[value="' + vlan_pk + '"]').prop('selected', false);
       if ($('#vm-create-network-list').children('span').length < 1) {
-        $('#vm-create-network-list').append('Not added to any network!');
+        $('#vm-create-network-list').append(gettext("Not added to any network"));
       }
     });
     return false;
@@ -155,7 +156,7 @@ function vmCustomizeLoaded() {
 
   // if all networks are added add a dummy and disable the add button
   if($("#vm-create-network-add-select option").length < 1) {
-    $("#vm-create-network-add-select").html('<option value="-1">No more networks!</option>');
+    $("#vm-create-network-add-select").html('<option value="-1">' + gettext("No more networks.") + '</option>');
     $('#vm-create-network-add-button').attr('disabled', true);
   }
 
