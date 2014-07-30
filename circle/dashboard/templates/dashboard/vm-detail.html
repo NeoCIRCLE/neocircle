@@ -100,7 +100,7 @@
         <dd style="font-size: 10px; text-align: right; padding-top: 8px;">
           <div id="vm-details-pw-reset">
           {% with op=op.password_reset %}{% if op %}
-            <a href="{{op.get_url}}" class="btn operation btn-default btn-xs" {% if op.disabled %}disabled{% endif %}>{% trans "Generate new password!" %}</a>
+          <a href="{% if op.disabled %}#{% else %}{{op.get_url}}{% endif %}" class="operation operation-{{op.op}}" data-disabled="{% if op.disabled %}true" title="{% trans "Start the VM to change the password." %}"{% else %}false" {% endif %}>{% trans "Generate new password!" %}</a>
           {% endif %}{% endwith %}
           </div>
         </dd>
