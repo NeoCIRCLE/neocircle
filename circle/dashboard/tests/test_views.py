@@ -587,7 +587,7 @@ class VmDetailTest(LoginMixin, TestCase):
             'amount': 2,
             'customized': 1,
             'template': 1,
-            'cpu_priority': 1, 'cpu_count': 1, 'ram_size': 1,
+            'cpu_priority': 10, 'cpu_count': 1, 'ram_size': 128,
             'network': [],
         })
 
