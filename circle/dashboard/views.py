@@ -49,8 +49,9 @@ from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import (TemplateView, DetailView, View, DeleteView,
                                   UpdateView, CreateView, ListView)
 from django.contrib import messages
-from django.utils.translation import ugettext as _, ugettext_noop
-from django.utils.translation import ungettext as __
+from django.utils.translation import (
+    ugettext as _, ugettext_noop, ungettext_lazy
+)
 from django.template.loader import render_to_string
 from django.template import RequestContext
 
@@ -1896,7 +1897,7 @@ class VmCreate(LoginRequiredMixin, TemplateView):
             i.deploy.async(user=request.user)
 
         if len(instances) > 1:
-            messages.success(request, __(
+            messages.success(request, ungettext_lazy(
                 "Successfully created %(count)d VM.",  # this should not happen
                 "Successfully created %(count)d VMs.", len(instances)) % {
                 'count': len(instances)})
@@ -2327,7 +2328,7 @@ class VmMassDelete(LoginRequiredMixin, View):
                 except Exception as e:
                     logger.error(e)
 
-        success_message = __(
+        success_message = ungettext_lazy(
             "Mass delete complete, the following VM was deleted: %s.",
             "Mass delete complete, the following VMs were deleted: %s.",
             len(names)) % u', '.join(names)
