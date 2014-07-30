@@ -1,4 +1,4 @@
-#!/usr/bin/env fab
+#!/bin/echo Usage: fab --list -f
 import contextlib
 import datetime
 
@@ -10,14 +10,14 @@ from fabric.decorators import roles, parallel
 env.roledefs['portal'] = ['localhost']
 
 try:
-    from vm.models import Node
-    from storage.models import DataStore
+    from vm.models import Node as _Node
+    from storage.models import DataStore as _DataStore
 except Exception as e:
     print e
 else:
     env.roledefs['node'] = [unicode(n.host.ipv4)
-                            for n in Node.objects.filter(enabled=True)]
-    env.roledefs['storage'] = [DataStore.objects.get().hostname]
+                            for n in _Node.objects.filter(enabled=True)]
+    env.roledefs['storage'] = [_DataStore.objects.get().hostname]
 
 
 def update_all():
