@@ -1322,7 +1322,7 @@
     "user_permissions": [
       115
     ], 
-    "password": "pbkdf2_sha256$10000$KIoeMs78MiOj$PnVXn3YJMehbOciBO32CMzqL0ZnQrzrdb7+b5dE13os=", 
+    "password": "md5$qLN4mQMOrsUJ$f07129fd1a289a0afb4e09f7a6816a4f",
     "email": "test@example.org", 
     "date_joined": "2013-09-04T15:29:49.914Z"
   }
