@@ -350,9 +350,9 @@ $(function () {
       }
     }
     for(var i=0; i<5 && i<search_result.length; i++)
-      html += generateGroupHTML(search_result[i].url, search_result[i].name);
+      html += generateGroupHTML(search_result[i].url, search_result[i].name, search_result.length < 5);
     if(search_result.length == 0)
-      html += '<div class="list-group-item">No result</div>';
+      html += '<div class="list-group-item list-group-item-last">No result</div>';
     $("#dashboard-group-list").html(html);
 
     // if there is only one result and ENTER is pressed redirect
@@ -396,8 +396,8 @@ function generateVmHTML(pk, name, host, icon, _status, fav, is_last) {
       '</a>';     
 }
 
-function generateGroupHTML(url, name) {
-  return '<a href="' + url + '" class="list-group-item real-link">'+
+function generateGroupHTML(url, name, is_last) {
+  return '<a href="' + url + '" class="list-group-item real-link' + (is_last ? " list-group-item-last" : "") +'">'+
          '<i class="fa fa-users"></i> '+ name +
          '</a>';
 }
