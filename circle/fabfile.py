@@ -1,3 +1,4 @@
+#!/usr/bin/env fab
 import contextlib
 import datetime
 
