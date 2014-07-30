@@ -1,14 +1,14 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 #
-# , 2014.
+# Mate Ory <ory.mate@ik.bme.hu>, 2014.
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-07-31 13:20+0200\n"
-"PO-Revision-Date: 2014-05-07 15:32+0200\n"
-"Last-Translator: Mate Ory <orymate@ik.bme.hu>\n"
+"PO-Revision-Date: 2014-07-31 14:30+0200\n"
+"Last-Translator: Mate Ory <ory.mate@ik.bme.hu>\n"
 "Language-Team: Hungarian <cloud@ik.bme.hu>\n"
 "Language: en_US\n"
 "MIME-Version: 1.0\n"
@@ -29,17 +29,17 @@ msgstr "Válasszon a folytatáshoz."
 #: static_collected/dashboard/dashboard.js:304
 #: static_collected/dashboard/dashboard.js:314
 msgid "No result"
-msgstr ""
+msgstr "Nincs eredmény"
 
 #: dashboard/static/dashboard/profile.js:18
 #: static_collected/dashboard/profile.js:18
 msgid "You have no permission to change this profile."
-msgstr ""
+msgstr "Nincs jogosultsága a profil módosításához."
 
 #: dashboard/static/dashboard/profile.js:20
 #: static_collected/dashboard/profile.js:20
 msgid "Unknown error."
-msgstr ""
+msgstr "Ismeretlen hiba."
 
 #: dashboard/static/dashboard/vm-tour.js:20
 #: static_collected/dashboard/vm-tour.js:20
@@ -262,7 +262,7 @@ msgstr "Biztosan törli ezt az eszközt?"
 #: static_collected/admin/js/SelectFilter2.js:45
 #, c-format
 msgid "Available %s"
-msgstr ""
+msgstr "Elérhető %s"
 
 #: static_collected/admin/js/SelectFilter2.js:46
 #, c-format
@@ -270,33 +270,35 @@ msgid ""
 "This is the list of available %s. You may choose some by selecting them in "
 "the box below and then clicking the \"Choose\" arrow between the two boxes."
 msgstr ""
+"Ez az elérhető %s listája. Úgy választhat közülük, hogy rákattint az alábbi "
+"dobozban, és megnyomja a dobozok közti \"Választás\" nyilat."
 
 #: static_collected/admin/js/SelectFilter2.js:53
 #, c-format
 msgid "Type into this box to filter down the list of available %s."
-msgstr ""
+msgstr "Írjon a mezőbe az elérhető %s szűréséhez."
 
 #: static_collected/admin/js/SelectFilter2.js:57
 msgid "Filter"
-msgstr ""
+msgstr "Szűrő"
 
 #: static_collected/admin/js/SelectFilter2.js:61
 msgid "Choose all"
-msgstr ""
+msgstr "Mindet kijelölni"
 
 #: static_collected/admin/js/SelectFilter2.js:61
 #, c-format
 msgid "Click to choose all %s at once."
-msgstr ""
+msgstr "Kattintson az összes %s kiválasztásához."
 
 #: static_collected/admin/js/SelectFilter2.js:67
 msgid "Choose"
-msgstr ""
+msgstr "Választás"
 
 #: static_collected/admin/js/SelectFilter2.js:75
 #, c-format
 msgid "Chosen %s"
-msgstr ""
+msgstr "%s kiválasztva"
 
 #: static_collected/admin/js/SelectFilter2.js:76
 #, c-format
@@ -304,23 +306,24 @@ msgid ""
 "This is the list of chosen %s. You may remove some by selecting them in the "
 "box below and then clicking the \"Remove\" arrow between the two boxes."
 msgstr ""
+"Ez a kiválasztott %s listája. Eltávolíthat közülük, ha rákattint, majd a két "
+"doboz közti \"Eltávolítás\" nyílra kattint."
 
 #: static_collected/admin/js/SelectFilter2.js:80
-#, fuzzy
 msgid "Remove all"
-msgstr "Eltávolítás"
+msgstr "Összes törlése"
 
 #: static_collected/admin/js/SelectFilter2.js:80
 #, c-format
 msgid "Click to remove all chosen %s at once."
-msgstr ""
+msgstr "Kattintson az összes %s eltávolításához."
 
 #: static_collected/admin/js/actions.js:18
 #: static_collected/admin/js/actions.min.js:1
 msgid "%(sel)s of %(cnt)s selected"
 msgid_plural "%(sel)s of %(cnt)s selected"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%(sel)s/%(cnt)s kijelölve"
+msgstr[1] "%(sel)s/%(cnt)s kijelölve"
 
 #: static_collected/admin/js/actions.js:109
 #: static_collected/admin/js/actions.min.js:5
@@ -328,6 +331,8 @@ msgid ""
 "You have unsaved changes on individual editable fields. If you run an "
 "action, your unsaved changes will be lost."
 msgstr ""
+"Még el nem mentett módosításai vannak egyes szerkeszthető mezőkön. Ha most "
+"futtat egy műveletet, akkor a módosítások elvesznek. "
 
 #: static_collected/admin/js/actions.js:121
 #: static_collected/admin/js/actions.min.js:5
@@ -336,6 +341,9 @@ msgid ""
 "individual fields yet. Please click OK to save. You'll need to re-run the "
 "action."
 msgstr ""
+"Kiválasztott egy műveletet, de nem mentette az egyes mezőkhöz kapcsolódó "
+"módosításait. Kattintson az OK gombra a mentéshez. Újra kell futtatnia az "
+"műveletet."
 
 #: static_collected/admin/js/actions.js:123
 #: static_collected/admin/js/actions.min.js:6
@@ -344,66 +352,70 @@ msgid ""
 "fields. You're probably looking for the Go button rather than the Save "
 "button."
 msgstr ""
+"Kiválasztott egy műveletet, és nem módosított egyetlen mezőt sem. "
+"Feltehetően a Mehet gombot keresi a Mentés helyett."
 
 #: static_collected/admin/js/calendar.js:8
 msgid ""
 "January February March April May June July August September October November "
 "December"
 msgstr ""
+"január február március április május június július augusztus szeptember "
+"október november december"
 
 #: static_collected/admin/js/calendar.js:9
 msgid "S M T W T F S"
-msgstr ""
+msgstr "V H K Sz Cs P Szo"
 
 #: static_collected/admin/js/collapse.js:8
 #: static_collected/admin/js/collapse.js:19
 #: static_collected/admin/js/collapse.min.js:1
 msgid "Show"
-msgstr ""
+msgstr "Mutat"
 
 #: static_collected/admin/js/collapse.js:16
 #: static_collected/admin/js/collapse.min.js:1
 msgid "Hide"
-msgstr ""
+msgstr "Elrejt"
 
 #: static_collected/admin/js/admin/DateTimeShortcuts.js:52
 #: static_collected/admin/js/admin/DateTimeShortcuts.js:88
 msgid "Now"
-msgstr ""
+msgstr "Most"
 
 #: static_collected/admin/js/admin/DateTimeShortcuts.js:56
 msgid "Clock"
-msgstr ""
+msgstr "Óra"
 
 #: static_collected/admin/js/admin/DateTimeShortcuts.js:84
 msgid "Choose a time"
-msgstr ""
+msgstr "Válassza ki az időt"
 
 #: static_collected/admin/js/admin/DateTimeShortcuts.js:89
 msgid "Midnight"
-msgstr ""
+msgstr "Éjfél"
 
 #: static_collected/admin/js/admin/DateTimeShortcuts.js:90
 msgid "6 a.m."
-msgstr ""
+msgstr "Reggel 6 óra"
 
 #: static_collected/admin/js/admin/DateTimeShortcuts.js:91
 msgid "Noon"
-msgstr ""
+msgstr "Dél"
 
 #: static_collected/admin/js/admin/DateTimeShortcuts.js:148
 #: static_collected/admin/js/admin/DateTimeShortcuts.js:201
 msgid "Today"
-msgstr ""
+msgstr "Ma"
 
 #: static_collected/admin/js/admin/DateTimeShortcuts.js:152
 msgid "Calendar"
-msgstr ""
+msgstr "Naptár"
 
 #: static_collected/admin/js/admin/DateTimeShortcuts.js:199
 msgid "Yesterday"
-msgstr ""
+msgstr "Tegnap"
 
 #: static_collected/admin/js/admin/DateTimeShortcuts.js:203
 msgid "Tomorrow"
-msgstr ""
+msgstr "Holnap"
