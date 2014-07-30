@@ -1,46 +1,16 @@
 {% load i18n %}
 {% load network_tags %}
 <h2>
-  <a href="#" id="vm-details-network-add" class="btn btn-success pull-right no-js-hidden">
-    <i class="fa fa-plus"></i> {% trans "add interface" %}
-  </a>
+    <div id="vm-details-add-interface">
+    {% with op=op.add_interface %}{% if op %}
+    <a href="{{op.get_url}}" class="btn btn-{{op.effect}} operation pull-right"
+        {% if op.disabled %}disabled{% endif %}>
+    <i class="fa fa-{{op.icon}}"></i> {% trans "add interface" %}</a>
+    {% endif %}{% endwith %}
+    </div>
   {% trans "Interfaces" %}
 </h2>
 
-<div class="js-hidden row" id="vm-details-network-add-form">
-  <div class="col-md-12">
-    <div>
-      <hr />
-      <h3>
-        {% trans "Add new network interface!" %}
-      </h3>
-      <form method="POST" action="">
-        {% csrf_token %}
-        <div class="input-group" style="max-width: 330px;">
-          <select name="new_network_vlan" class="form-control font-awesome-font">
-            {% for v in vlans %}
-              <option value="{{ v.pk }}">
-                {% if v.managed %}
-                  &#xf0ac;
-                {% else %}
-                  &#xf0c1;
-                {% endif %}
-                {{ v.name }}
-              </option>
-              {% empty %}
-              <option value="-1">No more networks!</option>
-            {% endfor %}
-          </select>
-          <div class="input-group-btn">
-            <button {% if vlans|length == 0 %}disabled{% endif %}
-              type="submit" class="btn btn-success"><i class="fa fa-plus-circle"></i></button>
-          </div>
-        </div>
-      </form>
-      <hr />
-    </div>
-  </div>
-</div>
 
 {% for i in instance.interface_set.all %}
 <div>

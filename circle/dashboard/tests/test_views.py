@@ -24,10 +24,10 @@ from django.contrib.auth.models import User, Group
 from django.contrib.auth.models import Permission
 from django.contrib.auth import authenticate
 
+from dashboard.views import VmAddInterfaceView
 from vm.models import Instance, InstanceTemplate, Lease, Node, Trait
-from vm.operations import WakeUpOperation
+from vm.operations import WakeUpOperation, AddInterfaceOperation
 from ..models import Profile
-from storage.models import Disk
 from firewall.models import Vlan, Host, VlanGroup
 from mock import Mock, patch
 from django_sshkey.models import UserKey
@@ -107,28 +107,6 @@ class VmDetailTest(LoginMixin, TestCase):
         response = c.get('/dashboard/vm/1/')
         self.assertEqual(response.status_code, 200)
 
-    def test_permitted_vm_delete(self):
-        c = Client()
-        self.login(c, 'user2')
-        inst = Instance.objects.get(pk=1)
-        inst.set_level(self.u2, 'owner')
-        response = c.post('/dashboard/vm/delete/1/')
-        self.assertEqual(response.status_code, 302)
-
-    def test_not_permitted_vm_delete(self):
-        c = Client()
-        self.login(c, 'user2')
-        inst = Instance.objects.get(pk=1)
-        inst.set_level(self.u2, 'operator')
-        response = c.post('/dashboard/vm/delete/1/')
-        self.assertEqual(response.status_code, 403)
-
-    def test_unpermitted_vm_delete(self):
-        c = Client()
-        self.login(c, 'user1')
-        response = c.post('/dashboard/vm/delete/1/')
-        self.assertEqual(response.status_code, 403)
-
     def test_unpermitted_vm_mass_delete(self):
         c = Client()
         self.login(c, 'user1')
@@ -143,33 +121,21 @@ class VmDetailTest(LoginMixin, TestCase):
         response = c.post('/dashboard/vm/mass-delete/', {'vms': [1]})
         self.assertEqual(response.status_code, 302)
 
-    def test_permitted_password_change(self):
-        c = Client()
-        self.login(c, "user2")
-        inst = Instance.objects.get(pk=1)
-        inst.set_level(self.u2, 'owner')
-        inst.node = Node.objects.all()[0]
-        inst.save()
-        password = inst.pw
-        response = c.post("/dashboard/vm/1/", {'change_password': True})
-        self.assertTrue(Instance.get_remote_queue_name.called)
-        self.assertEqual(response.status_code, 302)
-        self.assertNotEqual(password, Instance.objects.get(pk=1).pw)
-
     def test_unpermitted_password_change(self):
         c = Client()
         self.login(c, "user2")
         inst = Instance.objects.get(pk=1)
         inst.set_level(self.u1, 'owner')
         password = inst.pw
-        response = c.post("/dashboard/vm/1/", {'change_password': True})
+        response = c.post("/dashboard/vm/1/op/password_reset/")
         self.assertEqual(response.status_code, 403)
         self.assertEqual(password, Instance.objects.get(pk=1).pw)
 
     def test_unpermitted_network_add_wo_perm(self):
         c = Client()
         self.login(c, "user2")
-        response = c.post("/dashboard/vm/1/", {'new_network_vlan': 1})
+        response = c.post("/dashboard/vm/1/op/add_interface/",
+                          {'vlan': 1})
         self.assertEqual(response.status_code, 403)
 
     def test_unpermitted_network_add_wo_vlan_perm(self):
@@ -177,8 +143,18 @@ class VmDetailTest(LoginMixin, TestCase):
         self.login(c, "user2")
         inst = Instance.objects.get(pk=1)
         inst.set_level(self.u2, 'owner')
-        response = c.post("/dashboard/vm/1/", {'new_network_vlan': 1})
-        self.assertEqual(response.status_code, 403)
+        interface_count = inst.interface_set.count()
+
+        with patch.object(AddInterfaceOperation, 'async') as async:
+            async.side_effect = inst.add_interface.call
+            with patch.object(VmAddInterfaceView, 'get_form_kwargs',
+                              autospec=True) as get_form_kwargs:
+                get_form_kwargs.return_value = {'choices': Vlan.objects.all()}
+                response = c.post("/dashboard/vm/1/op/add_interface/",
+                                  {'vlan': 1})
+        self.assertEqual(response.status_code, 302)
+        assert async.called
+        self.assertEqual(inst.interface_set.count(), interface_count)
 
     def test_permitted_network_add(self):
         c = Client()
@@ -188,9 +164,12 @@ class VmDetailTest(LoginMixin, TestCase):
         vlan = Vlan.objects.get(id=1)
         vlan.set_level(self.u1, 'user')
         interface_count = inst.interface_set.count()
-        response = c.post("/dashboard/vm/1/",
-                          {'new_network_vlan': 1})
+        with patch.object(AddInterfaceOperation, 'async') as mock_method:
+            mock_method.side_effect = inst.add_interface
+            response = c.post("/dashboard/vm/1/op/add_interface/",
+                              {'vlan': 1})
         self.assertEqual(response.status_code, 302)
+        assert mock_method.called
         self.assertEqual(inst.interface_set.count(), interface_count + 1)
 
     def test_permitted_network_delete(self):
@@ -249,7 +228,6 @@ class VmDetailTest(LoginMixin, TestCase):
     def test_use_unpermitted_template(self):
         c = Client()
         self.login(c, 'user1')
-        Disk.objects.get(id=1).set_level(self.u1, 'user')
         Vlan.objects.get(id=1).set_level(self.u1, 'user')
         response = c.post('/dashboard/vm/create/',
                           {'template': 1,
@@ -261,7 +239,6 @@ class VmDetailTest(LoginMixin, TestCase):
     def test_use_permitted_template(self):
         c = Client()
         self.login(c, 'user1')
-        Disk.objects.get(id=1).set_level(self.u1, 'user')
         InstanceTemplate.objects.get(id=1).set_level(self.u1, 'user')
         Vlan.objects.get(id=1).set_level(self.u1, 'user')
         response = c.post('/dashboard/vm/create/',
@@ -293,7 +270,6 @@ class VmDetailTest(LoginMixin, TestCase):
         self.login(c, 'user1')
         tmpl = InstanceTemplate.objects.get(id=1)
         tmpl.set_level(self.u1, 'owner')
-        tmpl.disks.get().set_level(self.u1, 'owner')
         Vlan.objects.get(id=1).set_level(self.u1, 'user')
         kwargs = tmpl.__dict__.copy()
         kwargs.update(name='t1', lease=1, disks=1, raw_data='tst1')
@@ -405,8 +381,7 @@ class VmDetailTest(LoginMixin, TestCase):
         inst.set_level(self.u2, 'owner')
         vlan = Vlan.objects.get(id=1)
         vlan.set_level(self.u2, 'user')
-        response = c.post("/dashboard/vm/1/",
-                          {'new_network_vlan': 1})
+        inst.add_interface(user=self.u2, vlan=vlan)
         host = Host.objects.get(
             interface__in=inst.interface_set.all())
         self.u2.user_permissions.add(Permission.objects.get(
@@ -425,8 +400,7 @@ class VmDetailTest(LoginMixin, TestCase):
         inst.set_level(self.u2, 'owner')
         vlan = Vlan.objects.get(id=1)
         vlan.set_level(self.u2, 'user')
-        response = c.post("/dashboard/vm/1/",
-                          {'new_network_vlan': 1})
+        inst.add_interface(user=self.u2, vlan=vlan)
         host = Host.objects.get(
             interface__in=inst.interface_set.all())
         self.u2.user_permissions.add(Permission.objects.get(
@@ -533,47 +507,47 @@ class VmDetailTest(LoginMixin, TestCase):
     def test_permitted_wake_up_wrong_state(self):
         c = Client()
         self.login(c, "user2")
-        with patch.object(WakeUpOperation, 'async') as mock_method:
+        with patch.object(WakeUpOperation, 'async') as mock_method, \
+                patch.object(Instance.WrongStateError, 'send_message') as wro:
             inst = Instance.objects.get(pk=1)
             mock_method.side_effect = inst.wake_up
-            inst.manual_state_change('RUNNING')
+            inst.status = 'RUNNING'
             inst.set_level(self.u2, 'owner')
-            with patch('dashboard.views.messages') as msg:
-                c.post("/dashboard/vm/1/op/wake_up/")
-                assert msg.error.called
+            c.post("/dashboard/vm/1/op/wake_up/")
             inst = Instance.objects.get(pk=1)
             self.assertEqual(inst.status, 'RUNNING')  # mocked anyway
             assert mock_method.called
+            assert wro.called
 
     def test_permitted_wake_up(self):
         c = Client()
         self.login(c, "user2")
-        with patch.object(Instance, 'select_node', return_value=None):
-            with patch.object(WakeUpOperation, 'async') as new_wake_up:
-                with patch('vm.tasks.vm_tasks.wake_up.apply_async') as wuaa:
-                    inst = Instance.objects.get(pk=1)
-                    new_wake_up.side_effect = inst.wake_up
-                    inst.get_remote_queue_name = Mock(return_value='test')
-                    inst.manual_state_change('SUSPENDED')
-                    inst.set_level(self.u2, 'owner')
-                    with patch('dashboard.views.messages') as msg:
-                        response = c.post("/dashboard/vm/1/op/wake_up/")
-                        assert not msg.error.called
-                    self.assertEqual(response.status_code, 302)
-                    self.assertEqual(inst.status, 'RUNNING')
-                    assert new_wake_up.called
-                    assert wuaa.called
+        with patch.object(Instance, 'select_node', return_value=None), \
+                patch.object(WakeUpOperation, 'async') as new_wake_up, \
+                patch('vm.tasks.vm_tasks.wake_up.apply_async') as wuaa, \
+                patch.object(Instance.WrongStateError, 'send_message') as wro:
+            inst = Instance.objects.get(pk=1)
+            new_wake_up.side_effect = inst.wake_up
+            inst.get_remote_queue_name = Mock(return_value='test')
+            inst.status = 'SUSPENDED'
+            inst.set_level(self.u2, 'owner')
+            with patch('dashboard.views.messages') as msg:
+                response = c.post("/dashboard/vm/1/op/wake_up/")
+                assert not msg.error.called
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(inst.status, 'RUNNING')
+            assert new_wake_up.called
+            assert wuaa.called
+            assert not wro.called
 
     def test_unpermitted_wake_up(self):
         c = Client()
         self.login(c, "user2")
         inst = Instance.objects.get(pk=1)
-        inst.manual_state_change('SUSPENDED')
+        inst.status = 'SUSPENDED'
         inst.set_level(self.u2, 'user')
         response = c.post("/dashboard/vm/1/op/wake_up/")
         self.assertEqual(response.status_code, 403)
-        inst = Instance.objects.get(pk=1)
-        self.assertEqual(inst.status, 'SUSPENDED')
 
     def test_non_existing_template_get(self):
         c = Client()
@@ -593,7 +567,6 @@ class VmDetailTest(LoginMixin, TestCase):
             'template': 1,
             'cpu_priority': 1, 'cpu_count': 1, 'ram_size': 1,
             'network': [],
-            'disks': [Disk.objects.get(id=1).pk],
         })
 
         self.assertEqual(response.status_code, 302)
@@ -1250,7 +1223,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         acl_users = len(gp.get_users_with_level())
         response = c.post('/dashboard/group/' +
                           str(self.g1.pk) + '/acl/',
-                          {'perm-new-name': 'user3', 'perm-new': 'owner'})
+                          {'name': 'user3', 'level': 'owner'})
         self.assertEqual(acl_users, len(gp.get_users_with_level()))
         self.assertEqual(response.status_code, 302)
 
@@ -1261,9 +1234,9 @@ class GroupDetailTest(LoginMixin, TestCase):
         acl_users = len(gp.get_users_with_level())
         response = c.post('/dashboard/group/' +
                           str(self.g1.pk) + '/acl/',
-                          {'perm-new-name': 'user3', 'perm-new': 'owner'})
+                          {'name': 'user3', 'level': 'owner'})
         self.assertEqual(acl_users, len(gp.get_users_with_level()))
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 302)
 
     def test_superuser_add_acluser_to_group(self):
         c = Client()
@@ -1272,7 +1245,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         acl_users = len(gp.get_users_with_level())
         response = c.post('/dashboard/group/' +
                           str(self.g1.pk) + '/acl/',
-                          {'perm-new-name': 'user3', 'perm-new': 'owner'})
+                          {'name': 'user3', 'level': 'owner'})
         self.assertEqual(acl_users + 1, len(gp.get_users_with_level()))
         self.assertEqual(response.status_code, 302)
 
@@ -1283,7 +1256,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         acl_users = len(gp.get_users_with_level())
         response = c.post('/dashboard/group/' +
                           str(self.g1.pk) + '/acl/',
-                          {'perm-new-name': 'user3', 'perm-new': 'owner'})
+                          {'name': 'user3', 'level': 'owner'})
         self.assertEqual(acl_users + 1, len(gp.get_users_with_level()))
         self.assertEqual(response.status_code, 302)
 
@@ -1293,7 +1266,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         acl_groups = len(gp.get_groups_with_level())
         response = c.post('/dashboard/group/' +
                           str(self.g1.pk) + '/acl/',
-                          {'perm-new-name': 'group2', 'perm-new': 'owner'})
+                          {'name': 'group2', 'level': 'owner'})
         self.assertEqual(acl_groups, len(gp.get_groups_with_level()))
         self.assertEqual(response.status_code, 302)
 
@@ -1304,9 +1277,9 @@ class GroupDetailTest(LoginMixin, TestCase):
         acl_groups = len(gp.get_groups_with_level())
         response = c.post('/dashboard/group/' +
                           str(self.g1.pk) + '/acl/',
-                          {'perm-new-name': 'group2', 'perm-new': 'owner'})
+                          {'name': 'group2', 'level': 'owner'})
         self.assertEqual(acl_groups, len(gp.get_groups_with_level()))
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 302)
 
     def test_superuser_add_aclgroup_to_group(self):
         c = Client()
@@ -1315,7 +1288,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         acl_groups = len(gp.get_groups_with_level())
         response = c.post('/dashboard/group/' +
                           str(self.g1.pk) + '/acl/',
-                          {'perm-new-name': 'group2', 'perm-new': 'owner'})
+                          {'name': 'group2', 'level': 'owner'})
         self.assertEqual(acl_groups + 1, len(gp.get_groups_with_level()))
         self.assertEqual(response.status_code, 302)
 
@@ -1326,7 +1299,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         acl_groups = len(gp.get_groups_with_level())
         response = c.post('/dashboard/group/' +
                           str(self.g1.pk) + '/acl/',
-                          {'perm-new-name': 'group2', 'perm-new': 'owner'})
+                          {'name': 'group2', 'level': 'owner'})
         self.assertEqual(acl_groups + 1, len(gp.get_groups_with_level()))
         self.assertEqual(response.status_code, 302)
 
@@ -1366,84 +1339,6 @@ class GroupDetailTest(LoginMixin, TestCase):
         response = c.post('/dashboard/group/' + str(self.g1.pk) +
                           '/remove/user/' + str(self.u4.pk) + '/')
         self.assertEqual(user_in_group - 1, self.g1.user_set.count())
-        self.assertEqual(response.status_code, 302)
-
-    def test_anon_remove_acluser_from_group(self):
-        c = Client()
-        gp = self.g1.profile
-        acl_users = len(gp.get_users_with_level())
-        response = c.post('/dashboard/group/' + str(self.g1.pk) +
-                          '/remove/acl/user/' + str(self.u4.pk) + '/')
-        self.assertEqual(acl_users, len(gp.get_users_with_level()))
-        self.assertEqual(response.status_code, 302)
-
-    def test_unpermitted_remove_acluser_from_group(self):
-        c = Client()
-        self.login(c, 'user3')
-        gp = self.g1.profile
-        acl_users = len(gp.get_users_with_level())
-        response = c.post('/dashboard/group/' + str(self.g1.pk) +
-                          '/remove/acl/user/' + str(self.u4.pk) + '/')
-        self.assertEqual(acl_users, len(gp.get_users_with_level()))
-        self.assertEqual(response.status_code, 403)
-
-    def test_superuser_remove_acluser_from_group(self):
-        c = Client()
-        gp = self.g1.profile
-        self.login(c, 'superuser')
-        acl_users = len(gp.get_users_with_level())
-        response = c.post('/dashboard/group/' + str(self.g1.pk) +
-                          '/remove/acl/user/' + str(self.u4.pk) + '/')
-        self.assertEqual(acl_users - 1, len(gp.get_users_with_level()))
-        self.assertEqual(response.status_code, 302)
-
-    def test_permitted_remove_acluser_from_group(self):
-        c = Client()
-        gp = self.g1.profile
-        self.login(c, 'user0')
-        acl_users = len(gp.get_users_with_level())
-        response = c.post('/dashboard/group/' + str(self.g1.pk) +
-                          '/remove/acl/user/' + str(self.u4.pk) + '/')
-        self.assertEqual(acl_users - 1, len(gp.get_users_with_level()))
-        self.assertEqual(response.status_code, 302)
-
-    def test_anon_remove_aclgroup_from_group(self):
-        c = Client()
-        gp = self.g1.profile
-        acl_groups = len(gp.get_groups_with_level())
-        response = c.post('/dashboard/group/' + str(self.g1.pk) +
-                          '/remove/acl/group/' + str(self.g3.pk) + '/')
-        self.assertEqual(acl_groups, len(gp.get_groups_with_level()))
-        self.assertEqual(response.status_code, 302)
-
-    def test_unpermitted_remove_aclgroup_from_group(self):
-        c = Client()
-        self.login(c, 'user3')
-        gp = self.g1.profile
-        acl_groups = len(gp.get_groups_with_level())
-        response = c.post('/dashboard/group/' + str(self.g1.pk) +
-                          '/remove/acl/group/' + str(self.g3.pk) + '/')
-        self.assertEqual(acl_groups, len(gp.get_groups_with_level()))
-        self.assertEqual(response.status_code, 403)
-
-    def test_superuser_remove_aclgroup_from_group(self):
-        c = Client()
-        gp = self.g1.profile
-        acl_groups = len(gp.get_groups_with_level())
-        self.login(c, 'superuser')
-        response = c.post('/dashboard/group/' + str(self.g1.pk) +
-                          '/remove/acl/group/' + str(self.g3.pk) + '/')
-        self.assertEqual(acl_groups - 1, len(gp.get_groups_with_level()))
-        self.assertEqual(response.status_code, 302)
-
-    def test_permitted_remove_aclgroup_from_group(self):
-        c = Client()
-        gp = self.g1.profile
-        acl_groups = len(gp.get_groups_with_level())
-        self.login(c, 'user0')
-        response = c.post('/dashboard/group/' + str(self.g1.pk) +
-                          '/remove/acl/group/' + str(self.g3.pk) + '/')
-        self.assertEqual(acl_groups - 1, len(gp.get_groups_with_level()))
         self.assertEqual(response.status_code, 302)
 
     def test_unpermitted_user_add_wo_group_perm(self):
@@ -1774,8 +1669,8 @@ class AclViewTest(LoginMixin, TestCase):
 
         resp = c.post("/dashboard/vm/1/acl/", {
             'remove-u-%d' % self.u1.pk: "",
-            'perm-new-name': "",
-            'perm-new': "",
+            'name': "",
+            'level': "",
         })
         self.assertFalse((self.u1, "user") in inst.get_users_with_level())
         self.assertEqual(resp.status_code, 302)
@@ -1788,11 +1683,11 @@ class AclViewTest(LoginMixin, TestCase):
 
         resp = c.post("/dashboard/vm/1/acl/", {
             'remove-u-%d' % self.u1.pk: "",
-            'perm-new-name': "",
-            'perm-new': "",
+            'name': "",
+            'level': "",
         })
         self.assertTrue((self.u1, "user") in inst.get_users_with_level())
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_instance_original_owner_access_revoke(self):
         c = Client()
@@ -1802,8 +1697,8 @@ class AclViewTest(LoginMixin, TestCase):
         inst.set_level(self.ut, "owner")
         resp = c.post("/dashboard/vm/1/acl/", {
             'remove-u-%d' % self.ut.pk: "",
-            'perm-new-name': "",
-            'perm-new': "",
+            'name': "",
+            'level': "",
         })
         self.assertEqual(self.ut, Instance.objects.get(id=1).owner)
         self.assertTrue((self.ut, "owner") in inst.get_users_with_level())
@@ -1818,8 +1713,8 @@ class AclViewTest(LoginMixin, TestCase):
 
         resp = c.post("/dashboard/template/1/acl/", {
             'remove-u-%d' % self.u1.pk: "",
-            'perm-new-name': "",
-            'perm-new': "",
+            'name': "",
+            'level': "",
         })
         self.assertFalse((self.u1, "user") in tmpl.get_users_with_level())
         self.assertEqual(resp.status_code, 302)
@@ -1832,11 +1727,11 @@ class AclViewTest(LoginMixin, TestCase):
 
         resp = c.post("/dashboard/template/1/acl/", {
             'remove-u-%d' % self.u1.pk: "",
-            'perm-new-name': "",
-            'perm-new': "",
+            'name': "",
+            'level': "",
         })
         self.assertTrue((self.u1, "user") in tmpl.get_users_with_level())
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 302)
 
     def test_template_original_owner_access_revoke(self):
         c = Client()
@@ -1846,8 +1741,8 @@ class AclViewTest(LoginMixin, TestCase):
         tmpl.set_level(self.ut, "owner")
         resp = c.post("/dashboard/template/1/acl/", {
             'remove-u-%d' % self.ut.pk: "",
-            'perm-new-name': "",
-            'perm-new': "",
+            'name': "",
+            'level': "",
         })
         self.assertEqual(self.ut, InstanceTemplate.objects.get(id=1).owner)
         self.assertTrue((self.ut, "owner") in tmpl.get_users_with_level())

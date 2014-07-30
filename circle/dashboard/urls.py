@@ -18,6 +18,7 @@
 from __future__ import absolute_import
 from django.conf.urls import patterns, url, include
 
+import autocomplete_light
 from vm.models import Instance
 from .views import (
     AclUpdateView, FavouriteView, GroupAclUpdateView, GroupDelete,
@@ -27,10 +28,10 @@ from .views import (
     NodeDetailView, NodeFlushView, NodeGraphView, NodeList, NodeStatus,
     NotificationView, PortDelete, TemplateAclUpdateView, TemplateCreate,
     TemplateDelete, TemplateDetail, TemplateList, TransferOwnershipConfirmView,
-    TransferOwnershipView, vm_activity, VmCreate, VmDelete, VmDetailView,
+    TransferOwnershipView, vm_activity, VmCreate, VmDetailView,
     VmDetailVncTokenView, VmGraphView, VmList, VmMassDelete,
     DiskRemoveView, get_disk_download_status, InterfaceDeleteView,
-    GroupRemoveAclUserView, GroupRemoveAclGroupView, GroupRemoveUserView,
+    GroupRemoveUserView,
     GroupRemoveFutureUserView,
     GroupCreate, GroupProfileUpdate,
     TemplateChoose,
@@ -45,7 +46,10 @@ from .views import (
     LeaseAclUpdateView,
 )
 
+autocomplete_light.autodiscover()
+
 urlpatterns = patterns(
+
     '',
     url(r'^$', IndexView.as_view(), name="dashboard.index"),
     url(r'^lease/(?P<pk>\d+)/$', LeaseDetail.as_view(),
@@ -84,8 +88,6 @@ urlpatterns = patterns(
     url(r'^vm/list/$', VmList.as_view(), name='dashboard.views.vm-list'),
     url(r'^vm/create/$', VmCreate.as_view(),
         name='dashboard.views.vm-create'),
-    url(r'^vm/delete/(?P<pk>\d+)/$', VmDelete.as_view(),
-        name="dashboard.views.delete-vm"),
     url(r'^vm/mass-delete/', VmMassDelete.as_view(),
         name='dashboard.view.mass-delete-vm'),
     url(r'^vm/(?P<pk>\d+)/activity/$', vm_activity),
@@ -153,12 +155,6 @@ urlpatterns = patterns(
         name="dashboard.views.profile"),
     url(r'^profile/(?P<username>[^/]+)/use_gravatar/$', toggle_use_gravatar),
 
-    url(r'^group/(?P<group_pk>\d+)/remove/acl/user/(?P<member_pk>\d+)/$',
-        GroupRemoveAclUserView.as_view(),
-        name="dashboard.views.remove-acluser"),
-    url(r'^group/(?P<group_pk>\d+)/remove/acl/group/(?P<member_pk>\d+)/$',
-        GroupRemoveAclGroupView.as_view(),
-        name="dashboard.views.remove-aclgroup"),
     url(r'^group/(?P<group_pk>\d+)/remove/user/(?P<member_pk>\d+)/$',
         GroupRemoveUserView.as_view(),
         name="dashboard.views.remove-user"),
@@ -183,6 +179,8 @@ urlpatterns = patterns(
     url(r'^sshkey/create/$',
         UserKeyCreate.as_view(),
         name="dashboard.views.userkey-create"),
+
+    url(r'^autocomplete/', include('autocomplete_light.urls')),
 
     url(r"^store/list/$", StoreList.as_view(),
         name="dashboard.views.store-list"),

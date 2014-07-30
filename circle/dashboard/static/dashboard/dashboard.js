@@ -56,8 +56,6 @@ $(function () {
       url: '/dashboard/template/choose/', 
       success: function(data) { 
         $('body').append(data);
-        vmCreateLoaded();
-        addSliderMiscs();
         $('#create-modal').modal('show');
         $('#create-modal').on('hidden.bs.modal', function() {
           $('#create-modal').remove();
@@ -369,6 +367,11 @@ $(function () {
   /* notification message toggle */
   $(document).on('click', ".notification-message-subject", function() {
     $(".notification-message-text", $(this).parent()).slideToggle();
+    return false;
+  });
+
+  /* don't close notifications window on missclick */
+  $(document).on("click", ".notification-messages", function() {
     return false;
   });
 

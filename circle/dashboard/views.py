@@ -21,7 +21,11 @@ from __future__ import unicode_literals, absolute_import
 from collections import OrderedDict
 from itertools import chain
 from os import getenv
+<<<<<<< HEAD
 from os.path import join, normpath, dirname, basename
+=======
+from urlparse import urljoin
+>>>>>>> master
 import json
 import logging
 import re
@@ -30,8 +34,11 @@ import requests
 from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.views import login, redirect_to_login
+<<<<<<< HEAD
 from django.contrib.auth.decorators import login_required
 from django.contrib.messages import warning
+=======
+>>>>>>> master
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import (
     PermissionDenied, SuspiciousOperation,
@@ -39,7 +46,7 @@ from django.core.exceptions import (
 from django.core.cache import get_cache
 from django.core import signing
 from django.core.urlresolvers import reverse, reverse_lazy
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import (
     redirect, render, get_object_or_404, render_to_response,
@@ -59,6 +66,7 @@ from django_tables2 import SingleTableView
 from braces.views import (LoginRequiredMixin, SuperuserRequiredMixin,
                           PermissionRequiredMixin)
 from braces.views._access import AccessMixin
+from celery.exceptions import TimeoutError
 
 from django_sshkey.models import UserKey
 
@@ -68,13 +76,15 @@ from .forms import (
     UserCreationForm, GroupProfileUpdateForm, UnsubscribeForm,
     VmSaveForm, UserKeyForm, VmRenewForm,
     CirclePasswordChangeForm, VmCreateDiskForm, VmDownloadDiskForm,
-    TraitsForm, RawDataForm, GroupPermissionForm
+    TraitsForm, RawDataForm, GroupPermissionForm, AclUserAddForm,
+    VmAddInterfaceForm,
 )
 
 from .tables import (
     NodeListTable, NodeVmListTable, TemplateListTable, LeaseListTable,
     GroupListTable, UserKeyListTable
 )
+from common.models import HumanReadableObject, HumanReadableException
 from vm.models import (
     Instance, instance_activity, InstanceActivity, InstanceTemplate, Interface,
     InterfaceTemplate, Lease, Node, NodeActivity, Trait,
@@ -248,27 +258,6 @@ class IndexView(LoginRequiredMixin, TemplateView):
         return context
 
 
-def get_vm_acl_data(obj):
-    levels = obj.ACL_LEVELS
-    users = obj.get_users_with_level()
-    users = [{'user': u, 'level': l} for u, l in users]
-    groups = obj.get_groups_with_level()
-    groups = [{'group': g, 'level': l} for g, l in groups]
-    return {'users': users, 'groups': groups, 'levels': levels,
-            'url': reverse('dashboard.views.vm-acl', args=[obj.pk])}
-
-
-def get_group_acl_data(obj):
-    aclobj = obj.profile
-    levels = aclobj.ACL_LEVELS
-    users = aclobj.get_users_with_level()
-    users = [{'user': u, 'level': l} for u, l in users]
-    groups = aclobj.get_groups_with_level()
-    groups = [{'group': g, 'level': l} for g, l in groups]
-    return {'users': users, 'groups': groups, 'levels': levels,
-            'url': reverse('dashboard.views.group-acl', args=[obj.pk])}
-
-
 class CheckedDetailView(LoginRequiredMixin, DetailView):
     read_level = 'user'
 
@@ -323,8 +312,11 @@ class VmDetailView(CheckedDetailView):
         })
 
         # activity data
-        context['activities'] = self.object.get_merged_activities(
-            self.request.user)
+        activities = instance.get_merged_activities(self.request.user)
+        show_show_all = len(activities) > 10
+        activities = activities[:10]
+        context['activities'] = activities
+        context['show_show_all'] = show_show_all
 
         context['vlans'] = Vlan.get_objects_with_level(
             'user', self.request.user
@@ -332,7 +324,9 @@ class VmDetailView(CheckedDetailView):
             pk__in=Interface.objects.filter(
                 instance=self.get_object()).values_list("vlan", flat=True)
         ).all()
-        context['acl'] = get_vm_acl_data(instance)
+        context['acl'] = AclUpdateView.get_acl_data(
+            instance, self.request.user, 'dashboard.views.vm-acl')
+        context['aclform'] = AclUserAddForm()
         context['os_type_icon'] = instance.os_type.replace("unknown",
                                                            "question")
         # ipv6 infos
@@ -352,33 +346,19 @@ class VmDetailView(CheckedDetailView):
 
     def post(self, request, *args, **kwargs):
         options = {
-            'change_password': self.__change_password,
             'new_name': self.__set_name,
             'new_description': self.__set_description,
             'new_tag': self.__add_tag,
             'to_remove': self.__remove_tag,
             'port': self.__add_port,
-            'new_network_vlan': self.__new_network,
             'abort_operation': self.__abort_operation,
         }
         for k, v in options.iteritems():
             if request.POST.get(k) is not None:
                 return v(request)
-
         raise Http404()
 
-    def __change_password(self, request):
-        self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-
-        self.object.change_password(user=request.user)
-        messages.success(request, _("Password changed."))
-        if request.is_ajax():
-            return HttpResponse("Success.")
-        else:
-            return redirect(reverse_lazy("dashboard.views.detail",
-                                         kwargs={'pk': self.object.pk}))
+        raise Http404()
 
     def __set_name(self, request):
         self.object = self.get_object()
@@ -502,24 +482,6 @@ class VmDetailView(CheckedDetailView):
             return redirect(reverse_lazy("dashboard.views.detail",
                                          kwargs={'pk': self.get_object().pk}))
 
-    def __new_network(self, request):
-        self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-
-        vlan = get_object_or_404(Vlan, pk=request.POST.get("new_network_vlan"))
-        if not vlan.has_level(request.user, 'user'):
-            raise PermissionDenied()
-        try:
-            self.object.add_interface(vlan=vlan, user=request.user)
-            messages.success(request, _("Successfully added new interface."))
-        except Exception, e:
-            error = u' '.join(e.messages)
-            messages.error(request, error)
-
-        return redirect("%s#network" % reverse_lazy(
-            "dashboard.views.detail", kwargs={'pk': self.object.pk}))
-
     def __abort_operation(self, request):
         self.object = self.get_object()
 
@@ -542,6 +504,7 @@ class VmTraitsUpdate(SuperuserRequiredMixin, UpdateView):
 class VmRawDataUpdate(SuperuserRequiredMixin, UpdateView):
     form_class = RawDataForm
     model = Instance
+    template_name = 'dashboard/vm-detail/raw_data.html'
 
     def get_success_url(self):
         return self.get_object().get_absolute_url() + "#resources"
@@ -552,6 +515,7 @@ class OperationView(RedirectToLoginMixin, DetailView):
     template_name = 'dashboard/operate.html'
     show_in_toolbar = True
     effect = None
+    wait_for_result = None
 
     @property
     def name(self):
@@ -613,19 +577,65 @@ class OperationView(RedirectToLoginMixin, DetailView):
         self.check_auth()
         return super(OperationView, self).get(request, *args, **kwargs)
 
+    def get_response_data(self, result, done, extra=None, **kwargs):
+        """Return serializable data to return to agents requesting json
+        response to POST"""
+
+        if extra is None:
+            extra = {}
+        extra["success"] = not isinstance(result, Exception)
+        extra["done"] = done
+        if isinstance(result, HumanReadableObject):
+            extra["message"] = result.get_user_text()
+        return extra
+
     def post(self, request, extra=None, *args, **kwargs):
         self.check_auth()
         self.object = self.get_object()
         if extra is None:
             extra = {}
+        result = None
+        done = False
         try:
-            self.get_op().async(user=request.user, **extra)
+            task = self.get_op().async(user=request.user, **extra)
+        except HumanReadableException as e:
+            e.send_message(request)
+            logger.exception("Could not start operation")
+            result = e
         except Exception as e:
             messages.error(request, _('Could not start operation.'))
-            logger.exception(e)
+            logger.exception("Could not start operation")
+            result = e
         else:
-            messages.success(request, _('Operation is started.'))
-        return redirect("%s#activity" % self.object.get_absolute_url())
+            wait = self.wait_for_result
+            if wait:
+                try:
+                    result = task.get(timeout=wait,
+                                      interval=min((wait / 5, .5)))
+                except TimeoutError:
+                    logger.debug("Result didn't arrive in %ss",
+                                 self.wait_for_result, exc_info=True)
+                except HumanReadableException as e:
+                    e.send_message(request)
+                    logger.exception(e)
+                    result = e
+                except Exception as e:
+                    messages.error(request, _('Operation failed.'))
+                    logger.debug("Operation failed.", exc_info=True)
+                    result = e
+                else:
+                    done = True
+                    messages.success(request, _('Operation succeeded.'))
+            if result is None and not done:
+                messages.success(request, _('Operation is started.'))
+
+        if "/json" in request.META.get("HTTP_ACCEPT", ""):
+            data = self.get_response_data(result, done,
+                                          post_extra=extra, **kwargs)
+            return HttpResponse(json.dumps(data),
+                                content_type="application/json")
+        else:
+            return redirect("%s#activity" % self.object.get_absolute_url())
 
     @classmethod
     def factory(cls, op, icon='cog', effect='info', extra_bases=(), **kwargs):
@@ -652,6 +662,7 @@ class AjaxOperationMixin(object):
             store.used = True
             return HttpResponse(
                 json.dumps({'success': True,
+                            'with_reload': getattr(self, 'with_reload', False),
                             'messages': [unicode(m) for m in store]}),
                 content_type="application=json"
             )
@@ -691,7 +702,9 @@ class FormOperationMixin(object):
                 request, extra, *args, **kwargs)
             if request.is_ajax():
                 return HttpResponse(
-                    json.dumps({'success': True}),
+                    json.dumps({
+                        'success': True,
+                        'with_reload': getattr(self, 'with_reload', False)}),
                     content_type="application=json"
                 )
             else:
@@ -708,12 +721,32 @@ class RequestFormOperationMixin(FormOperationMixin):
         return val
 
 
+class VmAddInterfaceView(FormOperationMixin, VmOperationView):
+
+    op = 'add_interface'
+    form_class = VmAddInterfaceForm
+    show_in_toolbar = False
+    icon = 'globe'
+    effect = 'success'
+    with_reload = True
+
+    def get_form_kwargs(self):
+        inst = self.get_op().instance
+        choices = Vlan.get_objects_with_level(
+            "user", self.request.user).exclude(
+            vm_interface__instance__in=[inst])
+        val = super(VmAddInterfaceView, self).get_form_kwargs()
+        val.update({'choices': choices})
+        return val
+
+
 class VmCreateDiskView(FormOperationMixin, VmOperationView):
 
     op = 'create_disk'
     form_class = VmCreateDiskForm
     show_in_toolbar = False
     icon = 'hdd-o'
+    effect = "success"
     is_disk_operation = True
 
 
@@ -723,6 +756,7 @@ class VmDownloadDiskView(FormOperationMixin, VmOperationView):
     form_class = VmDownloadDiskForm
     show_in_toolbar = False
     icon = 'download'
+    effect = "success"
     is_disk_operation = True
 
 
@@ -820,6 +854,7 @@ class TokenOperationView(OperationView):
                     logger.info("Request user changed to %s at %s",
                                 user, self.request.get_full_path())
                     self.request.user = user
+                    self.request.token_user = True
         else:
             logger.debug("no token supplied to %s",
                          self.request.get_full_path())
@@ -862,6 +897,7 @@ class VmRenewView(FormOperationMixin, TokenOperationView, VmOperationView):
     effect = 'info'
     show_in_toolbar = False
     form_class = VmRenewForm
+    wait_for_result = 0.5
 
     def get_form_kwargs(self):
         choices = Lease.get_objects_with_level("user", self.request.user)
@@ -873,6 +909,13 @@ class VmRenewView(FormOperationMixin, TokenOperationView, VmOperationView):
         val = super(VmRenewView, self).get_form_kwargs()
         val.update({'choices': choices, 'default': default})
         return val
+
+    def get_response_data(self, result, done, extra=None, **kwargs):
+        extra = super(VmRenewView, self).get_response_data(result, done,
+                                                           extra, **kwargs)
+        extra["new_suspend_time"] = unicode(self.get_op().
+                                            instance.time_of_suspend)
+        return extra
 
 
 vm_ops = OrderedDict([
@@ -895,13 +938,19 @@ vm_ops = OrderedDict([
         op='shut_off', icon='ban', effect='warning')),
     ('recover', VmOperationView.factory(
         op='recover', icon='medkit', effect='warning')),
+    ('nostate', VmOperationView.factory(
+        op='emergency_change_state', icon='legal', effect='danger')),
     ('destroy', VmOperationView.factory(
         extra_bases=[TokenOperationView],
         op='destroy', icon='times', effect='danger')),
     ('create_disk', VmCreateDiskView),
     ('download_disk', VmDownloadDiskView),
+    ('add_interface', VmAddInterfaceView),
     ('renew', VmRenewView),
     ('resources_change', VmResourcesChangeView),
+    ('password_reset', VmOperationView.factory(
+        op='password_reset', icon='unlock', effect='warning',
+        show_in_toolbar=False, wait_for_result=0.5, with_reload=True)),
 ])
 
 
@@ -1005,7 +1054,10 @@ class GroupDetailView(CheckedDetailView):
         context['users'] = self.object.user_set.all()
         context['future_users'] = FutureMember.objects.filter(
             group=self.object)
-        context['acl'] = get_group_acl_data(self.object)
+        context['acl'] = AclUpdateView.get_acl_data(
+            self.object.profile, self.request.user,
+            'dashboard.views.group-acl')
+        context['aclform'] = AclUserAddForm()
         context['group_profile_form'] = GroupProfileUpdate.get_form_object(
             self.request, self.object.profile)
 
@@ -1048,7 +1100,7 @@ class GroupDetailView(CheckedDetailView):
                 FutureMember.objects.get_or_create(org_id=name,
                                                    group=self.object)
             else:
-                warning(request, _('User "%s" not found.') % name)
+                messages.warning(request, _('User "%s" not found.') % name)
 
     def __add_list(self, request):
         if not self.get_has_level()(request.user, 'operator'):
@@ -1093,120 +1145,169 @@ class GroupPermissionsView(SuperuserRequiredMixin, UpdateView):
 
 
 class AclUpdateView(LoginRequiredMixin, View, SingleObjectMixin):
+    def send_success_message(self, whom, old_level, new_level):
+        if old_level and new_level:
+            msg = _("Acl user/group %(w)s successfully modified.")
+        elif not old_level and new_level:
+            msg = _("Acl user/group %(w)s successfully added.")
+        elif old_level and not new_level:
+            msg = _("Acl user/group %(w)s successfully removed.")
+        if msg:
+            messages.success(self.request, msg % {'w': whom})
 
-    def post(self, request, *args, **kwargs):
-        instance = self.get_object()
-        if not (instance.has_level(request.user, "owner") or
-                getattr(instance, 'owner', None) == request.user):
-            logger.warning('Tried to set permissions of %s by non-owner %s.',
-                           unicode(instance), unicode(request.user))
-            raise PermissionDenied()
-        self.set_levels(request, instance)
-        self.remove_levels(request, instance)
-        self.add_levels(request, instance)
-        return redirect("%s#access" % instance.get_absolute_url())
+    def get_level(self, whom):
+        for u, level in self.acl_data:
+            if u == whom:
+                return level
+        return None
 
-    def set_levels(self, request, instance):
-        for key, value in request.POST.items():
-            m = re.match('perm-([ug])-(\d+)', key)
+    @classmethod
+    def get_acl_data(cls, obj, user, url):
+        levels = obj.ACL_LEVELS
+        allowed_levels = list(l for l in OrderedDict(levels)
+                              if cls.has_next_level(user, obj, l))
+        is_owner = 'owner' in allowed_levels
+
+        allowed_users = cls.get_allowed_users(user)
+        allowed_groups = cls.get_allowed_groups(user)
+
+        user_levels = list(
+            {'user': u, 'level': l} for u, l in obj.get_users_with_level()
+            if is_owner or u == user or u in allowed_users)
+
+        group_levels = list(
+            {'group': g, 'level': l} for g, l in obj.get_groups_with_level()
+            if is_owner or g in allowed_groups)
+
+        return {'users': user_levels,
+                'groups': group_levels,
+                'levels': levels,
+                'allowed_levels': allowed_levels,
+                'url': reverse(url, args=[obj.pk])}
+
+    @classmethod
+    def has_next_level(self, user, instance, level):
+        levels = OrderedDict(instance.ACL_LEVELS).keys()
+        next_levels = dict(zip([None] + levels, levels + levels[-1:]))
+        # {None: 'user', 'user': 'operator', 'operator: 'owner',
+        #  'owner: 'owner'}
+        next_level = next_levels[level]
+        return instance.has_level(user, next_level)
+
+    @classmethod
+    def get_allowed_groups(cls, user):
+        if user.has_perm('dashboard.use_autocomplete'):
+            return Group.objects.all()
+        else:
+            profiles = GroupProfile.get_objects_with_level('owner', user)
+            return Group.objects.filter(groupprofile__in=profiles).distinct()
+
+    @classmethod
+    def get_allowed_users(cls, user):
+        if user.has_perm('dashboard.use_autocomplete'):
+            return User.objects.all()
+        else:
+            groups = cls.get_allowed_groups(user)
+            return User.objects.filter(
+                Q(groups__in=groups) | Q(pk=user.pk)).distinct()
+
+    def check_auth(self, whom, old_level, new_level):
+        if isinstance(whom, Group):
+            if (not self.is_owner and whom not in
+                    AclUpdateView.get_allowed_groups(self.request.user)):
+                return False
+        elif isinstance(whom, User):
+            if (not self.is_owner and whom not in
+                    AclUpdateView.get_allowed_users(self.request.user)):
+                return False
+        return (
+            AclUpdateView.has_next_level(self.request.user,
+                                         self.instance, new_level) and
+            AclUpdateView.has_next_level(self.request.user,
+                                         self.instance, old_level))
+
+    def set_level(self, whom, new_level):
+        user = self.request.user
+        old_level = self.get_level(whom)
+        if old_level == new_level:
+            return
+
+        if getattr(self.instance, "owner", None) == whom:
+            logger.info("Tried to set owner's acl level for %s by %s.",
+                        unicode(self.instance), unicode(user))
+            msg = _("The original owner cannot be removed, however "
+                    "you can transfer ownership.")
+            if not getattr(self, 'hide_messages', False):
+                messages.warning(self.request, msg)
+        elif self.check_auth(whom, old_level, new_level):
+            logger.info(
+                u"Set %s's acl level for %s to %s by %s.", unicode(whom),
+                unicode(self.instance), new_level, unicode(user))
+            if not getattr(self, 'hide_messages', False):
+                self.send_success_message(whom, old_level, new_level)
+            self.instance.set_level(whom, new_level)
+        else:
+            logger.warning(
+                u"Tried to set %s's acl_level for %s (%s->%s) by %s.",
+                unicode(whom), unicode(self.instance), old_level, new_level,
+                unicode(user))
+
+    def set_or_remove_levels(self):
+        for key, value in self.request.POST.items():
+            m = re.match('(perm|remove)-([ug])-(\d+)', key)
             if m:
-                typ, id = m.groups()
+                cmd, typ, id = m.groups()
+                if cmd == 'remove':
+                    value = None
                 entity = {'u': User, 'g': Group}[typ].objects.get(id=id)
-                if getattr(instance, "owner", None) == entity:
-                    logger.info("Tried to set owner's acl level for %s by %s.",
-                                unicode(instance), unicode(request.user))
-                    continue
-                instance.set_level(entity, value)
-                logger.info("Set %s's acl level for %s to %s by %s.",
-                            unicode(entity), unicode(instance),
-                            value, unicode(request.user))
+                self.set_level(entity, value)
 
-    def remove_levels(self, request, instance):
-        for key, value in request.POST.items():
-            if key.startswith("remove"):
-                typ = key[7:8]  # len("remove-")
-                id = key[9:]  # len("remove-x-")
-                entity = {'u': User, 'g': Group}[typ].objects.get(id=id)
-                if getattr(instance, "owner", None) == entity:
-                    logger.info("Tried to remove owner from %s by %s.",
-                                unicode(instance), unicode(request.user))
-                    msg = _("The original owner cannot be removed, however "
-                            "you can transfer ownership.")
-                    messages.warning(request, msg)
-                    continue
-                instance.set_level(entity, None)
-                logger.info("Revoked %s's access to %s by %s.",
-                            unicode(entity), unicode(instance),
-                            unicode(request.user))
-
-    def add_levels(self, request, instance):
-        name = request.POST['perm-new-name']
-        value = request.POST['perm-new']
-        if not name:
+    def add_levels(self):
+        name = self.request.POST.get('name', None)
+        level = self.request.POST.get('level', None)
+        if not name or not level:
             return
         try:
             entity = search_user(name)
+            if self.instance.object_level_set.filter(users__in=[entity]):
+                messages.warning(
+                    self.request, _('User "%s" has already '
+                                    'access to this object.') % name)
+                return
         except User.DoesNotExist:
             entity = None
             try:
                 entity = Group.objects.get(name=name)
+                if self.instance.object_level_set.filter(groups__in=[entity]):
+                    messages.warning(
+                        self.request, _('Group "%s" has already '
+                                        'access to this object.') % name)
+                    return
             except Group.DoesNotExist:
-                warning(request, _('User or group "%s" not found.') % name)
+                messages.warning(
+                    self.request, _('User or group "%s" not found.') % name)
                 return
+        self.set_level(entity, level)
 
-        instance.set_level(entity, value)
-        logger.info("Set %s's new acl level for %s to %s by %s.",
-                    unicode(entity), unicode(instance),
-                    value, unicode(request.user))
+    def post(self, request, *args, **kwargs):
+        self.instance = self.get_object()
+        self.is_owner = self.instance.has_level(request.user, 'owner')
+        self.acl_data = (self.instance.get_users_with_level() +
+                         self.instance.get_groups_with_level())
+        self.set_or_remove_levels()
+        self.add_levels()
+        return redirect("%s#access" % self.instance.get_absolute_url())
 
 
 class TemplateAclUpdateView(AclUpdateView):
     model = InstanceTemplate
 
-    def post(self, request, *args, **kwargs):
-        template = self.get_object()
-        if not (template.has_level(request.user, "owner") or
-                getattr(template, 'owner', None) == request.user):
-            logger.warning('Tried to set permissions of %s by non-owner %s.',
-                           unicode(template), unicode(request.user))
-            raise PermissionDenied()
-
-        name = request.POST['perm-new-name']
-        if (User.objects.filter(username=name).count() +
-                Group.objects.filter(name=name).count() < 1
-                and len(name) > 0):
-            warning(request, _('User or group "%s" not found.') % name)
-        else:
-            self.set_levels(request, template)
-            self.add_levels(request, template)
-            self.remove_levels(request, template)
-
-            post_for_disk = request.POST.copy()
-            post_for_disk['perm-new'] = 'user'
-            request.POST = post_for_disk
-            for d in template.disks.all():
-                self.set_levels(request, d)
-                self.add_levels(request, d)
-                self.remove_levels(request, d)
-
-        return redirect(template)
-
 
 class GroupAclUpdateView(AclUpdateView):
     model = Group
 
-    def post(self, request, *args, **kwargs):
-        instance = self.get_object().profile
-        if not (instance.has_level(request.user, "owner") or
-                getattr(instance, 'owner', None) == request.user):
-            logger.warning('Tried to set permissions of %s by non-owner %s.',
-                           unicode(instance), unicode(request.user))
-            raise PermissionDenied()
-
-        self.set_levels(request, instance)
-        self.add_levels(request, instance)
-        return redirect(reverse("dashboard.views.group-detail",
-                                kwargs=self.kwargs))
+    def get_object(self):
+        return super(GroupAclUpdateView, self).get_object().profile
 
 
 class TemplateChoose(LoginRequiredMixin, TemplateView):
@@ -1353,8 +1454,11 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     def get_context_data(self, **kwargs):
         obj = self.get_object()
         context = super(TemplateDetail, self).get_context_data(**kwargs)
-        context['acl'] = get_vm_acl_data(obj)
+        context['acl'] = AclUpdateView.get_acl_data(
+            obj, self.request.user, 'dashboard.views.template-acl')
         context['disks'] = obj.disks.all()
+        context['is_owner'] = obj.has_level(self.request.user, 'owner')
+        context['aclform'] = AclUserAddForm()
         return context
 
     def get_success_url(self):
@@ -1653,34 +1757,6 @@ class GroupRemoveFutureUserView(GroupRemoveUserView):
         return _("Future user successfully removed from group.")
 
 
-class GroupRemoveAclUserView(GroupRemoveUserView):
-
-    def remove_member(self, pk):
-        container = self.get_object().profile
-        container.set_level(User.objects.get(pk=pk), None)
-
-    def get_success_message(self):
-        return _("Acl user successfully removed from group.")
-
-
-class GroupRemoveAclGroupView(GroupRemoveUserView):
-
-    def get_context_data(self, **kwargs):
-        context = super(GroupRemoveUserView, self).get_context_data(**kwargs)
-        try:
-            context['member'] = Group.objects.get(pk=self.member_pk)
-        except User.DoesNotExist:
-            raise Http404()
-        return context
-
-    def remove_member(self, pk):
-        container = self.get_object().profile
-        container.set_level(Group.objects.get(pk=pk), None)
-
-    def get_success_message(self):
-        return _("Acl group successfully removed from group.")
-
-
 class GroupDelete(CheckedDetailView, DeleteView):
 
     """This stuff deletes the group.
@@ -1807,13 +1883,12 @@ class VmCreate(LoginRequiredMixin, TemplateView):
             }
             networks = [InterfaceTemplate(vlan=l, managed=l.managed)
                         for l in post['networks']]
-            disks = post['disks']
 
             ikwargs.update({
                 'template': template,
                 'owner': user,
                 'networks': networks,
-                'disks': disks,
+                'disks': list(template.disks.all()),
             })
 
             amount = post['amount']
@@ -1855,9 +1930,13 @@ class VmCreate(LoginRequiredMixin, TemplateView):
         except Exception as e:
             logger.debug('No profile or instance limit: %s', e)
         else:
+            try:
+                amount = int(request.POST.get("amount", 1))
+            except:
+                amount = limit  # TODO this should definitely use a Form
             current = Instance.active.filter(owner=user).count()
             logger.debug('current use: %d, limit: %d', current, limit)
-            if limit < current:
+            if current + amount > limit:
                 messages.error(request,
                                _('Instance limit (%d) exceeded.') % limit)
                 if request.is_ajax():
@@ -2019,53 +2098,6 @@ class GroupProfileUpdate(SuccessMessageMixin, GroupCodeMixin,
             return self.form_invalid(form)
         form.save()
         return self.form_valid(form)
-
-
-class VmDelete(LoginRequiredMixin, DeleteView):
-    model = Instance
-    template_name = "dashboard/confirm/base-delete.html"
-
-    def get_template_names(self):
-        if self.request.is_ajax():
-            return ['dashboard/confirm/ajax-delete.html']
-        else:
-            return ['dashboard/confirm/base-delete.html']
-
-    def get_success_url(self):
-        next = self.request.POST.get('next')
-        if next:
-            return next
-        else:
-            return reverse_lazy('dashboard.index')
-
-    def get_context_data(self, **kwargs):
-        object = self.get_object()
-        if not object.has_level(self.request.user, 'owner'):
-            raise PermissionDenied()
-
-        context = super(VmDelete, self).get_context_data(**kwargs)
-        return context
-
-    # github.com/django/django/blob/master/django/views/generic/edit.py#L245
-    def delete(self, request, *args, **kwargs):
-        object = self.get_object()
-        if not object.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-
-        object.destroy.async(user=request.user)
-        success_url = self.get_success_url()
-        success_message = _("VM successfully deleted.")
-
-        if request.is_ajax():
-            if request.POST.get('redirect').lower() == "true":
-                messages.success(request, success_message)
-            return HttpResponse(
-                json.dumps({'message': success_message}),
-                content_type="application/json",
-            )
-        else:
-            messages.success(request, success_message)
-            return HttpResponseRedirect(success_url)
 
 
 class NodeDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
@@ -2345,7 +2377,8 @@ class LeaseDetail(LoginRequiredMixin, SuperuserRequiredMixin,
     def get_context_data(self, *args, **kwargs):
         obj = self.get_object()
         context = super(LeaseDetail, self).get_context_data(*args, **kwargs)
-        context['acl'] = get_vm_acl_data(obj)
+        context['acl'] = AclUpdateView.get_acl_data(
+            obj, self.request.user, 'dashboard.views.lease-acl')
         return context
 
     def get_success_url(self):
@@ -2405,30 +2438,35 @@ def vm_activity(request, pk):
         raise PermissionDenied()
 
     response = {}
-    only_status = request.GET.get("only_status", "false")
+    show_all = request.GET.get("show_all", "false") == "true"
+    activities = instance.get_merged_activities(request.user)
+    show_show_all = len(activities) > 10
+    if not show_all:
+        activities = activities[:10]
 
     response['human_readable_status'] = instance.get_status_display()
     response['status'] = instance.status
     response['icon'] = instance.get_status_icon()
-    if only_status == "false":  # instance activity
-        context = {
-            'instance': instance,
-            'activities': instance.get_merged_activities(request.user),
-            'ops': get_operations(instance, request.user),
-        }
 
-        response['activities'] = render_to_string(
-            "dashboard/vm-detail/_activity-timeline.html",
-            RequestContext(request, context),
-        )
-        response['ops'] = render_to_string(
-            "dashboard/vm-detail/_operations.html",
-            RequestContext(request, context),
-        )
-        response['disk_ops'] = render_to_string(
-            "dashboard/vm-detail/_disk-operations.html",
-            RequestContext(request, context),
-        )
+    context = {
+        'instance': instance,
+        'activities': activities,
+        'show_show_all': show_show_all,
+        'ops': get_operations(instance, request.user),
+    }
+
+    response['activities'] = render_to_string(
+        "dashboard/vm-detail/_activity-timeline.html",
+        RequestContext(request, context),
+    )
+    response['ops'] = render_to_string(
+        "dashboard/vm-detail/_operations.html",
+        RequestContext(request, context),
+    )
+    response['disk_ops'] = render_to_string(
+        "dashboard/vm-detail/_disk-operations.html",
+        RequestContext(request, context),
+    )
 
     return HttpResponse(
         json.dumps(response),
@@ -2818,11 +2856,10 @@ class DiskRemoveView(DeleteView):
 
     def delete(self, request, *args, **kwargs):
         disk = self.get_object()
-        if not disk.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-
-        disk = self.get_object()
         app = disk.get_appliance()
+
+        if not app.has_level(request.user, 'owner'):
+            raise PermissionDenied()
 
         app.remove_disk(disk=disk, user=request.user)
         disk.destroy()
@@ -2844,7 +2881,7 @@ class DiskRemoveView(DeleteView):
 @require_GET
 def get_disk_download_status(request, pk):
     disk = Disk.objects.get(pk=pk)
-    if not disk.has_level(request.user, 'owner'):
+    if not disk.get_appliance().has_level(request.user, 'owner'):
         raise PermissionDenied()
 
     return HttpResponse(
@@ -3249,3 +3286,7 @@ def store_refresh_toplist(request):
     cache.set(cache_key, files, 300)
 
     return redirect(reverse("dashboard.index"))
+
+
+def absolute_url(url):
+    return urljoin(settings.DJANGO_URL, url)

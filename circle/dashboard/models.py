@@ -77,7 +77,7 @@ class Notification(TimeStampedModel):
     def send(cls, user, subject, template, context,
              valid_until=None, subject_context=None):
         hro = create_readable(template, user=user, **context)
-        subject = create_readable(subject, subject_context or context)
+        subject = create_readable(subject, **(subject_context or context))
         return cls.objects.create(to=user,
                                   subject_data=subject.to_dict(),
                                   message_data=hro.to_dict(),
@@ -160,6 +160,11 @@ class Profile(Model):
 
     def __unicode__(self):
         return self.get_display_name()
+
+    class Meta:
+        permissions = (
+            ('use_autocomplete', _('Can use autocomplete.')),
+        )
 
 
 class FutureMember(Model):

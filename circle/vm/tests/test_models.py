@@ -66,8 +66,8 @@ class InstanceTestCase(TestCase):
         inst = MagicMock(spec=Instance, node=node, vnc_port=port)
         inst.save.side_effect = AssertionError
         with patch('vm.models.instance.InstanceActivity') as ia:
-            ia.create.side_effect = ActivityInProgressError(MagicMock())
-            Instance.vm_state_changed(inst, 'STOPPED')
+            ia.create.side_effect = ActivityInProgressError.create(MagicMock())
+            Instance.status = 'STOPPED'
         self.assertEquals(inst.node, node)
         self.assertEquals(inst.vnc_port, port)
 
@@ -210,7 +210,7 @@ class NodeTestCase(TestCase):
         node.enabled = True
         node.STATES = Node.STATES
         self.assertEqual(Node.get_state(node), "ONLINE")
-        assert isinstance(Node.get_status_display(node), _("").__class__)
+        assert isinstance(Node.get_status_display(node), _("x").__class__)
 
 
 class InstanceActivityTestCase(TestCase):

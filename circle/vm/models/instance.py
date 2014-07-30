@@ -41,7 +41,7 @@ from model_utils.models import TimeStampedModel, StatusModel
 from taggit.managers import TaggableManager
 
 from acl.models import AclBase
-from common.models import create_readable
+from common.models import create_readable, HumanReadableException
 from common.operations import OperatedMixin
 from ..tasks import vm_tasks, agent_tasks
 from .activity import (ActivityInProgressError, instance_activity,
@@ -271,32 +271,31 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             ('create_vm', _('Can create a new VM.')),
             ('config_ports', _('Can configure port forwards.')),
             ('recover', _('Can recover a destroyed VM.')),
+            ('emergency_change_state', _('Can change VM state to NOSTATE.')),
         )
         verbose_name = _('instance')
         verbose_name_plural = _('instances')
 
-    class InstanceDestroyedError(Exception):
+    class InstanceError(HumanReadableException):
 
-        def __init__(self, instance, message=None):
-            if message is None:
-                message = ("The instance (%s) has already been destroyed."
-                           % instance)
+        def __init__(self, instance, params=None, level=None, **kwargs):
+            kwargs.update(params or {})
+            self.instance = kwargs["instance"] = instance
+            super(Instance.InstanceError, self).__init__(
+                level, self.message, self.message, kwargs)
 
-            Exception.__init__(self, message)
+    class InstanceDestroyedError(InstanceError):
+        message = ugettext_noop(
+            "Instance %(instance)s has already been destroyed.")
 
-            self.instance = instance
+    class WrongStateError(InstanceError):
+        message = ugettext_noop(
+            "Current state (%(state)s) of instance %(instance)s is "
+            "inappropriate for the invoked operation.")
 
-    class WrongStateError(Exception):
-
-        def __init__(self, instance, message=None):
-            if message is None:
-                message = ("The instance's current state (%s) is "
-                           "inappropriate for the invoked operation."
-                           % instance.status)
-
-            Exception.__init__(self, message)
-
-            self.instance = instance
+        def __init__(self, instance, params=None, **kwargs):
+            super(Instance.WrongStateError, self).__init__(
+                instance, params, state=instance.status)
 
     def __unicode__(self):
         parts = (self.name, "(" + str(self.id) + ")")
@@ -404,13 +403,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         """
         disks = template.disks.all() if disks is None else disks
 
-        for disk in disks:
-            if not disk.has_level(owner, 'user'):
-                raise PermissionDenied()
-            elif (disk.type == 'qcow2-snap'
-                  and not disk.has_level(owner, 'owner')):
-                raise PermissionDenied()
-
         networks = (template.interface_set.all() if networks is None
                     else networks)
 
@@ -444,27 +436,15 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         self.time_of_suspend, self.time_of_delete = self.get_renew_times()
         super(Instance, self).clean(*args, **kwargs)
 
-    def manual_state_change(self, new_state="NOSTATE", reason=None, user=None):
-        """ Manually change state of an Instance.
-
-        Can be used to recover VM after administrator fixed problems.
-        """
-        # TODO cancel concurrent activity (if exists)
-        act = InstanceActivity.create(
-            code_suffix='manual_state_change', instance=self, user=user,
-            readable_name=create_readable(ugettext_noop(
-                "force %(state)s state"), state=new_state))
-        act.finished = act.started
-        act.result = reason
-        act.resultant_state = new_state
-        act.succeeded = True
-        act.save()
-
     def vm_state_changed(self, new_state):
         # log state change
         try:
-            act = InstanceActivity.create(code_suffix='vm_state_changed',
-                                          instance=self)
+            act = InstanceActivity.create(
+                code_suffix='vm_state_changed',
+                readable_name=create_readable(
+                    ugettext_noop("vm state changed to %(state)s"),
+                    state=new_state),
+                instance=self)
         except ActivityInProgressError:
             pass  # discard state change if another activity is in progress.
         else:
@@ -663,6 +643,13 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
 
         :param again: Notify already notified owners.
         """
+
+        notification_msg = ugettext_noop(
+            'Your instance <a href="%(url)s">%(instance)s</a> is going to '
+            'expire. It will be suspended at %(suspend)s and destroyed at '
+            '%(delete)s. Please, either <a href="%(token)s">renew</a> '
+            'or <a href="%(url)s">destroy</a> it now.')
+
         if not again and self._is_notified_about_expiration():
             return False
         success, failed = [], []
@@ -687,20 +674,26 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                                readable_name=ugettext_noop(
                                    "notify owner about expiration"),
                                on_commit=on_commit):
-            from dashboard.views import VmRenewView
+            from dashboard.views import VmRenewView, absolute_url
             level = self.get_level_object("owner")
             for u, ulevel in self.get_users_with_level(level__pk=level.pk):
                 try:
                     token = VmRenewView.get_token_url(self, u)
                     u.profile.notify(
-                        _('%s expiring soon') % unicode(self),
-                        'dashboard/notifications/vm-expiring.html',
-                        {'instance': self, 'token': token}, valid_until=min(
-                            self.time_of_delete, self.time_of_suspend))
+                        ugettext_noop('%(instance)s expiring soon'),
+                        notification_msg, url=self.get_absolute_url(),
+                        instance=self, suspend=self.time_of_suspend,
+                        token=token, delete=self.time_of_delete)
                 except Exception as e:
                     failed.append((u, e))
                 else:
                     success.append(u)
+            if self.status == "RUNNING":
+                token = absolute_url(
+                    VmRenewView.get_token_url(self, self.owner))
+                queue = self.get_remote_queue_name("agent")
+                agent_tasks.send_expiration.apply_async(
+                    queue=queue, args=(self.vm_name, token))
         return True
 
     def is_expiring(self, threshold=0.1):
@@ -739,24 +732,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         return (
             timezone.now() + lease.suspend_interval,
             timezone.now() + lease.delete_interval)
-
-    def change_password(self, user=None):
-        """Generate new password for the vm
-
-        :param self: The virtual machine.
-
-        :param user: The user who's issuing the command.
-        """
-
-        self.pw = pwgen()
-        with instance_activity(code_suffix='change_password', instance=self,
-                               readable_name=ugettext_noop("change password"),
-                               user=user):
-            queue = self.get_remote_queue_name("agent")
-            agent_tasks.change_password.apply_async(queue=queue,
-                                                    args=(self.vm_name,
-                                                          self.pw))
-        self.save()
 
     def select_node(self):
         """Returns the node the VM should be deployed or migrated to.

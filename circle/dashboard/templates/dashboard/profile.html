@@ -64,7 +64,7 @@
           <i class="fa fa-desktop"></i>
           {% trans "Virtual machines owned by the user" %} ({{ instances_owned|length }})
         </h4>
-        <ul class="dashboard-profile-vm-list">
+        <ul class="dashboard-profile-vm-list fa-ul">
         {% for i in instances_owned %}
           <li>
             <a href="{{ i.get_absolute_url }}">
@@ -85,7 +85,7 @@
           <i class="fa fa-desktop"></i>
           {% trans "Virtual machines with access" %} ({{ instances_with_access|length }})
         </h4>
-        <ul class="dashboard-profile-vm-list">
+        <ul class="dashboard-profile-vm-list fa-ul">
         {% for i in instances_with_access %}
           <li>
             <a href="{{ i.get_absolute_url }}">

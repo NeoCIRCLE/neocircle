@@ -71,3 +71,8 @@ def del_keys(vm, keys):
 @celery.task(name='agent.get_keys')
 def get_keys(vm):
     pass
+
+
+@celery.task(name='agent.send_expiration')
+def send_expiration(vm, url):
+    pass

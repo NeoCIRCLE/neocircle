@@ -47,12 +47,14 @@
     </dl>
 
     <h4>{% trans "Expiration" %} {% if instance.is_expiring %}<i class="fa fa-warning-sign text-danger"></i>{% endif %}
-        {% with op=op.renew %}
+      <span id="vm-details-renew-op">
+        {% with op=op.renew %}{% if op %}
           <a href="{{op.get_url}}" class="btn btn-success btn-xs
-                  operation operation-{{op.op}} btn btn-default">
+                  operation operation-{{op.op}}">
             <i class="fa fa-{{op.icon}}"></i>
                   {{op.name}} </a>
-        {% endwith %}
+        {% endif %}{% endwith %}
+      </span>
     </h4>
     <dl>
       <dt>{% trans "Suspended at:" %}</dt>

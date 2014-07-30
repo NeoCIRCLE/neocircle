@@ -844,3 +844,7 @@ textarea[name="list-new-namelist"] {
   height: 20px;
   position: absolute;
 }
+
+#show-all-activities-container {
+  margin: 20px 0 0 10px;
+}

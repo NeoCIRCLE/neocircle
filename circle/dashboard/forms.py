@@ -27,6 +27,7 @@ from django.contrib.auth.models import User, Group
 from django.core.validators import URLValidator
 from django.core.exceptions import PermissionDenied, ValidationError
 
+import autocomplete_light
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import (
     Layout, Div, BaseInput, Field, HTML, Submit, Fieldset, TEMPLATE_PACK,
@@ -44,7 +45,6 @@ from django.core.urlresolvers import reverse_lazy
 
 from django_sshkey.models import UserKey
 from firewall.models import Vlan, Host
-from storage.models import Disk
 from vm.models import (
     InstanceTemplate, Lease, InterfaceTemplate, Node, Trait, Instance
 )
@@ -54,6 +54,7 @@ from .models import Profile, GroupProfile
 from circle.settings.base import LANGUAGES
 from django.utils.translation import string_concat
 
+from .virtvalidator import domain_validator
 
 LANGUAGES_WITH_CODE = ((l[0], string_concat(l[1], " (", l[0], ")"))
                        for l in LANGUAGES)
@@ -78,7 +79,7 @@ class VmCustomizeForm(forms.Form):
     amount = forms.IntegerField(min_value=0, initial=1)
 
     disks = forms.ModelMultipleChoiceField(
-        queryset=None, required=True)
+        queryset=None, required=False)
     networks = forms.ModelMultipleChoiceField(
         queryset=None, required=False)
 
@@ -91,8 +92,7 @@ class VmCustomizeForm(forms.Form):
         super(VmCustomizeForm, self).__init__(*args, **kwargs)
 
         # set displayed disk and network list
-        self.fields['disks'].queryset = Disk.get_objects_with_level(
-            'user', self.user).exclude(type="qcow2-snap")
+        self.fields['disks'].queryset = self.template.disks.all()
         self.fields['networks'].queryset = Vlan.get_objects_with_level(
             'user', self.user)
 
@@ -596,8 +596,12 @@ class TemplateForm(forms.ModelForm):
             n = self.instance.interface_set.values_list("vlan", flat=True)
             self.initial['networks'] = n
 
-        self.allowed_fields = (
-            'name', 'access_method', 'description', 'system', 'tags')
+        if self.instance.pk and not self.instance.has_level(self.user,
+                                                            'owner'):
+            self.allowed_fields = ()
+        else:
+            self.allowed_fields = (
+                'name', 'access_method', 'description', 'system', 'tags')
         if self.user.has_perm('vm.change_template_resources'):
             self.allowed_fields += tuple(set(self.fields.keys()) -
                                          set(['raw_data']))
@@ -675,6 +679,11 @@ class TemplateForm(forms.ModelForm):
 
     @property
     def helper(self):
+        submit_kwargs = {}
+        if self.instance.pk and not self.instance.has_level(self.user,
+                                                            'owner'):
+            submit_kwargs['disabled'] = None
+
         helper = FormHelper()
         helper.layout = Layout(
             Field("name"),
@@ -739,7 +748,7 @@ class TemplateForm(forms.ModelForm):
                 Field("tags"),
             ),
         )
-        helper.add_input(Submit('submit', 'Save changes'))
+        helper.add_input(Submit('submit', 'Save changes', **submit_kwargs))
         return helper
 
     class Meta:
@@ -900,7 +909,8 @@ class VmRenewForm(forms.Form):
 
         self.fields['lease'] = forms.ModelChoiceField(queryset=choices,
                                                       initial=default,
-                                                      required=True,
+                                                      required=False,
+                                                      empty_label=None,
                                                       label=_('Length'))
         if len(choices) < 2:
             self.fields['lease'].widget = HiddenInput()
@@ -936,6 +946,25 @@ class VmCreateDiskForm(forms.Form):
 class VmDownloadDiskForm(forms.Form):
     name = forms.CharField(max_length=100, label=_("Name"))
     url = forms.CharField(label=_('URL'), validators=[URLValidator(), ])
+
+    @property
+    def helper(self):
+        helper = FormHelper(self)
+        helper.form_tag = False
+        return helper
+
+
+class VmAddInterfaceForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('choices')
+        super(VmAddInterfaceForm, self).__init__(*args, **kwargs)
+
+        field = forms.ModelChoiceField(
+            queryset=choices, required=True, label=_('Vlan'))
+        if not choices:
+            field.widget.attrs['disabled'] = 'disabled'
+            field.empty_label = _('No more networks.')
+        self.fields['vlan'] = field
 
     @property
     def helper(self):
@@ -1178,6 +1207,11 @@ class UserCreationForm(OrgUserCreationForm):
         return user
 
 
+class AclUserAddForm(forms.Form):
+    name = forms.CharField(widget=autocomplete_light.TextWidget(
+        'AclUserAutocomplete', attrs={'class': 'form-control'}))
+
+
 class UserKeyForm(forms.ModelForm):
     name = forms.CharField(required=True, label=_('Name'))
     key = forms.CharField(
@@ -1223,6 +1257,9 @@ class TraitsForm(forms.ModelForm):
 
 
 class RawDataForm(forms.ModelForm):
+    raw_data = forms.CharField(validators=[domain_validator],
+                               widget=forms.Textarea(attrs={'rows': 5}),
+                               required=False)
 
     class Meta:
         model = Instance

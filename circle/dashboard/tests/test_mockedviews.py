@@ -30,6 +30,7 @@ from django.utils import baseconv
 from ..models import Profile
 from ..views import InstanceActivityDetail, InstanceActivity
 from ..views import vm_ops, Instance, UnsubscribeFormView
+from ..views import AclUpdateView
 from .. import views
 
 
@@ -279,6 +280,7 @@ class RenewViewTest(unittest.TestCase):
         view = vm_ops['renew']
 
         with patch.object(view, 'get_object') as go, \
+                patch('dashboard.views.messages') as msg, \
                 patch('dashboard.views.get_object_or_404') as go4:
             inst = MagicMock(spec=Instance)
             inst._meta.object_name = "Instance"
@@ -287,7 +289,10 @@ class RenewViewTest(unittest.TestCase):
             inst.has_level.return_value = True
             go.return_value = inst
             go4.return_value = MagicMock()
-            assert view.as_view()(request, pk=1234).render().status_code == 200
+            assert view.as_view()(request, pk=1234)
+            assert not msg.error.called
+            assert inst.renew.async.called_with(user=request.user, lease=None)
+            assert inst.renew.async.return_value.get.called
             # success would redirect
 
     def test_renew_by_owner_w_param(self):
@@ -427,6 +432,79 @@ class RenewViewTest(unittest.TestCase):
             go.return_value = inst
             self.assertIn('login',
                           view.as_view()(request, pk=1234)['location'])
+
+
+class AclUpdateViewTest(unittest.TestCase):
+    def test_has_next_level(self):
+        data = {None: 'user', 'user': 'operator', 'operator': 'owner',
+                'owner': 'owner'}
+        for k, v in data.items():
+            inst = MagicMock(spec=Instance)
+            inst.has_level.return_value = True
+            inst.ACL_LEVELS = Instance.ACL_LEVELS
+
+            self.assertTrue(AclUpdateView.has_next_level('dummy', inst, k))
+            inst.has_level.assert_called_with('dummy', v)
+
+    def test_set_level_mod_owner(self):
+        with patch('dashboard.views.messages') as msg:
+            request = FakeRequestFactory(POST={})
+
+            inst = MagicMock(spec=Instance)
+            inst.owner = request.user
+
+            v = AclUpdateView()
+            v.instance = inst
+            v.request = request
+            v.get_level = MagicMock(return_value='owner')
+            v.check_auth = MagicMock(side_effect=Exception(''))
+
+            v.set_level(request.user, 'user')
+            v.get_level.assert_called_with(request.user)
+            assert not v.check_auth.called
+            assert msg.warning.called
+
+    def test_set_level_permitted(self):
+        data = (('user', 'owner', ('user', 'operator', 'owner'), False),
+                (None, None, ('user', ), True),
+                ('user', None, ('user', ), True),
+                (None, 'user', ('user', ), True),
+                ('operator', 'owner', ('user', 'operator'), True),
+                (None, 'user', ('user', 'operator'), False))
+
+        for old_level, new_level, allowed_levels, fail in data:
+            with patch('dashboard.views.messages') as msg:
+                def has_level(user, level):
+                    return level in allowed_levels
+
+                request = FakeRequestFactory(POST={})
+
+                inst = MagicMock(spec=Instance)
+                inst.has_level.side_effect = has_level
+                inst.ACL_LEVELS = Instance.ACL_LEVELS
+
+                v = AclUpdateView()
+                v.instance = inst
+                v.request = request
+                v.is_owner = True
+                v.get_level = MagicMock(return_value=old_level)
+
+                v.set_level(request.user, new_level)
+
+                v.get_level.assert_called_with(request.user)
+                assert (new_level == old_level) ^ inst.has_level.called
+                assert fail ^ inst.set_level.called
+                assert fail ^ msg.success.called
+
+    def test_readd(self):
+        request = FakeRequestFactory(POST={'name': 'user0', 'level': 'user'})
+        with patch('dashboard.views.messages') as msg:
+            with patch.object(AclUpdateView, 'get_object') as go:
+                view = AclUpdateView.as_view()
+                inst = MagicMock(spec=Instance)
+                go.return_value = inst
+                view(request)
+                assert msg.warning.called
 
 
 def FakeRequestFactory(user=None, **kwargs):

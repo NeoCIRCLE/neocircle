@@ -1,11 +1,28 @@
+var show_all = false;
+var in_progress = false;
+
 $(function() {
   /* do we need to check for new activities */
   if(decideActivityRefresh()) {
-    checkNewActivity(false, 1);
+    if(!in_progress) {
+      checkNewActivity(1);
+      in_progress = true;
+    }
   }
+
   $('a[href="#activity"]').click(function(){
     $('a[href="#activity"] i').addClass('fa-spin');
-    checkNewActivity(false, 1);
+    if(!in_progress) {
+      checkNewActivity(1);
+      in_progress = true;
+    }
+  });
+
+  $("#activity-refresh").on("click", "#show-all-activities", function() {
+    $(this).find("i").addClass("fa-spinner fa-spin");
+    show_all = !show_all;
+    $('a[href="#activity"]').trigger("click");
+    return false;
   });
 
   /* save resources */
@@ -132,11 +149,6 @@ $(function() {
   $("#vm-details-disk-add").click(function() {
     $("#vm-details-disk-add-for-form").html($("#vm-details-disk-add-form").html());
     return false;
-  });
-
-  /* show help */
-  $(".vm-details-help-button").click(function() {
-    $(".vm-details-help").stop().slideToggle();
   });
 
   /* for interface remove buttons */
@@ -295,6 +307,10 @@ $(function() {
     $("#vm-details-connection-string").focus();
   });
 
+  $("a.operation-password_reset").click(function() {
+    if(Boolean($(this).data("disabled"))) return false;
+  });
+
 });
 
 
@@ -315,17 +331,18 @@ function removePort(data) {
 
     }
   });
+
 }
 
 function decideActivityRefresh() {
   var check = false;
   /* if something is still spinning */
-  if($('.timeline .activity:first i:first').hasClass('fa-spin'))
+  if($('.timeline .activity i').hasClass('fa-spin'))
     check = true;
   /* if there is only one activity */
   if($('#activity-timeline div[class="activity"]').length < 2)
     check = true;
-
+  
   return check;
 }
 
@@ -340,25 +357,25 @@ function changeHTML(html) {
   return html.replace(/data-original-title/g, "title").replace(/title=""/g, "").replace(/\//g, '').replace(/ /g, '');
 }
 
-function checkNewActivity(only_status, runs) {
-  // set default only_status to false
-  only_status = typeof only_status !== 'undefined' ? only_status : false;
+function checkNewActivity(runs) {
   var instance = location.href.split('/'); instance = instance[instance.length - 2];
 
   $.ajax({
     type: 'GET',
     url: '/dashboard/vm/' + instance + '/activity/',
-    data: {'only_status': only_status},
+    data: {'show_all': show_all},
     success: function(data) {
-      if(!only_status) {
+      if(show_all) { /* replace on longer string freezes the spinning stuff */
+        $("#activity-refresh").html(data['activities']);
+      } else {
         a = unescapeHTML(data['activities']);
-        b = changeHTML($("#activity-timeline").html());
+        b = changeHTML($("#activity-refresh").html());
         if(a != b)
-          $("#activity-timeline").html(data['activities']);
-        $("#ops").html(data['ops']);
-        $("#disk-ops").html(data['disk_ops']);
-        $("[title]").tooltip();
+          $("#activity-refresh").html(data['activities']);
       }
+      $("#ops").html(data['ops']);
+      $("#disk-ops").html(data['disk_ops']);
+      $("[title]").tooltip();
 
       $("#vm-details-state i").prop("class", "fa " + data['icon']);
       $("#vm-details-state span").html(data['human_readable_status'].toUpperCase());
@@ -378,14 +395,16 @@ function checkNewActivity(only_status, runs) {
 
       if(runs > 0 && decideActivityRefresh()) {
         setTimeout(
-          function() {checkNewActivity(only_status, runs + 1)}, 
+          function() {checkNewActivity(runs + 1)}, 
           1000 + Math.exp(runs * 0.05)
         );
+      } else {
+        in_progress = false;
       }
       $('a[href="#activity"] i').removeClass('fa-spin');
     },
     error: function() {
-
+      in_progress = false;
     }
   });
 }
