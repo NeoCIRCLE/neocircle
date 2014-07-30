@@ -78,11 +78,11 @@ activity_code_separator = '.'
 def has_prefix(activity_code, *prefixes):
     """Determine whether the activity code has the specified prefix.
 
-    E.g.: has_prefix('foo.bar.buz', 'foo.bar') == True
-          has_prefix('foo.bar.buz', 'foo', 'bar') == True
-          has_prefix('foo.bar.buz', 'foo.bar', 'buz') == True
-          has_prefix('foo.bar.buz', 'foo', 'bar', 'buz') == True
-          has_prefix('foo.bar.buz', 'foo', 'buz') == False
+    >>> assert has_prefix('foo.bar.buz', 'foo.bar')
+    >>> assert has_prefix('foo.bar.buz', 'foo', 'bar')
+    >>> assert has_prefix('foo.bar.buz', 'foo.bar', 'buz')
+    >>> assert has_prefix('foo.bar.buz', 'foo', 'bar', 'buz')
+    >>> assert not has_prefix('foo.bar.buz', 'foo', 'buz')
     """
     equal = lambda a, b: a == b
     act_code_parts = split_activity_code(activity_code)
@@ -93,11 +93,11 @@ def has_prefix(activity_code, *prefixes):
 def has_suffix(activity_code, *suffixes):
     """Determine whether the activity code has the specified suffix.
 
-    E.g.: has_suffix('foo.bar.buz', 'bar.buz') == True
-          has_suffix('foo.bar.buz', 'bar', 'buz') == True
-          has_suffix('foo.bar.buz', 'foo.bar', 'buz') == True
-          has_suffix('foo.bar.buz', 'foo', 'bar', 'buz') == True
-          has_suffix('foo.bar.buz', 'foo', 'buz') == False
+    >>> assert has_suffix('foo.bar.buz', 'bar.buz')
+    >>> assert has_suffix('foo.bar.buz', 'bar', 'buz')
+    >>> assert has_suffix('foo.bar.buz', 'foo.bar', 'buz')
+    >>> assert has_suffix('foo.bar.buz', 'foo', 'bar', 'buz')
+    >>> assert not has_suffix('foo.bar.buz', 'foo', 'buz')
     """
     equal = lambda a, b: a == b
     act_code_parts = split_activity_code(activity_code)
