@@ -457,11 +457,12 @@ function addSliderMiscs() {
 
   $(".cpu-count-slider").bind("slider:changed", function (event, data) {
     var value = data.value + 0;
-    $(".cpu-count-input").val(value);
+    $(".cpu-count-input").val(parseInt(value));
   });
 
   $(".cpu-count-input").bind("input", function() {
-    var val = $(this).val();
+    var val = parseInt($(this).val());
+    if(!val) return;
     $(".cpu-count-slider").simpleSlider("setValue", val);
   });
   
