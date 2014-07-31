@@ -98,5 +98,5 @@ def reloadtask(type='Host', timeout=15):
     }[type]
     logger.info("Reload %s on next periodic iteration applying change to %s.",
                 ", ".join(reload), type)
-    if all(cache.add("%s_lock" % i, True, 30) for i in reload):
+    if all([cache.add("%s_lock" % i, 'true', 30) for i in reload]):
         reloadtask_worker.apply_async(queue='localhost.man', countdown=5)
