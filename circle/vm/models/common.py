@@ -18,6 +18,7 @@
 from __future__ import absolute_import, unicode_literals
 from datetime import timedelta, datetime
 
+from django.core.validators import MinValueValidator
 from django.db.models import Model, CharField, IntegerField, permalink
 from django.utils.translation import ugettext_lazy as _
 from django.utils.timesince import timeuntil
@@ -37,16 +38,20 @@ class BaseResourceConfigModel(Model):
     """
     num_cores = IntegerField(verbose_name=_('number of cores'),
                              help_text=_('Number of virtual CPU cores '
-                                         'available to the virtual machine.'))
+                                         'available to the virtual machine.'),
+                             validators=[MinValueValidator(0)])
     ram_size = IntegerField(verbose_name=_('RAM size'),
-                            help_text=_('Mebibytes of memory.'))
+                            help_text=_('Mebibytes of memory.'),
+                            validators=[MinValueValidator(0)])
     max_ram_size = IntegerField(verbose_name=_('maximal RAM size'),
                                 help_text=_('Upper memory size limit '
-                                            'for balloning.'))
+                                            'for balloning.'),
+                                validators=[MinValueValidator(0)])
     arch = CharField(max_length=10, verbose_name=_('architecture'),
                      choices=ARCHITECTURES)
     priority = IntegerField(verbose_name=_('priority'),
-                            help_text=_('CPU priority.'))
+                            help_text=_('CPU priority.'),
+                            validators=[MinValueValidator(0)])
 
     class Meta:
         abstract = True
