@@ -616,8 +616,11 @@ class TemplateForm(forms.ModelForm):
             self.instance.ram_size = 512
             self.instance.num_cores = 2
 
-        self.fields["lease"].queryset = Lease.get_objects_with_level(
-            "operator", self.user)
+        lease_queryset = (
+            Lease.get_objects_with_level("operator", self.user).distinct()
+            | Lease.objects.filter(pk=self.instance.lease_id).distinct())
+
+        self.fields["lease"].queryset = lease_queryset
 
     def clean_owner(self):
         if self.instance.pk is not None:
