@@ -393,12 +393,12 @@ function checkNewActivity(runs) {
         $("[data-target=#_console]").attr("data-toggle", "_pill").attr("href", "#").parent("li").addClass("disabled");
       }
 
-      if(data['status'] == "STOPPED") {
-        $(".enabled-when-stopped").prop("disabled", false);
-        $(".hide-when-stopped").hide();
+      if(data['status'] == "STOPPED" || data['status'] == "PENDING") {
+        $(".change-resources-button").prop("disabled", false);
+        $(".change-resources-help").hide();
       } else {
-        $(".enabled-when-stopped").prop("disabled", true);
-        $(".hide-when-stopped").show();
+        $(".change-resources-button").prop("disabled", true);
+        $(".change-resources-help").show();
       }
 
       if(runs > 0 && decideActivityRefresh()) {
