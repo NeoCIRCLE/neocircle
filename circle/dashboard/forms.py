@@ -116,7 +116,7 @@ class VmCustomizeForm(forms.Form):
         'min': "1",
         'style': "max-width: 60px",
         'required': "",
-    }), initial=1)
+    }), initial=1, min_value=1)
 
     disks = forms.ModelMultipleChoiceField(
         queryset=None, required=False,
@@ -135,12 +135,6 @@ class VmCustomizeForm(forms.Form):
 
     template = forms.CharField(widget=forms.HiddenInput())
     customized = forms.CharField(widget=forms.HiddenInput())
-
-    def clean_amount(self):
-        data = self.cleaned_data['amount']
-        if data < 1:
-            data = 1
-        return data
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
