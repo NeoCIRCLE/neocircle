@@ -371,8 +371,11 @@ $(function () {
   });
 
   /* don't close notifications window on missclick */
-  $(document).on("click", ".notification-messages", function() {
-    return false;
+  $(document).on("click", ".notification-messages", function(e) {
+    if($(e.target).closest("a").length)
+      return true
+    else
+      return false;
   });
 
   $("#notification-button a").click(function() {
