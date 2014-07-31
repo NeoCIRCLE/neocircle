@@ -70,20 +70,14 @@ SERVER_EMAIL = EMAIL_HOST_USER
 
 ########## CACHE CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#caches
-try:
-    CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-            'LOCATION': get_env_variable('DJANGO_MEMCACHED'),
-        }
+from urlparse import urlsplit
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': urlsplit(get_env_variable('CACHE_URI')).netloc,
     }
-except ImproperlyConfigured:
-    CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-            'LOCATION': SITE_NAME,
-        }
-    }
+}
 ########## END CACHE CONFIGURATION
 
 
