@@ -784,14 +784,8 @@ class VmResourcesChangeView(VmOperationView):
             else:
                 return redirect(instance.get_absolute_url() + "#resources")
         else:
-            resources = {
-                'num_cores': "num_cores",
-                'priority': "priority",
-                'ram_size': "ram_size",
-                'max_ram_size': "ram_size",  # TODO
-            }
-            for k, v in resources.iteritems():
-                extra[k] = request.POST.get(v)
+            extra = form.cleaned_data
+            extra['max_ram_size'] = extra['ram_size']
             return super(VmResourcesChangeView, self).post(request, extra,
                                                            *args, **kwargs)
 
