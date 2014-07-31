@@ -221,7 +221,7 @@ class Disk(TimeStampedModel):
         return {
             'qcow2-norm': 'virtio',
             'qcow2-snap': 'virtio',
-            'iso': 'scsi',
+            'iso': 'ide',
             'raw-ro': 'virtio',
             'raw-rw': 'virtio',
         }[self.type]
