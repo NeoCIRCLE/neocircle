@@ -87,7 +87,7 @@ from storage.models import Disk
 from firewall.models import Vlan, Host, Rule
 from .models import Favourite, Profile, GroupProfile, FutureMember
 
-from .store_api import Store, NoStoreException
+from .store_api import Store, NoStoreException, NotOkException
 
 logger = logging.getLogger(__name__)
 saml_available = hasattr(settings, "SAML_CONFIG")
@@ -3153,6 +3153,11 @@ class StoreList(LoginRequiredMixin, TemplateView):
         except NoStoreException:
             messages.warning(self.request, _("No store."))
             return redirect("/")
+        except NotOkException:
+            messages.warning(self.request, _("Store has some problems now."
+                                             " Try again later."))
+            return redirect("/")
+
 
     def create_up_directory(self, directory):
         path = normpath(join('/', directory, '..'))
