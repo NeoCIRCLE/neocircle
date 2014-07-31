@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
+from common.models import create_readable
 from manager.mancelery import celery
 from vm.tasks.agent_tasks import (restart_networking, change_password,
                                   set_time, set_hostname, start_access_server,
@@ -87,8 +88,9 @@ def agent_started(vm, version=None):
             try:
                 with act.sub_activity(
                     'update',
-                    readable_name=ugettext_noop('update to %(version)s'),
-                    version=settings.AGENT_VERSION
+                    readable_name=create_readable(
+                        ugettext_noop('update to %(version)s'),
+                        version=settings.AGENT_VERSION)
                 ):
                     update.apply_async(
                         queue=queue,
