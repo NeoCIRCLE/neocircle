@@ -30,7 +30,7 @@ from django.core.exceptions import PermissionDenied, ValidationError
 import autocomplete_light
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import (
-    Layout, Div, BaseInput, Field, HTML, Submit, Fieldset, TEMPLATE_PACK,
+    Layout, Div, BaseInput, Field, HTML, Submit, TEMPLATE_PACK,
 )
 
 from crispy_forms.utils import render_field
@@ -407,6 +407,29 @@ class TemplateForm(forms.ModelForm):
     networks = forms.ModelMultipleChoiceField(
         queryset=None, required=False, label=_("Networks"))
 
+    num_cores = forms.IntegerField(widget=forms.NumberInput(attrs={
+        'class': "form-control input-tags cpu-count-input",
+        'min': 1,
+        'max': 10,
+        'required': "",
+    }),
+        min_value=1, max_value=10,
+    )
+
+    ram_size = forms.IntegerField(widget=forms.NumberInput(attrs={
+        'class': "form-control input-tags ram-input",
+        'min': 128,
+        'max': MAX_NODE_RAM,
+        'step': 128,
+        'required': "",
+    }),
+        min_value=128, max_value=MAX_NODE_RAM,
+    )
+
+    priority = forms.ChoiceField(priority_choices, widget=forms.Select(attrs={
+        'class': "form-control input-tags cpu-priority-input",
+    }))
+
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
         super(TemplateForm, self).__init__(*args, **kwargs)
@@ -438,17 +461,23 @@ class TemplateForm(forms.ModelForm):
                 field.widget.attrs['disabled'] = 'disabled'
 
         if not self.instance.pk and len(self.errors) < 1:
-            self.instance.priority = 20
-            self.instance.ram_size = 512
-            self.instance.num_cores = 2
+            self.initial['num_cores'] = 1
+            self.initial['priority'] = 10
+            self.initial['ram_size'] = 512
+            self.initial['max_ram_size'] = 512
 
         self.fields["lease"].queryset = Lease.get_objects_with_level(
             "operator", self.user)
+
+        self.fields['raw_data'].validators.append(domain_validator)
 
     def clean_owner(self):
         if self.instance.pk is not None:
             return User.objects.get(pk=self.instance.owner.pk)
         return self.user
+
+    def clean_max_ram_size(self):
+        return self.cleaned_data.get("ram_size", 0)
 
     def _clean_fields(self):
         try:
@@ -511,77 +540,14 @@ class TemplateForm(forms.ModelForm):
             submit_kwargs['disabled'] = None
 
         helper = FormHelper()
-        helper.layout = Layout(
-            Field("name"),
-            Fieldset(
-                _("Resource configuration"),
-                Div(  # cpu count
-                    Div(
-                        Field('num_cores', id="vm-cpu-count-slider",
-                              css_class="vm-slider",
-                              data_slider_min="1", data_slider_max="8",
-                              data_slider_step="1",
-                              data_slider_value=self.instance.num_cores,
-                              data_slider_handle="square",
-                              data_slider_tooltip="hide"),
-                        css_class="col-sm-9"
-                    ),
-                    css_class="row"
-                ),
-                Div(  # cpu priority
-                    Div(
-                        Field('priority', id="vm-cpu-priority-slider",
-                              css_class="vm-slider",
-                              data_slider_min="0", data_slider_max="100",
-                              data_slider_step="1",
-                              data_slider_value=self.instance.priority,
-                              data_slider_handle="square",
-                              data_slider_tooltip="hide"),
-                        css_class="col-sm-9"
-                    ),
-                    css_class="row"
-                ),
-                Div(
-                    Div(
-                        Field('ram_size', id="vm-ram-size-slider",
-                              css_class="vm-slider",
-                              data_slider_min="128", data_slider_max="4096",
-                              data_slider_step="128",
-                              data_slider_value=self.instance.ram_size,
-                              data_slider_handle="square",
-                              data_slider_tooltip="hide"),
-                        css_class="col-sm-9"
-                    ),
-                    css_class="row",
-                ),
-                Field('max_ram_size', type="hidden", value="0"),
-                Field('arch'),
-            ),
-            Fieldset(
-                _("Virtual machine settings"),
-                Field('access_method'),
-                Field('boot_menu'),
-                Field('raw_data'),
-                Field('req_traits'),
-                Field('description'),
-                Field("parent", type="hidden"),
-                Field("system"),
-            ),
-            Fieldset(
-                _("External resources"),
-                Field("networks"),
-                Field("lease"),
-                Field("tags"),
-            ),
-        )
-        helper.add_input(Submit('submit', 'Save changes', **submit_kwargs))
         return helper
 
     class Meta:
         model = InstanceTemplate
         exclude = ('state', 'disks', )
         widgets = {
-            'system': forms.TextInput
+            'system': forms.TextInput,
+            'max_ram_size': forms.HiddenInput
         }
 
 

@@ -1348,10 +1348,13 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
     def get_context_data(self, *args, **kwargs):
         context = super(TemplateCreate, self).get_context_data(*args, **kwargs)
 
+        num_leases = Lease.get_objects_with_level("user",
+                                                  self.request.user).count()
+        can_create_leases = self.request.user.has_perm("create_leases")
         context.update({
             'box_title': _("Create a new base VM"),
             'template': "dashboard/_template-create.html",
-            'leases': Lease.objects.count()
+            'show_lease_create': num_leases < 1 and can_create_leases
         })
         return context
 
