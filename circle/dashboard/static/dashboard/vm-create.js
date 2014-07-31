@@ -2,13 +2,17 @@ var vlans = [];
 var disks = [];
 
 $(function() {
-  vmCustomizeLoaded();
+  if($(".vm-create-template-list").length) {
+    vmCreateLoaded();
+  } else {
+    vmCustomizeLoaded();
+  }
 });
 
 function vmCreateLoaded() {
   $(".vm-create-template-details").hide();
 
-  $(".vm-create-template-summary").click(function() {
+  $(".vm-create-template-summary").unbind("click").click(function() {
     $(this).next(".vm-create-template-details").slideToggle();
   });
 
