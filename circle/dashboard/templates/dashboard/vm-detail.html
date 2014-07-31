@@ -75,6 +75,8 @@
           <dd>
             {% if instance.get_connect_port %}
               {{ instance.get_connect_host }}:<strong>{{ instance.get_connect_port }}</strong>
+            {% elif instance.interface_set.count < 1%}
+              <strong>{% trans "The VM doesn't have any network interface." %}</strong>
             {% else %}
               <strong>{% trans "The required port for this protocol is not forwarded." %}</strong>
             {% endif %}
