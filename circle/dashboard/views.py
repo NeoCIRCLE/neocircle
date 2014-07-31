@@ -1,5 +1,4 @@
 # Copyright 2014 Budapest University of Technology and Economics (BME IK)
-
 #
 # This file is part of CIRCLE Cloud.
 #
@@ -3157,7 +3156,6 @@ class StoreList(LoginRequiredMixin, TemplateView):
             messages.warning(self.request, _("Store has some problems now."
                                              " Try again later."))
             return redirect("/")
-
 
     def create_up_directory(self, directory):
         path = normpath(join('/', directory, '..'))
