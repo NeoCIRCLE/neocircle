@@ -732,3 +732,41 @@ textarea[name="list-new-namelist"] {
   max-width: 450px;
   margin-top: 15px;
 }
+
+.vm-create-template {
+  max-width: 800px;
+  border: 1px solid black;
+  border-bottom: none;
+}
+
+.vm-create-template-list .vm-create-template:last-child {
+  border-bottom: 1px solid black;
+}
+
+.vm-create-template-summary {
+  padding: 15px;
+  cursor: pointer;
+}
+
+.vm-create-template:nth-child(odd) .vm-create-template-summary {
+  background: #F5F5F5;
+}
+
+.vm-create-template-list .vm-create-template-summary:hover {
+  background: #D2D2D2;
+}
+
+.vm-create-template-details {
+  border-top: 1px dashed #D3D3D3;
+  padding: 15px;
+}
+
+.vm-create-template-details ul {
+  list-style: none;
+  padding: 0 15px;
+}
+
+.vm-create-template-details li {
+  border-bottom: 1px dotted #aaa;
+  padding: 5px 0px;
+}
