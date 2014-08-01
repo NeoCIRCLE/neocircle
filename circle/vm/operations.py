@@ -281,7 +281,10 @@ class DeployOperation(InstanceOperation):
                 "boot virtual machine")):
             self.instance.resume_vm(timeout=timeout)
 
-        self.instance.renew(parent_activity=activity)
+        try:
+            self.instance.renew(parent_activity=activity)
+        except:
+            pass
 
 
 register_operation(DeployOperation)
@@ -702,8 +705,10 @@ class WakeUpOperation(InstanceOperation):
                 "deploy network")):
             self.instance.deploy_net()
 
-        # Renew vm
-        self.instance.renew(parent_activity=activity)
+        try:
+            self.instance.renew(parent_activity=activity)
+        except:
+            pass
 
 
 register_operation(WakeUpOperation)
