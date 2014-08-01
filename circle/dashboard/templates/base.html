@@ -59,10 +59,10 @@
     </div> <!-- /container -->
 
     <footer>
-      <a href="#">{% trans "Legal notice" %}</a> |
-      <a href="#">{% trans "Policy" %}</a> |
-      <a href="#">{% trans "Help" %}</a> |
-      <a href="#">{% trans "Support" %}</a>
+      <a href="{% url "info.legal" %}">{% trans "Legal notice" %}</a> |
+      <a href="{% url "info.policy" %}">{% trans "Policy" %}</a> |
+      <a href="{% url "info.help" %}">{% trans "Help" %}</a> |
+      <a href="{% url "info.support" %}">{% trans "Support" %}</a>
       <span class="pull-right">{{ COMPANY_NAME }}</span>
     </footer>
   </body>
