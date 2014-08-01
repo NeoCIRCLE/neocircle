@@ -697,16 +697,18 @@ class LeaseForm(forms.ModelForm):
 
 class VmRenewForm(forms.Form):
 
+    force = forms.BooleanField(required=False, label=_(
+        "Set expiration times even if they are shorter than "
+        "the current value."))
+
     def __init__(self, *args, **kwargs):
         choices = kwargs.pop('choices')
         default = kwargs.pop('default')
         super(VmRenewForm, self).__init__(*args, **kwargs)
 
-        self.fields['lease'] = forms.ModelChoiceField(queryset=choices,
-                                                      initial=default,
-                                                      required=False,
-                                                      empty_label=None,
-                                                      label=_('Length'))
+        self.fields.insert(0, 'lease', forms.ModelChoiceField(
+            queryset=choices, initial=default, required=False,
+            empty_label=None, label=_('Length')))
         if len(choices) < 2:
             self.fields['lease'].widget = HiddenInput()
 
