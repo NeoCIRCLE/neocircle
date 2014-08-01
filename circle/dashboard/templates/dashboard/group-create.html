@@ -1,9 +1,4 @@
 {% load crispy_forms_tags %}
-<style>
-  .row {
-    margin-bottom: 15px;
-  }
-</style>
 
 <form method="POST" action="{% url "dashboard.views.group-create" %}">
 {% csrf_token %}

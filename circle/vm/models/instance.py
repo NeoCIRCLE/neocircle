@@ -41,7 +41,9 @@ from model_utils.models import TimeStampedModel, StatusModel
 from taggit.managers import TaggableManager
 
 from acl.models import AclBase
-from common.models import create_readable, HumanReadableException
+from common.models import (
+    create_readable, HumanReadableException, humanize_exception
+)
 from common.operations import OperatedMixin
 from ..tasks import vm_tasks, agent_tasks
 from .activity import (ActivityInProgressError, instance_activity,
@@ -877,10 +879,11 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         while True:
             try:
                 return remote.get(timeout=step)
-            except TimeoutError:
+            except TimeoutError as e:
                 if task is not None and task.is_aborted():
                     AbortableAsyncResult(remote.id).abort()
-                    raise Exception("Shutdown aborted by user.")
+                    raise humanize_exception(ugettext_noop(
+                        "Operation aborted by user."), e)
 
     def suspend_vm(self, timeout=230):
         queue_name = self.get_remote_queue_name('vm', 'slow')
@@ -957,7 +960,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
 
         for a in acts:
             if (latest == a.activity_code and
-                    merged_acts[-1].result == a.result and
+                    merged_acts[-1].result_data == a.result_data and
                     a.finished and merged_acts[-1].finished and
                     a.user == merged_acts[-1].user and
                     (merged_acts[-1].finished - a.finished).days < 7 and
@@ -975,3 +978,10 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         return vm_tasks.screenshot.apply_async(args=[self.vm_name],
                                                queue=queue_name
                                                ).get(timeout=timeout)
+
+    def get_latest_activity_in_progress(self):
+        try:
+            return InstanceActivity.objects.filter(
+                instance=self, succeeded=None, parent=None).latest("started")
+        except InstanceActivity.DoesNotExist:
+            return None

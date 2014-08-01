@@ -1,0 +1,65 @@
+{% load i18n %}
+{% load sizefieldtags %}
+{% load crispy_forms_tags %}
+
+<div class="row">
+  <div class="col-sm-3" style="font-weight: bold;">
+    <i class="fa fa-trophy"></i> {% trans "CPU priority" %}
+  </div>
+  <div class="col-sm-6">
+    <input type="text" class="vm-slider cpu-priority-slider"
+     disabled placeholder="{% trans "Enable JS for fancy sliders" %}"
+     data-slider="true" data-slider-highlight="true" data-slider-range="10, 100"
+     data-slider-values="0, 10, 30, 80, 100" data-slider-snap="true"/>
+  </div>
+  <div class="col-sm-3">
+    <div class="input-group">
+      {{ field_priority }}
+      <span class="input-group-addon input-tags">
+        <i class="fa fa-question" title="{% trans "The priority of the CPU" %}"></i>
+      </span>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-sm-3" style="font-weight: bold;">
+    <i class="fa fa-cogs"></i> {% trans "CPU count" %}
+  </div>
+  <div class="col-sm-6">
+    <input type="text" class="vm-slider cpu-count-slider"
+     disabled placeholder="{% trans "Enable JS for fancy sliders" %}"
+     data-slider="true" data-slider-highlight="true" data-slider-range="0, 10"
+     data-slider-step="true" data-slider-snap="true"/>
+  </div>
+  <div class="col-sm-3">
+    <div class="input-group">
+      {{ field_num_cores }}
+      <span class="input-group-addon input-tags">
+        <i class="fa fa-question" title="{% trans "Number of CPU cores" %}"></i>
+      </span>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-sm-3" style="font-weight: bold;">
+    <i class="fa fa-ticket"></i> {% trans "RAM amount" %}
+  </div>
+  <div class="col-sm-6">
+    <input type="text" class="vm-slider ram-slider" 
+     disabled placeholder="{% trans "Enable JS for fancy sliders" %}"
+     data-slider="true" data-slider-highlight="true" data-slider-range="0, 8192"
+     data-slider-step="128" data-slider-snap="true"/>
+  </div>
+  <div class="col-sm-3">
+    <div class="input-group">
+      {{ field_ram_size }}
+      <span class="input-group-addon input-tags">
+        MiB
+      </span>
+      <span class="input-group-addon input-tags">
+        <i title="{% trans "RAM size in mebibytes" %}" class="fa fa-question"></i>
+      </span>
+    </div>
+  </div>
+</div>

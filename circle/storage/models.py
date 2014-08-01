@@ -33,7 +33,9 @@ from sizefield.models import FileSizeField
 
 from .tasks import local_tasks, storage_tasks
 from celery.exceptions import TimeoutError
-from common.models import WorkerNotFound, HumanReadableException
+from common.models import (
+    WorkerNotFound, HumanReadableException, humanize_exception
+)
 
 logger = logging.getLogger(__name__)
 
@@ -221,7 +223,7 @@ class Disk(TimeStampedModel):
         return {
             'qcow2-norm': 'virtio',
             'qcow2-snap': 'virtio',
-            'iso': 'scsi',
+            'iso': 'ide',
             'raw-ro': 'virtio',
             'raw-rw': 'virtio',
         }[self.type]
@@ -404,10 +406,11 @@ class Disk(TimeStampedModel):
             try:
                 result = remote.get(timeout=5)
                 break
-            except TimeoutError:
+            except TimeoutError as e:
                 if task is not None and task.is_aborted():
                     AbortableAsyncResult(remote.id).abort()
-                    raise Exception("Download aborted by user.")
+                    raise humanize_exception(ugettext_noop(
+                        "Operation aborted by user."), e)
         disk.size = result['size']
         disk.type = result['type']
         disk.is_ready = True
@@ -477,11 +480,12 @@ class Disk(TimeStampedModel):
             try:
                 remote.get(timeout=5)
                 break
-            except TimeoutError:
+            except TimeoutError as e:
                 if task is not None and task.is_aborted():
                     AbortableAsyncResult(remote.id).abort()
                     disk.destroy()
-                    raise Exception("Save as aborted by use.")
+                    raise humanize_exception(ugettext_noop(
+                        "Operation aborted by user."), e)
         disk.is_ready = True
         disk.save()
         return disk

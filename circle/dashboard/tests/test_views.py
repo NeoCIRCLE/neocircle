@@ -282,10 +282,12 @@ class VmDetailTest(LoginMixin, TestCase):
         c = Client()
         self.login(c, 'superuser')
         kwargs = InstanceTemplate.objects.get(id=1).__dict__.copy()
-        kwargs.update(name='t2', lease=1, disks=1, raw_data='tst2')
+        kwargs.update(name='t2', lease=1, disks=1,
+                      raw_data='<devices></devices>')
         response = c.post('/dashboard/template/1/', kwargs)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(InstanceTemplate.objects.get(id=1).raw_data, 'tst2')
+        self.assertEqual(InstanceTemplate.objects.get(id=1).raw_data,
+                         "<devices></devices>")
 
     def test_permitted_lease_delete_w_template_using_it(self):
         c = Client()
@@ -565,7 +567,7 @@ class VmDetailTest(LoginMixin, TestCase):
             'amount': 2,
             'customized': 1,
             'template': 1,
-            'cpu_priority': 1, 'cpu_count': 1, 'ram_size': 1,
+            'cpu_priority': 10, 'cpu_count': 1, 'ram_size': 128,
             'network': [],
         })
 

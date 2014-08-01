@@ -420,6 +420,7 @@ create_readable = HumanReadableObject.create
 class HumanReadableException(HumanReadableObject, Exception):
     """HumanReadableObject that is an Exception so can used in except clause.
     """
+
     def __init__(self, level=None, *args, **kwargs):
         super(HumanReadableException, self).__init__(*args, **kwargs)
         if level is not None:
@@ -450,6 +451,7 @@ def humanize_exception(message, exception=None, level=None, **params):
     ...
     Welcome!
     """
+
     Ex = type("HumanReadable" + type(exception).__name__,
               (HumanReadableException, type(exception)),
               exception.__dict__)

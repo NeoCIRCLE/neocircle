@@ -3273,7 +3273,7 @@ msgid ""
 "[%(filename)s] because it has never beendeployed."
 msgstr ""
 "A kér művelet nem hajtható végre a(z) „%(name)s” (%(pk)s) "
-"[(filename)s] lemezen, mivel nem volt még csatolva."
+"[%(filename)s] lemezen, mivel nem volt még csatolva."
 
 #: storage/models.py:159
 #, python-format

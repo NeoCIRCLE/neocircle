@@ -15,10 +15,41 @@
         <h3 class="no-margin"><i class="fa fa-puzzle-piece"></i> {% trans "Edit template" %}</h3>
       </div>
       <div class="panel-body">
+        <form action="" method="POST">
         {% with form=form %}
           {% include "display-form-errors.html" %}
         {% endwith %}
-        {% crispy form %}
+
+        {% csrf_token %}
+
+        {{ form.name|as_crispy_field }}
+
+        <fieldset class="resources-sliders">
+          <legend>{% trans "Resource configuration" %}</legend>
+          {% include "dashboard/_resources-sliders.html" with field_priority=form.priority field_num_cores=form.num_cores field_ram_size=form.ram_size %}
+          {{ form.max_ram_size|as_crispy_field }}
+        </fieldset>
+
+        <fieldset>
+          <legend>{% trans "Virtual machine settings" %}</legend>
+        {{ form.arch|as_crispy_field }}
+        {{ form.access_method|as_crispy_field }}
+        {{ form.boot_menu|as_crispy_field }}
+        {{ form.raw_data|as_crispy_field }}
+        {{ form.req_traits|as_crispy_field }}
+        {{ form.description|as_crispy_field }}
+        {{ form.system|as_crispy_field }}
+        </fieldset>
+        <fieldset>
+          <legend>{% trans "External resources" %}</legend>
+        {{ form.networks|as_crispy_field }}
+        {{ form.lease|as_crispy_field }}
+
+        {{ form.tags|as_crispy_field }}
+        </fieldset>
+
+        <input type="submit" value="{% trans "Save changes" %}" class="btn btn-primary">
+        </form>
       </div>
     </div>
   </div>
