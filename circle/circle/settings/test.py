@@ -35,7 +35,11 @@ SOUTH_TESTS_MIGRATE = False
 
 INSTALLED_APPS += (
     'acl.tests',
+    'django_nose',
 )
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+NOSE_ARGS = ['--with-doctest']
+PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']
 
 CACHES = {
     'default': {
@@ -52,3 +56,5 @@ LOGGING['handlers']['console'] = {'level': level,
                                   'formatter': 'simple'}
 for i in LOCAL_APPS:
     LOGGING['loggers'][i] = {'handlers': ['console'], 'level': level}
+# Forbid store usage
+STORE_URL = ""

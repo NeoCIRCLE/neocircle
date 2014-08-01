@@ -82,9 +82,9 @@
               </tr>
               {% endfor %}
               <tr><td><i class="icon-plus"></i></td>
-                  <td><input type="text" class="form-control" name="perm-new-name"
+                  <td><input type="text" class="form-control" name="name"
                       placeholder="{% trans "Name of group or user" %}"></td>
-                  <td><select class="form-control" name="perm-new">
+                  <td><select class="form-control" name="level">
                           {% for id, name in acl.levels %}
                           <option value="{{id}}">{{name}}</option>
                           {% endfor %}

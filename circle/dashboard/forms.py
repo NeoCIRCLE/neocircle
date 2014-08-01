@@ -30,7 +30,7 @@ from django.core.exceptions import PermissionDenied, ValidationError
 import autocomplete_light
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import (
-    Layout, Div, BaseInput, Field, HTML, Submit, Fieldset, TEMPLATE_PACK,
+    Layout, Div, BaseInput, Field, HTML, Submit, TEMPLATE_PACK,
 )
 
 from crispy_forms.utils import render_field
@@ -51,13 +51,20 @@ from vm.models import (
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth.models import Permission
 from .models import Profile, GroupProfile
-from circle.settings.base import LANGUAGES
+from circle.settings.base import LANGUAGES, MAX_NODE_RAM
 from django.utils.translation import string_concat
 
 from .virtvalidator import domain_validator
 
 LANGUAGES_WITH_CODE = ((l[0], string_concat(l[1], " (", l[0], ")"))
                        for l in LANGUAGES)
+
+priority_choices = (
+    (10, _("idle")),
+    (30, _("normal")),
+    (80, _("server")),
+    (100, _("realtime")),
+)
 
 
 class VmSaveForm(forms.Form):
@@ -72,19 +79,62 @@ class VmSaveForm(forms.Form):
 
 
 class VmCustomizeForm(forms.Form):
-    name = forms.CharField()
-    cpu_priority = forms.IntegerField()
-    cpu_count = forms.IntegerField()
-    ram_size = forms.IntegerField()
-    amount = forms.IntegerField(min_value=0, initial=1)
+    name = forms.CharField(widget=forms.TextInput(attrs={
+        'class': "form-control",
+        'style': "max-width: 350px",
+        'required': "",
+    }))
+
+    cpu_count = forms.IntegerField(widget=forms.NumberInput(attrs={
+        'class': "form-control input-tags cpu-count-input",
+        'min': 1,
+        'max': 10,
+        'required': "",
+    }),
+        min_value=1, max_value=10,
+    )
+
+    ram_size = forms.IntegerField(widget=forms.TextInput(attrs={
+        'class': "form-control input-tags ram-input",
+        'min': 128,
+        'pattern': "\d+",
+        'max': MAX_NODE_RAM,
+        'step': 128,
+        'required': "",
+    }),
+        min_value=128, max_value=MAX_NODE_RAM,
+    )
+
+    cpu_priority = forms.ChoiceField(
+        priority_choices, widget=forms.Select(attrs={
+            'class': "form-control input-tags cpu-priority-input",
+        })
+    )
+
+    amount = forms.IntegerField(widget=forms.NumberInput(attrs={
+        'class': "form-control",
+        'min': "1",
+        'style': "max-width: 60px",
+        'required': "",
+    }), initial=1, min_value=1)
 
     disks = forms.ModelMultipleChoiceField(
-        queryset=None, required=False)
+        queryset=None, required=False,
+        widget=forms.SelectMultiple(attrs={
+            'class': "form-control",
+            'id': "vm-create-disk-add-form",
+        })
+    )
     networks = forms.ModelMultipleChoiceField(
-        queryset=None, required=False)
+        queryset=None, required=False,
+        widget=forms.SelectMultiple(attrs={
+            'class': "form-control",
+            'id': "vm-create-network-add-vlan",
+        })
+    )
 
-    template = forms.CharField()
-    customized = forms.CharField()  # dummy flag field
+    template = forms.CharField(widget=forms.HiddenInput())
+    customized = forms.CharField(widget=forms.HiddenInput())
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
@@ -110,230 +160,6 @@ class VmCustomizeForm(forms.Form):
         self.initial['name'] = self.template.name
         self.initial['template'] = self.template.pk
         self.initial['customized'] = self.template.pk
-
-        # set widget for amount
-        self.fields['amount'].widget = NumberInput()
-
-        self.helper = FormHelper(self)
-
-        # don't show labels for the sliders
-        self.helper.form_show_labels = True
-        self.fields['cpu_count'].label = ""
-        self.fields['ram_size'].label = ""
-        self.fields['cpu_priority'].label = ""
-
-        self.helper.layout = Layout(
-            Field("template", type="hidden"),
-            Field("customized", type="hidden"),
-            Div(
-                Div(
-                    AnyTag(  # tip: don't try to use Button class
-                        "button",
-                        AnyTag(
-                            "i",
-                            css_class="fa fa-play"
-                        ),
-                        HTML(" Start"),
-                        css_id="vm-create-customized-start",
-                        css_class="btn btn-success",
-                        style="float: right; margin-top: 24px;",
-                    ),
-                    Field("name", style="max-width: 350px;"),
-                    css_class="col-sm-12",
-                ),
-                css_class="row",
-            ),
-            Div(
-                Div(
-                    Field("amount", min="1", style="max-width: 60px;"),
-                    css_class="col-sm-10",
-                ),
-                css_class="row",
-            ),
-            Div(
-                Div(
-                    AnyTag(
-                        'h2',
-                        HTML(_("Resources")),
-                    ),
-                    css_class="col-sm-12",
-                ),
-                css_class="row",
-            ),
-            Div(  # cpu priority
-                Div(
-                    HTML('<label for="vm-cpu-priority-slider">'
-                         '<i class="fa fa-trophy"></i> CPU priority'
-                         '</label>'),
-                    css_class="col-sm-3"
-                ),
-                Div(
-                    Field('cpu_priority', id="vm-cpu-priority-slider",
-                          css_class="vm-slider",
-                          data_slider_min="0", data_slider_max="100",
-                          data_slider_step="1",
-                          data_slider_value=self.template.priority,
-                          data_slider_handle="square",
-                          data_slider_tooltip="hide"),
-                    css_class="col-sm-9"
-                ),
-                css_class="row"
-            ),
-            Div(  # cpu count
-                Div(
-                    HTML('<label for="cpu-count-slider">'
-                         '<i class="fa fa-cogs"></i> CPU count'
-                         '</label>'),
-                    css_class="col-sm-3"
-                ),
-                Div(
-                    Field('cpu_count', id="vm-cpu-count-slider",
-                          css_class="vm-slider",
-                          data_slider_min="1", data_slider_max="8",
-                          data_slider_step="1",
-                          data_slider_value=self.template.num_cores,
-                          data_slider_handle="square",
-                          data_slider_tooltip="hide"),
-                    css_class="col-sm-9"
-                ),
-                css_class="row"
-            ),
-            Div(  # ram size
-                Div(
-                    HTML('<label for="ram-slider">'
-                         '<i class="fa fa-ticket"></i> RAM amount'
-                         '</label>'),
-                    css_class="col-sm-3"
-                ),
-                Div(
-                    Field('ram_size', id="vm-ram-size-slider",
-                          css_class="vm-slider",
-                          data_slider_min="128", data_slider_max="4096",
-                          data_slider_step="128",
-                          data_slider_value=self.template.ram_size,
-                          data_slider_handle="square",
-                          data_slider_tooltip="hide"),
-                    css_class="col-sm-9"
-                ),
-                css_class="row"
-            ),
-            Div(  # disks
-                Div(
-                    AnyTag(
-                        "h2",
-                        HTML("Disks")
-                    ),
-                    css_class="col-sm-4",
-                ),
-                Div(
-                    Div(
-                        Field("disks", css_class="form-control",
-                              id="vm-create-disk-add-form"),
-                        css_class="js-hidden",
-                        style="padding-top: 15px; max-width: 450px;",
-                    ),
-                    Div(
-                        AnyTag(
-                            "h3",
-                            HTML(_("No disks are added!")),
-                            css_id="vm-create-disk-list",
-                        ),
-                        Div(
-                            HTML(""),
-                            style="clear: both;",
-                        ),
-                        # AnyTag(
-                        #     "h3",
-                        #     Div(
-                        #         AnyTag(
-                        #             "select",
-                        #             css_class="form-control",
-                        #             css_id="vm-create-disk-add-select",
-                        #         ),
-                        #         Div(
-                        #             AnyTag(
-                        #                 "a",
-                        #                 AnyTag(
-                        #                     "i",
-                        #                     css_class="icon-plus-sign",
-                        #                 ),
-                        #                 href="#",
-                        #                 css_id="vm-create-disk-add-button",
-                        #                 css_class="btn btn-success",
-                        #             ),
-                        #             css_class="input-group-btn"
-                        #         ),
-                        #         css_class="input-group",
-                        #         style="max-width: 330px;",
-                        #     ),
-                        #     css_id="vm-create-disk-add",
-                        # ),
-                        css_class="no-js-hidden",
-                    ),
-                    css_class="col-sm-8",
-                    style="padding-top: 3px;",
-                ),
-                css_class="row",
-            ),  # end of disks
-            Div(  # network
-                Div(
-                    AnyTag(
-                        "h2",
-                        HTML(_("Network")),
-                    ),
-                    css_class="col-sm-4",
-                ),
-                Div(
-                    Div(  # js-hidden
-                        Field(
-                            "networks",
-                            css_class="form-control",
-                            id="vm-create-network-add-vlan",
-                        ),
-                        css_class="js-hidden",
-                        style="padding-top: 15px; max-width: 450px;",
-                    ),
-                    Div(  # no-js-hidden
-                        AnyTag(
-                            "h3",
-                            HTML(_("Not added to any network!")),
-                            css_id="vm-create-network-list",
-                        ),
-                        AnyTag(
-                            "h3",
-                            Div(
-                                AnyTag(
-                                    "select",
-                                    css_class=("form-control "
-                                               "font-awesome-font"),
-                                    css_id="vm-create-network-add-select",
-                                ),
-                                Div(
-                                    AnyTag(
-                                        "a",
-                                        AnyTag(
-                                            "i",
-                                            css_class="fa fa-plus-circle",
-                                        ),
-                                        css_id=("vm-create-network-add"
-                                                "-button"),
-                                        css_class="btn btn-success",
-                                    ),
-                                    css_class="input-group-btn",
-                                ),
-                                css_class="input-group",
-                                style="max-width: 330px;",
-                            ),
-                            css_class="vm-create-network-add"
-                        ),
-                        css_class="no-js-hidden",
-                    ),
-                    css_class="col-sm-8",
-                    style="padding-top: 3px;",
-                ),
-                css_class="row"
-            ),  # end of network
-        )
 
 
 class GroupCreateForm(forms.ModelForm):
@@ -581,6 +407,29 @@ class TemplateForm(forms.ModelForm):
     networks = forms.ModelMultipleChoiceField(
         queryset=None, required=False, label=_("Networks"))
 
+    num_cores = forms.IntegerField(widget=forms.NumberInput(attrs={
+        'class': "form-control input-tags cpu-count-input",
+        'min': 1,
+        'max': 10,
+        'required': "",
+    }),
+        min_value=1, max_value=10,
+    )
+
+    ram_size = forms.IntegerField(widget=forms.NumberInput(attrs={
+        'class': "form-control input-tags ram-input",
+        'min': 128,
+        'max': MAX_NODE_RAM,
+        'step': 128,
+        'required': "",
+    }),
+        min_value=128, max_value=MAX_NODE_RAM,
+    )
+
+    priority = forms.ChoiceField(priority_choices, widget=forms.Select(attrs={
+        'class': "form-control input-tags cpu-priority-input",
+    }))
+
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
         super(TemplateForm, self).__init__(*args, **kwargs)
@@ -612,17 +461,26 @@ class TemplateForm(forms.ModelForm):
                 field.widget.attrs['disabled'] = 'disabled'
 
         if not self.instance.pk and len(self.errors) < 1:
-            self.instance.priority = 20
-            self.instance.ram_size = 512
-            self.instance.num_cores = 2
+            self.initial['num_cores'] = 1
+            self.initial['priority'] = 10
+            self.initial['ram_size'] = 512
+            self.initial['max_ram_size'] = 512
 
-        self.fields["lease"].queryset = Lease.get_objects_with_level(
-            "operator", self.user)
+        lease_queryset = (
+            Lease.get_objects_with_level("operator", self.user).distinct()
+            | Lease.objects.filter(pk=self.instance.lease_id).distinct())
+
+        self.fields["lease"].queryset = lease_queryset
+
+        self.fields['raw_data'].validators.append(domain_validator)
 
     def clean_owner(self):
         if self.instance.pk is not None:
             return User.objects.get(pk=self.instance.owner.pk)
         return self.user
+
+    def clean_max_ram_size(self):
+        return self.cleaned_data.get("ram_size", 0)
 
     def _clean_fields(self):
         try:
@@ -685,77 +543,14 @@ class TemplateForm(forms.ModelForm):
             submit_kwargs['disabled'] = None
 
         helper = FormHelper()
-        helper.layout = Layout(
-            Field("name"),
-            Fieldset(
-                _("Resource configuration"),
-                Div(  # cpu count
-                    Div(
-                        Field('num_cores', id="vm-cpu-count-slider",
-                              css_class="vm-slider",
-                              data_slider_min="1", data_slider_max="8",
-                              data_slider_step="1",
-                              data_slider_value=self.instance.num_cores,
-                              data_slider_handle="square",
-                              data_slider_tooltip="hide"),
-                        css_class="col-sm-9"
-                    ),
-                    css_class="row"
-                ),
-                Div(  # cpu priority
-                    Div(
-                        Field('priority', id="vm-cpu-priority-slider",
-                              css_class="vm-slider",
-                              data_slider_min="0", data_slider_max="100",
-                              data_slider_step="1",
-                              data_slider_value=self.instance.priority,
-                              data_slider_handle="square",
-                              data_slider_tooltip="hide"),
-                        css_class="col-sm-9"
-                    ),
-                    css_class="row"
-                ),
-                Div(
-                    Div(
-                        Field('ram_size', id="vm-ram-size-slider",
-                              css_class="vm-slider",
-                              data_slider_min="128", data_slider_max="4096",
-                              data_slider_step="128",
-                              data_slider_value=self.instance.ram_size,
-                              data_slider_handle="square",
-                              data_slider_tooltip="hide"),
-                        css_class="col-sm-9"
-                    ),
-                    css_class="row",
-                ),
-                Field('max_ram_size', type="hidden", value="0"),
-                Field('arch'),
-            ),
-            Fieldset(
-                _("Virtual machine settings"),
-                Field('access_method'),
-                Field('boot_menu'),
-                Field('raw_data'),
-                Field('req_traits'),
-                Field('description'),
-                Field("parent", type="hidden"),
-                Field("system"),
-            ),
-            Fieldset(
-                _("External resources"),
-                Field("networks"),
-                Field("lease"),
-                Field("tags"),
-            ),
-        )
-        helper.add_input(Submit('submit', 'Save changes', **submit_kwargs))
         return helper
 
     class Meta:
         model = InstanceTemplate
         exclude = ('state', 'disks', )
         widgets = {
-            'system': forms.TextInput
+            'system': forms.TextInput,
+            'max_ram_size': forms.HiddenInput
         }
 
 
@@ -902,16 +697,18 @@ class LeaseForm(forms.ModelForm):
 
 class VmRenewForm(forms.Form):
 
+    force = forms.BooleanField(required=False, label=_(
+        "Set expiration times even if they are shorter than "
+        "the current value."))
+
     def __init__(self, *args, **kwargs):
         choices = kwargs.pop('choices')
         default = kwargs.pop('default')
         super(VmRenewForm, self).__init__(*args, **kwargs)
 
-        self.fields['lease'] = forms.ModelChoiceField(queryset=choices,
-                                                      initial=default,
-                                                      required=False,
-                                                      empty_label=None,
-                                                      label=_('Length'))
+        self.fields.insert(0, 'lease', forms.ModelChoiceField(
+            queryset=choices, initial=default, required=False,
+            empty_label=None, label=_('Length')))
         if len(choices) < 2:
             self.fields['lease'].widget = HiddenInput()
 
@@ -1303,3 +1100,32 @@ class GroupPermissionForm(forms.ModelForm):
         helper.add_input(Submit("submit", _("Save"),
                                 css_class="btn btn-success", ))
         return helper
+
+
+class VmResourcesForm(forms.ModelForm):
+    num_cores = forms.IntegerField(widget=forms.NumberInput(attrs={
+        'class': "form-control input-tags cpu-count-input",
+        'min': 1,
+        'max': 10,
+        'required': "",
+    }),
+        min_value=1, max_value=10,
+    )
+
+    ram_size = forms.IntegerField(widget=forms.NumberInput(attrs={
+        'class': "form-control input-tags ram-input",
+        'min': 128,
+        'max': MAX_NODE_RAM,
+        'step': 128,
+        'required': "",
+    }),
+        min_value=128, max_value=MAX_NODE_RAM,
+    )
+
+    priority = forms.ChoiceField(priority_choices, widget=forms.Select(attrs={
+        'class': "form-control input-tags cpu-priority-input",
+    }))
+
+    class Meta:
+        model = Instance
+        fields = ('num_cores', 'priority', 'ram_size', )

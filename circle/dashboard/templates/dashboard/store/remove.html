@@ -1,0 +1,42 @@
+{% extends "dashboard/base.html" %}
+{% load i18n %}
+
+{% block content %}
+  <div class="body-content">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="no-margin">
+          <i class="fa fa-times"></i>
+          {% if is_dir %}
+            {% trans "Directory removal confirmation" %}
+          {% else %}
+            {% trans "File removal confirmation" %}
+          {% endif %}
+        </h3>
+      </div>
+      <div class="panel-body">
+        {% if not is_dir %}
+          <h4>{% trans "File directory" %}: {{ directory }}</h4>
+          <h4>{% trans "File name" %}: {{ name }}</h4>
+
+          {% blocktrans with path=path %}
+          Are you sure you want to remove the file at <strong>{{ path }}</strong>?
+          {% endblocktrans %}
+        {% else %}
+          {% blocktrans with directory=directory %}
+          Are you sure you want to remove the directory <strong>{{ directory }}</strong>?
+          {% endblocktrans %}
+        {% endif %}
+        <div class="pull-right">
+          <form action="" method="POST">
+            {% csrf_token %}
+            <a href="{% url "dashboard.views.store-list" %}?directory={{ directory }}"
+              class="btn btn-default">{% trans "Cancel" %}</a>
+            <input type="hidden" name="path" value="{{ path }}"/>
+            <button class="btn btn-danger">{% trans "Remove" %}</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

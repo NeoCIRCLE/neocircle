@@ -210,7 +210,7 @@ class NodeTestCase(TestCase):
         node.enabled = True
         node.STATES = Node.STATES
         self.assertEqual(Node.get_state(node), "ONLINE")
-        assert isinstance(Node.get_status_display(node), _("").__class__)
+        assert isinstance(Node.get_status_display(node), _("x").__class__)
 
 
 class InstanceActivityTestCase(TestCase):

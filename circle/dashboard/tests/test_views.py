@@ -107,28 +107,6 @@ class VmDetailTest(LoginMixin, TestCase):
         response = c.get('/dashboard/vm/1/')
         self.assertEqual(response.status_code, 200)
 
-    def test_permitted_vm_delete(self):
-        c = Client()
-        self.login(c, 'user2')
-        inst = Instance.objects.get(pk=1)
-        inst.set_level(self.u2, 'owner')
-        response = c.post('/dashboard/vm/delete/1/')
-        self.assertEqual(response.status_code, 302)
-
-    def test_not_permitted_vm_delete(self):
-        c = Client()
-        self.login(c, 'user2')
-        inst = Instance.objects.get(pk=1)
-        inst.set_level(self.u2, 'operator')
-        response = c.post('/dashboard/vm/delete/1/')
-        self.assertEqual(response.status_code, 403)
-
-    def test_unpermitted_vm_delete(self):
-        c = Client()
-        self.login(c, 'user1')
-        response = c.post('/dashboard/vm/delete/1/')
-        self.assertEqual(response.status_code, 403)
-
     def test_unpermitted_vm_mass_delete(self):
         c = Client()
         self.login(c, 'user1')
@@ -304,10 +282,12 @@ class VmDetailTest(LoginMixin, TestCase):
         c = Client()
         self.login(c, 'superuser')
         kwargs = InstanceTemplate.objects.get(id=1).__dict__.copy()
-        kwargs.update(name='t2', lease=1, disks=1, raw_data='tst2')
+        kwargs.update(name='t2', lease=1, disks=1,
+                      raw_data='<devices></devices>')
         response = c.post('/dashboard/template/1/', kwargs)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(InstanceTemplate.objects.get(id=1).raw_data, 'tst2')
+        self.assertEqual(InstanceTemplate.objects.get(id=1).raw_data,
+                         "<devices></devices>")
 
     def test_permitted_lease_delete_w_template_using_it(self):
         c = Client()
@@ -529,36 +509,38 @@ class VmDetailTest(LoginMixin, TestCase):
     def test_permitted_wake_up_wrong_state(self):
         c = Client()
         self.login(c, "user2")
-        with patch.object(WakeUpOperation, 'async') as mock_method:
+        with patch.object(WakeUpOperation, 'async') as mock_method, \
+                patch.object(Instance.WrongStateError, 'send_message') as wro:
             inst = Instance.objects.get(pk=1)
             mock_method.side_effect = inst.wake_up
             inst.status = 'RUNNING'
             inst.set_level(self.u2, 'owner')
-            with patch('dashboard.views.messages') as msg:
-                c.post("/dashboard/vm/1/op/wake_up/")
-                assert msg.error.called
+            c.post("/dashboard/vm/1/op/wake_up/")
             inst = Instance.objects.get(pk=1)
             self.assertEqual(inst.status, 'RUNNING')  # mocked anyway
             assert mock_method.called
+            assert wro.called
 
     def test_permitted_wake_up(self):
         c = Client()
         self.login(c, "user2")
-        with patch.object(Instance, 'select_node', return_value=None):
-            with patch.object(WakeUpOperation, 'async') as new_wake_up:
-                with patch('vm.tasks.vm_tasks.wake_up.apply_async') as wuaa:
-                    inst = Instance.objects.get(pk=1)
-                    new_wake_up.side_effect = inst.wake_up
-                    inst.get_remote_queue_name = Mock(return_value='test')
-                    inst.status = 'SUSPENDED'
-                    inst.set_level(self.u2, 'owner')
-                    with patch('dashboard.views.messages') as msg:
-                        response = c.post("/dashboard/vm/1/op/wake_up/")
-                        assert not msg.error.called
-                    self.assertEqual(response.status_code, 302)
-                    self.assertEqual(inst.status, 'RUNNING')
-                    assert new_wake_up.called
-                    assert wuaa.called
+        with patch.object(Instance, 'select_node', return_value=None), \
+                patch.object(WakeUpOperation, 'async') as new_wake_up, \
+                patch('vm.tasks.vm_tasks.wake_up.apply_async') as wuaa, \
+                patch.object(Instance.WrongStateError, 'send_message') as wro:
+            inst = Instance.objects.get(pk=1)
+            new_wake_up.side_effect = inst.wake_up
+            inst.get_remote_queue_name = Mock(return_value='test')
+            inst.status = 'SUSPENDED'
+            inst.set_level(self.u2, 'owner')
+            with patch('dashboard.views.messages') as msg:
+                response = c.post("/dashboard/vm/1/op/wake_up/")
+                assert not msg.error.called
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(inst.status, 'RUNNING')
+            assert new_wake_up.called
+            assert wuaa.called
+            assert not wro.called
 
     def test_unpermitted_wake_up(self):
         c = Client()
@@ -585,7 +567,7 @@ class VmDetailTest(LoginMixin, TestCase):
             'amount': 2,
             'customized': 1,
             'template': 1,
-            'cpu_priority': 1, 'cpu_count': 1, 'ram_size': 1,
+            'cpu_priority': 10, 'cpu_count': 1, 'ram_size': 128,
             'network': [],
         })
 
@@ -1796,9 +1778,11 @@ class SshKeyTest(LoginMixin, TestCase):
     def setUp(self):
         self.u1 = User.objects.create(username='user1')
         self.u1.set_password('password')
+        self.u1.profile = Profile()
         self.u1.save()
         self.u2 = User.objects.create(username='user2')
         self.u2.set_password('password')
+        self.u2.profile = Profile()
         self.u2.save()
         self.k1 = UserKey(key='ssh-rsa AAAAB3NzaC1yc2EC asd', user=self.u1)
         self.k1.save()

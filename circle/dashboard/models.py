@@ -29,10 +29,13 @@ from django.db.models import (
     Model, ForeignKey, OneToOneField, CharField, IntegerField, TextField,
     DateTimeField, permalink, BooleanField
 )
-from django.db.models.signals import post_save, pre_delete
+from django.db.models.signals import post_save, pre_delete, post_delete
 from django.templatetags.static import static
 from django.utils.translation import ugettext_lazy as _
 from django_sshkey.models import UserKey
+from django.core.exceptions import ObjectDoesNotExist
+
+from sizefield.models import FileSizeField
 
 from jsonfield import JSONField
 from model_utils.models import TimeStampedModel
@@ -44,7 +47,11 @@ from common.models import HumanReadableObject, create_readable, Encoder
 
 from vm.tasks.agent_tasks import add_keys, del_keys
 
+from .store_api import Store, NoStoreException, NotOkException
+
 logger = getLogger(__name__)
+
+pwgen = User.objects.make_random_password
 
 
 class Favourite(Model):
@@ -109,6 +116,18 @@ class Profile(Model):
     email_notifications = BooleanField(
         verbose_name=_("Email notifications"), default=True,
         help_text=_('Whether user wants to get digested email notifications.'))
+    smb_password = CharField(
+        max_length=20,
+        verbose_name=_('Samba password'),
+        help_text=_(
+            'Generated password for accessing store from '
+            'virtual machines.'),
+        default=pwgen,
+    )
+    disk_quota = FileSizeField(
+        verbose_name=_('disk quota'),
+        default=2048 * 1024 * 1024,
+        help_text=_('Disk quota in mebibytes.'))
 
     def notify(self, subject, template, context=None, valid_until=None,
                **kwargs):
@@ -201,6 +220,11 @@ def create_profile(sender, user, request, **kwargs):
     if not user.pk:
         return False
     profile, created = Profile.objects.get_or_create(user=user)
+
+    try:
+        Store(user).create_user(profile.smb_password, None, profile.disk_quota)
+    except:
+        logger.exception("Can't create user %s", unicode(user))
     return created
 
 user_logged_in.connect(create_profile)
@@ -266,6 +290,44 @@ if hasattr(settings, 'SAML_ORG_ID_ATTRIBUTE'):
 
 else:
     logger.debug("Do not register save_org_id to djangosaml2 pre_user_save")
+
+
+def update_store_profile(sender, **kwargs):
+    profile = kwargs.get('instance')
+    keys = [i.key for i in profile.user.userkey_set.all()]
+    try:
+        s = Store(profile.user)
+        s.create_user(profile.smb_password, keys,
+                      profile.disk_quota)
+    except NoStoreException:
+        logger.debug("Store is not available.")
+    except NotOkException:
+        logger.critical("Store is not accepting connections.")
+
+
+post_save.connect(update_store_profile, sender=Profile)
+
+
+def update_store_keys(sender, **kwargs):
+    userkey = kwargs.get('instance')
+    try:
+        profile = userkey.user.profile
+    except ObjectDoesNotExist:
+        pass  # If there is no profile the user is deleted
+    else:
+        keys = [i.key for i in profile.user.userkey_set.all()]
+        try:
+            s = Store(userkey.user)
+            s.create_user(profile.smb_password, keys,
+                          profile.disk_quota)
+        except NoStoreException:
+            logger.debug("Store is not available.")
+        except NotOkException:
+            logger.critical("Store is not accepting connections.")
+
+
+post_save.connect(update_store_keys, sender=UserKey)
+post_delete.connect(update_store_keys, sender=UserKey)
 
 
 def add_ssh_keys(sender, **kwargs):

@@ -112,6 +112,7 @@ $(function () {
 
 
   /* no js compatibility */
+  noJS();
   $('.no-js-hidden').show();
   $('.js-hidden').hide();
 
@@ -349,9 +350,9 @@ $(function () {
       }
     }
     for(var i=0; i<5 && i<search_result.length; i++)
-      html += generateGroupHTML(search_result[i].url, search_result[i].name);
+      html += generateGroupHTML(search_result[i].url, search_result[i].name, search_result.length < 5);
     if(search_result.length == 0)
-      html += '<div class="list-group-item">No result</div>';
+      html += '<div class="list-group-item list-group-item-last">No result</div>';
     $("#dashboard-group-list").html(html);
 
     // if there is only one result and ENTER is pressed redirect
@@ -370,8 +371,11 @@ $(function () {
   });
 
   /* don't close notifications window on missclick */
-  $(document).on("click", ".notification-messages", function() {
-    return false;
+  $(document).on("click", ".notification-messages", function(e) {
+    if($(e.target).closest("a").length)
+      return true
+    else
+      return false;
   });
 
   $("#notification-button a").click(function() {
@@ -395,8 +399,8 @@ function generateVmHTML(pk, name, host, icon, _status, fav, is_last) {
       '</a>';     
 }
 
-function generateGroupHTML(url, name) {
-  return '<a href="' + url + '" class="list-group-item real-link">'+
+function generateGroupHTML(url, name, is_last) {
+  return '<a href="' + url + '" class="list-group-item real-link' + (is_last ? " list-group-item-last" : "") +'">'+
          '<i class="fa fa-users"></i> '+ name +
          '</a>';
 }
@@ -431,27 +435,62 @@ function compareVmByFav(a, b) {
     return a.pk < b.pk ? -1 : 1; 
 }
 
+$(document).on('shown.bs.tab', 'a[href="#resources"]', function (e) {
+  $(".cpu-priority-input").trigger("change");
+  $(".cpu-count-input, .ram-input").trigger("input");
+})
+
 function addSliderMiscs() {
-  $('.vm-slider').each(function() {  
-    $("<span>").addClass("output").html($(this).val()).insertAfter($(this));
-  });                                                                   
-                                                                            
-  $('.vm-slider').slider()                                              
-  .on('slide', function(e) {                                            
-    $(this).val(e.value);
-    $(this).parent('div').nextAll("span").html(e.value)                 
+  // set max values based on inputs
+  var cpu_count_range = "0, " + $(".cpu-count-input").prop("max");
+  var ram_range = "0, " + $(".ram-input").prop("max");
+  $(".cpu-count-slider").data("slider-range", cpu_count_range);
+  $(".ram-slider").data("slider-range", ram_range);
+
+  $(".vm-slider").simpleSlider();
+  $(".cpu-priority-slider").bind("slider:changed", function (event, data) {
+    var value = data.value + 0;
+
+    $('.cpu-priority-input option[value="' + value + '"]').attr("selected", "selected");
   });
 
-  refreshSliders();
+  $(".cpu-priority-input").change(function() {
+    var val = $(":selected", $(this)).val();
+    $(".cpu-priority-slider").simpleSlider("setValue", val);
+  });
+
+  $(".cpu-count-slider").bind("slider:changed", function (event, data) {
+    var value = data.value + 0;
+    $(".cpu-count-input").val(parseInt(value));
+  });
+
+  $(".cpu-count-input").bind("input", function() {
+    var val = parseInt($(this).val());
+    if(!val) return;
+    $(".cpu-count-slider").simpleSlider("setValue", val);
+  });
+  
+
+  var ram_fire = false;
+  $(".ram-slider").bind("slider:changed", function (event, data) {
+    if(ram_fire) {
+      ram_fire = false;
+      return;
+    }
+
+    var value = data.value + 0;
+    $(".ram-input").val(value);
+  });
+
+  $(".ram-input").bind("input", function() {
+    var val = $(this).val();
+    ram_fire = true;
+    $(".ram-slider").simpleSlider("setValue", parseInt(val));
+  });
+  $(".cpu-priority-input").trigger("change");
+  $(".cpu-count-input, .ram-input").trigger("input");
 }
 
-// ehhh
-function refreshSliders() {
-  $('.vm-slider').each(function() {
-    $(this).val($(this).slider().data('slider').getValue());
-    $(this).parent('div').nextAll("span").html($(this).val());
-  });
-}
 
 /* deletes the VM with the pk
  * if dir is true, then redirect to the dashboard landing page
@@ -560,4 +599,11 @@ function getCookie(name) {
     }                                                                       
   }                                                                         
   return cookieValue;                                                       
+}
+
+
+/* no js compatibility */
+function noJS() {
+  $('.no-js-hidden').show();
+  $('.js-hidden').hide();
 }

@@ -20,6 +20,7 @@ from __future__ import unicode_literals, absolute_import
 from collections import OrderedDict
 from itertools import chain
 from os import getenv
+from os.path import join, normpath, dirname, basename
 from urlparse import urljoin
 import json
 import logging
@@ -29,22 +30,27 @@ import requests
 from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.views import login, redirect_to_login
+from django.contrib.auth.decorators import login_required
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import (
     PermissionDenied, SuspiciousOperation,
 )
+from django.core.cache import get_cache
 from django.core import signing
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.db.models import Count, Q
 from django.http import HttpResponse, HttpResponseRedirect, Http404
-from django.shortcuts import redirect, render, get_object_or_404
+from django.shortcuts import (
+    redirect, render, get_object_or_404, render_to_response,
+)
 from django.views.decorators.http import require_GET, require_POST
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import (TemplateView, DetailView, View, DeleteView,
                                   UpdateView, CreateView, ListView)
 from django.contrib import messages
-from django.utils.translation import ugettext as _, ugettext_noop
-from django.utils.translation import ungettext as __
+from django.utils.translation import (
+    ugettext as _, ugettext_noop, ungettext_lazy
+)
 from django.template.loader import render_to_string
 from django.template import RequestContext
 
@@ -64,14 +70,14 @@ from .forms import (
     VmSaveForm, UserKeyForm, VmRenewForm,
     CirclePasswordChangeForm, VmCreateDiskForm, VmDownloadDiskForm,
     TraitsForm, RawDataForm, GroupPermissionForm, AclUserAddForm,
-    VmAddInterfaceForm,
+    VmResourcesForm, VmAddInterfaceForm,
 )
 
 from .tables import (
     NodeListTable, NodeVmListTable, TemplateListTable, LeaseListTable,
     GroupListTable, UserKeyListTable
 )
-from common.models import HumanReadableObject
+from common.models import HumanReadableObject, HumanReadableException
 from vm.models import (
     Instance, instance_activity, InstanceActivity, InstanceTemplate, Interface,
     InterfaceTemplate, Lease, Node, NodeActivity, Trait,
@@ -79,6 +85,8 @@ from vm.models import (
 from storage.models import Disk
 from firewall.models import Vlan, Host, Rule
 from .models import Favourite, Profile, GroupProfile, FutureMember
+
+from .store_api import Store, NoStoreException, NotOkException
 
 logger = logging.getLogger(__name__)
 saml_available = hasattr(settings, "SAML_CONFIG")
@@ -219,6 +227,27 @@ class IndexView(LoginRequiredMixin, TemplateView):
             context['templates'] = InstanceTemplate.get_objects_with_level(
                 'operator', user).all()[:5]
 
+        # toplist
+        if settings.STORE_URL:
+            cache_key = "files-%d" % self.request.user.pk
+            cache = get_cache("default")
+            files = cache.get(cache_key)
+            if not files:
+                try:
+                    store = Store(self.request.user)
+                    toplist = store.toplist()
+                    quota = store.get_quota()
+                    files = {'toplist': toplist, 'quota': quota}
+                except Exception:
+                    logger.exception("Unable to get tolist for %s",
+                                     unicode(self.request.user))
+                    files = {'toplist': []}
+                cache.set(cache_key, files, 300)
+
+            context['files'] = files
+        else:
+            context['no_store'] = True
+
         return context
 
 
@@ -281,6 +310,10 @@ class VmDetailView(CheckedDetailView):
         activities = activities[:10]
         context['activities'] = activities
         context['show_show_all'] = show_show_all
+        latest = instance.get_latest_activity_in_progress()
+        context['is_new_state'] = (latest and
+                                   latest.resultant_state is not None and
+                                   instance.status != latest.resultant_state)
 
         context['vlans'] = Vlan.get_objects_with_level(
             'user', self.request.user
@@ -298,6 +331,8 @@ class VmDetailView(CheckedDetailView):
         context['ipv6_port'] = instance.get_connect_port(use_ipv6=True)
 
         # resources forms
+        context['resources_form'] = VmResourcesForm(instance=instance)
+
         if self.request.user.is_superuser:
             context['traits_form'] = TraitsForm(instance=instance)
             context['raw_data_form'] = RawDataForm(instance=instance)
@@ -320,8 +355,6 @@ class VmDetailView(CheckedDetailView):
         for k, v in options.iteritems():
             if request.POST.get(k) is not None:
                 return v(request)
-        raise Http404()
-
         raise Http404()
 
     def __set_name(self, request):
@@ -562,9 +595,13 @@ class OperationView(RedirectToLoginMixin, DetailView):
         done = False
         try:
             task = self.get_op().async(user=request.user, **extra)
+        except HumanReadableException as e:
+            e.send_message(request)
+            logger.exception("Could not start operation")
+            result = e
         except Exception as e:
             messages.error(request, _('Could not start operation.'))
-            logger.exception(e)
+            logger.exception("Could not start operation")
             result = e
         else:
             wait = self.wait_for_result
@@ -575,6 +612,10 @@ class OperationView(RedirectToLoginMixin, DetailView):
                 except TimeoutError:
                     logger.debug("Result didn't arrive in %ss",
                                  self.wait_for_result, exc_info=True)
+                except HumanReadableException as e:
+                    e.send_message(request)
+                    logger.exception(e)
+                    result = e
                 except Exception as e:
                     messages.error(request, _('Operation failed.'))
                     logger.debug("Operation failed.", exc_info=True)
@@ -702,6 +743,7 @@ class VmCreateDiskView(FormOperationMixin, VmOperationView):
     form_class = VmCreateDiskForm
     show_in_toolbar = False
     icon = 'hdd-o'
+    effect = "success"
     is_disk_operation = True
 
 
@@ -711,6 +753,7 @@ class VmDownloadDiskView(FormOperationMixin, VmOperationView):
     form_class = VmDownloadDiskForm
     show_in_toolbar = False
     icon = 'download'
+    effect = "success"
     is_disk_operation = True
 
 
@@ -749,22 +792,35 @@ class VmResourcesChangeView(VmOperationView):
     op = 'resources_change'
     icon = "save"
     show_in_toolbar = False
+    wait_for_result = 0.5
 
     def post(self, request, extra=None, *args, **kwargs):
         if extra is None:
             extra = {}
 
-        resources = {
-            'num_cores': "cpu-count",
-            'priority': "cpu-priority",
-            'ram_size': "ram-size",
-            "max_ram_size": "ram-size",  # TODO
-        }
-        for k, v in resources.iteritems():
-            extra[k] = request.POST.get(v)
+        instance = get_object_or_404(Instance, pk=kwargs['pk'])
 
-        return super(VmResourcesChangeView, self).post(request, extra,
-                                                       *args, **kwargs)
+        form = VmResourcesForm(request.POST, instance=instance)
+        if not form.is_valid():
+            for f in form.errors:
+                messages.error(request, "<strong>%s</strong>: %s" % (
+                    f, form.errors[f].as_text()
+                ))
+            if request.is_ajax():  # this is not too nice
+                store = messages.get_messages(request)
+                store.used = True
+                return HttpResponse(
+                    json.dumps({'success': False,
+                                'messages': [unicode(m) for m in store]}),
+                    content_type="application=json"
+                )
+            else:
+                return redirect(instance.get_absolute_url() + "#resources")
+        else:
+            extra = form.cleaned_data
+            extra['max_ram_size'] = extra['ram_size']
+            return super(VmResourcesChangeView, self).post(request, extra,
+                                                           *args, **kwargs)
 
 
 class TokenOperationView(OperationView):
@@ -808,6 +864,7 @@ class TokenOperationView(OperationView):
                     logger.info("Request user changed to %s at %s",
                                 user, self.request.get_full_path())
                     self.request.user = user
+                    self.request.token_user = True
         else:
             logger.debug("no token supplied to %s",
                          self.request.get_full_path())
@@ -1320,10 +1377,13 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
     def get_context_data(self, *args, **kwargs):
         context = super(TemplateCreate, self).get_context_data(*args, **kwargs)
 
+        num_leases = Lease.get_objects_with_level("user",
+                                                  self.request.user).count()
+        can_create_leases = self.request.user.has_perm("create_leases")
         context.update({
             'box_title': _("Create a new base VM"),
             'template': "dashboard/_template-create.html",
-            'leases': Lease.objects.count()
+            'show_lease_create': num_leases < 1 and can_create_leases
         })
         return context
 
@@ -1858,7 +1918,7 @@ class VmCreate(LoginRequiredMixin, TemplateView):
             i.deploy.async(user=request.user)
 
         if len(instances) > 1:
-            messages.success(request, __(
+            messages.success(request, ungettext_lazy(
                 "Successfully created %(count)d VM.",  # this should not happen
                 "Successfully created %(count)d VMs.", len(instances)) % {
                 'count': len(instances)})
@@ -1885,9 +1945,13 @@ class VmCreate(LoginRequiredMixin, TemplateView):
         except Exception as e:
             logger.debug('No profile or instance limit: %s', e)
         else:
+            try:
+                amount = int(request.POST.get("amount", 1))
+            except:
+                amount = limit  # TODO this should definitely use a Form
             current = Instance.active.filter(owner=user).count()
             logger.debug('current use: %d, limit: %d', current, limit)
-            if limit < current:
+            if current + amount > limit:
                 messages.error(request,
                                _('Instance limit (%d) exceeded.') % limit)
                 if request.is_ajax():
@@ -2049,53 +2113,6 @@ class GroupProfileUpdate(SuccessMessageMixin, GroupCodeMixin,
             return self.form_invalid(form)
         form.save()
         return self.form_valid(form)
-
-
-class VmDelete(LoginRequiredMixin, DeleteView):
-    model = Instance
-    template_name = "dashboard/confirm/base-delete.html"
-
-    def get_template_names(self):
-        if self.request.is_ajax():
-            return ['dashboard/confirm/ajax-delete.html']
-        else:
-            return ['dashboard/confirm/base-delete.html']
-
-    def get_success_url(self):
-        next = self.request.POST.get('next')
-        if next:
-            return next
-        else:
-            return reverse_lazy('dashboard.index')
-
-    def get_context_data(self, **kwargs):
-        object = self.get_object()
-        if not object.has_level(self.request.user, 'owner'):
-            raise PermissionDenied()
-
-        context = super(VmDelete, self).get_context_data(**kwargs)
-        return context
-
-    # github.com/django/django/blob/master/django/views/generic/edit.py#L245
-    def delete(self, request, *args, **kwargs):
-        object = self.get_object()
-        if not object.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-
-        object.destroy.async(user=request.user)
-        success_url = self.get_success_url()
-        success_message = _("VM successfully deleted.")
-
-        if request.is_ajax():
-            if request.POST.get('redirect').lower() == "true":
-                messages.success(request, success_message)
-            return HttpResponse(
-                json.dumps({'message': success_message}),
-                content_type="application/json",
-            )
-        else:
-            messages.success(request, success_message)
-            return HttpResponseRedirect(success_url)
 
 
 class NodeDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
@@ -2332,7 +2349,7 @@ class VmMassDelete(LoginRequiredMixin, View):
                 except Exception as e:
                     logger.error(e)
 
-        success_message = __(
+        success_message = ungettext_lazy(
             "Mass delete complete, the following VM was deleted: %s.",
             "Mass delete complete, the following VMs were deleted: %s.",
             len(names)) % u', '.join(names)
@@ -2445,6 +2462,9 @@ def vm_activity(request, pk):
     response['human_readable_status'] = instance.get_status_display()
     response['status'] = instance.status
     response['icon'] = instance.get_status_icon()
+    latest = instance.get_latest_activity_in_progress()
+    response['is_new_state'] = (latest and latest.resultant_state is not None
+                                and instance.status != latest.resultant_state)
 
     context = {
         'instance': instance,
@@ -3124,6 +3144,170 @@ class UserKeyCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         kwargs = super(UserKeyCreate, self).get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
+
+
+class StoreList(LoginRequiredMixin, TemplateView):
+    template_name = "dashboard/store/list.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(StoreList, self).get_context_data(**kwargs)
+        directory = self.request.GET.get("directory", "/")
+        directory = "/" if not len(directory) else directory
+
+        store = Store(self.request.user)
+        context['root'] = store.list(directory)
+        context['quota'] = store.get_quota()
+        context['up_url'] = self.create_up_directory(directory)
+        context['current'] = directory
+        context['next_url'] = "%s%s?directory=%s" % (
+            settings.DJANGO_URL.rstrip("/"),
+            reverse("dashboard.views.store-list"), directory)
+        return context
+
+    def get(self, *args, **kwargs):
+        try:
+            if self.request.is_ajax():
+                context = self.get_context_data(**kwargs)
+                return render_to_response(
+                    "dashboard/store/_list-box.html",
+                    RequestContext(self.request, context),
+                )
+            else:
+                return super(StoreList, self).get(*args, **kwargs)
+        except NoStoreException:
+            messages.warning(self.request, _("No store."))
+            return redirect("/")
+        except NotOkException:
+            messages.warning(self.request, _("Store has some problems now."
+                                             " Try again later."))
+            return redirect("/")
+
+    def create_up_directory(self, directory):
+        path = normpath(join('/', directory, '..'))
+        if not path.endswith("/"):
+            path += "/"
+        return path
+
+
+@require_GET
+@login_required
+def store_download(request):
+    path = request.GET.get("path")
+    try:
+        url = Store(request.user).request_download(path)
+    except Exception:
+        messages.error(request, _("Something went wrong during download."))
+        logger.exception("Unable to download, "
+                         "maybe it is already deleted")
+        return redirect(reverse("dashboard.views.store-list"))
+    return redirect(url)
+
+
+@require_GET
+@login_required
+def store_upload(request):
+    directory = request.GET.get("directory", "/")
+    try:
+        action = Store(request.user).request_upload(directory)
+    except Exception:
+        logger.exception("Unable to upload")
+        messages.error(request, _("Unable to upload file."))
+        return redirect("/")
+
+    next_url = "%s%s?directory=%s" % (
+        settings.DJANGO_URL.rstrip("/"),
+        reverse("dashboard.views.store-list"), directory)
+
+    return render(request, "dashboard/store/upload.html",
+                  {'directory': directory, 'action': action,
+                   'next_url': next_url})
+
+
+@require_GET
+@login_required
+def store_get_upload_url(request):
+    current_dir = request.GET.get("current_dir")
+    try:
+        url = Store(request.user).request_upload(current_dir)
+    except Exception:
+        logger.exception("Unable to upload")
+        messages.error(request, _("Unable to upload file."))
+        return redirect("/")
+    return HttpResponse(
+        json.dumps({'url': url}), content_type="application/json")
+
+
+class StoreRemove(LoginRequiredMixin, TemplateView):
+    template_name = "dashboard/store/remove.html"
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(StoreRemove, self).get_context_data(*args, **kwargs)
+        path = self.request.GET.get("path", "/")
+        if path == "/":
+            SuspiciousOperation()
+
+        context['path'] = path
+        context['is_dir'] = path.endswith("/")
+        if context['is_dir']:
+            context['directory'] = path
+        else:
+            context['directory'] = dirname(path)
+            context['name'] = basename(path)
+
+        return context
+
+    def get(self, *args, **kwargs):
+        try:
+            return super(StoreRemove, self).get(*args, **kwargs)
+        except NoStoreException:
+            return redirect("/")
+
+    def post(self, *args, **kwargs):
+        path = self.request.POST.get("path")
+        try:
+            Store(self.request.user).remove(path)
+        except Exception:
+            logger.exception("Unable to remove %s", path)
+            messages.error(self.request, _("Unable to remove %s.") % path)
+
+        return redirect("%s?directory=%s" % (
+            reverse("dashboard.views.store-list"),
+            dirname(dirname(path)),
+        ))
+
+
+@require_POST
+@login_required
+def store_new_directory(request):
+    path = request.POST.get("path")
+    name = request.POST.get("name")
+
+    try:
+        Store(request.user).new_folder(join(path, name))
+    except Exception:
+        logger.exception("Unable to create folder %s in %s for %s",
+                         name, path, unicode(request.user))
+        messages.error(request, _("Unable to create folder."))
+    return redirect("%s?directory=%s" % (
+        reverse("dashboard.views.store-list"), path))
+
+
+@require_POST
+@login_required
+def store_refresh_toplist(request):
+    cache_key = "files-%d" % request.user.pk
+    cache = get_cache("default")
+    try:
+        store = Store(request.user)
+        toplist = store.toplist()
+        quota = store.get_quota()
+        files = {'toplist': toplist, 'quota': quota}
+    except Exception:
+        logger.exception("Can't get toplist of %s", unicode(request.user))
+        files = {'toplist': []}
+    cache.set(cache_key, files, 300)
+
+    return redirect(reverse("dashboard.index"))
 
 
 def absolute_url(url):

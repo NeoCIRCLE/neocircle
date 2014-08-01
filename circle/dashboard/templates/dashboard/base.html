@@ -5,7 +5,7 @@
 
 
 {% block extra_link %}
-  <link rel="stylesheet" href="{{ STATIC_URL }}dashboard/bootstrap-slider/slider.css"/>
+  <link rel="stylesheet" href="{{ STATIC_URL }}dashboard/loopj-jquery-simple-slider/css/simple-slider.css"/>
   <link href="{{ STATIC_URL }}dashboard/bootstrap-tour.min.css" rel="stylesheet">
   <link href="{{ STATIC_URL }}dashboard/dashboard.css" rel="stylesheet">
 {% endblock %}
@@ -18,23 +18,22 @@
 {% endblock %}
 
 {% block navbar %}
+{% if user.is_authenticated and user.pk and not request.token_user %}
+  <ul class="nav navbar-nav pull-right">
+    <li class="dropdown" id="notification-button">
+      <a href="{% url "dashboard.views.notifications" %}" style="color: white; font-size: 12px;"
+        class="dropdown-toggle" data-toggle="dropdown">
+        {% trans "Notifications" %}
+        {% if NEW_NOTIFICATIONS_COUNT > 0 %}
+          <span class="badge badge-pulse">{{ NEW_NOTIFICATIONS_COUNT }}</span>
+        {% endif %}
+      </a>
+      <ul class="dropdown-menu notification-messages">
+          <li>{% trans "Loading..." %}</li>
+      </ul>
+    </li>
+  </ul>
 
-<ul class="nav navbar-nav pull-right">
-  <li class="dropdown" id="notification-button">
-    <a href="{% url "dashboard.views.notifications" %}" style="color: white; font-size: 12px;"
-      class="dropdown-toggle" data-toggle="dropdown">
-      {% trans "Notifications" %}
-      {% if NEW_NOTIFICATIONS_COUNT > 0 %}
-        <span class="badge badge-pulse">{{ NEW_NOTIFICATIONS_COUNT }}</span>
-      {% endif %}
-    </a>
-    <ul class="dropdown-menu notification-messages">
-        <li>{% trans "Loading..." %}</li>
-    </ul>
-  </li>
-</ul>
-
-{% if user.is_authenticated and user.pk %}
   <a class="navbar-brand pull-right" href="{% url "logout" %}?next={% url "login" %}" style="color: white; font-size: 10px;">
     <i class="fa fa-sign-out"></i> {% trans "Log out" %}
   </a>
@@ -48,7 +47,7 @@
     <a class="navbar-brand pull-right" href="/admin/" style="color: white; font-size: 10px;"><i class="fa fa-cogs"></i> {% trans "Admin" %}</a>
   {% endif %}
 {% else %}
-  <a class="navbar-brand pull-right" href="{% url "login" %}?next={% url "dashboard.index" %}" style="color: white; font-size: 10px;"><i class="fa fa-sign-in"></i> {% trans "Log in " %}</a>
+  <a class="navbar-brand pull-right" href="{% url "login" %}?next={{ request.path }}" style="color: white; font-size: 10px;"><i class="fa fa-sign-in"></i> {% trans "Log in " %}</a>
 {% endif %}
 
 {% endblock %}
@@ -56,6 +55,5 @@
 
 {% block extra_script %}
   <script src="{{ STATIC_URL }}dashboard/js/jquery.knob.js"></script>
-  <script src="{{ STATIC_URL}}dashboard/bootstrap-slider/bootstrap-slider.js"></script>
   <script src="{{ STATIC_URL }}dashboard/dashboard.js"></script>
 {% endblock %}

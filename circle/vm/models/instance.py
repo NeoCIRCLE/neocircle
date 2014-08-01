@@ -41,7 +41,9 @@ from model_utils.models import TimeStampedModel, StatusModel
 from taggit.managers import TaggableManager
 
 from acl.models import AclBase
-from common.models import create_readable
+from common.models import (
+    create_readable, HumanReadableException, humanize_exception
+)
 from common.operations import OperatedMixin
 from ..tasks import vm_tasks, agent_tasks
 from .activity import (ActivityInProgressError, instance_activity,
@@ -276,28 +278,26 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         verbose_name = _('instance')
         verbose_name_plural = _('instances')
 
-    class InstanceDestroyedError(Exception):
+    class InstanceError(HumanReadableException):
 
-        def __init__(self, instance, message=None):
-            if message is None:
-                message = ("The instance (%s) has already been destroyed."
-                           % instance)
+        def __init__(self, instance, params=None, level=None, **kwargs):
+            kwargs.update(params or {})
+            self.instance = kwargs["instance"] = instance
+            super(Instance.InstanceError, self).__init__(
+                level, self.message, self.message, kwargs)
 
-            Exception.__init__(self, message)
+    class InstanceDestroyedError(InstanceError):
+        message = ugettext_noop(
+            "Instance %(instance)s has already been destroyed.")
 
-            self.instance = instance
+    class WrongStateError(InstanceError):
+        message = ugettext_noop(
+            "Current state (%(state)s) of instance %(instance)s is "
+            "inappropriate for the invoked operation.")
 
-    class WrongStateError(Exception):
-
-        def __init__(self, instance, message=None):
-            if message is None:
-                message = ("The instance's current state (%s) is "
-                           "inappropriate for the invoked operation."
-                           % instance.status)
-
-            Exception.__init__(self, message)
-
-            self.instance = instance
+        def __init__(self, instance, params=None, **kwargs):
+            super(Instance.WrongStateError, self).__init__(
+                instance, params, state=instance.status)
 
     def __unicode__(self):
         parts = (self.name, "(" + str(self.id) + ")")
@@ -441,9 +441,12 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
     def vm_state_changed(self, new_state):
         # log state change
         try:
-            act = InstanceActivity.create(code_suffix='vm_state_changed',
-                                          instance=self,
-                                          readable_name="vm state changed")
+            act = InstanceActivity.create(
+                code_suffix='vm_state_changed',
+                readable_name=create_readable(
+                    ugettext_noop("vm state changed to %(state)s"),
+                    state=new_state),
+                instance=self)
         except ActivityInProgressError:
             pass  # discard state change if another activity is in progress.
         else:
@@ -876,10 +879,11 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         while True:
             try:
                 return remote.get(timeout=step)
-            except TimeoutError:
+            except TimeoutError as e:
                 if task is not None and task.is_aborted():
                     AbortableAsyncResult(remote.id).abort()
-                    raise Exception("Shutdown aborted by user.")
+                    raise humanize_exception(ugettext_noop(
+                        "Operation aborted by user."), e)
 
     def suspend_vm(self, timeout=230):
         queue_name = self.get_remote_queue_name('vm', 'slow')
@@ -956,7 +960,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
 
         for a in acts:
             if (latest == a.activity_code and
-                    merged_acts[-1].result == a.result and
+                    merged_acts[-1].result_data == a.result_data and
                     a.finished and merged_acts[-1].finished and
                     a.user == merged_acts[-1].user and
                     (merged_acts[-1].finished - a.finished).days < 7 and
@@ -974,3 +978,10 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         return vm_tasks.screenshot.apply_async(args=[self.vm_name],
                                                queue=queue_name
                                                ).get(timeout=timeout)
+
+    def get_latest_activity_in_progress(self):
+        try:
+            return InstanceActivity.objects.filter(
+                instance=self, succeeded=None, parent=None).latest("started")
+        except InstanceActivity.DoesNotExist:
+            return None

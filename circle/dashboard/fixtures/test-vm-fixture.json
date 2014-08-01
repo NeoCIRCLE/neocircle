@@ -1322,7 +1322,7 @@
     "user_permissions": [
       115
     ], 
-    "password": "pbkdf2_sha256$10000$KIoeMs78MiOj$PnVXn3YJMehbOciBO32CMzqL0ZnQrzrdb7+b5dE13os=", 
+    "password": "md5$qLN4mQMOrsUJ$f07129fd1a289a0afb4e09f7a6816a4f",
     "email": "test@example.org", 
     "date_joined": "2013-09-04T15:29:49.914Z"
   }
@@ -1382,7 +1382,7 @@
     "pw": "ads", 
     "time_of_suspend": null, 
     "ram_size": 200, 
-    "priority": 4, 
+    "priority": 10, 
     "active_since": null, 
     "template": null, 
     "access_method": "nx", 
@@ -1412,7 +1412,7 @@
     "pw": "ads", 
     "time_of_suspend": null, 
     "ram_size": 200, 
-    "priority": 4, 
+    "priority": 10, 
     "active_since": null, 
     "template": null, 
     "access_method": "nx", 
@@ -1518,7 +1518,7 @@
     "ram_size": 1024, 
     "modified": "2014-01-24T00:58:19.654Z", 
     "system": "bubuntu", 
-    "priority": 20, 
+    "priority": 10, 
     "access_method": "ssh", 
     "raw_data": "", 
     "arch": "x86_64", 
