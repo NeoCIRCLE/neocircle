@@ -4,11 +4,11 @@
 {% block question %}
 <p>
 {% blocktrans with obj=object url=object.get_absolute_url op=op.name %}
-Do you want to do the following operation on <a href="{{url}}">{{obj}}</a>:
-<strong>{{op}}</strong>?
+Do you want to perform the following operation on
+<a data-dismiss="modal" href="{{url}}">{{obj}}</a>: <strong>{{op}}</strong>?
 {% endblocktrans %}
 </p>
-<p class="text-info">{{op.name}}: {{op.description}}</p>
+<p class="text-info">{{op.description}}</p>
 {% endblock %}
 <form method="POST" action="{{url}}">{% csrf_token %}
   {% block formfields %}
