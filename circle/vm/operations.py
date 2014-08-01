@@ -160,7 +160,7 @@ class CreateDiskOperation(InstanceOperation):
     activity_code_suffix = 'create_disk'
     id = 'create_disk'
     name = _("create disk")
-    description = _("Create empty disk for the VM.")
+    description = _("Create and attach empty disk to the virtual machine.")
     required_perms = ('storage.create_empty_disk', )
     accept_states = ('STOPPED', 'PENDING', 'RUNNING')
 
@@ -203,7 +203,10 @@ class DownloadDiskOperation(InstanceOperation):
     activity_code_suffix = 'download_disk'
     id = 'download_disk'
     name = _("download disk")
-    description = _("Download disk for the VM.")
+    description = _("Download and attach disk image (ISO file) for the "
+                    "virtual machine. Most operating systems do not detect a "
+                    "new optical drive, so you may have to reboot the "
+                    "machine.")
     abortable = True
     has_percentage = True
     required_perms = ('storage.download_disk', )
@@ -239,7 +242,8 @@ class DeployOperation(InstanceOperation):
     activity_code_suffix = 'deploy'
     id = 'deploy'
     name = _("deploy")
-    description = _("Deploy new virtual machine with network.")
+    description = _("Deploy and start the virtual machine (including storage "
+                    "and network configuration).")
     required_perms = ()
     deny_states = ('SUSPENDED', 'RUNNING')
 
@@ -294,7 +298,8 @@ class DestroyOperation(InstanceOperation):
     activity_code_suffix = 'destroy'
     id = 'destroy'
     name = _("destroy")
-    description = _("Destroy virtual machine and its networks.")
+    description = _("Permanently destroy virtual machine, its network "
+                    "settings and disks.")
     required_perms = ()
 
     def on_commit(self, activity):
@@ -343,7 +348,8 @@ class MigrateOperation(InstanceOperation):
     activity_code_suffix = 'migrate'
     id = 'migrate'
     name = _("migrate")
-    description = _("Live migrate running VM to another node.")
+    description = _("Move virtual machine to an other worker node with a few "
+                    "seconds of interruption (live migration).")
     required_perms = ()
     accept_states = ('RUNNING', )
 
@@ -400,7 +406,8 @@ class RebootOperation(InstanceOperation):
     activity_code_suffix = 'reboot'
     id = 'reboot'
     name = _("reboot")
-    description = _("Reboot virtual machine with Ctrl+Alt+Del signal.")
+    description = _("Warm reboot virtual machine by sending Ctrl+Alt+Del "
+                    "signal to its console.")
     required_perms = ()
     accept_states = ('RUNNING', )
 
@@ -415,7 +422,9 @@ class RemoveInterfaceOperation(InstanceOperation):
     activity_code_suffix = 'remove_interface'
     id = 'remove_interface'
     name = _("remove interface")
-    description = _("Remove the specified network interface from the VM.")
+    description = _("Remove the specified network interface and erase IP "
+                    "address allocations, related firewall rules and "
+                    "hostnames.")
     required_perms = ()
     accept_states = ('STOPPED', 'PENDING', 'RUNNING')
 
@@ -443,7 +452,8 @@ class RemoveDiskOperation(InstanceOperation):
     activity_code_suffix = 'remove_disk'
     id = 'remove_disk'
     name = _("remove disk")
-    description = _("Remove the specified disk from the VM.")
+    description = _("Remove the specified disk from the virtual machine, and "
+                    "destroy the data.")
     required_perms = ()
     accept_states = ('STOPPED', 'PENDING', 'RUNNING')
 
@@ -471,7 +481,7 @@ class ResetOperation(InstanceOperation):
     activity_code_suffix = 'reset'
     id = 'reset'
     name = _("reset")
-    description = _("Reset virtual machine (reset button).")
+    description = _("Cold reboot virtual machine (power cycle).")
     required_perms = ()
     accept_states = ('RUNNING', )
 
@@ -485,11 +495,10 @@ class SaveAsTemplateOperation(InstanceOperation):
     activity_code_suffix = 'save_as_template'
     id = 'save_as_template'
     name = _("save as template")
-    description = _("""Save Virtual Machine as a Template.
-
-        Template can be shared with groups and users.
-        Users can instantiate Virtual Machines from Templates.
-        """)
+    description = _("Save virtual machine as a template so they can be shared "
+                    "with users and groups.  Anyone who has access to a "
+                    "template (and to the networks it uses) will be able to "
+                    "start an instance of it.")
     abortable = True
     required_perms = ('vm.create_template', )
     accept_states = ('RUNNING', 'PENDING', 'STOPPED')
@@ -583,7 +592,10 @@ class ShutdownOperation(InstanceOperation):
     activity_code_suffix = 'shutdown'
     id = 'shutdown'
     name = _("shutdown")
-    description = _("Shutdown virtual machine with ACPI signal.")
+    description = _("Try to halt virtual machine by a standard ACPI signal, "
+                    "allowing the operating system to keep a consistent "
+                    "state. The operation will fail if the machine does not "
+                    "turn itself off in a period.")
     abortable = True
     required_perms = ()
     accept_states = ('RUNNING', )
@@ -604,7 +616,13 @@ class ShutOffOperation(InstanceOperation):
     activity_code_suffix = 'shut_off'
     id = 'shut_off'
     name = _("shut off")
-    description = _("Shut off VM (plug-out).")
+    description = _("Forcibly halt a virtual machine without notifying the "
+                    "operating system. This operation will even work in cases "
+                    "when shutdown does not, but the operating system and the "
+                    "file systems are likely to be in an inconsistent state,  "
+                    "so data loss is also possible. The effect of this "
+                    "operation is the same as interrupting the power supply "
+                    "of a physical machine.")
     required_perms = ()
     accept_states = ('RUNNING', )
 
@@ -632,7 +650,14 @@ class SleepOperation(InstanceOperation):
     activity_code_suffix = 'sleep'
     id = 'sleep'
     name = _("sleep")
-    description = _("Suspend virtual machine with memory dump.")
+    description = _("Suspend virtual machine. This means the machine is "
+                    "stopped and its memory is saved to disk, so if the "
+                    "machine is waked up, all the applications will keep "
+                    "running. Most of the applications will be able to "
+                    "continue even after a long suspension, but those which "
+                    "need a continous network connection may fail when "
+                    "resumed. In the meantime, the machine will only use "
+                    "storage resources, and keep network resources allocated.")
     required_perms = ()
     accept_states = ('RUNNING', )
 
@@ -672,10 +697,9 @@ class WakeUpOperation(InstanceOperation):
     activity_code_suffix = 'wake_up'
     id = 'wake_up'
     name = _("wake up")
-    description = _("""Wake up Virtual Machine from SUSPENDED state.
-
-        Power on Virtual Machine and load its memory from dump.
-        """)
+    description = _("Wake up sleeping (suspended) virtual machine. This will "
+                    "load the saved memory of the system and start the "
+                    "virtual machine from this state.")
     required_perms = ()
     accept_states = ('SUSPENDED', )
 
@@ -718,7 +742,10 @@ class RenewOperation(InstanceOperation):
     activity_code_suffix = 'renew'
     id = 'renew'
     name = _("renew")
-    description = _("Renew expiration times")
+    description = _("Virtual machines are suspended and destroyed after they "
+                    "expire. This operation renews expiration times according "
+                    "to the lease type. If the machine is close to the "
+                    "expiration, its owner will be notified.")
     acl_level = "operator"
     required_perms = ()
     concurrency_check = False
@@ -749,8 +776,12 @@ register_operation(RenewOperation)
 class ChangeStateOperation(InstanceOperation):
     activity_code_suffix = 'emergency_change_state'
     id = 'emergency_change_state'
-    name = _("emergency change state")
-    description = _("Change the virtual machine state to NOSTATE")
+    name = _("emergency state change")
+    description = _("Change the virtual machine state to NOSTATE. This "
+                    "should only be used if manual intervention was needed in "
+                    "the virtualization layer, and the machine has to be "
+                    "redeployed without losing its storage and network "
+                    "resources.")
     acl_level = "owner"
     required_perms = ('vm.emergency_change_state', )
 
@@ -827,7 +858,9 @@ class ScreenshotOperation(InstanceOperation):
     activity_code_suffix = 'screenshot'
     id = 'screenshot'
     name = _("screenshot")
-    description = _("Get screenshot")
+    description = _("Get a screenshot about the virtual machine's console. A "
+                    "key will be pressed on the keyboard to stop "
+                    "screensaver.")
     acl_level = "owner"
     required_perms = ()
     accept_states = ('RUNNING', )
@@ -843,7 +876,9 @@ class RecoverOperation(InstanceOperation):
     activity_code_suffix = 'recover'
     id = 'recover'
     name = _("recover")
-    description = _("Recover virtual machine from destroyed state.")
+    description = _("Try to recover virtual machine disks from destroyed "
+                    "state. Network resources (allocations) are already lost, "
+                    "so you will have to manually add interfaces afterwards.")
     acl_level = "owner"
     required_perms = ('vm.recover', )
     accept_states = ('DESTROYED', )
@@ -873,7 +908,7 @@ class ResourcesOperation(InstanceOperation):
     activity_code_suffix = 'Resources change'
     id = 'resources_change'
     name = _("resources change")
-    description = _("Change resources")
+    description = _("Change resources of a stopped virtual machine.")
     acl_level = "owner"
     required_perms = ('vm.change_resources', )
     accept_states = ('STOPPED', 'PENDING', )
@@ -903,7 +938,11 @@ class PasswordResetOperation(InstanceOperation):
     activity_code_suffix = 'Password reset'
     id = 'password_reset'
     name = _("password reset")
-    description = _("Password reset")
+    description = _("Generate and set a new login password on the virtual "
+                    "machine. This operation requires the agent running. "
+                    "Resetting the password is not warranted to allow you "
+                    "logging in as other settings are possible to prevent "
+                    "it.")
     acl_level = "owner"
     required_perms = ()
     accept_states = ('RUNNING', )

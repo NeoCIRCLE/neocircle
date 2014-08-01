@@ -1,0 +1,51 @@
+{% extends "dashboard/base.html" %}
+{% load i18n %}
+
+{% block title-page %}{% trans "Policy" %}{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-lg-8 col-lg-offset-2">
+    <div class="page-header">
+      <h1>{% trans "Policy" %} <small>{% trans "terms of usage" %}</small></h1>
+    </div>
+
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <p>
+        <ul>
+          <li>
+            {% blocktrans %}
+            The system cannot be used for illegal activites.
+            {% endblocktrans %}
+          </li>
+          <li>
+            {% blocktrans %} 
+            Every virtual machine has an expiration date, when this date is reached
+            the machine will be stopped, if the user doesn't renew the machine
+            it will be deleted and all data on it will be lost.
+            {% endblocktrans %}
+          </li>
+          <li>
+            {% blocktrans %}
+            Running the the virtual machine safely and 
+            updating the operating system is the responsibility of the user.
+            {% endblocktrans %}
+          </li>
+        </ul>
+        </p>
+      </div>
+    </div>
+
+    <div class="panel panel-default">
+      <div class="panel-body">
+          {% blocktrans %}
+            You can connect to the running virtual machines the usual way: for Windows machines
+            this mean RDP (remote desktop), Linux machines can be accessed either via SSH
+            or NoMachine NX (GUI).
+          {% endblocktrans %}
+          {# Installing the CIRCLE Desktop Client makes connecting easier. #}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

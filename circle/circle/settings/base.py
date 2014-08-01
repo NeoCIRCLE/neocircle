@@ -19,7 +19,7 @@
 # flake8: noqa
 from os import environ
 from os.path import (abspath, basename, dirname, join, normpath, isfile,
-                     expanduser)
+                     exists, expanduser)
 from sys import path
 from subprocess import check_output
 from uuid import getnode
@@ -161,6 +161,10 @@ STATICFILES_FINDERS = (
 )
 ########## END STATIC FILE CONFIGURATION
 
+p = join(dirname(SITE_ROOT), 'site-circle/static')
+if exists(p):
+    STATICFILES_DIRS = (p, )
+
 
 ########## SECRET CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
@@ -208,6 +212,7 @@ TEMPLATE_LOADERS = (
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs
 TEMPLATE_DIRS = (
     normpath(join(SITE_ROOT, 'templates')),
+    join(dirname(SITE_ROOT), 'site-circle/templates'),
 )
 ########## END TEMPLATE CONFIGURATION
 

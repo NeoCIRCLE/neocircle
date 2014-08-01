@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-07-31 13:20+0200\n"
-"PO-Revision-Date: 2014-07-31 14:30+0200\n"
+"POT-Creation-Date: 2014-08-01 19:36+0200\n"
+"PO-Revision-Date: 2014-08-01 21:03+0200\n"
 "Last-Translator: Mate Ory <ory.mate@ik.bme.hu>\n"
 "Language-Team: Hungarian <cloud@ik.bme.hu>\n"
 "Language: en_US\n"
@@ -40,6 +40,15 @@ msgstr "Nincs jogosultsága a profil módosításához."
 #: static_collected/dashboard/profile.js:20
 msgid "Unknown error."
 msgstr "Ismeretlen hiba."
+
+#: dashboard/static/dashboard/vm-create.js:108
+#: dashboard/static/dashboard/vm-create.js:171
+msgid "No more networks."
+msgstr "Nincs több hálózat."
+
+#: dashboard/static/dashboard/vm-create.js:140
+msgid "Not added to any network"
+msgstr "Nincs hálózathoz adva"
 
 #: dashboard/static/dashboard/vm-tour.js:20
 #: static_collected/dashboard/vm-tour.js:20
@@ -419,3 +428,5 @@ msgstr "Tegnap"
 #: static_collected/admin/js/admin/DateTimeShortcuts.js:203
 msgid "Tomorrow"
 msgstr "Holnap"
+
+# end

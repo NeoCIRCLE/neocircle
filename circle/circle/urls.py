@@ -16,14 +16,14 @@
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.conf.urls import patterns, include, url
-# from django.views.generic import TemplateView
+from django.views.generic import TemplateView
 
 from django.contrib import admin
 from django.shortcuts import redirect
 from django.core.urlresolvers import reverse
 
 from circle.settings.base import get_env_variable
-from dashboard.views import circle_login
+from dashboard.views import circle_login, HelpView
 from dashboard.forms import CirclePasswordResetForm, CircleSetPasswordForm
 
 admin.autodiscover()
@@ -57,6 +57,17 @@ urlpatterns = patterns(
         ),
     url(r'^accounts/login/?$', circle_login, name="accounts.login"),
     url(r'^accounts/', include('django.contrib.auth.urls')),
+    url(r'^info/help/$', HelpView.as_view(template_name="info/help.html"),
+        name="info.help"),
+    url(r'^info/policy/$',
+        TemplateView.as_view(template_name="info/policy.html"),
+        name="info.policy"),
+    url(r'^info/legal/$',
+        TemplateView.as_view(template_name="info/legal.html"),
+        name="info.legal"),
+    url(r'^info/support/$',
+        TemplateView.as_view(template_name="info/support.html"),
+        name="info.support"),
 )
 
 

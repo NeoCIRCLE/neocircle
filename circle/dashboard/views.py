@@ -3144,6 +3144,15 @@ class UserKeyCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         return kwargs
 
 
+class HelpView(TemplateView):
+
+    def get_context_data(self, *args, **kwargs):
+        ctx = super(HelpView, self).get_context_data(*args, **kwargs)
+        ctx.update({"saml": hasattr(settings, "SAML_CONFIG"),
+                    "store": settings.STORE_URL})
+        return ctx
+
+
 class StoreList(LoginRequiredMixin, TemplateView):
     template_name = "dashboard/store/list.html"
 
