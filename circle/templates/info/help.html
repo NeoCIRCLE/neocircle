@@ -11,6 +11,7 @@
 
     <div class="panel panel-default">
       <div class="panel-body">
+        <h2>{% trans "Introduction" %}</h2>
         <p>
         {% blocktrans %}
         This is a deployment of <a href="http://circlecloud.org/">CIRCLE
@@ -28,10 +29,10 @@
         advanced options.
         {% endblocktrans %}
         </p>
-        <h2>{% trans "Dashboard" %}</h2>
+        <h2><i class="fa fa-dashboard"></i> {% trans "Dashboard" %}</h2>
         <p>
         {% blocktrans with host=request.get_host %}
-        You can reach this service at https://{{host}}/ where you can log in
+        You can reach this service at <tt>https://{{host}}/</tt> where you can log in
         to the dashboard.
         {% endblocktrans %}
         <p>
@@ -41,24 +42,215 @@
         the system.
         {% endblocktrans %}
         </p>
-        <h3><i class="fa fa-desktop"></i> {% trans "Virtual machines" %}</h3>
-        <p {% if not perms.vm %}class="text-muted"{% endif %}>
-        {% blocktrans %}
-        In the <em>virtual machines</em> box you will find your recent
-        virtual machines.
-        A summary view is also available by clicking the <i class="fa
-            fa-dashboard"></i> dashboard button.
-        Click on the name of a virtual machine to see its connection
-        details, preferences, or to change its state.
-        Important or frequently used machines can be pinned by the
-        <i class="fa fa-star-o"></i> favorite button.
-        The search function field show results in place, and typing a ⏎
-        jumps directly to the result, if there is exactly one.
-        You can start a new virtual machine by clicking
-        <span class="btn btn-success disabled btn-xs">
-            <i class="fa fa-plus-circle"></i> new</span>.
-        {% endblocktrans %}
-        </p>
+        <div id="vms" {% if not perms.vm %}class="text-muted"{% endif %}>
+          <h2><i class="fa fa-desktop"></i> {% trans "Virtual machines" %}</h2>
+          {% if not perms.vm %}
+            <p class="text-warning">
+              {% trans "Sorry, you have no permission to launch virtual machines." %}
+            </p>
+          {% endif %}
+          <p>
+          {% blocktrans %}
+          In the <em>virtual machines</em> box you will find your recent
+          virtual machines.
+          A summary view is also available by clicking the dashboard button
+          (<i class="fa fa-dashboard"></i>).
+          Click on the name of a virtual machine to see its connection
+          details, preferences, or to change its state.
+          {% endblocktrans %}
+          {% blocktrans %}
+          Important or frequently used machines can be pinned by the
+          favorite button (<i class="fa fa-star-o"></i>).
+          The search field shows results incrementally, and submitting (⏎)
+          jumps directly to the result, if there is exactly one.
+          You can start a new virtual machine by clicking on the
+          <span class="btn btn-success disabled btn-xs">
+              <i class="fa fa-plus-circle"></i> new</span> button, and
+          choosing a template.
+          {% endblocktrans %}
+          </p><p>
+          {% blocktrans %}
+          If you select a virtual machine, you get to a page with all the
+          details and operations listed. On the left, you will see the state
+          of the machine and a summary about how you can
+          <strong>connect</strong> to the
+          machine.
+          In the middle there is a tabbed pane, which contains details about
+          the machine in categories.
+          {% endblocktrans %}
+          {% blocktrans %}
+          The upper right corner is the operation toolbar with the most
+          important actions that control the <strong>lifecycle</strong> of
+          the machine.
+          {% endblocktrans %}
+          </p><p>
+          {% blocktrans %}
+          The tool buttons are color coded by their effect, and enabled/disabled
+          based on the current state of the machine.
+          The recommended operation is always the biggest tool button with
+          the name displayed.
+          You can click on them as the confirmation dialog explains in
+          detail what they do.
+          {% endblocktrans %}
+          </p><p>
+          {% blocktrans %}
+          <strong><i class="fa fa-compass"></i> Home</strong> pane shows
+          statistics about the virtual machine, and this is where you can
+          change the name, description and tags of the instance.
+          We strongly advise to add a description to make the work of the
+          cloud administrators easier in case of maintenance.
+          Here is a summary about the <strong>expiration times</strong> as
+          well. Each virtual machine has a deadline for suspending and
+          destroying based on predefined leases. With the renew button you
+          can reset the counters. Of course you will get a notification if
+          the machine is going to expire.
+          {% endblocktrans %}
+          </p><p>
+          {% blocktrans %}
+          <strong><i class="fa fa-tasks"></i> Resources</strong> pane shows
+          details about how much memory and CPU the VM has, and how is it
+          scheduled.
+          {% endblocktrans %}
+          <span{% if not perms.vm.change_resources %}
+              class="text-muted"{% endif %}>{% blocktrans %}
+              Users with specific permission can change these settings if
+              the machine is stopped.{% endblocktrans %}</span>
+          </p><p>
+          {% blocktrans %}
+          <strong><i class="fa fa-desktop"></i> Console</strong> pane allows
+          to see the console of the virutal machine for troubleshooting and
+          operating system installation.{% endblocktrans %}
+          {% if perms.vm.access_console %}
+          {% trans "You can also use the keyboard and mouse." %}
+          {% else %}
+          <span class="text-warning">{% blocktrans %}You have permission to create
+              screenshots, but not to use the console keyboard or mouse.
+              {% endblocktrans %}</span>
+          {% endif %}
+          {% blocktrans %}You should normally use the machine by connecting
+          remotely over SSH or Remote Desktop.{% endblocktrans %}
+          </p><p>
+          {% blocktrans %}
+          <strong><i class="fa fa-group"></i> Access</strong> pane allows
+          sharing the machine with others and transferring the ownership.
+          Users can see the details of the machine, operators can use most
+          functions, and owners can also destroy the machine.
+          {% endblocktrans %}
+          </p><p>
+          {% blocktrans %}
+          <strong><i class="fa fa-globe"></i> Network</strong> pane shows
+          how the virtual machine is connected to the network.
+          You can add or remove interfaces, and allow remote access of
+          different TCP/UDP ports.
+          {% endblocktrans %}
+          </p><p>
+          {% blocktrans %}
+          <strong><i class="fa fa-clock-o"></i> Activity</strong> pane shows
+          the full life history of the virtual machine. This is where you
+          can see the causes of failed actions (just point the mouse to the name of
+          the action).
+          {% endblocktrans %}
+          </p>
+        </div>
+        <div id="templates" {% if not perms.vm.create_template %}class="text-muted"{% endif %}>
+          <h2><i class="fa fa-puzzle-piece"></i> {% trans "Templates" %}</h2>
+          {% if not perms.vm.create_template %}
+            <p class="text-warning">
+              {% trans "Sorry, you have no permission to create templates." %}
+            </p>
+          {% endif %}
+          <p>
+            {% blocktrans %}
+            <em>Templates</em> are the prototypes of virtual machine
+            instances: they contain configuration values for the different
+            technical details of a VM to create, and also the network
+            interfaces and disks to attach.
+            {% endblocktrans %}
+          </p><p>
+            {% blocktrans %}
+            In the dashboard box you see your own templates and those, for
+            which you have <em>operator</em> permission. This means that you can
+            share them with your groups or other users.
+            {% endblocktrans %}
+          </p><p>
+            {% blocktrans %}
+            You can create templates from any virtual machine with the
+            <span class="btn btn-info disabled btn-xs"><i class="fa fa-save"></i>
+              save as template</span>
+            button.
+            {% endblocktrans %}
+            {% blocktrans %}
+            Additionally, you can also click on the
+            <span class="btn btn-success disabled btn-xs">
+              <i class="fa fa-plus-circle"></i> new</span> button of the
+            template box, and follow the template creation wizard.
+            {% endblocktrans %}
+          </p>
+        </div>
+
+        <div id="groups" {% if not perms.auth %}class="text-muted"{% endif %}>
+          <h2><i class="fa fa-group"></i> {% trans "Groups" %}</h2>
+          {% if not perms.auth %}
+          <p class="text-warning">
+          {% trans "Sorry, you have no permission to create groups." %}
+          </p>
+          {% endif %}
+          <p>
+            {% blocktrans %}
+            Groups are the main building blocks of permission management.
+            On the dashboard you see a list of groups you have access to.
+            {% endblocktrans %}
+          </p><p>
+            {% blocktrans %}
+            You can also create your own groups by clicking on the
+            <span class="btn btn-success disabled btn-xs">
+              <i class="fa fa-plus-circle"></i> new</span> button of the
+            groups box.
+            {% endblocktrans %}
+            </p><p{% if not saml %} class="text-muted"{% endif %}>
+            {% blocktrans %}
+            Users logged in with SSO authentication can automatically become
+            members of groups based on its organizational identifier.
+            Those who are administrators of an organizational group (or a
+            professor of a subject in academics) can create groups with the
+            specific organizational identifier set, so members will
+            automatically added if they log in.
+            {% endblocktrans %}
+            {% blocktrans %}
+            You can also add users based on their identifier, also if they
+            have not logged in at the time.
+            {% endblocktrans %}
+            </p>
+        </div>
+
+        <div id="store" {% if not store or not user.is_authenticated %}class="text-muted"{% endif %}>
+          <h2><i class="fa fa-briefcase"></i> {% trans "Files" %}</h2>
+          {% if not store %}
+          <p class="text-warning">
+          {% trans "Sorry, this deployment of CIRCLE does not support file store." %}
+          </p>
+          {% endif %}
+          <p>
+            {% blocktrans %}
+            Each user has a simple personal file store, which is the easiest
+            way to keep and retrieve your work done on virtual machines.
+            {% endblocktrans %}
+          </p><p>
+            {% blocktrans %}
+            You can get and upload files from both the web interface and
+            from virtual machines. The web interface works like any other
+            graphical file browser. Virtual machines normally don't get the
+            credentials for your personal store, to prevent accidentally
+            sharing them with other users of the same machine. To use the
+            file store, press the
+            <span class="btn btn-info disabled btn-xs">
+              <i class="fa fa-briefcase"></i> mount store</span> button
+            of the virtual machine.
+            {% endblocktrans %}
+          </p><p>
+            {% blocktrans %}
+            {% endblocktrans %}
+        </div>
       </div>
     </div>
   </div>
