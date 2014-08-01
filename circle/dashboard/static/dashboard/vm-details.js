@@ -1,5 +1,6 @@
 var show_all = false;
 var in_progress = false;
+var activity_hash = 5;
 
 $(function() {
   /* do we need to check for new activities */
@@ -359,17 +360,6 @@ function decideActivityRefresh() {
   return check;
 }
 
-/* unescapes html got via the request, also removes whitespaces and replaces all ' with " */
-function unescapeHTML(html) {
-  return html.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&').replace(/&ndash;/g, "–").replace(/\//g, "").replace(/'/g, '"').replace(/&#39;/g, "'").replace(/ /g, '');
-}
-
-/* the html page contains some tags that were modified via js (titles for example), we delete these
-   also some html tags are closed with / */
-function changeHTML(html) {
-  return html.replace(/data-original-title/g, "title").replace(/title=""/g, "").replace(/\//g, '').replace(/ /g, '');
-}
-
 function checkNewActivity(runs) {
   var instance = location.href.split('/'); instance = instance[instance.length - 2];
 
@@ -378,19 +368,24 @@ function checkNewActivity(runs) {
     url: '/dashboard/vm/' + instance + '/activity/',
     data: {'show_all': show_all},
     success: function(data) {
-      if(show_all) { /* replace on longer string freezes the spinning stuff */
+      var new_activity_hash = (data['activities'] + "").hashCode();
+      if(new_activity_hash != activity_hash) {
         $("#activity-refresh").html(data['activities']);
-      } else {
-        a = unescapeHTML(data['activities']);
-        b = changeHTML($("#activity-refresh").html());
-        if(a != b)
-          $("#activity-refresh").html(data['activities']);
       }
+      activity_hash = new_activity_hash;
+
       $("#ops").html(data['ops']);
       $("#disk-ops").html(data['disk_ops']);
       $("[title]").tooltip();
 
-      $("#vm-details-state i").prop("class", "fa " + data['icon']);
+      /* changing the status text */
+      var icon = $("#vm-details-state i");
+      if(data['is_new_state']) {
+        if(!icon.hasClass("fa-spin"))
+          icon.prop("class", "fa fa-spinner fa-spin");
+      } else {
+        icon.prop("class", "fa " + data['icon']);
+      }
       $("#vm-details-state span").html(data['human_readable_status'].toUpperCase());
       if(data['status'] == "RUNNING") {
         $("[data-target=#_console]").attr("data-toggle", "pill").attr("href", "#console").parent("li").removeClass("disabled");
@@ -421,3 +416,14 @@ function checkNewActivity(runs) {
     }
   });
 }
+
+String.prototype.hashCode = function() {
+  var hash = 0, i, chr, len;
+  if (this.length == 0) return hash;
+  for (i = 0, len = this.length; i < len; i++) {
+    chr   = this.charCodeAt(i);
+    hash  = ((hash << 5) - hash) + chr;
+    hash |= 0; // Convert to 32bit integer
+  }
+  return hash;
+};

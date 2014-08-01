@@ -310,6 +310,9 @@ class VmDetailView(CheckedDetailView):
         activities = activities[:10]
         context['activities'] = activities
         context['show_show_all'] = show_show_all
+        latest = instance.get_latest_activity_in_progress()
+        context['is_new_state'] = (latest and
+                                   instance.status != latest.resultant_state)
 
         context['vlans'] = Vlan.get_objects_with_level(
             'user', self.request.user
@@ -2456,6 +2459,9 @@ def vm_activity(request, pk):
     response['human_readable_status'] = instance.get_status_display()
     response['status'] = instance.status
     response['icon'] = instance.get_status_icon()
+    latest = instance.get_latest_activity_in_progress()
+    response['is_new_state'] = (latest and
+                                instance.status != latest.resultant_state)
 
     context = {
         'instance': instance,

@@ -975,3 +975,10 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         return vm_tasks.screenshot.apply_async(args=[self.vm_name],
                                                queue=queue_name
                                                ).get(timeout=timeout)
+
+    def get_latest_activity_in_progress(self):
+        try:
+            return InstanceActivity.objects.filter(
+                instance=self, succeeded=None).latest("started")
+        except InstanceActivity.DoesNotExist:
+            return None
