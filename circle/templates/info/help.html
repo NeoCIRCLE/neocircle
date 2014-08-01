@@ -3,12 +3,14 @@
 
 {% block title-page %}{% trans "Help" %}{% endblock %}
 {% block content %}
-<div class="row"><div class="col-lg-8 col-lg-offset-2">
-<div class="page-header">
-    <h1>{% trans "Help" %} <small>{% trans "user guide in short" %}</small></h1>
-</div>
-<div class="panel panel-default">
-    <div class="panel-body">
+<div class="row">
+  <div class="col-lg-8 col-lg-offset-2">
+    <div class="page-header">
+      <h1>{% trans "Help" %} <small>{% trans "user guide in short" %}</small></h1>
+    </div>
+
+    <div class="panel panel-default">
+      <div class="panel-body">
         <p>
         {% blocktrans %}
         This is a deployment of <a href="http://circlecloud.org/">CIRCLE
@@ -57,7 +59,8 @@
             <i class="fa fa-plus-circle"></i> new</span>.
         {% endblocktrans %}
         </p>
+      </div>
+    </div>
+  </div>
 </div>
-</div>
-</div></div>
 {% endblock %}
