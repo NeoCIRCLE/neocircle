@@ -1,0 +1,63 @@
+{% extends "dashboard/base.html" %}
+{% load i18n %}
+
+{% block title-page %}{% trans "Help" %}{% endblock %}
+{% block content %}
+<div class="row"><div class="col-lg-8 col-lg-offset-2">
+<div class="page-header">
+    <h1>{% trans "Help" %} <small>{% trans "user guide in short" %}</small></h1>
+</div>
+<div class="panel panel-default">
+    <div class="panel-body">
+        <p>
+        {% blocktrans %}
+        This is a deployment of <a href="http://circlecloud.org/">CIRCLE
+            Cloud</a>, which is a free and open source cloud manager.
+        {% endblocktrans %}
+        {% blocktrans %}
+        Its most important function is starting and managing virtual machine
+        instances based on templates.
+        These templates are also easy to create.
+        {% endblocktrans %}
+        </p><p>
+        {% blocktrans %}
+        Apart from this tutorial we recommend to try the system, it is quite
+        intuitive, and the web interface shows detailed instructions on
+        advanced options.
+        {% endblocktrans %}
+        </p>
+        <h2>{% trans "Dashboard" %}</h2>
+        <p>
+        {% blocktrans with host=request.get_host %}
+        You can reach this service at https://{{host}}/ where you can log in
+        to the dashboard.
+        {% endblocktrans %}
+        <p>
+        {% blocktrans %}
+        The dashboard is a summary about your virtual machines and other
+        resources, and the main starting point to access the functions of
+        the system.
+        {% endblocktrans %}
+        </p>
+        <h3><i class="fa fa-desktop"></i> {% trans "Virtual machines" %}</h3>
+        <p {% if not perms.vm %}class="text-muted"{% endif %}>
+        {% blocktrans %}
+        In the <em>virtual machines</em> box you will find your recent
+        virtual machines.
+        A summary view is also available by clicking the <i class="fa
+            fa-dashboard"></i> dashboard button.
+        Click on the name of a virtual machine to see its connection
+        details, preferences, or to change its state.
+        Important or frequently used machines can be pinned by the
+        <i class="fa fa-star-o"></i> favorite button.
+        The search function field show results in place, and typing a ⏎
+        jumps directly to the result, if there is exactly one.
+        You can start a new virtual machine by clicking
+        <span class="btn btn-success disabled btn-xs">
+            <i class="fa fa-plus-circle"></i> new</span>.
+        {% endblocktrans %}
+        </p>
+</div>
+</div>
+</div></div>
+{% endblock %}
