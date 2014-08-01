@@ -63,7 +63,11 @@
     <div class="col-md-4" id="vm-info-pane">
       <div class="big">
         <span id="vm-details-state" class="label label-success">
-          <i class="fa {{ instance.get_status_icon }}"></i>
+          <i class="fa
+            {% if is_new_state %}
+            fa-spinner fa-spin
+            {% else %}
+            {{ instance.get_status_icon }}{% endif %}"></i>
           <span>{{ instance.get_status_display|upper }}</span>
         </span>
       </div>
