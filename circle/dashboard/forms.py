@@ -1124,6 +1124,14 @@ class VmResourcesForm(forms.ModelForm):
         'class': "form-control input-tags cpu-priority-input",
     }))
 
+    def __init__(self, *args, **kwargs):
+        self.can_edit = kwargs.pop("can_edit", None)
+        super(VmResourcesForm, self).__init__(*args, **kwargs)
+
+        if not self.can_edit:
+            for name, field in self.fields.items():
+                field.widget.attrs['disabled'] = "disabled"
+
     class Meta:
         model = Instance
         fields = ('num_cores', 'priority', 'ram_size', )
