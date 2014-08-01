@@ -1,0 +1,30 @@
+{% extends "dashboard/base.html" %}
+{% load i18n %}
+
+{% block title-page %}{% trans "Legal notice" %}{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-lg-8 col-lg-offset-2">
+    <div class="page-header">
+      <h1>{% trans "Legal notice" %}</h1>
+    </div>
+
+    <div class="panel panel-default">
+      <div class="panel-body">
+        {% blocktrans %}
+        CIRCLE Cloud is a complete and open source cloud solution 
+        that can be deployed with minimal effort on a single computer as well as on a larger cluster.
+        {% endblocktrans %}
+      </div>
+    </div>
+
+    <div class="panel panel-default">
+      <div class="panel-body">
+        {% blocktrans with maintainer=COMPANY_NAME %}
+          The maintainer of this site is: {{ maintainer }}       
+        {% endblocktrans %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

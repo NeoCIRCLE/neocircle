@@ -1,0 +1,22 @@
+{% extends "dashboard/base.html" %}
+{% load i18n %}
+
+{% block title-page %}{% trans "Support" %}{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-lg-8 col-lg-offset-2">
+    <div class="page-header">
+      <h1>{% trans "Support" %}</h1>
+    </div>
+
+    <div class="panel panel-default">
+      <div class="panel-body">
+        {% blocktrans %}
+        CIRCLE Cloud is an open source cloud solution. If you notice any bugs or
+        you have an idea for a feature please contact the maintainer of the site.
+        {% endblocktrans %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
