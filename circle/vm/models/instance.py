@@ -957,7 +957,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
 
         for a in acts:
             if (latest == a.activity_code and
-                    merged_acts[-1].result == a.result and
+                    merged_acts[-1].result_data == a.result_data and
                     a.finished and merged_acts[-1].finished and
                     a.user == merged_acts[-1].user and
                     (merged_acts[-1].finished - a.finished).days < 7 and

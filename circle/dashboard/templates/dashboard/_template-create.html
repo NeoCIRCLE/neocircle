@@ -1,17 +1,49 @@
 {% load i18n %}
 {% load crispy_forms_tags %}
 
-{% if leases < 1 %}
-  <div class="alert alert-warning">
-    {% trans "You haven't created any leases yet, but you need one to create a template!" %}
-    <a href="{% url "dashboard.views.lease-create" %}">{% trans "Create a new lease now." %}</a>
-  </div>
-{% endif %}
 
+<form action="" method="POST">
 {% with form=form %}
   {% include "display-form-errors.html" %}
 {% endwith %}
-{% crispy form %}
+
+{% csrf_token %}
+
+{{ form.name|as_crispy_field }}
+
+<fieldset class="resources-sliders">
+  <legend>{% trans "Resource configuration" %}</legend>
+  {% include "dashboard/_resources-sliders.html" with field_priority=form.priority field_num_cores=form.num_cores field_ram_size=form.ram_size %}
+  {{ form.max_ram_size|as_crispy_field }}
+</fieldset>
+
+<fieldset>
+  <legend>{% trans "Virtual machine settings" %}</legend>
+{{ form.arch|as_crispy_field }}
+{{ form.access_method|as_crispy_field }}
+{{ form.boot_menu|as_crispy_field }}
+{{ form.raw_data|as_crispy_field }}
+{{ form.req_traits|as_crispy_field }}
+{{ form.description|as_crispy_field }}
+{{ form.system|as_crispy_field }}
+</fieldset>
+<fieldset>
+  <legend>{% trans "External resources" %}</legend>
+{{ form.networks|as_crispy_field }}
+{{ form.lease|as_crispy_field }}
+
+{% if show_lease_create %}
+  <div class="alert alert-warning">
+    {% trans "You haven't created any leases yet, but you need one to create a template." %}
+    <a href="{% url "dashboard.views.lease-create" %}">{% trans "Create a new lease now." %}</a>
+  </div>
+{% endif %}
+{{ form.tags|as_crispy_field }}
+</fieldset>
+
+<input type="submit" value="{% trans "Create new template" %}" class="btn btn-success">
+</form>
+
 
 <style>
   fieldset {
@@ -21,8 +53,3 @@
     font-weight: bold;
   }
 </style>
-<script>
-  $(function() {
-    $("#hint_id_num_cores, #hint_id_priority, #hint_id_ram_size").hide();
-  });
-</script>

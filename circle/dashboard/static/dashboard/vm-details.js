@@ -27,6 +27,15 @@ $(function() {
 
   /* save resources */
   $('#vm-details-resources-save').click(function() {
+    var error = false;
+    $(".cpu-count-input, .ram-input").each(function() {
+      if(!$(this)[0].checkValidity()) {
+        error = true;
+      }
+    });
+    if(error) return true;
+
+
     $('i.fa-floppy-o', this).removeClass("fa-floppy-o").addClass("fa-refresh fa-spin");
     var vm = $(this).data("vm");
     $.ajax({
@@ -34,8 +43,12 @@ $(function() {
       url: "/dashboard/vm/" + vm + "/op/resources_change/", 
       data: $('#vm-details-resources-form').serialize(),
       success: function(data, textStatus, xhr) {
+        if(data.success) {
+          $('a[href="#activity"]').trigger("click");
+        } else {
+          addMessage(data.messages.join("<br />"), "danger");
+        }
         $("#vm-details-resources-save i").removeClass('fa-refresh fa-spin').addClass("fa-floppy-o");
-        $('a[href="#activity"]').trigger("click");
       },
       error: function(xhr, textStatus, error) {
         $("#vm-details-resources-save i").removeClass('fa-refresh fa-spin').addClass("fa-floppy-o");
@@ -385,12 +398,12 @@ function checkNewActivity(runs) {
         $("[data-target=#_console]").attr("data-toggle", "_pill").attr("href", "#").parent("li").addClass("disabled");
       }
 
-      if(data['status'] == "STOPPED") {
-        $(".enabled-when-stopped").prop("disabled", false);
-        $(".hide-when-stopped").hide();
+      if(data['status'] == "STOPPED" || data['status'] == "PENDING") {
+        $(".change-resources-button").prop("disabled", false);
+        $(".change-resources-help").hide();
       } else {
-        $(".enabled-when-stopped").prop("disabled", true);
-        $(".hide-when-stopped").show();
+        $(".change-resources-button").prop("disabled", true);
+        $(".change-resources-help").show();
       }
 
       if(runs > 0 && decideActivityRefresh()) {

@@ -1,11 +1,12 @@
 {% load crispy_forms_tags %}
-<style>
-  .row {
-    margin-bottom: 15px;
-  }
-</style>
-
-<form method="POST" action="/dashboard/node/create/">
+<form method="POST" action="/dashboard/node/create/" id="node-create-form">
 {% csrf_token %}
 {% crispy formset formset.form.helper %}
 </form>
+
+<style>
+  #node-create-form .row {
+    margin-bottom: 10px;
+  }
+</style>
+

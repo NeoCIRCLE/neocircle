@@ -70,7 +70,7 @@ from .forms import (
     VmSaveForm, UserKeyForm, VmRenewForm,
     CirclePasswordChangeForm, VmCreateDiskForm, VmDownloadDiskForm,
     TraitsForm, RawDataForm, GroupPermissionForm, AclUserAddForm,
-    VmAddInterfaceForm,
+    VmResourcesForm, VmAddInterfaceForm,
 )
 
 from .tables import (
@@ -327,6 +327,8 @@ class VmDetailView(CheckedDetailView):
         context['ipv6_port'] = instance.get_connect_port(use_ipv6=True)
 
         # resources forms
+        context['resources_form'] = VmResourcesForm(instance=instance)
+
         if self.request.user.is_superuser:
             context['traits_form'] = TraitsForm(instance=instance)
             context['raw_data_form'] = RawDataForm(instance=instance)
@@ -349,8 +351,6 @@ class VmDetailView(CheckedDetailView):
         for k, v in options.iteritems():
             if request.POST.get(k) is not None:
                 return v(request)
-        raise Http404()
-
         raise Http404()
 
     def __set_name(self, request):
@@ -788,22 +788,35 @@ class VmResourcesChangeView(VmOperationView):
     op = 'resources_change'
     icon = "save"
     show_in_toolbar = False
+    wait_for_result = 0.5
 
     def post(self, request, extra=None, *args, **kwargs):
         if extra is None:
             extra = {}
 
-        resources = {
-            'num_cores': "cpu-count",
-            'priority': "cpu-priority",
-            'ram_size': "ram-size",
-            "max_ram_size": "ram-size",  # TODO
-        }
-        for k, v in resources.iteritems():
-            extra[k] = request.POST.get(v)
+        instance = get_object_or_404(Instance, pk=kwargs['pk'])
 
-        return super(VmResourcesChangeView, self).post(request, extra,
-                                                       *args, **kwargs)
+        form = VmResourcesForm(request.POST, instance=instance)
+        if not form.is_valid():
+            for f in form.errors:
+                messages.error(request, "<strong>%s</strong>: %s" % (
+                    f, form.errors[f].as_text()
+                ))
+            if request.is_ajax():  # this is not too nice
+                store = messages.get_messages(request)
+                store.used = True
+                return HttpResponse(
+                    json.dumps({'success': False,
+                                'messages': [unicode(m) for m in store]}),
+                    content_type="application=json"
+                )
+            else:
+                return redirect(instance.get_absolute_url() + "#resources")
+        else:
+            extra = form.cleaned_data
+            extra['max_ram_size'] = extra['ram_size']
+            return super(VmResourcesChangeView, self).post(request, extra,
+                                                           *args, **kwargs)
 
 
 class TokenOperationView(OperationView):
@@ -1358,10 +1371,13 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
     def get_context_data(self, *args, **kwargs):
         context = super(TemplateCreate, self).get_context_data(*args, **kwargs)
 
+        num_leases = Lease.get_objects_with_level("user",
+                                                  self.request.user).count()
+        can_create_leases = self.request.user.has_perm("create_leases")
         context.update({
             'box_title': _("Create a new base VM"),
             'template': "dashboard/_template-create.html",
-            'leases': Lease.objects.count()
+            'show_lease_create': num_leases < 1 and can_create_leases
         })
         return context
 
