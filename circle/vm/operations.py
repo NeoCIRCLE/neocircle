@@ -28,7 +28,9 @@ from sizefield.utils import filesizeformat
 
 from celery.exceptions import TimeLimitExceeded
 
-from common.models import create_readable, humanize_exception
+from common.models import (
+    create_readable, humanize_exception, HumanReadableException
+)
 from common.operations import Operation, register_operation
 from .tasks.local_tasks import (
     abortable_async_instance_operation, abortable_async_node_operation,
@@ -716,10 +718,24 @@ class RenewOperation(InstanceOperation):
     required_perms = ()
     concurrency_check = False
 
-    def _operation(self, lease=None):
-        (self.instance.time_of_suspend,
-         self.instance.time_of_delete) = self.instance.get_renew_times(lease)
+    def _operation(self, activity, lease=None, force=False):
+        suspend, delete = self.instance.get_renew_times(lease)
+        if (not force and suspend and self.instance.time_of_suspend and
+                suspend < self.instance.time_of_suspend):
+            raise HumanReadableException.create(ugettext_noop(
+                "Renewing the machine with the selected lease would result "
+                "in its suspension time get earlier than before."))
+        if (not force and delete and self.instance.time_of_delete and
+                delete < self.instance.time_of_delete):
+            raise HumanReadableException.create(ugettext_noop(
+                "Renewing the machine with the selected lease would result "
+                "in its delete time get earlier than before."))
+        self.instance.time_of_suspend = suspend
+        self.instance.time_of_delete = delete
         self.instance.save()
+        activity.result = create_readable(ugettext_noop(
+            "Renewed to suspend at %(suspend)s and destroy at %(delete)s."),
+            suspend=suspend, delete=delete)
 
 
 register_operation(RenewOperation)
