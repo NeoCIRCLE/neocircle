@@ -901,8 +901,8 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
 
     def delete_mem_dump(self, timeout=15):
         queue_name = self.mem_dump['datastore'].get_remote_queue_name(
-            'storage')
-        from storage.tasks.remote_tasks import delete_dump
+            'storage', 'fast')
+        from storage.tasks.storage_tasks import delete_dump
         delete_dump.apply_async(args=[self.mem_dump['path']],
                                 queue=queue_name).get(timeout=timeout)
 
