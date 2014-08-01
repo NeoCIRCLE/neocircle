@@ -23,7 +23,7 @@ from django.shortcuts import redirect
 from django.core.urlresolvers import reverse
 
 from circle.settings.base import get_env_variable
-from dashboard.views import circle_login
+from dashboard.views import circle_login, HelpView
 from dashboard.forms import CirclePasswordResetForm, CircleSetPasswordForm
 
 admin.autodiscover()
@@ -57,8 +57,7 @@ urlpatterns = patterns(
         ),
     url(r'^accounts/login/?$', circle_login, name="accounts.login"),
     url(r'^accounts/', include('django.contrib.auth.urls')),
-    url(r'^info/help/$',
-        TemplateView.as_view(template_name="info/help.html"),
+    url(r'^info/help/$', HelpView.as_view(template_name="info/help.html"),
         name="info.help"),
     url(r'^info/policy/$',
         TemplateView.as_view(template_name="info/policy.html"),
