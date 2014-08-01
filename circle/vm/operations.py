@@ -19,10 +19,12 @@ from __future__ import absolute_import, unicode_literals
 from logging import getLogger
 from re import search
 from string import ascii_lowercase
+from urlparse import urlsplit
 
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _, ugettext_noop
+from django.conf import settings
 
 from sizefield.utils import filesizeformat
 
@@ -40,6 +42,8 @@ from .models import (
     NodeActivity, pwgen
 )
 from .tasks import agent_tasks
+
+from dashboard.store_api import Store, NoStoreException
 
 logger = getLogger(__name__)
 
@@ -934,16 +938,33 @@ class MountStoreOperation(InstanceOperation):
         if self.instance.status not in ["RUNNING"]:
             raise self.instance.WrongStateError(self.instance)
 
+        try:
+            latest_deploy = InstanceActivity.objects.filter(
+                instance=self.instance, activity_code="vm.Instance.deploy"
+            ).latest("finished").finished
+        except InstanceActivity.DoesNotExist:  # no deploy no agent
+            raise self.instance.WrongStateError(self.instance)
+
+        try:
+            InstanceActivity.objects.filter(
+                activity_code="vm.Instance.agent.starting",
+                started__gt=latest_deploy).latest("started")
+        except InstanceActivity.DoesNotExist:  # no agent no mount
+            raise self.instance.WrongStateError(self.instance)
+
+    def check_auth(self, user):
+        super(MountStoreOperation, self).check_auth(user)
+        try:
+            Store(user)
+        except NoStoreException:
+            raise PermissionDenied  # not show the button at all
+
     def _operation(self):
         inst = self.instance
         queue = self.instance.get_remote_queue_name("agent")
-        # TODO
-        # host = urlsplit(settings.STORE_URL).netloc
-        host = '10.0.0.24'
-        # username = Store(inst.owner).username
-        username = 'u-1'
-        # password = inst.owner.profile.smb_password
-        password = 'asd'
+        host = urlsplit(settings.STORE_URL).netloc
+        username = Store(inst.owner).username
+        password = inst.owner.profile.smb_password
         agent_tasks.mount_store.apply_async(
             queue=queue, args=(inst.vm_name, host, username, password))
 
