@@ -979,6 +979,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
     def get_latest_activity_in_progress(self):
         try:
             return InstanceActivity.objects.filter(
-                instance=self, succeeded=None).latest("started")
+                instance=self, succeeded=None, parent=None).latest("started")
         except InstanceActivity.DoesNotExist:
             return None
