@@ -22,9 +22,9 @@ $(function() {
    *   then changes the form's action attr before sending the form itself
    */
   $("#store-list-container").on("click", '#store-upload-form button[type="submit"]', function() {
+    $('#store-upload-form button[type="submit"] i').addClass("fa-spinner fa-spin");
     var current_dir = $("#store-upload-form").find('[name="current_dir"]').val();
     $.get($("#store-upload-form").data("action") + "?current_dir=" + current_dir, function(result) {
-      $('#store-upload-form button[type="submit"] i').addClass("fa-spinner fa-spin");
       $("#store-upload-form").get(0).setAttribute("action", result['url']);
       $("#store-upload-form").submit();
     });
