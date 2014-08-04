@@ -450,8 +450,10 @@ class TemplateForm(forms.ModelForm):
             self.allowed_fields = ()
         else:
             self.allowed_fields = (
-                'name', 'access_method', 'description', 'system', 'tags')
-        if self.user.has_perm('vm.change_template_resources'):
+                'name', 'access_method', 'description', 'system', 'tags',
+                'arch', 'lease')
+        if (self.user.has_perm('vm.change_template_resources')
+                or not self.instance.pk):
             self.allowed_fields += tuple(set(self.fields.keys()) -
                                          set(['raw_data']))
         if self.user.is_superuser:

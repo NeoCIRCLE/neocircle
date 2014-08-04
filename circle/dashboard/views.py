@@ -1376,7 +1376,7 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
     def get_context_data(self, *args, **kwargs):
         context = super(TemplateCreate, self).get_context_data(*args, **kwargs)
 
-        num_leases = Lease.get_objects_with_level("user",
+        num_leases = Lease.get_objects_with_level("operator",
                                                   self.request.user).count()
         can_create_leases = self.request.user.has_perm("create_leases")
         context.update({
