@@ -3183,11 +3183,13 @@ class StoreList(LoginRequiredMixin, TemplateView):
                 return super(StoreList, self).get(*args, **kwargs)
         except NoStoreException:
             messages.warning(self.request, _("No store."))
-            return redirect("/")
         except NotOkException:
             messages.warning(self.request, _("Store has some problems now."
                                              " Try again later."))
-            return redirect("/")
+        except Exception as e:
+            logger.critical("Something is wrong with store: %s", unicode(e))
+            messages.warning(self.request, _("Unknown store error."))
+        return redirect("/")
 
     def create_up_directory(self, directory):
         path = normpath(join('/', directory, '..'))
