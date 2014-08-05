@@ -40,6 +40,7 @@ from django.forms.widgets import TextInput, HiddenInput
 from django.template import Context
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy
 from sizefield.widgets import FileSizeWidget
 from django.core.urlresolvers import reverse_lazy
 
@@ -1141,7 +1142,7 @@ vm_search_choices = (
 class VmListSearchForm(forms.Form):
     s = forms.CharField(widget=forms.TextInput(attrs={
         'class': "form-control input-tags",
-        'placeholder': _("Search..."),
+        'placeholder': ugettext_lazy("Search...")
     }))
 
     stype = forms.ChoiceField(vm_search_choices, widget=forms.Select(attrs={
