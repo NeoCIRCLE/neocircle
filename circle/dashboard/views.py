@@ -70,7 +70,7 @@ from .forms import (
     VmSaveForm, UserKeyForm, VmRenewForm,
     CirclePasswordChangeForm, VmCreateDiskForm, VmDownloadDiskForm,
     TraitsForm, RawDataForm, GroupPermissionForm, AclUserAddForm,
-    VmResourcesForm, VmAddInterfaceForm,
+    VmResourcesForm, VmAddInterfaceForm, VmListSearchForm
 )
 
 from .tables import (
@@ -1552,6 +1552,11 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
         'owner': "owner__username",
     }
 
+    def get_context_data(self, *args, **kwargs):
+        context = super(VmList, self).get_context_data(*args, **kwargs)
+        context['search_form'] = VmListSearchForm(self.request.GET)
+        return context
+
     def get(self, *args, **kwargs):
         if self.request.is_ajax():
             favs = Instance.objects.filter(
@@ -1576,8 +1581,7 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
     def get_queryset(self):
         logger.debug('VmList.get_queryset() called. User: %s',
                      unicode(self.request.user))
-        queryset = Instance.get_objects_with_level(
-            'user', self.request.user).filter(destroyed_at=None)
+        queryset = self.create_default_queryset()
 
         self.create_fake_get()
         sort = self.request.GET.get("sort")
@@ -1591,6 +1595,17 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
         return queryset.filter(
             **self.get_queryset_filters()).select_related('owner', 'node'
                                                           ).distinct()
+
+    def create_default_queryset(self):
+        stype = self.request.GET.get("stype", "0")
+        superuser = stype == "2"
+        shared = stype == "1"
+        level = "owner" if stype == "0" else "user"
+        queryset = Instance.get_objects_with_level(
+            level, self.request.user,
+            group_also=shared, disregard_superuser=not superuser,
+        ).filter(destroyed_at=None)
+        return queryset
 
     def create_fake_get(self):
         """

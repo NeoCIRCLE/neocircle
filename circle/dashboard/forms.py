@@ -1129,3 +1129,21 @@ class VmResourcesForm(forms.ModelForm):
     class Meta:
         model = Instance
         fields = ('num_cores', 'priority', 'ram_size', )
+
+
+vm_search_choices = (
+    (0, _("owned")),
+    (1, _("shared")),
+    (2, _("all")),
+)
+
+
+class VmListSearchForm(forms.Form):
+    s = forms.CharField(widget=forms.TextInput(attrs={
+        'class': "form-control input-tags",
+        'placeholder': _("Search..."),
+    }))
+
+    stype = forms.ChoiceField(vm_search_choices, widget=forms.Select(attrs={
+        'class': "btn btn-default input-tags",
+    }))

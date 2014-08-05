@@ -264,7 +264,7 @@ $(function () {
       window.location.href = "/dashboard/vm/" + search_result[0].pk + "/";
     }
     if(e.keyCode == 13 && search_result.length > 1 && input.length > 0) {
-      window.location.href = "/dashboard/vm/list/?s=" + input;
+      window.location.href = "/dashboard/vm/list/?s=" + input + "&stype=2";
     }
   });
 
