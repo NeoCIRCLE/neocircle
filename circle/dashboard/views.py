@@ -938,8 +938,6 @@ vm_ops = OrderedDict([
         op='sleep', icon='moon-o', effect='info')),
     ('migrate', VmMigrateView),
     ('save_as_template', VmSaveView),
-    ('mount_store', VmOperationView.factory(
-        op='mount_store', icon='briefcase', effect='info')),
     ('reboot', VmOperationView.factory(
         op='reboot', icon='refresh', effect='warning')),
     ('reset', VmOperationView.factory(
@@ -963,6 +961,10 @@ vm_ops = OrderedDict([
     ('password_reset', VmOperationView.factory(
         op='password_reset', icon='unlock', effect='warning',
         show_in_toolbar=False, wait_for_result=0.5, with_reload=True)),
+    ('mount_store', VmOperationView.factory(
+        op='mount_store', icon='briefcase', effect='info',
+        show_in_toolbar=False,
+    )),
 ])
 
 

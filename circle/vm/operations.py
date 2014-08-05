@@ -928,8 +928,9 @@ class MountStoreOperation(InstanceOperation):
     id = 'mount_store'
     name = _("mount store")
     description = _(
-        "This operation exposes your personal files and your store"
-        "credentials to other users of this virtual machine (if any).")
+        "This operation attaches your personal file store. Other users who "
+        "has acces to this machine can see these files as well."
+    )
     acl_level = "owner"
     required_perms = ()
 

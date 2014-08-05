@@ -90,6 +90,20 @@
         </div>
       </form>
     </div><!-- id:vm-details-tags -->
+
+    {% if op.mount_store %}
+      <strong>{% trans "Store" %}</strong>
+      <p>
+        {{ op.mount_store.description }}
+      </p>
+      <div class="operation-wrapper">
+        <a href="{{ op.mount_store.get_url }}" class="btn btn-info btn-xs operation"
+        {% if op.mount_store.disabled %}disabled{% endif %}>
+          <i class="fa fa-{{op.mount_store.icon}}"></i>
+          {{ op.mount_store.name }}
+        </a>
+      </div>
+    {% endif %}
   </div>
   <div class="col-md-8">
     {% if graphite_enabled %}
