@@ -72,6 +72,8 @@
       </div>
     </div>
   </div>
+  {% empty %}
+    {% trans "You can't start new virtual machines beacuse no templates are shared with you." %}
   {% endfor %}
 </div>
 

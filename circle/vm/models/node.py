@@ -307,7 +307,7 @@ class Node(OperatedMixin, TimeStampedModel):
     def get_status_icon(self):
         return {
             'OFFLINE': 'fa-minus-circle',
-            'DISABLED': 'fa-moon',
+            'DISABLED': 'fa-moon-o',
             'MISSING': 'fa-warning',
             'ONLINE': 'fa-play-circle'}.get(self.get_state(),
                                             'fa-question-circle')

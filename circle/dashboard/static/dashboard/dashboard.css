@@ -738,6 +738,10 @@ textarea[name="list-new-namelist"] {
   margin-top: 8px;
 }
 
+#dashboard-files-toplist {
+  min-height: 204px;
+}
+
 #dashboard-files-toplist div.list-group-item {
   color: #555;
 }

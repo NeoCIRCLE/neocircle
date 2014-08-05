@@ -6,7 +6,7 @@
       title="{% trans "A list of your most recent files." %}">
       <i class="fa fa-info-circle"></i>
     </span>
-    <span class="btn btn-default btn-xs infobtn pull-right" 
+    <span class="btn btn-default btn-xs pull-right" 
       title="
       {% blocktrans with used=files.quota.readable_used soft=files.quota.readable_soft hard=files.quota.readable_hard %}
       You are currently using {{ used }}, your soft limit is {{ soft }}, your hard limit is {{ hard }}.
@@ -16,7 +16,8 @@
     <h3 class="no-margin"><i class="fa fa-briefcase"></i> {% trans "Files" %}
     </h3>
   </div>
-  <div class="list-group" id="dashboard-files-toplist">
+  <div class="list-group">
+    <div id="dashboard-files-toplist">
     {% for t in files.toplist %}
     {% if t.TYPE == "F" %}
       <div class="list-group-item">
@@ -44,7 +45,12 @@
       <div style="clear: both;"></div>
     </a>
     {% endif %}
+    {% empty %}
+      <div class="list-group-item list-group-item-last no-hover">
+        {% trans "Your toplist is empty, upload something." %}
+      </div>
     {% endfor %}
+  </div>
     <div class="list-group-item text-right no-hover">
       <form class="pull-left" method="POST" action="{% url "dashboard.views.store-refresh-toplist" %}">
         {% csrf_token %}
