@@ -1554,7 +1554,7 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
 
     def get_context_data(self, *args, **kwargs):
         context = super(VmList, self).get_context_data(*args, **kwargs)
-        context['search_form'] = VmListSearchForm(self.request.GET)
+        context['search_form'] = self.search_form
         return context
 
     def get(self, *args, **kwargs):
@@ -1576,6 +1576,8 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
                 content_type="application/json",
             )
         else:
+            self.search_form = VmListSearchForm(self.request.GET)
+            self.search_form.full_clean()
             return super(VmList, self).get(*args, **kwargs)
 
     def get_queryset(self):
@@ -1597,10 +1599,11 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
                                                           ).distinct()
 
     def create_default_queryset(self):
-        stype = self.request.GET.get("stype", "0")
-        superuser = stype == "2"
-        shared = stype == "1"
-        level = "owner" if stype == "0" else "user"
+        cleaned_data = self.search_form.cleaned_data
+        stype = cleaned_data.get('stype', 2)
+        superuser = stype == 2
+        shared = stype == 1
+        level = "owner" if stype == 0 else "user"
         queryset = Instance.get_objects_with_level(
             level, self.request.user,
             group_also=shared, disregard_superuser=not superuser,

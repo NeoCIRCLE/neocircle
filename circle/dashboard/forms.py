@@ -39,8 +39,7 @@ from django.contrib.auth.forms import UserCreationForm as OrgUserCreationForm
 from django.forms.widgets import TextInput, HiddenInput
 from django.template import Context
 from django.template.loader import render_to_string
-from django.utils.translation import ugettext as _
-from django.utils.translation import ugettext_lazy
+from django.utils.translation import ugettext_lazy as _
 from sizefield.widgets import FileSizeWidget
 from django.core.urlresolvers import reverse_lazy
 
@@ -1142,9 +1141,17 @@ vm_search_choices = (
 class VmListSearchForm(forms.Form):
     s = forms.CharField(widget=forms.TextInput(attrs={
         'class': "form-control input-tags",
-        'placeholder': ugettext_lazy("Search...")
+        'placeholder': _("Search...")
     }))
 
     stype = forms.ChoiceField(vm_search_choices, widget=forms.Select(attrs={
         'class': "btn btn-default input-tags",
     }))
+
+    def __init__(self, *args, **kwargs):
+        super(VmListSearchForm, self).__init__(*args, **kwargs)
+        # set initial value, otherwise it would be overwritten by request.GET
+        if not self.data.get("stype"):
+            data = self.data.copy()
+            data['stype'] = 2
+            self.data = data
