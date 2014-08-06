@@ -184,9 +184,8 @@ class UserListTablex(Table):
 
 
 class TemplateListTable(Table):
-    name = LinkColumn(
-        'dashboard.views.template-detail',
-        args=[A('pk')],
+    name = TemplateColumn(
+        template_name="dashboard/template-list/column-template-name.html",
         attrs={'th': {'data-sort': "string"}}
     )
     num_cores = Column(
@@ -194,15 +193,12 @@ class TemplateListTable(Table):
         attrs={'th': {'data-sort': "int"}}
     )
     ram_size = TemplateColumn(
-        "{{ record.ram_size }} Mb",
-        attrs={'th': {'data-sort': "string"}}
+        "{{ record.ram_size }} MiB",
+        attrs={'th': {'data-sort': "int"}},
     )
     lease = TemplateColumn(
         "{{ record.lease.name }}",
         verbose_name=_("Lease"),
-        attrs={'th': {'data-sort': "string"}}
-    )
-    arch = Column(
         attrs={'th': {'data-sort': "string"}}
     )
     system = Column(
@@ -210,6 +206,17 @@ class TemplateListTable(Table):
     )
     access_method = Column(
         attrs={'th': {'data-sort': "string"}}
+    )
+    owner = TemplateColumn(
+        template_name="dashboard/template-list/column-template-owner.html",
+        verbose_name=_("Owner"),
+        attrs={'th': {'data-sort': "string"}}
+    )
+    running = TemplateColumn(
+        template_name="dashboard/template-list/column-template-running.html",
+        verbose_name=_("Running"),
+        attrs={'th': {'data-sort': "int"}},
+        orderable=False,
     )
     actions = TemplateColumn(
         verbose_name=_("Actions"),
@@ -222,8 +229,8 @@ class TemplateListTable(Table):
         model = InstanceTemplate
         attrs = {'class': ('table table-bordered table-striped table-hover'
                            ' template-list-table')}
-        fields = ('name', 'num_cores', 'ram_size', 'arch',
-                  'system', 'access_method', 'lease', 'actions', )
+        fields = ('name', 'num_cores', 'ram_size', 'system',
+                  'access_method', 'lease', 'owner', 'running', 'actions', )
 
         prefix = "template-"
 
