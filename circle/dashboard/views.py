@@ -996,7 +996,6 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
         if form is None:
             form = self.form_class()
         context = super(NodeDetailView, self).get_context_data(**kwargs)
-        instances = Instance.active.filter(node=self.object)
         na = NodeActivity.objects.filter(
             node=self.object, parent=None
         ).order_by('-started').select_related()
