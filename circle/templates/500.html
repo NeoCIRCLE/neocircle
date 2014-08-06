@@ -6,11 +6,18 @@
 {% block page_title %}{% trans ":(" %}{% endblock page_title %}
 
 {% block content %}
-<div style="margin-top: 4em;">
-{% if error %}
-<p>{{ error }}</p>
-{% else %}
-<p>{% trans "Internal Server Error... Please leave the server alone..." %}</p>
-{% endif %}
+<div class="alert alert-danger" style="font-size: 22px; margin-top: 2em;">
+  <div class="row">
+    <div class="col-md-2" style="text-align: center;">
+      HTTP 500
+    </div>
+    <div class="col-md-10" style="text-align: center;">
+      {% if error %}
+        {{ error }}
+      {% else %}
+       {% trans "Internal Server Error... Please leave the server alone..." %}
+      {% endif %}
+    </div>
+  </div>
 </div>
 {% endblock content %}
