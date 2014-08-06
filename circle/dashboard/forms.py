@@ -450,8 +450,10 @@ class TemplateForm(forms.ModelForm):
             self.allowed_fields = ()
         else:
             self.allowed_fields = (
-                'name', 'access_method', 'description', 'system', 'tags')
-        if self.user.has_perm('vm.change_template_resources'):
+                'name', 'access_method', 'description', 'system', 'tags',
+                'arch', 'lease')
+        if (self.user.has_perm('vm.change_template_resources')
+                or not self.instance.pk):
             self.allowed_fields += tuple(set(self.fields.keys()) -
                                          set(['raw_data']))
         if self.user.is_superuser:
@@ -1125,6 +1127,14 @@ class VmResourcesForm(forms.ModelForm):
     priority = forms.ChoiceField(priority_choices, widget=forms.Select(attrs={
         'class': "form-control input-tags cpu-priority-input",
     }))
+
+    def __init__(self, *args, **kwargs):
+        self.can_edit = kwargs.pop("can_edit", None)
+        super(VmResourcesForm, self).__init__(*args, **kwargs)
+
+        if not self.can_edit:
+            for name, field in self.fields.items():
+                field.widget.attrs['disabled'] = "disabled"
 
     class Meta:
         model = Instance

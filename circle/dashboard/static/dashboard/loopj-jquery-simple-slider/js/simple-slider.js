@@ -80,7 +80,7 @@ var __slice = [].slice,
         });
       }
       this.dragger.mousedown(function(e) {
-        if (e.which !== 1) {
+        if (e.which !== 1 || _this.settings.disabled) {
           return;
         }
         _this.dragging = true;
@@ -170,6 +170,9 @@ var __slice = [].slice,
       if (this.input.data("slider-showscale") != null) {
         options.showScale = this.input.data("slider-showscale");
       }
+      if (this.input.data("slider-disabled")) {
+        options.disabled = this.input.data("slider-disabled");
+      }
       return options;
     }
 
@@ -207,8 +210,12 @@ var __slice = [].slice,
       return this.valueChanged(value, ratio, "setValue");
     };
 
+    SimpleSlider.prototype.setDisabled = function(value) {
+      this.settings.disabled = value;
+    }
+
     SimpleSlider.prototype.trackEvent = function(e) {
-      if (e.which !== 1) {
+      if (e.which !== 1 || this.settings.disabled) {
         return;
       }
       this.domDrag(e.pageX, e.pageY, true);
@@ -374,7 +381,7 @@ var __slice = [].slice,
     simpleSlider: function() {
       var params, publicMethods, settingsOrMethod;
       settingsOrMethod = arguments[0], params = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-      publicMethods = ["setRatio", "setValue"];
+      publicMethods = ["setRatio", "setValue", "setDisabled", ];
       return $(this).each(function() {
         var obj, settings;
         if (settingsOrMethod && __indexOf.call(publicMethods, settingsOrMethod) >= 0) {

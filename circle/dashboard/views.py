@@ -295,7 +295,8 @@ class VmDetailView(CheckedDetailView):
     def get_context_data(self, **kwargs):
         context = super(VmDetailView, self).get_context_data(**kwargs)
         instance = context['instance']
-        ops = get_operations(instance, self.request.user)
+        user = self.request.user
+        ops = get_operations(instance, user)
         context.update({
             'graphite_enabled': settings.GRAPHITE_URL is not None,
             'vnc_url': reverse_lazy("dashboard.views.detail-vnc",
@@ -305,7 +306,7 @@ class VmDetailView(CheckedDetailView):
         })
 
         # activity data
-        activities = instance.get_merged_activities(self.request.user)
+        activities = instance.get_merged_activities(user)
         show_show_all = len(activities) > 10
         activities = activities[:10]
         context['activities'] = activities
@@ -331,7 +332,11 @@ class VmDetailView(CheckedDetailView):
         context['ipv6_port'] = instance.get_connect_port(use_ipv6=True)
 
         # resources forms
-        context['resources_form'] = VmResourcesForm(instance=instance)
+        can_edit = (
+            instance in Instance.get_objects_with_level("owner", user)
+            and self.request.user.has_perm("vm.change_resources"))
+        context['resources_form'] = VmResourcesForm(
+            can_edit=can_edit, instance=instance)
 
         if self.request.user.is_superuser:
             context['traits_form'] = TraitsForm(instance=instance)
@@ -1375,7 +1380,7 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
     def get_context_data(self, *args, **kwargs):
         context = super(TemplateCreate, self).get_context_data(*args, **kwargs)
 
-        num_leases = Lease.get_objects_with_level("user",
+        num_leases = Lease.get_objects_with_level("operator",
                                                   self.request.user).count()
         can_create_leases = self.request.user.has_perm("create_leases")
         context.update({

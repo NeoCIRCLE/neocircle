@@ -489,6 +489,10 @@ function addSliderMiscs() {
   });
   $(".cpu-priority-input").trigger("change");
   $(".cpu-count-input, .ram-input").trigger("input");
+
+  $(".cpu-priority-slider").simpleSlider("setDisabled", $(".cpu-priority-input").prop("disabled"));
+  $(".cpu-count-slider").simpleSlider("setDisabled", $(".cpu-count-input").prop("disabled"));
+  $(".ram-slider").simpleSlider("setDisabled", $(".ram-input").prop("disabled"));
 }
 
 
