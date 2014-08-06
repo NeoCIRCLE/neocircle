@@ -84,7 +84,16 @@ def make_messages():
 def test(test=""):
     "Run portal tests"
     with _workon("circle"), cd("~/circle/circle"):
-        run("./manage.py test --settings=circle.settings.test %s" % test)
+        run("./manage.py test --settings=circle.settings.test "+
+            "--exclude-dir=dashboard/tests/selenium %s" % test)
+
+@roles('portal')
+def selenium(test="", driver="firefox"):
+    "Run portal selenium tests"
+    with _workon("circle"), cd("~/circle/circle"):
+        run("./manage.py test --settings=circle.settings.test "+
+            " --with-selenium-driver --selenium-driver="+
+            "%s -w dashboard/tests/selenium %s" % (driver, test))
 
 
 def pull(dir="~/circle/circle"):
