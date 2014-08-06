@@ -6,9 +6,9 @@
   <i class="fa {% if not a.finished %}fa-refresh fa-spin {% else %}fa-plus{% endif %}"></i>
 </span>
 <strong>{% if user.is_superuser %}
-    {{ a.readable_name.get_admin_text }}
+    {{ a.readable_name.get_admin_text|capfirst }}
     {% else %}
-    {{ a.readable_name.get_user_text }}{% endif %}</strong>
+    {{ a.readable_name.get_user_text|capfirst }}{% endif %}</strong>
 {{ a.started|date:"Y-m-d H:i" }}, {{ a.user }}
   {% if a.children.count > 0 %}
     <div class="sub-timeline">
