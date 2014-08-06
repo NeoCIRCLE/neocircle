@@ -35,16 +35,16 @@ class NodeListTable(Table):
     )
 
     overcommit = Column(
-        verbose_name="Overcommit",
+        verbose_name=_("Overcommit"),
         attrs={'th': {'class': 'node-list-table-thin'}},
     )
 
     host = Column(
-        verbose_name="Host",
+        verbose_name=_("Host"),
     )
 
     enabled = BooleanColumn(
-        verbose_name="Enabled",
+        verbose_name=_("Enabled"),
         attrs={'th': {'class': 'node-list-table-thin'}},
     )
 
@@ -59,6 +59,7 @@ class NodeListTable(Table):
     )
 
     number_of_VMs = TemplateColumn(
+        verbose_name=_("Number of VMs"),
         template_name='dashboard/node-list/column-vm.html',
         attrs={'th': {'class': 'node-list-table-thin'}},
     )
@@ -66,16 +67,14 @@ class NodeListTable(Table):
     monitor = TemplateColumn(
         template_name='dashboard/node-list/column-monitor.html',
         attrs={'th': {'class': 'node-list-table-monitor'}},
+        orderable=False,
     )
 
-    details = TemplateColumn(
-        template_name='dashboard/node-list/column-details.html',
-        attrs={'th': {'class': 'node-list-table-thin'}},
-    )
     actions = TemplateColumn(
         attrs={'th': {'class': 'node-list-table-thin'}},
         template_code=('{% include "dashboard/node-list/column-'
                        'actions.html" with btn_size="btn-xs" %}'),
+        orderable=False,
     )
 
     class Meta:
