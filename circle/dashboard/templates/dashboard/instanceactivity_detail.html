@@ -58,7 +58,7 @@
 
 
             <dt>{% trans "result" %}</dt>
-            <dd><textarea class="form-control">{% if user.is_superuser %}{{object.result.get_admin_text}}{% else %}{{object.result.get_admin_text}}{% endif %}</textarea></dd>
+            <dd><textarea class="form-control">{% if user.is_superuser %}{{object.result.get_admin_text}}{% else %}{{object.result.get_user_text}}{% endif %}</textarea></dd>
 
             <dt>{% trans "resultant state" %}</dt>
             <dd>{{object.resultant_state|default:'n/a'}}</dd>
