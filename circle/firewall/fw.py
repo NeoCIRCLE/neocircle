@@ -194,7 +194,7 @@ def generate_ptr_records():
 
         # ipv6
         if host.ipv6:
-            DNS.append("^%s:%s:%s" % (host.ipv6.reverse_dns,
+            DNS.append("^%s:%s:%s" % (host.ipv6.reverse_dns.rstrip('.'),
                                       reverse, settings['dns_ttl']))
 
     return DNS
@@ -211,14 +211,14 @@ def generate_records():
              'CNAME': 'C%(fqdn)s:%(address)s:%(ttl)s',
              'MX': '@%(fqdn)s::%(address)s:%(dist)s:%(ttl)s',
              'PTR': '^%(fqdn)s:%(address)s:%(ttl)s',
-             'TXT': '%(fqdn)s:%(octal)s:%(ttl)s'}
+             'TXT': "'%(fqdn)s:%(octal)s:%(ttl)s"}
 
     retval = []
 
     for r in Record.objects.all():
         params = {'fqdn': r.fqdn, 'address': r.address, 'ttl': r.ttl}
         if r.type == 'MX':
-            params['address'], params['dist'] = r.address.split(':', 2)
+            params['dist'], params['address'] = r.address.split(':', 2)
         if r.type == 'AAAA':
             try:
                 params['octal'] = ipv6_to_octal(r.address)
