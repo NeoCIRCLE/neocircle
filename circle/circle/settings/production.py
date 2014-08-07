@@ -24,18 +24,10 @@ from os import environ
 from base import *  # noqa
 
 
-def get_env_setting(setting):
-    """ Get the environment setting or return exception """
-    try:
-        return environ[setting]
-    except KeyError:
-        error_msg = "Set the %s env variable" % setting
-        raise ImproperlyConfigured(error_msg)
-
 ########## HOST CONFIGURATION
 # See: https://docs.djangoproject.com/en/1.5/releases/1.5/
 #      #allowed-hosts-required-in-production
-ALLOWED_HOSTS = get_env_setting('DJANGO_ALLOWED_HOSTS').split(',')
+ALLOWED_HOSTS = get_env_variable('DJANGO_ALLOWED_HOSTS').split(',')
 ########## END HOST CONFIGURATION
 
 ########## EMAIL CONFIGURATION
@@ -44,18 +36,18 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 try:
     # See: https://docs.djangoproject.com/en/dev/ref/settings/#email-host
-    EMAIL_HOST = environ.get('EMAIL_HOST')
+    EMAIL_HOST = get_env_variable('EMAIL_HOST')
 except ImproperlyConfigured:
-    pass
+    EMAIL_HOST = 'localhost'
 else:
     # https://docs.djangoproject.com/en/dev/ref/settings/#email-host-password
-    EMAIL_HOST_PASSWORD = environ.get('EMAIL_HOST_PASSWORD', '')
+    EMAIL_HOST_PASSWORD = get_env_variable('EMAIL_HOST_PASSWORD', '')
 
     # See: https://docs.djangoproject.com/en/dev/ref/settings/#email-host-user
-    EMAIL_HOST_USER = environ.get('EMAIL_HOST_USER', 'your_email@example.com')
+    EMAIL_HOST_USER = get_env_variable('EMAIL_HOST_USER', 'your_email@example.com')
 
     # See: https://docs.djangoproject.com/en/dev/ref/settings/#email-port
-    EMAIL_PORT = environ.get('EMAIL_PORT', 587)
+    EMAIL_PORT = get_env_variable('EMAIL_PORT', 587)
 
     # See: https://docs.djangoproject.com/en/dev/ref/settings/#email-use-tls
     EMAIL_USE_TLS = True
@@ -64,7 +56,8 @@ else:
 EMAIL_SUBJECT_PREFIX = '[%s] ' % SITE_NAME
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#server-email
-SERVER_EMAIL = EMAIL_HOST_USER
+DEFAULT_FROM_EMAIL = get_env_variable('DEFAULT_FROM_EMAIL')
+SERVER_EMAIL = get_env_variable('SERVER_EMAIL', DEFAULT_FROM_EMAIL)
 ########## END EMAIL CONFIGURATION
 
 
@@ -83,5 +76,5 @@ CACHES = {
 
 ########## SECRET CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
-SECRET_KEY = get_env_setting('SECRET_KEY')
+SECRET_KEY = get_env_variable('SECRET_KEY')
 ########## END SECRET CONFIGURATION
