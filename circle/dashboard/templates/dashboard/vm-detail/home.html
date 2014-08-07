@@ -90,6 +90,16 @@
         </div>
       </form>
     </div><!-- id:vm-details-tags -->
+    <dl>
+      <dt>{% trans "Template" %}:</dt>
+      <dd>
+        {% if instance.template %}
+          {{ instance.template.name }}
+        {% else %}
+          -
+        {% endif %}
+      </dd>
+    </dl>
   </div>
   <div class="col-md-8">
     {% if graphite_enabled %}

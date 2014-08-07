@@ -23,6 +23,7 @@
         {% csrf_token %}
 
         {{ form.name|as_crispy_field }}
+        {{ form.parent|as_crispy_field }}
 
         <fieldset class="resources-sliders">
           <legend>{% trans "Resource configuration" %}</legend>

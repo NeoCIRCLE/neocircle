@@ -552,7 +552,8 @@ class TemplateForm(forms.ModelForm):
         exclude = ('state', 'disks', )
         widgets = {
             'system': forms.TextInput,
-            'max_ram_size': forms.HiddenInput
+            'max_ram_size': forms.HiddenInput,
+            'parent': forms.Select(attrs={'disabled': ""}),
         }
 
 
