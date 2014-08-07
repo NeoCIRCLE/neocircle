@@ -78,3 +78,10 @@ CACHES = {
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
 SECRET_KEY = get_env_variable('SECRET_KEY')
 ########## END SECRET CONFIGURATION
+
+level = environ.get('LOGLEVEL', 'INFO')
+LOGGING['handlers']['syslog']['level'] = level
+for i in LOCAL_APPS:
+    LOGGING['loggers'][i] = {'handlers': ['syslog'], 'level': level}
+LOGGING['loggers']['djangosaml2'] = {'handlers': ['syslog'], 'level': level}
+LOGGING['loggers']['django'] = {'handlers': ['syslog'], 'level': level}
