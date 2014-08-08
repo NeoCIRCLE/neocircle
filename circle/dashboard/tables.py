@@ -39,12 +39,7 @@ class NodeListTable(Table):
         attrs={'th': {'class': 'node-list-table-thin'}},
     )
 
-    host = Column(
-        verbose_name=_("Host"),
-    )
-
     enabled = BooleanColumn(
-        verbose_name=_("Enabled"),
         attrs={'th': {'class': 'node-list-table-thin'}},
     )
 
@@ -54,7 +49,6 @@ class NodeListTable(Table):
     )
 
     priority = Column(
-        verbose_name=_("Priority"),
         attrs={'th': {'class': 'node-list-table-thin'}},
     )
 
@@ -65,12 +59,14 @@ class NodeListTable(Table):
     )
 
     monitor = TemplateColumn(
+        verbose_name=_("Monitor"),
         template_name='dashboard/node-list/column-monitor.html',
         attrs={'th': {'class': 'node-list-table-monitor'}},
         orderable=False,
     )
 
     actions = TemplateColumn(
+        verbose_name=_("Actions"),
         attrs={'th': {'class': 'node-list-table-thin'}},
         template_code=('{% include "dashboard/node-list/column-'
                        'actions.html" with btn_size="btn-xs" %}'),
