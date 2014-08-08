@@ -922,14 +922,13 @@ class EnsureAgentMixin(object):
             raise self.instance.NoAgentError(self.instance)
 
 
-class PasswordResetOperation(InstanceOperation):
-    activity_code_suffix = 'Password reset'
+class PasswordResetOperation(EnsureAgentMixin, InstanceOperation):
+    activity_code_suffix = 'password_reset'
     id = 'password_reset'
     name = _("password reset")
     description = _("Password reset")
     acl_level = "owner"
     required_perms = ()
-    accept_states = ('RUNNING', )
 
     def _operation(self):
         self.instance.pw = pwgen()
