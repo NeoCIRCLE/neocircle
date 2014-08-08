@@ -941,7 +941,7 @@ class PasswordResetOperation(EnsureAgentMixin, InstanceOperation):
 register_operation(PasswordResetOperation)
 
 
-class MountStoreOperation(InstanceOperation):
+class MountStoreOperation(EnsureAgentMixin, InstanceOperation):
     activity_code_suffix = 'mount_store'
     id = 'mount_store'
     name = _("mount store")
@@ -951,25 +951,6 @@ class MountStoreOperation(InstanceOperation):
     )
     acl_level = "owner"
     required_perms = ()
-
-    def check_precond(self):
-        super(MountStoreOperation, self).check_precond()
-        if self.instance.status not in ["RUNNING"]:
-            raise self.instance.WrongStateError(self.instance)
-
-        try:
-            latest_deploy = InstanceActivity.objects.filter(
-                instance=self.instance, activity_code="vm.Instance.deploy"
-            ).latest("finished").finished
-        except InstanceActivity.DoesNotExist:  # no deploy no agent
-            raise self.instance.WrongStateError(self.instance)
-
-        try:
-            InstanceActivity.objects.filter(
-                activity_code="vm.Instance.agent.starting",
-                started__gt=latest_deploy).latest("started")
-        except InstanceActivity.DoesNotExist:  # no agent no mount
-            raise self.instance.WrongStateError(self.instance)
 
     def check_auth(self, user):
         super(MountStoreOperation, self).check_auth(user)
