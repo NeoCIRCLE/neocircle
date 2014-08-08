@@ -23,7 +23,18 @@
         {% csrf_token %}
 
         {{ form.name|as_crispy_field }}
+        <a {% if form.parent.value %}
+            href="{% url "dashboard.views.template-detail" pk=form.parent.value %}" 
+           {% else %}
+            disabled %}
+          {% endif %}
+          class="btn btn-default pull-right" style="margin-top: 24px;">
+          {% trans "Visit" %}
+          <i class="fa fa-arrow-circle-right"></i>
+        </a> 
+        <div style="width: 80%;">
         {{ form.parent|as_crispy_field }}
+        </div>
 
         <fieldset class="resources-sliders">
           <legend>{% trans "Resource configuration" %}</legend>
