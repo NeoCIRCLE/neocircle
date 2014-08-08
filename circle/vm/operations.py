@@ -929,7 +929,7 @@ class MountStoreOperation(InstanceOperation):
     name = _("mount store")
     description = _(
         "This operation attaches your personal file store. Other users who "
-        "has acces to this machine can see these files as well."
+        "have access to this machine can see these files as well."
     )
     acl_level = "owner"
     required_perms = ()
