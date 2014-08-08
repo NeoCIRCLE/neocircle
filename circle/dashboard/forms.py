@@ -925,10 +925,8 @@ class TraitForm(forms.ModelForm):
                 Field('name', id="node-details-traits-input",
                       css_class="input-sm input-traits"),
                 Div(
-                    HTML('<input type="submit" '
-                         'class="btn btn-default btn-sm input-traits" '
-                         'value="Add trait"/>',
-                         ),
+                    Submit("submit", _("Add trait"),
+                           css_class="btn btn-primary btn-sm input-traits"),
                     css_class="input-group-btn",
                 ),
                 css_class="input-group",

@@ -54,11 +54,13 @@
   <div class="row">
     <div class="col-md-2" id="node-info-pane">
       <div id="node-info-data" class="big">
-      <span id="node-details-state" class="label {% if node.state == 'ONLINE' %}label-success
-			{% elif node.state == 'MISSING' %}label-danger
-			{% elif node.state == 'DISABLED' %}label-warning
-			{% elif node.state == 'OFFLINE' %}label-warning
-			{% endif %}">{{ node.get_status_display|upper }}</span>
+        <span id="node-details-state" class="label
+          {% if node.state == 'ONLINE' %}label-success
+          {% elif node.state == 'MISSING' %}label-danger
+          {% elif node.state == 'DISABLED' %}label-warning
+          {% elif node.state == 'OFFLINE' %}label-warning{% endif %}">
+          <i class="fa {{ node.get_status_icon }}"></i> {{ node.get_status_display|upper }}
+        </span>
       </div>
     </div>
     <div class="col-md-10" id="node-detail-pane">
@@ -67,39 +69,41 @@
           <li class="active">
             <a href="#home" data-toggle="pill" class="text-center">
               <i class="fa fa-compass fa-2x"></i><br>
-              {% trans "Home" %}</a></li>
+              {% trans "Home" %}
+            </a>
+          </li>
           <li>
             <a href="#resources" data-toggle="pill" class="text-center">
               <i class="fa fa-tasks fa-2x"></i><br>
-              {% trans "Resources" %}</a></li>
+              {% trans "Resources" %}
+            </a>
+          </li>
 	  <li>
-            <a href="#virtualmachines" data-toggle="pill" class="text-center">
+            <a href="{% url "dashboard.views.vm-list" %}?s=node:{{ node.name }}" 
+              target="blank" class="text-center">
               <i class="fa fa-desktop fa-2x"></i><br>
-              {% trans "Virtual Machines" %}</a></li>
+              {% trans "Virtual Machines" %}
+            </a>
+          </li>
  	  <li>
             <a href="#activity" data-toggle="pill" class="text-center">
               <i class="fa fa-clock-o fa-2x"></i><br>
-              {% trans "Activity" %}</a></li>
+              {% trans "Activity" %}
+            </a>
+          </li>
 	</ul>
 
         <div id="panel-body"  class="tab-content panel-body">
           <div class="tab-pane active" id="home">{% include "dashboard/node-detail/home.html" %}</div>
 	  <div class="tab-pane" id="resources">{% include "dashboard/node-detail/resources.html" %}</div>
           <div class="tab-pane" id="activity">{% include "dashboard/node-detail/activity.html" %}</div>
-          <div class="tab-pane" id="virtualmachines">{% include "dashboard/node-detail/vm.html" %}</div>
   	</div>
       </div>
     </div>
   </div>
 </div>
-<style>
-  .popover {
-    max-width: 600px;
-  }
-</style>
-
 {% endblock %}
+
 {% block extra_js %}
-<script src="{{ STATIC_URL}}dashboard/node-details.js"></script>
+  <script src="{{ STATIC_URL}}dashboard/node-details.js"></script>
 {% endblock %}
-

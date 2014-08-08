@@ -12,35 +12,24 @@
       <div class="panel-heading">
         <h3 class="no-margin"><i class="fa fa-desktop"></i> {% trans "Compute nodes" %}</h3>
       </div>
-	<div id="table_container">
-	
+      <div id="table_container">
         <div id="rendered_table" class="panel-body">
-	      {% render_table table %}
+          {% render_table table %}
         </div>
       </div>
     </div>
   </div>
 </div>
-<style>
 
-  .node-list-table tbody>tr>td {
+<style>
+  .node-list-table tbody>tr>td, .node-list-table thead>tr>th {
     vertical-align: middle;
   }
 
-  .popover {
-    max-width: 600px;
-  }
-
-  .node-list-selected, .node-list-selected td {
-    background-color: #e8e8e8 !important;
-  }
-
-  .node-list-selected:hover, .node-list-selected:hover td {
-    background-color: #d0d0d0 !important;
-  }
-
-  .node-list-selected td:first-child {
-    font-weight: bold;
+  .node-list-table thead>tr>th, 
+  .node-list-table .enabled, .node-list-table .priority, 
+  .node-list-table .overcommit, .node-list-table .number_of_VMs {
+    text-align: center;
   }
 
   .node-list-table-thin {
@@ -54,5 +43,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ STATIC_URL}}dashboard/node-list.js"></script>
+  <script src="{{ STATIC_URL}}dashboard/node-list.js"></script>
 {% endblock %}
