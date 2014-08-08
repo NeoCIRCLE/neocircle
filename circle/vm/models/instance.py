@@ -290,6 +290,10 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         message = ugettext_noop(
             "Instance %(instance)s has already been destroyed.")
 
+    class NoAgentError(InstanceError):
+        message = ugettext_noop(
+            "No agent software is running on instance %(instance)s.")
+
     class WrongStateError(InstanceError):
         message = ugettext_noop(
             "Current state (%(state)s) of instance %(instance)s is "

@@ -903,6 +903,25 @@ class ResourcesOperation(InstanceOperation):
 register_operation(ResourcesOperation)
 
 
+class EnsureAgentMixin(object):
+    accept_states = ('RUNNING', )
+
+    def check_precond(self):
+        super(EnsureAgentMixin, self).check_precond()
+
+        last_boot_time = self.instance.activity_log.filter(
+            succeeded=True, activity_code__in=(
+                "vm.Instance.deploy", "vm.Instance.reset",
+                "vm.Instance.reboot")).latest("finished").finished
+
+        try:
+            InstanceActivity.objects.filter(
+                activity_code="vm.Instance.agent.starting",
+                started__gt=last_boot_time).latest("started")
+        except InstanceActivity.DoesNotExist:  # no agent since last boot
+            raise self.instance.NoAgentError(self.instance)
+
+
 class PasswordResetOperation(InstanceOperation):
     activity_code_suffix = 'Password reset'
     id = 'password_reset'
