@@ -1555,6 +1555,7 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
         'tags[]': "tags__name__in",
         'tags': "tags__name__in",  # for search string
         'owner': "owner__username",
+        'template': "template__pk",
     }
 
     def get(self, *args, **kwargs):
