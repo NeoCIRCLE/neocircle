@@ -487,11 +487,12 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         """
         try:
             datastore = self.disks.all()[0].datastore
-        except:
-            return None
-        else:
-            path = datastore.path + '/' + self.vm_name + '.dump'
-            return {'datastore': datastore, 'path': path}
+        except IndexError:
+            from storage.models import DataStore
+            datastore = DataStore.objects.get()
+
+        path = datastore.path + '/' + self.vm_name + '.dump'
+        return {'datastore': datastore, 'path': path}
 
     @property
     def primary_host(self):
