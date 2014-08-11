@@ -46,14 +46,9 @@ $(function() {
       selected = [{'index': $(this).index(), 'vm': $(this).data("vm-pk")}];
     }
 
-    // reset btn disables
-    $('.vm-list-table tbody tr .btn').attr('disabled', false);
     // show/hide group controls
     if(selected.length > 0) {
-      $('.vm-list-group-control a').attr('disabled', false);
-      for(var i = 0; i < selected.length; i++) {
-        $('.vm-list-table tbody tr').eq(selected[i]).find('.btn').attr('disabled', true);
-      }
+      $('#vm-mass-ops .mass-operation').attr('disabled', false);
     } else {
       $('.vm-list-group-control a').attr('disabled', true);
     }
@@ -110,6 +105,40 @@ $(function() {
           $('#confirmation-modal').remove();
         });
         $("[title]").tooltip({'placement': "left"});
+      }
+    });
+    return false;
+  });
+
+
+  $("body").on("click", "#op-form-send", function() {
+    var url = $(this).closest("form").prop("action");
+    $(this).find("i").prop("class", "fa fa-spinner fa-spin");
+
+    $.ajax({
+      url: url,
+      headers: {"X-CSRFToken": getCookie('csrftoken')},
+      type: 'POST',
+      data: $(this).closest('form').serialize(),
+      success: function(data, textStatus, xhr) {
+        /* hide the modal we just submitted */
+        $('#confirmation-modal').modal("hide");
+
+        updateStatuses(1);
+  
+        /* if there are messages display them */
+        if(data.messages && data.messages.length > 0) {
+          addMessage(data.messages.join("<br />"), data.success ? "success" : "danger");
+        }
+      },
+      error: function(xhr, textStatus, error) {
+        $('#confirmation-modal').modal("hide");
+        
+        if (xhr.status == 500) {
+          addMessage("500 Internal Server Error", "danger");
+        } else {
+          addMessage(xhr.status + " Unknown Error", "danger");
+        }
       }
     });
     return false;
