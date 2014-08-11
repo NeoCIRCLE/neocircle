@@ -518,6 +518,7 @@ class OperationView(RedirectToLoginMixin, DetailView):
     show_in_toolbar = True
     effect = None
     wait_for_result = None
+    with_reload = False
 
     @property
     def name(self):
@@ -660,13 +661,14 @@ class AjaxOperationMixin(object):
         resp = super(AjaxOperationMixin, self).post(
             request, extra, *args, **kwargs)
         if request.is_ajax():
-            store = []
-            if not getattr(self, "with_reload", False):
+            if not self.with_reload:
                 store = messages.get_messages(request)
                 store.used = True
+            else:
+                store = []
             return HttpResponse(
                 json.dumps({'success': True,
-                            'with_reload': getattr(self, 'with_reload', False),
+                            'with_reload': self.with_reload,
                             'messages': [unicode(m) for m in store]}),
                 content_type="application=json"
             )
@@ -708,9 +710,8 @@ class FormOperationMixin(object):
                 return HttpResponse(
                     json.dumps({
                         'success': True,
-                        'with_reload': getattr(self, 'with_reload', False)}),
-                    content_type="application=json"
-                )
+                        'with_reload': self.with_reload}),
+                    content_type="application=json")
             else:
                 return resp
         else:
@@ -720,7 +721,7 @@ class FormOperationMixin(object):
 class RequestFormOperationMixin(FormOperationMixin):
 
     def get_form_kwargs(self):
-        val = super(FormOperationMixin, self).get_form_kwargs()
+        val = super(RequestFormOperationMixin, self).get_form_kwargs()
         val.update({'request': self.request})
         return val
 
