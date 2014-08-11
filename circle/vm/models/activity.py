@@ -90,7 +90,8 @@ class InstanceActivity(ActivityModel):
 
     @classmethod
     def create(cls, code_suffix, instance, task_uuid=None, user=None,
-               concurrency_check=True, readable_name=None):
+               concurrency_check=True, readable_name=None,
+               resultant_state=None):
 
         readable_name = _normalize_readable_name(readable_name, code_suffix)
         # Check for concurrent activities
@@ -100,14 +101,14 @@ class InstanceActivity(ActivityModel):
 
         activity_code = join_activity_code(cls.ACTIVITY_CODE_BASE, code_suffix)
         act = cls(activity_code=activity_code, instance=instance, parent=None,
-                  resultant_state=None, started=timezone.now(),
+                  resultant_state=resultant_state, started=timezone.now(),
                   readable_name_data=readable_name.to_dict(),
                   task_uuid=task_uuid, user=user)
         act.save()
         return act
 
     def create_sub(self, code_suffix, task_uuid=None, concurrency_check=True,
-                   readable_name=None):
+                   readable_name=None, resultant_state=None):
 
         readable_name = _normalize_readable_name(readable_name, code_suffix)
         # Check for concurrent activities
@@ -117,7 +118,8 @@ class InstanceActivity(ActivityModel):
 
         act = InstanceActivity(
             activity_code=join_activity_code(self.activity_code, code_suffix),
-            instance=self.instance, parent=self, resultant_state=None,
+            instance=self.instance, parent=self,
+            resultant_state=resultant_state,
             readable_name_data=readable_name.to_dict(), started=timezone.now(),
             task_uuid=task_uuid, user=self.user)
         act.save()
@@ -194,14 +196,15 @@ class InstanceActivity(ActivityModel):
 @contextmanager
 def instance_activity(code_suffix, instance, on_abort=None, on_commit=None,
                       task_uuid=None, user=None, concurrency_check=True,
-                      readable_name=None):
+                      readable_name=None, resultant_state=None):
     """Create a transactional context for an instance activity.
     """
     if not readable_name:
         warn("Set readable_name", stacklevel=3)
     act = InstanceActivity.create(code_suffix, instance, task_uuid, user,
                                   concurrency_check,
-                                  readable_name=readable_name)
+                                  readable_name=readable_name,
+                                  resultant_state=resultant_state)
     return activitycontextimpl(act, on_abort=on_abort, on_commit=on_commit)
 
 

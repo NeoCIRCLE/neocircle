@@ -51,6 +51,7 @@ class InstanceOperation(Operation):
     concurrency_check = True
     accept_states = None
     deny_states = None
+    resultant_state = None
 
     def __init__(self, instance):
         super(InstanceOperation, self).__init__(subject=instance)
@@ -95,12 +96,14 @@ class InstanceOperation(Operation):
                                  "provided as parameter.")
 
             return parent.create_sub(code_suffix=self.activity_code_suffix,
-                                     readable_name=name)
+                                     readable_name=name,
+                                     resultant_state=self.resultant_state)
         else:
             return InstanceActivity.create(
                 code_suffix=self.activity_code_suffix, instance=self.instance,
                 readable_name=name, user=user,
-                concurrency_check=self.concurrency_check)
+                concurrency_check=self.concurrency_check,
+                resultant_state=self.resultant_state)
 
     def is_preferred(self):
         """If this is the recommended op in the current state of the instance.
@@ -246,14 +249,12 @@ class DeployOperation(InstanceOperation):
                     "and network configuration).")
     required_perms = ()
     deny_states = ('SUSPENDED', 'RUNNING')
+    resultant_state = 'RUNNING'
 
     def is_preferred(self):
         return self.instance.status in (self.instance.STATUS.STOPPED,
                                         self.instance.STATUS.PENDING,
                                         self.instance.STATUS.ERROR)
-
-    def on_commit(self, activity):
-        activity.resultant_state = 'RUNNING'
 
     def _operation(self, activity, timeout=15):
         # Allocate VNC port and host node
@@ -301,9 +302,7 @@ class DestroyOperation(InstanceOperation):
     description = _("Permanently destroy virtual machine, its network "
                     "settings and disks.")
     required_perms = ()
-
-    def on_commit(self, activity):
-        activity.resultant_state = 'DESTROYED'
+    resultant_state = 'DESTROYED'
 
     def _operation(self, activity):
         # Destroy networks
@@ -599,9 +598,7 @@ class ShutdownOperation(InstanceOperation):
     abortable = True
     required_perms = ()
     accept_states = ('RUNNING', )
-
-    def on_commit(self, activity):
-        activity.resultant_state = 'STOPPED'
+    resultant_state = 'STOPPED'
 
     def _operation(self, task=None):
         self.instance.shutdown_vm(task=task)
@@ -625,9 +622,7 @@ class ShutOffOperation(InstanceOperation):
                     "of a physical machine.")
     required_perms = ()
     accept_states = ('RUNNING', )
-
-    def on_commit(self, activity):
-        activity.resultant_state = 'STOPPED'
+    resultant_state = 'STOPPED'
 
     def _operation(self, activity):
         # Shutdown networks
@@ -660,6 +655,7 @@ class SleepOperation(InstanceOperation):
                     "storage resources, and keep network resources allocated.")
     required_perms = ()
     accept_states = ('RUNNING', )
+    resultant_state = 'SUSPENDED'
 
     def is_preferred(self):
         return (not self.instance.is_base and
@@ -670,9 +666,6 @@ class SleepOperation(InstanceOperation):
             activity.resultant_state = None
         else:
             activity.resultant_state = 'ERROR'
-
-    def on_commit(self, activity):
-        activity.resultant_state = 'SUSPENDED'
 
     def _operation(self, activity, timeout=240):
         # Destroy networks
@@ -702,15 +695,13 @@ class WakeUpOperation(InstanceOperation):
                     "virtual machine from this state.")
     required_perms = ()
     accept_states = ('SUSPENDED', )
+    resultant_state = 'RUNNING'
 
     def is_preferred(self):
         return self.instance.status == self.instance.STATUS.SUSPENDED
 
     def on_abort(self, activity, error):
         activity.resultant_state = 'ERROR'
-
-    def on_commit(self, activity):
-        activity.resultant_state = 'RUNNING'
 
     def _operation(self, activity, timeout=60):
         # Schedule vm
@@ -882,15 +873,13 @@ class RecoverOperation(InstanceOperation):
     acl_level = "owner"
     required_perms = ('vm.recover', )
     accept_states = ('DESTROYED', )
+    resultant_state = 'PENDING'
 
     def check_precond(self):
         try:
             super(RecoverOperation, self).check_precond()
         except Instance.InstanceDestroyedError:
             pass
-
-    def on_commit(self, activity):
-        activity.resultant_state = 'PENDING'
 
     def _operation(self):
         for disk in self.instance.disks.all():
