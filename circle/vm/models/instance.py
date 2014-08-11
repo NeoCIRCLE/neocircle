@@ -988,3 +988,8 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                 instance=self, succeeded=None, parent=None).latest("started")
         except InstanceActivity.DoesNotExist:
             return None
+
+    def is_in_status_change(self):
+        latest = self.get_latest_activity_in_progress()
+        return (latest and latest.resultant_state is not None
+                and self.status != latest.resultant_state)

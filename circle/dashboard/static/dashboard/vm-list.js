@@ -60,23 +60,6 @@ $(function() {
     return retval;
   });
 
-    
-  $('#vm-list-group-migrate').click(function() {
-    // pass?
-  });
-
-  $('.vm-list-details').popover({
-    'placement': 'auto',
-    'html': true,
-    'trigger': 'hover'
-  });
-
-  $('.vm-list-connect').popover({
-    'placement': 'left',
-    'html': true,
-    'trigger': 'click'
-  });
-
   $('tbody a').mousedown(function(e) {
     // parent tr doesn't get selected when clicked
     e.stopPropagation();
@@ -89,43 +72,7 @@ $(function() {
     }
   });
 
-  /* rename */
-  $("#vm-list-rename-button, .vm-details-rename-button").click(function() {
-    $("#vm-list-column-name", $(this).closest("tr")).hide();
-    $("#vm-list-rename", $(this).closest("tr")).css('display', 'inline');
-    $("#vm-list-rename-name", $(this).closest("tr")).focus();
-  });
 
-  /* rename ajax */
-  $('.vm-list-rename-submit').click(function() {
-    var row = $(this).closest("tr")
-    var name = $('#vm-list-rename-name', row).val();
-    var url = '/dashboard/vm/' + row.children("td:first-child").text().replace(" ", "") + '/';
-    $.ajax({
-      method: 'POST',
-      url: url,
-      data: {'new_name': name},
-      headers: {"X-CSRFToken": getCookie('csrftoken')},
-      success: function(data, textStatus, xhr) {
-        
-        $("#vm-list-column-name", row).html(
-          $("<a/>", {
-            'class': "real-link",
-            href: "/dashboard/vm/" + data['vm_pk'] + "/",
-            text: data['new_name']
-          })
-        ).show();
-        $('#vm-list-rename', row).hide();
-        // addMessage(data['message'], "success");
-      },
-      error: function(xhr, textStatus, error) {
-        addMessage("Error during renaming!", "danger");
-      }
-    });
-    return false;
-  });
-  
-  
   /* group actions */
 
   /* select all */
@@ -143,17 +90,28 @@ $(function() {
     return false;
   });
 
-  /* mass vm delete */
-  $('#vm-list-group-delete').click(function() {
-    addModalConfirmation(massDeleteVm,
-      {
-        'url': '/dashboard/vm/mass-delete/',
-        'data': {
-          'selected': selected,
-          'v': collectIds(selected)
-        }
+
+  /* mass operations */
+  $("#vm-mass-ops").on('click', '.mass-operation', function(e) {
+    var icon = $(this).children("i").addClass('fa-spinner fa-spin');
+    params = "?a";
+    for(var i=0; i<selected.length; i++) {
+      params += "&vm=" + selected[i].vm;
+    }
+
+    $.ajax({
+      type: 'GET',
+      url: $(this).attr('href') + params,
+      success: function(data) {
+        icon.removeClass("fa-spinner fa-spin");
+        $('body').append(data);
+        $('#confirmation-modal').modal('show');
+        $('#confirmation-modal').on('hidden.bs.modal', function() {
+          $('#confirmation-modal').remove();
+        });
+        $("[title]").tooltip({'placement': "left"});
       }
-    );
+    });
     return false;
   });
 
@@ -181,7 +139,51 @@ $(function() {
   $(".vm-list-table th a").on("click", function(event) {
     event.preventDefault();
   });
+
+  if(checkStatusUpdate()) {
+    updateStatuses(1);
+  }
 });
+
+
+function checkStatusUpdate() {
+  if($("#vm-list-table tbody td.state i").hasClass("fa-spin")) {
+    return true;
+  }
+}
+
+
+function updateStatuses(runs) {
+  $.get("/dashboard/vm/list/?compact", function(result) {
+    $("#vm-list-table tbody tr").each(function() {
+      vm = $(this).data("vm-pk");
+      status_td = $(this).find("td.state");
+      status_icon = status_td.find("i");
+      status_text = status_td.find("span");
+
+      if(vm in result) {
+        if(result[vm].in_status_change) {
+          if(!status_icon.hasClass("fa-spin")) {
+            status_icon.prop("class", "fa fa-spinner fa-spin");
+          }
+        } else {
+          status_icon.prop("class", "fa " + result[vm].icon);
+        }
+        status_text.text(result[vm].status);
+      } else {
+        $(this).remove();
+      }
+    });
+    
+    if(checkStatusUpdate()) {
+      setTimeout(
+          function() {updateStatuses(runs + 1)}, 
+          1000 + Math.exp(runs * 0.05)
+      );
+    }
+  });
+}
+
 
 function isAlreadySelected(vm) {
   for(var i=0; i<selected.length; i++)

@@ -23,13 +23,14 @@
           </div>
         </form>
       </div>
-      <p>
+      <div id="vm-mass-ops">
       {% for o in ops %}
-        <a href="{{ o.get_url }}" class="btn btn-xs btn-{{ o.effect }}" title="{{ o.name }}">
+        <a href="{{ o.get_url }}" class="btn btn-xs btn-{{ o.effect }} mass-operation" 
+         title="{{ o.name }}">
           <i class="fa fa-{{ o.icon }}"></i>
         </a>
       {% endfor %}
-      </p>
+      </div>
       <div class="panel-body vm-list-group-control">
         <p>
         <strong>{% trans "Group actions" %}</strong>
@@ -41,7 +42,8 @@
         </p>
       </div>
       <div class="panel-body">
-        <table class="table table-bordered table-striped table-hover vm-list-table">
+        <table class="table table-bordered table-striped table-hover vm-list-table"
+         id="vm-list-table">
           <thead><tr>
               <th data-sort="int" class="orderable pk sortable vm-list-table-thin" style="min-width: 50px;">
                 {% trans "ID" as t %}
@@ -68,7 +70,14 @@
           <tr class="{% cycle 'odd' 'even' %}" data-vm-pk="{{ i.pk }}">
             <td class="pk"><div id="vm-{{i.pk}}">{{i.pk}}</div> </td>
             <td class="name"><a class="real-link" href="{% url "dashboard.views.detail" i.pk %}">{{ i.name }}</a>  </td>
-            <td class="state">{{ i.get_status_display }}</td>
+            <td class="state">
+              <i class="fa 
+                {% if i.is_in_status_change %}
+                  fa-spin fa-spinner
+                {% else %}
+                {{ i.get_status_icon }}{% endif %}"></i>
+              <span>{{ i.get_status_display }}</span>
+            </td>
             <td>
               {% include "dashboard/_display-name.html" with user=i.owner show_org=True %}
             </td>
@@ -104,6 +113,5 @@
 
 {% block extra_js %}
   <script src="{{ STATIC_URL}}dashboard/vm-list.js"></script>
-  <script src="{{ STATIC_URL}}dashboard/vm-common.js"></script>
   <script src="{{ STATIC_URL}}dashboard/js/stupidtable.min.js"></script>
 {% endblock %}

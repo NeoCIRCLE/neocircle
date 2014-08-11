@@ -1648,6 +1648,24 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
 
     def get(self, *args, **kwargs):
         if self.request.is_ajax():
+            return self._create_ajax_request()
+        else:
+            return super(VmList, self).get(*args, **kwargs)
+
+    def _create_ajax_request(self):
+        if self.request.GET.get("compact") is not None:
+            instances = Instance.get_objects_with_level(
+                "user", self.request.user).filter(destroyed_at=None)
+            statuses = {}
+            for i in instances:
+                statuses[i.pk] = {
+                    'status': i.get_status_display(),
+                    'icon': i.get_status_icon(),
+                    'in_status_change': i.is_in_status_change(),
+                }
+            return HttpResponse(json.dumps(statuses),
+                                content_type="application/json")
+        else:
             favs = Instance.objects.filter(
                 favourite__user=self.request.user).values_list('pk', flat=True)
             instances = Instance.get_objects_with_level(
@@ -1659,13 +1677,12 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
                 'icon': i.get_status_icon(),
                 'host': "" if not i.primary_host else i.primary_host.hostname,
                 'status': i.get_status_display(),
-                'fav': i.pk in favs} for i in instances]
+                'fav': i.pk in favs,
+            } for i in instances]
             return HttpResponse(
                 json.dumps(list(instances)),  # instances is ValuesQuerySet
                 content_type="application/json",
             )
-        else:
-            return super(VmList, self).get(*args, **kwargs)
 
     def get_queryset(self):
         logger.debug('VmList.get_queryset() called. User: %s',
