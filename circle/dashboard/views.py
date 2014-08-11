@@ -660,8 +660,10 @@ class AjaxOperationMixin(object):
         resp = super(AjaxOperationMixin, self).post(
             request, extra, *args, **kwargs)
         if request.is_ajax():
-            store = messages.get_messages(request)
-            store.used = True
+            store = []
+            if not getattr(self, "with_reload", False):
+                store = messages.get_messages(request)
+                store.used = True
             return HttpResponse(
                 json.dumps({'success': True,
                             'with_reload': getattr(self, 'with_reload', False),
