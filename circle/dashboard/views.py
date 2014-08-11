@@ -986,6 +986,91 @@ def get_operations(instance, user):
     return ops
 
 
+class MassOperationView(OperationView):
+    template_name = 'dashboard/mass-operate.html'
+    effect = "info"
+
+    @classmethod
+    def get_urlname(cls):
+        return 'dashboard.vm.mass-op.%s' % cls.op
+
+    @classmethod
+    def get_url(cls):
+        return reverse("dashboard.vm.mass-op.%s" % cls.op)
+
+    def get_op(self, instance=None):
+        if instance:
+            return getattr(instance, self.op)
+        else:
+            return Instance._ops[self.op]
+
+    def get_context_data(self, **kwargs):
+        ctx = super(MassOperationView, self).get_context_data(**kwargs)
+        instances = self.request.GET.getlist("vm")
+        instances = Instance.objects.filter(pk__in=instances)
+        ctx['instances'] = self._check_instances(instances, self.request.user)
+
+        return ctx
+
+    def check_auth(self):
+        pass
+
+    def get_object(self):
+        return None
+
+    def _check_instances(self, instances, user):
+        vms = []
+        for i in instances:
+            try:
+                self._op_checks(i, user)
+            except HumanReadableException as e:
+                setattr(i, "disabled", e.get_user_text())
+            except SuspiciousOperation:
+                continue
+            except PermissionDenied:
+                setattr(i, "disabled", "No permission")
+            except Exception:
+                setattr(i, "disabled", "Wrong state error, probably")
+            vms.append(i)
+        return vms
+
+    def post(self, request, *args, **kwargs):
+        user = self.request.user
+        vms = request.POST.getlist("vm")
+        instances = Instance.objects.filter(pk__in=vms)
+        for i in instances:
+            try:
+                op = self._op_checks(i, user)
+                op.async(user=user)
+            except HumanReadableException as e:
+                e.send_message(request)
+            except Exception as e:
+                pass
+
+        return redirect(reverse("dashboard.views.vm-list"))
+
+    def _op_checks(self, instance, user):
+        objects_of_user = Instance.get_objects_with_level("user", user)
+        if instance not in objects_of_user:
+            raise SuspiciousOperation()
+        op = self.get_op(instance)
+        op.check_auth(user)
+        op.check_precond()
+        return op
+
+
+vm_mass_ops = OrderedDict([
+    ('deploy', MassOperationView.factory(
+        op='deploy', icon='play', effect='success')),
+    ('wake_up', MassOperationView.factory(
+        op='wake_up', icon='sun-o', effect='success')),
+    ('sleep', MassOperationView.factory(
+        op='sleep', icon='moon-o', effect='info')),
+    ('destroy', MassOperationView.factory(
+        op='destroy', icon='times', effect='danger')),
+])
+
+
 class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
     template_name = "dashboard/node-detail.html"
     model = Node
@@ -1556,6 +1641,11 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
         'tags': "tags__name__in",  # for search string
         'owner': "owner__username",
     }
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(VmList, self).get_context_data(*args, **kwargs)
+        context['ops'] = [v for k, v in vm_mass_ops.iteritems()]
+        return context
 
     def get(self, *args, **kwargs):
         if self.request.is_ajax():

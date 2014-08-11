@@ -23,6 +23,13 @@
           </div>
         </form>
       </div>
+      <p>
+      {% for o in ops %}
+        <a href="{{ o.get_url }}" class="btn btn-xs btn-{{ o.effect }}" title="{{ o.name }}">
+          <i class="fa fa-{{ o.icon }}"></i>
+        </a>
+      {% endfor %}
+      </p>
       <div class="panel-body vm-list-group-control">
         <p>
         <strong>{% trans "Group actions" %}</strong>

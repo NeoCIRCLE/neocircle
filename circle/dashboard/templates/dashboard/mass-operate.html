@@ -1,0 +1,52 @@
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block question %}
+<p>
+{% blocktrans with op=op.name %}
+Do you want to perform the following operation: <strong>{{op}}</strong>?
+{% endblocktrans %}
+</p>
+<p class="text-info">{{op.description}}</p>
+{% endblock %}
+<form method="POST" action="{{url}}">{% csrf_token %}
+    {% for i in instances %}
+    <div class="panel panel-default mass-op-panel">
+      <i class="fa {{ i.get_status_icon }} fa-fw"></i>
+      {{ i.name }} ({{ i.pk }})
+      <div style="float: right;" title="{{ i.disabled }}">
+        <i class="fa status-icon
+          {% if i.disabled %}fa-minus-square minus{% else %}fa-check-square check{% endif %}">
+        </i>
+      </div>
+    </div>
+    <input type="checkbox" name="vm" value="{{ i.pk }}" {% if not i.disabled %}checked{% endif %}
+      style="display: none;"/>
+    {% endfor %}
+
+  <div class="pull-right">
+    <a class="btn btn-default" href="{% url "dashboard.views.vm-list" %}"
+        data-dismiss="modal">{% trans "Cancel" %}</a>
+    <button class="btn btn-{{ opview.effect }}" type="submit" id="op-form-send">
+        {% if opview.icon %}<i class="fa fa-{{opview.icon}}"></i> {% endif %}{{ opview.name|capfirst }}
+      </button>
+  </div>
+</form>
+
+<style>
+  .mass-op-panel {
+    padding: 6px 10px;
+  }
+
+  .mass-op-panel .check {
+    color: #449d44;
+  }
+
+  .mass-op-panel .minus {
+    color: #d9534f;
+  }
+
+  .mass-op-panel .status-icon {
+    font-size: 1.5em;
+  }
+</style>

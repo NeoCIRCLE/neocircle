@@ -49,7 +49,6 @@ from .views import (
 autocomplete_light.autodiscover()
 
 urlpatterns = patterns(
-
     '',
     url(r'^$', IndexView.as_view(), name="dashboard.index"),
     url(r'^lease/(?P<pk>\d+)/$', LeaseDetail.as_view(),
@@ -74,7 +73,7 @@ urlpatterns = patterns(
     url(r"^template/delete/(?P<pk>\d+)/$", TemplateDelete.as_view(),
         name="dashboard.views.template-delete"),
 
-    url(r'^vm/(?P<pk>\d+)/op/', include('dashboard.vm.urls')),
+    url(r'^vm/', include('dashboard.vm.urls')),
     url(r'^vm/(?P<pk>\d+)/remove_port/(?P<rule>\d+)/$', PortDelete.as_view(),
         name='dashboard.views.remove-port'),
     url(r'^vm/(?P<pk>\d+)/$', VmDetailView.as_view(),
