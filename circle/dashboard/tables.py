@@ -22,7 +22,7 @@ from django_tables2 import Table, A
 from django_tables2.columns import (TemplateColumn, Column, BooleanColumn,
                                     LinkColumn)
 
-from vm.models import Instance, Node, InstanceTemplate, Lease
+from vm.models import Node, InstanceTemplate, Lease
 from django.utils.translation import ugettext_lazy as _
 from django_sshkey.models import UserKey
 
@@ -35,16 +35,11 @@ class NodeListTable(Table):
     )
 
     overcommit = Column(
-        verbose_name="Overcommit",
+        verbose_name=_("Overcommit"),
         attrs={'th': {'class': 'node-list-table-thin'}},
     )
 
-    host = Column(
-        verbose_name="Host",
-    )
-
     enabled = BooleanColumn(
-        verbose_name="Enabled",
         attrs={'th': {'class': 'node-list-table-thin'}},
     )
 
@@ -54,28 +49,28 @@ class NodeListTable(Table):
     )
 
     priority = Column(
-        verbose_name=_("Priority"),
         attrs={'th': {'class': 'node-list-table-thin'}},
     )
 
     number_of_VMs = TemplateColumn(
+        verbose_name=_("Number of VMs"),
         template_name='dashboard/node-list/column-vm.html',
         attrs={'th': {'class': 'node-list-table-thin'}},
     )
 
     monitor = TemplateColumn(
+        verbose_name=_("Monitor"),
         template_name='dashboard/node-list/column-monitor.html',
         attrs={'th': {'class': 'node-list-table-monitor'}},
+        orderable=False,
     )
 
-    details = TemplateColumn(
-        template_name='dashboard/node-list/column-details.html',
-        attrs={'th': {'class': 'node-list-table-thin'}},
-    )
     actions = TemplateColumn(
+        verbose_name=_("Actions"),
         attrs={'th': {'class': 'node-list-table-thin'}},
         template_code=('{% include "dashboard/node-list/column-'
                        'actions.html" with btn_size="btn-xs" %}'),
+        orderable=False,
     )
 
     class Meta:
@@ -141,52 +136,14 @@ class UserListTable(Table):
         fields = ('pk', 'username', )
 
 
-class NodeVmListTable(Table):
-    pk = TemplateColumn(
-        template_name='dashboard/vm-list/column-id.html',
-        verbose_name="ID",
-        attrs={'th': {'class': 'vm-list-table-thin'}},
-    )
-
-    name = TemplateColumn(
-        template_name="dashboard/vm-list/column-name.html"
-    )
-
-    admin = TemplateColumn(
-        template_name='dashboard/vm-list/column-admin.html',
-        attrs={'th': {'class': 'vm-list-table-admin'}},
-    )
-    details = TemplateColumn(
-        template_name='dashboard/vm-list/column-details.html',
-        attrs={'th': {'class': 'vm-list-table-thin'}},
-    )
-    actions = TemplateColumn(
-        template_name='dashboard/vm-list/column-actions.html',
-        attrs={'th': {'class': 'vm-list-table-thin'}},
-    )
-    time_of_suspend = TemplateColumn(
-        '{{ record.time_of_suspend|timeuntil }}',
-        verbose_name=_("Suspend in"))
-    time_of_delete = TemplateColumn(
-        '{{ record.time_of_delete|timeuntil }}',
-        verbose_name=_("Delete in"))
-
-    class Meta:
-        model = Instance
-        attrs = {'class': ('table table-bordered table-striped table-hover '
-                           'vm-list-table')}
-        fields = ('pk', 'name', 'state', 'time_of_suspend', 'time_of_delete', )
-
-
 class UserListTablex(Table):
     class Meta:
         model = User
 
 
 class TemplateListTable(Table):
-    name = LinkColumn(
-        'dashboard.views.template-detail',
-        args=[A('pk')],
+    name = TemplateColumn(
+        template_name="dashboard/template-list/column-template-name.html",
         attrs={'th': {'data-sort': "string"}}
     )
     num_cores = Column(
@@ -194,15 +151,12 @@ class TemplateListTable(Table):
         attrs={'th': {'data-sort': "int"}}
     )
     ram_size = TemplateColumn(
-        "{{ record.ram_size }} Mb",
-        attrs={'th': {'data-sort': "string"}}
+        "{{ record.ram_size }} MiB",
+        attrs={'th': {'data-sort': "int"}},
     )
     lease = TemplateColumn(
         "{{ record.lease.name }}",
         verbose_name=_("Lease"),
-        attrs={'th': {'data-sort': "string"}}
-    )
-    arch = Column(
         attrs={'th': {'data-sort': "string"}}
     )
     system = Column(
@@ -210,6 +164,17 @@ class TemplateListTable(Table):
     )
     access_method = Column(
         attrs={'th': {'data-sort': "string"}}
+    )
+    owner = TemplateColumn(
+        template_name="dashboard/template-list/column-template-owner.html",
+        verbose_name=_("Owner"),
+        attrs={'th': {'data-sort': "string"}}
+    )
+    running = TemplateColumn(
+        template_name="dashboard/template-list/column-template-running.html",
+        verbose_name=_("Running"),
+        attrs={'th': {'data-sort': "int"}},
+        orderable=False,
     )
     actions = TemplateColumn(
         verbose_name=_("Actions"),
@@ -222,8 +187,8 @@ class TemplateListTable(Table):
         model = InstanceTemplate
         attrs = {'class': ('table table-bordered table-striped table-hover'
                            ' template-list-table')}
-        fields = ('name', 'num_cores', 'ram_size', 'arch',
-                  'system', 'access_method', 'lease', 'actions', )
+        fields = ('name', 'num_cores', 'ram_size', 'system',
+                  'access_method', 'lease', 'owner', 'running', 'actions', )
 
         prefix = "template-"
 

@@ -203,6 +203,9 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
         for disk in self.disks.all():
             disk.destroy()
 
+    def get_running_instances(self):
+        return Instance.active.filter(template=self, status="RUNNING")
+
 
 class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                TimeStampedModel):

@@ -74,7 +74,7 @@ from .forms import (
 )
 
 from .tables import (
-    NodeListTable, NodeVmListTable, TemplateListTable, LeaseListTable,
+    NodeListTable, TemplateListTable, LeaseListTable,
     GroupListTable, UserKeyListTable
 )
 from common.models import HumanReadableObject, HumanReadableException
@@ -1081,8 +1081,6 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
         if form is None:
             form = self.form_class()
         context = super(NodeDetailView, self).get_context_data(**kwargs)
-        instances = Instance.active.filter(node=self.object)
-        context['table'] = NodeVmListTable(instances)
         na = NodeActivity.objects.filter(
             node=self.object, parent=None
         ).order_by('-started').select_related()
@@ -1640,6 +1638,7 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
         'tags[]': "tags__name__in",
         'tags': "tags__name__in",  # for search string
         'owner': "owner__username",
+        'template': "template__pk",
     }
 
     def get_context_data(self, *args, **kwargs):

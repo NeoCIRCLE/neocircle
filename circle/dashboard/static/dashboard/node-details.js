@@ -1,3 +1,4 @@
+$(function() {
   /* rename */
   $("#node-details-h1-name, .node-details-rename-button").click(function() {
     $("#node-details-h1-name").hide();
@@ -43,26 +44,6 @@
     return false;
   });
 
-function changeNodeStatus(data) {
-  $.ajax({
-    type: 'POST',
-    url: data['url'],
-    headers: {"X-CSRFToken": getCookie('csrftoken')},
-    success: function(re, textStatus, xhr) {
-      if(!data['redirect']) {
-        selected = [];
-        addMessage(re['message'], 'success');
-      
-      } else {
-        window.location.replace('/dashboard');
-      }
-    },
-    error: function(xhr, textStatus, error) {
-      addMessage('Uh oh :(', 'danger')
-    }
-  });
-}
-
   // remove trait
   $('.node-details-remove-trait').click(function() {
     var to_remove =  $(this).data("trait-pk");
@@ -86,3 +67,24 @@ function changeNodeStatus(data) {
     });
     return false;
   });
+
+});
+
+function changeNodeStatus(data) {
+  $.ajax({
+    type: 'POST',
+    url: data['url'],
+    headers: {"X-CSRFToken": getCookie('csrftoken')},
+    success: function(re, textStatus, xhr) {
+      if(!data['redirect']) {
+        selected = [];
+        addMessage(re['message'], 'success');
+      } else {
+        window.location.replace('/dashboard');
+      }
+    },
+    error: function(xhr, textStatus, error) {
+      addMessage('Uh oh :(', 'danger')
+    }
+  });
+}
