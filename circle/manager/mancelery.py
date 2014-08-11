@@ -32,6 +32,7 @@ celery = Celery('manager',
                          'storage.tasks.periodic_tasks',
                          'firewall.tasks.local_tasks',
                          'monitor.tasks.local_periodic_tasks',
+                         'dashboard.tasks.local_periodic_tasks',
                          ])
 
 celery.conf.update(
@@ -60,7 +61,7 @@ celery.conf.update(
             'schedule': timedelta(hours=1),
             'options': {'queue': 'localhost.man'}
         },
-        'dashboard.local_periodic_tasks': {
+        'dashboard.send_email_notifications': {
             'task': 'dashboard.tasks.local_periodic_tasks.'
             'send_email_notifications',
             'schedule': timedelta(hours=24),
