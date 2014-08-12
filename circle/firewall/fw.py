@@ -192,9 +192,12 @@ def generate_ptr_records():
 
     for host in Host.objects.order_by('vlan').all():
         template = host.vlan.reverse_domain
-        i = host.get_external_ipv4().words
-        reverse = (host.reverse if host.reverse not in [None, '']
-                   else host.get_fqdn())
+        if not host.shared_ip and host.external_ipv4:  # DMZ
+            i = host.external_ipv4.words
+            reverse = host.get_hostname('ipv4', public=True)
+        else:
+            i = host.ipv4.words
+            reverse = host.get_hostname('ipv4', public=False)
 
         # ipv4
         if host.ipv4:
