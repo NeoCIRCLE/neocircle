@@ -161,7 +161,7 @@ STATICFILES_FINDERS = (
 )
 ########## END STATIC FILE CONFIGURATION
 
-p = join(dirname(SITE_ROOT), 'site-circle/static')
+p = normpath(join(SITE_ROOT, '../../site-circle/static'))
 if exists(p):
     STATICFILES_DIRS = (p, )
 
@@ -211,8 +211,8 @@ TEMPLATE_LOADERS = (
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs
 TEMPLATE_DIRS = (
+    normpath(join(SITE_ROOT, '../../site-circle/templates')),
     normpath(join(SITE_ROOT, 'templates')),
-    join(dirname(SITE_ROOT), 'site-circle/templates'),
 )
 ########## END TEMPLATE CONFIGURATION
 
