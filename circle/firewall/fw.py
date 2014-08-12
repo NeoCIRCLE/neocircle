@@ -62,6 +62,15 @@ class BuildFirewall:
                 extra='-j DNAT --to-destination %s:%s' % (rule.host.ipv4,
                                                           rule.dport)))
 
+        # SNAT rules for machines with public IPv4
+        for host in Host.objects.exclude(external_ipv4=None).select_related(
+                'vlan').prefetch_related('vlan__snat_to'):
+            for vl_out in host.vlan.snat_to.all():
+                self.add_rules(POSTROUTING=IptRule(
+                    priority=1500, src=(host.ipv4, None),
+                    extra='-o %s -j SNAT --to-source %s' % (
+                        vl_out.name, host.external_ipv4)))
+
         # default outbound NAT rules for VLANs
         for vl_in in Vlan.objects.exclude(
                 snat_ip=None).prefetch_related('snat_to'):
