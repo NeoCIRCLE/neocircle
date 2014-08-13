@@ -38,7 +38,7 @@ INSTALLED_APPS += (
     'django_nose',
 )
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-NOSE_ARGS = ['--with-doctest']
+NOSE_ARGS = ['--with-doctest', '--exclude-dir=dashboard/tests/selenium']
 PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']
 
 CACHES = {
