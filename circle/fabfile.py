@@ -91,7 +91,8 @@ def test(test=""):
 def selenium(test=""):
     "Run portal selenium tests"
     with _workon("circle"), cd("~/circle/circle"):
-        run("xvfb-run ./manage.py test --settings=circle.settings.selenium_test " +
+        # TODO Check if the user have any X so we don't have force xvfb
+        run("xvfb-run ./manage.py test --settings=circle.settings.selenium_test"
             "%s" % test)
 
 
