@@ -121,6 +121,13 @@
           <i class="fa fa-copy" title="{% trans "Select all" %}"></i>
         </span>
       </div>
+      <div id="dashboard-vm-details-connect">
+        <form method="POST" action="{{ instance.access_method}}:cloud:{{ instance.pw }}:{% if instance.get_connect_port %}{{ instance.get_connect_host }}:{{ instance.get_connect_port }}{% endif %}" target="_blank">
+	    <button id="dashboard-vm-details-connect-button" type="submit" class="btn btn-xs btn-default" {% if instance.status != "RUNNING" %}disabled{% endif %} title="{% trans "Connect via the CIRCLE Client" %}">
+    		<i class="fa fa-external-link"></i> {% trans "Connect" %}
+    	    </button>
+	</form>
+      </div>
     </div>
     <div class="col-md-8" id="vm-detail-pane">
       <div class="panel panel-default" id="vm-detail-panel">
