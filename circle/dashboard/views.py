@@ -1028,9 +1028,9 @@ class MassOperationView(OperationView):
             except SuspiciousOperation:
                 continue
             except PermissionDenied:
-                setattr(i, "disabled", "No permission")
+                setattr(i, "disabled", _("Permission denied"))
             except Exception:
-                setattr(i, "disabled", "Wrong state error, probably")
+                raise
             vms.append(i)
         return vms
 
@@ -1047,7 +1047,15 @@ class MassOperationView(OperationView):
             except Exception as e:
                 pass
 
-        return redirect(reverse("dashboard.views.vm-list"))
+        if request.is_ajax():
+            store = messages.get_messages(request)
+            store.used = True
+            return HttpResponse(
+                json.dumps({'messages': [unicode(m) for m in store]}),
+                content_type="application=json"
+            )
+        else:
+            return redirect(reverse("dashboard.views.vm-list"))
 
     def _op_checks(self, instance, user):
         objects_of_user = Instance.get_objects_with_level("user", user)
