@@ -2813,7 +2813,7 @@ class NodeGraphView(SuperuserRequiredMixin, GraphViewBase):
     model = Node
 
     def get_prefix(self, instance):
-        return 'circle.%s' % instance.name
+        return 'circle.%s' % instance.host.hostname
 
     def get_title(self, instance, metric):
         return '%s - %s' % (instance.name, metric)

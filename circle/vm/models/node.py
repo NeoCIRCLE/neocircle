@@ -257,7 +257,7 @@ class Node(OperatedMixin, TimeStampedModel):
     @method_cache(10)
     def monitor_info(self):
         metrics = ('cpu.usage', 'memory.usage')
-        prefix = 'circle.%s.' % self.name
+        prefix = 'circle.%s.' % self.host.hostname
         params = [('target', '%s%s' % (prefix, metric))
                   for metric in metrics]
         params.append(('from', '-5min'))
