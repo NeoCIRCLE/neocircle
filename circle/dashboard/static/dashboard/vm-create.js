@@ -28,6 +28,9 @@ function vmCreateLoaded() {
         $('#create-modal').on('hidden.bs.modal', function() {
             $('#create-modal').remove();
         });
+        $("#create-modal").on("shown.bs.modal", function() {
+          setDefaultSliderValues();
+        });
     });
     return false;
   });
