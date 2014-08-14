@@ -19,10 +19,12 @@ from __future__ import absolute_import, unicode_literals
 from logging import getLogger
 from re import search
 from string import ascii_lowercase
+from urlparse import urlsplit
 
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _, ugettext_noop
+from django.conf import settings
 
 from sizefield.utils import filesizeformat
 
@@ -40,6 +42,8 @@ from .models import (
     NodeActivity, pwgen
 )
 from .tasks import agent_tasks
+
+from dashboard.store_api import Store, NoStoreException
 
 logger = getLogger(__name__)
 
@@ -934,8 +938,27 @@ class ResourcesOperation(InstanceOperation):
 register_operation(ResourcesOperation)
 
 
-class PasswordResetOperation(InstanceOperation):
-    activity_code_suffix = 'Password reset'
+class EnsureAgentMixin(object):
+    accept_states = ('RUNNING', )
+
+    def check_precond(self):
+        super(EnsureAgentMixin, self).check_precond()
+
+        last_boot_time = self.instance.activity_log.filter(
+            succeeded=True, activity_code__in=(
+                "vm.Instance.deploy", "vm.Instance.reset",
+                "vm.Instance.reboot")).latest("finished").finished
+
+        try:
+            InstanceActivity.objects.filter(
+                activity_code="vm.Instance.agent.starting",
+                started__gt=last_boot_time).latest("started")
+        except InstanceActivity.DoesNotExist:  # no agent since last boot
+            raise self.instance.NoAgentError(self.instance)
+
+
+class PasswordResetOperation(EnsureAgentMixin, InstanceOperation):
+    activity_code_suffix = 'password_reset'
     id = 'password_reset'
     name = _("password reset")
     description = _("Generate and set a new login password on the virtual "
@@ -945,7 +968,6 @@ class PasswordResetOperation(InstanceOperation):
                     "it.")
     acl_level = "owner"
     required_perms = ()
-    accept_states = ('RUNNING', )
 
     def _operation(self):
         self.instance.pw = pwgen()
@@ -956,3 +978,34 @@ class PasswordResetOperation(InstanceOperation):
 
 
 register_operation(PasswordResetOperation)
+
+
+class MountStoreOperation(EnsureAgentMixin, InstanceOperation):
+    activity_code_suffix = 'mount_store'
+    id = 'mount_store'
+    name = _("mount store")
+    description = _(
+        "This operation attaches your personal file store. Other users who "
+        "have access to this machine can see these files as well."
+    )
+    acl_level = "owner"
+    required_perms = ()
+
+    def check_auth(self, user):
+        super(MountStoreOperation, self).check_auth(user)
+        try:
+            Store(user)
+        except NoStoreException:
+            raise PermissionDenied  # not show the button at all
+
+    def _operation(self):
+        inst = self.instance
+        queue = self.instance.get_remote_queue_name("agent")
+        host = urlsplit(settings.STORE_URL).hostname
+        username = Store(inst.owner).username
+        password = inst.owner.profile.smb_password
+        agent_tasks.mount_store.apply_async(
+            queue=queue, args=(inst.vm_name, host, username, password))
+
+
+register_operation(MountStoreOperation)

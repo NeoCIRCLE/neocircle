@@ -966,6 +966,10 @@ vm_ops = OrderedDict([
     ('password_reset', VmOperationView.factory(
         op='password_reset', icon='unlock', effect='warning',
         show_in_toolbar=False, wait_for_result=0.5, with_reload=True)),
+    ('mount_store', VmOperationView.factory(
+        op='mount_store', icon='briefcase', effect='info',
+        show_in_toolbar=False,
+    )),
 ])
 
 
