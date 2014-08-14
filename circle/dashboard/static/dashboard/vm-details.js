@@ -388,8 +388,10 @@ function checkNewActivity(runs) {
       }
       $("#vm-details-state span").html(data['human_readable_status'].toUpperCase());
       if(data['status'] == "RUNNING") {
+	$("#dashboard-vm-details-connect-button").prop("disabled", false);
         $("[data-target=#_console]").attr("data-toggle", "pill").attr("href", "#console").parent("li").removeClass("disabled");
       } else {
+	$("#dashboard-vm-details-connect-button").prop("disabled", true);
         $("[data-target=#_console]").attr("data-toggle", "_pill").attr("href", "#").parent("li").addClass("disabled");
       }
 
