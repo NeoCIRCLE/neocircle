@@ -938,7 +938,8 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             'ERROR': 'fa-warning',
             'PENDING': 'fa-rocket',
             'DESTROYED': 'fa-trash-o',
-            'MIGRATING': 'fa-truck'}.get(self.status, 'fa-question')
+            'MIGRATING': 'fa-truck migrating-icon'
+        }.get(self.status, 'fa-question')
 
     def get_activities(self, user=None):
         acts = (self.activity_log.filter(parent=None).

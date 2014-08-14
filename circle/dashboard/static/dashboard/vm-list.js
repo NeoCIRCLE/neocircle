@@ -114,7 +114,7 @@ $(function() {
 
   $("body").on("click", "#op-form-send", function() {
     var url = $(this).closest("form").prop("action");
-    $(this).find("i").prop("class", "fa fa-spinner fa-spin");
+    $(this).find("i").prop("class", "fa fa-fw fa-spinner fa-spin");
 
     $.ajax({
       url: url,
@@ -177,7 +177,8 @@ $(function() {
 
 
 function checkStatusUpdate() {
-  if($("#vm-list-table tbody td.state i").hasClass("fa-spin")) {
+  icons = $("#vm-list-table tbody td.state i");
+  if(icons.hasClass("fa-spin") || icons.hasClass("migrating-icon")) {
     return true;
   }
 }
@@ -194,12 +195,20 @@ function updateStatuses(runs) {
       if(vm in result) {
         if(result[vm].in_status_change) {
           if(!status_icon.hasClass("fa-spin")) {
-            status_icon.prop("class", "fa fa-spinner fa-spin");
+            status_icon.prop("class", "fa fa-fw fa-spinner fa-spin");
+          }
+        }
+        else if(result[vm].status == "MIGRATING") {
+          if(!status_icon.hasClass("migrating-icon")) {
+            status_icon.prop("class", "fa fa-fw " + result[vm].icon + " migrating-icon");
           }
         } else {
-          status_icon.prop("class", "fa " + result[vm].icon);
+          status_icon.prop("class", "fa fa-fw " + result[vm].icon);
         }
         status_text.text(result[vm].status);
+        if("node" in result[vm]) {
+          $(this).find(".node").text(result[vm].node);
+        }
       } else {
         $(this).remove();
       }

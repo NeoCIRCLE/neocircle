@@ -1034,14 +1034,16 @@ class MassOperationView(OperationView):
             vms.append(i)
         return vms
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, extra=None, *args, **kwargs):
+        if extra is None:
+            extra = {}
         user = self.request.user
         vms = request.POST.getlist("vm")
         instances = Instance.objects.filter(pk__in=vms)
         for i in instances:
             try:
                 op = self._op_checks(i, user)
-                op.async(user=user)
+                op.async(user=user, **extra)
             except HumanReadableException as e:
                 e.send_message(request)
             except Exception as e:
@@ -1067,6 +1069,28 @@ class MassOperationView(OperationView):
         return op
 
 
+class MassMigrationView(MassOperationView):
+    template_name = 'dashboard/_vm-mass-migrate.html'
+    icon = "info"
+    op = "migrate"
+    icon = "truck"
+
+    def get_context_data(self, **kwargs):
+        ctx = super(MassMigrationView, self).get_context_data(**kwargs)
+        ctx['nodes'] = [n for n in Node.objects.filter(enabled=True)
+                        if n.state == "ONLINE"]
+        return ctx
+
+    def post(self, request, extra=None, *args, **kwargs):
+        if extra is None:
+            extra = {}
+        node = self.request.POST.get("node")
+        if node:
+            node = get_object_or_404(Node, pk=node)
+            extra["to_node"] = node
+        return super(MassMigrationView, self).post(request, extra, *args,
+                                                   **kwargs)
+
 vm_mass_ops = OrderedDict([
     ('deploy', MassOperationView.factory(
         op='deploy', icon='play', effect='success')),
@@ -1074,6 +1098,7 @@ vm_mass_ops = OrderedDict([
         op='wake_up', icon='sun-o', effect='success')),
     ('sleep', MassOperationView.factory(
         op='sleep', icon='moon-o', effect='info')),
+    ('migrate', MassMigrationView),
     ('destroy', MassOperationView.factory(
         op='destroy', icon='times', effect='danger')),
 ])
@@ -1671,6 +1696,8 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
                     'icon': i.get_status_icon(),
                     'in_status_change': i.is_in_status_change(),
                 }
+                if self.request.user.is_superuser:
+                    statuses[i.pk]['node'] = i.node.name if i.node else "-"
             return HttpResponse(json.dumps(statuses),
                                 content_type="application/json")
         else:

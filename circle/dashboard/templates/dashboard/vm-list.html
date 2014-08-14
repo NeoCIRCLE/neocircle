@@ -66,7 +66,7 @@
             <td class="pk"><div id="vm-{{i.pk}}">{{i.pk}}</div> </td>
             <td class="name"><a class="real-link" href="{% url "dashboard.views.detail" i.pk %}">{{ i.name }}</a>  </td>
             <td class="state">
-              <i class="fa 
+              <i class="fa fa-fw
                 {% if i.is_in_status_change %}
                   fa-spin fa-spinner
                 {% else %}
@@ -77,7 +77,9 @@
               {% include "dashboard/_display-name.html" with user=i.owner show_org=True %}
             </td>
             {% if user.is_superuser %}
-            <td data-sort-value="{{ i.node.normalized_name }}">{{ i.node.name|default:"-" }}</td>
+            <td class="node "data-sort-value="{{ i.node.normalized_name }}">
+              {{ i.node.name|default:"-" }}
+            </td>
             {% endif %}
           </tr>
           {% empty %}
@@ -109,4 +111,53 @@
 {% block extra_js %}
   <script src="{{ STATIC_URL}}dashboard/vm-list.js"></script>
   <script src="{{ STATIC_URL}}dashboard/js/stupidtable.min.js"></script>
+  <style>
+    #vm-list-table .migrating-icon {
+      -webkit-animation: passing 2s linear infinite;
+      animation: passing 2s linear infinite;
+    }
+
+@-webkit-keyframes passing {
+  0% {
+    -webkit-transform: translateX(50%);
+    transform: translateX(50%);
+    opacity: 0;
+  }
+
+  50% {
+    -webkit-transform: translateX(0%);
+    transform: translateX(0%);
+    opacity: 1;
+  }
+
+  100% {
+    -webkit-transform: translateX(-50%);
+    transform: translateX(-50%);
+    opacity: 0;
+  }
+}
+
+@keyframes passing {
+  0% {
+    -webkit-transform: translateX(50%);
+    -ms-transform: translateX(50%);
+    transform: translateX(50%);
+    opacity: 0;
+  }
+
+  50% {
+    -webkit-transform: translateX(0%);
+    -ms-transform: translateX(0%);
+    transform: translateX(0%);
+    opacity: 1;
+  }
+
+  100% {
+    -webkit-transform: translateX(-50%);
+    -ms-transform: translateX(-50%);
+    transform: translateX(-50%);
+    opacity: 0;
+  }
+}
+  </style>
 {% endblock %}
