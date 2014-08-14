@@ -14,6 +14,7 @@ $(function() {
 
   $('.vm-list-table tbody').find('tr').mousedown(function() {
     var retval = true;
+    if(!$(this).data("vm-pk")) return;
     if (ctrlDown) {
       setRowColor($(this));
       if(!$(this).hasClass('vm-list-selected')) {
@@ -75,7 +76,7 @@ $(function() {
     $('.vm-list-table tbody tr').each(function() {
       var index = $(this).index();
       var vm = $(this).data("vm-pk");
-      if(!isAlreadySelected(vm)) {
+      if(vm && !isAlreadySelected(vm)) {
         selected.push({'index': index, 'vm': vm});
         $(this).addClass('vm-list-selected');
       }
@@ -128,7 +129,7 @@ $(function() {
   
         /* if there are messages display them */
         if(data.messages && data.messages.length > 0) {
-          addMessage(data.messages.join("<br />"), data.success ? "success" : "danger");
+          addMessage(data.messages.join("<br />"), "danger");
         }
       },
       error: function(xhr, textStatus, error) {
