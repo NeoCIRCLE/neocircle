@@ -962,7 +962,7 @@ class MountStoreOperation(EnsureAgentMixin, InstanceOperation):
     def _operation(self):
         inst = self.instance
         queue = self.instance.get_remote_queue_name("agent")
-        host = urlsplit(settings.STORE_URL).netloc
+        host = urlsplit(settings.STORE_URL).hostname
         username = Store(inst.owner).username
         password = inst.owner.profile.smb_password
         agent_tasks.mount_store.apply_async(
