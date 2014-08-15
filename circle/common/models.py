@@ -37,6 +37,7 @@ from django.utils.functional import Promise
 from django.utils.translation import ugettext_lazy as _, ugettext_noop
 from jsonfield import JSONField
 
+from manager.mancelery import celery
 from model_utils.models import TimeStampedModel
 
 logger = getLogger(__name__)
@@ -213,6 +214,27 @@ class ActivityModel(TimeStampedModel):
         self.result_data = None if value is None else value.to_dict()
 
 
+@celery.task()
+def compute_cached(method, instance, memcached_seconds,
+                   key, start, *args, **kwargs):
+    """Compute and store actual value of cached method."""
+    if isinstance(method, basestring):
+        model, id = instance
+        instance = model.objects.get(id=id)
+        method = getattr(instance, method)._original
+    #  call the actual method
+    result = method(instance, *args, **kwargs)
+    # save to memcache
+    cache.set(key, result, memcached_seconds)
+    elapsed = time() - start
+    cache.set("%s.cached" % key, 2, max(memcached_seconds * 0.5,
+                                        memcached_seconds * 0.75 - elapsed))
+    logger.debug('Value of <%s>.%s(%s)=<%s> saved to cache (%s elapsed).',
+                 unicode(instance), method.__name__, unicode(args),
+                 unicode(result), elapsed)
+    return result
+
+
 def method_cache(memcached_seconds=60, instance_seconds=5):  # noqa
     """Cache return value of decorated method to memcached and memory.
 
@@ -257,19 +279,22 @@ def method_cache(memcached_seconds=60, instance_seconds=5):  # noqa
                 if vals['time'] + instance_seconds > now:
                     # has valid on class cache, return that
                     result = vals['value']
+                    setattr(instance, key, {'time': now, 'value': result})
 
             if result is None:
                 result = cache.get(key)
 
             if invalidate or (result is None):
-                # all caches failed, call the actual method
-                result = method(instance, *args, **kwargs)
-                # save to memcache and class attr
-                cache.set(key, result, memcached_seconds)
+                logger.debug("all caches failed, compute now")
+                result = compute_cached(method, instance, memcached_seconds,
+                                        key, time(), *args, **kwargs)
                 setattr(instance, key, {'time': now, 'value': result})
-                logger.debug('Value of <%s>.%s(%s)=<%s> saved to cache.',
-                             unicode(instance), method.__name__,
-                             unicode(args), unicode(result))
+            elif not cache.get("%s.cached" % key):
+                logger.debug("caches expiring, compute async")
+                cache.set("%s.cached" % key, 1, memcached_seconds * 0.5)
+                compute_cached.delay(
+                    method_name, (instance.__class__, instance.id),
+                    memcached_seconds, key, time(), *args, **kwargs)
 
             return result
 
