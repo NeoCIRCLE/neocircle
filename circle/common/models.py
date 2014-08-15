@@ -229,8 +229,8 @@ def compute_cached(method, instance, memcached_seconds,
                 except AttributeError:
                     method = method.fget
         except AttributeError:
-            logger.exception("Couldnt get original method of %s.%s",
-                             unicode(instance), method.__name__)
+            logger.exception("Couldnt get original method of %s",
+                             unicode(method))
             raise
 
     #  call the actual method
