@@ -742,7 +742,7 @@ class Host(models.Model):
         Return a list of ports with forwarding rules set.
         """
         retval = []
-        for rule in self.rules.all():
+        for rule in self.rules.filter(dport__isnull=False, direction='in'):
             forward = {
                 'proto': rule.proto,
                 'private': rule.dport,
