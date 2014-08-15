@@ -575,10 +575,14 @@ class Host(models.Model):
 
         # IPv4
         if self.ipv4 is not None:
+            if not self.shared_ip and self.external_ipv4:  # DMZ
+                ipv4 = self.external_ipv4
+            else:
+                ipv4 = self.ipv4
             # update existing records
             affected_records = Record.objects.filter(
                 host=self, name=self.hostname,
-                type='A').update(address=self.ipv4)
+                type='A').update(address=ipv4)
             # create new record
             if affected_records == 0:
                 Record(host=self,
@@ -714,6 +718,8 @@ class Host(models.Model):
         :type proto: str.
         """
         assert proto in ('ipv6', 'ipv4', )
+        if self.reverse:
+            return self.reverse
         try:
             if proto == 'ipv6':
                 res = self.record_set.filter(type='AAAA',
