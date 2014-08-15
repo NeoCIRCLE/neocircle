@@ -2468,48 +2468,6 @@ class PortDelete(LoginRequiredMixin, DeleteView):
                             kwargs={'pk': self.kwargs.get("pk")})
 
 
-class VmMassDelete(LoginRequiredMixin, View):
-    def get(self, request, *args, **kwargs):
-        vms = request.GET.getlist('v[]')
-        objects = Instance.objects.filter(pk__in=vms)
-        return render(request, "dashboard/confirm/mass-delete.html",
-                      {'objects': objects})
-
-    def post(self, request, *args, **kwargs):
-        vms = request.POST.getlist('vms')
-        names = []
-        if vms is not None:
-            for i in Instance.objects.filter(pk__in=vms):
-                if not i.has_level(request.user, 'owner'):
-                    logger.info('Tried to delete instance #%d without owner '
-                                'permission by %s.', i.pk,
-                                unicode(request.user))
-                    # no need for rollback or proper error message, this can't
-                    # normally happen:
-                    raise PermissionDenied()
-                try:
-                    i.destroy.async(user=request.user)
-                    names.append(i.name)
-                except Exception as e:
-                    logger.error(e)
-
-        success_message = ungettext_lazy(
-            "Mass delete complete, the following VM was deleted: %s.",
-            "Mass delete complete, the following VMs were deleted: %s.",
-            len(names)) % u', '.join(names)
-
-        # we can get this only via AJAX ...
-        if request.is_ajax():
-            return HttpResponse(
-                json.dumps({'message': success_message}),
-                content_type="application/json"
-            )
-        else:
-            messages.success(request, success_message)
-            next = request.GET.get('next')
-            return redirect(next if next else reverse_lazy('dashboard.index'))
-
-
 class LeaseCreate(LoginRequiredMixin, PermissionRequiredMixin,
                   SuccessMessageMixin, CreateView):
     model = Lease
