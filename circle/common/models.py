@@ -221,7 +221,13 @@ def compute_cached(method, instance, memcached_seconds,
     if isinstance(method, basestring):
         model, id = instance
         instance = model.objects.get(id=id)
-        method = getattr(instance, method)._original
+        try:
+            method = getattr(instance, method)._original
+        except AttributeError:
+            logger.exception("Couldnt get original method of %s.%s",
+                             unicode(instance), method.__name__)
+            raise
+
     #  call the actual method
     result = method(instance, *args, **kwargs)
     # save to memcache
@@ -292,10 +298,13 @@ def method_cache(memcached_seconds=60, instance_seconds=5):  # noqa
             elif not cache.get("%s.cached" % key):
                 logger.debug("caches expiring, compute async")
                 cache.set("%s.cached" % key, 1, memcached_seconds * 0.5)
-                compute_cached.apply_async(
-                    queue='localhost.man', kwargs=kwargs, args=[
-                        method_name, (instance.__class__, instance.id),
-                        memcached_seconds, key, time()] + list(args))
+                try:
+                    compute_cached.apply_async(
+                        queue='localhost.man', kwargs=kwargs, args=[
+                            method_name, (instance.__class__, instance.id),
+                            memcached_seconds, key, time()] + list(args))
+                except:
+                    logger.exception("Couldnt compute async %s", method_name)
 
             return result
 
