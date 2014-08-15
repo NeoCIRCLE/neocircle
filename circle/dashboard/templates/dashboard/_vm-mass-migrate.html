@@ -14,7 +14,8 @@ Choose a compute node to migrate the selected VMs to.
 {% block formfields %}
   <ul id="vm-migrate-node-list" class="list-unstyled">
     {% for n in nodes %}
-      <li class="panel panel-default"><div class="panel-body">
+      <li class="panel panel-default mass-migrate-node">
+      <div class="panel-body">
         <label for="migrate-to-{{n.pk}}">
           <strong>{{ n }}</strong>
         </label>

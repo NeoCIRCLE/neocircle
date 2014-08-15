@@ -51,7 +51,7 @@ $(function() {
     if(selected.length > 0) {
       $('#vm-mass-ops .mass-operation').attr('disabled', false);
     } else {
-      $('.vm-list-group-control a').attr('disabled', true);
+      $('#vm-mass-ops .mass-operation').attr('disabled', true);
     }
     return retval;
   });
@@ -60,14 +60,6 @@ $(function() {
     // parent tr doesn't get selected when clicked
     e.stopPropagation();
     });
-
-  $('tbody a').click(function(e) {
-    // browser doesn't jump to top when clicked the buttons
-    if(!$(this).hasClass('real-link')) {
-      return false;
-    }
-  });
-
 
   /* group actions */
 
@@ -82,7 +74,7 @@ $(function() {
       }
     });
     if(selected.length > 0)
-      $('.vm-list-group-control a').attr('disabled', false);
+      $('#vm-mass-ops .mass-operation').attr('disabled', false);
     return false;
   });
 
@@ -168,6 +160,10 @@ $(function() {
 
   $(".vm-list-table th a").on("click", function(event) {
     event.preventDefault();
+  });
+
+  $(document).on("click", ".mass-migrate-node", function() {
+    $(this).find('input[type="radio"]').prop("checked", true); 
   });
 
   if(checkStatusUpdate()) {
