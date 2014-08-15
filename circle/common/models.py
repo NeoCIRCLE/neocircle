@@ -223,9 +223,11 @@ def compute_cached(method, instance, memcached_seconds,
         instance = model.objects.get(id=id)
         try:
             method = getattr(model, method)
-            if hasattr(method, 'fget'):
-                method = method.fget
-            method = method._original
+            while hasattr(method, '_original') or hasattr(method, 'fget'):
+                try:
+                    method = method._original
+                except AttributeError:
+                    method = method.fget
         except AttributeError:
             logger.exception("Couldnt get original method of %s.%s",
                              unicode(instance), method.__name__)
