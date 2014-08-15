@@ -225,7 +225,7 @@ class IndexView(LoginRequiredMixin, TemplateView):
         # template
         if user.has_perm('vm.create_template'):
             context['templates'] = InstanceTemplate.get_objects_with_level(
-                'operator', user).all()[:5]
+                'operator', user, disregard_superuser=True).all()[:5]
 
         # toplist
         if settings.STORE_URL:
@@ -1844,8 +1844,8 @@ class VmCreate(LoginRequiredMixin, TemplateView):
         form_error = form is not None
         template = (form.template.pk if form_error
                     else request.GET.get("template"))
-        templates = InstanceTemplate.get_objects_with_level('user',
-                                                            request.user)
+        templates = InstanceTemplate.get_objects_with_level(
+            'user', request.user, disregard_superuser=True)
         if form is None and template:
             form = self.form_class(user=request.user,
                                    template=templates.get(pk=template))
