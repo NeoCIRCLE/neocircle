@@ -292,9 +292,10 @@ def method_cache(memcached_seconds=60, instance_seconds=5):  # noqa
             elif not cache.get("%s.cached" % key):
                 logger.debug("caches expiring, compute async")
                 cache.set("%s.cached" % key, 1, memcached_seconds * 0.5)
-                compute_cached.delay(
-                    method_name, (instance.__class__, instance.id),
-                    memcached_seconds, key, time(), *args, **kwargs)
+                compute_cached.apply_async(
+                    queue='localhost.man', kwargs=kwargs, args=[
+                        method_name, (instance.__class__, instance.id),
+                        memcached_seconds, key, time()] + list(args))
 
             return result
 
