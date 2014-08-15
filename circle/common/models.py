@@ -17,6 +17,7 @@
 
 from collections import deque
 from contextlib import contextmanager
+from functools import update_wrapper
 from hashlib import sha224
 from itertools import chain, imap
 from logging import getLogger
@@ -233,9 +234,11 @@ def method_cache(memcached_seconds=60, instance_seconds=5):  # noqa
 
     def inner_cache(method):
 
+        method_name = method.__name__
+
         def get_key(instance, *args, **kwargs):
             return sha224(unicode(method.__module__) +
-                          unicode(method.__name__) +
+                          method_name +
                           unicode(instance.id) +
                           unicode(args) +
                           unicode(kwargs)).hexdigest()
@@ -269,6 +272,9 @@ def method_cache(memcached_seconds=60, instance_seconds=5):  # noqa
                              unicode(args), unicode(result))
 
             return result
+
+        update_wrapper(x, method)
+        x._original = method
         return x
 
     return inner_cache
