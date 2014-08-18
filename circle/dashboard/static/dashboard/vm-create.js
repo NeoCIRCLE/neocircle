@@ -220,6 +220,8 @@ function vmCustomizeLoaded() {
     });
     if(error) return true;
 
+    $(this).find("i").prop("class", "fa fa-spinner fa-spin");
+
     $.ajax({
       url: '/dashboard/vm/create/',
       headers: {"X-CSRFToken": getCookie('csrftoken')},
