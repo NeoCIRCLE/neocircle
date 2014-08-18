@@ -1109,6 +1109,12 @@ vm_mass_ops = OrderedDict([
         op='wake_up', icon='sun-o', effect='success')),
     ('sleep', MassOperationView.factory(
         op='sleep', icon='moon-o', effect='info')),
+    ('reboot', MassOperationView.factory(
+        op='reboot', icon='refresh', effect='warning')),
+    ('reset', MassOperationView.factory(
+        op='reset', icon='bolt', effect='warning')),
+    ('shut_off', MassOperationView.factory(
+        op='shut_off', icon='ban', effect='warning')),
     ('migrate', MassMigrationView),
     ('destroy', MassOperationView.factory(
         op='destroy', icon='times', effect='danger')),
