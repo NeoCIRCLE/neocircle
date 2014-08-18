@@ -258,14 +258,15 @@ $(function () {
       html += '<div class="list-group-item list-group-item-last">' + gettext("No result") + '</div>';
     $("#dashboard-vm-list").html(html);
     $('.title-favourite').tooltip({'placement': 'right'});
+  });
 
-    // if there is only one result and ENTER is pressed redirect
-    if(e.keyCode == 13 && search_result.length == 1) {
-      window.location.href = "/dashboard/vm/" + search_result[0].pk + "/";
+  $("#dashboard-vm-search-form").submit(function() {
+    var vm_list_items = $("#dashboard-vm-list .list-group-item");
+    if(vm_list_items.length == 1) {
+      window.location.href = vm_list_items.first().prop("href");
+      return false;
     }
-    if(e.keyCode == 13 && search_result.length > 1 && input.length > 0) {
-      window.location.href = "/dashboard/vm/list/?s=" + input;
-    }
+    return true;
   });
 
   /* search for nodes */

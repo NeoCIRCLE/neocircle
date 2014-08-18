@@ -15,22 +15,37 @@
         </div>
         <h3 class="no-margin"><i class="fa fa-desktop"></i> {% trans "Virtual machines" %}</h3>
       </div>
-      <div class="pull-right" style="max-width: 250px; margin-top: 15px; margin-right: 15px;">
-        <form action="" method="GET" class="input-group">
-          <input type="text" name="s"{% if request.GET.s %} value="{{ request.GET.s }}"{% endif %} class="form-control input-tags" placeholder="{% trans "Search..."%}" />
-          <div class="input-group-btn">
-            <button type="submit" class="form-control btn btn-primary input-tags" title="search"><i class="fa fa-search"></i></button>
+      <div class="pull-right" style="max-width: 300px; margin-top: 15px; margin-right: 15px;">
+        <form action="" method="GET">
+          <div class="input-group">
+            {{ search_form.s }}
+            <div class="input-group-btn">
+              {{ search_form.stype }}
+              <button type="submit" class="btn btn-primary input-tags"> 
+                <i class="fa fa-search"></i>
+              </button>
+            </div>
           </div>
         </form>
       </div>
       <div class="panel-body vm-list-group-control">
         <p>
         <strong>{% trans "Group actions" %}</strong>
+        <!--
         <button id="vm-list-group-select-all" class="btn btn-info btn-xs">{% trans "Select all" %}</button>
-        <a class="btn btn-default btn-xs" id="vm-list-group-migrate" disabled><i class="fa fa-truck"></i> {% trans "Migrate" %}</a>
-        <a disabled href="#" class="btn btn-default btn-xs"><i class="fa fa-refresh"></i> {% trans "Reboot" %}</a>
-        <a disabled href="#" class="btn btn-default btn-xs"><i class="fa fa-off"></i> {% trans "Shutdown" %}</a>
-        <a id="vm-list-group-delete" disabled href="#" class="btn btn-danger btn-xs"><i class="fa fa-times"></i> {% trans "Destroy" %}</a>
+        <a href="#" class="btn btn-default btn-xs" title="{% trans "Migrate" %}" disabled>
+          <i class="fa fa-truck"></i>
+        </a>
+        <a href="#" class="btn btn-default btn-xs" title="{% trans "Reboot" %}" disabled>
+          <i class="fa fa-refresh"></i>
+        </a>
+        <a href="#" class="btn btn-default btn-xs" title="{% trans "Shutdown" %}" disabled>
+          <i class="fa fa-power-off"></i>
+        </a>
+        -->
+        <a title="{% trans "Destroy" %}" id="vm-list-group-delete" disabled href="#" class="btn btn-danger btn-xs" disabled>
+          <i class="fa fa-times"></i>
+        </a>
         </p>
       </div>
       <div class="panel-body">
@@ -87,6 +102,9 @@
 </div>
 </div>
 
+<div class="alert alert-info">
+  You can filter the list by certain attributes (owner, name, status, tags) in the following way: "owner:John Doe name:my little server". If you don't specify any attribute names the filtering will be done by name.
+</div>
 
 <div class="alert alert-info">
   {% trans "You can select multiple vm instances while holding down the <strong>CTRL</strong> key." %}
