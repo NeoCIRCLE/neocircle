@@ -1004,6 +1004,11 @@ class MassOperationView(OperationView):
         else:
             return Instance._ops[self.op]
 
+    def dispatch(self, *args, **kwargs):
+        user = self.request.user
+        self.objects_of_user = Instance.get_objects_with_level("user", user)
+        return super(MassOperationView, self).dispatch(*args, **kwargs)
+
     def get_context_data(self, **kwargs):
         ctx = super(MassOperationView, self).get_context_data(**kwargs)
         instances = self.request.GET.getlist("vm")
@@ -1060,8 +1065,7 @@ class MassOperationView(OperationView):
             return redirect(reverse("dashboard.views.vm-list"))
 
     def _op_checks(self, instance, user):
-        objects_of_user = Instance.get_objects_with_level("user", user)
-        if instance not in objects_of_user:
+        if instance not in self.objects_of_user:
             raise SuspiciousOperation()
         op = self.get_op(instance)
         op.check_auth(user)
