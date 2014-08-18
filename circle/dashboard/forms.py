@@ -634,12 +634,8 @@ class LeaseForm(forms.ModelForm):
             Field('name'),
             Field("suspend_interval_seconds", type="hidden", value="0"),
             Field("delete_interval_seconds", type="hidden", value="0"),
+            HTML(string_concat("<label>", _("Suspend in"), "</label>")),
             Div(
-                Div(
-                    HTML(_("Suspend in")),
-                    css_class="input-group-addon",
-                    style="width: 100px;",
-                ),
                 NumberField("suspend_hours", css_class="form-control"),
                 Div(
                     HTML(_("hours")),
@@ -662,12 +658,8 @@ class LeaseForm(forms.ModelForm):
                 ),
                 css_class="input-group interval-input",
             ),
+            HTML(string_concat("<label>", _("Delete in"), "</label>")),
             Div(
-                Div(
-                    HTML(_("Delete in")),
-                    css_class="input-group-addon",
-                    style="width: 100px;",
-                ),
                 NumberField("delete_hours", css_class="form-control"),
                 Div(
                     HTML(_("hours")),
