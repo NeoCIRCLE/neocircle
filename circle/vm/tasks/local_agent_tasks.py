@@ -86,18 +86,11 @@ def agent_started(vm, version=None):
 
         if version and version != settings.AGENT_VERSION:
             try:
-                with act.sub_activity(
-                    'update',
-                    readable_name=create_readable(
-                        ugettext_noop('update to %(version)s'),
-                        version=settings.AGENT_VERSION)
-                ):
-                    update.apply_async(
-                        queue=queue,
-                        args=(vm, create_agent_tar())).get(timeout=10)
-                    return
+                update_agent(vm, instance, act)
             except TimeoutError:
                 pass
+            else:
+                return  # agent is going to restart
 
         if not initialized:
             measure_boot_time(instance)
@@ -139,3 +132,23 @@ def agent_stopped(vm):
     act = qs.latest('id')
     with act.sub_activity('stopping', readable_name=ugettext_noop('stopping')):
         pass
+
+
+def update_agent(instance, vm, act=None):
+    if act:
+        act.sub_activity(
+            'update',
+            readable_name=create_readable(
+                ugettext_noop('update to %(version)s'),
+                version=settings.AGENT_VERSION))
+    else:
+        from vm.models import instance_activity
+        act = instance_activity(
+            code_suffix='agent.update', instance=instance,
+            readable_name=create_readable(
+                ugettext_noop('update agent to %(version)s'),
+                version=settings.AGENT_VERSION))
+    with act:
+        queue = instance.get_remote_queue_name("agent")
+        update.apply_async(queue=queue,
+                           args=(vm, create_agent_tar())).get(timeout=10)

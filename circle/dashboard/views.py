@@ -70,7 +70,7 @@ from .forms import (
     VmSaveForm, UserKeyForm, VmRenewForm,
     CirclePasswordChangeForm, VmCreateDiskForm, VmDownloadDiskForm,
     TraitsForm, RawDataForm, GroupPermissionForm, AclUserAddForm,
-    VmResourcesForm, VmAddInterfaceForm,
+    VmResourcesForm, VmAddInterfaceForm, VmListSearchForm
 )
 
 from .tables import (
@@ -225,7 +225,7 @@ class IndexView(LoginRequiredMixin, TemplateView):
         # template
         if user.has_perm('vm.create_template'):
             context['templates'] = InstanceTemplate.get_objects_with_level(
-                'operator', user).all()[:5]
+                'operator', user, disregard_superuser=True).all()[:5]
 
         # toplist
         if settings.STORE_URL:
@@ -518,6 +518,7 @@ class OperationView(RedirectToLoginMixin, DetailView):
     show_in_toolbar = True
     effect = None
     wait_for_result = None
+    with_reload = False
 
     @property
     def name(self):
@@ -660,11 +661,14 @@ class AjaxOperationMixin(object):
         resp = super(AjaxOperationMixin, self).post(
             request, extra, *args, **kwargs)
         if request.is_ajax():
-            store = messages.get_messages(request)
-            store.used = True
+            if not self.with_reload:
+                store = messages.get_messages(request)
+                store.used = True
+            else:
+                store = []
             return HttpResponse(
                 json.dumps({'success': True,
-                            'with_reload': getattr(self, 'with_reload', False),
+                            'with_reload': self.with_reload,
                             'messages': [unicode(m) for m in store]}),
                 content_type="application=json"
             )
@@ -706,9 +710,8 @@ class FormOperationMixin(object):
                 return HttpResponse(
                     json.dumps({
                         'success': True,
-                        'with_reload': getattr(self, 'with_reload', False)}),
-                    content_type="application=json"
-                )
+                        'with_reload': self.with_reload}),
+                    content_type="application=json")
             else:
                 return resp
         else:
@@ -718,7 +721,7 @@ class FormOperationMixin(object):
 class RequestFormOperationMixin(FormOperationMixin):
 
     def get_form_kwargs(self):
-        val = super(FormOperationMixin, self).get_form_kwargs()
+        val = super(RequestFormOperationMixin, self).get_form_kwargs()
         val.update({'request': self.request})
         return val
 
@@ -966,6 +969,10 @@ vm_ops = OrderedDict([
     ('password_reset', VmOperationView.factory(
         op='password_reset', icon='unlock', effect='warning',
         show_in_toolbar=False, wait_for_result=0.5, with_reload=True)),
+    ('mount_store', VmOperationView.factory(
+        op='mount_store', icon='briefcase', effect='info',
+        show_in_toolbar=False,
+    )),
 ])
 
 
@@ -1681,12 +1688,15 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
     def get_context_data(self, *args, **kwargs):
         context = super(VmList, self).get_context_data(*args, **kwargs)
         context['ops'] = [v for k, v in vm_mass_ops.iteritems()]
+        context['search_form'] = self.search_form
         return context
 
     def get(self, *args, **kwargs):
         if self.request.is_ajax():
             return self._create_ajax_request()
         else:
+            self.search_form = VmListSearchForm(self.request.GET)
+            self.search_form.full_clean()
             return super(VmList, self).get(*args, **kwargs)
 
     def _create_ajax_request(self):
@@ -1726,8 +1736,7 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
     def get_queryset(self):
         logger.debug('VmList.get_queryset() called. User: %s',
                      unicode(self.request.user))
-        queryset = Instance.get_objects_with_level(
-            'user', self.request.user).filter(destroyed_at=None)
+        queryset = self.create_default_queryset()
 
         self.create_fake_get()
         sort = self.request.GET.get("sort")
@@ -1741,6 +1750,18 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
         return queryset.filter(
             **self.get_queryset_filters()).select_related('owner', 'node'
                                                           ).distinct()
+
+    def create_default_queryset(self):
+        cleaned_data = self.search_form.cleaned_data
+        stype = cleaned_data.get('stype', 2)
+        superuser = stype == 2
+        shared = stype == 1
+        level = "owner" if stype == 0 else "user"
+        queryset = Instance.get_objects_with_level(
+            level, self.request.user,
+            group_also=shared, disregard_superuser=not superuser,
+        ).filter(destroyed_at=None)
+        return queryset
 
     def create_fake_get(self):
         """
@@ -1983,8 +2004,8 @@ class VmCreate(LoginRequiredMixin, TemplateView):
         form_error = form is not None
         template = (form.template.pk if form_error
                     else request.GET.get("template"))
-        templates = InstanceTemplate.get_objects_with_level('user',
-                                                            request.user)
+        templates = InstanceTemplate.get_objects_with_level(
+            'user', request.user, disregard_superuser=True)
         if form is None and template:
             form = self.form_class(user=request.user,
                                    template=templates.get(pk=template))

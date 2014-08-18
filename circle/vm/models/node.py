@@ -16,6 +16,7 @@
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, unicode_literals
+from functools import update_wrapper
 from logging import getLogger
 from warnings import warn
 import requests
@@ -51,6 +52,8 @@ def node_available(function):
             return function(self, *args, **kwargs)
         else:
             return None
+    update_wrapper(decorate, function)
+    decorate._original = function
     return decorate
 
 
