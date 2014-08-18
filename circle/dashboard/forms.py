@@ -691,7 +691,7 @@ class LeaseForm(forms.ModelForm):
                 css_class="input-group interval-input",
             )
         )
-        helper.add_input(Submit("submit", "Save changes"))
+        helper.add_input(Submit("submit", _("Save changes")))
         return helper
 
     class Meta:
