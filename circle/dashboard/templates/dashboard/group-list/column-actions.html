@@ -1,1 +1,5 @@
-   <a data-group-pk="{{ record.pk }}" class="btn btn-danger btn-xs real-link group-delete" href="{% url "dashboard.views.delete-group" pk=record.pk %}?next={{ request.path }}"><i class="fa fa-trash"></i></a>
+<a data-group-pk="{{ record.pk }}" 
+  class="btn btn-danger btn-xs real-link group-delete" 
+  href="{% url "dashboard.views.delete-group" pk=record.pk %}?next={{ request.path }}">
+  <i class="fa fa-trash-o"></i>
+</a>
