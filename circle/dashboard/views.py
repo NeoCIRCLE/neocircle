@@ -1922,6 +1922,7 @@ class VmCreate(LoginRequiredMixin, TemplateView):
                 'num_cores': post['cpu_count'],
                 'ram_size': post['ram_size'],
                 'priority': post['cpu_priority'],
+                'max_ram_size': post['ram_size'],
             }
             networks = [InterfaceTemplate(vlan=l, managed=l.managed)
                         for l in post['networks']]
