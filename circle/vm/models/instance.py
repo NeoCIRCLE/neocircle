@@ -597,8 +597,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             port = self.get_connect_port(use_ipv6=use_ipv6)
             host = self.get_connect_host(use_ipv6=use_ipv6)
             proto = self.access_method
-            if proto == 'ssh':
-                proto = 'sshterm'
             return ('%(proto)s:cloud:%(pw)s:%(host)s:%(port)d' %
                     {'port': port, 'proto': proto, 'pw': self.pw,
                      'host': host})
