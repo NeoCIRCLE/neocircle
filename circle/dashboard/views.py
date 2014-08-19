@@ -924,7 +924,7 @@ class VmRenewView(FormOperationMixin, TokenOperationView, VmOperationView):
         val = super(VmRenewView, self).get_form_kwargs()
         val.update({'choices': choices, 'default': default})
         return val
-                    
+
     def get_response_data(self, result, done, extra=None, **kwargs):
         extra = super(VmRenewView, self).get_response_data(result, done,
                                                            extra, **kwargs)
@@ -2460,7 +2460,7 @@ def vm_activity(request, pk):
     show_show_all = len(activities) > 10
     if not show_all:
         activities = activities[:10]
-    
+
     response['connect_uri'] = instance.get_connect_uri()
     response['human_readable_status'] = instance.get_status_display()
     response['status'] = instance.status
