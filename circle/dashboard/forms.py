@@ -714,6 +714,27 @@ class VmRenewForm(forms.Form):
         return helper
 
 
+class VmStateChangeForm(forms.Form):
+
+    interrupt = forms.BooleanField(required=False, label=_(
+        "Forcibly interrupt all running activities."),
+        help_text=_("Set all activities to finished state, "
+                    "but don't interrupt any tasks."))
+
+    def __init__(self, *args, **kwargs):
+        show_interrupt = kwargs.pop('show_interrupt')
+        super(VmStateChangeForm, self).__init__(*args, **kwargs)
+
+        if not show_interrupt:
+            self.fields['interrupt'].widget = HiddenInput()
+
+    @property
+    def helper(self):
+        helper = FormHelper(self)
+        helper.form_tag = False
+        return helper
+
+
 class VmCreateDiskForm(forms.Form):
     name = forms.CharField(max_length=100, label=_("Name"))
     size = forms.CharField(

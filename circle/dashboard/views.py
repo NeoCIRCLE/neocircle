@@ -67,7 +67,7 @@ from .forms import (
     CircleAuthenticationForm, HostForm, LeaseForm, MyProfileForm,
     NodeForm, TemplateForm, TraitForm, VmCustomizeForm, GroupCreateForm,
     UserCreationForm, GroupProfileUpdateForm, UnsubscribeForm,
-    VmSaveForm, UserKeyForm, VmRenewForm,
+    VmSaveForm, UserKeyForm, VmRenewForm, VmStateChangeForm,
     CirclePasswordChangeForm, VmCreateDiskForm, VmDownloadDiskForm,
     TraitsForm, RawDataForm, GroupPermissionForm, AclUserAddForm,
     VmResourcesForm, VmAddInterfaceForm, VmListSearchForm
@@ -936,6 +936,22 @@ class VmRenewView(FormOperationMixin, TokenOperationView, VmOperationView):
         return extra
 
 
+class VmStateChangeView(FormOperationMixin, VmOperationView):
+    op = 'emergency_change_state'
+    icon = 'legal'
+    effect = 'danger'
+    show_in_toolbar = True
+    form_class = VmStateChangeForm
+    wait_for_result = 0.5
+
+    def get_form_kwargs(self):
+        inst = self.get_op().instance
+        show_interrupt = active_activities.exists()
+        val = super(VmStateChangeView, self).get_form_kwargs()
+        val.update({'show_interrupt': show_interrupt})
+        return val
+
+
 vm_ops = OrderedDict([
     ('deploy', VmOperationView.factory(
         op='deploy', icon='play', effect='success')),
@@ -956,8 +972,7 @@ vm_ops = OrderedDict([
         op='shut_off', icon='ban', effect='warning')),
     ('recover', VmOperationView.factory(
         op='recover', icon='medkit', effect='warning')),
-    ('nostate', VmOperationView.factory(
-        op='emergency_change_state', icon='legal', effect='danger')),
+    ('nostate', VmStateChangeView),
     ('destroy', VmOperationView.factory(
         extra_bases=[TokenOperationView],
         op='destroy', icon='times', effect='danger')),
