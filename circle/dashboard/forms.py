@@ -720,13 +720,17 @@ class VmStateChangeForm(forms.Form):
         "Forcibly interrupt all running activities."),
         help_text=_("Set all activities to finished state, "
                     "but don't interrupt any tasks."))
+    new_state = forms.ChoiceField(Instance.STATUS, label=_(
+        "New status"))
 
     def __init__(self, *args, **kwargs):
         show_interrupt = kwargs.pop('show_interrupt')
+        status = kwargs.pop('status')
         super(VmStateChangeForm, self).__init__(*args, **kwargs)
 
         if not show_interrupt:
             self.fields['interrupt'].widget = HiddenInput()
+        self.fields['new_state'].initial = status
 
     @property
     def helper(self):

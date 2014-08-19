@@ -946,9 +946,11 @@ class VmStateChangeView(FormOperationMixin, VmOperationView):
 
     def get_form_kwargs(self):
         inst = self.get_op().instance
+        active_activities = InstanceActivity.objects.filter(
+            finished__isnull=True, instance=inst)
         show_interrupt = active_activities.exists()
         val = super(VmStateChangeView, self).get_form_kwargs()
-        val.update({'show_interrupt': show_interrupt})
+        val.update({'show_interrupt': show_interrupt, 'status': inst.status})
         return val
 
 
