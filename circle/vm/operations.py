@@ -754,7 +754,7 @@ class RenewOperation(InstanceOperation):
     required_perms = ()
     concurrency_check = False
 
-    def _operation(self, activity, lease=None, force=False):
+    def _operation(self, activity, lease=None, force=False, save=False):
         suspend, delete = self.instance.get_renew_times(lease)
         if (not force and suspend and self.instance.time_of_suspend and
                 suspend < self.instance.time_of_suspend):
@@ -768,6 +768,8 @@ class RenewOperation(InstanceOperation):
                 "in its delete time get earlier than before."))
         self.instance.time_of_suspend = suspend
         self.instance.time_of_delete = delete
+        if save:
+            self.instance.lease = lease
         self.instance.save()
         activity.result = create_readable(ugettext_noop(
             "Renewed to suspend at %(suspend)s and destroy at %(delete)s."),
