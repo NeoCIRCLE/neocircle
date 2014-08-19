@@ -215,6 +215,7 @@ class DownloadDiskOperation(InstanceOperation):
     has_percentage = True
     required_perms = ('storage.download_disk', )
     accept_states = ('STOPPED', 'PENDING', 'RUNNING')
+    async_queue = "localhost.man.slow"
 
     def _operation(self, user, url, task, activity, name=None):
         activity.result = url
@@ -356,6 +357,7 @@ class MigrateOperation(InstanceOperation):
                     "seconds of interruption (live migration).")
     required_perms = ()
     accept_states = ('RUNNING', )
+    async_queue = "localhost.man.slow"
 
     def rollback(self, activity):
         with activity.sub_activity(
@@ -506,6 +508,7 @@ class SaveAsTemplateOperation(InstanceOperation):
     abortable = True
     required_perms = ('vm.create_template', )
     accept_states = ('RUNNING', 'PENDING', 'STOPPED')
+    async_queue = "localhost.man.slow"
 
     def is_preferred(self):
         return (self.instance.is_base and
@@ -664,6 +667,7 @@ class SleepOperation(InstanceOperation):
                     "storage resources, and keep network resources allocated.")
     required_perms = ()
     accept_states = ('RUNNING', )
+    async_queue = "localhost.man.slow"
 
     def is_preferred(self):
         return (not self.instance.is_base and
@@ -830,6 +834,7 @@ class FlushOperation(NodeOperation):
     name = _("flush")
     description = _("Disable node and move all instances to other ones.")
     required_perms = ()
+    async_queue = "localhost.man.slow"
 
     def on_abort(self, activity, error):
         from manager.scheduler import TraitsUnsatisfiableException
