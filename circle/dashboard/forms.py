@@ -703,6 +703,8 @@ class VmRenewForm(forms.Form):
     force = forms.BooleanField(required=False, label=_(
         "Set expiration times even if they are shorter than "
         "the current value."))
+    save = forms.BooleanField(required=False, label=_(
+        "Save selected lease."))
 
     def __init__(self, *args, **kwargs):
         choices = kwargs.pop('choices')
@@ -714,6 +716,7 @@ class VmRenewForm(forms.Form):
             empty_label=None, label=_('Length')))
         if len(choices) < 2:
             self.fields['lease'].widget = HiddenInput()
+            self.fields['save'].widget = HiddenInput()
 
     @property
     def helper(self):
