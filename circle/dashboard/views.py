@@ -1611,9 +1611,9 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
 
     def create_default_queryset(self):
         cleaned_data = self.search_form.cleaned_data
-        stype = cleaned_data.get('stype', 2)
-        superuser = stype == 2
-        shared = stype == 1
+        stype = cleaned_data.get('stype', "all")
+        superuser = stype == "all"
+        shared = stype == "shared"
         level = "owner" if stype == 0 else "user"
         queryset = Instance.get_objects_with_level(
             level, self.request.user,

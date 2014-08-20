@@ -262,7 +262,7 @@ $(function () {
 
   $("#dashboard-vm-search-form").submit(function() {
     var vm_list_items = $("#dashboard-vm-list .list-group-item");
-    if(vm_list_items.length == 1) {
+    if(vm_list_items.length == 1 && vm_list_items.first().prop("href")) {
       window.location.href = vm_list_items.first().prop("href");
       return false;
     }

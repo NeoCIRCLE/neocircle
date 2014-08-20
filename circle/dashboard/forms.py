@@ -1133,9 +1133,9 @@ class VmResourcesForm(forms.ModelForm):
 
 
 vm_search_choices = (
-    (0, _("owned")),
-    (1, _("shared")),
-    (2, _("all")),
+    ("owned", _("owned")),
+    ("shared", _("shared")),
+    ("all", _("all")),
 )
 
 
@@ -1154,5 +1154,5 @@ class VmListSearchForm(forms.Form):
         # set initial value, otherwise it would be overwritten by request.GET
         if not self.data.get("stype"):
             data = self.data.copy()
-            data['stype'] = 2
+            data['stype'] = "all"
             self.data = data
