@@ -1614,7 +1614,7 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
         stype = cleaned_data.get('stype', "all")
         superuser = stype == "all"
         shared = stype == "shared"
-        level = "owner" if stype == 0 else "user"
+        level = "owner" if stype == "owned" else "user"
         queryset = Instance.get_objects_with_level(
             level, self.request.user,
             group_also=shared, disregard_superuser=not superuser,
