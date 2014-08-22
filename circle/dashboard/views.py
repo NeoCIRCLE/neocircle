@@ -347,7 +347,8 @@ class VmDetailView(CheckedDetailView):
             "vm.change_resources")
 
         # client info
-        context['client_download'] = self.request.COOKIES.get('downloaded_client')
+        context['client_download'] = self.request.COOKIES.get(
+            'downloaded_client')
 
         return context
 
@@ -1340,15 +1341,18 @@ class ClientCheck(LoginRequiredMixin, TemplateView):
             'box_title': _('About CIRCLE Client'),
             'ajax_title': False,
             'template': "dashboard/_client-check.html",
-            'instance': get_object_or_404(Instance, pk=self.request.GET.get('vm')),
+            'instance': get_object_or_404(
+                Instance, pk=self.request.GET.get('vm')),
         })
         return context
 
     def post(self, request, *args, **kwargs):
         instance = get_object_or_404(Instance, pk=request.POST.get('vm'))
-        response = HttpResponseRedirect(reverse('dashboard.views.detail', args=[instance.pk]))
+        response = HttpResponseRedirect(reverse(
+            'dashboard.views.detail', args=[instance.pk]))
         response.set_cookie('downloaded_client', 'True', 365 * 24 * 60 * 60)
         return response
+
 
 class TemplateChoose(LoginRequiredMixin, TemplateView):
 
