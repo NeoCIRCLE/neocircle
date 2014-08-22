@@ -382,6 +382,13 @@ $(function () {
     $('.notification-messages').load("/dashboard/notifications/");
     $('#notification-button a span[class*="badge-pulse"]').remove();  
   });
+  
+  /* on the client confirmation button fire the clientInstalledAction */
+  $(document).on("click", "#client-check-button", function(event) {
+    var connectUri = $('#connect-uri').val();
+    clientInstalledAction(connectUri);
+    return false;
+  });
 });
 
 function generateVmHTML(pk, name, host, icon, _status, fav, is_last) {
@@ -584,23 +591,16 @@ function addModalConfirmation(func, data) {
 }
 
 function addOnClickToInput(id, func, param) {
-    $('input,select').not('textarea').keypress(function(event) {if (event.keyCode == 13) {event.preventDefault();}})
-    $('#' + id).click(function(){func(param); return false;})
+  $('input,select').not('textarea').keypress(function(event) {if (event.keyCode == 13) {event.preventDefault();}})
+  $('#' + id).click(function(){func(param); return false;})
 }
 
 function clientInstalledAction(location) {   
-    setCookie('downloaded_client', true, 365 * 24 * 60 * 60);
-    window.location.href = location;
-    $('#confirmation-modal').modal("hide");
+  setCookie('downloaded_client', true, 365 * 24 * 60 * 60);
+  window.location.href = location;
+  $('#confirmation-modal').modal("hide");
 }
 
-$(function() {
-    $(document).on("click", "#client-check-button", function(event) {
-        var connectUri = $('#connect-uri').val();
-        clientInstalledAction(connectUri);
-        return false;
-    });
-});
 // for AJAX calls
 /**                                                                         
  * Getter for user cookies                                                  
