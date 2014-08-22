@@ -1344,10 +1344,14 @@ class ClientCheck(LoginRequiredMixin, TemplateView):
             'instance': get_object_or_404(
                 Instance, pk=self.request.GET.get('vm')),
         })
+        if not context['instance'].has_level(self.request.user, 'operator'):
+            raise PermissionDenied()
         return context
 
     def post(self, request, *args, **kwargs):
         instance = get_object_or_404(Instance, pk=request.POST.get('vm'))
+        if not instance.has_level(request.user, 'operator'):
+            raise PermissionDenied()
         response = HttpResponseRedirect(reverse(
             'dashboard.views.detail', args=[instance.pk]))
         response.set_cookie('downloaded_client', 'True', 365 * 24 * 60 * 60)
