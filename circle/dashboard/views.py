@@ -346,6 +346,9 @@ class VmDetailView(CheckedDetailView):
         context['can_change_resources'] = self.request.user.has_perm(
             "vm.change_resources")
 
+        # client info
+        context['client_download'] = self.request.COOKIES.get('downloaded_client')
+
         return context
 
     def post(self, request, *args, **kwargs):
@@ -1322,6 +1325,30 @@ class GroupAclUpdateView(AclUpdateView):
     def get_object(self):
         return super(GroupAclUpdateView, self).get_object().profile
 
+
+class ClientCheck(LoginRequiredMixin, TemplateView):
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/_modal.html']
+        else:
+            return ['dashboard/nojs-wrapper.html']
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(ClientCheck, self).get_context_data(*args, **kwargs)
+        context.update({
+            'box_title': _('About CIRCLE Client'),
+            'ajax_title': False,
+            'template': "dashboard/_client-check.html",
+            'instance': get_object_or_404(Instance, pk=self.request.GET.get('vm')),
+        })
+        return context
+
+    def post(self, request, *args, **kwargs):
+        instance = get_object_or_404(Instance, pk=request.POST.get('vm'))
+        response = HttpResponseRedirect(reverse('dashboard.views.detail', args=[instance.pk]))
+        response.set_cookie('downloaded_client', 'True', 365 * 24 * 60 * 60)
+        return response
 
 class TemplateChoose(LoginRequiredMixin, TemplateView):
 
