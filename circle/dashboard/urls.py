@@ -44,6 +44,7 @@ from .views import (
     VmTraitsUpdate, VmRawDataUpdate,
     GroupPermissionsView,
     LeaseAclUpdateView,
+    ClientCheck,
 )
 
 autocomplete_light.autodiscover()
@@ -196,4 +197,6 @@ urlpatterns = patterns(
         name="dashboard.views.store-new-directory"),
     url(r"^store/refresh_toplist$", store_refresh_toplist,
         name="dashboard.views.store-refresh-toplist"),
+    url(r"^client/check$", ClientCheck.as_view(),
+        name="dashboard.views.client-check"),
 )
