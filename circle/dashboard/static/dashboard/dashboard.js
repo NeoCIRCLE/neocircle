@@ -597,7 +597,7 @@ function clientInstalledAction(location) {
 $(function() {
     $(document).on("click", "#client-check-button", function(event) {
         var connectUri = $('#connect-uri').val();
-        clientInstalledAction(connectUri); return false;
+        clientInstalledAction(connectUri);
         return false;
     });
 });
