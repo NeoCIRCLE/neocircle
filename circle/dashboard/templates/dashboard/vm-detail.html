@@ -121,12 +121,15 @@
           <i class="fa fa-copy" title="{% trans "Select all" %}"></i>
         </span>
       </div>
-      <div id="dashboard-vm-details-connect">
-        <form method="POST" action="{% if instance.get_connect_uri %}{{ instance.get_connect_uri}}{% endif %}" target="_blank">
-	    <button id="dashboard-vm-details-connect-button" type="submit" class="btn btn-xs btn-default" {% if instance.status != "RUNNING" or not instance.get_connect_uri %}disabled{% endif %} title="{% trans "Connect via the CIRCLE Client" %}">
-    		<i class="fa fa-external-link"></i> {% trans "Connect" %}
-    	</button>
-	</form>
+      <div id="dashboard-vm-details-connect" class="operation-wrapper">
+        <form method="{% if not client_download %}GET{% else %} POST{% endif %}" action="{% if not client_download %}{% url "dashboard.views.client-check" %}{% else %}{% if instance.get_connect_uri %}{{ instance.get_connect_uri}}{% endif %}{% endif %}">
+            <button id="dashboard-vm-details-connect-button" type="submit" class="btn btn-xs btn-default {% if not client_download %}operation{% endif %}"  href="{% url "dashboard.views.client-check" %}?vm={{ instance.pk }}" {% if instance.status != "RUNNING" or not instance.get_connect_uri %}disabled{% endif %} title="{% trans "Connect via the CIRCLE Client" %}">
+                <i class="fa fa-external-link"></i> {% trans "Connect" %}
+            </button>
+            {% if not client_download %}
+            <input type="hidden" name="vm" value="{{ instance.pk }}" />
+            {% endif %}
+        </form>
       </div>
     </div>
     <div class="col-md-8" id="vm-detail-pane">
