@@ -1,0 +1,30 @@
+{% load i18n %}
+
+<p>
+    {% trans "To effortlessly connect to all kind of virtual machines you have to install the " %}<strong>{% trans "CIRCLE Client" %}</strong>.
+</p>
+<p class="text-info">
+    {% trans "To install the" %} 
+    <strong>{% trans "CIRCLE Client" %}</strong> 
+    {% trans "click on the" %} 
+    <strong>{% trans "Download the Client" %}</strong> {% trans "button. The button takes you to the installation detail page, where you can choose your operating system and start the download or read more detailed information about the" %}
+    <strong>{% trans "Client" %}</strong>. {% trans "The program can be installed on Windows XP (and above) or Debian based Linux operating systems. To successfully install the client you have to have admin (root or elevated) rights. After the installation complete clicking on the" %}
+    <strong>{% trans "I have the Client installed" %}</strong> {% trans "button will launch the appropriate tool designed for that connection with necessarily predefined configurations. This option will also save your answer and this prompt about installation will not pop up again." %}
+</p> 
+<br>
+<div class="pull-right">
+    <form method="POST" id="dashboard-vm-details-connect" action="">
+        {% csrf_token %}
+        <a class="btn btn-default" href="{%  url "dashboard.views.detail" pk=instance.pk %}" data-dismiss="modal">{% trans "Cancel" %}</a>
+        <a class="btn btn-info" href="http://circlecloud.org/client/download" data-dismiss="modal">{% trans "Download the Client" %}</a>
+        <button data-dismiss="modal" id="client-check-button" type="submit" class="btn btn-success" title="{% trans "I downloaded and installed the client and I want to connect using it. This choice will be saved to your compuer" %}">
+            <i class="fa fa-external-link"></i> {% trans "I have the Client installed" %}
+        </button>
+        <input name="connect-uri" type="hidden" value="{% if instance.get_connect_uri %}{{ instance.get_connect_uri}}{% endif %}" />
+        <input name="vm" type="hidden" value="{% if instance.get_connect_uri %}{{ instance.pk}}{% endif %}" />
+    </form>
+</div>
+
+<script>
+    addOnClickToInput('client-check-button', clientInstalledAction, '{% if instance.get_connect_uri %}{{ instance.get_connect_uri}}{% endif %}');
+</script>
