@@ -596,7 +596,7 @@ function addOnClickToInput(id, func, param) {
 }
 
 function clientInstalledAction(location) {   
-  setCookie('downloaded_client', true, 365 * 24 * 60 * 60);
+  setCookie('downloaded_client', true, 365 * 24 * 60 * 60, "/");
   window.location.href = location;
   $('#confirmation-modal').modal("hide");
 }
@@ -623,13 +623,13 @@ function getCookie(name) {
   return cookieValue;                                                       
 }
 
-function setCookie(name,value,seconds) {
+function setCookie(name, value, seconds, path) {
   if (seconds!=null) {
     var today = new Date();
     var expire = new Date();
     expire.setTime(today.getTime() + seconds);
   }
-  document.cookie = name+"="+escape(value)+";expires="+expire.toUTCString();
+  document.cookie = name+"="+escape(value)+"; expires="+expire.toUTCString()+"; path="+path;
 }
 
 /* no js compatibility */
