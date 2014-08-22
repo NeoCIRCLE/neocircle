@@ -594,6 +594,13 @@ function clientInstalledAction(location) {
     $('#confirmation-modal').modal("hide");
 }
 
+$(function() {
+    $(document).on("click", "#client-check-button", function(event) {
+        var connectUri = $('#connect-uri').val();
+        clientInstalledAction(connectUri); return false;
+        return false;
+    });
+});
 // for AJAX calls
 /**                                                                         
  * Getter for user cookies                                                  
