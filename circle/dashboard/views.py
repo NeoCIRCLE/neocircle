@@ -1340,6 +1340,7 @@ class ClientCheck(LoginRequiredMixin, TemplateView):
         context.update({
             'box_title': _('About CIRCLE Client'),
             'ajax_title': False,
+            'client_download_url': settings.CLIENT_DOWNLOAD_URL,
             'template': "dashboard/_client-check.html",
             'instance': get_object_or_404(
                 Instance, pk=self.request.GET.get('vm')),

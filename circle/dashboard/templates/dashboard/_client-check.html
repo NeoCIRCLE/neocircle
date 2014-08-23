@@ -16,7 +16,7 @@
     <form method="POST" id="dashboard-client-check" action="">
         {% csrf_token %}
         <a class="btn btn-default" href="{%  url "dashboard.views.detail" pk=instance.pk %}" data-dismiss="modal">{% trans "Cancel" %}</a>
-        <a class="btn btn-info" href="http://circlecloud.org/client/download" data-dismiss="modal">{% trans "Download the Client" %}</a>
+        <a class="btn btn-info" href="{{ client_download_url }}" traget="_blank">{% trans "Download the Client" %}</a>
         <button data-dismiss="modal" id="client-check-button" type="submit" class="btn btn-success" title="{% trans "I downloaded and installed the client and I want to connect using it. This choice will be saved to your compuer" %}">
             <i class="fa fa-external-link"></i> {% trans "I have the Client installed" %}
         </button>
