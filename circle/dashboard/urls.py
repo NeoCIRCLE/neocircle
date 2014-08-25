@@ -39,6 +39,7 @@ from .views import (
     get_vm_screenshot,
     ProfileView, toggle_use_gravatar, UnsubscribeFormView,
     UserKeyDelete, UserKeyDetail, UserKeyCreate,
+    ConnectCommandDelete, ConnectCommandDetail, ConnectCommandCreate,
     StoreList, store_download, store_upload, store_get_upload_url, StoreRemove,
     store_new_directory, store_refresh_toplist,
     VmTraitsUpdate, VmRawDataUpdate,
@@ -179,6 +180,16 @@ urlpatterns = patterns(
     url(r'^sshkey/create/$',
         UserKeyCreate.as_view(),
         name="dashboard.views.userkey-create"),
+
+    url(r'^conncmd/delete/(?P<pk>\d+)/$',
+        ConnectCommandDelete.as_view(),
+        name="dashboard.views.connectcommand-delete"),
+    url(r'^conncmd/(?P<pk>\d+)/$',
+        ConnectCommandDetail.as_view(),
+        name="dashboard.views.connectcommand-detail"),
+    url(r'^conncmd/create/$',
+        ConnectCommandCreate.as_view(),
+        name="dashboard.views.connectcommand-create"),
 
     url(r'^autocomplete/', include('autocomplete_light.urls')),
 
