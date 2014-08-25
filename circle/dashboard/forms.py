@@ -57,7 +57,6 @@ from django.utils.translation import string_concat
 from .virtvalidator import domain_validator
 
 from dashboard.models import ConnectCommand
-from vm.models.instance import ACCESS_METHODS
 
 LANGUAGES_WITH_CODE = ((l[0], string_concat(l[1], " (", l[0], ")"))
                        for l in LANGUAGES)
@@ -1041,18 +1040,6 @@ class UserKeyForm(forms.ModelForm):
 
 
 class ConnectCommandForm(forms.ModelForm):
-    access_method = forms.ChoiceField(ACCESS_METHODS, required=True,
-                                      label=_('Access method'))
-    application = forms.CharField(required=False, label=_('Application'),
-                                  help_text=_('This will be the value of the '
-                                              '%(app)s parameter.'))
-    template = forms.CharField(
-        label=_('Template'), required=True,
-        help_text=_('This will be the connection command template. '
-                    'Available parameters are: username, '
-                    'host, port, password, app.'
-                    'Example: %(app)s -p %(password)s %(host)s'))
-
     class Meta:
         fields = ('access_method', 'application', 'template')
         model = ConnectCommand
