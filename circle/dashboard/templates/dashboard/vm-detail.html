@@ -115,7 +115,7 @@
       <div class="input-group" id="dashboard-vm-details-connect-command">
         <span class="input-group-addon input-tags">{% trans "Command" %}</span>
         <input type="text" spellcheck="false"
-        value="{% if instance.get_connect_command %}{{ instance.get_connect_command }}{% else %}{% trans "Connection is not possible." %}{% endif %}"
+        value="{% if connect_command %}{{ connect_command }}{% else %}{% trans "Connection is not possible." %}{% endif %}"
         id="vm-details-connection-string" class="form-control input-tags" />
         <span class="input-group-addon input-tags" id="vm-details-connection-string-copy">
           <i class="fa fa-copy" title="{% trans "Select all" %}"></i>
