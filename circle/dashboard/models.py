@@ -105,13 +105,25 @@ class ConnectCommand(Model):
     user = ForeignKey(User, related_name='command_set')
     access_method = CharField(max_length=10, choices=ACCESS_METHODS,
                               verbose_name=_('access method'),
-                              help_text=_('Primary remote access method.'))
+                              help_text=_('Type of the remote access method.'))
     application = CharField(max_length="128", verbose_name=_('application'),
                             help_text=_(
-                                'Application name to use for this type '
-                                'of connection protocol.'))
+                                'Name of the application used for '
+                                'remote connection. '
+                                'This will be the value of the '
+                                '%(app)s parameter.'))
     template = CharField(blank=True, null=True, max_length=256,
-                         help_text=_('Template for connection command.'))
+                         verbose_name=_('command template'),
+                         help_text=_('Template for connection command string. '
+                                     'Available parameters are: '
+                                     'username, password, '
+                                     'host, port, app. Example: sshpass '
+                                     '-p %(password)s %(app)s -o '
+                                     'StrictHostKeyChecking=no %(username)s@'
+                                     '%(host)s -p %(port)s'))
+
+    def __unicode__(self):
+        return self.template
 
 
 class Profile(Model):
