@@ -590,11 +590,6 @@ function addModalConfirmation(func, data) {
   });
 }
 
-function addOnClickToInput(id, func, param) {
-  $('input,select').not('textarea').keypress(function(event) {if (event.keyCode == 13) {event.preventDefault();}})
-  $('#' + id).click(function(){func(param); return false;})
-}
-
 function clientInstalledAction(location) {   
   setCookie('downloaded_client', true, 365 * 24 * 60 * 60, "/");
   window.location.href = location;
