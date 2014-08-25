@@ -25,6 +25,7 @@ from django_tables2.columns import (TemplateColumn, Column, BooleanColumn,
 from vm.models import Node, InstanceTemplate, Lease
 from django.utils.translation import ugettext_lazy as _
 from django_sshkey.models import UserKey
+from dashboard.models import ConnectCommand
 
 
 class NodeListTable(Table):
@@ -250,3 +251,31 @@ class UserKeyListTable(Table):
         model = UserKey
         attrs = {'class': ('table table-bordered table-striped table-hover')}
         fields = ('name', 'fingerprint', 'created', 'actions')
+
+
+class ConnectCommandListTable(Table):
+    access_method = Column(
+        verbose_name=_("Access method"),
+        attrs={'th': {'data-sort': "string"}}
+    )
+
+    application = Column(
+        verbose_name=_("Application"),
+        attrs={'th': {'data-sort': "string"}}
+    )
+
+    template = Column(
+        verbose_name=_("Template"),
+        attrs={'th': {'data-sort': "string"}}
+    )
+
+    actions = TemplateColumn(
+        verbose_name=_("Actions"),
+        template_name="dashboard/command-list/column-command-actions.html",
+        orderable=False,
+    )
+
+    class Meta:
+        model = ConnectCommand
+        attrs = {'class': ('table table-bordered table-striped table-hover')}
+        fields = ('access_method', 'application', 'template', 'actions')
