@@ -1912,8 +1912,9 @@ class VmCreate(LoginRequiredMixin, TemplateView):
         if not template.has_level(request.user, 'user'):
             raise PermissionDenied()
 
+        name = request.POST.get("name", None)
         instances = [Instance.create_from_template(
-            template=template, owner=user)]
+            template=template, owner=user, name=name)]
         return self.__deploy(request, instances)
 
     def __create_customized(self, request, *args, **kwargs):
