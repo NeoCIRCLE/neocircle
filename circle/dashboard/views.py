@@ -1079,6 +1079,13 @@ class MassOperationView(OperationView):
         op.check_precond()
         return op
 
+    @classmethod
+    def factory(cls, vm_op, extra_bases=(), **kwargs):
+        kwargs.update({'op': vm_op.op, 'icon': vm_op.icon,
+                       'effect': vm_op.effect})
+        return type(str(cls.__name__ + vm_op.op),
+                    tuple(list(extra_bases) + [cls]), kwargs)
+
 
 class MassMigrationView(MassOperationView):
     template_name = 'dashboard/_vm-mass-migrate.html'
@@ -1103,21 +1110,14 @@ class MassMigrationView(MassOperationView):
                                                    **kwargs)
 
 vm_mass_ops = OrderedDict([
-    ('deploy', MassOperationView.factory(
-        op='deploy', icon='play', effect='success')),
-    ('wake_up', MassOperationView.factory(
-        op='wake_up', icon='sun-o', effect='success')),
-    ('sleep', MassOperationView.factory(
-        op='sleep', icon='moon-o', effect='info')),
-    ('reboot', MassOperationView.factory(
-        op='reboot', icon='refresh', effect='warning')),
-    ('reset', MassOperationView.factory(
-        op='reset', icon='bolt', effect='warning')),
-    ('shut_off', MassOperationView.factory(
-        op='shut_off', icon='ban', effect='warning')),
+    ('deploy', MassOperationView.factory(vm_ops['deploy'])),
+    ('wake_up', MassOperationView.factory(vm_ops['wake_up'])),
+    ('sleep', MassOperationView.factory(vm_ops['sleep'])),
+    ('reboot', MassOperationView.factory(vm_ops['reboot'])),
+    ('reset', MassOperationView.factory(vm_ops['reset'])),
+    ('shut_off', MassOperationView.factory(vm_ops['shut_off'])),
     ('migrate', MassMigrationView),
-    ('destroy', MassOperationView.factory(
-        op='destroy', icon='times', effect='danger')),
+    ('destroy', MassOperationView.factory(vm_ops['destroy'])),
 ])
 
 
