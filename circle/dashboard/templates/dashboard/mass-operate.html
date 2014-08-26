@@ -3,8 +3,10 @@
 
 {% block question %}
 <p>
-{% blocktrans with op=op.name %}
-Do you want to perform the following operation: <strong>{{op}}</strong>?
+{% blocktrans with op=op.name count count=vm_count %}
+Do you want to perform the <strong>{{op}}</strong> operation on the following instance?
+{% plural %}
+Do you want to perform the <strong>{{op}}</strong> operation on the following {{ count }} instances?
 {% endblocktrans %}
 </p>
 <p class="text-info">{{op.description}}</p>

@@ -1020,7 +1020,8 @@ class MassOperationView(OperationView):
         ctx = super(MassOperationView, self).get_context_data(**kwargs)
         instances = self.request.GET.getlist("vm")
         instances = Instance.objects.filter(pk__in=instances)
-        ctx['instances'] = self._check_instances(instances, self.request.user)
+        ctx['instances'], ctx['vm_count'] = self._check_instances(
+            instances, self.request.user)
 
         return ctx
 
@@ -1032,6 +1033,7 @@ class MassOperationView(OperationView):
 
     def _check_instances(self, instances, user):
         vms = []
+        ok_vm_count = 0
         for i in instances:
             try:
                 self._op_checks(i, user)
@@ -1043,8 +1045,10 @@ class MassOperationView(OperationView):
                 setattr(i, "disabled", _("Permission denied"))
             except Exception:
                 raise
+            else:
+                ok_vm_count += 1
             vms.append(i)
-        return vms
+        return vms, ok_vm_count
 
     def post(self, request, extra=None, *args, **kwargs):
         if extra is None:
@@ -1108,6 +1112,7 @@ class MassMigrationView(MassOperationView):
             extra["to_node"] = node
         return super(MassMigrationView, self).post(request, extra, *args,
                                                    **kwargs)
+
 
 vm_mass_ops = OrderedDict([
     ('deploy', MassOperationView.factory(vm_ops['deploy'])),
