@@ -920,3 +920,19 @@ textarea[name="list-new-namelist"] {
 .mass-migrate-node {
   cursor: pointer;
 }
+
+.mass-op-panel {
+  padding: 6px 10px;
+}
+
+.mass-op-panel .check {
+  color: #449d44;
+}
+
+.mass-op-panel .minus {
+  color: #d9534f;
+}
+
+.mass-op-panel .status-icon {
+  font-size: 1.5em;
+}
