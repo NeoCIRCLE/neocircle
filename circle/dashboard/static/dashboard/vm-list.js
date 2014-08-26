@@ -82,10 +82,7 @@ $(function() {
   /* mass operations */
   $("#vm-mass-ops").on('click', '.mass-operation', function(e) {
     var icon = $(this).children("i").addClass('fa-spinner fa-spin');
-    params = "?a";
-    for(var i=0; i<selected.length; i++) {
-      params += "&vm=" + selected[i].vm;
-    }
+    params = "?" + selected.map(function(a){return "vm=" + a.vm}).join("&");
 
     $.ajax({
       type: 'GET',
