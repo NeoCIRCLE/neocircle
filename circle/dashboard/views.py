@@ -1041,7 +1041,8 @@ class MassOperationView(OperationView):
 
         return ctx
 
-    def check_auth(self):
+    @classmethod
+    def check_auth(self, user=None):
         pass
 
     def get_object(self):
@@ -1111,6 +1112,11 @@ class MassMigrationView(MassOperationView):
     op = "migrate"
     icon = "truck"
     effect = "info"
+
+    @classmethod
+    def check_auth(self, user=None):
+        if user and not user.is_superuser:
+            raise PermissionDenied
 
     def get_context_data(self, **kwargs):
         ctx = super(MassMigrationView, self).get_context_data(**kwargs)
@@ -1715,7 +1721,14 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
 
     def get_context_data(self, *args, **kwargs):
         context = super(VmList, self).get_context_data(*args, **kwargs)
-        context['ops'] = [v for k, v in vm_mass_ops.iteritems()]
+        context['ops'] = []
+        for k, v in vm_mass_ops.iteritems():
+            try:
+                v.check_auth(user=self.request.user)
+            except PermissionDenied:
+                pass
+            else:
+                context['ops'].append(v)
         context['search_form'] = self.search_form
         return context
 
