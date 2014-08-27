@@ -32,6 +32,7 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import (BooleanField, CharField, DateTimeField,
                               IntegerField, ForeignKey, Manager,
                               ManyToManyField, permalink, SET_NULL, TextField)
+from django.db import IntegrityError
 from django.dispatch import Signal
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _, ugettext_noop
@@ -926,8 +927,16 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
 
     def allocate_vnc_port(self):
         if self.vnc_port is None:
-            self.vnc_port = find_unused_vnc_port()
-            self.save()
+            while True:
+                try:
+                    self.vnc_port = find_unused_vnc_port()
+                    self.save()
+                except IntegrityError:
+                    # Another thread took this port get another one
+                    logger.debug("Port %s is in use.", self.vnc_port)
+                    pass
+                else:
+                    break
 
     def yield_vnc_port(self):
         if self.vnc_port is not None:

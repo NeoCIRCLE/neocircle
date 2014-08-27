@@ -4,7 +4,7 @@
 {% block content %}
 <div class="body-content">
   <div class="page-header">
-    <h1>
+    <h1><i class="fa fa-{{icon}}"></i>
         {{ object.instance.name }}:
             {% if user.is_superuser %}
             {{object.readable_name.get_admin_text}}

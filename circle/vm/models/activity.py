@@ -192,6 +192,10 @@ class InstanceActivity(ActivityModel):
                               readable_name=readable_name)
         return activitycontextimpl(act, on_abort=on_abort, on_commit=on_commit)
 
+    def get_operation(self):
+        return self.instance.get_operation_from_activity_code(
+            self.activity_code)
+
 
 @contextmanager
 def instance_activity(code_suffix, instance, on_abort=None, on_commit=None,

@@ -260,6 +260,16 @@ class DeployOperation(InstanceOperation):
                                         self.instance.STATUS.PENDING,
                                         self.instance.STATUS.ERROR)
 
+    def on_abort(self, activity, error):
+        activity.resultant_state = 'STOPPED'
+
+    def on_commit(self, activity):
+        activity.resultant_state = 'RUNNING'
+        activity.result = create_readable(
+            ugettext_noop("virtual machine successfully "
+                          "deployed to node: %(node)s"),
+            node=self.instance.node)
+
     def _operation(self, activity, timeout=15):
         # Allocate VNC port and host node
         self.instance.allocate_vnc_port()
@@ -273,9 +283,11 @@ class DeployOperation(InstanceOperation):
 
         # Deploy VM on remote machine
         if self.instance.state not in ['PAUSED']:
+            rn = create_readable(ugettext_noop("deploy virtual machine"),
+                                 ugettext_noop("deploy vm to %(node)s"),
+                                 node=self.instance.node)
             with activity.sub_activity(
-                'deploying_vm', readable_name=ugettext_noop(
-                    "deploy virtual machine")) as deploy_act:
+                    'deploying_vm', readable_name=rn) as deploy_act:
                 deploy_act.result = self.instance.deploy_vm(timeout=timeout)
 
         # Establish network connection (vmdriver)
