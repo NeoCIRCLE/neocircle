@@ -261,6 +261,10 @@ class DeployOperation(InstanceOperation):
 
     def on_commit(self, activity):
         activity.resultant_state = 'RUNNING'
+        activity.result = create_readable(
+            ugettext_noop("virtual machine succesfully "
+                          "deployed to node: %(node)s"),
+            node=self.instance.node)
 
     def _operation(self, activity, timeout=15):
         # Allocate VNC port and host node
