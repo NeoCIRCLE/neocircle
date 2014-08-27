@@ -203,12 +203,6 @@ class Rule(models.Model):
         elif self.firewall_id:
             return 'INPUT' if self.direction == 'in' else 'OUTPUT'
 
-    def get_dport_sport(self):
-        if self.direction == 'in':
-            return self.dport, self.sport
-        else:
-            return self.sport, self.dport
-
     def get_ipt_rules(self, host=None):
         # action
         action = 'LOG_ACC' if self.action == 'accept' else 'LOG_DROP'
@@ -235,9 +229,6 @@ class Rule(models.Model):
         if vlan and not vlan.managed:
             return retval
 
-        # src and dst ports
-        dport, sport = self.get_dport_sport()
-
         # process foreign vlans
         for foreign_vlan in self.foreign_network.vlans.all():
             if not foreign_vlan.managed:
@@ -246,7 +237,7 @@ class Rule(models.Model):
             r = IptRule(priority=self.weight, action=action,
                         proto=self.proto, extra=self.extra,
                         comment='Rule #%s' % self.pk,
-                        src=src, dst=dst, dport=dport, sport=sport)
+                        src=src, dst=dst, dport=self.dport, sport=self.sport)
             chain_name = self.get_chain_name(local=vlan, remote=foreign_vlan)
             retval[chain_name] = r
 

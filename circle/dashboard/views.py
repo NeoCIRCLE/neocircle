@@ -67,7 +67,7 @@ from .forms import (
     CircleAuthenticationForm, HostForm, LeaseForm, MyProfileForm,
     NodeForm, TemplateForm, TraitForm, VmCustomizeForm, GroupCreateForm,
     UserCreationForm, GroupProfileUpdateForm, UnsubscribeForm,
-    VmSaveForm, UserKeyForm, VmRenewForm,
+    VmSaveForm, UserKeyForm, VmRenewForm, VmStateChangeForm,
     CirclePasswordChangeForm, VmCreateDiskForm, VmDownloadDiskForm,
     TraitsForm, RawDataForm, GroupPermissionForm, AclUserAddForm,
     VmResourcesForm, VmAddInterfaceForm, VmListSearchForm
@@ -936,6 +936,24 @@ class VmRenewView(FormOperationMixin, TokenOperationView, VmOperationView):
         return extra
 
 
+class VmStateChangeView(FormOperationMixin, VmOperationView):
+    op = 'emergency_change_state'
+    icon = 'legal'
+    effect = 'danger'
+    show_in_toolbar = True
+    form_class = VmStateChangeForm
+    wait_for_result = 0.5
+
+    def get_form_kwargs(self):
+        inst = self.get_op().instance
+        active_activities = InstanceActivity.objects.filter(
+            finished__isnull=True, instance=inst)
+        show_interrupt = active_activities.exists()
+        val = super(VmStateChangeView, self).get_form_kwargs()
+        val.update({'show_interrupt': show_interrupt, 'status': inst.status})
+        return val
+
+
 vm_ops = OrderedDict([
     ('deploy', VmOperationView.factory(
         op='deploy', icon='play', effect='success')),
@@ -956,8 +974,7 @@ vm_ops = OrderedDict([
         op='shut_off', icon='ban', effect='warning')),
     ('recover', VmOperationView.factory(
         op='recover', icon='medkit', effect='warning')),
-    ('nostate', VmOperationView.factory(
-        op='emergency_change_state', icon='legal', effect='danger')),
+    ('nostate', VmStateChangeView),
     ('destroy', VmOperationView.factory(
         extra_bases=[TokenOperationView],
         op='destroy', icon='times', effect='danger')),
@@ -1764,10 +1781,10 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
 
     def create_default_queryset(self):
         cleaned_data = self.search_form.cleaned_data
-        stype = cleaned_data.get('stype', 2)
-        superuser = stype == 2
-        shared = stype == 1
-        level = "owner" if stype == 0 else "user"
+        stype = cleaned_data.get('stype', "all")
+        superuser = stype == "all"
+        shared = stype == "shared"
+        level = "owner" if stype == "owned" else "user"
         queryset = Instance.get_objects_with_level(
             level, self.request.user,
             group_also=shared, disregard_superuser=not superuser,
@@ -2048,8 +2065,10 @@ class VmCreate(LoginRequiredMixin, TemplateView):
         if not template.has_level(request.user, 'user'):
             raise PermissionDenied()
 
-        instances = [Instance.create_from_template(
-            template=template, owner=user)]
+        args = {"template": template, "owner": user}
+        if "name" in request.POST:
+            args["name"] = request.POST.get("name")
+        instances = [Instance.create_from_template(**args)]
         return self.__deploy(request, instances)
 
     def __create_customized(self, request, *args, **kwargs):
@@ -2075,6 +2094,7 @@ class VmCreate(LoginRequiredMixin, TemplateView):
                 'num_cores': post['cpu_count'],
                 'ram_size': post['ram_size'],
                 'priority': post['cpu_priority'],
+                'max_ram_size': post['ram_size'],
             }
             networks = [InterfaceTemplate(vlan=l, managed=l.managed)
                         for l in post['networks']]

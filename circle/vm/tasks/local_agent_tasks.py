@@ -86,7 +86,7 @@ def agent_started(vm, version=None):
 
         if version and version != settings.AGENT_VERSION:
             try:
-                update_agent(vm, instance, act)
+                update_agent(instance, act)
             except TimeoutError:
                 pass
             else:
@@ -134,9 +134,9 @@ def agent_stopped(vm):
         pass
 
 
-def update_agent(instance, vm, act=None):
+def update_agent(instance, act=None):
     if act:
-        act.sub_activity(
+        act = act.sub_activity(
             'update',
             readable_name=create_readable(
                 ugettext_noop('update to %(version)s'),
@@ -150,5 +150,6 @@ def update_agent(instance, vm, act=None):
                 version=settings.AGENT_VERSION))
     with act:
         queue = instance.get_remote_queue_name("agent")
-        update.apply_async(queue=queue,
-                           args=(vm, create_agent_tar())).get(timeout=10)
+        update.apply_async(
+            queue=queue,
+            args=(instance.vm_name, create_agent_tar())).get(timeout=10)

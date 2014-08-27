@@ -745,7 +745,7 @@ class RenewOperation(InstanceOperation):
     required_perms = ()
     concurrency_check = False
 
-    def _operation(self, activity, lease=None, force=False):
+    def _operation(self, activity, lease=None, force=False, save=False):
         suspend, delete = self.instance.get_renew_times(lease)
         if (not force and suspend and self.instance.time_of_suspend and
                 suspend < self.instance.time_of_suspend):
@@ -759,6 +759,8 @@ class RenewOperation(InstanceOperation):
                 "in its delete time get earlier than before."))
         self.instance.time_of_suspend = suspend
         self.instance.time_of_delete = delete
+        if save:
+            self.instance.lease = lease
         self.instance.save()
         activity.result = create_readable(ugettext_noop(
             "Renewed to suspend at %(suspend)s and destroy at %(delete)s."),
@@ -779,9 +781,17 @@ class ChangeStateOperation(InstanceOperation):
                     "resources.")
     acl_level = "owner"
     required_perms = ('vm.emergency_change_state', )
+    concurrency_check = False
 
-    def _operation(self, user, activity, new_state="NOSTATE"):
+    def _operation(self, user, activity, new_state="NOSTATE", interrupt=False):
         activity.resultant_state = new_state
+        if interrupt:
+            msg_txt = ugettext_noop("Activity is forcibly interrupted.")
+            message = create_readable(msg_txt, msg_txt)
+            for i in InstanceActivity.objects.filter(
+                    finished__isnull=True, instance=self.instance):
+                i.finish(False, result=message)
+                logger.error('Forced finishing activity %s', i)
 
 
 register_operation(ChangeStateOperation)

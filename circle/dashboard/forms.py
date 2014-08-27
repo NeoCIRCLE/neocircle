@@ -634,12 +634,8 @@ class LeaseForm(forms.ModelForm):
             Field('name'),
             Field("suspend_interval_seconds", type="hidden", value="0"),
             Field("delete_interval_seconds", type="hidden", value="0"),
+            HTML(string_concat("<label>", _("Suspend in"), "</label>")),
             Div(
-                Div(
-                    HTML(_("Suspend in")),
-                    css_class="input-group-addon",
-                    style="width: 100px;",
-                ),
                 NumberField("suspend_hours", css_class="form-control"),
                 Div(
                     HTML(_("hours")),
@@ -662,12 +658,8 @@ class LeaseForm(forms.ModelForm):
                 ),
                 css_class="input-group interval-input",
             ),
+            HTML(string_concat("<label>", _("Delete in"), "</label>")),
             Div(
-                Div(
-                    HTML(_("Delete in")),
-                    css_class="input-group-addon",
-                    style="width: 100px;",
-                ),
                 NumberField("delete_hours", css_class="form-control"),
                 Div(
                     HTML(_("hours")),
@@ -691,7 +683,7 @@ class LeaseForm(forms.ModelForm):
                 css_class="input-group interval-input",
             )
         )
-        helper.add_input(Submit("submit", "Save changes"))
+        helper.add_input(Submit("submit", _("Save changes")))
         return helper
 
     class Meta:
@@ -703,6 +695,8 @@ class VmRenewForm(forms.Form):
     force = forms.BooleanField(required=False, label=_(
         "Set expiration times even if they are shorter than "
         "the current value."))
+    save = forms.BooleanField(required=False, label=_(
+        "Save selected lease."))
 
     def __init__(self, *args, **kwargs):
         choices = kwargs.pop('choices')
@@ -714,6 +708,32 @@ class VmRenewForm(forms.Form):
             empty_label=None, label=_('Length')))
         if len(choices) < 2:
             self.fields['lease'].widget = HiddenInput()
+            self.fields['save'].widget = HiddenInput()
+
+    @property
+    def helper(self):
+        helper = FormHelper(self)
+        helper.form_tag = False
+        return helper
+
+
+class VmStateChangeForm(forms.Form):
+
+    interrupt = forms.BooleanField(required=False, label=_(
+        "Forcibly interrupt all running activities."),
+        help_text=_("Set all activities to finished state, "
+                    "but don't interrupt any tasks."))
+    new_state = forms.ChoiceField(Instance.STATUS, label=_(
+        "New status"))
+
+    def __init__(self, *args, **kwargs):
+        show_interrupt = kwargs.pop('show_interrupt')
+        status = kwargs.pop('status')
+        super(VmStateChangeForm, self).__init__(*args, **kwargs)
+
+        if not show_interrupt:
+            self.fields['interrupt'].widget = HiddenInput()
+        self.fields['new_state'].initial = status
 
     @property
     def helper(self):
@@ -1141,9 +1161,9 @@ class VmResourcesForm(forms.ModelForm):
 
 
 vm_search_choices = (
-    (0, _("owned")),
-    (1, _("shared")),
-    (2, _("all")),
+    ("owned", _("owned")),
+    ("shared", _("shared")),
+    ("all", _("all")),
 )
 
 
@@ -1162,5 +1182,5 @@ class VmListSearchForm(forms.Form):
         # set initial value, otherwise it would be overwritten by request.GET
         if not self.data.get("stype"):
             data = self.data.copy()
-            data['stype'] = 2
+            data['stype'] = "all"
             self.data = data
