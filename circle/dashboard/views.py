@@ -2958,6 +2958,20 @@ def get_disk_download_status(request, pk):
     )
 
 
+def _get_activity_icon(act):
+    op = act.get_operation()
+    if op and op.id in vm_ops:
+        return vm_ops[op.id].icon
+    else:
+        return "cog"
+
+
+def _format_activities(acts):
+    for i in acts:
+        i.icon = _get_activity_icon(i)
+    return acts
+
+
 class InstanceActivityDetail(CheckedDetailView):
     model = InstanceActivity
     context_object_name = 'instanceactivity'  # much simpler to mock object
