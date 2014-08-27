@@ -2135,7 +2135,7 @@ class VmCreate(LoginRequiredMixin, TemplateView):
                 "Successfully created %(count)d VM.",  # this should not happen
                 "Successfully created %(count)d VMs.", len(instances)) % {
                 'count': len(instances)})
-            path = reverse("dashboard.index")
+            path = "%s?stype=owned" % reverse("dashboard.views.vm-list")
         else:
             messages.success(request, _("VM successfully created."))
             path = instances[0].get_absolute_url()
