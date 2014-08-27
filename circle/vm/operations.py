@@ -256,6 +256,9 @@ class DeployOperation(InstanceOperation):
                                         self.instance.STATUS.PENDING,
                                         self.instance.STATUS.ERROR)
 
+    def on_abort(self, activity, error):
+        activity.resultant_state = 'STOPPED'
+
     def on_commit(self, activity):
         activity.resultant_state = 'RUNNING'
 
