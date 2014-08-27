@@ -309,7 +309,7 @@ class VmDetailView(CheckedDetailView):
         activities = instance.get_merged_activities(user)
         show_show_all = len(activities) > 10
         activities = activities[:10]
-        context['activities'] = activities
+        context['activities'] = _format_activities(activities)
         context['show_show_all'] = show_show_all
         latest = instance.get_latest_activity_in_progress()
         context['is_new_state'] = (latest and
@@ -2501,7 +2501,8 @@ def vm_activity(request, pk):
 
     response = {}
     show_all = request.GET.get("show_all", "false") == "true"
-    activities = instance.get_merged_activities(request.user)
+    activities = _format_activities(
+        instance.get_merged_activities(request.user))
     show_show_all = len(activities) > 10
     if not show_all:
         activities = activities[:10]
@@ -2982,8 +2983,9 @@ class InstanceActivityDetail(CheckedDetailView):
 
     def get_context_data(self, **kwargs):
         ctx = super(InstanceActivityDetail, self).get_context_data(**kwargs)
-        ctx['activities'] = self.object.instance.get_activities(
-            self.request.user)
+        ctx['activities'] = _format_activities(
+            self.object.instance.get_activities(self.request.user))
+        ctx['icon'] = _get_activity_icon(self.object)
         return ctx
 
 
