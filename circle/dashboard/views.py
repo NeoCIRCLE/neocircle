@@ -1124,7 +1124,9 @@ class MassMigrationView(MassOperationView):
         node = self.request.POST.get("node")
         if node:
             node = get_object_or_404(Node, pk=node)
-            extra["to_node"] = node
+        else:
+            node = None
+        extra["to_node"] = node
         return super(MassMigrationView, self).post(request, extra, *args,
                                                    **kwargs)
 

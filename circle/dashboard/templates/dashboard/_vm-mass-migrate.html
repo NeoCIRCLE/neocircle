@@ -2,28 +2,34 @@
 {% load i18n %}
 {% load sizefieldtags %}
 
-{% block question %}
-<p>
-{% blocktrans with op=op.name %}
-Choose a compute node to migrate the selected VMs to.
-{% endblocktrans %}
-</p>
-<p class="text-info">{{op.name}}: {{op.description}}</p>
-{% endblock %}
 
 {% block formfields %}
+  <hr />
   <ul id="vm-migrate-node-list" class="list-unstyled">
+    <li class="panel panel-default panel-primary mass-migrate-node">
+      <div class="panel-body">
+        <label for="migrate-to-none">
+          <strong>{% trans "Reschedule" %}</strong>
+        </label>
+        <input id="migrate-to-none" type="radio" name="node" value="" style="float: right;" checked="checked">
+        <span class="vm-migrate-node-property">
+          {% trans "This option will reschedule each virtual machine to the most optimal node." %}
+        </span>
+        <div style="clear: both;"></div>
+      </div>
+    </li>
     {% for n in nodes %}
-      <li class="panel panel-default mass-migrate-node">
+    <li class="panel panel-default mass-migrate-node">
       <div class="panel-body">
         <label for="migrate-to-{{n.pk}}">
           <strong>{{ n }}</strong>
         </label>
-        <input id="migrate-to-{{n.pk}}" type="radio" name="node" value="{{ n.pk }}" style="float: right;" checked="checked">
+        <input id="migrate-to-{{n.pk}}" type="radio" name="node" value="{{ n.pk }}" style="float: right;"/>
         <span class="vm-migrate-node-property">{% trans "CPU load" %}: {{ n.cpu_usage }}</span>
         <span class="vm-migrate-node-property">{% trans "RAM usage" %}: {{ n.byte_ram_usage|filesize }}/{{ n.ram_size|filesize }}</span>
         <div style="clear: both;"></div>
-      </div></li>
+      </div>
+    </li>
     {% endfor %}
   </ul>
   <hr />
