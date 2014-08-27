@@ -936,3 +936,7 @@ textarea[name="list-new-namelist"] {
 .mass-op-panel .status-icon {
   font-size: 1.5em;
 }
+
+#vm-list-search, #vm-mass-ops {
+  margin-top: 8px;
+}
