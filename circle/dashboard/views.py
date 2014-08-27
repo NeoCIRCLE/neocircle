@@ -1012,7 +1012,6 @@ def get_operations(instance, user):
 
 class MassOperationView(OperationView):
     template_name = 'dashboard/mass-operate.html'
-    effect = "info"
 
     @classmethod
     def get_urlname(cls):
@@ -1102,10 +1101,8 @@ class MassOperationView(OperationView):
 
     @classmethod
     def factory(cls, vm_op, extra_bases=(), **kwargs):
-        kwargs.update({'op': vm_op.op, 'icon': vm_op.icon,
-                       'effect': vm_op.effect})
         return type(str(cls.__name__ + vm_op.op),
-                    tuple(list(extra_bases) + [cls]), kwargs)
+                    tuple(list(extra_bases) + [cls, vm_op]), kwargs)
 
 
 class MassMigrationView(MassOperationView):
@@ -1113,6 +1110,7 @@ class MassMigrationView(MassOperationView):
     icon = "info"
     op = "migrate"
     icon = "truck"
+    effect = "info"
 
     def get_context_data(self, **kwargs):
         ctx = super(MassMigrationView, self).get_context_data(**kwargs)
