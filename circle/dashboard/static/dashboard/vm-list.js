@@ -127,7 +127,7 @@ $(function() {
         if (xhr.status == 500) {
           addMessage("500 Internal Server Error", "danger");
         } else {
-          addMessage(xhr.status + " Unknown Error", "danger");
+          addMessage(xhr.status + " " + xhr.statusText, "danger");
         }
       }
     });
