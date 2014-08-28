@@ -78,7 +78,8 @@ from .tables import (
     GroupListTable, UserKeyListTable
 )
 from common.models import (
-    HumanReadableObject, HumanReadableException, fetch_human_exception
+    HumanReadableObject, HumanReadableException, fetch_human_exception,
+    create_readable,
 )
 from vm.models import (
     Instance, instance_activity, InstanceActivity, InstanceTemplate, Interface,

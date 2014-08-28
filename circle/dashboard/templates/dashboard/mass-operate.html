@@ -17,10 +17,11 @@ Do you want to perform the <strong>{{op}}</strong> operation on the following {{
   <div class="panel panel-default mass-op-panel">
     <i class="fa {{ i.get_status_icon }} fa-fw"></i>
     {{ i.name }} ({{ i.pk }})
-    <div style="float: right;" title="{{ i.disabled }}">
-      <i class="fa status-icon
-        {% if i.disabled %}fa-minus-square minus{% else %}fa-check-square check{% endif %}">
-      </i>
+    <div style="float: right;" title="{{ i.disabled }}" class="status-icon">
+      <span class="fa-stack">
+        <i class="fa fa-stack-2x fa-square {{ i.disabled|yesno:"minus,check" }}"></i>
+        <i class="fa fa-stack-1x fa-inverse fa-{% if i.disabled %}{{i.disabled_icon|default:"minus"}}{% else %}check{% endif %}"></i>
+      </span>
     </div>
   </div>
   <input type="checkbox" name="vm" value="{{ i.pk }}" {% if not i.disabled %}checked{% endif %}
