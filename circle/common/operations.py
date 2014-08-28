@@ -143,13 +143,23 @@ class Operation(object):
     def check_precond(self):
         pass
 
-    def check_auth(self, user):
-        if self.required_perms is None:
+    @classmethod
+    def check_perms(cls, user):
+        """Check if user is permitted to run this operation on any instance
+        """
+
+        if cls.required_perms is None:
             raise ImproperlyConfigured(
                 "Set required_perms to () if none needed.")
-        if not user.has_perms(self.required_perms):
+        if not user.has_perms(cls.required_perms):
             raise PermissionDenied("%s doesn't have the required permissions."
                                    % user)
+
+    def check_auth(self, user):
+        """Check if user is permitted to run this operation on this instance
+        """
+
+        self.check_perms(user)
 
     def create_activity(self, parent, user, kwargs):
         raise NotImplementedError
