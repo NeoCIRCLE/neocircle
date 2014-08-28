@@ -1024,7 +1024,10 @@ class MassOperationView(OperationView):
     template_name = 'dashboard/mass-operate.html'
 
     def check_auth(self):
-        pass  # OperationView.get calls this
+        for i in self.get_object():
+            if not i.has_level(self.request.user, "user"):
+                raise PermissionDenied(
+                    "You have no user access to instance %d" % i.pk)
 
     @classmethod
     def get_urlname(cls):
@@ -1075,13 +1078,19 @@ class MassOperationView(OperationView):
                 op = self.get_op(i)
                 op.check_auth(user)
                 op.check_precond()
+            except PermissionDenied as e:
+                i.disabled = create_readable(
+                    _("You are not permitted to execute %(op)s on instance "
+                      "%(instance)s."), instance=i.pk, op=self.name)
+                i.disabled_icon = "lock"
             except Exception as e:
                 i.disabled = fetch_human_exception(e)
             else:
-                i.disabled = False
+                i.disabled = None
         return instances
 
     def post(self, request, extra=None, *args, **kwargs):
+        self.check_auth()
         if extra is None:
             extra = {}
         self._call_operations(extra)
