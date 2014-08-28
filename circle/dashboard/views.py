@@ -1101,36 +1101,8 @@ class MassOperationView(OperationView):
                     tuple(list(extra_bases) + [cls, vm_op]), kwargs)
 
 
-class MassMigrationView(MassOperationView):
+class MassMigrationView(MassOperationView, VmMigrateView):
     template_name = 'dashboard/_vm-mass-migrate.html'
-    icon = "info"
-    op = "migrate"
-    icon = "truck"
-    effect = "info"
-
-    @classmethod
-    def check_auth(self, user=None):
-        if user and not user.is_superuser:
-            raise PermissionDenied
-
-    def get_context_data(self, **kwargs):
-        ctx = super(MassMigrationView, self).get_context_data(**kwargs)
-        ctx['nodes'] = [n for n in Node.objects.filter(enabled=True)
-                        if n.state == "ONLINE"]
-        return ctx
-
-    def post(self, request, extra=None, *args, **kwargs):
-        if extra is None:
-            extra = {}
-        node = self.request.POST.get("node")
-        if node:
-            node = get_object_or_404(Node, pk=node)
-        else:
-            node = None
-        extra["to_node"] = node
-        return super(MassMigrationView, self).post(request, extra, *args,
-                                                   **kwargs)
-
 
 vm_mass_ops = OrderedDict([
     ('deploy', MassOperationView.factory(vm_ops['deploy'])),
