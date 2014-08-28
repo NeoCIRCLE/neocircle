@@ -27,6 +27,7 @@ from warnings import warn
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.core.cache import cache
+from django.core.exceptions import PermissionDenied
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import (
     CharField, DateTimeField, ForeignKey, NullBooleanField
@@ -413,6 +414,10 @@ class HumanReadableObject(object):
         self._set_values(user_text_template, admin_text_template, params)
 
     def _set_values(self, user_text_template, admin_text_template, params):
+        if isinstance(user_text_template, Promise):
+            user_text_template = user_text_template._proxy____args[0]
+        if isinstance(admin_text_template, Promise):
+            admin_text_template = admin_text_template._proxy____args[0]
         self.user_text_template = user_text_template
         self.admin_text_template = admin_text_template
         self.params = params
@@ -451,6 +456,12 @@ class HumanReadableObject(object):
                              self.user_text_template, unicode(self.params))
             return self.user_text_template
 
+    def get_text(self, user):
+        if user and user.is_superuser:
+            return self.get_admin_text()
+        else:
+            return self.get_user_text()
+
     def to_dict(self):
         return {"user_text_template": self.user_text_template,
                 "admin_text_template": self.admin_text_template,
@@ -481,11 +492,19 @@ class HumanReadableException(HumanReadableObject, Exception):
             self.level = "error"
 
     def send_message(self, request, level=None):
-        if request.user and request.user.is_superuser:
-            msg = self.get_admin_text()
-        else:
-            msg = self.get_user_text()
+        msg = self.get_text(request.user)
         getattr(messages, level or self.level)(request, msg)
+
+
+def fetch_human_exception(exception, user=None):
+    if not isinstance(exception, HumanReadableException):
+        if isinstance(exception, PermissionDenied):
+            exception = create_readable(ugettext_noop("Permission Denied"))
+        else:
+            exception = create_readable(
+                _("Unknown error"), _("Unknown error: %(ex)s"),
+                ex=unicode(exception)).get_text()
+    return exception.get_text(user) if user else exception
 
 
 def humanize_exception(message, exception=None, level=None, **params):
