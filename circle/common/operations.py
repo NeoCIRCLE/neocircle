@@ -18,10 +18,10 @@
 from inspect import getargspec
 from logging import getLogger
 
-from .models import activity_context, has_suffix
-
 from django.core.exceptions import PermissionDenied, ImproperlyConfigured
+from django.utils.translation import ugettext_noop
 
+from .models import activity_context, has_suffix, humanize_exception
 
 logger = getLogger(__name__)
 
@@ -31,6 +31,7 @@ class Operation(object):
     """
     async_queue = 'localhost.man'
     required_perms = None
+    superuser_required = False
     do_not_call_in_templates = True
     abortable = False
     has_percentage = False
@@ -154,6 +155,9 @@ class Operation(object):
         if not user.has_perms(cls.required_perms):
             raise PermissionDenied("%s doesn't have the required permissions."
                                    % user)
+        if cls.superuser_required and not user.is_superuser:
+            raise humanize_exception(ugettext_noop(
+                "Superuser privileges are required."), PermissionDenied())
 
     def check_auth(self, user):
         """Check if user is permitted to run this operation on this instance
