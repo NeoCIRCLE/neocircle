@@ -77,7 +77,9 @@ from .tables import (
     NodeListTable, TemplateListTable, LeaseListTable,
     GroupListTable, UserKeyListTable
 )
-from common.models import HumanReadableObject, HumanReadableException
+from common.models import (
+    HumanReadableObject, HumanReadableException, fetch_human_exception
+)
 from vm.models import (
     Instance, instance_activity, InstanceActivity, InstanceTemplate, Interface,
     InterfaceTemplate, Lease, Node, NodeActivity, Trait,
@@ -561,6 +563,10 @@ class OperationView(RedirectToLoginMixin, DetailView):
             setattr(self, '_opobj', getattr(self.get_object(), self.op))
         return self._opobj
 
+    @classmethod
+    def get_operation_class(cls):
+        return cls.model.get_operation_class(cls.op)
+
     def get_context_data(self, **kwargs):
         ctx = super(OperationView, self).get_context_data(**kwargs)
         ctx['op'] = self.get_op()
@@ -575,6 +581,10 @@ class OperationView(RedirectToLoginMixin, DetailView):
     def check_auth(self):
         logger.debug("OperationView.check_auth(%s)", unicode(self))
         self.get_op().check_auth(self.request.user)
+
+    @classmethod
+    def check_perms(cls, user):
+        cls.get_operation_class().check_perms(user)
 
     def get(self, request, *args, **kwargs):
         self.check_auth()
@@ -1013,6 +1023,9 @@ def get_operations(instance, user):
 class MassOperationView(OperationView):
     template_name = 'dashboard/mass-operate.html'
 
+    def check_auth(self):
+        pass  # OperationView.get calls this
+
     @classmethod
     def get_urlname(cls):
         return 'dashboard.vm.mass-op.%s' % cls.op
@@ -1027,61 +1040,51 @@ class MassOperationView(OperationView):
         else:
             return Instance._ops[self.op]
 
-    def dispatch(self, *args, **kwargs):
-        user = self.request.user
-        self.objects_of_user = Instance.get_objects_with_level("user", user)
-        return super(MassOperationView, self).dispatch(*args, **kwargs)
-
     def get_context_data(self, **kwargs):
         ctx = super(MassOperationView, self).get_context_data(**kwargs)
-        instances = self.request.GET.getlist("vm")
-        instances = Instance.objects.filter(pk__in=instances)
-        ctx['instances'], ctx['vm_count'] = self._check_instances(
+        instances = self.get_object()
+        ctx['instances'] = self._get_operable_instances(
             instances, self.request.user)
-
+        ctx['vm_count'] = sum(1 for i in ctx['instances'] if not i.disabled)
         return ctx
 
-    @classmethod
-    def check_auth(self, user=None):
-        pass
-
-    def get_object(self):
-        return None
-
-    def _check_instances(self, instances, user):
-        vms = []
-        ok_vm_count = 0
+    def _call_operations(self, extra):
+        request = self.request
+        user = request.user
+        instances = self.get_object()
         for i in instances:
             try:
-                self._op_checks(i, user)
+                self.get_op(i).async(user=user, **extra)
             except HumanReadableException as e:
-                setattr(i, "disabled", e.get_user_text())
-            except SuspiciousOperation:
-                continue
-            except PermissionDenied:
-                setattr(i, "disabled", _("Permission denied"))
-            except Exception:
-                raise
+                e.send_message(request)
+            except Exception as e:
+                # pre-existing errors should have been catched when the
+                # confirmation dialog was constructed
+                messages.error(request, _(
+                    "Failed to execute %(op)s operation on "
+                    "instance %(instance)s.") % {"op": self.name,
+                                                 "instance": i})
+
+    def get_object(self):
+        vms = getattr(self.request, self.request.method).getlist("vm")
+        return Instance.objects.filter(pk__in=vms)
+
+    def _get_operable_instances(self, instances, user):
+        for i in instances:
+            try:
+                op = self.get_op(i)
+                op.check_auth(user)
+                op.check_precond()
+            except Exception as e:
+                i.disabled = fetch_human_exception(e)
             else:
-                ok_vm_count += 1
-            vms.append(i)
-        return vms, ok_vm_count
+                i.disabled = False
+        return instances
 
     def post(self, request, extra=None, *args, **kwargs):
         if extra is None:
             extra = {}
-        user = self.request.user
-        vms = request.POST.getlist("vm")
-        instances = Instance.objects.filter(pk__in=vms)
-        for i in instances:
-            try:
-                op = self._op_checks(i, user)
-                op.async(user=user, **extra)
-            except HumanReadableException as e:
-                e.send_message(request)
-            except Exception as e:
-                pass
-
+        self._call_operations(extra)
         if request.is_ajax():
             store = messages.get_messages(request)
             store.used = True
@@ -1091,14 +1094,6 @@ class MassOperationView(OperationView):
             )
         else:
             return redirect(reverse("dashboard.views.vm-list"))
-
-    def _op_checks(self, instance, user):
-        if instance not in self.objects_of_user:
-            raise SuspiciousOperation()
-        op = self.get_op(instance)
-        op.check_auth(user)
-        op.check_precond()
-        return op
 
     @classmethod
     def factory(cls, vm_op, extra_bases=(), **kwargs):
@@ -1724,7 +1719,7 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
         context['ops'] = []
         for k, v in vm_mass_ops.iteritems():
             try:
-                v.check_auth(user=self.request.user)
+                v.check_perms(user=self.request.user)
             except PermissionDenied:
                 pass
             else:
