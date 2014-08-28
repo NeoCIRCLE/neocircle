@@ -199,14 +199,17 @@ class OperatedMixin(object):
     def __getattr__(self, name):
         # NOTE: __getattr__ is only called if the attribute doesn't already
         # exist in your __dict__
-        cls = self.__class__
+        return self.get_operation_class(name)(self)
+
+    @classmethod
+    def get_operation_class(cls, name):
         ops = getattr(cls, operation_registry_name, {})
         op = ops.get(name)
         if op:
-            return op(self)
+            return op
         else:
             raise AttributeError("%r object has no attribute %r" %
-                                 (self.__class__.__name__, name))
+                                 (cls.__name__, name))
 
     def get_available_operations(self, user):
         """Yield Operations that match permissions of user and preconditions.
