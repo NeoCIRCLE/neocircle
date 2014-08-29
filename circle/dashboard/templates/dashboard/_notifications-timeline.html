@@ -1,16 +1,17 @@
 {% load i18n %}
+{% load hro %}
 {% for n in notifications %}
   <li class="notification-message" id="msg-{{n.id}}">
     <span class="notification-message-subject">
       {% if n.status == "new" %}<i class="fa fa-envelope-o"></i> {% endif %}
-      {{ n.subject.get_user_text }}
+      {{ n.subject|get_text:user }}
     </span>
     <span class="notification-message-date pull-right" title="{{n.created}}">
       {{ n.created|timesince }}
     </span>
     <div style="clear: both;"></div>
     <div class="notification-message-text">
-      {{ n.message.get_user_text|safe }}
+      {{ n.message|get_text:user|safe }}
     </div>
   </li>
 {% empty %}

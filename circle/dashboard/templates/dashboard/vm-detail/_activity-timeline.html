@@ -1,5 +1,5 @@
 {% load i18n %}
-
+{% load hro %}
 <div id="activity-timeline" class="timeline">
 
 {% for a in activities %}
@@ -7,10 +7,10 @@
   <span class="timeline-icon{% if a.has_failed %} timeline-icon-failed{% endif %}">
   <i class="fa {% if not a.finished %}fa-refresh fa-spin {% else %}fa-{{a.icon}}{% endif %}"></i>
 </span>
-<strong{% if a.result %} title="{{ a.result.get_user_text }}"{% endif %}>
+<strong{% if a.result %} title="{{ a.result|get_text:user }}"{% endif %}>
   <a href="{{ a.get_absolute_url }}">
     {% if a.times > 1 %}({{ a.times }}x){% endif %}
-    {{ a.readable_name.get_user_text|capfirst }}</a>
+    {{ a.readable_name|get_text:user|capfirst }}</a>
 
 {% if a.has_percent %}
   - {{ a.percentage }}%
@@ -33,9 +33,9 @@
     <div class="sub-timeline">
       {% for s in a.children.all %}
       <div data-activity-id="{{ s.pk }}" class="sub-activity{% if s.has_failed %} sub-activity-failed{% endif %}{% if s.pk == active.pk %} sub-activity-active{% endif %}">
-        <span{% if s.result %} title="{{ s.result.get_user_text }}"{% endif %}>
+        <span{% if s.result %} title="{{ s.result|get_text:user }}"{% endif %}>
           <a href="{{ s.get_absolute_url }}">
-              {{ s.readable_name.get_user_text|capfirst }}</a></span> &ndash;
+              {{ s.readable_name|get_text:user|capfirst }}</a></span> &ndash;
         {% if s.finished %}
           {{ s.finished|time:"H:i:s" }}
         {% else %}

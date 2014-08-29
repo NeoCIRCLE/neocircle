@@ -1,0 +1,38 @@
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block question %}
+<p>
+{% blocktrans with op=op.name count count=vm_count %}
+Do you want to perform the <strong>{{op}}</strong> operation on the following instance?
+{% plural %}
+Do you want to perform the <strong>{{op}}</strong> operation on the following {{ count }} instances?
+{% endblocktrans %}
+</p>
+<p class="text-info">{{op.description}}</p>
+{% endblock %}
+<form method="POST" action="{{url}}">{% csrf_token %}
+  {% block formfields %}{% endblock %}
+  {% for i in instances %}
+  <div class="panel panel-default mass-op-panel">
+    <i class="fa {{ i.get_status_icon }} fa-fw"></i>
+    {{ i.name }} ({{ i.pk }})
+    <div style="float: right;" title="{{ i.disabled }}" class="status-icon">
+      <span class="fa-stack">
+        <i class="fa fa-stack-2x fa-square {{ i.disabled|yesno:"minus,check" }}"></i>
+        <i class="fa fa-stack-1x fa-inverse fa-{% if i.disabled %}{{i.disabled_icon|default:"minus"}}{% else %}check{% endif %}"></i>
+      </span>
+    </div>
+  </div>
+  <input type="checkbox" name="vm" value="{{ i.pk }}" {% if not i.disabled %}checked{% endif %}
+    style="display: none;"/>
+  {% endfor %}
+
+  <div class="pull-right">
+    <a class="btn btn-default" href="{% url "dashboard.views.vm-list" %}"
+     data-dismiss="modal">{% trans "Cancel" %}</a>
+    <button class="btn btn-{{ opview.effect }}" type="submit" id="op-form-send">
+      {% if opview.icon %}<i class="fa fa-fw fa-{{opview.icon}}"></i> {% endif %}{{ opview.name|capfirst }}
+    </button>
+  </div>
+</form>

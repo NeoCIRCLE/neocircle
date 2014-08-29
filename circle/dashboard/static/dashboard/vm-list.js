@@ -14,6 +14,7 @@ $(function() {
 
   $('.vm-list-table tbody').find('tr').mousedown(function() {
     var retval = true;
+    if(!$(this).data("vm-pk")) return;
     if (ctrlDown) {
       setRowColor($(this));
       if(!$(this).hasClass('vm-list-selected')) {
@@ -46,35 +47,13 @@ $(function() {
       selected = [{'index': $(this).index(), 'vm': $(this).data("vm-pk")}];
     }
 
-    // reset btn disables
-    $('.vm-list-table tbody tr .btn').attr('disabled', false);
     // show/hide group controls
     if(selected.length > 0) {
-      $('.vm-list-group-control a').attr('disabled', false);
-      for(var i = 0; i < selected.length; i++) {
-        $('.vm-list-table tbody tr').eq(selected[i]).find('.btn').attr('disabled', true);
-      }
+      $('#vm-mass-ops .mass-operation').attr('disabled', false);
     } else {
-      $('.vm-list-group-control a').attr('disabled', true);
+      $('#vm-mass-ops .mass-operation').attr('disabled', true);
     }
     return retval;
-  });
-
-    
-  $('#vm-list-group-migrate').click(function() {
-    // pass?
-  });
-
-  $('.vm-list-details').popover({
-    'placement': 'auto',
-    'html': true,
-    'trigger': 'hover'
-  });
-
-  $('.vm-list-connect').popover({
-    'placement': 'left',
-    'html': true,
-    'trigger': 'click'
   });
 
   $('tbody a').mousedown(function(e) {
@@ -82,50 +61,6 @@ $(function() {
     e.stopPropagation();
     });
 
-  $('tbody a').click(function(e) {
-    // browser doesn't jump to top when clicked the buttons
-    if(!$(this).hasClass('real-link')) {
-      return false;
-    }
-  });
-
-  /* rename */
-  $("#vm-list-rename-button, .vm-details-rename-button").click(function() {
-    $("#vm-list-column-name", $(this).closest("tr")).hide();
-    $("#vm-list-rename", $(this).closest("tr")).css('display', 'inline');
-    $("#vm-list-rename-name", $(this).closest("tr")).focus();
-  });
-
-  /* rename ajax */
-  $('.vm-list-rename-submit').click(function() {
-    var row = $(this).closest("tr")
-    var name = $('#vm-list-rename-name', row).val();
-    var url = '/dashboard/vm/' + row.children("td:first-child").text().replace(" ", "") + '/';
-    $.ajax({
-      method: 'POST',
-      url: url,
-      data: {'new_name': name},
-      headers: {"X-CSRFToken": getCookie('csrftoken')},
-      success: function(data, textStatus, xhr) {
-        
-        $("#vm-list-column-name", row).html(
-          $("<a/>", {
-            'class': "real-link",
-            href: "/dashboard/vm/" + data['vm_pk'] + "/",
-            text: data['new_name']
-          })
-        ).show();
-        $('#vm-list-rename', row).hide();
-        // addMessage(data['message'], "success");
-      },
-      error: function(xhr, textStatus, error) {
-        addMessage("Error during renaming!", "danger");
-      }
-    });
-    return false;
-  });
-  
-  
   /* group actions */
 
   /* select all */
@@ -133,27 +68,69 @@ $(function() {
     $('.vm-list-table tbody tr').each(function() {
       var index = $(this).index();
       var vm = $(this).data("vm-pk");
-      if(!isAlreadySelected(vm)) {
+      if(vm && !isAlreadySelected(vm)) {
         selected.push({'index': index, 'vm': vm});
         $(this).addClass('vm-list-selected');
       }
     });
     if(selected.length > 0)
-      $('.vm-list-group-control a').attr('disabled', false);
+      $('#vm-mass-ops .mass-operation').attr('disabled', false);
     return false;
   });
 
-  /* mass vm delete */
-  $('#vm-list-group-delete').click(function() {
-    addModalConfirmation(massDeleteVm,
-      {
-        'url': '/dashboard/vm/mass-delete/',
-        'data': {
-          'selected': selected,
-          'v': collectIds(selected)
+
+  /* mass operations */
+  $("#vm-mass-ops").on('click', '.mass-operation', function(e) {
+    var icon = $(this).children("i").addClass('fa-spinner fa-spin');
+    params = "?" + selected.map(function(a){return "vm=" + a.vm}).join("&");
+
+    $.ajax({
+      type: 'GET',
+      url: $(this).attr('href') + params,
+      success: function(data) {
+        icon.removeClass("fa-spinner fa-spin");
+        $('body').append(data);
+        $('#confirmation-modal').modal('show');
+        $('#confirmation-modal').on('hidden.bs.modal', function() {
+          $('#confirmation-modal').remove();
+        });
+        $("[title]").tooltip({'placement': "left"});
+      }
+    });
+    return false;
+  });
+
+
+  $("body").on("click", "#op-form-send", function() {
+    var url = $(this).closest("form").prop("action");
+    $(this).find("i").prop("class", "fa fa-fw fa-spinner fa-spin");
+
+    $.ajax({
+      url: url,
+      headers: {"X-CSRFToken": getCookie('csrftoken')},
+      type: 'POST',
+      data: $(this).closest('form').serialize(),
+      success: function(data, textStatus, xhr) {
+        /* hide the modal we just submitted */
+        $('#confirmation-modal').modal("hide");
+
+        updateStatuses(1);
+  
+        /* if there are messages display them */
+        if(data.messages && data.messages.length > 0) {
+          addMessage(data.messages.join("<br />"), "danger");
+        }
+      },
+      error: function(xhr, textStatus, error) {
+        $('#confirmation-modal').modal("hide");
+        
+        if (xhr.status == 500) {
+          addMessage("500 Internal Server Error", "danger");
+        } else {
+          addMessage(xhr.status + " " + xhr.statusText, "danger");
         }
       }
-    );
+    });
     return false;
   });
 
@@ -181,7 +158,64 @@ $(function() {
   $(".vm-list-table th a").on("click", function(event) {
     event.preventDefault();
   });
+
+  $(document).on("click", ".mass-migrate-node", function() {
+    $(this).find('input[type="radio"]').prop("checked", true); 
+  });
+
+  if(checkStatusUpdate()) {
+    updateStatuses(1);
+  }
 });
+
+
+function checkStatusUpdate() {
+  icons = $("#vm-list-table tbody td.state i");
+  if(icons.hasClass("fa-spin") || icons.hasClass("migrating-icon")) {
+    return true;
+  }
+}
+
+
+function updateStatuses(runs) {
+  $.get("/dashboard/vm/list/?compact", function(result) {
+    $("#vm-list-table tbody tr").each(function() {
+      vm = $(this).data("vm-pk");
+      status_td = $(this).find("td.state");
+      status_icon = status_td.find("i");
+      status_text = status_td.find("span");
+
+      if(vm in result) {
+        if(result[vm].in_status_change) {
+          if(!status_icon.hasClass("fa-spin")) {
+            status_icon.prop("class", "fa fa-fw fa-spinner fa-spin");
+          }
+        }
+        else if(result[vm].status == "MIGRATING") {
+          if(!status_icon.hasClass("migrating-icon")) {
+            status_icon.prop("class", "fa fa-fw " + result[vm].icon + " migrating-icon");
+          }
+        } else {
+          status_icon.prop("class", "fa fa-fw " + result[vm].icon);
+        }
+        status_text.text(result[vm].status);
+        if("node" in result[vm]) {
+          $(this).find(".node").text(result[vm].node);
+        }
+      } else {
+        $(this).remove();
+      }
+    });
+    
+    if(checkStatusUpdate()) {
+      setTimeout(
+          function() {updateStatuses(runs + 1)}, 
+          1000 + Math.exp(runs * 0.05)
+      );
+    }
+  });
+}
+
 
 function isAlreadySelected(vm) {
   for(var i=0; i<selected.length; i++)
