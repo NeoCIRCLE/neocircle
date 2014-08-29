@@ -70,7 +70,8 @@ from .forms import (
     VmSaveForm, UserKeyForm, VmRenewForm, VmStateChangeForm,
     CirclePasswordChangeForm, VmCreateDiskForm, VmDownloadDiskForm,
     TraitsForm, RawDataForm, GroupPermissionForm, AclUserAddForm,
-    VmResourcesForm, VmAddInterfaceForm, VmListSearchForm
+    VmResourcesForm, VmAddInterfaceForm, VmListSearchForm,
+    TemplateListSearchForm,
 )
 
 from .tables import (
@@ -168,6 +169,52 @@ class FilterMixin(object):
     def get_queryset(self):
         return super(FilterMixin,
                      self).get_queryset().filter(**self.get_queryset_filters())
+
+    def create_fake_get(self):
+        """
+        Updates the request's GET dict to filter the vm list
+        For example: "name:xy node:1" updates the GET dict
+                     to resemble this URL ?name=xy&node=1
+
+        "name:xy node:1".split(":") becomes ["name", "xy node", "1"]
+        we pop the the first element and use it as the first dict key
+        then we iterate over the rest of the list and split by the last
+        whitespace, the first part of this list will be the previous key's
+        value, then last part of the list will be the next key.
+        The final dict looks like this: {'name': xy, 'node':1}
+        """
+        s = self.request.GET.get("s")
+        if s:
+            s = s.split(":")
+            if len(s) < 2:  # if there is no ':' in the string, filter by name
+                got = {'name': s[0]}
+            else:
+                latest = s.pop(0)
+                got = {'%s' % latest: None}
+                for i in s[:-1]:
+                    new = i.rsplit(" ", 1)
+                    got[latest] = new[0]
+                    latest = new[1] if len(new) > 1 else None
+                got[latest] = s[-1]
+
+            # generate a new GET request, that is kinda fake
+            fake = self.request.GET.copy()
+            for k, v in got.iteritems():
+                fake[k] = v
+
+            self.request.GET = fake
+
+    def create_acl_queryset(self, model):
+        cleaned_data = self.search_form.cleaned_data
+        stype = cleaned_data.get('stype', "all")
+        superuser = stype == "all"
+        shared = stype == "shared"
+        level = "owner" if stype == "owned" else "user"
+        queryset = model.get_objects_with_level(
+            level, self.request.user,
+            group_also=shared, disregard_superuser=not superuser,
+        )
+        return queryset
 
 
 class IndexView(LoginRequiredMixin, TemplateView):
@@ -1517,7 +1564,7 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return kwargs
 
 
-class TemplateList(LoginRequiredMixin, SingleTableView):
+class TemplateList(LoginRequiredMixin, FilterMixin, SingleTableView):
     template_name = "dashboard/template-list.html"
     model = InstanceTemplate
     table_class = TemplateListTable
@@ -1525,15 +1572,24 @@ class TemplateList(LoginRequiredMixin, SingleTableView):
 
     def get_context_data(self, *args, **kwargs):
         context = super(TemplateList, self).get_context_data(*args, **kwargs)
-        context['lease_table'] = LeaseListTable(Lease.objects.all(),
-                                                request=self.request)
+        context['lease_table'] = LeaseListTable(
+            Lease.get_objects_with_level("user", self.request.user),
+            request=self.request)
+
+        context['search_form'] = self.search_form
+
         return context
+
+    def get(self, *args, **kwargs):
+        self.search_form = TemplateListSearchForm(self.request.GET)
+        self.search_form.full_clean()
+        return super(TemplateList, self).get(*args, **kwargs)
 
     def get_queryset(self):
         logger.debug('TemplateList.get_queryset() called. User: %s',
                      unicode(self.request.user))
-        return InstanceTemplate.get_objects_with_level(
-            'user', self.request.user).all()
+        queryset = self.create_acl_queryset(InstanceTemplate)
+        return queryset.annotate(running=Count('instance_set'))
 
 
 class TemplateDelete(LoginRequiredMixin, DeleteView):
@@ -1611,7 +1667,7 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
     def get_queryset(self):
         logger.debug('VmList.get_queryset() called. User: %s',
                      unicode(self.request.user))
-        queryset = self.create_default_queryset()
+        queryset = self.create_acl_queryset(Instance).filter(destroyed_at=None)
 
         self.create_fake_get()
         sort = self.request.GET.get("sort")
@@ -1625,52 +1681,6 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
         return queryset.filter(
             **self.get_queryset_filters()).select_related('owner', 'node'
                                                           ).distinct()
-
-    def create_default_queryset(self):
-        cleaned_data = self.search_form.cleaned_data
-        stype = cleaned_data.get('stype', "all")
-        superuser = stype == "all"
-        shared = stype == "shared"
-        level = "owner" if stype == "owned" else "user"
-        queryset = Instance.get_objects_with_level(
-            level, self.request.user,
-            group_also=shared, disregard_superuser=not superuser,
-        ).filter(destroyed_at=None)
-        return queryset
-
-    def create_fake_get(self):
-        """
-        Updates the request's GET dict to filter the vm list
-        For example: "name:xy node:1" updates the GET dict
-                     to resemble this URL ?name=xy&node=1
-
-        "name:xy node:1".split(":") becomes ["name", "xy node", "1"]
-        we pop the the first element and use it as the first dict key
-        then we iterate over the rest of the list and split by the last
-        whitespace, the first part of this list will be the previous key's
-        value, then last part of the list will be the next key.
-        The final dict looks like this: {'name': xy, 'node':1}
-        """
-        s = self.request.GET.get("s")
-        if s:
-            s = s.split(":")
-            if len(s) < 2:  # if there is no ':' in the string, filter by name
-                got = {'name': s[0]}
-            else:
-                latest = s.pop(0)
-                got = {'%s' % latest: None}
-                for i in s[:-1]:
-                    new = i.rsplit(" ", 1)
-                    got[latest] = new[0]
-                    latest = new[1] if len(new) > 1 else None
-                got[latest] = s[-1]
-
-            # generate a new GET request, that is kinda fake
-            fake = self.request.GET.copy()
-            for k, v in got.iteritems():
-                fake[k] = v
-
-            self.request.GET = fake
 
 
 class NodeList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):

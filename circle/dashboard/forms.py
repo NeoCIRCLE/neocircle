@@ -1184,3 +1184,22 @@ class VmListSearchForm(forms.Form):
             data = self.data.copy()
             data['stype'] = "all"
             self.data = data
+
+
+class TemplateListSearchForm(forms.Form):
+    s = forms.CharField(widget=forms.TextInput(attrs={
+        'class': "form-control input-tags",
+        'placeholder': _("Search...")
+    }))
+
+    stype = forms.ChoiceField(vm_search_choices, widget=forms.Select(attrs={
+        'class': "btn btn-default input-tags",
+    }))
+
+    def __init__(self, *args, **kwargs):
+        super(TemplateListSearchForm, self).__init__(*args, **kwargs)
+        # set initial value, otherwise it would be overwritten by request.GET
+        if not self.data.get("stype"):
+            data = self.data.copy()
+            data['stype'] = "all"
+            self.data = data
