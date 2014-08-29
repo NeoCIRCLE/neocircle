@@ -497,6 +497,19 @@ class HumanReadableException(HumanReadableObject, Exception):
 
 
 def fetch_human_exception(exception, user=None):
+    """Fetch user readable message from exception.
+
+    >>> r = humanize_exception("foo", Exception())
+    >>> fetch_human_exception(r, User())
+    u'foo'
+    >>> fetch_human_exception(r).get_text(User())
+    u'foo'
+    >>> fetch_human_exception(Exception(), User())
+    u'Unknown error'
+    >>> fetch_human_exception(PermissionDenied(), User())
+    u'Permission Denied'
+    """
+
     if not isinstance(exception, HumanReadableException):
         if isinstance(exception, PermissionDenied):
             exception = create_readable(ugettext_noop("Permission Denied"))
