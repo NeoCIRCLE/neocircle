@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-08-29 09:21+0200\n"
-"PO-Revision-Date: 2014-08-01 23:05+0200\n"
+"PO-Revision-Date: 2014-08-29 09:46+0200\n"
 "Last-Translator: Mate Ory <ory.mate@ik.bme.hu>\n"
 "Language-Team: Hungarian <cloud@ik.bme.hu>\n"
 "Language: hu\n"
@@ -96,19 +96,17 @@ msgid "Human readable result of activity."
 msgstr "A tevékenység eredménye olvasható formában."
 
 #: common/models.py:515
-#, fuzzy
 msgid "Permission Denied"
-msgstr "Jogosultságok"
+msgstr "Hozzáférés megtagadva"
 
 #: common/models.py:517
-#, fuzzy
 msgid "Unknown error"
-msgstr "Ismeretlen hiba."
+msgstr "Ismeretlen hiba"
 
 #: common/models.py:518
-#, fuzzy, python-format
+#, python-format
 msgid "Unknown error: %(ex)s"
-msgstr "Ismeretlen hiba."
+msgstr "Ismeretlen hiba: %(ex)s"
 
 #: common/operations.py:160
 msgid "Superuser privileges are required."
@@ -232,7 +230,7 @@ msgstr ""
 
 #: dashboard/forms.py:699
 msgid "Save selected lease."
-msgstr ""
+msgstr "Kiválasztott bérlet mentése."
 
 #: dashboard/forms.py:708
 msgid "Length"
@@ -240,16 +238,16 @@ msgstr "Hossz"
 
 #: dashboard/forms.py:723
 msgid "Forcibly interrupt all running activities."
-msgstr ""
+msgstr "Futó tevékenységek erőltetett befejezése."
 
 #: dashboard/forms.py:724
 msgid "Set all activities to finished state, but don't interrupt any tasks."
 msgstr ""
+"Minden tevékenység befejezettre állítása (a feladatok megszakítása nélkül)."
 
 #: dashboard/forms.py:727
-#, fuzzy
 msgid "New status"
-msgstr "állapot"
+msgstr "Új állapot"
 
 #: dashboard/forms.py:748
 #: dashboard/templates/dashboard/store/_list-box.html:117
@@ -303,7 +301,6 @@ msgid "Change password"
 msgstr "Jelszóváltoztatás"
 
 #: dashboard/forms.py:949
-#, fuzzy
 msgid "Add trait"
 msgstr "Jellemző hozzáadása"
 
@@ -320,18 +317,16 @@ msgid "permissions"
 msgstr "jogosultságok"
 
 #: dashboard/forms.py:1164
-#, fuzzy
 msgid "owned"
-msgstr "tulajdonos"
+msgstr "saját"
 
 #: dashboard/forms.py:1165
-#, fuzzy
 msgid "shared"
-msgstr "osztott IP"
+msgstr "osztott"
 
 #: dashboard/forms.py:1166
 msgid "all"
-msgstr ""
+msgstr "összes"
 
 #: dashboard/forms.py:1173 dashboard/templates/dashboard/index-groups.html:21
 #: dashboard/templates/dashboard/index-nodes.html:34
@@ -417,18 +412,16 @@ msgid "Unique identifier of the group at the organization."
 msgstr "A csoport egyedi szervezeti azonosítója."
 
 #: dashboard/tables.py:38
-#, fuzzy
 msgid "Overcommit"
-msgstr "túlfoglalási arány"
+msgstr "Túlfoglalás"
 
 #: dashboard/tables.py:56
-#, fuzzy
 msgid "Number of VMs"
-msgstr "magok száma"
+msgstr "VM-ek száma"
 
 #: dashboard/tables.py:62
 msgid "Monitor"
-msgstr ""
+msgstr "Állapot"
 
 #: dashboard/tables.py:69 dashboard/tables.py:180 dashboard/tables.py:211
 #: dashboard/tables.py:244
@@ -449,9 +442,8 @@ msgid "Owner"
 msgstr "Tulajdonos"
 
 #: dashboard/tables.py:175
-#, fuzzy
 msgid "Running"
-msgstr "fut"
+msgstr "Fut"
 
 #: dashboard/tables.py:234
 msgid "Fingerprint"
@@ -504,12 +496,12 @@ msgstr "A token lejárt."
 #: dashboard/views.py:1069
 #, python-format
 msgid "Failed to execute %(op)s operation on instance %(instance)s."
-msgstr ""
+msgstr "%(op)s végrehajtása meghiúsult a következőn: %(instance)s."
 
 #: dashboard/views.py:1085
 #, python-format
 msgid "You are not permitted to execute %(op)s on instance %(instance)s."
-msgstr ""
+msgstr "Nem engedélyezett a(z) %(op)s végrehajtása a(z) %(instance)s gépen."
 
 #: dashboard/views.py:1163
 msgid "Node successfully renamed."
@@ -781,9 +773,8 @@ msgid "Store has some problems now. Try again later."
 msgstr "A tárhely nem működik. Próbálja később."
 
 #: dashboard/views.py:3358
-#, fuzzy
 msgid "Unknown store error."
-msgstr "Ismeretlen hiba."
+msgstr "Ismeretlen tárhelyhiba."
 
 #: dashboard/views.py:3375
 msgid "Something went wrong during download."
@@ -992,6 +983,7 @@ msgid ""
 "You can't start new virtual machines because no templates are shared with "
 "you."
 msgstr ""
+"Még nem tud virtuális gépet indítani, mivel egy sablonhoz sincs hozzáférése."
 
 #: dashboard/templates/dashboard/_vm-create-2.html:30
 msgid "Amount"
@@ -1012,13 +1004,12 @@ msgid "Not added to any network."
 msgstr "Egy hálózathoz sincs hozzáadva."
 
 #: dashboard/templates/dashboard/_vm-mass-migrate.html:12
-#, fuzzy
 msgid "Reschedule"
-msgstr "ütemezés"
+msgstr "Újraütemezés"
 
 #: dashboard/templates/dashboard/_vm-mass-migrate.html:16
 msgid "This option will reschedule each virtual machine to the optimal node."
-msgstr ""
+msgstr "Ez a lehetőség minden virtuális gépet az optimális csomópontra migrál."
 
 #: dashboard/templates/dashboard/_vm-mass-migrate.html:28
 #: dashboard/templates/dashboard/_vm-migrate.html:27
@@ -1419,7 +1410,13 @@ msgid_plural ""
 "Do you want to perform the <strong>%(op)s</strong> operation on the "
 "following %(count)s instances?\n"
 msgstr[0] ""
+"\n"
+"Biztosan végrehajtja a(z) <strong>%(op)s</strong> műveletet a következő "
+"példányon?\n"
 msgstr[1] ""
+"\n"
+"Biztosan végrehajtja a(z) <strong>%(op)s</strong> műveletet a következő %"
+"(count)s példányon?\n"
 
 #: dashboard/templates/dashboard/mass-operate.html:33
 #: dashboard/templates/dashboard/operate.html:21
@@ -1585,7 +1582,7 @@ msgstr "Sablon szerkesztése"
 
 #: dashboard/templates/dashboard/template-edit.html:32
 msgid "Visit"
-msgstr ""
+msgstr "Megtekintés"
 
 #: dashboard/templates/dashboard/template-edit.html:82
 msgid "Disk list"
@@ -1971,9 +1968,8 @@ msgid "Host name"
 msgstr "Gépnév"
 
 #: dashboard/templates/dashboard/node-detail/resources.html:23
-#, fuzzy
 msgid "Edit host"
-msgstr "Bérlési mód szerkesztése"
+msgstr "Gép szerkesztése"
 
 #: dashboard/templates/dashboard/notifications/email.txt:2
 #, python-format
@@ -2071,11 +2067,11 @@ msgstr "Fájlok"
 
 #: dashboard/templates/dashboard/store/index-files.html:34
 msgid "Show in directory"
-msgstr "Megjelenítés könyvtában"
+msgstr "Megjelenítés könyvtárban"
 
 #: dashboard/templates/dashboard/store/index-files.html:50
 msgid "Your toplist is empty, upload something."
-msgstr ""
+msgstr "Nincs friss fájlja. Töltsön föl valamit most."
 
 #: dashboard/templates/dashboard/store/index-files.html:62
 msgid "show my files"
@@ -2266,9 +2262,8 @@ msgid "Add tag"
 msgstr "Címke hozzáadása"
 
 #: dashboard/templates/dashboard/vm-detail/home.html:94
-#, fuzzy
 msgid "Template"
-msgstr "Sablonok"
+msgstr "Sablon"
 
 #: dashboard/templates/dashboard/vm-detail/network.html:8 vm/operations.py:121
 msgid "add interface"
@@ -4215,9 +4210,9 @@ msgstr ""
 "beállítása)."
 
 #: vm/operations.py:269
-#, fuzzy, python-format
+#, python-format
 msgid "virtual machine successfully deployed to node: %(node)s"
-msgstr "A virtuális gép megújításra került."
+msgstr "a virtuális gép sikeresen elindítva a következő csomóponton: %(node)s"
 
 #: vm/operations.py:281
 msgid "deploy disks"
@@ -4228,9 +4223,9 @@ msgid "deploy virtual machine"
 msgstr "virtuális gép létrehozása"
 
 #: vm/operations.py:287
-#, fuzzy, python-format
+#, python-format
 msgid "deploy vm to %(node)s"
-msgstr "migrálás %(node)s csomópontra"
+msgstr "vm létrehozása: %(node)s"
 
 #: vm/operations.py:296 vm/operations.py:408 vm/operations.py:731
 msgid "deploy network"
@@ -4345,7 +4340,7 @@ msgstr "%(name)s lemez eltávolítása"
 
 #: vm/operations.py:493
 msgid "reset"
-msgstr "újraindítás"
+msgstr "reset"
 
 #: vm/operations.py:494
 msgid "Cold reboot virtual machine (power cycle)."
@@ -4494,7 +4489,7 @@ msgstr ""
 
 #: vm/operations.py:796
 msgid "Activity is forcibly interrupted."
-msgstr ""
+msgstr "A tevékenység erőszakos megszakításra került."
 
 #: vm/operations.py:838
 msgid "flush"
@@ -4566,15 +4561,16 @@ msgstr ""
 "sikeres belépést, mivel más beállítások is megakadályozhatják ezt."
 
 #: vm/operations.py:986
-#, fuzzy
 msgid "mount store"
-msgstr "Nincs tárhely."
+msgstr "tárhely csatolása"
 
 #: vm/operations.py:988
 msgid ""
 "This operation attaches your personal file store. Other users who have "
 "access to this machine can see these files as well."
 msgstr ""
+"Ez a művelet csatolja az ön személyes tárhelyét. A gép más felhasználói is "
+"elérhetik fájljait."
 
 #: vm/models/activity.py:47
 #, python-format
@@ -4885,7 +4881,7 @@ msgstr "%(instance)s példány már meg van semmisítve."
 #: vm/models/instance.py:299
 #, python-format
 msgid "No agent software is running on instance %(instance)s."
-msgstr ""
+msgstr "Nem fut ügynökszoftver a következőn: %(instance)s."
 
 #: vm/models/instance.py:303
 #, python-format
@@ -5084,9 +5080,9 @@ msgid "update to %(version)s"
 msgstr "frissítés erre: %(version)s"
 
 #: vm/tasks/local_agent_tasks.py:149
-#, fuzzy, python-format
+#, python-format
 msgid "update agent to %(version)s"
-msgstr "frissítés erre: %(version)s"
+msgstr "ügynökfrissítés erre: %(version)s"
 
 #: vm/tasks/local_periodic_tasks.py:51
 #, python-format
