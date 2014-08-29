@@ -1687,6 +1687,18 @@ class TemplateList(LoginRequiredMixin, FilterMixin, SingleTableView):
     table_class = TemplateListTable
     table_pagination = False
 
+    allowed_filters = {
+        'name': "name__icontains",
+        'tags[]': "tags__name__in",
+        'tags': "tags__name__in",  # for search string
+        'owner': "owner__username",
+        'ram': "ram_size",
+        'ram_size': "ram_size",
+        'cores': "num_cores",
+        'num_cores': "num_cores",
+        'access_method': "access_method__iexact",
+    }
+
     def get_context_data(self, *args, **kwargs):
         context = super(TemplateList, self).get_context_data(*args, **kwargs)
         context['lease_table'] = LeaseListTable(
@@ -1702,11 +1714,26 @@ class TemplateList(LoginRequiredMixin, FilterMixin, SingleTableView):
         self.search_form.full_clean()
         return super(TemplateList, self).get(*args, **kwargs)
 
+    def create_acl_queryset(self, model):
+        queryset = super(TemplateList, self).create_acl_queryset(model)
+        sql = ("SELECT count(*) FROM vm_instance WHERE "
+               "vm_instance.template_id = vm_instancetemplate.id and "
+               "vm_instance.destroyed_at is null and "
+               "vm_instance.status = 'RUNNING'")
+        queryset = queryset.extra(select={'running': sql})
+        return queryset
+
     def get_queryset(self):
         logger.debug('TemplateList.get_queryset() called. User: %s',
                      unicode(self.request.user))
         queryset = self.create_acl_queryset(InstanceTemplate)
-        return queryset.annotate(running=Count('instance_set'))
+        self.create_fake_get()
+
+        try:
+            return queryset.filter(**self.get_queryset_filters()).distinct()
+        except ValueError:
+            messages.error(self.request, _("Error during filtering."))
+            return queryset
 
 
 class TemplateDelete(LoginRequiredMixin, DeleteView):

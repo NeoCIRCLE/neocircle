@@ -1201,5 +1201,5 @@ class TemplateListSearchForm(forms.Form):
         # set initial value, otherwise it would be overwritten by request.GET
         if not self.data.get("stype"):
             data = self.data.copy()
-            data['stype'] = "all"
+            data['stype'] = "owned"
             self.data = data
