@@ -1025,6 +1025,7 @@ class MassOperationView(OperationView):
     template_name = 'dashboard/mass-operate.html'
 
     def check_auth(self):
+        self.get_op().check_perms(self.request.user)
         for i in self.get_object():
             if not i.has_level(self.request.user, "user"):
                 raise PermissionDenied(
@@ -1100,7 +1101,7 @@ class MassOperationView(OperationView):
             store.used = True
             return HttpResponse(
                 json.dumps({'messages': [unicode(m) for m in store]}),
-                content_type="application=json"
+                content_type="application/json"
             )
         else:
             return redirect(reverse("dashboard.views.vm-list"))

@@ -501,9 +501,9 @@ def fetch_human_exception(exception, user=None):
         if isinstance(exception, PermissionDenied):
             exception = create_readable(ugettext_noop("Permission Denied"))
         else:
-            exception = create_readable(
-                _("Unknown error"), _("Unknown error: %(ex)s"),
-                ex=unicode(exception)).get_text()
+            exception = create_readable(ugettext_noop("Unknown error"),
+                                        ugettext_noop("Unknown error: %(ex)s"),
+                                        ex=unicode(exception))
     return exception.get_text(user) if user else exception
 
 
