@@ -148,6 +148,7 @@ class TemplateListTable(Table):
     )
     resources = TemplateColumn(
         template_name="dashboard/template-list/column-template-resources.html",
+        verbose_name=_("Resources"),
         attrs={'th': {'data-sort': "int"}},
         order_by=("ram_size"),
     )
