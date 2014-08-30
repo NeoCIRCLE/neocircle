@@ -86,7 +86,12 @@
               <span>{{ i.get_status_display }}</span>
             </td>
             <td>
-              {% include "dashboard/_display-name.html" with user=i.owner show_org=True %}
+              {% if i.owner.profile %}
+                {{ i.owner.profile.get_display_name }}
+              {% else %}
+                {{ i.owner.username }}
+              {% endif %}
+              {# include "dashboard/_display-name.html" with user=i.owner show_org=True #}
             </td>
             {% if user.is_superuser %}
             <td class="node "data-sort-value="{{ i.node.normalized_name }}">
