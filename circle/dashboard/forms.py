@@ -1174,7 +1174,12 @@ class VmListSearchForm(forms.Form):
     }))
 
     stype = forms.ChoiceField(vm_search_choices, widget=forms.Select(attrs={
-        'class': "btn btn-default input-tags",
+        'class': "btn btn-default form-control input-tags",
+        'style': "min-width: 80px;",
+    }))
+
+    include_deleted = forms.BooleanField(widget=forms.CheckboxInput(attrs={
+        'id': "vm-list-search-checkbox",
     }))
 
     def __init__(self, *args, **kwargs):

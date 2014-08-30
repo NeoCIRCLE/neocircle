@@ -1835,10 +1835,16 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
                 content_type="application/json",
             )
 
+    def create_acl_queryset(self, model):
+        queryset = super(VmList, self).create_acl_queryset(model)
+        if not self.search_form.cleaned_data.get("include_deleted"):
+            queryset = queryset.filter(destroyed_at=None)
+        return queryset
+
     def get_queryset(self):
         logger.debug('VmList.get_queryset() called. User: %s',
                      unicode(self.request.user))
-        queryset = self.create_acl_queryset(Instance).filter(destroyed_at=None)
+        queryset = self.create_acl_queryset(Instance)
 
         self.create_fake_get()
         sort = self.request.GET.get("sort")

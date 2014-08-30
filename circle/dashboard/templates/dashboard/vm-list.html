@@ -33,6 +33,12 @@
                 {{ search_form.s }}
                 <div class="input-group-btn">
                   {{ search_form.stype }}
+                </div>
+                <span class="input-group-addon input-tags" title="{% trans "Include deleted VMs" %}" 
+                  id="vm-list-search-checkbox-span" data-container="body">
+                  {{ search_form.include_deleted }}
+                </span>
+                <div class="input-group-btn">
                   <button type="submit" class="btn btn-primary input-tags"> 
                     <i class="fa fa-search"></i>
                   </button>

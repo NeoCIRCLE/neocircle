@@ -940,3 +940,9 @@ textarea[name="list-new-namelist"] {
 #vm-list-search, #vm-mass-ops {
   margin-top: 8px;
 }
+
+#vm-list-search-checkbox {
+  margin-top: -1px;
+  display: inline-block;
+  vertical-align: middle;
+}
