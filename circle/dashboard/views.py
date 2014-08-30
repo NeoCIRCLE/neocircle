@@ -1726,14 +1726,15 @@ class TemplateList(LoginRequiredMixin, FilterMixin, SingleTableView):
     def get_queryset(self):
         logger.debug('TemplateList.get_queryset() called. User: %s',
                      unicode(self.request.user))
-        queryset = self.create_acl_queryset(InstanceTemplate)
+        qs = self.create_acl_queryset(InstanceTemplate)
         self.create_fake_get()
 
         try:
-            return queryset.filter(**self.get_queryset_filters()).distinct()
+            qs = qs.filter(**self.get_queryset_filters()).distinct()
         except ValueError:
             messages.error(self.request, _("Error during filtering."))
-            return queryset
+
+        return qs.select_related("lease", "owner", "owner__profile")
 
 
 class TemplateDelete(LoginRequiredMixin, DeleteView):
