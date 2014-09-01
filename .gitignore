@@ -34,8 +34,8 @@ circle/*.key
 circle/*.pem
 
 # collected static files:
-circle/static
 circle/static_collected
+circle/bower_components
 
 # jsi18n files
 jsi18n
