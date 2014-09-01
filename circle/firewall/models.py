@@ -600,6 +600,23 @@ class Host(models.Model):
                        description='created by host.save()',
                        type='AAAA').save()
 
+    def get_network_config(self):
+        interface = {'addresses': []}
+
+        if self.ipv4 and self.vlan.network4:
+            ipv4 = IPNetwork(self.ipv4)
+            ipv4.prefixlen = self.vlan.network4.prefixlen
+            interface['addresses'].append(str(ipv4))
+            interface['gw4'] = str(self.vlan.network4.ip)
+
+        if self.ipv6 and self.vlan.network6:
+            ipv6 = IPNetwork(self.ipv6)
+            ipv6.prefixlen = self.vlan.network6.prefixlen
+            interface['addresses'].append(str(ipv6))
+            interface['gw6'] = str(self.vlan.network6.ip)
+
+        return interface
+
     def enable_net(self):
         for i in settings.get('default_host_groups', []):
             self.groups.add(Group.objects.get(name=i))

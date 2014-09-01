@@ -19,7 +19,9 @@ from common.models import create_readable
 from manager.mancelery import celery
 from vm.tasks.agent_tasks import (restart_networking, change_password,
                                   set_time, set_hostname, start_access_server,
-                                  cleanup, update)
+                                  cleanup, update, change_ip)
+from firewall.models import Host
+
 import time
 from base64 import encodestring
 from StringIO import StringIO
@@ -35,9 +37,6 @@ def send_init_commands(instance, act, vm):
     queue = instance.get_remote_queue_name("agent")
     with act.sub_activity('cleanup', readable_name=ugettext_noop('cleanup')):
         cleanup.apply_async(queue=queue, args=(vm, ))
-    with act.sub_activity('restart_networking',
-                          readable_name=ugettext_noop('restart networking')):
-        restart_networking.apply_async(queue=queue, args=(vm, ))
     with act.sub_activity('change_password',
                           readable_name=ugettext_noop('change password')):
         change_password.apply_async(queue=queue, args=(vm, instance.pw))
@@ -96,6 +95,14 @@ def agent_started(vm, version=None):
             measure_boot_time(instance)
             send_init_commands(instance, act, vm)
 
+        with act.sub_activity('change_ip',
+                              readable_name=ugettext_noop('change ip')):
+            change_ip.apply_async(queue=queue, args=(
+                vm, ) + get_network_configs(instance))
+        with act.sub_activity('restart_networking',
+                              readable_name=ugettext_noop(
+                                  'restart networking')):
+            restart_networking.apply_async(queue=queue, args=(vm, ))
         with act.sub_activity(
             'start_access_server',
             readable_name=ugettext_noop('start access server')
@@ -132,6 +139,13 @@ def agent_stopped(vm):
     act = qs.latest('id')
     with act.sub_activity('stopping', readable_name=ugettext_noop('stopping')):
         pass
+
+
+def get_network_configs(instance):
+    interfaces = {}
+    for host in Host.objects.filter(interface__instance=instance):
+        interfaces[str(host.mac)] = host.get_network_config()
+    return (interfaces, settings.FIREWALL_SETTINGS['rdns_ip'])
 
 
 def update_agent(instance, act=None):
