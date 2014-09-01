@@ -251,6 +251,8 @@ class UserKeyListTable(Table):
         model = UserKey
         attrs = {'class': ('table table-bordered table-striped table-hover')}
         fields = ('name', 'fingerprint', 'created', 'actions')
+        prefix = "key-"
+        empty_text = _("You haven't added any public keys yet.")
 
 
 class ConnectCommandListTable(Table):
@@ -279,3 +281,6 @@ class ConnectCommandListTable(Table):
         model = ConnectCommand
         attrs = {'class': ('table table-bordered table-striped table-hover')}
         fields = ('access_method', 'application', 'template', 'actions')
+        prefix = "cmd-"
+        empty_text = _("You don't have any custom connection string, the "
+                       "default ones will be used.")

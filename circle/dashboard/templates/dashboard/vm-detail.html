@@ -111,16 +111,28 @@
           </div>
         </dd>
       </dl>
-
+      {% for c in connect_commands %}
       <div class="input-group" id="dashboard-vm-details-connect-command">
         <span class="input-group-addon input-tags">{% trans "Command" %}</span>
         <input type="text" spellcheck="false"
-        value="{% if connect_command %}{{ connect_command }}{% else %}{% trans "Connection is not possible." %}{% endif %}"
+        value="{{ c }}"
         id="vm-details-connection-string" class="form-control input-tags" />
         <span class="input-group-addon input-tags" id="vm-details-connection-string-copy">
           <i class="fa fa-copy" title="{% trans "Select all" %}"></i>
         </span>
       </div>
+
+      {% empty %}
+      <div class="input-group" id="dashboard-vm-details-connect-command">
+        <span class="input-group-addon input-tags">{% trans "Command" %}</span>
+        <input type="text" spellcheck="false" value="{% trans "Connection is not possible." %}"
+        id="vm-details-connection-string" class="form-control input-tags" />
+        <span class="input-group-addon input-tags" id="vm-details-connection-string-copy">
+          <i class="fa fa-copy" title="{% trans "Select all" %}"></i>
+        </span>
+      </div>
+
+      {% endfor %}
     </div>
     <div class="col-md-8" id="vm-detail-pane">
       <div class="panel panel-default" id="vm-detail-panel">

@@ -155,22 +155,25 @@ class Profile(Model):
         default=2048 * 1024 * 1024,
         help_text=_('Disk quota in mebibytes.'))
 
-    def get_connect_command(self, instance, use_ipv6=False):
+    def get_connect_commands(self, instance, use_ipv6=False):
         """ Generate connection command based on template."""
-        try:
-            command = self.user.command_set.get(
+        single_command = instance.get_connect_command(use_ipv6)
+        if single_command:  # can we even connect to that VM
+            commands = self.user.command_set.filter(
                 access_method=instance.access_method)
-        except ConnectCommand.DoesNotExist:
-            # No template for this protocol return default
-            return instance.get_connect_command(use_ipv6)
+            if commands.count() < 1:
+                return [single_command]
+            else:
+                return [
+                    command.template % {
+                        'port': instance.get_connect_port(use_ipv6=use_ipv6),
+                        'host':  instance.get_connect_host(use_ipv6=use_ipv6),
+                        'password': instance.pw,
+                        'app': command.application,
+                        'username': 'cloud',
+                    } for command in commands]
         else:
-            return command.template % {
-                'port': instance.get_connect_port(use_ipv6=use_ipv6),
-                'host':  instance.get_connect_host(use_ipv6=use_ipv6),
-                'password': instance.pw,
-                'app': command.application,
-                'username': 'cloud'
-            }
+            return []
 
     def notify(self, subject, template, context=None, valid_until=None,
                **kwargs):

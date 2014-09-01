@@ -304,7 +304,7 @@ class VmDetailView(CheckedDetailView):
                                     kwargs={'pk': self.object.pk}),
             'ops': ops,
             'op': {i.op: i for i in ops},
-            'connect_command': user.profile.get_connect_command(instance)
+            'connect_commands': user.profile.get_connect_commands(instance)
         })
 
         # activity data
@@ -3201,8 +3201,7 @@ class ConnectCommandDetail(LoginRequiredMixin, SuccessMessageMixin,
         object = self.get_object()
         if object.user != request.user:
             raise PermissionDenied()
-        return super(ConnectCommandDetail, self).post(self, request,
-                                                      args, kwargs)
+        return super(ConnectCommandDetail, self).post(request, args, kwargs)
 
 
 class ConnectCommandDelete(LoginRequiredMixin, DeleteView):
