@@ -1,4 +1,5 @@
 {% extends "dashboard/base.html" %}
+{% load staticfiles %}
 {% load i18n %}
 
 {% block title-page %}{% trans "Index" %}{% endblock %}
@@ -45,6 +46,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ STATIC_URL }}dashboard/vm-create.js"></script>
-<script src="{{ STATIC_URL }}dashboard/node-create.js"></script>
+<script src="{% static "dashboard/vm-create.js" %}"></script>
+<script src="{% static "dashboard/node-create.js" %}"></script>
 {% endblock %}

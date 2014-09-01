@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load staticfiles %}
 {% load i18n %}
 
 {% block title-site %}Dashboard | CIRCLE{% endblock %}
@@ -7,7 +8,7 @@
 
 {% block navbar-brand %}
   <a class="navbar-brand" href="{% url "dashboard.index" %}" style="padding: 10px 15px;">
-    <img src="{{ STATIC_URL}}dashboard/img/logo.png" style="height: 25px;"/>
+    <img src="{% static "dashboard/img/logo.png" %}" style="height: 25px;"/>
   </a>
 {% endblock %}
 

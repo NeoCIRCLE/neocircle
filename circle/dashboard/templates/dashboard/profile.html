@@ -1,4 +1,5 @@
 {% extends "dashboard/base.html" %}
+{% load staticfiles %}
 {% load i18n %}
 {% load crispy_forms_tags %}
 
@@ -107,5 +108,5 @@
 {% endblock %}
 
 {% block extra_js %}
-  <script src="{{ STATIC_URL }}dashboard/profile.js"></script>
+  <script src="{% static "dashboard/profile.js" %}"></script>
 {% endblock %}
