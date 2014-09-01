@@ -79,7 +79,7 @@
             <td class="name"><a class="real-link" href="{% url "dashboard.views.detail" i.pk %}">{{ i.name }}</a>  </td>
             <td class="state">
               <i class="fa fa-fw
-                {% if i.is_in_status_change %}
+                {% if show_acts_in_progress and i.is_in_status_change %}
                   fa-spin fa-spinner
                 {% else %}
                 {{ i.get_status_icon }}{% endif %}"></i>

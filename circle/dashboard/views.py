@@ -1792,6 +1792,7 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
             else:
                 context['ops'].append(v)
         context['search_form'] = self.search_form
+        context['show_acts_in_progress'] = self.object_list.count() < 100
         return context
 
     def get(self, *args, **kwargs):
