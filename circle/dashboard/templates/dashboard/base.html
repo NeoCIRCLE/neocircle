@@ -4,12 +4,6 @@
 {% block title-site %}Dashboard | CIRCLE{% endblock %}
 
 
-{% block extra_link %}
-  <link rel="stylesheet" href="{{ STATIC_URL }}dashboard/loopj-jquery-simple-slider/css/simple-slider.css"/>
-  <link href="{{ STATIC_URL }}dashboard/bootstrap-tour.min.css" rel="stylesheet">
-  <link href="{{ STATIC_URL }}dashboard/dashboard.css" rel="stylesheet">
-{% endblock %}
-
 
 {% block navbar-brand %}
   <a class="navbar-brand" href="{% url "dashboard.index" %}" style="padding: 10px 15px;">
@@ -50,10 +44,4 @@
   <a class="navbar-brand pull-right" href="{% url "login" %}?next={{ request.path }}" style="color: white; font-size: 10px;"><i class="fa fa-sign-in"></i> {% trans "Log in " %}</a>
 {% endif %}
 
-{% endblock %}
-
-
-{% block extra_script %}
-  <script src="{{ STATIC_URL }}dashboard/js/jquery.knob.js"></script>
-  <script src="{{ STATIC_URL }}dashboard/dashboard.js"></script>
 {% endblock %}
