@@ -18,7 +18,7 @@ function vmCreateLoaded() {
 
   $(".customize-vm").click(function() {
     var template = $(this).data("template-pk");
-  
+
     $.get("/dashboard/vm/create/?template=" + template, function(data) {
         var r = $('#create-modal'); r.next('div').remove(); r.remove();
         $('body').append(data);
@@ -34,7 +34,7 @@ function vmCreateLoaded() {
     });
     return false;
   });
-  
+
   /* start vm button clicks */
   $('.vm-create-start').click(function() {
     template = $(this).data("template-pk");
@@ -60,7 +60,7 @@ function vmCreateLoaded() {
       },
       error: function(xhr, textStatus, error) {
         var r = $('#create-modal'); r.next('div').remove(); r.remove();
-        
+
         if (xhr.status == 500) {
           addMessage("500 Internal Server Error", "danger");
         } else {
@@ -77,7 +77,7 @@ function vmCreateLoaded() {
     var now = $(this).attr('aria-valuenow');
     var siz = (now-min)*100/(max-min);
     $(this).css('width', siz+'%');
-  }); 
+  });
 
 }
 
@@ -93,18 +93,18 @@ function vmCustomizeLoaded() {
     // remove the hex chars
     name = name.substring(name.indexOf(" "), name.length);
 
-    if ($('#vm-create-network-list').children('span').length < 1) { 
+    if ($('#vm-create-network-list').children('span').length < 1) {
       $('#vm-create-network-list').html('');
-    }  
+    }
     $('#vm-create-network-list').append(
       vmCreateNetworkLabel(vlan_pk, name, managed)
     );
-    
+
     /* select the network in the hidden network select */
     $('#vm-create-network-add-vlan option[value="' + vlan_pk + '"]').prop('selected', true);
 
     $('option:selected', $('#vm-create-network-add-select')).remove();
-    
+
     /* add dummy text if no more networks are available */
     if($('#vm-create-network-add-select option').length < 1) {
       $('#vm-create-network-add-button').attr('disabled', true);
@@ -117,23 +117,23 @@ function vmCustomizeLoaded() {
   /* remove network */
   // event for network remove button (icon, X)
   $('body').on('click', '.vm-create-remove-network', function() {
-    var vlan_pk = ($(this).parent('span').prop('id')).replace('vlan-', '')
+    var vlan_pk = ($(this).parent('span').prop('id')).replace('vlan-', '');
     // if it's "blue" then it's managed, kinda not cool
     var managed = $(this).parent('span').hasClass('label-primary');
 
     $(this).parent('span').fadeOut(500, function() {
       /* if ther are no more vlans disabled the add button */
-      if($('#vm-create-network-add-select option')[0].value == -1) {   
-        $('#vm-create-network-add-button').attr('disabled', false);            
+      if($('#vm-create-network-add-select option')[0].value == -1) {
+        $('#vm-create-network-add-button').attr('disabled', false);
         $('#vm-create-network-add-select').html('');
       }
-      
+
       /* remove the network label */
-      $(this).remove(); 
+      $(this).remove();
 
       var vlan_name = $(this).text();
 
-      var html = '<option data-managed="' + (managed ? 1 : 0) + '" value="' + vlan_pk + '">'+ 
+      var html = '<option data-managed="' + (managed ? 1 : 0) + '" value="' + vlan_pk + '">'+
                  (managed ? "&#xf0ac;": "&#xf0c1;") + vlan_name + '</option>';
       $('#vm-create-network-add-select').append(html);
 
@@ -148,7 +148,7 @@ function vmCustomizeLoaded() {
 
   /* copy networks from hidden select */
   $('#vm-create-network-add-vlan option').each(function() {
-    var managed = $(this).text().indexOf("mana") == 0;
+    var managed = $(this).text().indexOf("mana") === 0;
     var raw_text = $(this).text();
     var pk = $(this).val();
     if(managed) {
@@ -157,7 +157,7 @@ function vmCustomizeLoaded() {
       text = raw_text.replace("unmanaged -", "&#xf0c1;");
     }
     var html = '<option data-managed="' + (managed ? 1 : 0) + '" value="' + pk + '">' + text + '</option>';
-  
+
     if($('#vm-create-network-list span').length < 1) {
       $("#vm-create-network-list").html("");
     }
@@ -180,7 +180,7 @@ function vmCustomizeLoaded() {
     vlans.push({
       'name': $(this).text().replace("unmanaged -", "&#xf0c1;").replace("managed -", "&#xf0ac;"),
       'pk': parseInt($(this).val()),
-      'managed': $(this).text().indexOf("mana") == 0,
+      'managed': $(this).text().indexOf("mana") === 0,
     });
   });
 
@@ -248,7 +248,7 @@ function vmCustomizeLoaded() {
       },
       error: function(xhr, textStatus, error) {
         var r = $('#create-modal'); r.next('div').remove(); r.remove();
-        
+
         if (xhr.status == 500) {
           addMessage("500 Internal Server Error", "danger");
         } else {
@@ -260,8 +260,8 @@ function vmCustomizeLoaded() {
   });
 
   /* for no js stuff */
-  $('.no-js-hidden').show();                                                
-  $('.js-hidden').hide(); 
+  $('.no-js-hidden').show();
+  $('.js-hidden').hide();
 
 }
 

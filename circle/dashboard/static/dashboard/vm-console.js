@@ -6,7 +6,7 @@ $(function() {
   var rfb;
 
   function updateState(rfb, state, oldstate, msg) {
-      $('#_console .btn-toolbar button').attr('disabled', !(state === "normal"));
+      $('#_console .btn-toolbar button').attr('disabled', (state !== "normal"));
       rfb.sendKey(0xffe3); // press and release ctrl to kill screensaver
 
       if (typeof(msg) !== 'undefined') {
@@ -42,13 +42,13 @@ $(function() {
       if (window.location.port == 8080) {
           port = 9999;
       } else {
-          port = window.location.port == "" ? "443" : window.location.port;
+          port = window.location.port === "" ? "443" : window.location.port;
       }
       password = '';
       $('#_console .btn-toolbar button').attr('disabled', true);
       $('#noVNC_status').html('Retreiving authorization token.');
       $.get(VNC_URL, function(data) {
-          if (data.indexOf('vnc') != 0) {
+          if (data.indexOf('vnc') !== 0) {
               $('#noVNC_status').html('No authorization token received.');
           }
           else {

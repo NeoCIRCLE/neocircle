@@ -25,7 +25,7 @@ $(function() {
       retval = false;
     } else if(shiftDown) {
       if(selected.length > 0) {
-        start = selected[selected.length - 1]['index'] + 1;
+        start = selected[selected.length - 1].index + 1;
         end = $(this).index();
 
         if(start > end) {
@@ -115,7 +115,7 @@ $(function() {
         $('#confirmation-modal').modal("hide");
 
         updateStatuses(1);
-  
+
         /* if there are messages display them */
         if(data.messages && data.messages.length > 0) {
           addMessage(data.messages.join("<br />"), "danger");
@@ -123,7 +123,7 @@ $(function() {
       },
       error: function(xhr, textStatus, error) {
         $('#confirmation-modal').modal("hide");
-        
+
         if (xhr.status == 500) {
           addMessage("500 Internal Server Error", "danger");
         } else {
@@ -145,7 +145,7 @@ $(function() {
     // this didn't work ;;
     // var th = $("this").find("th");
     $(".table-sorting").hide();
-    
+
     $(".vm-list-table thead th i").remove();
 
     var icon_html = '<i class="fa fa-sort-' + (data.direction == "desc" ? "desc" : "asc") + ' pull-right"></i>';
@@ -160,7 +160,7 @@ $(function() {
   });
 
   $(document).on("click", ".mass-migrate-node", function() {
-    $(this).find('input[type="radio"]').prop("checked", true); 
+    $(this).find('input[type="radio"]').prop("checked", true);
   });
 
   if(checkStatusUpdate()) {
@@ -206,10 +206,10 @@ function updateStatuses(runs) {
         $(this).remove();
       }
     });
-    
+
     if(checkStatusUpdate()) {
       setTimeout(
-          function() {updateStatuses(runs + 1)}, 
+          function() {updateStatuses(runs + 1)},
           1000 + Math.exp(runs * 0.05)
       );
     }
@@ -236,7 +236,7 @@ function collectIds(rows) {
   for(var i = 0; i < rows.length; i++) {
     ids.push(rows[i].vm);
   }
-  return ids;  
+  return ids;
 }
 
 function setRowColor(row) {

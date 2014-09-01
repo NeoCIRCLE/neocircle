@@ -14,7 +14,7 @@
       data: {'new_name': name},
       headers: {"X-CSRFToken": getCookie('csrftoken')},
       success: function(data, textStatus, xhr) {
-        $("#group-details-h1-name").html(data['new_name']).show();
+        $("#group-details-h1-name").html(data.new_name).show();
         $('#group-details-rename').hide();
         // addMessage(data['message'], "success");
       },
@@ -51,14 +51,14 @@
 function removeMember(data) {
   $.ajax({
     type: 'POST',
-    url: data['url'],
+    url: data.url,
     headers: {"X-CSRFToken": getCookie('csrftoken')},
     success: function(re, textStatus, xhr) {
-    data['tr'].fadeOut(function() {
+    data.tr.fadeOut(function() {
 	    $(this).remove();});
     },
     error: function(xhr, textStatus, error) {
-      addMessage('Uh oh :(', 'danger')
+      addMessage('Uh oh :(', 'danger');
     }
   });
 }

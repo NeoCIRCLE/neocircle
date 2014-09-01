@@ -4,12 +4,10 @@ $(function() {
   });
 
   // find disabled nodes, set danger (red) on the rows
-  function colortable() 
+  function colortable()
   {
-	var tr= $('.false').closest("tr");
-	tr.addClass('danger');
-	var tr= $('.true').closest("tr");
-	tr.removeClass('danger');
+	$('.false').closest("tr").addClass('danger');
+	$('.true').closest("tr").removeClass('danger');
   }
 
   /* rename */
@@ -20,7 +18,7 @@ $(function() {
 
   /* rename ajax */
   $('.node-list-rename-submit').click(function() {
-    var row = $(this).closest("tr")
+    var row = $(this).closest("tr");
     var name = $('#node-list-rename-name', row).val();
     var url = '/dashboard/node/' + row.children("td:first-child").text().replace(" ", "") + '/';
     $.ajax({
@@ -29,12 +27,12 @@ $(function() {
       data: {'new_name': name},
       headers: {"X-CSRFToken": getCookie('csrftoken')},
       success: function(data, textStatus, xhr) {
-        
+
         $("#node-list-column-name", row).html(
           $("<a/>", {
             'class': "real-link",
-            href: "/dashboard/node/" + data['node_pk'] + "/",
-            text: data['new_name']
+            href: "/dashboard/node/" + data.node_pk + "/",
+            text: data.new_name
           })
         ).show();
         $('#node-list-rename', row).hide();
@@ -50,7 +48,7 @@ $(function() {
   function statuschangeSuccess(tr){
    var tspan=tr.children('.enabled').children();
     var buttons=tr.children('.actions').children('.btn-group').children('.dropdown-menu').children('li').children('.node-enable');
- 
+
     buttons.each(function(index){
       if ($(this).css("display")=="block"){
           $(this).css("display","none");
@@ -58,12 +56,12 @@ $(function() {
       else{
          $(this).css("display","block");
         }
-    }); 
+    });
     if(tspan.hasClass("false")){
           tspan.removeClass("false");
 	  tspan.addClass("true");
  	  tspan.text("✔");
-      } 
+      }
   else{
   	  tspan.removeClass("true");
 	  tspan.addClass("false");

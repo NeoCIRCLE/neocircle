@@ -42,7 +42,7 @@ function createTemplateTour() {
   ttour.addStep({
     backdrop: true,
     element: 'a[href="#home"]',
-    title: gettext("Home tab"), 
+    title: gettext("Home tab"),
     content: gettext("In this tab you can tag your virtual machine and modify the name and description."),
     placement: 'top',
     onShow: function() {
@@ -66,9 +66,9 @@ function createTemplateTour() {
     placement: 'top',
     backdrop: true,
     title: gettext("Resources"),
-    content: '<p><strong>' + gettext("CPU priority") + ":</strong> " + gettext("higher is better") + "</p>" + 
+    content: '<p><strong>' + gettext("CPU priority") + ":</strong> " + gettext("higher is better") + "</p>" +
              '<p><strong>' + gettext("CPU count") + ":</strong> " + gettext("number of CPU cores.") + "</p>" +
-             '<p><strong>' + gettext("RAM amount") + ":</strong> " + gettext("amount of RAM.") + "</p>", 
+             '<p><strong>' + gettext("RAM amount") + ":</strong> " + gettext("amount of RAM.") + "</p>",
     onShow: function() {
       $('a[href="#resources"]').trigger("click");
     },
@@ -111,7 +111,7 @@ function createTemplateTour() {
     placement: "top",
     backdrop: true,
     content: gettext("Use the connection string or connect with your choice of client!"),
-    
+
   });
 
   ttour.addStep({
@@ -128,8 +128,8 @@ function createTemplateTour() {
     backdrop: true,
     content: gettext('Press the "Save as template" button and wait until the activity finishes.'),
   });
-  
-  
+
+
   ttour.addStep({
     element: ".alert-new-template",
     title: gettext("Finish"),
@@ -137,6 +137,6 @@ function createTemplateTour() {
     placement: "bottom",
     content: gettext("This is the last message, if something is not clear you can do the the tour again!"),
   });
-  
+
   return ttour;
 }
