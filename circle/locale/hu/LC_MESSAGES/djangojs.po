@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-08-01 19:36+0200\n"
+"POT-Creation-Date: 2014-08-29 09:21+0200\n"
 "PO-Revision-Date: 2014-08-01 21:03+0200\n"
 "Last-Translator: Mate Ory <ory.mate@ik.bme.hu>\n"
 "Language-Team: Hungarian <cloud@ik.bme.hu>\n"
@@ -23,11 +23,11 @@ msgid "Select an option to proceed!"
 msgstr "Válasszon a folytatáshoz."
 
 #: dashboard/static/dashboard/dashboard.js:258
-#: dashboard/static/dashboard/dashboard.js:305
-#: dashboard/static/dashboard/dashboard.js:315
-#: static_collected/dashboard/dashboard.js:257
-#: static_collected/dashboard/dashboard.js:304
-#: static_collected/dashboard/dashboard.js:314
+#: dashboard/static/dashboard/dashboard.js:306
+#: dashboard/static/dashboard/dashboard.js:316
+#: static_collected/dashboard/dashboard.js:258
+#: static_collected/dashboard/dashboard.js:306
+#: static_collected/dashboard/dashboard.js:316
 msgid "No result"
 msgstr "Nincs eredmény"
 
@@ -41,12 +41,15 @@ msgstr "Nincs jogosultsága a profil módosításához."
 msgid "Unknown error."
 msgstr "Ismeretlen hiba."
 
-#: dashboard/static/dashboard/vm-create.js:108
-#: dashboard/static/dashboard/vm-create.js:171
+#: dashboard/static/dashboard/vm-create.js:111
+#: dashboard/static/dashboard/vm-create.js:174
+#: static_collected/dashboard/vm-create.js:111
+#: static_collected/dashboard/vm-create.js:174
 msgid "No more networks."
 msgstr "Nincs több hálózat."
 
-#: dashboard/static/dashboard/vm-create.js:140
+#: dashboard/static/dashboard/vm-create.js:143
+#: static_collected/dashboard/vm-create.js:143
 msgid "Not added to any network"
 msgstr "Nincs hálózathoz adva"
 
@@ -428,5 +431,3 @@ msgstr "Tegnap"
 #: static_collected/admin/js/admin/DateTimeShortcuts.js:203
 msgid "Tomorrow"
 msgstr "Holnap"
-
-# end

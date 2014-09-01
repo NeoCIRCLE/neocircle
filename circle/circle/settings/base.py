@@ -368,9 +368,9 @@ if get_env_variable('DJANGO_SAML', 'FALSE') == 'TRUE':
         from shutilwhich import which
     from saml2 import BINDING_HTTP_POST, BINDING_HTTP_REDIRECT
 
-    # INSTALLED_APPS += (  # needed only for testing djangosaml2
-    #     'djangosaml',
-    # )
+    INSTALLED_APPS += ( 
+        'djangosaml2',
+    )
     AUTHENTICATION_BACKENDS = (
         'django.contrib.auth.backends.ModelBackend',
         'djangosaml2.backends.Saml2Backend',

@@ -28,6 +28,9 @@ function vmCreateLoaded() {
         $('#create-modal').on('hidden.bs.modal', function() {
             $('#create-modal').remove();
         });
+        $("#create-modal").on("shown.bs.modal", function() {
+          setDefaultSliderValues();
+        });
     });
     return false;
   });
@@ -216,6 +219,8 @@ function vmCustomizeLoaded() {
       }
     });
     if(error) return true;
+
+    $(this).find("i").prop("class", "fa fa-spinner fa-spin");
 
     $.ajax({
       url: '/dashboard/vm/create/',

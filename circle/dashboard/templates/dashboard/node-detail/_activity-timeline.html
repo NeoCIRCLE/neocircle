@@ -1,4 +1,5 @@
 {% load i18n %}
+{% load hro %}
 <div id="activity-timeline" class="timeline">
 {% for a in activities %}
 <div class="activity" data-activity-id="{{ a.pk }}">
@@ -16,10 +17,7 @@
       <div data-activity-id="{{ s.pk }}" 
         class="sub-activity{% if s.has_failed %} sub-activity-failed{% endif %}"
         >
-    {% if user.is_superuser %}
-    {{ s.readable_name.get_admin_text }}
-    {% else %}
-    {{ s.readable_name.get_user_text }}{% endif %}
+    {{ s.readable_name|get_text:user }}
          &ndash;
         {% if s.finished %}
           {{ s.finished|time:"H:i:s" }}

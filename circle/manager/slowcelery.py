@@ -23,15 +23,12 @@ from os import getenv
 HOSTNAME = "localhost"
 CACHE_URI = getenv("CACHE_URI", "pylibmc://127.0.0.1:11211/")
 
-celery = Celery('manager',
+celery = Celery('manager.slow',
                 broker=getenv("AMQP_URI"),
                 include=['vm.tasks.local_tasks',
                          'vm.tasks.local_periodic_tasks',
-                         'vm.tasks.local_agent_tasks',
                          'storage.tasks.local_tasks',
                          'storage.tasks.periodic_tasks',
-                         'firewall.tasks.local_tasks',
-                         'dashboard.tasks.local_periodic_tasks',
                          ])
 
 celery.conf.update(
@@ -39,20 +36,14 @@ celery.conf.update(
     CELERY_CACHE_BACKEND=CACHE_URI,
     CELERY_TASK_RESULT_EXPIRES=300,
     CELERY_QUEUES=(
-        Queue(HOSTNAME + '.man', Exchange('manager', type='direct'),
-              routing_key="manager"),
+        Queue(HOSTNAME + '.man.slow', Exchange('manager.slow', type='direct'),
+              routing_key="manager.slow"),
     ),
     CELERYBEAT_SCHEDULE={
-        'storage.periodic_tasks': {
-            'task': 'storage.tasks.periodic_tasks.garbage_collector',
-            'schedule': timedelta(hours=1),
-            'options': {'queue': 'localhost.man'}
-        },
-        'dashboard.send_email_notifications': {
-            'task': 'dashboard.tasks.local_periodic_tasks.'
-            'send_email_notifications',
-            'schedule': timedelta(hours=24),
-            'options': {'queue': 'localhost.man'}
+        'vm.garbage_collector': {
+            'task': 'vm.tasks.local_periodic_tasks.garbage_collector',
+            'schedule': timedelta(minutes=10),
+            'options': {'queue': 'localhost.man.slow'}
         },
     }
 
