@@ -3183,7 +3183,7 @@ class UserKeyCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 class ConnectCommandDetail(LoginRequiredMixin, SuccessMessageMixin,
                            UpdateView):
     model = ConnectCommand
-    template_name = "dashboard/connectcommand-edit.html"
+    template_name = "dashboard/connect-command-edit.html"
     form_class = ConnectCommandForm
     success_message = _("Successfully modified command template.")
 
@@ -3239,7 +3239,7 @@ class ConnectCommandCreate(LoginRequiredMixin, SuccessMessageMixin,
                            CreateView):
     model = ConnectCommand
     form_class = ConnectCommandForm
-    template_name = "dashboard/connectcommand-create.html"
+    template_name = "dashboard/connect-command-create.html"
     success_message = _("Successfully created a new command template.")
 
     def get_success_url(self):

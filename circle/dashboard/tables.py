@@ -273,7 +273,8 @@ class ConnectCommandListTable(Table):
 
     actions = TemplateColumn(
         verbose_name=_("Actions"),
-        template_name="dashboard/command-list/column-command-actions.html",
+        template_name=("dashboard/connect-command-list/column-command"
+                       "-actions.html"),
         orderable=False,
     )
 
