@@ -3194,7 +3194,7 @@ class ConnectCommandDetail(LoginRequiredMixin, SuccessMessageMixin,
         return super(ConnectCommandDetail, self).get(request, *args, **kwargs)
 
     def get_success_url(self):
-        return reverse_lazy("dashboard.views.connectcommand-detail",
+        return reverse_lazy("dashboard.views.connect-command-detail",
                             kwargs=self.kwargs)
 
     def post(self, request, *args, **kwargs):

@@ -1041,7 +1041,7 @@ class UserKeyForm(forms.ModelForm):
 
 class ConnectCommandForm(forms.ModelForm):
     class Meta:
-        fields = ('access_method', 'application', 'template')
+        fields = ('name', 'access_method', 'template')
         model = ConnectCommand
 
     @property

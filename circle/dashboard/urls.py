@@ -183,13 +183,13 @@ urlpatterns = patterns(
 
     url(r'^conncmd/delete/(?P<pk>\d+)/$',
         ConnectCommandDelete.as_view(),
-        name="dashboard.views.connectcommand-delete"),
+        name="dashboard.views.connect-command-delete"),
     url(r'^conncmd/(?P<pk>\d+)/$',
         ConnectCommandDetail.as_view(),
-        name="dashboard.views.connectcommand-detail"),
+        name="dashboard.views.connect-command-detail"),
     url(r'^conncmd/create/$',
         ConnectCommandCreate.as_view(),
-        name="dashboard.views.connectcommand-create"),
+        name="dashboard.views.connect-command-create"),
 
     url(r'^autocomplete/', include('autocomplete_light.urls')),
 

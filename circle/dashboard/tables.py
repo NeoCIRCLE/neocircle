@@ -249,28 +249,27 @@ class UserKeyListTable(Table):
 
     class Meta:
         model = UserKey
-        attrs = {'class': ('table table-bordered table-striped table-hover')}
+        attrs = {'class': ('table table-bordered table-striped table-hover'),
+                 'id': "profile-key-list-table"}
         fields = ('name', 'fingerprint', 'created', 'actions')
         prefix = "key-"
         empty_text = _("You haven't added any public keys yet.")
 
 
 class ConnectCommandListTable(Table):
+    name = LinkColumn(
+        'dashboard.views.connect-command-detail',
+        args=[A('pk')],
+        attrs={'th': {'data-sort': "string"}}
+    )
     access_method = Column(
         verbose_name=_("Access method"),
         attrs={'th': {'data-sort': "string"}}
     )
-
-    application = Column(
-        verbose_name=_("Application"),
-        attrs={'th': {'data-sort': "string"}}
-    )
-
     template = Column(
         verbose_name=_("Template"),
         attrs={'th': {'data-sort': "string"}}
     )
-
     actions = TemplateColumn(
         verbose_name=_("Actions"),
         template_name=("dashboard/connect-command-list/column-command"
@@ -280,8 +279,9 @@ class ConnectCommandListTable(Table):
 
     class Meta:
         model = ConnectCommand
-        attrs = {'class': ('table table-bordered table-striped table-hover')}
-        fields = ('access_method', 'application', 'template', 'actions')
+        attrs = {'class': ('table table-bordered table-striped table-hover'),
+                 'id': "profile-command-list-table"}
+        fields = ('name', 'access_method',  'template', 'actions')
         prefix = "cmd-"
         empty_text = _("You don't have any custom connection string, the "
                        "default ones will be used.")

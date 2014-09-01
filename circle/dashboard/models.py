@@ -106,19 +106,15 @@ class ConnectCommand(Model):
     access_method = CharField(max_length=10, choices=ACCESS_METHODS,
                               verbose_name=_('access method'),
                               help_text=_('Type of the remote access method.'))
-    application = CharField(max_length="128", verbose_name=_('application'),
-                            help_text=_(
-                                'Name of the application used for '
-                                'remote connection. '
-                                'This will be the value of the '
-                                '%(app)s parameter.'))
+    name = CharField(max_length="128", verbose_name=_('name'), blank=False,
+                     help_text=_("Name of your custom command."))
     template = CharField(blank=True, null=True, max_length=256,
                          verbose_name=_('command template'),
                          help_text=_('Template for connection command string. '
                                      'Available parameters are: '
                                      'username, password, '
                                      'host, port, app. Example: sshpass '
-                                     '-p %(password)s %(app)s -o '
+                                     '-p %(password)s ssh -o '
                                      'StrictHostKeyChecking=no %(username)s@'
                                      '%(host)s -p %(port)s'))
 
@@ -169,7 +165,6 @@ class Profile(Model):
                         'port': instance.get_connect_port(use_ipv6=use_ipv6),
                         'host':  instance.get_connect_host(use_ipv6=use_ipv6),
                         'password': instance.pw,
-                        'app': command.application,
                         'username': 'cloud',
                     } for command in commands]
         else:
