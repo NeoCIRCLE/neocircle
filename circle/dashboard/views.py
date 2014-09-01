@@ -67,7 +67,7 @@ from .forms import (
     CircleAuthenticationForm, HostForm, LeaseForm, MyProfileForm,
     NodeForm, TemplateForm, TraitForm, VmCustomizeForm, GroupCreateForm,
     UserCreationForm, GroupProfileUpdateForm, UnsubscribeForm,
-    VmSaveForm, UserKeyForm, VmRenewForm,
+    VmSaveForm, UserKeyForm, VmRenewForm, VmStateChangeForm,
     CirclePasswordChangeForm, VmCreateDiskForm, VmDownloadDiskForm,
     TraitsForm, RawDataForm, GroupPermissionForm, AclUserAddForm,
     VmResourcesForm, VmAddInterfaceForm, VmListSearchForm, ConnectCommandForm
@@ -77,7 +77,10 @@ from .tables import (
     NodeListTable, TemplateListTable, LeaseListTable,
     GroupListTable, UserKeyListTable, ConnectCommandListTable,
 )
-from common.models import HumanReadableObject, HumanReadableException
+from common.models import (
+    HumanReadableObject, HumanReadableException, fetch_human_exception,
+    create_readable,
+)
 from vm.models import (
     Instance, instance_activity, InstanceActivity, InstanceTemplate, Interface,
     InterfaceTemplate, Lease, Node, NodeActivity, Trait,
@@ -311,7 +314,7 @@ class VmDetailView(CheckedDetailView):
         activities = instance.get_merged_activities(user)
         show_show_all = len(activities) > 10
         activities = activities[:10]
-        context['activities'] = activities
+        context['activities'] = _format_activities(activities)
         context['show_show_all'] = show_show_all
         latest = instance.get_latest_activity_in_progress()
         context['is_new_state'] = (latest and
@@ -563,6 +566,10 @@ class OperationView(RedirectToLoginMixin, DetailView):
             setattr(self, '_opobj', getattr(self.get_object(), self.op))
         return self._opobj
 
+    @classmethod
+    def get_operation_class(cls):
+        return cls.model.get_operation_class(cls.op)
+
     def get_context_data(self, **kwargs):
         ctx = super(OperationView, self).get_context_data(**kwargs)
         ctx['op'] = self.get_op()
@@ -577,6 +584,10 @@ class OperationView(RedirectToLoginMixin, DetailView):
     def check_auth(self):
         logger.debug("OperationView.check_auth(%s)", unicode(self))
         self.get_op().check_auth(self.request.user)
+
+    @classmethod
+    def check_perms(cls, user):
+        cls.get_operation_class().check_perms(user)
 
     def get(self, request, *args, **kwargs):
         self.check_auth()
@@ -938,6 +949,24 @@ class VmRenewView(FormOperationMixin, TokenOperationView, VmOperationView):
         return extra
 
 
+class VmStateChangeView(FormOperationMixin, VmOperationView):
+    op = 'emergency_change_state'
+    icon = 'legal'
+    effect = 'danger'
+    show_in_toolbar = True
+    form_class = VmStateChangeForm
+    wait_for_result = 0.5
+
+    def get_form_kwargs(self):
+        inst = self.get_op().instance
+        active_activities = InstanceActivity.objects.filter(
+            finished__isnull=True, instance=inst)
+        show_interrupt = active_activities.exists()
+        val = super(VmStateChangeView, self).get_form_kwargs()
+        val.update({'show_interrupt': show_interrupt, 'status': inst.status})
+        return val
+
+
 vm_ops = OrderedDict([
     ('deploy', VmOperationView.factory(
         op='deploy', icon='play', effect='success')),
@@ -958,8 +987,7 @@ vm_ops = OrderedDict([
         op='shut_off', icon='ban', effect='warning')),
     ('recover', VmOperationView.factory(
         op='recover', icon='medkit', effect='warning')),
-    ('nostate', VmOperationView.factory(
-        op='emergency_change_state', icon='legal', effect='danger')),
+    ('nostate', VmStateChangeView),
     ('destroy', VmOperationView.factory(
         extra_bases=[TokenOperationView],
         op='destroy', icon='times', effect='danger')),
@@ -993,6 +1021,112 @@ def get_operations(instance, user):
         else:
             ops.append(v.bind_to_object(instance))
     return ops
+
+
+class MassOperationView(OperationView):
+    template_name = 'dashboard/mass-operate.html'
+
+    def check_auth(self):
+        self.get_op().check_perms(self.request.user)
+        for i in self.get_object():
+            if not i.has_level(self.request.user, "user"):
+                raise PermissionDenied(
+                    "You have no user access to instance %d" % i.pk)
+
+    @classmethod
+    def get_urlname(cls):
+        return 'dashboard.vm.mass-op.%s' % cls.op
+
+    @classmethod
+    def get_url(cls):
+        return reverse("dashboard.vm.mass-op.%s" % cls.op)
+
+    def get_op(self, instance=None):
+        if instance:
+            return getattr(instance, self.op)
+        else:
+            return Instance._ops[self.op]
+
+    def get_context_data(self, **kwargs):
+        ctx = super(MassOperationView, self).get_context_data(**kwargs)
+        instances = self.get_object()
+        ctx['instances'] = self._get_operable_instances(
+            instances, self.request.user)
+        ctx['vm_count'] = sum(1 for i in ctx['instances'] if not i.disabled)
+        return ctx
+
+    def _call_operations(self, extra):
+        request = self.request
+        user = request.user
+        instances = self.get_object()
+        for i in instances:
+            try:
+                self.get_op(i).async(user=user, **extra)
+            except HumanReadableException as e:
+                e.send_message(request)
+            except Exception as e:
+                # pre-existing errors should have been catched when the
+                # confirmation dialog was constructed
+                messages.error(request, _(
+                    "Failed to execute %(op)s operation on "
+                    "instance %(instance)s.") % {"op": self.name,
+                                                 "instance": i})
+
+    def get_object(self):
+        vms = getattr(self.request, self.request.method).getlist("vm")
+        return Instance.objects.filter(pk__in=vms)
+
+    def _get_operable_instances(self, instances, user):
+        for i in instances:
+            try:
+                op = self.get_op(i)
+                op.check_auth(user)
+                op.check_precond()
+            except PermissionDenied as e:
+                i.disabled = create_readable(
+                    _("You are not permitted to execute %(op)s on instance "
+                      "%(instance)s."), instance=i.pk, op=self.name)
+                i.disabled_icon = "lock"
+            except Exception as e:
+                i.disabled = fetch_human_exception(e)
+            else:
+                i.disabled = None
+        return instances
+
+    def post(self, request, extra=None, *args, **kwargs):
+        self.check_auth()
+        if extra is None:
+            extra = {}
+        self._call_operations(extra)
+        if request.is_ajax():
+            store = messages.get_messages(request)
+            store.used = True
+            return HttpResponse(
+                json.dumps({'messages': [unicode(m) for m in store]}),
+                content_type="application/json"
+            )
+        else:
+            return redirect(reverse("dashboard.views.vm-list"))
+
+    @classmethod
+    def factory(cls, vm_op, extra_bases=(), **kwargs):
+        return type(str(cls.__name__ + vm_op.op),
+                    tuple(list(extra_bases) + [cls, vm_op]), kwargs)
+
+
+class MassMigrationView(MassOperationView, VmMigrateView):
+    template_name = 'dashboard/_vm-mass-migrate.html'
+
+vm_mass_ops = OrderedDict([
+    ('deploy', MassOperationView.factory(vm_ops['deploy'])),
+    ('wake_up', MassOperationView.factory(vm_ops['wake_up'])),
+    ('sleep', MassOperationView.factory(vm_ops['sleep'])),
+    ('reboot', MassOperationView.factory(vm_ops['reboot'])),
+    ('reset', MassOperationView.factory(vm_ops['reset'])),
+    ('shut_off', MassOperationView.factory(vm_ops['shut_off'])),
+    ('migrate', MassMigrationView),
+    ('destroy', MassOperationView.factory(vm_ops['destroy'])),
+])
 
 
 class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
@@ -1567,11 +1701,41 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
 
     def get_context_data(self, *args, **kwargs):
         context = super(VmList, self).get_context_data(*args, **kwargs)
+        context['ops'] = []
+        for k, v in vm_mass_ops.iteritems():
+            try:
+                v.check_perms(user=self.request.user)
+            except PermissionDenied:
+                pass
+            else:
+                context['ops'].append(v)
         context['search_form'] = self.search_form
         return context
 
     def get(self, *args, **kwargs):
         if self.request.is_ajax():
+            return self._create_ajax_request()
+        else:
+            self.search_form = VmListSearchForm(self.request.GET)
+            self.search_form.full_clean()
+            return super(VmList, self).get(*args, **kwargs)
+
+    def _create_ajax_request(self):
+        if self.request.GET.get("compact") is not None:
+            instances = Instance.get_objects_with_level(
+                "user", self.request.user).filter(destroyed_at=None)
+            statuses = {}
+            for i in instances:
+                statuses[i.pk] = {
+                    'status': i.get_status_display(),
+                    'icon': i.get_status_icon(),
+                    'in_status_change': i.is_in_status_change(),
+                }
+                if self.request.user.is_superuser:
+                    statuses[i.pk]['node'] = i.node.name if i.node else "-"
+            return HttpResponse(json.dumps(statuses),
+                                content_type="application/json")
+        else:
             favs = Instance.objects.filter(
                 favourite__user=self.request.user).values_list('pk', flat=True)
             instances = Instance.get_objects_with_level(
@@ -1583,15 +1747,12 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
                 'icon': i.get_status_icon(),
                 'host': "" if not i.primary_host else i.primary_host.hostname,
                 'status': i.get_status_display(),
-                'fav': i.pk in favs} for i in instances]
+                'fav': i.pk in favs,
+            } for i in instances]
             return HttpResponse(
                 json.dumps(list(instances)),  # instances is ValuesQuerySet
                 content_type="application/json",
             )
-        else:
-            self.search_form = VmListSearchForm(self.request.GET)
-            self.search_form.full_clean()
-            return super(VmList, self).get(*args, **kwargs)
 
     def get_queryset(self):
         logger.debug('VmList.get_queryset() called. User: %s',
@@ -1613,10 +1774,10 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
 
     def create_default_queryset(self):
         cleaned_data = self.search_form.cleaned_data
-        stype = cleaned_data.get('stype', 2)
-        superuser = stype == 2
-        shared = stype == 1
-        level = "owner" if stype == 0 else "user"
+        stype = cleaned_data.get('stype', "all")
+        superuser = stype == "all"
+        shared = stype == "shared"
+        level = "owner" if stype == "owned" else "user"
         queryset = Instance.get_objects_with_level(
             level, self.request.user,
             group_also=shared, disregard_superuser=not superuser,
@@ -1897,8 +2058,10 @@ class VmCreate(LoginRequiredMixin, TemplateView):
         if not template.has_level(request.user, 'user'):
             raise PermissionDenied()
 
-        instances = [Instance.create_from_template(
-            template=template, owner=user)]
+        args = {"template": template, "owner": user}
+        if "name" in request.POST:
+            args["name"] = request.POST.get("name")
+        instances = [Instance.create_from_template(**args)]
         return self.__deploy(request, instances)
 
     def __create_customized(self, request, *args, **kwargs):
@@ -1924,6 +2087,7 @@ class VmCreate(LoginRequiredMixin, TemplateView):
                 'num_cores': post['cpu_count'],
                 'ram_size': post['ram_size'],
                 'priority': post['cpu_priority'],
+                'max_ram_size': post['ram_size'],
             }
             networks = [InterfaceTemplate(vlan=l, managed=l.managed)
                         for l in post['networks']]
@@ -1951,7 +2115,7 @@ class VmCreate(LoginRequiredMixin, TemplateView):
                 "Successfully created %(count)d VM.",  # this should not happen
                 "Successfully created %(count)d VMs.", len(instances)) % {
                 'count': len(instances)})
-            path = reverse("dashboard.index")
+            path = "%s?stype=owned" % reverse("dashboard.views.vm-list")
         else:
             messages.success(request, _("VM successfully created."))
             path = instances[0].get_absolute_url()
@@ -2353,48 +2517,6 @@ class PortDelete(LoginRequiredMixin, DeleteView):
                             kwargs={'pk': self.kwargs.get("pk")})
 
 
-class VmMassDelete(LoginRequiredMixin, View):
-    def get(self, request, *args, **kwargs):
-        vms = request.GET.getlist('v[]')
-        objects = Instance.objects.filter(pk__in=vms)
-        return render(request, "dashboard/confirm/mass-delete.html",
-                      {'objects': objects})
-
-    def post(self, request, *args, **kwargs):
-        vms = request.POST.getlist('vms')
-        names = []
-        if vms is not None:
-            for i in Instance.objects.filter(pk__in=vms):
-                if not i.has_level(request.user, 'owner'):
-                    logger.info('Tried to delete instance #%d without owner '
-                                'permission by %s.', i.pk,
-                                unicode(request.user))
-                    # no need for rollback or proper error message, this can't
-                    # normally happen:
-                    raise PermissionDenied()
-                try:
-                    i.destroy.async(user=request.user)
-                    names.append(i.name)
-                except Exception as e:
-                    logger.error(e)
-
-        success_message = ungettext_lazy(
-            "Mass delete complete, the following VM was deleted: %s.",
-            "Mass delete complete, the following VMs were deleted: %s.",
-            len(names)) % u', '.join(names)
-
-        # we can get this only via AJAX ...
-        if request.is_ajax():
-            return HttpResponse(
-                json.dumps({'message': success_message}),
-                content_type="application/json"
-            )
-        else:
-            messages.success(request, success_message)
-            next = request.GET.get('next')
-            return redirect(next if next else reverse_lazy('dashboard.index'))
-
-
 class LeaseCreate(LoginRequiredMixin, PermissionRequiredMixin,
                   SuccessMessageMixin, CreateView):
     model = Lease
@@ -2483,7 +2605,8 @@ def vm_activity(request, pk):
 
     response = {}
     show_all = request.GET.get("show_all", "false") == "true"
-    activities = instance.get_merged_activities(request.user)
+    activities = _format_activities(
+        instance.get_merged_activities(request.user))
     show_show_all = len(activities) > 10
     if not show_all:
         activities = activities[:10]
@@ -2725,7 +2848,7 @@ class NodeGraphView(SuperuserRequiredMixin, GraphViewBase):
     model = Node
 
     def get_prefix(self, instance):
-        return 'circle.%s' % instance.name
+        return 'circle.%s' % instance.host.hostname
 
     def get_title(self, instance, metric):
         return '%s - %s' % (instance.name, metric)
@@ -2945,6 +3068,20 @@ def get_disk_download_status(request, pk):
     )
 
 
+def _get_activity_icon(act):
+    op = act.get_operation()
+    if op and op.id in vm_ops:
+        return vm_ops[op.id].icon
+    else:
+        return "cog"
+
+
+def _format_activities(acts):
+    for i in acts:
+        i.icon = _get_activity_icon(i)
+    return acts
+
+
 class InstanceActivityDetail(CheckedDetailView):
     model = InstanceActivity
     context_object_name = 'instanceactivity'  # much simpler to mock object
@@ -2955,8 +3092,9 @@ class InstanceActivityDetail(CheckedDetailView):
 
     def get_context_data(self, **kwargs):
         ctx = super(InstanceActivityDetail, self).get_context_data(**kwargs)
-        ctx['activities'] = self.object.instance.get_activities(
-            self.request.user)
+        ctx['activities'] = _format_activities(
+            self.object.instance.get_activities(self.request.user))
+        ctx['icon'] = _get_activity_icon(self.object)
         return ctx
 
 

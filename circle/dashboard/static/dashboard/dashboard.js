@@ -262,7 +262,7 @@ $(function () {
 
   $("#dashboard-vm-search-form").submit(function() {
     var vm_list_items = $("#dashboard-vm-list .list-group-item");
-    if(vm_list_items.length == 1) {
+    if(vm_list_items.length == 1 && vm_list_items.first().prop("href")) {
       window.location.href = vm_list_items.first().prop("href");
       return false;
     }
@@ -488,12 +488,17 @@ function addSliderMiscs() {
     ram_fire = true;
     $(".ram-slider").simpleSlider("setValue", parseInt(val));
   });
-  $(".cpu-priority-input").trigger("change");
-  $(".cpu-count-input, .ram-input").trigger("input");
+
+  setDefaultSliderValues();
 
   $(".cpu-priority-slider").simpleSlider("setDisabled", $(".cpu-priority-input").prop("disabled"));
   $(".cpu-count-slider").simpleSlider("setDisabled", $(".cpu-count-input").prop("disabled"));
   $(".ram-slider").simpleSlider("setDisabled", $(".ram-input").prop("disabled"));
+}
+
+function setDefaultSliderValues() {
+  $(".cpu-priority-input").trigger("change");
+  $(".ram-input, .cpu-count-input").trigger("input");
 }
 
 

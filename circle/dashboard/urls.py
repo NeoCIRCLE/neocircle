@@ -29,7 +29,7 @@ from .views import (
     NotificationView, PortDelete, TemplateAclUpdateView, TemplateCreate,
     TemplateDelete, TemplateDetail, TemplateList, TransferOwnershipConfirmView,
     TransferOwnershipView, vm_activity, VmCreate, VmDetailView,
-    VmDetailVncTokenView, VmGraphView, VmList, VmMassDelete,
+    VmDetailVncTokenView, VmGraphView, VmList,
     DiskRemoveView, get_disk_download_status, InterfaceDeleteView,
     GroupRemoveUserView,
     GroupRemoveFutureUserView,
@@ -50,7 +50,6 @@ from .views import (
 autocomplete_light.autodiscover()
 
 urlpatterns = patterns(
-
     '',
     url(r'^$', IndexView.as_view(), name="dashboard.index"),
     url(r'^lease/(?P<pk>\d+)/$', LeaseDetail.as_view(),
@@ -75,7 +74,7 @@ urlpatterns = patterns(
     url(r"^template/delete/(?P<pk>\d+)/$", TemplateDelete.as_view(),
         name="dashboard.views.template-delete"),
 
-    url(r'^vm/(?P<pk>\d+)/op/', include('dashboard.vm.urls')),
+    url(r'^vm/', include('dashboard.vm.urls')),
     url(r'^vm/(?P<pk>\d+)/remove_port/(?P<rule>\d+)/$', PortDelete.as_view(),
         name='dashboard.views.remove-port'),
     url(r'^vm/(?P<pk>\d+)/$', VmDetailView.as_view(),
@@ -89,8 +88,6 @@ urlpatterns = patterns(
     url(r'^vm/list/$', VmList.as_view(), name='dashboard.views.vm-list'),
     url(r'^vm/create/$', VmCreate.as_view(),
         name='dashboard.views.vm-create'),
-    url(r'^vm/mass-delete/', VmMassDelete.as_view(),
-        name='dashboard.view.mass-delete-vm'),
     url(r'^vm/(?P<pk>\d+)/activity/$', vm_activity),
     url(r'^vm/activity/(?P<pk>\d+)/$', InstanceActivityDetail.as_view(),
         name='dashboard.views.vm-activity'),
