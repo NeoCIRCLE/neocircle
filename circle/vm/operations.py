@@ -1003,12 +1003,12 @@ class MountStoreOperation(EnsureAgentMixin, InstanceOperation):
         except NoStoreException:
             raise PermissionDenied  # not show the button at all
 
-    def _operation(self):
+    def _operation(self, user):
         inst = self.instance
         queue = self.instance.get_remote_queue_name("agent")
         host = urlsplit(settings.STORE_URL).hostname
-        username = Store(inst.owner).username
-        password = inst.owner.profile.smb_password
+        username = Store(user).username
+        password = user.profile.smb_password
         agent_tasks.mount_store.apply_async(
             queue=queue, args=(inst.vm_name, host, username, password))
 
