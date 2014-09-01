@@ -98,8 +98,9 @@
           <div class="input-group">
             <input type="text" id="vm-details-pw-input" class="form-control input-sm input-tags"
             value="{{ instance.pw }}" spellcheck="false"/>
-            <span class="input-group-addon input-tags" id="vm-details-pw-show">
-              <i class="fa fa-eye" id="vm-details-pw-eye" title="Show password"></i>
+            <span class="input-group-addon input-tags" id="vm-details-pw-show"
+              title="{% trans "Show password" %}" data-container="body">
+              <i class="fa fa-eye" id="vm-details-pw-eye"></i>
             </span>
           </div>
         </dd>
@@ -112,13 +113,14 @@
         </dd>
       </dl>
       {% for c in connect_commands %}
-      <div class="input-group" id="dashboard-vm-details-connect-command">
+      <div class="input-group dashboard-vm-details-connect-command">
         <span class="input-group-addon input-tags">{% trans "Command" %}</span>
         <input type="text" spellcheck="false"
         value="{{ c }}"
         id="vm-details-connection-string" class="form-control input-tags" />
-        <span class="input-group-addon input-tags" id="vm-details-connection-string-copy">
-          <i class="fa fa-copy" title="{% trans "Select all" %}"></i>
+        <span class="input-group-addon input-tags vm-details-connection-string-copy"
+          title="{% trans "Select all" %}" data-container="body">
+          <i class="fa fa-copy"></i>
         </span>
       </div>
 

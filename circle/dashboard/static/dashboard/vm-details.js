@@ -105,19 +105,20 @@ $(function() {
   $("#vm-details-pw-show").click(function() {
     var input = $(this).parent("div").children("input");
     var eye = $(this).children("#vm-details-pw-eye");
+    var span = $(this);
     
-    eye.tooltip("destroy")
+    span.tooltip("destroy")
     if(eye.hasClass("fa-eye")) {
       eye.removeClass("fa-eye").addClass("fa-eye-slash");
       input.prop("type", "text");
-      input.focus();
-      eye.prop("title", "Hide password");
+      input.select();
+      span.prop("title", gettext("Hide password"));
     } else {
       eye.removeClass("fa-eye-slash").addClass("fa-eye");
       input.prop("type", "password");
-      eye.prop("title", "Show password");
+      span.prop("title", gettext("Show password"));
     }
-    eye.tooltip();
+    span.tooltip();
   });
 
   /* change password confirmation */
@@ -198,7 +199,7 @@ $(function() {
   $("#vm-details-h1-name, .vm-details-rename-button").click(function() {
     $("#vm-details-h1-name").hide();
     $("#vm-details-rename").css('display', 'inline');
-    $("#vm-details-rename-name").focus();
+    $("#vm-details-rename-name").select();
     return false;
   });
 
@@ -206,7 +207,7 @@ $(function() {
   $(".vm-details-home-edit-name-click").click(function() {
     $(".vm-details-home-edit-name-click").hide();
     $("#vm-details-home-rename").show();
-    $("input", $("#vm-details-home-rename")).focus();
+    $("input", $("#vm-details-home-rename")).select();
     return false;
   });
 
@@ -306,8 +307,8 @@ $(function() {
   });
 
   // select connection string
-  $("#vm-details-connection-string-copy").click(function() {
-    $("#vm-details-connection-string").focus();
+  $(".vm-details-connection-string-copy").click(function() {
+    $(this).parent("div").find("input").select();
   });
 
   $("a.operation-password_reset").click(function() {

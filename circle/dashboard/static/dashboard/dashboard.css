@@ -654,7 +654,8 @@ textarea[name="list-new-namelist"] {
   width: 130px;
 }
 
-#vm-details-connection-string-copy {
+.vm-details-connection-string-copy,
+#vm-details-pw-show {
   cursor: pointer;
 }
 
@@ -681,10 +682,9 @@ textarea[name="list-new-namelist"] {
   max-width: 200px;
 }
 
-#dashboard-vm-details-connect-command {
+.dashboard-vm-details-connect-command {
   /* for mobile view */
   margin-bottom: 20px;
-
 }
 
 #store-list-list {
