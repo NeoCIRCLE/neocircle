@@ -530,6 +530,26 @@ class Host(models.Model):
     def incoming_rules(self):
         return self.rules.filter(direction='in')
 
+    @staticmethod
+    def create_ipnetwork(ip, prefixlen):
+        try:
+            net = IPNetwork(ip)
+            net.prefixlen = prefixlen
+        except TypeError:
+            return None
+        else:
+            return net
+
+    @property
+    def ipv4_with_vlan_prefixlen(self):
+        return Host.create_ipnetwork(
+            self.ipv4, self.vlan.network4.prefixlen)
+
+    @property
+    def ipv6_with_vlan_prefixlen(self):
+        return Host.create_ipnetwork(
+            self.ipv6, self.vlan.network6.prefixlen)
+
     @property
     def ipv6_with_prefixlen(self):
         try:
@@ -604,15 +624,11 @@ class Host(models.Model):
         interface = {'addresses': []}
 
         if self.ipv4 and self.vlan.network4:
-            ipv4 = IPNetwork(self.ipv4)
-            ipv4.prefixlen = self.vlan.network4.prefixlen
-            interface['addresses'].append(str(ipv4))
+            interface['addresses'].append(str(self.ipv4_with_vlan_prefixlen))
             interface['gw4'] = str(self.vlan.network4.ip)
 
         if self.ipv6 and self.vlan.network6:
-            ipv6 = IPNetwork(self.ipv6)
-            ipv6.prefixlen = self.vlan.network6.prefixlen
-            interface['addresses'].append(str(ipv6))
+            interface['addresses'].append(str(self.ipv4_with_vlan_prefixlen))
             interface['gw6'] = str(self.vlan.network6.ip)
 
         return interface
