@@ -624,7 +624,7 @@ class Host(models.Model):
             interface['gw4'] = str(self.vlan.network4.ip)
 
         if self.ipv6 and self.vlan.network6:
-            interface['addresses'].append(str(self.ipv4_with_vlan_prefixlen))
+            interface['addresses'].append(str(self.ipv6_with_vlan_prefixlen))
             interface['gw6'] = str(self.vlan.network6.ip)
 
         return interface
