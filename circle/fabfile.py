@@ -34,6 +34,15 @@ def pip(env, req):
         run("pip install -r %s" % req)
 
 
+def bower(component=None):
+    "Install bower component"
+    with cd("~/circle/circle"):
+        if component:
+            run("bower install %s" % component)
+        else:
+            run("bower install")
+
+
 @roles('portal')
 def migrate():
     "Run db migrations"
@@ -104,6 +113,7 @@ def update_portal(test=False):
     with _stopped("portal", "manager"):
         pull()
         pip("circle", "~/circle/requirements.txt")
+        bower()
         migrate()
         compile_things()
         if test:
