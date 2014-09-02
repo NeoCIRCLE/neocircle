@@ -68,10 +68,20 @@
                 {% trans "Owner" as t %}
                 {% include "dashboard/vm-list/header-link.html" with name=t sort="owner" %}
               </th>
-              {% if user.is_superuser %}<th data-sort="string" class="orderable sortable">
-                {% trans "Node" as t %}
-                {% include "dashboard/vm-list/header-link.html" with name=t sort="node" %}
-              </th>{% endif %}
+              <th data-sort="string" class="orderable sortable">
+                {% trans "Lease" as t %}
+                {% include "dashboard/vm-list/header-link.html" with name=t sort="lease" %}
+              </th>
+              {% if user.is_superuser %}
+                <th data-sort="string" class="orderable sortable">
+                  {% trans "IP address" as t %}
+                  {% include "dashboard/vm-list/header-link.html" with name=t sort="ip_addr" %}
+                </th>
+                <th data-sort="string" class="orderable sortable">
+                  {% trans "Node" as t %}
+                  {% include "dashboard/vm-list/header-link.html" with name=t sort="node" %}
+                </th>
+              {% endif %}
           </tr></thead><tbody>
           {% for i in object_list %}
           <tr class="{% cycle 'odd' 'even' %}" data-vm-pk="{{ i.pk }}">
@@ -93,7 +103,13 @@
               {% endif %}
               {# include "dashboard/_display-name.html" with user=i.owner show_org=True #}
             </td>
+            <td class="lease "data-sort-value="{{ i.lease.name }}">
+              {{ i.lease.name }}
+            </td>
             {% if user.is_superuser %}
+            <td class="ip_addr "data-sort-value="{{ i.ipv4 }}">
+              {{ i.ipv4|default:"-" }}
+            </td>
             <td class="node "data-sort-value="{{ i.node.normalized_name }}">
               {{ i.node.name|default:"-" }}
             </td>
@@ -101,7 +117,7 @@
           </tr>
           {% empty %}
           <tr>
-            <td colspan="5">
+            <td colspan="7">
               {% if request.GET.s %}
                 <strong>{% trans "No result." %}</strong>
               {% else %}

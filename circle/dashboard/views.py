@@ -1875,7 +1875,8 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
 
         return queryset.filter(
             **self.get_queryset_filters()).prefetch_related(
-                "owner", "node", "owner__profile").distinct()
+                "owner", "node", "owner__profile", "interface_set", "lease",
+                "interface_set__host").distinct()
 
 
 class NodeList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):

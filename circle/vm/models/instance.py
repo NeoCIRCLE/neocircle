@@ -513,7 +513,12 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
     def ipv4(self):
         """Primary IPv4 address of the instance.
         """
-        return self.primary_host.ipv4 if self.primary_host else None
+        # return self.primary_host.ipv4 if self.primary_host else None
+        for i in self.interface_set.all():
+            if i.host:
+                return i.host.ipv4
+        return None
+
 
     @property
     def ipv6(self):
