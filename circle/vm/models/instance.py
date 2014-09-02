@@ -519,7 +519,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                 return i.host.ipv4
         return None
 
-
     @property
     def ipv6(self):
         """Primary IPv6 address of the instance.
