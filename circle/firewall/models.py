@@ -215,7 +215,7 @@ class Rule(models.Model):
         dst = None
 
         if host:
-            ip = (host.ipv4, host.ipv6_with_prefixlen)
+            ip = (host.ipv4, host.ipv6_with_host_prefixlen)
             if self.direction == 'in':
                 dst = ip
             else:
@@ -551,13 +551,9 @@ class Host(models.Model):
             self.ipv6, self.vlan.network6.prefixlen)
 
     @property
-    def ipv6_with_prefixlen(self):
-        try:
-            net = IPNetwork(self.ipv6)
-            net.prefixlen = self.vlan.host_ipv6_prefixlen
-            return net
-        except TypeError:
-            return None
+    def ipv6_with_host_prefixlen(self):
+        return Host.create_ipnetwork(
+            self.ipv6, self.vlan.host_ipv6_prefixlen)
 
     def get_external_ipv4(self):
         return self.external_ipv4 if self.external_ipv4 else self.ipv4
