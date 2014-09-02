@@ -946,3 +946,7 @@ textarea[name="list-new-namelist"] {
   display: inline-block;
   vertical-align: middle;
 }
+
+#vm-list-search-checkbox-span {
+  cursor: pointer
+}

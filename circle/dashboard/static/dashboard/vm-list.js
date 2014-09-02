@@ -167,14 +167,6 @@ $(function() {
     updateStatuses(1);
   }
  
-  $("#vm-list-search-checkbox-span").css("cursor", "pointer");
-
-  $("#vm-list-search-checkbox-span").click(function(e) {
-    if(e.target.type === "checkbox") return;
-    var checkbox = $(this).find("input");
-    checkbox.prop("checked", !checkbox.prop("checked"));
-    return false;
-  });
 });
 
 
