@@ -284,4 +284,5 @@ class ConnectCommandListTable(Table):
         fields = ('name', 'access_method',  'template', 'actions')
         prefix = "cmd-"
         empty_text = _("You don't have any custom connection string, the "
-                       "default ones will be used.")
+                       "default ones will be used. These command strings "
+                       "would be displayed on the VM detail page.")
