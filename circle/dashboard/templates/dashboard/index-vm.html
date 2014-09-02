@@ -41,15 +41,11 @@
         </div>
       {% endfor %}
     </div>
-    <style>
-      .list-group-item-last {
-        border-bottom: 1px solid #ddd !important;
-      }
-    </style>
     <div href="#" class="list-group-item list-group-footer">
       <div class="row">
+        <div class="col-xs-6">
         <form action="{% url "dashboard.views.vm-list" %}" method="GET" id="dashboard-vm-search-form">
-          <div class="col-sm-6 col-xs-6 input-group input-group-sm">
+          <div class="input-group input-group-sm">
             <input id="dashboard-vm-search-input" type="text" class="form-control" name="s" 
             placeholder="{% trans "Search..." %}" />
             <div class="input-group-btn">
@@ -57,7 +53,8 @@
             </div>
           </div>
         </form>
-        <div class="col-sm-6 text-right">
+        </div>
+        <div class="col-xs-6 text-right">
           <a class="btn btn-primary btn-xs" href="{% url "dashboard.views.vm-list" %}">
             <i class="fa fa-chevron-circle-right"></i>
             {% if more_instances > 0 %}
