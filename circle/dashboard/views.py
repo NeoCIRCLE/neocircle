@@ -336,7 +336,7 @@ class VmDetailView(CheckedDetailView):
 
         # resources forms
         can_edit = (
-            instance in Instance.get_objects_with_level("owner", user)
+            instance.has_level(user, "owner")
             and self.request.user.has_perm("vm.change_resources"))
         context['resources_form'] = VmResourcesForm(
             can_edit=can_edit, instance=instance)
@@ -348,6 +348,11 @@ class VmDetailView(CheckedDetailView):
         # resources change perm
         context['can_change_resources'] = self.request.user.has_perm(
             "vm.change_resources")
+
+        # can link template
+        context['can_link_template'] = (
+            instance.template and instance.template.has_level(user, "operator")
+        )
 
         return context
 
