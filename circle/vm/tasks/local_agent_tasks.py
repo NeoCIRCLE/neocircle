@@ -33,7 +33,8 @@ from celery.result import TimeoutError
 from monitor.client import Client
 
 
-def send_init_commands(instance, act, vm):
+def send_init_commands(instance, act):
+    vm = instance.vm_name
     queue = instance.get_remote_queue_name("agent")
     with act.sub_activity('cleanup', readable_name=ugettext_noop('cleanup')):
         cleanup.apply_async(queue=queue, args=(vm, ))
@@ -46,6 +47,17 @@ def send_init_commands(instance, act, vm):
                           readable_name=ugettext_noop('set hostname')):
         set_hostname.apply_async(
             queue=queue, args=(vm, instance.primary_host.hostname))
+
+
+def send_networking_commands(instance, act):
+    queue = instance.get_remote_queue_name("agent")
+    with act.sub_activity('change_ip',
+                          readable_name=ugettext_noop('change ip')):
+        change_ip.apply_async(queue=queue, args=(
+            instance.vm_name, ) + get_network_configs(instance))
+    with act.sub_activity('restart_networking',
+                          readable_name=ugettext_noop('restart networking')):
+        restart_networking.apply_async(queue=queue, args=(instance.vm_name, ))
 
 
 def create_agent_tar():
@@ -93,16 +105,9 @@ def agent_started(vm, version=None):
 
         if not initialized:
             measure_boot_time(instance)
-            send_init_commands(instance, act, vm)
+            send_init_commands(instance, act)
 
-        with act.sub_activity('change_ip',
-                              readable_name=ugettext_noop('change ip')):
-            change_ip.apply_async(queue=queue, args=(
-                vm, ) + get_network_configs(instance))
-        with act.sub_activity('restart_networking',
-                              readable_name=ugettext_noop(
-                                  'restart networking')):
-            restart_networking.apply_async(queue=queue, args=(vm, ))
+        send_networking_commands(instance, act)
         with act.sub_activity(
             'start_access_server',
             readable_name=ugettext_noop('start access server')
