@@ -190,13 +190,18 @@ class FilterMixin(object):
         The final dict looks like this: {'name': xy, 'node':1}
 
         >>> f = FilterMixin()
-        >>> f._parse_get({'s': "hello"}) # doctest: +ELLIPSIS
-        {u's': u'...', u'name': u'hello'}
-        >>> f._parse_get({'s': "name:hello owner:test"}) # doctest: +ELLIPSIS
-        {u'owner': u'test', u's': u'...', u'name': u'hello'}
-        >>> f._parse_get({'s': "name:hello whitespace node:node 3 oh"})
-        ... # doctest: +ELLIPSIS
-        {u'node': u'node 3 oh', u's': u'...', u'name': u'hello whitespace'}
+        >>> o = f._parse_get({'s': "hello"}).items()
+        >>> o.sort()
+        >>> o # doctest: +ELLIPSIS
+        [(u'name', u'hello'), (...)]
+        >>> o = f._parse_get({'s': "name:hello owner:test"}).items()
+        >>> o.sort()
+        >>> o # doctest: +ELLIPSIS
+        [(u'name', u'hello'), (u'owner', u'test'), (...)]
+        >>> o = f._parse_get({'s': "name:hello ws node:node 3 oh"}).items()
+        >>> o.sort()
+        >>> o # doctest: +ELLIPSIS
+        [(u'name', u'hello ws'), (u'node', u'node 3 oh'), (...)]
         """
         s = GET_dict.get("s")
         fake = GET_dict.copy()
