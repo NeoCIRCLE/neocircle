@@ -1,6 +1,7 @@
 {% extends "dashboard/base.html" %}
 {% load staticfiles %}
 {% load i18n %}
+{% load compressed %}
 
 {% block title-page %}{{ instance.name }} | vm{% endblock %}
 
@@ -173,10 +174,5 @@
 {% endblock %}
 
 {% block extra_js %}
-  <script src="{% static "dashboard/bootstrap-tour.min.js" %}"></script>
-  <script src="{% static "dashboard/vm-details.js" %}"></script>
-  <script src="{% static "dashboard/vm-common.js" %}"></script>
-  <script src="{% static "dashboard/vm-console.js" %}"></script>
-  <script src="{% static "dashboard/disk-list.js" %}"></script>
-  <script src="{% static "dashboard/vm-tour.js" %}"></script>
+  {% compressed_js 'vm-detail' %}
 {% endblock %}

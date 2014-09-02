@@ -1,8 +1,8 @@
 $(function() {
   "use strict";
 
-  Util.load_scripts(["webutil.js", "base64.js", "websock.js", "des.js",
-                     "input.js", "display.js", "jsunzip.js", "rfb.js"]);
+  // Util.load_scripts(["webutil.js", "base64.js", "websock.js", "des.js",
+  //                    "input.js", "display.js", "jsunzip.js", "rfb.js"]);
   var rfb;
 
   function updateState(rfb, state, oldstate, msg) {

@@ -1,6 +1,7 @@
 var show_all = false;
 var in_progress = false;
 var activity_hash = 5;
+var Websock_native;
 
 $(function() {
   /* do we need to check for new activities */

@@ -23,9 +23,8 @@
 <canvas id="noVNC_canvas" width="640px" height="20px">Canvas not supported.
 </canvas>
 
-<script src="{% static "dashboard/novnc/util.js" %}"></script>
 <script>
-  var INCLUDE_URI = '{{ STATIC_URL }}dashboard/novnc/';
+  var INCLUDE_URI = '{% static "no-vnc/include/" %}';
   var VNC_URL = "{{ vnc_url }}";
 </script>
 {% endif %}
