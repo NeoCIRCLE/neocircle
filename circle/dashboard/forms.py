@@ -54,7 +54,7 @@ from .models import Profile, GroupProfile
 from circle.settings.base import LANGUAGES, MAX_NODE_RAM
 from django.utils.translation import string_concat
 
-from .virtvalidator import domain_validator
+from .validators import domain_validator
 
 from dashboard.models import ConnectCommand
 
@@ -1064,19 +1064,14 @@ class ConnectCommandForm(forms.ModelForm):
         fields = ('name', 'access_method', 'template')
         model = ConnectCommand
 
-    @property
-    def helper(self):
-        helper = FormHelper()
-        helper.add_input(Submit("submit", _("Save")))
-        return helper
-
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop("user", None)
+        self.user = kwargs.pop("user")
         super(ConnectCommandForm, self).__init__(*args, **kwargs)
 
     def clean(self):
         if self.user:
             self.instance.user = self.user
+
         return super(ConnectCommandForm, self).clean()
 
 

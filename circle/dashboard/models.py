@@ -49,6 +49,7 @@ from vm.tasks.agent_tasks import add_keys, del_keys
 from vm.models.instance import ACCESS_METHODS
 
 from .store_api import Store, NoStoreException, NotOkException
+from .validators import connect_command_template_validator
 
 logger = getLogger(__name__)
 
@@ -113,10 +114,8 @@ class ConnectCommand(Model):
                          help_text=_('Template for connection command string. '
                                      'Available parameters are: '
                                      'username, password, '
-                                     'host, port, app. Example: sshpass '
-                                     '-p %(password)s ssh -o '
-                                     'StrictHostKeyChecking=no %(username)s@'
-                                     '%(host)s -p %(port)s'))
+                                     'host, port.'),
+                         validators=[connect_command_template_validator])
 
     def __unicode__(self):
         return self.template
