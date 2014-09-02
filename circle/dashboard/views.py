@@ -174,8 +174,11 @@ class FilterMixin(object):
                      self).get_queryset().filter(**self.get_queryset_filters())
 
     def create_fake_get(self):
+        self.request.GET = self._parse_get(self.request.GET)
+
+    def _parse_get(self, GET_dict):
         """
-        Updates the request's GET dict to filter the vm list
+        Returns a new dict from request's GET dict to filter the vm list
         For example: "name:xy node:1" updates the GET dict
                      to resemble this URL ?name=xy&node=1
 
@@ -185,8 +188,17 @@ class FilterMixin(object):
         whitespace, the first part of this list will be the previous key's
         value, then last part of the list will be the next key.
         The final dict looks like this: {'name': xy, 'node':1}
+
+        >>> f = FilterMixin()
+        >>> f._parse_get({'s': "hello"})
+        {u'name': u'hello', s': '...'}
+        >>> f._parse_get({'s': "name:hello owner:test"})
+        {u'owner': u'test', u'name': u'hello', 's': '...'}
+        >>> f._parse_get({'s': "name:hello with whitespace node:node 3 oh"})
+        {u'node': u'node 3 oh', u'name': u'hello with whitespace', 's': '...'}
         """
-        s = self.request.GET.get("s")
+        s = GET_dict.get("s")
+        fake = GET_dict.copy()
         if s:
             s = s.split(":")
             if len(s) < 2:  # if there is no ':' in the string, filter by name
@@ -201,11 +213,9 @@ class FilterMixin(object):
                 got[latest] = s[-1]
 
             # generate a new GET request, that is kinda fake
-            fake = self.request.GET.copy()
             for k, v in got.iteritems():
                 fake[k] = v
-
-            self.request.GET = fake
+        return fake
 
     def create_acl_queryset(self, model):
         cleaned_data = self.search_form.cleaned_data
