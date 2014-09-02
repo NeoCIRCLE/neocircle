@@ -94,7 +94,13 @@
       <dt>{% trans "Template" %}:</dt>
       <dd>
         {% if instance.template %}
-          {{ instance.template.name }}
+          {% if can_link_template %}
+          <a href="{{ instance.template.get_absolute_url }}">
+            {{ instance.template.name }}
+          </a>
+          {% else %}
+            {{ instance.template.name }}
+          {% endif %}
         {% else %}
           -
         {% endif %}
