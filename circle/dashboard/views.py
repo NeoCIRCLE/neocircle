@@ -351,8 +351,7 @@ class VmDetailView(CheckedDetailView):
 
         # can link template
         context['can_link_template'] = (
-            instance.template.has_level(user, "operator")
-            if instance.template else False
+            instance.template and instance.template.has_level(user, "operator")
         )
 
         return context
