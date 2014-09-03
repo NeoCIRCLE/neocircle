@@ -20,9 +20,12 @@
 
 
 from os import environ
+from sys import argv
 
 from base import *  # noqa
 
+if 'runserver' in argv:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTOCOL', 'https')
 
 ########## HOST CONFIGURATION
 # See: https://docs.djangoproject.com/en/1.5/releases/1.5/

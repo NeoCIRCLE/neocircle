@@ -46,8 +46,10 @@ from acl.models import AclBase
 from common.models import HumanReadableObject, create_readable, Encoder
 
 from vm.tasks.agent_tasks import add_keys, del_keys
+from vm.models.instance import ACCESS_METHODS
 
 from .store_api import Store, NoStoreException, NotOkException
+from .validators import connect_command_template_validator
 
 logger = getLogger(__name__)
 
@@ -100,6 +102,25 @@ class Notification(TimeStampedModel):
         self.message_data = None if value is None else value.to_dict()
 
 
+class ConnectCommand(Model):
+    user = ForeignKey(User, related_name='command_set')
+    access_method = CharField(max_length=10, choices=ACCESS_METHODS,
+                              verbose_name=_('access method'),
+                              help_text=_('Type of the remote access method.'))
+    name = CharField(max_length="128", verbose_name=_('name'), blank=False,
+                     help_text=_("Name of your custom command."))
+    template = CharField(blank=True, null=True, max_length=256,
+                         verbose_name=_('command template'),
+                         help_text=_('Template for connection command string. '
+                                     'Available parameters are: '
+                                     'username, password, '
+                                     'host, port.'),
+                         validators=[connect_command_template_validator])
+
+    def __unicode__(self):
+        return self.template
+
+
 class Profile(Model):
     user = OneToOneField(User)
     preferred_language = CharField(verbose_name=_('preferred language'),
@@ -128,6 +149,25 @@ class Profile(Model):
         verbose_name=_('disk quota'),
         default=2048 * 1024 * 1024,
         help_text=_('Disk quota in mebibytes.'))
+
+    def get_connect_commands(self, instance, use_ipv6=False):
+        """ Generate connection command based on template."""
+        single_command = instance.get_connect_command(use_ipv6)
+        if single_command:  # can we even connect to that VM
+            commands = self.user.command_set.filter(
+                access_method=instance.access_method)
+            if commands.count() < 1:
+                return [single_command]
+            else:
+                return [
+                    command.template % {
+                        'port': instance.get_connect_port(use_ipv6=use_ipv6),
+                        'host':  instance.get_connect_host(use_ipv6=use_ipv6),
+                        'password': instance.pw,
+                        'username': 'cloud',
+                    } for command in commands]
+        else:
+            return []
 
     def notify(self, subject, template, context=None, valid_until=None,
                **kwargs):

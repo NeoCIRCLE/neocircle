@@ -29,7 +29,7 @@ from .views import (
     NotificationView, PortDelete, TemplateAclUpdateView, TemplateCreate,
     TemplateDelete, TemplateDetail, TemplateList, TransferOwnershipConfirmView,
     TransferOwnershipView, vm_activity, VmCreate, VmDetailView,
-    VmDetailVncTokenView, VmGraphView, VmList, VmMassDelete,
+    VmDetailVncTokenView, VmGraphView, VmList,
     DiskRemoveView, get_disk_download_status, InterfaceDeleteView,
     GroupRemoveUserView,
     GroupRemoveFutureUserView,
@@ -39,6 +39,7 @@ from .views import (
     get_vm_screenshot,
     ProfileView, toggle_use_gravatar, UnsubscribeFormView,
     UserKeyDelete, UserKeyDetail, UserKeyCreate,
+    ConnectCommandDelete, ConnectCommandDetail, ConnectCommandCreate,
     StoreList, store_download, store_upload, store_get_upload_url, StoreRemove,
     store_new_directory, store_refresh_toplist,
     VmTraitsUpdate, VmRawDataUpdate,
@@ -50,7 +51,6 @@ from .views import (
 autocomplete_light.autodiscover()
 
 urlpatterns = patterns(
-
     '',
     url(r'^$', IndexView.as_view(), name="dashboard.index"),
     url(r'^lease/(?P<pk>\d+)/$', LeaseDetail.as_view(),
@@ -75,7 +75,7 @@ urlpatterns = patterns(
     url(r"^template/delete/(?P<pk>\d+)/$", TemplateDelete.as_view(),
         name="dashboard.views.template-delete"),
 
-    url(r'^vm/(?P<pk>\d+)/op/', include('dashboard.vm.urls')),
+    url(r'^vm/', include('dashboard.vm.urls')),
     url(r'^vm/(?P<pk>\d+)/remove_port/(?P<rule>\d+)/$', PortDelete.as_view(),
         name='dashboard.views.remove-port'),
     url(r'^vm/(?P<pk>\d+)/$', VmDetailView.as_view(),
@@ -89,8 +89,6 @@ urlpatterns = patterns(
     url(r'^vm/list/$', VmList.as_view(), name='dashboard.views.vm-list'),
     url(r'^vm/create/$', VmCreate.as_view(),
         name='dashboard.views.vm-create'),
-    url(r'^vm/mass-delete/', VmMassDelete.as_view(),
-        name='dashboard.view.mass-delete-vm'),
     url(r'^vm/(?P<pk>\d+)/activity/$', vm_activity),
     url(r'^vm/activity/(?P<pk>\d+)/$', InstanceActivityDetail.as_view(),
         name='dashboard.views.vm-activity'),
@@ -180,6 +178,16 @@ urlpatterns = patterns(
     url(r'^sshkey/create/$',
         UserKeyCreate.as_view(),
         name="dashboard.views.userkey-create"),
+
+    url(r'^conncmd/delete/(?P<pk>\d+)/$',
+        ConnectCommandDelete.as_view(),
+        name="dashboard.views.connect-command-delete"),
+    url(r'^conncmd/(?P<pk>\d+)/$',
+        ConnectCommandDetail.as_view(),
+        name="dashboard.views.connect-command-detail"),
+    url(r'^conncmd/create/$',
+        ConnectCommandCreate.as_view(),
+        name="dashboard.views.connect-command-create"),
 
     url(r'^autocomplete/', include('autocomplete_light.urls')),
 

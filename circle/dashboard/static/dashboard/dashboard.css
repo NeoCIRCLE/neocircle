@@ -654,7 +654,8 @@ textarea[name="list-new-namelist"] {
   width: 130px;
 }
 
-#vm-details-connection-string-copy {
+.vm-details-connection-string-copy,
+#vm-details-pw-show {
   cursor: pointer;
 }
 
@@ -681,10 +682,9 @@ textarea[name="list-new-namelist"] {
   max-width: 200px;
 }
 
-#dashboard-vm-details-connect-command {
+.dashboard-vm-details-connect-command {
   /* for mobile view */
   margin-bottom: 20px;
-
 }
 
 #store-list-list {
@@ -866,4 +866,93 @@ textarea[name="list-new-namelist"] {
 .vm-create-template-details li {
   border-bottom: 1px dotted #aaa;
   padding: 5px 0px;
+}
+
+#profile-key-list-table td:last-child, #profile-key-list-table th:last-child,
+#profile-command-list-table td:last-child, #profile-command-list-table th:last-child,
+#profile-command-list-table td:nth-child(2), #profile-command-list-table th:nth-child(2) {
+  text-align: center;
+  vertical-align: middle;
+}
+
+#vm-list-table .migrating-icon {
+  -webkit-animation: passing 2s linear infinite;
+  animation: passing 2s linear infinite;
+}
+
+@-webkit-keyframes passing {
+  0% {
+    -webkit-transform: translateX(50%);
+    transform: translateX(50%);
+    opacity: 0;
+  }
+
+  50% {
+    -webkit-transform: translateX(0%);
+    transform: translateX(0%);
+    opacity: 1;
+  }
+
+  100% {
+    -webkit-transform: translateX(-50%);
+    transform: translateX(-50%);
+    opacity: 0;
+  }
+}
+
+@keyframes passing {
+  0% {
+    -webkit-transform: translateX(50%);
+    -ms-transform: translateX(50%);
+    transform: translateX(50%);
+    opacity: 0;
+  }
+
+  50% {
+    -webkit-transform: translateX(0%);
+    -ms-transform: translateX(0%);
+    transform: translateX(0%);
+    opacity: 1;
+  }
+
+  100% {
+    -webkit-transform: translateX(-50%);
+    -ms-transform: translateX(-50%);
+    transform: translateX(-50%);
+    opacity: 0;
+  }
+}
+
+.mass-migrate-node {
+  cursor: pointer;
+}
+
+.mass-op-panel {
+  padding: 6px 10px;
+}
+
+.mass-op-panel .check {
+  color: #449d44;
+}
+
+.mass-op-panel .minus {
+  color: #d9534f;
+}
+
+.mass-op-panel .status-icon {
+  font-size: .8em;
+}
+
+#vm-list-search, #vm-mass-ops {
+  margin-top: 8px;
+}
+
+#vm-list-search-checkbox {
+  margin-top: -1px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+#vm-list-search-checkbox-span {
+  cursor: pointer
 }

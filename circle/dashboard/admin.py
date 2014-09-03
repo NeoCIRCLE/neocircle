@@ -21,18 +21,22 @@ from django import contrib
 from django.contrib.auth.admin import UserAdmin, GroupAdmin
 from django.contrib.auth.models import User, Group
 
-from dashboard.models import Profile, GroupProfile
+from dashboard.models import Profile, GroupProfile, ConnectCommand
 
 
 class ProfileInline(contrib.admin.TabularInline):
     model = Profile
 
 
+class CommandInline(contrib.admin.TabularInline):
+    model = ConnectCommand
+
+
 class GroupProfileInline(contrib.admin.TabularInline):
     model = GroupProfile
 
 
-UserAdmin.inlines = (ProfileInline, )
+UserAdmin.inlines = (ProfileInline, CommandInline, )
 GroupAdmin.inlines = (GroupProfileInline, )
 
 contrib.admin.site.unregister(User)

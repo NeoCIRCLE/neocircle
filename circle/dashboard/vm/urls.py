@@ -17,9 +17,17 @@
 
 from django.conf.urls import patterns, url
 
-from ..views import vm_ops
+from ..views import vm_ops, vm_mass_ops
 
 
-urlpatterns = patterns('',
-                       *(url(r'^%s/$' % op, v.as_view(), name=v.get_urlname())
-                         for op, v in vm_ops.iteritems()))
+urlpatterns = patterns(
+    '',
+    *(url(r'^(?P<pk>\d+)/op/%s/$' % op, v.as_view(), name=v.get_urlname())
+        for op, v in vm_ops.iteritems())
+)
+
+urlpatterns += patterns(
+    '',
+    *(url(r'^mass_op/%s/$' % op, v.as_view(), name=v.get_urlname())
+        for op, v in vm_mass_ops.iteritems())
+)

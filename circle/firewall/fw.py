@@ -62,6 +62,15 @@ class BuildFirewall:
                 extra='-j DNAT --to-destination %s:%s' % (rule.host.ipv4,
                                                           rule.dport)))
 
+        # SNAT rules for machines with public IPv4
+        for host in Host.objects.exclude(external_ipv4=None).select_related(
+                'vlan').prefetch_related('vlan__snat_to'):
+            for vl_out in host.vlan.snat_to.all():
+                self.add_rules(POSTROUTING=IptRule(
+                    priority=1500, src=(host.ipv4, None),
+                    extra='-o %s -j SNAT --to-source %s' % (
+                        vl_out.name, host.external_ipv4)))
+
         # default outbound NAT rules for VLANs
         for vl_in in Vlan.objects.exclude(
                 snat_ip=None).prefetch_related('snat_to'):
@@ -183,9 +192,12 @@ def generate_ptr_records():
 
     for host in Host.objects.order_by('vlan').all():
         template = host.vlan.reverse_domain
-        i = host.get_external_ipv4().words
-        reverse = (host.reverse if host.reverse not in [None, '']
-                   else host.get_fqdn())
+        if not host.shared_ip and host.external_ipv4:  # DMZ
+            i = host.external_ipv4.words
+            reverse = host.get_hostname('ipv4', public=True)
+        else:
+            i = host.ipv4.words
+            reverse = host.get_hostname('ipv4', public=False)
 
         # ipv4
         if host.ipv4:
@@ -194,7 +206,7 @@ def generate_ptr_records():
 
         # ipv6
         if host.ipv6:
-            DNS.append("^%s:%s:%s" % (host.ipv6.reverse_dns,
+            DNS.append("^%s:%s:%s" % (host.ipv6.reverse_dns.rstrip('.'),
                                       reverse, settings['dns_ttl']))
 
     return DNS
@@ -211,14 +223,14 @@ def generate_records():
              'CNAME': 'C%(fqdn)s:%(address)s:%(ttl)s',
              'MX': '@%(fqdn)s::%(address)s:%(dist)s:%(ttl)s',
              'PTR': '^%(fqdn)s:%(address)s:%(ttl)s',
-             'TXT': '%(fqdn)s:%(octal)s:%(ttl)s'}
+             'TXT': "'%(fqdn)s:%(octal)s:%(ttl)s"}
 
     retval = []
 
     for r in Record.objects.all():
         params = {'fqdn': r.fqdn, 'address': r.address, 'ttl': r.ttl}
         if r.type == 'MX':
-            params['address'], params['dist'] = r.address.split(':', 2)
+            params['dist'], params['address'] = r.address.split(':', 2)
         if r.type == 'AAAA':
             try:
                 params['octal'] = ipv6_to_octal(r.address)

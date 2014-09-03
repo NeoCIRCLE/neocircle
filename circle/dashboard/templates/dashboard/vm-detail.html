@@ -98,8 +98,9 @@
           <div class="input-group">
             <input type="text" id="vm-details-pw-input" class="form-control input-sm input-tags"
             value="{{ instance.pw }}" spellcheck="false"/>
-            <span class="input-group-addon input-tags" id="vm-details-pw-show">
-              <i class="fa fa-eye" id="vm-details-pw-eye" title="Show password"></i>
+            <span class="input-group-addon input-tags" id="vm-details-pw-show"
+              title="{% trans "Show password" %}" data-container="body">
+              <i class="fa fa-eye" id="vm-details-pw-eye"></i>
             </span>
           </div>
         </dd>
@@ -111,16 +112,28 @@
           </div>
         </dd>
       </dl>
-
-      <div class="input-group" id="dashboard-vm-details-connect-command">
+      {% for c in connect_commands %}
+      <div class="input-group dashboard-vm-details-connect-command">
         <span class="input-group-addon input-tags">{% trans "Command" %}</span>
         <input type="text" spellcheck="false"
-        value="{% if instance.get_connect_command %}{{ instance.get_connect_command }}{% else %}{% trans "Connection is not possible." %}{% endif %}"
+        value="{{ c }}"
+        id="vm-details-connection-string" class="form-control input-tags" />
+        <span class="input-group-addon input-tags vm-details-connection-string-copy"
+          title="{% trans "Select all" %}" data-container="body">
+          <i class="fa fa-copy"></i>
+        </span>
+      </div>
+
+      {% empty %}
+      <div class="input-group dashboard-vm-details-connect-command">
+        <span class="input-group-addon input-tags">{% trans "Command" %}</span>
+        <input type="text" spellcheck="false" value="{% trans "Connection is not possible." %}"
         id="vm-details-connection-string" class="form-control input-tags" />
         <span class="input-group-addon input-tags" id="vm-details-connection-string-copy">
           <i class="fa fa-copy" title="{% trans "Select all" %}"></i>
         </span>
       </div>
+      {% endfor %}
       <div id="dashboard-vm-details-connect" class="operation-wrapper">  
         <a id="dashboard-vm-details-connect-button" class="btn btn-xs btn-default{% if not client_download %} operation{% endif %}{% if instance.status != "RUNNING" or not instance.get_connect_uri %} disabled{% endif %}" {% if client_download %}target="_blank"{% endif %}  href="{% if not client_download %}{% url "dashboard.views.client-check" %}?vm={{ instance.pk }}{% else %}{{ instance.get_connect_uri}}{% endif %}" title="{% trans "Connect via the CIRCLE Client" %}">
                 <i class="fa fa-external-link"></i> {% trans "Connect" %}

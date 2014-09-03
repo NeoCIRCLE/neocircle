@@ -19,7 +19,9 @@ from common.models import create_readable
 from manager.mancelery import celery
 from vm.tasks.agent_tasks import (restart_networking, change_password,
                                   set_time, set_hostname, start_access_server,
-                                  cleanup, update)
+                                  cleanup, update, change_ip)
+from firewall.models import Host
+
 import time
 from base64 import encodestring
 from StringIO import StringIO
@@ -31,13 +33,11 @@ from celery.result import TimeoutError
 from monitor.client import Client
 
 
-def send_init_commands(instance, act, vm):
+def send_init_commands(instance, act):
+    vm = instance.vm_name
     queue = instance.get_remote_queue_name("agent")
     with act.sub_activity('cleanup', readable_name=ugettext_noop('cleanup')):
         cleanup.apply_async(queue=queue, args=(vm, ))
-    with act.sub_activity('restart_networking',
-                          readable_name=ugettext_noop('restart networking')):
-        restart_networking.apply_async(queue=queue, args=(vm, ))
     with act.sub_activity('change_password',
                           readable_name=ugettext_noop('change password')):
         change_password.apply_async(queue=queue, args=(vm, instance.pw))
@@ -47,6 +47,17 @@ def send_init_commands(instance, act, vm):
                           readable_name=ugettext_noop('set hostname')):
         set_hostname.apply_async(
             queue=queue, args=(vm, instance.primary_host.hostname))
+
+
+def send_networking_commands(instance, act):
+    queue = instance.get_remote_queue_name("agent")
+    with act.sub_activity('change_ip',
+                          readable_name=ugettext_noop('change ip')):
+        change_ip.apply_async(queue=queue, args=(
+            instance.vm_name, ) + get_network_configs(instance))
+    with act.sub_activity('restart_networking',
+                          readable_name=ugettext_noop('restart networking')):
+        restart_networking.apply_async(queue=queue, args=(instance.vm_name, ))
 
 
 def create_agent_tar():
@@ -86,7 +97,7 @@ def agent_started(vm, version=None):
 
         if version and version != settings.AGENT_VERSION:
             try:
-                update_agent(vm, instance, act)
+                update_agent(instance, act)
             except TimeoutError:
                 pass
             else:
@@ -94,8 +105,9 @@ def agent_started(vm, version=None):
 
         if not initialized:
             measure_boot_time(instance)
-            send_init_commands(instance, act, vm)
+            send_init_commands(instance, act)
 
+        send_networking_commands(instance, act)
         with act.sub_activity(
             'start_access_server',
             readable_name=ugettext_noop('start access server')
@@ -134,9 +146,16 @@ def agent_stopped(vm):
         pass
 
 
-def update_agent(instance, vm, act=None):
+def get_network_configs(instance):
+    interfaces = {}
+    for host in Host.objects.filter(interface__instance=instance):
+        interfaces[str(host.mac)] = host.get_network_config()
+    return (interfaces, settings.FIREWALL_SETTINGS['rdns_ip'])
+
+
+def update_agent(instance, act=None):
     if act:
-        act.sub_activity(
+        act = act.sub_activity(
             'update',
             readable_name=create_readable(
                 ugettext_noop('update to %(version)s'),
@@ -150,5 +169,6 @@ def update_agent(instance, vm, act=None):
                 version=settings.AGENT_VERSION))
     with act:
         queue = instance.get_remote_queue_name("agent")
-        update.apply_async(queue=queue,
-                           args=(vm, create_agent_tar())).get(timeout=10)
+        update.apply_async(
+            queue=queue,
+            args=(instance.vm_name, create_agent_tar())).get(timeout=10)

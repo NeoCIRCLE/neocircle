@@ -17,6 +17,7 @@
 
 from collections import deque
 from contextlib import contextmanager
+from functools import update_wrapper
 from hashlib import sha224
 from itertools import chain, imap
 from logging import getLogger
@@ -26,6 +27,7 @@ from warnings import warn
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.core.cache import cache
+from django.core.exceptions import PermissionDenied
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import (
     CharField, DateTimeField, ForeignKey, NullBooleanField
@@ -36,6 +38,7 @@ from django.utils.functional import Promise
 from django.utils.translation import ugettext_lazy as _, ugettext_noop
 from jsonfield import JSONField
 
+from manager.mancelery import celery
 from model_utils.models import TimeStampedModel
 
 logger = getLogger(__name__)
@@ -212,6 +215,38 @@ class ActivityModel(TimeStampedModel):
         self.result_data = None if value is None else value.to_dict()
 
 
+@celery.task()
+def compute_cached(method, instance, memcached_seconds,
+                   key, start, *args, **kwargs):
+    """Compute and store actual value of cached method."""
+    if isinstance(method, basestring):
+        model, id = instance
+        instance = model.objects.get(id=id)
+        try:
+            method = getattr(model, method)
+            while hasattr(method, '_original') or hasattr(method, 'fget'):
+                try:
+                    method = method._original
+                except AttributeError:
+                    method = method.fget
+        except AttributeError:
+            logger.exception("Couldnt get original method of %s",
+                             unicode(method))
+            raise
+
+    #  call the actual method
+    result = method(instance, *args, **kwargs)
+    # save to memcache
+    cache.set(key, result, memcached_seconds)
+    elapsed = time() - start
+    cache.set("%s.cached" % key, 2, max(memcached_seconds * 0.5,
+                                        memcached_seconds * 0.75 - elapsed))
+    logger.debug('Value of <%s>.%s(%s)=<%s> saved to cache (%s elapsed).',
+                 unicode(instance), method.__name__, unicode(args),
+                 unicode(result), elapsed)
+    return result
+
+
 def method_cache(memcached_seconds=60, instance_seconds=5):  # noqa
     """Cache return value of decorated method to memcached and memory.
 
@@ -233,9 +268,11 @@ def method_cache(memcached_seconds=60, instance_seconds=5):  # noqa
 
     def inner_cache(method):
 
+        method_name = method.__name__
+
         def get_key(instance, *args, **kwargs):
             return sha224(unicode(method.__module__) +
-                          unicode(method.__name__) +
+                          method_name +
                           unicode(instance.id) +
                           unicode(args) +
                           unicode(kwargs)).hexdigest()
@@ -254,21 +291,31 @@ def method_cache(memcached_seconds=60, instance_seconds=5):  # noqa
                 if vals['time'] + instance_seconds > now:
                     # has valid on class cache, return that
                     result = vals['value']
+                    setattr(instance, key, {'time': now, 'value': result})
 
             if result is None:
                 result = cache.get(key)
 
             if invalidate or (result is None):
-                # all caches failed, call the actual method
-                result = method(instance, *args, **kwargs)
-                # save to memcache and class attr
-                cache.set(key, result, memcached_seconds)
+                logger.debug("all caches failed, compute now")
+                result = compute_cached(method, instance, memcached_seconds,
+                                        key, time(), *args, **kwargs)
                 setattr(instance, key, {'time': now, 'value': result})
-                logger.debug('Value of <%s>.%s(%s)=<%s> saved to cache.',
-                             unicode(instance), method.__name__,
-                             unicode(args), unicode(result))
+            elif not cache.get("%s.cached" % key):
+                logger.debug("caches expiring, compute async")
+                cache.set("%s.cached" % key, 1, memcached_seconds * 0.5)
+                try:
+                    compute_cached.apply_async(
+                        queue='localhost.man', kwargs=kwargs, args=[
+                            method_name, (instance.__class__, instance.id),
+                            memcached_seconds, key, time()] + list(args))
+                except:
+                    logger.exception("Couldnt compute async %s", method_name)
 
             return result
+
+        update_wrapper(x, method)
+        x._original = method
         return x
 
     return inner_cache
@@ -367,6 +414,10 @@ class HumanReadableObject(object):
         self._set_values(user_text_template, admin_text_template, params)
 
     def _set_values(self, user_text_template, admin_text_template, params):
+        if isinstance(user_text_template, Promise):
+            user_text_template = user_text_template._proxy____args[0]
+        if isinstance(admin_text_template, Promise):
+            admin_text_template = admin_text_template._proxy____args[0]
         self.user_text_template = user_text_template
         self.admin_text_template = admin_text_template
         self.params = params
@@ -405,6 +456,12 @@ class HumanReadableObject(object):
                              self.user_text_template, unicode(self.params))
             return self.user_text_template
 
+    def get_text(self, user):
+        if user and user.is_superuser:
+            return self.get_admin_text()
+        else:
+            return self.get_user_text()
+
     def to_dict(self):
         return {"user_text_template": self.user_text_template,
                 "admin_text_template": self.admin_text_template,
@@ -435,11 +492,32 @@ class HumanReadableException(HumanReadableObject, Exception):
             self.level = "error"
 
     def send_message(self, request, level=None):
-        if request.user and request.user.is_superuser:
-            msg = self.get_admin_text()
-        else:
-            msg = self.get_user_text()
+        msg = self.get_text(request.user)
         getattr(messages, level or self.level)(request, msg)
+
+
+def fetch_human_exception(exception, user=None):
+    """Fetch user readable message from exception.
+
+    >>> r = humanize_exception("foo", Exception())
+    >>> fetch_human_exception(r, User())
+    u'foo'
+    >>> fetch_human_exception(r).get_text(User())
+    u'foo'
+    >>> fetch_human_exception(Exception(), User())
+    u'Unknown error'
+    >>> fetch_human_exception(PermissionDenied(), User())
+    u'Permission Denied'
+    """
+
+    if not isinstance(exception, HumanReadableException):
+        if isinstance(exception, PermissionDenied):
+            exception = create_readable(ugettext_noop("Permission Denied"))
+        else:
+            exception = create_readable(ugettext_noop("Unknown error"),
+                                        ugettext_noop("Unknown error: %(ex)s"),
+                                        ex=unicode(exception))
+    return exception.get_text(user) if user else exception
 
 
 def humanize_exception(message, exception=None, level=None, **params):

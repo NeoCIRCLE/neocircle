@@ -28,7 +28,7 @@ def check_queue(storage, queue_id, priority):
     if priority is not None:
         queue_name = queue_name + "." + priority
     inspect = celery.control.inspect()
-    inspect.timeout = 0.1
+    inspect.timeout = 0.5
     active_queues = inspect.active_queues()
     if active_queues is None:
         return False

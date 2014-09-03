@@ -3,10 +3,12 @@
   <div class="panel-heading">
     <div class="pull-right toolbar">
       <div class="btn-group">
-        <a href="#index-graph-view" data-index-box="vm" class="btn
-            btn-default btn-xs" title="{% trans "summary view" %}"><i class="fa fa-dashboard"></i></a>
-        <a href="#index-list-view" data-index-box="vm" class="btn
-            btn-default btn-xs disabled" title="{% trans "list view" %}"><i class="fa fa-list"></i></a>
+        <a href="#index-graph-view" data-index-box="vm" class="btn btn-default btn-xs"
+          data-container="body"
+          title="{% trans "summary view" %}"><i class="fa fa-dashboard"></i></a>
+        <a href="#index-list-view" data-index-box="vm" class="btn btn-default btn-xs disabled"
+          data-container="body"
+          title="{% trans "list view" %}"><i class="fa fa-list"></i></a>
       </div>
       <span class="btn btn-default btn-xs infobtn" title="{% trans "List of your current virtual machines. Favourited ones are ahead of others." %}"><i class="fa fa-info-circle"></i></span>
     </div>
@@ -46,12 +48,15 @@
     </style>
     <div href="#" class="list-group-item list-group-footer">
       <div class="row">
-        <div class="col-sm-6 col-xs-6 input-group input-group-sm">
-          <input id="dashboard-vm-search-input" type="text" class="form-control" placeholder="{% trans "Search..." %}" />
-          <div class="input-group-btn">
-            <button type="submit" class="form-control btn btn-primary"><i class="fa fa-search"></i></button>
+        <form action="{% url "dashboard.views.vm-list" %}" method="GET" id="dashboard-vm-search-form">
+          <div class="col-sm-6 col-xs-6 input-group input-group-sm">
+            <input id="dashboard-vm-search-input" type="text" class="form-control" name="s"
+            placeholder="{% trans "Search..." %}" />
+            <div class="input-group-btn">
+              <button type="submit" class="form-control btn btn-primary"><i class="fa fa-search"></i></button>
+            </div>
           </div>
-        </div>
+        </form>
         <div class="col-sm-6 text-right">
           <a class="btn btn-primary btn-xs" href="{% url "dashboard.views.vm-list" %}">
             <i class="fa fa-chevron-circle-right"></i>
