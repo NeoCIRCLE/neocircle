@@ -868,10 +868,10 @@ textarea[name="list-new-namelist"] {
   padding: 5px 0px;
 }
 
-#profile-key-list-table td:last-child, #profile-key-list-table th:last-child, 
+#profile-key-list-table td:last-child, #profile-key-list-table th:last-child,
 #profile-command-list-table td:last-child, #profile-command-list-table th:last-child,
 #profile-command-list-table td:nth-child(2), #profile-command-list-table th:nth-child(2) {
-  text-align: center;  
+  text-align: center;
   vertical-align: middle;
 }
 
@@ -945,4 +945,14 @@ textarea[name="list-new-namelist"] {
 
 #vm-list-search, #vm-mass-ops {
   margin-top: 8px;
+}
+
+#vm-list-search-checkbox {
+  margin-top: -1px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+#vm-list-search-checkbox-span {
+  cursor: pointer
 }

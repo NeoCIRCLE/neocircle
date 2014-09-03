@@ -1199,7 +1199,12 @@ class VmListSearchForm(forms.Form):
     }))
 
     stype = forms.ChoiceField(vm_search_choices, widget=forms.Select(attrs={
-        'class': "btn btn-default input-tags",
+        'class': "btn btn-default form-control input-tags",
+        'style': "min-width: 80px;",
+    }))
+
+    include_deleted = forms.BooleanField(widget=forms.CheckboxInput(attrs={
+        'id': "vm-list-search-checkbox",
     }))
 
     def __init__(self, *args, **kwargs):
@@ -1208,4 +1213,23 @@ class VmListSearchForm(forms.Form):
         if not self.data.get("stype"):
             data = self.data.copy()
             data['stype'] = "all"
+            self.data = data
+
+
+class TemplateListSearchForm(forms.Form):
+    s = forms.CharField(widget=forms.TextInput(attrs={
+        'class': "form-control input-tags",
+        'placeholder': _("Search...")
+    }))
+
+    stype = forms.ChoiceField(vm_search_choices, widget=forms.Select(attrs={
+        'class': "btn btn-default input-tags",
+    }))
+
+    def __init__(self, *args, **kwargs):
+        super(TemplateListSearchForm, self).__init__(*args, **kwargs)
+        # set initial value, otherwise it would be overwritten by request.GET
+        if not self.data.get("stype"):
+            data = self.data.copy()
+            data['stype'] = "owned"
             self.data = data

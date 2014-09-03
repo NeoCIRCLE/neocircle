@@ -1,4 +1,8 @@
 {% load i18n %}
+<a href="{% url "dashboard.views.vm-create" %}?template={{ record.pk }}"
+  class="btn btn-success btn-xs customize-vm" title="{% trans "Start" %}">
+  <i class="fa fa-play"></i>
+</a>
 <a href="{% url "dashboard.views.template-detail" pk=record.pk%}" id="template-list-edit-button" class="btn btn-default btn-xs" title="{% trans "Edit" %}">
   <i class="fa fa-edit"></i>
 </a>
