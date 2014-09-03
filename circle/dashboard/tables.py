@@ -283,6 +283,7 @@ class ConnectCommandListTable(Table):
                  'id': "profile-command-list-table"}
         fields = ('name', 'access_method',  'template', 'actions')
         prefix = "cmd-"
-        empty_text = _("You don't have any custom connection string, the "
-                       "default ones will be used. These command strings "
-                       "would be displayed on the VM detail page.")
+        empty_text = _(
+            "You don't have any custom connection commands yet. You can "
+            "specify commands to be displayed on VM detail pages instead of "
+            "the defaults.")
