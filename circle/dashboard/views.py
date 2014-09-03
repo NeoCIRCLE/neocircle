@@ -2123,8 +2123,6 @@ class VmCreate(LoginRequiredMixin, TemplateView):
             raise PermissionDenied()
 
         args = {"template": template, "owner": user}
-        if "name" in request.POST:
-            args["name"] = request.POST.get("name")
         instances = [Instance.create_from_template(**args)]
         return self.__deploy(request, instances)
 
@@ -2145,30 +2143,31 @@ class VmCreate(LoginRequiredMixin, TemplateView):
         if not template.has_level(user, 'user'):
             raise PermissionDenied()
 
+        ikwargs = {
+            'name': post['name'],
+            'template': template,
+            'owner': user,
+        }
+        amount = post.get("amount", 1)
         if request.user.has_perm('vm.set_resources'):
-            ikwargs = {
-                'name': post['name'],
-                'num_cores': post['cpu_count'],
-                'ram_size': post['ram_size'],
-                'priority': post['cpu_priority'],
-                'max_ram_size': post['ram_size'],
-            }
             networks = [InterfaceTemplate(vlan=l, managed=l.managed)
                         for l in post['networks']]
 
             ikwargs.update({
-                'template': template,
-                'owner': user,
+                'num_cores': post['cpu_count'],
+                'ram_size': post['ram_size'],
+                'priority': post['cpu_priority'],
+                'max_ram_size': post['ram_size'],
                 'networks': networks,
                 'disks': list(template.disks.all()),
             })
 
-            amount = post['amount']
-            instances = Instance.mass_create_from_template(amount=amount,
-                                                           **ikwargs)
-            return self.__deploy(request, instances)
         else:
-            raise PermissionDenied()
+            pass
+
+        instances = Instance.mass_create_from_template(amount=amount,
+                                                       **ikwargs)
+        return self.__deploy(request, instances)
 
     def __deploy(self, request, instances, *args, **kwargs):
         for i in instances:
