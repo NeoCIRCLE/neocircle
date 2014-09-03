@@ -191,16 +191,13 @@ class FilterMixin(object):
 
         >>> f = FilterMixin()
         >>> o = f._parse_get({'s': "hello"}).items()
-        >>> o.sort()
-        >>> o # doctest: +ELLIPSIS
+        >>> sorted(o) # doctest: +ELLIPSIS
         [(u'name', u'hello'), (...)]
         >>> o = f._parse_get({'s': "name:hello owner:test"}).items()
-        >>> o.sort()
-        >>> o # doctest: +ELLIPSIS
+        >>> sorted(o) # doctest: +ELLIPSIS
         [(u'name', u'hello'), (u'owner', u'test'), (...)]
         >>> o = f._parse_get({'s': "name:hello ws node:node 3 oh"}).items()
-        >>> o.sort()
-        >>> o # doctest: +ELLIPSIS
+        >>> sorted(o) # doctest: +ELLIPSIS
         [(u'name', u'hello ws'), (u'node', u'node 3 oh'), (...)]
         """
         s = GET_dict.get("s")
