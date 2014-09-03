@@ -54,7 +54,9 @@ from .models import Profile, GroupProfile
 from circle.settings.base import LANGUAGES, MAX_NODE_RAM
 from django.utils.translation import string_concat
 
-from .virtvalidator import domain_validator
+from .validators import domain_validator
+
+from dashboard.models import ConnectCommand
 
 LANGUAGES_WITH_CODE = ((l[0], string_concat(l[1], " (", l[0], ")"))
                        for l in LANGUAGES)
@@ -1062,6 +1064,22 @@ class UserKeyForm(forms.ModelForm):
         if self.user:
             self.instance.user = self.user
         return super(UserKeyForm, self).clean()
+
+
+class ConnectCommandForm(forms.ModelForm):
+    class Meta:
+        fields = ('name', 'access_method', 'template')
+        model = ConnectCommand
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user")
+        super(ConnectCommandForm, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        if self.user:
+            self.instance.user = self.user
+
+        return super(ConnectCommandForm, self).clean()
 
 
 class TraitsForm(forms.ModelForm):

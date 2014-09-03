@@ -70,12 +70,12 @@ from .forms import (
     VmSaveForm, UserKeyForm, VmRenewForm, VmStateChangeForm,
     CirclePasswordChangeForm, VmCreateDiskForm, VmDownloadDiskForm,
     TraitsForm, RawDataForm, GroupPermissionForm, AclUserAddForm,
-    VmResourcesForm, VmAddInterfaceForm, VmListSearchForm
+    VmResourcesForm, VmAddInterfaceForm, VmListSearchForm, ConnectCommandForm
 )
 
 from .tables import (
     NodeListTable, TemplateListTable, LeaseListTable,
-    GroupListTable, UserKeyListTable
+    GroupListTable, UserKeyListTable, ConnectCommandListTable,
 )
 from common.models import (
     HumanReadableObject, HumanReadableException, fetch_human_exception,
@@ -87,7 +87,8 @@ from vm.models import (
 )
 from storage.models import Disk
 from firewall.models import Vlan, Host, Rule
-from .models import Favourite, Profile, GroupProfile, FutureMember
+from .models import (Favourite, Profile, GroupProfile, FutureMember,
+                     ConnectCommand)
 
 from .store_api import Store, NoStoreException, NotOkException
 
@@ -306,6 +307,7 @@ class VmDetailView(CheckedDetailView):
                                     kwargs={'pk': self.object.pk}),
             'ops': ops,
             'op': {i.op: i for i in ops},
+            'connect_commands': user.profile.get_connect_commands(instance)
         })
 
         # activity data
@@ -2907,11 +2909,16 @@ class MyPreferencesView(UpdateView):
                 user=self.request.user),
             'change_language': MyProfileForm(instance=self.get_object()),
         }
-        table = UserKeyListTable(
+        key_table = UserKeyListTable(
             UserKey.objects.filter(user=self.request.user),
             request=self.request)
-        table.page = None
-        context['userkey_table'] = table
+        key_table.page = None
+        context['userkey_table'] = key_table
+        cmd_table = ConnectCommandListTable(
+            self.request.user.command_set.all(),
+            request=self.request)
+        cmd_table.page = None
+        context['connectcommand_table'] = cmd_table
         return context
 
     def get_object(self, queryset=None):
@@ -3312,6 +3319,82 @@ class UserKeyCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 
     def get_form_kwargs(self):
         kwargs = super(UserKeyCreate, self).get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+
+class ConnectCommandDetail(LoginRequiredMixin, SuccessMessageMixin,
+                           UpdateView):
+    model = ConnectCommand
+    template_name = "dashboard/connect-command-edit.html"
+    form_class = ConnectCommandForm
+    success_message = _("Successfully modified command template.")
+
+    def get(self, request, *args, **kwargs):
+        object = self.get_object()
+        if object.user != request.user:
+            raise PermissionDenied()
+        return super(ConnectCommandDetail, self).get(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy("dashboard.views.connect-command-detail",
+                            kwargs=self.kwargs)
+
+    def post(self, request, *args, **kwargs):
+        object = self.get_object()
+        if object.user != request.user:
+            raise PermissionDenied()
+        return super(ConnectCommandDetail, self).post(request, args, kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super(ConnectCommandDetail, self).get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+
+class ConnectCommandDelete(LoginRequiredMixin, DeleteView):
+    model = ConnectCommand
+
+    def get_success_url(self):
+        return reverse("dashboard.views.profile-preferences")
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/confirm/ajax-delete.html']
+        else:
+            return ['dashboard/confirm/base-delete.html']
+
+    def delete(self, request, *args, **kwargs):
+        object = self.get_object()
+        if object.user != request.user:
+            raise PermissionDenied()
+
+        object.delete()
+        success_url = self.get_success_url()
+        success_message = _("Command template successfully deleted.")
+
+        if request.is_ajax():
+            return HttpResponse(
+                json.dumps({'message': success_message}),
+                content_type="application/json",
+            )
+        else:
+            messages.success(request, success_message)
+            return HttpResponseRedirect(success_url)
+
+
+class ConnectCommandCreate(LoginRequiredMixin, SuccessMessageMixin,
+                           CreateView):
+    model = ConnectCommand
+    form_class = ConnectCommandForm
+    template_name = "dashboard/connect-command-create.html"
+    success_message = _("Successfully created a new command template.")
+
+    def get_success_url(self):
+        return reverse_lazy("dashboard.views.profile-preferences")
+
+    def get_form_kwargs(self):
+        kwargs = super(ConnectCommandCreate, self).get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
 
