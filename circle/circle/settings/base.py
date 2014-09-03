@@ -368,7 +368,7 @@ if get_env_variable('DJANGO_SAML', 'FALSE') == 'TRUE':
         from shutilwhich import which
     from saml2 import BINDING_HTTP_POST, BINDING_HTTP_REDIRECT
 
-    INSTALLED_APPS += ( 
+    INSTALLED_APPS += (
         'djangosaml2',
     )
     AUTHENTICATION_BACKENDS = (
@@ -465,3 +465,6 @@ SESSION_COOKIE_NAME = "csessid%x" % (((getnode() // 139) ^
                                       (getnode() % 983)) & 0xffff)
 
 MAX_NODE_RAM = get_env_variable("MAX_NODE_RAM", 1024)
+
+# Url to download the client: (e.g. http://circlecloud.org/client/download/)
+CLIENT_DOWNLOAD_URL = get_env_variable('CLIENT_DOWNLOAD_URL', 'http://circlecloud.org/client/download/')

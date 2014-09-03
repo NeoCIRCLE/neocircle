@@ -383,6 +383,19 @@ $(function () {
     $('.notification-messages').load("/dashboard/notifications/");
     $('#notification-button a span[class*="badge-pulse"]').remove();  
   });
+  
+  /* on the client confirmation button fire the clientInstalledAction */
+  $(document).on("click", "#client-check-button", function(event) {
+    var connectUri = $('#connect-uri').val();
+    clientInstalledAction(connectUri);
+    return false;
+  });
+
+  $("#dashboard-vm-details-connect-button").click(function(event) {
+    var connectUri = $(this).attr("href");
+    clientInstalledAction(connectUri);
+    return false;
+  });
 });
 
 function generateVmHTML(pk, name, host, icon, _status, fav, is_last) {
@@ -589,6 +602,12 @@ function addModalConfirmation(func, data) {
   });
 }
 
+function clientInstalledAction(location) {   
+  setCookie('downloaded_client', true, 365 * 24 * 60 * 60, "/");
+  window.location.href = location;
+  $('#confirmation-modal').modal("hide");
+}
+
 // for AJAX calls
 /**                                                                         
  * Getter for user cookies                                                  
@@ -611,6 +630,14 @@ function getCookie(name) {
   return cookieValue;                                                       
 }
 
+function setCookie(name, value, seconds, path) {
+  if (seconds!=null) {
+    var today = new Date();
+    var expire = new Date();
+    expire.setTime(today.getTime() + seconds);
+  }
+  document.cookie = name+"="+escape(value)+"; expires="+expire.toUTCString()+"; path="+path;
+}
 
 /* no js compatibility */
 function noJS() {

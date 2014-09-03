@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-09-03 12:57+0200\n"
-"PO-Revision-Date: 2014-09-03 12:50+0200\n"
+"POT-Creation-Date: 2014-09-03 18:49+0200\n"
+"PO-Revision-Date: 2014-09-03 19:00+0200\n"
 "Last-Translator: Mate Ory <ory.mate@ik.bme.hu>\n"
 "Language-Team: Hungarian <cloud@ik.bme.hu>\n"
 "Language: hu\n"
@@ -476,7 +476,7 @@ msgstr "Műveletek"
 
 #: dashboard/tables.py:152 dashboard/templates/dashboard/_vm-create-2.html:38
 #: dashboard/templates/dashboard/node-detail.html:78
-#: dashboard/templates/dashboard/vm-detail.html:150
+#: dashboard/templates/dashboard/vm-detail.html:163
 msgid "Resources"
 msgstr "Erőforrások"
 
@@ -531,214 +531,218 @@ msgstr "Érvénytelen sablon."
 msgid "console access"
 msgstr "konzolhozzáférés"
 
-#: dashboard/views.py:443
+#: dashboard/views.py:446
 msgid "VM successfully renamed."
 msgstr "A virtuális gép átnevezésre került."
 
-#: dashboard/views.py:467
+#: dashboard/views.py:470
 msgid "VM description successfully updated."
 msgstr "A VM leírása megváltoztatásra került."
 
-#: dashboard/views.py:544
+#: dashboard/views.py:547
 msgid "There is a problem with your input."
 msgstr "A megadott érték nem megfelelő."
 
-#: dashboard/views.py:546
+#: dashboard/views.py:549
 msgid "Unknown error."
 msgstr "Ismeretlen hiba."
 
-#: dashboard/views.py:687
+#: dashboard/views.py:690
 msgid "Could not start operation."
 msgstr "A művelet megkezdése meghiúsult."
 
-#: dashboard/views.py:704
+#: dashboard/views.py:707
 msgid "Operation failed."
 msgstr "A művelet meghiúsult."
 
-#: dashboard/views.py:709
+#: dashboard/views.py:712
 msgid "Operation succeeded."
 msgstr "A művelet sikeresen végrehajtásra került."
 
-#: dashboard/views.py:711
+#: dashboard/views.py:714
 msgid "Operation is started."
 msgstr "A művelet megkezdődött."
 
-#: dashboard/views.py:948
+#: dashboard/views.py:951
 msgid "The token has expired."
 msgstr "A token lejárt."
 
-#: dashboard/views.py:1136
+#: dashboard/views.py:1139
 #, python-format
 msgid "Failed to execute %(op)s operation on instance %(instance)s."
 msgstr "%(op)s végrehajtása meghiúsult a következőn: %(instance)s."
 
-#: dashboard/views.py:1152
+#: dashboard/views.py:1155
 #, python-format
 msgid "You are not permitted to execute %(op)s on instance %(instance)s."
 msgstr "Nem engedélyezett a(z) %(op)s végrehajtása a(z) %(instance)s gépen."
 
-#: dashboard/views.py:1230
+#: dashboard/views.py:1233
 msgid "Node successfully renamed."
 msgstr "A csomópont átnevezésre került."
 
-#: dashboard/views.py:1324
+#: dashboard/views.py:1327
 #, python-format
 msgid "User \"%s\" not found."
 msgstr "Nem található „%s” felhasználó."
 
-#: dashboard/views.py:1340
+#: dashboard/views.py:1343
 msgid "Group successfully renamed."
 msgstr "A csoport átnevezésre került."
 
-#: dashboard/views.py:1371
+#: dashboard/views.py:1374
 #, python-format
 msgid "Acl user/group %(w)s successfully modified."
 msgstr "A(z) %(w)s ACL felhasználó/csoport módosításra került."
 
-#: dashboard/views.py:1373
+#: dashboard/views.py:1376
 #, python-format
 msgid "Acl user/group %(w)s successfully added."
 msgstr "A(z) %(w)s ACL felhasználó/csoport hozzáadásra került."
 
-#: dashboard/views.py:1375
+#: dashboard/views.py:1378
 #, python-format
 msgid "Acl user/group %(w)s successfully removed."
 msgstr "A(z) %(w)s ACL felhasználó/csoport törlésre került."
 
-#: dashboard/views.py:1459
+#: dashboard/views.py:1462
 msgid ""
 "The original owner cannot be removed, however you can transfer ownership."
 msgstr "Az eredeti tulajdonos nem törölhető, azonban a tulajdon átruházható."
 
-#: dashboard/views.py:1495
+#: dashboard/views.py:1498
 #, python-format
 msgid "User \"%s\" has already access to this object."
 msgstr "„%s” felhasználó már hozzáfér az objektumhoz."
 
-#: dashboard/views.py:1504
+#: dashboard/views.py:1507
 #, python-format
 msgid "Group \"%s\" has already access to this object."
 msgstr "„%s” csoport már hozzáfér az objektumhoz."
 
-#: dashboard/views.py:1509
+#: dashboard/views.py:1512
 #, python-format
 msgid "User or group \"%s\" not found."
 msgstr "Nem található „%s” felhasználó vagy csoport."
 
-#: dashboard/views.py:1547
+#: dashboard/views.py:1548
+msgid "About CIRCLE Client"
+msgstr "A CIRCLE kliensről"
+
+#: dashboard/views.py:1581
 msgid "Choose template"
 msgstr "Válasszon sablont"
 
-#: dashboard/views.py:1562
+#: dashboard/views.py:1596
 msgid "Select an option to proceed."
 msgstr "Válasszon a folytatáshoz."
 
-#: dashboard/views.py:1593
+#: dashboard/views.py:1627
 msgid "Create a new base VM"
 msgstr "Alap VM létrehozása"
 
-#: dashboard/views.py:1649
+#: dashboard/views.py:1683
 msgid "Successfully modified template."
 msgstr "A sablon módosításra került."
 
-#: dashboard/views.py:1755
+#: dashboard/views.py:1789
 msgid "Error during filtering."
 msgstr "A szűrés sikertelen."
 
-#: dashboard/views.py:1780
+#: dashboard/views.py:1814
 msgid "Template successfully deleted."
 msgstr "A sablon törlésre került."
 
-#: dashboard/views.py:1985
+#: dashboard/views.py:2019
 msgid "Member successfully removed from group."
 msgstr "A csoporttag eltávolításra került."
 
-#: dashboard/views.py:2026
+#: dashboard/views.py:2060
 msgid "Future user successfully removed from group."
 msgstr "A leendő csoporttag eltávolításra került."
 
-#: dashboard/views.py:2053
+#: dashboard/views.py:2087
 msgid "Group successfully deleted."
 msgstr "A csoport törlésre került."
 
-#: dashboard/views.py:2102
+#: dashboard/views.py:2136
 msgid "Customize VM"
 msgstr "VM testreszabása"
 
-#: dashboard/views.py:2110
+#: dashboard/views.py:2144
 msgid "Create a VM"
 msgstr "VM létrehozása"
 
-#: dashboard/views.py:2179
+#: dashboard/views.py:2213
 #, python-format
 msgid "Successfully created %(count)d VM."
 msgid_plural "Successfully created %(count)d VMs."
 msgstr[0] "%(count)d VM létrehozásra került."
 msgstr[1] "%(count)d VM létrehozásra került."
 
-#: dashboard/views.py:2184
+#: dashboard/views.py:2218
 msgid "VM successfully created."
 msgstr "VM létrehozásra került."
 
-#: dashboard/views.py:2213
+#: dashboard/views.py:2247
 #, python-format
 msgid "Instance limit (%d) exceeded."
 msgstr "A példányok létrehozási korlátját (%d) túllépte."
 
-#: dashboard/views.py:2273
+#: dashboard/views.py:2307
 msgid "Node successfully created."
 msgstr "A csomópont létrehozásra került."
 
-#: dashboard/views.py:2301
+#: dashboard/views.py:2335
 msgid "Create a Group"
 msgstr "Csoport létrehozása"
 
-#: dashboard/views.py:2317
+#: dashboard/views.py:2351
 msgid "Group successfully created."
 msgstr "A csoport létrehozásra került."
 
-#: dashboard/views.py:2331
+#: dashboard/views.py:2365
 msgid "Group is successfully updated."
 msgstr "A csoport frissítésre került."
 
-#: dashboard/views.py:2394
+#: dashboard/views.py:2428
 msgid "Node successfully deleted."
 msgstr "A csomópont törlésre került."
 
-#: dashboard/views.py:2441
+#: dashboard/views.py:2475
 msgid "Trait successfully added to node."
 msgstr "A csomópontjellemző hozzáadásra került."
 
-#: dashboard/views.py:2486
+#: dashboard/views.py:2520
 msgid "Node successfully changed status."
 msgstr "A csomópont állapota megváltoztatásra került."
 
-#: dashboard/views.py:2533
+#: dashboard/views.py:2567
 msgid "Node successfully flushed."
 msgstr "A csomópont ürítésre kerül."
 
-#: dashboard/views.py:2552
+#: dashboard/views.py:2586
 msgid "Port delete confirmation"
 msgstr "Porteltávolítás megerősítése"
 
-#: dashboard/views.py:2553
+#: dashboard/views.py:2587
 #, python-format
 msgid "Are you sure you want to close %(port)d/%(proto)s on %(vm)s?"
 msgstr "Biztosan bezárja a(z) %(port)d/%(proto)s portot a következőn: %(vm)s?"
 
-#: dashboard/views.py:2568
+#: dashboard/views.py:2602
 msgid "Port successfully removed."
 msgstr "A port eltávolításra került."
 
-#: dashboard/views.py:2590
+#: dashboard/views.py:2624
 msgid "Successfully created a new lease."
 msgstr "Új bérlési mód létrehozásra került."
 
-#: dashboard/views.py:2605
+#: dashboard/views.py:2639
 msgid "Successfully modified lease."
 msgstr "A bérlési mód megváltoztatásra került."
 
-#: dashboard/views.py:2635
+#: dashboard/views.py:2669
 msgid ""
 "You can't delete this lease because some templates are still using it, "
 "modify these to proceed: "
@@ -746,19 +750,19 @@ msgstr ""
 "Nem törölhető a bérleti mód, mivel az alábbi sablonok még használják. A "
 "folytatáshoz módosítsa őket: "
 
-#: dashboard/views.py:2652
+#: dashboard/views.py:2686
 msgid "Lease successfully deleted."
 msgstr "A bérlési mód törlésre került."
 
-#: dashboard/views.py:2734
+#: dashboard/views.py:2769
 msgid "Can not find specified user."
 msgstr "Nem található a megadott felhasználó."
 
-#: dashboard/views.py:2750
+#: dashboard/views.py:2785
 msgid "Ownership offer"
 msgstr "Átruházási ajánlat"
 
-#: dashboard/views.py:2751
+#: dashboard/views.py:2786
 #, python-format
 msgid ""
 "%(user)s offered you to take the ownership of his/her virtual machine called "
@@ -768,49 +772,49 @@ msgstr ""
 "%(user)s át kívánja ruházni %(instance)s nevű virtuális gépét Önre. <a href="
 "\"%(token)s\" class=\"btn btn-success btn-small\">Elfogadás</a>"
 
-#: dashboard/views.py:2757
+#: dashboard/views.py:2792
 msgid "Can not notify selected user."
 msgstr "A kiválaszott felhasználó értesítése sikertelen."
 
-#: dashboard/views.py:2760
+#: dashboard/views.py:2795
 #, python-format
 msgid "User %s is notified about the offer."
 msgstr "%s felhasználó értesítésre került az ajánlatról."
 
-#: dashboard/views.py:2771
+#: dashboard/views.py:2806
 msgid "Ownership successfully transferred to you."
 msgstr "A tulajdon átruházásra került."
 
-#: dashboard/views.py:2784
+#: dashboard/views.py:2819
 msgid "This token is for an other user."
 msgstr "A token más felhasználó nevére szól."
 
-#: dashboard/views.py:2787
+#: dashboard/views.py:2822
 msgid "This token is invalid or has expired."
 msgstr "A token érvénytelen vagy lejárt."
 
-#: dashboard/views.py:2809
+#: dashboard/views.py:2844
 msgid "Ownership accepted"
 msgstr "Átruházás elfogadva"
 
-#: dashboard/views.py:2810
+#: dashboard/views.py:2845
 #, python-format
 msgid "Your ownership offer of %(instance)s has been accepted by %(user)s."
 msgstr "%(instance)s gépre vonatkozó átruházási ajánlatát elfogadta %(user)s."
 
-#: dashboard/views.py:2989
+#: dashboard/views.py:3024
 msgid "You don't have a profile."
 msgstr "Nincs profilja."
 
-#: dashboard/views.py:3027
+#: dashboard/views.py:3062
 msgid "Successfully modified subscription."
 msgstr "A feliratkozás módosításra került."
 
-#: dashboard/views.py:3088
+#: dashboard/views.py:3123
 msgid "Disk remove confirmation"
 msgstr "Lemez törlésének megerősítése"
 
-#: dashboard/views.py:3089
+#: dashboard/views.py:3124
 #, python-format
 msgid ""
 "Are you sure you want to remove <strong>%(disk)s</strong> from <strong>"
@@ -819,71 +823,71 @@ msgstr ""
 "Biztosan eltávolítja a(z) <strong>%(disk)s</strong> lemezt a következőből: "
 "%(app)s?"
 
-#: dashboard/views.py:3108
+#: dashboard/views.py:3143
 msgid "Disk successfully removed."
 msgstr "A lemez eltávolításra került."
 
-#: dashboard/views.py:3205
+#: dashboard/views.py:3240
 #, python-format
 msgid ""
 "Are you sure you want to remove this interface from <strong>%(vm)s</strong>?"
 msgstr ""
 "Biztosan eltávolítja az interfészt a(z) <strong>%(vm)s</strong> gépből?"
 
-#: dashboard/views.py:3219
+#: dashboard/views.py:3254
 msgid "Interface successfully deleted."
 msgstr "Az interfész törlésre került."
 
-#: dashboard/views.py:3320
+#: dashboard/views.py:3355
 msgid "Successfully modified SSH key."
 msgstr "Az SSH kulcs módosításra került."
 
-#: dashboard/views.py:3358
+#: dashboard/views.py:3393
 msgid "SSH key successfully deleted."
 msgstr "Az SSH kulcs törlésre került."
 
-#: dashboard/views.py:3374
+#: dashboard/views.py:3409
 msgid "Successfully created a new SSH key."
 msgstr "Az új SSH kulcs hozzáadásra került."
 
-#: dashboard/views.py:3390
+#: dashboard/views.py:3425
 msgid "Successfully modified command template."
 msgstr "A parancssablon módosításra került."
 
-#: dashboard/views.py:3433
+#: dashboard/views.py:3468
 msgid "Command template successfully deleted."
 msgstr "A parancssablon törlésre került."
 
-#: dashboard/views.py:3450
+#: dashboard/views.py:3485
 msgid "Successfully created a new command template."
 msgstr "A parancssablon létrehozásra került."
 
-#: dashboard/views.py:3499
+#: dashboard/views.py:3534
 msgid "No store."
 msgstr "Nincs tárhely."
 
-#: dashboard/views.py:3501
+#: dashboard/views.py:3536
 msgid "Store has some problems now. Try again later."
 msgstr "A tárhely nem működik. Próbálja később."
 
-#: dashboard/views.py:3505
+#: dashboard/views.py:3540
 msgid "Unknown store error."
 msgstr "Ismeretlen tárhelyhiba."
 
-#: dashboard/views.py:3522
+#: dashboard/views.py:3557
 msgid "Something went wrong during download."
 msgstr "Hiba a letöltésben."
 
-#: dashboard/views.py:3537 dashboard/views.py:3557
+#: dashboard/views.py:3572 dashboard/views.py:3592
 msgid "Unable to upload file."
 msgstr "Fájl feltöltése sikertelen."
 
-#: dashboard/views.py:3594
+#: dashboard/views.py:3629
 #, python-format
 msgid "Unable to remove %s."
 msgstr "%s törlése sikertelen."
 
-#: dashboard/views.py:3613
+#: dashboard/views.py:3648
 msgid "Unable to create folder."
 msgstr "Mappa létrehozása sikertelen."
 
@@ -919,6 +923,76 @@ msgstr "Támogatás"
 #: dashboard/templates/dashboard/_base.html:12
 msgid "Confirmation"
 msgstr "Megerősítés"
+
+#: dashboard/templates/dashboard/_client-check.html:4
+msgid ""
+"\n"
+"    To effortlessly connect to all kind of virtual machines you have to "
+"install the <strong>CIRCLE Client</strong>.\n"
+"    "
+msgstr ""
+"\n"
+"    A virtuális gépekhez való könnyű csatlakozáshoz telepítse a "
+"<strong>CIRCLE klienst</strong>.\n"
+"    "
+
+#: dashboard/templates/dashboard/_client-check.html:9
+msgid ""
+"\n"
+"    To install the <strong>CIRCLE Client</strong> click on the "
+"<strong>Download the Client</strong> button. \n"
+"    The button takes you to the installation detail page, where you can "
+"choose your operating system and start \n"
+"    the download or read more detailed information about the <strong>Client</"
+"strong>. The program can be installed on Windows XP (and above)\n"
+"    or Debian based Linux operating systems. To successfully install the "
+"client you have to have admin (root or elevated) rights.\n"
+"    After the installation complete clicking on the <strong>I have the "
+"Client installed</strong> button will launch the appropriate tool\n"
+"    designed for that connection with necessarily predefined configurations. "
+"This option will also save your answer and this prompt about\n"
+"    installation will not pop up again.\n"
+"    "
+msgstr ""
+"\n"
+"    A <strong>CIRCLE kliens</strong> letöltéséhez kattintson a "
+"<strong>Kliens letöltése</strong> gombra. \n"
+"    A gomb a letöltőoldalra visz, ahol kiválaszthatja a megfelelő <strong>"
+"kliens</strong> "
+"telepítőcsomagot.\n"
+"    A telepítés után kattintson a <strong>Már telepítve van</strong> gombra a "
+"megfelelő eszköz indításához. "
+"Ezt a választást a rendszer megjegyzi.\n"
+"    "
+
+#: dashboard/templates/dashboard/_client-check.html:23
+#: dashboard/templates/dashboard/mass-operate.html:33
+#: dashboard/templates/dashboard/operate.html:21
+#: dashboard/templates/dashboard/confirm/ajax-delete.html:15
+#: dashboard/templates/dashboard/confirm/ajax-node-flush.html:17
+#: dashboard/templates/dashboard/confirm/ajax-node-status.html:17
+#: dashboard/templates/dashboard/confirm/base-delete.html:27
+#: dashboard/templates/dashboard/confirm/mass-delete.html:11
+#: dashboard/templates/dashboard/confirm/node-status.html:27
+#: dashboard/templates/dashboard/store/remove.html:34
+msgid "Cancel"
+msgstr "Mégsem"
+
+#: dashboard/templates/dashboard/_client-check.html:24
+msgid "Download the Client"
+msgstr "Kliens letöltése"
+
+#: dashboard/templates/dashboard/_client-check.html:25
+msgid ""
+"I downloaded and installed the client and I want to connect using it. This "
+"choice will be saved to your compuer"
+msgstr ""
+"A kliens letöltésre és telepítésre került. Ez a beállítás "
+"mentésre kerül."
+
+#: dashboard/templates/dashboard/_client-check.html:26
+msgid "I have the Client installed"
+msgstr "Már telepítve van"
 
 #: dashboard/templates/dashboard/_disk-list-element.html:10
 #: dashboard/templates/dashboard/node-detail/_activity-timeline.html:28
@@ -1054,7 +1128,7 @@ msgstr "Lemezek"
 #: dashboard/templates/dashboard/_vm-create-1.html:40
 #: dashboard/templates/dashboard/_vm-create-2.html:65
 #: dashboard/templates/dashboard/base.html:46
-#: dashboard/templates/dashboard/vm-detail.html:164
+#: dashboard/templates/dashboard/vm-detail.html:177
 msgid "Network"
 msgstr "Hálózat"
 
@@ -1454,7 +1528,7 @@ msgstr "Nincs jogosultsága virtuális gépek indítására vagy kezelésére."
 
 #: dashboard/templates/dashboard/instanceactivity_detail.html:25
 #: dashboard/templates/dashboard/node-detail.html:91
-#: dashboard/templates/dashboard/vm-detail.html:169
+#: dashboard/templates/dashboard/vm-detail.html:182
 #: dashboard/templates/dashboard/node-detail/activity.html:3
 #: dashboard/templates/dashboard/vm-detail/activity.html:3
 msgid "Activity"
@@ -1536,18 +1610,6 @@ msgstr[1] ""
 "Biztosan végrehajtja a(z) <strong>%(op)s</strong> műveletet a következő "
 "%(count)s példányon?\n"
 
-#: dashboard/templates/dashboard/mass-operate.html:33
-#: dashboard/templates/dashboard/operate.html:21
-#: dashboard/templates/dashboard/confirm/ajax-delete.html:15
-#: dashboard/templates/dashboard/confirm/ajax-node-flush.html:17
-#: dashboard/templates/dashboard/confirm/ajax-node-status.html:17
-#: dashboard/templates/dashboard/confirm/base-delete.html:27
-#: dashboard/templates/dashboard/confirm/mass-delete.html:11
-#: dashboard/templates/dashboard/confirm/node-status.html:27
-#: dashboard/templates/dashboard/store/remove.html:34
-msgid "Cancel"
-msgstr "Mégsem"
-
 #: dashboard/templates/dashboard/node-add-trait.html:19
 msgid "Add Trait"
 msgstr "Jellemző hozzáadása"
@@ -1591,7 +1653,7 @@ msgid "Remove node and it's host."
 msgstr "Csomópont és hoszt törlése."
 
 #: dashboard/templates/dashboard/node-detail.html:72
-#: dashboard/templates/dashboard/vm-detail.html:145
+#: dashboard/templates/dashboard/vm-detail.html:158
 msgid "Home"
 msgstr "Kezdőoldal"
 
@@ -1845,11 +1907,31 @@ msgstr "Összes kiválasztása"
 msgid "Connection is not possible."
 msgstr "A csatlakozás nem lehetséges."
 
-#: dashboard/templates/dashboard/vm-detail.html:155
+#: dashboard/templates/dashboard/vm-detail.html:140
+msgid "Connect via the CIRCLE Client"
+msgstr "Csatlakozás CIRCLE klienssel"
+
+#: dashboard/templates/dashboard/vm-detail.html:141
+msgid "Connect"
+msgstr "Csatlakozás"
+
+#: dashboard/templates/dashboard/vm-detail.html:143
+msgid "Download client"
+msgstr "Kliens letöltése"
+
+#: dashboard/templates/dashboard/vm-detail.html:145
+msgid "Download the CIRCLE Client"
+msgstr "A CIRCLE kliens letöltése"
+
+#: dashboard/templates/dashboard/vm-detail.html:146
+msgid "Connect (download client)"
+msgstr "Csatlakozás (kliens letöltése)"
+
+#: dashboard/templates/dashboard/vm-detail.html:168
 msgid "Console"
 msgstr "Konzol"
 
-#: dashboard/templates/dashboard/vm-detail.html:159
+#: dashboard/templates/dashboard/vm-detail.html:172
 msgid "Access"
 msgstr "Hozzáférés"
 
@@ -3631,7 +3713,7 @@ msgstr ""
 "lemezen, mivel az alapja,  „%(b_name)s” (%(b_pk)s) [%(b_filename)s]  nem "
 "volt még csatolva."
 
-#: storage/models.py:413 storage/models.py:488 vm/models/instance.py:899
+#: storage/models.py:413 storage/models.py:488 vm/models/instance.py:897
 msgid "Operation aborted by user."
 msgstr "A műveletet a felhasználó megszakította."
 
@@ -5041,7 +5123,7 @@ msgstr "példány létrehozása"
 msgid "vm state changed to %(state)s"
 msgstr "VM állapota erre változott: %(state)s"
 
-#: vm/models/instance.py:663
+#: vm/models/instance.py:661
 #, python-format
 msgid ""
 "Your instance <a href=\"%(url)s\">%(instance)s</a> is going to expire. It "
@@ -5053,34 +5135,34 @@ msgstr ""
 "kerül.  Kérjük, <a href=\"%(token)s\">újítsa meg</a> vagy <a href=\"%(url)s"
 "\">törölje</a> most."
 
+#: vm/models/instance.py:673
+#, python-format
+msgid ""
+"%(failed)s notifications failed and %(success) succeeded. Failed ones are: "
+"%(faileds)s."
+msgstr ""
+"%(failed)s értesítés sikertelen és %(success) sikeres. A sikertelenek: "
+"%(faileds)s."
+
 #: vm/models/instance.py:675
 #, python-format
 msgid ""
 "%(failed)s notifications failed and %(success) succeeded. Failed ones are: "
-"%(faileds)s."
-msgstr ""
-"%(failed)s értesítés sikertelen és %(success) sikeres. A sikertelenek: "
-"%(faileds)s."
-
-#: vm/models/instance.py:677
-#, python-format
-msgid ""
-"%(failed)s notifications failed and %(success) succeeded. Failed ones are: "
 "%(faileds_ex)s."
 msgstr ""
 "%(failed)s értesítés sikertelen és %(success) sikeres. A sikertelenek: "
 "%(faileds_ex)s."
 
-#: vm/models/instance.py:685
+#: vm/models/instance.py:683
 #, python-format
 msgid "%(success)s notifications succeeded."
 msgstr "%(success)s sikeres értesítés."
 
-#: vm/models/instance.py:690
+#: vm/models/instance.py:688
 msgid "notify owner about expiration"
 msgstr "tulaj értesítése a lejáratról"
 
-#: vm/models/instance.py:698
+#: vm/models/instance.py:696
 #, python-format
 msgid "%(instance)s expiring soon"
 msgstr "%(instance)s hamarosan lejár"

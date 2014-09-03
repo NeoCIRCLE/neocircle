@@ -411,6 +411,9 @@ class VmDetailView(CheckedDetailView):
         context['can_change_resources'] = self.request.user.has_perm(
             "vm.change_resources")
 
+        # client info
+        context['client_download'] = self.request.COOKIES.get(
+            'downloaded_client')
         # can link template
         context['can_link_template'] = (
             instance.template and instance.template.has_level(user, "operator")
@@ -1529,6 +1532,37 @@ class GroupAclUpdateView(AclUpdateView):
 
     def get_object(self):
         return super(GroupAclUpdateView, self).get_object().profile
+
+
+class ClientCheck(LoginRequiredMixin, TemplateView):
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/_modal.html']
+        else:
+            return ['dashboard/nojs-wrapper.html']
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(ClientCheck, self).get_context_data(*args, **kwargs)
+        context.update({
+            'box_title': _('About CIRCLE Client'),
+            'ajax_title': False,
+            'client_download_url': settings.CLIENT_DOWNLOAD_URL,
+            'template': "dashboard/_client-check.html",
+            'instance': get_object_or_404(
+                Instance, pk=self.request.GET.get('vm')),
+        })
+        if not context['instance'].has_level(self.request.user, 'operator'):
+            raise PermissionDenied()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        instance = get_object_or_404(Instance, pk=request.POST.get('vm'))
+        if not instance.has_level(request.user, 'operator'):
+            raise PermissionDenied()
+        response = HttpResponseRedirect(instance.get_absolute_url())
+        response.set_cookie('downloaded_client', 'True', 365 * 24 * 60 * 60)
+        return response
 
 
 class TemplateChoose(LoginRequiredMixin, TemplateView):
@@ -2675,6 +2709,7 @@ def vm_activity(request, pk):
     if not show_all:
         activities = activities[:10]
 
+    response['connect_uri'] = instance.get_connect_uri()
     response['human_readable_status'] = instance.get_status_display()
     response['status'] = instance.status
     response['icon'] = instance.get_status_icon()
