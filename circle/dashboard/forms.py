@@ -54,7 +54,9 @@ from .models import Profile, GroupProfile
 from circle.settings.base import LANGUAGES, MAX_NODE_RAM
 from django.utils.translation import string_concat
 
-from .virtvalidator import domain_validator
+from .validators import domain_validator
+
+from dashboard.models import ConnectCommand
 
 LANGUAGES_WITH_CODE = ((l[0], string_concat(l[1], " (", l[0], ")"))
                        for l in LANGUAGES)
@@ -176,7 +178,14 @@ class GroupCreateForm(forms.ModelForm):
         self.fields['org_id'] = forms.ChoiceField(
             # TRANSLATORS: directory like in LDAP
             choices=choices, required=False, label=_('Directory identifier'))
-        if not new_groups:
+        if new_groups:
+            self.fields['org_id'].help_text = _(
+                "If you select an item here, the members of this directory "
+                "group will be automatically added to the group at the time "
+                "they log in. Please note that other users (those with "
+                "permissions like yours) may also automatically become a "
+                "group co-owner).")
+        else:
             self.fields['org_id'].widget = HiddenInput()
 
     def save(self, commit=True):
@@ -1055,6 +1064,22 @@ class UserKeyForm(forms.ModelForm):
         if self.user:
             self.instance.user = self.user
         return super(UserKeyForm, self).clean()
+
+
+class ConnectCommandForm(forms.ModelForm):
+    class Meta:
+        fields = ('name', 'access_method', 'template')
+        model = ConnectCommand
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user")
+        super(ConnectCommandForm, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        if self.user:
+            self.instance.user = self.user
+
+        return super(ConnectCommandForm, self).clean()
 
 
 class TraitsForm(forms.ModelForm):

@@ -1,4 +1,10 @@
 {% load crispy_forms_tags %}
+{% load i18n %}
+
+<p class="text-muted">
+{% trans "User groups allow sharing templates or other resources with multiple users at once." %}
+</p>
+
 
 <form method="POST" action="{% url "dashboard.views.group-create" %}">
 {% csrf_token %}

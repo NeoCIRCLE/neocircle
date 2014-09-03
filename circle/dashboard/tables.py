@@ -25,6 +25,7 @@ from django_tables2.columns import (TemplateColumn, Column, BooleanColumn,
 from vm.models import Node, InstanceTemplate, Lease
 from django.utils.translation import ugettext_lazy as _
 from django_sshkey.models import UserKey
+from dashboard.models import ConnectCommand
 
 
 class NodeListTable(Table):
@@ -249,5 +250,41 @@ class UserKeyListTable(Table):
 
     class Meta:
         model = UserKey
-        attrs = {'class': ('table table-bordered table-striped table-hover')}
+        attrs = {'class': ('table table-bordered table-striped table-hover'),
+                 'id': "profile-key-list-table"}
         fields = ('name', 'fingerprint', 'created', 'actions')
+        prefix = "key-"
+        empty_text = _("You haven't added any public keys yet.")
+
+
+class ConnectCommandListTable(Table):
+    name = LinkColumn(
+        'dashboard.views.connect-command-detail',
+        args=[A('pk')],
+        attrs={'th': {'data-sort': "string"}}
+    )
+    access_method = Column(
+        verbose_name=_("Access method"),
+        attrs={'th': {'data-sort': "string"}}
+    )
+    template = Column(
+        verbose_name=_("Template"),
+        attrs={'th': {'data-sort': "string"}}
+    )
+    actions = TemplateColumn(
+        verbose_name=_("Actions"),
+        template_name=("dashboard/connect-command-list/column-command"
+                       "-actions.html"),
+        orderable=False,
+    )
+
+    class Meta:
+        model = ConnectCommand
+        attrs = {'class': ('table table-bordered table-striped table-hover'),
+                 'id': "profile-command-list-table"}
+        fields = ('name', 'access_method',  'template', 'actions')
+        prefix = "cmd-"
+        empty_text = _(
+            "You don't have any custom connection commands yet. You can "
+            "specify commands to be displayed on VM detail pages instead of "
+            "the defaults.")

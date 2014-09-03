@@ -41,7 +41,7 @@ from .models import (
     Instance, InstanceActivity, InstanceTemplate, Interface, Node,
     NodeActivity, pwgen
 )
-from .tasks import agent_tasks
+from .tasks import agent_tasks, local_agent_tasks
 
 from dashboard.store_api import Store, NoStoreException
 
@@ -153,6 +153,7 @@ class AddInterfaceOperation(InstanceOperation):
                     self.rollback(net, activity)
                 raise
             net.deploy()
+            local_agent_tasks.send_networking_commands(self.instance, activity)
 
     def get_activity_name(self, kwargs):
         return create_readable(ugettext_noop("add %(vlan)s interface"),
@@ -218,6 +219,7 @@ class DownloadDiskOperation(InstanceOperation):
     has_percentage = True
     required_perms = ('storage.download_disk', )
     accept_states = ('STOPPED', 'PENDING', 'RUNNING')
+    async_queue = "localhost.man.slow"
 
     def _operation(self, user, url, task, activity, name=None):
         activity.result = url
@@ -368,6 +370,7 @@ class MigrateOperation(InstanceOperation):
     required_perms = ()
     superuser_required = True
     accept_states = ('RUNNING', )
+    async_queue = "localhost.man.slow"
 
     def rollback(self, activity):
         with activity.sub_activity(
@@ -512,6 +515,7 @@ class SaveAsTemplateOperation(InstanceOperation):
     abortable = True
     required_perms = ('vm.create_template', )
     accept_states = ('RUNNING', 'PENDING', 'STOPPED')
+    async_queue = "localhost.man.slow"
 
     def is_preferred(self):
         return (self.instance.is_base and
@@ -667,6 +671,7 @@ class SleepOperation(InstanceOperation):
     required_perms = ()
     accept_states = ('RUNNING', )
     resultant_state = 'SUSPENDED'
+    async_queue = "localhost.man.slow"
 
     def is_preferred(self):
         return (not self.instance.is_base and
@@ -839,6 +844,7 @@ class FlushOperation(NodeOperation):
     description = _("Disable node and move all instances to other ones.")
     required_perms = ()
     superuser_required = True
+    async_queue = "localhost.man.slow"
 
     def on_abort(self, activity, error):
         from manager.scheduler import TraitsUnsatisfiableException
@@ -998,12 +1004,12 @@ class MountStoreOperation(EnsureAgentMixin, InstanceOperation):
         except NoStoreException:
             raise PermissionDenied  # not show the button at all
 
-    def _operation(self):
+    def _operation(self, user):
         inst = self.instance
         queue = self.instance.get_remote_queue_name("agent")
         host = urlsplit(settings.STORE_URL).hostname
-        username = Store(inst.owner).username
-        password = inst.owner.profile.smb_password
+        username = Store(user).username
+        password = user.profile.smb_password
         agent_tasks.mount_store.apply_async(
             queue=queue, args=(inst.vm_name, host, username, password))
 
