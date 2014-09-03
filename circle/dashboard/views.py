@@ -225,7 +225,7 @@ class FilterMixin(object):
         cleaned_data = self.search_form.cleaned_data
         stype = cleaned_data.get('stype', "all")
         superuser = stype == "all"
-        shared = stype == "shared"
+        shared = stype == "shared" or stype == "all"
         level = "owner" if stype == "owned" else "user"
         queryset = model.get_objects_with_level(
             level, self.request.user,
