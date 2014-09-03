@@ -41,7 +41,7 @@ from .models import (
     Instance, InstanceActivity, InstanceTemplate, Interface, Node,
     NodeActivity, pwgen
 )
-from .tasks import agent_tasks
+from .tasks import agent_tasks, local_agent_tasks
 
 from dashboard.store_api import Store, NoStoreException
 
@@ -153,6 +153,7 @@ class AddInterfaceOperation(InstanceOperation):
                     self.rollback(net, activity)
                 raise
             net.deploy()
+            local_agent_tasks.send_networking_commands(self.instance, activity)
 
     def get_activity_name(self, kwargs):
         return create_readable(ugettext_noop("add %(vlan)s interface"),
