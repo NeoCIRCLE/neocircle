@@ -134,11 +134,20 @@
         </span>
       </div>
       {% endfor %}
+      {% if instance.get_connect_uri %}
       <div id="dashboard-vm-details-connect" class="operation-wrapper">  
-        <a id="dashboard-vm-details-connect-button" class="btn btn-xs btn-default{% if not client_download %} operation{% endif %}{% if instance.status != "RUNNING" or not instance.get_connect_uri %} disabled{% endif %}" {% if client_download %}target="_blank"{% endif %}  href="{% if not client_download %}{% url "dashboard.views.client-check" %}?vm={{ instance.pk }}{% else %}{{ instance.get_connect_uri}}{% endif %}" title="{% trans "Connect via the CIRCLE Client" %}">
+        {% if client_download %}
+        <a id="dashboard-vm-details-connect-button" class="btn btn-xs btn-default operation " href="{{ instance.get_connect_uri}}" title="{% trans "Connect via the CIRCLE Client" %}">
                 <i class="fa fa-external-link"></i> {% trans "Connect" %}
         </a>
+        <a href="{% url "dashboard.views.client-check" %}?vm={{ instance.pk }}">{% trans "Download client" %}</a>
+        {% else %}
+        <a id="dashboard-vm-details-connect-download-button" class="btn btn-xs btn-default operation " href="{% url "dashboard.views.client-check" %}?vm={{ instance.pk }}" title="{% trans "Download the CIRCLE Client" %}">
+                <i class="fa fa-external-link"></i> {% trans "Connect (download client)" %}
+        </a>
+        {% endif %}
       </div>
+      {% endif %}
     </div>
     <div class="col-md-8" id="vm-detail-pane">
       <div class="panel panel-default" id="vm-detail-panel">
