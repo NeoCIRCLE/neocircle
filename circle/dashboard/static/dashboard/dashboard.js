@@ -390,6 +390,12 @@ $(function () {
     clientInstalledAction(connectUri);
     return false;
   });
+
+  $("#dashboard-vm-details-connect-button").click(function(event) {
+    var connectUri = $(this).attr("href");
+    clientInstalledAction(connectUri);
+    return false;
+  });
 });
 
 function generateVmHTML(pk, name, host, icon, _status, fav, is_last) {
