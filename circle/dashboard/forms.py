@@ -176,7 +176,14 @@ class GroupCreateForm(forms.ModelForm):
         self.fields['org_id'] = forms.ChoiceField(
             # TRANSLATORS: directory like in LDAP
             choices=choices, required=False, label=_('Directory identifier'))
-        if not new_groups:
+        if new_groups:
+            self.fields['org_id'].help_text = _(
+                "If you select an item here, the members of this directory "
+                "group will be automatically added to the group at the time "
+                "they log in. Please note that other users (those with "
+                "permissions like yours) may also automatically become a "
+                "group co-owner).")
+        else:
             self.fields['org_id'].widget = HiddenInput()
 
     def save(self, commit=True):

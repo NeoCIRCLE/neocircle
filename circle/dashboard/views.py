@@ -1483,7 +1483,7 @@ class TemplateChoose(LoginRequiredMixin, TemplateView):
                                                             self.request.user)
         context.update({
             'box_title': _('Choose template'),
-            'ajax_title': False,
+            'ajax_title': True,
             'template': "dashboard/_template-choose.html",
             'templates': templates.all(),
         })
@@ -2039,7 +2039,7 @@ class VmCreate(LoginRequiredMixin, TemplateView):
             context.update({
                 'template': 'dashboard/_vm-create-2.html',
                 'box_title': _('Customize VM'),
-                'ajax_title': False,
+                'ajax_title': True,
                 'vm_create_form': form,
                 'template_o': templates.get(pk=template),
             })
@@ -2047,7 +2047,7 @@ class VmCreate(LoginRequiredMixin, TemplateView):
             context.update({
                 'template': 'dashboard/_vm-create-1.html',
                 'box_title': _('Create a VM'),
-                'ajax_title': False,
+                'ajax_title': True,
                 'templates': templates.all(),
             })
         return self.render_to_response(context)
@@ -2237,9 +2237,9 @@ class GroupCreate(GroupCodeMixin, LoginRequiredMixin, TemplateView):
         context = self.get_context_data(**kwargs)
         context.update({
             'template': 'dashboard/group-create.html',
-            'box_title': 'Create a Group',
+            'box_title': _('Create a Group'),
             'form': form,
-
+            'ajax_title': True,
         })
         return self.render_to_response(context)
 
