@@ -2232,7 +2232,7 @@ class GroupCreate(GroupCodeMixin, LoginRequiredMixin, TemplateView):
         context = self.get_context_data(**kwargs)
         context.update({
             'template': 'dashboard/group-create.html',
-            'box_title': 'Create a Group',
+            'box_title': _('Create a Group'),
             'form': form,
             'ajax_title': True,
         })
