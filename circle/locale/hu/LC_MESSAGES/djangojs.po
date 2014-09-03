@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-09-03 12:42+0200\n"
-"PO-Revision-Date: 2014-08-01 21:03+0200\n"
+"PO-Revision-Date: 2014-09-03 12:51+0200\n"
 "Last-Translator: Mate Ory <ory.mate@ik.bme.hu>\n"
 "Language-Team: Hungarian <cloud@ik.bme.hu>\n"
 "Language: en_US\n"
@@ -179,12 +179,12 @@ msgstr "Nincs hálózathoz adva"
 #: dashboard/static/dashboard/vm-details.js:115
 #: static_collected/dashboard/vm-details.js:115
 msgid "Hide password"
-msgstr ""
+msgstr "Jelszó rejtése"
 
 #: dashboard/static/dashboard/vm-details.js:119
 #: static_collected/dashboard/vm-details.js:119
 msgid "Show password"
-msgstr ""
+msgstr "Jelszó megjelenítése"
 
 #: dashboard/static/dashboard/vm-tour.js:20
 #: static_collected/vm-detail.09737c69abc3.js:5853
@@ -835,12 +835,15 @@ msgid "Are you sure you want to delete this device?"
 msgstr "Biztosan törli ezt az eszközt?"
 
 #: static_collected/vm-detail.e81fe84bf4c0.js:9
-#, fuzzy
 msgid ""
 "During the tour please don't try the functions because it may lead to "
 "graphical glitches, however you can end the tour any time you want with the "
 "End Tour button!"
-msgstr "A túra során még ne próbálja ki a bemutatott funkciókat."
+msgstr ""
+"A túra során még ne próbálja ki a bemutatott funkciókat, mivel ez "
+"megjelenítési "
+"problémákat okozhatnak. A túrát bármikor befejezheti a Befejezés gombra "
+"kattintva."
 
 #: static_collected/admin/js/SelectFilter2.9825381ac407.js:45
 #: static_collected/admin/js/SelectFilter2.js:45
@@ -1040,3 +1043,6 @@ msgstr "Tegnap"
 #: static_collected/admin/js/admin/DateTimeShortcuts.js:203
 msgid "Tomorrow"
 msgstr "Holnap"
+
+#~ msgid "Prevent newline at end of file"
+#~ msgstr "x"

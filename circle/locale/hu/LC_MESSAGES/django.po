@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-09-03 12:42+0200\n"
-"PO-Revision-Date: 2014-08-29 09:46+0200\n"
+"PO-Revision-Date: 2014-09-03 12:50+0200\n"
 "Last-Translator: Mate Ory <ory.mate@ik.bme.hu>\n"
 "Language-Team: Hungarian <cloud@ik.bme.hu>\n"
 "Language: hu\n"
@@ -167,6 +167,10 @@ msgid ""
 "other users (those with permissions like yours) may also automatically "
 "become a group co-owner)."
 msgstr ""
+"Ha kiválaszt egy elemet, a címtári csoport tagjai automatikusan "
+"hozzáadásra kerülnek, ha bejelentkeznek. Vegye figyelembe, hogy más, "
+"az önhöz hasonló jogosultságú felhasználók is csoportadminisztrátorrá "
+"válhatnak."
 
 #: dashboard/forms.py:207
 #: dashboard/templates/dashboard/store/_list-box.html:57
@@ -367,9 +371,8 @@ msgid "access method"
 msgstr "elérés módja"
 
 #: dashboard/models.py:109
-#, fuzzy
 msgid "Type of the remote access method."
-msgstr "Elsődleges távoli elérési mód."
+msgstr "Távoli elérési mód típusa."
 
 #: dashboard/models.py:110 firewall/models.py:413 firewall/models.py:440
 #: firewall/models.py:828 firewall/models.py:850 firewall/models.py:871
@@ -381,18 +384,19 @@ msgstr "név"
 
 #: dashboard/models.py:111
 msgid "Name of your custom command."
-msgstr ""
+msgstr "Egyedi parancs neve"
 
 #: dashboard/models.py:113
-#, fuzzy
 msgid "command template"
-msgstr "új sablon"
+msgstr "parancssablon"
 
 #: dashboard/models.py:114
 msgid ""
 "Template for connection command string. Available parameters are: username, "
 "password, host, port."
 msgstr ""
+"Sablon a csatlakozási parancshoz. Elérhető paraméterek: username, "
+"password, host, port."
 
 #: dashboard/models.py:126
 msgid "preferred language"
@@ -501,12 +505,11 @@ msgstr "Ujjlenyomat"
 
 #: dashboard/tables.py:257
 msgid "You haven't added any public keys yet."
-msgstr ""
+msgstr "Még nem adott meg publikus kulcsot."
 
 #: dashboard/tables.py:267
-#, fuzzy
 msgid "Access method"
-msgstr "elérés módja"
+msgstr "Elérés módja"
 
 #: dashboard/tables.py:271
 #: dashboard/templates/dashboard/vm-detail/home.html:94
@@ -518,10 +521,12 @@ msgid ""
 "You don't have any custom connection commands yet. You can specify commands "
 "to be displayed on VM detail pages instead of the defaults."
 msgstr ""
+"Még nincs egyedi csatlakozási parancsa. Az itt megadott parancsok fognak "
+"megjelenni a VM-részletező oldalon az alapértelmezettek helyett."
 
 #: dashboard/validators.py:57
 msgid "Invalid template string."
-msgstr ""
+msgstr "Érvénytelen sablon."
 
 #: dashboard/views.py:345
 msgid "console access"
@@ -639,7 +644,7 @@ msgstr "A sablon módosításra került."
 
 #: dashboard/views.py:1755
 msgid "Error during filtering."
-msgstr ""
+msgstr "A szűrés sikertelen."
 
 #: dashboard/views.py:1780
 msgid "Template successfully deleted."
@@ -686,9 +691,8 @@ msgid "Node successfully created."
 msgstr "A csomópont létrehozásra került."
 
 #: dashboard/views.py:2301
-#, fuzzy
 msgid "Create a Group"
-msgstr "VM létrehozása"
+msgstr "Csoport létrehozása"
 
 #: dashboard/views.py:2317
 msgid "Group successfully created."
@@ -844,19 +848,16 @@ msgid "Successfully created a new SSH key."
 msgstr "Az új SSH kulcs hozzáadásra került."
 
 #: dashboard/views.py:3390
-#, fuzzy
 msgid "Successfully modified command template."
-msgstr "A sablon módosításra került."
+msgstr "A parancssablon módosításra került."
 
 #: dashboard/views.py:3433
-#, fuzzy
 msgid "Command template successfully deleted."
-msgstr "A sablon törlésre került."
+msgstr "A parancssablon törlésre került."
 
 #: dashboard/views.py:3450
-#, fuzzy
 msgid "Successfully created a new command template."
-msgstr "A sablon létrehozásra került."
+msgstr "A parancssablon létrehozásra került."
 
 #: dashboard/views.py:3499
 msgid "No store."
@@ -1165,9 +1166,8 @@ msgid "Log in "
 msgstr "Bejelentkezés"
 
 #: dashboard/templates/dashboard/connect-command-create.html:5
-#, fuzzy
 msgid "Create command template"
-msgstr "Sablon létrehozása"
+msgstr "Parancssablon létrehozása"
 
 #: dashboard/templates/dashboard/connect-command-create.html:13
 #: dashboard/templates/dashboard/connect-command-edit.html:13
@@ -1183,26 +1183,26 @@ msgid "Back"
 msgstr "Vissza"
 
 #: dashboard/templates/dashboard/connect-command-create.html:14
-#, fuzzy
 msgid "Create new command template"
-msgstr "Sablon létrehozása"
+msgstr "Parancssablon létrehozása"
 
 #: dashboard/templates/dashboard/connect-command-create.html:23
 #: dashboard/templates/dashboard/connect-command-edit.html:23
 msgid "Examples"
-msgstr ""
+msgstr "Példák"
 
 #: dashboard/templates/dashboard/connect-command-edit.html:5
 #: dashboard/templates/dashboard/connect-command-edit.html:14
-#, fuzzy
 msgid "Edit command template"
-msgstr "Sablon szerkesztése"
+msgstr "Parancssablon szerkesztése"
 
 #: dashboard/templates/dashboard/group-create.html:5
 msgid ""
 "User groups allow sharing templates or other resources with multiple users "
 "at once."
 msgstr ""
+"A felhasználói csoportok lehetővé teszik sablonok és más erőforrások együttes "
+"megosztását több felhasználóval."
 
 #: dashboard/templates/dashboard/group-detail.html:9
 #: dashboard/templates/dashboard/group-detail.html:18
@@ -1695,14 +1695,12 @@ msgid "SSH public keys"
 msgstr "SSH publikus kulcsok"
 
 #: dashboard/templates/dashboard/profile_form.html:75
-#, fuzzy
 msgid "add command template"
-msgstr "Sablon neve"
+msgstr "új parancssablon"
 
 #: dashboard/templates/dashboard/profile_form.html:77
-#, fuzzy
 msgid "Command templates"
-msgstr "sablonok"
+msgstr "Parancssablonok"
 
 #: dashboard/templates/dashboard/template-edit.html:6
 #: dashboard/templates/dashboard/template-edit.html:15
@@ -1822,9 +1820,8 @@ msgid "Host (IPv6)"
 msgstr "Gép (IPv6)"
 
 #: dashboard/templates/dashboard/vm-detail.html:102
-#, fuzzy
 msgid "Show password"
-msgstr "jelszó"
+msgstr "Jelszó megjelenítése"
 
 #: dashboard/templates/dashboard/vm-detail.html:110
 msgid "Start the VM to change the password."
@@ -1867,7 +1864,7 @@ msgstr "Csoportos műveletek"
 
 #: dashboard/templates/dashboard/vm-list.html:37
 msgid "Include deleted VMs"
-msgstr ""
+msgstr "Törölt VM-ek megjelenítése"
 
 #: dashboard/templates/dashboard/vm-list.html:56
 msgid "ID"
@@ -1878,9 +1875,8 @@ msgid "State"
 msgstr "Állapot"
 
 #: dashboard/templates/dashboard/vm-list.html:77
-#, fuzzy
 msgid "IP address"
-msgstr "IPv4 cím"
+msgstr "IP cím"
 
 #: dashboard/templates/dashboard/vm-list.html:122
 msgid "No result."
@@ -2329,7 +2325,12 @@ msgid_plural ""
 "\n"
 "  %(num_cores)s CPU cores\n"
 msgstr[0] ""
+"\n"
+"  %(num_cores)s CPU mag\n"
+"  "
 msgstr[1] ""
+"\n"
+"  %(num_cores)s CPU mag\n"
 
 #: dashboard/templates/dashboard/vm-detail/_activity-timeline.html:29
 msgid "Abort"
@@ -5197,9 +5198,8 @@ msgid "set hostname"
 msgstr "gépnév beállítása"
 
 #: vm/tasks/local_agent_tasks.py:55
-#, fuzzy
 msgid "change ip"
-msgstr "jelszóváltoztatás"
+msgstr "IP cím beállítása"
 
 #: vm/tasks/local_agent_tasks.py:59
 msgid "restart networking"
