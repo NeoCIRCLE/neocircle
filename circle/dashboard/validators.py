@@ -34,6 +34,18 @@ def domain_validator(value):
 
 
 def connect_command_template_validator(value):
+    """Validate value as a connect command template.
+
+    >>> try: connect_command_template_validator("%(host)s")
+    ... except ValidationError as e: print e
+    ...
+    >>> connect_command_template_validator("%(host)s")
+    >>> try: connect_command_template_validator("%(host)s %s")
+    ... except ValidationError as e: print e
+    ...
+    [u'Invalid template string.']
+    """
+
     try:
         value % {
             'username': "uname",
