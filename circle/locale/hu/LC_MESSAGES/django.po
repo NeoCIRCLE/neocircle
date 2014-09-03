@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-09-03 18:49+0200\n"
-"PO-Revision-Date: 2014-09-03 12:50+0200\n"
+"PO-Revision-Date: 2014-09-03 19:00+0200\n"
 "Last-Translator: Mate Ory <ory.mate@ik.bme.hu>\n"
 "Language-Team: Hungarian <cloud@ik.bme.hu>\n"
 "Language: hu\n"
@@ -627,7 +627,7 @@ msgstr "Nem található „%s” felhasználó vagy csoport."
 
 #: dashboard/views.py:1548
 msgid "About CIRCLE Client"
-msgstr ""
+msgstr "A CIRCLE kliensről"
 
 #: dashboard/views.py:1581
 msgid "Choose template"
@@ -931,6 +931,10 @@ msgid ""
 "install the <strong>CIRCLE Client</strong>.\n"
 "    "
 msgstr ""
+"\n"
+"    A virtuális gépekhez való könnyű csatlakozáshoz telepítse a "
+"<strong>CIRCLE klienst</strong>.\n"
+"    "
 
 #: dashboard/templates/dashboard/_client-check.html:9
 msgid ""
@@ -950,6 +954,16 @@ msgid ""
 "    installation will not pop up again.\n"
 "    "
 msgstr ""
+"\n"
+"    A <strong>CIRCLE kliens</strong> letöltéséhez kattintson a "
+"<strong>Kliens letöltése</strong> gombra. \n"
+"    A gomb a letöltőoldalra visz, ahol kiválaszthatja a megfelelő <strong>"
+"kliens</strong> "
+"telepítőcsomagot.\n"
+"    A telepítés után kattintson a <strong>Már telepítve van</strong> gombra a "
+"megfelelő eszköz indításához. "
+"Ezt a választást a rendszer megjegyzi.\n"
+"    "
 
 #: dashboard/templates/dashboard/_client-check.html:23
 #: dashboard/templates/dashboard/mass-operate.html:33
@@ -965,19 +979,20 @@ msgid "Cancel"
 msgstr "Mégsem"
 
 #: dashboard/templates/dashboard/_client-check.html:24
-#, fuzzy
 msgid "Download the Client"
-msgstr "Könyvtár letöltése"
+msgstr "Kliens letöltése"
 
 #: dashboard/templates/dashboard/_client-check.html:25
 msgid ""
 "I downloaded and installed the client and I want to connect using it. This "
 "choice will be saved to your compuer"
 msgstr ""
+"A kliens letöltésre és telepítésre került. Ez a beállítás "
+"mentésre kerül."
 
 #: dashboard/templates/dashboard/_client-check.html:26
 msgid "I have the Client installed"
-msgstr ""
+msgstr "Már telepítve van"
 
 #: dashboard/templates/dashboard/_disk-list-element.html:10
 #: dashboard/templates/dashboard/node-detail/_activity-timeline.html:28
@@ -1894,24 +1909,23 @@ msgstr "A csatlakozás nem lehetséges."
 
 #: dashboard/templates/dashboard/vm-detail.html:140
 msgid "Connect via the CIRCLE Client"
-msgstr ""
+msgstr "Csatlakozás CIRCLE klienssel"
 
 #: dashboard/templates/dashboard/vm-detail.html:141
 msgid "Connect"
-msgstr ""
+msgstr "Csatlakozás"
 
 #: dashboard/templates/dashboard/vm-detail.html:143
-#, fuzzy
 msgid "Download client"
-msgstr "Könyvtár letöltése"
+msgstr "Kliens letöltése"
 
 #: dashboard/templates/dashboard/vm-detail.html:145
 msgid "Download the CIRCLE Client"
-msgstr ""
+msgstr "A CIRCLE kliens letöltése"
 
 #: dashboard/templates/dashboard/vm-detail.html:146
 msgid "Connect (download client)"
-msgstr ""
+msgstr "Csatlakozás (kliens letöltése)"
 
 #: dashboard/templates/dashboard/vm-detail.html:168
 msgid "Console"
