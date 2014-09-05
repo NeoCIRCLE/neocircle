@@ -185,8 +185,13 @@
 
 {% endblock %}
 
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ STATIC_URL }}dashboard/introjs/introjs.min.css">
+{% endblock %}
+
 {% block extra_js %}
   <script src="{{ STATIC_URL }}dashboard/bootstrap-tour.min.js"></script>
+  <script src="{{ STATIC_URL }}dashboard/introjs/intro.min.js"></script>
   <script src="{{ STATIC_URL }}dashboard/vm-details.js"></script>
   <script src="{{ STATIC_URL }}dashboard/vm-common.js"></script>
   <script src="{{ STATIC_URL }}dashboard/vm-console.js"></script>
