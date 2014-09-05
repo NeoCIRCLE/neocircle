@@ -77,19 +77,27 @@ def has_enough_ram(ram_size, node):
     """True, if the node has enough memory to accomodate a guest requiring
        ram_size mebibytes of memory; otherwise, false.
     """
+    ram_size = ram_size * 1024 * 1024
     try:
         total = node.ram_size
-        used = (node.ram_usage / 100) * total
+        used = node.byte_ram_usage
         unused = total - used
 
         overcommit = node.ram_size_with_overcommit
-        reserved = node.instance_set.aggregate(r=Sum('ram_size'))['r'] or 0
+        reserved = (node.instance_set.aggregate(
+            r=Sum('ram_size'))['r'] or 0) * 1024 * 1024
         free = overcommit - reserved
 
-        return ram_size < unused and ram_size < free
+        retval = ram_size < unused and ram_size < free
+
+        logger.debug('has_enough_ram(%d, %s)=%s (total=%s unused=%s'
+                     ' overcommit=%s free=%s free_ok=%s overcommit_ok=%s)',
+                     ram_size, node, retval, total, unused, overcommit, free,
+                     ram_size < unused, ram_size < free)
+        return retval
     except TypeError as e:
-        logger.warning('Got incorrect monitoring data for node %s. %s',
-                       unicode(node), unicode(e))
+        logger.exception('Got incorrect monitoring data for node %s. %s',
+                         unicode(node), unicode(e))
         return False
 
 
