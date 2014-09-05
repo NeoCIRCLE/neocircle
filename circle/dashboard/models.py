@@ -201,6 +201,11 @@ class Profile(Model):
     def __unicode__(self):
         return self.get_display_name()
 
+    def save(self, *args, **kwargs):
+        if self.org_id == "":
+            self.org_id = None
+        super(Profile, self).save(*args, **kwargs)
+
     class Meta:
         permissions = (
             ('use_autocomplete', _('Can use autocomplete.')),
