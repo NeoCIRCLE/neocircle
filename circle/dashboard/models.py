@@ -48,7 +48,7 @@ from common.models import HumanReadableObject, create_readable, Encoder
 from vm.tasks.agent_tasks import add_keys, del_keys
 from vm.models.instance import ACCESS_METHODS
 
-from .store_api import Store, NoStoreException, NotOkException
+from .store_api import Store, NoStoreException, NotOkException, Timeout
 from .validators import connect_command_template_validator
 
 logger = getLogger(__name__)
@@ -346,7 +346,7 @@ def update_store_profile(sender, **kwargs):
                       profile.disk_quota)
     except NoStoreException:
         logger.debug("Store is not available.")
-    except NotOkException:
+    except (NotOkException, Timeout):
         logger.critical("Store is not accepting connections.")
 
 
