@@ -1756,9 +1756,16 @@ class TemplateList(LoginRequiredMixin, FilterMixin, SingleTableView):
 
     def get_context_data(self, *args, **kwargs):
         context = super(TemplateList, self).get_context_data(*args, **kwargs)
+        user = self.request.user
+        leases_w_operator = Lease.get_objects_with_level("operator", user)
         context['lease_table'] = LeaseListTable(
-            Lease.get_objects_with_level("user", self.request.user),
-            request=self.request)
+            leases_w_operator, request=self.request,
+            template="django_tables2/table_no_page.html",
+        )
+        context['show_lease_table'] = (
+            leases_w_operator.count() > 0 or
+            user.has_perm("vm.create_leases")
+        )
 
         context['search_form'] = self.search_form
 
