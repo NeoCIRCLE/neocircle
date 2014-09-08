@@ -244,10 +244,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                                    verbose_name=_('time of delete'),
                                    help_text=_("Proposed time of automatic "
                                                "deletion."))
-    active_since = DateTimeField(blank=True, null=True,
-                                 help_text=_("Time stamp of successful "
-                                             "boot report."),
-                                 verbose_name=_('active since'))
     node = ForeignKey(Node, blank=True, null=True,
                       related_name='instance_set',
                       help_text=_("Current hypervisor of this instance."),
@@ -532,15 +528,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         return self.primary_host.mac if self.primary_host else None
 
     @property
-    def uptime(self):
-        """Uptime of the instance.
-        """
-        if self.active_since:
-            return timezone.now() - self.active_since
-        else:
-            return timedelta()  # zero
-
-    @property
     def os_type(self):
         """Get the type of the instance's operating system.
         """
@@ -548,13 +535,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             return "unknown"
         else:
             return self.template.os_type
-
-    def get_age(self):
-        """Deprecated. Use uptime instead.
-
-        Get age of VM in seconds.
-        """
-        return self.uptime.seconds
 
     @property
     def waiting(self):
