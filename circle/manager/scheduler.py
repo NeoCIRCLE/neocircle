@@ -18,26 +18,37 @@
 from logging import getLogger
 
 from django.db.models import Sum
+from django.utils.translation import ugettext_noop
+
+from common.models import HumanReadableException
 
 logger = getLogger(__name__)
 
 
-class NotEnoughMemoryException(Exception):
+class SchedulerError(HumanReadableException):
+    admin_message = None
 
-    def __init__(self, message=None):
-        if message is None:
-            message = "No node has enough memory to accomodate the guest."
+    def __init__(self, params=None, level=None, **kwargs):
+        kwargs.update(params or {})
+        super(SchedulerError, self).__init__(
+            level, self.message, self.admin_message or self.message,
+            kwargs)
 
-        Exception.__init__(self, message)
+
+class NotEnoughMemoryException(SchedulerError):
+    message = ugettext_noop(
+        "The resources required for launching the virtual machine are not "
+        "available currently. Please try again later.")
+
+    admin_message = ugettext_noop(
+        "The required free memory for launching the virtual machine is not "
+        "available on any usable node currently. Please try again later.")
 
 
-class TraitsUnsatisfiableException(Exception):
-
-    def __init__(self, message=None):
-        if message is None:
-            message = "No node can satisfy all required traits of the guest."
-
-        Exception.__init__(self, message)
+class TraitsUnsatisfiableException(SchedulerError):
+    message = ugettext_noop(
+        "No node can satisfy the required traits of the "
+        "new vitual machine currently.")
 
 
 def select_node(instance, nodes):
