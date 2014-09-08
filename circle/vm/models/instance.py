@@ -613,6 +613,13 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         except:
             return
 
+    @property
+    def short_hostname(self):
+        try:
+            return self.primary_host.hostname
+        except AttributeError:
+            return self.vm_name
+
     def get_vm_desc(self):
         """Serialize Instance object to vmdriver.
         """
