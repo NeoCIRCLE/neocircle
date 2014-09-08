@@ -222,6 +222,8 @@ function vmCustomizeLoaded() {
 
     $(this).find("i").prop("class", "fa fa-spinner fa-spin");
 
+    if($("#create-modal")) return true;
+
     $.ajax({
       url: '/dashboard/vm/create/',
       headers: {"X-CSRFToken": getCookie('csrftoken')},
