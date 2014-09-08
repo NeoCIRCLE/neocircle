@@ -3371,6 +3371,9 @@ class ProfileView(LoginRequiredMixin, DetailView):
                 template__in=it)
             context['instances_with_access'] = context[
                 'instances_with_access'].filter(template__in=it)
+        if self.request.user.is_superuser:
+            context['login_token'] = TokenLogin.get_token_url(
+                user, self.request.user)
         return context
 
 
