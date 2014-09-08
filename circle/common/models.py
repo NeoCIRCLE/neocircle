@@ -488,7 +488,7 @@ class HumanReadableException(HumanReadableObject, Exception):
                     "Level should be the name of an attribute of django."
                     "contrib.messages (and it should be callable with "
                     "(request, message)). Like 'error', 'warning'.")
-        else:
+        elif not hasattr(self, "level"):
             self.level = "error"
 
     def send_message(self, request, level=None):
