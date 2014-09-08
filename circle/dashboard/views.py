@@ -2120,9 +2120,11 @@ class VmCreate(LoginRequiredMixin, TemplateView):
         if not request.user.has_perm('vm.create_vm'):
             raise PermissionDenied()
 
-        form_error = form is not None
-        template_pk = (form.template.pk if form_error
-                       else request.GET.get("template"))
+        if form is None:
+            template_pk = request.GET.get("template")
+        else:
+            template_pk = form.template.pk
+
         if template_pk:
             template = get_object_or_404(InstanceTemplate, pk=template_pk)
             if not template.has_level(request.user, 'user'):
