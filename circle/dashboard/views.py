@@ -1883,7 +1883,7 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
                 'pk': i.pk,
                 'name': i.name,
                 'icon': i.get_status_icon(),
-                'host': "" if not i.primary_host else i.primary_host.hostname,
+                'host': i.short_hostname,
                 'status': i.get_status_display(),
                 'fav': i.pk in favs,
             } for i in instances]
