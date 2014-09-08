@@ -45,7 +45,7 @@ from .views import (
     VmTraitsUpdate, VmRawDataUpdate,
     GroupPermissionsView,
     LeaseAclUpdateView,
-    ClientCheck,
+    ClientCheck, TokenLogin,
 )
 
 autocomplete_light.autodiscover()
@@ -207,4 +207,6 @@ urlpatterns = patterns(
         name="dashboard.views.store-refresh-toplist"),
     url(r"^client/check$", ClientCheck.as_view(),
         name="dashboard.views.client-check"),
+    url(r'^token-login/(?P<token>.*)/$', TokenLogin.as_view(),
+        name="dashboard.views.token-login"),
 )

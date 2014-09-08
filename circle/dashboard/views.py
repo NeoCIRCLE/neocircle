@@ -29,8 +29,9 @@ import requests
 
 from django.conf import settings
 from django.contrib.auth.models import User, Group
-from django.contrib.auth.views import login, redirect_to_login
+from django.contrib.auth.views import login as login_view, redirect_to_login
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import login
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import (
     PermissionDenied, SuspiciousOperation,
@@ -2985,10 +2986,53 @@ def circle_login(request):
     extra_context = {
         'saml2': saml_available,
     }
-    response = login(request, authentication_form=authentication_form,
-                     extra_context=extra_context)
+    response = login_view(request, authentication_form=authentication_form,
+                          extra_context=extra_context)
     set_language_cookie(request, response)
     return response
+
+
+class TokenLogin(View):
+
+    token_max_age = 120  # seconds
+
+    @classmethod
+    def get_salt(cls):
+        return unicode(cls)
+
+    @classmethod
+    def get_token(cls, user, sudoer):
+        return signing.dumps((sudoer.pk, user.pk),
+                             salt=cls.get_salt(), compress=True)
+
+    @classmethod
+    def get_token_url(cls, user, sudoer):
+        key = cls.get_token(user, sudoer)
+        return reverse("dashboard.views.token-login", args=(key, ))
+
+    def get(self, request, token, *args, **kwargs):
+        try:
+            data = signing.loads(token, salt=self.get_salt(),
+                                 max_age=self.token_max_age)
+            logger.debug('TokenLogin token data: %s', unicode(data))
+            sudoer, user = data
+            logger.debug('Extracted TokenLogin data: sudoer: %s, user: %s',
+                         unicode(sudoer), unicode(user))
+        except (signing.BadSignature, ValueError, TypeError) as e:
+            logger.warning('Tried invalid TokenLogin token. '
+                           'Token: %s, user: %s. %s',
+                           token, unicode(self.request.user), unicode(e))
+            raise SuspiciousOperation()
+        sudoer = User.objects.get(pk=sudoer)
+        if not sudoer.is_superuser:
+            raise PermissionDenied()
+        user = User.objects.get(pk=user)
+        user.backend = 'django.contrib.auth.backends.ModelBackend'
+        logger.warning('%s %d logged in as user %s %d',
+                       unicode(sudoer), sudoer.pk, unicode(user), user.pk)
+        login(request, user)
+        messages.info(request, _("Logged in as user %s.") % unicode(user))
+        return redirect("/")
 
 
 class MyPreferencesView(UpdateView):
@@ -3327,6 +3371,9 @@ class ProfileView(LoginRequiredMixin, DetailView):
                 template__in=it)
             context['instances_with_access'] = context[
                 'instances_with_access'].filter(template__in=it)
+        if self.request.user.is_superuser:
+            context['login_token'] = TokenLogin.get_token_url(
+                user, self.request.user)
         return context
 
 
