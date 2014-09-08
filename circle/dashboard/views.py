@@ -2121,22 +2121,26 @@ class VmCreate(LoginRequiredMixin, TemplateView):
             raise PermissionDenied()
 
         form_error = form is not None
-        template = (form.template.pk if form_error
-                    else request.GET.get("template"))
-        templates = InstanceTemplate.get_objects_with_level(
-            'user', request.user, disregard_superuser=True)
-        if form is None and template:
-            form = self.form_class(user=request.user,
-                                   template=templates.get(pk=template))
+        template_pk = (form.template.pk if form_error
+                       else request.GET.get("template"))
+        if template_pk:
+            template = get_object_or_404(InstanceTemplate, pk=template_pk)
+            if not template.has_level(request.user, 'user'):
+                raise PermissionDenied()
+            if form is None:
+                form = self.form_class(user=request.user, template=template)
+        else:
+            templates = InstanceTemplate.get_objects_with_level(
+                'user', request.user, disregard_superuser=True)
 
         context = self.get_context_data(**kwargs)
-        if template:
+        if template_pk:
             context.update({
                 'template': 'dashboard/_vm-create-2.html',
                 'box_title': _('Customize VM'),
                 'ajax_title': True,
                 'vm_create_form': form,
-                'template_o': templates.get(pk=template),
+                'template_o': template,
             })
         else:
             context.update({
@@ -2162,18 +2166,15 @@ class VmCreate(LoginRequiredMixin, TemplateView):
 
     def __create_customized(self, request, *args, **kwargs):
         user = request.user
+        # no form yet, using POST directly:
+        template = get_object_or_404(InstanceTemplate,
+                                     pk=request.POST.get("template"))
         form = self.form_class(
-            request.POST, user=request.user,
-            template=InstanceTemplate.objects.get(
-                pk=request.POST.get("template")
-            )
-        )
+            request.POST, user=request.user, template=template)
         if not form.is_valid():
             return self.get(request, form, *args, **kwargs)
         post = form.cleaned_data
 
-        template = InstanceTemplate.objects.get(pk=post['template'])
-        # permission check
         if not template.has_level(user, 'user'):
             raise PermissionDenied()
 
