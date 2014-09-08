@@ -620,6 +620,17 @@ class ShutdownOperation(InstanceOperation):
         self.instance.yield_node()
         self.instance.yield_vnc_port()
 
+    def on_abort(self, activity, error):
+        if isinstance(error, TimeLimitExceeded):
+            activity.result = humanize_exception(ugettext_noop(
+                "The virtual machine did not switch off in the provided time "
+                "limit. Most of the time this is caused by incorrect ACPI "
+                "settings. You can also try to power off the machine from the "
+                "operating system manually."), error)
+            activity.resultant_state = None
+        else:
+            super(ShutdownOperation, self).on_abort(activity, error)
+
 
 register_operation(ShutdownOperation)
 
