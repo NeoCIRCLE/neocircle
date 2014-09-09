@@ -684,7 +684,7 @@ textarea[name="list-new-namelist"] {
 
 .dashboard-vm-details-connect-command {
   /* for mobile view */
-  margin-bottom: 20px;
+  padding-bottom: 20px;
 }
 
 #store-list-list {
@@ -955,4 +955,12 @@ textarea[name="list-new-namelist"] {
 
 #vm-list-search-checkbox-span {
   cursor: pointer
+}
+
+#vm-details-resources-disk {
+  padding: 2px 5px 10px 5px;
+}
+
+#vm-details-start-template-tour {
+  margin-right: 5px;
 }

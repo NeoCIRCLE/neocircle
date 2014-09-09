@@ -1,5 +1,5 @@
 $(function() {
-  $(".vm-details-start-template-tour").click(function() {
+  $("#vm-details-start-template-tour").click(function() {
     var intro = introJs();
     intro.setOptions({
       'nextLabel': gettext("Next"),
@@ -10,7 +10,7 @@ $(function() {
     intro.setOptions({
       steps: [
         {
-          element: document.querySelector("#vm-details-template-tour-button"),
+          element: document.querySelector("#vm-details-start-template-tour"),
           intro: "<p>" + gettext("Welcome to the template tutorial. In this quick tour, we gonna show you how to do the steps described above.") + "</p>" +
                  "<p>" + gettext('For the next tour step press the "Next" button or the right arrow (or "Back" button/left arrow for the previous step).') + "</p>" +
                  "<p>" + gettext("During the tour please don't try the functions because it may lead to graphical glitches, however " +
@@ -27,19 +27,21 @@ $(function() {
         {
           element: document.querySelector('#vm-details-resources-form'),
           intro: '<p><strong>' + gettext("CPU priority") + ":</strong> " + gettext("higher is better") + "</p>" + 
-                   '<p><strong>' + gettext("CPU count") + ":</strong> " + gettext("number of CPU cores.") + "</p>" +
-                   '<p><strong>' + gettext("RAM amount") + ":</strong> " + gettext("amount of RAM.") + "</p>", 
+                 '<p><strong>' + gettext("CPU count") + ":</strong> " + gettext("number of CPU cores.") + "</p>" +
+                 '<p><strong>' + gettext("RAM amount") + ":</strong> " + gettext("amount of RAM.") + "</p>", 
+          position: "top",
         },
         {
           element: document.querySelector('#vm-details-resources-disk'),
           intro: gettext("You can add empty disks, download new ones and remove existing ones here."),
+          position: "top",
         },
         {
           element: document.querySelector('a[href="#network"]'),
           intro: gettext('You can add new network interfaces or remove existing ones here.'),
         },
         {
-          element: document.querySelector("#ops"),
+          element: document.querySelector('#ops a[class*="operation-deploy"]'),
           intro: gettext("Deploy the virtual machine."),
         },
         {
@@ -51,7 +53,7 @@ $(function() {
           intro: gettext("After you have connected to the virtual machine do your modifications then log off."),
         },
         {
-          element: document.querySelector("#ops"),
+          element: document.querySelector('#ops a[class*="operation-save_as"]'),
           intro: gettext('Press the "Save as template" button and wait until the activity finishes.'),
         },
         {

@@ -361,13 +361,16 @@ class VmDetailView(CheckedDetailView):
         instance = context['instance']
         user = self.request.user
         ops = get_operations(instance, user)
+        hide_tutorial = self.request.COOKIES.get(
+            "hide_tutorial_for_%s" % instance.pk) == "True"
         context.update({
             'graphite_enabled': settings.GRAPHITE_URL is not None,
             'vnc_url': reverse_lazy("dashboard.views.detail-vnc",
                                     kwargs={'pk': self.object.pk}),
             'ops': ops,
             'op': {i.op: i for i in ops},
-            'connect_commands': user.profile.get_connect_commands(instance)
+            'connect_commands': user.profile.get_connect_commands(instance),
+            'hide_tutorial': hide_tutorial,
         })
 
         # activity data
@@ -3635,3 +3638,13 @@ def store_refresh_toplist(request):
 
 def absolute_url(url):
     return urljoin(settings.DJANGO_URL, url)
+
+
+@login_required
+def toggle_template_tutorial(request, pk):
+    hidden = request.POST.get("hidden", "").lower() == "true"
+    instance = get_object_or_404(Instance, pk=pk)
+    response = HttpResponseRedirect(instance.get_absolute_url())
+    response.set_cookie(  # for a week
+        "hide_tutorial_for_%s" % pk, hidden, 7 * 24 * 60 * 60)
+    return response

@@ -315,6 +315,24 @@ $(function() {
     if(Boolean($(this).data("disabled"))) return false;
   });
 
+  $("#dashboard-tutorial-toggle").click(function() {
+    var box = $("#alert-new-template");
+    var list = box.find("ol")
+    list.stop().slideToggle(function() {
+      var url = box.find("form").prop("action");
+      var hidden = list.css("display") === "none";
+      box.find("button i").prop("class", "fa fa-caret-" + (hidden ? "down" : "up"));
+      $.ajax({
+        type: 'POST',
+        url: url,
+        data: {'hidden': hidden},
+        headers: {"X-CSRFToken": getCookie('csrftoken')},
+        success: function(re, textStatus, xhr) {}
+      });
+    }); 
+    return false;
+  });
+
 });
 
 
