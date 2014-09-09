@@ -34,6 +34,7 @@ from common.models import (
     create_readable, humanize_exception, HumanReadableException
 )
 from common.operations import Operation, register_operation
+from manager.scheduler import SchedulerError
 from .tasks.local_tasks import (
     abortable_async_instance_operation, abortable_async_node_operation,
 )
@@ -728,7 +729,10 @@ class WakeUpOperation(InstanceOperation):
         return self.instance.status == self.instance.STATUS.SUSPENDED
 
     def on_abort(self, activity, error):
-        activity.resultant_state = 'ERROR'
+        if isinstance(error, SchedulerError):
+            activity.resultant_state = None
+        else:
+            activity.resultant_state = 'ERROR'
 
     def _operation(self, activity, timeout=60):
         # Schedule vm
