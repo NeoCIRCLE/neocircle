@@ -4,7 +4,7 @@ from django.utils.translation import ugettext as _
 from .views import AclUpdateView
 
 
-class AclUserAutocomplete(autocomplete_light.AutocompleteGenericBase):
+class AclUserGroupAutocomplete(autocomplete_light.AutocompleteGenericBase):
     search_fields = (
         ('^first_name', 'last_name', 'username', '^email', 'profile__org_id'),
         ('^name', 'groupprofile__org_id'),
@@ -27,7 +27,26 @@ class AclUserAutocomplete(autocomplete_light.AutocompleteGenericBase):
         user = self.request.user
         self.choices = (AclUpdateView.get_allowed_users(user),
                         AclUpdateView.get_allowed_groups(user))
-        return super(AclUserAutocomplete, self).choices_for_request()
+        return super(AclUserGroupAutocomplete, self).choices_for_request()
+
+    def autocomplete_html(self):
+        html = []
+
+        for choice in self.choices_for_request():
+            html.append(self.choice_html(choice))
+
+        if not html:
+            html = self.empty_html_format % _('no matches found').capitalize()
+
+        return self.autocomplete_html_format % ''.join(html)
 
 
+class AclUserAutocomplete(AclUserGroupAutocomplete):
+    def choices_for_request(self):
+        user = self.request.user
+        self.choices = (AclUpdateView.get_allowed_users(user), )
+        return super(AclUserGroupAutocomplete, self).choices_for_request()
+
+
+autocomplete_light.register(AclUserGroupAutocomplete)
 autocomplete_light.register(AclUserAutocomplete)
