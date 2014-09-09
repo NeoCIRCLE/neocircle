@@ -1055,9 +1055,12 @@ class UserCreationForm(OrgUserCreationForm):
         return user
 
 
-class AclUserAddForm(forms.Form):
+class AclUserOrGroupAddForm(forms.Form):
     name = forms.CharField(widget=autocomplete_light.TextWidget(
-        'AclUserAutocomplete', attrs={'class': 'form-control'}))
+        'AclUserGroupAutocomplete',
+        autocomplete_js_attributes={'placeholder': _("Name of group or user")},
+        attrs={'class': 'form-control'}))
+
 
 
 class UserKeyForm(forms.ModelForm):

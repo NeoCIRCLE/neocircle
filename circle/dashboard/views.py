@@ -70,7 +70,7 @@ from .forms import (
     UserCreationForm, GroupProfileUpdateForm, UnsubscribeForm,
     VmSaveForm, UserKeyForm, VmRenewForm, VmStateChangeForm,
     CirclePasswordChangeForm, VmCreateDiskForm, VmDownloadDiskForm,
-    TraitsForm, RawDataForm, GroupPermissionForm, AclUserAddForm,
+    TraitsForm, RawDataForm, GroupPermissionForm, AclUserOrGroupAddForm,
     VmResourcesForm, VmAddInterfaceForm, VmListSearchForm,
     TemplateListSearchForm, ConnectCommandForm
 )
@@ -390,7 +390,7 @@ class VmDetailView(CheckedDetailView):
         ).all()
         context['acl'] = AclUpdateView.get_acl_data(
             instance, self.request.user, 'dashboard.views.vm-acl')
-        context['aclform'] = AclUserAddForm()
+        context['aclform'] = AclUserOrGroupAddForm()
         context['os_type_icon'] = instance.os_type.replace("unknown",
                                                            "question")
         # ipv6 infos
@@ -1282,7 +1282,7 @@ class GroupDetailView(CheckedDetailView):
         context['acl'] = AclUpdateView.get_acl_data(
             self.object.profile, self.request.user,
             'dashboard.views.group-acl')
-        context['aclform'] = AclUserAddForm()
+        context['aclform'] = AclUserOrGroupAddForm()
         context['group_profile_form'] = GroupProfileUpdate.get_form_object(
             self.request, self.object.profile)
 
@@ -1717,7 +1717,7 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
             obj, self.request.user, 'dashboard.views.template-acl')
         context['disks'] = obj.disks.all()
         context['is_owner'] = obj.has_level(self.request.user, 'owner')
-        context['aclform'] = AclUserAddForm()
+        context['aclform'] = AclUserOrGroupAddForm()
         return context
 
     def get_success_url(self):

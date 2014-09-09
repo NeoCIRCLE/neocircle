@@ -42,7 +42,7 @@ from operator import itemgetter
 from itertools import chain
 import json
 from dashboard.views import AclUpdateView
-from dashboard.forms import AclUserAddForm
+from dashboard.forms import AclUserOrGroupAddForm
 
 
 class SuccessMessageMixin(FormMixin):
@@ -654,7 +654,7 @@ class VlanDetail(LoginRequiredMixin, SuperuserRequiredMixin,
         context['vlan_vid'] = self.kwargs.get('vid')
         context['acl'] = AclUpdateView.get_acl_data(
             self.object, self.request.user, 'network.vlan-acl')
-        context['aclform'] = AclUserAddForm()
+        context['aclform'] = AclUserOrGroupAddForm()
         return context
 
     success_url = reverse_lazy('network.vlan_list')
