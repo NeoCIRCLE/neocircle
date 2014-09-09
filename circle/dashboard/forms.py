@@ -1062,6 +1062,14 @@ class AclUserOrGroupAddForm(forms.Form):
         attrs={'class': 'form-control'}))
 
 
+class TransferOwnershipForm(forms.Form):
+    name = forms.CharField(
+        widget=autocomplete_light.TextWidget(
+            'AclUserAutocomplete',
+            autocomplete_js_attributes={"placeholder": _("Name of user")},
+            attrs={'class': 'form-control'}),
+        label=_("E-mail address or identifier of user"))
+
 
 class AddGroupMemberForm(forms.Form):
     new_member = forms.CharField(

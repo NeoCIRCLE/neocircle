@@ -2766,11 +2766,30 @@ class FavouriteView(TemplateView):
             return HttpResponse("Added.")
 
 
-class TransferOwnershipView(LoginRequiredMixin, DetailView):
+class TransferOwnershipView(CheckedDetailView, DetailView):
     model = Instance
-    template_name = 'dashboard/vm-detail/tx-owner.html'
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/_modal.html']
+        else:
+            return ['dashboard/nojs-wrapper.html']
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(TransferOwnershipView, self).get_context_data(
+            *args, **kwargs)
+        context['form'] = TransferOwnershipForm()
+        context.update({
+            'box_title': _("Transfer ownership"),
+            'ajax_title': True,
+            'template': "dashboard/vm-detail/tx-owner.html",
+        })
+        return context
 
     def post(self, request, *args, **kwargs):
+        form = TransferOwnershipForm(request.POST)
+        if not form.is_valid():
+            return self.get(request)
         try:
             new_owner = search_user(request.POST['name'])
         except User.DoesNotExist:
