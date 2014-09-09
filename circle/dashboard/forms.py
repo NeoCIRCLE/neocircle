@@ -1063,6 +1063,15 @@ class AclUserOrGroupAddForm(forms.Form):
 
 
 
+class AddGroupMemberForm(forms.Form):
+    new_member = forms.CharField(
+        widget=autocomplete_light.TextWidget(
+            'AclUserAutocomplete',
+            autocomplete_js_attributes={"placeholder": _("Name of user")},
+            attrs={'class': 'form-control'}),
+        label=_("E-mail address or identifier of user"))
+
+
 class UserKeyForm(forms.ModelForm):
     name = forms.CharField(required=True, label=_('Name'))
     key = forms.CharField(

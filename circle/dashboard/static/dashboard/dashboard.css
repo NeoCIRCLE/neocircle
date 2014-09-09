@@ -591,11 +591,15 @@ footer a, footer a:hover, footer a:visited {
   width: 100px;
 }
 
+#group-detail-user-table tr:last-child td:nth-child(2) {
+  text-align: left;
+}
+
 #group-detail-perm-header {
   margin-top: 25px;
 }
 
-textarea[name="list-new-namelist"] {
+textarea[name="new_members"] {
   max-width: 500px;
   min-height: 80px;
   margin-bottom: 10px;

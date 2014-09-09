@@ -72,7 +72,8 @@ from .forms import (
     CirclePasswordChangeForm, VmCreateDiskForm, VmDownloadDiskForm,
     TraitsForm, RawDataForm, GroupPermissionForm, AclUserOrGroupAddForm,
     VmResourcesForm, VmAddInterfaceForm, VmListSearchForm,
-    TemplateListSearchForm, ConnectCommandForm
+    TemplateListSearchForm, ConnectCommandForm,
+    TransferOwnershipForm, AddGroupMemberForm
 )
 
 from .tables import (
@@ -1283,6 +1284,7 @@ class GroupDetailView(CheckedDetailView):
             self.object.profile, self.request.user,
             'dashboard.views.group-acl')
         context['aclform'] = AclUserOrGroupAddForm()
+        context['addmemberform'] = AddGroupMemberForm()
         context['group_profile_form'] = GroupProfileUpdate.get_form_object(
             self.request, self.object.profile)
 
@@ -1299,17 +1301,15 @@ class GroupDetailView(CheckedDetailView):
 
         if request.POST.get('new_name'):
             return self.__set_name(request)
-        if request.POST.get('list-new-name'):
+        if request.POST.get('new_member'):
             return self.__add_user(request)
-        if request.POST.get('list-new-namelist'):
+        if request.POST.get('new_members'):
             return self.__add_list(request)
-        if (request.POST.get('list-new-name') is not None) and \
-                (request.POST.get('list-new-namelist') is not None):
-            return redirect(reverse_lazy("dashboard.views.group-detail",
-                                         kwargs={'pk': self.get_object().pk}))
+        return redirect(reverse_lazy("dashboard.views.group-detail",
+                                     kwargs={'pk': self.get_object().pk}))
 
     def __add_user(self, request):
-        name = request.POST['list-new-name']
+        name = request.POST['new_member']
         self.__add_username(request, name)
         return redirect(reverse_lazy("dashboard.views.group-detail",
                                      kwargs={'pk': self.object.pk}))
@@ -1328,9 +1328,7 @@ class GroupDetailView(CheckedDetailView):
                 messages.warning(request, _('User "%s" not found.') % name)
 
     def __add_list(self, request):
-        if not self.get_has_level()(request.user, 'operator'):
-            raise PermissionDenied()
-        userlist = request.POST.get('list-new-namelist').split('\r\n')
+        userlist = request.POST.get('new_members').split('\r\n')
         for line in userlist:
             self.__add_username(request, line)
         return redirect(reverse_lazy("dashboard.views.group-detail",
