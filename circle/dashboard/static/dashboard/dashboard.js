@@ -244,7 +244,7 @@ $(function () {
     var search_result = []
     var html = '';
     for(var i in my_vms) {
-      if(my_vms[i].name.indexOf(input) != -1) {
+      if(my_vms[i].name.indexOf(input) != -1 || my_vms[i].host.indexOf(input) != -1) {
         search_result.push(my_vms[i]);
       }
     }
