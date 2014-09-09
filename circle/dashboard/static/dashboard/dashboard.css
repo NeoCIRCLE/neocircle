@@ -960,3 +960,12 @@ textarea[name="list-new-namelist"] {
 #vm-activity-state {
   margin-bottom: 15px;
 }
+
+.autocomplete-hl {
+  color: #b20000;
+  font-weight: bold;
+}
+
+.hilight .autocomplete-hl {
+  color: orange;
+}
