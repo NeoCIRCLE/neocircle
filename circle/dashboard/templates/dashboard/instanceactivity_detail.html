@@ -10,9 +10,9 @@
     </h1>
   </div>
   <div class="row">
-    <div class="col-md-5" id="vm-info-pane">
-      <div class="big">
-        <span id="vm-activity-state" class="label label-{% if object.get_status_id == 'wait' %}info{% else %}{% if object.succeeded %}success{% else %}error{% endif %}{% endif %}">
+    <div class="col-md-6" id="vm-info-pane">
+      <div class="big" id="vm-activity-state">
+        <span class="label label-{% if object.get_status_id == 'wait' %}info{% else %}{% if object.succeeded %}success{% else %}danger{% endif %}{% endif %}">
           <span>{{ object.get_status_id|upper }}</span>
         </span>
       </div>
@@ -20,7 +20,7 @@
       {% include "dashboard/vm-detail/_activity-timeline.html" with active=object %}
 
     </div>
-    <div class="col-md-7">
+    <div class="col-md-6">
       <div class="panel panel-default">
         <!--<div class="panel-heading"><h2 class="panel-title">{% trans "Activity" %}</h2></div> -->
         <div class="panel-body">

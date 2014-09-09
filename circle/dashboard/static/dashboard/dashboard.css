@@ -956,3 +956,7 @@ textarea[name="list-new-namelist"] {
 #vm-list-search-checkbox-span {
   cursor: pointer
 }
+
+#vm-activity-state {
+  margin-bottom: 15px;
+}
