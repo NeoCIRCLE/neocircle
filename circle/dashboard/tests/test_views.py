@@ -1134,7 +1134,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         c = Client()
         user_in_group = self.g1.user_set.count()
         response = c.post('/dashboard/group/' +
-                          str(self.g1.pk) + '/', {'list-new-name': 'user3'})
+                          str(self.g1.pk) + '/', {'new_member': 'user3'})
         self.assertEqual(user_in_group,
                          self.g1.user_set.count())
         self.assertEqual(response.status_code, 302)
@@ -1144,7 +1144,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         self.login(c, 'user3')
         user_in_group = self.g1.user_set.count()
         response = c.post('/dashboard/group/' +
-                          str(self.g1.pk) + '/', {'list-new-name': 'user3'})
+                          str(self.g1.pk) + '/', {'new_member': 'user3'})
         self.assertEqual(user_in_group, self.g1.user_set.count())
         self.assertEqual(response.status_code, 403)
 
@@ -1153,7 +1153,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         self.login(c, 'superuser')
         user_in_group = self.g1.user_set.count()
         response = c.post('/dashboard/group/' +
-                          str(self.g1.pk) + '/', {'list-new-name': 'user3'})
+                          str(self.g1.pk) + '/', {'new_member': 'user3'})
         self.assertEqual(user_in_group + 1, self.g1.user_set.count())
         self.assertEqual(response.status_code, 302)
 
@@ -1162,7 +1162,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         self.login(c, 'user0')
         user_in_group = self.g1.user_set.count()
         response = c.post('/dashboard/group/' +
-                          str(self.g1.pk) + '/', {'list-new-name': 'user3'})
+                          str(self.g1.pk) + '/', {'new_member': 'user3'})
         self.assertEqual(user_in_group + 1, self.g1.user_set.count())
         self.assertEqual(response.status_code, 302)
 
@@ -1172,7 +1172,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         user_in_group = self.g1.user_set.count()
         response = c.post('/dashboard/group/' +
                           str(self.g1.pk) + '/',
-                          {'list-new-namelist': 'user1\r\nuser2'})
+                          {'new_members': 'user1\r\nuser2'})
         self.assertEqual(user_in_group + 2, self.g1.user_set.count())
         self.assertEqual(response.status_code, 302)
 
@@ -1182,7 +1182,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         user_in_group = self.g1.user_set.count()
         response = c.post('/dashboard/group/' +
                           str(self.g1.pk) + '/',
-                          {'list-new-namelist': 'user1\r\nnoname\r\nuser2'})
+                          {'new_members': 'user1\r\nnoname\r\nuser2'})
         self.assertEqual(user_in_group + 2, self.g1.user_set.count())
         self.assertEqual(response.status_code, 302)
 
@@ -1192,7 +1192,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         user_in_group = self.g1.user_set.count()
         response = c.post('/dashboard/group/' +
                           str(self.g1.pk) + '/',
-                          {'list-new-namelist': 'user1\r\nuser2'})
+                          {'new_members': 'user1\r\nuser2'})
         self.assertEqual(user_in_group, self.g1.user_set.count())
         self.assertEqual(response.status_code, 403)
 
@@ -1201,7 +1201,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         user_in_group = self.g1.user_set.count()
         response = c.post('/dashboard/group/' +
                           str(self.g1.pk) + '/',
-                          {'list-new-namelist': 'user1\r\nuser2'})
+                          {'new_members': 'user1\r\nuser2'})
         self.assertEqual(user_in_group, self.g1.user_set.count())
         self.assertEqual(response.status_code, 302)
 
@@ -1471,8 +1471,8 @@ class TransferOwnershipViewTest(LoginMixin, TestCase):
         c2 = self.u2.notification_set.count()
         c = Client()
         self.login(c, 'user2')
-        response = c.post('/dashboard/vm/1/tx/')
-        assert response.status_code == 400
+        response = c.post('/dashboard/vm/1/tx/', {'name': 'userx'})
+        assert response.status_code == 403
         self.assertEqual(self.u2.notification_set.count(), c2)
 
     def test_owned_offer(self):
