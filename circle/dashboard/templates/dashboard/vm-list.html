@@ -21,7 +21,7 @@
             <strong>{% trans "Group actions" %}</strong>
             <button id="vm-list-group-select-all" class="btn btn-info btn-xs">{% trans "Select all" %}</button>
             {% for o in ops %}
-              <a href="{{ o.get_url }}" class="btn btn-xs btn-{{ o.effect }} mass-operation" 
+              <a href="{{ o.get_url }}" class="btn btn-xs btn-{{ o.effect }} mass-operation"
                title="{{ o.name|capfirst }}" disabled>
                 <i class="fa fa-{{ o.icon }}"></i>
               </a>
@@ -34,12 +34,12 @@
                 <div class="input-group-btn">
                   {{ search_form.stype }}
                 </div>
-                <label class="input-group-addon input-tags" title="{% trans "Include deleted VMs" %}" 
+                <label class="input-group-addon input-tags" title="{% trans "Include deleted VMs" %}"
                   id="vm-list-search-checkbox-span" data-container="body">
                   {{ search_form.include_deleted }}
                 </label>
                 <div class="input-group-btn">
-                  <button type="submit" class="btn btn-primary input-tags"> 
+                  <button type="submit" class="btn btn-primary input-tags">
                     <i class="fa fa-search"></i>
                   </button>
                 </div>

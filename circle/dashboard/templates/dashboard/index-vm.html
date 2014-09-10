@@ -3,10 +3,10 @@
   <div class="panel-heading">
     <div class="pull-right toolbar">
       <div class="btn-group">
-        <a href="#index-graph-view" data-index-box="vm" class="btn btn-default btn-xs" 
+        <a href="#index-graph-view" data-index-box="vm" class="btn btn-default btn-xs"
           data-container="body"
           title="{% trans "summary view" %}"><i class="fa fa-dashboard"></i></a>
-        <a href="#index-list-view" data-index-box="vm" class="btn btn-default btn-xs disabled" 
+        <a href="#index-list-view" data-index-box="vm" class="btn btn-default btn-xs disabled"
           data-container="body"
           title="{% trans "list view" %}"><i class="fa fa-list"></i></a>
       </div>
@@ -25,7 +25,7 @@
           <i class="fa {{ i.get_status_icon }}" title="{{ i.get_status_display }}"></i>
           {{ i.name }}
         </span>
-        <small class="text-muted"> {{ i.primary_host.hostname }}</small>
+        <small class="text-muted"> {{ i.short_hostname }}</small>
         <div class="pull-right dashboard-vm-favourite" data-vm="{{ i.pk }}">
           {% if i.fav %}
             <i class="fa fa-star text-primary title-favourite" title="{% trans "Unfavourite" %}"></i>
@@ -50,7 +50,7 @@
       <div class="row">
         <form action="{% url "dashboard.views.vm-list" %}" method="GET" id="dashboard-vm-search-form">
           <div class="col-sm-6 col-xs-6 input-group input-group-sm">
-            <input id="dashboard-vm-search-input" type="text" class="form-control" name="s" 
+            <input id="dashboard-vm-search-input" type="text" class="form-control" name="s"
             placeholder="{% trans "Search..." %}" />
             <div class="input-group-btn">
               <button type="submit" class="form-control btn btn-primary"><i class="fa fa-search"></i></button>

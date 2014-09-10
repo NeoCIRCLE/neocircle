@@ -1,9 +1,11 @@
 {% load i18n %}
 {% load l10n %}
 
-{# <span style="color: #FF0000;">[{{ record.r_type }}]</span> #}
-{% if record.direction == "1" %}
+{% if record.direction == "in" %}
   {{ record.foreign_network }}
+  [{% for v in record.foreign_network.vlans.all %}
+    {{ v.name }}{% if not forloop.last %},{% endif %}
+  {% endfor %}]
 {% else %}
   {% if record.r_type == "host" %}
     {{ record.host.get_fqdn }}
@@ -11,10 +13,10 @@
     {{ record.r_type }}
   {% endif %}
 {% endif %}
-{#<span style="color: #0000FF;"> ▸ </span>#}
 
 <i class="fa fa-arrow-right"></i>
-{% if record.direction == "0" %}
+
+{% if record.direction == "out" %}
   {{ record.foreign_network }}
 {% else %}
   {% if record.r_type == "host" %}
@@ -28,11 +30,16 @@
 {% endif %}
 
 {% if record.extra %}
-    <span class="label label-default">{{ record.extra }}</span>
+  <span class="label label-default">{{ record.extra }}</span>
 {% endif %}
 
 {% if record.nat %}
-    <span class="label label-success">NAT
-        [ {{ record.dport }} <i class="fa fa-arrow-right"></i>
-        {{record.nat_external_port}} ]</span>
+  <span class="label label-success">NAT
+      [
+        {{record.nat_external_port}}
+        <i class="fa fa-arrow-right"></i>
+        {{ record.dport }}
+      ]
+      {{ record.proto|upper }}
+  </span>
 {% endif %}

@@ -23,7 +23,7 @@
                 {{ search_form.s }}
                 <div class="input-group-btn">
                   {{ search_form.stype }}
-                  <button type="submit" class="btn btn-primary input-tags"> 
+                  <button type="submit" class="btn btn-primary input-tags">
                     <i class="fa fa-search"></i>
                   </button>
                 </div>
@@ -39,12 +39,14 @@
   </div>
 </div>
 
+{% if show_lease_table %}
 <div class="row">
   <div class="col-md-6">
     <div class="panel panel-default">
       <div class="panel-heading">
         {% if perms.vm.create_leases %}
-        <a href="{% url "dashboard.views.lease-create" %}" class="pull-right btn btn-success btn-xs" style="margin-right: 10px;">
+        <a href="{% url "dashboard.views.lease-create" %}"
+          class="pull-right btn btn-success btn-xs" style="margin-right: 10px;">
           <i class="fa fa-plus"></i> {% trans "new lease" %}
         </a>
         {% endif %}
@@ -71,6 +73,7 @@
   </div>
   {% endcomment %}
 </div>
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}

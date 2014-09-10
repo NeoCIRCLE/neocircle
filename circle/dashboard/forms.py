@@ -143,25 +143,46 @@ class VmCustomizeForm(forms.Form):
         self.template = kwargs.pop("template", None)
         super(VmCustomizeForm, self).__init__(*args, **kwargs)
 
-        # set displayed disk and network list
-        self.fields['disks'].queryset = self.template.disks.all()
-        self.fields['networks'].queryset = Vlan.get_objects_with_level(
-            'user', self.user)
+        if self.user.has_perm("vm_set_resouces"):
+            self.allowed_fields = tuple(self.fields.keys())
+            # set displayed disk and network list
+            self.fields['disks'].queryset = self.template.disks.all()
+            self.fields['networks'].queryset = Vlan.get_objects_with_level(
+                'user', self.user)
 
-        # set initial for disk and network list
-        self.initial['disks'] = self.template.disks.all()
-        self.initial['networks'] = InterfaceTemplate.objects.filter(
-            template=self.template).values_list("vlan", flat=True)
+            # set initial for disk and network list
+            self.initial['disks'] = self.template.disks.all()
+            self.initial['networks'] = InterfaceTemplate.objects.filter(
+                template=self.template).values_list("vlan", flat=True)
 
-        # set initial for resources
-        self.initial['cpu_priority'] = self.template.priority
-        self.initial['cpu_count'] = self.template.num_cores
-        self.initial['ram_size'] = self.template.ram_size
+            # set initial for resources
+            self.initial['cpu_priority'] = self.template.priority
+            self.initial['cpu_count'] = self.template.num_cores
+            self.initial['ram_size'] = self.template.ram_size
+
+        else:
+            self.allowed_fields = ("name", "template", "customized", )
 
         # initial name and template pk
         self.initial['name'] = self.template.name
         self.initial['template'] = self.template.pk
-        self.initial['customized'] = self.template.pk
+        self.initial['customized'] = True
+
+    def _clean_fields(self):
+        for name, field in self.fields.items():
+            if name in self.allowed_fields:
+                value = field.widget.value_from_datadict(
+                    self.data, self.files, self.add_prefix(name))
+                try:
+                    value = field.clean(value)
+                    self.cleaned_data[name] = value
+                    if hasattr(self, 'clean_%s' % name):
+                        value = getattr(self, 'clean_%s' % name)()
+                        self.cleaned_data[name] = value
+                except ValidationError as e:
+                    self._errors[name] = self.error_class(e.messages)
+                    if name in self.cleaned_data:
+                        del self.cleaned_data[name]
 
 
 class GroupCreateForm(forms.ModelForm):

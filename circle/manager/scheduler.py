@@ -18,26 +18,37 @@
 from logging import getLogger
 
 from django.db.models import Sum
+from django.utils.translation import ugettext_noop
+
+from common.models import HumanReadableException
 
 logger = getLogger(__name__)
 
 
-class NotEnoughMemoryException(Exception):
+class SchedulerError(HumanReadableException):
+    admin_message = None
 
-    def __init__(self, message=None):
-        if message is None:
-            message = "No node has enough memory to accomodate the guest."
+    def __init__(self, params=None, level=None, **kwargs):
+        kwargs.update(params or {})
+        super(SchedulerError, self).__init__(
+            level, self.message, self.admin_message or self.message,
+            kwargs)
 
-        Exception.__init__(self, message)
+
+class NotEnoughMemoryException(SchedulerError):
+    message = ugettext_noop(
+        "The resources required for launching the virtual machine are not "
+        "available currently. Please try again later.")
+
+    admin_message = ugettext_noop(
+        "The required free memory for launching the virtual machine is not "
+        "available on any usable node currently. Please try again later.")
 
 
-class TraitsUnsatisfiableException(Exception):
-
-    def __init__(self, message=None):
-        if message is None:
-            message = "No node can satisfy all required traits of the guest."
-
-        Exception.__init__(self, message)
+class TraitsUnsatisfiableException(SchedulerError):
+    message = ugettext_noop(
+        "No node can satisfy the required traits of the "
+        "new vitual machine currently.")
 
 
 def select_node(instance, nodes):
@@ -77,19 +88,27 @@ def has_enough_ram(ram_size, node):
     """True, if the node has enough memory to accomodate a guest requiring
        ram_size mebibytes of memory; otherwise, false.
     """
+    ram_size = ram_size * 1024 * 1024
     try:
         total = node.ram_size
-        used = (node.ram_usage / 100) * total
+        used = node.byte_ram_usage
         unused = total - used
 
         overcommit = node.ram_size_with_overcommit
-        reserved = node.instance_set.aggregate(r=Sum('ram_size'))['r'] or 0
+        reserved = (node.instance_set.aggregate(
+            r=Sum('ram_size'))['r'] or 0) * 1024 * 1024
         free = overcommit - reserved
 
-        return ram_size < unused and ram_size < free
+        retval = ram_size < unused and ram_size < free
+
+        logger.debug('has_enough_ram(%d, %s)=%s (total=%s unused=%s'
+                     ' overcommit=%s free=%s free_ok=%s overcommit_ok=%s)',
+                     ram_size, node, retval, total, unused, overcommit, free,
+                     ram_size < unused, ram_size < free)
+        return retval
     except TypeError as e:
-        logger.warning('Got incorrect monitoring data for node %s. %s',
-                       unicode(node), unicode(e))
+        logger.exception('Got incorrect monitoring data for node %s. %s',
+                         unicode(node), unicode(e))
         return False
 
 

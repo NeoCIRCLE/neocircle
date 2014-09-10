@@ -34,6 +34,7 @@ from common.models import (
     create_readable, humanize_exception, HumanReadableException
 )
 from common.operations import Operation, register_operation
+from manager.scheduler import SchedulerError
 from .tasks.local_tasks import (
     abortable_async_instance_operation, abortable_async_node_operation,
 )
@@ -620,6 +621,17 @@ class ShutdownOperation(InstanceOperation):
         self.instance.yield_node()
         self.instance.yield_vnc_port()
 
+    def on_abort(self, activity, error):
+        if isinstance(error, TimeLimitExceeded):
+            activity.result = humanize_exception(ugettext_noop(
+                "The virtual machine did not switch off in the provided time "
+                "limit. Most of the time this is caused by incorrect ACPI "
+                "settings. You can also try to power off the machine from the "
+                "operating system manually."), error)
+            activity.resultant_state = None
+        else:
+            super(ShutdownOperation, self).on_abort(activity, error)
+
 
 register_operation(ShutdownOperation)
 
@@ -717,7 +729,10 @@ class WakeUpOperation(InstanceOperation):
         return self.instance.status == self.instance.STATUS.SUSPENDED
 
     def on_abort(self, activity, error):
-        activity.resultant_state = 'ERROR'
+        if isinstance(error, SchedulerError):
+            activity.resultant_state = None
+        else:
+            activity.resultant_state = 'ERROR'
 
     def _operation(self, activity, timeout=60):
         # Schedule vm

@@ -29,8 +29,9 @@ import requests
 
 from django.conf import settings
 from django.contrib.auth.models import User, Group
-from django.contrib.auth.views import login, redirect_to_login
+from django.contrib.auth.views import login as login_view, redirect_to_login
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import login
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import (
     PermissionDenied, SuspiciousOperation,
@@ -225,7 +226,7 @@ class FilterMixin(object):
         cleaned_data = self.search_form.cleaned_data
         stype = cleaned_data.get('stype', "all")
         superuser = stype == "all"
-        shared = stype == "shared"
+        shared = stype == "shared" or stype == "all"
         level = "owner" if stype == "owned" else "user"
         queryset = model.get_objects_with_level(
             level, self.request.user,
@@ -414,6 +415,9 @@ class VmDetailView(CheckedDetailView):
         context['can_change_resources'] = self.request.user.has_perm(
             "vm.change_resources")
 
+        # client info
+        context['client_download'] = self.request.COOKIES.get(
+            'downloaded_client')
         # can link template
         context['can_link_template'] = (
             instance.template and instance.template.has_level(user, "operator")
@@ -1534,6 +1538,37 @@ class GroupAclUpdateView(AclUpdateView):
         return super(GroupAclUpdateView, self).get_object().profile
 
 
+class ClientCheck(LoginRequiredMixin, TemplateView):
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/_modal.html']
+        else:
+            return ['dashboard/nojs-wrapper.html']
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(ClientCheck, self).get_context_data(*args, **kwargs)
+        context.update({
+            'box_title': _('About CIRCLE Client'),
+            'ajax_title': False,
+            'client_download_url': settings.CLIENT_DOWNLOAD_URL,
+            'template': "dashboard/_client-check.html",
+            'instance': get_object_or_404(
+                Instance, pk=self.request.GET.get('vm')),
+        })
+        if not context['instance'].has_level(self.request.user, 'operator'):
+            raise PermissionDenied()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        instance = get_object_or_404(Instance, pk=request.POST.get('vm'))
+        if not instance.has_level(request.user, 'operator'):
+            raise PermissionDenied()
+        response = HttpResponseRedirect(instance.get_absolute_url())
+        response.set_cookie('downloaded_client', 'True', 365 * 24 * 60 * 60)
+        return response
+
+
 class TemplateChoose(LoginRequiredMixin, TemplateView):
 
     def get_template_names(self):
@@ -1724,9 +1759,16 @@ class TemplateList(LoginRequiredMixin, FilterMixin, SingleTableView):
 
     def get_context_data(self, *args, **kwargs):
         context = super(TemplateList, self).get_context_data(*args, **kwargs)
+        user = self.request.user
+        leases_w_operator = Lease.get_objects_with_level("operator", user)
         context['lease_table'] = LeaseListTable(
-            Lease.get_objects_with_level("user", self.request.user),
-            request=self.request)
+            leases_w_operator, request=self.request,
+            template="django_tables2/table_no_page.html",
+        )
+        context['show_lease_table'] = (
+            leases_w_operator.count() > 0 or
+            user.has_perm("vm.create_leases")
+        )
 
         context['search_form'] = self.search_form
 
@@ -1851,7 +1893,7 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
                 'pk': i.pk,
                 'name': i.name,
                 'icon': i.get_status_icon(),
-                'host': "" if not i.primary_host else i.primary_host.hostname,
+                'host': i.short_hostname,
                 'status': i.get_status_display(),
                 'fav': i.pk in favs,
             } for i in instances]
@@ -2089,23 +2131,29 @@ class VmCreate(LoginRequiredMixin, TemplateView):
         if not request.user.has_perm('vm.create_vm'):
             raise PermissionDenied()
 
-        form_error = form is not None
-        template = (form.template.pk if form_error
-                    else request.GET.get("template"))
-        templates = InstanceTemplate.get_objects_with_level(
-            'user', request.user, disregard_superuser=True)
-        if form is None and template:
-            form = self.form_class(user=request.user,
-                                   template=templates.get(pk=template))
+        if form is None:
+            template_pk = request.GET.get("template")
+        else:
+            template_pk = form.template.pk
+
+        if template_pk:
+            template = get_object_or_404(InstanceTemplate, pk=template_pk)
+            if not template.has_level(request.user, 'user'):
+                raise PermissionDenied()
+            if form is None:
+                form = self.form_class(user=request.user, template=template)
+        else:
+            templates = InstanceTemplate.get_objects_with_level(
+                'user', request.user, disregard_superuser=True)
 
         context = self.get_context_data(**kwargs)
-        if template:
+        if template_pk:
             context.update({
                 'template': 'dashboard/_vm-create-2.html',
                 'box_title': _('Customize VM'),
                 'ajax_title': True,
                 'vm_create_form': form,
-                'template_o': templates.get(pk=template),
+                'template_o': template,
             })
         else:
             context.update({
@@ -2126,52 +2174,48 @@ class VmCreate(LoginRequiredMixin, TemplateView):
             raise PermissionDenied()
 
         args = {"template": template, "owner": user}
-        if "name" in request.POST:
-            args["name"] = request.POST.get("name")
         instances = [Instance.create_from_template(**args)]
         return self.__deploy(request, instances)
 
     def __create_customized(self, request, *args, **kwargs):
         user = request.user
+        # no form yet, using POST directly:
+        template = get_object_or_404(InstanceTemplate,
+                                     pk=request.POST.get("template"))
         form = self.form_class(
-            request.POST, user=request.user,
-            template=InstanceTemplate.objects.get(
-                pk=request.POST.get("template")
-            )
-        )
+            request.POST, user=request.user, template=template)
         if not form.is_valid():
             return self.get(request, form, *args, **kwargs)
         post = form.cleaned_data
 
-        template = InstanceTemplate.objects.get(pk=post['template'])
-        # permission check
         if not template.has_level(user, 'user'):
             raise PermissionDenied()
 
+        ikwargs = {
+            'name': post['name'],
+            'template': template,
+            'owner': user,
+        }
+        amount = post.get("amount", 1)
         if request.user.has_perm('vm.set_resources'):
-            ikwargs = {
-                'name': post['name'],
-                'num_cores': post['cpu_count'],
-                'ram_size': post['ram_size'],
-                'priority': post['cpu_priority'],
-                'max_ram_size': post['ram_size'],
-            }
             networks = [InterfaceTemplate(vlan=l, managed=l.managed)
                         for l in post['networks']]
 
             ikwargs.update({
-                'template': template,
-                'owner': user,
+                'num_cores': post['cpu_count'],
+                'ram_size': post['ram_size'],
+                'priority': post['cpu_priority'],
+                'max_ram_size': post['ram_size'],
                 'networks': networks,
                 'disks': list(template.disks.all()),
             })
 
-            amount = post['amount']
-            instances = Instance.mass_create_from_template(amount=amount,
-                                                           **ikwargs)
-            return self.__deploy(request, instances)
         else:
-            raise PermissionDenied()
+            pass
+
+        instances = Instance.mass_create_from_template(amount=amount,
+                                                       **ikwargs)
+        return self.__deploy(request, instances)
 
     def __deploy(self, request, instances, *args, **kwargs):
         for i in instances:
@@ -2678,6 +2722,7 @@ def vm_activity(request, pk):
     if not show_all:
         activities = activities[:10]
 
+    response['connect_uri'] = instance.get_connect_uri()
     response['human_readable_status'] = instance.get_status_display()
     response['status'] = instance.status
     response['icon'] = instance.get_status_icon()
@@ -2954,10 +2999,53 @@ def circle_login(request):
     extra_context = {
         'saml2': saml_available,
     }
-    response = login(request, authentication_form=authentication_form,
-                     extra_context=extra_context)
+    response = login_view(request, authentication_form=authentication_form,
+                          extra_context=extra_context)
     set_language_cookie(request, response)
     return response
+
+
+class TokenLogin(View):
+
+    token_max_age = 120  # seconds
+
+    @classmethod
+    def get_salt(cls):
+        return unicode(cls)
+
+    @classmethod
+    def get_token(cls, user, sudoer):
+        return signing.dumps((sudoer.pk, user.pk),
+                             salt=cls.get_salt(), compress=True)
+
+    @classmethod
+    def get_token_url(cls, user, sudoer):
+        key = cls.get_token(user, sudoer)
+        return reverse("dashboard.views.token-login", args=(key, ))
+
+    def get(self, request, token, *args, **kwargs):
+        try:
+            data = signing.loads(token, salt=self.get_salt(),
+                                 max_age=self.token_max_age)
+            logger.debug('TokenLogin token data: %s', unicode(data))
+            sudoer, user = data
+            logger.debug('Extracted TokenLogin data: sudoer: %s, user: %s',
+                         unicode(sudoer), unicode(user))
+        except (signing.BadSignature, ValueError, TypeError) as e:
+            logger.warning('Tried invalid TokenLogin token. '
+                           'Token: %s, user: %s. %s',
+                           token, unicode(self.request.user), unicode(e))
+            raise SuspiciousOperation()
+        sudoer = User.objects.get(pk=sudoer)
+        if not sudoer.is_superuser:
+            raise PermissionDenied()
+        user = User.objects.get(pk=user)
+        user.backend = 'django.contrib.auth.backends.ModelBackend'
+        logger.warning('%s %d logged in as user %s %d',
+                       unicode(sudoer), sudoer.pk, unicode(user), user.pk)
+        login(request, user)
+        messages.info(request, _("Logged in as user %s.") % unicode(user))
+        return redirect("/")
 
 
 class MyPreferencesView(UpdateView):
@@ -3296,6 +3384,9 @@ class ProfileView(LoginRequiredMixin, DetailView):
                 template__in=it)
             context['instances_with_access'] = context[
                 'instances_with_access'].filter(template__in=it)
+        if self.request.user.is_superuser:
+            context['login_token'] = TokenLogin.get_token_url(
+                user, self.request.user)
         return context
 
 

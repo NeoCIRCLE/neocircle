@@ -964,3 +964,7 @@ textarea[name="list-new-namelist"] {
 #vm-details-start-template-tour {
   margin-right: 5px;
 }
+
+#vm-activity-state {
+  margin-bottom: 15px;
+}

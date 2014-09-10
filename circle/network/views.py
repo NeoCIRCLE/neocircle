@@ -399,6 +399,12 @@ class HostDetail(LoginRequiredMixin, SuperuserRequiredMixin,
         # set host pk (we need this for URL-s)
         context['host_pk'] = self.kwargs['pk']
 
+        from network.tables import HostRecordsTable
+        context['records_table'] = HostRecordsTable(
+            Record.objects.filter(host=self.get_object()),
+            request=self.request, template="django_tables2/table_no_page.html"
+        )
+
         return context
 
     def get_success_url(self):

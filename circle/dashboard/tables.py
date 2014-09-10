@@ -222,6 +222,7 @@ class LeaseListTable(Table):
         fields = ('name', 'suspend_interval_seconds',
                   'delete_interval_seconds', )
         prefix = "lease-"
+        empty_text = _("No available leases.")
 
 
 class UserKeyListTable(Table):

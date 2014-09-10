@@ -46,7 +46,7 @@ def send_init_commands(instance, act):
     with act.sub_activity('set_hostname',
                           readable_name=ugettext_noop('set hostname')):
         set_hostname.apply_async(
-            queue=queue, args=(vm, instance.primary_host.hostname))
+            queue=queue, args=(vm, instance.short_hostname))
 
 
 def send_networking_commands(instance, act):
