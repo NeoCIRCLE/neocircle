@@ -7,6 +7,30 @@ from .views import AclUpdateView
 from .models import Profile
 
 
+def highlight(field, q, none_wo_match=True):
+    """
+    >>> highlight('<b>Akkount Krokodil', 'kro', False)
+    u'&lt;b&gt;Akkount <span class="autocomplete-hl">Kro</span>kodil'
+    """
+
+    if not field:
+        return None
+    try:
+        match = field.lower().index(q.lower())
+    except ValueError:
+        match = None
+    if q and match is not None:
+        match_end = match + len(q)
+        return (escape(field[:match])
+                + '<span class="autocomplete-hl">'
+                + escape(field[match:match_end])
+                + '</span>' + escape(field[match_end:]))
+    elif none_wo_match:
+        return None
+    else:
+        return escape(field)
+
+
 class AclUserGroupAutocomplete(autocomplete_light.AutocompleteGenericBase):
     search_fields = (
         ('first_name', 'last_name', 'username', 'email', 'profile__org_id'),
@@ -15,38 +39,20 @@ class AclUserGroupAutocomplete(autocomplete_light.AutocompleteGenericBase):
     choice_html_format = (u'<span data-value="%s"><span style="display:none"'
                           u'>%s</span>%s</span>')
 
-    def highlight(self, field, q, none_wo_match=True):
-        if not field:
-            return None
-        try:
-            match = field.lower().index(q.lower())
-        except ValueError:
-            match = None
-        if q and match is not None:
-            match_end = match + len(q)
-            return (escape(field[:match])
-                    + '<span class="autocomplete-hl">'
-                    + escape(field[match:match_end])
-                    + '</span>' + escape(field[match_end:]))
-        elif none_wo_match:
-            return None
-        else:
-            return escape(field)
-
     def choice_displayed_text(self, choice):
         q = unicode(self.request.GET.get('q', ''))
-        name = self.highlight(unicode(choice), q, False)
+        name = highlight(unicode(choice), q, False)
         if isinstance(choice, User):
-            extra_fields = [self.highlight(choice.get_full_name(), q, False),
-                            self.highlight(choice.email, q)]
+            extra_fields = [highlight(choice.get_full_name(), q, False),
+                            highlight(choice.email, q)]
             try:
-                extra_fields.append(self.highlight(choice.profile.org_id, q))
+                extra_fields.append(highlight(choice.profile.org_id, q))
             except Profile.DoesNotExist:
                 pass
             return '%s (%s)' % (name, ', '.join(f for f in extra_fields
                                                 if f))
         else:
-            return '%s (%s)' % (name, _('group'))
+            return _('%s (group)') % name
 
     def choice_html(self, choice):
         return self.choice_html_format % (
