@@ -9,8 +9,10 @@
   {% endblocktrans %}
   {% endif %}
   {% if user == instance.owner or user.is_superuser %}
+  <span class="operation-wrapper">
   <a href="{% url "dashboard.views.vm-transfer-ownership" instance.pk %}"
-      class="btn btn-link">{% trans "Transfer ownership..." %}</a>
+      class="btn btn-link operation">{% trans "Transfer ownership..." %}</a>
+  </span>
   {% endif %}
 </p>
 <h3>{% trans "Permissions"|capfirst %}</h3>
