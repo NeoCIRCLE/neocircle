@@ -45,7 +45,7 @@
         {% endif %}
 
     <div class="page-header">
-        <h3>Add host group</h3>
+      <h3>{% trans "Add host group" %}</h3>
     </div>
     {% if not_used_groups|length == 0 %}
       No more groups to add!
@@ -64,7 +64,12 @@
             </div><!-- input-group -->
         </form>
     {% endif %}
-    </div><!-- col-sm-4 -->
+    <div class="page-header">
+      <h3>{% trans "Records" %}</h3>
+    </div>
+    {% render_table records_table %}
+
+    </div><!-- col-sm-5 -->
 </div><!-- row -->
 
 {% endblock %}
