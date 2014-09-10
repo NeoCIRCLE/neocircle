@@ -1,5 +1,6 @@
 import autocomplete_light
 from django.contrib.auth.models import User
+from django.utils.html import escape
 from django.utils.translation import ugettext as _
 
 from .views import AclUpdateView
@@ -23,10 +24,14 @@ class AclUserGroupAutocomplete(autocomplete_light.AutocompleteGenericBase):
             match = None
         if q and match is not None:
             match_end = match + len(q)
-            return (field[:match] + '<span class="autocomplete-hl">' +
-                    field[match:match_end] + '</span>' + field[match_end:])
+            return (escape(field[:match])
+                    + '<span class="autocomplete-hl">'
+                    + escape(field[match:match_end])
+                    + '</span>' + escape(field[match_end:]))
+        elif none_wo_match:
+            return None
         else:
-            return None if none_wo_match else field
+            return escape(field)
 
     def choice_displayed_text(self, choice):
         q = unicode(self.request.GET.get('q', ''))
