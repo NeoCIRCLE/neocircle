@@ -262,6 +262,7 @@ class VlanForm(ModelForm):
                 'Info',
                 'description',
                 'comment',
+                'owner',
                 # 'created_at',
                 # 'modified_at',
             ),

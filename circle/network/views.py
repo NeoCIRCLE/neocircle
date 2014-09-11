@@ -657,7 +657,7 @@ class VlanDetail(LoginRequiredMixin, SuperuserRequiredMixin,
 
 
 class VlanCreate(LoginRequiredMixin, SuperuserRequiredMixin,
-                 SuccessMessageMixin, CreateView):
+                 SuccessMessageMixin, InitialOwnerMixin, CreateView):
     model = Vlan
     template_name = "network/vlan-create.html"
     form_class = VlanForm
