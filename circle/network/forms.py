@@ -58,7 +58,8 @@ class BlacklistItemForm(ModelForm):
         ),
         FormActions(
             Submit('submit', _('Save changes')),
-            LinkButton('back', _("Back"), reverse_lazy('network.blacklist_list'))
+            LinkButton('back', _("Back"),
+                       reverse_lazy('network.blacklist_list'))
         )
     )
 
