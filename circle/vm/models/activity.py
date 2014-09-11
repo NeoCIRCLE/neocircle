@@ -99,7 +99,7 @@ class InstanceActivity(ActivityModel):
         if concurrency_check and active_activities.exists():
             raise ActivityInProgressError.create(active_activities[0])
 
-        activity_code = join_activity_code(cls.ACTIVITY_CODE_BASE, code_suffix)
+        activity_code = cls.construct_activity_code(code_suffix)
         act = cls(activity_code=activity_code, instance=instance, parent=None,
                   resultant_state=resultant_state, started=timezone.now(),
                   readable_name_data=readable_name.to_dict(),
