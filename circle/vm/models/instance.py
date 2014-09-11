@@ -123,6 +123,10 @@ class VirtualMachineDescModel(BaseResourceConfigModel):
                                     'format like "%s".') %
                                   'Ubuntu 12.04 LTS Desktop amd64'))
     tags = TaggableManager(blank=True, verbose_name=_("tags"))
+    has_agent = BooleanField(verbose_name=_('has agent'), default=True,
+                             help_text=_(
+                                 'If the machine has agent installed, and '
+                                 'the manager should wait for its start.'))
 
     class Meta:
         abstract = True
@@ -424,7 +428,8 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         # prepare parameters
         common_fields = ['name', 'description', 'num_cores', 'ram_size',
                          'max_ram_size', 'arch', 'priority', 'boot_menu',
-                         'raw_data', 'lease', 'access_method', 'system']
+                         'raw_data', 'lease', 'access_method', 'system',
+                         'has_agent']
         params = dict(template=template, owner=owner, pw=pwgen())
         params.update([(f, getattr(template, f)) for f in common_fields])
         params.update(kwargs)  # override defaults w/ user supplied values
