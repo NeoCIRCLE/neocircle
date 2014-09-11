@@ -481,7 +481,7 @@ class TemplateForm(forms.ModelForm):
         else:
             self.allowed_fields = (
                 'name', 'access_method', 'description', 'system', 'tags',
-                'arch', 'lease')
+                'arch', 'lease', 'has_agent')
         if (self.user.has_perm('vm.change_template_resources')
                 or not self.instance.pk):
             self.allowed_fields += tuple(set(self.fields.keys()) -
