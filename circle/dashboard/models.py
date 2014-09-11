@@ -261,7 +261,7 @@ def get_or_create_profile(self):
 Group.profile = property(get_or_create_profile)
 
 
-def create_profile(sender, user, request, **kwargs):
+def create_profile(user):
     if not user.pk:
         return False
     profile, created = Profile.objects.get_or_create(user=user)
@@ -272,7 +272,11 @@ def create_profile(sender, user, request, **kwargs):
         logger.exception("Can't create user %s", unicode(user))
     return created
 
-user_logged_in.connect(create_profile)
+
+def create_profile_hook(sender, user, request, **kwargs):
+    return create_profile(user)
+
+user_logged_in.connect(create_profile_hook)
 
 if hasattr(settings, 'SAML_ORG_ID_ATTRIBUTE'):
     logger.debug("Register save_org_id to djangosaml2 pre_user_save")
