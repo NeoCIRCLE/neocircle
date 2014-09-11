@@ -505,10 +505,23 @@ class RecordCreate(LoginRequiredMixin, SuperuserRequiredMixin,
     success_message = _(u'Successfully created record!')
 
     def get_initial(self):
-        return {
-            # 'owner': 1,
-            'domain': self.request.GET.get('domain'),
-        }
+        host_pk = self.request.GET.get("host")
+        try:
+            host = Host.objects.get(pk=host_pk)
+        except (Host.DoesNotExist, ValueError):
+            host = None
+
+        initial = {'owner': self.request.user}
+        if host:
+            initial.update({
+                'type': "CNAME",
+                'host': host,
+                'address': host.get_fqdn(),
+            })
+        else:
+            initial['domain'] = self.request.GET.get('domain')
+
+        return initial
 
 
 class RecordDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
