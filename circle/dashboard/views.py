@@ -70,9 +70,10 @@ from .forms import (
     UserCreationForm, GroupProfileUpdateForm, UnsubscribeForm,
     VmSaveForm, UserKeyForm, VmRenewForm, VmStateChangeForm,
     CirclePasswordChangeForm, VmCreateDiskForm, VmDownloadDiskForm,
-    TraitsForm, RawDataForm, GroupPermissionForm, AclUserAddForm,
+    TraitsForm, RawDataForm, GroupPermissionForm, AclUserOrGroupAddForm,
     VmResourcesForm, VmAddInterfaceForm, VmListSearchForm,
-    TemplateListSearchForm, ConnectCommandForm
+    TemplateListSearchForm, ConnectCommandForm,
+    TransferOwnershipForm, AddGroupMemberForm
 )
 
 from .tables import (
@@ -390,7 +391,7 @@ class VmDetailView(CheckedDetailView):
         ).all()
         context['acl'] = AclUpdateView.get_acl_data(
             instance, self.request.user, 'dashboard.views.vm-acl')
-        context['aclform'] = AclUserAddForm()
+        context['aclform'] = AclUserOrGroupAddForm()
         context['os_type_icon'] = instance.os_type.replace("unknown",
                                                            "question")
         # ipv6 infos
@@ -1282,7 +1283,8 @@ class GroupDetailView(CheckedDetailView):
         context['acl'] = AclUpdateView.get_acl_data(
             self.object.profile, self.request.user,
             'dashboard.views.group-acl')
-        context['aclform'] = AclUserAddForm()
+        context['aclform'] = AclUserOrGroupAddForm()
+        context['addmemberform'] = AddGroupMemberForm()
         context['group_profile_form'] = GroupProfileUpdate.get_form_object(
             self.request, self.object.profile)
 
@@ -1299,17 +1301,15 @@ class GroupDetailView(CheckedDetailView):
 
         if request.POST.get('new_name'):
             return self.__set_name(request)
-        if request.POST.get('list-new-name'):
+        if request.POST.get('new_member'):
             return self.__add_user(request)
-        if request.POST.get('list-new-namelist'):
+        if request.POST.get('new_members'):
             return self.__add_list(request)
-        if (request.POST.get('list-new-name') is not None) and \
-                (request.POST.get('list-new-namelist') is not None):
-            return redirect(reverse_lazy("dashboard.views.group-detail",
-                                         kwargs={'pk': self.get_object().pk}))
+        return redirect(reverse_lazy("dashboard.views.group-detail",
+                                     kwargs={'pk': self.get_object().pk}))
 
     def __add_user(self, request):
-        name = request.POST['list-new-name']
+        name = request.POST['new_member']
         self.__add_username(request, name)
         return redirect(reverse_lazy("dashboard.views.group-detail",
                                      kwargs={'pk': self.object.pk}))
@@ -1328,9 +1328,7 @@ class GroupDetailView(CheckedDetailView):
                 messages.warning(request, _('User "%s" not found.') % name)
 
     def __add_list(self, request):
-        if not self.get_has_level()(request.user, 'operator'):
-            raise PermissionDenied()
-        userlist = request.POST.get('list-new-namelist').split('\r\n')
+        userlist = request.POST.get('new_members').split('\r\n')
         for line in userlist:
             self.__add_username(request, line)
         return redirect(reverse_lazy("dashboard.views.group-detail",
@@ -1717,7 +1715,7 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
             obj, self.request.user, 'dashboard.views.template-acl')
         context['disks'] = obj.disks.all()
         context['is_owner'] = obj.has_level(self.request.user, 'owner')
-        context['aclform'] = AclUserAddForm()
+        context['aclform'] = AclUserOrGroupAddForm()
         return context
 
     def get_success_url(self):
@@ -2768,11 +2766,30 @@ class FavouriteView(TemplateView):
             return HttpResponse("Added.")
 
 
-class TransferOwnershipView(LoginRequiredMixin, DetailView):
+class TransferOwnershipView(CheckedDetailView, DetailView):
     model = Instance
-    template_name = 'dashboard/vm-detail/tx-owner.html'
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/_modal.html']
+        else:
+            return ['dashboard/nojs-wrapper.html']
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(TransferOwnershipView, self).get_context_data(
+            *args, **kwargs)
+        context['form'] = TransferOwnershipForm()
+        context.update({
+            'box_title': _("Transfer ownership"),
+            'ajax_title': True,
+            'template': "dashboard/vm-detail/tx-owner.html",
+        })
+        return context
 
     def post(self, request, *args, **kwargs):
+        form = TransferOwnershipForm(request.POST)
+        if not form.is_valid():
+            return self.get(request)
         try:
             new_owner = search_user(request.POST['name'])
         except User.DoesNotExist:

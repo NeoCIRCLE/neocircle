@@ -1055,9 +1055,29 @@ class UserCreationForm(OrgUserCreationForm):
         return user
 
 
-class AclUserAddForm(forms.Form):
+class AclUserOrGroupAddForm(forms.Form):
     name = forms.CharField(widget=autocomplete_light.TextWidget(
-        'AclUserAutocomplete', attrs={'class': 'form-control'}))
+        'AclUserGroupAutocomplete',
+        autocomplete_js_attributes={'placeholder': _("Name of group or user")},
+        attrs={'class': 'form-control'}))
+
+
+class TransferOwnershipForm(forms.Form):
+    name = forms.CharField(
+        widget=autocomplete_light.TextWidget(
+            'AclUserAutocomplete',
+            autocomplete_js_attributes={"placeholder": _("Name of user")},
+            attrs={'class': 'form-control'}),
+        label=_("E-mail address or identifier of user"))
+
+
+class AddGroupMemberForm(forms.Form):
+    new_member = forms.CharField(
+        widget=autocomplete_light.TextWidget(
+            'AclUserAutocomplete',
+            autocomplete_js_attributes={"placeholder": _("Name of user")},
+            attrs={'class': 'form-control'}),
+        label=_("E-mail address or identifier of user"))
 
 
 class UserKeyForm(forms.ModelForm):
