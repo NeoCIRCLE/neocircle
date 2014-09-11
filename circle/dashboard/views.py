@@ -91,7 +91,7 @@ from vm.models import (
 from storage.models import Disk
 from firewall.models import Vlan, Host, Rule
 from .models import (Favourite, Profile, GroupProfile, FutureMember,
-                     ConnectCommand)
+                     ConnectCommand, create_profile)
 
 from .store_api import Store, NoStoreException, NotOkException
 
@@ -3288,6 +3288,7 @@ class UserCreationView(LoginRequiredMixin, PermissionRequiredMixin,
         self.get_group(group_pk)
         ret = super(UserCreationView, self).post(*args, **kwargs)
         if self.object:
+            create_profile(self.object)
             self.object.groups.add(self.group)
             return redirect(
                 reverse('dashboard.views.group-detail', args=[group_pk]))
