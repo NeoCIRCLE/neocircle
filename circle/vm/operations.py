@@ -515,7 +515,7 @@ class SaveAsTemplateOperation(InstanceOperation):
                     "start an instance of it.")
     abortable = True
     required_perms = ('vm.create_template', )
-    accept_states = ('RUNNING', 'PENDING', 'STOPPED')
+    accept_states = ('RUNNING', 'STOPPED')
     async_queue = "localhost.man.slow"
 
     def is_preferred(self):
