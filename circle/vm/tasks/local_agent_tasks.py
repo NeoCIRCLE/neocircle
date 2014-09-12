@@ -85,15 +85,21 @@ def agent_started(vm, version=None):
     from vm.models import Instance, instance_activity, InstanceActivity
     instance = Instance.objects.get(id=int(vm.split('-')[-1]))
     queue = instance.get_remote_queue_name("agent")
-    initialized = InstanceActivity.objects.filter(
-        instance=instance, activity_code='vm.Instance.agent.cleanup').exists()
+    initialized = instance.activity_log.filter(
+        activity_code='vm.Instance.agent.cleanup').exists()
 
     with instance_activity(code_suffix='agent',
                            readable_name=ugettext_noop('agent'),
+                           concurrency_check=False,
                            instance=instance) as act:
         with act.sub_activity('starting',
                               readable_name=ugettext_noop('starting')):
             pass
+
+        for i in InstanceActivity.objects.filter(
+                instance=instance, activity_code__endswith='.os_boot',
+                finished__isnull=True):
+            i.finish(True)
 
         if version and version != settings.AGENT_VERSION:
             try:
@@ -108,10 +114,9 @@ def agent_started(vm, version=None):
             send_init_commands(instance, act)
 
         send_networking_commands(instance, act)
-        with act.sub_activity(
-            'start_access_server',
-            readable_name=ugettext_noop('start access server')
-        ):
+        with act.sub_activity('start_access_server',
+                              readable_name=ugettext_noop(
+                                  'start access server')):
             start_access_server.apply_async(queue=queue, args=(vm, ))
 
 
