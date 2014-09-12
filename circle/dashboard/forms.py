@@ -143,7 +143,7 @@ class VmCustomizeForm(forms.Form):
         self.template = kwargs.pop("template", None)
         super(VmCustomizeForm, self).__init__(*args, **kwargs)
 
-        if self.user.has_perm("vm_set_resouces"):
+        if self.user.has_perm("vm.set_resources"):
             self.allowed_fields = tuple(self.fields.keys())
             # set displayed disk and network list
             self.fields['disks'].queryset = self.template.disks.all()
