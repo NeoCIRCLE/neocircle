@@ -981,3 +981,13 @@ textarea[name="new_members"] {
 .hilight .autocomplete-hl {
   color: orange;
 }
+
+.introjs-button:focus {
+  text-decoration: none;
+  color: #333;
+  outline: none;
+}
+
+.introjs-button:hover {
+  color: #428bca;
+}

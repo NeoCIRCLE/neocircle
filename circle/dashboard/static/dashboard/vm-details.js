@@ -361,10 +361,7 @@ function decideActivityRefresh() {
   /* if something is still spinning */
   if($('.timeline .activity i').hasClass('fa-spin'))
     check = true;
-  /* if there is only one activity */
-  if($('#activity-timeline div[class="activity"]').length < 2)
-    check = true;
-  
+
   return check;
 }
 
