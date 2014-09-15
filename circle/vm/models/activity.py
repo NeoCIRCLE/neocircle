@@ -24,7 +24,7 @@ from celery.signals import worker_ready
 from celery.contrib.abortable import AbortableAsyncResult
 
 from django.core.urlresolvers import reverse
-from django.db.models import CharField, ForeignKey
+from django.db.models import CharField, ForeignKey, BooleanField
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _, ugettext_noop
 
@@ -70,6 +70,8 @@ class InstanceActivity(ActivityModel):
                           help_text=_('Instance this activity works on.'),
                           verbose_name=_('instance'))
     resultant_state = CharField(blank=True, max_length=20, null=True)
+    interruptible = BooleanField(default=False, help_text=_(
+        'Other activities can interrupt this one.'))
 
     class Meta:
         app_label = 'vm'
@@ -91,24 +93,30 @@ class InstanceActivity(ActivityModel):
     @classmethod
     def create(cls, code_suffix, instance, task_uuid=None, user=None,
                concurrency_check=True, readable_name=None,
-               resultant_state=None):
+               resultant_state=None, interruptible=False):
 
         readable_name = _normalize_readable_name(readable_name, code_suffix)
         # Check for concurrent activities
         active_activities = instance.activity_log.filter(finished__isnull=True)
         if concurrency_check and active_activities.exists():
-            raise ActivityInProgressError.create(active_activities[0])
+            for i in active_activities:
+                if i.interruptible:
+                    i.finish(False, result=ugettext_noop(
+                        "Interrupted by other activity."))
+                else:
+                    raise ActivityInProgressError.create(i)
 
-        activity_code = join_activity_code(cls.ACTIVITY_CODE_BASE, code_suffix)
+        activity_code = cls.construct_activity_code(code_suffix)
         act = cls(activity_code=activity_code, instance=instance, parent=None,
                   resultant_state=resultant_state, started=timezone.now(),
                   readable_name_data=readable_name.to_dict(),
-                  task_uuid=task_uuid, user=user)
+                  task_uuid=task_uuid, user=user, interruptible=interruptible)
         act.save()
         return act
 
     def create_sub(self, code_suffix, task_uuid=None, concurrency_check=True,
-                   readable_name=None, resultant_state=None):
+                   readable_name=None, resultant_state=None,
+                   interruptible=False):
 
         readable_name = _normalize_readable_name(readable_name, code_suffix)
         # Check for concurrent activities
@@ -119,7 +127,7 @@ class InstanceActivity(ActivityModel):
         act = InstanceActivity(
             activity_code=join_activity_code(self.activity_code, code_suffix),
             instance=self.instance, parent=self,
-            resultant_state=resultant_state,
+            resultant_state=resultant_state, interruptible=interruptible,
             readable_name_data=readable_name.to_dict(), started=timezone.now(),
             task_uuid=task_uuid, user=self.user)
         act.save()
@@ -183,13 +191,14 @@ class InstanceActivity(ActivityModel):
     @contextmanager
     def sub_activity(self, code_suffix, on_abort=None, on_commit=None,
                      readable_name=None, task_uuid=None,
-                     concurrency_check=True):
+                     concurrency_check=True, interruptible=False):
         """Create a transactional context for a nested instance activity.
         """
         if not readable_name:
             warn("Set readable_name", stacklevel=3)
         act = self.create_sub(code_suffix, task_uuid, concurrency_check,
-                              readable_name=readable_name)
+                              readable_name=readable_name,
+                              interruptible=interruptible)
         return activitycontextimpl(act, on_abort=on_abort, on_commit=on_commit)
 
     def get_operation(self):

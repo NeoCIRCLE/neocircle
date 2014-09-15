@@ -143,7 +143,7 @@ class VmCustomizeForm(forms.Form):
         self.template = kwargs.pop("template", None)
         super(VmCustomizeForm, self).__init__(*args, **kwargs)
 
-        if self.user.has_perm("vm_set_resouces"):
+        if self.user.has_perm("vm.set_resources"):
             self.allowed_fields = tuple(self.fields.keys())
             # set displayed disk and network list
             self.fields['disks'].queryset = self.template.disks.all()
@@ -481,7 +481,7 @@ class TemplateForm(forms.ModelForm):
         else:
             self.allowed_fields = (
                 'name', 'access_method', 'description', 'system', 'tags',
-                'arch', 'lease')
+                'arch', 'lease', 'has_agent')
         if (self.user.has_perm('vm.change_template_resources')
                 or not self.instance.pk):
             self.allowed_fields += tuple(set(self.fields.keys()) -
@@ -1055,9 +1055,29 @@ class UserCreationForm(OrgUserCreationForm):
         return user
 
 
-class AclUserAddForm(forms.Form):
+class AclUserOrGroupAddForm(forms.Form):
     name = forms.CharField(widget=autocomplete_light.TextWidget(
-        'AclUserAutocomplete', attrs={'class': 'form-control'}))
+        'AclUserGroupAutocomplete',
+        autocomplete_js_attributes={'placeholder': _("Name of group or user")},
+        attrs={'class': 'form-control'}))
+
+
+class TransferOwnershipForm(forms.Form):
+    name = forms.CharField(
+        widget=autocomplete_light.TextWidget(
+            'AclUserAutocomplete',
+            autocomplete_js_attributes={"placeholder": _("Name of user")},
+            attrs={'class': 'form-control'}),
+        label=_("E-mail address or identifier of user"))
+
+
+class AddGroupMemberForm(forms.Form):
+    new_member = forms.CharField(
+        widget=autocomplete_light.TextWidget(
+            'AclUserAutocomplete',
+            autocomplete_js_attributes={"placeholder": _("Name of user")},
+            attrs={'class': 'form-control'}),
+        label=_("E-mail address or identifier of user"))
 
 
 class UserKeyForm(forms.ModelForm):

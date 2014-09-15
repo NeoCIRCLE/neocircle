@@ -1,25 +1,16 @@
-{% extends "dashboard/base.html" %}
 {% load i18n %}
 
-{% block content %}
-  <div class="body-content">
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h3 class="no-margin">
-          {% trans "Transfer ownership" %}
-        </h3>
-      </div>
-      <div class="panel-body">
-        <div class="pull-right">
-          <form action="" method="POST">
-            {% csrf_token %}
-            <label>
-              {% trans "E-mail address or identifier of user" %}:
-              <input name="name">
-            </label>
-            <input type="submit">
-          </form>
+<div class="pull-right">
+    <form action="{% url "dashboard.views.vm-transfer-ownership" pk=instance.pk %}" method="POST" style="max-width: 400px;">
+    {% csrf_token %}
+    <label>
+        {{ form.name.label }}
+    </label>
+    <div class="input-group">
+        {{form.name}}
+        <div class="input-group-btn">
+            <input type="submit" value="{% trans "Save" %}" class="btn btn-primary">
         </div>
-      </div>
-  </div>
-{% endblock %}
+    </div>
+    </form>
+</div>
