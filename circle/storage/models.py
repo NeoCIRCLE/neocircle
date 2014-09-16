@@ -367,7 +367,8 @@ class Disk(TimeStampedModel):
         disk = cls.__create(user, params)
         disk.clean()
         disk.save()
-        logger.debug("Disk created: %s", params)
+        logger.debug(u"Disk created from: %s",
+                     unicode(params.get("base", "nobase")))
         return disk
 
     @classmethod

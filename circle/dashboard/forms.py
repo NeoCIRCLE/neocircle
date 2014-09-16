@@ -143,7 +143,7 @@ class VmCustomizeForm(forms.Form):
         self.template = kwargs.pop("template", None)
         super(VmCustomizeForm, self).__init__(*args, **kwargs)
 
-        if self.user.has_perm("vm_set_resouces"):
+        if self.user.has_perm("vm.set_resources"):
             self.allowed_fields = tuple(self.fields.keys())
             # set displayed disk and network list
             self.fields['disks'].queryset = self.template.disks.all()
@@ -481,7 +481,7 @@ class TemplateForm(forms.ModelForm):
         else:
             self.allowed_fields = (
                 'name', 'access_method', 'description', 'system', 'tags',
-                'arch', 'lease')
+                'arch', 'lease', 'has_agent')
         if (self.user.has_perm('vm.change_template_resources')
                 or not self.instance.pk):
             self.allowed_fields += tuple(set(self.fields.keys()) -

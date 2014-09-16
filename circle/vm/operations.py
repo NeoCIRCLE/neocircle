@@ -299,16 +299,20 @@ class DeployOperation(InstanceOperation):
                 "deploy network")):
             self.instance.deploy_net()
 
+        try:
+            self.instance.renew(parent_activity=activity)
+        except:
+            pass
+
         # Resume vm
         with activity.sub_activity(
             'booting', readable_name=ugettext_noop(
                 "boot virtual machine")):
             self.instance.resume_vm(timeout=timeout)
 
-        try:
-            self.instance.renew(parent_activity=activity)
-        except:
-            pass
+        if self.instance.has_agent:
+            activity.sub_activity('os_boot', readable_name=ugettext_noop(
+                "wait operating system loading"), interruptible=True)
 
 
 register_operation(DeployOperation)
@@ -425,8 +429,11 @@ class RebootOperation(InstanceOperation):
     required_perms = ()
     accept_states = ('RUNNING', )
 
-    def _operation(self, timeout=5):
+    def _operation(self, activity, timeout=5):
         self.instance.reboot_vm(timeout=timeout)
+        if self.instance.has_agent:
+            activity.sub_activity('os_boot', readable_name=ugettext_noop(
+                "wait operating system loading"), interruptible=True)
 
 
 register_operation(RebootOperation)
@@ -499,8 +506,11 @@ class ResetOperation(InstanceOperation):
     required_perms = ()
     accept_states = ('RUNNING', )
 
-    def _operation(self, timeout=5):
+    def _operation(self, activity, timeout=5):
         self.instance.reset_vm(timeout=timeout)
+        if self.instance.has_agent:
+            activity.sub_activity('os_boot', readable_name=ugettext_noop(
+                "wait operating system loading"), interruptible=True)
 
 register_operation(ResetOperation)
 
