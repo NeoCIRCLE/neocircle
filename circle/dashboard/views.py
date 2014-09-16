@@ -1890,6 +1890,8 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
                 'icon': i.get_status_icon(),
                 'host': i.short_hostname,
                 'status': i.get_status_display(),
+                'owner': (i.owner.profile.get_display_name()
+                          if i.owner != self.request.user else None),
                 'fav': i.pk in favs,
             } for i in instances]
             return HttpResponse(
