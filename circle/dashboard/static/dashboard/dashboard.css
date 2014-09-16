@@ -364,9 +364,11 @@ a.hover-black {
   display: block;
 }
 
-.notification-messages {
+#notification-messages {
   padding: 10px 8px;
   width: 350px;
+  right: 0;
+  left: auto;
 }
 
 .notification-message {
@@ -375,7 +377,7 @@ a.hover-black {
   border-bottom: 1px dotted #D3D3D3;
 }
 
-.notification-messages .notification-message:last-child {
+#notification-messages .notification-message:last-child {
   margin-bottom: 0px;
   padding: 0px;
   border-bottom: none;
@@ -388,6 +390,15 @@ a.hover-black {
 
 .notification-message .notification-message-subject {
   cursor: pointer;
+}
+
+#notification-button a.dropdown-toggle {
+  color: white;
+  font-size: 12px;
+}
+
+#notification-button {
+  margin-right: 15px;
 }
 
 #vm-migrate-node-list {

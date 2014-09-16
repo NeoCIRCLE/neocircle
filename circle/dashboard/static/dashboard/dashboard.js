@@ -372,7 +372,7 @@ $(function () {
   });
 
   /* don't close notifications window on missclick */
-  $(document).on("click", ".notification-messages", function(e) {
+  $(document).on("click", "#notification-messages", function(e) {
     if($(e.target).closest("a").length)
       return true;
     else
@@ -380,7 +380,7 @@ $(function () {
   });
 
   $("#notification-button a").click(function() {
-    $('.notification-messages').load("/dashboard/notifications/");
+    $('#notification-messages').load("/dashboard/notifications/");
     $('#notification-button a span[class*="badge-pulse"]').remove();
   });
   
