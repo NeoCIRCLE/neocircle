@@ -455,15 +455,14 @@ $(document).on('shown.bs.tab', 'a[href="#resources"]', function (e) {
 });
 
 function addSliderMiscs() {
-  var vms = $(".vm-slider:not(.slider-added)").addClass("slider-added");
   // set max values based on inputs
   var cpu_count_range = "0, " + $(".cpu-count-input").prop("max");
   var ram_range = "0, " + $(".ram-input").prop("max");
   $(".cpu-count-slider").data("slider-range", cpu_count_range);
   $(".ram-slider").data("slider-range", ram_range);
 
-  vms.simpleSlider();
-  $(".cpu-priority-slider", vms).bind("slider:changed", function (event, data) {
+  $(".vm-slider").simpleSlider();
+  $(".cpu-priority-slider").bind("slider:changed", function (event, data) {
     var value = data.value + 0;
 
     $('.cpu-priority-input option[value="' + value + '"]').attr("selected", "selected");
@@ -474,7 +473,7 @@ function addSliderMiscs() {
     $(".cpu-priority-slider").simpleSlider("setValue", val);
   });
 
-  $(".cpu-count-slider", vms).bind("slider:changed", function (event, data) {
+  $(".cpu-count-slider").bind("slider:changed", function (event, data) {
     var value = data.value + 0;
     $(".cpu-count-input").val(parseInt(value));
   });
@@ -487,7 +486,7 @@ function addSliderMiscs() {
 
 
   var ram_fire = false;
-  $(".ram-slider", vms).bind("slider:changed", function (event, data) {
+  $(".ram-slider").bind("slider:changed", function (event, data) {
     if(ram_fire) {
       ram_fire = false;
       return;
@@ -505,9 +504,9 @@ function addSliderMiscs() {
 
   setDefaultSliderValues();
 
-  $(".cpu-priority-slider", vms).simpleSlider("setDisabled", $(".cpu-priority-input").prop("disabled"));
-  $(".cpu-count-slider", vms).simpleSlider("setDisabled", $(".cpu-count-input").prop("disabled"));
-  $(".ram-slider", vms).simpleSlider("setDisabled", $(".ram-input").prop("disabled"));
+  $(".cpu-priority-slider").simpleSlider("setDisabled", $(".cpu-priority-input").prop("disabled"));
+  $(".cpu-count-slider").simpleSlider("setDisabled", $(".cpu-count-input").prop("disabled"));
+  $(".ram-slider").simpleSlider("setDisabled", $(".ram-input").prop("disabled"));
 }
 
 function setDefaultSliderValues() {

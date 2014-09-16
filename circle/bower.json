@@ -17,7 +17,7 @@
     "no-vnc": "*",
     "bootstrap-tour": "~0.9.3",
     "jquery-knob": "~1.2.9",
-    "jquery-simple-slider": "*",
+    "jquery-simple-slider": "https://github.com/BME-IK/jquery-simple-slider.git",
     "bootbox": "~4.3.0"
   }
 }
