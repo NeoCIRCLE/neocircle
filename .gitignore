@@ -39,3 +39,6 @@ circle/bower_components
 
 # jsi18n files
 jsi18n
+
+# less
+*.css

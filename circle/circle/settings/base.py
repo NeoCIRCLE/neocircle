@@ -175,16 +175,17 @@ PIPELINE_CSS_COMPRESSOR = 'pipeline.compressors.yuglify.YuglifyCompressor'
 # PIPELINE_JS_COMPRESSOR = 'pipeline.compressors.yuglify.YuglifyCompressor'
 PIPELINE_JS_COMPRESSOR = None  # js compressors don't really like our deps
 PIPELINE_DISABLE_WRAPPER = True
+PIPELINE_LESS_ARGUMENTS = u'--include-path={}'.format(':'.join(STATICFILES_DIRS))
 PIPELINE_CSS = {
     "all": {"source_filenames": (
-        "bootstrap/dist/css/bootstrap.css",
-        "bootstrap/dist/css/bootstrap-theme.css",
         "fontawesome/css/font-awesome.css",
         "jquery-simple-slider/css/simple-slider.css",
         "bootstrap-tour/build/css/bootstrap-tour.css",
-        "template.css",
-        "dashboard/dashboard.css",
-        "network/network.css",
+        "template.less",
+        "dashboard/dashboard.less",
+        "network/network.less",
+        "compile_bootstrap.less",
+        "bootstrap/dist/css/bootstrap-theme.css",
     ),
         "output_filename": "all.css",
     }
