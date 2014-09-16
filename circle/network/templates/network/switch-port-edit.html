@@ -5,6 +5,8 @@
 {% load staticfiles %}
 {% load crispy_forms_tags %}
 
+{% block title-page %}{{ switch_port_pk }} | {% trans "switch port" %}{% endblock %}
+
 {% block content %}
 <div class="page-header">
   <a href="{% url "network.switch_port_delete" pk=switch_port_pk %}" class="btn btn-danger pull-right"><i class="fa fa-times-circle"></i> {% trans "Delete this switchport" %}</a>

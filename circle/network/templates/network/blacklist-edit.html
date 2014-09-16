@@ -5,6 +5,8 @@
 {% load staticfiles %}
 {% load crispy_forms_tags %}
 
+{% block title-page %}{{ form.ipv4.value }} - {{ form.type.value }} | {% trans "blacklist" %}{% endblock %}
+
 {% block content %}
 <div class="page-header">
     <a href="{% url "network.blacklist_delete" pk=blacklist_pk %}" class="btn btn-danger pull-right"><i class="fa fa-times-circle"></i> {% trans "Delete this blaclist item" %}</a>

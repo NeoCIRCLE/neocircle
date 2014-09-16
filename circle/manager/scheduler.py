@@ -48,7 +48,7 @@ class NotEnoughMemoryException(SchedulerError):
 class TraitsUnsatisfiableException(SchedulerError):
     message = ugettext_noop(
         "No node can satisfy the required traits of the "
-        "new vitual machine currently.")
+        "new virtual machine currently.")
 
 
 def select_node(instance, nodes):

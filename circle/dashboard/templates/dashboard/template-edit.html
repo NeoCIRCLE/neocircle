@@ -3,7 +3,7 @@
 {% load sizefieldtags %}
 {% load crispy_forms_tags %}
 
-{% block title-page %}{% trans "Edit template" %}{% endblock %}
+{% block title-page %}{{ form.name.value }} | {% trans "template" %}{% endblock %}
 
 {% block content %}
 
