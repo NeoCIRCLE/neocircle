@@ -3,10 +3,11 @@
 <div class="panel panel-default">
   <div class="panel-heading">
     <span class="btn btn-default btn-xs infobtn pull-right store-action-button" 
-      title="{% trans "A list of your most recent files." %}">
+      title="{% trans "A list of your most recent files." %}"
+      data-container="body">
       <i class="fa fa-info-circle"></i>
     </span>
-    <span class="btn btn-default btn-xs pull-right" 
+    <span class="btn btn-default btn-xs pull-right" data-container="body"
       title="
       {% blocktrans with used=files.quota.readable_used soft=files.quota.readable_soft hard=files.quota.readable_hard %}
       You are currently using {{ used }}, your soft limit is {{ soft }}, your hard limit is {{ hard }}.
