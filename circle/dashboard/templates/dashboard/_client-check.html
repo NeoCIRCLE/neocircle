@@ -1,0 +1,31 @@
+{% load i18n %}
+
+<p>
+    {% blocktrans %}
+    To effortlessly connect to all kind of virtual machines you have to install the <strong>CIRCLE Client</strong>.
+    {% endblocktrans %}
+</p>
+<p class="text-info">
+    {% blocktrans %}
+    To install the <strong>CIRCLE Client</strong> click on the <strong>Download the Client</strong> button. 
+    The button takes you to the installation detail page, where you can choose your operating system and start 
+    the download or read more detailed information about the <strong>Client</strong>. The program can be installed on Windows XP (and above)
+    or Debian based Linux operating systems. To successfully install the client you have to have admin (root or elevated) rights.
+    After the installation complete clicking on the <strong>I have the Client installed</strong> button will launch the appropriate tool
+    designed for that connection with necessarily predefined configurations. This option will also save your answer and this prompt about
+    installation will not pop up again.
+    {% endblocktrans %}
+</p> 
+<br>
+<div class="pull-right">
+    <form method="POST" id="dashboard-client-check" action="">
+        {% csrf_token %}
+        <a class="btn btn-default" href="{%  url "dashboard.views.detail" pk=instance.pk %}" data-dismiss="modal">{% trans "Cancel" %}</a>
+        <a class="btn btn-info" href="{{ client_download_url }}" traget="_blank">{% trans "Download the Client" %}</a>
+        <button data-dismiss="modal" id="client-check-button" type="submit" class="btn btn-success" title="{% trans "I downloaded and installed the client and I want to connect using it. This choice will be saved to your compuer" %}">
+            <i class="fa fa-external-link"></i> {% trans "I have the Client installed" %}
+        </button>
+        <input id="connect-uri" name="connect-uri" type="hidden" value="{% if instance.get_connect_uri %}{{ instance.get_connect_uri}}{% endif %}" />
+        <input name="vm" type="hidden" value="{% if instance.get_connect_uri %}{{ instance.pk}}{% endif %}" />
+    </form>
+</div>

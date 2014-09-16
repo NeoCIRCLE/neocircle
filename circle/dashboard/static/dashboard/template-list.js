@@ -39,6 +39,7 @@ $(function() {
   $(".template-list-table thead th").css("cursor", "pointer");
 
   $(".template-list-table th a").on("click", function(event) {
+    if(!$(this).closest("th").data("sort")) return true;
     event.preventDefault();
   });
 });

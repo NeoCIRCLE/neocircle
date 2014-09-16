@@ -29,8 +29,9 @@ import requests
 
 from django.conf import settings
 from django.contrib.auth.models import User, Group
-from django.contrib.auth.views import login, redirect_to_login
+from django.contrib.auth.views import login as login_view, redirect_to_login
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import login
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import (
     PermissionDenied, SuspiciousOperation,
@@ -69,13 +70,15 @@ from .forms import (
     UserCreationForm, GroupProfileUpdateForm, UnsubscribeForm,
     VmSaveForm, UserKeyForm, VmRenewForm, VmStateChangeForm,
     CirclePasswordChangeForm, VmCreateDiskForm, VmDownloadDiskForm,
-    TraitsForm, RawDataForm, GroupPermissionForm, AclUserAddForm,
-    VmResourcesForm, VmAddInterfaceForm, VmListSearchForm
+    TraitsForm, RawDataForm, GroupPermissionForm, AclUserOrGroupAddForm,
+    VmResourcesForm, VmAddInterfaceForm, VmListSearchForm,
+    TemplateListSearchForm, ConnectCommandForm,
+    TransferOwnershipForm, AddGroupMemberForm
 )
 
 from .tables import (
     NodeListTable, TemplateListTable, LeaseListTable,
-    GroupListTable, UserKeyListTable
+    GroupListTable, UserKeyListTable, ConnectCommandListTable,
 )
 from common.models import (
     HumanReadableObject, HumanReadableException, fetch_human_exception,
@@ -87,7 +90,8 @@ from vm.models import (
 )
 from storage.models import Disk
 from firewall.models import Vlan, Host, Rule
-from .models import Favourite, Profile, GroupProfile, FutureMember
+from .models import (Favourite, Profile, GroupProfile, FutureMember,
+                     ConnectCommand, create_profile)
 
 from .store_api import Store, NoStoreException, NotOkException
 
@@ -171,6 +175,65 @@ class FilterMixin(object):
     def get_queryset(self):
         return super(FilterMixin,
                      self).get_queryset().filter(**self.get_queryset_filters())
+
+    def create_fake_get(self):
+        self.request.GET = self._parse_get(self.request.GET)
+
+    def _parse_get(self, GET_dict):
+        """
+        Returns a new dict from request's GET dict to filter the vm list
+        For example: "name:xy node:1" updates the GET dict
+                     to resemble this URL ?name=xy&node=1
+
+        "name:xy node:1".split(":") becomes ["name", "xy node", "1"]
+        we pop the the first element and use it as the first dict key
+        then we iterate over the rest of the list and split by the last
+        whitespace, the first part of this list will be the previous key's
+        value, then last part of the list will be the next key.
+        The final dict looks like this: {'name': xy, 'node':1}
+
+        >>> f = FilterMixin()
+        >>> o = f._parse_get({'s': "hello"}).items()
+        >>> sorted(o) # doctest: +ELLIPSIS
+        [(u'name', u'hello'), (...)]
+        >>> o = f._parse_get({'s': "name:hello owner:test"}).items()
+        >>> sorted(o) # doctest: +ELLIPSIS
+        [(u'name', u'hello'), (u'owner', u'test'), (...)]
+        >>> o = f._parse_get({'s': "name:hello ws node:node 3 oh"}).items()
+        >>> sorted(o) # doctest: +ELLIPSIS
+        [(u'name', u'hello ws'), (u'node', u'node 3 oh'), (...)]
+        """
+        s = GET_dict.get("s")
+        fake = GET_dict.copy()
+        if s:
+            s = s.split(":")
+            if len(s) < 2:  # if there is no ':' in the string, filter by name
+                got = {'name': s[0]}
+            else:
+                latest = s.pop(0)
+                got = {'%s' % latest: None}
+                for i in s[:-1]:
+                    new = i.rsplit(" ", 1)
+                    got[latest] = new[0]
+                    latest = new[1] if len(new) > 1 else None
+                got[latest] = s[-1]
+
+            # generate a new GET request, that is kinda fake
+            for k, v in got.iteritems():
+                fake[k] = v
+        return fake
+
+    def create_acl_queryset(self, model):
+        cleaned_data = self.search_form.cleaned_data
+        stype = cleaned_data.get('stype', "all")
+        superuser = stype == "all"
+        shared = stype == "shared" or stype == "all"
+        level = "owner" if stype == "owned" else "user"
+        queryset = model.get_objects_with_level(
+            level, self.request.user,
+            group_also=shared, disregard_superuser=not superuser,
+        )
+        return queryset
 
 
 class IndexView(LoginRequiredMixin, TemplateView):
@@ -306,6 +369,7 @@ class VmDetailView(CheckedDetailView):
                                     kwargs={'pk': self.object.pk}),
             'ops': ops,
             'op': {i.op: i for i in ops},
+            'connect_commands': user.profile.get_connect_commands(instance)
         })
 
         # activity data
@@ -327,7 +391,7 @@ class VmDetailView(CheckedDetailView):
         ).all()
         context['acl'] = AclUpdateView.get_acl_data(
             instance, self.request.user, 'dashboard.views.vm-acl')
-        context['aclform'] = AclUserAddForm()
+        context['aclform'] = AclUserOrGroupAddForm()
         context['os_type_icon'] = instance.os_type.replace("unknown",
                                                            "question")
         # ipv6 infos
@@ -336,7 +400,7 @@ class VmDetailView(CheckedDetailView):
 
         # resources forms
         can_edit = (
-            instance in Instance.get_objects_with_level("owner", user)
+            instance.has_level(user, "owner")
             and self.request.user.has_perm("vm.change_resources"))
         context['resources_form'] = VmResourcesForm(
             can_edit=can_edit, instance=instance)
@@ -348,6 +412,14 @@ class VmDetailView(CheckedDetailView):
         # resources change perm
         context['can_change_resources'] = self.request.user.has_perm(
             "vm.change_resources")
+
+        # client info
+        context['client_download'] = self.request.COOKIES.get(
+            'downloaded_client')
+        # can link template
+        context['can_link_template'] = (
+            instance.template and instance.template.has_level(user, "operator")
+        )
 
         return context
 
@@ -1211,7 +1283,8 @@ class GroupDetailView(CheckedDetailView):
         context['acl'] = AclUpdateView.get_acl_data(
             self.object.profile, self.request.user,
             'dashboard.views.group-acl')
-        context['aclform'] = AclUserAddForm()
+        context['aclform'] = AclUserOrGroupAddForm()
+        context['addmemberform'] = AddGroupMemberForm()
         context['group_profile_form'] = GroupProfileUpdate.get_form_object(
             self.request, self.object.profile)
 
@@ -1228,17 +1301,15 @@ class GroupDetailView(CheckedDetailView):
 
         if request.POST.get('new_name'):
             return self.__set_name(request)
-        if request.POST.get('list-new-name'):
+        if request.POST.get('new_member'):
             return self.__add_user(request)
-        if request.POST.get('list-new-namelist'):
+        if request.POST.get('new_members'):
             return self.__add_list(request)
-        if (request.POST.get('list-new-name') is not None) and \
-                (request.POST.get('list-new-namelist') is not None):
-            return redirect(reverse_lazy("dashboard.views.group-detail",
-                                         kwargs={'pk': self.get_object().pk}))
+        return redirect(reverse_lazy("dashboard.views.group-detail",
+                                     kwargs={'pk': self.get_object().pk}))
 
     def __add_user(self, request):
-        name = request.POST['list-new-name']
+        name = request.POST['new_member']
         self.__add_username(request, name)
         return redirect(reverse_lazy("dashboard.views.group-detail",
                                      kwargs={'pk': self.object.pk}))
@@ -1257,9 +1328,7 @@ class GroupDetailView(CheckedDetailView):
                 messages.warning(request, _('User "%s" not found.') % name)
 
     def __add_list(self, request):
-        if not self.get_has_level()(request.user, 'operator'):
-            raise PermissionDenied()
-        userlist = request.POST.get('list-new-namelist').split('\r\n')
+        userlist = request.POST.get('new_members').split('\r\n')
         for line in userlist:
             self.__add_username(request, line)
         return redirect(reverse_lazy("dashboard.views.group-detail",
@@ -1464,6 +1533,37 @@ class GroupAclUpdateView(AclUpdateView):
         return super(GroupAclUpdateView, self).get_object().profile
 
 
+class ClientCheck(LoginRequiredMixin, TemplateView):
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/_modal.html']
+        else:
+            return ['dashboard/nojs-wrapper.html']
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(ClientCheck, self).get_context_data(*args, **kwargs)
+        context.update({
+            'box_title': _('About CIRCLE Client'),
+            'ajax_title': False,
+            'client_download_url': settings.CLIENT_DOWNLOAD_URL,
+            'template': "dashboard/_client-check.html",
+            'instance': get_object_or_404(
+                Instance, pk=self.request.GET.get('vm')),
+        })
+        if not context['instance'].has_level(self.request.user, 'operator'):
+            raise PermissionDenied()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        instance = get_object_or_404(Instance, pk=request.POST.get('vm'))
+        if not instance.has_level(request.user, 'operator'):
+            raise PermissionDenied()
+        response = HttpResponseRedirect(instance.get_absolute_url())
+        response.set_cookie('downloaded_client', 'True', 365 * 24 * 60 * 60)
+        return response
+
+
 class TemplateChoose(LoginRequiredMixin, TemplateView):
 
     def get_template_names(self):
@@ -1478,7 +1578,7 @@ class TemplateChoose(LoginRequiredMixin, TemplateView):
                                                             self.request.user)
         context.update({
             'box_title': _('Choose template'),
-            'ajax_title': False,
+            'ajax_title': True,
             'template': "dashboard/_template-choose.html",
             'templates': templates.all(),
         })
@@ -1615,7 +1715,7 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
             obj, self.request.user, 'dashboard.views.template-acl')
         context['disks'] = obj.disks.all()
         context['is_owner'] = obj.has_level(self.request.user, 'owner')
-        context['aclform'] = AclUserAddForm()
+        context['aclform'] = AclUserOrGroupAddForm()
         return context
 
     def get_success_url(self):
@@ -1634,23 +1734,67 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return kwargs
 
 
-class TemplateList(LoginRequiredMixin, SingleTableView):
+class TemplateList(LoginRequiredMixin, FilterMixin, SingleTableView):
     template_name = "dashboard/template-list.html"
     model = InstanceTemplate
     table_class = TemplateListTable
     table_pagination = False
 
+    allowed_filters = {
+        'name': "name__icontains",
+        'tags[]': "tags__name__in",
+        'tags': "tags__name__in",  # for search string
+        'owner': "owner__username",
+        'ram': "ram_size",
+        'ram_size': "ram_size",
+        'cores': "num_cores",
+        'num_cores': "num_cores",
+        'access_method': "access_method__iexact",
+    }
+
     def get_context_data(self, *args, **kwargs):
         context = super(TemplateList, self).get_context_data(*args, **kwargs)
-        context['lease_table'] = LeaseListTable(Lease.objects.all(),
-                                                request=self.request)
+        user = self.request.user
+        leases_w_operator = Lease.get_objects_with_level("operator", user)
+        context['lease_table'] = LeaseListTable(
+            leases_w_operator, request=self.request,
+            template="django_tables2/table_no_page.html",
+        )
+        context['show_lease_table'] = (
+            leases_w_operator.count() > 0 or
+            user.has_perm("vm.create_leases")
+        )
+
+        context['search_form'] = self.search_form
+
         return context
+
+    def get(self, *args, **kwargs):
+        self.search_form = TemplateListSearchForm(self.request.GET)
+        self.search_form.full_clean()
+        return super(TemplateList, self).get(*args, **kwargs)
+
+    def create_acl_queryset(self, model):
+        queryset = super(TemplateList, self).create_acl_queryset(model)
+        sql = ("SELECT count(*) FROM vm_instance WHERE "
+               "vm_instance.template_id = vm_instancetemplate.id and "
+               "vm_instance.destroyed_at is null and "
+               "vm_instance.status = 'RUNNING'")
+        queryset = queryset.extra(select={'running': sql})
+        return queryset
 
     def get_queryset(self):
         logger.debug('TemplateList.get_queryset() called. User: %s',
                      unicode(self.request.user))
-        return InstanceTemplate.get_objects_with_level(
-            'user', self.request.user).all()
+        qs = self.create_acl_queryset(InstanceTemplate)
+        self.create_fake_get()
+
+        try:
+            qs = qs.filter(**self.get_queryset_filters()).distinct()
+        except ValueError:
+            messages.error(self.request, _("Error during filtering."))
+
+        return qs.select_related("lease", "owner", "owner__profile")
 
 
 class TemplateDelete(LoginRequiredMixin, DeleteView):
@@ -1708,6 +1852,7 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
             else:
                 context['ops'].append(v)
         context['search_form'] = self.search_form
+        context['show_acts_in_progress'] = self.object_list.count() < 100
         return context
 
     def get(self, *args, **kwargs):
@@ -1743,7 +1888,7 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
                 'pk': i.pk,
                 'name': i.name,
                 'icon': i.get_status_icon(),
-                'host': "" if not i.primary_host else i.primary_host.hostname,
+                'host': i.short_hostname,
                 'status': i.get_status_display(),
                 'fav': i.pk in favs,
             } for i in instances]
@@ -1752,10 +1897,16 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
                 content_type="application/json",
             )
 
+    def create_acl_queryset(self, model):
+        queryset = super(VmList, self).create_acl_queryset(model)
+        if not self.search_form.cleaned_data.get("include_deleted"):
+            queryset = queryset.filter(destroyed_at=None)
+        return queryset
+
     def get_queryset(self):
         logger.debug('VmList.get_queryset() called. User: %s',
                      unicode(self.request.user))
-        queryset = self.create_default_queryset()
+        queryset = self.create_acl_queryset(Instance)
 
         self.create_fake_get()
         sort = self.request.GET.get("sort")
@@ -1767,54 +1918,9 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
             queryset = queryset.order_by(sort)
 
         return queryset.filter(
-            **self.get_queryset_filters()).select_related('owner', 'node'
-                                                          ).distinct()
-
-    def create_default_queryset(self):
-        cleaned_data = self.search_form.cleaned_data
-        stype = cleaned_data.get('stype', "all")
-        superuser = stype == "all"
-        shared = stype == "shared"
-        level = "owner" if stype == "owned" else "user"
-        queryset = Instance.get_objects_with_level(
-            level, self.request.user,
-            group_also=shared, disregard_superuser=not superuser,
-        ).filter(destroyed_at=None)
-        return queryset
-
-    def create_fake_get(self):
-        """
-        Updates the request's GET dict to filter the vm list
-        For example: "name:xy node:1" updates the GET dict
-                     to resemble this URL ?name=xy&node=1
-
-        "name:xy node:1".split(":") becomes ["name", "xy node", "1"]
-        we pop the the first element and use it as the first dict key
-        then we iterate over the rest of the list and split by the last
-        whitespace, the first part of this list will be the previous key's
-        value, then last part of the list will be the next key.
-        The final dict looks like this: {'name': xy, 'node':1}
-        """
-        s = self.request.GET.get("s")
-        if s:
-            s = s.split(":")
-            if len(s) < 2:  # if there is no ':' in the string, filter by name
-                got = {'name': s[0]}
-            else:
-                latest = s.pop(0)
-                got = {'%s' % latest: None}
-                for i in s[:-1]:
-                    new = i.rsplit(" ", 1)
-                    got[latest] = new[0]
-                    latest = new[1] if len(new) > 1 else None
-                got[latest] = s[-1]
-
-            # generate a new GET request, that is kinda fake
-            fake = self.request.GET.copy()
-            for k, v in got.iteritems():
-                fake[k] = v
-
-            self.request.GET = fake
+            **self.get_queryset_filters()).prefetch_related(
+                "owner", "node", "owner__profile", "interface_set", "lease",
+                "interface_set__host").distinct()
 
 
 class NodeList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
@@ -2020,29 +2126,35 @@ class VmCreate(LoginRequiredMixin, TemplateView):
         if not request.user.has_perm('vm.create_vm'):
             raise PermissionDenied()
 
-        form_error = form is not None
-        template = (form.template.pk if form_error
-                    else request.GET.get("template"))
-        templates = InstanceTemplate.get_objects_with_level(
-            'user', request.user, disregard_superuser=True)
-        if form is None and template:
-            form = self.form_class(user=request.user,
-                                   template=templates.get(pk=template))
+        if form is None:
+            template_pk = request.GET.get("template")
+        else:
+            template_pk = form.template.pk
+
+        if template_pk:
+            template = get_object_or_404(InstanceTemplate, pk=template_pk)
+            if not template.has_level(request.user, 'user'):
+                raise PermissionDenied()
+            if form is None:
+                form = self.form_class(user=request.user, template=template)
+        else:
+            templates = InstanceTemplate.get_objects_with_level(
+                'user', request.user, disregard_superuser=True)
 
         context = self.get_context_data(**kwargs)
-        if template:
+        if template_pk:
             context.update({
                 'template': 'dashboard/_vm-create-2.html',
                 'box_title': _('Customize VM'),
-                'ajax_title': False,
+                'ajax_title': True,
                 'vm_create_form': form,
-                'template_o': templates.get(pk=template),
+                'template_o': template,
             })
         else:
             context.update({
                 'template': 'dashboard/_vm-create-1.html',
                 'box_title': _('Create a VM'),
-                'ajax_title': False,
+                'ajax_title': True,
                 'templates': templates.all(),
             })
         return self.render_to_response(context)
@@ -2057,52 +2169,48 @@ class VmCreate(LoginRequiredMixin, TemplateView):
             raise PermissionDenied()
 
         args = {"template": template, "owner": user}
-        if "name" in request.POST:
-            args["name"] = request.POST.get("name")
         instances = [Instance.create_from_template(**args)]
         return self.__deploy(request, instances)
 
     def __create_customized(self, request, *args, **kwargs):
         user = request.user
+        # no form yet, using POST directly:
+        template = get_object_or_404(InstanceTemplate,
+                                     pk=request.POST.get("template"))
         form = self.form_class(
-            request.POST, user=request.user,
-            template=InstanceTemplate.objects.get(
-                pk=request.POST.get("template")
-            )
-        )
+            request.POST, user=request.user, template=template)
         if not form.is_valid():
             return self.get(request, form, *args, **kwargs)
         post = form.cleaned_data
 
-        template = InstanceTemplate.objects.get(pk=post['template'])
-        # permission check
         if not template.has_level(user, 'user'):
             raise PermissionDenied()
 
+        ikwargs = {
+            'name': post['name'],
+            'template': template,
+            'owner': user,
+        }
+        amount = post.get("amount", 1)
         if request.user.has_perm('vm.set_resources'):
-            ikwargs = {
-                'name': post['name'],
-                'num_cores': post['cpu_count'],
-                'ram_size': post['ram_size'],
-                'priority': post['cpu_priority'],
-                'max_ram_size': post['ram_size'],
-            }
             networks = [InterfaceTemplate(vlan=l, managed=l.managed)
                         for l in post['networks']]
 
             ikwargs.update({
-                'template': template,
-                'owner': user,
+                'num_cores': post['cpu_count'],
+                'ram_size': post['ram_size'],
+                'priority': post['cpu_priority'],
+                'max_ram_size': post['ram_size'],
                 'networks': networks,
                 'disks': list(template.disks.all()),
             })
 
-            amount = post['amount']
-            instances = Instance.mass_create_from_template(amount=amount,
-                                                           **ikwargs)
-            return self.__deploy(request, instances)
         else:
-            raise PermissionDenied()
+            pass
+
+        instances = Instance.mass_create_from_template(amount=amount,
+                                                       **ikwargs)
+        return self.__deploy(request, instances)
 
     def __deploy(self, request, instances, *args, **kwargs):
         for i in instances:
@@ -2232,9 +2340,9 @@ class GroupCreate(GroupCodeMixin, LoginRequiredMixin, TemplateView):
         context = self.get_context_data(**kwargs)
         context.update({
             'template': 'dashboard/group-create.html',
-            'box_title': 'Create a Group',
+            'box_title': _('Create a Group'),
             'form': form,
-
+            'ajax_title': True,
         })
         return self.render_to_response(context)
 
@@ -2609,6 +2717,7 @@ def vm_activity(request, pk):
     if not show_all:
         activities = activities[:10]
 
+    response['connect_uri'] = instance.get_connect_uri()
     response['human_readable_status'] = instance.get_status_display()
     response['status'] = instance.status
     response['icon'] = instance.get_status_icon()
@@ -2657,11 +2766,30 @@ class FavouriteView(TemplateView):
             return HttpResponse("Added.")
 
 
-class TransferOwnershipView(LoginRequiredMixin, DetailView):
+class TransferOwnershipView(CheckedDetailView, DetailView):
     model = Instance
-    template_name = 'dashboard/vm-detail/tx-owner.html'
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/_modal.html']
+        else:
+            return ['dashboard/nojs-wrapper.html']
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(TransferOwnershipView, self).get_context_data(
+            *args, **kwargs)
+        context['form'] = TransferOwnershipForm()
+        context.update({
+            'box_title': _("Transfer ownership"),
+            'ajax_title': True,
+            'template': "dashboard/vm-detail/tx-owner.html",
+        })
+        return context
 
     def post(self, request, *args, **kwargs):
+        form = TransferOwnershipForm(request.POST)
+        if not form.is_valid():
+            return self.get(request)
         try:
             new_owner = search_user(request.POST['name'])
         except User.DoesNotExist:
@@ -2885,10 +3013,53 @@ def circle_login(request):
     extra_context = {
         'saml2': saml_available,
     }
-    response = login(request, authentication_form=authentication_form,
-                     extra_context=extra_context)
+    response = login_view(request, authentication_form=authentication_form,
+                          extra_context=extra_context)
     set_language_cookie(request, response)
     return response
+
+
+class TokenLogin(View):
+
+    token_max_age = 120  # seconds
+
+    @classmethod
+    def get_salt(cls):
+        return unicode(cls)
+
+    @classmethod
+    def get_token(cls, user, sudoer):
+        return signing.dumps((sudoer.pk, user.pk),
+                             salt=cls.get_salt(), compress=True)
+
+    @classmethod
+    def get_token_url(cls, user, sudoer):
+        key = cls.get_token(user, sudoer)
+        return reverse("dashboard.views.token-login", args=(key, ))
+
+    def get(self, request, token, *args, **kwargs):
+        try:
+            data = signing.loads(token, salt=self.get_salt(),
+                                 max_age=self.token_max_age)
+            logger.debug('TokenLogin token data: %s', unicode(data))
+            sudoer, user = data
+            logger.debug('Extracted TokenLogin data: sudoer: %s, user: %s',
+                         unicode(sudoer), unicode(user))
+        except (signing.BadSignature, ValueError, TypeError) as e:
+            logger.warning('Tried invalid TokenLogin token. '
+                           'Token: %s, user: %s. %s',
+                           token, unicode(self.request.user), unicode(e))
+            raise SuspiciousOperation()
+        sudoer = User.objects.get(pk=sudoer)
+        if not sudoer.is_superuser:
+            raise PermissionDenied()
+        user = User.objects.get(pk=user)
+        user.backend = 'django.contrib.auth.backends.ModelBackend'
+        logger.warning('%s %d logged in as user %s %d',
+                       unicode(sudoer), sudoer.pk, unicode(user), user.pk)
+        login(request, user)
+        messages.info(request, _("Logged in as user %s.") % unicode(user))
+        return redirect("/")
 
 
 class MyPreferencesView(UpdateView):
@@ -2902,11 +3073,16 @@ class MyPreferencesView(UpdateView):
                 user=self.request.user),
             'change_language': MyProfileForm(instance=self.get_object()),
         }
-        table = UserKeyListTable(
+        key_table = UserKeyListTable(
             UserKey.objects.filter(user=self.request.user),
             request=self.request)
-        table.page = None
-        context['userkey_table'] = table
+        key_table.page = None
+        context['userkey_table'] = key_table
+        cmd_table = ConnectCommandListTable(
+            self.request.user.command_set.all(),
+            request=self.request)
+        cmd_table.page = None
+        context['connectcommand_table'] = cmd_table
         return context
 
     def get_object(self, queryset=None):
@@ -3112,6 +3288,7 @@ class UserCreationView(LoginRequiredMixin, PermissionRequiredMixin,
         self.get_group(group_pk)
         ret = super(UserCreationView, self).post(*args, **kwargs)
         if self.object:
+            create_profile(self.object)
             self.object.groups.add(self.group)
             return redirect(
                 reverse('dashboard.views.group-detail', args=[group_pk]))
@@ -3222,6 +3399,9 @@ class ProfileView(LoginRequiredMixin, DetailView):
                 template__in=it)
             context['instances_with_access'] = context[
                 'instances_with_access'].filter(template__in=it)
+        if self.request.user.is_superuser:
+            context['login_token'] = TokenLogin.get_token_url(
+                user, self.request.user)
         return context
 
 
@@ -3307,6 +3487,82 @@ class UserKeyCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 
     def get_form_kwargs(self):
         kwargs = super(UserKeyCreate, self).get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+
+class ConnectCommandDetail(LoginRequiredMixin, SuccessMessageMixin,
+                           UpdateView):
+    model = ConnectCommand
+    template_name = "dashboard/connect-command-edit.html"
+    form_class = ConnectCommandForm
+    success_message = _("Successfully modified command template.")
+
+    def get(self, request, *args, **kwargs):
+        object = self.get_object()
+        if object.user != request.user:
+            raise PermissionDenied()
+        return super(ConnectCommandDetail, self).get(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy("dashboard.views.connect-command-detail",
+                            kwargs=self.kwargs)
+
+    def post(self, request, *args, **kwargs):
+        object = self.get_object()
+        if object.user != request.user:
+            raise PermissionDenied()
+        return super(ConnectCommandDetail, self).post(request, args, kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super(ConnectCommandDetail, self).get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+
+class ConnectCommandDelete(LoginRequiredMixin, DeleteView):
+    model = ConnectCommand
+
+    def get_success_url(self):
+        return reverse("dashboard.views.profile-preferences")
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/confirm/ajax-delete.html']
+        else:
+            return ['dashboard/confirm/base-delete.html']
+
+    def delete(self, request, *args, **kwargs):
+        object = self.get_object()
+        if object.user != request.user:
+            raise PermissionDenied()
+
+        object.delete()
+        success_url = self.get_success_url()
+        success_message = _("Command template successfully deleted.")
+
+        if request.is_ajax():
+            return HttpResponse(
+                json.dumps({'message': success_message}),
+                content_type="application/json",
+            )
+        else:
+            messages.success(request, success_message)
+            return HttpResponseRedirect(success_url)
+
+
+class ConnectCommandCreate(LoginRequiredMixin, SuccessMessageMixin,
+                           CreateView):
+    model = ConnectCommand
+    form_class = ConnectCommandForm
+    template_name = "dashboard/connect-command-create.html"
+    success_message = _("Successfully created a new command template.")
+
+    def get_success_url(self):
+        return reverse_lazy("dashboard.views.profile-preferences")
+
+    def get_form_kwargs(self):
+        kwargs = super(ConnectCommandCreate, self).get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
 

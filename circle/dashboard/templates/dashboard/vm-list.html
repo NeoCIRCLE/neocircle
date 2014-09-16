@@ -22,7 +22,7 @@
             <strong>{% trans "Group actions" %}</strong>
             <button id="vm-list-group-select-all" class="btn btn-info btn-xs">{% trans "Select all" %}</button>
             {% for o in ops %}
-              <a href="{{ o.get_url }}" class="btn btn-xs btn-{{ o.effect }} mass-operation" 
+              <a href="{{ o.get_url }}" class="btn btn-xs btn-{{ o.effect }} mass-operation"
                title="{{ o.name|capfirst }}" disabled>
                 <i class="fa fa-{{ o.icon }}"></i>
               </a>
@@ -34,7 +34,13 @@
                 {{ search_form.s }}
                 <div class="input-group-btn">
                   {{ search_form.stype }}
-                  <button type="submit" class="btn btn-primary input-tags"> 
+                </div>
+                <label class="input-group-addon input-tags" title="{% trans "Include deleted VMs" %}"
+                  id="vm-list-search-checkbox-span" data-container="body">
+                  {{ search_form.include_deleted }}
+                </label>
+                <div class="input-group-btn">
+                  <button type="submit" class="btn btn-primary input-tags">
                     <i class="fa fa-search"></i>
                   </button>
                 </div>
@@ -63,10 +69,20 @@
                 {% trans "Owner" as t %}
                 {% include "dashboard/vm-list/header-link.html" with name=t sort="owner" %}
               </th>
-              {% if user.is_superuser %}<th data-sort="string" class="orderable sortable">
-                {% trans "Node" as t %}
-                {% include "dashboard/vm-list/header-link.html" with name=t sort="node" %}
-              </th>{% endif %}
+              <th data-sort="string" class="orderable sortable">
+                {% trans "Lease" as t %}
+                {% include "dashboard/vm-list/header-link.html" with name=t sort="lease" %}
+              </th>
+              {% if user.is_superuser %}
+                <th data-sort="string" class="orderable sortable">
+                  {% trans "IP address" as t %}
+                  {% include "dashboard/vm-list/header-link.html" with name=t sort="ip_addr" %}
+                </th>
+                <th data-sort="string" class="orderable sortable">
+                  {% trans "Node" as t %}
+                  {% include "dashboard/vm-list/header-link.html" with name=t sort="node" %}
+                </th>
+              {% endif %}
           </tr></thead><tbody>
           {% for i in object_list %}
           <tr class="{% cycle 'odd' 'even' %}" data-vm-pk="{{ i.pk }}">
@@ -74,16 +90,27 @@
             <td class="name"><a class="real-link" href="{% url "dashboard.views.detail" i.pk %}">{{ i.name }}</a>  </td>
             <td class="state">
               <i class="fa fa-fw
-                {% if i.is_in_status_change %}
+                {% if show_acts_in_progress and i.is_in_status_change %}
                   fa-spin fa-spinner
                 {% else %}
                 {{ i.get_status_icon }}{% endif %}"></i>
               <span>{{ i.get_status_display }}</span>
             </td>
             <td>
-              {% include "dashboard/_display-name.html" with user=i.owner show_org=True %}
+              {% if i.owner.profile %}
+                {{ i.owner.profile.get_display_name }}
+              {% else %}
+                {{ i.owner.username }}
+              {% endif %}
+              {# include "dashboard/_display-name.html" with user=i.owner show_org=True #}
+            </td>
+            <td class="lease "data-sort-value="{{ i.lease.name }}">
+              {{ i.lease.name }}
             </td>
             {% if user.is_superuser %}
+            <td class="ip_addr "data-sort-value="{{ i.ipv4 }}">
+              {{ i.ipv4|default:"-" }}
+            </td>
             <td class="node "data-sort-value="{{ i.node.normalized_name }}">
               {{ i.node.name|default:"-" }}
             </td>
@@ -91,7 +118,7 @@
           </tr>
           {% empty %}
           <tr>
-            <td colspan="5">
+            <td colspan="7">
               {% if request.GET.s %}
                 <strong>{% trans "No result." %}</strong>
               {% else %}

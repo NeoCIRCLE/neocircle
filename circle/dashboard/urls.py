@@ -39,11 +39,13 @@ from .views import (
     get_vm_screenshot,
     ProfileView, toggle_use_gravatar, UnsubscribeFormView,
     UserKeyDelete, UserKeyDetail, UserKeyCreate,
+    ConnectCommandDelete, ConnectCommandDetail, ConnectCommandCreate,
     StoreList, store_download, store_upload, store_get_upload_url, StoreRemove,
     store_new_directory, store_refresh_toplist,
     VmTraitsUpdate, VmRawDataUpdate,
     GroupPermissionsView,
     LeaseAclUpdateView,
+    ClientCheck, TokenLogin,
 )
 
 autocomplete_light.autodiscover()
@@ -177,6 +179,16 @@ urlpatterns = patterns(
         UserKeyCreate.as_view(),
         name="dashboard.views.userkey-create"),
 
+    url(r'^conncmd/delete/(?P<pk>\d+)/$',
+        ConnectCommandDelete.as_view(),
+        name="dashboard.views.connect-command-delete"),
+    url(r'^conncmd/(?P<pk>\d+)/$',
+        ConnectCommandDetail.as_view(),
+        name="dashboard.views.connect-command-detail"),
+    url(r'^conncmd/create/$',
+        ConnectCommandCreate.as_view(),
+        name="dashboard.views.connect-command-create"),
+
     url(r'^autocomplete/', include('autocomplete_light.urls')),
 
     url(r"^store/list/$", StoreList.as_view(),
@@ -193,4 +205,8 @@ urlpatterns = patterns(
         name="dashboard.views.store-new-directory"),
     url(r"^store/refresh_toplist$", store_refresh_toplist,
         name="dashboard.views.store-refresh-toplist"),
+    url(r"^client/check$", ClientCheck.as_view(),
+        name="dashboard.views.client-check"),
+    url(r'^token-login/(?P<token>.*)/$', TokenLogin.as_view(),
+        name="dashboard.views.token-login"),
 )

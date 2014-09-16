@@ -1,4 +1,6 @@
 from django.core.exceptions import ValidationError
+from django.utils.translation import ugettext_lazy as _
+
 from lxml import etree as ET
 import logging
 
@@ -29,3 +31,27 @@ def domain_validator(value):
             relaxng.assertValid(parsed_xml)
         except Exception as e:
             raise ValidationError(e.message)
+
+
+def connect_command_template_validator(value):
+    """Validate value as a connect command template.
+
+    >>> try: connect_command_template_validator("%(host)s")
+    ... except ValidationError as e: print e
+    ...
+    >>> connect_command_template_validator("%(host)s")
+    >>> try: connect_command_template_validator("%(host)s %s")
+    ... except ValidationError as e: print e
+    ...
+    [u'Invalid template string.']
+    """
+
+    try:
+        value % {
+            'username': "uname",
+            'password': "pw",
+            'host': "111.111.111.111",
+            'port': 12345,
+        }
+    except (KeyError, TypeError, ValueError):
+        raise ValidationError(_("Invalid template string."))

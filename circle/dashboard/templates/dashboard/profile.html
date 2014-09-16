@@ -11,6 +11,12 @@
   <div class="col-md-12">
     <div class="panel panel-default">
       <div class="panel-heading">
+        {% if request.user.is_superuser %}
+          <a href="{{ login_token }}"
+             class="pull-right btn btn-danger btn-xs"
+             title="{% trans "Log in as this user. Recommended to open in an incognito window." %}">
+             {% trans "Login as this user" %}</a>
+        {% endif %}
         <a class="pull-right btn btn-default btn-xs" href="{% url "dashboard.index" %}">{% trans "Back" %}</a>
         <h3 class="no-margin">
           <i class="fa fa-user"></i>

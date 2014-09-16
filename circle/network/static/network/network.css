@@ -6,3 +6,8 @@
   text-align: center;
 }
 
+#host-detail-records-table td:first-child,
+#host-detail-records-table th:first-child {
+  text-align: center;
+  width: 60px;
+}

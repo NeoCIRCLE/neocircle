@@ -163,9 +163,10 @@ $(function() {
     $(this).find('input[type="radio"]').prop("checked", true);
   });
 
-  if(checkStatusUpdate()) {
+  if(checkStatusUpdate() || $("#vm-list-table tbody tr").length >= 100) {
     updateStatuses(1);
   }
+
 });
 
 
@@ -178,6 +179,7 @@ function checkStatusUpdate() {
 
 
 function updateStatuses(runs) {
+  var include_deleted = getParameterByName("include_deleted");
   $.get("/dashboard/vm/list/?compact", function(result) {
     $("#vm-list-table tbody tr").each(function() {
       vm = $(this).data("vm-pk");
@@ -203,7 +205,8 @@ function updateStatuses(runs) {
           $(this).find(".node").text(result[vm].node);
         }
       } else {
-        $(this).remove();
+        if(!include_deleted)
+          $(this).remove();
       }
     });
 

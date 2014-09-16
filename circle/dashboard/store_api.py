@@ -7,6 +7,7 @@ from datetime import datetime
 from django.http import Http404
 from django.conf import settings
 from requests import get, post, codes
+from requests.exceptions import Timeout  # noqa
 from sizefield.utils import filesizeformat
 
 logger = logging.getLogger(__name__)

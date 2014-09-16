@@ -123,6 +123,10 @@ class VirtualMachineDescModel(BaseResourceConfigModel):
                                     'format like "%s".') %
                                   'Ubuntu 12.04 LTS Desktop amd64'))
     tags = TaggableManager(blank=True, verbose_name=_("tags"))
+    has_agent = BooleanField(verbose_name=_('has agent'), default=True,
+                             help_text=_(
+                                 'If the machine has agent installed, and '
+                                 'the manager should wait for its start.'))
 
     class Meta:
         abstract = True
@@ -244,10 +248,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                                    verbose_name=_('time of delete'),
                                    help_text=_("Proposed time of automatic "
                                                "deletion."))
-    active_since = DateTimeField(blank=True, null=True,
-                                 help_text=_("Time stamp of successful "
-                                             "boot report."),
-                                 verbose_name=_('active since'))
     node = ForeignKey(Node, blank=True, null=True,
                       related_name='instance_set',
                       help_text=_("Current hypervisor of this instance."),
@@ -428,7 +428,8 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         # prepare parameters
         common_fields = ['name', 'description', 'num_cores', 'ram_size',
                          'max_ram_size', 'arch', 'priority', 'boot_menu',
-                         'raw_data', 'lease', 'access_method', 'system']
+                         'raw_data', 'lease', 'access_method', 'system',
+                         'has_agent']
         params = dict(template=template, owner=owner, pw=pwgen())
         params.update([(f, getattr(template, f)) for f in common_fields])
         params.update(kwargs)  # override defaults w/ user supplied values
@@ -513,7 +514,11 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
     def ipv4(self):
         """Primary IPv4 address of the instance.
         """
-        return self.primary_host.ipv4 if self.primary_host else None
+        # return self.primary_host.ipv4 if self.primary_host else None
+        for i in self.interface_set.all():
+            if i.host:
+                return i.host.ipv4
+        return None
 
     @property
     def ipv6(self):
@@ -528,15 +533,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         return self.primary_host.mac if self.primary_host else None
 
     @property
-    def uptime(self):
-        """Uptime of the instance.
-        """
-        if self.active_since:
-            return timezone.now() - self.active_since
-        else:
-            return timedelta()  # zero
-
-    @property
     def os_type(self):
         """Get the type of the instance's operating system.
         """
@@ -544,13 +540,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             return "unknown"
         else:
             return self.template.os_type
-
-    def get_age(self):
-        """Deprecated. Use uptime instead.
-
-        Get age of VM in seconds.
-        """
-        return self.uptime.seconds
 
     @property
     def waiting(self):
@@ -603,13 +592,18 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             port = self.get_connect_port(use_ipv6=use_ipv6)
             host = self.get_connect_host(use_ipv6=use_ipv6)
             proto = self.access_method
-            if proto == 'ssh':
-                proto = 'sshterm'
-            return ('%(proto)s:cloud:%(pw)s:%(host)s:%(port)d' %
+            return ('circle:%(proto)s:cloud:%(pw)s:%(host)s:%(port)d' %
                     {'port': port, 'proto': proto, 'pw': self.pw,
                      'host': host})
         except:
             return
+
+    @property
+    def short_hostname(self):
+        try:
+            return self.primary_host.hostname
+        except AttributeError:
+            return self.vm_name
 
     def get_vm_desc(self):
         """Serialize Instance object to vmdriver.

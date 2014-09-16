@@ -46,8 +46,10 @@ from acl.models import AclBase
 from common.models import HumanReadableObject, create_readable, Encoder
 
 from vm.tasks.agent_tasks import add_keys, del_keys
+from vm.models.instance import ACCESS_METHODS
 
-from .store_api import Store, NoStoreException, NotOkException
+from .store_api import Store, NoStoreException, NotOkException, Timeout
+from .validators import connect_command_template_validator
 
 logger = getLogger(__name__)
 
@@ -100,6 +102,25 @@ class Notification(TimeStampedModel):
         self.message_data = None if value is None else value.to_dict()
 
 
+class ConnectCommand(Model):
+    user = ForeignKey(User, related_name='command_set')
+    access_method = CharField(max_length=10, choices=ACCESS_METHODS,
+                              verbose_name=_('access method'),
+                              help_text=_('Type of the remote access method.'))
+    name = CharField(max_length="128", verbose_name=_('name'), blank=False,
+                     help_text=_("Name of your custom command."))
+    template = CharField(blank=True, null=True, max_length=256,
+                         verbose_name=_('command template'),
+                         help_text=_('Template for connection command string. '
+                                     'Available parameters are: '
+                                     'username, password, '
+                                     'host, port.'),
+                         validators=[connect_command_template_validator])
+
+    def __unicode__(self):
+        return self.template
+
+
 class Profile(Model):
     user = OneToOneField(User)
     preferred_language = CharField(verbose_name=_('preferred language'),
@@ -128,6 +149,25 @@ class Profile(Model):
         verbose_name=_('disk quota'),
         default=2048 * 1024 * 1024,
         help_text=_('Disk quota in mebibytes.'))
+
+    def get_connect_commands(self, instance, use_ipv6=False):
+        """ Generate connection command based on template."""
+        single_command = instance.get_connect_command(use_ipv6)
+        if single_command:  # can we even connect to that VM
+            commands = self.user.command_set.filter(
+                access_method=instance.access_method)
+            if commands.count() < 1:
+                return [single_command]
+            else:
+                return [
+                    command.template % {
+                        'port': instance.get_connect_port(use_ipv6=use_ipv6),
+                        'host':  instance.get_connect_host(use_ipv6=use_ipv6),
+                        'password': instance.pw,
+                        'username': 'cloud',
+                    } for command in commands]
+        else:
+            return []
 
     def notify(self, subject, template, context=None, valid_until=None,
                **kwargs):
@@ -160,6 +200,11 @@ class Profile(Model):
 
     def __unicode__(self):
         return self.get_display_name()
+
+    def save(self, *args, **kwargs):
+        if self.org_id == "":
+            self.org_id = None
+        super(Profile, self).save(*args, **kwargs)
 
     class Meta:
         permissions = (
@@ -216,7 +261,7 @@ def get_or_create_profile(self):
 Group.profile = property(get_or_create_profile)
 
 
-def create_profile(sender, user, request, **kwargs):
+def create_profile(user):
     if not user.pk:
         return False
     profile, created = Profile.objects.get_or_create(user=user)
@@ -227,7 +272,11 @@ def create_profile(sender, user, request, **kwargs):
         logger.exception("Can't create user %s", unicode(user))
     return created
 
-user_logged_in.connect(create_profile)
+
+def create_profile_hook(sender, user, request, **kwargs):
+    return create_profile(user)
+
+user_logged_in.connect(create_profile_hook)
 
 if hasattr(settings, 'SAML_ORG_ID_ATTRIBUTE'):
     logger.debug("Register save_org_id to djangosaml2 pre_user_save")
@@ -301,7 +350,7 @@ def update_store_profile(sender, **kwargs):
                       profile.disk_quota)
     except NoStoreException:
         logger.debug("Store is not available.")
-    except NotOkException:
+    except (NotOkException, Timeout):
         logger.critical("Store is not accepting connections.")
 
 

@@ -11,10 +11,6 @@
     body {
       margin-top: 40px;
     }
-    .container {
-      width: 600px;
-    }
-
     ul, li {
       list-style: none;
       margin: 0;
@@ -22,6 +18,8 @@
     }
 
     .container > .content {
+      max-width: 570px;
+      margin: auto;
       background-color: #fff;
       padding: 20px;
       -webkit-border-radius: 10px 10px 10px 10px;
@@ -38,8 +36,10 @@
     }
 
     .login-form {
-      margin-top: 40px;
+      margin: 20px auto 0 auto;
       padding: 0 10px;
+      max-width: 250px;
+
     }
 
     .login-form form {
@@ -78,4 +78,11 @@
   <a class="navbar-brand" href="{% url "dashboard.index" %}" style="padding: 10px 15px;">
     <img src="{% static "dashboard/img/logo.png" %}" style="height: 25px;"/>
   </a>
+{% endblock %}
+
+
+{% block content %}
+  <div class="content">
+    {% block content_box %}{% endblock %}
+  </div>
 {% endblock %}

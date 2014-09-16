@@ -214,6 +214,14 @@ class ActivityModel(TimeStampedModel):
 
         self.result_data = None if value is None else value.to_dict()
 
+    @classmethod
+    def construct_activity_code(cls, code_suffix, sub_suffix=None):
+        code = join_activity_code(cls.ACTIVITY_CODE_BASE, code_suffix)
+        if sub_suffix:
+            return join_activity_code(code, sub_suffix)
+        else:
+            return code
+
 
 @celery.task()
 def compute_cached(method, instance, memcached_seconds,
@@ -488,7 +496,7 @@ class HumanReadableException(HumanReadableObject, Exception):
                     "Level should be the name of an attribute of django."
                     "contrib.messages (and it should be callable with "
                     "(request, message)). Like 'error', 'warning'.")
-        else:
+        elif not hasattr(self, "level"):
             self.level = "error"
 
     def send_message(self, request, level=None):

@@ -215,7 +215,7 @@ class Rule(models.Model):
         dst = None
 
         if host:
-            ip = (host.ipv4, host.ipv6_with_prefixlen)
+            ip = (host.ipv4, host.ipv6_with_host_prefixlen)
             if self.direction == 'in':
                 dst = ip
             else:
@@ -530,14 +530,30 @@ class Host(models.Model):
     def incoming_rules(self):
         return self.rules.filter(direction='in')
 
-    @property
-    def ipv6_with_prefixlen(self):
+    @staticmethod
+    def create_ipnetwork(ip, prefixlen):
         try:
-            net = IPNetwork(self.ipv6)
-            net.prefixlen = self.vlan.host_ipv6_prefixlen
-            return net
+            net = IPNetwork(ip)
+            net.prefixlen = prefixlen
         except TypeError:
             return None
+        else:
+            return net
+
+    @property
+    def ipv4_with_vlan_prefixlen(self):
+        return Host.create_ipnetwork(
+            self.ipv4, self.vlan.network4.prefixlen)
+
+    @property
+    def ipv6_with_vlan_prefixlen(self):
+        return Host.create_ipnetwork(
+            self.ipv6, self.vlan.network6.prefixlen)
+
+    @property
+    def ipv6_with_host_prefixlen(self):
+        return Host.create_ipnetwork(
+            self.ipv6, self.vlan.host_ipv6_prefixlen)
 
     def get_external_ipv4(self):
         return self.external_ipv4 if self.external_ipv4 else self.ipv4
@@ -599,6 +615,19 @@ class Host(models.Model):
                        owner=self.owner,
                        description='created by host.save()',
                        type='AAAA').save()
+
+    def get_network_config(self):
+        interface = {'addresses': []}
+
+        if self.ipv4 and self.vlan.network4:
+            interface['addresses'].append(str(self.ipv4_with_vlan_prefixlen))
+            interface['gw4'] = str(self.vlan.network4.ip)
+
+        if self.ipv6 and self.vlan.network6:
+            interface['addresses'].append(str(self.ipv6_with_vlan_prefixlen))
+            interface['gw6'] = str(self.vlan.network6.ip)
+
+        return interface
 
     def enable_net(self):
         for i in settings.get('default_host_groups', []):

@@ -278,7 +278,7 @@ class Disk(TimeStampedModel):
 
         return Disk.create(base=self, datastore=self.datastore,
                            name=self.name, size=self.size,
-                           type=new_type)
+                           type=new_type, dev_num=self.dev_num)
 
     def get_vmdisk_desc(self):
         """Serialize disk object to the vmdriver.
@@ -367,7 +367,8 @@ class Disk(TimeStampedModel):
         disk = cls.__create(user, params)
         disk.clean()
         disk.save()
-        logger.debug("Disk created: %s", params)
+        logger.debug(u"Disk created from: %s",
+                     unicode(params.get("base", "nobase")))
         return disk
 
     @classmethod

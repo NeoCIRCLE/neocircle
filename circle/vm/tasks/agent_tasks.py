@@ -76,3 +76,8 @@ def get_keys(vm):
 @celery.task(name='agent.send_expiration')
 def send_expiration(vm, url):
     pass
+
+
+@celery.task(name='agent.change_ip')
+def change_ip(vm, interfaces, dns):
+    pass

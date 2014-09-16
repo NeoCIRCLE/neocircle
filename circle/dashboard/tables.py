@@ -25,6 +25,7 @@ from django_tables2.columns import (TemplateColumn, Column, BooleanColumn,
 from vm.models import Node, InstanceTemplate, Lease
 from django.utils.translation import ugettext_lazy as _
 from django_sshkey.models import UserKey
+from dashboard.models import ConnectCommand
 
 
 class NodeListTable(Table):
@@ -146,13 +147,11 @@ class TemplateListTable(Table):
         template_name="dashboard/template-list/column-template-name.html",
         attrs={'th': {'data-sort': "string"}}
     )
-    num_cores = Column(
-        verbose_name=_("Cores"),
-        attrs={'th': {'data-sort': "int"}}
-    )
-    ram_size = TemplateColumn(
-        "{{ record.ram_size }} MiB",
+    resources = TemplateColumn(
+        template_name="dashboard/template-list/column-template-resources.html",
+        verbose_name=_("Resources"),
         attrs={'th': {'data-sort': "int"}},
+        order_by=("ram_size"),
     )
     lease = TemplateColumn(
         "{{ record.lease.name }}",
@@ -170,11 +169,14 @@ class TemplateListTable(Table):
         verbose_name=_("Owner"),
         attrs={'th': {'data-sort': "string"}}
     )
+    created = TemplateColumn(
+        template_name="dashboard/template-list/column-template-created.html",
+        verbose_name=_("Created at"),
+    )
     running = TemplateColumn(
         template_name="dashboard/template-list/column-template-running.html",
         verbose_name=_("Running"),
         attrs={'th': {'data-sort': "int"}},
-        orderable=False,
     )
     actions = TemplateColumn(
         verbose_name=_("Actions"),
@@ -187,8 +189,8 @@ class TemplateListTable(Table):
         model = InstanceTemplate
         attrs = {'class': ('table table-bordered table-striped table-hover'
                            ' template-list-table')}
-        fields = ('name', 'num_cores', 'ram_size', 'system',
-                  'access_method', 'lease', 'owner', 'running', 'actions', )
+        fields = ('name', 'resources', 'system', 'access_method', 'lease',
+                  'owner', 'created', 'running', 'actions', )
 
         prefix = "template-"
 
@@ -220,6 +222,7 @@ class LeaseListTable(Table):
         fields = ('name', 'suspend_interval_seconds',
                   'delete_interval_seconds', )
         prefix = "lease-"
+        empty_text = _("No available leases.")
 
 
 class UserKeyListTable(Table):
@@ -248,5 +251,41 @@ class UserKeyListTable(Table):
 
     class Meta:
         model = UserKey
-        attrs = {'class': ('table table-bordered table-striped table-hover')}
+        attrs = {'class': ('table table-bordered table-striped table-hover'),
+                 'id': "profile-key-list-table"}
         fields = ('name', 'fingerprint', 'created', 'actions')
+        prefix = "key-"
+        empty_text = _("You haven't added any public keys yet.")
+
+
+class ConnectCommandListTable(Table):
+    name = LinkColumn(
+        'dashboard.views.connect-command-detail',
+        args=[A('pk')],
+        attrs={'th': {'data-sort': "string"}}
+    )
+    access_method = Column(
+        verbose_name=_("Access method"),
+        attrs={'th': {'data-sort': "string"}}
+    )
+    template = Column(
+        verbose_name=_("Template"),
+        attrs={'th': {'data-sort': "string"}}
+    )
+    actions = TemplateColumn(
+        verbose_name=_("Actions"),
+        template_name=("dashboard/connect-command-list/column-command"
+                       "-actions.html"),
+        orderable=False,
+    )
+
+    class Meta:
+        model = ConnectCommand
+        attrs = {'class': ('table table-bordered table-striped table-hover'),
+                 'id': "profile-command-list-table"}
+        fields = ('name', 'access_method',  'template', 'actions')
+        prefix = "cmd-"
+        empty_text = _(
+            "You don't have any custom connection commands yet. You can "
+            "specify commands to be displayed on VM detail pages instead of "
+            "the defaults.")

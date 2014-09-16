@@ -34,6 +34,7 @@ from common.models import (
     create_readable, humanize_exception, HumanReadableException
 )
 from common.operations import Operation, register_operation
+from manager.scheduler import SchedulerError
 from .tasks.local_tasks import (
     abortable_async_instance_operation, abortable_async_node_operation,
 )
@@ -41,7 +42,7 @@ from .models import (
     Instance, InstanceActivity, InstanceTemplate, Interface, Node,
     NodeActivity, pwgen
 )
-from .tasks import agent_tasks
+from .tasks import agent_tasks, local_agent_tasks
 
 from dashboard.store_api import Store, NoStoreException
 
@@ -153,6 +154,7 @@ class AddInterfaceOperation(InstanceOperation):
                     self.rollback(net, activity)
                 raise
             net.deploy()
+            local_agent_tasks.send_networking_commands(self.instance, activity)
 
     def get_activity_name(self, kwargs):
         return create_readable(ugettext_noop("add %(vlan)s interface"),
@@ -297,16 +299,20 @@ class DeployOperation(InstanceOperation):
                 "deploy network")):
             self.instance.deploy_net()
 
+        try:
+            self.instance.renew(parent_activity=activity)
+        except:
+            pass
+
         # Resume vm
         with activity.sub_activity(
             'booting', readable_name=ugettext_noop(
                 "boot virtual machine")):
             self.instance.resume_vm(timeout=timeout)
 
-        try:
-            self.instance.renew(parent_activity=activity)
-        except:
-            pass
+        if self.instance.has_agent:
+            activity.sub_activity('os_boot', readable_name=ugettext_noop(
+                "wait operating system loading"), interruptible=True)
 
 
 register_operation(DeployOperation)
@@ -423,8 +429,11 @@ class RebootOperation(InstanceOperation):
     required_perms = ()
     accept_states = ('RUNNING', )
 
-    def _operation(self, timeout=5):
+    def _operation(self, activity, timeout=5):
         self.instance.reboot_vm(timeout=timeout)
+        if self.instance.has_agent:
+            activity.sub_activity('os_boot', readable_name=ugettext_noop(
+                "wait operating system loading"), interruptible=True)
 
 
 register_operation(RebootOperation)
@@ -497,8 +506,11 @@ class ResetOperation(InstanceOperation):
     required_perms = ()
     accept_states = ('RUNNING', )
 
-    def _operation(self, timeout=5):
+    def _operation(self, activity, timeout=5):
         self.instance.reset_vm(timeout=timeout)
+        if self.instance.has_agent:
+            activity.sub_activity('os_boot', readable_name=ugettext_noop(
+                "wait operating system loading"), interruptible=True)
 
 register_operation(ResetOperation)
 
@@ -619,6 +631,17 @@ class ShutdownOperation(InstanceOperation):
         self.instance.yield_node()
         self.instance.yield_vnc_port()
 
+    def on_abort(self, activity, error):
+        if isinstance(error, TimeLimitExceeded):
+            activity.result = humanize_exception(ugettext_noop(
+                "The virtual machine did not switch off in the provided time "
+                "limit. Most of the time this is caused by incorrect ACPI "
+                "settings. You can also try to power off the machine from the "
+                "operating system manually."), error)
+            activity.resultant_state = None
+        else:
+            super(ShutdownOperation, self).on_abort(activity, error)
+
 
 register_operation(ShutdownOperation)
 
@@ -716,7 +739,10 @@ class WakeUpOperation(InstanceOperation):
         return self.instance.status == self.instance.STATUS.SUSPENDED
 
     def on_abort(self, activity, error):
-        activity.resultant_state = 'ERROR'
+        if isinstance(error, SchedulerError):
+            activity.resultant_state = None
+        else:
+            activity.resultant_state = 'ERROR'
 
     def _operation(self, activity, timeout=60):
         # Schedule vm
@@ -1003,12 +1029,12 @@ class MountStoreOperation(EnsureAgentMixin, InstanceOperation):
         except NoStoreException:
             raise PermissionDenied  # not show the button at all
 
-    def _operation(self):
+    def _operation(self, user):
         inst = self.instance
         queue = self.instance.get_remote_queue_name("agent")
         host = urlsplit(settings.STORE_URL).hostname
-        username = Store(inst.owner).username
-        password = inst.owner.profile.smb_password
+        username = Store(user).username
+        password = user.profile.smb_password
         agent_tasks.mount_store.apply_async(
             queue=queue, args=(inst.vm_name, host, username, password))
 

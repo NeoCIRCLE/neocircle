@@ -17,6 +17,7 @@
 
 from django.forms import ModelForm
 from django.core.urlresolvers import reverse_lazy
+from django.utils.translation import ugettext_lazy as _
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, Div, Submit, BaseInput
@@ -56,8 +57,9 @@ class BlacklistItemForm(ModelForm):
             )
         ),
         FormActions(
-            Submit('submit', 'Save changes'),
-            LinkButton('back', 'Back', reverse_lazy('network.blacklist_list'))
+            Submit('submit', _('Save changes')),
+            LinkButton('back', _("Back"),
+                       reverse_lazy('network.blacklist_list'))
         )
     )
 
@@ -77,8 +79,8 @@ class DomainForm(ModelForm):
             ),
         ),
         FormActions(
-            Submit('submit', 'Save'),
-            LinkButton('back', 'Back', reverse_lazy('network.domain_list'))
+            Submit('submit', _('Save')),
+            LinkButton('back', _("Back"), reverse_lazy('network.domain_list'))
         )
     )
 
@@ -91,15 +93,15 @@ class GroupForm(ModelForm):
     helper.layout = Layout(
         Div(
             Fieldset(
-                'Identity',
+                '',
                 'name',
                 'description',
                 'owner',
             ),
         ),
         FormActions(
-            Submit('submit', 'Save'),
-            LinkButton('back', 'Back', reverse_lazy('network.group_list'))
+            Submit('submit', _('Save')),
+            LinkButton('back', _("Back"), reverse_lazy('network.group_list'))
         )
     )
 
@@ -112,13 +114,13 @@ class HostForm(ModelForm):
     helper.layout = Layout(
         Div(
             Fieldset(
-                'Identity',
+                '',
                 'hostname',
                 'reverse',
                 'mac',
             ),
             Fieldset(
-                'Network',
+                _('Network'),
                 'vlan',
                 'ipv4',
                 'ipv6',
@@ -126,7 +128,7 @@ class HostForm(ModelForm):
                 'external_ipv4',
             ),
             Fieldset(
-                'Information',
+                _('Information'),
                 'description',
                 'location',
                 'comment',
@@ -134,8 +136,8 @@ class HostForm(ModelForm):
             ),
         ),
         FormActions(
-            Submit('submit', 'Save'),
-            LinkButton('back', 'Back', reverse_lazy('network.host_list')))
+            Submit('submit', _('Save')),
+            LinkButton('back', _('Back'), reverse_lazy('network.host_list')))
     )
 
     class Meta:
@@ -159,8 +161,8 @@ class RecordForm(ModelForm):
             )
         ),
         FormActions(
-            Submit('submit', 'Save'),
-            LinkButton('back', 'Back', reverse_lazy('network.record_list'))
+            Submit('submit', _("Save")),
+            LinkButton('back', _("Back"), reverse_lazy('network.record_list'))
         )
     )
 
@@ -173,7 +175,7 @@ class RuleForm(ModelForm):
     helper.layout = Layout(
         Div(
             Fieldset(
-                'Identity',
+                '',
                 'direction',
                 'description',
                 'foreign_network',
@@ -189,7 +191,7 @@ class RuleForm(ModelForm):
                 'nat_external_ipv4',
             ),
             Fieldset(
-                'External',
+                _('External'),
                 'vlan',
                 'vlangroup',
                 'host',
@@ -198,8 +200,8 @@ class RuleForm(ModelForm):
             )
         ),
         FormActions(
-            Submit('submit', 'Save'),
-            LinkButton('back', 'Back', reverse_lazy('network.rule_list'))
+            Submit('submit', _("Save")),
+            LinkButton('back', _("Back"), reverse_lazy('network.rule_list'))
         )
     )
 
@@ -219,8 +221,8 @@ class SwitchPortForm(ModelForm):
             )
         ),
         FormActions(
-            Submit('submit', 'Save'),
-            LinkButton('back', 'Back',
+            Submit('submit', _("Save")),
+            LinkButton('back', _("Back"),
                        reverse_lazy('network.switch_port_list'))
         )
     )
@@ -234,41 +236,42 @@ class VlanForm(ModelForm):
     helper.layout = Layout(
         Div(
             Fieldset(
-                'Identity',
+                '',
                 'name',
                 'vid',
                 'network_type',
                 'managed',
             ),
             Fieldset(
-                'IPv4',
+                _('IPv4'),
                 'network4',
                 'snat_to',
                 'snat_ip',
                 'dhcp_pool',
             ),
             Fieldset(
-                'IPv6',
+                _('IPv6'),
                 'network6',
                 'ipv6_template',
                 'host_ipv6_prefixlen',
             ),
             Fieldset(
-                'Domain name service',
+                _('Domain name service'),
                 'domain',
                 'reverse_domain',
             ),
             Fieldset(
-                'Info',
+                _('Info'),
                 'description',
                 'comment',
+                'owner',
                 # 'created_at',
                 # 'modified_at',
             ),
         ),
         FormActions(
-            Submit('submit', 'Save'),
-            LinkButton('back', 'Back', reverse_lazy('network.vlan_list'))
+            Submit('submit', _("Save")),
+            LinkButton('back', _("Back"), reverse_lazy('network.vlan_list'))
         )
     )
 
@@ -289,8 +292,8 @@ class VlanGroupForm(ModelForm):
             )
         ),
         FormActions(
-            Submit('submit', 'Save'),
-            LinkButton('back', 'Back', reverse_lazy(
+            Submit('submit', _("Save")),
+            LinkButton('back', _("Back"), reverse_lazy(
                 'network.vlan_group_list'))
         )
     )

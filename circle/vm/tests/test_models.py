@@ -217,6 +217,8 @@ class InstanceActivityTestCase(TestCase):
 
     def test_create_concurrency_check(self):
         instance = MagicMock(spec=Instance)
+        instance.activity_log.filter.return_value.__iter__.return_value = iter(
+            [MagicMock(spec=InstanceActivity, interruptible=False)])
         instance.activity_log.filter.return_value.exists.return_value = True
 
         with self.assertRaises(ActivityInProgressError):

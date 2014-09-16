@@ -54,7 +54,9 @@ from .models import Profile, GroupProfile
 from circle.settings.base import LANGUAGES, MAX_NODE_RAM
 from django.utils.translation import string_concat
 
-from .virtvalidator import domain_validator
+from .validators import domain_validator
+
+from dashboard.models import ConnectCommand
 
 LANGUAGES_WITH_CODE = ((l[0], string_concat(l[1], " (", l[0], ")"))
                        for l in LANGUAGES)
@@ -141,25 +143,46 @@ class VmCustomizeForm(forms.Form):
         self.template = kwargs.pop("template", None)
         super(VmCustomizeForm, self).__init__(*args, **kwargs)
 
-        # set displayed disk and network list
-        self.fields['disks'].queryset = self.template.disks.all()
-        self.fields['networks'].queryset = Vlan.get_objects_with_level(
-            'user', self.user)
+        if self.user.has_perm("vm.set_resources"):
+            self.allowed_fields = tuple(self.fields.keys())
+            # set displayed disk and network list
+            self.fields['disks'].queryset = self.template.disks.all()
+            self.fields['networks'].queryset = Vlan.get_objects_with_level(
+                'user', self.user)
 
-        # set initial for disk and network list
-        self.initial['disks'] = self.template.disks.all()
-        self.initial['networks'] = InterfaceTemplate.objects.filter(
-            template=self.template).values_list("vlan", flat=True)
+            # set initial for disk and network list
+            self.initial['disks'] = self.template.disks.all()
+            self.initial['networks'] = InterfaceTemplate.objects.filter(
+                template=self.template).values_list("vlan", flat=True)
 
-        # set initial for resources
-        self.initial['cpu_priority'] = self.template.priority
-        self.initial['cpu_count'] = self.template.num_cores
-        self.initial['ram_size'] = self.template.ram_size
+            # set initial for resources
+            self.initial['cpu_priority'] = self.template.priority
+            self.initial['cpu_count'] = self.template.num_cores
+            self.initial['ram_size'] = self.template.ram_size
+
+        else:
+            self.allowed_fields = ("name", "template", "customized", )
 
         # initial name and template pk
         self.initial['name'] = self.template.name
         self.initial['template'] = self.template.pk
-        self.initial['customized'] = self.template.pk
+        self.initial['customized'] = True
+
+    def _clean_fields(self):
+        for name, field in self.fields.items():
+            if name in self.allowed_fields:
+                value = field.widget.value_from_datadict(
+                    self.data, self.files, self.add_prefix(name))
+                try:
+                    value = field.clean(value)
+                    self.cleaned_data[name] = value
+                    if hasattr(self, 'clean_%s' % name):
+                        value = getattr(self, 'clean_%s' % name)()
+                        self.cleaned_data[name] = value
+                except ValidationError as e:
+                    self._errors[name] = self.error_class(e.messages)
+                    if name in self.cleaned_data:
+                        del self.cleaned_data[name]
 
 
 class GroupCreateForm(forms.ModelForm):
@@ -176,7 +199,14 @@ class GroupCreateForm(forms.ModelForm):
         self.fields['org_id'] = forms.ChoiceField(
             # TRANSLATORS: directory like in LDAP
             choices=choices, required=False, label=_('Directory identifier'))
-        if not new_groups:
+        if new_groups:
+            self.fields['org_id'].help_text = _(
+                "If you select an item here, the members of this directory "
+                "group will be automatically added to the group at the time "
+                "they log in. Please note that other users (those with "
+                "permissions like yours) may also automatically become a "
+                "group co-owner).")
+        else:
             self.fields['org_id'].widget = HiddenInput()
 
     def save(self, commit=True):
@@ -451,7 +481,7 @@ class TemplateForm(forms.ModelForm):
         else:
             self.allowed_fields = (
                 'name', 'access_method', 'description', 'system', 'tags',
-                'arch', 'lease')
+                'arch', 'lease', 'has_agent')
         if (self.user.has_perm('vm.change_template_resources')
                 or not self.instance.pk):
             self.allowed_fields += tuple(set(self.fields.keys()) -
@@ -1025,9 +1055,29 @@ class UserCreationForm(OrgUserCreationForm):
         return user
 
 
-class AclUserAddForm(forms.Form):
+class AclUserOrGroupAddForm(forms.Form):
     name = forms.CharField(widget=autocomplete_light.TextWidget(
-        'AclUserAutocomplete', attrs={'class': 'form-control'}))
+        'AclUserGroupAutocomplete',
+        autocomplete_js_attributes={'placeholder': _("Name of group or user")},
+        attrs={'class': 'form-control'}))
+
+
+class TransferOwnershipForm(forms.Form):
+    name = forms.CharField(
+        widget=autocomplete_light.TextWidget(
+            'AclUserAutocomplete',
+            autocomplete_js_attributes={"placeholder": _("Name of user")},
+            attrs={'class': 'form-control'}),
+        label=_("E-mail address or identifier of user"))
+
+
+class AddGroupMemberForm(forms.Form):
+    new_member = forms.CharField(
+        widget=autocomplete_light.TextWidget(
+            'AclUserAutocomplete',
+            autocomplete_js_attributes={"placeholder": _("Name of user")},
+            attrs={'class': 'form-control'}),
+        label=_("E-mail address or identifier of user"))
 
 
 class UserKeyForm(forms.ModelForm):
@@ -1055,6 +1105,22 @@ class UserKeyForm(forms.ModelForm):
         if self.user:
             self.instance.user = self.user
         return super(UserKeyForm, self).clean()
+
+
+class ConnectCommandForm(forms.ModelForm):
+    class Meta:
+        fields = ('name', 'access_method', 'template')
+        model = ConnectCommand
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user")
+        super(ConnectCommandForm, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        if self.user:
+            self.instance.user = self.user
+
+        return super(ConnectCommandForm, self).clean()
 
 
 class TraitsForm(forms.ModelForm):
@@ -1174,7 +1240,12 @@ class VmListSearchForm(forms.Form):
     }))
 
     stype = forms.ChoiceField(vm_search_choices, widget=forms.Select(attrs={
-        'class': "btn btn-default input-tags",
+        'class': "btn btn-default form-control input-tags",
+        'style': "min-width: 80px;",
+    }))
+
+    include_deleted = forms.BooleanField(widget=forms.CheckboxInput(attrs={
+        'id': "vm-list-search-checkbox",
     }))
 
     def __init__(self, *args, **kwargs):
@@ -1183,4 +1254,23 @@ class VmListSearchForm(forms.Form):
         if not self.data.get("stype"):
             data = self.data.copy()
             data['stype'] = "all"
+            self.data = data
+
+
+class TemplateListSearchForm(forms.Form):
+    s = forms.CharField(widget=forms.TextInput(attrs={
+        'class': "form-control input-tags",
+        'placeholder': _("Search...")
+    }))
+
+    stype = forms.ChoiceField(vm_search_choices, widget=forms.Select(attrs={
+        'class': "btn btn-default input-tags",
+    }))
+
+    def __init__(self, *args, **kwargs):
+        super(TemplateListSearchForm, self).__init__(*args, **kwargs)
+        # set initial value, otherwise it would be overwritten by request.GET
+        if not self.data.get("stype"):
+            data = self.data.copy()
+            data['stype'] = "owned"
             self.data = data
