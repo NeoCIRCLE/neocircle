@@ -2859,6 +2859,7 @@ class TransferOwnershipConfirmView(LoginRequiredMixin, View):
 
         old = instance.owner
         with instance_activity(code_suffix='ownership-transferred',
+                               concurrency_check=False,
                                instance=instance, user=request.user):
             instance.owner = request.user
             instance.clean()
