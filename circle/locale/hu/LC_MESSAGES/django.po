@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-09-16 12:11+0200\n"
-"PO-Revision-Date: 2014-09-03 19:00+0200\n"
+"POT-Creation-Date: 2014-09-16 12:15+0200\n"
+"PO-Revision-Date: 2014-09-16 12:24+0200\n"
 "Last-Translator: Mate Ory <ory.mate@ik.bme.hu>\n"
 "Language-Team: Hungarian <cloud@ik.bme.hu>\n"
 "Language: hu\n"
@@ -113,14 +113,13 @@ msgid "Superuser privileges are required."
 msgstr "Rendszergazdai jogosultság szükséges."
 
 #: dashboard/autocomplete_light_registry.py:55
-#, fuzzy, python-format
+#, python-format
 msgid "%s (group)"
-msgstr "gépcsoport"
+msgstr "%s (csoport)"
 
 #: dashboard/autocomplete_light_registry.py:75
-#, fuzzy
 msgid "no matches found"
-msgstr "Az oldal nem található"
+msgstr "nincs találat"
 
 #: dashboard/forms.py:65
 msgid "idle"
@@ -527,7 +526,7 @@ msgstr "Fut"
 
 #: dashboard/tables.py:225
 msgid "No available leases."
-msgstr ""
+msgstr "Nincs elérhető bérlési mód."
 
 #: dashboard/tables.py:237
 msgid "Fingerprint"
@@ -840,7 +839,7 @@ msgstr "%(instance)s gépre vonatkozó átruházási ajánlatát elfogadta %(use
 #: dashboard/views.py:3061
 #, python-format
 msgid "Logged in as user %s."
-msgstr ""
+msgstr "Bejelentkezve mint %s."
 
 #: dashboard/views.py:3094
 msgid "You don't have a profile."
@@ -1727,10 +1726,11 @@ msgstr "Profil"
 #: dashboard/templates/dashboard/profile.html:16
 msgid "Log in as this user. Recommended to open in an incognito window."
 msgstr ""
+"Bejelentkezés a felhasználó nevében. Ajánlott inkognitóablakban megnyitni."
 
 #: dashboard/templates/dashboard/profile.html:17
 msgid "Login as this user"
-msgstr ""
+msgstr "Bejelentkezés a felhasználó nevében"
 
 #: dashboard/templates/dashboard/profile.html:32
 msgid "Organization ID"
@@ -3249,40 +3249,43 @@ msgid ""
 "The resources required for launching the virtual machine are not available "
 "currently. Please try again later."
 msgstr ""
+"A virtuális gép indításához szükséges erőforrások jelenleg nem állnak "
+"rendelkezésre. Próbálja újra később."
 
 #: manager/scheduler.py:44
 msgid ""
 "The required free memory for launching the virtual machine is not available "
 "on any usable node currently. Please try again later."
 msgstr ""
+"A virtuális gép indításához szükséges memória jelenleg nem áll "
+"rendelkezésre. Próbálja újra később."
 
 #: manager/scheduler.py:50
 msgid ""
-"No node can satisfy the required traits of the new vitual machine currently."
+"No node can satisfy the required traits of the new virtual machine currently."
 msgstr ""
+"Egy csomópont sem biztosítja a virtuális gép indításához szükséges "
+"jellemzőket."
 
 #: network/forms.py:131
-#, fuzzy
 msgid "Information"
-msgstr "Megerősítés"
+msgstr "Információ"
 
 #: network/forms.py:194
 msgid "External"
 msgstr "Külső"
 
 #: network/forms.py:259
-#, fuzzy
 msgid "Domain name service"
-msgstr "tartománynév"
+msgstr "DNS szolgáltatás"
 
 #: network/forms.py:264
 msgid "Info"
-msgstr ""
+msgstr "Infó"
 
 #: network/tables.py:202
-#, fuzzy
 msgid "No records."
-msgstr "Rekordok"
+msgstr "Nincs rekord."
 
 #: network/views.py:104
 #, python-format
@@ -3524,7 +3527,6 @@ msgid "Delete this host"
 msgstr "Gép törlése"
 
 #: network/templates/network/host-edit.html:28
-#, fuzzy
 msgid "No rules associated with this host."
 msgstr "Ehhez a géphez nem tartozik szabály."
 
@@ -3533,22 +3535,20 @@ msgid "This host is not added to any host groups!"
 msgstr "Ez a gép nem tagja egy gépcsoportnak sem."
 
 #: network/templates/network/host-edit.html:50
-#, fuzzy
 msgid "Add host group"
-msgstr "gépcsoport"
+msgstr "Gépcsoport hozzáadása"
 
 #: network/templates/network/host-edit.html:53
 msgid "No more groups to add"
-msgstr ""
+msgstr "Nincs több hozzáadható csoport"
 
 #: network/templates/network/host-edit.html:64
 msgid "Add group"
 msgstr "Csoport hozzáadása"
 
 #: network/templates/network/host-edit.html:73
-#, fuzzy
 msgid "Add new CNAME record"
-msgstr "Rekord hozzáadása"
+msgstr "CNAME rekord hozzáadása"
 
 #: network/templates/network/host-list.html:15
 msgid "list of all hosts"
@@ -3618,9 +3618,8 @@ msgstr "Vlan-csoportok"
 
 #: network/templates/network/record-create.html:8
 #: network/templates/network/record-edit.html:8
-#, fuzzy
 msgid "record"
-msgstr "Rekordok"
+msgstr "rekord"
 
 #: network/templates/network/record-create.html:12
 #: network/templates/network/record-list.html:11
@@ -4452,21 +4451,25 @@ msgid "Password reset confirm"
 msgstr "Megerősítés jelszó-visszaállításról"
 
 #: templates/registration/password_reset_confirm.html:15
-#, fuzzy
 msgid ""
 "\n"
 "      Please enter your new password twice so we can verify you typed it in "
 "correctly.\n"
 "      "
-msgstr "Adja meg a választott jelszót kétszer a hiba elkerülése érdekében."
+msgstr ""
+"\n"
+"      Adja meg a választott jelszót kétszer a hiba elkerülése "
+"érdekében.\n"
+"      "
 
 #: templates/registration/password_reset_confirm.html:25
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "This token is expired, please <a href=\"%(url)s\">request</a> a new password "
 "reset link again."
 msgstr ""
-"A token lejárt, <a href=\"%(url)s\">igényeljen</a> új jelszó-visszaállítást."
+"A token lejárt, <a href=\"%(url)s\">igényeljen</a> új "
+"jelszó-visszaállítást."
 
 #: templates/registration/password_reset_done.html:6
 msgid "Password reset done"
@@ -4478,7 +4481,6 @@ msgid "Back to login"
 msgstr "Vissza a bejelentkezéshez"
 
 #: templates/registration/password_reset_done.html:15
-#, fuzzy
 msgid "We have sent you an email about your next steps."
 msgstr "Küldtünk egy e-mailt a további teendőkről."
 
@@ -4487,7 +4489,6 @@ msgid "Password reset"
 msgstr "Jelszó visszaállítása"
 
 #: templates/registration/password_reset_form.html:16
-#, fuzzy
 msgid "Enter your email address to reset your password."
 msgstr "Adja meg e-mail címét a jelszó visszaállításához."
 
@@ -4597,9 +4598,8 @@ msgid "boot virtual machine"
 msgstr "virtuális gép indítása"
 
 #: vm/operations.py:315 vm/operations.py:436 vm/operations.py:513
-#, fuzzy
 msgid "wait operating system loading"
-msgstr "operációs rendszer"
+msgstr "várakozás az operációs rendszer betöltésére"
 
 #: vm/operations.py:324
 msgid "destroy"
@@ -4751,6 +4751,9 @@ msgid ""
 "the time this is caused by incorrect ACPI settings. You can also try to "
 "power off the machine from the operating system manually."
 msgstr ""
+"A virtuális gép nem állt le a biztosított időkorlát alatt. A legtöbb "
+"esetben ez a nem megfelelő ACPI beállítások miatt van. Megpróbálhatja "
+"a gépet az operációs rendszerből, kézzel leállítani."
 
 #: vm/operations.py:652
 msgid "shut off"
@@ -4960,13 +4963,12 @@ msgid "Instance this activity works on."
 msgstr "A tevékenység tárgyát képező példány."
 
 #: vm/models/activity.py:74
-#, fuzzy
 msgid "Other activities can interrupt this one."
-msgstr "A tevékenység erőszakos megszakításra került."
+msgstr "Más tevékenységek megszakíthatják ezt."
 
 #: vm/models/activity.py:105
 msgid "Interrupted by other activity."
-msgstr ""
+msgstr "Egy másik tevékenység megszakította."
 
 #: vm/models/activity.py:227
 msgid "Node this activity works on."
@@ -5096,15 +5098,16 @@ msgid "tags"
 msgstr "címkék"
 
 #: vm/models/instance.py:126
-#, fuzzy
 msgid "has agent"
-msgstr "ügynök"
+msgstr "van ügynöke"
 
 #: vm/models/instance.py:128
 msgid ""
 "If the machine has agent installed, and the manager should wait for its "
 "start."
 msgstr ""
+"A gépre telepítve van-e az ügynökszoftver, vagyis a menedzser várjon-e "
+"az indulására."
 
 #: vm/models/instance.py:148
 msgid "parent template"
