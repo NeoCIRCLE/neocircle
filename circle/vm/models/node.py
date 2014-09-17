@@ -381,3 +381,7 @@ class Node(OperatedMixin, TimeStampedModel):
     @permalink
     def get_absolute_url(self):
         return ('dashboard.views.node-detail', None, {'pk': self.id})
+
+    @property
+    def metric_prefix(self):
+        return 'circle.%s' % self.host.hostname

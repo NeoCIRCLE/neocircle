@@ -20,16 +20,17 @@ from django.conf.urls import patterns, url, include
 
 import autocomplete_light
 from vm.models import Instance
+from .graph import VmGraphView, NodeGraphView, NodeListGraphView
 from .views import (
     AclUpdateView, FavouriteView, GroupAclUpdateView, GroupDelete,
     GroupDetailView, GroupList, IndexView,
     InstanceActivityDetail, LeaseCreate, LeaseDelete, LeaseDetail,
     MyPreferencesView, NodeAddTraitView, NodeCreate, NodeDelete,
-    NodeDetailView, NodeFlushView, NodeGraphView, NodeList, NodeStatus,
+    NodeDetailView, NodeFlushView, NodeList, NodeStatus,
     NotificationView, PortDelete, TemplateAclUpdateView, TemplateCreate,
     TemplateDelete, TemplateDetail, TemplateList, TransferOwnershipConfirmView,
     TransferOwnershipView, vm_activity, VmCreate, VmDetailView,
-    VmDetailVncTokenView, VmGraphView, VmList,
+    VmDetailVncTokenView, VmList,
     DiskRemoveView, get_disk_download_status, InterfaceDeleteView,
     GroupRemoveUserView,
     GroupRemoveFutureUserView,
@@ -121,14 +122,18 @@ urlpatterns = patterns(
         name="dashboard.views.delete-group"),
     url(r'^group/list/$', GroupList.as_view(),
         name='dashboard.views.group-list'),
-    url((r'^vm/(?P<pk>\d+)/graph/(?P<metric>cpu|memory|network)/'
+    url((r'^vm/(?P<pk>\d+)/graph/(?P<metric>[a-z]+)/'
          r'(?P<time>[0-9]{1,2}[hdwy])$'),
         VmGraphView.as_view(),
         name='dashboard.views.vm-graph'),
-    url((r'^node/(?P<pk>\d+)/graph/(?P<metric>cpu|memory|network)/'
+    url((r'^node/(?P<pk>\d+)/graph/(?P<metric>[a-z]+)/'
          r'(?P<time>[0-9]{1,2}[hdwy])$'),
         NodeGraphView.as_view(),
         name='dashboard.views.node-graph'),
+    url((r'^node/graph/(?P<metric>[a-z]+)/'
+         r'(?P<time>[0-9]{1,2}[hdwy])$'),
+        NodeListGraphView.as_view(),
+        name='dashboard.views.node-list-graph'),
     url(r'^group/(?P<pk>\d+)/$', GroupDetailView.as_view(),
         name='dashboard.views.group-detail'),
     url(r'^group/(?P<pk>\d+)/update/$', GroupProfileUpdate.as_view(),

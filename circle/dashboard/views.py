@@ -25,7 +25,6 @@ from urlparse import urljoin
 import json
 import logging
 import re
-import requests
 
 from django.conf import settings
 from django.contrib.auth.models import User, Group
@@ -2902,88 +2901,6 @@ class TransferOwnershipConfirmView(LoginRequiredMixin, View):
                          unicode(user), user.pk, new_owner, key)
             raise PermissionDenied()
         return (instance, new_owner)
-
-
-class GraphViewBase(LoginRequiredMixin, View):
-    def get(self, request, pk, metric, time, *args, **kwargs):
-        graphite_url = settings.GRAPHITE_URL
-        if graphite_url is None:
-            raise Http404()
-
-        if metric not in self.metrics.keys():
-            raise SuspiciousOperation()
-
-        try:
-            instance = self.get_object(request, pk)
-        except self.model.DoesNotExist:
-            raise Http404()
-
-        prefix = self.get_prefix(instance)
-        target = self.metrics[metric] % {'prefix': prefix}
-        title = self.get_title(instance, metric)
-        params = {'target': target,
-                  'from': '-%s' % time,
-                  'title': title.encode('UTF-8'),
-                  'width': '500',
-                  'height': '200'}
-        logger.debug('%s %s', graphite_url, params)
-        response = requests.get('%s/render/' % graphite_url, params=params)
-        return HttpResponse(response.content, mimetype="image/png")
-
-    def get_prefix(self, instance):
-        raise NotImplementedError("Subclass must implement abstract method")
-
-    def get_title(self, instance, metric):
-        raise NotImplementedError("Subclass must implement abstract method")
-
-    def get_object(self, request, pk):
-        instance = self.model.objects.get(id=pk)
-        if not instance.has_level(request.user, 'user'):
-            raise PermissionDenied()
-        return instance
-
-
-class VmGraphView(GraphViewBase):
-    metrics = {
-        'cpu': ('cactiStyle(alias(nonNegativeDerivative(%(prefix)s.cpu.usage),'
-                '"cpu usage (%%)"))'),
-        'memory': ('cactiStyle(alias(%(prefix)s.memory.usage,'
-                   '"memory usage (%%)"))'),
-        'network': (
-            'group('
-            'aliasSub(nonNegativeDerivative(%(prefix)s.network.bytes_recv*),'
-            ' ".*-(\d+)\\)", "out (vlan \\1)"),'
-            'aliasSub(nonNegativeDerivative(%(prefix)s.network.bytes_sent*),'
-            ' ".*-(\d+)\\)", "in (vlan \\1)"))'),
-    }
-    model = Instance
-
-    def get_prefix(self, instance):
-        return 'vm.%s' % instance.vm_name
-
-    def get_title(self, instance, metric):
-        return '%s (%s) - %s' % (instance.name, instance.vm_name, metric)
-
-
-class NodeGraphView(SuperuserRequiredMixin, GraphViewBase):
-    metrics = {
-        'cpu': ('cactiStyle(alias(nonNegativeDerivative(%(prefix)s.cpu.times),'
-                '"cpu usage (%%)"))'),
-        'memory': ('cactiStyle(alias(%(prefix)s.memory.usage,'
-                   '"memory usage (%%)"))'),
-        'network': ('cactiStyle(aliasByMetric('
-                    'nonNegativeDerivative(%(prefix)s.network.bytes_*)))'),
-    }
-    model = Node
-
-    def get_prefix(self, instance):
-        return 'circle.%s' % instance.host.hostname
-
-    def get_title(self, instance, metric):
-        return '%s - %s' % (instance.name, metric)
-
-    def get_object(self, request, pk):
-        return self.model.objects.get(id=pk)
 
 
 class NotificationView(LoginRequiredMixin, TemplateView):
