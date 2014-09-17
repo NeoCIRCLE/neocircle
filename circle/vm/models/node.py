@@ -24,7 +24,7 @@ import requests
 from django.conf import settings
 from django.db.models import (
     CharField, IntegerField, ForeignKey, BooleanField, ManyToManyField,
-    FloatField, permalink,
+    FloatField, permalink, Sum
 )
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _, ugettext_noop
@@ -114,6 +114,11 @@ class Node(OperatedMixin, TimeStampedModel):
                                           'architecture': ''})
 
     info = property(get_info)
+
+    @property
+    def allocated_ram(self):
+        return (self.instance_set.aggregate(
+            r=Sum('ram_size'))['r'] or 0) * 1024 * 1024
 
     @property
     def ram_size(self):
