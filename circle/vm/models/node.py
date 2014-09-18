@@ -364,11 +364,11 @@ class Node(OperatedMixin, TimeStampedModel):
                     self.instance_set.get(id=i['id']).vm_state_changed(d)
 
                 del domains[i['id']]
-        for i in domains.values():
+        for id, state in domains.iteritems():
             from .instance import Instance
-            logger.info('Node %s update: domain %s in libvirt but not in db.',
-                        self, i['id'])
-            Instance.objects.get(id=i['id']).vm_state_changed(i['state'], self)
+            logger.error('Node %s update: domain %s in libvirt but not in db.',
+                         self, id)
+            Instance.objects.get(id=id).vm_state_changed(state, self)
 
     @classmethod
     def get_state_count(cls, online, enabled):
