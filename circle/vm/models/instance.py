@@ -459,10 +459,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         except ActivityInProgressError:
             pass  # discard state change if another activity is in progress.
         else:
-            if new_state == 'STOPPED':
-                self.vnc_port = None
-                self.node = None
-                self.save()
             act.finished = act.started
             act.resultant_state = new_state
             act.succeeded = True
