@@ -33,6 +33,8 @@
     <img src="{% url "dashboard.views.node-graph" node.pk "cpu" "6h" %}" style="width:100%"/>
     <img src="{% url "dashboard.views.node-graph" node.pk "memory" "6h" %}" style="width:100%"/>
     <img src="{% url "dashboard.views.node-graph" node.pk "network" "6h" %}" style="width:100%"/>
+    <img src="{% url "dashboard.views.node-graph" node.pk "vm" "6h" %}" style="width:100%"/>
+    <img src="{% url "dashboard.views.node-graph" node.pk "alloc" "6h" %}" style="width:100%"/>
     {% endif %}
   </div>
   </div>
