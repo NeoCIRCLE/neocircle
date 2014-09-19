@@ -178,14 +178,15 @@ PIPELINE_DISABLE_WRAPPER = True
 PIPELINE_LESS_ARGUMENTS = u'--include-path={}'.format(':'.join(STATICFILES_DIRS))
 PIPELINE_CSS = {
     "all": {"source_filenames": (
+        "compile_bootstrap.less",
+        "bootstrap/dist/css/bootstrap-theme.css",
         "fontawesome/css/font-awesome.css",
         "jquery-simple-slider/css/simple-slider.css",
         "bootstrap-tour/build/css/bootstrap-tour.css",
         "template.less",
         "dashboard/dashboard.less",
         "network/network.less",
-        "compile_bootstrap.less",
-        "bootstrap/dist/css/bootstrap-theme.css",
+        "autocomplete_light/style.css",
     ),
         "output_filename": "all.css",
     }
@@ -201,7 +202,7 @@ PIPELINE_JS = {
         "dashboard/dashboard.js",
         "dashboard/group-details.js",
         "dashboard/group-list.js",
-        "dashboard/js/stupidtable.min.js",
+        "dashboard/js/stupidtable.min.js",  # no bower file
         "dashboard/node-create.js",
         "dashboard/node-details.js",
         "dashboard/node-list.js",
@@ -214,6 +215,11 @@ PIPELINE_JS = {
         "js/host.js",
         "js/network.js",
         "js/switch-port.js",
+        "autocomplete_light/autocomplete.js",
+        "autocomplete_light/widget.js",
+        "autocomplete_light/addanother.js",
+        "autocomplete_light/text_widget.js",
+        "autocomplete_light/remote.js",
     ),
         "output_filename": "all.js",
     },
