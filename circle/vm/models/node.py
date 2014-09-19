@@ -259,7 +259,7 @@ class Node(OperatedMixin, TimeStampedModel):
     @node_available
     @method_cache(10)
     def monitor_info(self):
-        metrics = ('cpu.usage', 'memory.usage')
+        metrics = ('cpu.percent', 'memory.usage')
         prefix = 'circle.%s.' % self.host.hostname
         params = [('target', '%s%s' % (prefix, metric))
                   for metric in metrics]
@@ -295,7 +295,7 @@ class Node(OperatedMixin, TimeStampedModel):
     @property
     @node_available
     def cpu_usage(self):
-        return self.monitor_info.get('cpu.usage') / 100
+        return self.monitor_info.get('cpu.percent') / 100
 
     @property
     @node_available
