@@ -973,3 +973,21 @@ textarea[name="new_members"] {
 .hilight .autocomplete-hl {
   color: orange;
 }
+
+.node-list-table tbody>tr>td, .node-list-table thead>tr>th {
+  vertical-align: middle;
+}
+
+.node-list-table thead>tr>th,
+.node-list-table .enabled, .node-list-table .priority,
+.node-list-table .overcommit, .node-list-table .number_of_VMs {
+  text-align: center;
+}
+
+.node-list-table-thin {
+  width: 10px;
+}
+
+.node-list-table-monitor {
+  width: 250px;
+}
