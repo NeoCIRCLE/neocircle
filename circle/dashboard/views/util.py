@@ -540,7 +540,8 @@ class GraphMixin(object):
         {'time': "1h", 'name': _("1 hour")},
         {'time': "1d", 'name': _("1 day")},
         {'time': "1w", 'name': _("1 week")},
-        {'time': "4w", 'name': _("1 month")},
+        {'time': "30d", 'name': _("1 month")},
+        {'time': "26w", 'name': _("6 months")},
     ]
     default_graph_time = "6h"
 
