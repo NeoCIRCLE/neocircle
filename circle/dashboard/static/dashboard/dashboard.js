@@ -234,6 +234,7 @@ $(function () {
             'host': result[i].host,
             'icon': result[i].icon,
             'status': result[i].status,
+            'owner': result[i].owner,
           });
         }
       });
@@ -251,7 +252,7 @@ $(function () {
     search_result.sort(compareVmByFav);
     for(var i=0; i<5 && i<search_result.length; i++)
       html += generateVmHTML(search_result[i].pk, search_result[i].name, 
-                             search_result[i].host, search_result[i].icon,
+                             search_result[i].owner ? search_result[i].owner : search_result[i].host, search_result[i].icon,
                              search_result[i].status, search_result[i].fav,
                              (search_result.length < 5));
     if(search_result.length == 0)
