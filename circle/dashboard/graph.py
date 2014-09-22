@@ -241,7 +241,7 @@ class NodeAllocated(object):
 
     def get_target(self):
         prefix = self.obj.metric_prefix
-        if self.obj.online:
+        if self.obj.online and self.obj.enabled:
             ram_size = self.obj.ram_size
         else:
             ram_size = 0
