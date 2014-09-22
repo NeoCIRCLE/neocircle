@@ -24,7 +24,7 @@ from django.contrib.auth.models import User
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, get_object_or_404
 from django.utils.translation import ugettext as _
 from django.views.generic import (
@@ -145,7 +145,8 @@ class TemplateCreate(SuccessMessageMixin, CreateView):
                                    networks=networks,
                                    tags=tags, req_traits=req_traits)
 
-            return redirect("%s#resources" % inst.get_absolute_url())
+            return HttpResponseRedirect("%s#resources" %
+                                        inst.get_absolute_url())
 
     def __create_networks(self, vlans, user):
         networks = []
@@ -255,7 +256,7 @@ class TemplateDelete(LoginRequiredMixin, DeleteView):
             )
         else:
             messages.success(request, success_message)
-            return redirect(success_url)
+            return HttpResponseRedirect(success_url)
 
 
 class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
@@ -394,4 +395,4 @@ class LeaseDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
             )
         else:
             messages.success(request, success_message)
-            return redirect(success_url)
+            return HttpResponseRedirect(success_url)

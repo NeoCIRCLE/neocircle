@@ -31,7 +31,7 @@ from django.core.urlresolvers import reverse
 from django.contrib import messages
 from django.contrib.auth.views import redirect_to_login
 from django.db.models import Q
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.utils.translation import ugettext as _
 from django.views.generic import DetailView, View
@@ -299,7 +299,8 @@ class OperationView(RedirectToLoginMixin, DetailView):
             return HttpResponse(json.dumps(data),
                                 content_type="application/json")
         else:
-            return redirect("%s#activity" % self.object.get_absolute_url())
+            return HttpResponseRedirect("%s#activity" %
+                                        self.object.get_absolute_url())
 
     @classmethod
     def factory(cls, op, icon='cog', effect='info', extra_bases=(), **kwargs):

@@ -27,7 +27,7 @@ from django.contrib.auth.models import User
 from django.core import signing
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.urlresolvers import reverse, reverse_lazy
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.shortcuts import redirect, get_object_or_404, render
 from django.template import RequestContext
 from django.template.loader import render_to_string
@@ -302,7 +302,8 @@ class VmDetailView(CheckedDetailView):
         if not activity.is_abortable_for(request.user):
             raise PermissionDenied()
         activity.abort()
-        return redirect("%s#activity" % self.object.get_absolute_url())
+        return HttpResponseRedirect("%s#activity" %
+                                    self.object.get_absolute_url())
 
 
 class VmTraitsUpdate(SuperuserRequiredMixin, UpdateView):
@@ -442,7 +443,8 @@ class VmResourcesChangeView(VmOperationView):
                     content_type="application=json"
                 )
             else:
-                return redirect(instance.get_absolute_url() + "#resources")
+                return HttpResponseRedirect(instance.get_absolute_url()
+                                            + "#resources")
         else:
             extra = form.cleaned_data
             extra['max_ram_size'] = extra['ram_size']
@@ -946,7 +948,7 @@ class VmCreate(LoginRequiredMixin, TemplateView):
             return HttpResponse(json.dumps({'redirect': path}),
                                 content_type="application/json")
         else:
-            return redirect("%s#activity" % path)
+            return HttpResponseRedirect("%s#activity" % path)
 
     def post(self, request, *args, **kwargs):
         user = request.user
@@ -1057,7 +1059,7 @@ class InterfaceDeleteView(DeleteView):
             )
         else:
             messages.success(request, success_message)
-            return redirect("%s#network" % success_url)
+            return HttpResponseRedirect("%s#network" % success_url)
 
     def get_success_url(self):
         redirect = self.request.POST.get("next")
@@ -1124,7 +1126,7 @@ class DiskRemoveView(DeleteView):
             )
         else:
             messages.success(request, success_message)
-            return redirect("%s#resources" % success_url)
+            return HttpResponseRedirect("%s#resources" % success_url)
 
 
 @require_GET
@@ -1181,7 +1183,7 @@ class PortDelete(LoginRequiredMixin, DeleteView):
             )
         else:
             messages.success(request, success_message)
-            return redirect("%s#network" % success_url)
+            return HttpResponseRedirect("%s#network" % success_url)
 
     def get_success_url(self):
         return reverse_lazy('dashboard.views.detail',
