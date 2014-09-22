@@ -1210,7 +1210,7 @@ class ClientCheck(LoginRequiredMixin, TemplateView):
             'instance': get_object_or_404(
                 Instance, pk=self.request.GET.get('vm')),
         })
-        if not context['instance'].has_level(self.request.user, 'operator'):
+        if not context['instance'].has_level(self.request.user, 'user'):
             raise PermissionDenied()
         return context
 
