@@ -149,8 +149,8 @@ class VmOperationViewTestCase(unittest.TestCase):
         view = vm_ops['migrate']
 
         with patch.object(view, 'get_object') as go, \
-                patch('dashboard.views.messages') as msg, \
-                patch('dashboard.views.get_object_or_404') as go4:
+                patch('dashboard.views.util.messages') as msg, \
+                patch('dashboard.views.vm.get_object_or_404') as go4:
             inst = MagicMock(spec=Instance)
             inst._meta.object_name = "Instance"
             inst.migrate = Instance._ops['migrate'](inst)
@@ -160,14 +160,15 @@ class VmOperationViewTestCase(unittest.TestCase):
             go4.return_value = MagicMock()
             assert view.as_view()(request, pk=1234)['location']
             assert not msg.error.called
+            assert go4.called
 
     def test_migrate_failed(self):
         request = FakeRequestFactory(POST={'node': 1}, superuser=True)
         view = vm_ops['migrate']
 
         with patch.object(view, 'get_object') as go, \
-                patch('dashboard.views.messages') as msg, \
-                patch('dashboard.views.get_object_or_404') as go4:
+                patch('dashboard.views.util.messages') as msg, \
+                patch('dashboard.views.vm.get_object_or_404') as go4:
             inst = MagicMock(spec=Instance)
             inst._meta.object_name = "Instance"
             inst.migrate = Instance._ops['migrate'](inst)
@@ -178,13 +179,14 @@ class VmOperationViewTestCase(unittest.TestCase):
             go4.return_value = MagicMock()
             assert view.as_view()(request, pk=1234)['location']
             assert msg.error.called
+            assert go4.called
 
     def test_migrate_wo_permission(self):
         request = FakeRequestFactory(POST={'node': 1}, superuser=False)
         view = vm_ops['migrate']
 
         with patch.object(view, 'get_object') as go, \
-                patch('dashboard.views.get_object_or_404') as go4:
+                patch('dashboard.views.vm.get_object_or_404') as go4:
             inst = MagicMock(spec=Instance)
             inst._meta.object_name = "Instance"
             inst.migrate = Instance._ops['migrate'](inst)
@@ -194,6 +196,7 @@ class VmOperationViewTestCase(unittest.TestCase):
             go4.return_value = MagicMock()
             with self.assertRaises(PermissionDenied):
                 assert view.as_view()(request, pk=1234)['location']
+            assert go4.called
 
     def test_migrate_template(self):
         """check if GET dialog's template can be rendered"""
@@ -214,15 +217,13 @@ class VmOperationViewTestCase(unittest.TestCase):
         view = vm_ops['save_as_template']
 
         with patch.object(view, 'get_object') as go, \
-                patch('dashboard.views.messages') as msg, \
-                patch('dashboard.views.get_object_or_404') as go4:
+                patch('dashboard.views.util.messages') as msg:
             inst = MagicMock(spec=Instance)
             inst._meta.object_name = "Instance"
             inst.save_as_template = Instance._ops['save_as_template'](inst)
             inst.save_as_template.async = MagicMock()
             inst.has_level.return_value = True
             go.return_value = inst
-            go4.return_value = MagicMock()
             assert view.as_view()(request, pk=1234)
             assert not msg.error.called
 
@@ -232,15 +233,13 @@ class VmOperationViewTestCase(unittest.TestCase):
         view = vm_ops['save_as_template']
 
         with patch.object(view, 'get_object') as go, \
-                patch('dashboard.views.messages') as msg, \
-                patch('dashboard.views.get_object_or_404') as go4:
+                patch('dashboard.views.util.messages') as msg:
             inst = MagicMock(spec=Instance)
             inst._meta.object_name = "Instance"
             inst.save_as_template = Instance._ops['save_as_template'](inst)
             inst.save_as_template.async = MagicMock()
             inst.has_level.return_value = True
             go.return_value = inst
-            go4.return_value = MagicMock()
             assert view.as_view()(request, pk=1234)['location']
             assert not msg.error.called
 
@@ -306,25 +305,24 @@ class VmMassOperationViewTestCase(unittest.TestCase):
         view = vm_mass_ops['migrate']
 
         with patch.object(view, 'get_object') as go, \
-                patch('dashboard.views.messages') as msg, \
-                patch('dashboard.views.get_object_or_404') as go4:
+                patch('dashboard.views.util.messages') as msg, \
+                patch('dashboard.views.vm.messages') as msg2:
             inst = MagicMock(spec=Instance)
             inst._meta.object_name = "Instance"
             inst.migrate = Instance._ops['migrate'](inst)
             inst.migrate.async = MagicMock()
             inst.has_level.return_value = True
             go.return_value = [inst]
-            go4.return_value = MagicMock()
             assert view.as_view()(request, pk=1234)['location']
             assert not msg.error.called
+            assert not msg2.error.called
 
     def test_migrate_failed(self):
         request = FakeRequestFactory(POST={'node': 1}, superuser=True)
         view = vm_mass_ops['migrate']
 
         with patch.object(view, 'get_object') as go, \
-                patch('dashboard.views.messages') as msg, \
-                patch('dashboard.views.get_object_or_404') as go4:
+                patch('dashboard.views.vm.messages') as msg:
             inst = MagicMock(spec=Instance)
             inst._meta.object_name = "Instance"
             inst.migrate = Instance._ops['migrate'](inst)
@@ -332,7 +330,6 @@ class VmMassOperationViewTestCase(unittest.TestCase):
             inst.migrate.async.side_effect = Exception
             inst.has_level.return_value = True
             go.return_value = [inst]
-            go4.return_value = MagicMock()
             assert view.as_view()(request, pk=1234)['location']
             assert msg.error.called
 
@@ -340,15 +337,13 @@ class VmMassOperationViewTestCase(unittest.TestCase):
         request = FakeRequestFactory(POST={'node': 1}, superuser=False)
         view = vm_mass_ops['migrate']
 
-        with patch.object(view, 'get_object') as go, \
-                patch('dashboard.views.get_object_or_404') as go4:
+        with patch.object(view, 'get_object') as go:
             inst = MagicMock(spec=Instance)
             inst._meta.object_name = "Instance"
             inst.migrate = Instance._ops['migrate'](inst)
             inst.migrate.async = MagicMock()
             inst.has_level.return_value = True
             go.return_value = [inst]
-            go4.return_value = MagicMock()
             with self.assertRaises(PermissionDenied):
                 assert view.as_view()(request, pk=1234)['location']
 
@@ -388,15 +383,13 @@ class RenewViewTest(unittest.TestCase):
         view = vm_ops['renew']
 
         with patch.object(view, 'get_object') as go, \
-                patch('dashboard.views.messages') as msg, \
-                patch('dashboard.views.get_object_or_404') as go4:
+                patch('dashboard.views.util.messages') as msg:
             inst = MagicMock(spec=Instance)
             inst._meta.object_name = "Instance"
             inst.renew = Instance._ops['renew'](inst)
             inst.renew.async = MagicMock()
             inst.has_level.return_value = True
             go.return_value = inst
-            go4.return_value = MagicMock()
             assert view.as_view()(request, pk=1234)
             assert not msg.error.called
             assert inst.renew.async.called_with(user=request.user, lease=None)
@@ -408,15 +401,13 @@ class RenewViewTest(unittest.TestCase):
         view = vm_ops['renew']
 
         with patch.object(view, 'get_object') as go, \
-                patch('dashboard.views.messages') as msg, \
-                patch('dashboard.views.get_object_or_404') as go4:
+                patch('dashboard.views.util.messages') as msg:
             inst = MagicMock(spec=Instance)
             inst._meta.object_name = "Instance"
             inst.renew = Instance._ops['renew'](inst)
             inst.renew.async = MagicMock()
             inst.has_level.return_value = True
             go.return_value = inst
-            go4.return_value = MagicMock()
             assert view.as_view()(request, pk=1234)
             assert not msg.error.called
 
@@ -424,15 +415,13 @@ class RenewViewTest(unittest.TestCase):
         request = FakeRequestFactory(authenticated=False)
         view = vm_ops['renew']
 
-        with patch.object(view, 'get_object') as go, \
-                patch('dashboard.views.get_object_or_404') as go4:
+        with patch.object(view, 'get_object') as go:
             inst = MagicMock(spec=Instance)
             inst._meta.object_name = "Instance"
             inst.renew = Instance._ops['renew'](inst)
             inst.renew.async = MagicMock()
             inst.has_level.return_value = False
             go.return_value = inst
-            go4.return_value = MagicMock()
             self.assertIn('login',
                           view.as_view()(request, pk=1234)['location'])
 
@@ -440,15 +429,13 @@ class RenewViewTest(unittest.TestCase):
         request = FakeRequestFactory(has_perms_mock=True)
         view = vm_ops['renew']
 
-        with patch.object(view, 'get_object') as go, \
-                patch('dashboard.views.get_object_or_404') as go4:
+        with patch.object(view, 'get_object') as go:
             inst = MagicMock(spec=Instance)
             inst._meta.object_name = "Instance"
             inst.renew = Instance._ops['renew'](inst)
             inst.renew.async = MagicMock()
             inst.has_level.return_value = False
             go.return_value = inst
-            go4.return_value = MagicMock()
             with self.assertRaises(PermissionDenied):
                 assert view.as_view()(request, pk=1234)
 
@@ -456,15 +443,13 @@ class RenewViewTest(unittest.TestCase):
         request = FakeRequestFactory(POST={'length': 1}, has_perms_mock=True)
         view = vm_ops['renew']
 
-        with patch.object(view, 'get_object') as go, \
-                patch('dashboard.views.get_object_or_404') as go4:
+        with patch.object(view, 'get_object') as go:
             inst = MagicMock(spec=Instance, pk=11)
             inst._meta.object_name = "Instance"
             inst.renew = Instance._ops['renew'](inst)
             inst.renew.async = MagicMock()
             inst.has_level.return_value = False
             go.return_value = inst
-            go4.return_value = MagicMock()
             with self.assertRaises(PermissionDenied):
                 assert view.as_view()(request, pk=1234)
 
@@ -555,7 +540,7 @@ class AclUpdateViewTest(unittest.TestCase):
             inst.has_level.assert_called_with('dummy', v)
 
     def test_set_level_mod_owner(self):
-        with patch('dashboard.views.messages') as msg:
+        with patch('dashboard.views.util.messages') as msg:
             request = FakeRequestFactory(POST={})
 
             inst = MagicMock(spec=Instance)
@@ -581,7 +566,7 @@ class AclUpdateViewTest(unittest.TestCase):
                 (None, 'user', ('user', 'operator'), False))
 
         for old_level, new_level, allowed_levels, fail in data:
-            with patch('dashboard.views.messages') as msg:
+            with patch('dashboard.views.util.messages') as msg:
                 def has_level(user, level):
                     return level in allowed_levels
 
@@ -606,7 +591,7 @@ class AclUpdateViewTest(unittest.TestCase):
 
     def test_readd(self):
         request = FakeRequestFactory(POST={'name': 'user0', 'level': 'user'})
-        with patch('dashboard.views.messages') as msg:
+        with patch('dashboard.views.util.messages') as msg:
             with patch.object(AclUpdateView, 'get_object') as go:
                 view = AclUpdateView.as_view()
                 inst = MagicMock(spec=Instance)

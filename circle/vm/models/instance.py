@@ -447,21 +447,22 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         self.time_of_suspend, self.time_of_delete = self.get_renew_times()
         super(Instance, self).clean(*args, **kwargs)
 
-    def vm_state_changed(self, new_state):
+    def vm_state_changed(self, new_state, new_node=False):
+        if new_node is False:  # None would be a valid value
+            new_node = self.node
         # log state change
         try:
             act = InstanceActivity.create(
                 code_suffix='vm_state_changed',
                 readable_name=create_readable(
-                    ugettext_noop("vm state changed to %(state)s"),
-                    state=new_state),
+                    ugettext_noop("vm state changed to %(state)s on %(node)s"),
+                    state=new_state, node=new_node),
                 instance=self)
         except ActivityInProgressError:
             pass  # discard state change if another activity is in progress.
         else:
-            if new_state == 'STOPPED':
-                self.vnc_port = None
-                self.node = None
+            if self.node != new_node:
+                self.node = new_node
                 self.save()
             act.finished = act.started
             act.resultant_state = new_state

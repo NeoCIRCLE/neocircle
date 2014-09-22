@@ -20,7 +20,6 @@ from django.conf.urls import patterns, url, include
 
 import autocomplete_light
 from vm.models import Instance
-from .graph import VmGraphView, NodeGraphView, NodeListGraphView
 from .views import (
     AclUpdateView, FavouriteView, GroupAclUpdateView, GroupDelete,
     GroupDetailView, GroupList, IndexView,
@@ -47,6 +46,7 @@ from .views import (
     GroupPermissionsView,
     LeaseAclUpdateView,
     ClientCheck, TokenLogin,
+    VmGraphView, NodeGraphView, NodeListGraphView,
 )
 
 autocomplete_light.autodiscover()
