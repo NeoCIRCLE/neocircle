@@ -555,6 +555,10 @@ class GraphMixin(object):
                                              "h, d, w, and y."))
             graph_time = self.default_graph_time
         context['graph_time'] = graph_time
+        self.graph_time_options = (
+            self.graph_time_options +
+            [{'time': self.default_graph_time, 'name': _("default")}]
+        )
         context['graph_time_options'] = self.graph_time_options
         return context
 

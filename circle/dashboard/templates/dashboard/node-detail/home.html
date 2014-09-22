@@ -29,26 +29,26 @@
     </div><!-- id:node-details-traits -->
   </div>
   <div class="col-md-8">
-    <div class="text-center">
-      {% for o in graph_time_options %}
-        <a class="btn btn-default btn-xs"
-          href="?graph_time={{ o.time }}">
-          {{ o.name }}
-        </a>
-      {% endfor %}
-    </div>
     {% if graphite_enabled %}
-    <img src="{% url "dashboard.views.node-graph" node.pk "cpu" graph_time %}" style="width:100%"/>
-    <img src="{% url "dashboard.views.node-graph" node.pk "memory" graph_time %}" style="width:100%"/>
-    <img src="{% url "dashboard.views.node-graph" node.pk "network" graph_time %}" style="width:100%"/>
-    <img src="{% url "dashboard.views.node-graph" node.pk "vm" graph_time %}" style="width:100%"/>
-    <img src="{% url "dashboard.views.node-graph" node.pk "alloc" graph_time %}" style="width:100%"/>
+    <div class="text-center graph-buttons">
+      {% include "dashboard/_graph-time-buttons.html" %}
+    </div>
+    <div class="graph-images">
+      <img src="{% url "dashboard.views.node-graph" node.pk "cpu" graph_time %}"/>
+      <img src="{% url "dashboard.views.node-graph" node.pk "memory" graph_time %}"/>
+      <img src="{% url "dashboard.views.node-graph" node.pk "network" graph_time %}"/>
+      <img src="{% url "dashboard.views.node-graph" node.pk "vm" graph_time %}"/>
+      <img src="{% url "dashboard.views.node-graph" node.pk "alloc" graph_time %}"/>
+    </div>
     {% endif %}
   </div>
-  </div>
-  <style>
-  .form-group {
-    margin: 0px;
-  }
+</div>
 
-</style>
+  <style>
+    .form-group {
+      margin: 0px;
+    }
+    .graph-images img {
+      width: 100%;
+    }
+  </style>

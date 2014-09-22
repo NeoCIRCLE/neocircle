@@ -123,17 +123,14 @@
   </div>
   <div class="col-md-8">
     {% if graphite_enabled %}
-    <div class="text-center">
-      {% for o in graph_time_options %}
-        <a class="btn btn-default btn-xs"
-          href="?graph_time={{ o.time }}">
-          {{ o.name }}
-        </a>
-      {% endfor %}
+    <div class="text-center graph-buttons">
+      {% include "dashboard/_graph-time-buttons.html" %}
     </div>
-    <img src="{% url "dashboard.views.vm-graph" instance.pk "cpu" graph_time %}" style="width:100%"/>
-    <img src="{% url "dashboard.views.vm-graph" instance.pk "memory" graph_time %}" style="width:100%"/>
-    <img src="{% url "dashboard.views.vm-graph" instance.pk "network" graph_time %}" style="width:100%"/>
+    <div class="graph-images">
+      <img src="{% url "dashboard.views.vm-graph" instance.pk "cpu" graph_time %}"/>
+      <img src="{% url "dashboard.views.vm-graph" instance.pk "memory" graph_time %}"/>
+      <img src="{% url "dashboard.views.vm-graph" instance.pk "network" graph_time %}"/>
+    </div>
     {% endif %}
   </div>
 </div>
