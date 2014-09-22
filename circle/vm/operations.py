@@ -629,7 +629,6 @@ class ShutdownOperation(InstanceOperation):
     def _operation(self, task=None):
         self.instance.shutdown_vm(task=task)
         self.instance.yield_node()
-        self.instance.yield_vnc_port()
 
     def on_abort(self, activity, error):
         if isinstance(error, TimeLimitExceeded):
@@ -670,9 +669,7 @@ class ShutOffOperation(InstanceOperation):
         with activity.sub_activity('delete_vm'):
             self.instance.delete_vm()
 
-        # Clear node and VNC port association
         self.instance.yield_node()
-        self.instance.yield_vnc_port()
 
 
 register_operation(ShutOffOperation)

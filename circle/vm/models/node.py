@@ -354,7 +354,8 @@ class Node(OperatedMixin, TimeStampedModel):
                 logger.info('Node %s update: instance %s missing from '
                             'libvirt', self, i['id'])
                 # Set state to STOPPED when instance is missing
-                self.instance_set.get(id=i['id']).vm_state_changed('STOPPED')
+                self.instance_set.get(id=i['id']).vm_state_changed(
+                    'STOPPED', None)
             else:
                 if d != i['state']:
                     logger.info('Node %s update: instance %s state changed '
@@ -363,9 +364,11 @@ class Node(OperatedMixin, TimeStampedModel):
                     self.instance_set.get(id=i['id']).vm_state_changed(d)
 
                 del domains[i['id']]
-        for i in domains.keys():
-            logger.info('Node %s update: domain %s in libvirt but not in db.',
-                        self, i)
+        for id, state in domains.iteritems():
+            from .instance import Instance
+            logger.error('Node %s update: domain %s in libvirt but not in db.',
+                         self, id)
+            Instance.objects.get(id=id).vm_state_changed(state, self)
 
     @classmethod
     def get_state_count(cls, online, enabled):
