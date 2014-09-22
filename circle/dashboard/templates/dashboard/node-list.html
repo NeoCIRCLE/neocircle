@@ -25,11 +25,19 @@
   <div class="col-md-12">
     <div class="panel panel-default">
       <div class="panel-heading">
+        <div class="pull-right">
+          {% for o in graph_time_options %}
+            <a class="btn btn-default btn-xs"
+              href="?graph_time={{ o.time }}">
+              {{ o.name }}
+            </a>
+          {% endfor %}
+        </div>
         <h3 class="no-margin"><i class="fa fa-area-chart"></i> {% trans "Graphs" %}</h3>
       </div>
       <div class="text-center">
-        <img src="{% url "dashboard.views.node-list-graph" "alloc" "6h" %}"/>
-        <img src="{% url "dashboard.views.node-list-graph" "vm" "6h" %}"/>
+        <img src="{% url "dashboard.views.node-list-graph" "alloc" graph_time %}"/>
+        <img src="{% url "dashboard.views.node-list-graph" "vm" graph_time %}"/>
       </div>
     </div>
   </div><!-- -col-md-12 -->

@@ -535,5 +535,28 @@ class AclUpdateView(LoginRequiredMixin, View, SingleObjectMixin):
         return redirect("%s#access" % self.instance.get_absolute_url())
 
 
+class GraphMixin(object):
+    graph_time_options = [
+        {'time': "1h", 'name': _("1 hour")},
+        {'time': "1d", 'name': _("1 day")},
+        {'time': "1w", 'name': _("1 week")},
+        {'time': "4w", 'name': _("1 month")},
+    ]
+    default_graph_time = "6h"
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(GraphMixin, self).get_context_data(*args, **kwargs)
+        graph_time = self.request.GET.get("graph_time",
+                                          self.default_graph_time)
+        if not re.match("^[0-9]{1,2}[hdwy]$", graph_time):
+            messages.warning(self.request, _("Bad graph time format, "
+                                             "available periods are: "
+                                             "h, d, w, and y."))
+            graph_time = self.default_graph_time
+        context['graph_time'] = graph_time
+        context['graph_time_options'] = self.graph_time_options
+        return context
+
+
 def absolute_url(url):
     return urljoin(settings.DJANGO_URL, url)
