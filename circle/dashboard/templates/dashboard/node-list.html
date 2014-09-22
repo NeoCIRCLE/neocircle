@@ -27,8 +27,10 @@
       <div class="panel-heading">
         <h3 class="no-margin"><i class="fa fa-area-chart"></i> {% trans "Graphs" %}</h3>
       </div>
-       <img src="{% url "dashboard.views.node-list-graph" "alloc" "6h" %}"/>
-       <img src="{% url "dashboard.views.node-list-graph" "vm" "6h" %}"/>
+      <div class="text-center">
+        <img src="{% url "dashboard.views.node-list-graph" "alloc" "6h" %}"/>
+        <img src="{% url "dashboard.views.node-list-graph" "vm" "6h" %}"/>
+      <div>
     </div>
   </div>
 </div>
