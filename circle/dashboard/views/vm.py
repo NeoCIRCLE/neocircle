@@ -52,7 +52,7 @@ from vm.models import (
 )
 from .util import (
     CheckedDetailView, AjaxOperationMixin, OperationView, AclUpdateView,
-    FormOperationMixin, FilterMixin, search_user,
+    FormOperationMixin, FilterMixin, search_user, GraphMixin,
 )
 from ..forms import (
     AclUserOrGroupAddForm, VmResourcesForm, TraitsForm, RawDataForm,
@@ -89,7 +89,7 @@ class VmDetailVncTokenView(CheckedDetailView):
             raise Http404()
 
 
-class VmDetailView(CheckedDetailView):
+class VmDetailView(GraphMixin, CheckedDetailView):
     template_name = "dashboard/vm-detail.html"
     model = Instance
 

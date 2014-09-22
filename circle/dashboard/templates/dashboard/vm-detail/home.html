@@ -123,9 +123,17 @@
   </div>
   <div class="col-md-8">
     {% if graphite_enabled %}
-    <img src="{% url "dashboard.views.vm-graph" instance.pk "cpu" "6h" %}" style="width:100%"/>
-    <img src="{% url "dashboard.views.vm-graph" instance.pk "memory" "6h" %}" style="width:100%"/>
-    <img src="{% url "dashboard.views.vm-graph" instance.pk "network" "6h" %}" style="width:100%"/>
+    <div class="text-center">
+      {% for o in graph_time_options %}
+        <a class="btn btn-default btn-xs"
+          href="?graph_time={{ o.time }}">
+          {{ o.name }}
+        </a>
+      {% endfor %}
+    </div>
+    <img src="{% url "dashboard.views.vm-graph" instance.pk "cpu" graph_time %}" style="width:100%"/>
+    <img src="{% url "dashboard.views.vm-graph" instance.pk "memory" graph_time %}" style="width:100%"/>
+    <img src="{% url "dashboard.views.vm-graph" instance.pk "network" graph_time %}" style="width:100%"/>
     {% endif %}
   </div>
 </div>
