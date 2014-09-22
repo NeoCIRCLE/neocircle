@@ -31,7 +31,7 @@ from django.contrib.auth.views import redirect_to_login
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _
 from django.views.generic import DetailView, View
 from django.views.generic.detail import SingleObjectMixin
 

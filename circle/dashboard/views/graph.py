@@ -23,6 +23,7 @@ import requests
 from django.conf import settings
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.http import HttpResponse, Http404
+from django.utils.translation import ugettext_lazy as _
 from django.views.generic import View
 
 from braces.views import LoginRequiredMixin, SuperuserRequiredMixin
@@ -162,8 +163,8 @@ class NodeListGraphView(SuperuserRequiredMixin, GraphViewBase):
 
 class Ram(object):
     metric_name = "memory.usage"
-    title = "RAM usage (%)"
-    label = "RAM usage (%)"
+    title = _("RAM usage (%)")
+    label = _("RAM usage (%)")
 
     def get_minmax(self):
         return (0, 105)
@@ -174,8 +175,8 @@ register_graph(Ram, 'memory', NodeGraphView)
 
 class Cpu(object):
     metric_name = "cpu.percent"
-    title = "CPU usage (%)"
-    label = "CPU usage (%)"
+    title = _("CPU usage (%)")
+    label = _("CPU usage (%)")
 
     def get_minmax(self):
         if isinstance(self.obj, Node):
@@ -188,7 +189,7 @@ register_graph(Cpu, 'cpu', NodeGraphView)
 
 
 class VmNetwork(object):
-    title = "Network"
+    title = _("Network")
 
     def get_minmax(self):
         return (0, None)
@@ -211,7 +212,7 @@ register_graph(VmNetwork, 'network', VmGraphView)
 
 
 class NodeNetwork(object):
-    title = "Network"
+    title = _("Network")
 
     def get_minmax(self):
         return (0, None)
@@ -227,8 +228,8 @@ register_graph(NodeNetwork, 'network', NodeGraphView)
 
 class NodeVms(object):
     metric_name = "vmcount"
-    title = "Instance count"
-    label = "instance count"
+    title = _("Instance count")
+    label = _("instance count")
 
     def get_minmax(self):
         return (0, None)
@@ -237,7 +238,7 @@ register_graph(NodeVms, 'vm', NodeGraphView)
 
 
 class NodeAllocated(object):
-    title = "Allocated memory (bytes)"
+    title = _("Allocated memory (bytes)")
 
     def get_target(self):
         prefix = self.obj.metric_prefix
@@ -257,7 +258,7 @@ register_graph(NodeAllocated, 'alloc', NodeGraphView)
 
 
 class NodeListAllocated(object):
-    title = "Allocated memory (bytes)"
+    title = _("Allocated memory (bytes)")
 
     def get_target(self):
         nodes = self.obj
@@ -277,7 +278,7 @@ register_graph(NodeListAllocated, 'alloc', NodeListGraphView)
 
 
 class NodeListVms(object):
-    title = "Instance count"
+    title = _("Instance count")
 
     def get_target(self):
         vmcount = ','.join('%s.vmcount' % n.metric_prefix for n in self.obj)
