@@ -33,7 +33,7 @@
     <div class="text-center graph-buttons">
       {% include "dashboard/_graph-time-buttons.html" %}
     </div>
-    <div class="graph-images">
+    <div class="graph-images text-center">
       <img src="{% url "dashboard.views.node-graph" node.pk "cpu" graph_time %}"/>
       <img src="{% url "dashboard.views.node-graph" node.pk "memory" graph_time %}"/>
       <img src="{% url "dashboard.views.node-graph" node.pk "network" graph_time %}"/>
@@ -47,8 +47,5 @@
   <style>
     .form-group {
       margin: 0px;
-    }
-    .graph-images img {
-      width: 100%;
     }
   </style>

@@ -991,3 +991,7 @@ textarea[name="new_members"] {
 .node-list-table-monitor {
   width: 250px;
 }
+
+.graph-images img {
+  max-width: 100%;
+}

@@ -538,6 +538,7 @@ class AclUpdateView(LoginRequiredMixin, View, SingleObjectMixin):
 class GraphMixin(object):
     graph_time_options = [
         {'time': "1h", 'name': _("1 hour")},
+        {'time': "6h", 'name': _("6 hours")},
         {'time': "1d", 'name': _("1 day")},
         {'time': "1w", 'name': _("1 week")},
         {'time': "30d", 'name': _("1 month")},
@@ -555,10 +556,6 @@ class GraphMixin(object):
                                              "h, d, w, and y."))
             graph_time = self.default_graph_time
         context['graph_time'] = graph_time
-        self.graph_time_options = (
-            self.graph_time_options +
-            [{'time': self.default_graph_time, 'name': _("default")}]
-        )
         context['graph_time_options'] = self.graph_time_options
         return context
 

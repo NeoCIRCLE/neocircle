@@ -126,7 +126,7 @@
     <div class="text-center graph-buttons">
       {% include "dashboard/_graph-time-buttons.html" %}
     </div>
-    <div class="graph-images">
+    <div class="graph-images text-center">
       <img src="{% url "dashboard.views.vm-graph" instance.pk "cpu" graph_time %}"/>
       <img src="{% url "dashboard.views.vm-graph" instance.pk "memory" graph_time %}"/>
       <img src="{% url "dashboard.views.vm-graph" instance.pk "network" graph_time %}"/>
