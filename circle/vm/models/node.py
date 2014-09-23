@@ -72,6 +72,11 @@ class Node(OperatedMixin, TimeStampedModel):
     enabled = BooleanField(verbose_name=_('enabled'), default=False,
                            help_text=_('Indicates whether the node can '
                                        'be used for hosting.'))
+    schedule_enabled = BooleanField(verbose_name=_('schedule enabled'),
+                                    default=False, help_text=_(
+                                        'Indicates whether a vm can be '
+                                        'automatically scheduled to this '
+                                        'node.'))
     traits = ManyToManyField(Trait, blank=True,
                              help_text=_("Declared traits."),
                              verbose_name=_('traits'))
