@@ -809,12 +809,17 @@ class VmDiskResizeForm(forms.Form):
             queryset=choices, initial=default, required=True,
             empty_label=None, label=_('Disk')))
 
-    def clean_size(self):
+    def clean(self):
+        cleaned_data = super(VmDiskResizeForm, self).clean()
         size_in_bytes = self.cleaned_data.get("size")
+        disk = self.cleaned_data.get('disk')
         if not size_in_bytes.isdigit() and len(size_in_bytes) > 0:
             raise forms.ValidationError(_("Invalid format, you can use "
                                           " GB or MB!"))
-        return size_in_bytes
+        if float(size_in_bytes) < float(disk.size):
+            raise forms.ValidationError(_("Disk size must be greater than the "
+                                        "actual size."))
+        return cleaned_data
 
     @property
     def helper(self):
