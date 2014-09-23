@@ -21,7 +21,7 @@ import logging
 import requests
 
 from django.conf import settings
-from django.core.exceptions import PermissionDenied, SuspiciousOperation
+from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, Http404
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import View
@@ -52,7 +52,7 @@ class GraphViewBase(LoginRequiredMixin, View):
         try:
             metric = self.metrics[metric]
         except KeyError:
-            raise SuspiciousOperation()
+            raise Http404()
 
         try:
             instance = self.get_object(request, pk)
