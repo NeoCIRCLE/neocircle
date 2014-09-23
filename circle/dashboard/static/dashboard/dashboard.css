@@ -973,3 +973,7 @@ textarea[name="new_members"] {
 .hilight .autocomplete-hl {
   color: orange;
 }
+
+#vm-info-pane {
+  margin-bottom: 20px;
+}
