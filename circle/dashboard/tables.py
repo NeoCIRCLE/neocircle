@@ -66,14 +66,6 @@ class NodeListTable(Table):
         orderable=False,
     )
 
-    actions = TemplateColumn(
-        verbose_name=_("Actions"),
-        attrs={'th': {'class': 'node-list-table-thin'}},
-        template_code=('{% include "dashboard/node-list/column-'
-                       'actions.html" with btn_size="btn-xs" %}'),
-        orderable=False,
-    )
-
     class Meta:
         model = Node
         attrs = {'class': ('table table-bordered table-striped table-hover '
