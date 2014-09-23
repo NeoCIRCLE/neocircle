@@ -548,9 +548,7 @@ class TemplateForm(forms.ModelForm):
         data = self.cleaned_data
         self.instance.max_ram_size = data.get('ram_size')
 
-        instance = super(TemplateForm, self).save(commit=False)
-        if commit:
-            instance.save()
+        instance = super(TemplateForm, self).save(commit=True)
 
         # create and/or delete InterfaceTemplates
         networks = InterfaceTemplate.objects.filter(
