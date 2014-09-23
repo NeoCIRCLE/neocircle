@@ -17,6 +17,7 @@
 from __future__ import unicode_literals, absolute_import
 
 import json
+from collections import OrderedDict
 
 from django.conf import settings
 from django.contrib import messages
@@ -37,7 +38,39 @@ from vm.models import Node, NodeActivity, Trait
 
 from ..forms import TraitForm, HostForm, NodeForm
 from ..tables import NodeListTable
-from .util import GraphViewBase
+from .util import GraphViewBase, AjaxOperationMixin, OperationView
+
+
+def get_operations(instance, user):
+    ops = []
+    for k, v in node_ops.iteritems():
+        try:
+            op = v.get_op_by_object(instance)
+            op.check_auth(user)
+            op.check_precond()
+        except Exception:
+            ops.append(v.bind_to_object(instance, disabled=True))
+        else:
+            ops.append(v.bind_to_object(instance))
+    return ops
+
+
+class NodeOperationView(AjaxOperationMixin, OperationView):
+
+    model = Node
+    context_object_name = 'node'  # much simpler to mock object
+
+
+node_ops = OrderedDict([
+    ('activate', NodeOperationView.factory(
+        op='activate', icon='play-circle', effect='success')),
+    ('passivate', NodeOperationView.factory(
+        op='passivate', icon='play-circle-o', effect='info')),
+    ('disable', NodeOperationView.factory(
+        op='disable', icon='times-circle-o', effect='danger')),
+    ('flush', NodeOperationView.factory(
+        op='flush', icon='paint-brush', effect='danger')),
+])
 
 
 class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
@@ -53,6 +86,8 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
         na = NodeActivity.objects.filter(
             node=self.object, parent=None
         ).order_by('-started').select_related()
+        context['ops'] = get_operations(self.object, self.request.user)
+        context['op'] = {i.op: i for i in context['ops']}
         context['activities'] = na
         context['trait_form'] = form
         context['graphite_enabled'] = (
@@ -314,42 +349,6 @@ class NodeStatus(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
         else:
             messages.success(request, success_message)
             return redirect(self.get_success_url())
-
-
-class NodeFlushView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
-    template_name = "dashboard/confirm/node-flush.html"
-    model = Node
-
-    def get_template_names(self):
-        if self.request.is_ajax():
-            return ['dashboard/confirm/ajax-node-flush.html']
-        else:
-            return ['dashboard/confirm/node-flush.html']
-
-    def get_success_url(self):
-        next = self.request.GET.get('next')
-        if next:
-            return next
-        else:
-            return reverse_lazy("dashboard.views.node-detail",
-                                kwargs={'pk': self.object.pk})
-
-    def get_context_data(self, **kwargs):
-        context = super(NodeFlushView, self).get_context_data(**kwargs)
-        return context
-
-    def post(self, request, *args, **kwargs):
-        if request.POST.get('flush') is not None:
-            return self.__flush(request)
-        return redirect(reverse_lazy("dashboard.views.node-detail",
-                                     kwargs={'pk': self.get_object().pk}))
-
-    def __flush(self, request):
-        self.object = self.get_object()
-        self.object.flush.async(user=request.user)
-        success_message = _("Node successfully flushed.")
-        messages.success(request, success_message)
-        return redirect(self.get_success_url())
 
 
 class NodeGraphView(SuperuserRequiredMixin, GraphViewBase):

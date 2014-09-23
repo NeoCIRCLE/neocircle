@@ -25,7 +25,7 @@ from .views import (
     GroupDetailView, GroupList, IndexView,
     InstanceActivityDetail, LeaseCreate, LeaseDelete, LeaseDetail,
     MyPreferencesView, NodeAddTraitView, NodeCreate, NodeDelete,
-    NodeDetailView, NodeFlushView, NodeGraphView, NodeList, NodeStatus,
+    NodeDetailView, NodeGraphView, NodeList, NodeStatus,
     NotificationView, PortDelete, TemplateAclUpdateView, TemplateCreate,
     TemplateDelete, TemplateDetail, TemplateList, TransferOwnershipConfirmView,
     TransferOwnershipView, vm_activity, VmCreate, VmDetailView,
@@ -47,6 +47,8 @@ from .views import (
     LeaseAclUpdateView,
     ClientCheck, TokenLogin,
 )
+from .views.vm import vm_ops, vm_mass_ops
+from .views.node import node_ops
 
 autocomplete_light.autodiscover()
 
@@ -74,8 +76,6 @@ urlpatterns = patterns(
         name="dashboard.views.template-list"),
     url(r"^template/delete/(?P<pk>\d+)/$", TemplateDelete.as_view(),
         name="dashboard.views.template-delete"),
-
-    url(r'^vm/', include('dashboard.vm.urls')),
     url(r'^vm/(?P<pk>\d+)/remove_port/(?P<rule>\d+)/$', PortDelete.as_view(),
         name='dashboard.views.remove-port'),
     url(r'^vm/(?P<pk>\d+)/$', VmDetailView.as_view(),
@@ -110,8 +110,6 @@ urlpatterns = patterns(
         name="dashboard.views.delete-node"),
     url(r'^node/status/(?P<pk>\d+)/$', NodeStatus.as_view(),
         name="dashboard.views.status-node"),
-    url(r'^node/flush/(?P<pk>\d+)/$', NodeFlushView.as_view(),
-        name="dashboard.views.flush-node"),
     url(r'^node/create/$', NodeCreate.as_view(),
         name='dashboard.views.node-create'),
 
@@ -209,4 +207,22 @@ urlpatterns = patterns(
         name="dashboard.views.client-check"),
     url(r'^token-login/(?P<token>.*)/$', TokenLogin.as_view(),
         name="dashboard.views.token-login"),
+)
+
+urlpatterns += patterns(
+    '',
+    *(url(r'^vm/(?P<pk>\d+)/op/%s/$' % op, v.as_view(), name=v.get_urlname())
+        for op, v in vm_ops.iteritems())
+)
+
+urlpatterns += patterns(
+    '',
+    *(url(r'^vm/mass_op/%s/$' % op, v.as_view(), name=v.get_urlname())
+        for op, v in vm_mass_ops.iteritems())
+)
+
+urlpatterns += patterns(
+    '',
+    *(url(r'^node/(?P<pk>\d+)/op/%s/$' % op, v.as_view(), name=v.get_urlname())
+        for op, v in node_ops.iteritems())
 )
