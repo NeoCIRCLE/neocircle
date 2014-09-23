@@ -758,6 +758,13 @@ class WakeUpOperation(InstanceOperation):
                 "deploy network")):
             self.instance.deploy_net()
 
+        activity.result = create_readable(
+            "",
+            ugettext_noop(
+                "Scheduled to %(node)s" % {'node': self.instance.node.name}
+            )
+        )
+
         try:
             self.instance.renew(parent_activity=activity)
         except:

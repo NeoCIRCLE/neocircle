@@ -90,6 +90,19 @@
         </div>
       </form>
     </div><!-- id:vm-details-tags -->
+    {% if request.user.is_superuser %}
+    <dl>
+      <dt>Node:</dt>
+      {% if instance.node %}
+      <dd>
+        <a href="{{ instance.node.get_absolute_url }}">
+          {{ instance.node.name }}
+        </a>
+      </dd>
+      {% else %}
+        -
+      {% endif %}
+    {% endif %}
     <dl>
       <dt>{% trans "Template" %}:</dt>
       <dd>
