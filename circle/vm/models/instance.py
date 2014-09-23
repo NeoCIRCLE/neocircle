@@ -790,6 +790,16 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             else:
                 raise
 
+    def resize_disk(self, disk, size, timeout=15):
+        try:
+            queue_name = self.get_remote_queue_name('vm', 'slow')
+            return vm_task.resize_disk.apply_async(
+                args=[self.vm_name, disk.path, size],
+                queue = queue_name).get(timeout=timeout)
+        except:
+            raise
+
+
     def deploy_disks(self):
         """Deploy all associated disks.
         """
