@@ -17,5 +17,10 @@
   >
   <i class="fa fa-times"></i>{% if long_remove %} {% trans "Remove" %}{% endif %}
 </a>
+<span class="operation-wrapper">
+  <a href="{{ op.resize_disk.get_url }}?disk={{d.pk}}" class="btn btn-xs btn-warning pull-right operation">
+    <i class="fa fa-arrows-alt"></i> {% trans "Resize" %}
+  </a>
+</span>
 {% endif %}
 <div style="clear: both;"></div>
