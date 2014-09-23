@@ -208,6 +208,29 @@ class CreateDiskOperation(InstanceOperation):
 register_operation(CreateDiskOperation)
 
 
+class ResizeDiskOperation(InstanceOperation):
+
+    activity_code_suffix = 'resize_disk'
+    id = 'resize_disk'
+    name = _("resize disk")
+    description = _("Resize the virtual disk image. "
+                    "Size must be greater value than the actual size.")
+    required_perms = ('vm.resize_disk', )
+    accept_states = ('RUNNING')
+
+    def _operation(self, user, disk, size, activity):
+        if self.instance.is_running:
+            self.instance.resize_disk(disk, size)
+
+    def get_activity_name(self, kwargs):
+        return create_readable(
+            ugettext_noop("resize disk %(name)s to %(size)s"),
+            size=filesizeformat(kwargs['size']), name=kwargs['disk'].name)
+
+
+register_operation(ResizeDiskOperation)
+
+
 class DownloadDiskOperation(InstanceOperation):
     activity_code_suffix = 'download_disk'
     id = 'download_disk'
