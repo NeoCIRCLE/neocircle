@@ -300,6 +300,7 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         context['disks'] = obj.disks.all()
         context['is_owner'] = obj.has_level(self.request.user, 'owner')
         context['aclform'] = AclUserOrGroupAddForm()
+        context['parent'] = obj.parent
         return context
 
     def get_success_url(self):
