@@ -544,6 +544,9 @@ class TemplateForm(forms.ModelForm):
                 else:
                     self.cleaned_data[name] = getattr(old, name)
 
+        if "req_traits" not in self.allowed_fields:
+            self.cleaned_data['req_traits'] = self.instance.req_traits.all()
+
     def save(self, commit=True):
         data = self.cleaned_data
         self.instance.max_ram_size = data.get('ram_size')
