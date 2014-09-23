@@ -397,6 +397,20 @@ $(function () {
     clientInstalledAction(connectUri);
     return false;
   });
+
+  /* change graphs */
+  $(".graph-buttons a").click(function() {
+    var time = $(this).data("graph-time");
+    $(".graph-images img").each(function() {
+      var src = $(this).prop("src");
+      var new_src = src.substring(0, src.lastIndexOf("/") + 1) + time;
+      $(this).prop("src", new_src);
+    });
+    // change the buttons too
+    $(".graph-buttons a").removeClass("btn-primary").addClass("btn-default");
+    $(this).removeClass("btn-default").addClass("btn-primary");
+    return false;
+  });
 });
 
 function generateVmHTML(pk, name, host, icon, _status, fav, is_last) {
