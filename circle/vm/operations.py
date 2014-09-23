@@ -116,6 +116,7 @@ class InstanceOperation(Operation):
         return False
 
 
+@register_operation
 class AddInterfaceOperation(InstanceOperation):
     activity_code_suffix = 'add_interface'
     id = 'add_interface'
@@ -161,9 +162,7 @@ class AddInterfaceOperation(InstanceOperation):
                                vlan=kwargs['vlan'])
 
 
-register_operation(AddInterfaceOperation)
-
-
+@register_operation
 class CreateDiskOperation(InstanceOperation):
 
     activity_code_suffix = 'create_disk'
@@ -205,9 +204,7 @@ class CreateDiskOperation(InstanceOperation):
             size=filesizeformat(kwargs['size']), name=kwargs['name'])
 
 
-register_operation(CreateDiskOperation)
-
-
+@register_operation
 class DownloadDiskOperation(InstanceOperation):
     activity_code_suffix = 'download_disk'
     id = 'download_disk'
@@ -245,9 +242,8 @@ class DownloadDiskOperation(InstanceOperation):
             ):
                 self.instance.attach_disk(disk)
 
-register_operation(DownloadDiskOperation)
 
-
+@register_operation
 class DeployOperation(InstanceOperation):
     activity_code_suffix = 'deploy'
     id = 'deploy'
@@ -315,9 +311,7 @@ class DeployOperation(InstanceOperation):
                 "wait operating system loading"), interruptible=True)
 
 
-register_operation(DeployOperation)
-
-
+@register_operation
 class DestroyOperation(InstanceOperation):
     activity_code_suffix = 'destroy'
     id = 'destroy'
@@ -363,9 +357,7 @@ class DestroyOperation(InstanceOperation):
         self.instance.save()
 
 
-register_operation(DestroyOperation)
-
-
+@register_operation
 class MigrateOperation(InstanceOperation):
     activity_code_suffix = 'migrate'
     id = 'migrate'
@@ -417,9 +409,7 @@ class MigrateOperation(InstanceOperation):
             self.instance.deploy_net()
 
 
-register_operation(MigrateOperation)
-
-
+@register_operation
 class RebootOperation(InstanceOperation):
     activity_code_suffix = 'reboot'
     id = 'reboot'
@@ -436,9 +426,7 @@ class RebootOperation(InstanceOperation):
                 "wait operating system loading"), interruptible=True)
 
 
-register_operation(RebootOperation)
-
-
+@register_operation
 class RemoveInterfaceOperation(InstanceOperation):
     activity_code_suffix = 'remove_interface'
     id = 'remove_interface'
@@ -466,9 +454,7 @@ class RemoveInterfaceOperation(InstanceOperation):
                                vlan=kwargs['interface'].vlan)
 
 
-register_operation(RemoveInterfaceOperation)
-
-
+@register_operation
 class RemoveDiskOperation(InstanceOperation):
     activity_code_suffix = 'remove_disk'
     id = 'remove_disk'
@@ -495,9 +481,8 @@ class RemoveDiskOperation(InstanceOperation):
         return create_readable(ugettext_noop('remove disk %(name)s'),
                                name=kwargs["disk"].name)
 
-register_operation(RemoveDiskOperation)
 
-
+@register_operation
 class ResetOperation(InstanceOperation):
     activity_code_suffix = 'reset'
     id = 'reset'
@@ -512,9 +497,8 @@ class ResetOperation(InstanceOperation):
             activity.sub_activity('os_boot', readable_name=ugettext_noop(
                 "wait operating system loading"), interruptible=True)
 
-register_operation(ResetOperation)
 
-
+@register_operation
 class SaveAsTemplateOperation(InstanceOperation):
     activity_code_suffix = 'save_as_template'
     id = 'save_as_template'
@@ -610,9 +594,7 @@ class SaveAsTemplateOperation(InstanceOperation):
             return tmpl
 
 
-register_operation(SaveAsTemplateOperation)
-
-
+@register_operation
 class ShutdownOperation(InstanceOperation):
     activity_code_suffix = 'shutdown'
     id = 'shutdown'
@@ -642,9 +624,7 @@ class ShutdownOperation(InstanceOperation):
             super(ShutdownOperation, self).on_abort(activity, error)
 
 
-register_operation(ShutdownOperation)
-
-
+@register_operation
 class ShutOffOperation(InstanceOperation):
     activity_code_suffix = 'shut_off'
     id = 'shut_off'
@@ -672,9 +652,7 @@ class ShutOffOperation(InstanceOperation):
         self.instance.yield_node()
 
 
-register_operation(ShutOffOperation)
-
-
+@register_operation
 class SleepOperation(InstanceOperation):
     activity_code_suffix = 'sleep'
     id = 'sleep'
@@ -718,9 +696,7 @@ class SleepOperation(InstanceOperation):
         # VNC port needs to be kept
 
 
-register_operation(SleepOperation)
-
-
+@register_operation
 class WakeUpOperation(InstanceOperation):
     activity_code_suffix = 'wake_up'
     id = 'wake_up'
@@ -764,9 +740,7 @@ class WakeUpOperation(InstanceOperation):
             pass
 
 
-register_operation(WakeUpOperation)
-
-
+@register_operation
 class RenewOperation(InstanceOperation):
     activity_code_suffix = 'renew'
     id = 'renew'
@@ -801,9 +775,7 @@ class RenewOperation(InstanceOperation):
             suspend=suspend, delete=delete)
 
 
-register_operation(RenewOperation)
-
-
+@register_operation
 class ChangeStateOperation(InstanceOperation):
     activity_code_suffix = 'emergency_change_state'
     id = 'emergency_change_state'
@@ -826,9 +798,6 @@ class ChangeStateOperation(InstanceOperation):
                     finished__isnull=True, instance=self.instance):
                 i.finish(False, result=message)
                 logger.error('Forced finishing activity %s', i)
-
-
-register_operation(ChangeStateOperation)
 
 
 class NodeOperation(Operation):
@@ -859,6 +828,7 @@ class NodeOperation(Operation):
                                        readable_name=name)
 
 
+@register_operation
 class FlushOperation(NodeOperation):
     activity_code_suffix = 'flush'
     id = 'flush'
@@ -885,9 +855,9 @@ class FlushOperation(NodeOperation):
                 i.migrate(user=user)
 
 
-register_operation(FlushOperation)
 
 
+@register_operation
 class ScreenshotOperation(InstanceOperation):
     activity_code_suffix = 'screenshot'
     id = 'screenshot'
@@ -903,9 +873,7 @@ class ScreenshotOperation(InstanceOperation):
         return self.instance.get_screenshot(timeout=20)
 
 
-register_operation(ScreenshotOperation)
-
-
+@register_operation
 class RecoverOperation(InstanceOperation):
     activity_code_suffix = 'recover'
     id = 'recover'
@@ -933,9 +901,7 @@ class RecoverOperation(InstanceOperation):
         self.instance.save()
 
 
-register_operation(RecoverOperation)
-
-
+@register_operation
 class ResourcesOperation(InstanceOperation):
     activity_code_suffix = 'Resources change'
     id = 'resources_change'
@@ -963,9 +929,6 @@ class ResourcesOperation(InstanceOperation):
         )
 
 
-register_operation(ResourcesOperation)
-
-
 class EnsureAgentMixin(object):
     accept_states = ('RUNNING', )
 
@@ -985,6 +948,7 @@ class EnsureAgentMixin(object):
             raise self.instance.NoAgentError(self.instance)
 
 
+@register_operation
 class PasswordResetOperation(EnsureAgentMixin, InstanceOperation):
     activity_code_suffix = 'password_reset'
     id = 'password_reset'
@@ -1005,9 +969,7 @@ class PasswordResetOperation(EnsureAgentMixin, InstanceOperation):
         self.instance.save()
 
 
-register_operation(PasswordResetOperation)
-
-
+@register_operation
 class MountStoreOperation(EnsureAgentMixin, InstanceOperation):
     activity_code_suffix = 'mount_store'
     id = 'mount_store'
@@ -1034,6 +996,3 @@ class MountStoreOperation(EnsureAgentMixin, InstanceOperation):
         password = user.profile.smb_password
         agent_tasks.mount_store.apply_async(
             queue=queue, args=(inst.vm_name, host, username, password))
-
-
-register_operation(MountStoreOperation)
