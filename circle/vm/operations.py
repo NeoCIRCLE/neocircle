@@ -803,10 +803,19 @@ class ChangeStateOperation(InstanceOperation):
 class NodeOperation(Operation):
     async_operation = abortable_async_node_operation
     host_cls = Node
+    online_required = True
+    superuser_required = True
 
     def __init__(self, node):
         super(NodeOperation, self).__init__(subject=node)
         self.node = node
+
+    def check_precond(self):
+        super(NodeOperation, self).check_precond()
+        if self.online_required and not self.node.online:
+            raise humanize_exception(ugettext_noop(
+                "You cannot call this operation on an offline node."),
+                Exception())
 
     def create_activity(self, parent, user, kwargs):
         name = self.get_activity_name(kwargs)
@@ -833,20 +842,14 @@ class FlushOperation(NodeOperation):
     activity_code_suffix = 'flush'
     id = 'flush'
     name = _("flush")
-    description = _("Disable node and move all instances to other ones.")
+    description = _("Passivate node and move all instances to other ones.")
     required_perms = ()
-    superuser_required = True
     async_queue = "localhost.man.slow"
 
-    def on_abort(self, activity, error):
-        from manager.scheduler import TraitsUnsatisfiableException
-        if isinstance(error, TraitsUnsatisfiableException):
-            if self.node_enabled:
-                self.node.enable(activity.user, activity)
-
     def _operation(self, activity, user):
-        self.node_enabled = self.node.enabled
-        self.node.disable(user, activity)
+        if self.node.schedule_enabled:
+            PassivateOperation(self.node).call(parent_activity=activity,
+                                               user=user)
         for i in self.node.instance_set.all():
             name = create_readable(ugettext_noop(
                 "migrate %(instance)s (%(pk)s)"), instance=i.name, pk=i.pk)
@@ -855,6 +858,72 @@ class FlushOperation(NodeOperation):
                 i.migrate(user=user)
 
 
+@register_operation
+class ActivateOperation(NodeOperation):
+    activity_code_suffix = 'activate'
+    id = 'activate'
+    name = _("activate")
+    description = _("Make node active, i.e. scheduler is allowed to deploy "
+                    "virtual machines to it.")
+    required_perms = ()
+
+    def check_precond(self):
+        super(ActivateOperation, self).check_precond()
+        if self.node.enabled and self.node.schedule_enabled:
+            raise humanize_exception(ugettext_noop(
+                "You cannot activate an active node."), Exception())
+
+    def _operation(self):
+        self.node.enabled = True
+        self.node.schedule_enabled = True
+        self.node.save()
+
+
+@register_operation
+class PassivateOperation(NodeOperation):
+    activity_code_suffix = 'passivate'
+    id = 'passivate'
+    name = _("passivate")
+    description = _("Make node passive, i.e. scheduler is denied to deploy "
+                    "virtual machines to it, but remaining instances and "
+                    "the ones manually migrated will continue running.")
+    required_perms = ()
+
+    def check_precond(self):
+        if self.node.enabled and not self.node.schedule_enabled:
+            raise humanize_exception(ugettext_noop(
+                "You cannot passivate a passive node."), Exception())
+        super(PassivateOperation, self).check_precond()
+
+    def _operation(self):
+        self.node.enabled = True
+        self.node.schedule_enabled = False
+        self.node.save()
+
+
+@register_operation
+class DisableOperation(NodeOperation):
+    activity_code_suffix = 'disable'
+    id = 'disable'
+    name = _("disable")
+    description = _("Disable node.")
+    required_perms = ()
+    online_required = False
+
+    def check_precond(self):
+        if not self.node.enabled:
+            raise humanize_exception(ugettext_noop(
+                "You cannot disable a disabled node."), Exception())
+        if self.node.instance_set.exists():
+            raise humanize_exception(ugettext_noop(
+                "You cannot disable a node which is hosting instances."),
+                Exception())
+        super(DisableOperation, self).check_precond()
+
+    def _operation(self):
+        self.node.enabled = False
+        self.node.schedule_enabled = False
+        self.node.save()
 
 
 @register_operation

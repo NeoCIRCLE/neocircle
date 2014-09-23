@@ -27,7 +27,7 @@ from django.db.models import (
     FloatField, permalink,
 )
 from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _, ugettext_noop
+from django.utils.translation import ugettext_lazy as _
 
 from celery.exceptions import TimeoutError
 from model_utils.models import TimeStampedModel
@@ -37,7 +37,7 @@ from common.models import method_cache, WorkerNotFound, HumanSortField
 from common.operations import OperatedMixin
 from firewall.models import Host
 from ..tasks import vm_tasks
-from .activity import node_activity, NodeActivity
+from .activity import NodeActivity
 from .common import Trait
 
 
@@ -145,31 +145,8 @@ class Node(OperatedMixin, TimeStampedModel):
     def get_status_display(self):
         return self.STATES[self.enabled][self.online][1]
 
-    def disable(self, user=None, base_activity=None):
-        ''' Disable the node.'''
-        if self.enabled:
-            if base_activity:
-                act_ctx = base_activity.sub_activity(
-                    'disable', readable_name=ugettext_noop("disable node"))
-            else:
-                act_ctx = node_activity(
-                    'disable', node=self, user=user,
-                    readable_name=ugettext_noop("disable node"))
-            with act_ctx:
-                self.enabled = False
-                self.save()
-
     def enable(self, user=None, base_activity=None):
-        ''' Enable the node. '''
-        if self.enabled is not True:
-            if base_activity:
-                act_ctx = base_activity.sub_activity('enable')
-            else:
-                act_ctx = node_activity('enable', node=self, user=user)
-            with act_ctx:
-                self.enabled = True
-                self.save()
-            self.get_info(invalidate_cache=True)
+        raise NotImplementedError("Use activate or passivate instead.")
 
     @property
     @node_available
