@@ -216,11 +216,12 @@ class ResizeDiskOperation(InstanceOperation):
     description = _("Resize the virtual disk image. "
                     "Size must be greater value than the actual size.")
     required_perms = ('vm.resize_disk', )
-    accept_states = ('RUNNING')
+    accept_states = ('RUNNING', )
+    async_queue = "localhost.man.slow"
 
     def _operation(self, user, disk, size, activity):
         if self.instance.is_running:
-            self.instance.resize_disk(disk, size)
+            self.instance.resize_disk_live(disk, size)
 
     def get_activity_name(self, kwargs):
         return create_readable(
