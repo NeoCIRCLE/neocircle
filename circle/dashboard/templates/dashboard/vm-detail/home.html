@@ -92,17 +92,18 @@
     </div><!-- id:vm-details-tags -->
     {% if request.user.is_superuser %}
     <dl>
-      <dt>Node:</dt>
-      {% if instance.node %}
+      <dt>{% trans "Node" %}:</dt>
       <dd>
-        <a href="{{ instance.node.get_absolute_url }}">
-          {{ instance.node.name }}
-        </a>
+        {% if instance.node %}
+          <a href="{{ instance.node.get_absolute_url }}">
+            {{ instance.node.name }}
+          </a>
+        {% else %}
+          -
+        {% endif %}
       </dd>
-      {% else %}
-        -
-      {% endif %}
     {% endif %}
+    </dl>
     <dl>
       <dt>{% trans "Template" %}:</dt>
       <dd>
