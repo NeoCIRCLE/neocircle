@@ -591,11 +591,15 @@ footer a, footer a:hover, footer a:visited {
   width: 100px;
 }
 
+#group-detail-user-table tr:last-child td:nth-child(2) {
+  text-align: left;
+}
+
 #group-detail-perm-header {
   margin-top: 25px;
 }
 
-textarea[name="list-new-namelist"] {
+textarea[name="new_members"] {
   max-width: 500px;
   min-height: 80px;
   margin-bottom: 10px;
@@ -654,7 +658,8 @@ textarea[name="list-new-namelist"] {
   width: 130px;
 }
 
-#vm-details-connection-string-copy {
+.vm-details-connection-string-copy,
+#vm-details-pw-show {
   cursor: pointer;
 }
 
@@ -681,10 +686,9 @@ textarea[name="list-new-namelist"] {
   max-width: 200px;
 }
 
-#dashboard-vm-details-connect-command {
+.dashboard-vm-details-connect-command {
   /* for mobile view */
   margin-bottom: 20px;
-
 }
 
 #store-list-list {
@@ -866,4 +870,136 @@ textarea[name="list-new-namelist"] {
 .vm-create-template-details li {
   border-bottom: 1px dotted #aaa;
   padding: 5px 0px;
+}
+
+#profile-key-list-table td:last-child, #profile-key-list-table th:last-child,
+#profile-command-list-table td:last-child, #profile-command-list-table th:last-child,
+#profile-command-list-table td:nth-child(2), #profile-command-list-table th:nth-child(2) {
+  text-align: center;
+  vertical-align: middle;
+}
+
+#vm-list-table .migrating-icon {
+  -webkit-animation: passing 2s linear infinite;
+  animation: passing 2s linear infinite;
+}
+
+@-webkit-keyframes passing {
+  0% {
+    -webkit-transform: translateX(50%);
+    transform: translateX(50%);
+    opacity: 0;
+  }
+
+  50% {
+    -webkit-transform: translateX(0%);
+    transform: translateX(0%);
+    opacity: 1;
+  }
+
+  100% {
+    -webkit-transform: translateX(-50%);
+    transform: translateX(-50%);
+    opacity: 0;
+  }
+}
+
+@keyframes passing {
+  0% {
+    -webkit-transform: translateX(50%);
+    -ms-transform: translateX(50%);
+    transform: translateX(50%);
+    opacity: 0;
+  }
+
+  50% {
+    -webkit-transform: translateX(0%);
+    -ms-transform: translateX(0%);
+    transform: translateX(0%);
+    opacity: 1;
+  }
+
+  100% {
+    -webkit-transform: translateX(-50%);
+    -ms-transform: translateX(-50%);
+    transform: translateX(-50%);
+    opacity: 0;
+  }
+}
+
+.mass-migrate-node {
+  cursor: pointer;
+}
+
+.mass-op-panel {
+  padding: 6px 10px;
+}
+
+.mass-op-panel .check {
+  color: #449d44;
+}
+
+.mass-op-panel .minus {
+  color: #d9534f;
+}
+
+.mass-op-panel .status-icon {
+  font-size: .8em;
+}
+
+#vm-list-search, #vm-mass-ops {
+  margin-top: 8px;
+}
+
+#vm-list-search-checkbox {
+  margin-top: -1px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+#vm-list-search-checkbox-span {
+  cursor: pointer
+}
+
+#vm-activity-state {
+  margin-bottom: 15px;
+}
+
+.autocomplete-hl {
+  color: #b20000;
+  font-weight: bold;
+}
+
+.hilight .autocomplete-hl {
+  color: orange;
+}
+
+.node-list-table tbody>tr>td, .node-list-table thead>tr>th {
+  vertical-align: middle;
+}
+
+.node-list-table thead>tr>th,
+.node-list-table .enabled, .node-list-table .priority,
+.node-list-table .overcommit, .node-list-table .number_of_VMs {
+  text-align: center;
+}
+
+.node-list-table-thin {
+  width: 10px;
+}
+
+.node-list-table-monitor {
+  width: 250px;
+}
+
+.graph-images img {
+  max-width: 100%;
+}
+
+#vm-list-table tbody td:nth-child(3) {
+  white-space: nowrap;
+}
+
+#vm-list-table td {
+  vertical-align: middle;
 }

@@ -34,6 +34,7 @@ from .forms import (HostForm, VlanForm, DomainForm, GroupForm, RecordForm,
                     BlacklistItemForm, RuleForm, VlanGroupForm, SwitchPortForm)
 
 from django.contrib import messages
+from django.contrib.messages.views import SuccessMessageMixin
 from django.views.generic.edit import FormMixin
 from django.utils.translation import ugettext_lazy as _
 from braces.views import LoginRequiredMixin, SuperuserRequiredMixin
@@ -42,25 +43,14 @@ from operator import itemgetter
 from itertools import chain
 import json
 from dashboard.views import AclUpdateView
-from dashboard.forms import AclUserAddForm
+from dashboard.forms import AclUserOrGroupAddForm
 
 
-class SuccessMessageMixin(FormMixin):
-    """
-    Adds a success message on successful form submission.
-    From django/contrib/messages/views.py@9a85ad89
-    """
-    success_message = ''
-
-    def form_valid(self, form):
-        response = super(SuccessMessageMixin, self).form_valid(form)
-        success_message = self.get_success_message(form.cleaned_data)
-        if success_message:
-            messages.success(self.request, success_message)
-        return response
-
-    def get_success_message(self, cleaned_data):
-        return self.success_message % cleaned_data
+class InitialOwnerMixin(FormMixin):
+    def get_initial(self):
+        initial = super(InitialOwnerMixin, self).get_initial()
+        initial['owner'] = self.request.user
+        return initial
 
 
 class IndexView(LoginRequiredMixin, SuperuserRequiredMixin, TemplateView):
@@ -190,7 +180,7 @@ class DomainDetail(LoginRequiredMixin, SuperuserRequiredMixin,
 
 
 class DomainCreate(LoginRequiredMixin, SuperuserRequiredMixin,
-                   SuccessMessageMixin, CreateView):
+                   SuccessMessageMixin, InitialOwnerMixin, CreateView):
     model = Domain
     template_name = "network/domain-create.html"
     form_class = DomainForm
@@ -274,7 +264,7 @@ class GroupList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
 
 
 class GroupCreate(LoginRequiredMixin, SuperuserRequiredMixin,
-                  SuccessMessageMixin, CreateView):
+                  SuccessMessageMixin, InitialOwnerMixin, CreateView):
     model = Group
     template_name = "network/group-create.html"
     form_class = GroupForm
@@ -399,6 +389,12 @@ class HostDetail(LoginRequiredMixin, SuperuserRequiredMixin,
         # set host pk (we need this for URL-s)
         context['host_pk'] = self.kwargs['pk']
 
+        from network.tables import HostRecordsTable
+        context['records_table'] = HostRecordsTable(
+            Record.objects.filter(host=self.get_object()),
+            request=self.request, template="django_tables2/table_no_page.html"
+        )
+
         return context
 
     def get_success_url(self):
@@ -407,7 +403,7 @@ class HostDetail(LoginRequiredMixin, SuperuserRequiredMixin,
 
 
 class HostCreate(LoginRequiredMixin, SuperuserRequiredMixin,
-                 SuccessMessageMixin, CreateView):
+                 SuccessMessageMixin, InitialOwnerMixin, CreateView):
     model = Host
     template_name = "network/host-create.html"
     form_class = HostForm
@@ -491,7 +487,7 @@ class RecordDetail(LoginRequiredMixin, SuperuserRequiredMixin,
 
 
 class RecordCreate(LoginRequiredMixin, SuperuserRequiredMixin,
-                   SuccessMessageMixin, CreateView):
+                   SuccessMessageMixin, InitialOwnerMixin, CreateView):
     model = Record
     template_name = "network/record-create.html"
     form_class = RecordForm
@@ -499,10 +495,23 @@ class RecordCreate(LoginRequiredMixin, SuperuserRequiredMixin,
     success_message = _(u'Successfully created record!')
 
     def get_initial(self):
-        return {
-            # 'owner': 1,
-            'domain': self.request.GET.get('domain'),
-        }
+        initial = super(RecordCreate, self).get_initial()
+        initial['domain'] = self.request.GET.get('domain')
+
+        host_pk = self.request.GET.get("host")
+        try:
+            host = Host.objects.get(pk=host_pk)
+        except (Host.DoesNotExist, ValueError):
+            host = None
+
+        if host:
+            initial.update({
+                'type': "CNAME",
+                'host': host,
+                'address': host.get_fqdn(),
+            })
+
+        return initial
 
 
 class RecordDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
@@ -550,18 +559,19 @@ class RuleDetail(LoginRequiredMixin, SuperuserRequiredMixin,
 
 
 class RuleCreate(LoginRequiredMixin, SuperuserRequiredMixin,
-                 SuccessMessageMixin, CreateView):
+                 SuccessMessageMixin, InitialOwnerMixin, CreateView):
     model = Rule
     template_name = "network/rule-create.html"
     form_class = RuleForm
     success_message = _(u'Successfully created rule!')
 
     def get_initial(self):
-        return {
-            # 'owner': 1,
+        initial = super(RuleCreate, self).get_initial()
+        initial.update({
             'host': self.request.GET.get('host'),
             'hostgroup': self.request.GET.get('hostgroup')
-        }
+        })
+        return initial
 
 
 class RuleDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
@@ -654,14 +664,14 @@ class VlanDetail(LoginRequiredMixin, SuperuserRequiredMixin,
         context['vlan_vid'] = self.kwargs.get('vid')
         context['acl'] = AclUpdateView.get_acl_data(
             self.object, self.request.user, 'network.vlan-acl')
-        context['aclform'] = AclUserAddForm()
+        context['aclform'] = AclUserOrGroupAddForm()
         return context
 
     success_url = reverse_lazy('network.vlan_list')
 
 
 class VlanCreate(LoginRequiredMixin, SuperuserRequiredMixin,
-                 SuccessMessageMixin, CreateView):
+                 SuccessMessageMixin, InitialOwnerMixin, CreateView):
     model = Vlan
     template_name = "network/vlan-create.html"
     form_class = VlanForm
@@ -741,7 +751,7 @@ class VlanGroupDetail(LoginRequiredMixin, SuperuserRequiredMixin,
 
 
 class VlanGroupCreate(LoginRequiredMixin, SuperuserRequiredMixin,
-                      SuccessMessageMixin, CreateView):
+                      SuccessMessageMixin, InitialOwnerMixin, CreateView):
     model = VlanGroup
     template_name = "network/vlan-group-create.html"
     form_class = VlanGroupForm

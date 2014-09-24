@@ -1,22 +1,23 @@
 {% load i18n %}
-
+{% load hro %}
 <div id="activity-timeline" class="timeline">
 
 {% for a in activities %}
 <div class="activity{% if a.pk == active.pk %} activity-active{%endif%}" data-activity-id="{{ a.pk }}">
   <span class="timeline-icon{% if a.has_failed %} timeline-icon-failed{% endif %}">
-  <i class="fa {% if not a.finished %}fa-refresh fa-spin {% else %}fa-plus{% endif %}"></i>
+  <i class="fa {% if not a.finished %}fa-refresh fa-spin {% else %}fa-{{a.icon}}{% endif %}"></i>
 </span>
-<strong{% if a.result %} title="{{ a.result.get_user_text }}"{% endif %}>
+{% spaceless %}
+<strong{% if a.result %} title="{{ a.result|get_text:user }}"{% endif %}>
   <a href="{{ a.get_absolute_url }}">
     {% if a.times > 1 %}({{ a.times }}x){% endif %}
-    {{ a.readable_name.get_user_text|capfirst }}</a>
+    {{ a.readable_name|get_text:user|capfirst }}</a>
 
 {% if a.has_percent %}
   - {{ a.percentage }}%
 {% endif %}
 </strong>
-{% if a.times < 2%}{{ a.started|date:"Y-m-d H:i" }}{% endif %}{% if a.user %},
+{% endspaceless %}{% if a.times < 2%} {{ a.started|date:"Y-m-d H:i" }}{% endif %}{% if a.user %},
   <a class="no-style-link" href="{% url "dashboard.views.profile" username=a.user.username %}">
     {% include "dashboard/_display-name.html" with user=a.user show_org=True %}
   </a>
@@ -33,9 +34,9 @@
     <div class="sub-timeline">
       {% for s in a.children.all %}
       <div data-activity-id="{{ s.pk }}" class="sub-activity{% if s.has_failed %} sub-activity-failed{% endif %}{% if s.pk == active.pk %} sub-activity-active{% endif %}">
-        <span{% if s.result %} title="{{ s.result.get_user_text }}"{% endif %}>
+        <span{% if s.result %} title="{{ s.result|get_text:user }}"{% endif %}>
           <a href="{{ s.get_absolute_url }}">
-              {{ s.readable_name.get_user_text|capfirst }}</a></span> &ndash;
+              {{ s.readable_name|get_text:user|capfirst }}</a></span> &ndash;
         {% if s.finished %}
           {{ s.finished|time:"H:i:s" }}
         {% else %}

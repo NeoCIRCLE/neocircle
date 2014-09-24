@@ -41,6 +41,7 @@ def send_email_notifications():
     for i in Notification.objects.filter(q):
         recipients.setdefault(i.to, [])
         recipients[i.to].append(i)
+    logger.info("Delivering notifications to %d users", len(recipients))
 
     for user, msgs in recipients.iteritems():
         if (not user.profile or not user.email or not

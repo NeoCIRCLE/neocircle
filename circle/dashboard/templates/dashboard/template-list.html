@@ -16,22 +16,41 @@
         <h3 class="no-margin"><i class="fa fa-puzzle-piece"></i> {% trans "Templates" %}</h3>
       </div>
       <div class="panel-body">
+        <div class="row">
+          <div class="col-md-offset-8 col-md-4" id="template-list-search">
+            <form action="" method="GET">
+              <div class="input-group">
+                {{ search_form.s }}
+                <div class="input-group-btn">
+                  {{ search_form.stype }}
+                  <button type="submit" class="btn btn-primary input-tags">
+                    <i class="fa fa-search"></i>
+                  </button>
+                </div>
+              </div><!-- .input-group -->
+            </form>
+          </div><!-- .col-md-4 #template-list-search -->
+        </div>
+      </div>
+      <div class="panel-body">
         {% render_table table %}
       </div>
     </div>
   </div>
 </div>
 
+{% if show_lease_table %}
 <div class="row">
   <div class="col-md-6">
     <div class="panel panel-default">
       <div class="panel-heading">
         {% if perms.vm.create_leases %}
-        <a href="{% url "dashboard.views.lease-create" %}" class="pull-right btn btn-success btn-xs" style="margin-right: 10px;">
+        <a href="{% url "dashboard.views.lease-create" %}"
+          class="pull-right btn btn-success btn-xs" style="margin-right: 10px;">
           <i class="fa fa-plus"></i> {% trans "new lease" %}
         </a>
         {% endif %}
-        <h3 class="no-margin"><i class="fa fa-time"></i> {% trans "Leases" %}</h3>
+        <h3 class="no-margin"><i class="fa fa-clock-o"></i> {% trans "Leases" %}</h3>
       </div>
       <div class="panel-body">
         <div class="" style="max-width: 600px;">
@@ -54,6 +73,7 @@
   </div>
   {% endcomment %}
 </div>
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}

@@ -39,7 +39,7 @@ from django.contrib.auth.forms import UserCreationForm as OrgUserCreationForm
 from django.forms.widgets import TextInput, HiddenInput
 from django.template import Context
 from django.template.loader import render_to_string
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _
 from sizefield.widgets import FileSizeWidget
 from django.core.urlresolvers import reverse_lazy
 
@@ -54,7 +54,9 @@ from .models import Profile, GroupProfile
 from circle.settings.base import LANGUAGES, MAX_NODE_RAM
 from django.utils.translation import string_concat
 
-from .virtvalidator import domain_validator
+from .validators import domain_validator
+
+from dashboard.models import ConnectCommand
 
 LANGUAGES_WITH_CODE = ((l[0], string_concat(l[1], " (", l[0], ")"))
                        for l in LANGUAGES)
@@ -141,25 +143,46 @@ class VmCustomizeForm(forms.Form):
         self.template = kwargs.pop("template", None)
         super(VmCustomizeForm, self).__init__(*args, **kwargs)
 
-        # set displayed disk and network list
-        self.fields['disks'].queryset = self.template.disks.all()
-        self.fields['networks'].queryset = Vlan.get_objects_with_level(
-            'user', self.user)
+        if self.user.has_perm("vm.set_resources"):
+            self.allowed_fields = tuple(self.fields.keys())
+            # set displayed disk and network list
+            self.fields['disks'].queryset = self.template.disks.all()
+            self.fields['networks'].queryset = Vlan.get_objects_with_level(
+                'user', self.user)
 
-        # set initial for disk and network list
-        self.initial['disks'] = self.template.disks.all()
-        self.initial['networks'] = InterfaceTemplate.objects.filter(
-            template=self.template).values_list("vlan", flat=True)
+            # set initial for disk and network list
+            self.initial['disks'] = self.template.disks.all()
+            self.initial['networks'] = InterfaceTemplate.objects.filter(
+                template=self.template).values_list("vlan", flat=True)
 
-        # set initial for resources
-        self.initial['cpu_priority'] = self.template.priority
-        self.initial['cpu_count'] = self.template.num_cores
-        self.initial['ram_size'] = self.template.ram_size
+            # set initial for resources
+            self.initial['cpu_priority'] = self.template.priority
+            self.initial['cpu_count'] = self.template.num_cores
+            self.initial['ram_size'] = self.template.ram_size
+
+        else:
+            self.allowed_fields = ("name", "template", "customized", )
 
         # initial name and template pk
         self.initial['name'] = self.template.name
         self.initial['template'] = self.template.pk
-        self.initial['customized'] = self.template.pk
+        self.initial['customized'] = True
+
+    def _clean_fields(self):
+        for name, field in self.fields.items():
+            if name in self.allowed_fields:
+                value = field.widget.value_from_datadict(
+                    self.data, self.files, self.add_prefix(name))
+                try:
+                    value = field.clean(value)
+                    self.cleaned_data[name] = value
+                    if hasattr(self, 'clean_%s' % name):
+                        value = getattr(self, 'clean_%s' % name)()
+                        self.cleaned_data[name] = value
+                except ValidationError as e:
+                    self._errors[name] = self.error_class(e.messages)
+                    if name in self.cleaned_data:
+                        del self.cleaned_data[name]
 
 
 class GroupCreateForm(forms.ModelForm):
@@ -176,7 +199,14 @@ class GroupCreateForm(forms.ModelForm):
         self.fields['org_id'] = forms.ChoiceField(
             # TRANSLATORS: directory like in LDAP
             choices=choices, required=False, label=_('Directory identifier'))
-        if not new_groups:
+        if new_groups:
+            self.fields['org_id'].help_text = _(
+                "If you select an item here, the members of this directory "
+                "group will be automatically added to the group at the time "
+                "they log in. Please note that other users (those with "
+                "permissions like yours) may also automatically become a "
+                "group co-owner).")
+        else:
             self.fields['org_id'].widget = HiddenInput()
 
     def save(self, commit=True):
@@ -450,8 +480,10 @@ class TemplateForm(forms.ModelForm):
             self.allowed_fields = ()
         else:
             self.allowed_fields = (
-                'name', 'access_method', 'description', 'system', 'tags')
-        if self.user.has_perm('vm.change_template_resources'):
+                'name', 'access_method', 'description', 'system', 'tags',
+                'arch', 'lease', 'has_agent')
+        if (self.user.has_perm('vm.change_template_resources')
+                or not self.instance.pk):
             self.allowed_fields += tuple(set(self.fields.keys()) -
                                          set(['raw_data']))
         if self.user.is_superuser:
@@ -492,11 +524,7 @@ class TemplateForm(forms.ModelForm):
                 value = field.widget.value_from_datadict(
                     self.data, self.files, self.add_prefix(name))
                 try:
-                    if isinstance(field, forms.FileField):
-                        initial = self.initial.get(name, field.initial)
-                        value = field.clean(value, initial)
-                    else:
-                        value = field.clean(value)
+                    value = field.clean(value)
                     self.cleaned_data[name] = value
                     if hasattr(self, 'clean_%s' % name):
                         value = getattr(self, 'clean_%s' % name)()
@@ -512,13 +540,14 @@ class TemplateForm(forms.ModelForm):
                 else:
                     self.cleaned_data[name] = getattr(old, name)
 
+        if "req_traits" not in self.allowed_fields:
+            self.cleaned_data['req_traits'] = self.instance.req_traits.all()
+
     def save(self, commit=True):
         data = self.cleaned_data
         self.instance.max_ram_size = data.get('ram_size')
 
-        instance = super(TemplateForm, self).save(commit=False)
-        if commit:
-            instance.save()
+        instance = super(TemplateForm, self).save(commit=True)
 
         # create and/or delete InterfaceTemplates
         networks = InterfaceTemplate.objects.filter(
@@ -550,7 +579,8 @@ class TemplateForm(forms.ModelForm):
         exclude = ('state', 'disks', )
         widgets = {
             'system': forms.TextInput,
-            'max_ram_size': forms.HiddenInput
+            'max_ram_size': forms.HiddenInput,
+            'parent': forms.Select(attrs={'disabled': ""}),
         }
 
 
@@ -631,12 +661,8 @@ class LeaseForm(forms.ModelForm):
             Field('name'),
             Field("suspend_interval_seconds", type="hidden", value="0"),
             Field("delete_interval_seconds", type="hidden", value="0"),
+            HTML(string_concat("<label>", _("Suspend in"), "</label>")),
             Div(
-                Div(
-                    HTML(_("Suspend in")),
-                    css_class="input-group-addon",
-                    style="width: 100px;",
-                ),
                 NumberField("suspend_hours", css_class="form-control"),
                 Div(
                     HTML(_("hours")),
@@ -659,12 +685,8 @@ class LeaseForm(forms.ModelForm):
                 ),
                 css_class="input-group interval-input",
             ),
+            HTML(string_concat("<label>", _("Delete in"), "</label>")),
             Div(
-                Div(
-                    HTML(_("Delete in")),
-                    css_class="input-group-addon",
-                    style="width: 100px;",
-                ),
                 NumberField("delete_hours", css_class="form-control"),
                 Div(
                     HTML(_("hours")),
@@ -688,7 +710,7 @@ class LeaseForm(forms.ModelForm):
                 css_class="input-group interval-input",
             )
         )
-        helper.add_input(Submit("submit", "Save changes"))
+        helper.add_input(Submit("submit", _("Save changes")))
         return helper
 
     class Meta:
@@ -700,6 +722,8 @@ class VmRenewForm(forms.Form):
     force = forms.BooleanField(required=False, label=_(
         "Set expiration times even if they are shorter than "
         "the current value."))
+    save = forms.BooleanField(required=False, label=_(
+        "Save selected lease."))
 
     def __init__(self, *args, **kwargs):
         choices = kwargs.pop('choices')
@@ -711,6 +735,32 @@ class VmRenewForm(forms.Form):
             empty_label=None, label=_('Length')))
         if len(choices) < 2:
             self.fields['lease'].widget = HiddenInput()
+            self.fields['save'].widget = HiddenInput()
+
+    @property
+    def helper(self):
+        helper = FormHelper(self)
+        helper.form_tag = False
+        return helper
+
+
+class VmStateChangeForm(forms.Form):
+
+    interrupt = forms.BooleanField(required=False, label=_(
+        "Forcibly interrupt all running activities."),
+        help_text=_("Set all activities to finished state, "
+                    "but don't interrupt any tasks."))
+    new_state = forms.ChoiceField(Instance.STATUS, label=_(
+        "New status"))
+
+    def __init__(self, *args, **kwargs):
+        show_interrupt = kwargs.pop('show_interrupt')
+        status = kwargs.pop('status')
+        super(VmStateChangeForm, self).__init__(*args, **kwargs)
+
+        if not show_interrupt:
+            self.fields['interrupt'].widget = HiddenInput()
+        self.fields['new_state'].initial = status
 
     @property
     def helper(self):
@@ -737,6 +787,48 @@ class VmCreateDiskForm(forms.Form):
     def helper(self):
         helper = FormHelper(self)
         helper.form_tag = False
+        return helper
+
+
+class VmDiskResizeForm(forms.Form):
+    size = forms.CharField(
+        widget=FileSizeWidget, initial=(10 << 30), label=_('Size'),
+        help_text=_('Size to resize the disk in bytes or with units '
+                    'like MB or GB.'))
+
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('choices')
+        self.disk = kwargs.pop('default')
+
+        super(VmDiskResizeForm, self).__init__(*args, **kwargs)
+
+        self.fields.insert(0, 'disk', forms.ModelChoiceField(
+            queryset=choices, initial=self.disk, required=True,
+            empty_label=None, label=_('Disk')))
+        if self.disk:
+            self.fields['disk'].widget = HiddenInput()
+            self.fields['size'].initial += self.disk.size
+
+    def clean(self):
+        cleaned_data = super(VmDiskResizeForm, self).clean()
+        size_in_bytes = self.cleaned_data.get("size")
+        disk = self.cleaned_data.get('disk')
+        if not size_in_bytes.isdigit() and len(size_in_bytes) > 0:
+            raise forms.ValidationError(_("Invalid format, you can use "
+                                          " GB or MB!"))
+        if int(size_in_bytes) < int(disk.size):
+            raise forms.ValidationError(_("Disk size must be greater than the "
+                                        "actual size."))
+        return cleaned_data
+
+    @property
+    def helper(self):
+        helper = FormHelper(self)
+        helper.form_tag = False
+        if self.disk:
+            helper.layout = Layout(
+                HTML(_("<label>Disk:</label> %s") % self.disk),
+                Field('disk'), Field('size'))
         return helper
 
 
@@ -923,10 +1015,8 @@ class TraitForm(forms.ModelForm):
                 Field('name', id="node-details-traits-input",
                       css_class="input-sm input-traits"),
                 Div(
-                    HTML('<input type="submit" '
-                         'class="btn btn-default btn-sm input-traits" '
-                         'value="Add trait"/>',
-                         ),
+                    Submit("submit", _("Add trait"),
+                           css_class="btn btn-primary btn-sm input-traits"),
                     css_class="input-group-btn",
                 ),
                 css_class="input-group",
@@ -1004,9 +1094,29 @@ class UserCreationForm(OrgUserCreationForm):
         return user
 
 
-class AclUserAddForm(forms.Form):
+class AclUserOrGroupAddForm(forms.Form):
     name = forms.CharField(widget=autocomplete_light.TextWidget(
-        'AclUserAutocomplete', attrs={'class': 'form-control'}))
+        'AclUserGroupAutocomplete',
+        autocomplete_js_attributes={'placeholder': _("Name of group or user")},
+        attrs={'class': 'form-control'}))
+
+
+class TransferOwnershipForm(forms.Form):
+    name = forms.CharField(
+        widget=autocomplete_light.TextWidget(
+            'AclUserAutocomplete',
+            autocomplete_js_attributes={"placeholder": _("Name of user")},
+            attrs={'class': 'form-control'}),
+        label=_("E-mail address or identifier of user"))
+
+
+class AddGroupMemberForm(forms.Form):
+    new_member = forms.CharField(
+        widget=autocomplete_light.TextWidget(
+            'AclUserAutocomplete',
+            autocomplete_js_attributes={"placeholder": _("Name of user")},
+            attrs={'class': 'form-control'}),
+        label=_("E-mail address or identifier of user"))
 
 
 class UserKeyForm(forms.ModelForm):
@@ -1034,6 +1144,22 @@ class UserKeyForm(forms.ModelForm):
         if self.user:
             self.instance.user = self.user
         return super(UserKeyForm, self).clean()
+
+
+class ConnectCommandForm(forms.ModelForm):
+    class Meta:
+        fields = ('name', 'access_method', 'template')
+        model = ConnectCommand
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user")
+        super(ConnectCommandForm, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        if self.user:
+            self.instance.user = self.user
+
+        return super(ConnectCommandForm, self).clean()
 
 
 class TraitsForm(forms.ModelForm):
@@ -1126,6 +1252,64 @@ class VmResourcesForm(forms.ModelForm):
         'class': "form-control input-tags cpu-priority-input",
     }))
 
+    def __init__(self, *args, **kwargs):
+        self.can_edit = kwargs.pop("can_edit", None)
+        super(VmResourcesForm, self).__init__(*args, **kwargs)
+
+        if not self.can_edit:
+            for name, field in self.fields.items():
+                field.widget.attrs['disabled'] = "disabled"
+
     class Meta:
         model = Instance
         fields = ('num_cores', 'priority', 'ram_size', )
+
+
+vm_search_choices = (
+    ("owned", _("owned")),
+    ("shared", _("shared")),
+    ("all", _("all")),
+)
+
+
+class VmListSearchForm(forms.Form):
+    s = forms.CharField(widget=forms.TextInput(attrs={
+        'class': "form-control input-tags",
+        'placeholder': _("Search...")
+    }))
+
+    stype = forms.ChoiceField(vm_search_choices, widget=forms.Select(attrs={
+        'class': "btn btn-default form-control input-tags",
+        'style': "min-width: 80px;",
+    }))
+
+    include_deleted = forms.BooleanField(widget=forms.CheckboxInput(attrs={
+        'id': "vm-list-search-checkbox",
+    }))
+
+    def __init__(self, *args, **kwargs):
+        super(VmListSearchForm, self).__init__(*args, **kwargs)
+        # set initial value, otherwise it would be overwritten by request.GET
+        if not self.data.get("stype"):
+            data = self.data.copy()
+            data['stype'] = "all"
+            self.data = data
+
+
+class TemplateListSearchForm(forms.Form):
+    s = forms.CharField(widget=forms.TextInput(attrs={
+        'class': "form-control input-tags",
+        'placeholder': _("Search...")
+    }))
+
+    stype = forms.ChoiceField(vm_search_choices, widget=forms.Select(attrs={
+        'class': "btn btn-default input-tags",
+    }))
+
+    def __init__(self, *args, **kwargs):
+        super(TemplateListSearchForm, self).__init__(*args, **kwargs)
+        # set initial value, otherwise it would be overwritten by request.GET
+        if not self.data.get("stype"):
+            data = self.data.copy()
+            data['stype'] = "owned"
+            self.data = data

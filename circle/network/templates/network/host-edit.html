@@ -5,70 +5,81 @@
 {% load staticfiles %}
 {% load crispy_forms_tags %}
 
+{% block title-page %}{{ form.hostname.value }} | {% trans "host" %}{% endblock %}
+
 {% block content %}
 <div class="page-header">
-    <a href="{% url "network.host_delete" pk=host_pk%}" class="btn btn-danger pull-right"><i class="fa fa-times-circle"></i> {% trans "Delete this host" %}</a>
-    <h2>{{ form.hostname.value }}</h2>
+  <a href="{% url "network.host_delete" pk=host_pk%}" class="btn btn-danger pull-right"><i class="fa fa-times-circle"></i> {% trans "Delete this host" %}</a>
+  <h2>{{ form.hostname.value }}</h2>
 </div>
 
 <div class="row">
-    <div class="col-sm-7">
-        {% crispy form %}
+  <div class="col-md-6">
+    {% crispy form %}
+  </div>
+  <div class="col-md-6">
+    <div class="page-header">
+      <a href="{% url "network.rule_create" %}?host={{ host_pk }}" class="btn btn-success pull-right btn-xs"><i class="fa fa-plus-circle"></i> {% trans "Add new rule" %}</a>
+      <h3>{% trans "Rules" %}</h3>
     </div>
-    <div class="col-sm-5">
-        <div class="page-header">
-            <a href="{% url "network.rule_create" %}?host={{ host_pk }}" class="btn btn-success pull-right btn-xs"><i class="fa fa-plus-circle"></i> {% trans "Add new rule" %}</a>
-            <h3>{% trans "Rules" %}</h3>
-        </div>
-        {% if rule_list.data.data.count > 0 %}
-            {% render_table rule_list %}
-        {% else %}
-            {% trans "No rules associated with this host!" %}
-        {% endif %}
-
-        <div class="page-header">
-            <h3>{% trans "Groups" %}</h3>
-        </div>
-        {% if group_rule_list|length > 0 %}
-            {% for group in group_rule_list %}
-            <div>
-                <h4 id="{{ group.pk }}_group_pk">{{ group.name }}
-                    <a href="{% url "network.remove_host_group" pk=host_pk group_pk=group.pk %}?from={{ request.path }}">
-                        <i class="fa fa-times" style="vertical-align: middle;"></i></a>
-                <a href="{% url "network.group" group.pk %}">
-                    <i class="fa fa-pencil" style="vertical-align: middle;"></i></a>
-                </h4>
-            </div>
-            {% endfor %}
-        {% else %}
-            {% trans "This host is not added to any host groups!" %}
-        {% endif %}
+    {% if rule_list.data.data.count > 0 %}
+      {% render_table rule_list %}
+    {% else %}
+      {% trans "No rules associated with this host." %}
+    {% endif %}
 
     <div class="page-header">
-        <h3>Add host group</h3>
+      <h3>{% trans "Groups" %}</h3>
+    </div>
+    {% if group_rule_list|length > 0 %}
+      {% for group in group_rule_list %}
+        <div>
+          <h4 id="{{ group.pk }}_group_pk">{{ group.name }}
+            <a href="{% url "network.remove_host_group" pk=host_pk group_pk=group.pk %}?from={{ request.path }}">
+              <i class="fa fa-times" style="vertical-align: middle;"></i></a>
+            <a href="{% url "network.group" group.pk %}">
+              <i class="fa fa-pencil" style="vertical-align: middle;"></i></a>
+          </h4>
+        </div>
+      {% endfor %}
+    {% else %}
+      {% trans "This host is not added to any host groups!" %}
+    {% endif %}
+
+    <div class="page-header">
+      <h3>{% trans "Add host group" %}</h3>
     </div>
     {% if not_used_groups|length == 0 %}
-      No more groups to add!
+      {% trans "No more groups to add" %}
     {% else %}
-        <form action="{% url "network.add_host_group" pk=host_pk %}" method="POST">
+      <form action="{% url "network.add_host_group" pk=host_pk %}" method="POST">
         {% csrf_token %}
-            <div class="input-group">
-                <select name="group" id="add_group" class="form-control">
-                    {% for rest in not_used_groups %}
-                        <option value="{{ rest.pk }}">{{ rest }}</option>
-                    {% endfor %}
-                </select>
-                <div class="input-group-btn">
-                    <input type="submit" value="{% trans "Add group" %}" class="btn btn-default"></input>
-                </div>
-            </div><!-- input-group -->
-        </form>
+        <div class="input-group">
+          <select name="group" id="add_group" class="form-control">
+            {% for rest in not_used_groups %}
+            <option value="{{ rest.pk }}">{{ rest }}</option>
+            {% endfor %}
+          </select>
+          <div class="input-group-btn">
+            <input type="submit" value="{% trans "Add group" %}" class="btn btn-default"></input>
+          </div>
+        </div><!-- input-group -->
+      </form>
     {% endif %}
-    </div><!-- col-sm-4 -->
+    <div class="page-header">
+      <a href="{% url "network.record_create" %}?host={{ host_pk }}" 
+       class="btn btn-xs btn-success pull-right">
+        <i class="fa fa-plus-circle"></i>
+        {% trans "Add new CNAME record" %}
+      </a>
+      <h3>{% trans "Records" %}</h3>
+    </div>
+    {% render_table records_table %}
+  </div><!-- col-sm-5 -->
 </div><!-- row -->
 
 {% endblock %}
 
 {% block extra_etc %}
-<script src="{% static "js/host.js" %}"></script>
+  <script src="{% static "js/host.js" %}"></script>
 {% endblock %}

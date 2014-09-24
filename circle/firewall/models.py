@@ -203,12 +203,6 @@ class Rule(models.Model):
         elif self.firewall_id:
             return 'INPUT' if self.direction == 'in' else 'OUTPUT'
 
-    def get_dport_sport(self):
-        if self.direction == 'in':
-            return self.dport, self.sport
-        else:
-            return self.sport, self.dport
-
     def get_ipt_rules(self, host=None):
         # action
         action = 'LOG_ACC' if self.action == 'accept' else 'LOG_DROP'
@@ -221,7 +215,7 @@ class Rule(models.Model):
         dst = None
 
         if host:
-            ip = (host.ipv4, host.ipv6_with_prefixlen)
+            ip = (host.ipv4, host.ipv6_with_host_prefixlen)
             if self.direction == 'in':
                 dst = ip
             else:
@@ -235,9 +229,6 @@ class Rule(models.Model):
         if vlan and not vlan.managed:
             return retval
 
-        # src and dst ports
-        dport, sport = self.get_dport_sport()
-
         # process foreign vlans
         for foreign_vlan in self.foreign_network.vlans.all():
             if not foreign_vlan.managed:
@@ -246,7 +237,7 @@ class Rule(models.Model):
             r = IptRule(priority=self.weight, action=action,
                         proto=self.proto, extra=self.extra,
                         comment='Rule #%s' % self.pk,
-                        src=src, dst=dst, dport=dport, sport=sport)
+                        src=src, dst=dst, dport=self.dport, sport=self.sport)
             chain_name = self.get_chain_name(local=vlan, remote=foreign_vlan)
             retval[chain_name] = r
 
@@ -539,14 +530,30 @@ class Host(models.Model):
     def incoming_rules(self):
         return self.rules.filter(direction='in')
 
-    @property
-    def ipv6_with_prefixlen(self):
+    @staticmethod
+    def create_ipnetwork(ip, prefixlen):
         try:
-            net = IPNetwork(self.ipv6)
-            net.prefixlen = self.vlan.host_ipv6_prefixlen
-            return net
+            net = IPNetwork(ip)
+            net.prefixlen = prefixlen
         except TypeError:
             return None
+        else:
+            return net
+
+    @property
+    def ipv4_with_vlan_prefixlen(self):
+        return Host.create_ipnetwork(
+            self.ipv4, self.vlan.network4.prefixlen)
+
+    @property
+    def ipv6_with_vlan_prefixlen(self):
+        return Host.create_ipnetwork(
+            self.ipv6, self.vlan.network6.prefixlen)
+
+    @property
+    def ipv6_with_host_prefixlen(self):
+        return Host.create_ipnetwork(
+            self.ipv6, self.vlan.host_ipv6_prefixlen)
 
     def get_external_ipv4(self):
         return self.external_ipv4 if self.external_ipv4 else self.ipv4
@@ -575,10 +582,14 @@ class Host(models.Model):
 
         # IPv4
         if self.ipv4 is not None:
+            if not self.shared_ip and self.external_ipv4:  # DMZ
+                ipv4 = self.external_ipv4
+            else:
+                ipv4 = self.ipv4
             # update existing records
             affected_records = Record.objects.filter(
                 host=self, name=self.hostname,
-                type='A').update(address=self.ipv4)
+                type='A').update(address=ipv4)
             # create new record
             if affected_records == 0:
                 Record(host=self,
@@ -604,6 +615,19 @@ class Host(models.Model):
                        owner=self.owner,
                        description='created by host.save()',
                        type='AAAA').save()
+
+    def get_network_config(self):
+        interface = {'addresses': []}
+
+        if self.ipv4 and self.vlan.network4:
+            interface['addresses'].append(str(self.ipv4_with_vlan_prefixlen))
+            interface['gw4'] = str(self.vlan.network4.ip)
+
+        if self.ipv6 and self.vlan.network6:
+            interface['addresses'].append(str(self.ipv6_with_vlan_prefixlen))
+            interface['gw6'] = str(self.vlan.network6.ip)
+
+        return interface
 
     def enable_net(self):
         for i in settings.get('default_host_groups', []):
@@ -714,6 +738,8 @@ class Host(models.Model):
         :type proto: str.
         """
         assert proto in ('ipv6', 'ipv4', )
+        if self.reverse:
+            return self.reverse
         try:
             if proto == 'ipv6':
                 res = self.record_set.filter(type='AAAA',
@@ -736,7 +762,7 @@ class Host(models.Model):
         Return a list of ports with forwarding rules set.
         """
         retval = []
-        for rule in self.rules.all():
+        for rule in self.rules.filter(dport__isnull=False, direction='in'):
             forward = {
                 'proto': rule.proto,
                 'private': rule.dport,

@@ -19,10 +19,12 @@ from __future__ import absolute_import, unicode_literals
 from logging import getLogger
 from re import search
 from string import ascii_lowercase
+from urlparse import urlsplit
 
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _, ugettext_noop
+from django.conf import settings
 
 from sizefield.utils import filesizeformat
 
@@ -32,6 +34,7 @@ from common.models import (
     create_readable, humanize_exception, HumanReadableException
 )
 from common.operations import Operation, register_operation
+from manager.scheduler import SchedulerError
 from .tasks.local_tasks import (
     abortable_async_instance_operation, abortable_async_node_operation,
 )
@@ -39,7 +42,9 @@ from .models import (
     Instance, InstanceActivity, InstanceTemplate, Interface, Node,
     NodeActivity, pwgen
 )
-from .tasks import agent_tasks
+from .tasks import agent_tasks, local_agent_tasks
+
+from dashboard.store_api import Store, NoStoreException
 
 logger = getLogger(__name__)
 
@@ -51,6 +56,7 @@ class InstanceOperation(Operation):
     concurrency_check = True
     accept_states = None
     deny_states = None
+    resultant_state = None
 
     def __init__(self, instance):
         super(InstanceOperation, self).__init__(subject=instance)
@@ -95,12 +101,14 @@ class InstanceOperation(Operation):
                                  "provided as parameter.")
 
             return parent.create_sub(code_suffix=self.activity_code_suffix,
-                                     readable_name=name)
+                                     readable_name=name,
+                                     resultant_state=self.resultant_state)
         else:
             return InstanceActivity.create(
                 code_suffix=self.activity_code_suffix, instance=self.instance,
                 readable_name=name, user=user,
-                concurrency_check=self.concurrency_check)
+                concurrency_check=self.concurrency_check,
+                resultant_state=self.resultant_state)
 
     def is_preferred(self):
         """If this is the recommended op in the current state of the instance.
@@ -108,6 +116,7 @@ class InstanceOperation(Operation):
         return False
 
 
+@register_operation
 class AddInterfaceOperation(InstanceOperation):
     activity_code_suffix = 'add_interface'
     id = 'add_interface'
@@ -146,15 +155,14 @@ class AddInterfaceOperation(InstanceOperation):
                     self.rollback(net, activity)
                 raise
             net.deploy()
+            local_agent_tasks.send_networking_commands(self.instance, activity)
 
     def get_activity_name(self, kwargs):
         return create_readable(ugettext_noop("add %(vlan)s interface"),
                                vlan=kwargs['vlan'])
 
 
-register_operation(AddInterfaceOperation)
-
-
+@register_operation
 class CreateDiskOperation(InstanceOperation):
 
     activity_code_suffix = 'create_disk'
@@ -196,9 +204,28 @@ class CreateDiskOperation(InstanceOperation):
             size=filesizeformat(kwargs['size']), name=kwargs['name'])
 
 
-register_operation(CreateDiskOperation)
+@register_operation
+class ResizeDiskOperation(InstanceOperation):
+
+    activity_code_suffix = 'resize_disk'
+    id = 'resize_disk'
+    name = _("resize disk")
+    description = _("Resize the virtual disk image. "
+                    "Size must be greater value than the actual size.")
+    required_perms = ('storage.resize_disk', )
+    accept_states = ('RUNNING', )
+    async_queue = "localhost.man.slow"
+
+    def _operation(self, user, disk, size, activity):
+        self.instance.resize_disk_live(disk, size)
+
+    def get_activity_name(self, kwargs):
+        return create_readable(
+            ugettext_noop("resize disk %(name)s to %(size)s"),
+            size=filesizeformat(kwargs['size']), name=kwargs['disk'].name)
 
 
+@register_operation
 class DownloadDiskOperation(InstanceOperation):
     activity_code_suffix = 'download_disk'
     id = 'download_disk'
@@ -211,6 +238,7 @@ class DownloadDiskOperation(InstanceOperation):
     has_percentage = True
     required_perms = ('storage.download_disk', )
     accept_states = ('STOPPED', 'PENDING', 'RUNNING')
+    async_queue = "localhost.man.slow"
 
     def _operation(self, user, url, task, activity, name=None):
         activity.result = url
@@ -235,9 +263,8 @@ class DownloadDiskOperation(InstanceOperation):
             ):
                 self.instance.attach_disk(disk)
 
-register_operation(DownloadDiskOperation)
 
-
+@register_operation
 class DeployOperation(InstanceOperation):
     activity_code_suffix = 'deploy'
     id = 'deploy'
@@ -246,14 +273,22 @@ class DeployOperation(InstanceOperation):
                     "and network configuration).")
     required_perms = ()
     deny_states = ('SUSPENDED', 'RUNNING')
+    resultant_state = 'RUNNING'
 
     def is_preferred(self):
         return self.instance.status in (self.instance.STATUS.STOPPED,
                                         self.instance.STATUS.PENDING,
                                         self.instance.STATUS.ERROR)
 
+    def on_abort(self, activity, error):
+        activity.resultant_state = 'STOPPED'
+
     def on_commit(self, activity):
         activity.resultant_state = 'RUNNING'
+        activity.result = create_readable(
+            ugettext_noop("virtual machine successfully "
+                          "deployed to node: %(node)s"),
+            node=self.instance.node)
 
     def _operation(self, activity, timeout=15):
         # Allocate VNC port and host node
@@ -268,9 +303,11 @@ class DeployOperation(InstanceOperation):
 
         # Deploy VM on remote machine
         if self.instance.state not in ['PAUSED']:
+            rn = create_readable(ugettext_noop("deploy virtual machine"),
+                                 ugettext_noop("deploy vm to %(node)s"),
+                                 node=self.instance.node)
             with activity.sub_activity(
-                'deploying_vm', readable_name=ugettext_noop(
-                    "deploy virtual machine")) as deploy_act:
+                    'deploying_vm', readable_name=rn) as deploy_act:
                 deploy_act.result = self.instance.deploy_vm(timeout=timeout)
 
         # Establish network connection (vmdriver)
@@ -279,21 +316,23 @@ class DeployOperation(InstanceOperation):
                 "deploy network")):
             self.instance.deploy_net()
 
+        try:
+            self.instance.renew(parent_activity=activity)
+        except:
+            pass
+
         # Resume vm
         with activity.sub_activity(
             'booting', readable_name=ugettext_noop(
                 "boot virtual machine")):
             self.instance.resume_vm(timeout=timeout)
 
-        try:
-            self.instance.renew(parent_activity=activity)
-        except:
-            pass
+        if self.instance.has_agent:
+            activity.sub_activity('os_boot', readable_name=ugettext_noop(
+                "wait operating system loading"), interruptible=True)
 
 
-register_operation(DeployOperation)
-
-
+@register_operation
 class DestroyOperation(InstanceOperation):
     activity_code_suffix = 'destroy'
     id = 'destroy'
@@ -301,9 +340,7 @@ class DestroyOperation(InstanceOperation):
     description = _("Permanently destroy virtual machine, its network "
                     "settings and disks.")
     required_perms = ()
-
-    def on_commit(self, activity):
-        activity.resultant_state = 'DESTROYED'
+    resultant_state = 'DESTROYED'
 
     def _operation(self, activity):
         # Destroy networks
@@ -341,9 +378,7 @@ class DestroyOperation(InstanceOperation):
         self.instance.save()
 
 
-register_operation(DestroyOperation)
-
-
+@register_operation
 class MigrateOperation(InstanceOperation):
     activity_code_suffix = 'migrate'
     id = 'migrate'
@@ -351,19 +386,15 @@ class MigrateOperation(InstanceOperation):
     description = _("Move virtual machine to an other worker node with a few "
                     "seconds of interruption (live migration).")
     required_perms = ()
+    superuser_required = True
     accept_states = ('RUNNING', )
+    async_queue = "localhost.man.slow"
 
     def rollback(self, activity):
         with activity.sub_activity(
             'rollback_net', readable_name=ugettext_noop(
                 "redeploy network (rollback)")):
             self.instance.deploy_net()
-
-    def check_auth(self, user):
-        if not user.is_superuser:
-            raise PermissionDenied()
-
-        super(MigrateOperation, self).check_auth(user=user)
 
     def _operation(self, activity, to_node=None, timeout=120):
         if not to_node:
@@ -399,9 +430,7 @@ class MigrateOperation(InstanceOperation):
             self.instance.deploy_net()
 
 
-register_operation(MigrateOperation)
-
-
+@register_operation
 class RebootOperation(InstanceOperation):
     activity_code_suffix = 'reboot'
     id = 'reboot'
@@ -411,13 +440,14 @@ class RebootOperation(InstanceOperation):
     required_perms = ()
     accept_states = ('RUNNING', )
 
-    def _operation(self, timeout=5):
+    def _operation(self, activity, timeout=5):
         self.instance.reboot_vm(timeout=timeout)
+        if self.instance.has_agent:
+            activity.sub_activity('os_boot', readable_name=ugettext_noop(
+                "wait operating system loading"), interruptible=True)
 
 
-register_operation(RebootOperation)
-
-
+@register_operation
 class RemoveInterfaceOperation(InstanceOperation):
     activity_code_suffix = 'remove_interface'
     id = 'remove_interface'
@@ -445,9 +475,7 @@ class RemoveInterfaceOperation(InstanceOperation):
                                vlan=kwargs['interface'].vlan)
 
 
-register_operation(RemoveInterfaceOperation)
-
-
+@register_operation
 class RemoveDiskOperation(InstanceOperation):
     activity_code_suffix = 'remove_disk'
     id = 'remove_disk'
@@ -474,9 +502,8 @@ class RemoveDiskOperation(InstanceOperation):
         return create_readable(ugettext_noop('remove disk %(name)s'),
                                name=kwargs["disk"].name)
 
-register_operation(RemoveDiskOperation)
 
-
+@register_operation
 class ResetOperation(InstanceOperation):
     activity_code_suffix = 'reset'
     id = 'reset'
@@ -485,12 +512,14 @@ class ResetOperation(InstanceOperation):
     required_perms = ()
     accept_states = ('RUNNING', )
 
-    def _operation(self, timeout=5):
+    def _operation(self, activity, timeout=5):
         self.instance.reset_vm(timeout=timeout)
+        if self.instance.has_agent:
+            activity.sub_activity('os_boot', readable_name=ugettext_noop(
+                "wait operating system loading"), interruptible=True)
 
-register_operation(ResetOperation)
 
-
+@register_operation
 class SaveAsTemplateOperation(InstanceOperation):
     activity_code_suffix = 'save_as_template'
     id = 'save_as_template'
@@ -499,9 +528,11 @@ class SaveAsTemplateOperation(InstanceOperation):
                     "with users and groups.  Anyone who has access to a "
                     "template (and to the networks it uses) will be able to "
                     "start an instance of it.")
+    has_percentage = True
     abortable = True
     required_perms = ('vm.create_template', )
-    accept_states = ('RUNNING', 'PENDING', 'STOPPED')
+    accept_states = ('RUNNING', 'STOPPED')
+    async_queue = "localhost.man.slow"
 
     def is_preferred(self):
         return (self.instance.is_base and
@@ -585,9 +616,7 @@ class SaveAsTemplateOperation(InstanceOperation):
             return tmpl
 
 
-register_operation(SaveAsTemplateOperation)
-
-
+@register_operation
 class ShutdownOperation(InstanceOperation):
     activity_code_suffix = 'shutdown'
     id = 'shutdown'
@@ -599,19 +628,25 @@ class ShutdownOperation(InstanceOperation):
     abortable = True
     required_perms = ()
     accept_states = ('RUNNING', )
-
-    def on_commit(self, activity):
-        activity.resultant_state = 'STOPPED'
+    resultant_state = 'STOPPED'
 
     def _operation(self, task=None):
         self.instance.shutdown_vm(task=task)
         self.instance.yield_node()
-        self.instance.yield_vnc_port()
+
+    def on_abort(self, activity, error):
+        if isinstance(error, TimeLimitExceeded):
+            activity.result = humanize_exception(ugettext_noop(
+                "The virtual machine did not switch off in the provided time "
+                "limit. Most of the time this is caused by incorrect ACPI "
+                "settings. You can also try to power off the machine from the "
+                "operating system manually."), error)
+            activity.resultant_state = None
+        else:
+            super(ShutdownOperation, self).on_abort(activity, error)
 
 
-register_operation(ShutdownOperation)
-
-
+@register_operation
 class ShutOffOperation(InstanceOperation):
     activity_code_suffix = 'shut_off'
     id = 'shut_off'
@@ -625,9 +660,7 @@ class ShutOffOperation(InstanceOperation):
                     "of a physical machine.")
     required_perms = ()
     accept_states = ('RUNNING', )
-
-    def on_commit(self, activity):
-        activity.resultant_state = 'STOPPED'
+    resultant_state = 'STOPPED'
 
     def _operation(self, activity):
         # Shutdown networks
@@ -638,14 +671,10 @@ class ShutOffOperation(InstanceOperation):
         with activity.sub_activity('delete_vm'):
             self.instance.delete_vm()
 
-        # Clear node and VNC port association
         self.instance.yield_node()
-        self.instance.yield_vnc_port()
 
 
-register_operation(ShutOffOperation)
-
-
+@register_operation
 class SleepOperation(InstanceOperation):
     activity_code_suffix = 'sleep'
     id = 'sleep'
@@ -660,6 +689,8 @@ class SleepOperation(InstanceOperation):
                     "storage resources, and keep network resources allocated.")
     required_perms = ()
     accept_states = ('RUNNING', )
+    resultant_state = 'SUSPENDED'
+    async_queue = "localhost.man.slow"
 
     def is_preferred(self):
         return (not self.instance.is_base and
@@ -670,9 +701,6 @@ class SleepOperation(InstanceOperation):
             activity.resultant_state = None
         else:
             activity.resultant_state = 'ERROR'
-
-    def on_commit(self, activity):
-        activity.resultant_state = 'SUSPENDED'
 
     def _operation(self, activity, timeout=240):
         # Destroy networks
@@ -690,9 +718,7 @@ class SleepOperation(InstanceOperation):
         # VNC port needs to be kept
 
 
-register_operation(SleepOperation)
-
-
+@register_operation
 class WakeUpOperation(InstanceOperation):
     activity_code_suffix = 'wake_up'
     id = 'wake_up'
@@ -702,15 +728,16 @@ class WakeUpOperation(InstanceOperation):
                     "virtual machine from this state.")
     required_perms = ()
     accept_states = ('SUSPENDED', )
+    resultant_state = 'RUNNING'
 
     def is_preferred(self):
         return self.instance.status == self.instance.STATUS.SUSPENDED
 
     def on_abort(self, activity, error):
-        activity.resultant_state = 'ERROR'
-
-    def on_commit(self, activity):
-        activity.resultant_state = 'RUNNING'
+        if isinstance(error, SchedulerError):
+            activity.resultant_state = None
+        else:
+            activity.resultant_state = 'ERROR'
 
     def _operation(self, activity, timeout=60):
         # Schedule vm
@@ -735,9 +762,7 @@ class WakeUpOperation(InstanceOperation):
             pass
 
 
-register_operation(WakeUpOperation)
-
-
+@register_operation
 class RenewOperation(InstanceOperation):
     activity_code_suffix = 'renew'
     id = 'renew'
@@ -750,7 +775,7 @@ class RenewOperation(InstanceOperation):
     required_perms = ()
     concurrency_check = False
 
-    def _operation(self, activity, lease=None, force=False):
+    def _operation(self, activity, lease=None, force=False, save=False):
         suspend, delete = self.instance.get_renew_times(lease)
         if (not force and suspend and self.instance.time_of_suspend and
                 suspend < self.instance.time_of_suspend):
@@ -764,15 +789,15 @@ class RenewOperation(InstanceOperation):
                 "in its delete time get earlier than before."))
         self.instance.time_of_suspend = suspend
         self.instance.time_of_delete = delete
+        if save:
+            self.instance.lease = lease
         self.instance.save()
         activity.result = create_readable(ugettext_noop(
             "Renewed to suspend at %(suspend)s and destroy at %(delete)s."),
             suspend=suspend, delete=delete)
 
 
-register_operation(RenewOperation)
-
-
+@register_operation
 class ChangeStateOperation(InstanceOperation):
     activity_code_suffix = 'emergency_change_state'
     id = 'emergency_change_state'
@@ -784,21 +809,35 @@ class ChangeStateOperation(InstanceOperation):
                     "resources.")
     acl_level = "owner"
     required_perms = ('vm.emergency_change_state', )
+    concurrency_check = False
 
-    def _operation(self, user, activity, new_state="NOSTATE"):
+    def _operation(self, user, activity, new_state="NOSTATE", interrupt=False):
         activity.resultant_state = new_state
-
-
-register_operation(ChangeStateOperation)
+        if interrupt:
+            msg_txt = ugettext_noop("Activity is forcibly interrupted.")
+            message = create_readable(msg_txt, msg_txt)
+            for i in InstanceActivity.objects.filter(
+                    finished__isnull=True, instance=self.instance):
+                i.finish(False, result=message)
+                logger.error('Forced finishing activity %s', i)
 
 
 class NodeOperation(Operation):
     async_operation = abortable_async_node_operation
     host_cls = Node
+    online_required = True
+    superuser_required = True
 
     def __init__(self, node):
         super(NodeOperation, self).__init__(subject=node)
         self.node = node
+
+    def check_precond(self):
+        super(NodeOperation, self).check_precond()
+        if self.online_required and not self.node.online:
+            raise humanize_exception(ugettext_noop(
+                "You cannot call this operation on an offline node."),
+                Exception())
 
     def create_activity(self, parent, user, kwargs):
         name = self.get_activity_name(kwargs)
@@ -820,29 +859,19 @@ class NodeOperation(Operation):
                                        readable_name=name)
 
 
+@register_operation
 class FlushOperation(NodeOperation):
     activity_code_suffix = 'flush'
     id = 'flush'
     name = _("flush")
-    description = _("Disable node and move all instances to other ones.")
+    description = _("Passivate node and move all instances to other ones.")
     required_perms = ()
-
-    def on_abort(self, activity, error):
-        from manager.scheduler import TraitsUnsatisfiableException
-        if isinstance(error, TraitsUnsatisfiableException):
-            if self.node_enabled:
-                self.node.enable(activity.user, activity)
-
-    def check_auth(self, user):
-        if not user.is_superuser:
-            raise humanize_exception(ugettext_noop(
-                "Superuser privileges are required."), PermissionDenied())
-
-        super(FlushOperation, self).check_auth(user=user)
+    async_queue = "localhost.man.slow"
 
     def _operation(self, activity, user):
-        self.node_enabled = self.node.enabled
-        self.node.disable(user, activity)
+        if self.node.schedule_enabled:
+            PassivateOperation(self.node).call(parent_activity=activity,
+                                               user=user)
         for i in self.node.instance_set.all():
             name = create_readable(ugettext_noop(
                 "migrate %(instance)s (%(pk)s)"), instance=i.name, pk=i.pk)
@@ -851,9 +880,75 @@ class FlushOperation(NodeOperation):
                 i.migrate(user=user)
 
 
-register_operation(FlushOperation)
+@register_operation
+class ActivateOperation(NodeOperation):
+    activity_code_suffix = 'activate'
+    id = 'activate'
+    name = _("activate")
+    description = _("Make node active, i.e. scheduler is allowed to deploy "
+                    "virtual machines to it.")
+    required_perms = ()
+
+    def check_precond(self):
+        super(ActivateOperation, self).check_precond()
+        if self.node.enabled and self.node.schedule_enabled:
+            raise humanize_exception(ugettext_noop(
+                "You cannot activate an active node."), Exception())
+
+    def _operation(self):
+        self.node.enabled = True
+        self.node.schedule_enabled = True
+        self.node.save()
 
 
+@register_operation
+class PassivateOperation(NodeOperation):
+    activity_code_suffix = 'passivate'
+    id = 'passivate'
+    name = _("passivate")
+    description = _("Make node passive, i.e. scheduler is denied to deploy "
+                    "virtual machines to it, but remaining instances and "
+                    "the ones manually migrated will continue running.")
+    required_perms = ()
+
+    def check_precond(self):
+        if self.node.enabled and not self.node.schedule_enabled:
+            raise humanize_exception(ugettext_noop(
+                "You cannot passivate a passive node."), Exception())
+        super(PassivateOperation, self).check_precond()
+
+    def _operation(self):
+        self.node.enabled = True
+        self.node.schedule_enabled = False
+        self.node.save()
+
+
+@register_operation
+class DisableOperation(NodeOperation):
+    activity_code_suffix = 'disable'
+    id = 'disable'
+    name = _("disable")
+    description = _("Disable node.")
+    required_perms = ()
+    online_required = False
+
+    def check_precond(self):
+        if not self.node.enabled:
+            raise humanize_exception(ugettext_noop(
+                "You cannot disable a disabled node."), Exception())
+        if self.node.instance_set.exists():
+            raise humanize_exception(ugettext_noop(
+                "You cannot disable a node which is hosting instances."),
+                Exception())
+        super(DisableOperation, self).check_precond()
+
+    def _operation(self):
+        self.node.enabled = False
+        self.node.schedule_enabled = False
+        self.node.save()
+
+
+@register_operation
 class ScreenshotOperation(InstanceOperation):
     activity_code_suffix = 'screenshot'
     id = 'screenshot'
@@ -869,9 +964,7 @@ class ScreenshotOperation(InstanceOperation):
         return self.instance.get_screenshot(timeout=20)
 
 
-register_operation(ScreenshotOperation)
-
-
+@register_operation
 class RecoverOperation(InstanceOperation):
     activity_code_suffix = 'recover'
     id = 'recover'
@@ -882,15 +975,13 @@ class RecoverOperation(InstanceOperation):
     acl_level = "owner"
     required_perms = ('vm.recover', )
     accept_states = ('DESTROYED', )
+    resultant_state = 'PENDING'
 
     def check_precond(self):
         try:
             super(RecoverOperation, self).check_precond()
         except Instance.InstanceDestroyedError:
             pass
-
-    def on_commit(self, activity):
-        activity.resultant_state = 'PENDING'
 
     def _operation(self):
         for disk in self.instance.disks.all():
@@ -901,9 +992,7 @@ class RecoverOperation(InstanceOperation):
         self.instance.save()
 
 
-register_operation(RecoverOperation)
-
-
+@register_operation
 class ResourcesOperation(InstanceOperation):
     activity_code_suffix = 'Resources change'
     id = 'resources_change'
@@ -931,11 +1020,28 @@ class ResourcesOperation(InstanceOperation):
         )
 
 
-register_operation(ResourcesOperation)
+class EnsureAgentMixin(object):
+    accept_states = ('RUNNING', )
+
+    def check_precond(self):
+        super(EnsureAgentMixin, self).check_precond()
+
+        last_boot_time = self.instance.activity_log.filter(
+            succeeded=True, activity_code__in=(
+                "vm.Instance.deploy", "vm.Instance.reset",
+                "vm.Instance.reboot")).latest("finished").finished
+
+        try:
+            InstanceActivity.objects.filter(
+                activity_code="vm.Instance.agent.starting",
+                started__gt=last_boot_time).latest("started")
+        except InstanceActivity.DoesNotExist:  # no agent since last boot
+            raise self.instance.NoAgentError(self.instance)
 
 
-class PasswordResetOperation(InstanceOperation):
-    activity_code_suffix = 'Password reset'
+@register_operation
+class PasswordResetOperation(EnsureAgentMixin, InstanceOperation):
+    activity_code_suffix = 'password_reset'
     id = 'password_reset'
     name = _("password reset")
     description = _("Generate and set a new login password on the virtual "
@@ -945,7 +1051,6 @@ class PasswordResetOperation(InstanceOperation):
                     "it.")
     acl_level = "owner"
     required_perms = ()
-    accept_states = ('RUNNING', )
 
     def _operation(self):
         self.instance.pw = pwgen()
@@ -955,4 +1060,30 @@ class PasswordResetOperation(InstanceOperation):
         self.instance.save()
 
 
-register_operation(PasswordResetOperation)
+@register_operation
+class MountStoreOperation(EnsureAgentMixin, InstanceOperation):
+    activity_code_suffix = 'mount_store'
+    id = 'mount_store'
+    name = _("mount store")
+    description = _(
+        "This operation attaches your personal file store. Other users who "
+        "have access to this machine can see these files as well."
+    )
+    acl_level = "owner"
+    required_perms = ()
+
+    def check_auth(self, user):
+        super(MountStoreOperation, self).check_auth(user)
+        try:
+            Store(user)
+        except NoStoreException:
+            raise PermissionDenied  # not show the button at all
+
+    def _operation(self, user):
+        inst = self.instance
+        queue = self.instance.get_remote_queue_name("agent")
+        host = urlsplit(settings.STORE_URL).hostname
+        username = Store(user).username
+        password = user.profile.smb_password
+        agent_tasks.mount_store.apply_async(
+            queue=queue, args=(inst.vm_name, host, username, password))

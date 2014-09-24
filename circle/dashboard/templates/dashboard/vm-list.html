@@ -15,26 +15,42 @@
         </div>
         <h3 class="no-margin"><i class="fa fa-desktop"></i> {% trans "Virtual machines" %}</h3>
       </div>
-      <div class="pull-right" style="max-width: 250px; margin-top: 15px; margin-right: 15px;">
-        <form action="" method="GET" class="input-group">
-          <input type="text" name="s"{% if request.GET.s %} value="{{ request.GET.s }}"{% endif %} class="form-control input-tags" placeholder="{% trans "Search..."%}" />
-          <div class="input-group-btn">
-            <button type="submit" class="form-control btn btn-primary input-tags" title="search"><i class="fa fa-search"></i></button>
-          </div>
-        </form>
-      </div>
-      <div class="panel-body vm-list-group-control">
-        <p>
-        <strong>{% trans "Group actions" %}</strong>
-        <button id="vm-list-group-select-all" class="btn btn-info btn-xs">{% trans "Select all" %}</button>
-        <a class="btn btn-default btn-xs" id="vm-list-group-migrate" disabled><i class="fa fa-truck"></i> {% trans "Migrate" %}</a>
-        <a disabled href="#" class="btn btn-default btn-xs"><i class="fa fa-refresh"></i> {% trans "Reboot" %}</a>
-        <a disabled href="#" class="btn btn-default btn-xs"><i class="fa fa-off"></i> {% trans "Shutdown" %}</a>
-        <a id="vm-list-group-delete" disabled href="#" class="btn btn-danger btn-xs"><i class="fa fa-times"></i> {% trans "Destroy" %}</a>
-        </p>
-      </div>
       <div class="panel-body">
-        <table class="table table-bordered table-striped table-hover vm-list-table">
+        <div class="row">
+          <div class="col-md-8 vm-list-group-control" id="vm-mass-ops">
+            <strong>{% trans "Group actions" %}</strong>
+            <button id="vm-list-group-select-all" class="btn btn-info btn-xs">{% trans "Select all" %}</button>
+            {% for o in ops %}
+              <a href="{{ o.get_url }}" class="btn btn-xs btn-{{ o.effect }} mass-operation"
+               title="{{ o.name|capfirst }}" disabled>
+                <i class="fa fa-{{ o.icon }}"></i>
+              </a>
+            {% endfor %}
+          </div><!-- .vm-list-group-control -->
+          <div class="col-md-4" id="vm-list-search">
+            <form action="" method="GET">
+              <div class="input-group">
+                {{ search_form.s }}
+                <div class="input-group-btn">
+                  {{ search_form.stype }}
+                </div>
+                <label class="input-group-addon input-tags" title="{% trans "Include deleted VMs" %}"
+                  id="vm-list-search-checkbox-span" data-container="body">
+                  {{ search_form.include_deleted }}
+                </label>
+                <div class="input-group-btn">
+                  <button type="submit" class="btn btn-primary input-tags">
+                    <i class="fa fa-search"></i>
+                  </button>
+                </div>
+              </div><!-- .input-group -->
+            </form>
+          </div><!-- .col-md-4 #vm-list-search -->
+        </div><!-- .row -->
+      </div><!-- .panel-body -->
+      <div class="panel-body">
+        <table class="table table-bordered table-striped table-hover vm-list-table"
+         id="vm-list-table">
           <thead><tr>
               <th data-sort="int" class="orderable pk sortable vm-list-table-thin" style="min-width: 50px;">
                 {% trans "ID" as t %}
@@ -52,26 +68,56 @@
                 {% trans "Owner" as t %}
                 {% include "dashboard/vm-list/header-link.html" with name=t sort="owner" %}
               </th>
-              {% if user.is_superuser %}<th data-sort="string" class="orderable sortable">
-                {% trans "Node" as t %}
-                {% include "dashboard/vm-list/header-link.html" with name=t sort="node" %}
-              </th>{% endif %}
+              <th data-sort="string" class="orderable sortable">
+                {% trans "Lease" as t %}
+                {% include "dashboard/vm-list/header-link.html" with name=t sort="lease" %}
+              </th>
+              {% if user.is_superuser %}
+                <th data-sort="string" class="orderable sortable">
+                  {% trans "IP address" as t %}
+                  {% include "dashboard/vm-list/header-link.html" with name=t sort="ip_addr" %}
+                </th>
+                <th data-sort="string" class="orderable sortable">
+                  {% trans "Node" as t %}
+                  {% include "dashboard/vm-list/header-link.html" with name=t sort="node" %}
+                </th>
+              {% endif %}
           </tr></thead><tbody>
           {% for i in object_list %}
           <tr class="{% cycle 'odd' 'even' %}" data-vm-pk="{{ i.pk }}">
             <td class="pk"><div id="vm-{{i.pk}}">{{i.pk}}</div> </td>
             <td class="name"><a class="real-link" href="{% url "dashboard.views.detail" i.pk %}">{{ i.name }}</a>  </td>
-            <td class="state">{{ i.get_status_display }}</td>
+            <td class="state">
+              <i class="fa fa-fw
+                {% if show_acts_in_progress and i.is_in_status_change %}
+                  fa-spin fa-spinner
+                {% else %}
+                {{ i.get_status_icon }}{% endif %}"></i>
+              <span>{{ i.get_status_display }}</span>
+            </td>
             <td>
-              {% include "dashboard/_display-name.html" with user=i.owner show_org=True %}
+              {% if i.owner.profile %}
+                {{ i.owner.profile.get_display_name }}
+              {% else %}
+                {{ i.owner.username }}
+              {% endif %}
+              {# include "dashboard/_display-name.html" with user=i.owner show_org=True #}
+            </td>
+            <td class="lease "data-sort-value="{{ i.lease.name }}">
+              {{ i.lease.name }}
             </td>
             {% if user.is_superuser %}
-            <td data-sort-value="{{ i.node.normalized_name }}">{{ i.node.name|default:"-" }}</td>
+            <td class="ip_addr "data-sort-value="{{ i.ipv4 }}">
+              {{ i.ipv4|default:"-" }}
+            </td>
+            <td class="node "data-sort-value="{{ i.node.normalized_name }}">
+              {{ i.node.name|default:"-" }}
+            </td>
             {% endif %}
           </tr>
           {% empty %}
           <tr>
-            <td colspan="5">
+            <td colspan="7">
               {% if request.GET.s %}
                 <strong>{% trans "No result." %}</strong>
               {% else %}
@@ -87,6 +133,9 @@
 </div>
 </div>
 
+<div class="alert alert-info">
+  You can filter the list by certain attributes (owner, name, status, tags) in the following way: "owner:John Doe name:my little server". If you don't specify any attribute names the filtering will be done by name.
+</div>
 
 <div class="alert alert-info">
   {% trans "You can select multiple vm instances while holding down the <strong>CTRL</strong> key." %}
@@ -97,6 +146,5 @@
 
 {% block extra_js %}
   <script src="{{ STATIC_URL}}dashboard/vm-list.js"></script>
-  <script src="{{ STATIC_URL}}dashboard/vm-common.js"></script>
   <script src="{{ STATIC_URL}}dashboard/js/stupidtable.min.js"></script>
 {% endblock %}

@@ -1,0 +1,1425 @@
+# Copyright 2014 Budapest University of Technology and Economics (BME IK)
+#
+# This file is part of CIRCLE Cloud.
+#
+# CIRCLE is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your option)
+# any later version.
+#
+# CIRCLE is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along
+# with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
+from __future__ import unicode_literals, absolute_import
+
+import json
+import logging
+from collections import OrderedDict
+from os import getenv
+
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth.models import User
+from django.core import signing
+from django.core.exceptions import PermissionDenied, SuspiciousOperation
+from django.core.urlresolvers import reverse, reverse_lazy
+from django.http import HttpResponse, Http404, HttpResponseRedirect
+from django.shortcuts import redirect, get_object_or_404, render
+from django.template import RequestContext
+from django.template.loader import render_to_string
+from django.utils.translation import (
+    ugettext as _, ugettext_noop, ungettext_lazy,
+)
+from django.views.decorators.http import require_GET
+from django.views.generic import (
+    UpdateView, ListView, TemplateView, DeleteView, DetailView, View,
+)
+
+from braces.views import SuperuserRequiredMixin, LoginRequiredMixin
+
+from common.models import (
+    create_readable, HumanReadableException, fetch_human_exception,
+)
+from firewall.models import Vlan, Host, Rule
+from storage.models import Disk
+from vm.models import (
+    Instance, instance_activity, InstanceActivity, Node, Lease,
+    InstanceTemplate, InterfaceTemplate, Interface,
+)
+from .util import (
+    CheckedDetailView, AjaxOperationMixin, OperationView, AclUpdateView,
+    FormOperationMixin, FilterMixin, search_user, GraphMixin,
+)
+from ..forms import (
+    AclUserOrGroupAddForm, VmResourcesForm, TraitsForm, RawDataForm,
+    VmAddInterfaceForm, VmCreateDiskForm, VmDownloadDiskForm, VmSaveForm,
+    VmRenewForm, VmStateChangeForm, VmListSearchForm, VmCustomizeForm,
+    TransferOwnershipForm, VmDiskResizeForm,
+)
+from ..models import Favourite, Profile
+
+logger = logging.getLogger(__name__)
+
+
+class VmDetailVncTokenView(CheckedDetailView):
+    template_name = "dashboard/vm-detail.html"
+    model = Instance
+
+    def get(self, request, **kwargs):
+        self.object = self.get_object()
+        if not self.object.has_level(request.user, 'operator'):
+            raise PermissionDenied()
+        if not request.user.has_perm('vm.access_console'):
+            raise PermissionDenied()
+        if self.object.node:
+            with instance_activity(
+                    code_suffix='console-accessed', instance=self.object,
+                    user=request.user, readable_name=ugettext_noop(
+                        "console access"), concurrency_check=False):
+                port = self.object.vnc_port
+                host = str(self.object.node.host.ipv4)
+                value = signing.dumps({'host': host, 'port': port},
+                                      key=getenv("PROXY_SECRET", 'asdasd')),
+                return HttpResponse('vnc/?d=%s' % value)
+        else:
+            raise Http404()
+
+
+class VmDetailView(GraphMixin, CheckedDetailView):
+    template_name = "dashboard/vm-detail.html"
+    model = Instance
+
+    def get_context_data(self, **kwargs):
+        context = super(VmDetailView, self).get_context_data(**kwargs)
+        instance = context['instance']
+        user = self.request.user
+        ops = get_operations(instance, user)
+        context.update({
+            'graphite_enabled': settings.GRAPHITE_URL is not None,
+            'vnc_url': reverse_lazy("dashboard.views.detail-vnc",
+                                    kwargs={'pk': self.object.pk}),
+            'ops': ops,
+            'op': {i.op: i for i in ops},
+            'connect_commands': user.profile.get_connect_commands(instance)
+        })
+
+        # activity data
+        activities = instance.get_merged_activities(user)
+        show_show_all = len(activities) > 10
+        activities = activities[:10]
+        context['activities'] = _format_activities(activities)
+        context['show_show_all'] = show_show_all
+        latest = instance.get_latest_activity_in_progress()
+        context['is_new_state'] = (latest and
+                                   latest.resultant_state is not None and
+                                   instance.status != latest.resultant_state)
+
+        context['vlans'] = Vlan.get_objects_with_level(
+            'user', self.request.user
+        ).exclude(  # exclude already added interfaces
+            pk__in=Interface.objects.filter(
+                instance=self.get_object()).values_list("vlan", flat=True)
+        ).all()
+        context['acl'] = AclUpdateView.get_acl_data(
+            instance, self.request.user, 'dashboard.views.vm-acl')
+        context['aclform'] = AclUserOrGroupAddForm()
+        context['os_type_icon'] = instance.os_type.replace("unknown",
+                                                           "question")
+        # ipv6 infos
+        context['ipv6_host'] = instance.get_connect_host(use_ipv6=True)
+        context['ipv6_port'] = instance.get_connect_port(use_ipv6=True)
+
+        # resources forms
+        can_edit = (
+            instance.has_level(user, "owner")
+            and self.request.user.has_perm("vm.change_resources"))
+        context['resources_form'] = VmResourcesForm(
+            can_edit=can_edit, instance=instance)
+
+        if self.request.user.is_superuser:
+            context['traits_form'] = TraitsForm(instance=instance)
+            context['raw_data_form'] = RawDataForm(instance=instance)
+
+        # resources change perm
+        context['can_change_resources'] = self.request.user.has_perm(
+            "vm.change_resources")
+
+        # client info
+        context['client_download'] = self.request.COOKIES.get(
+            'downloaded_client')
+        # can link template
+        context['can_link_template'] = (
+            instance.template and instance.template.has_level(user, "operator")
+        )
+
+        return context
+
+    def post(self, request, *args, **kwargs):
+        options = {
+            'new_name': self.__set_name,
+            'new_description': self.__set_description,
+            'new_tag': self.__add_tag,
+            'to_remove': self.__remove_tag,
+            'port': self.__add_port,
+            'abort_operation': self.__abort_operation,
+        }
+        for k, v in options.iteritems():
+            if request.POST.get(k) is not None:
+                return v(request)
+        raise Http404()
+
+    def __set_name(self, request):
+        self.object = self.get_object()
+        if not self.object.has_level(request.user, 'owner'):
+            raise PermissionDenied()
+        new_name = request.POST.get("new_name")
+        Instance.objects.filter(pk=self.object.pk).update(
+            **{'name': new_name})
+
+        success_message = _("VM successfully renamed.")
+        if request.is_ajax():
+            response = {
+                'message': success_message,
+                'new_name': new_name,
+                'vm_pk': self.object.pk
+            }
+            return HttpResponse(
+                json.dumps(response),
+                content_type="application/json"
+            )
+        else:
+            messages.success(request, success_message)
+            return redirect(self.object.get_absolute_url())
+
+    def __set_description(self, request):
+        self.object = self.get_object()
+        if not self.object.has_level(request.user, 'owner'):
+            raise PermissionDenied()
+
+        new_description = request.POST.get("new_description")
+        Instance.objects.filter(pk=self.object.pk).update(
+            **{'description': new_description})
+
+        success_message = _("VM description successfully updated.")
+        if request.is_ajax():
+            response = {
+                'message': success_message,
+                'new_description': new_description,
+            }
+            return HttpResponse(
+                json.dumps(response),
+                content_type="application/json"
+            )
+        else:
+            messages.success(request, success_message)
+            return redirect(self.object.get_absolute_url())
+
+    def __add_tag(self, request):
+        new_tag = request.POST.get('new_tag')
+        self.object = self.get_object()
+        if not self.object.has_level(request.user, 'owner'):
+            raise PermissionDenied()
+
+        if len(new_tag) < 1:
+            message = u"Please input something."
+        elif len(new_tag) > 20:
+            message = u"Tag name is too long."
+        else:
+            self.object.tags.add(new_tag)
+
+        try:
+            messages.error(request, message)
+        except:
+            pass
+
+        return redirect(reverse_lazy("dashboard.views.detail",
+                                     kwargs={'pk': self.object.pk}))
+
+    def __remove_tag(self, request):
+        try:
+            to_remove = request.POST.get('to_remove')
+            self.object = self.get_object()
+            if not self.object.has_level(request.user, 'owner'):
+                raise PermissionDenied()
+
+            self.object.tags.remove(to_remove)
+            message = u"Success"
+        except:  # note this won't really happen
+            message = u"Not success"
+
+        if request.is_ajax():
+            return HttpResponse(
+                json.dumps({'message': message}),
+                content_type="application=json"
+            )
+        else:
+            return redirect(reverse_lazy("dashboard.views.detail",
+                            kwargs={'pk': self.object.pk}))
+
+    def __add_port(self, request):
+        object = self.get_object()
+        if (not object.has_level(request.user, 'owner') or
+                not request.user.has_perm('vm.config_ports')):
+            raise PermissionDenied()
+
+        port = request.POST.get("port")
+        proto = request.POST.get("proto")
+
+        try:
+            error = None
+            interfaces = object.interface_set.all()
+            host = Host.objects.get(pk=request.POST.get("host_pk"),
+                                    interface__in=interfaces)
+            host.add_port(proto, private=port)
+        except Host.DoesNotExist:
+            logger.error('Tried to add port to nonexistent host %d. User: %s. '
+                         'Instance: %s', request.POST.get("host_pk"),
+                         unicode(request.user), object)
+            raise PermissionDenied()
+        except ValueError:
+            error = _("There is a problem with your input.")
+        except Exception as e:
+            error = _("Unknown error.")
+            logger.error(e)
+
+        if request.is_ajax():
+            pass
+        else:
+            if error:
+                messages.error(request, error)
+            return redirect(reverse_lazy("dashboard.views.detail",
+                                         kwargs={'pk': self.get_object().pk}))
+
+    def __abort_operation(self, request):
+        self.object = self.get_object()
+
+        activity = get_object_or_404(InstanceActivity,
+                                     pk=request.POST.get("activity"))
+        if not activity.is_abortable_for(request.user):
+            raise PermissionDenied()
+        activity.abort()
+        return HttpResponseRedirect("%s#activity" %
+                                    self.object.get_absolute_url())
+
+
+class VmTraitsUpdate(SuperuserRequiredMixin, UpdateView):
+    form_class = TraitsForm
+    model = Instance
+
+    def get_success_url(self):
+        return self.get_object().get_absolute_url() + "#resources"
+
+
+class VmRawDataUpdate(SuperuserRequiredMixin, UpdateView):
+    form_class = RawDataForm
+    model = Instance
+    template_name = 'dashboard/vm-detail/raw_data.html'
+
+    def get_success_url(self):
+        return self.get_object().get_absolute_url() + "#resources"
+
+
+class VmOperationView(AjaxOperationMixin, OperationView):
+
+    model = Instance
+    context_object_name = 'instance'  # much simpler to mock object
+
+
+def get_operations(instance, user):
+    ops = []
+    for k, v in vm_ops.iteritems():
+        try:
+            op = v.get_op_by_object(instance)
+            op.check_auth(user)
+            op.check_precond()
+        except PermissionDenied as e:
+            logger.debug('Not showing operation %s for %s: %s',
+                         k, instance, unicode(e))
+        except Exception:
+            ops.append(v.bind_to_object(instance, disabled=True))
+        else:
+            ops.append(v.bind_to_object(instance))
+    return ops
+
+
+class VmAddInterfaceView(FormOperationMixin, VmOperationView):
+
+    op = 'add_interface'
+    form_class = VmAddInterfaceForm
+    show_in_toolbar = False
+    icon = 'globe'
+    effect = 'success'
+    with_reload = True
+
+    def get_form_kwargs(self):
+        inst = self.get_op().instance
+        choices = Vlan.get_objects_with_level(
+            "user", self.request.user).exclude(
+            vm_interface__instance__in=[inst])
+        val = super(VmAddInterfaceView, self).get_form_kwargs()
+        val.update({'choices': choices})
+        return val
+
+
+class VmDiskResizeView(FormOperationMixin, VmOperationView):
+
+    op = 'resize_disk'
+    form_class = VmDiskResizeForm
+    show_in_toolbar = False
+    icon = 'arrows-alt'
+    effect = "success"
+
+    def get_form_kwargs(self):
+        choices = self.get_op().instance.disks
+        disk_pk = self.request.GET.get('disk')
+        if disk_pk:
+            try:
+                default = choices.get(pk=disk_pk)
+            except (ValueError, Disk.DoesNotExist):
+                raise Http404()
+        else:
+            default = None
+
+        val = super(VmDiskResizeView, self).get_form_kwargs()
+        val.update({'choices': choices, 'default': default})
+        return val
+
+
+class VmCreateDiskView(FormOperationMixin, VmOperationView):
+
+    op = 'create_disk'
+    form_class = VmCreateDiskForm
+    show_in_toolbar = False
+    icon = 'hdd-o'
+    effect = "success"
+    is_disk_operation = True
+
+
+class VmDownloadDiskView(FormOperationMixin, VmOperationView):
+
+    op = 'download_disk'
+    form_class = VmDownloadDiskForm
+    show_in_toolbar = False
+    icon = 'download'
+    effect = "success"
+    is_disk_operation = True
+
+
+class VmMigrateView(VmOperationView):
+
+    op = 'migrate'
+    icon = 'truck'
+    effect = 'info'
+    template_name = 'dashboard/_vm-migrate.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super(VmMigrateView, self).get_context_data(**kwargs)
+        ctx['nodes'] = [n for n in Node.objects.filter(enabled=True)
+                        if n.online]
+        return ctx
+
+    def post(self, request, extra=None, *args, **kwargs):
+        if extra is None:
+            extra = {}
+        node = self.request.POST.get("node")
+        if node:
+            node = get_object_or_404(Node, pk=node)
+            extra["to_node"] = node
+        return super(VmMigrateView, self).post(request, extra, *args, **kwargs)
+
+
+class VmSaveView(FormOperationMixin, VmOperationView):
+
+    op = 'save_as_template'
+    icon = 'save'
+    effect = 'info'
+    form_class = VmSaveForm
+
+
+class VmResourcesChangeView(VmOperationView):
+    op = 'resources_change'
+    icon = "save"
+    show_in_toolbar = False
+    wait_for_result = 0.5
+
+    def post(self, request, extra=None, *args, **kwargs):
+        if extra is None:
+            extra = {}
+
+        instance = get_object_or_404(Instance, pk=kwargs['pk'])
+
+        form = VmResourcesForm(request.POST, instance=instance)
+        if not form.is_valid():
+            for f in form.errors:
+                messages.error(request, "<strong>%s</strong>: %s" % (
+                    f, form.errors[f].as_text()
+                ))
+            if request.is_ajax():  # this is not too nice
+                store = messages.get_messages(request)
+                store.used = True
+                return HttpResponse(
+                    json.dumps({'success': False,
+                                'messages': [unicode(m) for m in store]}),
+                    content_type="application=json"
+                )
+            else:
+                return HttpResponseRedirect(instance.get_absolute_url()
+                                            + "#resources")
+        else:
+            extra = form.cleaned_data
+            extra['max_ram_size'] = extra['ram_size']
+            return super(VmResourcesChangeView, self).post(request, extra,
+                                                           *args, **kwargs)
+
+
+class TokenOperationView(OperationView):
+    """Abstract operation view with token support.
+
+    User can do the action with a valid token instead of logging in.
+    """
+    token_max_age = 3 * 24 * 3600
+    redirect_exception_classes = (PermissionDenied, SuspiciousOperation, )
+
+    @classmethod
+    def get_salt(cls):
+        return unicode(cls)
+
+    @classmethod
+    def get_token(cls, instance, user):
+        t = tuple([getattr(i, 'pk', i) for i in [instance, user]])
+        return signing.dumps(t, salt=cls.get_salt(), compress=True)
+
+    @classmethod
+    def get_token_url(cls, instance, user):
+        key = cls.get_token(instance, user)
+        return cls.get_instance_url(instance.pk, key)
+
+    def check_auth(self):
+        if 'k' in self.request.GET:
+            try:  # check if token is needed at all
+                return super(TokenOperationView, self).check_auth()
+            except Exception:
+                op = self.get_op()
+                pk = op.instance.pk
+                key = self.request.GET.get('k')
+
+                logger.debug("checking token supplied to %s",
+                             self.request.get_full_path())
+                try:
+                    user = self.validate_key(pk, key)
+                except signing.SignatureExpired:
+                    messages.error(self.request, _('The token has expired.'))
+                else:
+                    logger.info("Request user changed to %s at %s",
+                                user, self.request.get_full_path())
+                    self.request.user = user
+                    self.request.token_user = True
+        else:
+            logger.debug("no token supplied to %s",
+                         self.request.get_full_path())
+
+        return super(TokenOperationView, self).check_auth()
+
+    def validate_key(self, pk, key):
+        """Get object based on signed token.
+        """
+        try:
+            data = signing.loads(key, salt=self.get_salt())
+            logger.debug('Token data: %s', unicode(data))
+            instance, user = data
+            logger.debug('Extracted token data: instance: %s, user: %s',
+                         unicode(instance), unicode(user))
+        except (signing.BadSignature, ValueError, TypeError) as e:
+            logger.warning('Tried invalid token. Token: %s, user: %s. %s',
+                           key, unicode(self.request.user), unicode(e))
+            raise SuspiciousOperation()
+
+        try:
+            instance, user = signing.loads(key, max_age=self.token_max_age,
+                                           salt=self.get_salt())
+            logger.debug('Extracted non-expired token data: %s, %s',
+                         unicode(instance), unicode(user))
+        except signing.BadSignature as e:
+            raise signing.SignatureExpired()
+
+        if pk != instance:
+            logger.debug('pk (%d) != instance (%d)', pk, instance)
+            raise SuspiciousOperation()
+        user = User.objects.get(pk=user)
+        return user
+
+
+class VmRenewView(FormOperationMixin, TokenOperationView, VmOperationView):
+
+    op = 'renew'
+    icon = 'calendar'
+    effect = 'info'
+    show_in_toolbar = False
+    form_class = VmRenewForm
+    wait_for_result = 0.5
+
+    def get_form_kwargs(self):
+        choices = Lease.get_objects_with_level("user", self.request.user)
+        default = self.get_op().instance.lease
+        if default and default not in choices:
+            choices = (choices.distinct() |
+                       Lease.objects.filter(pk=default.pk).distinct())
+
+        val = super(VmRenewView, self).get_form_kwargs()
+        val.update({'choices': choices, 'default': default})
+        return val
+
+    def get_response_data(self, result, done, extra=None, **kwargs):
+        extra = super(VmRenewView, self).get_response_data(result, done,
+                                                           extra, **kwargs)
+        extra["new_suspend_time"] = unicode(self.get_op().
+                                            instance.time_of_suspend)
+        return extra
+
+
+class VmStateChangeView(FormOperationMixin, VmOperationView):
+    op = 'emergency_change_state'
+    icon = 'legal'
+    effect = 'danger'
+    show_in_toolbar = True
+    form_class = VmStateChangeForm
+    wait_for_result = 0.5
+
+    def get_form_kwargs(self):
+        inst = self.get_op().instance
+        active_activities = InstanceActivity.objects.filter(
+            finished__isnull=True, instance=inst)
+        show_interrupt = active_activities.exists()
+        val = super(VmStateChangeView, self).get_form_kwargs()
+        val.update({'show_interrupt': show_interrupt, 'status': inst.status})
+        return val
+
+
+vm_ops = OrderedDict([
+    ('deploy', VmOperationView.factory(
+        op='deploy', icon='play', effect='success')),
+    ('wake_up', VmOperationView.factory(
+        op='wake_up', icon='sun-o', effect='success')),
+    ('sleep', VmOperationView.factory(
+        extra_bases=[TokenOperationView],
+        op='sleep', icon='moon-o', effect='info')),
+    ('migrate', VmMigrateView),
+    ('save_as_template', VmSaveView),
+    ('reboot', VmOperationView.factory(
+        op='reboot', icon='refresh', effect='warning')),
+    ('reset', VmOperationView.factory(
+        op='reset', icon='bolt', effect='warning')),
+    ('shutdown', VmOperationView.factory(
+        op='shutdown', icon='power-off', effect='warning')),
+    ('shut_off', VmOperationView.factory(
+        op='shut_off', icon='ban', effect='warning')),
+    ('recover', VmOperationView.factory(
+        op='recover', icon='medkit', effect='warning')),
+    ('nostate', VmStateChangeView),
+    ('destroy', VmOperationView.factory(
+        extra_bases=[TokenOperationView],
+        op='destroy', icon='times', effect='danger')),
+    ('create_disk', VmCreateDiskView),
+    ('download_disk', VmDownloadDiskView),
+    ('resize_disk', VmDiskResizeView),
+    ('add_interface', VmAddInterfaceView),
+    ('renew', VmRenewView),
+    ('resources_change', VmResourcesChangeView),
+    ('password_reset', VmOperationView.factory(
+        op='password_reset', icon='unlock', effect='warning',
+        show_in_toolbar=False, wait_for_result=0.5, with_reload=True)),
+    ('mount_store', VmOperationView.factory(
+        op='mount_store', icon='briefcase', effect='info',
+        show_in_toolbar=False,
+    )),
+])
+
+
+def _get_activity_icon(act):
+    op = act.get_operation()
+    if op and op.id in vm_ops:
+        return vm_ops[op.id].icon
+    else:
+        return "cog"
+
+
+def _format_activities(acts):
+    for i in acts:
+        i.icon = _get_activity_icon(i)
+    return acts
+
+
+class MassOperationView(OperationView):
+    template_name = 'dashboard/mass-operate.html'
+
+    def check_auth(self):
+        self.get_op().check_perms(self.request.user)
+        for i in self.get_object():
+            if not i.has_level(self.request.user, "user"):
+                raise PermissionDenied(
+                    "You have no user access to instance %d" % i.pk)
+
+    @classmethod
+    def get_urlname(cls):
+        return 'dashboard.vm.mass-op.%s' % cls.op
+
+    @classmethod
+    def get_url(cls):
+        return reverse("dashboard.vm.mass-op.%s" % cls.op)
+
+    def get_op(self, instance=None):
+        if instance:
+            return getattr(instance, self.op)
+        else:
+            return Instance._ops[self.op]
+
+    def get_context_data(self, **kwargs):
+        ctx = super(MassOperationView, self).get_context_data(**kwargs)
+        instances = self.get_object()
+        ctx['instances'] = self._get_operable_instances(
+            instances, self.request.user)
+        ctx['vm_count'] = sum(1 for i in ctx['instances'] if not i.disabled)
+        return ctx
+
+    def _call_operations(self, extra):
+        request = self.request
+        user = request.user
+        instances = self.get_object()
+        for i in instances:
+            try:
+                self.get_op(i).async(user=user, **extra)
+            except HumanReadableException as e:
+                e.send_message(request)
+            except Exception as e:
+                # pre-existing errors should have been catched when the
+                # confirmation dialog was constructed
+                messages.error(request, _(
+                    "Failed to execute %(op)s operation on "
+                    "instance %(instance)s.") % {"op": self.name,
+                                                 "instance": i})
+
+    def get_object(self):
+        vms = getattr(self.request, self.request.method).getlist("vm")
+        return Instance.objects.filter(pk__in=vms)
+
+    def _get_operable_instances(self, instances, user):
+        for i in instances:
+            try:
+                op = self.get_op(i)
+                op.check_auth(user)
+                op.check_precond()
+            except PermissionDenied as e:
+                i.disabled = create_readable(
+                    _("You are not permitted to execute %(op)s on instance "
+                      "%(instance)s."), instance=i.pk, op=self.name)
+                i.disabled_icon = "lock"
+            except Exception as e:
+                i.disabled = fetch_human_exception(e)
+            else:
+                i.disabled = None
+        return instances
+
+    def post(self, request, extra=None, *args, **kwargs):
+        self.check_auth()
+        if extra is None:
+            extra = {}
+        self._call_operations(extra)
+        if request.is_ajax():
+            store = messages.get_messages(request)
+            store.used = True
+            return HttpResponse(
+                json.dumps({'messages': [unicode(m) for m in store]}),
+                content_type="application/json"
+            )
+        else:
+            return redirect(reverse("dashboard.views.vm-list"))
+
+    @classmethod
+    def factory(cls, vm_op, extra_bases=(), **kwargs):
+        return type(str(cls.__name__ + vm_op.op),
+                    tuple(list(extra_bases) + [cls, vm_op]), kwargs)
+
+
+class MassMigrationView(MassOperationView, VmMigrateView):
+    template_name = 'dashboard/_vm-mass-migrate.html'
+
+
+vm_mass_ops = OrderedDict([
+    ('deploy', MassOperationView.factory(vm_ops['deploy'])),
+    ('wake_up', MassOperationView.factory(vm_ops['wake_up'])),
+    ('sleep', MassOperationView.factory(vm_ops['sleep'])),
+    ('reboot', MassOperationView.factory(vm_ops['reboot'])),
+    ('reset', MassOperationView.factory(vm_ops['reset'])),
+    ('shut_off', MassOperationView.factory(vm_ops['shut_off'])),
+    ('migrate', MassMigrationView),
+    ('destroy', MassOperationView.factory(vm_ops['destroy'])),
+])
+
+
+class VmList(LoginRequiredMixin, FilterMixin, ListView):
+    template_name = "dashboard/vm-list.html"
+    allowed_filters = {
+        'name': "name__icontains",
+        'node': "node__name__icontains",
+        'status': "status__iexact",
+        'tags[]': "tags__name__in",
+        'tags': "tags__name__in",  # for search string
+        'owner': "owner__username",
+        'template': "template__pk",
+    }
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(VmList, self).get_context_data(*args, **kwargs)
+        context['ops'] = []
+        for k, v in vm_mass_ops.iteritems():
+            try:
+                v.check_perms(user=self.request.user)
+            except PermissionDenied:
+                pass
+            else:
+                context['ops'].append(v)
+        context['search_form'] = self.search_form
+        context['show_acts_in_progress'] = self.object_list.count() < 100
+        return context
+
+    def get(self, *args, **kwargs):
+        if self.request.is_ajax():
+            return self._create_ajax_request()
+        else:
+            self.search_form = VmListSearchForm(self.request.GET)
+            self.search_form.full_clean()
+            return super(VmList, self).get(*args, **kwargs)
+
+    def _create_ajax_request(self):
+        if self.request.GET.get("compact") is not None:
+            instances = Instance.get_objects_with_level(
+                "user", self.request.user).filter(destroyed_at=None)
+            statuses = {}
+            for i in instances:
+                statuses[i.pk] = {
+                    'status': i.get_status_display(),
+                    'icon': i.get_status_icon(),
+                    'in_status_change': i.is_in_status_change(),
+                }
+                if self.request.user.is_superuser:
+                    statuses[i.pk]['node'] = i.node.name if i.node else "-"
+            return HttpResponse(json.dumps(statuses),
+                                content_type="application/json")
+        else:
+            favs = Instance.objects.filter(
+                favourite__user=self.request.user).values_list('pk', flat=True)
+            instances = Instance.get_objects_with_level(
+                'user', self.request.user).filter(
+                destroyed_at=None).all()
+            instances = [{
+                'pk': i.pk,
+                'name': i.name,
+                'icon': i.get_status_icon(),
+                'host': i.short_hostname,
+                'status': i.get_status_display(),
+                'owner': (i.owner.profile.get_display_name()
+                          if i.owner != self.request.user else None),
+                'fav': i.pk in favs,
+            } for i in instances]
+            return HttpResponse(
+                json.dumps(list(instances)),  # instances is ValuesQuerySet
+                content_type="application/json",
+            )
+
+    def create_acl_queryset(self, model):
+        queryset = super(VmList, self).create_acl_queryset(model)
+        if not self.search_form.cleaned_data.get("include_deleted"):
+            queryset = queryset.filter(destroyed_at=None)
+        return queryset
+
+    def get_queryset(self):
+        logger.debug('VmList.get_queryset() called. User: %s',
+                     unicode(self.request.user))
+        queryset = self.create_acl_queryset(Instance)
+
+        self.create_fake_get()
+        sort = self.request.GET.get("sort")
+        # remove "-" that means descending order
+        # also check if the column name is valid
+        if (sort and
+            (sort[1:] if sort[0] == "-" else sort)
+                in [i.name for i in Instance._meta.fields] + ["pk"]):
+            queryset = queryset.order_by(sort)
+
+        return queryset.filter(
+            **self.get_queryset_filters()).prefetch_related(
+                "owner", "node", "owner__profile", "interface_set", "lease",
+                "interface_set__host").distinct()
+
+
+class VmCreate(LoginRequiredMixin, TemplateView):
+
+    form_class = VmCustomizeForm
+    form = None
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/modal-wrapper.html']
+        else:
+            return ['dashboard/nojs-wrapper.html']
+
+    def get(self, request, form=None, *args, **kwargs):
+        if not request.user.has_perm('vm.create_vm'):
+            raise PermissionDenied()
+
+        if form is None:
+            template_pk = request.GET.get("template")
+        else:
+            template_pk = form.template.pk
+
+        if template_pk:
+            template = get_object_or_404(InstanceTemplate, pk=template_pk)
+            if not template.has_level(request.user, 'user'):
+                raise PermissionDenied()
+            if form is None:
+                form = self.form_class(user=request.user, template=template)
+        else:
+            templates = InstanceTemplate.get_objects_with_level(
+                'user', request.user, disregard_superuser=True)
+
+        context = self.get_context_data(**kwargs)
+        if template_pk:
+            context.update({
+                'template': 'dashboard/_vm-create-2.html',
+                'box_title': _('Customize VM'),
+                'ajax_title': True,
+                'vm_create_form': form,
+                'template_o': template,
+            })
+        else:
+            context.update({
+                'template': 'dashboard/_vm-create-1.html',
+                'box_title': _('Create a VM'),
+                'ajax_title': True,
+                'templates': templates.all(),
+            })
+        return self.render_to_response(context)
+
+    def __create_normal(self, request, *args, **kwargs):
+        user = request.user
+        template = InstanceTemplate.objects.get(
+            pk=request.POST.get("template"))
+
+        # permission check
+        if not template.has_level(request.user, 'user'):
+            raise PermissionDenied()
+
+        args = {"template": template, "owner": user}
+        instances = [Instance.create_from_template(**args)]
+        return self.__deploy(request, instances)
+
+    def __create_customized(self, request, *args, **kwargs):
+        user = request.user
+        # no form yet, using POST directly:
+        template = get_object_or_404(InstanceTemplate,
+                                     pk=request.POST.get("template"))
+        form = self.form_class(
+            request.POST, user=request.user, template=template)
+        if not form.is_valid():
+            return self.get(request, form, *args, **kwargs)
+        post = form.cleaned_data
+
+        if not template.has_level(user, 'user'):
+            raise PermissionDenied()
+
+        ikwargs = {
+            'name': post['name'],
+            'template': template,
+            'owner': user,
+        }
+        amount = post.get("amount", 1)
+        if request.user.has_perm('vm.set_resources'):
+            networks = [InterfaceTemplate(vlan=l, managed=l.managed)
+                        for l in post['networks']]
+
+            ikwargs.update({
+                'num_cores': post['cpu_count'],
+                'ram_size': post['ram_size'],
+                'priority': post['cpu_priority'],
+                'max_ram_size': post['ram_size'],
+                'networks': networks,
+                'disks': list(template.disks.all()),
+            })
+
+        else:
+            pass
+
+        instances = Instance.mass_create_from_template(amount=amount,
+                                                       **ikwargs)
+        return self.__deploy(request, instances)
+
+    def __deploy(self, request, instances, *args, **kwargs):
+        for i in instances:
+            i.deploy.async(user=request.user)
+
+        if len(instances) > 1:
+            messages.success(request, ungettext_lazy(
+                "Successfully created %(count)d VM.",  # this should not happen
+                "Successfully created %(count)d VMs.", len(instances)) % {
+                'count': len(instances)})
+            path = "%s?stype=owned" % reverse("dashboard.views.vm-list")
+        else:
+            messages.success(request, _("VM successfully created."))
+            path = instances[0].get_absolute_url()
+
+        if request.is_ajax():
+            return HttpResponse(json.dumps({'redirect': path}),
+                                content_type="application/json")
+        else:
+            return HttpResponseRedirect("%s#activity" % path)
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+
+        if not request.user.has_perm('vm.create_vm'):
+            raise PermissionDenied()
+
+        # limit chekcs
+        try:
+            limit = user.profile.instance_limit
+        except Exception as e:
+            logger.debug('No profile or instance limit: %s', e)
+        else:
+            try:
+                amount = int(request.POST.get("amount", 1))
+            except:
+                amount = limit  # TODO this should definitely use a Form
+            current = Instance.active.filter(owner=user).count()
+            logger.debug('current use: %d, limit: %d', current, limit)
+            if current + amount > limit:
+                messages.error(request,
+                               _('Instance limit (%d) exceeded.') % limit)
+                if request.is_ajax():
+                    return HttpResponse(json.dumps({'redirect': '/'}),
+                                        content_type="application/json")
+                else:
+                    return redirect('/')
+
+        create_func = (self.__create_normal if
+                       request.POST.get("customized") is None else
+                       self.__create_customized)
+
+        return create_func(request, *args, **kwargs)
+
+
+@require_GET
+def get_vm_screenshot(request, pk):
+    instance = get_object_or_404(Instance, pk=pk)
+    try:
+        image = instance.screenshot(user=request.user).getvalue()
+    except:
+        # TODO handle this better
+        raise Http404()
+
+    return HttpResponse(image, mimetype="image/png")
+
+
+class InterfaceDeleteView(DeleteView):
+    model = Interface
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/confirm/ajax-delete.html']
+        else:
+            return ['dashboard/confirm/base-delete.html']
+
+    def get_context_data(self, **kwargs):
+        context = super(InterfaceDeleteView, self).get_context_data(**kwargs)
+        interface = self.get_object()
+        context['text'] = _("Are you sure you want to remove this interface "
+                            "from <strong>%(vm)s</strong>?" %
+                            {'vm': interface.instance.name})
+        return context
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        instance = self.object.instance
+
+        if not instance.has_level(request.user, "owner"):
+            raise PermissionDenied()
+
+        instance.remove_interface(interface=self.object, user=request.user)
+        success_url = self.get_success_url()
+        success_message = _("Interface successfully deleted.")
+
+        if request.is_ajax():
+            return HttpResponse(
+                json.dumps(
+                    {'message': success_message,
+                     'removed_network': {
+                         'vlan': self.object.vlan.name,
+                         'vlan_pk': self.object.vlan.pk,
+                         'managed': self.object.host is not None,
+                     }}),
+                content_type="application/json",
+            )
+        else:
+            messages.success(request, success_message)
+            return HttpResponseRedirect("%s#network" % success_url)
+
+    def get_success_url(self):
+        redirect = self.request.POST.get("next")
+        if redirect:
+            return redirect
+        self.object.instance.get_absolute_url()
+
+
+class InstanceActivityDetail(CheckedDetailView):
+    model = InstanceActivity
+    context_object_name = 'instanceactivity'  # much simpler to mock object
+    template_name = 'dashboard/instanceactivity_detail.html'
+
+    def get_has_level(self):
+        return self.object.instance.has_level
+
+    def get_context_data(self, **kwargs):
+        ctx = super(InstanceActivityDetail, self).get_context_data(**kwargs)
+        ctx['activities'] = _format_activities(
+            self.object.instance.get_activities(self.request.user))
+        ctx['icon'] = _get_activity_icon(self.object)
+        return ctx
+
+
+class DiskRemoveView(DeleteView):
+    model = Disk
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/confirm/ajax-delete.html']
+        else:
+            return ['dashboard/confirm/base-delete.html']
+
+    def get_context_data(self, **kwargs):
+        context = super(DiskRemoveView, self).get_context_data(**kwargs)
+        disk = self.get_object()
+        app = disk.get_appliance()
+        context['title'] = _("Disk remove confirmation")
+        context['text'] = _("Are you sure you want to remove "
+                            "<strong>%(disk)s</strong> from "
+                            "<strong>%(app)s</strong>?" % {'disk': disk,
+                                                           'app': app}
+                            )
+        return context
+
+    def delete(self, request, *args, **kwargs):
+        disk = self.get_object()
+        app = disk.get_appliance()
+
+        if not app.has_level(request.user, 'owner'):
+            raise PermissionDenied()
+
+        app.remove_disk(disk=disk, user=request.user)
+        disk.destroy()
+
+        next_url = request.POST.get("next")
+        success_url = next_url if next_url else app.get_absolute_url()
+        success_message = _("Disk successfully removed.")
+
+        if request.is_ajax():
+            return HttpResponse(
+                json.dumps({'message': success_message}),
+                content_type="application/json",
+            )
+        else:
+            messages.success(request, success_message)
+            return HttpResponseRedirect("%s#resources" % success_url)
+
+
+@require_GET
+def get_disk_download_status(request, pk):
+    disk = Disk.objects.get(pk=pk)
+    if not disk.get_appliance().has_level(request.user, 'owner'):
+        raise PermissionDenied()
+
+    return HttpResponse(
+        json.dumps({
+            'percentage': disk.get_download_percentage(),
+            'failed': disk.failed
+        }),
+        content_type="application/json",
+    )
+
+
+class PortDelete(LoginRequiredMixin, DeleteView):
+    model = Rule
+    pk_url_kwarg = 'rule'
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/confirm/ajax-delete.html']
+        else:
+            return ['dashboard/confirm/base-delete.html']
+
+    def get_context_data(self, **kwargs):
+        context = super(PortDelete, self).get_context_data(**kwargs)
+        rule = kwargs.get('object')
+        instance = rule.host.interface_set.get().instance
+        context['title'] = _("Port delete confirmation")
+        context['text'] = _("Are you sure you want to close %(port)d/"
+                            "%(proto)s on %(vm)s?" % {'port': rule.dport,
+                                                      'proto': rule.proto,
+                                                      'vm': instance})
+        return context
+
+    def delete(self, request, *args, **kwargs):
+        rule = Rule.objects.get(pk=kwargs.get("rule"))
+        instance = rule.host.interface_set.get().instance
+        if not instance.has_level(request.user, 'owner'):
+            raise PermissionDenied()
+
+        super(PortDelete, self).delete(request, *args, **kwargs)
+
+        success_url = self.get_success_url()
+        success_message = _("Port successfully removed.")
+
+        if request.is_ajax():
+            return HttpResponse(
+                json.dumps({'message': success_message}),
+                content_type="application/json",
+            )
+        else:
+            messages.success(request, success_message)
+            return HttpResponseRedirect("%s#network" % success_url)
+
+    def get_success_url(self):
+        return reverse_lazy('dashboard.views.detail',
+                            kwargs={'pk': self.kwargs.get("pk")})
+
+
+class ClientCheck(LoginRequiredMixin, TemplateView):
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/_modal.html']
+        else:
+            return ['dashboard/nojs-wrapper.html']
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(ClientCheck, self).get_context_data(*args, **kwargs)
+        context.update({
+            'box_title': _('About CIRCLE Client'),
+            'ajax_title': False,
+            'client_download_url': settings.CLIENT_DOWNLOAD_URL,
+            'template': "dashboard/_client-check.html",
+            'instance': get_object_or_404(
+                Instance, pk=self.request.GET.get('vm')),
+        })
+        if not context['instance'].has_level(self.request.user, 'user'):
+            raise PermissionDenied()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        instance = get_object_or_404(Instance, pk=request.POST.get('vm'))
+        if not instance.has_level(request.user, 'operator'):
+            raise PermissionDenied()
+        response = redirect(instance.get_absolute_url())
+        response.set_cookie('downloaded_client', 'True', 365 * 24 * 60 * 60)
+        return response
+
+
+@require_GET
+def vm_activity(request, pk):
+    instance = Instance.objects.get(pk=pk)
+    if not instance.has_level(request.user, 'user'):
+        raise PermissionDenied()
+
+    response = {}
+    show_all = request.GET.get("show_all", "false") == "true"
+    activities = _format_activities(
+        instance.get_merged_activities(request.user))
+    show_show_all = len(activities) > 10
+    if not show_all:
+        activities = activities[:10]
+
+    response['connect_uri'] = instance.get_connect_uri()
+    response['human_readable_status'] = instance.get_status_display()
+    response['status'] = instance.status
+    response['icon'] = instance.get_status_icon()
+    latest = instance.get_latest_activity_in_progress()
+    response['is_new_state'] = (latest and latest.resultant_state is not None
+                                and instance.status != latest.resultant_state)
+
+    context = {
+        'instance': instance,
+        'activities': activities,
+        'show_show_all': show_show_all,
+        'ops': get_operations(instance, request.user),
+    }
+
+    response['activities'] = render_to_string(
+        "dashboard/vm-detail/_activity-timeline.html",
+        RequestContext(request, context),
+    )
+    response['ops'] = render_to_string(
+        "dashboard/vm-detail/_operations.html",
+        RequestContext(request, context),
+    )
+    response['disk_ops'] = render_to_string(
+        "dashboard/vm-detail/_disk-operations.html",
+        RequestContext(request, context),
+    )
+
+    return HttpResponse(
+        json.dumps(response),
+        content_type="application/json"
+    )
+
+
+class FavouriteView(TemplateView):
+
+    def post(self, *args, **kwargs):
+        user = self.request.user
+        vm = Instance.objects.get(pk=self.request.POST.get("vm"))
+        if not vm.has_level(user, 'user'):
+            raise PermissionDenied()
+        try:
+            Favourite.objects.get(instance=vm, user=user).delete()
+            return HttpResponse("Deleted.")
+        except Favourite.DoesNotExist:
+            Favourite(instance=vm, user=user).save()
+            return HttpResponse("Added.")
+
+
+class TransferOwnershipView(CheckedDetailView, DetailView):
+    model = Instance
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/_modal.html']
+        else:
+            return ['dashboard/nojs-wrapper.html']
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(TransferOwnershipView, self).get_context_data(
+            *args, **kwargs)
+        context['form'] = TransferOwnershipForm()
+        context.update({
+            'box_title': _("Transfer ownership"),
+            'ajax_title': True,
+            'template': "dashboard/vm-detail/tx-owner.html",
+        })
+        return context
+
+    def post(self, request, *args, **kwargs):
+        form = TransferOwnershipForm(request.POST)
+        if not form.is_valid():
+            return self.get(request)
+        try:
+            new_owner = search_user(request.POST['name'])
+        except User.DoesNotExist:
+            messages.error(request, _('Can not find specified user.'))
+            return self.get(request, *args, **kwargs)
+        except KeyError:
+            raise SuspiciousOperation()
+
+        obj = self.get_object()
+        if not (obj.owner == request.user or
+                request.user.is_superuser):
+            raise PermissionDenied()
+
+        token = signing.dumps((obj.pk, new_owner.pk),
+                              salt=TransferOwnershipConfirmView.get_salt())
+        token_path = reverse(
+            'dashboard.views.vm-transfer-ownership-confirm', args=[token])
+        try:
+            new_owner.profile.notify(
+                ugettext_noop('Ownership offer'),
+                ugettext_noop('%(user)s offered you to take the ownership of '
+                              'his/her virtual machine called %(instance)s. '
+                              '<a href="%(token)s" '
+                              'class="btn btn-success btn-small">Accept</a>'),
+                {'instance': obj, 'token': token_path})
+        except Profile.DoesNotExist:
+            messages.error(request, _('Can not notify selected user.'))
+        else:
+            messages.success(request,
+                             _('User %s is notified about the offer.') % (
+                                 unicode(new_owner), ))
+
+        return redirect(reverse_lazy("dashboard.views.detail",
+                                     kwargs={'pk': obj.pk}))
+
+
+class TransferOwnershipConfirmView(LoginRequiredMixin, View):
+    """User can accept an ownership offer."""
+
+    max_age = 3 * 24 * 3600
+    success_message = _("Ownership successfully transferred to you.")
+
+    @classmethod
+    def get_salt(cls):
+        return unicode(cls)
+
+    def get(self, request, key, *args, **kwargs):
+        """Confirm ownership transfer based on token.
+        """
+        logger.debug('Confirm dialog for token %s.', key)
+        try:
+            instance, new_owner = self.get_instance(key, request.user)
+        except PermissionDenied:
+            messages.error(request, _('This token is for an other user.'))
+            raise
+        except SuspiciousOperation:
+            messages.error(request, _('This token is invalid or has expired.'))
+            raise PermissionDenied()
+        return render(request,
+                      "dashboard/confirm/base-transfer-ownership.html",
+                      dictionary={'instance': instance, 'key': key})
+
+    def post(self, request, key, *args, **kwargs):
+        """Really transfer ownership based on token.
+        """
+        instance, owner = self.get_instance(key, request.user)
+
+        old = instance.owner
+        with instance_activity(code_suffix='ownership-transferred',
+                               concurrency_check=False,
+                               instance=instance, user=request.user):
+            instance.owner = request.user
+            instance.clean()
+            instance.save()
+        messages.success(request, self.success_message)
+        logger.info('Ownership of %s transferred from %s to %s.',
+                    unicode(instance), unicode(old), unicode(request.user))
+        if old.profile:
+            old.profile.notify(
+                ugettext_noop('Ownership accepted'),
+                ugettext_noop('Your ownership offer of %(instance)s has been '
+                              'accepted by %(user)s.'),
+                {'instance': instance})
+        return redirect(instance.get_absolute_url())
+
+    def get_instance(self, key, user):
+        """Get object based on signed token.
+        """
+        try:
+            instance, new_owner = (
+                signing.loads(key, max_age=self.max_age,
+                              salt=self.get_salt()))
+        except (signing.BadSignature, ValueError, TypeError) as e:
+            logger.error('Tried invalid token. Token: %s, user: %s. %s',
+                         key, unicode(user), unicode(e))
+            raise SuspiciousOperation()
+
+        try:
+            instance = Instance.objects.get(id=instance)
+        except Instance.DoesNotExist as e:
+            logger.error('Tried token to nonexistent instance %d. '
+                         'Token: %s, user: %s. %s',
+                         instance, key, unicode(user), unicode(e))
+            raise Http404()
+
+        if new_owner != user.pk:
+            logger.error('%s (%d) tried the token for %s. Token: %s.',
+                         unicode(user), user.pk, new_owner, key)
+            raise PermissionDenied()
+        return (instance, new_owner)

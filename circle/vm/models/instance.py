@@ -32,6 +32,7 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import (BooleanField, CharField, DateTimeField,
                               IntegerField, ForeignKey, Manager,
                               ManyToManyField, permalink, SET_NULL, TextField)
+from django.db import IntegrityError
 from django.dispatch import Signal
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _, ugettext_noop
@@ -122,6 +123,10 @@ class VirtualMachineDescModel(BaseResourceConfigModel):
                                     'format like "%s".') %
                                   'Ubuntu 12.04 LTS Desktop amd64'))
     tags = TaggableManager(blank=True, verbose_name=_("tags"))
+    has_agent = BooleanField(verbose_name=_('has agent'), default=True,
+                             help_text=_(
+                                 'If the machine has agent installed, and '
+                                 'the manager should wait for its start.'))
 
     class Meta:
         abstract = True
@@ -203,6 +208,9 @@ class InstanceTemplate(AclBase, VirtualMachineDescModel, TimeStampedModel):
         for disk in self.disks.all():
             disk.destroy()
 
+    def get_running_instances(self):
+        return Instance.active.filter(template=self, status="RUNNING")
+
 
 class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                TimeStampedModel):
@@ -240,10 +248,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                                    verbose_name=_('time of delete'),
                                    help_text=_("Proposed time of automatic "
                                                "deletion."))
-    active_since = DateTimeField(blank=True, null=True,
-                                 help_text=_("Time stamp of successful "
-                                             "boot report."),
-                                 verbose_name=_('active since'))
     node = ForeignKey(Node, blank=True, null=True,
                       related_name='instance_set',
                       help_text=_("Current hypervisor of this instance."),
@@ -289,6 +293,10 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
     class InstanceDestroyedError(InstanceError):
         message = ugettext_noop(
             "Instance %(instance)s has already been destroyed.")
+
+    class NoAgentError(InstanceError):
+        message = ugettext_noop(
+            "No agent software is running on instance %(instance)s.")
 
     class WrongStateError(InstanceError):
         message = ugettext_noop(
@@ -420,7 +428,8 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         # prepare parameters
         common_fields = ['name', 'description', 'num_cores', 'ram_size',
                          'max_ram_size', 'arch', 'priority', 'boot_menu',
-                         'raw_data', 'lease', 'access_method', 'system']
+                         'raw_data', 'lease', 'access_method', 'system',
+                         'has_agent']
         params = dict(template=template, owner=owner, pw=pwgen())
         params.update([(f, getattr(template, f)) for f in common_fields])
         params.update(kwargs)  # override defaults w/ user supplied values
@@ -438,21 +447,22 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         self.time_of_suspend, self.time_of_delete = self.get_renew_times()
         super(Instance, self).clean(*args, **kwargs)
 
-    def vm_state_changed(self, new_state):
+    def vm_state_changed(self, new_state, new_node=False):
+        if new_node is False:  # None would be a valid value
+            new_node = self.node
         # log state change
         try:
             act = InstanceActivity.create(
                 code_suffix='vm_state_changed',
                 readable_name=create_readable(
-                    ugettext_noop("vm state changed to %(state)s"),
-                    state=new_state),
+                    ugettext_noop("vm state changed to %(state)s on %(node)s"),
+                    state=new_state, node=new_node),
                 instance=self)
         except ActivityInProgressError:
             pass  # discard state change if another activity is in progress.
         else:
-            if new_state == 'STOPPED':
-                self.vnc_port = None
-                self.node = None
+            if self.node != new_node:
+                self.node = new_node
                 self.save()
             act.finished = act.started
             act.resultant_state = new_state
@@ -480,11 +490,12 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         """
         try:
             datastore = self.disks.all()[0].datastore
-        except:
-            return None
-        else:
-            path = datastore.path + '/' + self.vm_name + '.dump'
-            return {'datastore': datastore, 'path': path}
+        except IndexError:
+            from storage.models import DataStore
+            datastore = DataStore.objects.get()
+
+        path = datastore.path + '/' + self.vm_name + '.dump'
+        return {'datastore': datastore, 'path': path}
 
     @property
     def primary_host(self):
@@ -504,7 +515,11 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
     def ipv4(self):
         """Primary IPv4 address of the instance.
         """
-        return self.primary_host.ipv4 if self.primary_host else None
+        # return self.primary_host.ipv4 if self.primary_host else None
+        for i in self.interface_set.all():
+            if i.host:
+                return i.host.ipv4
+        return None
 
     @property
     def ipv6(self):
@@ -519,15 +534,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         return self.primary_host.mac if self.primary_host else None
 
     @property
-    def uptime(self):
-        """Uptime of the instance.
-        """
-        if self.active_since:
-            return timezone.now() - self.active_since
-        else:
-            return timedelta()  # zero
-
-    @property
     def os_type(self):
         """Get the type of the instance's operating system.
         """
@@ -535,13 +541,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             return "unknown"
         else:
             return self.template.os_type
-
-    def get_age(self):
-        """Deprecated. Use uptime instead.
-
-        Get age of VM in seconds.
-        """
-        return self.uptime.seconds
 
     @property
     def waiting(self):
@@ -594,13 +593,18 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             port = self.get_connect_port(use_ipv6=use_ipv6)
             host = self.get_connect_host(use_ipv6=use_ipv6)
             proto = self.access_method
-            if proto == 'ssh':
-                proto = 'sshterm'
-            return ('%(proto)s:cloud:%(pw)s:%(host)s:%(port)d' %
+            return ('circle:%(proto)s:cloud:%(pw)s:%(host)s:%(port)d' %
                     {'port': port, 'proto': proto, 'pw': self.pw,
                      'host': host})
         except:
             return
+
+    @property
+    def short_hostname(self):
+        try:
+            return self.primary_host.hostname
+        except AttributeError:
+            return self.vm_name
 
     def get_vm_desc(self):
         """Serialize Instance object to vmdriver.
@@ -786,6 +790,15 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             else:
                 raise
 
+    def resize_disk_live(self, disk, size, timeout=15):
+        queue_name = self.get_remote_queue_name('vm', 'slow')
+        result = vm_tasks.resize_disk.apply_async(
+            args=[self.vm_name, disk.path, size],
+            queue=queue_name).get(timeout=timeout)
+        disk.size = size
+        disk.save()
+        return result
+
     def deploy_disks(self):
         """Deploy all associated disks.
         """
@@ -918,8 +931,16 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
 
     def allocate_vnc_port(self):
         if self.vnc_port is None:
-            self.vnc_port = find_unused_vnc_port()
-            self.save()
+            while True:
+                try:
+                    self.vnc_port = find_unused_vnc_port()
+                    self.save()
+                except IntegrityError:
+                    # Another thread took this port get another one
+                    logger.debug("Port %s is in use.", self.vnc_port)
+                    pass
+                else:
+                    break
 
     def yield_vnc_port(self):
         if self.vnc_port is not None:
@@ -935,7 +956,8 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             'ERROR': 'fa-warning',
             'PENDING': 'fa-rocket',
             'DESTROYED': 'fa-trash-o',
-            'MIGRATING': 'fa-truck'}.get(self.status, 'fa-question')
+            'MIGRATING': 'fa-truck migrating-icon'
+        }.get(self.status, 'fa-question')
 
     def get_activities(self, user=None):
         acts = (self.activity_log.filter(parent=None).
@@ -985,3 +1007,12 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                 instance=self, succeeded=None, parent=None).latest("started")
         except InstanceActivity.DoesNotExist:
             return None
+
+    def is_in_status_change(self):
+        latest = self.get_latest_activity_in_progress()
+        return (latest and latest.resultant_state is not None
+                and self.status != latest.resultant_state)
+
+    @property
+    def metric_prefix(self):
+        return 'vm.%s' % self.vm_name

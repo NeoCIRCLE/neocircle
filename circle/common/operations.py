@@ -18,10 +18,10 @@
 from inspect import getargspec
 from logging import getLogger
 
-from .models import activity_context, has_suffix
-
 from django.core.exceptions import PermissionDenied, ImproperlyConfigured
+from django.utils.translation import ugettext_noop
 
+from .models import activity_context, has_suffix, humanize_exception
 
 logger = getLogger(__name__)
 
@@ -31,6 +31,7 @@ class Operation(object):
     """
     async_queue = 'localhost.man'
     required_perms = None
+    superuser_required = False
     do_not_call_in_templates = True
     abortable = False
     has_percentage = False
@@ -143,13 +144,26 @@ class Operation(object):
     def check_precond(self):
         pass
 
-    def check_auth(self, user):
-        if self.required_perms is None:
+    @classmethod
+    def check_perms(cls, user):
+        """Check if user is permitted to run this operation on any instance
+        """
+
+        if cls.required_perms is None:
             raise ImproperlyConfigured(
                 "Set required_perms to () if none needed.")
-        if not user.has_perms(self.required_perms):
+        if not user.has_perms(cls.required_perms):
             raise PermissionDenied("%s doesn't have the required permissions."
                                    % user)
+        if cls.superuser_required and not user.is_superuser:
+            raise humanize_exception(ugettext_noop(
+                "Superuser privileges are required."), PermissionDenied())
+
+    def check_auth(self, user):
+        """Check if user is permitted to run this operation on this instance
+        """
+
+        self.check_perms(user)
 
     def create_activity(self, parent, user, kwargs):
         raise NotImplementedError
@@ -185,14 +199,17 @@ class OperatedMixin(object):
     def __getattr__(self, name):
         # NOTE: __getattr__ is only called if the attribute doesn't already
         # exist in your __dict__
-        cls = self.__class__
+        return self.get_operation_class(name)(self)
+
+    @classmethod
+    def get_operation_class(cls, name):
         ops = getattr(cls, operation_registry_name, {})
         op = ops.get(name)
         if op:
-            return op(self)
+            return op
         else:
             raise AttributeError("%r object has no attribute %r" %
-                                 (self.__class__.__name__, name))
+                                 (cls.__name__, name))
 
     def get_available_operations(self, user):
         """Yield Operations that match permissions of user and preconditions.
@@ -256,3 +273,4 @@ def register_operation(op_cls, op_id=None, target_cls=None):
         setattr(target_cls, operation_registry_name, dict())
 
     getattr(target_cls, operation_registry_name)[op_id] = op_cls
+    return op_cls

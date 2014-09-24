@@ -5,6 +5,8 @@
 {% load staticfiles %}
 {% load crispy_forms_tags %}
 
+{% block title-page %}{{ record.fqdn }} | {% trans "record" %}{% endblock %}
+
 {% block content %}
 <div class="page-header">
     <a href="{% url "network.record_delete" pk=record_pk %}" class="btn btn-danger pull-right"><i class="fa fa-times-circle"></i> {% trans "Delete this record" %}</a>

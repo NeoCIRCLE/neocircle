@@ -3,7 +3,7 @@
 {% load sizefieldtags %}
 {% load crispy_forms_tags %}
 
-{% block title-page %}{% trans "Edit template" %}{% endblock %}
+{% block title-page %}{{ form.name.value }} | {% trans "template" %}{% endblock %}
 
 {% block content %}
 
@@ -24,6 +24,15 @@
 
         {{ form.name|as_crispy_field }}
 
+        <strong>{% trans "Parent template" %}:</strong>
+        {% if parent %}
+        <a href="{% url "dashboard.views.template-detail" pk=parent.pk %}">
+          {{ parent.name }}
+        </a>
+        {% else %}
+          -
+        {% endif %}
+
         <fieldset class="resources-sliders">
           <legend>{% trans "Resource configuration" %}</legend>
           {% include "dashboard/_resources-sliders.html" with field_priority=form.priority field_num_cores=form.num_cores field_ram_size=form.ram_size %}
@@ -39,6 +48,7 @@
         {{ form.req_traits|as_crispy_field }}
         {{ form.description|as_crispy_field }}
         {{ form.system|as_crispy_field }}
+        {{ form.has_agent|as_crispy_field }}
         </fieldset>
         <fieldset>
           <legend>{% trans "External resources" %}</legend>

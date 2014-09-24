@@ -25,9 +25,9 @@ def handler500(request):
                     ctx['error'] = exception.get_admin_text()
             except:
                 pass
-        try:
-            resp = render_to_response("500.html", ctx, RequestContext(request))
-        except:
-            resp = render_to_response("500.html", ctx)
-        resp.status_code = 500
-        return resp
+    try:
+        resp = render_to_response("500.html", ctx, RequestContext(request))
+    except:
+        resp = render_to_response("500.html", ctx)
+    resp.status_code = 500
+    return resp

@@ -5,6 +5,8 @@
 {% load staticfiles %}
 {% load crispy_forms_tags %}
 
+{% block title-page %}{{ form.name.value }} | {% trans "vlan group" %}{% endblock %}
+
 {% block content %}
 <div class="page-header">
     <a href="{% url "network.vlan_group_delete" pk=vlangroup_pk %}" class="btn btn-danger pull-right"><i class="fa fa-times-circle"></i> {% trans "Delete this group" %}</a>

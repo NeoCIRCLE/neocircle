@@ -2,6 +2,8 @@
 {% load crispy_forms_tags %}
 {% load i18n %}
 
+{% block title-page %}{{ group.name }} | {% trans "group" %}{% endblock %}
+
 {% block content %}
 <div class="body-content">
   <div class="page-header">
@@ -89,13 +91,12 @@
         <tr>
           <td><i class="fa fa-plus"></i></td>
           <td colspan="2">
-            <input type="text" class="form-control" name="list-new-name"
-            placeholder="{% trans "Name of user" %}">
+            {{addmemberform.new_member}}
           </td>
         </tr>
   </tbody>
   </table>
-  <textarea name="list-new-namelist" class="form-control"
+  <textarea name="new_members" class="form-control"
     placeholder="{% trans "Add multiple users at once (one identifier per line)." %}"></textarea>
   <div class="form-actions">
     <button type="submit" class="btn btn-success">{% trans "Save" %}</button>

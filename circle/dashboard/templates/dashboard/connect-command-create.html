@@ -1,0 +1,44 @@
+{% extends "dashboard/base.html" %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block title-page %}{% trans "Create command template" %}{% endblock %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <a class="pull-right btn btn-default btn-xs" href="{% url "dashboard.views.profile-preferences" %}">{% trans "Back" %}</a>
+        <h3 class="no-margin"><i class="fa fa-code"></i> {% trans "Create new command template" %}</h3>
+      </div>
+      <div class="panel-body">
+        <form method="POST">
+          {% csrf_token %}
+          {{ form.name|as_crispy_field }}
+          {{ form.access_method|as_crispy_field }}
+          {{ form.template|as_crispy_field }}
+          <p class="text-muted">
+            {% trans "Examples" %}
+          </p>
+          <p>
+            <strong>SSH:</strong>
+            <span class="text-muted">
+              sshpass -p %(password)s ssh -o StrictHostKeyChecking=no cloud@%(host)s -p %(port)d
+            </span>
+          </p>
+          <p>
+            <strong>RDP:</strong>
+            <span class="text-muted">
+              rdesktop %(host)s:%(port)d -u cloud -p %(password)s
+            </span>
+          </p>
+          <input type="submit" class="btn btn-primary" value="{% trans "Save" %}">
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

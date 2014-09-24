@@ -6,7 +6,7 @@
   {% csrf_token %}
   {% include "dashboard/_resources-sliders.html" with field_priority=resources_form.priority field_num_cores=resources_form.num_cores field_ram_size=resources_form.ram_size %}
 
-{% if can_change_resources %}
+{% if op.resources_change %}
     <button type="submit" class="btn btn-success btn-sm change-resources-button" 
       id="vm-details-resources-save" data-vm="{{ instance.pk }}"
       {% if op.resources_change.disabled %}disabled{% endif %}>

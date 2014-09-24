@@ -25,11 +25,11 @@ from .views import (
     GroupDetailView, GroupList, IndexView,
     InstanceActivityDetail, LeaseCreate, LeaseDelete, LeaseDetail,
     MyPreferencesView, NodeAddTraitView, NodeCreate, NodeDelete,
-    NodeDetailView, NodeFlushView, NodeGraphView, NodeList, NodeStatus,
+    NodeDetailView, NodeList, NodeStatus,
     NotificationView, PortDelete, TemplateAclUpdateView, TemplateCreate,
     TemplateDelete, TemplateDetail, TemplateList, TransferOwnershipConfirmView,
     TransferOwnershipView, vm_activity, VmCreate, VmDetailView,
-    VmDetailVncTokenView, VmGraphView, VmList, VmMassDelete,
+    VmDetailVncTokenView, VmList,
     DiskRemoveView, get_disk_download_status, InterfaceDeleteView,
     GroupRemoveUserView,
     GroupRemoveFutureUserView,
@@ -39,17 +39,21 @@ from .views import (
     get_vm_screenshot,
     ProfileView, toggle_use_gravatar, UnsubscribeFormView,
     UserKeyDelete, UserKeyDetail, UserKeyCreate,
+    ConnectCommandDelete, ConnectCommandDetail, ConnectCommandCreate,
     StoreList, store_download, store_upload, store_get_upload_url, StoreRemove,
     store_new_directory, store_refresh_toplist,
     VmTraitsUpdate, VmRawDataUpdate,
     GroupPermissionsView,
     LeaseAclUpdateView,
+    ClientCheck, TokenLogin,
+    VmGraphView, NodeGraphView, NodeListGraphView,
 )
+from .views.vm import vm_ops, vm_mass_ops
+from .views.node import node_ops
 
 autocomplete_light.autodiscover()
 
 urlpatterns = patterns(
-
     '',
     url(r'^$', IndexView.as_view(), name="dashboard.index"),
     url(r'^lease/(?P<pk>\d+)/$', LeaseDetail.as_view(),
@@ -73,8 +77,6 @@ urlpatterns = patterns(
         name="dashboard.views.template-list"),
     url(r"^template/delete/(?P<pk>\d+)/$", TemplateDelete.as_view(),
         name="dashboard.views.template-delete"),
-
-    url(r'^vm/(?P<pk>\d+)/op/', include('dashboard.vm.urls')),
     url(r'^vm/(?P<pk>\d+)/remove_port/(?P<rule>\d+)/$', PortDelete.as_view(),
         name='dashboard.views.remove-port'),
     url(r'^vm/(?P<pk>\d+)/$', VmDetailView.as_view(),
@@ -88,8 +90,6 @@ urlpatterns = patterns(
     url(r'^vm/list/$', VmList.as_view(), name='dashboard.views.vm-list'),
     url(r'^vm/create/$', VmCreate.as_view(),
         name='dashboard.views.vm-create'),
-    url(r'^vm/mass-delete/', VmMassDelete.as_view(),
-        name='dashboard.view.mass-delete-vm'),
     url(r'^vm/(?P<pk>\d+)/activity/$', vm_activity),
     url(r'^vm/activity/(?P<pk>\d+)/$', InstanceActivityDetail.as_view(),
         name='dashboard.views.vm-activity'),
@@ -111,8 +111,6 @@ urlpatterns = patterns(
         name="dashboard.views.delete-node"),
     url(r'^node/status/(?P<pk>\d+)/$', NodeStatus.as_view(),
         name="dashboard.views.status-node"),
-    url(r'^node/flush/(?P<pk>\d+)/$', NodeFlushView.as_view(),
-        name="dashboard.views.flush-node"),
     url(r'^node/create/$', NodeCreate.as_view(),
         name='dashboard.views.node-create'),
 
@@ -122,14 +120,18 @@ urlpatterns = patterns(
         name="dashboard.views.delete-group"),
     url(r'^group/list/$', GroupList.as_view(),
         name='dashboard.views.group-list'),
-    url((r'^vm/(?P<pk>\d+)/graph/(?P<metric>cpu|memory|network)/'
+    url((r'^vm/(?P<pk>\d+)/graph/(?P<metric>[a-z]+)/'
          r'(?P<time>[0-9]{1,2}[hdwy])$'),
         VmGraphView.as_view(),
         name='dashboard.views.vm-graph'),
-    url((r'^node/(?P<pk>\d+)/graph/(?P<metric>cpu|memory|network)/'
+    url((r'^node/(?P<pk>\d+)/graph/(?P<metric>[a-z]+)/'
          r'(?P<time>[0-9]{1,2}[hdwy])$'),
         NodeGraphView.as_view(),
         name='dashboard.views.node-graph'),
+    url((r'^node/graph/(?P<metric>[a-z]+)/'
+         r'(?P<time>[0-9]{1,2}[hdwy])$'),
+        NodeListGraphView.as_view(),
+        name='dashboard.views.node-list-graph'),
     url(r'^group/(?P<pk>\d+)/$', GroupDetailView.as_view(),
         name='dashboard.views.group-detail'),
     url(r'^group/(?P<pk>\d+)/update/$', GroupProfileUpdate.as_view(),
@@ -180,6 +182,16 @@ urlpatterns = patterns(
         UserKeyCreate.as_view(),
         name="dashboard.views.userkey-create"),
 
+    url(r'^conncmd/delete/(?P<pk>\d+)/$',
+        ConnectCommandDelete.as_view(),
+        name="dashboard.views.connect-command-delete"),
+    url(r'^conncmd/(?P<pk>\d+)/$',
+        ConnectCommandDetail.as_view(),
+        name="dashboard.views.connect-command-detail"),
+    url(r'^conncmd/create/$',
+        ConnectCommandCreate.as_view(),
+        name="dashboard.views.connect-command-create"),
+
     url(r'^autocomplete/', include('autocomplete_light.urls')),
 
     url(r"^store/list/$", StoreList.as_view(),
@@ -196,4 +208,26 @@ urlpatterns = patterns(
         name="dashboard.views.store-new-directory"),
     url(r"^store/refresh_toplist$", store_refresh_toplist,
         name="dashboard.views.store-refresh-toplist"),
+    url(r"^client/check$", ClientCheck.as_view(),
+        name="dashboard.views.client-check"),
+    url(r'^token-login/(?P<token>.*)/$', TokenLogin.as_view(),
+        name="dashboard.views.token-login"),
+)
+
+urlpatterns += patterns(
+    '',
+    *(url(r'^vm/(?P<pk>\d+)/op/%s/$' % op, v.as_view(), name=v.get_urlname())
+        for op, v in vm_ops.iteritems())
+)
+
+urlpatterns += patterns(
+    '',
+    *(url(r'^vm/mass_op/%s/$' % op, v.as_view(), name=v.get_urlname())
+        for op, v in vm_mass_ops.iteritems())
+)
+
+urlpatterns += patterns(
+    '',
+    *(url(r'^node/(?P<pk>\d+)/op/%s/$' % op, v.as_view(), name=v.get_urlname())
+        for op, v in node_ops.iteritems())
 )

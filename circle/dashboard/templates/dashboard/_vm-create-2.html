@@ -3,7 +3,7 @@
 {% load sizefieldtags %}
 
 {% include "display-form-errors.html" with form=vm_create_form %}
-<form method="POST">
+<form method="POST" action="{% url "dashboard.views.vm-create" %}">
 {% csrf_token %}
 
 {{ vm_create_form.template }}
@@ -23,6 +23,7 @@
   </div>
 </div>
 
+{% if perms.vm.set_resources %}
 <div class="row">
   <div class="col-sm-10">
     <div class="form-group">
@@ -85,6 +86,7 @@
     </div><!-- .no-js-hidden -->
   </div><!-- .col-sm-8 -->
 </div><!-- .row -->
+{% endif %}
 
 </form>
 <script>

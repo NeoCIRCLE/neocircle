@@ -55,7 +55,7 @@ def get_queues():
     result = cache.get(key)
     if result is None:
         inspect = celery.control.inspect()
-        inspect.timeout = 0.1
+        inspect.timeout = 0.5
         result = inspect.active_queues()
         logger.debug('Queue list of length %d cached.', len(result))
         cache.set(key, result, 10)
@@ -129,6 +129,11 @@ def reboot(params):
 
 @celery.task(name='vmdriver.migrate')
 def migrate(params):
+    pass
+
+
+@celery.task(name='vmdriver.resize_disk')
+def resize_disk(params):
     pass
 
 

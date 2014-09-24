@@ -111,7 +111,7 @@ def pull(dir="~/circle/circle"):
 @roles('portal')
 def update_portal(test=False):
     "Update and restart portal+manager"
-    with _stopped("portal", "mancelery"):
+    with _stopped("portal", "manager"):
         pull()
         pip("circle", "~/circle/requirements.txt")
         migrate()
@@ -123,17 +123,19 @@ def update_portal(test=False):
 @roles('portal')
 def stop_portal(test=False):
     "Stop portal and manager"
-    _stop_services("portal", "mancelery")
+    _stop_services("portal", "manager")
 
 
 @roles('node')
 def update_node():
     "Update and restart nodes"
-    with _stopped("node", "agentdriver"):
+    with _stopped("node", "agentdriver", "monitor-client"):
         pull("~/vmdriver")
         pip("vmdriver", "~/vmdriver/requirements/production.txt")
         pull("~/agentdriver")
         pip("agentdriver", "~/agentdriver/requirements.txt")
+        pull("~/monitor-client")
+        pip("monitor-client", "~/monitor-client/requirements.txt")
 
 
 @parallel

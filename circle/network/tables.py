@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
+from django.utils.translation import ugettext_lazy as _
+
 from django_tables2 import Table, A
 from django_tables2.columns import LinkColumn, TemplateColumn
 
@@ -181,3 +183,20 @@ class VlanGroupTable(Table):
         attrs = {'class': 'table table-striped table-condensed'}
         fields = ('name', 'vlans', 'description', 'owner', )
         order_by = 'name'
+
+
+class HostRecordsTable(Table):
+    fqdn = LinkColumn(
+        "network.record", args=[A("pk")],
+        order_by=("name", ),
+    )
+
+    class Meta:
+        model = Record
+        attrs = {
+            'class': "table table-striped table-bordered",
+            'id': "host-detail-records-table",
+        }
+        fields = ("type", "fqdn")
+        order_by = ("name", )
+        empty_text = _("No records.")

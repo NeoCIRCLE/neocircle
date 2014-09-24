@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-08-01 19:36+0200\n"
-"PO-Revision-Date: 2014-08-01 21:03+0200\n"
+"POT-Creation-Date: 2014-09-24 12:19+0200\n"
+"PO-Revision-Date: 2014-09-03 12:51+0200\n"
 "Last-Translator: Mate Ory <ory.mate@ik.bme.hu>\n"
 "Language-Team: Hungarian <cloud@ik.bme.hu>\n"
 "Language: en_US\n"
@@ -18,59 +18,250 @@ msgstr ""
 "X-Generator: Lokalize 1.5\n"
 
 #: dashboard/static/dashboard/dashboard.js:68
+#: static_collected/all.047675ebf594.js:3443
+#: static_collected/all.0aecd87e873a.js:3443
+#: static_collected/all.0db607331718.js:3443
+#: static_collected/all.146abee8fe99.js:3443
+#: static_collected/all.24315fee0c8e.js:3443
+#: static_collected/all.483236be7507.js:19
+#: static_collected/all.73e18dd7e023.js:3443
+#: static_collected/all.a650c949d06f.js:3443
+#: static_collected/all.b66e942cdb56.js:3443
+#: static_collected/all.f62aa30bd0a4.js:3443 static_collected/all.js:3443
+#: static_collected/dashboard/dashboard.32a5b5729414.js:68
+#: static_collected/dashboard/dashboard.32fd2a07ee32.js:68
+#: static_collected/dashboard/dashboard.b96d0ea9ce41.js:68
+#: static_collected/dashboard/dashboard.be8725cd91bf.js:68
+#: static_collected/dashboard/dashboard.e740d80401b2.js:68
+#: static_collected/dashboard/dashboard.fe0a2f126346.js:68
 #: static_collected/dashboard/dashboard.js:68
 msgid "Select an option to proceed!"
 msgstr "Válasszon a folytatáshoz."
 
-#: dashboard/static/dashboard/dashboard.js:258
-#: dashboard/static/dashboard/dashboard.js:305
-#: dashboard/static/dashboard/dashboard.js:315
-#: static_collected/dashboard/dashboard.js:257
-#: static_collected/dashboard/dashboard.js:304
-#: static_collected/dashboard/dashboard.js:314
+#: dashboard/static/dashboard/dashboard.js:259
+#: dashboard/static/dashboard/dashboard.js:307
+#: dashboard/static/dashboard/dashboard.js:317
+#: static_collected/all.047675ebf594.js:3633
+#: static_collected/all.047675ebf594.js:3681
+#: static_collected/all.047675ebf594.js:3691
+#: static_collected/all.0aecd87e873a.js:3633
+#: static_collected/all.0aecd87e873a.js:3681
+#: static_collected/all.0aecd87e873a.js:3691
+#: static_collected/all.0db607331718.js:3633
+#: static_collected/all.0db607331718.js:3681
+#: static_collected/all.0db607331718.js:3691
+#: static_collected/all.146abee8fe99.js:3633
+#: static_collected/all.146abee8fe99.js:3681
+#: static_collected/all.146abee8fe99.js:3691
+#: static_collected/all.24315fee0c8e.js:3633
+#: static_collected/all.24315fee0c8e.js:3681
+#: static_collected/all.24315fee0c8e.js:3691
+#: static_collected/all.483236be7507.js:19
+#: static_collected/all.73e18dd7e023.js:3633
+#: static_collected/all.73e18dd7e023.js:3681
+#: static_collected/all.73e18dd7e023.js:3691
+#: static_collected/all.a650c949d06f.js:3633
+#: static_collected/all.a650c949d06f.js:3681
+#: static_collected/all.a650c949d06f.js:3691
+#: static_collected/all.b66e942cdb56.js:3633
+#: static_collected/all.b66e942cdb56.js:3681
+#: static_collected/all.b66e942cdb56.js:3691
+#: static_collected/all.f62aa30bd0a4.js:3633
+#: static_collected/all.f62aa30bd0a4.js:3681
+#: static_collected/all.f62aa30bd0a4.js:3691 static_collected/all.js:3633
+#: static_collected/all.js.c:3681 static_collected/all.js:3691
+#: static_collected/dashboard/dashboard.32a5b5729414.js:258
+#: static_collected/dashboard/dashboard.32a5b5729414.js:306
+#: static_collected/dashboard/dashboard.32a5b5729414.js:316
+#: static_collected/dashboard/dashboard.32fd2a07ee32.js:258
+#: static_collected/dashboard/dashboard.32fd2a07ee32.js:306
+#: static_collected/dashboard/dashboard.32fd2a07ee32.js:316
+#: static_collected/dashboard/dashboard.b96d0ea9ce41.js:258
+#: static_collected/dashboard/dashboard.b96d0ea9ce41.js:306
+#: static_collected/dashboard/dashboard.b96d0ea9ce41.js:316
+#: static_collected/dashboard/dashboard.be8725cd91bf.js:258
+#: static_collected/dashboard/dashboard.be8725cd91bf.js:306
+#: static_collected/dashboard/dashboard.be8725cd91bf.js:316
+#: static_collected/dashboard/dashboard.e740d80401b2.js:258
+#: static_collected/dashboard/dashboard.e740d80401b2.js:306
+#: static_collected/dashboard/dashboard.e740d80401b2.js:316
+#: static_collected/dashboard/dashboard.fe0a2f126346.js:258
+#: static_collected/dashboard/dashboard.fe0a2f126346.js:306
+#: static_collected/dashboard/dashboard.fe0a2f126346.js:316
+#: static_collected/dashboard/dashboard.js:258
+#: static_collected/dashboard/dashboard.js:306
+#: static_collected/dashboard/dashboard.js:316
 msgid "No result"
 msgstr "Nincs eredmény"
 
 #: dashboard/static/dashboard/profile.js:18
+#: static_collected/all.047675ebf594.js:4459
+#: static_collected/all.0aecd87e873a.js:4458
+#: static_collected/all.0db607331718.js:4435
+#: static_collected/all.146abee8fe99.js:4459
+#: static_collected/all.24315fee0c8e.js:4458
+#: static_collected/all.483236be7507.js:21
+#: static_collected/all.73e18dd7e023.js:4435
+#: static_collected/all.a650c949d06f.js:4458
+#: static_collected/all.b66e942cdb56.js:4458
+#: static_collected/all.f62aa30bd0a4.js:4459 static_collected/all.js:4435
+#: static_collected/dashboard/profile.333ac16a5ce1.js:18
+#: static_collected/dashboard/profile.b7bd994913eb.js:18
 #: static_collected/dashboard/profile.js:18
 msgid "You have no permission to change this profile."
 msgstr "Nincs jogosultsága a profil módosításához."
 
 #: dashboard/static/dashboard/profile.js:20
+#: static_collected/all.047675ebf594.js:4461
+#: static_collected/all.0aecd87e873a.js:4460
+#: static_collected/all.0db607331718.js:4437
+#: static_collected/all.146abee8fe99.js:4461
+#: static_collected/all.24315fee0c8e.js:4460
+#: static_collected/all.483236be7507.js:21
+#: static_collected/all.73e18dd7e023.js:4437
+#: static_collected/all.a650c949d06f.js:4460
+#: static_collected/all.b66e942cdb56.js:4460
+#: static_collected/all.f62aa30bd0a4.js:4461 static_collected/all.js:4437
+#: static_collected/dashboard/profile.333ac16a5ce1.js:20
+#: static_collected/dashboard/profile.b7bd994913eb.js:20
 #: static_collected/dashboard/profile.js:20
 msgid "Unknown error."
 msgstr "Ismeretlen hiba."
 
-#: dashboard/static/dashboard/vm-create.js:108
-#: dashboard/static/dashboard/vm-create.js:171
+#: dashboard/static/dashboard/vm-create.js:111
+#: dashboard/static/dashboard/vm-create.js:174
+#: static_collected/all.047675ebf594.js:4813
+#: static_collected/all.047675ebf594.js:4876
+#: static_collected/all.0aecd87e873a.js:4883
+#: static_collected/all.0aecd87e873a.js:4946
+#: static_collected/all.0db607331718.js:4789
+#: static_collected/all.0db607331718.js:4852
+#: static_collected/all.146abee8fe99.js:4813
+#: static_collected/all.146abee8fe99.js:4876
+#: static_collected/all.24315fee0c8e.js:4812
+#: static_collected/all.24315fee0c8e.js:4875
+#: static_collected/all.483236be7507.js:2
+#: static_collected/all.73e18dd7e023.js:4789
+#: static_collected/all.73e18dd7e023.js:4852
+#: static_collected/all.a650c949d06f.js:4812
+#: static_collected/all.a650c949d06f.js:4875
+#: static_collected/all.b66e942cdb56.js:4812
+#: static_collected/all.b66e942cdb56.js:4875
+#: static_collected/all.f62aa30bd0a4.js:4813
+#: static_collected/all.f62aa30bd0a4.js:4876 static_collected/all.js:4789
+#: static_collected/all.js.c:4852
+#: static_collected/dashboard/vm-create.1a1f6dae3556.js:111
+#: static_collected/dashboard/vm-create.1a1f6dae3556.js:174
+#: static_collected/dashboard/vm-create.7562c27e19a2.js:111
+#: static_collected/dashboard/vm-create.7562c27e19a2.js:174
+#: static_collected/dashboard/vm-create.js:111
+#: static_collected/dashboard/vm-create.js:174
 msgid "No more networks."
 msgstr "Nincs több hálózat."
 
-#: dashboard/static/dashboard/vm-create.js:140
+#: dashboard/static/dashboard/vm-create.js:143
+#: static_collected/all.047675ebf594.js:4845
+#: static_collected/all.0aecd87e873a.js:4915
+#: static_collected/all.0db607331718.js:4821
+#: static_collected/all.146abee8fe99.js:4845
+#: static_collected/all.24315fee0c8e.js:4844
+#: static_collected/all.483236be7507.js:2
+#: static_collected/all.73e18dd7e023.js:4821
+#: static_collected/all.a650c949d06f.js:4844
+#: static_collected/all.b66e942cdb56.js:4844
+#: static_collected/all.f62aa30bd0a4.js:4845 static_collected/all.js:4821
+#: static_collected/dashboard/vm-create.1a1f6dae3556.js:143
+#: static_collected/dashboard/vm-create.7562c27e19a2.js:143
+#: static_collected/dashboard/vm-create.js:143
 msgid "Not added to any network"
 msgstr "Nincs hálózathoz adva"
 
+#: dashboard/static/dashboard/vm-details.js:115
+#: static_collected/dashboard/vm-details.js:115
+msgid "Hide password"
+msgstr "Jelszó rejtése"
+
+#: dashboard/static/dashboard/vm-details.js:119
+#: static_collected/dashboard/vm-details.js:119
+msgid "Show password"
+msgstr "Jelszó megjelenítése"
+
 #: dashboard/static/dashboard/vm-tour.js:20
+#: static_collected/vm-detail.09737c69abc3.js:5853
+#: static_collected/vm-detail.15d710d8ccf0.js:6389
+#: static_collected/vm-detail.234990ca6ec1.js:6962
+#: static_collected/vm-detail.47b1d21da259.js:5853
+#: static_collected/vm-detail.9e1734ade019.js:5854
+#: static_collected/vm-detail.c47949114749.js:6962
+#: static_collected/vm-detail.e3f398067c8a.js:6891
+#: static_collected/vm-detail.e81fe84bf4c0.js:9
+#: static_collected/vm-detail.js:6389
+#: static_collected/dashboard/vm-tour.1562cc89a659.js:20
+#: static_collected/dashboard/vm-tour.7b4cf596f543.js:20
 #: static_collected/dashboard/vm-tour.js:20
 msgid "Prev"
 msgstr "Vissza"
 
 #: dashboard/static/dashboard/vm-tour.js:22
+#: static_collected/vm-detail.09737c69abc3.js:5855
+#: static_collected/vm-detail.15d710d8ccf0.js:6391
+#: static_collected/vm-detail.234990ca6ec1.js:6964
+#: static_collected/vm-detail.47b1d21da259.js:5855
+#: static_collected/vm-detail.9e1734ade019.js:5856
+#: static_collected/vm-detail.c47949114749.js:6964
+#: static_collected/vm-detail.e3f398067c8a.js:6893
+#: static_collected/vm-detail.e81fe84bf4c0.js:9
+#: static_collected/vm-detail.js:6391
+#: static_collected/dashboard/vm-tour.1562cc89a659.js:22
+#: static_collected/dashboard/vm-tour.7b4cf596f543.js:22
 #: static_collected/dashboard/vm-tour.js:22
 msgid "Next"
 msgstr "Tovább"
 
 #: dashboard/static/dashboard/vm-tour.js:26
+#: static_collected/vm-detail.09737c69abc3.js:5859
+#: static_collected/vm-detail.15d710d8ccf0.js:6395
+#: static_collected/vm-detail.234990ca6ec1.js:6968
+#: static_collected/vm-detail.47b1d21da259.js:5859
+#: static_collected/vm-detail.9e1734ade019.js:5860
+#: static_collected/vm-detail.c47949114749.js:6968
+#: static_collected/vm-detail.e3f398067c8a.js:6897
+#: static_collected/vm-detail.e81fe84bf4c0.js:9
+#: static_collected/vm-detail.js:6395
+#: static_collected/dashboard/vm-tour.1562cc89a659.js:26
+#: static_collected/dashboard/vm-tour.7b4cf596f543.js:26
 #: static_collected/dashboard/vm-tour.js:26
 msgid "End tour"
 msgstr "Befejezés"
 
 #: dashboard/static/dashboard/vm-tour.js:33
+#: static_collected/vm-detail.09737c69abc3.js:5866
+#: static_collected/vm-detail.15d710d8ccf0.js:6402
+#: static_collected/vm-detail.234990ca6ec1.js:6975
+#: static_collected/vm-detail.47b1d21da259.js:5866
+#: static_collected/vm-detail.9e1734ade019.js:5867
+#: static_collected/vm-detail.c47949114749.js:6975
+#: static_collected/vm-detail.e3f398067c8a.js:6904
+#: static_collected/vm-detail.e81fe84bf4c0.js:9
+#: static_collected/vm-detail.js:6402
+#: static_collected/dashboard/vm-tour.1562cc89a659.js:33
+#: static_collected/dashboard/vm-tour.7b4cf596f543.js:33
 #: static_collected/dashboard/vm-tour.js:33
 msgid "Template Tutorial Tour"
 msgstr "Sablon-kalauz"
 
 #: dashboard/static/dashboard/vm-tour.js:34
+#: static_collected/vm-detail.09737c69abc3.js:5867
+#: static_collected/vm-detail.15d710d8ccf0.js:6403
+#: static_collected/vm-detail.234990ca6ec1.js:6976
+#: static_collected/vm-detail.47b1d21da259.js:5867
+#: static_collected/vm-detail.9e1734ade019.js:5868
+#: static_collected/vm-detail.c47949114749.js:6976
+#: static_collected/vm-detail.e3f398067c8a.js:6905
+#: static_collected/vm-detail.e81fe84bf4c0.js:9
+#: static_collected/vm-detail.js:6403
+#: static_collected/dashboard/vm-tour.1562cc89a659.js:34
+#: static_collected/dashboard/vm-tour.7b4cf596f543.js:34
 #: static_collected/dashboard/vm-tour.js:34
 msgid ""
 "Welcome to the template tutorial. In this quick tour, we gonna show you how "
@@ -80,6 +271,17 @@ msgstr ""
 "lépéseket."
 
 #: dashboard/static/dashboard/vm-tour.js:35
+#: static_collected/vm-detail.09737c69abc3.js:5868
+#: static_collected/vm-detail.15d710d8ccf0.js:6404
+#: static_collected/vm-detail.234990ca6ec1.js:6977
+#: static_collected/vm-detail.47b1d21da259.js:5868
+#: static_collected/vm-detail.9e1734ade019.js:5869
+#: static_collected/vm-detail.c47949114749.js:6977
+#: static_collected/vm-detail.e3f398067c8a.js:6906
+#: static_collected/vm-detail.e81fe84bf4c0.js:9
+#: static_collected/vm-detail.js:6404
+#: static_collected/dashboard/vm-tour.1562cc89a659.js:35
+#: static_collected/dashboard/vm-tour.7b4cf596f543.js:35
 #: static_collected/dashboard/vm-tour.js:35
 msgid ""
 "For the next tour step press the \"Next\" button or the right arrow (or "
@@ -89,6 +291,16 @@ msgstr ""
 "nyílbillentyűket."
 
 #: dashboard/static/dashboard/vm-tour.js:36
+#: static_collected/vm-detail.09737c69abc3.js:5869
+#: static_collected/vm-detail.15d710d8ccf0.js:6405
+#: static_collected/vm-detail.234990ca6ec1.js:6978
+#: static_collected/vm-detail.47b1d21da259.js:5869
+#: static_collected/vm-detail.9e1734ade019.js:5870
+#: static_collected/vm-detail.c47949114749.js:6978
+#: static_collected/vm-detail.e3f398067c8a.js:6907
+#: static_collected/vm-detail.js:6405
+#: static_collected/dashboard/vm-tour.1562cc89a659.js:36
+#: static_collected/dashboard/vm-tour.7b4cf596f543.js:36
 #: static_collected/dashboard/vm-tour.js:36
 msgid ""
 "During the tour please don't try the functions because it may lead to "
@@ -96,11 +308,33 @@ msgid ""
 msgstr "A túra során még ne próbálja ki a bemutatott funkciókat."
 
 #: dashboard/static/dashboard/vm-tour.js:45
+#: static_collected/vm-detail.09737c69abc3.js:5878
+#: static_collected/vm-detail.15d710d8ccf0.js:6414
+#: static_collected/vm-detail.234990ca6ec1.js:6987
+#: static_collected/vm-detail.47b1d21da259.js:5878
+#: static_collected/vm-detail.9e1734ade019.js:5879
+#: static_collected/vm-detail.c47949114749.js:6987
+#: static_collected/vm-detail.e3f398067c8a.js:6916
+#: static_collected/vm-detail.e81fe84bf4c0.js:9
+#: static_collected/vm-detail.js:6414
+#: static_collected/dashboard/vm-tour.1562cc89a659.js:45
+#: static_collected/dashboard/vm-tour.7b4cf596f543.js:45
 #: static_collected/dashboard/vm-tour.js:45
 msgid "Home tab"
 msgstr "Kezdőoldal"
 
 #: dashboard/static/dashboard/vm-tour.js:46
+#: static_collected/vm-detail.09737c69abc3.js:5879
+#: static_collected/vm-detail.15d710d8ccf0.js:6415
+#: static_collected/vm-detail.234990ca6ec1.js:6988
+#: static_collected/vm-detail.47b1d21da259.js:5879
+#: static_collected/vm-detail.9e1734ade019.js:5880
+#: static_collected/vm-detail.c47949114749.js:6988
+#: static_collected/vm-detail.e3f398067c8a.js:6917
+#: static_collected/vm-detail.e81fe84bf4c0.js:9
+#: static_collected/vm-detail.js:6415
+#: static_collected/dashboard/vm-tour.1562cc89a659.js:46
+#: static_collected/dashboard/vm-tour.7b4cf596f543.js:46
 #: static_collected/dashboard/vm-tour.js:46
 msgid ""
 "In this tab you can tag your virtual machine and modify the name and "
@@ -110,11 +344,33 @@ msgstr ""
 "leírását."
 
 #: dashboard/static/dashboard/vm-tour.js:55
+#: static_collected/vm-detail.09737c69abc3.js:5888
+#: static_collected/vm-detail.15d710d8ccf0.js:6424
+#: static_collected/vm-detail.234990ca6ec1.js:6997
+#: static_collected/vm-detail.47b1d21da259.js:5888
+#: static_collected/vm-detail.9e1734ade019.js:5889
+#: static_collected/vm-detail.c47949114749.js:6997
+#: static_collected/vm-detail.e3f398067c8a.js:6926
+#: static_collected/vm-detail.e81fe84bf4c0.js:9
+#: static_collected/vm-detail.js:6424
+#: static_collected/dashboard/vm-tour.1562cc89a659.js:55
+#: static_collected/dashboard/vm-tour.7b4cf596f543.js:55
 #: static_collected/dashboard/vm-tour.js:55
 msgid "Resources tab"
 msgstr "Erőforrások lap"
 
 #: dashboard/static/dashboard/vm-tour.js:58
+#: static_collected/vm-detail.09737c69abc3.js:5891
+#: static_collected/vm-detail.15d710d8ccf0.js:6427
+#: static_collected/vm-detail.234990ca6ec1.js:7000
+#: static_collected/vm-detail.47b1d21da259.js:5891
+#: static_collected/vm-detail.9e1734ade019.js:5892
+#: static_collected/vm-detail.c47949114749.js:7000
+#: static_collected/vm-detail.e3f398067c8a.js:6929
+#: static_collected/vm-detail.e81fe84bf4c0.js:9
+#: static_collected/vm-detail.js:6427
+#: static_collected/dashboard/vm-tour.1562cc89a659.js:58
+#: static_collected/dashboard/vm-tour.7b4cf596f543.js:58
 #: static_collected/dashboard/vm-tour.js:58
 msgid ""
 "On the resources tab you can edit the CPU/RAM options and add/remove disks!"
@@ -123,46 +379,145 @@ msgstr ""
 "hozzáadhat és törölhet lemezeket."
 
 #: dashboard/static/dashboard/vm-tour.js:68
+#: static_collected/vm-detail.09737c69abc3.js:5901
+#: static_collected/vm-detail.15d710d8ccf0.js:6437
+#: static_collected/vm-detail.234990ca6ec1.js:7010
+#: static_collected/vm-detail.47b1d21da259.js:5901
+#: static_collected/vm-detail.9e1734ade019.js:5902
+#: static_collected/vm-detail.c47949114749.js:7010
+#: static_collected/vm-detail.e3f398067c8a.js:6939
+#: static_collected/vm-detail.e81fe84bf4c0.js:9
+#: static_collected/vm-detail.js:6437
+#: static_collected/dashboard/vm-tour.1562cc89a659.js:68
+#: static_collected/dashboard/vm-tour.7b4cf596f543.js:68
 #: static_collected/dashboard/vm-tour.js:68
 msgid "Resources"
 msgstr "Erőforrások"
 
 #: dashboard/static/dashboard/vm-tour.js:69
+#: static_collected/vm-detail.09737c69abc3.js:5902
+#: static_collected/vm-detail.15d710d8ccf0.js:6438
+#: static_collected/vm-detail.234990ca6ec1.js:7011
+#: static_collected/vm-detail.47b1d21da259.js:5902
+#: static_collected/vm-detail.9e1734ade019.js:5903
+#: static_collected/vm-detail.c47949114749.js:7011
+#: static_collected/vm-detail.e3f398067c8a.js:6940
+#: static_collected/vm-detail.e81fe84bf4c0.js:9
+#: static_collected/vm-detail.js:6438
+#: static_collected/dashboard/vm-tour.1562cc89a659.js:69
+#: static_collected/dashboard/vm-tour.7b4cf596f543.js:69
 #: static_collected/dashboard/vm-tour.js:69
 msgid "CPU priority"
 msgstr "CPU prioritás"
 
 #: dashboard/static/dashboard/vm-tour.js:69
+#: static_collected/vm-detail.09737c69abc3.js:5902
+#: static_collected/vm-detail.15d710d8ccf0.js:6438
+#: static_collected/vm-detail.234990ca6ec1.js:7011
+#: static_collected/vm-detail.47b1d21da259.js:5902
+#: static_collected/vm-detail.9e1734ade019.js:5903
+#: static_collected/vm-detail.c47949114749.js:7011
+#: static_collected/vm-detail.e3f398067c8a.js:6940
+#: static_collected/vm-detail.e81fe84bf4c0.js:9
+#: static_collected/vm-detail.js:6438
+#: static_collected/dashboard/vm-tour.1562cc89a659.js:69
+#: static_collected/dashboard/vm-tour.7b4cf596f543.js:69
 #: static_collected/dashboard/vm-tour.js:69
 msgid "higher is better"
 msgstr "a nagyobb érték a jobb"
 
 #: dashboard/static/dashboard/vm-tour.js:70
+#: static_collected/vm-detail.09737c69abc3.js:5903
+#: static_collected/vm-detail.15d710d8ccf0.js:6439
+#: static_collected/vm-detail.234990ca6ec1.js:7012
+#: static_collected/vm-detail.47b1d21da259.js:5903
+#: static_collected/vm-detail.9e1734ade019.js:5904
+#: static_collected/vm-detail.c47949114749.js:7012
+#: static_collected/vm-detail.e3f398067c8a.js:6941
+#: static_collected/vm-detail.e81fe84bf4c0.js:9
+#: static_collected/vm-detail.js:6439
+#: static_collected/dashboard/vm-tour.1562cc89a659.js:70
+#: static_collected/dashboard/vm-tour.7b4cf596f543.js:70
 #: static_collected/dashboard/vm-tour.js:70
 msgid "CPU count"
 msgstr "CPU-k száma"
 
 #: dashboard/static/dashboard/vm-tour.js:70
+#: static_collected/vm-detail.09737c69abc3.js:5903
+#: static_collected/vm-detail.15d710d8ccf0.js:6439
+#: static_collected/vm-detail.234990ca6ec1.js:7012
+#: static_collected/vm-detail.47b1d21da259.js:5903
+#: static_collected/vm-detail.9e1734ade019.js:5904
+#: static_collected/vm-detail.c47949114749.js:7012
+#: static_collected/vm-detail.e3f398067c8a.js:6941
+#: static_collected/vm-detail.e81fe84bf4c0.js:9
+#: static_collected/vm-detail.js:6439
+#: static_collected/dashboard/vm-tour.1562cc89a659.js:70
+#: static_collected/dashboard/vm-tour.7b4cf596f543.js:70
 #: static_collected/dashboard/vm-tour.js:70
 msgid "number of CPU cores."
 msgstr "A CPU-magok száma."
 
 #: dashboard/static/dashboard/vm-tour.js:71
+#: static_collected/vm-detail.09737c69abc3.js:5904
+#: static_collected/vm-detail.15d710d8ccf0.js:6440
+#: static_collected/vm-detail.234990ca6ec1.js:7013
+#: static_collected/vm-detail.47b1d21da259.js:5904
+#: static_collected/vm-detail.9e1734ade019.js:5905
+#: static_collected/vm-detail.c47949114749.js:7013
+#: static_collected/vm-detail.e3f398067c8a.js:6942
+#: static_collected/vm-detail.e81fe84bf4c0.js:9
+#: static_collected/vm-detail.js:6440
+#: static_collected/dashboard/vm-tour.1562cc89a659.js:71
+#: static_collected/dashboard/vm-tour.7b4cf596f543.js:71
 #: static_collected/dashboard/vm-tour.js:71
 msgid "RAM amount"
 msgstr "RAM mennyiség"
 
 #: dashboard/static/dashboard/vm-tour.js:71
+#: static_collected/vm-detail.09737c69abc3.js:5904
+#: static_collected/vm-detail.15d710d8ccf0.js:6440
+#: static_collected/vm-detail.234990ca6ec1.js:7013
+#: static_collected/vm-detail.47b1d21da259.js:5904
+#: static_collected/vm-detail.9e1734ade019.js:5905
+#: static_collected/vm-detail.c47949114749.js:7013
+#: static_collected/vm-detail.e3f398067c8a.js:6942
+#: static_collected/vm-detail.e81fe84bf4c0.js:9
+#: static_collected/vm-detail.js:6440
+#: static_collected/dashboard/vm-tour.1562cc89a659.js:71
+#: static_collected/dashboard/vm-tour.7b4cf596f543.js:71
 #: static_collected/dashboard/vm-tour.js:71
 msgid "amount of RAM."
 msgstr "a memória mennyisége."
 
 #: dashboard/static/dashboard/vm-tour.js:81
+#: static_collected/vm-detail.09737c69abc3.js:5914
+#: static_collected/vm-detail.15d710d8ccf0.js:6450
+#: static_collected/vm-detail.234990ca6ec1.js:7023
+#: static_collected/vm-detail.47b1d21da259.js:5914
+#: static_collected/vm-detail.9e1734ade019.js:5915
+#: static_collected/vm-detail.c47949114749.js:7023
+#: static_collected/vm-detail.e3f398067c8a.js:6952
+#: static_collected/vm-detail.e81fe84bf4c0.js:9
+#: static_collected/vm-detail.js:6450
+#: static_collected/dashboard/vm-tour.1562cc89a659.js:81
+#: static_collected/dashboard/vm-tour.7b4cf596f543.js:81
 #: static_collected/dashboard/vm-tour.js:81
 msgid "Disks"
 msgstr "Lemezek"
 
 #: dashboard/static/dashboard/vm-tour.js:82
+#: static_collected/vm-detail.09737c69abc3.js:5915
+#: static_collected/vm-detail.15d710d8ccf0.js:6451
+#: static_collected/vm-detail.234990ca6ec1.js:7024
+#: static_collected/vm-detail.47b1d21da259.js:5915
+#: static_collected/vm-detail.9e1734ade019.js:5916
+#: static_collected/vm-detail.c47949114749.js:7024
+#: static_collected/vm-detail.e3f398067c8a.js:6953
+#: static_collected/vm-detail.e81fe84bf4c0.js:9
+#: static_collected/vm-detail.js:6451
+#: static_collected/dashboard/vm-tour.1562cc89a659.js:82
+#: static_collected/dashboard/vm-tour.7b4cf596f543.js:82
 #: static_collected/dashboard/vm-tour.js:82
 msgid ""
 "You can add empty disks, download new ones and remove existing ones here."
@@ -171,41 +526,129 @@ msgstr ""
 "meglévőket."
 
 #: dashboard/static/dashboard/vm-tour.js:92
+#: static_collected/vm-detail.09737c69abc3.js:5925
+#: static_collected/vm-detail.15d710d8ccf0.js:6461
+#: static_collected/vm-detail.234990ca6ec1.js:7034
+#: static_collected/vm-detail.47b1d21da259.js:5925
+#: static_collected/vm-detail.9e1734ade019.js:5926
+#: static_collected/vm-detail.c47949114749.js:7034
+#: static_collected/vm-detail.e3f398067c8a.js:6963
+#: static_collected/vm-detail.e81fe84bf4c0.js:10
+#: static_collected/vm-detail.js:6461
+#: static_collected/dashboard/vm-tour.1562cc89a659.js:92
+#: static_collected/dashboard/vm-tour.7b4cf596f543.js:92
 #: static_collected/dashboard/vm-tour.js:92
 msgid "Network tab"
 msgstr "Hálózat lap"
 
 #: dashboard/static/dashboard/vm-tour.js:93
+#: static_collected/vm-detail.09737c69abc3.js:5926
+#: static_collected/vm-detail.15d710d8ccf0.js:6462
+#: static_collected/vm-detail.234990ca6ec1.js:7035
+#: static_collected/vm-detail.47b1d21da259.js:5926
+#: static_collected/vm-detail.9e1734ade019.js:5927
+#: static_collected/vm-detail.c47949114749.js:7035
+#: static_collected/vm-detail.e3f398067c8a.js:6964
+#: static_collected/vm-detail.e81fe84bf4c0.js:10
+#: static_collected/vm-detail.js:6462
+#: static_collected/dashboard/vm-tour.1562cc89a659.js:93
+#: static_collected/dashboard/vm-tour.7b4cf596f543.js:93
 #: static_collected/dashboard/vm-tour.js:93
 msgid "You can add new network interfaces or remove existing ones here."
 msgstr "Hozzáadhat új hálózati interfészeket, vagy törölheti a meglévőket."
 
 #: dashboard/static/dashboard/vm-tour.js:102
+#: static_collected/vm-detail.09737c69abc3.js:5935
+#: static_collected/vm-detail.15d710d8ccf0.js:6471
+#: static_collected/vm-detail.234990ca6ec1.js:7044
+#: static_collected/vm-detail.47b1d21da259.js:5935
+#: static_collected/vm-detail.9e1734ade019.js:5936
+#: static_collected/vm-detail.c47949114749.js:7044
+#: static_collected/vm-detail.e3f398067c8a.js:6973
+#: static_collected/vm-detail.e81fe84bf4c0.js:10
+#: static_collected/vm-detail.js:6471
+#: static_collected/dashboard/vm-tour.1562cc89a659.js:102
+#: static_collected/dashboard/vm-tour.7b4cf596f543.js:102
 #: static_collected/dashboard/vm-tour.js:102
 msgid "Deploy"
 msgstr "Indítás"
 
 #: dashboard/static/dashboard/vm-tour.js:105
+#: static_collected/vm-detail.09737c69abc3.js:5938
+#: static_collected/vm-detail.15d710d8ccf0.js:6474
+#: static_collected/vm-detail.234990ca6ec1.js:7047
+#: static_collected/vm-detail.47b1d21da259.js:5938
+#: static_collected/vm-detail.9e1734ade019.js:5939
+#: static_collected/vm-detail.c47949114749.js:7047
+#: static_collected/vm-detail.e3f398067c8a.js:6976
+#: static_collected/vm-detail.e81fe84bf4c0.js:10
+#: static_collected/vm-detail.js:6474
+#: static_collected/dashboard/vm-tour.1562cc89a659.js:105
+#: static_collected/dashboard/vm-tour.7b4cf596f543.js:105
 #: static_collected/dashboard/vm-tour.js:105
 msgid "Deploy the virtual machine."
 msgstr "A virtuális gép elindítása."
 
 #: dashboard/static/dashboard/vm-tour.js:110
+#: static_collected/vm-detail.09737c69abc3.js:5943
+#: static_collected/vm-detail.15d710d8ccf0.js:6479
+#: static_collected/vm-detail.234990ca6ec1.js:7052
+#: static_collected/vm-detail.47b1d21da259.js:5943
+#: static_collected/vm-detail.9e1734ade019.js:5944
+#: static_collected/vm-detail.c47949114749.js:7052
+#: static_collected/vm-detail.e3f398067c8a.js:6981
+#: static_collected/vm-detail.e81fe84bf4c0.js:10
+#: static_collected/vm-detail.js:6479
+#: static_collected/dashboard/vm-tour.1562cc89a659.js:110
+#: static_collected/dashboard/vm-tour.7b4cf596f543.js:110
 #: static_collected/dashboard/vm-tour.js:110
 msgid "Connect"
 msgstr "Csatlakozás"
 
 #: dashboard/static/dashboard/vm-tour.js:113
+#: static_collected/vm-detail.09737c69abc3.js:5946
+#: static_collected/vm-detail.15d710d8ccf0.js:6482
+#: static_collected/vm-detail.234990ca6ec1.js:7055
+#: static_collected/vm-detail.47b1d21da259.js:5946
+#: static_collected/vm-detail.9e1734ade019.js:5947
+#: static_collected/vm-detail.c47949114749.js:7055
+#: static_collected/vm-detail.e3f398067c8a.js:6984
+#: static_collected/vm-detail.e81fe84bf4c0.js:10
+#: static_collected/vm-detail.js:6482
+#: static_collected/dashboard/vm-tour.1562cc89a659.js:113
+#: static_collected/dashboard/vm-tour.7b4cf596f543.js:113
 #: static_collected/dashboard/vm-tour.js:113
 msgid "Use the connection string or connect with your choice of client!"
 msgstr "Használja a megadott parancsot, vagy kedvenc kliensét."
 
 #: dashboard/static/dashboard/vm-tour.js:120
+#: static_collected/vm-detail.09737c69abc3.js:5953
+#: static_collected/vm-detail.15d710d8ccf0.js:6489
+#: static_collected/vm-detail.234990ca6ec1.js:7062
+#: static_collected/vm-detail.47b1d21da259.js:5953
+#: static_collected/vm-detail.9e1734ade019.js:5954
+#: static_collected/vm-detail.c47949114749.js:7062
+#: static_collected/vm-detail.e3f398067c8a.js:6991
+#: static_collected/vm-detail.e81fe84bf4c0.js:10
+#: static_collected/vm-detail.js:6489
+#: static_collected/dashboard/vm-tour.1562cc89a659.js:120
+#: static_collected/dashboard/vm-tour.7b4cf596f543.js:120
 #: static_collected/dashboard/vm-tour.js:120
 msgid "Customize the virtual machine"
 msgstr "Szabja testre a gépet"
 
 #: dashboard/static/dashboard/vm-tour.js:121
+#: static_collected/vm-detail.09737c69abc3.js:5954
+#: static_collected/vm-detail.15d710d8ccf0.js:6490
+#: static_collected/vm-detail.234990ca6ec1.js:7063
+#: static_collected/vm-detail.47b1d21da259.js:5954
+#: static_collected/vm-detail.9e1734ade019.js:5955
+#: static_collected/vm-detail.c47949114749.js:7063
+#: static_collected/vm-detail.e3f398067c8a.js:6992
+#: static_collected/vm-detail.e81fe84bf4c0.js:10
+#: static_collected/vm-detail.js:6490
+#: static_collected/dashboard/vm-tour.1562cc89a659.js:121
+#: static_collected/dashboard/vm-tour.7b4cf596f543.js:121
 #: static_collected/dashboard/vm-tour.js:121
 msgid ""
 "After you have connected to the virtual machine do your modifications then "
@@ -215,11 +658,33 @@ msgstr ""
 "ki."
 
 #: dashboard/static/dashboard/vm-tour.js:126
+#: static_collected/vm-detail.09737c69abc3.js:5959
+#: static_collected/vm-detail.15d710d8ccf0.js:6495
+#: static_collected/vm-detail.234990ca6ec1.js:7068
+#: static_collected/vm-detail.47b1d21da259.js:5959
+#: static_collected/vm-detail.9e1734ade019.js:5960
+#: static_collected/vm-detail.c47949114749.js:7068
+#: static_collected/vm-detail.e3f398067c8a.js:6997
+#: static_collected/vm-detail.e81fe84bf4c0.js:10
+#: static_collected/vm-detail.js:6495
+#: static_collected/dashboard/vm-tour.1562cc89a659.js:126
+#: static_collected/dashboard/vm-tour.7b4cf596f543.js:126
 #: static_collected/dashboard/vm-tour.js:126
 msgid "Save as"
 msgstr "Mentés sablonként"
 
 #: dashboard/static/dashboard/vm-tour.js:129
+#: static_collected/vm-detail.09737c69abc3.js:5962
+#: static_collected/vm-detail.15d710d8ccf0.js:6498
+#: static_collected/vm-detail.234990ca6ec1.js:7071
+#: static_collected/vm-detail.47b1d21da259.js:5962
+#: static_collected/vm-detail.9e1734ade019.js:5963
+#: static_collected/vm-detail.c47949114749.js:7071
+#: static_collected/vm-detail.e3f398067c8a.js:7000
+#: static_collected/vm-detail.e81fe84bf4c0.js:10
+#: static_collected/vm-detail.js:6498
+#: static_collected/dashboard/vm-tour.1562cc89a659.js:129
+#: static_collected/dashboard/vm-tour.7b4cf596f543.js:129
 #: static_collected/dashboard/vm-tour.js:129
 msgid ""
 "Press the \"Save as template\" button and wait until the activity finishes."
@@ -228,18 +693,50 @@ msgstr ""
 "elkészül."
 
 #: dashboard/static/dashboard/vm-tour.js:135
+#: static_collected/vm-detail.09737c69abc3.js:5968
+#: static_collected/vm-detail.15d710d8ccf0.js:6504
+#: static_collected/vm-detail.234990ca6ec1.js:7077
+#: static_collected/vm-detail.47b1d21da259.js:5968
+#: static_collected/vm-detail.9e1734ade019.js:5969
+#: static_collected/vm-detail.c47949114749.js:7077
+#: static_collected/vm-detail.e3f398067c8a.js:7006
+#: static_collected/vm-detail.e81fe84bf4c0.js:10
+#: static_collected/vm-detail.js:6504
+#: static_collected/dashboard/vm-tour.1562cc89a659.js:135
+#: static_collected/dashboard/vm-tour.7b4cf596f543.js:135
 #: static_collected/dashboard/vm-tour.js:135
 msgid "Finish"
 msgstr "Befejezés"
 
 #: dashboard/static/dashboard/vm-tour.js:138
+#: static_collected/vm-detail.09737c69abc3.js:5971
+#: static_collected/vm-detail.15d710d8ccf0.js:6507
+#: static_collected/vm-detail.234990ca6ec1.js:7080
+#: static_collected/vm-detail.47b1d21da259.js:5971
+#: static_collected/vm-detail.9e1734ade019.js:5972
+#: static_collected/vm-detail.c47949114749.js:7080
+#: static_collected/vm-detail.e3f398067c8a.js:7009
+#: static_collected/vm-detail.e81fe84bf4c0.js:10
+#: static_collected/vm-detail.js:6507
+#: static_collected/dashboard/vm-tour.1562cc89a659.js:138
+#: static_collected/dashboard/vm-tour.7b4cf596f543.js:138
 #: static_collected/dashboard/vm-tour.js:138
 msgid ""
 "This is the last message, if something is not clear you can do the the tour "
 "again!"
 msgstr "A túra véget ért. Ha valami nem érthető, újrakezdheti az útmutatót."
 
-#: network/static/js/host.js:10 static_collected/js/host.js:10
+#: network/static/js/host.js:10 static_collected/all.047675ebf594.js:5239
+#: static_collected/all.0aecd87e873a.js:5309
+#: static_collected/all.0db607331718.js:5215
+#: static_collected/all.146abee8fe99.js:5239
+#: static_collected/all.24315fee0c8e.js:5238
+#: static_collected/all.483236be7507.js:22
+#: static_collected/all.73e18dd7e023.js:5215
+#: static_collected/all.a650c949d06f.js:5238
+#: static_collected/all.b66e942cdb56.js:5238
+#: static_collected/all.f62aa30bd0a4.js:5239 static_collected/all.js:5215
+#: static_collected/js/host.e1b01efa0e67.js:10 static_collected/js/host.js:10
 msgid ""
 "Are you sure you want to remove host group <strong>\"%(group)s\"</strong> "
 "from <strong>\"%(host)s\"</strong>?"
@@ -247,32 +744,113 @@ msgstr ""
 "Biztosan törli a(z)<strong>„%(host)s”</strong> gépet a(z) "
 "<strong>„%(group)s”</strong> gépcsoportból?"
 
-#: network/static/js/host.js:13 static_collected/js/host.js:13
+#: network/static/js/host.js:13 static_collected/all.047675ebf594.js:5242
+#: static_collected/all.0aecd87e873a.js:5312
+#: static_collected/all.0db607331718.js:5218
+#: static_collected/all.146abee8fe99.js:5242
+#: static_collected/all.24315fee0c8e.js:5241
+#: static_collected/all.483236be7507.js:22
+#: static_collected/all.73e18dd7e023.js:5218
+#: static_collected/all.a650c949d06f.js:5241
+#: static_collected/all.b66e942cdb56.js:5241
+#: static_collected/all.f62aa30bd0a4.js:5242 static_collected/all.js:5218
+#: static_collected/js/host.e1b01efa0e67.js:13 static_collected/js/host.js:13
 msgid "Are you sure you want to delete this rule?"
 msgstr "Biztosan törli ezt a szabályt?"
 
 #: network/static/js/host.js:20 network/static/js/switch-port.js:14
+#: static_collected/all.047675ebf594.js:5249
+#: static_collected/all.047675ebf594.js:5347
+#: static_collected/all.0aecd87e873a.js:5319
+#: static_collected/all.0aecd87e873a.js:5417
+#: static_collected/all.0db607331718.js:5225
+#: static_collected/all.0db607331718.js:5323
+#: static_collected/all.146abee8fe99.js:5249
+#: static_collected/all.146abee8fe99.js:5347
+#: static_collected/all.24315fee0c8e.js:5248
+#: static_collected/all.24315fee0c8e.js:5346
+#: static_collected/all.483236be7507.js:22
+#: static_collected/all.73e18dd7e023.js:5225
+#: static_collected/all.73e18dd7e023.js:5323
+#: static_collected/all.a650c949d06f.js:5248
+#: static_collected/all.a650c949d06f.js:5346
+#: static_collected/all.b66e942cdb56.js:5248
+#: static_collected/all.b66e942cdb56.js:5346
+#: static_collected/all.f62aa30bd0a4.js:5249
+#: static_collected/all.f62aa30bd0a4.js:5347 static_collected/all.js:5225
+#: static_collected/all.js.c:5323
+#: static_collected/admin/js/admin/DateTimeShortcuts.5d58f199725a.js:95
+#: static_collected/admin/js/admin/DateTimeShortcuts.5d58f199725a.js:208
 #: static_collected/admin/js/admin/DateTimeShortcuts.js:95
 #: static_collected/admin/js/admin/DateTimeShortcuts.js:208
-#: static_collected/js/host.js:20 static_collected/js/switch-port.js:14
+#: static_collected/js/host.e1b01efa0e67.js:20 static_collected/js/host.js:20
+#: static_collected/js/switch-port.5eafbc56ee38.js:14
+#: static_collected/js/switch-port.js:14
 msgid "Cancel"
 msgstr "Mégsem"
 
 #: network/static/js/host.js:25 network/static/js/switch-port.js:19
+#: static_collected/all.047675ebf594.js:5254
+#: static_collected/all.047675ebf594.js:5352
+#: static_collected/all.0aecd87e873a.js:5324
+#: static_collected/all.0aecd87e873a.js:5422
+#: static_collected/all.0db607331718.js:5230
+#: static_collected/all.0db607331718.js:5328
+#: static_collected/all.146abee8fe99.js:5254
+#: static_collected/all.146abee8fe99.js:5352
+#: static_collected/all.24315fee0c8e.js:5253
+#: static_collected/all.24315fee0c8e.js:5351
+#: static_collected/all.483236be7507.js:22
+#: static_collected/all.73e18dd7e023.js:5230
+#: static_collected/all.73e18dd7e023.js:5328
+#: static_collected/all.a650c949d06f.js:5253
+#: static_collected/all.a650c949d06f.js:5351
+#: static_collected/all.b66e942cdb56.js:5253
+#: static_collected/all.b66e942cdb56.js:5351
+#: static_collected/all.f62aa30bd0a4.js:5254
+#: static_collected/all.f62aa30bd0a4.js:5352 static_collected/all.js:5230
+#: static_collected/all.js.c:5328
+#: static_collected/admin/js/SelectFilter2.9825381ac407.js:69
 #: static_collected/admin/js/SelectFilter2.js:69
-#: static_collected/js/host.js:25 static_collected/js/switch-port.js:19
+#: static_collected/js/host.e1b01efa0e67.js:25 static_collected/js/host.js:25
+#: static_collected/js/switch-port.5eafbc56ee38.js:19
+#: static_collected/js/switch-port.js:19
 msgid "Remove"
 msgstr "Eltávolítás"
 
-#: network/static/js/switch-port.js:8 static_collected/js/switch-port.js:8
+#: network/static/js/switch-port.js:8
+#: static_collected/all.047675ebf594.js:5341
+#: static_collected/all.0aecd87e873a.js:5411
+#: static_collected/all.0db607331718.js:5317
+#: static_collected/all.146abee8fe99.js:5341
+#: static_collected/all.24315fee0c8e.js:5340
+#: static_collected/all.483236be7507.js:22
+#: static_collected/all.73e18dd7e023.js:5317
+#: static_collected/all.a650c949d06f.js:5340
+#: static_collected/all.b66e942cdb56.js:5340
+#: static_collected/all.f62aa30bd0a4.js:5341 static_collected/all.js:5317
+#: static_collected/js/switch-port.5eafbc56ee38.js:8
+#: static_collected/js/switch-port.js:8
 msgid "Are you sure you want to delete this device?"
 msgstr "Biztosan törli ezt az eszközt?"
 
+#: static_collected/vm-detail.e81fe84bf4c0.js:9
+msgid ""
+"During the tour please don't try the functions because it may lead to "
+"graphical glitches, however you can end the tour any time you want with the "
+"End Tour button!"
+msgstr ""
+"A túra során még ne próbálja ki a bemutatott funkciókat, mivel ez "
+"megjelenítési problémákat okozhatnak. A túrát bármikor befejezheti a "
+"Befejezés gombra kattintva."
+
+#: static_collected/admin/js/SelectFilter2.9825381ac407.js:45
 #: static_collected/admin/js/SelectFilter2.js:45
 #, c-format
 msgid "Available %s"
 msgstr "Elérhető %s"
 
+#: static_collected/admin/js/SelectFilter2.9825381ac407.js:46
 #: static_collected/admin/js/SelectFilter2.js:46
 #, c-format
 msgid ""
@@ -282,33 +860,40 @@ msgstr ""
 "Ez az elérhető %s listája. Úgy választhat közülük, hogy rákattint az alábbi "
 "dobozban, és megnyomja a dobozok közti \"Választás\" nyilat."
 
+#: static_collected/admin/js/SelectFilter2.9825381ac407.js:53
 #: static_collected/admin/js/SelectFilter2.js:53
 #, c-format
 msgid "Type into this box to filter down the list of available %s."
 msgstr "Írjon a mezőbe az elérhető %s szűréséhez."
 
+#: static_collected/admin/js/SelectFilter2.9825381ac407.js:57
 #: static_collected/admin/js/SelectFilter2.js:57
 msgid "Filter"
 msgstr "Szűrő"
 
+#: static_collected/admin/js/SelectFilter2.9825381ac407.js:61
 #: static_collected/admin/js/SelectFilter2.js:61
 msgid "Choose all"
 msgstr "Mindet kijelölni"
 
+#: static_collected/admin/js/SelectFilter2.9825381ac407.js:61
 #: static_collected/admin/js/SelectFilter2.js:61
 #, c-format
 msgid "Click to choose all %s at once."
 msgstr "Kattintson az összes %s kiválasztásához."
 
+#: static_collected/admin/js/SelectFilter2.9825381ac407.js:67
 #: static_collected/admin/js/SelectFilter2.js:67
 msgid "Choose"
 msgstr "Választás"
 
+#: static_collected/admin/js/SelectFilter2.9825381ac407.js:75
 #: static_collected/admin/js/SelectFilter2.js:75
 #, c-format
 msgid "Chosen %s"
 msgstr "%s kiválasztva"
 
+#: static_collected/admin/js/SelectFilter2.9825381ac407.js:76
 #: static_collected/admin/js/SelectFilter2.js:76
 #, c-format
 msgid ""
@@ -318,23 +903,29 @@ msgstr ""
 "Ez a kiválasztott %s listája. Eltávolíthat közülük, ha rákattint, majd a két "
 "doboz közti \"Eltávolítás\" nyílra kattint."
 
+#: static_collected/admin/js/SelectFilter2.9825381ac407.js:80
 #: static_collected/admin/js/SelectFilter2.js:80
 msgid "Remove all"
 msgstr "Összes törlése"
 
+#: static_collected/admin/js/SelectFilter2.9825381ac407.js:80
 #: static_collected/admin/js/SelectFilter2.js:80
 #, c-format
 msgid "Click to remove all chosen %s at once."
 msgstr "Kattintson az összes %s eltávolításához."
 
+#: static_collected/admin/js/actions.fd884781224d.js:18
 #: static_collected/admin/js/actions.js:18
+#: static_collected/admin/js/actions.min.6a5121336635.js:1
 #: static_collected/admin/js/actions.min.js:1
 msgid "%(sel)s of %(cnt)s selected"
 msgid_plural "%(sel)s of %(cnt)s selected"
 msgstr[0] "%(sel)s/%(cnt)s kijelölve"
 msgstr[1] "%(sel)s/%(cnt)s kijelölve"
 
+#: static_collected/admin/js/actions.fd884781224d.js:109
 #: static_collected/admin/js/actions.js:109
+#: static_collected/admin/js/actions.min.6a5121336635.js:5
 #: static_collected/admin/js/actions.min.js:5
 msgid ""
 "You have unsaved changes on individual editable fields. If you run an "
@@ -343,7 +934,9 @@ msgstr ""
 "Még el nem mentett módosításai vannak egyes szerkeszthető mezőkön. Ha most "
 "futtat egy műveletet, akkor a módosítások elvesznek. "
 
+#: static_collected/admin/js/actions.fd884781224d.js:121
 #: static_collected/admin/js/actions.js:121
+#: static_collected/admin/js/actions.min.6a5121336635.js:5
 #: static_collected/admin/js/actions.min.js:5
 msgid ""
 "You have selected an action, but you haven't saved your changes to "
@@ -354,7 +947,9 @@ msgstr ""
 "módosításait. Kattintson az OK gombra a mentéshez. Újra kell futtatnia az "
 "műveletet."
 
+#: static_collected/admin/js/actions.fd884781224d.js:123
 #: static_collected/admin/js/actions.js:123
+#: static_collected/admin/js/actions.min.6a5121336635.js:6
 #: static_collected/admin/js/actions.min.js:6
 msgid ""
 "You have selected an action, and you haven't made any changes on individual "
@@ -364,6 +959,7 @@ msgstr ""
 "Kiválasztott egy műveletet, és nem módosított egyetlen mezőt sem. "
 "Feltehetően a Mehet gombot keresi a Mentés helyett."
 
+#: static_collected/admin/js/calendar.23d4bc1c37cd.js:8
 #: static_collected/admin/js/calendar.js:8
 msgid ""
 "January February March April May June July August September October November "
@@ -372,61 +968,80 @@ msgstr ""
 "január február március április május június július augusztus szeptember "
 "október november december"
 
+#: static_collected/admin/js/calendar.23d4bc1c37cd.js:9
 #: static_collected/admin/js/calendar.js:9
 msgid "S M T W T F S"
 msgstr "V H K Sz Cs P Szo"
 
+#: static_collected/admin/js/collapse.c781bafaf192.js:8
+#: static_collected/admin/js/collapse.c781bafaf192.js:19
 #: static_collected/admin/js/collapse.js:8
 #: static_collected/admin/js/collapse.js:19
+#: static_collected/admin/js/collapse.min.ce55331a033c.js:1
 #: static_collected/admin/js/collapse.min.js:1
 msgid "Show"
 msgstr "Mutat"
 
+#: static_collected/admin/js/collapse.c781bafaf192.js:16
 #: static_collected/admin/js/collapse.js:16
+#: static_collected/admin/js/collapse.min.ce55331a033c.js:1
 #: static_collected/admin/js/collapse.min.js:1
 msgid "Hide"
 msgstr "Elrejt"
 
+#: static_collected/admin/js/admin/DateTimeShortcuts.5d58f199725a.js:52
+#: static_collected/admin/js/admin/DateTimeShortcuts.5d58f199725a.js:88
 #: static_collected/admin/js/admin/DateTimeShortcuts.js:52
 #: static_collected/admin/js/admin/DateTimeShortcuts.js:88
 msgid "Now"
 msgstr "Most"
 
+#: static_collected/admin/js/admin/DateTimeShortcuts.5d58f199725a.js:56
 #: static_collected/admin/js/admin/DateTimeShortcuts.js:56
 msgid "Clock"
 msgstr "Óra"
 
+#: static_collected/admin/js/admin/DateTimeShortcuts.5d58f199725a.js:84
 #: static_collected/admin/js/admin/DateTimeShortcuts.js:84
 msgid "Choose a time"
 msgstr "Válassza ki az időt"
 
+#: static_collected/admin/js/admin/DateTimeShortcuts.5d58f199725a.js:89
 #: static_collected/admin/js/admin/DateTimeShortcuts.js:89
 msgid "Midnight"
 msgstr "Éjfél"
 
+#: static_collected/admin/js/admin/DateTimeShortcuts.5d58f199725a.js:90
 #: static_collected/admin/js/admin/DateTimeShortcuts.js:90
 msgid "6 a.m."
 msgstr "Reggel 6 óra"
 
+#: static_collected/admin/js/admin/DateTimeShortcuts.5d58f199725a.js:91
 #: static_collected/admin/js/admin/DateTimeShortcuts.js:91
 msgid "Noon"
 msgstr "Dél"
 
+#: static_collected/admin/js/admin/DateTimeShortcuts.5d58f199725a.js:148
+#: static_collected/admin/js/admin/DateTimeShortcuts.5d58f199725a.js:201
 #: static_collected/admin/js/admin/DateTimeShortcuts.js:148
 #: static_collected/admin/js/admin/DateTimeShortcuts.js:201
 msgid "Today"
 msgstr "Ma"
 
+#: static_collected/admin/js/admin/DateTimeShortcuts.5d58f199725a.js:152
 #: static_collected/admin/js/admin/DateTimeShortcuts.js:152
 msgid "Calendar"
 msgstr "Naptár"
 
+#: static_collected/admin/js/admin/DateTimeShortcuts.5d58f199725a.js:199
 #: static_collected/admin/js/admin/DateTimeShortcuts.js:199
 msgid "Yesterday"
 msgstr "Tegnap"
 
+#: static_collected/admin/js/admin/DateTimeShortcuts.5d58f199725a.js:203
 #: static_collected/admin/js/admin/DateTimeShortcuts.js:203
 msgid "Tomorrow"
 msgstr "Holnap"
 
-# end
+#~ msgid "Prevent newline at end of file"
+#~ msgstr "x"
