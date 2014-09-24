@@ -215,7 +215,7 @@ class ResizeDiskOperation(InstanceOperation):
     name = _("resize disk")
     description = _("Resize the virtual disk image. "
                     "Size must be greater value than the actual size.")
-    required_perms = ('vm.resize_disk', )
+    required_perms = ('storage.resize_disk', )
     accept_states = ('RUNNING', )
     async_queue = "localhost.man.slow"
 

@@ -104,7 +104,9 @@ class Disk(TimeStampedModel):
         verbose_name_plural = _('disks')
         permissions = (
             ('create_empty_disk', _('Can create an empty disk.')),
-            ('download_disk', _('Can download a disk.')))
+            ('download_disk', _('Can download a disk.')),
+            ('resize_disk', _('Can resize a disk.'))
+        )
 
     class DiskError(HumanReadableException):
         admin_message = None
