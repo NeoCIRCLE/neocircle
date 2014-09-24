@@ -38,7 +38,7 @@ from vm.models import Node, NodeActivity, Trait
 
 from ..forms import TraitForm, HostForm, NodeForm
 from ..tables import NodeListTable
-from .util import GraphViewBase, AjaxOperationMixin, OperationView, GraphMixin
+from .util import AjaxOperationMixin, OperationView, GraphMixin
 
 
 def get_operations(instance, user):
@@ -351,24 +351,3 @@ class NodeStatus(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
         else:
             messages.success(request, success_message)
             return redirect(self.get_success_url())
-
-
-class NodeGraphView(SuperuserRequiredMixin, GraphViewBase):
-    metrics = {
-        'cpu': ('cactiStyle(alias(nonNegativeDerivative(%(prefix)s.cpu.times),'
-                '"cpu usage (%%)"))'),
-        'memory': ('cactiStyle(alias(%(prefix)s.memory.usage,'
-                   '"memory usage (%%)"))'),
-        'network': ('cactiStyle(aliasByMetric('
-                    'nonNegativeDerivative(%(prefix)s.network.bytes_*)))'),
-    }
-    model = Node
-
-    def get_prefix(self, instance):
-        return 'circle.%s' % instance.host.hostname
-
-    def get_title(self, instance, metric):
-        return '%s - %s' % (instance.name, metric)
-
-    def get_object(self, request, pk):
-        return self.model.objects.get(id=pk)
