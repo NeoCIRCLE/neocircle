@@ -12,7 +12,6 @@
      <div class="pull-right" style="padding-top: 15px;">
       <a title="{% trans "Rename" %}" href="#" class="btn btn-default btn-xs node-details-rename-button"><i class="fa fa-pencil"></i></a>
       <a title="{% trans "Delete" %}" data-node-pk="{{ node.pk }}" class="btn btn-default btn-xs real-link node-delete" href="{% url "dashboard.views.delete-node" pk=node.pk %}"><i class="fa fa-trash-o"></i></a>
-      <a title="{% trans "Help" %}" href="#" class="btn btn-default btn-xs node-details-help-button"><i class="fa fa-question"></i></a>
     </div>
    <h1>
       <div id="node-details-rename">
@@ -26,40 +25,33 @@
       {{ node.name }}
       </div>
     </h1>
-    <div class="node-details-help js-hidden">
-      <ul style="list-style: none;">
-        <li>
-          <strong>{% trans "Rename" %}:</strong>
-          {% trans "Change the name of the node." %}
-        </li>
-        <li>
-          <strong>{% trans "Flush" %}:</strong>
-          {% trans "Disable node and move all instances to other one." %}
-        </li>
-        <li>
-          <strong>{% trans "Enable" %}:</strong>
-          {% trans "Enables node." %}
-        </li>
-        <li>
-          <strong>{% trans "Disable" %}:</strong>
-          {% trans "Disables node." %}
-        </li>
-        <li>
-          <strong>{% trans "Delete" %}:</strong>
-          {% trans "Remove node and it's host." %}
-        </li>
-      </ul>
-    </div>
   </div>
   <div class="row">
     <div class="col-md-2" id="node-info-pane">
       <div id="node-info-data" class="big">
         <span id="node-details-state" class="label
           {% if node.state == 'ACTIVE' %}label-success
-          {% elif node.state == 'PASSIVE' %}label-danger
-          {% else %}label-warning{% endif %}">
+          {% elif node.state == 'PASSIVE' %}label-warning
+          {% else %}label-danger{% endif %}">
           <i class="fa {{ node.get_status_icon }}"></i> {{ node.get_status_display|upper }}
         </span>
+      </div>
+      <div>
+        {% if node.enabled %}
+          <span class="label label-success">{% trans "Enabled" %}</span>
+          {% if node.schedule_enabled %}
+            <span class="label label-success">{% trans "Schedule enabled" %}</span>
+          {% else %}
+            <span class="label label-warning">{% trans "Schedule disabled" %}</span>
+          {% endif %}
+        {% else %}
+          <span class="label label-warning">{% trans "Disabled" %}</span>
+        {% endif %}
+        {% if node.online %}
+          <span class="label label-success">{% trans "Online" %}</span>
+        {% else %}
+          <span class="label label-warning">{% trans "Offline" %}</span>
+        {% endif %}
       </div>
     </div>
     <div class="col-md-10" id="node-detail-pane">
