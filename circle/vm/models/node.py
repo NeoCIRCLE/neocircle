@@ -135,7 +135,8 @@ class Node(OperatedMixin, TimeStampedModel):
         warn('Use Node.info["core_num"]', DeprecationWarning)
         return self.info['core_num']
 
-    STATES = {None: ('MISSING', _('missing')),
+    STATES = {None: ({True: ('MISSING', _('missing')),
+                      False: ('OFFLINE', _('offline'))}),
               False: {False: ('DISABLED', _('disabled'))},
               True: {False: ('PASSIVE', _('passive')),
                      True: ('ACTIVE', _('active'))}}
@@ -146,7 +147,7 @@ class Node(OperatedMixin, TimeStampedModel):
         if self.online:
             return self.STATES[self.enabled][self.schedule_enabled]
         else:
-            return self.STATES[None]
+            return self.STATES[None][self.enabled]
 
     def get_status_display(self):
         return self._get_state()[1]
@@ -303,6 +304,7 @@ class Node(OperatedMixin, TimeStampedModel):
     def get_status_icon(self):
         return {
             'DISABLED': 'times-circle-o',
+            'OFFLINE': 'times-circle',
             'MISSING': 'fa-warning',
             'PASSIVE': 'fa-play-circle-o',
             'ACTIVE': 'fa-play-circle'}.get(self.get_state(),
