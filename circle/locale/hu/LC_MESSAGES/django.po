@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-09-24 12:19+0200\n"
-"PO-Revision-Date: 2014-09-16 12:24+0200\n"
+"PO-Revision-Date: 2014-09-24 12:28+0200\n"
 "Last-Translator: Mate Ory <ory.mate@ik.bme.hu>\n"
 "Language-Team: Hungarian <cloud@ik.bme.hu>\n"
 "Language: hu\n"
@@ -1327,7 +1327,7 @@ msgstr "Számítási csomópontok"
 
 #: dashboard/templates/dashboard/node-list.html:31
 msgid "Graphs"
-msgstr ""
+msgstr "Grafikonok"
 
 #: dashboard/templates/dashboard/operate.html:6
 #, python-format
@@ -2245,27 +2245,24 @@ msgid "Raw data"
 msgstr "Nyers adat"
 
 #: dashboard/views/graph.py:166 dashboard/views/graph.py:167
-#, fuzzy
 msgid "RAM usage (%)"
-msgstr "RAM-használat"
+msgstr "RAM-használat (%)"
 
 #: dashboard/views/graph.py:178 dashboard/views/graph.py:179
 msgid "CPU usage (%)"
-msgstr ""
+msgstr "CPU-használat (%)"
 
 #: dashboard/views/graph.py:231 dashboard/views/graph.py:281
-#, fuzzy
 msgid "Instance count"
-msgstr "példány"
+msgstr "Példányok száma"
 
 #: dashboard/views/graph.py:232
-#, fuzzy
 msgid "instance count"
-msgstr "példány"
+msgstr "példányok száma"
 
 #: dashboard/views/graph.py:241 dashboard/views/graph.py:261
 msgid "Allocated memory (bytes)"
-msgstr ""
+msgstr "Foglalt memória (byte)"
 
 #: dashboard/views/group.py:140
 #, python-format
@@ -2482,37 +2479,32 @@ msgid "User or group \"%s\" not found."
 msgstr "Nem található „%s” felhasználó vagy csoport."
 
 #: dashboard/views/util.py:540
-#, fuzzy
 msgid "1 hour"
-msgstr "óra"
+msgstr "1 óra"
 
 #: dashboard/views/util.py:541
-#, fuzzy
 msgid "6 hours"
-msgstr "óra"
+msgstr "6 óra"
 
 #: dashboard/views/util.py:542
 msgid "1 day"
-msgstr ""
+msgstr "1 nap"
 
 #: dashboard/views/util.py:543
-#, fuzzy
 msgid "1 week"
-msgstr "hét"
+msgstr "1 hét"
 
 #: dashboard/views/util.py:544
-#, fuzzy
 msgid "1 month"
-msgstr "hónap"
+msgstr "1 hónap"
 
 #: dashboard/views/util.py:545
-#, fuzzy
 msgid "6 months"
-msgstr "hónap"
+msgstr "6 hónap"
 
 #: dashboard/views/util.py:554
 msgid "Bad graph time format, available periods are: h, d, w, and y."
-msgstr ""
+msgstr "Hibás grafikon időformátum. Lehetséges egységek: h, d, w és y."
 
 #: dashboard/views/vm.py:82
 msgid "console access"
@@ -4913,16 +4905,16 @@ msgstr "A tevékenység erőszakos megszakításra került."
 
 #: vm/operations.py:817
 msgid "You cannot call this operation on an offline node."
-msgstr ""
+msgstr "Nem hívható ez a művelet elérhetetlen csomópontra."
 
 #: vm/operations.py:844
 msgid "flush"
 msgstr "ürítés"
 
 #: vm/operations.py:845
-#, fuzzy
 msgid "Passivate node and move all instances to other ones."
-msgstr "A csomópont tiltása és az összes példány másikakra mozgatása."
+msgstr ""
+"A csomópont passzívra állítása és az összes példány másikakra mozgatása."
 
 #: vm/operations.py:855
 #, python-format
@@ -4930,22 +4922,21 @@ msgid "migrate %(instance)s (%(pk)s)"
 msgstr "%(instance)s (%(pk)s) migrálása"
 
 #: vm/operations.py:865
-#, fuzzy
 msgid "activate"
-msgstr "tevékenységkód"
+msgstr "aktiválás"
 
 #: vm/operations.py:866
 msgid ""
 "Make node active, i.e. scheduler is allowed to deploy virtual machines to it."
-msgstr ""
+msgstr "Csomópont aktívvá tétele: az ütemező indíthat virtuális gépeket rajta."
 
 #: vm/operations.py:874
 msgid "You cannot activate an active node."
-msgstr ""
+msgstr "Aktív csomópont aktiválása nem lehetséges."
 
 #: vm/operations.py:886
 msgid "passivate"
-msgstr ""
+msgstr "passziválás"
 
 #: vm/operations.py:887
 msgid ""
@@ -4953,28 +4944,29 @@ msgid ""
 "it, but remaining instances and the ones manually migrated will continue "
 "running."
 msgstr ""
+"Csomópont passzívvá tétele: az ütemező nem indíthat rajta virtuális gépeket, "
+"azonban a megmaradt példányok és a kézzel idemigráltak tovább "
+"működnek."
 
 #: vm/operations.py:895
 msgid "You cannot passivate a passive node."
-msgstr ""
+msgstr "Passzív csomópont passziválása nem lehetséges."
 
 #: vm/operations.py:908
-#, fuzzy
 msgid "disable"
-msgstr "tiltva"
+msgstr "tiltás"
 
 #: vm/operations.py:909
-#, fuzzy
 msgid "Disable node."
 msgstr "Csomópont tiltása."
 
 #: vm/operations.py:916
 msgid "You cannot disable a disabled node."
-msgstr ""
+msgstr "Tiltott csomópont tiltása nem lehetséges."
 
 #: vm/operations.py:919
 msgid "You cannot disable a node which is hosting instances."
-msgstr ""
+msgstr "Nem tiltható le olyan csomópont, amelyen még futnak példányok."
 
 #: vm/operations.py:933
 msgid "screenshot"
@@ -5373,9 +5365,9 @@ msgid "create instance"
 msgstr "példány létrehozása"
 
 #: vm/models/instance.py:458
-#, fuzzy, python-format
+#, python-format
 msgid "vm state changed to %(state)s on %(node)s"
-msgstr "VM állapota erre változott: %(state)s"
+msgstr "VM állapota erre változott: %(state)s, %(node)s"
 
 #: vm/models/instance.py:654
 #, python-format
@@ -5479,14 +5471,12 @@ msgid "Indicates whether the node can be used for hosting."
 msgstr "A csomópont használható-e gépek fogadására."
 
 #: vm/models/node.py:75
-#, fuzzy
 msgid "schedule enabled"
-msgstr "ütemezés"
+msgstr "ütemezés engedélyezve"
 
 #: vm/models/node.py:77
-#, fuzzy
 msgid "Indicates whether a vm can be automatically scheduled to this node."
-msgstr "A csomópont használható-e gépek fogadására."
+msgstr "A csomópontra ütemezhetőek-e automatikusan gépek."
 
 #: vm/models/node.py:81
 msgid "Declared traits."
@@ -5514,12 +5504,11 @@ msgstr "tiltva"
 
 #: vm/models/node.py:140
 msgid "passive"
-msgstr ""
+msgstr "passzív"
 
 #: vm/models/node.py:141
-#, fuzzy
 msgid "active"
-msgstr "aktív ezóta"
+msgstr "aktív"
 
 #: vm/tasks/local_agent_tasks.py:40
 msgid "cleanup"
@@ -5555,7 +5544,7 @@ msgstr "indítás"
 
 #: vm/tasks/local_agent_tasks.py:113
 msgid "wait agent restarting"
-msgstr ""
+msgstr "várakozás az ügynök újraindulására"
 
 #: vm/tasks/local_agent_tasks.py:123
 msgid "start access server"
