@@ -285,6 +285,25 @@ class ProfileView(LoginRequiredMixin, DetailView):
     slug_field = "username"
     slug_url_kwarg = "username"
 
+    def get(self, *args, **kwargs):
+        user = self.request.user
+        target = self.get_object()
+
+        # get the list of groups where the user is operator
+        user_g_w_op = GroupProfile.get_objects_with_level("operator", user)
+        # get the list of groups the "target" (the profile) is member of
+        target_groups = GroupProfile.objects.filter(
+            group__in=target.groups.all())
+        intersection = set(user_g_w_op).intersection(target_groups)
+
+        # if the intersection of the 2 lists is empty the logged in user
+        # has no permission to check the target's profile
+        # (except if the user want to see his own profile)
+        if len(intersection) < 1 and target != user:
+            raise PermissionDenied
+
+        return super(ProfileView, self).get(*args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super(ProfileView, self).get_context_data(**kwargs)
         user = self.get_object()
