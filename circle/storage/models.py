@@ -476,7 +476,8 @@ class Disk(TimeStampedModel):
         queue_name = self.get_remote_queue_name("storage", priority="slow")
         remote = storage_tasks.merge.apply_async(kwargs={
             "old_json": self.get_disk_desc(),
-            "new_json": disk.get_disk_desc()},
+            "new_json": disk.get_disk_desc(),
+            "parent_id": task.request.id},
             queue=queue_name
         )  # Timeout
         while True:

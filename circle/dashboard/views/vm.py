@@ -52,7 +52,7 @@ from vm.models import (
 )
 from .util import (
     CheckedDetailView, AjaxOperationMixin, OperationView, AclUpdateView,
-    FormOperationMixin, FilterMixin, GraphViewBase, search_user,
+    FormOperationMixin, FilterMixin, search_user, GraphMixin,
 )
 from ..forms import (
     AclUserOrGroupAddForm, VmResourcesForm, TraitsForm, RawDataForm,
@@ -89,7 +89,7 @@ class VmDetailVncTokenView(CheckedDetailView):
             raise Http404()
 
 
-class VmDetailView(CheckedDetailView):
+class VmDetailView(GraphMixin, CheckedDetailView):
     template_name = "dashboard/vm-detail.html"
     model = Instance
 
@@ -419,7 +419,7 @@ class VmMigrateView(VmOperationView):
     def get_context_data(self, **kwargs):
         ctx = super(VmMigrateView, self).get_context_data(**kwargs)
         ctx['nodes'] = [n for n in Node.objects.filter(enabled=True)
-                        if n.state == "ONLINE"]
+                        if n.online]
         return ctx
 
     def post(self, request, extra=None, *args, **kwargs):
@@ -1009,28 +1009,6 @@ class VmCreate(LoginRequiredMixin, TemplateView):
                        self.__create_customized)
 
         return create_func(request, *args, **kwargs)
-
-
-class VmGraphView(GraphViewBase):
-    metrics = {
-        'cpu': ('cactiStyle(alias(nonNegativeDerivative(%(prefix)s.cpu.usage),'
-                '"cpu usage (%%)"))'),
-        'memory': ('cactiStyle(alias(%(prefix)s.memory.usage,'
-                   '"memory usage (%%)"))'),
-        'network': (
-            'group('
-            'aliasSub(nonNegativeDerivative(%(prefix)s.network.bytes_recv*),'
-            ' ".*-(\d+)\\)", "out (vlan \\1)"),'
-            'aliasSub(nonNegativeDerivative(%(prefix)s.network.bytes_sent*),'
-            ' ".*-(\d+)\\)", "in (vlan \\1)"))'),
-    }
-    model = Instance
-
-    def get_prefix(self, instance):
-        return 'vm.%s' % instance.vm_name
-
-    def get_title(self, instance, metric):
-        return '%s (%s) - %s' % (instance.name, instance.vm_name, metric)
 
 
 @require_GET

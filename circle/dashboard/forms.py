@@ -524,11 +524,7 @@ class TemplateForm(forms.ModelForm):
                 value = field.widget.value_from_datadict(
                     self.data, self.files, self.add_prefix(name))
                 try:
-                    if isinstance(field, forms.FileField):
-                        initial = self.initial.get(name, field.initial)
-                        value = field.clean(value, initial)
-                    else:
-                        value = field.clean(value)
+                    value = field.clean(value)
                     self.cleaned_data[name] = value
                     if hasattr(self, 'clean_%s' % name):
                         value = getattr(self, 'clean_%s' % name)()
@@ -544,13 +540,14 @@ class TemplateForm(forms.ModelForm):
                 else:
                     self.cleaned_data[name] = getattr(old, name)
 
+        if "req_traits" not in self.allowed_fields:
+            self.cleaned_data['req_traits'] = self.instance.req_traits.all()
+
     def save(self, commit=True):
         data = self.cleaned_data
         self.instance.max_ram_size = data.get('ram_size')
 
-        instance = super(TemplateForm, self).save(commit=False)
-        if commit:
-            instance.save()
+        instance = super(TemplateForm, self).save(commit=True)
 
         # create and/or delete InterfaceTemplates
         networks = InterfaceTemplate.objects.filter(

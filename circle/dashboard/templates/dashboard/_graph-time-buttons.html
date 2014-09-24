@@ -1,0 +1,8 @@
+{% for o in graph_time_options %}
+  <a class="btn btn-xs
+    btn-{% if graph_time == o.time %}primary{% else %}default{% endif %}"
+    href="?graph_time={{ o.time }}"
+    data-graph-time="{{ o.time }}">
+    {{ o.name }}
+  </a>
+{% endfor %}
