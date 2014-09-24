@@ -55,10 +55,9 @@
     <div class="col-md-2" id="node-info-pane">
       <div id="node-info-data" class="big">
         <span id="node-details-state" class="label
-          {% if node.state == 'ONLINE' %}label-success
-          {% elif node.state == 'MISSING' %}label-danger
-          {% elif node.state == 'DISABLED' %}label-warning
-          {% elif node.state == 'OFFLINE' %}label-warning{% endif %}">
+          {% if node.state == 'ACTIVE' %}label-success
+          {% elif node.state == 'PASSIVE' %}label-danger
+          {% else %}label-warning{% endif %}">
           <i class="fa {{ node.get_status_icon }}"></i> {{ node.get_status_display|upper }}
         </span>
       </div>

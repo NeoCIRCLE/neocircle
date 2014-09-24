@@ -130,20 +130,26 @@ class Node(OperatedMixin, TimeStampedModel):
         warn('Use Node.info["core_num"]', DeprecationWarning)
         return self.info['core_num']
 
-    STATES = {False: {False: ('OFFLINE', _('offline')),
-                      True: ('DISABLED', _('disabled'))},
-              True: {False: ('MISSING', _('missing')),
-                     True: ('ONLINE', _('online'))}}
+    STATES = {None: ('MISSING', _('missing')),
+              False: {False: ('DISABLED', _('disabled'))},
+              True: {False: ('PASSIVE', _('passive')),
+                     True: ('ACTIVE', _('active'))}}
 
-    def get_state(self):
-        """The state combined of online and enabled attributes.
+    def _get_state(self):
+        """The state tuple based on online and enabled attributes.
         """
-        return self.STATES[self.enabled][self.online][0]
-
-    state = property(get_state)
+        if self.online:
+            return self.STATES[self.enabled][self.schedule_enabled]
+        else:
+            return self.STATES[None]
 
     def get_status_display(self):
-        return self.STATES[self.enabled][self.online][1]
+        return self._get_state()[1]
+
+    def get_state(self):
+        return self._get_state()[0]
+
+    state = property(get_state)
 
     def enable(self, user=None, base_activity=None):
         raise NotImplementedError("Use activate or passivate instead.")
@@ -291,10 +297,10 @@ class Node(OperatedMixin, TimeStampedModel):
 
     def get_status_icon(self):
         return {
-            'OFFLINE': 'fa-minus-circle',
-            'DISABLED': 'fa-moon-o',
+            'DISABLED': 'times-circle-o',
             'MISSING': 'fa-warning',
-            'ONLINE': 'fa-play-circle'}.get(self.get_state(),
+            'PASSIVE': 'fa-play-circle-o',
+            'ACTIVE': 'fa-play-circle'}.get(self.get_state(),
                                             'fa-question-circle')
 
     def get_status_label(self):
