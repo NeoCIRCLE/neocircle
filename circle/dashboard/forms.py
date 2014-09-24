@@ -810,6 +810,7 @@ class VmDiskResizeForm(forms.Form):
             empty_label=None, label=_('Disk')))
         if self.disk:
             self.fields['disk'].widget = HiddenInput()
+            self.fields['size'].initial += self.disk.size
 
     def clean(self):
         cleaned_data = super(VmDiskResizeForm, self).clean()
