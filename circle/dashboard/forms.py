@@ -816,7 +816,7 @@ class VmDiskResizeForm(forms.Form):
         if not size_in_bytes.isdigit() and len(size_in_bytes) > 0:
             raise forms.ValidationError(_("Invalid format, you can use "
                                           " GB or MB!"))
-        if float(size_in_bytes) < float(disk.size):
+        if int(size_in_bytes) < int(disk.size):
             raise forms.ValidationError(_("Disk size must be greater than the "
                                         "actual size."))
         return cleaned_data
