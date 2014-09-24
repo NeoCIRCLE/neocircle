@@ -55,7 +55,7 @@ def select_node(instance, nodes):
     '''
     # check required traits
     nodes = [n for n in nodes
-             if n.enabled and n.online
+             if n.schedule_enabled and n.online
              and has_traits(instance.req_traits.all(), n)]
     if not nodes:
         logger.warning('select_node: no usable node for %s', unicode(instance))

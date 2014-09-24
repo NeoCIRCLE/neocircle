@@ -27,7 +27,7 @@ from django.db.models import (
     FloatField, permalink, Sum
 )
 from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _, ugettext_noop
+from django.utils.translation import ugettext_lazy as _
 
 from celery.exceptions import TimeoutError
 from model_utils.models import TimeStampedModel
@@ -37,7 +37,7 @@ from common.models import method_cache, WorkerNotFound, HumanSortField
 from common.operations import OperatedMixin
 from firewall.models import Host
 from ..tasks import vm_tasks
-from .activity import node_activity, NodeActivity
+from .activity import NodeActivity
 from .common import Trait
 
 
@@ -72,6 +72,11 @@ class Node(OperatedMixin, TimeStampedModel):
     enabled = BooleanField(verbose_name=_('enabled'), default=False,
                            help_text=_('Indicates whether the node can '
                                        'be used for hosting.'))
+    schedule_enabled = BooleanField(verbose_name=_('schedule enabled'),
+                                    default=False, help_text=_(
+                                        'Indicates whether a vm can be '
+                                        'automatically scheduled to this '
+                                        'node.'))
     traits = ManyToManyField(Trait, blank=True,
                              help_text=_("Declared traits."),
                              verbose_name=_('traits'))
@@ -130,46 +135,30 @@ class Node(OperatedMixin, TimeStampedModel):
         warn('Use Node.info["core_num"]', DeprecationWarning)
         return self.info['core_num']
 
-    STATES = {False: {False: ('OFFLINE', _('offline')),
-                      True: ('DISABLED', _('disabled'))},
-              True: {False: ('MISSING', _('missing')),
-                     True: ('ONLINE', _('online'))}}
+    STATES = {None: ({True: ('MISSING', _('missing')),
+                      False: ('OFFLINE', _('offline'))}),
+              False: {False: ('DISABLED', _('disabled'))},
+              True: {False: ('PASSIVE', _('passive')),
+                     True: ('ACTIVE', _('active'))}}
+
+    def _get_state(self):
+        """The state tuple based on online and enabled attributes.
+        """
+        if self.online:
+            return self.STATES[self.enabled][self.schedule_enabled]
+        else:
+            return self.STATES[None][self.enabled]
+
+    def get_status_display(self):
+        return self._get_state()[1]
 
     def get_state(self):
-        """The state combined of online and enabled attributes.
-        """
-        return self.STATES[self.enabled][self.online][0]
+        return self._get_state()[0]
 
     state = property(get_state)
 
-    def get_status_display(self):
-        return self.STATES[self.enabled][self.online][1]
-
-    def disable(self, user=None, base_activity=None):
-        ''' Disable the node.'''
-        if self.enabled:
-            if base_activity:
-                act_ctx = base_activity.sub_activity(
-                    'disable', readable_name=ugettext_noop("disable node"))
-            else:
-                act_ctx = node_activity(
-                    'disable', node=self, user=user,
-                    readable_name=ugettext_noop("disable node"))
-            with act_ctx:
-                self.enabled = False
-                self.save()
-
     def enable(self, user=None, base_activity=None):
-        ''' Enable the node. '''
-        if self.enabled is not True:
-            if base_activity:
-                act_ctx = base_activity.sub_activity('enable')
-            else:
-                act_ctx = node_activity('enable', node=self, user=user)
-            with act_ctx:
-                self.enabled = True
-                self.save()
-            self.get_info(invalidate_cache=True)
+        raise NotImplementedError("Use activate or passivate instead.")
 
     @property
     @node_available
@@ -314,10 +303,11 @@ class Node(OperatedMixin, TimeStampedModel):
 
     def get_status_icon(self):
         return {
-            'OFFLINE': 'fa-minus-circle',
-            'DISABLED': 'fa-moon-o',
+            'DISABLED': 'fa-times-circle-o',
+            'OFFLINE': 'fa-times-circle',
             'MISSING': 'fa-warning',
-            'ONLINE': 'fa-play-circle'}.get(self.get_state(),
+            'PASSIVE': 'fa-play-circle-o',
+            'ACTIVE': 'fa-play-circle'}.get(self.get_state(),
                                             'fa-question-circle')
 
     def get_status_label(self):
@@ -384,6 +374,11 @@ class Node(OperatedMixin, TimeStampedModel):
     @permalink
     def get_absolute_url(self):
         return ('dashboard.views.node-detail', None, {'pk': self.id})
+
+    def save(self, *args, **kwargs):
+        if not self.enabled:
+            self.schedule_enabled = False
+        super(Node, self).save(*args, **kwargs)
 
     @property
     def metric_prefix(self):
