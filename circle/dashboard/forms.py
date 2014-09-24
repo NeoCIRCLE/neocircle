@@ -801,13 +801,15 @@ class VmDiskResizeForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         choices = kwargs.pop('choices')
-        default = kwargs.pop('default')
+        self.disk = kwargs.pop('default')
 
         super(VmDiskResizeForm, self).__init__(*args, **kwargs)
 
         self.fields.insert(0, 'disk', forms.ModelChoiceField(
-            queryset=choices, initial=default, required=True,
+            queryset=choices, initial=self.disk, required=True,
             empty_label=None, label=_('Disk')))
+        if self.disk:
+            self.fields['disk'].widget = HiddenInput()
 
     def clean(self):
         cleaned_data = super(VmDiskResizeForm, self).clean()
@@ -825,6 +827,10 @@ class VmDiskResizeForm(forms.Form):
     def helper(self):
         helper = FormHelper(self)
         helper.form_tag = False
+        if self.disk:
+            helper.layout = Layout(
+                HTML(_("<label>Disk:</label> %s") % self.disk),
+                Field('disk'), Field('size'))
         return helper
 
 

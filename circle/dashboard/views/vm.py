@@ -380,9 +380,9 @@ class VmDiskResizeView(FormOperationMixin, VmOperationView):
             try:
                 default = choices.get(pk=disk_pk)
             except (ValueError, Disk.DoesNotExist):
-                raise SuspiciousOperation()
+                raise Http404()
         else:
-            raise SuspiciousOperation()
+            default = None
 
         val = super(VmDiskResizeView, self).get_form_kwargs()
         val.update({'choices': choices, 'default': default})
