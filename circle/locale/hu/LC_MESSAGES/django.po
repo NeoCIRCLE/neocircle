@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-09-24 12:19+0200\n"
-"PO-Revision-Date: 2014-09-24 12:28+0200\n"
+"POT-Creation-Date: 2014-09-24 13:16+0200\n"
+"PO-Revision-Date: 2014-09-24 13:18+0200\n"
 "Last-Translator: Mate Ory <ory.mate@ik.bme.hu>\n"
 "Language-Team: Hungarian <cloud@ik.bme.hu>\n"
 "Language: hu\n"
@@ -138,7 +138,7 @@ msgid "realtime"
 msgstr "valós idejű"
 
 #: dashboard/forms.py:73 dashboard/forms.py:776 dashboard/forms.py:797
-#: dashboard/forms.py:1084 dashboard/tables.py:224
+#: dashboard/forms.py:1084 dashboard/tables.py:225
 #: dashboard/templates/dashboard/_vm-create-2.html:20
 #: dashboard/templates/dashboard/vm-list.html:60
 #: dashboard/templates/dashboard/vm-detail/home.html:8 firewall/models.py:285
@@ -483,69 +483,73 @@ msgstr "tulajdonos"
 msgid "Unique identifier of the group at the organization."
 msgstr "A csoport egyedi szervezeti azonosítója."
 
-#: dashboard/tables.py:39
+#: dashboard/tables.py:38
 msgid "Overcommit"
 msgstr "Túlfoglalás"
 
-#: dashboard/tables.py:57
+#: dashboard/tables.py:43
+msgid "Status"
+msgstr "Állapot"
+
+#: dashboard/tables.py:58
 msgid "Number of VMs"
 msgstr "VM-ek száma"
 
-#: dashboard/tables.py:63
+#: dashboard/tables.py:64
 msgid "Monitor"
 msgstr "Állapot"
 
-#: dashboard/tables.py:144 dashboard/templates/dashboard/_vm-create-2.html:38
-#: dashboard/templates/dashboard/node-detail.html:77
+#: dashboard/tables.py:145 dashboard/templates/dashboard/_vm-create-2.html:38
+#: dashboard/templates/dashboard/node-detail.html:69
 #: dashboard/templates/dashboard/vm-detail.html:163
 msgid "Resources"
 msgstr "Erőforrások"
 
-#: dashboard/tables.py:150 dashboard/templates/dashboard/vm-list.html:72
+#: dashboard/tables.py:151 dashboard/templates/dashboard/vm-list.html:72
 #: vm/models/instance.py:113
 msgid "Lease"
 msgstr "Bérlet"
 
-#: dashboard/tables.py:161 dashboard/templates/dashboard/vm-list.html:68
+#: dashboard/tables.py:162 dashboard/templates/dashboard/vm-list.html:68
 #: dashboard/templates/dashboard/vm-detail/access.html:2
 msgid "Owner"
 msgstr "Tulajdonos"
 
-#: dashboard/tables.py:166 dashboard/tables.py:234
+#: dashboard/tables.py:167 dashboard/tables.py:235
 msgid "Created at"
 msgstr "Létrehozva"
 
-#: dashboard/tables.py:170
+#: dashboard/tables.py:171
 msgid "Running"
 msgstr "Fut"
 
-#: dashboard/tables.py:174 dashboard/tables.py:205 dashboard/tables.py:239
-#: dashboard/tables.py:268
+#: dashboard/tables.py:175 dashboard/tables.py:206 dashboard/tables.py:240
+#: dashboard/tables.py:269
 msgid "Actions"
 msgstr "Műveletek"
 
-#: dashboard/tables.py:217
+#: dashboard/tables.py:218
 msgid "No available leases."
 msgstr "Nincs elérhető bérlési mód."
 
-#: dashboard/tables.py:229
+#: dashboard/tables.py:230
 msgid "Fingerprint"
 msgstr "Ujjlenyomat"
 
-#: dashboard/tables.py:250
+#: dashboard/tables.py:251
 msgid "You haven't added any public keys yet."
 msgstr "Még nem adott meg publikus kulcsot."
 
-#: dashboard/tables.py:260
+#: dashboard/tables.py:261
 msgid "Access method"
 msgstr "Elérés módja"
 
-#: dashboard/tables.py:264
+#: dashboard/tables.py:265
 #: dashboard/templates/dashboard/vm-detail/home.html:94
 msgid "Template"
 msgstr "Sablon"
 
-#: dashboard/tables.py:281
+#: dashboard/tables.py:282
 msgid ""
 "You don't have any custom connection commands yet. You can specify commands "
 "to be displayed on VM detail pages instead of the defaults."
@@ -576,7 +580,6 @@ msgstr "Szabályzat"
 
 #: dashboard/templates/base.html:64
 #: dashboard/templates/dashboard/group-detail.html:13
-#: dashboard/templates/dashboard/node-detail.html:15
 #: templates/info/help.html:4 templates/info/help.html.py:9
 msgid "Help"
 msgstr "Súgó"
@@ -952,8 +955,7 @@ msgstr "csoport"
 #: dashboard/templates/dashboard/group-detail.html:20
 #: dashboard/templates/dashboard/group-detail.html:33
 #: dashboard/templates/dashboard/node-detail.html:13
-#: dashboard/templates/dashboard/node-detail.html:22
-#: dashboard/templates/dashboard/node-detail.html:32
+#: dashboard/templates/dashboard/node-detail.html:21
 #: dashboard/templates/dashboard/vm-detail.html:50
 #: dashboard/templates/dashboard/group-list/column-name.html:7
 #: dashboard/templates/dashboard/node-list/column-name.html:7
@@ -965,7 +967,6 @@ msgstr "Átnevezés"
 #: dashboard/templates/dashboard/group-detail.html:12
 #: dashboard/templates/dashboard/group-detail.html:37
 #: dashboard/templates/dashboard/node-detail.html:14
-#: dashboard/templates/dashboard/node-detail.html:48
 #: dashboard/templates/dashboard/confirm/ajax-delete.html:18
 #: dashboard/templates/dashboard/confirm/mass-delete.html:12
 #: dashboard/templates/dashboard/connect-command-list/column-command-actions.html:5
@@ -1193,7 +1194,7 @@ msgid "You have no permission to start or manage virtual machines."
 msgstr "Nincs jogosultsága virtuális gépek indítására vagy kezelésére."
 
 #: dashboard/templates/dashboard/instanceactivity_detail.html:25
-#: dashboard/templates/dashboard/node-detail.html:90
+#: dashboard/templates/dashboard/node-detail.html:82
 #: dashboard/templates/dashboard/vm-detail.html:182
 #: dashboard/templates/dashboard/node-detail/activity.html:3
 #: dashboard/templates/dashboard/vm-detail/activity.html:3
@@ -1280,44 +1281,37 @@ msgstr[1] ""
 msgid "Add Trait"
 msgstr "Jellemző hozzáadása"
 
-#: dashboard/templates/dashboard/node-detail.html:33
-msgid "Change the name of the node."
-msgstr "Válasszon nevet a csomópontnak."
-
-#: dashboard/templates/dashboard/node-detail.html:36
-msgid "Flush"
-msgstr "Ürítés"
-
-#: dashboard/templates/dashboard/node-detail.html:37
-msgid "Disable node and move all instances to other one."
-msgstr "Csomópont letiltása és az összes példány migrálása a többire."
-
-#: dashboard/templates/dashboard/node-detail.html:40
-msgid "Enable"
-msgstr "Engedélyezés"
-
 #: dashboard/templates/dashboard/node-detail.html:41
-msgid "Enables node."
-msgstr "Csomópont engedélyezése."
+#: dashboard/templates/dashboard/node-detail/resources.html:10
+msgid "Enabled"
+msgstr "Engedélyezve"
 
-#: dashboard/templates/dashboard/node-detail.html:44
-msgid "Disable"
-msgstr "Tiltás"
+#: dashboard/templates/dashboard/node-detail.html:43
+msgid "Schedule enabled"
+msgstr "Ütemezés engedélyezve"
 
 #: dashboard/templates/dashboard/node-detail.html:45
-msgid "Disables node."
-msgstr "Csomópont tiltása."
+msgid "Schedule disabled"
+msgstr "Ütemezés tiltva"
 
-#: dashboard/templates/dashboard/node-detail.html:49
-msgid "Remove node and it's host."
-msgstr "Csomópont és hoszt törlése."
+#: dashboard/templates/dashboard/node-detail.html:48
+msgid "Disabled"
+msgstr "Tiltás"
 
-#: dashboard/templates/dashboard/node-detail.html:71
+#: dashboard/templates/dashboard/node-detail.html:51
+msgid "Online"
+msgstr "Elérhető"
+
+#: dashboard/templates/dashboard/node-detail.html:53
+msgid "Offline"
+msgstr "Offline"
+
+#: dashboard/templates/dashboard/node-detail.html:63
 #: dashboard/templates/dashboard/vm-detail.html:158
 msgid "Home"
 msgstr "Kezdőoldal"
 
-#: dashboard/templates/dashboard/node-detail.html:84
+#: dashboard/templates/dashboard/node-detail.html:76
 msgid "Virtual Machines"
 msgstr "Virtuális gépek"
 
@@ -1851,10 +1845,6 @@ msgstr "Architektúra"
 #: dashboard/templates/dashboard/node-detail/resources.html:9
 msgid "Host IP"
 msgstr "Gép IP címe"
-
-#: dashboard/templates/dashboard/node-detail/resources.html:10
-msgid "Enabled"
-msgstr "Engedélyezve"
 
 #: dashboard/templates/dashboard/node-detail/resources.html:11
 msgid "Host online"
@@ -4945,8 +4935,7 @@ msgid ""
 "running."
 msgstr ""
 "Csomópont passzívvá tétele: az ütemező nem indíthat rajta virtuális gépeket, "
-"azonban a megmaradt példányok és a kézzel idemigráltak tovább "
-"működnek."
+"azonban a megmaradt példányok és a kézzel idemigráltak tovább működnek."
 
 #: vm/operations.py:895
 msgid "You cannot passivate a passive node."
@@ -5499,14 +5488,18 @@ msgid "missing"
 msgstr "eltűnt"
 
 #: vm/models/node.py:139
+msgid "offline"
+msgstr "nem elérhető"
+
+#: vm/models/node.py:140
 msgid "disabled"
 msgstr "tiltva"
 
-#: vm/models/node.py:140
+#: vm/models/node.py:141
 msgid "passive"
 msgstr "passzív"
 
-#: vm/models/node.py:141
+#: vm/models/node.py:142
 msgid "active"
 msgstr "aktív"
 
@@ -5596,14 +5589,29 @@ msgstr ""
 msgid "x"
 msgstr "x"
 
+#~ msgid "Change the name of the node."
+#~ msgstr "Válasszon nevet a csomópontnak."
+
+#~ msgid "Flush"
+#~ msgstr "Ürítés"
+
+#~ msgid "Disable node and move all instances to other one."
+#~ msgstr "Csomópont letiltása és az összes példány migrálása a többire."
+
+#~ msgid "Enable"
+#~ msgstr "Engedélyezés"
+
+#~ msgid "Enables node."
+#~ msgstr "Csomópont engedélyezése."
+
+#~ msgid "Disables node."
+#~ msgstr "Csomópont tiltása."
+
+#~ msgid "Remove node and it's host."
+#~ msgstr "Csomópont és hoszt törlése."
+
 #~ msgid "Node successfully flushed."
 #~ msgstr "A csomópont ürítésre kerül."
-
-#~ msgid "offline"
-#~ msgstr "nem elérhető"
-
-#~ msgid "online"
-#~ msgstr "elérhető"
 
 #~ msgid "disable node"
 #~ msgstr "csomópont tiltása"
