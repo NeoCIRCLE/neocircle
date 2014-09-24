@@ -995,3 +995,11 @@ textarea[name="new_members"] {
 .graph-images img {
   max-width: 100%;
 }
+
+#vm-list-table tbody td:nth-child(3) {
+  white-space: nowrap;
+}
+
+#vm-list-table td {
+  vertical-align: middle;
+}
