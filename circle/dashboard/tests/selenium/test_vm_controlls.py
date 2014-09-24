@@ -14,82 +14,197 @@
 #
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
-
-# from unittest import skip
 from selenose.cases import SeleniumTestCase
-# from django.test import TestCase
-from xvfbwrapper import Xvfb
-from firewall.models import Vlan, VlanGroup
-from mock import Mock
-from django_sshkey.models import UserKey
-from vm.models import Instance
-from django.contrib.auth.models import User, Group, Permission
-import django.conf
-settings = django.conf.settings.FIREWALL_SETTINGS
+from django.contrib.auth.models import User
+import random
+import urlparse
+import re
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 host = 'https:127.0.0.1'
 
 
-class LoginMixin(object):
+class UtilityMixin(object):
     def login(self, username, password='password'):
         driver = self.driver
         driver.get('%s/accounts/login/' % host)
         try:
             name_input = driver.find_element_by_id("id_username")
-        except:
-            pass
-        try:
             password_input = driver.find_element_by_id("id_password")
-        except:
-            pass
-        try:
             submit_input = driver.find_element_by_id("submit-id-submit")
         except:
-            pass
-        name_input.clear()
-        name_input.send_keys(username)
-        password_input.clear()
-        password_input.send_keys(password)
-        submit_input.click()
+            inputs = driver.find_elements_by_tag_name("input")
+            for current_input in inputs:
+                input_type = current_input.get_attribute("type")
+                if input_type == "text":
+                    name_input = current_input
+                if input_type == "password":
+                    password_input = current_input
+                if input_type == "submit":
+                    submit_input = current_input
+        try:
+            name_input.clear()
+            name_input.send_keys(username)
+            password_input.clear()
+            password_input.send_keys(password)
+            submit_input.click()
+            try:  # If selenium runs only in a small (virtual) screen
+                driver.find_element_by_class_name('navbar-toggle').click()
+            except:
+                pass
+            WebDriverWait(self.driver, 10).until(
+                EC.element_to_be_clickable((
+                    By.CSS_SELECTOR, "a[href*='/dashboard/profile/']")))
+        except:
+            raise Exception('Selenium cannot find the form controls')
 
-class VmDetailTest(LoginMixin, SeleniumTestCase):
-    fixtures = ['test-vm-fixture.json', 'node.json']
+    def get_link_by_href(self, target_href, attributes=None):
+        try:
+            links = self.driver.find_elements_by_tag_name('a')
+            for link in links:
+                href = link.get_attribute('href')
+                if href is not None:
+                    if target_href in href:
+                        perfect_fit = True
+                        if isinstance(attributes, dict):
+                            for key, target_value in attributes.iteritems():
+                                attr_check = link.get_attribute(key)
+                                if attr_check is not None:
+                                    if target_value not in attr_check:
+                                        perfect_fit = False
+                        if perfect_fit:
+                            return link
+        except:
+            raise Exception(
+                'Selenium cannot find the href=%s link' % target_href)
+
+    def create_random_vm(self):
+        try:
+            self.driver.get('%s/dashboard/vm/create/' % host)
+            vm_list = []
+            pk = None
+            vm_list = self.driver.find_elements_by_class_name(
+                'vm-create-template-summary')
+            choice = random.randint(0, len(vm_list) - 1)
+            vm_list[choice].click()
+            create = WebDriverWait(self.driver, 10).until(
+                EC.element_to_be_clickable((
+                    By.CLASS_NAME, 'vm-create-start')))
+            create.click()
+            WebDriverWait(self.driver, 10).until(
+                EC.visibility_of_element_located((
+                    By.CLASS_NAME, 'alert-success')))
+            url = urlparse.urlparse(self.driver.current_url)
+            pk = re.search(r'\d+', url.path).group()
+            return pk
+        except:
+            raise Exception('Selenium cannot start any VM')
+
+    def viewChange(self, target_box):
+        driver = self.driver
+        driver.get('%s/dashboard/' % host)
+        list_view = driver.find_element_by_id('%s-list-view' % target_box)
+        graph_view = driver.find_element_by_id('%s-graph-view' % target_box)
+        js_script = 'return arguments[0].style.display;'
+        required_attributes = {'data-index-box': target_box}
+        graph_view_link = self.get_link_by_href(
+            '#index-graph-view',
+            required_attributes).find_element_by_tag_name('i')
+        list_view_link = self.get_link_by_href(
+            '#index-list-view',
+            required_attributes).find_element_by_tag_name('i')
+        list_view_link.click()
+        states = [driver.execute_script("%s" % js_script, list_view),
+                  driver.execute_script("%s" % js_script, graph_view)]
+        graph_view_link.click()
+        states.extend([driver.execute_script("%s" % js_script, list_view),
+                       driver.execute_script("%s" % js_script, graph_view)])
+        list_view_link.click()
+        states.extend([driver.execute_script("%s" % js_script, list_view),
+                       driver.execute_script("%s" % js_script, graph_view)])
+        return states
+
+    def delete_vm(self, pk):
+        try:
+            driver = self.driver
+            driver.get('%s/dashboard/vm/%s/' % (host, pk))
+            status_span = driver.find_element_by_id('vm-details-state')
+            destroy_link = self.get_link_by_href(
+                "/dashboard/vm/%s/op/destroy/" % pk)
+            destroy_link.click()
+            destroy = WebDriverWait(self.driver, 10).until(
+                EC.element_to_be_clickable((By.ID, 'op-form-send')))
+            destroy.click()
+            WebDriverWait(status_span, 10).until(
+                EC.visibility_of_element_located((
+                    By.CLASS_NAME, 'fa-trash-o')))
+            return True
+        except:
+            raise Exception("Selenium can not destroy a VM")
+
+
+class VmDetailTest(UtilityMixin, SeleniumTestCase):
+    random = "".join([random.choice(
+        '0123456789abcdefghijklmnopqrstvwxyz') for n in xrange(10)])
 
     def setUp(self):
-        self.xvfb = Xvfb(width=1280, height=720)
-        self.addCleanup(self.xvfb.stop)
-        self.xvfb.start()
-        Instance.get_remote_queue_name = Mock(return_value='test')
-        self.u1 = User.objects.create(username='user1')
-        self.u1.set_password('password')
+        self.u1 = User.objects.create(username='test_%s' % self.random,
+                                      is_superuser=True)
+        self.u1.set_password(self.random)
         self.u1.save()
-        self.u2 = User.objects.create(username='user2', is_staff=True)
-        self.u2.set_password('password')
-        self.u2.save()
-        self.us = User.objects.create(username='superuser', is_superuser=True)
-        self.us.set_password('password')
-        self.us.save()
-        self.g1 = Group.objects.create(name='group1')
-        self.g1.user_set.add(self.u1)
-        self.g1.user_set.add(self.u2)
-        self.g1.save()
-        self.u1.user_permissions.add(Permission.objects.get(
-            codename='create_vm'))
-        settings["default_vlangroup"] = 'public'
-        VlanGroup.objects.create(name='public')
+        self.addCleanup(self.u1.delete)
 
-    def tearDown(self):
-        super(VmDetailTest, self).tearDown()
-        self.u1.delete()
-        self.u2.delete()
-        self.us.delete()
-        self.g1.delete()
-
-    def test_404_vm_page(self):
-        import sys
-        self.login('user1')
+    def test_01_login(self):
+        title = 'Dashboard | CIRCLE'
+        location = '/dashboard/'
+        self.login('test_%s' % self.random, self.random)
         self.driver.get('%s/dashboard/' % host)
-        print self.driver.page_source
-        sys.stdout.flush()
-        assert False
-        # response = c.get('/dashboard/vm/235555/')
-        # self.assertEqual(response.status_code, 404)
+        url = urlparse.urlparse(self.driver.current_url)
+        (self.assertIn('%s' % title, self.driver.title,
+                       '%s is not found in the title' % title) and
+            self.assertEqual(url.path, '%s' % location,
+                             'URL path is not equal with %s' % location))
+
+    def test_02_able_to_create_vm(self):
+        self.login('test_%s' % self.random, self.random)
+        vm_list = None
+        create_vm_link = self.get_link_by_href('/dashboard/vm/create/')
+        create_vm_link.click()
+        vm_list = self.driver.find_elements_by_class_name(
+            'vm-create-template-summary')
+        (self.assertIsNotNone(
+            vm_list, "Selenium can not find the VM list") and
+            self.assertGreater(len(vm_list), 0, "The create VM list is empty"))
+
+    def test_03_create_vm(self):
+        self.login('test_%s' % self.random, self.random)
+        pk = self.create_random_vm()
+        self.assertIsNotNone(pk, "Can not create a VM")
+
+    def test_04_vm_view_change(self):
+        self.login('test_%s' % self.random, self.random)
+        expected_states = ["", "none",
+                           "none", "",
+                           "block", "none"]
+        states = self.viewChange("vm")
+        print 'states: [%s]' % ', '.join(map(str, states))
+        print 'expected: [%s]' % ', '.join(map(str, expected_states))
+        self.assertListEqual(states, expected_states,
+                             "The view mode does not change for VM listing")
+
+    def test_05_node_view_change(self):
+        self.login('test_%s' % self.random, self.random)
+        expected_states = ["", "none",
+                           "none", "",
+                           "block", "none"]
+        states = self.viewChange("node")
+        print 'states: [%s]' % ', '.join(map(str, states))
+        print 'expected: [%s]' % ', '.join(map(str, expected_states))
+        self.assertListEqual(states, expected_states,
+                             "The view mode does not change for NODE listing")
+
+    def test_06_delete_vm(self):
+        self.login('test_%s' % self.random, self.random)
+        pk = self.create_random_vm()
+        self.assertTrue(self.delete_vm(pk), "Can not delete a VM")
