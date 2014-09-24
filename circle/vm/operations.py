@@ -205,6 +205,27 @@ class CreateDiskOperation(InstanceOperation):
 
 
 @register_operation
+class ResizeDiskOperation(InstanceOperation):
+
+    activity_code_suffix = 'resize_disk'
+    id = 'resize_disk'
+    name = _("resize disk")
+    description = _("Resize the virtual disk image. "
+                    "Size must be greater value than the actual size.")
+    required_perms = ('storage.resize_disk', )
+    accept_states = ('RUNNING', )
+    async_queue = "localhost.man.slow"
+
+    def _operation(self, user, disk, size, activity):
+        self.instance.resize_disk_live(disk, size)
+
+    def get_activity_name(self, kwargs):
+        return create_readable(
+            ugettext_noop("resize disk %(name)s to %(size)s"),
+            size=filesizeformat(kwargs['size']), name=kwargs['disk'].name)
+
+
+@register_operation
 class DownloadDiskOperation(InstanceOperation):
     activity_code_suffix = 'download_disk'
     id = 'download_disk'

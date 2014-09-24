@@ -58,7 +58,7 @@ from ..forms import (
     AclUserOrGroupAddForm, VmResourcesForm, TraitsForm, RawDataForm,
     VmAddInterfaceForm, VmCreateDiskForm, VmDownloadDiskForm, VmSaveForm,
     VmRenewForm, VmStateChangeForm, VmListSearchForm, VmCustomizeForm,
-    TransferOwnershipForm,
+    TransferOwnershipForm, VmDiskResizeForm,
 )
 from ..models import Favourite, Profile
 
@@ -365,6 +365,30 @@ class VmAddInterfaceView(FormOperationMixin, VmOperationView):
         return val
 
 
+class VmDiskResizeView(FormOperationMixin, VmOperationView):
+
+    op = 'resize_disk'
+    form_class = VmDiskResizeForm
+    show_in_toolbar = False
+    icon = 'arrows-alt'
+    effect = "success"
+
+    def get_form_kwargs(self):
+        choices = self.get_op().instance.disks
+        disk_pk = self.request.GET.get('disk')
+        if disk_pk:
+            try:
+                default = choices.get(pk=disk_pk)
+            except (ValueError, Disk.DoesNotExist):
+                raise Http404()
+        else:
+            default = None
+
+        val = super(VmDiskResizeView, self).get_form_kwargs()
+        val.update({'choices': choices, 'default': default})
+        return val
+
+
 class VmCreateDiskView(FormOperationMixin, VmOperationView):
 
     op = 'create_disk'
@@ -601,6 +625,7 @@ vm_ops = OrderedDict([
         op='destroy', icon='times', effect='danger')),
     ('create_disk', VmCreateDiskView),
     ('download_disk', VmDownloadDiskView),
+    ('resize_disk', VmDiskResizeView),
     ('add_interface', VmAddInterfaceView),
     ('renew', VmRenewView),
     ('resources_change', VmResourcesChangeView),

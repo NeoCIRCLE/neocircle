@@ -790,6 +790,48 @@ class VmCreateDiskForm(forms.Form):
         return helper
 
 
+class VmDiskResizeForm(forms.Form):
+    size = forms.CharField(
+        widget=FileSizeWidget, initial=(10 << 30), label=_('Size'),
+        help_text=_('Size to resize the disk in bytes or with units '
+                    'like MB or GB.'))
+
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('choices')
+        self.disk = kwargs.pop('default')
+
+        super(VmDiskResizeForm, self).__init__(*args, **kwargs)
+
+        self.fields.insert(0, 'disk', forms.ModelChoiceField(
+            queryset=choices, initial=self.disk, required=True,
+            empty_label=None, label=_('Disk')))
+        if self.disk:
+            self.fields['disk'].widget = HiddenInput()
+            self.fields['size'].initial += self.disk.size
+
+    def clean(self):
+        cleaned_data = super(VmDiskResizeForm, self).clean()
+        size_in_bytes = self.cleaned_data.get("size")
+        disk = self.cleaned_data.get('disk')
+        if not size_in_bytes.isdigit() and len(size_in_bytes) > 0:
+            raise forms.ValidationError(_("Invalid format, you can use "
+                                          " GB or MB!"))
+        if int(size_in_bytes) < int(disk.size):
+            raise forms.ValidationError(_("Disk size must be greater than the "
+                                        "actual size."))
+        return cleaned_data
+
+    @property
+    def helper(self):
+        helper = FormHelper(self)
+        helper.form_tag = False
+        if self.disk:
+            helper.layout = Layout(
+                HTML(_("<label>Disk:</label> %s") % self.disk),
+                Field('disk'), Field('size'))
+        return helper
+
+
 class VmDownloadDiskForm(forms.Form):
     name = forms.CharField(max_length=100, label=_("Name"))
     url = forms.CharField(label=_('URL'), validators=[URLValidator(), ])
