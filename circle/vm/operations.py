@@ -220,8 +220,7 @@ class ResizeDiskOperation(InstanceOperation):
     async_queue = "localhost.man.slow"
 
     def _operation(self, user, disk, size, activity):
-        if self.instance.is_running:
-            self.instance.resize_disk_live(disk, size)
+        self.instance.resize_disk_live(disk, size)
 
     def get_activity_name(self, kwargs):
         return create_readable(
