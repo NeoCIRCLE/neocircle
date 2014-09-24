@@ -47,7 +47,10 @@
           <div class="input-group vm-details-home-name">
             <input id="vm-details-rename-name" class="form-control input-sm" name="new_name" type="text" value="{{ instance.name }}"/>
             <span class="input-group-btn">
-              <button type="submit" class="btn btn-sm vm-details-rename-submit">{% trans "Rename" %}</button>
+              <button type="submit" class="btn btn-sm vm-details-rename-submit
+                {% if not is_operator %}disabled{% endif %}">
+                {% trans "Rename" %}
+              </button>
             </span>
           </div>
         </form>

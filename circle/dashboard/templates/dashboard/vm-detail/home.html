@@ -6,7 +6,9 @@
       <dd><i class="fa fa-{{ os_type_icon }}"></i> {{ instance.system }}</dd>
       <dt style="margin-top: 5px;">
         {% trans "Name" %}:
-        <a href="#" class="vm-details-home-edit-name-click"><i class="fa fa-pencil"></i></a>
+        {% if is_operator %}
+          <a href="#" class="vm-details-home-edit-name-click"><i class="fa fa-pencil"></i></a>
+        {% endif %}
       </dt>
       <dd>
         <div class="vm-details-home-edit-name-click">
@@ -18,8 +20,9 @@
             <div class="input-group">
               <input type="text" name="new_name" value="{{ instance.name }}" class="form-control input-sm"/>
               <span class="input-group-btn">
-                <button type="submit" class="btn btn-success btn-sm vm-details-rename-submit">
-                  <i class="fa fa-pencil"></i> {% trans "Rename" %}
+                <button type="submit" class="btn btn-success btn-sm vm-details-rename-submit
+                  {% if not is_operator %}disabled{% endif %}" title="{% trans "Rename" %}">
+                  <i class="fa fa-pencil"></i>
                 </button>
               </span>
             </div>
@@ -28,7 +31,9 @@
       </dd>
       <dt style="margin-top: 5px;">
         {% trans "Description" %}:
-        <a href="#" class="vm-details-home-edit-description-click"><i class="fa fa-pencil"></i></a>
+        {% if is_operator %}
+          <a href="#" class="vm-details-home-edit-description-click"><i class="fa fa-pencil"></i></a>
+        {% endif %}
       </dt>
       <dd>
         {% csrf_token %}
@@ -38,7 +43,8 @@
         <div id="vm-details-home-description" class="js-hidden">
           <form method="POST">
             <textarea name="new_description" class="form-control">{{ instance.description }}</textarea>
-            <button type="submit" class="btn btn-xs btn-success vm-details-description-submit">
+            <button type="submit" class="btn btn-xs btn-success vm-details-description-submit
+              {% if not is_operator %}disabled{% endif %}">
               <i class="fa fa-pencil"></i> {% trans "Update" %}
             </button>
           </form>
@@ -70,11 +76,13 @@
           {% for t in instance.tags.all %}
             <div class="label label-primary label-tag" style="display: inline-block">
               {{ t }}
-              <a href="#" class="vm-details-remove-tag"><i class="fa fa-times"></i></a>
+              {% if is_operator %}
+                <a href="#" class="vm-details-remove-tag"><i class="fa fa-times"></i></a>
+              {% endif %}
             </div>
           {% endfor %}
         {% else %}
-          <small>{% trans "No tag added!" %}</small>
+          <small>{% trans "No tag added." %}</small>
         {% endif %}
       </div>
       <form action="" method="POST">
@@ -85,7 +93,8 @@
             <i class="fa fa-question"></i>
           </div>-->
           <div class="input-group-btn">
-            <input type="submit" class="btn btn-default btn-sm input-tags" value="{% trans "Add tag" %}"/>
+            <input type="submit" class="btn btn-default btn-sm input-tags
+            {% if not is_operator %}disabled{% endif %}" value="{% trans "Add tag" %}"/>
           </div>
         </div>
       </form>

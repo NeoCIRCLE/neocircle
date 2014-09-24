@@ -97,6 +97,8 @@ class VmDetailView(GraphMixin, CheckedDetailView):
         context = super(VmDetailView, self).get_context_data(**kwargs)
         instance = context['instance']
         user = self.request.user
+        is_operator = instance.has_level(user, "operator")
+        is_owner = instance.has_level(user, "owner")
         ops = get_operations(instance, user)
         context.update({
             'graphite_enabled': settings.GRAPHITE_URL is not None,
@@ -152,9 +154,11 @@ class VmDetailView(GraphMixin, CheckedDetailView):
         context['client_download'] = self.request.COOKIES.get(
             'downloaded_client')
         # can link template
-        context['can_link_template'] = (
-            instance.template and instance.template.has_level(user, "operator")
-        )
+        context['can_link_template'] = instance.template and is_operator
+
+        # is operator/owner
+        context['is_operator'] = is_operator
+        context['is_owner'] = is_owner
 
         return context
 
@@ -174,7 +178,7 @@ class VmDetailView(GraphMixin, CheckedDetailView):
 
     def __set_name(self, request):
         self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
+        if not self.object.has_level(request.user, "operator"):
             raise PermissionDenied()
         new_name = request.POST.get("new_name")
         Instance.objects.filter(pk=self.object.pk).update(
@@ -197,7 +201,7 @@ class VmDetailView(GraphMixin, CheckedDetailView):
 
     def __set_description(self, request):
         self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
+        if not self.object.has_level(request.user, "operator"):
             raise PermissionDenied()
 
         new_description = request.POST.get("new_description")
@@ -221,7 +225,7 @@ class VmDetailView(GraphMixin, CheckedDetailView):
     def __add_tag(self, request):
         new_tag = request.POST.get('new_tag')
         self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
+        if not self.object.has_level(request.user, "operator"):
             raise PermissionDenied()
 
         if len(new_tag) < 1:
@@ -243,7 +247,7 @@ class VmDetailView(GraphMixin, CheckedDetailView):
         try:
             to_remove = request.POST.get('to_remove')
             self.object = self.get_object()
-            if not self.object.has_level(request.user, 'owner'):
+            if not self.object.has_level(request.user, "operator"):
                 raise PermissionDenied()
 
             self.object.tags.remove(to_remove)
@@ -262,8 +266,8 @@ class VmDetailView(GraphMixin, CheckedDetailView):
 
     def __add_port(self, request):
         object = self.get_object()
-        if (not object.has_level(request.user, 'owner') or
-                not request.user.has_perm('vm.config_ports')):
+        if not (object.has_level(request.user, "operator") and
+                request.user.has_perm('vm.config_ports')):
             raise PermissionDenied()
 
         port = request.POST.get("port")
