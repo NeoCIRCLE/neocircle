@@ -276,7 +276,7 @@ class DeployOperation(InstanceOperation):
     def _operation(self, activity, timeout=15):
         # Allocate VNC port and host node
         self.instance.allocate_vnc_port()
-        self.instance.allocate_node()
+        self.instance.allocate_node(activity)
 
         # Deploy virtual images
         with activity.sub_activity(
@@ -385,12 +385,7 @@ class MigrateOperation(InstanceOperation):
 
     def _operation(self, activity, to_node=None, timeout=120):
         if not to_node:
-            with activity.sub_activity('scheduling',
-                                       readable_name=ugettext_noop(
-                                           "schedule")) as sa:
-                to_node = self.instance.select_node()
-                sa.result = to_node
-
+            self.instance.allocate_node(activity)
         try:
             with activity.sub_activity(
                 'migrate_vm', readable_name=create_readable(
@@ -744,7 +739,7 @@ class WakeUpOperation(InstanceOperation):
     def _operation(self, activity, timeout=60):
         # Schedule vm
         self.instance.allocate_vnc_port()
-        self.instance.allocate_node()
+        self.instance.allocate_node(activity)
 
         # Resume vm
         with activity.sub_activity(
@@ -757,13 +752,6 @@ class WakeUpOperation(InstanceOperation):
             'deploying_net', readable_name=ugettext_noop(
                 "deploy network")):
             self.instance.deploy_net()
-
-        activity.result = create_readable(
-            "",
-            ugettext_noop(
-                "Scheduled to %(node)s" % {'node': self.instance.node.name}
-            )
-        )
 
         try:
             self.instance.renew(parent_activity=activity)

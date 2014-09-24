@@ -910,10 +910,16 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         delete_dump.apply_async(args=[self.mem_dump['path']],
                                 queue=queue_name).get(timeout=timeout)
 
-    def allocate_node(self):
-        if self.node is None:
-            self.node = self.select_node()
+    def allocate_node(self, activity):
+        if self.node is not None:
+            return None
+
+        with activity.sub_activity(
+                'scheduling',
+                readable_name=ugettext_noop("schedule")) as sa:
+            sa.result = self.node = self.select_node()
             self.save()
+            return self.node
 
     def yield_node(self):
         if self.node is not None:
