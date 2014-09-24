@@ -405,7 +405,8 @@ class AclUpdateView(LoginRequiredMixin, View, SingleObjectMixin):
         is_owner = 'owner' in allowed_levels
 
         allowed_users = cls.get_allowed_users(user)
-        allowed_groups = cls.get_allowed_groups(user)
+        allowed_groups = (set(cls.get_allowed_groups(user)) |
+                          set(user.groups.all()))
 
         user_levels = list(
             {'user': u, 'level': l} for u, l in obj.get_users_with_level()
