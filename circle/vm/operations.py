@@ -523,6 +523,7 @@ class SaveAsTemplateOperation(InstanceOperation):
                     "with users and groups.  Anyone who has access to a "
                     "template (and to the networks it uses) will be able to "
                     "start an instance of it.")
+    has_percentage = True
     abortable = True
     required_perms = ('vm.create_template', )
     accept_states = ('RUNNING', 'STOPPED')
