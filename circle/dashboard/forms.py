@@ -524,11 +524,7 @@ class TemplateForm(forms.ModelForm):
                 value = field.widget.value_from_datadict(
                     self.data, self.files, self.add_prefix(name))
                 try:
-                    if isinstance(field, forms.FileField):
-                        initial = self.initial.get(name, field.initial)
-                        value = field.clean(value, initial)
-                    else:
-                        value = field.clean(value)
+                    value = field.clean(value)
                     self.cleaned_data[name] = value
                     if hasattr(self, 'clean_%s' % name):
                         value = getattr(self, 'clean_%s' % name)()
