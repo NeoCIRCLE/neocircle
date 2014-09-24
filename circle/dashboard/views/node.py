@@ -38,7 +38,7 @@ from vm.models import Node, NodeActivity, Trait
 
 from ..forms import TraitForm, HostForm, NodeForm
 from ..tables import NodeListTable
-from .util import GraphViewBase, AjaxOperationMixin, OperationView
+from .util import GraphViewBase, AjaxOperationMixin, OperationView, GraphMixin
 
 
 def get_operations(instance, user):
@@ -73,7 +73,8 @@ node_ops = OrderedDict([
 ])
 
 
-class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
+class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin,
+                     GraphMixin, DetailView):
     template_name = "dashboard/node-detail.html"
     model = Node
     form = None
@@ -142,7 +143,8 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
             return redirect(self.object.get_absolute_url())
 
 
-class NodeList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
+class NodeList(LoginRequiredMixin, SuperuserRequiredMixin,
+               GraphMixin, SingleTableView):
     template_name = "dashboard/node-list.html"
     table_class = NodeListTable
     table_pagination = False

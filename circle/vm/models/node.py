@@ -24,7 +24,7 @@ import requests
 from django.conf import settings
 from django.db.models import (
     CharField, IntegerField, ForeignKey, BooleanField, ManyToManyField,
-    FloatField, permalink,
+    FloatField, permalink, Sum
 )
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -119,6 +119,11 @@ class Node(OperatedMixin, TimeStampedModel):
                                           'architecture': ''})
 
     info = property(get_info)
+
+    @property
+    def allocated_ram(self):
+        return (self.instance_set.aggregate(
+            r=Sum('ram_size'))['r'] or 0) * 1024 * 1024
 
     @property
     def ram_size(self):
@@ -247,7 +252,7 @@ class Node(OperatedMixin, TimeStampedModel):
     @node_available
     @method_cache(10)
     def monitor_info(self):
-        metrics = ('cpu.usage', 'memory.usage')
+        metrics = ('cpu.percent', 'memory.usage')
         prefix = 'circle.%s.' % self.host.hostname
         params = [('target', '%s%s' % (prefix, metric))
                   for metric in metrics]
@@ -283,7 +288,7 @@ class Node(OperatedMixin, TimeStampedModel):
     @property
     @node_available
     def cpu_usage(self):
-        return self.monitor_info.get('cpu.usage') / 100
+        return self.monitor_info.get('cpu.percent') / 100
 
     @property
     @node_available
@@ -372,3 +377,7 @@ class Node(OperatedMixin, TimeStampedModel):
         if not self.enabled:
             self.schedule_enabled = False
         super(Node, self).save(*args, **kwargs)
+
+    @property
+    def metric_prefix(self):
+        return 'circle.%s' % self.host.hostname

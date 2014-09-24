@@ -61,6 +61,12 @@ celery.conf.update(
             'schedule': timedelta(seconds=30),
             'options': {'queue': 'localhost.monitor'}
         },
+        'monitor.allocated_memory': {
+            'task': 'monitor.tasks.local_periodic_tasks.'
+                    'allocated_memory',
+            'schedule': timedelta(seconds=30),
+            'options': {'queue': 'localhost.monitor'}
+        },
     }
 
 )

@@ -22,18 +22,16 @@ import re
 from collections import OrderedDict
 from urlparse import urljoin
 
-import requests
-
 from django.conf import settings
 from django.contrib.auth.models import User, Group
-from django.core.exceptions import PermissionDenied, SuspiciousOperation
+from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.contrib import messages
 from django.contrib.auth.views import redirect_to_login
 from django.db.models import Q
-from django.http import HttpResponse, Http404, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _
 from django.views.generic import DetailView, View
 from django.views.generic.detail import SingleObjectMixin
 
@@ -537,43 +535,29 @@ class AclUpdateView(LoginRequiredMixin, View, SingleObjectMixin):
         return redirect("%s#access" % self.instance.get_absolute_url())
 
 
-class GraphViewBase(LoginRequiredMixin, View):
-    def get(self, request, pk, metric, time, *args, **kwargs):
-        graphite_url = settings.GRAPHITE_URL
-        if graphite_url is None:
-            raise Http404()
+class GraphMixin(object):
+    graph_time_options = [
+        {'time': "1h", 'name': _("1 hour")},
+        {'time': "6h", 'name': _("6 hours")},
+        {'time': "1d", 'name': _("1 day")},
+        {'time': "1w", 'name': _("1 week")},
+        {'time': "30d", 'name': _("1 month")},
+        {'time': "26w", 'name': _("6 months")},
+    ]
+    default_graph_time = "6h"
 
-        if metric not in self.metrics.keys():
-            raise SuspiciousOperation()
-
-        try:
-            instance = self.get_object(request, pk)
-        except self.model.DoesNotExist:
-            raise Http404()
-
-        prefix = self.get_prefix(instance)
-        target = self.metrics[metric] % {'prefix': prefix}
-        title = self.get_title(instance, metric)
-        params = {'target': target,
-                  'from': '-%s' % time,
-                  'title': title.encode('UTF-8'),
-                  'width': '500',
-                  'height': '200'}
-        logger.debug('%s %s', graphite_url, params)
-        response = requests.get('%s/render/' % graphite_url, params=params)
-        return HttpResponse(response.content, mimetype="image/png")
-
-    def get_prefix(self, instance):
-        raise NotImplementedError("Subclass must implement abstract method")
-
-    def get_title(self, instance, metric):
-        raise NotImplementedError("Subclass must implement abstract method")
-
-    def get_object(self, request, pk):
-        instance = self.model.objects.get(id=pk)
-        if not instance.has_level(request.user, 'user'):
-            raise PermissionDenied()
-        return instance
+    def get_context_data(self, *args, **kwargs):
+        context = super(GraphMixin, self).get_context_data(*args, **kwargs)
+        graph_time = self.request.GET.get("graph_time",
+                                          self.default_graph_time)
+        if not re.match("^[0-9]{1,2}[hdwy]$", graph_time):
+            messages.warning(self.request, _("Bad graph time format, "
+                                             "available periods are: "
+                                             "h, d, w, and y."))
+            graph_time = self.default_graph_time
+        context['graph_time'] = graph_time
+        context['graph_time_options'] = self.graph_time_options
+        return context
 
 
 def absolute_url(url):

@@ -1003,3 +1003,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         latest = self.get_latest_activity_in_progress()
         return (latest and latest.resultant_state is not None
                 and self.status != latest.resultant_state)
+
+    @property
+    def metric_prefix(self):
+        return 'vm.%s' % self.vm_name
