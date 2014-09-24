@@ -395,7 +395,7 @@ class VmMigrateView(VmOperationView):
     def get_context_data(self, **kwargs):
         ctx = super(VmMigrateView, self).get_context_data(**kwargs)
         ctx['nodes'] = [n for n in Node.objects.filter(enabled=True)
-                        if n.state == "ONLINE"]
+                        if n.online]
         return ctx
 
     def post(self, request, extra=None, *args, **kwargs):
