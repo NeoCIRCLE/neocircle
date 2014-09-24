@@ -22,6 +22,9 @@ import re
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
+random_pass = "".join([random.choice(
+    '0123456789abcdefghijklmnopqrstvwxyz') for n in xrange(10)])
+wait_max_sec = 10
 host = 'https:127.0.0.1'
 
 
@@ -53,7 +56,7 @@ class UtilityMixin(object):
                 driver.find_element_by_class_name('navbar-toggle').click()
             except:
                 pass
-            WebDriverWait(self.driver, 10).until(
+            WebDriverWait(self.driver, wait_max_sec).until(
                 EC.element_to_be_clickable((
                     By.CSS_SELECTOR, "a[href*='/dashboard/profile/']")))
         except:
@@ -86,13 +89,14 @@ class UtilityMixin(object):
             pk = None
             vm_list = self.driver.find_elements_by_class_name(
                 'vm-create-template-summary')
+            self.driver.save_screenshot('screenie.png')
             choice = random.randint(0, len(vm_list) - 1)
             vm_list[choice].click()
-            create = WebDriverWait(self.driver, 10).until(
+            create = WebDriverWait(self.driver, wait_max_sec).until(
                 EC.element_to_be_clickable((
                     By.CLASS_NAME, 'vm-create-start')))
             create.click()
-            WebDriverWait(self.driver, 10).until(
+            WebDriverWait(self.driver, wait_max_sec).until(
                 EC.visibility_of_element_located((
                     By.CLASS_NAME, 'alert-success')))
             url = urlparse.urlparse(self.driver.current_url)
@@ -133,10 +137,10 @@ class UtilityMixin(object):
             destroy_link = self.get_link_by_href(
                 "/dashboard/vm/%s/op/destroy/" % pk)
             destroy_link.click()
-            destroy = WebDriverWait(self.driver, 10).until(
+            destroy = WebDriverWait(self.driver, wait_max_sec).until(
                 EC.element_to_be_clickable((By.ID, 'op-form-send')))
             destroy.click()
-            WebDriverWait(status_span, 10).until(
+            WebDriverWait(status_span, wait_max_sec).until(
                 EC.visibility_of_element_located((
                     By.CLASS_NAME, 'fa-trash-o')))
             return True
@@ -145,45 +149,46 @@ class UtilityMixin(object):
 
 
 class VmDetailTest(UtilityMixin, SeleniumTestCase):
-    random = "".join([random.choice(
-        '0123456789abcdefghijklmnopqrstvwxyz') for n in xrange(10)])
-
     def setUp(self):
-        self.u1 = User.objects.create(username='test_%s' % self.random,
+        self.u1 = User.objects.create(username='test_%s' % random_pass,
                                       is_superuser=True)
-        self.u1.set_password(self.random)
+        self.u1.set_password(random_pass)
         self.u1.save()
         self.addCleanup(self.u1.delete)
 
     def test_01_login(self):
         title = 'Dashboard | CIRCLE'
         location = '/dashboard/'
-        self.login('test_%s' % self.random, self.random)
+        self.login('test_%s' % random_pass, random_pass)
         self.driver.get('%s/dashboard/' % host)
         url = urlparse.urlparse(self.driver.current_url)
         (self.assertIn('%s' % title, self.driver.title,
-                       '%s is not found in the title' % title) and
+                       '%s is not found in the title' % title) or
             self.assertEqual(url.path, '%s' % location,
                              'URL path is not equal with %s' % location))
 
     def test_02_able_to_create_vm(self):
-        self.login('test_%s' % self.random, self.random)
+        self.login('test_%s' % random_pass, random_pass)
         vm_list = None
         create_vm_link = self.get_link_by_href('/dashboard/vm/create/')
         create_vm_link.click()
+        WebDriverWait(self.driver, wait_max_sec).until(
+            EC.visibility_of_element_located((
+                By.ID, 'create-modal')))
         vm_list = self.driver.find_elements_by_class_name(
             'vm-create-template-summary')
+        print 'Selenium found %s template possibilities' % len(vm_list)
         (self.assertIsNotNone(
-            vm_list, "Selenium can not find the VM list") and
+            vm_list, "Selenium can not find the VM list") or
             self.assertGreater(len(vm_list), 0, "The create VM list is empty"))
 
     def test_03_create_vm(self):
-        self.login('test_%s' % self.random, self.random)
+        self.login('test_%s' % random_pass, random_pass)
         pk = self.create_random_vm()
         self.assertIsNotNone(pk, "Can not create a VM")
 
     def test_04_vm_view_change(self):
-        self.login('test_%s' % self.random, self.random)
+        self.login('test_%s' % random_pass, random_pass)
         expected_states = ["", "none",
                            "none", "",
                            "block", "none"]
@@ -194,7 +199,7 @@ class VmDetailTest(UtilityMixin, SeleniumTestCase):
                              "The view mode does not change for VM listing")
 
     def test_05_node_view_change(self):
-        self.login('test_%s' % self.random, self.random)
+        self.login('test_%s' % random_pass, random_pass)
         expected_states = ["", "none",
                            "none", "",
                            "block", "none"]
@@ -205,6 +210,6 @@ class VmDetailTest(UtilityMixin, SeleniumTestCase):
                              "The view mode does not change for NODE listing")
 
     def test_06_delete_vm(self):
-        self.login('test_%s' % self.random, self.random)
+        self.login('test_%s' % random_pass, random_pass)
         pk = self.create_random_vm()
         self.assertTrue(self.delete_vm(pk), "Can not delete a VM")
