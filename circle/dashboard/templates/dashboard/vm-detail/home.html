@@ -64,9 +64,17 @@
     </h4>
     <dl>
       <dt>{% trans "Suspended at:" %}</dt>
-      <dd><i class="fa fa-moon-o"></i> {{ instance.time_of_suspend|timeuntil }}</dd>
+      <dd>
+        <span title="{{ instance.time_of_suspend }}">
+          <i class="fa fa-moon-o"></i> {{ instance.time_of_suspend|timeuntil }}
+        </span>
+      </dd>
       <dt>{% trans "Destroyed at:" %}</dt>
-      <dd><i class="fa fa-times"></i> {{ instance.time_of_delete|timeuntil }}</dd>
+      <dd>
+        <span title="{{ instance.time_of_delete }}">
+          <i class="fa fa-times"></i> {{ instance.time_of_delete|timeuntil }}
+        </span>
+      </dd>
     </dl>
 
     <div style="font-weight: bold;">{% trans "Tags" %}</div>
