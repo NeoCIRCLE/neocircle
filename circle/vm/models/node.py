@@ -367,3 +367,8 @@ class Node(OperatedMixin, TimeStampedModel):
     @permalink
     def get_absolute_url(self):
         return ('dashboard.views.node-detail', None, {'pk': self.id})
+
+    def save(self, *args, **kwargs):
+        if not self.enabled:
+            self.schedule_enabled = False
+        super(Node, self).save(*args, **kwargs)
