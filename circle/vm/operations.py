@@ -33,7 +33,7 @@ from celery.exceptions import TimeLimitExceeded
 from common.models import (
     create_readable, humanize_exception, HumanReadableException
 )
-from common.operations import Operation, register_operation
+from common.operations import Operation, register_operation, SubOperationMixin
 from manager.scheduler import SchedulerError
 from .tasks.local_tasks import (
     abortable_async_instance_operation, abortable_async_node_operation,
@@ -218,11 +218,7 @@ class CreateDiskOperation(InstanceOperation):
                 readable_name=ugettext_noop("deploying disk")
             ):
                 disk.deploy()
-            with activity.sub_activity(
-                'attach_disk',
-                readable_name=ugettext_noop("attach disk")
-            ):
-                self.instance.attach_disk(disk)
+            self.instance._attach_disk(parent_activity=activity, disk=disk)
 
     def get_activity_name(self, kwargs):
         return create_readable(
@@ -231,7 +227,7 @@ class CreateDiskOperation(InstanceOperation):
 
 
 @register_operation
-class ResizeDiskOperation(InstanceOperation):
+class ResizeDiskOperation(RemoteInstanceOperation):
 
     id = 'resize_disk'
     name = _("resize disk")
@@ -240,9 +236,12 @@ class ResizeDiskOperation(InstanceOperation):
     required_perms = ('storage.resize_disk', )
     accept_states = ('RUNNING', )
     async_queue = "localhost.man.slow"
+    remote_queue = ('vm', 'slow')
+    task = vm_tasks.resize_disk
 
-    def _operation(self, user, disk, size, activity):
-        self.instance.resize_disk_live(disk, size)
+    def _get_remote_args(self, disk, size, **kwargs):
+        return (super(ResizeDiskOperation, self)
+                ._get_remote_args(**kwargs) + [disk.path, size])
 
     def get_activity_name(self, kwargs):
         return create_readable(
@@ -281,11 +280,7 @@ class DownloadDiskOperation(InstanceOperation):
 
         # TODO iso (cd) hot-plug is not supported by kvm/guests
         if self.instance.is_running and disk.type not in ["iso"]:
-            with activity.sub_activity(
-                'attach_disk',
-                readable_name=ugettext_noop("attach disk")
-            ):
-                self.instance.attach_disk(disk)
+            self.instance._attach_disk(parent_activity=activity, disk=disk)
 
 
 @register_operation
@@ -319,10 +314,7 @@ class DeployOperation(InstanceOperation):
         self.instance.allocate_node()
 
         # Deploy virtual images
-        with activity.sub_activity(
-            'deploying_disks', readable_name=ugettext_noop(
-                "deploy disks")):
-            self.instance.deploy_disks()
+        self.instance._deploy_disks(parent_activity=activity)
 
         # Deploy VM on remote machine
         if self.instance.state not in ['PAUSED']:
@@ -344,15 +336,35 @@ class DeployOperation(InstanceOperation):
         except:
             pass
 
-        # Resume vm
-        with activity.sub_activity(
-            'booting', readable_name=ugettext_noop(
-                "boot virtual machine")):
-            self.instance.resume_vm(timeout=timeout)
+        self.instance._resume_vm(parent_activity=activity)
 
         if self.instance.has_agent:
             activity.sub_activity('os_boot', readable_name=ugettext_noop(
                 "wait operating system loading"), interruptible=True)
+
+    @register_operation
+    class DeployDisksOperation(SubOperationMixin, InstanceOperation):
+        id = "_deploy_disks"
+        name = _("deploy disks")
+        description = _("Deploy all associated disks.")
+
+        def _operation(self):
+            devnums = list(ascii_lowercase)  # a-z
+            for disk in self.instance.disks.all():
+                # assign device numbers
+                if disk.dev_num in devnums:
+                    devnums.remove(disk.dev_num)
+                else:
+                    disk.dev_num = devnums.pop(0)
+                    disk.save()
+                # deploy disk
+                disk.deploy()
+
+    class ResumeVmOperation(SubOperationMixin, InstanceOperation):
+        id = "_resume_vm"
+        name = _("boot virtual machine")
+        remote_queue = ("vm", "slow")
+        task = vm_tasks.resume
 
 
 @register_operation
@@ -374,11 +386,7 @@ class DestroyOperation(InstanceOperation):
             self.instance.destroy_net()
 
         if self.instance.node:
-            # Delete virtual machine
-            with activity.sub_activity(
-                    'destroying_vm',
-                    readable_name=ugettext_noop("destroy virtual machine")):
-                self.instance.delete_vm()
+            self.instance._delete_vm(parent_activity=activity)
 
         # Destroy disks
         with activity.sub_activity(
@@ -459,16 +467,17 @@ class MigrateOperation(InstanceOperation):
 
 
 @register_operation
-class RebootOperation(InstanceOperation):
+class RebootOperation(RemoteInstanceOperation):
     id = 'reboot'
     name = _("reboot")
     description = _("Warm reboot virtual machine by sending Ctrl+Alt+Del "
                     "signal to its console.")
     required_perms = ()
     accept_states = ('RUNNING', )
+    task = vm_tasks.reboot
 
-    def _operation(self, activity, timeout=5):
-        self.instance.reboot_vm(timeout=timeout)
+    def _operation(self, activity):
+        super(RebootOperation, self)._operation()
         if self.instance.has_agent:
             activity.sub_activity('os_boot', readable_name=ugettext_noop(
                 "wait operating system loading"), interruptible=True)
@@ -486,11 +495,8 @@ class RemoveInterfaceOperation(InstanceOperation):
 
     def _operation(self, activity, user, system, interface):
         if self.instance.is_running:
-            with activity.sub_activity(
-                'detach_network',
-                readable_name=ugettext_noop("detach network")
-            ):
-                self.instance.detach_network(interface)
+            self.instance._detach_network(interface=interface,
+                                          parent_activity=activity)
             interface.shutdown()
 
         interface.destroy()
@@ -512,11 +518,7 @@ class RemoveDiskOperation(InstanceOperation):
 
     def _operation(self, activity, user, system, disk):
         if self.instance.is_running and disk.type not in ["iso"]:
-            with activity.sub_activity(
-                'detach_disk',
-                readable_name=ugettext_noop('detach disk')
-            ):
-                self.instance.detach_disk(disk)
+            self.instance._detach_disk(disk=disk, parent_activity=activity)
         with activity.sub_activity(
             'destroy_disk',
             readable_name=ugettext_noop('destroy disk')
@@ -529,15 +531,16 @@ class RemoveDiskOperation(InstanceOperation):
 
 
 @register_operation
-class ResetOperation(InstanceOperation):
+class ResetOperation(RemoteInstanceOperation):
     id = 'reset'
     name = _("reset")
     description = _("Cold reboot virtual machine (power cycle).")
     required_perms = ()
     accept_states = ('RUNNING', )
+    task = vm_tasks.reset
 
-    def _operation(self, activity, timeout=5):
-        self.instance.reset_vm(timeout=timeout)
+    def _operation(self, activity):
+        super(ResetOperation, self)._operation()
         if self.instance.has_agent:
             activity.sub_activity('os_boot', readable_name=ugettext_noop(
                 "wait operating system loading"), interruptible=True)
@@ -688,10 +691,7 @@ class ShutOffOperation(InstanceOperation):
         with activity.sub_activity('shutdown_net'):
             self.instance.shutdown_net()
 
-        # Delete virtual machine
-        with activity.sub_activity('delete_vm'):
-            self.instance.delete_vm()
-
+        self.instance._delete_vm(parent_activity=activity)
         self.instance.yield_node()
 
 
@@ -1098,3 +1098,61 @@ class MountStoreOperation(EnsureAgentMixin, InstanceOperation):
         password = user.profile.smb_password
         agent_tasks.mount_store.apply_async(
             queue=queue, args=(inst.vm_name, host, username, password))
+
+
+class AbstractDiskOperation(SubOperationMixin, RemoteInstanceOperation):
+    required_perms = ()
+
+    def _get_remote_args(self, disk, **kwargs):
+        return (super(AbstractDiskOperation, self)._get_remote_args(**kwargs)
+                + [disk.get_vmdisk_desc()])
+
+
+@register_operation
+class AttachDisk(AbstractDiskOperation):
+    id = "_attach_disk"
+    name = _("attach disk")
+    task = vm_tasks.attach_disk
+
+
+class DetachMixin(object):
+    def _operation(self, activity, **kwargs):
+        try:
+            super(DetachMixin, self)._operation(**kwargs)
+        except Exception as e:
+            if hasattr(e, "libvirtError") and "not found" in unicode(e):
+                activity.result = create_readable(
+                    ugettext_noop("Resource was not found."),
+                    ugettext_noop("Resource was not found. %(exception)s"),
+                    exception=unicode(e))
+            else:
+                raise
+
+
+@register_operation
+class DetachDisk(DetachMixin, AbstractDiskOperation):
+    id = "_detach_disk"
+    name = _("detach disk")
+    task = vm_tasks.detach_disk
+
+
+class AbstractNetworkOperation(SubOperationMixin, RemoteInstanceOperation):
+    required_perms = ()
+
+    def _get_remote_args(self, interface, **kwargs):
+        return (super(AbstractNetworkOperation, self)
+                ._get_remote_args(**kwargs) + [interface.get_vmnetwork_desc()])
+
+
+@register_operation
+class AttachNetwork(AbstractNetworkOperation):
+    id = "_attach_network"
+    name = _("attach network")
+    task = vm_tasks.attach_network
+
+
+@register_operation
+class DetachNetwork(DetachMixin, AbstractNetworkOperation):
+    id = "_detach_network"
+    name = _("detach network")
+    task = vm_tasks.detach_network

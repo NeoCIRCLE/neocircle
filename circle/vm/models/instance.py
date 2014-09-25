@@ -20,7 +20,6 @@ from datetime import timedelta
 from functools import partial
 from importlib import import_module
 from logging import getLogger
-from string import ascii_lowercase
 from warnings import warn
 
 from celery.exceptions import TimeoutError
@@ -738,74 +737,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         """
         return scheduler.select_node(self, Node.objects.all())
 
-    def attach_disk(self, disk, timeout=15):
-        queue_name = self.get_remote_queue_name('vm', 'fast')
-        return vm_tasks.attach_disk.apply_async(
-            args=[self.vm_name,
-                  disk.get_vmdisk_desc()],
-            queue=queue_name
-        ).get(timeout=timeout)
-
-    def detach_disk(self, disk, timeout=15):
-        try:
-            queue_name = self.get_remote_queue_name('vm', 'fast')
-            return vm_tasks.detach_disk.apply_async(
-                args=[self.vm_name,
-                      disk.get_vmdisk_desc()],
-                queue=queue_name
-            ).get(timeout=timeout)
-        except Exception as e:
-            if e.libvirtError and "not found" in str(e):
-                logger.debug("Disk %s was not found."
-                             % disk.name)
-            else:
-                raise
-
-    def attach_network(self, network, timeout=15):
-        queue_name = self.get_remote_queue_name('vm', 'fast')
-        return vm_tasks.attach_network.apply_async(
-            args=[self.vm_name,
-                  network.get_vmnetwork_desc()],
-            queue=queue_name
-        ).get(timeout=timeout)
-
-    def detach_network(self, network, timeout=15):
-        try:
-            queue_name = self.get_remote_queue_name('vm', 'fast')
-            return vm_tasks.detach_network.apply_async(
-                args=[self.vm_name,
-                      network.get_vmnetwork_desc()],
-                queue=queue_name
-            ).get(timeout=timeout)
-        except Exception as e:
-            if e.libvirtError and "not found" in str(e):
-                logger.debug("Interface %s was not found."
-                             % (network.__unicode__()))
-            else:
-                raise
-
-    def resize_disk_live(self, disk, size, timeout=15):
-        queue_name = self.get_remote_queue_name('vm', 'slow')
-        return vm_tasks.resize_disk.apply_async(
-            args=[self.vm_name, disk.path, size],
-            queue=queue_name).get(timeout=timeout)
-        disk.size = size
-        disk.save()
-
-    def deploy_disks(self):
-        """Deploy all associated disks.
-        """
-        devnums = list(ascii_lowercase)  # a-z
-        for disk in self.disks.all():
-            # assign device numbers
-            if disk.dev_num in devnums:
-                devnums.remove(disk.dev_num)
-            else:
-                disk.dev_num = devnums.pop(0)
-                disk.save()
-            # deploy disk
-            disk.deploy()
-
     def destroy_disks(self):
         """Destroy all associated disks.
         """
@@ -830,19 +761,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         for net in self.interface_set.all():
             net.shutdown()
 
-    def delete_vm(self, timeout=15):
-        queue_name = self.get_remote_queue_name('vm', 'fast')
-        try:
-            return vm_tasks.destroy.apply_async(args=[self.vm_name],
-                                                queue=queue_name
-                                                ).get(timeout=timeout)
-        except Exception as e:
-            if e.libvirtError and "Domain not found" in str(e):
-                logger.debug("Domain %s was not found at %s"
-                             % (self.vm_name, queue_name))
-            else:
-                raise
-
     def deploy_vm(self, timeout=15):
         queue_name = self.get_remote_queue_name('vm', 'slow')
         return vm_tasks.deploy.apply_async(args=[self.get_vm_desc()],
@@ -856,24 +774,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                                                   True],
                                             queue=queue_name
                                             ).get(timeout=timeout)
-
-    def reboot_vm(self, timeout=5):
-        queue_name = self.get_remote_queue_name('vm', 'fast')
-        return vm_tasks.reboot.apply_async(args=[self.vm_name],
-                                           queue=queue_name
-                                           ).get(timeout=timeout)
-
-    def reset_vm(self, timeout=5):
-        queue_name = self.get_remote_queue_name('vm', 'fast')
-        return vm_tasks.reset.apply_async(args=[self.vm_name],
-                                          queue=queue_name
-                                          ).get(timeout=timeout)
-
-    def resume_vm(self, timeout=15):
-        queue_name = self.get_remote_queue_name('vm', 'slow')
-        return vm_tasks.resume.apply_async(args=[self.vm_name],
-                                           queue=queue_name
-                                           ).get(timeout=timeout)
 
     def shutdown_vm(self, task=None, step=5):
         queue_name = self.get_remote_queue_name('vm', 'slow')
