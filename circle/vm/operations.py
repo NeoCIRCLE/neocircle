@@ -42,11 +42,26 @@ from .models import (
     Instance, InstanceActivity, InstanceTemplate, Interface, Node,
     NodeActivity, pwgen
 )
-from .tasks import agent_tasks, local_agent_tasks
+from .tasks import agent_tasks, local_agent_tasks, vm_tasks
 
 from dashboard.store_api import Store, NoStoreException
 
 logger = getLogger(__name__)
+
+
+class RemoteOperationMixin(object):
+
+    remote_timeout = 30
+
+    def _operation(self, **kwargs):
+        args = self._get_remote_args(**kwargs),
+        return self.task.apply_async(
+            args=args, queue=self._get_remote_queue()
+        ).get(timeout=self.remote_timeout)
+
+    def check_precond(self):
+        super(RemoteOperationMixin, self).check_precond()
+        self._get_remote_queue()
 
 
 class InstanceOperation(Operation):
@@ -114,6 +129,18 @@ class InstanceOperation(Operation):
         """If this is the recommended op in the current state of the instance.
         """
         return False
+
+
+class RemoteInstanceOperation(RemoteOperationMixin, InstanceOperation):
+
+    remote_queue = ('vm', 'fast')
+    # activity_code_suffix = property(lambda self: self.id or self.task.name)
+
+    def _get_remote_queue(self):
+        return self.instance.get_remote_queue_name(*self.remote_queue)
+
+    def _get_remote_args(self, **kwargs):
+        return [self.instance.vm_name]
 
 
 @register_operation
