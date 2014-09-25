@@ -752,6 +752,7 @@ class VmStateChangeForm(forms.Form):
                     "but don't interrupt any tasks."))
     new_state = forms.ChoiceField(Instance.STATUS, label=_(
         "New status"))
+    reset_node = forms.BooleanField(required=False, label=_("Reset node"))
 
     def __init__(self, *args, **kwargs):
         show_interrupt = kwargs.pop('show_interrupt')

@@ -811,7 +811,8 @@ class ChangeStateOperation(InstanceOperation):
     required_perms = ('vm.emergency_change_state', )
     concurrency_check = False
 
-    def _operation(self, user, activity, new_state="NOSTATE", interrupt=False):
+    def _operation(self, user, activity, new_state="NOSTATE", interrupt=False,
+                   reset_node=False):
         activity.resultant_state = new_state
         if interrupt:
             msg_txt = ugettext_noop("Activity is forcibly interrupted.")
@@ -820,6 +821,10 @@ class ChangeStateOperation(InstanceOperation):
                     finished__isnull=True, instance=self.instance):
                 i.finish(False, result=message)
                 logger.error('Forced finishing activity %s', i)
+
+        if reset_node:
+            self.instance.node = None
+            self.instance.save()
 
 
 class NodeOperation(Operation):
