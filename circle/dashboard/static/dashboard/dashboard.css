@@ -974,6 +974,10 @@ textarea[name="new_members"] {
   color: orange;
 }
 
+#vm-info-pane {
+  margin-bottom: 20px;
+}
+
 .node-list-table tbody>tr>td, .node-list-table thead>tr>th {
   vertical-align: middle;
 }
