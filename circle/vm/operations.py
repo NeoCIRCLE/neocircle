@@ -827,6 +827,33 @@ class ChangeStateOperation(InstanceOperation):
             self.instance.save()
 
 
+@register_operation
+class RedeployOperation(InstanceOperation):
+    activity_code_suffix = 'redeploy'
+    id = 'redeploy'
+    name = _("redeploy")
+    description = _("Change the virtual machine state to NOSTATE "
+                    "and redeploy the VM. This operation allows starting "
+                    "machines formerly running on a failed node.")
+    acl_level = "owner"
+    required_perms = ('vm.redeploy', )
+    concurrency_check = False
+
+    def _operation(self, user, activity, with_emergency_change_state=True):
+        if with_emergency_change_state:
+            ChangeStateOperation(self.instance).call(
+                parent_activity=activity, user=user,
+                new_state='NOSTATE', interrupt=False, reset_node=True)
+        else:
+            ShutOffOperation(self.instance).call(
+                parent_activity=activity, user=user)
+
+        self.instance._update_status()
+
+        DeployOperation(self.instance).call(
+            parent_activity=activity, user=user)
+
+
 class NodeOperation(Operation):
     async_operation = abortable_async_node_operation
     host_cls = Node

@@ -770,6 +770,17 @@ class VmStateChangeForm(forms.Form):
         return helper
 
 
+class RedeployForm(forms.Form):
+    with_emergency_change_state = forms.BooleanField(
+        required=False, initial=True, label=_("use emergency state change"))
+
+    @property
+    def helper(self):
+        helper = FormHelper(self)
+        helper.form_tag = False
+        return helper
+
+
 class VmCreateDiskForm(forms.Form):
     name = forms.CharField(max_length=100, label=_("Name"))
     size = forms.CharField(
