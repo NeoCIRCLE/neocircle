@@ -26,6 +26,16 @@ from .models import activity_context, has_suffix, humanize_exception
 logger = getLogger(__name__)
 
 
+class SubOperationMixin(object):
+
+    def create_activity(self, parent, user, kwargs):
+        if not parent:
+            raise TypeError("SubOperation can only be called with "
+                            "parent_activity specified.")
+        return super(SubOperationMixin, self).create_activity(
+            parent, user, kwargs)
+
+
 class Operation(object):
     """Base class for VM operations.
     """
