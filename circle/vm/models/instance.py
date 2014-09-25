@@ -38,6 +38,7 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _, ugettext_noop
 
 from model_utils import Choices
+from model_utils.managers import QueryManager
 from model_utils.models import TimeStampedModel, StatusModel
 from taggit.managers import TaggableManager
 
@@ -90,13 +91,6 @@ def find_unused_vnc_port():
         raise Exception("No unused port could be found for VNC.")
     else:
         return port
-
-
-class InstanceActiveManager(Manager):
-
-    def get_query_set(self):
-        return super(InstanceActiveManager,
-                     self).get_query_set().filter(destroyed_at=None)
 
 
 class VirtualMachineDescModel(BaseResourceConfigModel):
@@ -264,7 +258,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                                  help_text=_("The virtual machine's time of "
                                              "destruction."))
     objects = Manager()
-    active = InstanceActiveManager()
+    active = QueryManager(destroyed_at=None)
 
     class Meta:
         app_label = 'vm'
