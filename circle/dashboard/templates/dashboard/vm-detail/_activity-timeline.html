@@ -7,6 +7,7 @@
   <span class="timeline-icon{% if a.has_failed %} timeline-icon-failed{% endif %}">
   <i class="fa {% if not a.finished %}fa-refresh fa-spin {% else %}fa-{{a.icon}}{% endif %}"></i>
 </span>
+{% spaceless %}
 <strong{% if a.result %} title="{{ a.result|get_text:user }}"{% endif %}>
   <a href="{{ a.get_absolute_url }}">
     {% if a.times > 1 %}({{ a.times }}x){% endif %}
@@ -16,7 +17,7 @@
   - {{ a.percentage }}%
 {% endif %}
 </strong>
-{% if a.times < 2%}{{ a.started|date:"Y-m-d H:i" }}{% endif %}{% if a.user %},
+{% endspaceless %}{% if a.times < 2%} {{ a.started|date:"Y-m-d H:i" }}{% endif %}{% if a.user %},
   <a class="no-style-link" href="{% url "dashboard.views.profile" username=a.user.username %}">
     {% include "dashboard/_display-name.html" with user=a.user show_org=True %}
   </a>

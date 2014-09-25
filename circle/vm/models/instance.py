@@ -790,6 +790,15 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             else:
                 raise
 
+    def resize_disk_live(self, disk, size, timeout=15):
+        queue_name = self.get_remote_queue_name('vm', 'slow')
+        result = vm_tasks.resize_disk.apply_async(
+            args=[self.vm_name, disk.path, size],
+            queue=queue_name).get(timeout=timeout)
+        disk.size = size
+        disk.save()
+        return result
+
     def deploy_disks(self):
         """Deploy all associated disks.
         """
@@ -1009,3 +1018,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         latest = self.get_latest_activity_in_progress()
         return (latest and latest.resultant_state is not None
                 and self.status != latest.resultant_state)
+
+    @property
+    def metric_prefix(self):
+        return 'vm.%s' % self.vm_name

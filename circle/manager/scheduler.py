@@ -17,7 +17,6 @@
 
 from logging import getLogger
 
-from django.db.models import Sum
 from django.utils.translation import ugettext_noop
 
 from common.models import HumanReadableException
@@ -56,7 +55,7 @@ def select_node(instance, nodes):
     '''
     # check required traits
     nodes = [n for n in nodes
-             if n.enabled and n.online
+             if n.schedule_enabled and n.online
              and has_traits(instance.req_traits.all(), n)]
     if not nodes:
         logger.warning('select_node: no usable node for %s', unicode(instance))
@@ -95,8 +94,7 @@ def has_enough_ram(ram_size, node):
         unused = total - used
 
         overcommit = node.ram_size_with_overcommit
-        reserved = (node.instance_set.aggregate(
-            r=Sum('ram_size'))['r'] or 0) * 1024 * 1024
+        reserved = node.allocated_ram
         free = overcommit - reserved
 
         retval = ram_size < unused and ram_size < free

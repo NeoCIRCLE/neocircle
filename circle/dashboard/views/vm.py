@@ -52,13 +52,13 @@ from vm.models import (
 )
 from .util import (
     CheckedDetailView, AjaxOperationMixin, OperationView, AclUpdateView,
-    FormOperationMixin, FilterMixin, GraphViewBase, search_user,
+    FormOperationMixin, FilterMixin, search_user, GraphMixin,
 )
 from ..forms import (
     AclUserOrGroupAddForm, VmResourcesForm, TraitsForm, RawDataForm,
     VmAddInterfaceForm, VmCreateDiskForm, VmDownloadDiskForm, VmSaveForm,
     VmRenewForm, VmStateChangeForm, VmListSearchForm, VmCustomizeForm,
-    TransferOwnershipForm,
+    TransferOwnershipForm, VmDiskResizeForm,
 )
 from ..models import Favourite, Profile
 
@@ -89,7 +89,7 @@ class VmDetailVncTokenView(CheckedDetailView):
             raise Http404()
 
 
-class VmDetailView(CheckedDetailView):
+class VmDetailView(GraphMixin, CheckedDetailView):
     template_name = "dashboard/vm-detail.html"
     model = Instance
 
@@ -365,6 +365,30 @@ class VmAddInterfaceView(FormOperationMixin, VmOperationView):
         return val
 
 
+class VmDiskResizeView(FormOperationMixin, VmOperationView):
+
+    op = 'resize_disk'
+    form_class = VmDiskResizeForm
+    show_in_toolbar = False
+    icon = 'arrows-alt'
+    effect = "success"
+
+    def get_form_kwargs(self):
+        choices = self.get_op().instance.disks
+        disk_pk = self.request.GET.get('disk')
+        if disk_pk:
+            try:
+                default = choices.get(pk=disk_pk)
+            except (ValueError, Disk.DoesNotExist):
+                raise Http404()
+        else:
+            default = None
+
+        val = super(VmDiskResizeView, self).get_form_kwargs()
+        val.update({'choices': choices, 'default': default})
+        return val
+
+
 class VmCreateDiskView(FormOperationMixin, VmOperationView):
 
     op = 'create_disk'
@@ -395,7 +419,7 @@ class VmMigrateView(VmOperationView):
     def get_context_data(self, **kwargs):
         ctx = super(VmMigrateView, self).get_context_data(**kwargs)
         ctx['nodes'] = [n for n in Node.objects.filter(enabled=True)
-                        if n.state == "ONLINE"]
+                        if n.online]
         return ctx
 
     def post(self, request, extra=None, *args, **kwargs):
@@ -601,6 +625,7 @@ vm_ops = OrderedDict([
         op='destroy', icon='times', effect='danger')),
     ('create_disk', VmCreateDiskView),
     ('download_disk', VmDownloadDiskView),
+    ('resize_disk', VmDiskResizeView),
     ('add_interface', VmAddInterfaceView),
     ('renew', VmRenewView),
     ('resources_change', VmResourcesChangeView),
@@ -984,28 +1009,6 @@ class VmCreate(LoginRequiredMixin, TemplateView):
                        self.__create_customized)
 
         return create_func(request, *args, **kwargs)
-
-
-class VmGraphView(GraphViewBase):
-    metrics = {
-        'cpu': ('cactiStyle(alias(nonNegativeDerivative(%(prefix)s.cpu.usage),'
-                '"cpu usage (%%)"))'),
-        'memory': ('cactiStyle(alias(%(prefix)s.memory.usage,'
-                   '"memory usage (%%)"))'),
-        'network': (
-            'group('
-            'aliasSub(nonNegativeDerivative(%(prefix)s.network.bytes_recv*),'
-            ' ".*-(\d+)\\)", "out (vlan \\1)"),'
-            'aliasSub(nonNegativeDerivative(%(prefix)s.network.bytes_sent*),'
-            ' ".*-(\d+)\\)", "in (vlan \\1)"))'),
-    }
-    model = Instance
-
-    def get_prefix(self, instance):
-        return 'vm.%s' % instance.vm_name
-
-    def get_title(self, instance, metric):
-        return '%s (%s) - %s' % (instance.name, instance.vm_name, metric)
 
 
 @require_GET

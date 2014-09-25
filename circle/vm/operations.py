@@ -116,6 +116,7 @@ class InstanceOperation(Operation):
         return False
 
 
+@register_operation
 class AddInterfaceOperation(InstanceOperation):
     activity_code_suffix = 'add_interface'
     id = 'add_interface'
@@ -161,9 +162,7 @@ class AddInterfaceOperation(InstanceOperation):
                                vlan=kwargs['vlan'])
 
 
-register_operation(AddInterfaceOperation)
-
-
+@register_operation
 class CreateDiskOperation(InstanceOperation):
 
     activity_code_suffix = 'create_disk'
@@ -205,9 +204,28 @@ class CreateDiskOperation(InstanceOperation):
             size=filesizeformat(kwargs['size']), name=kwargs['name'])
 
 
-register_operation(CreateDiskOperation)
+@register_operation
+class ResizeDiskOperation(InstanceOperation):
+
+    activity_code_suffix = 'resize_disk'
+    id = 'resize_disk'
+    name = _("resize disk")
+    description = _("Resize the virtual disk image. "
+                    "Size must be greater value than the actual size.")
+    required_perms = ('storage.resize_disk', )
+    accept_states = ('RUNNING', )
+    async_queue = "localhost.man.slow"
+
+    def _operation(self, user, disk, size, activity):
+        self.instance.resize_disk_live(disk, size)
+
+    def get_activity_name(self, kwargs):
+        return create_readable(
+            ugettext_noop("resize disk %(name)s to %(size)s"),
+            size=filesizeformat(kwargs['size']), name=kwargs['disk'].name)
 
 
+@register_operation
 class DownloadDiskOperation(InstanceOperation):
     activity_code_suffix = 'download_disk'
     id = 'download_disk'
@@ -245,9 +263,8 @@ class DownloadDiskOperation(InstanceOperation):
             ):
                 self.instance.attach_disk(disk)
 
-register_operation(DownloadDiskOperation)
 
-
+@register_operation
 class DeployOperation(InstanceOperation):
     activity_code_suffix = 'deploy'
     id = 'deploy'
@@ -315,9 +332,7 @@ class DeployOperation(InstanceOperation):
                 "wait operating system loading"), interruptible=True)
 
 
-register_operation(DeployOperation)
-
-
+@register_operation
 class DestroyOperation(InstanceOperation):
     activity_code_suffix = 'destroy'
     id = 'destroy'
@@ -363,9 +378,7 @@ class DestroyOperation(InstanceOperation):
         self.instance.save()
 
 
-register_operation(DestroyOperation)
-
-
+@register_operation
 class MigrateOperation(InstanceOperation):
     activity_code_suffix = 'migrate'
     id = 'migrate'
@@ -412,9 +425,7 @@ class MigrateOperation(InstanceOperation):
             self.instance.deploy_net()
 
 
-register_operation(MigrateOperation)
-
-
+@register_operation
 class RebootOperation(InstanceOperation):
     activity_code_suffix = 'reboot'
     id = 'reboot'
@@ -431,9 +442,7 @@ class RebootOperation(InstanceOperation):
                 "wait operating system loading"), interruptible=True)
 
 
-register_operation(RebootOperation)
-
-
+@register_operation
 class RemoveInterfaceOperation(InstanceOperation):
     activity_code_suffix = 'remove_interface'
     id = 'remove_interface'
@@ -461,9 +470,7 @@ class RemoveInterfaceOperation(InstanceOperation):
                                vlan=kwargs['interface'].vlan)
 
 
-register_operation(RemoveInterfaceOperation)
-
-
+@register_operation
 class RemoveDiskOperation(InstanceOperation):
     activity_code_suffix = 'remove_disk'
     id = 'remove_disk'
@@ -490,9 +497,8 @@ class RemoveDiskOperation(InstanceOperation):
         return create_readable(ugettext_noop('remove disk %(name)s'),
                                name=kwargs["disk"].name)
 
-register_operation(RemoveDiskOperation)
 
-
+@register_operation
 class ResetOperation(InstanceOperation):
     activity_code_suffix = 'reset'
     id = 'reset'
@@ -507,9 +513,8 @@ class ResetOperation(InstanceOperation):
             activity.sub_activity('os_boot', readable_name=ugettext_noop(
                 "wait operating system loading"), interruptible=True)
 
-register_operation(ResetOperation)
 
-
+@register_operation
 class SaveAsTemplateOperation(InstanceOperation):
     activity_code_suffix = 'save_as_template'
     id = 'save_as_template'
@@ -518,6 +523,7 @@ class SaveAsTemplateOperation(InstanceOperation):
                     "with users and groups.  Anyone who has access to a "
                     "template (and to the networks it uses) will be able to "
                     "start an instance of it.")
+    has_percentage = True
     abortable = True
     required_perms = ('vm.create_template', )
     accept_states = ('RUNNING', 'STOPPED')
@@ -605,9 +611,7 @@ class SaveAsTemplateOperation(InstanceOperation):
             return tmpl
 
 
-register_operation(SaveAsTemplateOperation)
-
-
+@register_operation
 class ShutdownOperation(InstanceOperation):
     activity_code_suffix = 'shutdown'
     id = 'shutdown'
@@ -637,9 +641,7 @@ class ShutdownOperation(InstanceOperation):
             super(ShutdownOperation, self).on_abort(activity, error)
 
 
-register_operation(ShutdownOperation)
-
-
+@register_operation
 class ShutOffOperation(InstanceOperation):
     activity_code_suffix = 'shut_off'
     id = 'shut_off'
@@ -667,9 +669,7 @@ class ShutOffOperation(InstanceOperation):
         self.instance.yield_node()
 
 
-register_operation(ShutOffOperation)
-
-
+@register_operation
 class SleepOperation(InstanceOperation):
     activity_code_suffix = 'sleep'
     id = 'sleep'
@@ -713,9 +713,7 @@ class SleepOperation(InstanceOperation):
         # VNC port needs to be kept
 
 
-register_operation(SleepOperation)
-
-
+@register_operation
 class WakeUpOperation(InstanceOperation):
     activity_code_suffix = 'wake_up'
     id = 'wake_up'
@@ -759,9 +757,7 @@ class WakeUpOperation(InstanceOperation):
             pass
 
 
-register_operation(WakeUpOperation)
-
-
+@register_operation
 class RenewOperation(InstanceOperation):
     activity_code_suffix = 'renew'
     id = 'renew'
@@ -796,9 +792,7 @@ class RenewOperation(InstanceOperation):
             suspend=suspend, delete=delete)
 
 
-register_operation(RenewOperation)
-
-
+@register_operation
 class ChangeStateOperation(InstanceOperation):
     activity_code_suffix = 'emergency_change_state'
     id = 'emergency_change_state'
@@ -823,16 +817,22 @@ class ChangeStateOperation(InstanceOperation):
                 logger.error('Forced finishing activity %s', i)
 
 
-register_operation(ChangeStateOperation)
-
-
 class NodeOperation(Operation):
     async_operation = abortable_async_node_operation
     host_cls = Node
+    online_required = True
+    superuser_required = True
 
     def __init__(self, node):
         super(NodeOperation, self).__init__(subject=node)
         self.node = node
+
+    def check_precond(self):
+        super(NodeOperation, self).check_precond()
+        if self.online_required and not self.node.online:
+            raise humanize_exception(ugettext_noop(
+                "You cannot call this operation on an offline node."),
+                Exception())
 
     def create_activity(self, parent, user, kwargs):
         name = self.get_activity_name(kwargs)
@@ -854,24 +854,19 @@ class NodeOperation(Operation):
                                        readable_name=name)
 
 
+@register_operation
 class FlushOperation(NodeOperation):
     activity_code_suffix = 'flush'
     id = 'flush'
     name = _("flush")
-    description = _("Disable node and move all instances to other ones.")
+    description = _("Passivate node and move all instances to other ones.")
     required_perms = ()
-    superuser_required = True
     async_queue = "localhost.man.slow"
 
-    def on_abort(self, activity, error):
-        from manager.scheduler import TraitsUnsatisfiableException
-        if isinstance(error, TraitsUnsatisfiableException):
-            if self.node_enabled:
-                self.node.enable(activity.user, activity)
-
     def _operation(self, activity, user):
-        self.node_enabled = self.node.enabled
-        self.node.disable(user, activity)
+        if self.node.schedule_enabled:
+            PassivateOperation(self.node).call(parent_activity=activity,
+                                               user=user)
         for i in self.node.instance_set.all():
             name = create_readable(ugettext_noop(
                 "migrate %(instance)s (%(pk)s)"), instance=i.name, pk=i.pk)
@@ -880,9 +875,75 @@ class FlushOperation(NodeOperation):
                 i.migrate(user=user)
 
 
-register_operation(FlushOperation)
+@register_operation
+class ActivateOperation(NodeOperation):
+    activity_code_suffix = 'activate'
+    id = 'activate'
+    name = _("activate")
+    description = _("Make node active, i.e. scheduler is allowed to deploy "
+                    "virtual machines to it.")
+    required_perms = ()
+
+    def check_precond(self):
+        super(ActivateOperation, self).check_precond()
+        if self.node.enabled and self.node.schedule_enabled:
+            raise humanize_exception(ugettext_noop(
+                "You cannot activate an active node."), Exception())
+
+    def _operation(self):
+        self.node.enabled = True
+        self.node.schedule_enabled = True
+        self.node.save()
 
 
+@register_operation
+class PassivateOperation(NodeOperation):
+    activity_code_suffix = 'passivate'
+    id = 'passivate'
+    name = _("passivate")
+    description = _("Make node passive, i.e. scheduler is denied to deploy "
+                    "virtual machines to it, but remaining instances and "
+                    "the ones manually migrated will continue running.")
+    required_perms = ()
+
+    def check_precond(self):
+        if self.node.enabled and not self.node.schedule_enabled:
+            raise humanize_exception(ugettext_noop(
+                "You cannot passivate a passive node."), Exception())
+        super(PassivateOperation, self).check_precond()
+
+    def _operation(self):
+        self.node.enabled = True
+        self.node.schedule_enabled = False
+        self.node.save()
+
+
+@register_operation
+class DisableOperation(NodeOperation):
+    activity_code_suffix = 'disable'
+    id = 'disable'
+    name = _("disable")
+    description = _("Disable node.")
+    required_perms = ()
+    online_required = False
+
+    def check_precond(self):
+        if not self.node.enabled:
+            raise humanize_exception(ugettext_noop(
+                "You cannot disable a disabled node."), Exception())
+        if self.node.instance_set.exists():
+            raise humanize_exception(ugettext_noop(
+                "You cannot disable a node which is hosting instances."),
+                Exception())
+        super(DisableOperation, self).check_precond()
+
+    def _operation(self):
+        self.node.enabled = False
+        self.node.schedule_enabled = False
+        self.node.save()
+
+
+@register_operation
 class ScreenshotOperation(InstanceOperation):
     activity_code_suffix = 'screenshot'
     id = 'screenshot'
@@ -898,9 +959,7 @@ class ScreenshotOperation(InstanceOperation):
         return self.instance.get_screenshot(timeout=20)
 
 
-register_operation(ScreenshotOperation)
-
-
+@register_operation
 class RecoverOperation(InstanceOperation):
     activity_code_suffix = 'recover'
     id = 'recover'
@@ -928,9 +987,7 @@ class RecoverOperation(InstanceOperation):
         self.instance.save()
 
 
-register_operation(RecoverOperation)
-
-
+@register_operation
 class ResourcesOperation(InstanceOperation):
     activity_code_suffix = 'Resources change'
     id = 'resources_change'
@@ -958,9 +1015,6 @@ class ResourcesOperation(InstanceOperation):
         )
 
 
-register_operation(ResourcesOperation)
-
-
 class EnsureAgentMixin(object):
     accept_states = ('RUNNING', )
 
@@ -980,6 +1034,7 @@ class EnsureAgentMixin(object):
             raise self.instance.NoAgentError(self.instance)
 
 
+@register_operation
 class PasswordResetOperation(EnsureAgentMixin, InstanceOperation):
     activity_code_suffix = 'password_reset'
     id = 'password_reset'
@@ -1000,9 +1055,7 @@ class PasswordResetOperation(EnsureAgentMixin, InstanceOperation):
         self.instance.save()
 
 
-register_operation(PasswordResetOperation)
-
-
+@register_operation
 class MountStoreOperation(EnsureAgentMixin, InstanceOperation):
     activity_code_suffix = 'mount_store'
     id = 'mount_store'
@@ -1029,6 +1082,3 @@ class MountStoreOperation(EnsureAgentMixin, InstanceOperation):
         password = user.profile.smb_password
         agent_tasks.mount_store.apply_async(
             queue=queue, args=(inst.vm_name, host, username, password))
-
-
-register_operation(MountStoreOperation)

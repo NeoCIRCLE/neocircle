@@ -132,6 +132,11 @@ def migrate(params):
     pass
 
 
+@celery.task(name='vmdriver.resize_disk')
+def resize_disk(params):
+    pass
+
+
 @celery.task(name='vmdriver.domain_info')
 def domain_info(params):
     pass

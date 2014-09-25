@@ -205,8 +205,10 @@ class NodeTestCase(TestCase):
         node = Mock(spec=Node)
         node.online = True
         node.enabled = True
+        node.schedule_enabled = True
         node.STATES = Node.STATES
-        self.assertEqual(Node.get_state(node), "ONLINE")
+        node._get_state = lambda: Node._get_state(node)
+        self.assertEqual(Node.get_state(node), "ACTIVE")
         assert isinstance(Node.get_status_display(node), _("x").__class__)
 
 
@@ -348,70 +350,45 @@ class InstanceActivityTestCase(TestCase):
         self.assertTrue(InstanceActivity.is_abortable_for(iaobj, su))
 
     def test_disable_enabled(self):
-        node = MagicMock(spec=Node, enabled=True)
-        with patch('vm.models.node.node_activity') as nac:
-            na = MagicMock()
-            nac.return_value = na
-            na.__enter__.return_value = MagicMock()
-            Node.disable(node)
-        self.assertFalse(node.enabled)
-        node.save.assert_called_once()
-        na.assert_called()
+        node = MagicMock(spec=Node, enabled=True, online=True)
+        node.instance_set.exists.return_value = False
+        Node._ops['disable'](node).check_precond()
 
     def test_disable_disabled(self):
         node = MagicMock(spec=Node, enabled=False)
-        with patch('vm.models.node.node_activity') as nac:
-            na = MagicMock()
-            na.__enter__.side_effect = AssertionError
-            nac.return_value = na
-            Node.disable(node)
-        self.assertFalse(node.enabled)
-
-    def test_disable_enabled_sub(self):
-        node = MagicMock(spec=Node, enabled=True)
-        act = MagicMock()
-        subact = MagicMock()
-        act.sub_activity.return_value = subact
-        Node.disable(node, base_activity=act)
-        self.assertFalse(node.enabled)
-        subact.__enter__.assert_called()
+        with self.assertRaises(Exception):
+            Node._ops['disable'](node).check_precond()
 
     def test_flush(self):
         insts = [MagicMock(spec=Instance, migrate=MagicMock()),
                  MagicMock(spec=Instance, migrate=MagicMock())]
         insts[0].name = insts[1].name = "x"
-        node = MagicMock(spec=Node, enabled=True)
+        node = MagicMock(spec=Node, enabled=True, schedule_enabled=True)
         node.instance_set.all.return_value = insts
         user = MagicMock(spec=User)
         user.is_superuser = MagicMock(return_value=True)
-        flush_op = FlushOperation(node)
-
-        with patch.object(FlushOperation, 'create_activity') as create_act:
-            act = create_act.return_value = MagicMock()
-
-            flush_op(user=user)
-
+        with patch.object(FlushOperation, 'create_activity') as create_act, \
+                patch.object(
+                    Node._ops['passivate'], 'create_activity') as create_act2:
+            FlushOperation(node)(user=user)
+            node.schedule_enabled = True
             create_act.assert_called()
-            node.disable.assert_called_with(user, act)
+            create_act2.assert_called()
             for i in insts:
                 i.migrate.assert_called()
-        user.is_superuser.assert_called()
+            user.is_superuser.assert_called()
 
     def test_flush_disabled_wo_user(self):
         insts = [MagicMock(spec=Instance, migrate=MagicMock()),
                  MagicMock(spec=Instance, migrate=MagicMock())]
         insts[0].name = insts[1].name = "x"
-        node = MagicMock(spec=Node, enabled=False)
+        node = MagicMock(spec=Node, enabled=False, schedule_enabled=False)
         node.instance_set.all.return_value = insts
         flush_op = FlushOperation(node)
 
         with patch.object(FlushOperation, 'create_activity') as create_act:
-            act = create_act.return_value = MagicMock()
-
+            create_act.return_value = MagicMock()
             flush_op(system=True)
-
             create_act.assert_called()
-            node.disable.assert_called_with(None, act)
-            # ^ should be called, but real method no-ops if disabled
             for i in insts:
                 i.migrate.assert_called()

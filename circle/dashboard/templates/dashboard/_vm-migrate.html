@@ -18,6 +18,8 @@ Choose a compute node to migrate {{obj}} to.
       <li class="panel panel-default"><div class="panel-body">
         <label for="migrate-to-{{n.pk}}">
           <strong>{{ n }}</strong>
+          <div class="label label-primary"><i class="fa {{n.get_status_icon}}"></i>
+              {{n.get_status_display}}</div>
           {% if current == n.pk %}<div class="label label-info">{% trans "current" %}</div>{% endif %}
           {% if selected == n.pk %}<div class="label label-success">{% trans "recommended" %}</div>{% endif %}
         </label>

@@ -119,11 +119,13 @@ def stop_portal(test=False):
 @roles('node')
 def update_node():
     "Update and restart nodes"
-    with _stopped("node", "agentdriver"):
+    with _stopped("node", "agentdriver", "monitor-client"):
         pull("~/vmdriver")
         pip("vmdriver", "~/vmdriver/requirements/production.txt")
         pull("~/agentdriver")
         pip("agentdriver", "~/agentdriver/requirements.txt")
+        pull("~/monitor-client")
+        pip("monitor-client", "~/monitor-client/requirements.txt")
 
 
 @parallel

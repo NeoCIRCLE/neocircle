@@ -19,8 +19,7 @@ from __future__ import absolute_import
 
 from django.contrib.auth.models import Group, User
 from django_tables2 import Table, A
-from django_tables2.columns import (TemplateColumn, Column, BooleanColumn,
-                                    LinkColumn)
+from django_tables2.columns import TemplateColumn, Column, LinkColumn
 
 from vm.models import Node, InstanceTemplate, Lease
 from django.utils.translation import ugettext_lazy as _
@@ -40,8 +39,10 @@ class NodeListTable(Table):
         attrs={'th': {'class': 'node-list-table-thin'}},
     )
 
-    enabled = BooleanColumn(
+    get_status_display = Column(
+        verbose_name=_("Status"),
         attrs={'th': {'class': 'node-list-table-thin'}},
+        order_by=("enabled", "schedule_enabled"),
     )
 
     name = TemplateColumn(
@@ -66,20 +67,12 @@ class NodeListTable(Table):
         orderable=False,
     )
 
-    actions = TemplateColumn(
-        verbose_name=_("Actions"),
-        attrs={'th': {'class': 'node-list-table-thin'}},
-        template_code=('{% include "dashboard/node-list/column-'
-                       'actions.html" with btn_size="btn-xs" %}'),
-        orderable=False,
-    )
-
     class Meta:
         model = Node
         attrs = {'class': ('table table-bordered table-striped table-hover '
                            'node-list-table')}
-        fields = ('pk', 'name', 'host', 'enabled', 'priority', 'overcommit',
-                  'number_of_VMs', )
+        fields = ('pk', 'name', 'host', 'get_status_display', 'priority',
+                  'overcommit', 'number_of_VMs', )
 
 
 class GroupListTable(Table):
