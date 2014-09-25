@@ -792,11 +792,12 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
 
     def resize_disk_live(self, disk, size, timeout=15):
         queue_name = self.get_remote_queue_name('vm', 'slow')
-        return vm_tasks.resize_disk.apply_async(
+        result = vm_tasks.resize_disk.apply_async(
             args=[self.vm_name, disk.path, size],
             queue=queue_name).get(timeout=timeout)
         disk.size = size
         disk.save()
+        return result
 
     def deploy_disks(self):
         """Deploy all associated disks.
