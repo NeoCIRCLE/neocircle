@@ -892,6 +892,35 @@ class NodeOperation(Operation):
 
 
 @register_operation
+class ResetNodeOperation(NodeOperation):
+    activity_code_suffix = 'reset'
+    id = 'reset'
+    name = _("reset")
+    description = _("Disable missing node and redeploy all instances "
+                    "on other ones.")
+    required_perms = ()
+    online_required = False
+    async_queue = "localhost.man.slow"
+
+    def check_precond(self):
+        super(ResetNodeOperation, self).check_precond()
+        if not self.node.enabled or self.node.online:
+            raise humanize_exception(ugettext_noop(
+                "You cannot reset a disabled or online node."), Exception())
+
+    def _operation(self, activity, user):
+        if self.node.enabled:
+            DisableOperation(self.node).call(parent_activity=activity,
+                                             user=user)
+        for i in self.node.instance_set.all():
+            name = create_readable(ugettext_noop(
+                "migrate %(instance)s (%(pk)s)"), instance=i.name, pk=i.pk)
+            with activity.sub_activity('migrate_instance_%d' % i.pk,
+                                       readable_name=name):
+                i.redeploy(user=user)
+
+
+@register_operation
 class FlushOperation(NodeOperation):
     activity_code_suffix = 'flush'
     id = 'flush'
