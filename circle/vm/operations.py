@@ -72,6 +72,7 @@ class InstanceOperation(Operation):
     accept_states = None
     deny_states = None
     resultant_state = None
+    activity_code_suffix = property(lambda self: self.id)
 
     def __init__(self, instance):
         super(InstanceOperation, self).__init__(subject=instance)
@@ -145,7 +146,6 @@ class RemoteInstanceOperation(RemoteOperationMixin, InstanceOperation):
 
 @register_operation
 class AddInterfaceOperation(InstanceOperation):
-    activity_code_suffix = 'add_interface'
     id = 'add_interface'
     name = _("add interface")
     description = _("Add a new network interface for the specified VLAN to "
@@ -192,7 +192,6 @@ class AddInterfaceOperation(InstanceOperation):
 @register_operation
 class CreateDiskOperation(InstanceOperation):
 
-    activity_code_suffix = 'create_disk'
     id = 'create_disk'
     name = _("create disk")
     description = _("Create and attach empty disk to the virtual machine.")
@@ -234,7 +233,6 @@ class CreateDiskOperation(InstanceOperation):
 @register_operation
 class ResizeDiskOperation(InstanceOperation):
 
-    activity_code_suffix = 'resize_disk'
     id = 'resize_disk'
     name = _("resize disk")
     description = _("Resize the virtual disk image. "
@@ -254,7 +252,6 @@ class ResizeDiskOperation(InstanceOperation):
 
 @register_operation
 class DownloadDiskOperation(InstanceOperation):
-    activity_code_suffix = 'download_disk'
     id = 'download_disk'
     name = _("download disk")
     description = _("Download and attach disk image (ISO file) for the "
@@ -293,7 +290,6 @@ class DownloadDiskOperation(InstanceOperation):
 
 @register_operation
 class DeployOperation(InstanceOperation):
-    activity_code_suffix = 'deploy'
     id = 'deploy'
     name = _("deploy")
     description = _("Deploy and start the virtual machine (including storage "
@@ -361,7 +357,6 @@ class DeployOperation(InstanceOperation):
 
 @register_operation
 class DestroyOperation(InstanceOperation):
-    activity_code_suffix = 'destroy'
     id = 'destroy'
     name = _("destroy")
     description = _("Permanently destroy virtual machine, its network "
@@ -404,10 +399,16 @@ class DestroyOperation(InstanceOperation):
         self.instance.destroyed_at = timezone.now()
         self.instance.save()
 
+    @register_operation
+    class DeleteVmOperation(RemoteInstanceOperation):
+        id = "_delete_vm"
+        name = _("destroy virtual machine")
+        task = vm_tasks.destroy
+        # if e.libvirtError and "Domain not found" in str(e):
+
 
 @register_operation
 class MigrateOperation(InstanceOperation):
-    activity_code_suffix = 'migrate'
     id = 'migrate'
     name = _("migrate")
     description = _("Move virtual machine to an other worker node with a few "
@@ -459,7 +460,6 @@ class MigrateOperation(InstanceOperation):
 
 @register_operation
 class RebootOperation(InstanceOperation):
-    activity_code_suffix = 'reboot'
     id = 'reboot'
     name = _("reboot")
     description = _("Warm reboot virtual machine by sending Ctrl+Alt+Del "
@@ -476,7 +476,6 @@ class RebootOperation(InstanceOperation):
 
 @register_operation
 class RemoveInterfaceOperation(InstanceOperation):
-    activity_code_suffix = 'remove_interface'
     id = 'remove_interface'
     name = _("remove interface")
     description = _("Remove the specified network interface and erase IP "
@@ -504,7 +503,6 @@ class RemoveInterfaceOperation(InstanceOperation):
 
 @register_operation
 class RemoveDiskOperation(InstanceOperation):
-    activity_code_suffix = 'remove_disk'
     id = 'remove_disk'
     name = _("remove disk")
     description = _("Remove the specified disk from the virtual machine, and "
@@ -532,7 +530,6 @@ class RemoveDiskOperation(InstanceOperation):
 
 @register_operation
 class ResetOperation(InstanceOperation):
-    activity_code_suffix = 'reset'
     id = 'reset'
     name = _("reset")
     description = _("Cold reboot virtual machine (power cycle).")
@@ -548,7 +545,6 @@ class ResetOperation(InstanceOperation):
 
 @register_operation
 class SaveAsTemplateOperation(InstanceOperation):
-    activity_code_suffix = 'save_as_template'
     id = 'save_as_template'
     name = _("save as template")
     description = _("Save virtual machine as a template so they can be shared "
@@ -645,7 +641,6 @@ class SaveAsTemplateOperation(InstanceOperation):
 
 @register_operation
 class ShutdownOperation(InstanceOperation):
-    activity_code_suffix = 'shutdown'
     id = 'shutdown'
     name = _("shutdown")
     description = _("Try to halt virtual machine by a standard ACPI signal, "
@@ -675,7 +670,6 @@ class ShutdownOperation(InstanceOperation):
 
 @register_operation
 class ShutOffOperation(InstanceOperation):
-    activity_code_suffix = 'shut_off'
     id = 'shut_off'
     name = _("shut off")
     description = _("Forcibly halt a virtual machine without notifying the "
@@ -703,7 +697,6 @@ class ShutOffOperation(InstanceOperation):
 
 @register_operation
 class SleepOperation(InstanceOperation):
-    activity_code_suffix = 'sleep'
     id = 'sleep'
     name = _("sleep")
     description = _("Suspend virtual machine. This means the machine is "
@@ -747,7 +740,6 @@ class SleepOperation(InstanceOperation):
 
 @register_operation
 class WakeUpOperation(InstanceOperation):
-    activity_code_suffix = 'wake_up'
     id = 'wake_up'
     name = _("wake up")
     description = _("Wake up sleeping (suspended) virtual machine. This will "
@@ -791,7 +783,6 @@ class WakeUpOperation(InstanceOperation):
 
 @register_operation
 class RenewOperation(InstanceOperation):
-    activity_code_suffix = 'renew'
     id = 'renew'
     name = _("renew")
     description = _("Virtual machines are suspended and destroyed after they "
@@ -826,7 +817,6 @@ class RenewOperation(InstanceOperation):
 
 @register_operation
 class ChangeStateOperation(InstanceOperation):
-    activity_code_suffix = 'emergency_change_state'
     id = 'emergency_change_state'
     name = _("emergency state change")
     description = _("Change the virtual machine state to NOSTATE. This "
@@ -854,6 +844,7 @@ class NodeOperation(Operation):
     host_cls = Node
     online_required = True
     superuser_required = True
+    activity_code_suffix = property(lambda self: self.id)
 
     def __init__(self, node):
         super(NodeOperation, self).__init__(subject=node)
@@ -888,7 +879,6 @@ class NodeOperation(Operation):
 
 @register_operation
 class FlushOperation(NodeOperation):
-    activity_code_suffix = 'flush'
     id = 'flush'
     name = _("flush")
     description = _("Passivate node and move all instances to other ones.")
@@ -909,7 +899,6 @@ class FlushOperation(NodeOperation):
 
 @register_operation
 class ActivateOperation(NodeOperation):
-    activity_code_suffix = 'activate'
     id = 'activate'
     name = _("activate")
     description = _("Make node active, i.e. scheduler is allowed to deploy "
@@ -930,7 +919,6 @@ class ActivateOperation(NodeOperation):
 
 @register_operation
 class PassivateOperation(NodeOperation):
-    activity_code_suffix = 'passivate'
     id = 'passivate'
     name = _("passivate")
     description = _("Make node passive, i.e. scheduler is denied to deploy "
@@ -952,7 +940,6 @@ class PassivateOperation(NodeOperation):
 
 @register_operation
 class DisableOperation(NodeOperation):
-    activity_code_suffix = 'disable'
     id = 'disable'
     name = _("disable")
     description = _("Disable node.")
@@ -977,7 +964,6 @@ class DisableOperation(NodeOperation):
 
 @register_operation
 class ScreenshotOperation(InstanceOperation):
-    activity_code_suffix = 'screenshot'
     id = 'screenshot'
     name = _("screenshot")
     description = _("Get a screenshot about the virtual machine's console. A "
@@ -993,7 +979,6 @@ class ScreenshotOperation(InstanceOperation):
 
 @register_operation
 class RecoverOperation(InstanceOperation):
-    activity_code_suffix = 'recover'
     id = 'recover'
     name = _("recover")
     description = _("Try to recover virtual machine disks from destroyed "
@@ -1021,7 +1006,6 @@ class RecoverOperation(InstanceOperation):
 
 @register_operation
 class ResourcesOperation(InstanceOperation):
-    activity_code_suffix = 'Resources change'
     id = 'resources_change'
     name = _("resources change")
     description = _("Change resources of a stopped virtual machine.")
