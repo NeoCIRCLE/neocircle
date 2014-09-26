@@ -767,13 +767,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                                             queue=queue_name
                                             ).get(timeout=timeout)
 
-    def delete_mem_dump(self, timeout=15):
-        queue_name = self.mem_dump['datastore'].get_remote_queue_name(
-            'storage', 'fast')
-        from storage.tasks.storage_tasks import delete_dump
-        delete_dump.apply_async(args=[self.mem_dump['path']],
-                                queue=queue_name).get(timeout=timeout)
-
     def allocate_node(self):
         if self.node is None:
             self.node = self.select_node()

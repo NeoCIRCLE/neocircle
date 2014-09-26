@@ -428,7 +428,7 @@ class DestroyOperation(InstanceOperation):
 
         # Delete mem. dump if exists
         try:
-            self.instance.delete_mem_dump()
+            self.instance._delete_mem_dump(parent_activity=activity)
         except:
             pass
 
@@ -445,6 +445,20 @@ class DestroyOperation(InstanceOperation):
         name = _("destroy virtual machine")
         task = vm_tasks.destroy
         # if e.libvirtError and "Domain not found" in str(e):
+
+    @register_operation
+    class DeleteMemDumpOperation(RemoteOperationMixin, SubOperationMixin,
+                                 InstanceOperation):
+        id = "_delete_mem_dump"
+        name = _("removing memory dump")
+        task = storage_tasks.delete_dump
+
+        def _get_remote_queue(self):
+            return self.instance.mem_dump['datastore'].get_remote_queue_name(
+                "storage", "fast")
+
+        def _get_remote_args(self, **kwargs):
+            return [self.instance.mem_dump['path']]
 
 
 @register_operation
