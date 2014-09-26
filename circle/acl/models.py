@@ -229,7 +229,7 @@ class AclBase(Model):
             levelfilter,
             content_type=ct, level__weight__gte=level.weight).distinct()
         clsfilter = Q(object_level_set__in=ols.all())
-        return cls.objects.filter(clsfilter)
+        return cls.objects.filter(clsfilter).distinct()
 
     def save(self, *args, **kwargs):
         super(AclBase, self).save(*args, **kwargs)
