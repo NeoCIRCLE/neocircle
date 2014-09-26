@@ -236,6 +236,9 @@ class GroupProfile(AclBase):
         help_text=_('Unique identifier of the group at the organization.'))
     description = TextField(blank=True)
 
+    def __unicode__(self):
+        return self.group.name
+
     def save(self, *args, **kwargs):
         if not self.org_id:
             self.org_id = None
