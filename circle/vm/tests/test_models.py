@@ -89,7 +89,7 @@ class InstanceTestCase(TestCase):
         self.assertFalse(inst.save.called)
 
     def test_destroy_sets_destroyed(self):
-        inst = Mock(destroyed_at=None, spec=Instance,
+        inst = Mock(destroyed_at=None, spec=Instance, _delete_vm=Mock(),
                     InstanceDestroyedError=Instance.InstanceDestroyedError)
         inst.node = MagicMock(spec=Node)
         inst.disks.all.return_value = []
