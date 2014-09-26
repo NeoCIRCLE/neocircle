@@ -761,12 +761,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         for net in self.interface_set.all():
             net.shutdown()
 
-    def deploy_vm(self, timeout=15):
-        queue_name = self.get_remote_queue_name('vm', 'slow')
-        return vm_tasks.deploy.apply_async(args=[self.get_vm_desc()],
-                                           queue=queue_name
-                                           ).get(timeout=timeout)
-
     def migrate_vm(self, to_node, timeout=120):
         queue_name = self.get_remote_queue_name('vm', 'slow')
         return vm_tasks.migrate.apply_async(args=[self.vm_name,

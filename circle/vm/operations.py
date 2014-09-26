@@ -28,7 +28,8 @@ from django.conf import settings
 
 from sizefield.utils import filesizeformat
 
-from celery.exceptions import TimeLimitExceeded
+from celery.contrib.abortable import AbortableAsyncResult
+from celery.exceptions import TimeLimitExceeded, TimeoutError
 
 from common.models import (
     create_readable, humanize_exception, HumanReadableException
@@ -318,12 +319,7 @@ class DeployOperation(InstanceOperation):
 
         # Deploy VM on remote machine
         if self.instance.state not in ['PAUSED']:
-            rn = create_readable(ugettext_noop("deploy virtual machine"),
-                                 ugettext_noop("deploy vm to %(node)s"),
-                                 node=self.instance.node)
-            with activity.sub_activity(
-                    'deploying_vm', readable_name=rn) as deploy_act:
-                deploy_act.result = self.instance.deploy_vm(timeout=timeout)
+            self.instance._deploy_vm(parent_activity=activity)
 
         # Establish network connection (vmdriver)
         with activity.sub_activity(
@@ -341,6 +337,23 @@ class DeployOperation(InstanceOperation):
         if self.instance.has_agent:
             activity.sub_activity('os_boot', readable_name=ugettext_noop(
                 "wait operating system loading"), interruptible=True)
+
+    @register_operation
+    class DeployVmOperation(SubOperationMixin, InstanceOperation):
+        id = "_deploy_vm"
+        name = _("deploy vm")
+        description = _("Deploy all associated disks.")
+        remote_queue = ("vm", "slow")
+        task = vm_tasks.deploy
+
+        def _get_remote_args(self):
+            return [self.instance.get_vm_desc()]
+            # intentionally not calling super
+
+        def get_activity_name(self, kwargs):
+            return create_readable(ugettext_noop("deploy virtual machine"),
+                                   ugettext_noop("deploy vm to %(node)s"),
+                                   node=self.instance.node)
 
     @register_operation
     class DeployDisksOperation(SubOperationMixin, InstanceOperation):
