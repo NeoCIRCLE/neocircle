@@ -462,7 +462,7 @@ class DestroyOperation(InstanceOperation):
 
 
 @register_operation
-class MigrateOperation(InstanceOperation):
+class MigrateOperation(RemoteInstanceOperation):
     id = 'migrate'
     name = _("migrate")
     description = _("Move virtual machine to an other worker node with a few "
@@ -471,6 +471,14 @@ class MigrateOperation(InstanceOperation):
     superuser_required = True
     accept_states = ('RUNNING', )
     async_queue = "localhost.man.slow"
+    task = vm_tasks.migrate
+    remote_queue = ("vm", "slow")
+    timeout = 600
+
+    def _get_remote_args(self, to_node, **kwargs):
+        return (super(MigrateOperation, self)._get_remote_args(**kwargs)
+                + [to_node.host.hostname, True])
+        # TODO handle non-live migration
 
     def rollback(self, activity):
         with activity.sub_activity(
@@ -478,7 +486,7 @@ class MigrateOperation(InstanceOperation):
                 "redeploy network (rollback)")):
             self.instance.deploy_net()
 
-    def _operation(self, activity, to_node=None, timeout=120):
+    def _operation(self, activity, to_node=None):
         if not to_node:
             with activity.sub_activity('scheduling',
                                        readable_name=ugettext_noop(
@@ -490,7 +498,7 @@ class MigrateOperation(InstanceOperation):
             with activity.sub_activity(
                 'migrate_vm', readable_name=create_readable(
                     ugettext_noop("migrate to %(node)s"), node=to_node)):
-                self.instance.migrate_vm(to_node=to_node, timeout=timeout)
+                super(MigrateOperation, self)._operation(to_node=to_node)
         except Exception as e:
             if hasattr(e, 'libvirtError'):
                 self.rollback(activity)

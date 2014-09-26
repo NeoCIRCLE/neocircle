@@ -759,14 +759,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         for net in self.interface_set.all():
             net.shutdown()
 
-    def migrate_vm(self, to_node, timeout=120):
-        queue_name = self.get_remote_queue_name('vm', 'slow')
-        return vm_tasks.migrate.apply_async(args=[self.vm_name,
-                                                  to_node.host.hostname,
-                                                  True],
-                                            queue=queue_name
-                                            ).get(timeout=timeout)
-
     def allocate_node(self):
         if self.node is None:
             self.node = self.select_node()
