@@ -785,13 +785,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                     raise humanize_exception(ugettext_noop(
                         "Operation aborted by user."), e)
 
-    def suspend_vm(self, timeout=230):
-        queue_name = self.get_remote_queue_name('vm', 'slow')
-        return vm_tasks.sleep.apply_async(args=[self.vm_name,
-                                                self.mem_dump['path']],
-                                          queue=queue_name
-                                          ).get(timeout=timeout)
-
     def delete_mem_dump(self, timeout=15):
         queue_name = self.mem_dump['datastore'].get_remote_queue_name(
             'storage', 'fast')

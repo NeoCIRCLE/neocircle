@@ -735,20 +735,26 @@ class SleepOperation(InstanceOperation):
         else:
             activity.resultant_state = 'ERROR'
 
-    def _operation(self, activity, timeout=240):
-        # Destroy networks
-        with activity.sub_activity('shutdown_net', readable_name=ugettext_noop(
-                "shutdown network")):
-            self.instance.shutdown_net()
-
-        # Suspend vm
-        with activity.sub_activity('suspending',
+    def _operation(self, activity):
+        with activity.sub_activity('shutdown_net',
                                    readable_name=ugettext_noop(
-                                       "suspend virtual machine")):
-            self.instance.suspend_vm(timeout=timeout)
-
+                                       "shutdown network")):
+            self.instance.shutdown_net()
+        self.instance._suspend_vm(parent_activity=activity)
         self.instance.yield_node()
-        # VNC port needs to be kept
+
+    @register_operation
+    class SuspendVmOperation(SubOperationMixin, RemoteInstanceOperation):
+        id = "_suspend_vm"
+        name = _("suspend virtual machine")
+        task = vm_tasks.suspend
+        remote_queue = ("vm", "slow")
+        timeout = 600
+
+        def _get_remote_args(self, **kwargs):
+            return (super(SleepOperation.SuspendVmOperation, self)
+                    ._get_remote_args(**kwargs)
+                    + [self.instance.mem_dump['path']])
 
 
 @register_operation
