@@ -52,6 +52,36 @@
 
 <hr />
 
+<h3>{% trans "Available objects for this group" %}</h3>
+<ul class="dashboard-profile-vm-list fa-ul">
+  {% for i in vm_objects %}
+    <li>
+      <a href="{{ i.get_absolute_url }}">
+        <i class="fa fa-li {{ i.get_status_icon }}"></i>
+        {{ i }}
+      </a>
+    </li>
+  {% endfor %}
+  {% for t in template_objects %}
+    <li>
+      <a href="{{ t.get_absolute_url }}">
+        <i class="fa fa-li fa-puzzle-piece"></i>
+        {{ t }}
+      </a>
+    </li>
+  {% endfor %}
+  {% for g in group_objects %}
+    <li>
+      <a href="{{ g.get_absolute_url }}">
+        <i class="fa fa-li fa-users"></i>
+        {{ g }}
+      </a>
+    </li>
+  {% endfor %}
+</ul>
+
+<hr />
+
 <h3>{% trans "User list"|capfirst %}
     {% if perms.auth.add_user %}
         <a href="{% url "dashboard.views.create-user" group.pk %}" class="btn btn-success pull-right">{% trans "Create user" %}</a>
