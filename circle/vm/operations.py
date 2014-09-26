@@ -1037,7 +1037,7 @@ class DisableOperation(NodeOperation):
 
 
 @register_operation
-class ScreenshotOperation(InstanceOperation):
+class ScreenshotOperation(RemoteInstanceOperation):
     id = 'screenshot'
     name = _("screenshot")
     description = _("Get a screenshot about the virtual machine's console. A "
@@ -1046,9 +1046,7 @@ class ScreenshotOperation(InstanceOperation):
     acl_level = "owner"
     required_perms = ()
     accept_states = ('RUNNING', )
-
-    def _operation(self):
-        return self.instance.get_screenshot(timeout=20)
+    task = vm_tasks.screenshot
 
 
 @register_operation

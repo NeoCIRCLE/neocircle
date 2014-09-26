@@ -44,7 +44,7 @@ from common.models import (
     create_readable, HumanReadableException,
 )
 from common.operations import OperatedMixin
-from ..tasks import vm_tasks, agent_tasks
+from ..tasks import agent_tasks
 from .activity import (ActivityInProgressError, instance_activity,
                        InstanceActivity)
 from .common import BaseResourceConfigModel, Lease
@@ -834,12 +834,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             latest = a.activity_code
 
         return merged_acts
-
-    def get_screenshot(self, timeout=5):
-        queue_name = self.get_remote_queue_name("vm", "fast")
-        return vm_tasks.screenshot.apply_async(args=[self.vm_name],
-                                               queue=queue_name
-                                               ).get(timeout=timeout)
 
     def get_latest_activity_in_progress(self):
         try:
