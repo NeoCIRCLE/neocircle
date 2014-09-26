@@ -22,8 +22,6 @@ from importlib import import_module
 from logging import getLogger
 from warnings import warn
 
-from celery.exceptions import TimeoutError
-from celery.contrib.abortable import AbortableAsyncResult
 import django.conf
 from django.contrib.auth.models import User
 from django.core import signing
@@ -43,7 +41,7 @@ from taggit.managers import TaggableManager
 
 from acl.models import AclBase
 from common.models import (
-    create_readable, HumanReadableException, humanize_exception
+    create_readable, HumanReadableException,
 )
 from common.operations import OperatedMixin
 from ..tasks import vm_tasks, agent_tasks
@@ -768,22 +766,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                                                   True],
                                             queue=queue_name
                                             ).get(timeout=timeout)
-
-    def shutdown_vm(self, task=None, step=5):
-        queue_name = self.get_remote_queue_name('vm', 'slow')
-        logger.debug("RPC Shutdown at queue: %s, for vm: %s.", queue_name,
-                     self.vm_name)
-        remote = vm_tasks.shutdown.apply_async(kwargs={'name': self.vm_name},
-                                               queue=queue_name)
-
-        while True:
-            try:
-                return remote.get(timeout=step)
-            except TimeoutError as e:
-                if task is not None and task.is_aborted():
-                    AbortableAsyncResult(remote.id).abort()
-                    raise humanize_exception(ugettext_noop(
-                        "Operation aborted by user."), e)
 
     def delete_mem_dump(self, timeout=15):
         queue_name = self.mem_dump['datastore'].get_remote_queue_name(

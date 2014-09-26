@@ -46,6 +46,7 @@ from .models import (
 from .tasks import agent_tasks, local_agent_tasks, vm_tasks
 
 from dashboard.store_api import Store, NoStoreException
+from storage.tasks import storage_tasks
 
 logger = getLogger(__name__)
 
@@ -63,6 +64,24 @@ class RemoteOperationMixin(object):
     def check_precond(self):
         super(RemoteOperationMixin, self).check_precond()
         self._get_remote_queue()
+
+
+class AbortableRemoteOperationMixin(object):
+    remote_step = property(lambda self: self.remote_timeout / 10)
+
+    def _operation(self, task, **kwargs):
+        args = self._get_remote_args(**kwargs),
+        remote = self.task.apply_async(
+            args=args, queue=self._get_remote_queue())
+        for i in xrange(int(self.remote_timeout / self.remote_step)):
+            try:
+                return remote.get(timeout=self.remote_step)
+            except TimeoutError as e:
+                if task is not None and task.is_aborted():
+                    AbortableAsyncResult(remote.id).abort()
+                    raise humanize_exception(ugettext_noop(
+                        "Operation aborted by user."), e)
+        return remote.get(timeout=self.remote_step)
 
 
 class InstanceOperation(Operation):
@@ -656,7 +675,8 @@ class SaveAsTemplateOperation(InstanceOperation):
 
 
 @register_operation
-class ShutdownOperation(InstanceOperation):
+class ShutdownOperation(AbortableRemoteOperationMixin,
+                        RemoteInstanceOperation):
     id = 'shutdown'
     name = _("shutdown")
     description = _("Try to halt virtual machine by a standard ACPI signal, "
@@ -667,9 +687,12 @@ class ShutdownOperation(InstanceOperation):
     required_perms = ()
     accept_states = ('RUNNING', )
     resultant_state = 'STOPPED'
+    task = vm_tasks.shutdown
+    remote_queue = ("vm", "slow")
+    timeout = 120
 
-    def _operation(self, task=None):
-        self.instance.shutdown_vm(task=task)
+    def _operation(self, task):
+        super(ShutdownOperation, self)._operation(task=task)
         self.instance.yield_node()
 
     def on_abort(self, activity, error):
