@@ -771,16 +771,13 @@ class WakeUpOperation(InstanceOperation):
         else:
             activity.resultant_state = 'ERROR'
 
-    def _operation(self, activity, timeout=60):
+    def _operation(self, activity):
         # Schedule vm
         self.instance.allocate_vnc_port()
         self.instance.allocate_node()
 
         # Resume vm
-        with activity.sub_activity(
-            'resuming', readable_name=ugettext_noop(
-                "resume virtual machine")):
-            self.instance.wake_up_vm(timeout=timeout)
+        self.instance._wake_up_vm(parent_activity=activity)
 
         # Estabilish network connection (vmdriver)
         with activity.sub_activity(
@@ -792,6 +789,19 @@ class WakeUpOperation(InstanceOperation):
             self.instance.renew(parent_activity=activity)
         except:
             pass
+
+    @register_operation
+    class WakeUpVmOperation(SubOperationMixin, RemoteInstanceOperation):
+        id = "_wake_up_vm"
+        name = _("resume virtual machine")
+        task = vm_tasks.wake_up
+        remote_queue = ("vm", "slow")
+        timeout = 600
+
+        def _get_remote_args(self, **kwargs):
+            return (super(WakeUpOperation.WakeUpVmOperation, self)
+                    ._get_remote_args(**kwargs)
+                    + [self.instance.mem_dump['path']])
 
 
 @register_operation
