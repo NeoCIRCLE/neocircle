@@ -114,8 +114,8 @@ class Node(OperatedMixin, TimeStampedModel):
     def get_info(self):
         return self.remote_query(vm_tasks.get_info,
                                  priority='fast',
-                                 default={'core_num': '',
-                                          'ram_size': '0',
+                                 default={'core_num': 0,
+                                          'ram_size': 0,
                                           'architecture': ''})
 
     info = property(get_info)
