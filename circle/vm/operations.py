@@ -806,7 +806,8 @@ class ChangeStateOperation(InstanceOperation):
     required_perms = ('vm.emergency_change_state', )
     concurrency_check = False
 
-    def _operation(self, user, activity, new_state="NOSTATE", interrupt=False):
+    def _operation(self, user, activity, new_state="NOSTATE", interrupt=False,
+                   reset_node=False):
         activity.resultant_state = new_state
         if interrupt:
             msg_txt = ugettext_noop("Activity is forcibly interrupted.")
@@ -815,6 +816,37 @@ class ChangeStateOperation(InstanceOperation):
                     finished__isnull=True, instance=self.instance):
                 i.finish(False, result=message)
                 logger.error('Forced finishing activity %s', i)
+
+        if reset_node:
+            self.instance.node = None
+            self.instance.save()
+
+
+@register_operation
+class RedeployOperation(InstanceOperation):
+    activity_code_suffix = 'redeploy'
+    id = 'redeploy'
+    name = _("redeploy")
+    description = _("Change the virtual machine state to NOSTATE "
+                    "and redeploy the VM. This operation allows starting "
+                    "machines formerly running on a failed node.")
+    acl_level = "owner"
+    required_perms = ('vm.redeploy', )
+    concurrency_check = False
+
+    def _operation(self, user, activity, with_emergency_change_state=True):
+        if with_emergency_change_state:
+            ChangeStateOperation(self.instance).call(
+                parent_activity=activity, user=user,
+                new_state='NOSTATE', interrupt=False, reset_node=True)
+        else:
+            ShutOffOperation(self.instance).call(
+                parent_activity=activity, user=user)
+
+        self.instance._update_status()
+
+        DeployOperation(self.instance).call(
+            parent_activity=activity, user=user)
 
 
 class NodeOperation(Operation):
@@ -852,6 +884,35 @@ class NodeOperation(Operation):
             return NodeActivity.create(code_suffix=self.activity_code_suffix,
                                        node=self.node, user=user,
                                        readable_name=name)
+
+
+@register_operation
+class ResetNodeOperation(NodeOperation):
+    activity_code_suffix = 'reset'
+    id = 'reset'
+    name = _("reset")
+    description = _("Disable missing node and redeploy all instances "
+                    "on other ones.")
+    required_perms = ()
+    online_required = False
+    async_queue = "localhost.man.slow"
+
+    def check_precond(self):
+        super(ResetNodeOperation, self).check_precond()
+        if not self.node.enabled or self.node.online:
+            raise humanize_exception(ugettext_noop(
+                "You cannot reset a disabled or online node."), Exception())
+
+    def _operation(self, activity, user):
+        if self.node.enabled:
+            DisableOperation(self.node).call(parent_activity=activity,
+                                             user=user)
+        for i in self.node.instance_set.all():
+            name = create_readable(ugettext_noop(
+                "migrate %(instance)s (%(pk)s)"), instance=i.name, pk=i.pk)
+            with activity.sub_activity('migrate_instance_%d' % i.pk,
+                                       readable_name=name):
+                i.redeploy(user=user)
 
 
 @register_operation

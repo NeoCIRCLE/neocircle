@@ -58,7 +58,7 @@ from ..forms import (
     AclUserOrGroupAddForm, VmResourcesForm, TraitsForm, RawDataForm,
     VmAddInterfaceForm, VmCreateDiskForm, VmDownloadDiskForm, VmSaveForm,
     VmRenewForm, VmStateChangeForm, VmListSearchForm, VmCustomizeForm,
-    TransferOwnershipForm, VmDiskResizeForm,
+    TransferOwnershipForm, VmDiskResizeForm, RedeployForm,
 )
 from ..models import Favourite, Profile
 
@@ -599,6 +599,15 @@ class VmStateChangeView(FormOperationMixin, VmOperationView):
         return val
 
 
+class RedeployView(FormOperationMixin, VmOperationView):
+    op = 'redeploy'
+    icon = 'stethoscope'
+    effect = 'danger'
+    show_in_toolbar = True
+    form_class = RedeployForm
+    wait_for_result = 0.5
+
+
 vm_ops = OrderedDict([
     ('deploy', VmOperationView.factory(
         op='deploy', icon='play', effect='success')),
@@ -620,6 +629,7 @@ vm_ops = OrderedDict([
     ('recover', VmOperationView.factory(
         op='recover', icon='medkit', effect='warning')),
     ('nostate', VmStateChangeView),
+    ('redeploy', RedeployView),
     ('destroy', VmOperationView.factory(
         extra_bases=[TokenOperationView],
         op='destroy', icon='times', effect='danger')),

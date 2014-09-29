@@ -752,6 +752,7 @@ class VmStateChangeForm(forms.Form):
                     "but don't interrupt any tasks."))
     new_state = forms.ChoiceField(Instance.STATUS, label=_(
         "New status"))
+    reset_node = forms.BooleanField(required=False, label=_("Reset node"))
 
     def __init__(self, *args, **kwargs):
         show_interrupt = kwargs.pop('show_interrupt')
@@ -761,6 +762,17 @@ class VmStateChangeForm(forms.Form):
         if not show_interrupt:
             self.fields['interrupt'].widget = HiddenInput()
         self.fields['new_state'].initial = status
+
+    @property
+    def helper(self):
+        helper = FormHelper(self)
+        helper.form_tag = False
+        return helper
+
+
+class RedeployForm(forms.Form):
+    with_emergency_change_state = forms.BooleanField(
+        required=False, initial=True, label=_("use emergency state change"))
 
     @property
     def helper(self):
