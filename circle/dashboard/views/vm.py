@@ -428,7 +428,7 @@ class VmMigrateView(VmOperationView):
             if isinstance(inst, Instance):
                 ctx["recommended"] = inst.select_node().pk
         except SchedulerError:
-            pass
+            logger.exception("scheduler error:")
 
         return ctx
 
