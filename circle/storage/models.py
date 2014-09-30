@@ -104,7 +104,9 @@ class Disk(TimeStampedModel):
         verbose_name_plural = _('disks')
         permissions = (
             ('create_empty_disk', _('Can create an empty disk.')),
-            ('download_disk', _('Can download a disk.')))
+            ('download_disk', _('Can download a disk.')),
+            ('resize_disk', _('Can resize a disk.'))
+        )
 
     class DiskError(HumanReadableException):
         admin_message = None
@@ -474,7 +476,8 @@ class Disk(TimeStampedModel):
         queue_name = self.get_remote_queue_name("storage", priority="slow")
         remote = storage_tasks.merge.apply_async(kwargs={
             "old_json": self.get_disk_desc(),
-            "new_json": disk.get_disk_desc()},
+            "new_json": disk.get_disk_desc(),
+            "parent_id": task.request.id},
             queue=queue_name
         )  # Timeout
         while True:

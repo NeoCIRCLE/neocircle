@@ -22,25 +22,23 @@
   </div>
 </div>
 
-<style>
-  .node-list-table tbody>tr>td, .node-list-table thead>tr>th {
-    vertical-align: middle;
-  }
+<div class="row">
+  <div class="col-md-12">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <div class="pull-right graph-buttons">
+          {% include "dashboard/_graph-time-buttons.html" %}
+        </div>
+        <h3 class="no-margin"><i class="fa fa-area-chart"></i> {% trans "Graphs" %}</h3>
+      </div>
+      <div class="text-center graph-images">
+        <img src="{% url "dashboard.views.node-list-graph" "alloc" graph_time %}"/>
+        <img src="{% url "dashboard.views.node-list-graph" "vm" graph_time %}"/>
+      </div>
+    </div>
+  </div><!-- -col-md-12 -->
+</div><!-- .row -->
 
-  .node-list-table thead>tr>th, 
-  .node-list-table .enabled, .node-list-table .priority, 
-  .node-list-table .overcommit, .node-list-table .number_of_VMs {
-    text-align: center;
-  }
-
-  .node-list-table-thin {
-    width: 10px;
-  }
-
-  .node-list-table-monitor {
-    width: 250px;
-  }
-</style>
 {% endblock %}
 
 {% block extra_js %}

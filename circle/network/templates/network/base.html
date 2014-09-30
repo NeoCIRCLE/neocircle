@@ -4,6 +4,8 @@
 {% load staticfiles %}
 {% get_current_language as lang %}
 
+{% block title-site %}{% trans "Network" %} | CIRCLE{% endblock %}
+
 {% block extra_link %}
   <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:200,400&amp;subset=latin,latin-ext' rel='stylesheet' type='text/css'>
   <link href="{% static "network/network.css" %}" rel="stylesheet">

@@ -275,6 +275,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             ('change_resources', _('Can change resources of a running VM.')),
             ('set_resources', _('Can change resources of a new VM.')),
             ('create_vm', _('Can create a new VM.')),
+            ('redeploy', _('Can redeploy a VM.')),
             ('config_ports', _('Can configure port forwards.')),
             ('recover', _('Can recover a destroyed VM.')),
             ('emergency_change_state', _('Can change VM state to NOSTATE.')),
@@ -447,21 +448,22 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         self.time_of_suspend, self.time_of_delete = self.get_renew_times()
         super(Instance, self).clean(*args, **kwargs)
 
-    def vm_state_changed(self, new_state):
+    def vm_state_changed(self, new_state, new_node=False):
+        if new_node is False:  # None would be a valid value
+            new_node = self.node
         # log state change
         try:
             act = InstanceActivity.create(
                 code_suffix='vm_state_changed',
                 readable_name=create_readable(
-                    ugettext_noop("vm state changed to %(state)s"),
-                    state=new_state),
+                    ugettext_noop("vm state changed to %(state)s on %(node)s"),
+                    state=new_state, node=new_node),
                 instance=self)
         except ActivityInProgressError:
             pass  # discard state change if another activity is in progress.
         else:
-            if new_state == 'STOPPED':
-                self.vnc_port = None
-                self.node = None
+            if self.node != new_node:
+                self.node = new_node
                 self.save()
             act.finished = act.started
             act.resultant_state = new_state
@@ -789,6 +791,15 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             else:
                 raise
 
+    def resize_disk_live(self, disk, size, timeout=15):
+        queue_name = self.get_remote_queue_name('vm', 'slow')
+        result = vm_tasks.resize_disk.apply_async(
+            args=[self.vm_name, disk.path, size],
+            queue=queue_name).get(timeout=timeout)
+        disk.size = size
+        disk.save()
+        return result
+
     def deploy_disks(self):
         """Deploy all associated disks.
         """
@@ -909,10 +920,16 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         delete_dump.apply_async(args=[self.mem_dump['path']],
                                 queue=queue_name).get(timeout=timeout)
 
-    def allocate_node(self):
-        if self.node is None:
-            self.node = self.select_node()
+    def allocate_node(self, activity):
+        if self.node is not None:
+            return None
+
+        with activity.sub_activity(
+                'scheduling',
+                readable_name=ugettext_noop("schedule")) as sa:
+            sa.result = self.node = self.select_node()
             self.save()
+            return self.node
 
     def yield_node(self):
         if self.node is not None:
@@ -1002,3 +1019,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         latest = self.get_latest_activity_in_progress()
         return (latest and latest.resultant_state is not None
                 and self.status != latest.resultant_state)
+
+    @property
+    def metric_prefix(self):
+        return 'vm.%s' % self.vm_name

@@ -25,7 +25,10 @@
           <i class="fa {{ i.get_status_icon }}" title="{{ i.get_status_display }}"></i>
           {{ i.name }}
         </span>
-        <small class="text-muted"> {{ i.short_hostname }}</small>
+        <small class="text-muted">
+          {% if i.owner == request.user %}{{ i.short_hostname }}
+          {% else %}{{i.owner.profile.get_display_name}}{% endif %}
+        </small>
         <div class="pull-right dashboard-vm-favourite" data-vm="{{ i.pk }}">
           {% if i.fav %}
             <i class="fa fa-star text-primary title-favourite" title="{% trans "Unfavourite" %}"></i>

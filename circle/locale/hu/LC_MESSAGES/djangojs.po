@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-09-03 18:49+0200\n"
+"POT-Creation-Date: 2014-09-24 12:19+0200\n"
 "PO-Revision-Date: 2014-09-03 12:51+0200\n"
 "Last-Translator: Mate Ory <ory.mate@ik.bme.hu>\n"
 "Language-Team: Hungarian <cloud@ik.bme.hu>\n"
@@ -38,9 +38,9 @@ msgstr ""
 msgid "Select an option to proceed!"
 msgstr "Válasszon a folytatáshoz."
 
-#: dashboard/static/dashboard/dashboard.js:258
-#: dashboard/static/dashboard/dashboard.js:306
-#: dashboard/static/dashboard/dashboard.js:316
+#: dashboard/static/dashboard/dashboard.js:259
+#: dashboard/static/dashboard/dashboard.js:307
+#: dashboard/static/dashboard/dashboard.js:317
 #: static_collected/all.047675ebf594.js:3633
 #: static_collected/all.047675ebf594.js:3681
 #: static_collected/all.047675ebf594.js:3691

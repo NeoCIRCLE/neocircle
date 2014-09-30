@@ -524,11 +524,7 @@ class TemplateForm(forms.ModelForm):
                 value = field.widget.value_from_datadict(
                     self.data, self.files, self.add_prefix(name))
                 try:
-                    if isinstance(field, forms.FileField):
-                        initial = self.initial.get(name, field.initial)
-                        value = field.clean(value, initial)
-                    else:
-                        value = field.clean(value)
+                    value = field.clean(value)
                     self.cleaned_data[name] = value
                     if hasattr(self, 'clean_%s' % name):
                         value = getattr(self, 'clean_%s' % name)()
@@ -544,13 +540,14 @@ class TemplateForm(forms.ModelForm):
                 else:
                     self.cleaned_data[name] = getattr(old, name)
 
+        if "req_traits" not in self.allowed_fields:
+            self.cleaned_data['req_traits'] = self.instance.req_traits.all()
+
     def save(self, commit=True):
         data = self.cleaned_data
         self.instance.max_ram_size = data.get('ram_size')
 
-        instance = super(TemplateForm, self).save(commit=False)
-        if commit:
-            instance.save()
+        instance = super(TemplateForm, self).save(commit=True)
 
         # create and/or delete InterfaceTemplates
         networks = InterfaceTemplate.objects.filter(
@@ -755,6 +752,7 @@ class VmStateChangeForm(forms.Form):
                     "but don't interrupt any tasks."))
     new_state = forms.ChoiceField(Instance.STATUS, label=_(
         "New status"))
+    reset_node = forms.BooleanField(required=False, label=_("Reset node"))
 
     def __init__(self, *args, **kwargs):
         show_interrupt = kwargs.pop('show_interrupt')
@@ -764,6 +762,17 @@ class VmStateChangeForm(forms.Form):
         if not show_interrupt:
             self.fields['interrupt'].widget = HiddenInput()
         self.fields['new_state'].initial = status
+
+    @property
+    def helper(self):
+        helper = FormHelper(self)
+        helper.form_tag = False
+        return helper
+
+
+class RedeployForm(forms.Form):
+    with_emergency_change_state = forms.BooleanField(
+        required=False, initial=True, label=_("use emergency state change"))
 
     @property
     def helper(self):
@@ -790,6 +799,48 @@ class VmCreateDiskForm(forms.Form):
     def helper(self):
         helper = FormHelper(self)
         helper.form_tag = False
+        return helper
+
+
+class VmDiskResizeForm(forms.Form):
+    size = forms.CharField(
+        widget=FileSizeWidget, initial=(10 << 30), label=_('Size'),
+        help_text=_('Size to resize the disk in bytes or with units '
+                    'like MB or GB.'))
+
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('choices')
+        self.disk = kwargs.pop('default')
+
+        super(VmDiskResizeForm, self).__init__(*args, **kwargs)
+
+        self.fields.insert(0, 'disk', forms.ModelChoiceField(
+            queryset=choices, initial=self.disk, required=True,
+            empty_label=None, label=_('Disk')))
+        if self.disk:
+            self.fields['disk'].widget = HiddenInput()
+            self.fields['size'].initial += self.disk.size
+
+    def clean(self):
+        cleaned_data = super(VmDiskResizeForm, self).clean()
+        size_in_bytes = self.cleaned_data.get("size")
+        disk = self.cleaned_data.get('disk')
+        if not size_in_bytes.isdigit() and len(size_in_bytes) > 0:
+            raise forms.ValidationError(_("Invalid format, you can use "
+                                          " GB or MB!"))
+        if int(size_in_bytes) < int(disk.size):
+            raise forms.ValidationError(_("Disk size must be greater than the "
+                                        "actual size."))
+        return cleaned_data
+
+    @property
+    def helper(self):
+        helper = FormHelper(self)
+        helper.form_tag = False
+        if self.disk:
+            helper.layout = Layout(
+                HTML(_("<label>Disk:</label> %s") % self.disk),
+                Field('disk'), Field('size'))
         return helper
 
 

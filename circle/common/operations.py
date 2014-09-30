@@ -273,3 +273,4 @@ def register_operation(op_cls, op_id=None, target_cls=None):
         setattr(target_cls, operation_registry_name, dict())
 
     getattr(target_cls, operation_registry_name)[op_id] = op_cls
+    return op_cls
