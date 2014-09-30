@@ -1007,3 +1007,7 @@ textarea[name="new_members"] {
 #vm-list-table td {
   vertical-align: middle;
 }
+
+.disk-resize-btn {
+  margin-right: 5px;
+}
