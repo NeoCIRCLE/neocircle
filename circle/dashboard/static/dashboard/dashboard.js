@@ -618,7 +618,7 @@ function addModalConfirmation(func, data) {
 }
 
 function clientInstalledAction(location) {   
-  setCookie('downloaded_client', true, 365 * 24 * 60 * 60, "/");
+  setCookie('downloaded_client', true, 365 * 24 * 60 * 60 * 1000, "/");
   window.location.href = location;
   $('#confirmation-modal').modal("hide");
 }
