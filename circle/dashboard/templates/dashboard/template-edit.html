@@ -86,7 +86,13 @@
         {% endif %}
         {% for d in disks %}
           <li>
-            {% include "dashboard/_disk-list-element.html" %}
+            <i class="fa fa-file"></i>
+            {{ d.name }} (#{{ d.id }}) -
+            <a href="{% url "dashboard.views.disk-remove" pk=d.pk %}?next={{ request.path }}"
+              data-disk-pk="{{ d.pk }}" class="btn btn-xs btn-danger pull-right disk-remove"
+              {% if not long_remove %}title="{% trans "Remove" %}"{% endif %}>
+              <i class="fa fa-times"></i>{% if long_remove %} {% trans "Remove" %}{% endif %}
+            </a>
           </li>
         {% endfor %}
         </ul>

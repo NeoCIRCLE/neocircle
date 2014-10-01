@@ -844,6 +844,35 @@ class VmDiskResizeForm(forms.Form):
         return helper
 
 
+class VmDiskRemoveForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('choices')
+        self.disk = kwargs.pop('default')
+
+        super(VmDiskRemoveForm, self).__init__(*args, **kwargs)
+
+        self.fields.insert(0, 'disk', forms.ModelChoiceField(
+            queryset=choices, initial=self.disk, required=True,
+            empty_label=None, label=_('Disk')))
+        if self.disk:
+            self.fields['disk'].widget = HiddenInput()
+
+    @property
+    def helper(self):
+        helper = FormHelper(self)
+        helper.form_tag = False
+        if self.disk:
+            helper.layout = Layout(
+                AnyTag(
+                    "div",
+                    HTML(_("<label>Disk:</label> %s") % self.disk),
+                    css_class="form-group",
+                ),
+                Field("disk"),
+            )
+        return helper
+
+
 class VmDownloadDiskForm(forms.Form):
     name = forms.CharField(max_length=100, label=_("Name"))
     url = forms.CharField(label=_('URL'), validators=[URLValidator(), ])
