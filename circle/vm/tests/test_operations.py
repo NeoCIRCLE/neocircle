@@ -52,15 +52,14 @@ class MigrateOperationTestCase(TestCase):
 
         inst = MagicMock(spec=Instance)
         act = MagicMock(spec=InstanceActivity)
-        inst.migrate_vm = MagicMock(side_effect=MigrateException())
+        op = MigrateOperation(inst)
+        op._get_remote_args = MagicMock(side_effect=MigrateException())
         inst.select_node = MagicMock(return_value='test')
-        inst.reallocate_node = (
-            lambda act: Instance.reallocate_node(inst, act))
         self.assertRaises(
-            MigrateException, MigrateOperation(inst)._operation,
+            MigrateException, op._operation,
             act, to_node=None)
         assert inst.select_node.called
-        inst.migrate_vm.assert_called_once_with(to_node='test', timeout=120)
+        op._get_remote_args.assert_called_once_with(to_node='test')
 
 
 class RebootOperationTestCase(TestCase):
