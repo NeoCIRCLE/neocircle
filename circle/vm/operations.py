@@ -330,7 +330,7 @@ class DeployOperation(InstanceOperation):
     def _operation(self, activity, timeout=15):
         # Allocate VNC port and host node
         self.instance.allocate_vnc_port()
-        self.instance.allocate_node(activity)
+        self.instance.allocate_node()
 
         # Deploy virtual images
         self.instance._deploy_disks(parent_activity=activity)
@@ -820,7 +820,7 @@ class WakeUpOperation(InstanceOperation):
     def _operation(self, activity):
         # Schedule vm
         self.instance.allocate_vnc_port()
-        self.instance.allocate_node(activity)
+        self.instance.allocate_node()
 
         # Resume vm
         self.instance._wake_up_vm(parent_activity=activity)
