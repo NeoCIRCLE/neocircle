@@ -487,7 +487,12 @@ class MigrateOperation(RemoteInstanceOperation):
 
     def _operation(self, activity, to_node=None):
         if not to_node:
-            to_node = self.instance.reallocate_node(activity)
+            with activity.sub_activity('scheduling',
+                                       readable_name=ugettext_noop(
+                                           "schedule")) as sa:
+                to_node = self.instance.select_node()
+                sa.result = to_node
+
         try:
             with activity.sub_activity(
                 'migrate_vm', readable_name=create_readable(
