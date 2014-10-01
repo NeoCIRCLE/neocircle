@@ -16,7 +16,7 @@
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.test import TestCase
-from mock import patch, MagicMock
+from mock import MagicMock
 
 from common.operations import operation_registry_name as op_reg_name
 from vm.models import Instance, InstanceActivity, Node
