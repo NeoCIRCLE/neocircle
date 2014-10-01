@@ -180,10 +180,7 @@ class GroupPermissionsView(SuperuserRequiredMixin, UpdateView):
 
 
 class GroupAclUpdateView(AclUpdateView):
-    model = Group
-
-    def get_object(self):
-        return super(GroupAclUpdateView, self).get_object().profile
+    model = GroupProfile
 
 
 class GroupList(LoginRequiredMixin, SingleTableView):

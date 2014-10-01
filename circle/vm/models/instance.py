@@ -266,6 +266,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
             ('change_resources', _('Can change resources of a running VM.')),
             ('set_resources', _('Can change resources of a new VM.')),
             ('create_vm', _('Can create a new VM.')),
+            ('redeploy', _('Can redeploy a VM.')),
             ('config_ports', _('Can configure port forwards.')),
             ('recover', _('Can recover a destroyed VM.')),
             ('emergency_change_state', _('Can change VM state to NOSTATE.')),
@@ -763,6 +764,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         if self.node is None:
             self.node = self.select_node()
             self.save()
+            return self.node
 
     def yield_node(self):
         if self.node is not None:

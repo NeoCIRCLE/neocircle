@@ -114,8 +114,7 @@ class InstanceTestCase(TestCase):
                 migrate_op(system=True)
 
             migr.apply_async.assert_called()
-            self.assertIn(call.sub_activity(
-                u'scheduling', readable_name=u'schedule'), act.mock_calls)
+            inst.allocate_node.assert_called()
             inst.select_node.assert_called()
 
     def test_migrate_wo_scheduling(self):
@@ -133,7 +132,7 @@ class InstanceTestCase(TestCase):
                 migrate_op(to_node=inst.node, system=True)
 
             migr.apply_async.assert_called()
-            self.assertNotIn(call.sub_activity(u'scheduling'), act.mock_calls)
+            inst.allocate_node.assert_called()
 
     def test_migrate_with_error(self):
         inst = Mock(destroyed_at=None, spec=Instance)

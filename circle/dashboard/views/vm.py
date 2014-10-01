@@ -45,6 +45,7 @@ from common.models import (
     create_readable, HumanReadableException, fetch_human_exception,
 )
 from firewall.models import Vlan, Host, Rule
+from manager.scheduler import SchedulerError
 from storage.models import Disk
 from vm.models import (
     Instance, instance_activity, InstanceActivity, Node, Lease,
@@ -58,7 +59,7 @@ from ..forms import (
     AclUserOrGroupAddForm, VmResourcesForm, TraitsForm, RawDataForm,
     VmAddInterfaceForm, VmCreateDiskForm, VmDownloadDiskForm, VmSaveForm,
     VmRenewForm, VmStateChangeForm, VmListSearchForm, VmCustomizeForm,
-    TransferOwnershipForm, VmDiskResizeForm,
+    TransferOwnershipForm, VmDiskResizeForm, RedeployForm,
 )
 from ..models import Favourite, Profile
 
@@ -97,6 +98,8 @@ class VmDetailView(GraphMixin, CheckedDetailView):
         context = super(VmDetailView, self).get_context_data(**kwargs)
         instance = context['instance']
         user = self.request.user
+        is_operator = instance.has_level(user, "operator")
+        is_owner = instance.has_level(user, "owner")
         ops = get_operations(instance, user)
         context.update({
             'graphite_enabled': settings.GRAPHITE_URL is not None,
@@ -152,9 +155,11 @@ class VmDetailView(GraphMixin, CheckedDetailView):
         context['client_download'] = self.request.COOKIES.get(
             'downloaded_client')
         # can link template
-        context['can_link_template'] = (
-            instance.template and instance.template.has_level(user, "operator")
-        )
+        context['can_link_template'] = instance.template and is_operator
+
+        # is operator/owner
+        context['is_operator'] = is_operator
+        context['is_owner'] = is_owner
 
         return context
 
@@ -174,7 +179,7 @@ class VmDetailView(GraphMixin, CheckedDetailView):
 
     def __set_name(self, request):
         self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
+        if not self.object.has_level(request.user, "operator"):
             raise PermissionDenied()
         new_name = request.POST.get("new_name")
         Instance.objects.filter(pk=self.object.pk).update(
@@ -197,7 +202,7 @@ class VmDetailView(GraphMixin, CheckedDetailView):
 
     def __set_description(self, request):
         self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
+        if not self.object.has_level(request.user, "operator"):
             raise PermissionDenied()
 
         new_description = request.POST.get("new_description")
@@ -221,7 +226,7 @@ class VmDetailView(GraphMixin, CheckedDetailView):
     def __add_tag(self, request):
         new_tag = request.POST.get('new_tag')
         self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
+        if not self.object.has_level(request.user, "operator"):
             raise PermissionDenied()
 
         if len(new_tag) < 1:
@@ -243,7 +248,7 @@ class VmDetailView(GraphMixin, CheckedDetailView):
         try:
             to_remove = request.POST.get('to_remove')
             self.object = self.get_object()
-            if not self.object.has_level(request.user, 'owner'):
+            if not self.object.has_level(request.user, "operator"):
                 raise PermissionDenied()
 
             self.object.tags.remove(to_remove)
@@ -262,8 +267,8 @@ class VmDetailView(GraphMixin, CheckedDetailView):
 
     def __add_port(self, request):
         object = self.get_object()
-        if (not object.has_level(request.user, 'owner') or
-                not request.user.has_perm('vm.config_ports')):
+        if not (object.has_level(request.user, "operator") and
+                request.user.has_perm('vm.config_ports')):
             raise PermissionDenied()
 
         port = request.POST.get("port")
@@ -420,6 +425,15 @@ class VmMigrateView(VmOperationView):
         ctx = super(VmMigrateView, self).get_context_data(**kwargs)
         ctx['nodes'] = [n for n in Node.objects.filter(enabled=True)
                         if n.online]
+
+        inst = self.get_object()
+        ctx["recommended"] = None
+        try:
+            if isinstance(inst, Instance):
+                ctx["recommended"] = inst.select_node().pk
+        except SchedulerError:
+            logger.exception("scheduler error:")
+
         return ctx
 
     def post(self, request, extra=None, *args, **kwargs):
@@ -599,6 +613,15 @@ class VmStateChangeView(FormOperationMixin, VmOperationView):
         return val
 
 
+class RedeployView(FormOperationMixin, VmOperationView):
+    op = 'redeploy'
+    icon = 'stethoscope'
+    effect = 'danger'
+    show_in_toolbar = True
+    form_class = RedeployForm
+    wait_for_result = 0.5
+
+
 vm_ops = OrderedDict([
     ('deploy', VmOperationView.factory(
         op='deploy', icon='play', effect='success')),
@@ -620,6 +643,7 @@ vm_ops = OrderedDict([
     ('recover', VmOperationView.factory(
         op='recover', icon='medkit', effect='warning')),
     ('nostate', VmStateChangeView),
+    ('redeploy', RedeployView),
     ('destroy', VmOperationView.factory(
         extra_bases=[TokenOperationView],
         op='destroy', icon='times', effect='danger')),

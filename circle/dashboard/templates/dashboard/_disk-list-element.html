@@ -18,7 +18,8 @@
   </a>
   {% if op.resize_disk %}
     <span class="operation-wrapper">
-      <a href="{{ op.resize_disk.get_url }}?disk={{d.pk}}" class="btn btn-xs btn-warning pull-right operation">
+      <a href="{{ op.resize_disk.get_url }}?disk={{d.pk}}" 
+        class="btn btn-xs btn-warning pull-right operation disk-resize-btn">
         <i class="fa fa-arrows-alt"></i> {% trans "Resize" %}
       </a>
     </span>

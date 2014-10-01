@@ -1210,7 +1210,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         gp = self.g1.profile
         acl_users = len(gp.get_users_with_level())
         response = c.post('/dashboard/group/' +
-                          str(self.g1.pk) + '/acl/',
+                          str(gp.pk) + '/acl/',
                           {'name': 'user3', 'level': 'owner'})
         self.assertEqual(acl_users, len(gp.get_users_with_level()))
         self.assertEqual(response.status_code, 302)
@@ -1221,7 +1221,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         gp = self.g1.profile
         acl_users = len(gp.get_users_with_level())
         response = c.post('/dashboard/group/' +
-                          str(self.g1.pk) + '/acl/',
+                          str(gp.pk) + '/acl/',
                           {'name': 'user3', 'level': 'owner'})
         self.assertEqual(acl_users, len(gp.get_users_with_level()))
         self.assertEqual(response.status_code, 302)
@@ -1232,7 +1232,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         self.login(c, 'superuser')
         acl_users = len(gp.get_users_with_level())
         response = c.post('/dashboard/group/' +
-                          str(self.g1.pk) + '/acl/',
+                          str(gp.pk) + '/acl/',
                           {'name': 'user3', 'level': 'owner'})
         self.assertEqual(acl_users + 1, len(gp.get_users_with_level()))
         self.assertEqual(response.status_code, 302)
@@ -1243,7 +1243,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         self.login(c, 'user0')
         acl_users = len(gp.get_users_with_level())
         response = c.post('/dashboard/group/' +
-                          str(self.g1.pk) + '/acl/',
+                          str(gp.pk) + '/acl/',
                           {'name': 'user3', 'level': 'owner'})
         self.assertEqual(acl_users + 1, len(gp.get_users_with_level()))
         self.assertEqual(response.status_code, 302)
@@ -1253,7 +1253,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         gp = self.g1.profile
         acl_groups = len(gp.get_groups_with_level())
         response = c.post('/dashboard/group/' +
-                          str(self.g1.pk) + '/acl/',
+                          str(gp.pk) + '/acl/',
                           {'name': 'group2', 'level': 'owner'})
         self.assertEqual(acl_groups, len(gp.get_groups_with_level()))
         self.assertEqual(response.status_code, 302)
@@ -1264,7 +1264,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         self.login(c, 'user3')
         acl_groups = len(gp.get_groups_with_level())
         response = c.post('/dashboard/group/' +
-                          str(self.g1.pk) + '/acl/',
+                          str(gp.pk) + '/acl/',
                           {'name': 'group2', 'level': 'owner'})
         self.assertEqual(acl_groups, len(gp.get_groups_with_level()))
         self.assertEqual(response.status_code, 302)
@@ -1275,7 +1275,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         self.login(c, 'superuser')
         acl_groups = len(gp.get_groups_with_level())
         response = c.post('/dashboard/group/' +
-                          str(self.g1.pk) + '/acl/',
+                          str(gp.pk) + '/acl/',
                           {'name': 'group2', 'level': 'owner'})
         self.assertEqual(acl_groups + 1, len(gp.get_groups_with_level()))
         self.assertEqual(response.status_code, 302)
@@ -1286,7 +1286,7 @@ class GroupDetailTest(LoginMixin, TestCase):
         self.login(c, 'user0')
         acl_groups = len(gp.get_groups_with_level())
         response = c.post('/dashboard/group/' +
-                          str(self.g1.pk) + '/acl/',
+                          str(gp.pk) + '/acl/',
                           {'name': 'group2', 'level': 'owner'})
         self.assertEqual(acl_groups + 1, len(gp.get_groups_with_level()))
         self.assertEqual(response.status_code, 302)
