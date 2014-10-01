@@ -1000,7 +1000,8 @@ textarea[name="new_members"] {
   max-width: 100%;
 }
 
-#vm-list-table tbody td:nth-child(3) {
+#vm-list-table td.state,
+#vm-list-table td.memory {
   white-space: nowrap;
 }
 
