@@ -56,7 +56,7 @@ class RemoteOperationMixin(object):
     remote_timeout = 30
 
     def _operation(self, **kwargs):
-        args = self._get_remote_args(**kwargs),
+        args = self._get_remote_args(**kwargs)
         return self.task.apply_async(
             args=args, queue=self._get_remote_queue()
         ).get(timeout=self.remote_timeout)
@@ -92,7 +92,6 @@ class InstanceOperation(Operation):
     accept_states = None
     deny_states = None
     resultant_state = None
-    activity_code_suffix = property(lambda self: self.id)
 
     def __init__(self, instance):
         super(InstanceOperation, self).__init__(subject=instance)
@@ -358,10 +357,10 @@ class DeployOperation(InstanceOperation):
                 "wait operating system loading"), interruptible=True)
 
     @register_operation
-    class DeployVmOperation(SubOperationMixin, InstanceOperation):
+    class DeployVmOperation(SubOperationMixin, RemoteInstanceOperation):
         id = "_deploy_vm"
         name = _("deploy vm")
-        description = _("Deploy all associated disks.")
+        description = _("Deploy virtual machine.")
         remote_queue = ("vm", "slow")
         task = vm_tasks.deploy
 
@@ -392,7 +391,7 @@ class DeployOperation(InstanceOperation):
                 # deploy disk
                 disk.deploy()
 
-    class ResumeVmOperation(SubOperationMixin, InstanceOperation):
+    class ResumeVmOperation(SubOperationMixin, RemoteInstanceOperation):
         id = "_resume_vm"
         name = _("boot virtual machine")
         remote_queue = ("vm", "slow")
@@ -918,7 +917,6 @@ class NodeOperation(Operation):
     host_cls = Node
     online_required = True
     superuser_required = True
-    activity_code_suffix = property(lambda self: self.id)
 
     def __init__(self, node):
         super(NodeOperation, self).__init__(subject=node)

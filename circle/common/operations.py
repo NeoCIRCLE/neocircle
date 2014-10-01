@@ -46,6 +46,14 @@ class Operation(object):
     abortable = False
     has_percentage = False
 
+    @property
+    def activity_code_suffix(self):
+        return getattr(self, "_real_activity_code_suffix", self.id)
+
+    @activity_code_suffix.setter
+    def activity_code_suffix(self, value):
+        self._real_activity_code_suffix = value
+
     def __call__(self, **kwargs):
         return self.call(**kwargs)
 
