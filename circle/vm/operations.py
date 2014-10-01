@@ -398,7 +398,7 @@ class MigrateOperation(InstanceOperation):
 
     def _operation(self, activity, to_node=None, timeout=120):
         if not to_node:
-            self.instance.allocate_node(activity)
+            to_node = self.instance.reallocate_node(activity)
         try:
             with activity.sub_activity(
                 'migrate_vm', readable_name=create_readable(
@@ -418,6 +418,7 @@ class MigrateOperation(InstanceOperation):
         # Refresh node information
         self.instance.node = to_node
         self.instance.save()
+
         # Estabilish network connection (vmdriver)
         with activity.sub_activity(
             'deploying_net', readable_name=ugettext_noop(

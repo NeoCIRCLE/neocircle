@@ -45,6 +45,7 @@ from common.models import (
     create_readable, HumanReadableException, fetch_human_exception,
 )
 from firewall.models import Vlan, Host, Rule
+from manager.scheduler import SchedulerError
 from storage.models import Disk
 from vm.models import (
     Instance, instance_activity, InstanceActivity, Node, Lease,
@@ -424,6 +425,15 @@ class VmMigrateView(VmOperationView):
         ctx = super(VmMigrateView, self).get_context_data(**kwargs)
         ctx['nodes'] = [n for n in Node.objects.filter(enabled=True)
                         if n.online]
+
+        inst = self.get_object()
+        ctx["recommended"] = None
+        try:
+            if isinstance(inst, Instance):
+                ctx["recommended"] = inst.select_node().pk
+        except SchedulerError:
+            logger.exception("scheduler error:")
+
         return ctx
 
     def post(self, request, extra=None, *args, **kwargs):

@@ -920,6 +920,13 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         delete_dump.apply_async(args=[self.mem_dump['path']],
                                 queue=queue_name).get(timeout=timeout)
 
+    def reallocate_node(self, activity):
+        with activity.sub_activity(
+                'scheduling',
+                readable_name=ugettext_noop("schedule")) as sa:
+            sa.result = node = self.select_node()
+            return node
+
     def allocate_node(self, activity):
         if self.node is not None:
             return None
