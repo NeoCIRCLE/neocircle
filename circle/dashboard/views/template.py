@@ -323,6 +323,10 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
 class DiskRemoveView(DeleteView):
     model = Disk
 
+    def get_queryset(self):
+        qs = super(DiskRemoveView, self).get_queryset()
+        return qs.exclude(template_set=None)
+
     def get_template_names(self):
         if self.request.is_ajax():
             return ['dashboard/confirm/ajax-delete.html']
@@ -332,27 +336,29 @@ class DiskRemoveView(DeleteView):
     def get_context_data(self, **kwargs):
         context = super(DiskRemoveView, self).get_context_data(**kwargs)
         disk = self.get_object()
-        app = disk.get_appliance()
+        template = disk.template_set.get()
+        if not template.has_level(self.request.user, 'owner'):
+            raise PermissionDenied()
         context['title'] = _("Disk remove confirmation")
         context['text'] = _("Are you sure you want to remove "
                             "<strong>%(disk)s</strong> from "
                             "<strong>%(app)s</strong>?" % {'disk': disk,
-                                                           'app': app}
+                                                           'app': template}
                             )
         return context
 
     def delete(self, request, *args, **kwargs):
         disk = self.get_object()
-        app = disk.get_appliance()
+        template = disk.template_set.get()
 
-        if not app.has_level(request.user, 'owner'):
+        if not template.has_level(request.user, 'owner'):
             raise PermissionDenied()
 
-        app.remove_disk(disk=disk, user=request.user)
+        template.remove_disk(disk=disk, user=request.user)
         disk.destroy()
 
         next_url = request.POST.get("next")
-        success_url = next_url if next_url else app.get_absolute_url()
+        success_url = next_url if next_url else template.get_absolute_url()
         success_message = _("Disk successfully removed.")
 
         if request.is_ajax():
