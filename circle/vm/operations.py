@@ -793,7 +793,7 @@ class SleepOperation(InstanceOperation):
     class SuspendVmOperation(SubOperationMixin, RemoteInstanceOperation):
         id = "_suspend_vm"
         name = _("suspend virtual machine")
-        task = vm_tasks.suspend
+        task = vm_tasks.sleep
         remote_queue = ("vm", "slow")
         timeout = 600
 
