@@ -391,6 +391,7 @@ class DeployOperation(InstanceOperation):
                 # deploy disk
                 disk.deploy()
 
+    @register_operation
     class ResumeVmOperation(SubOperationMixin, RemoteInstanceOperation):
         id = "_resume_vm"
         name = _("boot virtual machine")
