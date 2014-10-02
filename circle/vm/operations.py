@@ -192,10 +192,8 @@ class AddInterfaceOperation(InstanceOperation):
 
         if self.instance.is_running:
             try:
-                with activity.sub_activity(
-                    'attach_network',
-                        readable_name=ugettext_noop("attach network")):
-                    self.instance.attach_network(net)
+                self.instance._attach_network(
+                    interface=net, parent_activity=activity)
             except Exception as e:
                 if hasattr(e, 'libvirtError'):
                     self.rollback(net, activity)
