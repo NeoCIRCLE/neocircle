@@ -73,7 +73,7 @@ class AbortableRemoteOperationMixin(object):
         args = self._get_remote_args(**kwargs),
         remote = self.task.apply_async(
             args=args, queue=self._get_remote_queue())
-        for i in xrange(int(self.remote_timeout / self.remote_step)):
+        for i in xrange(0, self.remote_timeout, self.remote_step):
             try:
                 return remote.get(timeout=self.remote_step)
             except TimeoutError as e:
@@ -81,7 +81,6 @@ class AbortableRemoteOperationMixin(object):
                     AbortableAsyncResult(remote.id).abort()
                     raise humanize_exception(ugettext_noop(
                         "Operation aborted by user."), e)
-        return remote.get(timeout=self.remote_step)
 
 
 class InstanceOperation(Operation):
