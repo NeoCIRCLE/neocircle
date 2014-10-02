@@ -27,6 +27,7 @@ logger = getLogger(__name__)
 
 
 class SubOperationMixin(object):
+    required_perms = ()
 
     def create_activity(self, parent, user, kwargs):
         if not parent:
