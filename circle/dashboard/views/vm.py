@@ -369,13 +369,8 @@ class VmAddInterfaceView(FormOperationMixin, VmOperationView):
         return val
 
 
-class VmDiskResizeView(FormOperationMixin, VmOperationView):
-
-    op = 'resize_disk'
-    form_class = VmDiskResizeForm
+class VmDiskModifyView(FormOperationMixin, VmOperationView):
     show_in_toolbar = False
-    icon = 'arrows-alt'
-    effect = "warning"
 
     def get_form_kwargs(self):
         choices = self.get_op().instance.disks
@@ -388,31 +383,7 @@ class VmDiskResizeView(FormOperationMixin, VmOperationView):
         else:
             default = None
 
-        val = super(VmDiskResizeView, self).get_form_kwargs()
-        val.update({'choices': choices, 'default': default})
-        return val
-
-
-class VmDiskRemoveView(FormOperationMixin, VmOperationView):
-
-    op = 'remove_disk'
-    form_class = VmDiskRemoveForm
-    show_in_toolbar = False
-    icon = "times"
-    effect = "danger"
-
-    def get_form_kwargs(self):
-        choices = self.get_op().instance.disks
-        disk_pk = self.request.GET.get('disk')
-        if disk_pk:
-            try:
-                default = choices.get(pk=disk_pk)
-            except (ValueError, Disk.DoesNotExist):
-                raise Http404()
-        else:
-            default = None
-
-        val = super(VmDiskRemoveView, self).get_form_kwargs()
+        val = super(VmDiskModifyView, self).get_form_kwargs()
         val.update({'choices': choices, 'default': default})
         return val
 
@@ -663,8 +634,12 @@ vm_ops = OrderedDict([
         op='destroy', icon='times', effect='danger')),
     ('create_disk', VmCreateDiskView),
     ('download_disk', VmDownloadDiskView),
-    ('resize_disk', VmDiskResizeView),
-    ('remove_disk', VmDiskRemoveView),
+    ('resize_disk', VmDiskModifyView.factory(
+        op='resize_disk', form_class=VmDiskResizeForm,
+        icon='arrows-alt', effect="warning")),
+    ('remove_disk', VmDiskModifyView.factory(
+        op='remove_disk', form_class=VmDiskRemoveForm,
+        icon='times', effect="danger")),
     ('add_interface', VmAddInterfaceView),
     ('renew', VmRenewView),
     ('resources_change', VmResourcesChangeView),
