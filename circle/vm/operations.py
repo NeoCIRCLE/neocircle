@@ -440,7 +440,7 @@ class DestroyOperation(InstanceOperation):
         self.instance.save()
 
     @register_operation
-    class DeleteVmOperation(RemoteInstanceOperation):
+    class DeleteVmOperation(SubOperationMixin, RemoteInstanceOperation):
         id = "_delete_vm"
         name = _("destroy virtual machine")
         task = vm_tasks.destroy
