@@ -184,7 +184,7 @@ class OperationView(RedirectToLoginMixin, DetailView):
 
     @classmethod
     def get_urlname(cls):
-        return 'dashboard.vm.op.%s' % cls.op
+        return 'dashboard.%s.op.%s' % (cls.model._meta.model_name, cls.op)
 
     @classmethod
     def get_instance_url(cls, pk, key=None, *args, **kwargs):
