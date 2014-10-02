@@ -46,13 +46,9 @@ class Operation(object):
     abortable = False
     has_percentage = False
 
-    @property
-    def activity_code_suffix(self):
-        return getattr(self, "_real_activity_code_suffix", self.id)
-
-    @activity_code_suffix.setter
-    def activity_code_suffix(self, value):
-        self._real_activity_code_suffix = value
+    @classmethod
+    def get_activity_code_suffix(cls):
+        return cls.id
 
     def __call__(self, **kwargs):
         return self.call(**kwargs)
@@ -250,7 +246,7 @@ class OperatedMixin(object):
                   operation could be found.
         """
         for op in getattr(self, operation_registry_name, {}).itervalues():
-            if has_suffix(activity_code, op.activity_code_suffix):
+            if has_suffix(activity_code, op.get_activity_code_suffix()):
                 return op(self)
         else:
             return None

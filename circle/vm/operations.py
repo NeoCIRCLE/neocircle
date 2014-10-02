@@ -135,12 +135,13 @@ class InstanceOperation(Operation):
                                  "parent activity does not match the user "
                                  "provided as parameter.")
 
-            return parent.create_sub(code_suffix=self.activity_code_suffix,
-                                     readable_name=name,
-                                     resultant_state=self.resultant_state)
+            return parent.create_sub(
+                code_suffix=self.get_activity_code_suffix(),
+                readable_name=name, resultant_state=self.resultant_state)
         else:
             return InstanceActivity.create(
-                code_suffix=self.activity_code_suffix, instance=self.instance,
+                code_suffix=self.get_activity_code_suffix(),
+                instance=self.instance,
                 readable_name=name, user=user,
                 concurrency_check=self.concurrency_check,
                 resultant_state=self.resultant_state)
@@ -154,7 +155,6 @@ class InstanceOperation(Operation):
 class RemoteInstanceOperation(RemoteOperationMixin, InstanceOperation):
 
     remote_queue = ('vm', 'fast')
-    # activity_code_suffix = property(lambda self: self.id or self.task.name)
 
     def _get_remote_queue(self):
         return self.instance.get_remote_queue_name(*self.remote_queue)
@@ -920,7 +920,6 @@ class ChangeStateOperation(InstanceOperation):
 
 @register_operation
 class RedeployOperation(InstanceOperation):
-    activity_code_suffix = 'redeploy'
     id = 'redeploy'
     name = _("redeploy")
     description = _("Change the virtual machine state to NOSTATE "
@@ -974,17 +973,17 @@ class NodeOperation(Operation):
                                  "parent activity does not match the user "
                                  "provided as parameter.")
 
-            return parent.create_sub(code_suffix=self.activity_code_suffix,
-                                     readable_name=name)
+            return parent.create_sub(
+                code_suffix=self.get_activity_code_suffix(),
+                readable_name=name)
         else:
-            return NodeActivity.create(code_suffix=self.activity_code_suffix,
-                                       node=self.node, user=user,
-                                       readable_name=name)
+            return NodeActivity.create(
+                code_suffix=self.get_activity_code_suffix(), node=self.node,
+                user=user, readable_name=name)
 
 
 @register_operation
 class ResetNodeOperation(NodeOperation):
-    activity_code_suffix = 'reset'
     id = 'reset'
     name = _("reset")
     description = _("Disable missing node and redeploy all instances "
@@ -1184,7 +1183,6 @@ class EnsureAgentMixin(object):
 
 @register_operation
 class PasswordResetOperation(EnsureAgentMixin, InstanceOperation):
-    activity_code_suffix = 'password_reset'
     id = 'password_reset'
     name = _("password reset")
     description = _("Generate and set a new login password on the virtual "
@@ -1205,7 +1203,6 @@ class PasswordResetOperation(EnsureAgentMixin, InstanceOperation):
 
 @register_operation
 class MountStoreOperation(EnsureAgentMixin, InstanceOperation):
-    activity_code_suffix = 'mount_store'
     id = 'mount_store'
     name = _("mount store")
     description = _(
