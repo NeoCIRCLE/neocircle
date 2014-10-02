@@ -364,7 +364,7 @@ class DeployOperation(InstanceOperation):
         remote_queue = ("vm", "slow")
         task = vm_tasks.deploy
 
-        def _get_remote_args(self):
+        def _get_remote_args(self, **kwargs):
             return [self.instance.get_vm_desc()]
             # intentionally not calling super
 
