@@ -39,6 +39,7 @@ from django.contrib.auth.forms import UserCreationForm as OrgUserCreationForm
 from django.forms.widgets import TextInput, HiddenInput
 from django.template import Context
 from django.template.loader import render_to_string
+from django.utils.html import escape
 from django.utils.translation import ugettext_lazy as _
 from sizefield.widgets import FileSizeWidget
 from django.core.urlresolvers import reverse_lazy
@@ -839,7 +840,7 @@ class VmDiskResizeForm(forms.Form):
         helper.form_tag = False
         if self.disk:
             helper.layout = Layout(
-                HTML(_("<label>Disk:</label> %s") % self.disk),
+                HTML(_("<label>Disk:</label> %s") % escape(self.disk)),
                 Field('disk'), Field('size'))
         return helper
 
@@ -865,7 +866,7 @@ class VmDiskRemoveForm(forms.Form):
             helper.layout = Layout(
                 AnyTag(
                     "div",
-                    HTML(_("<label>Disk:</label> %s") % self.disk),
+                    HTML(_("<label>Disk:</label> %s") % escape(self.disk)),
                     css_class="form-group",
                 ),
                 Field("disk"),
