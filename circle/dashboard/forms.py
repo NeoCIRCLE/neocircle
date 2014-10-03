@@ -18,6 +18,7 @@
 from __future__ import absolute_import
 
 from datetime import timedelta
+from urlparse import urlparse
 
 from django.contrib.auth.forms import (
     AuthenticationForm, PasswordResetForm, SetPasswordForm,
@@ -857,7 +858,7 @@ class VmDiskResizeForm(forms.Form):
 
 
 class VmDownloadDiskForm(forms.Form):
-    name = forms.CharField(max_length=100, label=_("Name"))
+    name = forms.CharField(max_length=100, label=_("Name"), required=False)
     url = forms.CharField(label=_('URL'), validators=[URLValidator(), ])
 
     @property
@@ -865,6 +866,18 @@ class VmDownloadDiskForm(forms.Form):
         helper = FormHelper(self)
         helper.form_tag = False
         return helper
+
+    def clean(self):
+        cleaned_data = super(VmDownloadDiskForm, self).clean()
+        if not cleaned_data['name']:
+            if cleaned_data['url']:
+                cleaned_data['name'] = urlparse(
+                    cleaned_data['url']).path.split('/')[-1]
+            if not cleaned_data['name']:
+                raise forms.ValidationError(
+                    _("Could not find filename in URL, "
+                      "please specify a name explicitly."))
+        return cleaned_data
 
 
 class VmAddInterfaceForm(forms.Form):
