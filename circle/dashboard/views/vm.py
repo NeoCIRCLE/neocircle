@@ -374,6 +374,7 @@ class VmDiskResizeView(FormOperationMixin, VmOperationView):
     op = 'resize_disk'
     form_class = VmDiskResizeForm
     show_in_toolbar = False
+    with_reload = True
     icon = 'arrows-alt'
     effect = "success"
 
@@ -401,6 +402,7 @@ class VmCreateDiskView(FormOperationMixin, VmOperationView):
     icon = 'hdd-o'
     effect = "success"
     is_disk_operation = True
+    with_reload = True
 
 
 class VmDownloadDiskView(FormOperationMixin, VmOperationView):
@@ -411,6 +413,7 @@ class VmDownloadDiskView(FormOperationMixin, VmOperationView):
     icon = 'download'
     effect = "success"
     is_disk_operation = True
+    with_reload = True
 
 
 class VmMigrateView(VmOperationView):
