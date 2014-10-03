@@ -37,6 +37,7 @@ from braces.views import (
 from django_tables2 import SingleTableView
 
 from vm.models import InstanceTemplate, InterfaceTemplate, Instance, Lease
+from storage.models import Disk
 
 from ..forms import (
     TemplateForm, TemplateListSearchForm, AclUserOrGroupAddForm, LeaseForm,
@@ -317,6 +318,57 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         kwargs = super(TemplateDetail, self).get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
+
+
+class DiskRemoveView(DeleteView):
+    model = Disk
+
+    def get_queryset(self):
+        qs = super(DiskRemoveView, self).get_queryset()
+        return qs.exclude(template_set=None)
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/confirm/ajax-delete.html']
+        else:
+            return ['dashboard/confirm/base-delete.html']
+
+    def get_context_data(self, **kwargs):
+        context = super(DiskRemoveView, self).get_context_data(**kwargs)
+        disk = self.get_object()
+        template = disk.template_set.get()
+        if not template.has_level(self.request.user, 'owner'):
+            raise PermissionDenied()
+        context['title'] = _("Disk remove confirmation")
+        context['text'] = _("Are you sure you want to remove "
+                            "<strong>%(disk)s</strong> from "
+                            "<strong>%(app)s</strong>?" % {'disk': disk,
+                                                           'app': template}
+                            )
+        return context
+
+    def delete(self, request, *args, **kwargs):
+        disk = self.get_object()
+        template = disk.template_set.get()
+
+        if not template.has_level(request.user, 'owner'):
+            raise PermissionDenied()
+
+        template.remove_disk(disk=disk, user=request.user)
+        disk.destroy()
+
+        next_url = request.POST.get("next")
+        success_url = next_url if next_url else template.get_absolute_url()
+        success_message = _("Disk successfully removed.")
+
+        if request.is_ajax():
+            return HttpResponse(
+                json.dumps({'message': success_message}),
+                content_type="application/json",
+            )
+        else:
+            messages.success(request, success_message)
+            return HttpResponseRedirect("%s#resources" % success_url)
 
 
 class LeaseCreate(LoginRequiredMixin, PermissionRequiredMixin,

@@ -59,7 +59,7 @@ from ..forms import (
     AclUserOrGroupAddForm, VmResourcesForm, TraitsForm, RawDataForm,
     VmAddInterfaceForm, VmCreateDiskForm, VmDownloadDiskForm, VmSaveForm,
     VmRenewForm, VmStateChangeForm, VmListSearchForm, VmCustomizeForm,
-    TransferOwnershipForm, VmDiskResizeForm, RedeployForm,
+    TransferOwnershipForm, VmDiskResizeForm, RedeployForm, VmDiskRemoveForm,
 )
 from ..models import Favourite, Profile
 
@@ -370,13 +370,8 @@ class VmAddInterfaceView(FormOperationMixin, VmOperationView):
         return val
 
 
-class VmDiskResizeView(FormOperationMixin, VmOperationView):
-
-    op = 'resize_disk'
-    form_class = VmDiskResizeForm
+class VmDiskModifyView(FormOperationMixin, VmOperationView):
     show_in_toolbar = False
-    icon = 'arrows-alt'
-    effect = "success"
 
     def get_form_kwargs(self):
         choices = self.get_op().instance.disks
@@ -389,7 +384,7 @@ class VmDiskResizeView(FormOperationMixin, VmOperationView):
         else:
             default = None
 
-        val = super(VmDiskResizeView, self).get_form_kwargs()
+        val = super(VmDiskModifyView, self).get_form_kwargs()
         val.update({'choices': choices, 'default': default})
         return val
 
@@ -662,7 +657,12 @@ vm_ops = OrderedDict([
         op='destroy', icon='times', effect='danger')),
     ('create_disk', VmCreateDiskView),
     ('download_disk', VmDownloadDiskView),
-    ('resize_disk', VmDiskResizeView),
+    ('resize_disk', VmDiskModifyView.factory(
+        op='resize_disk', form_class=VmDiskResizeForm,
+        icon='arrows-alt', effect="warning")),
+    ('remove_disk', VmDiskModifyView.factory(
+        op='remove_disk', form_class=VmDiskRemoveForm,
+        icon='times', effect="danger")),
     ('add_interface', VmAddInterfaceView),
     ('renew', VmRenewView),
     ('resources_change', VmResourcesChangeView),
@@ -1124,51 +1124,6 @@ class InstanceActivityDetail(CheckedDetailView):
             self.object.instance.get_activities(self.request.user))
         ctx['icon'] = _get_activity_icon(self.object)
         return ctx
-
-
-class DiskRemoveView(DeleteView):
-    model = Disk
-
-    def get_template_names(self):
-        if self.request.is_ajax():
-            return ['dashboard/confirm/ajax-delete.html']
-        else:
-            return ['dashboard/confirm/base-delete.html']
-
-    def get_context_data(self, **kwargs):
-        context = super(DiskRemoveView, self).get_context_data(**kwargs)
-        disk = self.get_object()
-        app = disk.get_appliance()
-        context['title'] = _("Disk remove confirmation")
-        context['text'] = _("Are you sure you want to remove "
-                            "<strong>%(disk)s</strong> from "
-                            "<strong>%(app)s</strong>?" % {'disk': disk,
-                                                           'app': app}
-                            )
-        return context
-
-    def delete(self, request, *args, **kwargs):
-        disk = self.get_object()
-        app = disk.get_appliance()
-
-        if not app.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-
-        app.remove_disk(disk=disk, user=request.user)
-        disk.destroy()
-
-        next_url = request.POST.get("next")
-        success_url = next_url if next_url else app.get_absolute_url()
-        success_message = _("Disk successfully removed.")
-
-        if request.is_ajax():
-            return HttpResponse(
-                json.dumps({'message': success_message}),
-                content_type="application/json",
-            )
-        else:
-            messages.success(request, success_message)
-            return HttpResponseRedirect("%s#resources" % success_url)
 
 
 @require_GET

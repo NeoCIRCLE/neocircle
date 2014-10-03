@@ -575,6 +575,7 @@ class RemoveDiskOperation(InstanceOperation):
             'destroy_disk',
             readable_name=ugettext_noop('destroy disk')
         ):
+            disk.destroy()
             return self.instance.disks.remove(disk)
 
     def get_activity_name(self, kwargs):

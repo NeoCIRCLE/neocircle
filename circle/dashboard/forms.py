@@ -40,6 +40,7 @@ from django.contrib.auth.forms import UserCreationForm as OrgUserCreationForm
 from django.forms.widgets import TextInput, HiddenInput
 from django.template import Context
 from django.template.loader import render_to_string
+from django.utils.html import escape
 from django.utils.translation import ugettext_lazy as _
 from sizefield.widgets import FileSizeWidget
 from django.core.urlresolvers import reverse_lazy
@@ -852,8 +853,37 @@ class VmDiskResizeForm(forms.Form):
         helper.form_tag = False
         if self.disk:
             helper.layout = Layout(
-                HTML(_("<label>Disk:</label> %s") % self.disk),
+                HTML(_("<label>Disk:</label> %s") % escape(self.disk)),
                 Field('disk'), Field('size'))
+        return helper
+
+
+class VmDiskRemoveForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('choices')
+        self.disk = kwargs.pop('default')
+
+        super(VmDiskRemoveForm, self).__init__(*args, **kwargs)
+
+        self.fields.insert(0, 'disk', forms.ModelChoiceField(
+            queryset=choices, initial=self.disk, required=True,
+            empty_label=None, label=_('Disk')))
+        if self.disk:
+            self.fields['disk'].widget = HiddenInput()
+
+    @property
+    def helper(self):
+        helper = FormHelper(self)
+        helper.form_tag = False
+        if self.disk:
+            helper.layout = Layout(
+                AnyTag(
+                    "div",
+                    HTML(_("<label>Disk:</label> %s") % escape(self.disk)),
+                    css_class="form-group",
+                ),
+                Field("disk"),
+            )
         return helper
 
 
