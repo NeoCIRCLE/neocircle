@@ -453,6 +453,12 @@ class VmSaveView(FormOperationMixin, VmOperationView):
     effect = 'info'
     form_class = VmSaveForm
 
+    def get_form_kwargs(self):
+        op = self.get_op()
+        val = super(VmSaveView, self).get_form_kwargs()
+        val['default'] = op._rename(op.instance.name)
+        return val
+
 
 class VmResourcesChangeView(VmOperationView):
     op = 'resources_change'

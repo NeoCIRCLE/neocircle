@@ -79,6 +79,12 @@ class VmSaveForm(forms.Form):
         helper.form_tag = False
         return helper
 
+    def __init__(self, *args, **kwargs):
+        default = kwargs.pop('default', None)
+        super(VmSaveForm, self).__init__(*args, **kwargs)
+        if default:
+            self.fields['name'].initial = default
+
 
 class VmCustomizeForm(forms.Form):
     name = forms.CharField(widget=forms.TextInput(attrs={
