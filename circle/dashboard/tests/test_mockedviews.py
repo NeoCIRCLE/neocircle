@@ -219,6 +219,7 @@ class VmOperationViewTestCase(unittest.TestCase):
         with patch.object(view, 'get_object') as go, \
                 patch('dashboard.views.util.messages') as msg:
             inst = MagicMock(spec=Instance)
+            inst.name = "asd"
             inst._meta.object_name = "Instance"
             inst.save_as_template = Instance._ops['save_as_template'](inst)
             inst.save_as_template.async = MagicMock()
@@ -235,6 +236,7 @@ class VmOperationViewTestCase(unittest.TestCase):
         with patch.object(view, 'get_object') as go, \
                 patch('dashboard.views.util.messages') as msg:
             inst = MagicMock(spec=Instance)
+            inst.name = "asd"
             inst._meta.object_name = "Instance"
             inst.save_as_template = Instance._ops['save_as_template'](inst)
             inst.save_as_template.async = MagicMock()
