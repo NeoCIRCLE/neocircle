@@ -403,6 +403,13 @@ class VmCreateDiskView(FormOperationMixin, VmOperationView):
     effect = "success"
     is_disk_operation = True
 
+    def get_form_kwargs(self):
+        op = self.get_op()
+        val = super(VmCreateDiskView, self).get_form_kwargs()
+        num = op.instance.disks.count() + 1
+        val['default'] = "%s %d" % (op.instance.name, num)
+        return val
+
 
 class VmDownloadDiskView(FormOperationMixin, VmOperationView):
 

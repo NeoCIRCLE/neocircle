@@ -794,6 +794,12 @@ class VmCreateDiskForm(forms.Form):
         help_text=_('Size of disk to create in bytes or with units '
                     'like MB or GB.'))
 
+    def __init__(self, *args, **kwargs):
+        default = kwargs.pop('default', None)
+        super(VmCreateDiskForm, self).__init__(*args, **kwargs)
+        if default:
+            self.fields['name'].initial = default
+
     def clean_size(self):
         size_in_bytes = self.cleaned_data.get("size")
         if not size_in_bytes.isdigit() and len(size_in_bytes) > 0:
