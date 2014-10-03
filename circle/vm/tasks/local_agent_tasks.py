@@ -83,16 +83,15 @@ def create_agent_tar():
 
 @celery.task
 def agent_started(vm, version=None):
-    from vm.models import Instance, instance_activity, InstanceActivity
+    from vm.models import Instance, InstanceActivity
     instance = Instance.objects.get(id=int(vm.split('-')[-1]))
     queue = instance.get_remote_queue_name("agent")
     initialized = instance.activity_log.filter(
         activity_code='vm.Instance.agent.cleanup').exists()
 
-    with instance_activity(code_suffix='agent',
+    with instance.activity(code_suffix='agent',
                            readable_name=ugettext_noop('agent'),
-                           concurrency_check=False,
-                           instance=instance) as act:
+                           concurrency_check=False) as act:
         with act.sub_activity('starting',
                               readable_name=ugettext_noop('starting')):
             pass
@@ -170,9 +169,8 @@ def update_agent(instance, act=None):
                 ugettext_noop('update to %(version)s'),
                 version=settings.AGENT_VERSION))
     else:
-        from vm.models import instance_activity
-        act = instance_activity(
-            code_suffix='agent.update', instance=instance,
+        act = instance.activity(
+            code_suffix='agent.update',
             readable_name=create_readable(
                 ugettext_noop('update agent to %(version)s'),
                 version=settings.AGENT_VERSION))

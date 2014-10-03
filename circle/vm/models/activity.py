@@ -206,21 +206,6 @@ class InstanceActivity(ActivityModel):
             self.activity_code)
 
 
-@contextmanager
-def instance_activity(code_suffix, instance, on_abort=None, on_commit=None,
-                      task_uuid=None, user=None, concurrency_check=True,
-                      readable_name=None, resultant_state=None):
-    """Create a transactional context for an instance activity.
-    """
-    if not readable_name:
-        warn("Set readable_name", stacklevel=3)
-    act = InstanceActivity.create(code_suffix, instance, task_uuid, user,
-                                  concurrency_check,
-                                  readable_name=readable_name,
-                                  resultant_state=resultant_state)
-    return activitycontextimpl(act, on_abort=on_abort, on_commit=on_commit)
-
-
 class NodeActivity(ActivityModel):
     ACTIVITY_CODE_BASE = join_activity_code('vm', 'Node')
     node = ForeignKey('Node', related_name='activity_log',

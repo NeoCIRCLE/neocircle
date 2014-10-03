@@ -48,7 +48,7 @@ from firewall.models import Vlan, Host, Rule
 from manager.scheduler import SchedulerError
 from storage.models import Disk
 from vm.models import (
-    Instance, instance_activity, InstanceActivity, Node, Lease,
+    Instance, InstanceActivity, Node, Lease,
     InstanceTemplate, InterfaceTemplate, Interface,
 )
 from .util import (
@@ -77,10 +77,10 @@ class VmDetailVncTokenView(CheckedDetailView):
         if not request.user.has_perm('vm.access_console'):
             raise PermissionDenied()
         if self.object.node:
-            with instance_activity(
-                    code_suffix='console-accessed', instance=self.object,
-                    user=request.user, readable_name=ugettext_noop(
-                        "console access"), concurrency_check=False):
+            with self.object.activity(
+                    code_suffix='console-accessed', user=request.user,
+                    readable_name=ugettext_noop("console access"),
+                    concurrency_check=False):
                 port = self.object.vnc_port
                 host = str(self.object.node.host.ipv4)
                 value = signing.dumps({'host': host, 'port': port},
@@ -874,10 +874,9 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
                 in [i.name for i in Instance._meta.fields] + ["pk"]):
             queryset = queryset.order_by(sort)
 
-        return queryset.filter(
-            **self.get_queryset_filters()).prefetch_related(
-                "owner", "node", "owner__profile", "interface_set", "lease",
-                "interface_set__host").distinct()
+        return queryset.filter(**self.get_queryset_filters()).prefetch_related(
+            "owner", "node", "owner__profile", "interface_set", "lease",
+            "interface_set__host").distinct()
 
 
 class VmCreate(LoginRequiredMixin, TemplateView):
@@ -1405,9 +1404,8 @@ class TransferOwnershipConfirmView(LoginRequiredMixin, View):
         instance, owner = self.get_instance(key, request.user)
 
         old = instance.owner
-        with instance_activity(code_suffix='ownership-transferred',
-                               concurrency_check=False,
-                               instance=instance, user=request.user):
+        with instance.activity(code_suffix='ownership-transferred',
+                               concurrency_check=False, user=request.user):
             instance.owner = request.user
             instance.clean()
             instance.save()

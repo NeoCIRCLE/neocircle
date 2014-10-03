@@ -16,6 +16,7 @@
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, unicode_literals
+from contextlib import contextmanager
 from datetime import timedelta
 from functools import partial
 from importlib import import_module
@@ -41,12 +42,11 @@ from taggit.managers import TaggableManager
 
 from acl.models import AclBase
 from common.models import (
-    create_readable, HumanReadableException,
+    activitycontextimpl, create_readable, HumanReadableException,
 )
 from common.operations import OperatedMixin
-from ..tasks import agent_tasks
-from .activity import (ActivityInProgressError, instance_activity,
-                       InstanceActivity)
+from ..tasks import vm_tasks, agent_tasks
+from .activity import (ActivityInProgressError, InstanceActivity)
 from .common import BaseResourceConfigModel, Lease
 from .network import Interface
 from .node import Node, Trait
@@ -365,9 +365,9 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         def __on_commit(activity):
             activity.resultant_state = 'PENDING'
 
-        with instance_activity(code_suffix='create', instance=inst,
-                               readable_name=ugettext_noop("create instance"),
-                               on_commit=__on_commit, user=inst.owner) as act:
+        with inst.activity(code_suffix='create',
+                           readable_name=ugettext_noop("create instance"),
+                           on_commit=__on_commit, user=inst.owner) as act:
             # create related entities
             inst.disks.add(*[disk.get_exclusive() for disk in disks])
 
@@ -668,10 +668,10 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                     "%(success)s notifications succeeded."),
                     success=len(success), successes=success)
 
-        with instance_activity('notification_about_expiration', instance=self,
-                               readable_name=ugettext_noop(
-                                   "notify owner about expiration"),
-                               on_commit=on_commit):
+        with self.activity('notification_about_expiration',
+                           readable_name=ugettext_noop(
+                               "notify owner about expiration"),
+                           on_commit=on_commit):
             from dashboard.views import VmRenewView, absolute_url
             level = self.get_level_object("owner")
             for u, ulevel in self.get_users_with_level(level__pk=level.pk):
@@ -852,3 +852,17 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
     @property
     def metric_prefix(self):
         return 'vm.%s' % self.vm_name
+
+    @contextmanager
+    def activity(self, code_suffix, readable_name, on_abort=None,
+                 on_commit=None, task_uuid=None, user=None,
+                 concurrency_check=True, resultant_state=None):
+        """Create a transactional context for an instance activity.
+        """
+        if not readable_name:
+            warn("Set readable_name", stacklevel=3)
+        act = InstanceActivity.create(
+            code_suffix=code_suffix, instance=self, task_uuid=task_uuid,
+            user=user, concurrency_check=concurrency_check,
+            readable_name=readable_name, resultant_state=resultant_state)
+        return activitycontextimpl(act, on_abort=on_abort, on_commit=on_commit)
