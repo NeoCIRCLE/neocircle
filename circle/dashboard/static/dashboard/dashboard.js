@@ -445,7 +445,7 @@ function generateNodeHTML(name, icon, _status, url, is_last) {
 
 function generateNodeTagHTML(name, icon, _status, label , url) {
   return '<a href="' + url + '" class="label ' + label + '" >' +
-        '<i class="' + icon + '" title="' + _status + '"></i> ' + name +
+        '<i class="fa ' + icon + '" title="' + _status + '"></i> ' + name +
         '</a> ';
 }
 
