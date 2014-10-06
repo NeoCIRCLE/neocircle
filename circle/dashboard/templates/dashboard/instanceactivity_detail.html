@@ -58,6 +58,26 @@
 
             <dt>{% trans "resultant state" %}</dt>
             <dd>{{object.resultant_state|default:'n/a'}}</dd>
+
+            <dt>{% trans "subactivities" %}</dt>
+            {% for s in object.children.all %}
+              <dd>
+                <span{% if s.result %} title="{{ s.result|get_text:user }}"{% endif %}>
+                  <a href="{{ s.get_absolute_url }}">
+                      {{ s.readable_name|get_text:user|capfirst }}</a></span> &ndash;
+                {% if s.finished %}
+                  {{ s.finished|time:"H:i:s" }}
+                {% else %}
+                  <i class="fa fa-refresh fa-spin" class="sub-activity-loading-icon"></i>
+                {% endif %}
+                {% if s.has_failed %}
+                  <div class="label label-danger">{% trans "failed" %}</div>
+                {% endif %}
+              </dd>
+            {% empty %}
+              <dd>{% trans "none" %}</dd>
+            {% endfor %}
+          </div>
         </div>
       </div>
     </div>
