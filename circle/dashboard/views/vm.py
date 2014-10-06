@@ -372,6 +372,9 @@ class VmAddInterfaceView(FormOperationMixin, VmOperationView):
 
 class VmDiskModifyView(FormOperationMixin, VmOperationView):
     show_in_toolbar = False
+    with_reload = True
+    icon = 'arrows-alt'
+    effect = "success"
 
     def get_form_kwargs(self):
         choices = self.get_op().instance.disks
@@ -397,6 +400,7 @@ class VmCreateDiskView(FormOperationMixin, VmOperationView):
     icon = 'hdd-o'
     effect = "success"
     is_disk_operation = True
+    with_reload = True
 
     def get_form_kwargs(self):
         op = self.get_op()
@@ -414,6 +418,7 @@ class VmDownloadDiskView(FormOperationMixin, VmOperationView):
     icon = 'download'
     effect = "success"
     is_disk_operation = True
+    with_reload = True
 
 
 class VmMigrateView(VmOperationView):
