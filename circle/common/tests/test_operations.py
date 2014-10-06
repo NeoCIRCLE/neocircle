@@ -27,9 +27,7 @@ class OperationTestCase(TestCase):
         class AbortEx(Exception):
             pass
 
-        op = Operation(MagicMock())
-        op.activity_code_suffix = 'test'
-        op.id = 'test'
+        op = TestOp(MagicMock())
         op.async_operation = MagicMock(
             apply_async=MagicMock(side_effect=AbortEx))
 
@@ -44,9 +42,7 @@ class OperationTestCase(TestCase):
         class AbortEx(Exception):
             pass
 
-        op = Operation(MagicMock())
-        op.activity_code_suffix = 'test'
-        op.id = 'test'
+        op = TestOp(MagicMock())
         with patch.object(Operation, 'create_activity', side_effect=AbortEx):
             with patch.object(Operation, 'check_precond') as chk_pre:
                 try:
@@ -55,9 +51,7 @@ class OperationTestCase(TestCase):
                     self.assertTrue(chk_pre.called)
 
     def test_auth_check_on_non_system_call(self):
-        op = Operation(MagicMock())
-        op.activity_code_suffix = 'test'
-        op.id = 'test'
+        op = TestOp(MagicMock())
         user = MagicMock()
         with patch.object(Operation, 'check_auth') as check_auth:
             with patch.object(Operation, 'check_precond'), \
@@ -67,9 +61,7 @@ class OperationTestCase(TestCase):
             check_auth.assert_called_with(user)
 
     def test_no_auth_check_on_system_call(self):
-        op = Operation(MagicMock())
-        op.activity_code_suffix = 'test'
-        op.id = 'test'
+        op = TestOp(MagicMock())
         with patch.object(Operation, 'check_auth', side_effect=AssertionError):
             with patch.object(Operation, 'check_precond'), \
                     patch.object(Operation, 'create_activity'), \
@@ -77,39 +69,25 @@ class OperationTestCase(TestCase):
                 op.call(system=True)
 
     def test_no_exception_for_more_arguments_when_operation_takes_kwargs(self):
-        class KwargOp(Operation):
-            activity_code_suffix = 'test'
-            id = 'test'
-
-            def _operation(self, **kwargs):
-                pass
-
-        op = KwargOp(MagicMock())
-        with patch.object(KwargOp, 'create_activity'), \
-                patch.object(KwargOp, '_exec_op'):
-            op.call(system=True, foo=42)
-
-    def test_exception_for_unexpected_arguments(self):
-        class TestOp(Operation):
-            activity_code_suffix = 'test'
-            id = 'test'
-
-            def _operation(self):
-                pass
-
         op = TestOp(MagicMock())
         with patch.object(TestOp, 'create_activity'), \
                 patch.object(TestOp, '_exec_op'):
-            self.assertRaises(TypeError, op.call, system=True, foo=42)
+            op.call(system=True, foo=42)
+
+    def test_exception_for_unexpected_arguments(self):
+        op = TestOp(MagicMock())
+        with patch.object(TestOp, 'create_activity'), \
+                patch.object(TestOp, '_exec_op'):
+            self.assertRaises(TypeError, op.call, system=True, bar=42)
 
     def test_exception_for_missing_arguments(self):
-        class TestOp(Operation):
-            activity_code_suffix = 'test'
-            id = 'test'
-
-            def _operation(self, foo):
-                pass
-
         op = TestOp(MagicMock())
         with patch.object(TestOp, 'create_activity'):
             self.assertRaises(TypeError, op.call, system=True)
+
+
+class TestOp(Operation):
+    id = 'test'
+
+    def _operation(self, foo):
+        pass

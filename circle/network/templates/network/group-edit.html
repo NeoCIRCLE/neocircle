@@ -5,6 +5,8 @@
 {% load staticfiles %}
 {% load crispy_forms_tags %}
 
+{% block title-page %}{{ form.name.value }} | {% trans "host group" %}{% endblock %}
+
 {% block content %}
 <div class="page-header">
     <a href="{% url "network.group_delete" pk=group.pk %}" class="btn btn-danger pull-right"><i class="fa fa-times-circle"></i> {% trans "Delete this group" %}</a>

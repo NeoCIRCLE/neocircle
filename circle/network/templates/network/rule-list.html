@@ -4,6 +4,8 @@
 {% load l10n %}
 {% load staticfiles %}
 
+{% block title-page %}{% trans "Rules" %}{% endblock %}
+
 {% block content %}
 <div class="page-header">
     <a href="{% url "network.rule_create" %}" class="btn btn-success pull-right"><i class="fa fa-plus-circle"></i> {% trans "Create a new rule" %}</a>

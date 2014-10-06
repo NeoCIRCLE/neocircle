@@ -26,6 +26,17 @@ from .models import activity_context, has_suffix, humanize_exception
 logger = getLogger(__name__)
 
 
+class SubOperationMixin(object):
+    required_perms = ()
+
+    def create_activity(self, parent, user, kwargs):
+        if not parent:
+            raise TypeError("SubOperation can only be called with "
+                            "parent_activity specified.")
+        return super(SubOperationMixin, self).create_activity(
+            parent, user, kwargs)
+
+
 class Operation(object):
     """Base class for VM operations.
     """
@@ -35,6 +46,10 @@ class Operation(object):
     do_not_call_in_templates = True
     abortable = False
     has_percentage = False
+
+    @classmethod
+    def get_activity_code_suffix(cls):
+        return cls.id
 
     def __call__(self, **kwargs):
         return self.call(**kwargs)
@@ -232,7 +247,7 @@ class OperatedMixin(object):
                   operation could be found.
         """
         for op in getattr(self, operation_registry_name, {}).itervalues():
-            if has_suffix(activity_code, op.activity_code_suffix):
+            if has_suffix(activity_code, op.get_activity_code_suffix()):
                 return op(self)
         else:
             return None
@@ -273,3 +288,4 @@ def register_operation(op_cls, op_id=None, target_cls=None):
         setattr(target_cls, operation_registry_name, dict())
 
     getattr(target_cls, operation_registry_name)[op_id] = op_cls
+    return op_cls

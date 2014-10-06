@@ -18,6 +18,7 @@
 from __future__ import absolute_import
 
 from datetime import timedelta
+from urlparse import urlparse
 
 from django.contrib.auth.forms import (
     AuthenticationForm, PasswordResetForm, SetPasswordForm,
@@ -39,6 +40,7 @@ from django.contrib.auth.forms import UserCreationForm as OrgUserCreationForm
 from django.forms.widgets import TextInput, HiddenInput
 from django.template import Context
 from django.template.loader import render_to_string
+from django.utils.html import escape
 from django.utils.translation import ugettext_lazy as _
 from sizefield.widgets import FileSizeWidget
 from django.core.urlresolvers import reverse_lazy
@@ -78,6 +80,12 @@ class VmSaveForm(forms.Form):
         helper = FormHelper(self)
         helper.form_tag = False
         return helper
+
+    def __init__(self, *args, **kwargs):
+        default = kwargs.pop('default', None)
+        super(VmSaveForm, self).__init__(*args, **kwargs)
+        if default:
+            self.fields['name'].initial = default
 
 
 class VmCustomizeForm(forms.Form):
@@ -524,11 +532,7 @@ class TemplateForm(forms.ModelForm):
                 value = field.widget.value_from_datadict(
                     self.data, self.files, self.add_prefix(name))
                 try:
-                    if isinstance(field, forms.FileField):
-                        initial = self.initial.get(name, field.initial)
-                        value = field.clean(value, initial)
-                    else:
-                        value = field.clean(value)
+                    value = field.clean(value)
                     self.cleaned_data[name] = value
                     if hasattr(self, 'clean_%s' % name):
                         value = getattr(self, 'clean_%s' % name)()
@@ -544,13 +548,14 @@ class TemplateForm(forms.ModelForm):
                 else:
                     self.cleaned_data[name] = getattr(old, name)
 
+        if "req_traits" not in self.allowed_fields:
+            self.cleaned_data['req_traits'] = self.instance.req_traits.all()
+
     def save(self, commit=True):
         data = self.cleaned_data
         self.instance.max_ram_size = data.get('ram_size')
 
-        instance = super(TemplateForm, self).save(commit=False)
-        if commit:
-            instance.save()
+        instance = super(TemplateForm, self).save(commit=True)
 
         # create and/or delete InterfaceTemplates
         networks = InterfaceTemplate.objects.filter(
@@ -755,6 +760,7 @@ class VmStateChangeForm(forms.Form):
                     "but don't interrupt any tasks."))
     new_state = forms.ChoiceField(Instance.STATUS, label=_(
         "New status"))
+    reset_node = forms.BooleanField(required=False, label=_("Reset node"))
 
     def __init__(self, *args, **kwargs):
         show_interrupt = kwargs.pop('show_interrupt')
@@ -772,12 +778,29 @@ class VmStateChangeForm(forms.Form):
         return helper
 
 
+class RedeployForm(forms.Form):
+    with_emergency_change_state = forms.BooleanField(
+        required=False, initial=True, label=_("use emergency state change"))
+
+    @property
+    def helper(self):
+        helper = FormHelper(self)
+        helper.form_tag = False
+        return helper
+
+
 class VmCreateDiskForm(forms.Form):
     name = forms.CharField(max_length=100, label=_("Name"))
     size = forms.CharField(
         widget=FileSizeWidget, initial=(10 << 30), label=_('Size'),
         help_text=_('Size of disk to create in bytes or with units '
                     'like MB or GB.'))
+
+    def __init__(self, *args, **kwargs):
+        default = kwargs.pop('default', None)
+        super(VmCreateDiskForm, self).__init__(*args, **kwargs)
+        if default:
+            self.fields['name'].initial = default
 
     def clean_size(self):
         size_in_bytes = self.cleaned_data.get("size")
@@ -793,8 +816,79 @@ class VmCreateDiskForm(forms.Form):
         return helper
 
 
+class VmDiskResizeForm(forms.Form):
+    size = forms.CharField(
+        widget=FileSizeWidget, initial=(10 << 30), label=_('Size'),
+        help_text=_('Size to resize the disk in bytes or with units '
+                    'like MB or GB.'))
+
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('choices')
+        self.disk = kwargs.pop('default')
+
+        super(VmDiskResizeForm, self).__init__(*args, **kwargs)
+
+        self.fields.insert(0, 'disk', forms.ModelChoiceField(
+            queryset=choices, initial=self.disk, required=True,
+            empty_label=None, label=_('Disk')))
+        if self.disk:
+            self.fields['disk'].widget = HiddenInput()
+            self.fields['size'].initial += self.disk.size
+
+    def clean(self):
+        cleaned_data = super(VmDiskResizeForm, self).clean()
+        size_in_bytes = self.cleaned_data.get("size")
+        disk = self.cleaned_data.get('disk')
+        if not size_in_bytes.isdigit() and len(size_in_bytes) > 0:
+            raise forms.ValidationError(_("Invalid format, you can use "
+                                          " GB or MB!"))
+        if int(size_in_bytes) < int(disk.size):
+            raise forms.ValidationError(_("Disk size must be greater than the "
+                                        "actual size."))
+        return cleaned_data
+
+    @property
+    def helper(self):
+        helper = FormHelper(self)
+        helper.form_tag = False
+        if self.disk:
+            helper.layout = Layout(
+                HTML(_("<label>Disk:</label> %s") % escape(self.disk)),
+                Field('disk'), Field('size'))
+        return helper
+
+
+class VmDiskRemoveForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('choices')
+        self.disk = kwargs.pop('default')
+
+        super(VmDiskRemoveForm, self).__init__(*args, **kwargs)
+
+        self.fields.insert(0, 'disk', forms.ModelChoiceField(
+            queryset=choices, initial=self.disk, required=True,
+            empty_label=None, label=_('Disk')))
+        if self.disk:
+            self.fields['disk'].widget = HiddenInput()
+
+    @property
+    def helper(self):
+        helper = FormHelper(self)
+        helper.form_tag = False
+        if self.disk:
+            helper.layout = Layout(
+                AnyTag(
+                    "div",
+                    HTML(_("<label>Disk:</label> %s") % escape(self.disk)),
+                    css_class="form-group",
+                ),
+                Field("disk"),
+            )
+        return helper
+
+
 class VmDownloadDiskForm(forms.Form):
-    name = forms.CharField(max_length=100, label=_("Name"))
+    name = forms.CharField(max_length=100, label=_("Name"), required=False)
     url = forms.CharField(label=_('URL'), validators=[URLValidator(), ])
 
     @property
@@ -802,6 +896,18 @@ class VmDownloadDiskForm(forms.Form):
         helper = FormHelper(self)
         helper.form_tag = False
         return helper
+
+    def clean(self):
+        cleaned_data = super(VmDownloadDiskForm, self).clean()
+        if not cleaned_data['name']:
+            if cleaned_data['url']:
+                cleaned_data['name'] = urlparse(
+                    cleaned_data['url']).path.split('/')[-1]
+            if not cleaned_data['name']:
+                raise forms.ValidationError(
+                    _("Could not find filename in URL, "
+                      "please specify a name explicitly."))
+        return cleaned_data
 
 
 class VmAddInterfaceForm(forms.Form):

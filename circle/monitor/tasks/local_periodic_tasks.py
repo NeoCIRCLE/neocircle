@@ -107,3 +107,19 @@ def instance_per_template():
                                        time()))
 
     Client().send(metrics)
+
+
+@celery.task(ignore_result=True)
+def allocated_memory():
+    graphite_string = lambda hostname, val, time: (
+        "circle.%s.memory.allocated %d %s" % (
+            hostname, val, time)
+    )
+
+    metrics = []
+    for n in Node.objects.all():
+        print n.allocated_ram
+        metrics.append(graphite_string(
+            n.host.hostname, n.allocated_ram, time()))
+
+    Client().send(metrics)

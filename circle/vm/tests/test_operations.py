@@ -16,9 +16,10 @@
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.test import TestCase
+from mock import MagicMock
 
 from common.operations import operation_registry_name as op_reg_name
-from vm.models import Instance, Node
+from vm.models import Instance, InstanceActivity, Node
 from vm.operations import (
     DeployOperation, DestroyOperation, FlushOperation, MigrateOperation,
     RebootOperation, ResetOperation, SaveAsTemplateOperation,
@@ -44,6 +45,21 @@ class FlushOperationTestCase(TestCase):
 class MigrateOperationTestCase(TestCase):
     def test_operation_registered(self):
         assert MigrateOperation.id in getattr(Instance, op_reg_name)
+
+    def test_operation_wo_to_node_param(self):
+        class MigrateException(Exception):
+            pass
+
+        inst = MagicMock(spec=Instance)
+        act = MagicMock(spec=InstanceActivity)
+        op = MigrateOperation(inst)
+        op._get_remote_args = MagicMock(side_effect=MigrateException())
+        inst.select_node = MagicMock(return_value='test')
+        self.assertRaises(
+            MigrateException, op._operation,
+            act, to_node=None)
+        assert inst.select_node.called
+        op._get_remote_args.assert_called_once_with(to_node='test')
 
 
 class RebootOperationTestCase(TestCase):

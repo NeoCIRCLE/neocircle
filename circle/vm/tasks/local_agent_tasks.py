@@ -27,6 +27,7 @@ from base64 import encodestring
 from StringIO import StringIO
 from tarfile import TarFile, TarInfo
 from django.conf import settings
+from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import ugettext_noop
 from celery.result import TimeoutError
@@ -97,8 +98,9 @@ def agent_started(vm, version=None):
             pass
 
         for i in InstanceActivity.objects.filter(
-                instance=instance, activity_code__endswith='.os_boot',
-                finished__isnull=True):
+                (Q(activity_code__endswith='.os_boot') |
+                 Q(activity_code__endswith='.agent_wait')),
+                instance=instance, finished__isnull=True):
             i.finish(True)
 
         if version and version != settings.AGENT_VERSION:
@@ -107,6 +109,8 @@ def agent_started(vm, version=None):
             except TimeoutError:
                 pass
             else:
+                act.sub_activity('agent_wait', readable_name=ugettext_noop(
+                    "wait agent restarting"), interruptible=True)
                 return  # agent is going to restart
 
         if not initialized:

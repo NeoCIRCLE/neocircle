@@ -3,7 +3,7 @@
 {% load sizefieldtags %}
 {% load crispy_forms_tags %}
 
-{% block title-page %}{% trans "Edit template" %}{% endblock %}
+{% block title-page %}{{ form.name.value }} | {% trans "template" %}{% endblock %}
 
 {% block content %}
 
@@ -23,18 +23,15 @@
         {% csrf_token %}
 
         {{ form.name|as_crispy_field }}
-        <a {% if form.parent.value %}
-            href="{% url "dashboard.views.template-detail" pk=form.parent.value %}" 
-           {% else %}
-            disabled %}
-          {% endif %}
-          class="btn btn-default pull-right" style="margin-top: 24px;">
-          {% trans "Visit" %}
-          <i class="fa fa-arrow-circle-right"></i>
-        </a> 
-        <div style="width: 80%;">
-        {{ form.parent|as_crispy_field }}
-        </div>
+
+        <strong>{% trans "Parent template" %}:</strong>
+        {% if parent %}
+        <a href="{% url "dashboard.views.template-detail" pk=parent.pk %}">
+          {{ parent.name }}
+        </a>
+        {% else %}
+          -
+        {% endif %}
 
         <fieldset class="resources-sliders">
           <legend>{% trans "Resource configuration" %}</legend>
@@ -89,7 +86,13 @@
         {% endif %}
         {% for d in disks %}
           <li>
-            {% include "dashboard/_disk-list-element.html" %}
+            <i class="fa fa-file"></i>
+            {{ d.name }} (#{{ d.id }}) -
+            <a href="{% url "dashboard.views.disk-remove" pk=d.pk %}?next={{ request.path }}"
+              data-disk-pk="{{ d.pk }}" class="btn btn-xs btn-danger pull-right disk-remove"
+              {% if not long_remove %}title="{% trans "Remove" %}"{% endif %}>
+              <i class="fa fa-times"></i>{% if long_remove %} {% trans "Remove" %}{% endif %}
+            </a>
           </li>
         {% endfor %}
         </ul>

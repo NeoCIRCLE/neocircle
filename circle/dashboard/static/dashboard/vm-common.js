@@ -51,7 +51,8 @@ $(function() {
         if(data.success) {
           $('a[href="#activity"]').trigger("click");
           if(data.with_reload) {
-            location.reload();
+            // when the activity check stops the page will reload
+            reload_vm_detail = true;
           }
 
           /* if there are messages display them */

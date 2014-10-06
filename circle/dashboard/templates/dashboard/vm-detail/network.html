@@ -21,11 +21,13 @@
       <a href="{{ i.host.get_absolute_url }}"
         class="btn btn-default btn-xs">{% trans "edit" %}</a>
     {% endif %}
-    <a href="{% url "dashboard.views.interface-delete" pk=i.pk %}?next={{ request.path }}"
-      class="btn btn-danger btn-xs interface-remove"
-      data-interface-pk="{{ i.pk }}">
-      {% trans "remove" %}
-    </a>
+    {% if is_owner %}
+      <a href="{% url "dashboard.views.interface-delete" pk=i.pk %}?next={{ request.path }}"
+        class="btn btn-danger btn-xs interface-remove"
+        data-interface-pk="{{ i.pk }}">
+        {% trans "remove" %}
+      </a>
+    {% endif %}
   </h3>
   {% if i.host %}
     <div class="row">

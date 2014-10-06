@@ -7,7 +7,6 @@ from .common import BaseResourceConfigModel
 from .common import Lease
 from .common import NamedBaseResourceConfig
 from .common import Trait
-from .instance import InstanceActiveManager
 from .instance import VirtualMachineDescModel
 from .instance import InstanceTemplate
 from .instance import Instance
@@ -19,7 +18,7 @@ from .network import Interface
 from .node import Node
 
 __all__ = [
-    'InstanceActivity', 'InstanceActiveManager', 'BaseResourceConfigModel',
+    'InstanceActivity', 'BaseResourceConfigModel',
     'NamedBaseResourceConfig', 'VirtualMachineDescModel', 'InstanceTemplate',
     'Instance', 'instance_activity', 'post_state_changed', 'pre_state_changed',
     'InterfaceTemplate', 'Interface', 'Trait', 'Node', 'NodeActivity', 'Lease',
