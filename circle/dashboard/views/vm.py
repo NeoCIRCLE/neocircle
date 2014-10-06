@@ -807,6 +807,7 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
     allowed_filters = {
         'name': "name__icontains",
         'node': "node__name__icontains",
+        'node_exact': "node__name",
         'status': "status__iexact",
         'tags[]': "tags__name__in",
         'tags': "tags__name__in",  # for search string

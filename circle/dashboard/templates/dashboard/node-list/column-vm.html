@@ -1,7 +1,7 @@
 {% load i18n %}
 
 <div id="node-list-column-vm">
-  <a class="real-link" href="{% url "dashboard.views.vm-list" %}?s=node:{{ record.name }}">
+  <a class="real-link" href="{% url "dashboard.views.vm-list" %}?s=node_exact:{{ record.name }}">
     {{ value }}
   </a>
 </div>
