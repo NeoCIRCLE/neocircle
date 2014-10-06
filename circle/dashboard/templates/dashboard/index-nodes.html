@@ -29,35 +29,9 @@
       </a>
       {% endfor %}
     </div>
-    <div href="#" class="list-group-item list-group-footer">
-      <div class="row">
-        <div class="col-sm-6 col-xs-6 input-group input-group-sm">
-          <input id="dashboard-node-search-input" type="text" class="form-control"
-           placeholder="{% trans "Search..." %}" />
-          <div class="input-group-btn">
-            <button type="submit" class="btn btn-primary" title="{% trans "Search" %}" data-container="body">
-              <i class="fa fa-search"></i>
-            </button>
-          </div>
-        </div>
-        <div class="col-sm-6 text-right">
-          <a class="btn btn-primary btn-xs" href="{% url "dashboard.views.node-list" %}">
-            <i class="fa fa-chevron-circle-right"></i>
-            {% if more_nodes > 0 %}
-                {% blocktrans with count=more_nodes %}<strong>{{count}}</strong>  more{% endblocktrans %}
-            {% else %}
-                {% trans "list" %}
-            {% endif %}
-          </a>
-          <a class="btn btn-success btn-xs node-create" href="{% url "dashboard.views.node-create" %}">
-            <i class="fa fa-plus-circle"></i> {% trans "new" %}
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
+  </div><!-- #node-list-view -->
 
-  <div class="panel-body" id="node-graph-view" style="display: none">
+  <div class="panel-body" id="node-graph-view" style="display: none; min-height: 204px;">
     <p class="pull-right">
       <input class="knob" data-fgColor="chartreuse"
       data-thickness=".4" data-width="60" data-height="60" data-readOnly="true"
@@ -78,14 +52,28 @@
     </ul>
 
     <div class="clearfix"></div>
-      <div class="row">
-        <div class="col-sm-6 text-right pull-right">
-        {% if more_nodes >= 0  %}
+  </div>
+
+  <div href="#" class="list-group-item list-group-footer">
+    <div class="row">
+      <div class="col-sm-6 col-xs-6 input-group input-group-sm">
+        <input id="dashboard-node-search-input" type="text" class="form-control"
+         placeholder="{% trans "Search..." %}" />
+        <div class="input-group-btn">
+          <button type="submit" class="btn btn-primary" title="{% trans "Search" %}" data-container="body">
+            <i class="fa fa-search"></i>
+          </button>
+        </div>
+      </div>
+      <div class="col-sm-6 text-right">
         <a class="btn btn-primary btn-xs" href="{% url "dashboard.views.node-list" %}">
           <i class="fa fa-chevron-circle-right"></i>
-          {% blocktrans with count=more_nodes %}<strong>{{count}}</strong>  more{% endblocktrans %}
+          {% if more_nodes > 0 %}
+              {% blocktrans with count=more_nodes %}<strong>{{count}}</strong>  more{% endblocktrans %}
+          {% else %}
+              {% trans "list" %}
+          {% endif %}
         </a>
-        {% endif %}
         <a class="btn btn-success btn-xs node-create" href="{% url "dashboard.views.node-create" %}">
           <i class="fa fa-plus-circle"></i> {% trans "new" %}
         </a>
