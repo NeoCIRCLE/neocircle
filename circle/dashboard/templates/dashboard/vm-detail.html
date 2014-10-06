@@ -76,7 +76,7 @@
   <div class="row">
     <div class="col-md-4" id="vm-info-pane">
       <div class="big">
-        <span id="vm-details-state" class="label label-success">
+        <span id="vm-details-state" class="label label-success" data-status="{{ instance.status }}">
           <i class="fa
             {% if is_new_state %}
             fa-spinner fa-spin

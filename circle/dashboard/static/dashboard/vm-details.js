@@ -392,6 +392,7 @@ function checkNewActivity(runs) {
       } else {
         icon.prop("class", "fa " + data['icon']);
       }
+      $("#vm-details-state").data("status", data['status']);
       $("#vm-details-state span").html(data['human_readable_status'].toUpperCase());
       if(data['status'] == "RUNNING") {
         if(data['connect_uri']) {

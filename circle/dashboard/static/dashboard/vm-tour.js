@@ -37,8 +37,11 @@ function get_steps() {
   deploy_selector = "#ops";
   save_as_selector = "#ops";
   if(!$('.timeline .activity i').hasClass('fa-spin')) {
-    deploy_selector += ' a[class*="operation-deploy"]';
-    save_as_selector += ' a[class*="operation-save_as"]';
+    vm_status = $("#vm-details-state").data("status");
+    if(vm_status === "PENDING")
+      deploy_selector += ' a[class*="operation-deploy"]';
+    if(vm_status === "RUNNING" || vm_status === "STOPPED")
+      save_as_selector += ' a[class*="operation-save_as_template"]';
   }
 
   steps = [
@@ -55,7 +58,7 @@ function get_steps() {
     },
     {
       element: document.querySelector('a[href="#resources"]'),
-      intro: gettext("On the resources tab you can edit the CPU/RAM options and add/remove disks!"),
+      intro: gettext("On the resources tab you can edit the CPU/RAM options and add/remove disks."),
     },
     {
       element: document.querySelector('#vm-details-resources-form'),
@@ -82,7 +85,7 @@ function get_steps() {
     },
     {
       element: document.querySelector("#vm-info-pane"),
-      intro: gettext("Use the connection string or connect with your choice of client!"),
+      intro: gettext("Use the CIRCLE client or the connection string to connect to the virtual machine."),
     },
     {
       element: document.querySelector("#vm-info-pane"),
@@ -94,7 +97,7 @@ function get_steps() {
     },
     {
       element: document.querySelector(".alert-new-template"),
-      intro: gettext("This is the last message, if something is not clear you can do the the tour again!"),
+      intro: gettext("This is the last message, if something is not clear you can do the the tour again."),
     },
   ];
   return steps;
