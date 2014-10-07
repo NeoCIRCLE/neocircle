@@ -60,6 +60,7 @@ from ..forms import (
     VmAddInterfaceForm, VmCreateDiskForm, VmDownloadDiskForm, VmSaveForm,
     VmRenewForm, VmStateChangeForm, VmListSearchForm, VmCustomizeForm,
     TransferOwnershipForm, VmDiskResizeForm, RedeployForm, VmDiskRemoveForm,
+    VmMigrateForm,
 )
 from ..models import Favourite, Profile
 
@@ -421,36 +422,28 @@ class VmDownloadDiskView(FormOperationMixin, VmOperationView):
     with_reload = True
 
 
-class VmMigrateView(VmOperationView):
+class VmMigrateView(FormOperationMixin, VmOperationView):
 
     op = 'migrate'
     icon = 'truck'
     effect = 'info'
     template_name = 'dashboard/_vm-migrate.html'
+    form_class = VmMigrateForm
 
-    def get_context_data(self, **kwargs):
-        ctx = super(VmMigrateView, self).get_context_data(**kwargs)
-        ctx['nodes'] = [n for n in Node.objects.filter(enabled=True)
-                        if n.online]
-
+    def get_form_kwargs(self):
+        online = (n.pk for n in Node.objects.filter(enabled=True) if n.online)
+        choices = Node.objects.filter(pk__in=online)
+        default = None
         inst = self.get_object()
-        ctx["recommended"] = None
         try:
             if isinstance(inst, Instance):
-                ctx["recommended"] = inst.select_node().pk
+                default = inst.select_node().pk
         except SchedulerError:
             logger.exception("scheduler error:")
 
-        return ctx
-
-    def post(self, request, extra=None, *args, **kwargs):
-        if extra is None:
-            extra = {}
-        node = self.request.POST.get("node")
-        if node:
-            node = get_object_or_404(Node, pk=node)
-            extra["to_node"] = node
-        return super(VmMigrateView, self).post(request, extra, *args, **kwargs)
+        val = super(VmMigrateView, self).get_form_kwargs()
+        val.update({'choices': choices, 'default': default})
+        return val
 
 
 class VmSaveView(FormOperationMixin, VmOperationView):

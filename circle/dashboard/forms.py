@@ -752,6 +752,26 @@ class VmRenewForm(forms.Form):
         return helper
 
 
+class VmMigrateForm(forms.Form):
+    live_migration = forms.BooleanField(
+        required=False, initial=True, label=_("live migration"))
+
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('choices')
+        default = kwargs.pop('default')
+        super(VmMigrateForm, self).__init__(*args, **kwargs)
+
+        self.fields.insert(0, 'to_node', forms.ModelChoiceField(
+            queryset=choices, initial=default, required=False,
+            widget=forms.RadioSelect(), label=_("Node")))
+
+    @property
+    def helper(self):
+        helper = FormHelper(self)
+        helper.form_tag = False
+        return helper
+
+
 class VmStateChangeForm(forms.Form):
 
     interrupt = forms.BooleanField(required=False, label=_(

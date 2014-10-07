@@ -472,10 +472,9 @@ class MigrateOperation(RemoteInstanceOperation):
     remote_queue = ("vm", "slow")
     timeout = 600
 
-    def _get_remote_args(self, to_node, **kwargs):
+    def _get_remote_args(self, to_node, live_migration, **kwargs):
         return (super(MigrateOperation, self)._get_remote_args(**kwargs)
-                + [to_node.host.hostname, True])
-        # TODO handle non-live migration
+                + [to_node.host.hostname, live_migration])
 
     def rollback(self, activity):
         with activity.sub_activity(
@@ -483,7 +482,7 @@ class MigrateOperation(RemoteInstanceOperation):
                 "redeploy network (rollback)")):
             self.instance.deploy_net()
 
-    def _operation(self, activity, to_node=None):
+    def _operation(self, activity, to_node=None, live_migration=True):
         if not to_node:
             with activity.sub_activity('scheduling',
                                        readable_name=ugettext_noop(
@@ -495,7 +494,8 @@ class MigrateOperation(RemoteInstanceOperation):
             with activity.sub_activity(
                 'migrate_vm', readable_name=create_readable(
                     ugettext_noop("migrate to %(node)s"), node=to_node)):
-                super(MigrateOperation, self)._operation(to_node=to_node)
+                super(MigrateOperation, self)._operation(
+                    to_node=to_node, live_migration=live_migration)
         except Exception as e:
             if hasattr(e, 'libvirtError'):
                 self.rollback(activity)
