@@ -490,6 +490,9 @@ class Disk(TimeStampedModel):
                     disk.destroy()
                     raise humanize_exception(ugettext_noop(
                         "Operation aborted by user."), e)
+            except:
+                disk.destroy()
+                raise
         disk.is_ready = True
         disk.save()
         return disk
