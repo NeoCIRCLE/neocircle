@@ -470,7 +470,7 @@ class MigrateOperation(RemoteInstanceOperation):
     async_queue = "localhost.man.slow"
     task = vm_tasks.migrate
     remote_queue = ("vm", "slow")
-    timeout = 600
+    remote_timeout = 1000
 
     def _get_remote_args(self, to_node, **kwargs):
         return (super(MigrateOperation, self)._get_remote_args(**kwargs)
@@ -710,7 +710,7 @@ class ShutdownOperation(AbortableRemoteOperationMixin,
     resultant_state = 'STOPPED'
     task = vm_tasks.shutdown
     remote_queue = ("vm", "slow")
-    timeout = 120
+    remote_timeout = 120
 
     def _operation(self, task):
         super(ShutdownOperation, self)._operation(task=task)
@@ -793,7 +793,7 @@ class SleepOperation(InstanceOperation):
         name = _("suspend virtual machine")
         task = vm_tasks.sleep
         remote_queue = ("vm", "slow")
-        timeout = 600
+        remote_timeout = 1000
 
         def _get_remote_args(self, **kwargs):
             return (super(SleepOperation.SuspendVmOperation, self)
@@ -846,7 +846,7 @@ class WakeUpOperation(InstanceOperation):
         name = _("resume virtual machine")
         task = vm_tasks.wake_up
         remote_queue = ("vm", "slow")
-        timeout = 600
+        remote_timeout = 1000
 
         def _get_remote_args(self, **kwargs):
             return (super(WakeUpOperation.WakeUpVmOperation, self)
