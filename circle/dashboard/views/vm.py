@@ -762,6 +762,12 @@ class MassOperationView(OperationView):
         self.check_auth()
         if extra is None:
             extra = {}
+
+        if hasattr(self, 'form_class'):
+            form = self.form_class(self.request.POST, **self.get_form_kwargs())
+            if form.is_valid():
+                extra.update(form.cleaned_data)
+
         self._call_operations(extra)
         if request.is_ajax():
             store = messages.get_messages(request)
