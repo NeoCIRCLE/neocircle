@@ -2,7 +2,7 @@
 {% load sizefieldtags %}
 
 <i class="fa fa-file"></i>
-{{ d.name }} (#{{ d.id }})
+{{ d.name }} (#{{ d.id }}) - {{ d.size|filesize }}
 
 {% if op.remove_disk %}
   <span class="operation-wrapper">
@@ -22,5 +22,8 @@
     </a>
   </span>
 {% endif %}
-
 <div style="clear: both;"></div>
+
+{% if request.user.is_superuser %}
+  <small>{% trans "File name" %}: {{ d.filename }}</small>
+{% endif %}
