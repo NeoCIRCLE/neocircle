@@ -324,7 +324,7 @@ class DeployOperation(InstanceOperation):
                           "deployed to node: %(node)s"),
             node=self.instance.node)
 
-    def _operation(self, activity, timeout=15):
+    def _operation(self, activity):
         # Allocate VNC port and host node
         self.instance.allocate_vnc_port()
         self.instance.allocate_node()
@@ -632,7 +632,7 @@ class SaveAsTemplateOperation(InstanceOperation):
             for disk in self.disks:
                 disk.destroy()
 
-    def _operation(self, activity, user, system, timeout=300, name=None,
+    def _operation(self, activity, user, system, name=None,
                    with_shutdown=True, task=None, **kwargs):
         if with_shutdown:
             try:
