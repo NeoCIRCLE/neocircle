@@ -405,7 +405,7 @@ class DestroyOperation(InstanceOperation):
     required_perms = ()
     resultant_state = 'DESTROYED'
 
-    def _operation(self, activity):
+    def _operation(self, activity, system):
         # Destroy networks
         with activity.sub_activity(
                 'destroying_net',
@@ -415,7 +415,7 @@ class DestroyOperation(InstanceOperation):
             self.instance.destroy_net()
 
         if self.instance.node:
-            self.instance._delete_vm(parent_activity=activity)
+            self.instance._delete_vm(parent_activity=activity, system=system)
 
         # Destroy disks
         with activity.sub_activity(
@@ -425,7 +425,8 @@ class DestroyOperation(InstanceOperation):
 
         # Delete mem. dump if exists
         try:
-            self.instance._delete_mem_dump(parent_activity=activity)
+            self.instance._delete_mem_dump(parent_activity=activity,
+                                           system=system)
         except:
             pass
 
@@ -779,12 +780,12 @@ class SleepOperation(InstanceOperation):
         else:
             activity.resultant_state = 'ERROR'
 
-    def _operation(self, activity):
+    def _operation(self, activity, system):
         with activity.sub_activity('shutdown_net',
                                    readable_name=ugettext_noop(
                                        "shutdown network")):
             self.instance.shutdown_net()
-        self.instance._suspend_vm(parent_activity=activity)
+        self.instance._suspend_vm(parent_activity=activity, system=system)
         self.instance.yield_node()
 
     @register_operation
