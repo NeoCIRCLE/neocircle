@@ -1012,3 +1012,7 @@ textarea[name="new_members"] {
 .disk-resize-btn {
   margin-right: 5px;
 }
+
+#vm-migrate-node-list li {
+  cursor: pointer;
+}

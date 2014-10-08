@@ -18,18 +18,20 @@ Choose a compute node to migrate {{obj}} to.
       <li class="panel panel-default"><div class="panel-body">
         <label for="migrate-to-{{n.pk}}">
           <strong>{{ n }}</strong>
-          <div class="label label-primary"><i class="fa {{n.get_status_icon}}"></i>
-              {{n.get_status_display}}</div>
+          <div class="label label-primary">
+            <i class="fa {{n.get_status_icon}}"></i> {{n.get_status_display}}</div>
           {% if current == n.pk %}<div class="label label-info">{% trans "current" %}</div>{% endif %}
           {% if recommended == n.pk %}<div class="label label-success">{% trans "recommended" %}</div>{% endif %}
         </label>
         <input id="migrate-to-{{n.pk}}" type="radio" name="node" value="{{ n.pk }}" style="float: right;"
-        {% if current == n.pk %}disabled="disabled"{% endif %}
-        {% if recommended == n.pk %}checked="checked"{% endif %} />
+          {% if current == n.pk %}disabled="disabled"{% endif %}
+          {% if recommended == n.pk %}checked="checked"{% endif %}
+        />
         <span class="vm-migrate-node-property">{% trans "CPU load" %}: {{ n.cpu_usage }}</span>
-        <span class="vm-migrate-node-property">{% trans "RAM usage" %}: {{ n.byte_ram_usage|filesize }}/{{ n.ram_size|filesize }}</span>
+        <span class="vm-migrate-node-property">
+          {% trans "RAM usage" %}: {{ n.byte_ram_usage|filesize }}/{{ n.ram_size|filesize }}</span>
         <div style="clear: both;"></div>
-      </div></li>
+      </li>
     {% endfor %}
   {% endwith %}
   </ul>
