@@ -324,7 +324,7 @@ class DeployOperation(InstanceOperation):
                           "deployed to node: %(node)s"),
             node=self.instance.node)
 
-    def _operation(self, activity, timeout=15):
+    def _operation(self, activity):
         # Allocate VNC port and host node
         self.instance.allocate_vnc_port()
         self.instance.allocate_node()
@@ -405,7 +405,7 @@ class DestroyOperation(InstanceOperation):
     required_perms = ()
     resultant_state = 'DESTROYED'
 
-    def _operation(self, activity):
+    def _operation(self, activity, system):
         # Destroy networks
         with activity.sub_activity(
                 'destroying_net',
@@ -415,7 +415,7 @@ class DestroyOperation(InstanceOperation):
             self.instance.destroy_net()
 
         if self.instance.node:
-            self.instance._delete_vm(parent_activity=activity)
+            self.instance._delete_vm(parent_activity=activity, system=system)
 
         # Destroy disks
         with activity.sub_activity(
@@ -425,7 +425,8 @@ class DestroyOperation(InstanceOperation):
 
         # Delete mem. dump if exists
         try:
-            self.instance._delete_mem_dump(parent_activity=activity)
+            self.instance._delete_mem_dump(parent_activity=activity,
+                                           system=system)
         except:
             pass
 
@@ -470,7 +471,7 @@ class MigrateOperation(RemoteInstanceOperation):
     async_queue = "localhost.man.slow"
     task = vm_tasks.migrate
     remote_queue = ("vm", "slow")
-    timeout = 600
+    remote_timeout = 1000
 
     def _get_remote_args(self, to_node, live_migration, **kwargs):
         return (super(MigrateOperation, self)._get_remote_args(**kwargs)
@@ -632,7 +633,7 @@ class SaveAsTemplateOperation(InstanceOperation):
             for disk in self.disks:
                 disk.destroy()
 
-    def _operation(self, activity, user, system, timeout=300, name=None,
+    def _operation(self, activity, user, system, name=None,
                    with_shutdown=True, task=None, **kwargs):
         if with_shutdown:
             try:
@@ -710,7 +711,7 @@ class ShutdownOperation(AbortableRemoteOperationMixin,
     resultant_state = 'STOPPED'
     task = vm_tasks.shutdown
     remote_queue = ("vm", "slow")
-    timeout = 120
+    remote_timeout = 120
 
     def _operation(self, task):
         super(ShutdownOperation, self)._operation(task=task)
@@ -779,12 +780,12 @@ class SleepOperation(InstanceOperation):
         else:
             activity.resultant_state = 'ERROR'
 
-    def _operation(self, activity):
+    def _operation(self, activity, system):
         with activity.sub_activity('shutdown_net',
                                    readable_name=ugettext_noop(
                                        "shutdown network")):
             self.instance.shutdown_net()
-        self.instance._suspend_vm(parent_activity=activity)
+        self.instance._suspend_vm(parent_activity=activity, system=system)
         self.instance.yield_node()
 
     @register_operation
@@ -793,7 +794,7 @@ class SleepOperation(InstanceOperation):
         name = _("suspend virtual machine")
         task = vm_tasks.sleep
         remote_queue = ("vm", "slow")
-        timeout = 600
+        remote_timeout = 1000
 
         def _get_remote_args(self, **kwargs):
             return (super(SleepOperation.SuspendVmOperation, self)
@@ -846,7 +847,7 @@ class WakeUpOperation(InstanceOperation):
         name = _("resume virtual machine")
         task = vm_tasks.wake_up
         remote_queue = ("vm", "slow")
-        timeout = 600
+        remote_timeout = 1000
 
         def _get_remote_args(self, **kwargs):
             return (super(WakeUpOperation.WakeUpVmOperation, self)
