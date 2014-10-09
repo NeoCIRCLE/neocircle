@@ -431,9 +431,18 @@ LOGIN_REDIRECT_URL = "/"
 
 AGENT_DIR = get_env_variable(
     'DJANGO_AGENT_DIR', join(unicode(expanduser("~")), 'agent'))
+    # AGENT_DIR is the root directory for the agent.
+    # The directory structure SHOULD be:
+    # /home/username/agent
+    # |-- agent-linux
+    # |    |-- .git
+    # |    +-- ...
+    # |-- agent-win
+    # |    +-- agent-win-%(version).exe
+    #
 
 try:
-    git_env = {'GIT_DIR': join(AGENT_DIR, '.git')}
+    git_env = {'GIT_DIR': join(join(AGENT_DIR, "agent-linux"), '.git')}
     AGENT_VERSION = check_output(
         ('git', 'log', '-1', r'--pretty=format:%h', 'HEAD'), env=git_env)
 except:
