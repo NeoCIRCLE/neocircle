@@ -765,12 +765,6 @@ class VmMigrateForm(forms.Form):
             queryset=choices, initial=default, required=False,
             widget=forms.RadioSelect(), label=_("Node")))
 
-    @property
-    def helper(self):
-        helper = FormHelper(self)
-        helper.form_tag = False
-        return helper
-
 
 class VmStateChangeForm(forms.Form):
 

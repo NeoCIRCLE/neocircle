@@ -437,7 +437,7 @@ class VmMigrateView(FormOperationMixin, VmOperationView):
         inst = self.get_object()
         try:
             if isinstance(inst, Instance):
-                default = inst.select_node().pk
+                default = inst.select_node()
         except SchedulerError:
             logger.exception("scheduler error:")
 

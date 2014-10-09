@@ -14,7 +14,7 @@ Choose a compute node to migrate {{obj}} to.
 
 {% block formfields %}
   <ul id="vm-migrate-node-list" class="list-unstyled">
-  {% with current=object.node.pk recommended=form.fields.to_node.initial %}
+  {% with current=object.node.pk recommended=form.fields.to_node.initial.pk %}
     {% for n in form.fields.to_node.queryset.all %}
       <li class="panel panel-default"><div class="panel-body">
         <label for="migrate-to-{{n.pk}}">
