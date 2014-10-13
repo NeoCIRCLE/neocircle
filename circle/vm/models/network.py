@@ -26,7 +26,6 @@ from django.utils.translation import ugettext_lazy as _, ugettext_noop
 from common.models import create_readable
 from firewall.models import Vlan, Host
 from ..tasks import net_tasks
-from .activity import instance_activity
 
 logger = getLogger(__name__)
 
@@ -120,10 +119,10 @@ class Interface(Model):
             host.hostname = instance.vm_name
             # Get addresses from firewall
             if base_activity is None:
-                act_ctx = instance_activity(
+                act_ctx = instance.activity(
                     code_suffix='allocating_ip',
                     readable_name=ugettext_noop("allocate IP address"),
-                    instance=instance, user=owner)
+                    user=owner)
             else:
                 act_ctx = base_activity.sub_activity(
                     'allocating_ip',
