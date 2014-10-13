@@ -1,0 +1,5 @@
+Category: compute; scheme={{ kind.scheme }}; class="{{ kind.class }}";
+{% spaceless %}
+{% for k, v in attrs.items %}
+X-OCCI-Attribute: {{ k }}={% if v.isdigit == False %}"{{ v }}"{% else %}{{ v }}{% endif %}{% endfor %}
+{% endspaceless %}
