@@ -39,6 +39,7 @@ from ..forms import (
     GroupCreateForm, GroupProfileUpdateForm,
 )
 from ..models import FutureMember, GroupProfile
+from vm.models import Instance, InstanceTemplate
 from ..tables import GroupListTable
 from .util import CheckedDetailView, AclUpdateView, search_user, saml_available
 
@@ -99,6 +100,15 @@ class GroupDetailView(CheckedDetailView):
         context['addmemberform'] = AddGroupMemberForm()
         context['group_profile_form'] = GroupProfileUpdate.get_form_object(
             self.request, self.object.profile)
+
+        context.update({
+            'group_objects': GroupProfile.get_objects_with_group_level(
+                "operator", self.get_object()),
+            'vm_objects': Instance.get_objects_with_group_level(
+                "user", self.get_object()),
+            'template_objects': InstanceTemplate.get_objects_with_group_level(
+                "user", self.get_object()),
+        })
 
         if self.request.user.is_superuser:
             context['group_perm_form'] = GroupPermissionForm(
