@@ -433,7 +433,7 @@ class HumanReadableObject(object):
             try:
                 v = timezone.datetime.strptime(
                     v, "%Y-%m-%dT%H:%M:%S.%fZ").replace(tzinfo=timezone.UTC())
-            except ValueError:
+            except (ValueError, TypeError):  # Mock raises TypeError
                 pass
             if isinstance(v, timezone.datetime):
                 params[k] = defaultfilters.date(v, "DATETIME_FORMAT")
