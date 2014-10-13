@@ -415,7 +415,7 @@ class DestroyOperation(InstanceOperation):
             self.instance.destroy_net()
 
         if self.instance.node:
-            self.instance._delete_vm(parent_activity=activity, system=system)
+            self.instance._delete_vm(parent_activity=activity)
 
         # Destroy disks
         with activity.sub_activity(
@@ -425,8 +425,7 @@ class DestroyOperation(InstanceOperation):
 
         # Delete mem. dump if exists
         try:
-            self.instance._delete_mem_dump(parent_activity=activity,
-                                           system=system)
+            self.instance._delete_mem_dump(parent_activity=activity)
         except:
             pass
 
@@ -785,7 +784,7 @@ class SleepOperation(InstanceOperation):
                                    readable_name=ugettext_noop(
                                        "shutdown network")):
             self.instance.shutdown_net()
-        self.instance._suspend_vm(parent_activity=activity, system=system)
+        self.instance._suspend_vm(parent_activity=activity)
         self.instance.yield_node()
 
     @register_operation
