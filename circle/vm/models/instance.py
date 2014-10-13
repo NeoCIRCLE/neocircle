@@ -45,7 +45,7 @@ from common.models import (
     activitycontextimpl, create_readable, HumanReadableException,
 )
 from common.operations import OperatedMixin
-from ..tasks import vm_tasks, agent_tasks
+from ..tasks import agent_tasks
 from .activity import (ActivityInProgressError, InstanceActivity)
 from .common import BaseResourceConfigModel, Lease
 from .network import Interface
