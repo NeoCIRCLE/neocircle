@@ -279,6 +279,7 @@ LOCAL_APPS = (
     'manager',
     'acl',
     'monitor',
+    'occi',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
