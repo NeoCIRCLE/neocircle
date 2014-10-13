@@ -1,6 +1,7 @@
 {% extends "dashboard/mass-operate.html" %}
 {% load i18n %}
 {% load sizefieldtags %}
+{% load crispy_forms_tags %}
 
 
 {% block formfields %}
@@ -11,20 +12,20 @@
         <label for="migrate-to-none">
           <strong>{% trans "Reschedule" %}</strong>
         </label>
-        <input id="migrate-to-none" type="radio" name="node" value="" style="float: right;" checked="checked">
+        <input id="migrate-to-none" type="radio" name="to_node" value="" style="float: right;" checked="checked">
         <span class="vm-migrate-node-property">
           {% trans "This option will reschedule each virtual machine to the optimal node." %}
         </span>
         <div style="clear: both;"></div>
       </div>
     </li>
-    {% for n in nodes %}
+    {% for n in form.fields.to_node.queryset.all %}
     <li class="panel panel-default mass-migrate-node">
       <div class="panel-body">
         <label for="migrate-to-{{n.pk}}">
           <strong>{{ n }}</strong>
         </label>
-        <input id="migrate-to-{{n.pk}}" type="radio" name="node" value="{{ n.pk }}" style="float: right;"/>
+        <input id="migrate-to-{{n.pk}}" type="radio" name="to_node" value="{{ n.pk }}" style="float: right;"/>
         <span class="vm-migrate-node-property">{% trans "CPU load" %}: {{ n.cpu_usage }}</span>
         <span class="vm-migrate-node-property">{% trans "RAM usage" %}: {{ n.byte_ram_usage|filesize }}/{{ n.ram_size|filesize }}</span>
         <div style="clear: both;"></div>
@@ -32,5 +33,6 @@
     </li>
     {% endfor %}
   </ul>
+  {{ form.live_migration|as_crispy_field }}
   <hr />
 {% endblock %}

@@ -59,7 +59,8 @@ class MigrateOperationTestCase(TestCase):
             MigrateException, op._operation,
             act, to_node=None)
         assert inst.select_node.called
-        op._get_remote_args.assert_called_once_with(to_node='test')
+        op._get_remote_args.assert_called_once_with(
+            to_node='test', live_migration=True)
 
 
 class RebootOperationTestCase(TestCase):
