@@ -19,11 +19,14 @@ from common.models import create_readable
 from manager.mancelery import celery
 from vm.tasks.agent_tasks import (restart_networking, change_password,
                                   set_time, set_hostname, start_access_server,
-                                  cleanup, update, change_ip)
+                                  cleanup, update, append,
+                                  change_ip, update_legacy)
 from firewall.models import Host
 
 import time
+import os
 from base64 import encodestring
+from hashlib import md5
 from StringIO import StringIO
 from tarfile import TarFile, TarInfo
 from django.conf import settings
@@ -61,17 +64,34 @@ def send_networking_commands(instance, act):
         restart_networking.apply_async(queue=queue, args=(instance.vm_name, ))
 
 
-def create_agent_tar():
+def create_linux_tar():
     def exclude(tarinfo):
-        if tarinfo.name.startswith('./.git'):
+        ignored = ('./.', './misc', './windows')
+        if any(tarinfo.name.startswith(x) for x in ignored):
             return None
         else:
             return tarinfo
 
     f = StringIO()
 
+    with TarFile.open(fileobj=f, mode='w:gz') as tar:
+        agent_path = os.path.join(settings.AGENT_DIR, "agent-linux")
+        tar.add(agent_path, arcname='.', filter=exclude)
+
+        version_fileobj = StringIO(settings.AGENT_VERSION)
+        version_info = TarInfo(name='version.txt')
+        version_info.size = len(version_fileobj.buf)
+        tar.addfile(version_info, version_fileobj)
+
+    return encodestring(f.getvalue()).replace('\n', '')
+
+
+def create_windows_tar():
+    f = StringIO()
+
+    agent_path = os.path.join(settings.AGENT_DIR, "agent-win")
     with TarFile.open(fileobj=f, mode='w|gz') as tar:
-        tar.add(settings.AGENT_DIR, arcname='.', filter=exclude)
+        tar.add(agent_path, arcname='.')
 
         version_fileobj = StringIO(settings.AGENT_VERSION)
         version_info = TarInfo(name='version.txt')
@@ -82,7 +102,7 @@ def create_agent_tar():
 
 
 @celery.task
-def agent_started(vm, version=None):
+def agent_started(vm, version=None, system=None):
     from vm.models import Instance, InstanceActivity
     instance = Instance.objects.get(id=int(vm.split('-')[-1]))
     queue = instance.get_remote_queue_name("agent")
@@ -104,7 +124,7 @@ def agent_started(vm, version=None):
 
         if version and version != settings.AGENT_VERSION:
             try:
-                update_agent(instance, act)
+                update_agent(instance, act, system, settings.AGENT_VERSION)
             except TimeoutError:
                 pass
             else:
@@ -146,11 +166,16 @@ def measure_boot_time(instance):
 @celery.task
 def agent_stopped(vm):
     from vm.models import Instance, InstanceActivity
+    from vm.models.activity import ActivityInProgressError
     instance = Instance.objects.get(id=int(vm.split('-')[-1]))
     qs = InstanceActivity.objects.filter(instance=instance,
                                          activity_code='vm.Instance.agent')
     act = qs.latest('id')
-    with act.sub_activity('stopping', readable_name=ugettext_noop('stopping')):
+    try:
+        with act.sub_activity('stopping',
+                              readable_name=ugettext_noop('stopping')):
+            pass
+    except ActivityInProgressError:
         pass
 
 
@@ -161,7 +186,7 @@ def get_network_configs(instance):
     return (interfaces, settings.FIREWALL_SETTINGS['rdns_ip'])
 
 
-def update_agent(instance, act=None):
+def update_agent(instance, act=None, system=None, version=None):
     if act:
         act = act.sub_activity(
             'update',
@@ -176,6 +201,40 @@ def update_agent(instance, act=None):
                 version=settings.AGENT_VERSION))
     with act:
         queue = instance.get_remote_queue_name("agent")
-        update.apply_async(
-            queue=queue,
-            args=(instance.vm_name, create_agent_tar())).get(timeout=10)
+        if system == "Windows":
+            executable = os.listdir(os.path.join(settings.AGENT_DIR,
+                                                 "agent-win"))[0]
+            # executable = "agent-winservice-%(version)s.exe" % {
+            #   'version': version}
+            data = create_windows_tar()
+        elif system == "Linux":
+            executable = ""
+            data = create_linux_tar()
+        else:
+            executable = ""
+            # Legacy update method
+            return update_legacy.apply_async(
+                queue=queue,
+                args=(instance.vm_name, create_linux_tar())
+            ).get(timeout=60)
+
+        checksum = md5(data).hexdigest()
+        chunk_size = 1024 * 1024
+        chunk_number = 0
+        index = 0
+        filename = version + ".tar"
+        while True:
+            chunk = data[index:index+chunk_size]
+            if chunk:
+                append.apply_async(
+                    queue=queue,
+                    args=(instance.vm_name, chunk,
+                          filename, chunk_number)).get(timeout=60)
+                index = index + chunk_size
+                chunk_number = chunk_number + 1
+            else:
+                update.apply_async(
+                    queue=queue,
+                    args=(instance.vm_name, filename, executable, checksum)
+                ).get(timeout=60)
+                break

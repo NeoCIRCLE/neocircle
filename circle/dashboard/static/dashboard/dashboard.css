@@ -528,7 +528,7 @@ footer a, footer a:hover, footer a:visited {
 }
 
 #dashboard-template-list a small {
-  max-width: 50%;
+  max-width: 45%;
   float: left;
   padding-top: 2px;
   text-overflow: ellipsis;
@@ -1011,4 +1011,8 @@ textarea[name="new_members"] {
 
 .disk-resize-btn {
   margin-right: 5px;
+}
+
+#vm-migrate-node-list li {
+  cursor: pointer;
 }

@@ -16,12 +16,14 @@
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
 from celery import Celery
+from celery.signals import worker_ready
 from datetime import timedelta
 from kombu import Queue, Exchange
 from os import getenv
 
 HOSTNAME = "localhost"
 CACHE_URI = getenv("CACHE_URI", "pylibmc://127.0.0.1:11211/")
+QUEUE_NAME = HOSTNAME + '.man.slow'
 
 celery = Celery('manager.slow',
                 broker=getenv("AMQP_URI"),
@@ -36,7 +38,7 @@ celery.conf.update(
     CELERY_CACHE_BACKEND=CACHE_URI,
     CELERY_TASK_RESULT_EXPIRES=300,
     CELERY_QUEUES=(
-        Queue(HOSTNAME + '.man.slow', Exchange('manager.slow', type='direct'),
+        Queue(QUEUE_NAME, Exchange('manager.slow', type='direct'),
               routing_key="manager.slow"),
     ),
     CELERYBEAT_SCHEDULE={
@@ -48,3 +50,10 @@ celery.conf.update(
     }
 
 )
+
+
+@worker_ready.connect()
+def cleanup_tasks(conf=None, **kwargs):
+    '''Discard all task and clean up activity.'''
+    from vm.models.activity import cleanup
+    cleanup(queue_name=QUEUE_NAME)

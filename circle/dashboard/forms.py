@@ -18,6 +18,7 @@
 from __future__ import absolute_import
 
 from datetime import timedelta
+from urlparse import urlparse
 
 from django.contrib.auth.forms import (
     AuthenticationForm, PasswordResetForm, SetPasswordForm,
@@ -39,6 +40,7 @@ from django.contrib.auth.forms import UserCreationForm as OrgUserCreationForm
 from django.forms.widgets import TextInput, HiddenInput
 from django.template import Context
 from django.template.loader import render_to_string
+from django.utils.html import escape
 from django.utils.translation import ugettext_lazy as _
 from sizefield.widgets import FileSizeWidget
 from django.core.urlresolvers import reverse_lazy
@@ -78,6 +80,12 @@ class VmSaveForm(forms.Form):
         helper = FormHelper(self)
         helper.form_tag = False
         return helper
+
+    def __init__(self, *args, **kwargs):
+        default = kwargs.pop('default', None)
+        super(VmSaveForm, self).__init__(*args, **kwargs)
+        if default:
+            self.fields['name'].initial = default
 
 
 class VmCustomizeForm(forms.Form):
@@ -744,6 +752,20 @@ class VmRenewForm(forms.Form):
         return helper
 
 
+class VmMigrateForm(forms.Form):
+    live_migration = forms.BooleanField(
+        required=False, initial=True, label=_("live migration"))
+
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('choices')
+        default = kwargs.pop('default')
+        super(VmMigrateForm, self).__init__(*args, **kwargs)
+
+        self.fields.insert(0, 'to_node', forms.ModelChoiceField(
+            queryset=choices, initial=default, required=False,
+            widget=forms.RadioSelect(), label=_("Node")))
+
+
 class VmStateChangeForm(forms.Form):
 
     interrupt = forms.BooleanField(required=False, label=_(
@@ -787,6 +809,12 @@ class VmCreateDiskForm(forms.Form):
         widget=FileSizeWidget, initial=(10 << 30), label=_('Size'),
         help_text=_('Size of disk to create in bytes or with units '
                     'like MB or GB.'))
+
+    def __init__(self, *args, **kwargs):
+        default = kwargs.pop('default', None)
+        super(VmCreateDiskForm, self).__init__(*args, **kwargs)
+        if default:
+            self.fields['name'].initial = default
 
     def clean_size(self):
         size_in_bytes = self.cleaned_data.get("size")
@@ -839,13 +867,42 @@ class VmDiskResizeForm(forms.Form):
         helper.form_tag = False
         if self.disk:
             helper.layout = Layout(
-                HTML(_("<label>Disk:</label> %s") % self.disk),
+                HTML(_("<label>Disk:</label> %s") % escape(self.disk)),
                 Field('disk'), Field('size'))
         return helper
 
 
+class VmDiskRemoveForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('choices')
+        self.disk = kwargs.pop('default')
+
+        super(VmDiskRemoveForm, self).__init__(*args, **kwargs)
+
+        self.fields.insert(0, 'disk', forms.ModelChoiceField(
+            queryset=choices, initial=self.disk, required=True,
+            empty_label=None, label=_('Disk')))
+        if self.disk:
+            self.fields['disk'].widget = HiddenInput()
+
+    @property
+    def helper(self):
+        helper = FormHelper(self)
+        helper.form_tag = False
+        if self.disk:
+            helper.layout = Layout(
+                AnyTag(
+                    "div",
+                    HTML(_("<label>Disk:</label> %s") % escape(self.disk)),
+                    css_class="form-group",
+                ),
+                Field("disk"),
+            )
+        return helper
+
+
 class VmDownloadDiskForm(forms.Form):
-    name = forms.CharField(max_length=100, label=_("Name"))
+    name = forms.CharField(max_length=100, label=_("Name"), required=False)
     url = forms.CharField(label=_('URL'), validators=[URLValidator(), ])
 
     @property
@@ -853,6 +910,18 @@ class VmDownloadDiskForm(forms.Form):
         helper = FormHelper(self)
         helper.form_tag = False
         return helper
+
+    def clean(self):
+        cleaned_data = super(VmDownloadDiskForm, self).clean()
+        if not cleaned_data['name']:
+            if cleaned_data['url']:
+                cleaned_data['name'] = urlparse(
+                    cleaned_data['url']).path.split('/')[-1]
+            if not cleaned_data['name']:
+                raise forms.ValidationError(
+                    _("Could not find filename in URL, "
+                      "please specify a name explicitly."))
+        return cleaned_data
 
 
 class VmAddInterfaceForm(forms.Form):

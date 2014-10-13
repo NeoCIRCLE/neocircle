@@ -313,10 +313,11 @@ class Node(OperatedMixin, TimeStampedModel):
     def get_status_label(self):
         return {
             'OFFLINE': 'label-warning',
-            'DISABLED': 'label-warning',
+            'DISABLED': 'label-danger',
             'MISSING': 'label-danger',
-            'ONLINE': 'label-success'}.get(self.get_state(),
-                                           'label-danger')
+            'ACTIVE': 'label-success',
+            'PASSIVE': 'label-warning',
+        }.get(self.get_state(), 'label-danger')
 
     @node_available
     def update_vm_states(self):

@@ -1,6 +1,7 @@
 var show_all = false;
 var in_progress = false;
 var activity_hash = 5;
+var reload_vm_detail = false;
 
 $(function() {
   /* do we need to check for new activities */
@@ -404,6 +405,7 @@ function checkNewActivity(runs) {
         );
       } else {
         in_progress = false;
+        if(reload_vm_detail) location.reload();
       }
       $('a[href="#activity"] i').removeClass('fa-spin');
     },

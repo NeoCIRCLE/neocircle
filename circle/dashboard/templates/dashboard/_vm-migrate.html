@@ -1,6 +1,7 @@
 {% extends "dashboard/operate.html" %}
 {% load i18n %}
 {% load sizefieldtags %}
+{% load crispy_forms_tags %}
 
 {% block question %}
 <p>
@@ -13,24 +14,27 @@ Choose a compute node to migrate {{obj}} to.
 
 {% block formfields %}
   <ul id="vm-migrate-node-list" class="list-unstyled">
-  {% with current=object.node.pk %}
-    {% for n in nodes %}
+  {% with current=object.node.pk recommended=form.fields.to_node.initial.pk %}
+    {% for n in form.fields.to_node.queryset.all %}
       <li class="panel panel-default"><div class="panel-body">
         <label for="migrate-to-{{n.pk}}">
           <strong>{{ n }}</strong>
-          <div class="label label-primary"><i class="fa {{n.get_status_icon}}"></i>
-              {{n.get_status_display}}</div>
+          <div class="label label-primary">
+            <i class="fa {{n.get_status_icon}}"></i> {{n.get_status_display}}</div>
           {% if current == n.pk %}<div class="label label-info">{% trans "current" %}</div>{% endif %}
           {% if recommended == n.pk %}<div class="label label-success">{% trans "recommended" %}</div>{% endif %}
         </label>
-        <input id="migrate-to-{{n.pk}}" type="radio" name="node" value="{{ n.pk }}" style="float: right;"
-        {% if current == n.pk %}disabled="disabled"{% endif %}
-        {% if recommended == n.pk %}checked="checked"{% endif %} />
+        <input id="migrate-to-{{n.pk}}" type="radio" name="to_node" value="{{ n.pk }}" style="float: right;"
+          {% if current == n.pk %}disabled="disabled"{% endif %}
+          {% if recommended == n.pk %}checked="checked"{% endif %}
+        />
         <span class="vm-migrate-node-property">{% trans "CPU load" %}: {{ n.cpu_usage }}</span>
-        <span class="vm-migrate-node-property">{% trans "RAM usage" %}: {{ n.byte_ram_usage|filesize }}/{{ n.ram_size|filesize }}</span>
+        <span class="vm-migrate-node-property">
+          {% trans "RAM usage" %}: {{ n.byte_ram_usage|filesize }}/{{ n.ram_size|filesize }}</span>
         <div style="clear: both;"></div>
-      </div></li>
+      </li>
     {% endfor %}
   {% endwith %}
   </ul>
+  {{ form.live_migration|as_crispy_field }}
 {% endblock %}

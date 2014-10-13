@@ -411,6 +411,17 @@ $(function () {
     $(this).removeClass("btn-default").addClass("btn-primary");
     return false;
   });
+
+  // vm migrate select for node
+  $(document).on("click", "#vm-migrate-node-list li", function(e) {
+    var li = $(this).closest('li');
+    if (li.find('input').attr('disabled'))
+      return true;
+    $('#vm-migrate-node-list li').removeClass('panel-primary');
+    li.addClass('panel-primary').find('input').prop("checked", true);
+    return true;
+  });
+
 });
 
 function generateVmHTML(pk, name, host, icon, _status, fav, is_last) {
@@ -445,7 +456,7 @@ function generateNodeHTML(name, icon, _status, url, is_last) {
 
 function generateNodeTagHTML(name, icon, _status, label , url) {
   return '<a href="' + url + '" class="label ' + label + '" >' +
-        '<i class="' + icon + '" title="' + _status + '"></i> ' + name +
+        '<i class="fa ' + icon + '" title="' + _status + '"></i> ' + name +
         '</a> ';
 }
 

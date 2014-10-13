@@ -59,7 +59,8 @@ from ..forms import (
     AclUserOrGroupAddForm, VmResourcesForm, TraitsForm, RawDataForm,
     VmAddInterfaceForm, VmCreateDiskForm, VmDownloadDiskForm, VmSaveForm,
     VmRenewForm, VmStateChangeForm, VmListSearchForm, VmCustomizeForm,
-    TransferOwnershipForm, VmDiskResizeForm, RedeployForm,
+    TransferOwnershipForm, VmDiskResizeForm, RedeployForm, VmDiskRemoveForm,
+    VmMigrateForm,
 )
 from ..models import Favourite, Profile
 
@@ -370,11 +371,9 @@ class VmAddInterfaceView(FormOperationMixin, VmOperationView):
         return val
 
 
-class VmDiskResizeView(FormOperationMixin, VmOperationView):
-
-    op = 'resize_disk'
-    form_class = VmDiskResizeForm
+class VmDiskModifyView(FormOperationMixin, VmOperationView):
     show_in_toolbar = False
+    with_reload = True
     icon = 'arrows-alt'
     effect = "success"
 
@@ -389,7 +388,7 @@ class VmDiskResizeView(FormOperationMixin, VmOperationView):
         else:
             default = None
 
-        val = super(VmDiskResizeView, self).get_form_kwargs()
+        val = super(VmDiskModifyView, self).get_form_kwargs()
         val.update({'choices': choices, 'default': default})
         return val
 
@@ -402,6 +401,14 @@ class VmCreateDiskView(FormOperationMixin, VmOperationView):
     icon = 'hdd-o'
     effect = "success"
     is_disk_operation = True
+    with_reload = True
+
+    def get_form_kwargs(self):
+        op = self.get_op()
+        val = super(VmCreateDiskView, self).get_form_kwargs()
+        num = op.instance.disks.count() + 1
+        val['default'] = "%s %d" % (op.instance.name, num)
+        return val
 
 
 class VmDownloadDiskView(FormOperationMixin, VmOperationView):
@@ -412,38 +419,31 @@ class VmDownloadDiskView(FormOperationMixin, VmOperationView):
     icon = 'download'
     effect = "success"
     is_disk_operation = True
+    with_reload = True
 
 
-class VmMigrateView(VmOperationView):
+class VmMigrateView(FormOperationMixin, VmOperationView):
 
     op = 'migrate'
     icon = 'truck'
     effect = 'info'
     template_name = 'dashboard/_vm-migrate.html'
+    form_class = VmMigrateForm
 
-    def get_context_data(self, **kwargs):
-        ctx = super(VmMigrateView, self).get_context_data(**kwargs)
-        ctx['nodes'] = [n for n in Node.objects.filter(enabled=True)
-                        if n.online]
-
+    def get_form_kwargs(self):
+        online = (n.pk for n in Node.objects.filter(enabled=True) if n.online)
+        choices = Node.objects.filter(pk__in=online)
+        default = None
         inst = self.get_object()
-        ctx["recommended"] = None
         try:
             if isinstance(inst, Instance):
-                ctx["recommended"] = inst.select_node().pk
+                default = inst.select_node()
         except SchedulerError:
             logger.exception("scheduler error:")
 
-        return ctx
-
-    def post(self, request, extra=None, *args, **kwargs):
-        if extra is None:
-            extra = {}
-        node = self.request.POST.get("node")
-        if node:
-            node = get_object_or_404(Node, pk=node)
-            extra["to_node"] = node
-        return super(VmMigrateView, self).post(request, extra, *args, **kwargs)
+        val = super(VmMigrateView, self).get_form_kwargs()
+        val.update({'choices': choices, 'default': default})
+        return val
 
 
 class VmSaveView(FormOperationMixin, VmOperationView):
@@ -452,6 +452,12 @@ class VmSaveView(FormOperationMixin, VmOperationView):
     icon = 'save'
     effect = 'info'
     form_class = VmSaveForm
+
+    def get_form_kwargs(self):
+        op = self.get_op()
+        val = super(VmSaveView, self).get_form_kwargs()
+        val['default'] = op._rename(op.instance.name)
+        return val
 
 
 class VmResourcesChangeView(VmOperationView):
@@ -649,7 +655,12 @@ vm_ops = OrderedDict([
         op='destroy', icon='times', effect='danger')),
     ('create_disk', VmCreateDiskView),
     ('download_disk', VmDownloadDiskView),
-    ('resize_disk', VmDiskResizeView),
+    ('resize_disk', VmDiskModifyView.factory(
+        op='resize_disk', form_class=VmDiskResizeForm,
+        icon='arrows-alt', effect="warning")),
+    ('remove_disk', VmDiskModifyView.factory(
+        op='remove_disk', form_class=VmDiskRemoveForm,
+        icon='times', effect="danger")),
     ('add_interface', VmAddInterfaceView),
     ('renew', VmRenewView),
     ('resources_change', VmResourcesChangeView),
@@ -751,6 +762,12 @@ class MassOperationView(OperationView):
         self.check_auth()
         if extra is None:
             extra = {}
+
+        if hasattr(self, 'form_class'):
+            form = self.form_class(self.request.POST, **self.get_form_kwargs())
+            if form.is_valid():
+                extra.update(form.cleaned_data)
+
         self._call_operations(extra)
         if request.is_ajax():
             store = messages.get_messages(request)
@@ -789,6 +806,7 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
     allowed_filters = {
         'name': "name__icontains",
         'node': "node__name__icontains",
+        'node_exact': "node__name",
         'status': "status__iexact",
         'tags[]': "tags__name__in",
         'tags': "tags__name__in",  # for search string
@@ -1110,51 +1128,6 @@ class InstanceActivityDetail(CheckedDetailView):
             self.object.instance.get_activities(self.request.user))
         ctx['icon'] = _get_activity_icon(self.object)
         return ctx
-
-
-class DiskRemoveView(DeleteView):
-    model = Disk
-
-    def get_template_names(self):
-        if self.request.is_ajax():
-            return ['dashboard/confirm/ajax-delete.html']
-        else:
-            return ['dashboard/confirm/base-delete.html']
-
-    def get_context_data(self, **kwargs):
-        context = super(DiskRemoveView, self).get_context_data(**kwargs)
-        disk = self.get_object()
-        app = disk.get_appliance()
-        context['title'] = _("Disk remove confirmation")
-        context['text'] = _("Are you sure you want to remove "
-                            "<strong>%(disk)s</strong> from "
-                            "<strong>%(app)s</strong>?" % {'disk': disk,
-                                                           'app': app}
-                            )
-        return context
-
-    def delete(self, request, *args, **kwargs):
-        disk = self.get_object()
-        app = disk.get_appliance()
-
-        if not app.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-
-        app.remove_disk(disk=disk, user=request.user)
-        disk.destroy()
-
-        next_url = request.POST.get("next")
-        success_url = next_url if next_url else app.get_absolute_url()
-        success_message = _("Disk successfully removed.")
-
-        if request.is_ajax():
-            return HttpResponse(
-                json.dumps({'message': success_message}),
-                content_type="application/json",
-            )
-        else:
-            messages.success(request, success_message)
-            return HttpResponseRedirect("%s#resources" % success_url)
 
 
 @require_GET
