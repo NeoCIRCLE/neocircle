@@ -227,6 +227,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'voms.auth.VomsMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 ########## END MIDDLEWARE CONFIGURATION
@@ -279,6 +280,7 @@ LOCAL_APPS = (
     'manager',
     'acl',
     'monitor',
+    'voms',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -360,6 +362,10 @@ CACHES = {
     }
 }
 
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'voms.auth.VomsBackend',
+)
 
 if get_env_variable('DJANGO_SAML', 'FALSE') == 'TRUE':
     try:
@@ -371,8 +377,7 @@ if get_env_variable('DJANGO_SAML', 'FALSE') == 'TRUE':
     INSTALLED_APPS += (
         'djangosaml2',
     )
-    AUTHENTICATION_BACKENDS = (
-        'django.contrib.auth.backends.ModelBackend',
+    AUTHENTICATION_BACKENDS += (
         'djangosaml2.backends.Saml2Backend',
     )
 
