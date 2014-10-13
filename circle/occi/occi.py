@@ -5,7 +5,7 @@ from vm.models import Instance, Lease
 from vm.models.common import ARCHITECTURES
 from vm.models.instance import ACCESS_METHODS
 
-OCCI_ADDR = "http://pc3.szgt.uni-miskolc.hu:5863/"
+OCCI_ADDR = "https://miskolc.cloud.bme.hu:12598/"
 
 
 class Category():
@@ -30,11 +30,13 @@ class Category():
     def render_values(self):
         ret = "%s;" % self.term
 
-        simple_arguments = ["scheme", "class", "title", "rel", "location"]
+        simple_arguments = ["scheme", "class", "title", "rel"]
         for i in simple_arguments:
             if hasattr(self, i):
                 ret += ' %s="%s";' % (i, getattr(self, i))
 
+        if hasattr(self, "location"):
+            ret += ' location="%s";' % (self.location % OCCI_ADDR)
         if hasattr(self, "attributes"):
             ret += ' attributes="%s";' % " ".join(
                 [a.render() for a in self.attributes])
@@ -87,7 +89,7 @@ class Compute(Resource):
     def __init__(self, instance=None, attrs=None, **kwargs):
         self.attrs = {}
         if instance:
-            self.location = "%socci/vm/%d" % (OCCI_ADDR, instance.pk)
+            self.location = "%socci/vm/%d/" % (OCCI_ADDR, instance.pk)
             self.instance = instance
             self.init_attrs()
         elif attrs:
@@ -95,6 +97,7 @@ class Compute(Resource):
             self._create_object()
 
     translate = {
+        'occi.core.id': "id",
         'occi.compute.architecture': "arch",
         'occi.compute.cores': "num_cores",
         'occi.compute.hostname': "short_hostname",
@@ -124,10 +127,10 @@ class Compute(Resource):
         params['name'] = "from occi yo"
         i = Instance.create(params=params, disks=[], networks=[],
                             req_traits=[], tags=[])
-        self.location = "%socci/vm/%d" % (OCCI_ADDR, i.pk)
+        self.location = "%socci/vm/%d/" % (OCCI_ADDR, i.pk)
 
     def render_location(self):
-        return "X-OCCI-Location: %s" % self.location
+        return "%s" % self.location
 
     def render_body(self):
         kind = COMPUTE_KIND
