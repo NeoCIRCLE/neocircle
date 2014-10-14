@@ -471,10 +471,9 @@ class LeaseDelete(LoginRequiredMixin, DeleteView):
     def delete(self, request, *args, **kwargs):
         object = self.get_object()
 
-        # if there are still templates with this lease
-        # or the user is not owner
-        if (object.instancetemplate_set.count() > 0
-                or not object.has_level(request.user, "owner")):
+        if not object.has_level(request.user, "owner"):
+            raise PermissionDenied()
+        if object.instancetemplate_set.count() > 0:
             raise SuspiciousOperation()
 
         object.delete()

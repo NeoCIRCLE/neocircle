@@ -299,7 +299,7 @@ class VmDetailTest(LoginMixin, TestCase):
         leases = Lease.objects.count()
         response = c.post("/dashboard/lease/delete/1/")
         # redirect to the login page
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 403)
         self.assertEqual(leases, Lease.objects.count())
 
     def test_notification_read(self):
