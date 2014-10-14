@@ -11,7 +11,9 @@
   <div class="col-md-7">
     <div class="panel panel-default">
       <div class="panel-heading">
-        <a class="pull-right btn btn-default btn-xs" href="{% url "dashboard.views.template-list" %}">{% trans "Back" %}</a>
+        <a class="pull-right btn btn-default btn-xs" href="{% url "dashboard.views.template-list" %}">
+          {% trans "Back" %}
+        </a>
         <h3 class="no-margin"><i class="fa fa-puzzle-piece"></i> {% trans "Edit template" %}</h3>
       </div>
       <div class="panel-body">
@@ -65,6 +67,18 @@
   </div>
 
   <div class="col-md-5">
+    {% if is_owner %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <a href="{% url "dashboard.views.template-delete" pk=object.pk %}" 
+         class="btn btn-xs btn-danger pull-right">
+          {% trans "Delete" %}
+        </a>
+        <h4 class="no-margin"><i class="fa fa-times"></i> {% trans "Delete template"  %}</h4>
+      </div>
+    </div>
+    {% endif %}
+
     <div class="panel panel-default">
       <div class="panel-heading">
         <h4 class="no-margin"><i class="fa fa-group"></i> {% trans "Manage access"  %}</h4>
