@@ -16,15 +16,6 @@ $(function() {
         $('#confirmation-modal').on('hidden.bs.modal', function() {
           $('#confirmation-modal').remove();
         });
-
-        $('#vm-migrate-node-list li').click(function(e) {
-          var li = $(this).closest('li');
-          if (li.find('input').attr('disabled'))
-            return true;
-          $('#vm-migrate-node-list li').removeClass('panel-primary');
-          li.addClass('panel-primary').find('input').attr('checked', true);
-          return false;
-        });
         $('#vm-migrate-node-list li input:checked').closest('li').addClass('panel-primary');
       }
     });
@@ -51,7 +42,8 @@ $(function() {
         if(data.success) {
           $('a[href="#activity"]').trigger("click");
           if(data.with_reload) {
-            location.reload();
+            // when the activity check stops the page will reload
+            reload_vm_detail = true;
           }
 
           /* if there are messages display them */

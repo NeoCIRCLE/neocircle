@@ -29,7 +29,8 @@ from ..models import (
 )
 from ..models.instance import find_unused_port, ActivityInProgressError
 from ..operations import (
-    DeployOperation, DestroyOperation, FlushOperation, MigrateOperation,
+    RemoteOperationMixin, DeployOperation, DestroyOperation, FlushOperation,
+    MigrateOperation,
 )
 
 
@@ -89,7 +90,7 @@ class InstanceTestCase(TestCase):
         self.assertFalse(inst.save.called)
 
     def test_destroy_sets_destroyed(self):
-        inst = Mock(destroyed_at=None, spec=Instance,
+        inst = Mock(destroyed_at=None, spec=Instance, _delete_vm=Mock(),
                     InstanceDestroyedError=Instance.InstanceDestroyedError)
         inst.node = MagicMock(spec=Node)
         inst.disks.all.return_value = []
@@ -105,15 +106,15 @@ class InstanceTestCase(TestCase):
         inst.node = MagicMock(spec=Node)
         inst.status = 'RUNNING'
         migrate_op = MigrateOperation(inst)
-        with patch('vm.models.instance.vm_tasks.migrate') as migr:
+        with patch('vm.operations.vm_tasks.migrate') as migr, \
+                patch.object(RemoteOperationMixin, "_operation"):
             act = MagicMock()
             with patch.object(MigrateOperation, 'create_activity',
                               return_value=act):
                 migrate_op(system=True)
 
             migr.apply_async.assert_called()
-            self.assertIn(call.sub_activity(
-                u'scheduling', readable_name=u'schedule'), act.mock_calls)
+            inst.allocate_node.assert_called()
             inst.select_node.assert_called()
 
     def test_migrate_wo_scheduling(self):
@@ -122,7 +123,8 @@ class InstanceTestCase(TestCase):
         inst.node = MagicMock(spec=Node)
         inst.status = 'RUNNING'
         migrate_op = MigrateOperation(inst)
-        with patch('vm.models.instance.vm_tasks.migrate') as migr:
+        with patch('vm.operations.vm_tasks.migrate') as migr, \
+                patch.object(RemoteOperationMixin, "_operation"):
             inst.select_node.side_effect = AssertionError
             act = MagicMock()
             with patch.object(MigrateOperation, 'create_activity',
@@ -130,7 +132,7 @@ class InstanceTestCase(TestCase):
                 migrate_op(to_node=inst.node, system=True)
 
             migr.apply_async.assert_called()
-            self.assertNotIn(call.sub_activity(u'scheduling'), act.mock_calls)
+            inst.allocate_node.assert_called()
 
     def test_migrate_with_error(self):
         inst = Mock(destroyed_at=None, spec=Instance)
@@ -139,20 +141,21 @@ class InstanceTestCase(TestCase):
         inst.status = 'RUNNING'
         e = Exception('abc')
         setattr(e, 'libvirtError', '')
-        inst.migrate_vm.side_effect = e
         migrate_op = MigrateOperation(inst)
-        with patch('vm.models.instance.vm_tasks.migrate') as migr:
+        migrate_op.rollback = Mock()
+        with patch('vm.operations.vm_tasks.migrate') as migr, \
+                patch.object(RemoteOperationMixin, '_operation') as remop:
             act = MagicMock()
+            remop.side_effect = e
             with patch.object(MigrateOperation, 'create_activity',
                               return_value=act):
                 self.assertRaises(Exception, migrate_op, system=True)
 
+            remop.assert_called()
             migr.apply_async.assert_called()
             self.assertIn(call.sub_activity(
                 u'scheduling', readable_name=u'schedule'), act.mock_calls)
-            self.assertIn(call.sub_activity(
-                u'rollback_net', readable_name=u'redeploy network (rollback)'),
-                act.mock_calls)
+            migrate_op.rollback.assert_called()
             inst.select_node.assert_called()
 
     def test_status_icon(self):

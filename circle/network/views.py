@@ -657,7 +657,7 @@ class VlanDetail(LoginRequiredMixin, SuperuserRequiredMixin,
         context = super(VlanDetail, self).get_context_data(**kwargs)
 
         q = Host.objects.filter(interface__in=Interface.objects.filter(
-            vlan=self.object, instance__destroyed_at=None
+            vlan=self.object
         ))
 
         context['host_list'] = SmallHostTable(q)

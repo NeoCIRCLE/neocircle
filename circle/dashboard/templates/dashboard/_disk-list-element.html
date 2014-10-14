@@ -1,27 +1,29 @@
 {% load i18n %}
 {% load sizefieldtags %}
 
-<i class="fa {% if d.is_downloading %}fa-refresh fa-spin{% else %}fa-file{% if d.failed %}" style="color: #d9534f;{% endif %}{% endif %}"></i>
-{{ d.name }} (#{{ d.id }}) -
-{% if not d.is_downloading %}
-  {% if not d.failed %}
-    {% if d.size %}{{ d.size|filesize }}{% endif %}
-  {% else %}
-  <div class="label label-danger"{% if user.is_superuser %} title="{{ d.get_latest_activity_result }}"{% endif %}>{% trans "failed" %}</div>
-  {% endif %}
-{% else %}<span class="disk-list-disk-percentage" data-disk-pk="{{ d.pk }}">{{ d.get_download_percentage }}</span>%{% endif %}
-{% if is_owner != False %}
-  <a href="{% url "dashboard.views.disk-remove" pk=d.pk %}?next={{ request.path }}"
-    data-disk-pk="{{ d.pk }}" class="btn btn-xs btn-danger pull-right disk-remove"
-    {% if not long_remove %}title="{% trans "Remove" %}"{% endif %}>
-    <i class="fa fa-times"></i>{% if long_remove %} {% trans "Remove" %}{% endif %}
-  </a>
-  {% if op.resize_disk %}
-    <span class="operation-wrapper">
-      <a href="{{ op.resize_disk.get_url }}?disk={{d.pk}}" class="btn btn-xs btn-warning pull-right operation">
-        <i class="fa fa-arrows-alt"></i> {% trans "Resize" %}
-      </a>
-    </span>
-  {% endif %}
+<i class="fa fa-file"></i>
+{{ d.name }} (#{{ d.id }}) - {{ d.size|filesize }}
+
+{% if op.remove_disk %}
+  <span class="operation-wrapper">
+    <a href="{{ op.remove_disk.get_url }}?disk={{d.pk}}"
+      class="btn btn-xs btn-{{ op.remove_disk.effect}} pull-right operation disk-remove-btn
+      {% if op.resize_disk.disabled %}disabled{% endif %}">
+      <i class="fa fa-{{ op.remove_disk.icon }}"></i> {% trans "Remove" %}
+    </a>
+  </span>
+{% endif %}
+{% if op.resize_disk %}
+  <span class="operation-wrapper">
+    <a href="{{ op.resize_disk.get_url }}?disk={{d.pk}}"
+      class="btn btn-xs btn-{{ op.resize_disk.effect }} pull-right operation disk-resize-btn
+      {% if op.resize_disk.disabled %}disabled{% endif %}">
+      <i class="fa fa-{{ op.resize_disk.icon }}"></i> {% trans "Resize" %}
+    </a>
+  </span>
 {% endif %}
 <div style="clear: both;"></div>
+
+{% if request.user.is_superuser %}
+  <small>{% trans "File name" %}: {{ d.filename }}</small>
+{% endif %}

@@ -53,8 +53,18 @@ def start_access_server(vm):
     pass
 
 
+@celery.task(name='agent.update_legacy')
+def update_legacy(vm, data, executable=None):
+    pass
+
+
+@celery.task(name='agent.append')
+def append(vm, data, filename, chunk_number):
+    pass
+
+
 @celery.task(name='agent.update')
-def update(vm, data):
+def update(vm, filename, executable, checksum):
     pass
 
 

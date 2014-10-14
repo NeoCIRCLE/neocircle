@@ -45,9 +45,10 @@ from common.models import (
     create_readable, HumanReadableException, fetch_human_exception,
 )
 from firewall.models import Vlan, Host, Rule
+from manager.scheduler import SchedulerError
 from storage.models import Disk
 from vm.models import (
-    Instance, instance_activity, InstanceActivity, Node, Lease,
+    Instance, InstanceActivity, Node, Lease,
     InstanceTemplate, InterfaceTemplate, Interface,
 )
 from .util import (
@@ -58,7 +59,8 @@ from ..forms import (
     AclUserOrGroupAddForm, VmResourcesForm, TraitsForm, RawDataForm,
     VmAddInterfaceForm, VmCreateDiskForm, VmDownloadDiskForm, VmSaveForm,
     VmRenewForm, VmStateChangeForm, VmListSearchForm, VmCustomizeForm,
-    TransferOwnershipForm, VmDiskResizeForm,
+    TransferOwnershipForm, VmDiskResizeForm, RedeployForm, VmDiskRemoveForm,
+    VmMigrateForm,
 )
 from ..models import Favourite, Profile
 
@@ -76,10 +78,10 @@ class VmDetailVncTokenView(CheckedDetailView):
         if not request.user.has_perm('vm.access_console'):
             raise PermissionDenied()
         if self.object.node:
-            with instance_activity(
-                    code_suffix='console-accessed', instance=self.object,
-                    user=request.user, readable_name=ugettext_noop(
-                        "console access"), concurrency_check=False):
+            with self.object.activity(
+                    code_suffix='console-accessed', user=request.user,
+                    readable_name=ugettext_noop("console access"),
+                    concurrency_check=False):
                 port = self.object.vnc_port
                 host = str(self.object.node.host.ipv4)
                 value = signing.dumps({'host': host, 'port': port},
@@ -97,6 +99,8 @@ class VmDetailView(GraphMixin, CheckedDetailView):
         context = super(VmDetailView, self).get_context_data(**kwargs)
         instance = context['instance']
         user = self.request.user
+        is_operator = instance.has_level(user, "operator")
+        is_owner = instance.has_level(user, "owner")
         ops = get_operations(instance, user)
         context.update({
             'graphite_enabled': settings.GRAPHITE_URL is not None,
@@ -152,9 +156,11 @@ class VmDetailView(GraphMixin, CheckedDetailView):
         context['client_download'] = self.request.COOKIES.get(
             'downloaded_client')
         # can link template
-        context['can_link_template'] = (
-            instance.template and instance.template.has_level(user, "operator")
-        )
+        context['can_link_template'] = instance.template and is_operator
+
+        # is operator/owner
+        context['is_operator'] = is_operator
+        context['is_owner'] = is_owner
 
         return context
 
@@ -174,7 +180,7 @@ class VmDetailView(GraphMixin, CheckedDetailView):
 
     def __set_name(self, request):
         self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
+        if not self.object.has_level(request.user, "operator"):
             raise PermissionDenied()
         new_name = request.POST.get("new_name")
         Instance.objects.filter(pk=self.object.pk).update(
@@ -197,7 +203,7 @@ class VmDetailView(GraphMixin, CheckedDetailView):
 
     def __set_description(self, request):
         self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
+        if not self.object.has_level(request.user, "operator"):
             raise PermissionDenied()
 
         new_description = request.POST.get("new_description")
@@ -221,7 +227,7 @@ class VmDetailView(GraphMixin, CheckedDetailView):
     def __add_tag(self, request):
         new_tag = request.POST.get('new_tag')
         self.object = self.get_object()
-        if not self.object.has_level(request.user, 'owner'):
+        if not self.object.has_level(request.user, "operator"):
             raise PermissionDenied()
 
         if len(new_tag) < 1:
@@ -243,7 +249,7 @@ class VmDetailView(GraphMixin, CheckedDetailView):
         try:
             to_remove = request.POST.get('to_remove')
             self.object = self.get_object()
-            if not self.object.has_level(request.user, 'owner'):
+            if not self.object.has_level(request.user, "operator"):
                 raise PermissionDenied()
 
             self.object.tags.remove(to_remove)
@@ -262,8 +268,8 @@ class VmDetailView(GraphMixin, CheckedDetailView):
 
     def __add_port(self, request):
         object = self.get_object()
-        if (not object.has_level(request.user, 'owner') or
-                not request.user.has_perm('vm.config_ports')):
+        if not (object.has_level(request.user, "operator") and
+                request.user.has_perm('vm.config_ports')):
             raise PermissionDenied()
 
         port = request.POST.get("port")
@@ -365,11 +371,9 @@ class VmAddInterfaceView(FormOperationMixin, VmOperationView):
         return val
 
 
-class VmDiskResizeView(FormOperationMixin, VmOperationView):
-
-    op = 'resize_disk'
-    form_class = VmDiskResizeForm
+class VmDiskModifyView(FormOperationMixin, VmOperationView):
     show_in_toolbar = False
+    with_reload = True
     icon = 'arrows-alt'
     effect = "success"
 
@@ -384,7 +388,7 @@ class VmDiskResizeView(FormOperationMixin, VmOperationView):
         else:
             default = None
 
-        val = super(VmDiskResizeView, self).get_form_kwargs()
+        val = super(VmDiskModifyView, self).get_form_kwargs()
         val.update({'choices': choices, 'default': default})
         return val
 
@@ -397,6 +401,14 @@ class VmCreateDiskView(FormOperationMixin, VmOperationView):
     icon = 'hdd-o'
     effect = "success"
     is_disk_operation = True
+    with_reload = True
+
+    def get_form_kwargs(self):
+        op = self.get_op()
+        val = super(VmCreateDiskView, self).get_form_kwargs()
+        num = op.instance.disks.count() + 1
+        val['default'] = "%s %d" % (op.instance.name, num)
+        return val
 
 
 class VmDownloadDiskView(FormOperationMixin, VmOperationView):
@@ -407,29 +419,31 @@ class VmDownloadDiskView(FormOperationMixin, VmOperationView):
     icon = 'download'
     effect = "success"
     is_disk_operation = True
+    with_reload = True
 
 
-class VmMigrateView(VmOperationView):
+class VmMigrateView(FormOperationMixin, VmOperationView):
 
     op = 'migrate'
     icon = 'truck'
     effect = 'info'
     template_name = 'dashboard/_vm-migrate.html'
+    form_class = VmMigrateForm
 
-    def get_context_data(self, **kwargs):
-        ctx = super(VmMigrateView, self).get_context_data(**kwargs)
-        ctx['nodes'] = [n for n in Node.objects.filter(enabled=True)
-                        if n.online]
-        return ctx
+    def get_form_kwargs(self):
+        online = (n.pk for n in Node.objects.filter(enabled=True) if n.online)
+        choices = Node.objects.filter(pk__in=online)
+        default = None
+        inst = self.get_object()
+        try:
+            if isinstance(inst, Instance):
+                default = inst.select_node()
+        except SchedulerError:
+            logger.exception("scheduler error:")
 
-    def post(self, request, extra=None, *args, **kwargs):
-        if extra is None:
-            extra = {}
-        node = self.request.POST.get("node")
-        if node:
-            node = get_object_or_404(Node, pk=node)
-            extra["to_node"] = node
-        return super(VmMigrateView, self).post(request, extra, *args, **kwargs)
+        val = super(VmMigrateView, self).get_form_kwargs()
+        val.update({'choices': choices, 'default': default})
+        return val
 
 
 class VmSaveView(FormOperationMixin, VmOperationView):
@@ -438,6 +452,12 @@ class VmSaveView(FormOperationMixin, VmOperationView):
     icon = 'save'
     effect = 'info'
     form_class = VmSaveForm
+
+    def get_form_kwargs(self):
+        op = self.get_op()
+        val = super(VmSaveView, self).get_form_kwargs()
+        val['default'] = op._rename(op.instance.name)
+        return val
 
 
 class VmResourcesChangeView(VmOperationView):
@@ -599,6 +619,15 @@ class VmStateChangeView(FormOperationMixin, VmOperationView):
         return val
 
 
+class RedeployView(FormOperationMixin, VmOperationView):
+    op = 'redeploy'
+    icon = 'stethoscope'
+    effect = 'danger'
+    show_in_toolbar = True
+    form_class = RedeployForm
+    wait_for_result = 0.5
+
+
 vm_ops = OrderedDict([
     ('deploy', VmOperationView.factory(
         op='deploy', icon='play', effect='success')),
@@ -620,12 +649,18 @@ vm_ops = OrderedDict([
     ('recover', VmOperationView.factory(
         op='recover', icon='medkit', effect='warning')),
     ('nostate', VmStateChangeView),
+    ('redeploy', RedeployView),
     ('destroy', VmOperationView.factory(
         extra_bases=[TokenOperationView],
         op='destroy', icon='times', effect='danger')),
     ('create_disk', VmCreateDiskView),
     ('download_disk', VmDownloadDiskView),
-    ('resize_disk', VmDiskResizeView),
+    ('resize_disk', VmDiskModifyView.factory(
+        op='resize_disk', form_class=VmDiskResizeForm,
+        icon='arrows-alt', effect="warning")),
+    ('remove_disk', VmDiskModifyView.factory(
+        op='remove_disk', form_class=VmDiskRemoveForm,
+        icon='times', effect="danger")),
     ('add_interface', VmAddInterfaceView),
     ('renew', VmRenewView),
     ('resources_change', VmResourcesChangeView),
@@ -727,6 +762,12 @@ class MassOperationView(OperationView):
         self.check_auth()
         if extra is None:
             extra = {}
+
+        if hasattr(self, 'form_class'):
+            form = self.form_class(self.request.POST, **self.get_form_kwargs())
+            if form.is_valid():
+                extra.update(form.cleaned_data)
+
         self._call_operations(extra)
         if request.is_ajax():
             store = messages.get_messages(request)
@@ -765,6 +806,7 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
     allowed_filters = {
         'name': "name__icontains",
         'node': "node__name__icontains",
+        'node_exact': "node__name",
         'status': "status__iexact",
         'tags[]': "tags__name__in",
         'tags': "tags__name__in",  # for search string
@@ -850,10 +892,9 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
                 in [i.name for i in Instance._meta.fields] + ["pk"]):
             queryset = queryset.order_by(sort)
 
-        return queryset.filter(
-            **self.get_queryset_filters()).prefetch_related(
-                "owner", "node", "owner__profile", "interface_set", "lease",
-                "interface_set__host").distinct()
+        return queryset.filter(**self.get_queryset_filters()).prefetch_related(
+            "owner", "node", "owner__profile", "interface_set", "lease",
+            "interface_set__host").distinct()
 
 
 class VmCreate(LoginRequiredMixin, TemplateView):
@@ -1087,51 +1128,6 @@ class InstanceActivityDetail(CheckedDetailView):
             self.object.instance.get_activities(self.request.user))
         ctx['icon'] = _get_activity_icon(self.object)
         return ctx
-
-
-class DiskRemoveView(DeleteView):
-    model = Disk
-
-    def get_template_names(self):
-        if self.request.is_ajax():
-            return ['dashboard/confirm/ajax-delete.html']
-        else:
-            return ['dashboard/confirm/base-delete.html']
-
-    def get_context_data(self, **kwargs):
-        context = super(DiskRemoveView, self).get_context_data(**kwargs)
-        disk = self.get_object()
-        app = disk.get_appliance()
-        context['title'] = _("Disk remove confirmation")
-        context['text'] = _("Are you sure you want to remove "
-                            "<strong>%(disk)s</strong> from "
-                            "<strong>%(app)s</strong>?" % {'disk': disk,
-                                                           'app': app}
-                            )
-        return context
-
-    def delete(self, request, *args, **kwargs):
-        disk = self.get_object()
-        app = disk.get_appliance()
-
-        if not app.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-
-        app.remove_disk(disk=disk, user=request.user)
-        disk.destroy()
-
-        next_url = request.POST.get("next")
-        success_url = next_url if next_url else app.get_absolute_url()
-        success_message = _("Disk successfully removed.")
-
-        if request.is_ajax():
-            return HttpResponse(
-                json.dumps({'message': success_message}),
-                content_type="application/json",
-            )
-        else:
-            messages.success(request, success_message)
-            return HttpResponseRedirect("%s#resources" % success_url)
 
 
 @require_GET
@@ -1381,9 +1377,8 @@ class TransferOwnershipConfirmView(LoginRequiredMixin, View):
         instance, owner = self.get_instance(key, request.user)
 
         old = instance.owner
-        with instance_activity(code_suffix='ownership-transferred',
-                               concurrency_check=False,
-                               instance=instance, user=request.user):
+        with instance.activity(code_suffix='ownership-transferred',
+                               concurrency_check=False, user=request.user):
             instance.owner = request.user
             instance.clean()
             instance.save()
