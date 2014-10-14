@@ -19,6 +19,7 @@ Jinja2==2.7.2
 jsonfield==0.9.20
 kombu==3.0.15
 logutils==0.3.3
+M2Crypto==0.22.3
 MarkupSafe==0.21
 netaddr==0.7.11
 pip-tools==0.3.4
