@@ -32,7 +32,7 @@ from django.views.generic import (
 )
 
 from braces.views import (
-    LoginRequiredMixin, PermissionRequiredMixin, SuperuserRequiredMixin,
+    LoginRequiredMixin, PermissionRequiredMixin,
 )
 from django_tables2 import SingleTableView
 
@@ -430,6 +430,7 @@ class LeaseDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
             raise PermissionDenied()
 
         return super(LeaseDetail, self).post(request, *args, **kwargs)
+
 
 class LeaseDelete(LoginRequiredMixin, DeleteView):
     model = Lease
