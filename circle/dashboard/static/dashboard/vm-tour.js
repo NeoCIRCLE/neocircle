@@ -4,7 +4,7 @@ $(function() {
     intro.setOptions({
       'nextLabel': gettext("Next") + ' <i class="fa fa-chevron-right"></i>',
       'prevLabel': '<i class="fa fa-chevron-left"></i> ' + gettext("Previous"),
-      'skipLabel': gettext("Skip"),
+      'skipLabel': '<i class="fa fa-times"></i> ' + gettext("End tour"),
       'doneLabel': gettext("Done"),
     });
     intro.setOptions({
@@ -49,12 +49,20 @@ function get_steps() {
       element: document.querySelector("#vm-details-start-template-tour"),
       intro: "<p>" + gettext("Welcome to the template tutorial. In this quick tour, we gonna show you how to do the steps described above.") + "</p>" +
              "<p>" + gettext('For the next tour step press the "Next" button or the right arrow (or "Back" button/left arrow for the previous step).') + "</p>" +
-             "<p>" + gettext("During the tour please don't try the functions because it may lead to graphical glitches, however you can end the tour any time you want with the End Tour button!") + 
+             "<p>" + gettext("During the tour please <strong>don't try</strong> the functions because it may lead to graphical glitches, however you can end the tour any time you want with the End Tour button.") + 
              "</p>",
     },
     {
       element: document.querySelector('a[href="#home"]'),
-      intro: gettext("In this tab you can tag your virtual machine and modify the name and description."),
+      intro: gettext("In this tab you can extend the expiration date of your virtual machine, add tags and modify the name and description."),
+    },
+    {
+      element: document.querySelector('#home_name_and_description'),
+      intro: gettext("Please add a meaningful description to the virtual machine. Changing the name is also recommended, however you can choose a new name when saving the template."),
+    },
+    {
+      element: document.querySelector('#home_expiration_and_lease'),
+      intro: gettext("You can change the lease to extend the expiration date. This will be the lease of the new template."),
     },
     {
       element: document.querySelector('a[href="#resources"]'),

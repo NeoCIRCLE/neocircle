@@ -982,14 +982,22 @@ textarea[name="new_members"] {
   color: orange;
 }
 
+.introjs-skipbutton {
+  color: #333;
+}
+
 .introjs-button:focus {
   text-decoration: none;
   color: #333;
   outline: none;
 }
 
-.introjs-button:hover {
+.introjs-button:hover:not(.introjs-disabled) {
   color: #428bca;
+}
+
+.introjs-tooltip {
+  min-width: 250px;
 }
 
 #vm-info-pane {

@@ -1,7 +1,7 @@
 {% load i18n %}
 <div class="row">
   <div class="col-md-4">
-    <dl>
+    <dl id="home_name_and_description">
       <dt>{% trans "System" %}:</dt>
       <dd><i class="fa fa-{{ os_type_icon }}"></i> {{ instance.system }}</dd>
       <dt style="margin-top: 5px;">
@@ -52,30 +52,34 @@
       </dd>
     </dl>
 
-    <h4>{% trans "Expiration" %} {% if instance.is_expiring %}<i class="fa fa-warning-sign text-danger"></i>{% endif %}
-      <span id="vm-details-renew-op">
-        {% with op=op.renew %}{% if op %}
-          <a href="{{op.get_url}}" class="btn btn-success btn-xs
-                  operation operation-{{op.op}}">
-            <i class="fa fa-{{op.icon}}"></i>
-                  {{op.name}} </a>
-        {% endif %}{% endwith %}
-      </span>
-    </h4>
-    <dl>
-      <dt>{% trans "Suspended at:" %}</dt>
-      <dd>
-        <span title="{{ instance.time_of_suspend }}">
-          <i class="fa fa-moon-o"></i> {{ instance.time_of_suspend|timeuntil }}
+    <div id="home_expiration_and_lease">
+      <h4>
+        {% trans "Expiration" %}
+        {% if instance.is_expiring %}<i class="fa fa-warning-sign text-danger"></i>{% endif %}
+        <span id="vm-details-renew-op">
+          {% with op=op.renew %}{% if op %}
+            <a href="{{op.get_url}}" class="btn btn-success btn-xs
+                    operation operation-{{op.op}}">
+              <i class="fa fa-{{op.icon}}"></i>
+                    {{op.name}} </a>
+          {% endif %}{% endwith %}
         </span>
-      </dd>
-      <dt>{% trans "Destroyed at:" %}</dt>
-      <dd>
-        <span title="{{ instance.time_of_delete }}">
-          <i class="fa fa-times"></i> {{ instance.time_of_delete|timeuntil }}
-        </span>
-      </dd>
-    </dl>
+      </h4>
+      <dl>
+        <dt>{% trans "Suspended at:" %}</dt>
+        <dd>
+          <span title="{{ instance.time_of_suspend }}">
+            <i class="fa fa-moon-o"></i> {{ instance.time_of_suspend|timeuntil }}
+          </span>
+        </dd>
+        <dt>{% trans "Destroyed at:" %}</dt>
+        <dd>
+          <span title="{{ instance.time_of_delete }}">
+            <i class="fa fa-times"></i> {{ instance.time_of_delete|timeuntil }}
+          </span>
+        </dd>
+      </dl>
+    </div>
 
     <div style="font-weight: bold;">{% trans "Tags" %}</div>
     <div id="vm-details-tags" style="margin-bottom: 20px;">
