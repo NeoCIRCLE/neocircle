@@ -753,7 +753,12 @@ class VmRenewForm(OperationForm):
 
 class VmMigrateForm(forms.Form):
     live_migration = forms.BooleanField(
-        required=False, initial=True, label=_("live migration"))
+        required=False, initial=True, label=_("Live migration"),
+        help_text=_(
+            "Live migration is a way of moving virtual machines between "
+            "hosts with a service interruption of at most some seconds. "
+            "Please note that it can take very long and cause "
+            "much network traffic in case of busy machines."))
 
     def __init__(self, *args, **kwargs):
         choices = kwargs.pop('choices')

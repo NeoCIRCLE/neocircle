@@ -466,8 +466,8 @@ class DestroyOperation(InstanceOperation):
 class MigrateOperation(RemoteInstanceOperation):
     id = 'migrate'
     name = _("migrate")
-    description = _("Move virtual machine to an other worker node with a few "
-                    "seconds of interruption (live migration).")
+    description = _("Move a running virtual machine to an other worker node "
+                    "keeping its full state.")
     required_perms = ()
     superuser_required = True
     accept_states = ('RUNNING', )
