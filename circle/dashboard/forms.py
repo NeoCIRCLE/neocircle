@@ -71,15 +71,22 @@ priority_choices = (
 )
 
 
-class VmSaveForm(forms.Form):
-    name = forms.CharField(max_length=100, label=_('Name'),
-                           help_text=_('Human readable name of template.'))
+class NoFormTagMixin(object):
 
     @property
     def helper(self):
         helper = FormHelper(self)
         helper.form_tag = False
         return helper
+
+
+class OperationForm(NoFormTagMixin, forms.Form):
+    pass
+
+
+class VmSaveForm(OperationForm):
+    name = forms.CharField(max_length=100, label=_('Name'),
+                           help_text=_('Human readable name of template.'))
 
     def __init__(self, *args, **kwargs):
         default = kwargs.pop('default', None)
@@ -193,7 +200,7 @@ class VmCustomizeForm(forms.Form):
                         del self.cleaned_data[name]
 
 
-class GroupCreateForm(forms.ModelForm):
+class GroupCreateForm(NoFormTagMixin, forms.ModelForm):
 
     description = forms.CharField(label=_("Description"), required=False,
                                   widget=forms.Textarea(attrs={'rows': 3}))
@@ -232,9 +239,8 @@ class GroupCreateForm(forms.ModelForm):
 
     @property
     def helper(self):
-        helper = FormHelper(self)
+        helper = super(GroupCreateForm, self).helper
         helper.add_input(Submit("submit", _("Create")))
-        helper.form_tag = False
         return helper
 
     class Meta:
@@ -242,7 +248,7 @@ class GroupCreateForm(forms.ModelForm):
         fields = ('name', )
 
 
-class GroupProfileUpdateForm(forms.ModelForm):
+class GroupProfileUpdateForm(NoFormTagMixin, forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         new_groups = kwargs.pop('new_groups', None)
@@ -261,9 +267,8 @@ class GroupProfileUpdateForm(forms.ModelForm):
 
     @property
     def helper(self):
-        helper = FormHelper(self)
+        helper = super(GroupProfileUpdateForm, self).helper
         helper.add_input(Submit("submit", _("Save")))
-        helper.form_tag = False
         return helper
 
     def save(self, commit=True):
@@ -278,17 +283,16 @@ class GroupProfileUpdateForm(forms.ModelForm):
         fields = ('description', 'org_id')
 
 
-class HostForm(forms.ModelForm):
+class HostForm(NoFormTagMixin, forms.ModelForm):
 
     def setowner(self, user):
         self.instance.owner = user
 
-    def __init__(self, *args, **kwargs):
-        super(HostForm, self).__init__(*args, **kwargs)
-        self.helper = FormHelper(self)
-        self.helper.form_show_labels = False
-        self.helper.form_tag = False
-        self.helper.layout = Layout(
+    @property
+    def helper(self):
+        helper = super(HostForm, self).helper
+        helper.form_show_labels = False
+        helper.layout = Layout(
             Div(
                 Div(  # host
                     Div(
@@ -345,6 +349,7 @@ class HostForm(forms.ModelForm):
                 ),
             ),
         )
+        return helper
 
     class Meta:
         model = Host
@@ -745,12 +750,6 @@ class VmRenewForm(forms.Form):
             self.fields['lease'].widget = HiddenInput()
             self.fields['save'].widget = HiddenInput()
 
-    @property
-    def helper(self):
-        helper = FormHelper(self)
-        helper.form_tag = False
-        return helper
-
 
 class VmMigrateForm(forms.Form):
     live_migration = forms.BooleanField(
@@ -766,7 +765,7 @@ class VmMigrateForm(forms.Form):
             widget=forms.RadioSelect(), label=_("Node")))
 
 
-class VmStateChangeForm(forms.Form):
+class VmStateChangeForm(OperationForm):
 
     interrupt = forms.BooleanField(required=False, label=_(
         "Forcibly interrupt all running activities."),
@@ -785,25 +784,13 @@ class VmStateChangeForm(forms.Form):
             self.fields['interrupt'].widget = HiddenInput()
         self.fields['new_state'].initial = status
 
-    @property
-    def helper(self):
-        helper = FormHelper(self)
-        helper.form_tag = False
-        return helper
 
-
-class RedeployForm(forms.Form):
+class RedeployForm(OperationForm):
     with_emergency_change_state = forms.BooleanField(
         required=False, initial=True, label=_("use emergency state change"))
 
-    @property
-    def helper(self):
-        helper = FormHelper(self)
-        helper.form_tag = False
-        return helper
 
-
-class VmCreateDiskForm(forms.Form):
+class VmCreateDiskForm(OperationForm):
     name = forms.CharField(max_length=100, label=_("Name"))
     size = forms.CharField(
         widget=FileSizeWidget, initial=(10 << 30), label=_('Size'),
@@ -823,14 +810,8 @@ class VmCreateDiskForm(forms.Form):
                                           " GB or MB!"))
         return size_in_bytes
 
-    @property
-    def helper(self):
-        helper = FormHelper(self)
-        helper.form_tag = False
-        return helper
 
-
-class VmDiskResizeForm(forms.Form):
+class VmDiskResizeForm(OperationForm):
     size = forms.CharField(
         widget=FileSizeWidget, initial=(10 << 30), label=_('Size'),
         help_text=_('Size to resize the disk in bytes or with units '
@@ -863,8 +844,7 @@ class VmDiskResizeForm(forms.Form):
 
     @property
     def helper(self):
-        helper = FormHelper(self)
-        helper.form_tag = False
+        helper = super(VmDiskResizeForm, self).helper
         if self.disk:
             helper.layout = Layout(
                 HTML(_("<label>Disk:</label> %s") % escape(self.disk)),
@@ -872,7 +852,7 @@ class VmDiskResizeForm(forms.Form):
         return helper
 
 
-class VmDiskRemoveForm(forms.Form):
+class VmDiskRemoveForm(OperationForm):
     def __init__(self, *args, **kwargs):
         choices = kwargs.pop('choices')
         self.disk = kwargs.pop('default')
@@ -887,8 +867,7 @@ class VmDiskRemoveForm(forms.Form):
 
     @property
     def helper(self):
-        helper = FormHelper(self)
-        helper.form_tag = False
+        helper = super(VmDiskRemoveForm, self).helper
         if self.disk:
             helper.layout = Layout(
                 AnyTag(
@@ -901,15 +880,9 @@ class VmDiskRemoveForm(forms.Form):
         return helper
 
 
-class VmDownloadDiskForm(forms.Form):
+class VmDownloadDiskForm(OperationForm):
     name = forms.CharField(max_length=100, label=_("Name"), required=False)
     url = forms.CharField(label=_('URL'), validators=[URLValidator(), ])
-
-    @property
-    def helper(self):
-        helper = FormHelper(self)
-        helper.form_tag = False
-        return helper
 
     def clean(self):
         cleaned_data = super(VmDownloadDiskForm, self).clean()
@@ -924,7 +897,7 @@ class VmDownloadDiskForm(forms.Form):
         return cleaned_data
 
 
-class VmAddInterfaceForm(forms.Form):
+class VmAddInterfaceForm(OperationForm):
     def __init__(self, *args, **kwargs):
         choices = kwargs.pop('choices')
         super(VmAddInterfaceForm, self).__init__(*args, **kwargs)
@@ -935,12 +908,6 @@ class VmAddInterfaceForm(forms.Form):
             field.widget.attrs['disabled'] = 'disabled'
             field.empty_label = _('No more networks.')
         self.fields['vlan'] = field
-
-    @property
-    def helper(self):
-        helper = FormHelper(self)
-        helper.form_tag = False
-        return helper
 
 
 class VmDeployForm(forms.Form):
