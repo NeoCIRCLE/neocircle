@@ -60,7 +60,7 @@ from ..forms import (
     VmAddInterfaceForm, VmCreateDiskForm, VmDownloadDiskForm, VmSaveForm,
     VmRenewForm, VmStateChangeForm, VmListSearchForm, VmCustomizeForm,
     TransferOwnershipForm, VmDiskResizeForm, RedeployForm, VmDiskRemoveForm,
-    VmMigrateForm,
+    VmMigrateForm, VmDeployForm,
 )
 from ..models import Favourite, Profile
 
@@ -605,7 +605,6 @@ class VmStateChangeView(FormOperationMixin, VmOperationView):
     op = 'emergency_change_state'
     icon = 'legal'
     effect = 'danger'
-    show_in_toolbar = True
     form_class = VmStateChangeForm
     wait_for_result = 0.5
 
@@ -628,9 +627,23 @@ class RedeployView(FormOperationMixin, VmOperationView):
     wait_for_result = 0.5
 
 
+class VmDeployView(FormOperationMixin, VmOperationView):
+    op = 'deploy'
+    icon = 'play'
+    effect = 'success'
+    form_class = VmDeployForm
+
+    def get_form_kwargs(self):
+        kwargs = super(VmDeployView, self).get_form_kwargs()
+        if self.request.user.is_superuser:
+            online = (n.pk for n in
+                      Node.objects.filter(enabled=True) if n.online)
+            kwargs['choices'] = Node.objects.filter(pk__in=online)
+        return kwargs
+
+
 vm_ops = OrderedDict([
-    ('deploy', VmOperationView.factory(
-        op='deploy', icon='play', effect='success')),
+    ('deploy', VmDeployView),
     ('wake_up', VmOperationView.factory(
         op='wake_up', icon='sun-o', effect='success')),
     ('sleep', VmOperationView.factory(
