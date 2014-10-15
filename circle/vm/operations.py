@@ -280,7 +280,6 @@ class DownloadDiskOperation(InstanceOperation):
     async_queue = "localhost.man.slow"
 
     def _operation(self, user, url, task, activity, name=None):
-        activity.result = url
         from storage.models import Disk
 
         disk = Disk.download(url=url, name=name, task=task)
@@ -294,6 +293,10 @@ class DownloadDiskOperation(InstanceOperation):
         activity.readable_name = create_readable(
             ugettext_noop("download %(name)s"), name=disk.name)
 
+        activity.result = create_readable(ugettext_noop(
+            "Downloading %(url)s is finished. The file md5sum "
+            "is: '%(checksum)s'."),
+            url=url, checksum=disk.checksum)
         # TODO iso (cd) hot-plug is not supported by kvm/guests
         if self.instance.is_running and disk.type not in ["iso"]:
             self.instance._attach_disk(parent_activity=activity, disk=disk)
