@@ -730,7 +730,7 @@ class LeaseForm(forms.ModelForm):
         model = Lease
 
 
-class VmRenewForm(forms.Form):
+class VmRenewForm(OperationForm):
 
     force = forms.BooleanField(required=False, label=_(
         "Set expiration times even if they are shorter than "
