@@ -943,6 +943,20 @@ class VmAddInterfaceForm(forms.Form):
         return helper
 
 
+class VmDeployForm(forms.Form):
+
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('choices', None)
+
+        super(VmDeployForm, self).__init__(*args, **kwargs)
+
+        if choices is not None:
+            self.fields.insert(0, 'node', forms.ModelChoiceField(
+                queryset=choices, label=_('Node'), help_text=_(
+                    "Deploy virtual machine to this node "
+                    "(blank allows scheduling automatically).")))
+
+
 class CircleAuthenticationForm(AuthenticationForm):
     # fields: username, password
 
