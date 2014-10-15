@@ -634,7 +634,7 @@ class VmDeployView(FormOperationMixin, VmOperationView):
     form_class = VmDeployForm
 
     def get_form_kwargs(self):
-        kwargs = super(VmOperationView, self).get_form_kwargs()
+        kwargs = super(VmDeployView, self).get_form_kwargs()
         if self.request.user.is_superuser:
             online = (n.pk for n in
                       Node.objects.filter(enabled=True) if n.online)

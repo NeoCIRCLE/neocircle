@@ -910,7 +910,7 @@ class VmAddInterfaceForm(OperationForm):
         self.fields['vlan'] = field
 
 
-class VmDeployForm(forms.Form):
+class VmDeployForm(OperationForm):
 
     def __init__(self, *args, **kwargs):
         choices = kwargs.pop('choices', None)
@@ -919,7 +919,7 @@ class VmDeployForm(forms.Form):
 
         if choices is not None:
             self.fields.insert(0, 'node', forms.ModelChoiceField(
-                queryset=choices, label=_('Node'), help_text=_(
+                queryset=choices, required=False, label=_('Node'), help_text=_(
                     "Deploy virtual machine to this node "
                     "(blank allows scheduling automatically).")))
 
