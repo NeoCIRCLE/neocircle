@@ -1,6 +1,7 @@
+var intro;
 $(function() {
   $("#vm-details-start-template-tour").click(function() {
-    var intro = introJs();
+    intro = introJs();
     intro.setOptions({
       'nextLabel': gettext("Next") + ' <i class="fa fa-chevron-right"></i>',
       'prevLabel': '<i class="fa fa-chevron-left"></i> ' + gettext("Previous"),
@@ -27,6 +28,11 @@ $(function() {
     intro.start();
 
     return false;
+  });
+
+  $(document).on('click', 'button[type="submit"], a.operation', function() {
+    if(intro)
+      intro.exit();
   });
 });
 
