@@ -637,7 +637,7 @@ class SaveAsTemplateOperation(InstanceOperation):
                 disk.destroy()
 
     def _operation(self, activity, user, system, name=None,
-                   with_shutdown=True, task=None, **kwargs):
+                   with_shutdown=True, clone=False, task=None, **kwargs):
         if with_shutdown:
             try:
                 ShutdownOperation(self.instance).call(parent_activity=activity,
@@ -687,6 +687,8 @@ class SaveAsTemplateOperation(InstanceOperation):
         tmpl = InstanceTemplate(**params)
         tmpl.full_clean()  # Avoiding database errors.
         tmpl.save()
+        if clone:
+            tmpl.clone_acl(self.instance.template)
         try:
             tmpl.disks.add(*self.disks)
             # create interface templates
