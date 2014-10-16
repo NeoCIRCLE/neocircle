@@ -324,10 +324,14 @@ class DeployOperation(InstanceOperation):
                           "deployed to node: %(node)s"),
             node=self.instance.node)
 
-    def _operation(self, activity):
+    def _operation(self, activity, node=None):
         # Allocate VNC port and host node
         self.instance.allocate_vnc_port()
-        self.instance.allocate_node()
+        if node is not None:
+            self.instance.node = node
+            self.instance.save()
+        else:
+            self.instance.allocate_node()
 
         # Deploy virtual images
         self.instance._deploy_disks(parent_activity=activity)
@@ -462,8 +466,8 @@ class DestroyOperation(InstanceOperation):
 class MigrateOperation(RemoteInstanceOperation):
     id = 'migrate'
     name = _("migrate")
-    description = _("Move virtual machine to an other worker node with a few "
-                    "seconds of interruption (live migration).")
+    description = _("Move a running virtual machine to an other worker node "
+                    "keeping its full state.")
     required_perms = ()
     superuser_required = True
     accept_states = ('RUNNING', )
