@@ -825,6 +825,7 @@ class WakeUpOperation(InstanceOperation):
     required_perms = ()
     accept_states = ('SUSPENDED', )
     resultant_state = 'RUNNING'
+    async_queue = "localhost.man.slow"
 
     def is_preferred(self):
         return self.instance.status == self.instance.STATUS.SUSPENDED
