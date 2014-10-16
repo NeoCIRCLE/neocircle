@@ -754,7 +754,7 @@ class ShutOffOperation(InstanceOperation):
                     "operation is the same as interrupting the power supply "
                     "of a physical machine.")
     required_perms = ()
-    accept_states = ('RUNNING', )
+    accept_states = ('RUNNING', 'PAUSED')
     resultant_state = 'STOPPED'
 
     def _operation(self, activity):
