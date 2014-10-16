@@ -30,7 +30,7 @@ $(function() {
     return false;
   });
 
-  $(document).on('click', 'button[type="submit"], a.operation', function() {
+  $(document).on('click', '#vm-details-resources-save, .vm-details-home-edit-name-click, .vm-details-home-edit-description-click, a.operation', function() {
     if(intro)
       intro.exit();
   });
@@ -54,9 +54,7 @@ function get_steps() {
     {
       element: document.querySelector("#vm-details-start-template-tour"),
       intro: "<p>" + gettext("Welcome to the template tutorial. In this quick tour, we gonna show you how to do the steps described above.") + "</p>" +
-             "<p>" + gettext('For the next tour step press the "Next" button or the right arrow (or "Back" button/left arrow for the previous step).') + "</p>" +
-             "<p>" + gettext("During the tour please <strong>don't try</strong> the functions because it may lead to graphical glitches, however you can end the tour any time you want with the End Tour button.") + 
-             "</p>",
+             "<p>" + gettext('For the next tour step press the "Next" button or the right arrow (or "Back" button/left arrow for the previous step).') + "</p>"
     },
     {
       element: document.querySelector('a[href="#home"]'),

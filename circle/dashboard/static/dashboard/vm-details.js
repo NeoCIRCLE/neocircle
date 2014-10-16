@@ -28,7 +28,7 @@ $(function() {
   });
 
   /* save resources */
-  $('#vm-details-resources-save').click(function() {
+  $('#vm-details-resources-save').click(function(e) {
     var error = false;
     $(".cpu-count-input, .ram-input").each(function() {
       if(!$(this)[0].checkValidity()) {
@@ -61,7 +61,7 @@ $(function() {
         }  
       }
     });
-    return false;
+    e.preventDefault();
   });
 
   /* remove tag */
@@ -205,11 +205,11 @@ $(function() {
   });
 
   /* rename in home tab */
-  $(".vm-details-home-edit-name-click").click(function() {
+  $(".vm-details-home-edit-name-click").click(function(e) {
     $(".vm-details-home-edit-name-click").hide();
     $("#vm-details-home-rename").show();
     $("input", $("#vm-details-home-rename")).select();
-    return false;
+    e.preventDefault();
   });
 
   /* rename ajax */
@@ -236,7 +236,7 @@ $(function() {
   });
   
   /* update description click */
-  $(".vm-details-home-edit-description-click").click(function() {
+  $(".vm-details-home-edit-description-click").click(function(e) {
     $(".vm-details-home-edit-description-click").hide();
     $("#vm-details-home-description").show();
     var ta = $("#vm-details-home-description textarea");
@@ -244,7 +244,7 @@ $(function() {
     ta.val("");
     ta.focus();
     ta.val(tmp)
-    return false;
+    e.preventDefault();
   });
   
   /* description update ajax */
