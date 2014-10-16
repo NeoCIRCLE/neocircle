@@ -264,6 +264,11 @@ class ResizeDiskOperation(RemoteInstanceOperation):
             ugettext_noop("resize disk %(name)s to %(size)s"),
             size=filesizeformat(kwargs['size']), name=kwargs['disk'].name)
 
+    def _operation(self, disk, size):
+        super(ResizeDiskOperation, self)._operation(disk=disk, size=size)
+        disk.size = size
+        disk.save()
+
 
 @register_operation
 class DownloadDiskOperation(InstanceOperation):
