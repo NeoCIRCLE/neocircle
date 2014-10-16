@@ -90,9 +90,15 @@ class VmSaveForm(OperationForm):
 
     def __init__(self, *args, **kwargs):
         default = kwargs.pop('default', None)
+        clone = kwargs.pop('clone', False)
         super(VmSaveForm, self).__init__(*args, **kwargs)
         if default:
             self.fields['name'].initial = default
+        if clone:
+            self.fields.insert(2, "clone", forms.BooleanField(
+                required=False, label=_("Clone template permissions"),
+                help_text=_("Clone the access list of parent template. Useful "
+                            "for updating a template.")))
 
 
 class VmCustomizeForm(forms.Form):

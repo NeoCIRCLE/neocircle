@@ -457,6 +457,10 @@ class VmSaveView(FormOperationMixin, VmOperationView):
         op = self.get_op()
         val = super(VmSaveView, self).get_form_kwargs()
         val['default'] = op._rename(op.instance.name)
+        obj = self.get_object()
+        if obj.template and obj.template.has_level(
+                self.request.user, "owner"):
+            val['clone'] = True
         return val
 
 
