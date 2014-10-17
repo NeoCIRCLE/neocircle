@@ -18,11 +18,14 @@
 from __future__ import absolute_import
 from django.conf.urls import url, patterns
 
-from occi.views import QueryInterface, ComputeInterface, VmInterface
+from occi.views import (
+    QueryInterface, ComputeInterface, VmInterface, OsTplInterface,
+)
 
 urlpatterns = patterns(
     '',
     url(r'^-/$', QueryInterface.as_view(), name="occi.query"),
     url(r'^compute/$', ComputeInterface.as_view(), name="occi.compute"),
+    url(r'^os_tpl/$', OsTplInterface.as_view(), name="occi.os_tpl"),
     url(r'^vm/(?P<pk>\d+)/$', VmInterface.as_view(), name="occi.vm"),
 )
