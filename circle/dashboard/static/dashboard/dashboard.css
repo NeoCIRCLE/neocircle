@@ -216,7 +216,7 @@ html {
 }
 
 #vm-list-rename-name, #node-list-rename-name, #group-list-rename-name {
-  max-width: 100px;
+  max-width: 150px;
 }
 
 .label-tag {
@@ -1015,4 +1015,13 @@ textarea[name="new_members"] {
 
 #vm-migrate-node-list li {
   cursor: pointer;
+}
+
+.group-list-table .actions,
+.group-list-table .admin,
+.group-list-table .number_of_users,
+.group-list-table .pk {
+  width: 1px;
+  white-space: nowrap;
+  text-align: center;
 }
