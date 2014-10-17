@@ -8,9 +8,15 @@
 <div class="body-content">
   <div class="page-header">
     <div class="pull-right" style="padding-top: 15px;">
-      <a title="{% trans "Rename" %}" href="#" class="btn btn-default btn-xs group-details-rename-button"><i class="fa fa-pencil"></i></a>
-      <a title="{% trans "Delete" %}" data-group-pk="{{ group.pk }}" class="btn btn-default btn-xs real-link group-delete" href="{% url "dashboard.views.delete-group" pk=group.pk %}"><i class="fa fa-trash-o"></i></a>
-      <a title="{% trans "Help" %}" href="#" class="btn btn-default btn-xs group-details-help-button"><i class="fa fa-question"></i></a>
+      <a title="{% trans "Rename" %}" href="#" class="btn btn-default btn-xs group-details-rename-button">
+        <i class="fa fa-pencil"></i>
+      </a>
+      <a title="{% trans "Delete" %}" data-group-pk="{{ group.pk }}" class="btn btn-default btn-xs real-link group-delete" href="{% url "dashboard.views.delete-group" pk=group.pk %}">
+        <i class="fa fa-trash-o"></i>
+      </a>
+      <a title="{% trans "Help" %}" href="#" class="btn btn-default btn-xs group-details-help-button">
+        <i class="fa fa-question"></i>
+      </a>
     </div>
    <h1>
       <div id="group-details-rename">
@@ -39,121 +45,120 @@
         </li>
       </ul>
     </div>
- </div>
+  </div><!-- .page-header -->
   <div class="row">
     <div class="col-md-12" id="group-detail-pane">
-      <div class="panel panel-default" id="group-detail-panel">
-        <div class="tab-content panel-body" id="group-form-body">
+      <div class="panel panel-default panel-body" id="group-detail-panel">
+        <form method="POST" action="{% url "dashboard.views.group-update" pk=group.pk %}">
+          {% csrf_token %}
+          {% crispy group_profile_form %}
+        </form>
+        <hr />
 
-          <form method="POST" action="{% url "dashboard.views.group-update" pk=group.pk %}">
-{% csrf_token %}
-{% crispy group_profile_form %}
-</form>
+        <h3>{% trans "Available objects for this group" %}</h3>
+        <ul class="dashboard-profile-vm-list fa-ul">
+          {% for i in vm_objects %}
+            <li>
+              <a href="{{ i.get_absolute_url }}">
+                <i class="fa fa-li {{ i.get_status_icon }}"></i>
+                {{ i }}
+              </a>
+            </li>
+          {% endfor %}
+          {% for t in template_objects %}
+            <li>
+              <a href="{{ t.get_absolute_url }}">
+                <i class="fa fa-li fa-puzzle-piece"></i>
+                {{ t }}
+              </a>
+            </li>
+          {% endfor %}
+          {% for g in group_objects %}
+            <li>
+              <a href="{{ g.get_absolute_url }}">
+                <i class="fa fa-li fa-users"></i>
+                {{ g }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+        <hr />
 
-<hr />
+        <h3>
+          {% trans "User list" %}
+          {% if perms.auth.add_user %}
+          <a href="{% url "dashboard.views.create-user" group.pk %}" class="btn btn-success pull-right">
+            {% trans "Create user" %}
+          </a>
+          {% endif %}
+        </h3>
+        <form action="" method="post">{% csrf_token %}
+        <table class="table table-striped table-with-form-fields table-bordered" id="group-detail-user-table">
+          <tbody>
+            <thead><tr><th></th><th>{% trans "Who" %}</th><th>{% trans "Remove" %}</th></tr></thead>
+              {% for i in users %}
+                <tr>
+                  <td>
+                    <i class="fa fa-user"></i>
+                  </td>
+                  <td>
+                    <a href="{% url "dashboard.views.profile" username=i.username %}" title="{{ i.username }}"
+                      >{% include "dashboard/_display-name.html" with user=i show_org=True %}</a>
+                  </td>
+                  <td>
+                    <a data-group_pk="{{ group.pk }}" data-member_pk="{{i.pk}}" href="{% url "dashboard.views.remove-user" member_pk=i.pk group_pk=group.pk %}" class="real-link delete-from-group btn btn-link btn-xs"><i class="fa fa-times">
+                        <span class="sr-only">{% trans "remove" %}</span></i>
+                    </a>
+                  </td>
+                </tr>
+              {% endfor %}
+              {% for i in future_users %}
+                <tr>
+                  <td>
+                    <i class="fa fa-user text-muted"></i>
+                  </td>
+                  <td> {{ i.org_id }} </td>
+                  <td>
+                    <a href="{% url "dashboard.views.remove-future-user" member_org_id=i.org_id group_pk=group.pk %}"
+                        class="real-link btn-link btn-xs">
+                        <i class="fa fa-times"><span class="sr-only">{% trans "remove" %}</span></i></a>
+                  </td>
+                </tr>
+              {% endfor %}
+              <tr>
+                <td><i class="fa fa-plus"></i></td>
+                <td colspan="2">
+                  {{addmemberform.new_member}}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <textarea name="new_members" class="form-control"
+            placeholder="{% trans "Add multiple users at once (one identifier per line)." %}"></textarea>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-success">{% trans "Save" %}</button>
+          </div>
+        </form>
+        <hr />
+        <h3 id="group-detail-perm-header">{% trans "Access permissions" %}</h3>
+        {% include "dashboard/_manage_access.html" with table_id="group-detail-perm-table" %}
 
-<h3>{% trans "Available objects for this group" %}</h3>
-<ul class="dashboard-profile-vm-list fa-ul">
-  {% for i in vm_objects %}
-    <li>
-      <a href="{{ i.get_absolute_url }}">
-        <i class="fa fa-li {{ i.get_status_icon }}"></i>
-        {{ i }}
-      </a>
-    </li>
-  {% endfor %}
-  {% for t in template_objects %}
-    <li>
-      <a href="{{ t.get_absolute_url }}">
-        <i class="fa fa-li fa-puzzle-piece"></i>
-        {{ t }}
-      </a>
-    </li>
-  {% endfor %}
-  {% for g in group_objects %}
-    <li>
-      <a href="{{ g.get_absolute_url }}">
-        <i class="fa fa-li fa-users"></i>
-        {{ g }}
-      </a>
-    </li>
-  {% endfor %}
-</ul>
+        {% if user.is_superuser %}
+          <hr />
 
-<hr />
+          <script type="text/javascript" src="/static/admin/js/jquery.min.js"></script>
+          <script type="text/javascript" src="/static/admin/js/jquery.init.js"></script>
+          {{ group_perm_form.media }}
 
-<h3>{% trans "User list"|capfirst %}
-    {% if perms.auth.add_user %}
-        <a href="{% url "dashboard.views.create-user" group.pk %}" class="btn btn-success pull-right">{% trans "Create user" %}</a>
-    {% endif %}
-</h3>
-<form action="" method="post">{% csrf_token %}
-<table class="table table-striped table-with-form-fields table-bordered" id="group-detail-user-table">
-    <tbody>
-      <thead><tr><th></th><th>{% trans "Who" %}</th><th>{% trans "Remove" %}</th></tr></thead>
-        {% for i in users %}
-	  <tr>
-            <td>
-              <i class="fa fa-user"></i>
-            </td>
-            <td>
-              <a href="{% url "dashboard.views.profile" username=i.username %}" title="{{ i.username }}"
-                >{% include "dashboard/_display-name.html" with user=i show_org=True %}</a>
-            </td>
-	    <td>
-              <a data-group_pk="{{ group.pk }}" data-member_pk="{{i.pk}}" href="{% url "dashboard.views.remove-user" member_pk=i.pk group_pk=group.pk %}" class="real-link delete-from-group btn btn-link btn-xs"><i class="fa fa-times"><span class="sr-only">{% trans "remove" %}</span></i></a>
-            </td>
-          </tr>
-        {% endfor %}
-        {% for i in future_users %}
-	  <tr>
-            <td>
-              <i class="fa fa-user text-muted"></i>
-            </td>
-            <td> {{ i.org_id }} </td>
-	    <td>
-              <a href="{% url "dashboard.views.remove-future-user" member_org_id=i.org_id group_pk=group.pk %}"
-                  class="real-link btn-link btn-xs">
-                  <i class="fa fa-times"><span class="sr-only">{% trans "remove" %}</span></i></a>
-            </td>
-          </tr>
-        {% endfor %}
-        <tr>
-          <td><i class="fa fa-plus"></i></td>
-          <td colspan="2">
-            {{addmemberform.new_member}}
-          </td>
-        </tr>
-  </tbody>
-  </table>
-  <textarea name="new_members" class="form-control"
-    placeholder="{% trans "Add multiple users at once (one identifier per line)." %}"></textarea>
-  <div class="form-actions">
-    <button type="submit" class="btn btn-success">{% trans "Save" %}</button>
-  </div>
-  </form>
+          <h3>{% trans "Group permissions" %}</h3>
 
-  <hr />
-<h3 id="group-detail-perm-header">{% trans "Access permissions"|capfirst %}</h3>
-{% include "dashboard/_manage_access.html" with table_id="group-detail-perm-table" %}
-{% if user.is_superuser %}
-  <hr />
+          <div id="group-detail-permissions">
+          {% crispy group_perm_form %}
+          </div>
 
-<script type="text/javascript" src="/static/admin/js/jquery.min.js"></script>
-<script type="text/javascript" src="/static/admin/js/jquery.init.js"></script>
-{{ group_perm_form.media }}
-
-<h3>{% trans "Group permissions" %}</h3>
-
-<div id="group-detail-permissions">
-{% crispy group_perm_form %}
-</div>
-
-<link rel="stylesheet" type="text/css" href="/static/admin/css/widgets.css" />
-
-{% endif %}
-	</div>
-     </div>
+          <link rel="stylesheet" type="text/css" href="/static/admin/css/widgets.css" />
+        {% endif %}
+      </div>
     </div>
   </div>
 </div>
