@@ -1,6 +1,7 @@
 {% extends "dashboard/base.html" %}
 {% load crispy_forms_tags %}
 {% load i18n %}
+{% load static %}
 
 {% block title-page %}{{ group.name }} | {% trans "group" %}{% endblock %}
 
@@ -162,4 +163,8 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+  <script type="text/javascript" src="{% static "dashboard/group-details.js" %}"></script>
 {% endblock %}
