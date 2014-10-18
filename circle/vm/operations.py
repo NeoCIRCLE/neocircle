@@ -680,6 +680,11 @@ class SaveAsTemplateOperation(InstanceOperation):
 
     def _operation(self, activity, user, system, name=None,
                    with_shutdown=True, clone=False, task=None, **kwargs):
+        try:
+            self.instance._cleanup(parent_activity=activity, user=user)
+        except Instance.WrongStateError:
+            pass
+
         if with_shutdown:
             try:
                 ShutdownOperation(self.instance).call(parent_activity=activity,
