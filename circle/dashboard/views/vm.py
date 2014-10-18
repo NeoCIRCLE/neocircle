@@ -1166,52 +1166,6 @@ def get_disk_download_status(request, pk):
     )
 
 
-class PortDelete(LoginRequiredMixin, DeleteView):
-    model = Rule
-    pk_url_kwarg = 'rule'
-
-    def get_template_names(self):
-        if self.request.is_ajax():
-            return ['dashboard/confirm/ajax-delete.html']
-        else:
-            return ['dashboard/confirm/base-delete.html']
-
-    def get_context_data(self, **kwargs):
-        context = super(PortDelete, self).get_context_data(**kwargs)
-        rule = kwargs.get('object')
-        instance = rule.host.interface_set.get().instance
-        context['title'] = _("Port delete confirmation")
-        context['text'] = _("Are you sure you want to close %(port)d/"
-                            "%(proto)s on %(vm)s?" % {'port': rule.dport,
-                                                      'proto': rule.proto,
-                                                      'vm': instance})
-        return context
-
-    def delete(self, request, *args, **kwargs):
-        rule = Rule.objects.get(pk=kwargs.get("rule"))
-        instance = rule.host.interface_set.get().instance
-        if not instance.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-
-        super(PortDelete, self).delete(request, *args, **kwargs)
-
-        success_url = self.get_success_url()
-        success_message = _("Port successfully removed.")
-
-        if request.is_ajax():
-            return HttpResponse(
-                json.dumps({'message': success_message}),
-                content_type="application/json",
-            )
-        else:
-            messages.success(request, success_message)
-            return HttpResponseRedirect("%s#network" % success_url)
-
-    def get_success_url(self):
-        return reverse_lazy('dashboard.views.detail',
-                            kwargs={'pk': self.kwargs.get("pk")})
-
-
 class ClientCheck(LoginRequiredMixin, TemplateView):
 
     def get_template_names(self):
