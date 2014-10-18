@@ -964,6 +964,41 @@ class VmPortRemoveForm(OperationForm):
         return helper
 
 
+class VmPortAddForm(OperationForm):
+    port = forms.IntegerField(required=True, label=_('Port'),
+                              min_value=1, max_value=65535)
+    proto = forms.ChoiceField((('tcp', 'tcp'), ('udp', 'udp')),
+                              required=True, label=_('Protocol'))
+
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('choices')
+        self.host = kwargs.pop('default')
+
+        super(VmPortAddForm, self).__init__(*args, **kwargs)
+
+        self.fields.insert(0, 'host', forms.ModelChoiceField(
+            queryset=choices, initial=self.host, required=True,
+            empty_label=None, label=_('Host')))
+        if self.host:
+            self.fields['host'].widget = HiddenInput()
+
+    @property
+    def helper(self):
+        helper = super(VmPortAddForm, self).helper
+        if self.host:
+            helper.layout = Layout(
+                AnyTag(
+                    "div",
+                    HTML(format_html(_("<label>Host:</label> {0}"), self.host)),
+                    css_class="form-group",
+                ),
+                Field("host"),
+                Field("proto"),
+                Field("port"),
+            )
+        return helper
+
+
 class CircleAuthenticationForm(AuthenticationForm):
     # fields: username, password
 

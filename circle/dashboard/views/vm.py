@@ -62,7 +62,7 @@ from ..forms import (
     VmRenewForm, VmStateChangeForm, VmListSearchForm, VmCustomizeForm,
     TransferOwnershipForm, VmDiskResizeForm, RedeployForm, VmDiskRemoveForm,
     VmMigrateForm, VmDeployForm,
-    VmPortRemoveForm,
+    VmPortRemoveForm, VmPortAddForm,
 )
 from ..models import Favourite, Profile
 
@@ -175,7 +175,6 @@ class VmDetailView(GraphMixin, CheckedDetailView):
             'new_description': self.__set_description,
             'new_tag': self.__add_tag,
             'to_remove': self.__remove_tag,
-            'port': self.__add_port,
             'abort_operation': self.__abort_operation,
         }
         for k, v in options.iteritems():
@@ -271,39 +270,6 @@ class VmDetailView(GraphMixin, CheckedDetailView):
             return redirect(reverse_lazy("dashboard.views.detail",
                             kwargs={'pk': self.object.pk}))
 
-    def __add_port(self, request):
-        object = self.get_object()
-        if not (object.has_level(request.user, "operator") and
-                request.user.has_perm('vm.config_ports')):
-            raise PermissionDenied()
-
-        port = request.POST.get("port")
-        proto = request.POST.get("proto")
-
-        try:
-            error = None
-            interfaces = object.interface_set.all()
-            host = Host.objects.get(pk=request.POST.get("host_pk"),
-                                    interface__in=interfaces)
-            host.add_port(proto, private=port)
-        except Host.DoesNotExist:
-            logger.error('Tried to add port to nonexistent host %d. User: %s. '
-                         'Instance: %s', request.POST.get("host_pk"),
-                         unicode(request.user), object)
-            raise PermissionDenied()
-        except ValueError:
-            error = _("There is a problem with your input.")
-        except Exception as e:
-            error = _("Unknown error.")
-            logger.error(e)
-
-        if request.is_ajax():
-            pass
-        else:
-            if error:
-                messages.error(request, error)
-            return redirect(reverse_lazy("dashboard.views.detail",
-                                         kwargs={'pk': self.get_object().pk}))
 
     def __abort_operation(self, request):
         self.object = self.get_object()
@@ -474,6 +440,32 @@ class VmPortRemoveView(FormOperationMixin, VmOperationView):
             default = None
 
         val = super(VmPortRemoveView, self).get_form_kwargs()
+        val.update({'choices': choices, 'default': default})
+        return val
+
+
+class VmPortAddView(FormOperationMixin, VmOperationView):
+
+    op = 'add_port'
+    show_in_toolbar = False
+    with_reload = True
+    icon = 'times'
+    effect = "success"
+    form_class = VmPortAddForm
+
+    def get_form_kwargs(self):
+        instance = self.get_op().instance
+        choices = Host.objects.filter(interface__instance=instance)
+        host_pk = self.request.GET.get('host')
+        if host_pk:
+            try:
+                default = choices.get(pk=host_pk)
+            except (ValueError, Host.DoesNotExist):
+                raise Http404()
+        else:
+            default = None
+
+        val = super(VmPortAddView, self).get_form_kwargs()
         val.update({'choices': choices, 'default': default})
         return val
 
@@ -712,6 +704,7 @@ vm_ops = OrderedDict([
         icon='times', effect="danger")),
     ('add_interface', VmAddInterfaceView),
     ('remove_port', VmPortRemoveView),
+    ('add_port', VmPortAddView),
     ('renew', VmRenewView),
     ('resources_change', VmResourcesChangeView),
     ('password_reset', VmOperationView.factory(

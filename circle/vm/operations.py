@@ -625,6 +625,24 @@ class RemovePortOperation(InstanceOperation):
 
 
 @register_operation
+class AddPortOperation(InstanceOperation):
+    id = 'add_port'
+    name = _("open port")
+    description = _("Open the specified port.")
+    concurrency_check = False
+    required_perms = ()
+    accept_states = ()
+
+    def _operation(self, activity, host, proto, port):
+        if host.interface_set.get().instance != self.instance:
+            raise PermissionDenied()
+        host.add_port(proto, private=port)
+        activity.readable_name = create_readable(
+            ugettext_noop("open %(proto)s/%(port)d on %(host)s"),
+            proto=proto, port=port, host=host)
+
+
+@register_operation
 class RemoveDiskOperation(InstanceOperation):
     id = 'remove_disk'
     name = _("remove disk")
