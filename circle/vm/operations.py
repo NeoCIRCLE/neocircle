@@ -606,6 +606,25 @@ class RemoveInterfaceOperation(InstanceOperation):
 
 
 @register_operation
+class RemovePortOperation(InstanceOperation):
+    id = 'remove_port'
+    name = _("close port")
+    description = _("Close the specified port.")
+    concurrency_check = False
+    required_perms = ()
+    accept_states = ()
+
+    def _operation(self, activity, rule):
+        interface = rule.host.interface_set.get()
+        if interface.instance != self.instance:
+            raise PermissionDenied()
+        activity.readable_name = create_readable(
+            ugettext_noop("close %(proto)s/%(port)d on %(host)s"),
+            proto=rule.proto, port=rule.dport, host=rule.host)
+        rule.delete()
+
+
+@register_operation
 class RemoveDiskOperation(InstanceOperation):
     id = 'remove_disk'
     name = _("remove disk")

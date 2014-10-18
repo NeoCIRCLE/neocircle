@@ -40,7 +40,7 @@ from django.contrib.auth.forms import UserCreationForm as OrgUserCreationForm
 from django.forms.widgets import TextInput, HiddenInput
 from django.template import Context
 from django.template.loader import render_to_string
-from django.utils.html import escape
+from django.utils.html import escape, format_html
 from django.utils.translation import ugettext_lazy as _
 from sizefield.widgets import FileSizeWidget
 from django.core.urlresolvers import reverse_lazy
@@ -933,6 +933,35 @@ class VmDeployForm(OperationForm):
                 queryset=choices, required=False, label=_('Node'), help_text=_(
                     "Deploy virtual machine to this node "
                     "(blank allows scheduling automatically).")))
+
+
+class VmPortRemoveForm(OperationForm):
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('choices')
+        self.rule = kwargs.pop('default')
+
+        super(VmPortRemoveForm, self).__init__(*args, **kwargs)
+
+        self.fields.insert(0, 'rule', forms.ModelChoiceField(
+            queryset=choices, initial=self.rule, required=True,
+            empty_label=None, label=_('Port')))
+        if self.rule:
+            self.fields['rule'].widget = HiddenInput()
+
+    @property
+    def helper(self):
+        helper = super(VmPortRemoveForm, self).helper
+        if self.rule:
+            helper.layout = Layout(
+                AnyTag(
+                    "div",
+                    HTML(format_html(_("<label>Port:</label> {0}/{1}"),
+                        escape(self.rule.dport), escape(self.rule.proto))),
+                    css_class="form-group",
+                ),
+                Field("rule"),
+            )
+        return helper
 
 
 class CircleAuthenticationForm(AuthenticationForm):

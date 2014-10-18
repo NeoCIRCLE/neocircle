@@ -62,6 +62,7 @@ from ..forms import (
     VmRenewForm, VmStateChangeForm, VmListSearchForm, VmCustomizeForm,
     TransferOwnershipForm, VmDiskResizeForm, RedeployForm, VmDiskRemoveForm,
     VmMigrateForm, VmDeployForm,
+    VmPortRemoveForm,
 )
 from ..models import Favourite, Profile
 
@@ -450,6 +451,33 @@ class VmMigrateView(FormOperationMixin, VmOperationView):
         return val
 
 
+class VmPortRemoveView(FormOperationMixin, VmOperationView):
+
+    op = 'remove_port'
+    show_in_toolbar = False
+    with_reload = True
+    icon = 'times'
+    effect = "danger"
+    form_class = VmPortRemoveForm
+
+    def get_form_kwargs(self):
+        instance = self.get_op().instance
+        choices = Rule.portforwards().filter(
+            host__interface__instance=instance)
+        rule_pk = self.request.GET.get('rule')
+        if rule_pk:
+            try:
+                default = choices.get(pk=rule_pk)
+            except (ValueError, Rule.DoesNotExist):
+                raise Http404()
+        else:
+            default = None
+
+        val = super(VmPortRemoveView, self).get_form_kwargs()
+        val.update({'choices': choices, 'default': default})
+        return val
+
+
 class VmSaveView(FormOperationMixin, VmOperationView):
 
     op = 'save_as_template'
@@ -683,6 +711,7 @@ vm_ops = OrderedDict([
         op='remove_disk', form_class=VmDiskRemoveForm,
         icon='times', effect="danger")),
     ('add_interface', VmAddInterfaceView),
+    ('remove_port', VmPortRemoveView),
     ('renew', VmRenewView),
     ('resources_change', VmResourcesChangeView),
     ('password_reset', VmOperationView.factory(
