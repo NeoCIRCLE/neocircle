@@ -662,7 +662,7 @@ vm_ops = OrderedDict([
     ('shutdown', VmOperationView.factory(
         op='shutdown', icon='power-off', effect='warning')),
     ('shut_off', VmOperationView.factory(
-        op='shut_off', icon='ban', effect='warning')),
+        op='shut_off', icon='plug', effect='warning')),
     ('recover', VmOperationView.factory(
         op='recover', icon='medkit', effect='warning')),
     ('nostate', VmStateChangeView),
