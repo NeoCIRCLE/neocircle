@@ -24,6 +24,7 @@ from os import getenv
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
 from django.core import signing
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.urlresolvers import reverse, reverse_lazy
@@ -102,13 +103,16 @@ class VmDetailView(GraphMixin, CheckedDetailView):
         is_operator = instance.has_level(user, "operator")
         is_owner = instance.has_level(user, "owner")
         ops = get_operations(instance, user)
+        hide_tutorial = self.request.COOKIES.get(
+            "hide_tutorial_for_%s" % instance.pk) == "True"
         context.update({
             'graphite_enabled': settings.GRAPHITE_URL is not None,
             'vnc_url': reverse_lazy("dashboard.views.detail-vnc",
                                     kwargs={'pk': self.object.pk}),
             'ops': ops,
             'op': {i.op: i for i in ops},
-            'connect_commands': user.profile.get_connect_commands(instance)
+            'connect_commands': user.profile.get_connect_commands(instance),
+            'hide_tutorial': hide_tutorial,
         })
 
         # activity data
@@ -1435,3 +1439,13 @@ class TransferOwnershipConfirmView(LoginRequiredMixin, View):
                          unicode(user), user.pk, new_owner, key)
             raise PermissionDenied()
         return (instance, new_owner)
+
+
+@login_required
+def toggle_template_tutorial(request, pk):
+    hidden = request.POST.get("hidden", "").lower() == "true"
+    instance = get_object_or_404(Instance, pk=pk)
+    response = HttpResponseRedirect(instance.get_absolute_url())
+    response.set_cookie(  # for a week
+        "hide_tutorial_for_%s" % pk, hidden, 7 * 24 * 60 * 60)
+    return response

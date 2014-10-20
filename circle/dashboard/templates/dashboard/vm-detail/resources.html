@@ -18,34 +18,28 @@
 {% endif %}
 </form>
 
-
 <hr />
 
-
-<div class="row" id="vm-details-resources-disk">
-  <div class="col-sm-11">
-    <h3>
-      {% trans "Disks" %}
-      <div class="pull-right">
-        <div id="disk-ops">
-          {% include "dashboard/vm-detail/_disk-operations.html" %}
-        </div>
+<div id="vm-details-resources-disk">
+  <h3>
+    {% trans "Disks" %}
+    <div class="pull-right">
+      <div id="disk-ops">
+        {% include "dashboard/vm-detail/_disk-operations.html" %}
       </div>
-    </h3>
+    </div>
+  </h3>
 
-    <div class="row" id="vm-details-disk-add-for-form"></div>
-
-    {% if not instance.disks.all %}
-      {% trans "No disks are added!" %}
-    {% endif %}
-    {% for d in instance.disks.all %}
-      <h4 class="list-group-item-heading dashboard-vm-details-network-h3">
-        {% with long_remove=True %}
-          {% include "dashboard/_disk-list-element.html" %}
-        {% endwith %}
-      </h4>
-    {% endfor %}
-  </div>
+  {% if not instance.disks.all %}
+    {% trans "No disks are added." %}
+  {% endif %}
+  {% for d in instance.disks.all %}
+    <h4 class="list-group-item-heading dashboard-vm-details-network-h3">
+      {% with long_remove=True %}
+        {% include "dashboard/_disk-list-element.html" %}
+      {% endwith %}
+    </h4>
+  {% endfor %}
 </div>
 
 {% if user.is_superuser %}
