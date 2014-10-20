@@ -611,7 +611,7 @@ class RemovePortOperation(InstanceOperation):
     name = _("close port")
     description = _("Close the specified port.")
     concurrency_check = False
-    required_perms = ()
+    required_perms = ('vm.config_ports', )
     accept_states = ()
 
     def _operation(self, activity, rule):
@@ -630,7 +630,7 @@ class AddPortOperation(InstanceOperation):
     name = _("open port")
     description = _("Open the specified port.")
     concurrency_check = False
-    required_perms = ()
+    required_perms = ('vm.config_ports', )
     accept_states = ()
 
     def _operation(self, activity, host, proto, port):
