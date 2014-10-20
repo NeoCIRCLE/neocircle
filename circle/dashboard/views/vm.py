@@ -270,7 +270,6 @@ class VmDetailView(GraphMixin, CheckedDetailView):
             return redirect(reverse_lazy("dashboard.views.detail",
                             kwargs={'pk': self.object.pk}))
 
-
     def __abort_operation(self, request):
         self.object = self.get_object()
 

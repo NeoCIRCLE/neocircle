@@ -956,7 +956,7 @@ class VmPortRemoveForm(OperationForm):
                 AnyTag(
                     "div",
                     HTML(format_html(_("<label>Port:</label> {0}/{1}"),
-                        escape(self.rule.dport), escape(self.rule.proto))),
+                         escape(self.rule.dport), escape(self.rule.proto))),
                     css_class="form-group",
                 ),
                 Field("rule"),
@@ -989,7 +989,8 @@ class VmPortAddForm(OperationForm):
             helper.layout = Layout(
                 AnyTag(
                     "div",
-                    HTML(format_html(_("<label>Host:</label> {0}"), self.host)),
+                    HTML(format_html(
+                        _("<label>Host:</label> {0}"), self.host)),
                     css_class="form-group",
                 ),
                 Field("host"),
