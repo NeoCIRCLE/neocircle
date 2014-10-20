@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-10-20 12:09+0200\n"
-"PO-Revision-Date: 2014-09-03 12:51+0200\n"
+"PO-Revision-Date: 2014-10-20 12:21+0200\n"
 "Last-Translator: Mate Ory <ory.mate@ik.bme.hu>\n"
 "Language-Team: Hungarian <cloud@ik.bme.hu>\n"
 "Language: en_US\n"
@@ -130,11 +130,11 @@ msgstr "Ismeretlen hiba."
 
 #: dashboard/static/dashboard/template-list.js:103
 msgid "Only the owners can delete the selected object."
-msgstr ""
+msgstr "Csak a tulajdonos törölheti a kiválasztott elemet."
 
 #: dashboard/static/dashboard/template-list.js:105
 msgid "An error occurred. ("
-msgstr ""
+msgstr "Hiba történt. ("
 
 #: dashboard/static/dashboard/vm-create.js:111
 #: dashboard/static/dashboard/vm-create.js:174
@@ -211,7 +211,6 @@ msgid "Next"
 msgstr "Tovább"
 
 #: dashboard/static/dashboard/vm-tour.js:7
-#, fuzzy
 msgid "Previous"
 msgstr "Vissza"
 
@@ -233,10 +232,9 @@ msgstr "Befejezés"
 
 #: dashboard/static/dashboard/vm-tour.js:9
 msgid "Done"
-msgstr ""
+msgstr "Kész"
 
 #: dashboard/static/dashboard/vm-tour.js:56
-#, fuzzy
 msgid ""
 "Welcome to the template tutorial. In this quick tour, we are going to show "
 "you how to do the steps described above."
@@ -265,13 +263,12 @@ msgstr ""
 "nyílbillentyűket."
 
 #: dashboard/static/dashboard/vm-tour.js:61
-#, fuzzy
 msgid ""
 "In this tab you can extend the expiration date of your virtual machine, add "
 "tags and modify the name and description."
 msgstr ""
-"Ezen a lapon címkéket adhat a virtuális géphez, vagy módosíthatja a nevét, "
-"leírását."
+"Ezen a lapon megújíthatja a virtuális gép lejáratát, címkéket adhat hozzá, "
+"vagy módosíthatja a nevét, leírását."
 
 #: dashboard/static/dashboard/vm-tour.js:65
 msgid ""
@@ -279,21 +276,25 @@ msgid ""
 "name is also recommended, however you can choose a new name when saving the "
 "template."
 msgstr ""
+"Kérjük, adjon meg egy informatív leírást. A név megváltoztatása is "
+"ajánlott, azonban a mentéskor is van a sablon nevének "
+"megválasztására."
 
 #: dashboard/static/dashboard/vm-tour.js:69
 msgid ""
 "You can change the lease to extend the expiration date. This will be the "
 "lease of the new template."
 msgstr ""
+"Megváltoztathatja a bérleti módot is a lejárat bővítéséhez. Az gép "
+"bérleti módját örökli majd a sablon is."
 
 #: dashboard/static/dashboard/vm-tour.js:73
-#, fuzzy
 msgid ""
 "On the resources tab you can edit the CPU/RAM options and add/remove disks "
 "if you have required permissions."
 msgstr ""
 "Az erőforrások lapon szerkesztheti a CPU/memória-beállításokat, valamint "
-"hozzáadhat és törölhet lemezeket."
+"hozzáadhat és törölhet lemezeket, ha van ehhez jogosultsága."
 
 #: dashboard/static/dashboard/vm-tour.js:81
 #: static_collected/vm-detail.09737c69abc3.js:5902
@@ -443,11 +444,12 @@ msgid "Deploy the virtual machine."
 msgstr "A virtuális gép elindítása."
 
 #: dashboard/static/dashboard/vm-tour.js:113
-#, fuzzy
 msgid ""
 "Use the CIRCLE client or the connection string to connect to the virtual "
 "machine."
-msgstr "Használja a megadott parancsot, vagy kedvenc kliensét."
+msgstr ""
+"Használja a CIRCLE klienst vagy a kapcsolódási adatokat a "
+"virtuális géphez való csatlakozáshoz."
 
 #: dashboard/static/dashboard/vm-tour.js:117
 #: static_collected/vm-detail.09737c69abc3.js:5954
@@ -489,11 +491,12 @@ msgstr ""
 "elkészül."
 
 #: dashboard/static/dashboard/vm-tour.js:125
-#, fuzzy
 msgid ""
 "This is the last message, if something is not clear you can do the the tour "
 "again."
-msgstr "A túra véget ért. Ha valami nem érthető, újrakezdheti az útmutatót."
+msgstr ""
+"A túra véget ért. Ha valami nem érthető, újrakezdheti az "
+"útmutatót."
 
 #: network/static/js/host.js:10 static_collected/all.047675ebf594.js:5239
 #: static_collected/all.0aecd87e873a.js:5309

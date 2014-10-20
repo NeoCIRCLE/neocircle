@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-10-20 12:09+0200\n"
-"PO-Revision-Date: 2014-09-24 13:18+0200\n"
+"PO-Revision-Date: 2014-10-20 13:01+0200\n"
 "Last-Translator: Mate Ory <ory.mate@ik.bme.hu>\n"
 "Language-Team: Hungarian <cloud@ik.bme.hu>\n"
 "Language: hu\n"
@@ -152,14 +152,15 @@ msgid "Human readable name of template."
 msgstr "A sablon olvasható neve."
 
 #: dashboard/forms.py:99
-#, fuzzy
 msgid "Clone template permissions"
-msgstr "Csoportjogosultságok"
+msgstr "Sablon jogosultságainak klónozása"
 
 #: dashboard/forms.py:100
 msgid ""
 "Clone the access list of parent template. Useful for updating a template."
 msgstr ""
+"A szülősablon hozzáférési listájának másolása. Sablonok frissítéséhez "
+"ajánlott."
 
 #: dashboard/forms.py:211 dashboard/templates/dashboard/_vm-create-1.html:53
 #: dashboard/templates/dashboard/vm-detail/home.html:33
@@ -276,9 +277,8 @@ msgid "Length"
 msgstr "Hossz"
 
 #: dashboard/forms.py:762
-#, fuzzy
 msgid "Live migration"
-msgstr "Legutóbbi változtatás"
+msgstr "Live migration"
 
 #: dashboard/forms.py:764
 msgid ""
@@ -286,6 +286,9 @@ msgid ""
 "service interruption of at most some seconds. Please note that it can take "
 "very long and cause much network traffic in case of busy machines."
 msgstr ""
+"A live migration lehetővé teszi virtuális gépek csomópontok közti mozgatását "
+"legfeljebb néhány másodperces szolgáltatáskimaradással. Vegye figyelembe, "
+"hogy ez terhelt gépek esetén sokáig tarthat és nagy hálózati forgalommal jár."
 
 #: dashboard/forms.py:782
 msgid "Forcibly interrupt all running activities."
@@ -301,14 +304,12 @@ msgid "New status"
 msgstr "Új állapot"
 
 #: dashboard/forms.py:787
-#, fuzzy
 msgid "Reset node"
-msgstr "csomópont"
+msgstr "Csomópont visszaállítása"
 
 #: dashboard/forms.py:801
-#, fuzzy
 msgid "use emergency state change"
-msgstr "vész-állapotváltás"
+msgstr "vész-állapotváltás használata"
 
 #: dashboard/forms.py:807 dashboard/forms.py:827
 #: dashboard/templates/dashboard/store/_list-box.html:117
@@ -324,23 +325,21 @@ msgid "Invalid format, you can use  GB or MB!"
 msgstr "Érvénytelen formátum. „GB” és „MB” is használható."
 
 #: dashboard/forms.py:828
-#, fuzzy
 msgid "Size to resize the disk in bytes or with units like MB or GB."
-msgstr "Létrehozandó lemez mérete byte-okban vagy mértékegységgel (MB, GB)."
+msgstr "A lemez kívánt mérete byte-okban vagy mértékegységgel (MB, GB)."
 
 #: dashboard/forms.py:839 dashboard/forms.py:875
-#, fuzzy
 msgid "Disk"
-msgstr "Lemezek"
+msgstr "Lemez"
 
 #: dashboard/forms.py:852
 msgid "Disk size must be greater than the actual size."
-msgstr ""
+msgstr "A lemez mérete nagyobb kell legyen a jelenleginél."
 
 #: dashboard/forms.py:861 dashboard/forms.py:886
 #, python-format
 msgid "<label>Disk:</label> %s"
-msgstr ""
+msgstr "<label>Lemez:</label> %s"
 
 #: dashboard/forms.py:896
 msgid "URL"
@@ -348,7 +347,7 @@ msgstr "URL"
 
 #: dashboard/forms.py:906
 msgid "Could not find filename in URL, please specify a name explicitly."
-msgstr ""
+msgstr "Az URL-ben nem található fájlnév. Kérem adja meg explicite."
 
 #: dashboard/forms.py:917
 #: dashboard/templates/dashboard/node-detail/resources.html:17
@@ -363,6 +362,8 @@ msgstr "Nincs több hálózat."
 msgid ""
 "Deploy virtual machine to this node (blank allows scheduling automatically)."
 msgstr ""
+"A virtuális gép elindítása ezen a csomóponton (üresen hagyva automatikus "
+"ütemezés)."
 
 #: dashboard/forms.py:956 dashboard/templates/dashboard/profile.html:31
 #: dashboard/templates/dashboard/vm-detail.html:108
@@ -737,9 +738,8 @@ msgid "Remove"
 msgstr "Eltávolítás"
 
 #: dashboard/templates/dashboard/_disk-list-element.html:21
-#, fuzzy
 msgid "Resize"
-msgstr "RAM-méret"
+msgstr "Átméretezés"
 
 #: dashboard/templates/dashboard/_disk-list-element.html:28
 #: dashboard/templates/dashboard/store/remove.html:20
@@ -1055,7 +1055,7 @@ msgstr "Csoport törlése."
 
 #: dashboard/templates/dashboard/group-detail.html:55
 msgid "Available objects for this group"
-msgstr ""
+msgstr "Csoport számára elérhető objektumok"
 
 #: dashboard/templates/dashboard/group-detail.html:85
 msgid "User list"
@@ -1141,9 +1141,8 @@ msgid "Nodes"
 msgstr "Csomópontok"
 
 #: dashboard/templates/dashboard/index-nodes.html:63
-#, fuzzy
 msgid "Search"
-msgstr "Keresés..."
+msgstr "Keresés"
 
 #: dashboard/templates/dashboard/index-nodes.html:72
 #, python-format
@@ -1320,9 +1319,8 @@ msgid "resultant state"
 msgstr "új állapot"
 
 #: dashboard/templates/dashboard/instanceactivity_detail.html:62
-#, fuzzy
 msgid "subactivities"
-msgstr "Kevesebb tevékenység megjelenítése"
+msgstr "altevékenységek"
 
 #: dashboard/templates/dashboard/instanceactivity_detail.html:74
 #: dashboard/templates/dashboard/node-detail/_activity-timeline.html:28
@@ -1332,7 +1330,7 @@ msgstr "meghiúsult"
 
 #: dashboard/templates/dashboard/instanceactivity_detail.html:78
 msgid "none"
-msgstr ""
+msgstr "nincs"
 
 #: dashboard/templates/dashboard/lease-create.html:5
 #: dashboard/templates/dashboard/lease-create.html:14
@@ -1532,14 +1530,12 @@ msgid "Edit template"
 msgstr "Sablon szerkesztése"
 
 #: dashboard/templates/dashboard/template-edit.html:29
-#, fuzzy
 msgid "Parent template"
-msgstr "szülősablon"
+msgstr "Szülősablon"
 
 #: dashboard/templates/dashboard/template-edit.html:77
-#, fuzzy
 msgid "Delete template"
-msgstr "új sablon"
+msgstr "Sablon törlése"
 
 #: dashboard/templates/dashboard/template-edit.html:94
 msgid "Disk list"
@@ -1577,7 +1573,7 @@ msgstr "SSH publikus kulcs módosítása"
 
 #: dashboard/templates/dashboard/vm-detail.html:18
 msgid "Toggle tutorial panel"
-msgstr ""
+msgstr "Kalauz engedélyezése/tiltása"
 
 #: dashboard/templates/dashboard/vm-detail.html:23
 msgid "Start template tutorial"
@@ -2255,7 +2251,6 @@ msgid "Tags"
 msgstr "Címkék"
 
 #: dashboard/templates/dashboard/vm-detail/home.html:97
-#, fuzzy
 msgid "No tag added."
 msgstr "Nincs címke."
 
@@ -2451,9 +2446,8 @@ msgid "Error during filtering."
 msgstr "A szűrés sikertelen."
 
 #: dashboard/views/template.py:245
-#, fuzzy
 msgid "Only the owners can delete the selected template."
-msgstr "Csak egy mező választható ki."
+msgstr "A kiválasztott sablont csak a tulajdonosok törölhetik."
 
 #: dashboard/views/template.py:261
 msgid "Template successfully deleted."
@@ -2489,9 +2483,8 @@ msgid "Successfully modified lease."
 msgstr "A bérlési mód megváltoztatásra került."
 
 #: dashboard/views/template.py:423
-#, fuzzy
 msgid "Only the owners can modify the selected lease."
-msgstr "Csak egy mező választható ki."
+msgstr "Csak a tulajdonosai törölhetik a kiválasztott bérleti módot."
 
 #: dashboard/views/template.py:452
 msgid ""
@@ -2502,9 +2495,8 @@ msgstr ""
 "folytatáshoz módosítsa őket: "
 
 #: dashboard/views/template.py:463
-#, fuzzy
 msgid "Only the owners can delete the selected lease."
-msgstr "Csak egy mező választható ki."
+msgstr "Csak a tulajdonos törölheti a kiválasztott bérleti módot."
 
 #: dashboard/views/template.py:481
 msgid "Lease successfully deleted."
@@ -3914,22 +3906,21 @@ msgid "Can download a disk."
 msgstr "Letölthet lemezt."
 
 #: storage/models.py:108
-#, fuzzy
 msgid "Can resize a disk."
-msgstr "Létrehozhat új lemezt."
+msgstr "Átméretezhet lemezt."
 
 #: storage/models.py:122
 #, python-format
 msgid "Operation can't be invoked on disk '%(name)s' of type '%(type)s'."
 msgstr ""
-"A kér művelet nem hajtható végre a(z) %(type)s típusú „%(name)s” lemezen."
+"A kért művelet nem hajtható végre a(z) %(type)s típusú „%(name)s” lemezen."
 
 #: storage/models.py:126
 #, python-format
 msgid ""
 "Operation can't be invoked on disk '%(name)s' (%(pk)s) of type '%(type)s'."
 msgstr ""
-"A kér művelet nem hajtható végre a(z) %(type)s típusú „%(name)s” (%(pk)s) "
+"A kért művelet nem hajtható végre a(z) %(type)s típusú „%(name)s” (%(pk)s) "
 "lemezen."
 
 #: storage/models.py:135
@@ -3938,7 +3929,7 @@ msgid ""
 "The requested operation can't be performed on disk '%(name)s' because it is "
 "in use."
 msgstr ""
-"A kér művelet nem hajtható végre a(z) „%(name)s” lemezen, mivel használatban "
+"A kért művelet nem hajtható végre a(z) „%(name)s” lemezen, mivel használatban "
 "van."
 
 #: storage/models.py:139
@@ -3947,7 +3938,7 @@ msgid ""
 "The requested operation can't be performed on disk '%(name)s' (%(pk)s) "
 "because it is in use."
 msgstr ""
-"A kér művelet nem hajtható végre a(z) „%(name)s” (%(pk)s) lemezen, mivel "
+"A kért művelet nem hajtható végre a(z) „%(name)s” (%(pk)s) lemezen, mivel "
 "használatban van."
 
 #: storage/models.py:148
@@ -3956,7 +3947,7 @@ msgid ""
 "The requested operation can't be performed on disk '%(name)s' because it has "
 "never been deployed."
 msgstr ""
-"A kér művelet nem hajtható végre a(z) „%(name)s” lemezen, mivel nem volt még "
+"A kért művelet nem hajtható végre a(z) „%(name)s” lemezen, mivel nem volt még "
 "csatolva."
 
 #: storage/models.py:152
@@ -3965,7 +3956,7 @@ msgid ""
 "The requested operation can't be performed on disk '%(name)s' (%(pk)s) "
 "[%(filename)s] because it has never beendeployed."
 msgstr ""
-"A kér művelet nem hajtható végre a(z) „%(name)s” (%(pk)s) [%(filename)s] "
+"A kért művelet nem hajtható végre a(z) „%(name)s” (%(pk)s) [%(filename)s] "
 "lemezen, mivel nem volt még csatolva."
 
 #: storage/models.py:163
@@ -3974,7 +3965,7 @@ msgid ""
 "The requested operation can't be performed on disk '%(name)s' because its "
 "base has never been deployed."
 msgstr ""
-"A kér művelet nem hajtható végre a(z) „%(name)s” lemezen, mivel az alapja "
+"A kért művelet nem hajtható végre a(z) „%(name)s” lemezen, mivel az alapja "
 "nem volt még csatolva."
 
 #: storage/models.py:167
@@ -3984,7 +3975,7 @@ msgid ""
 "[%(filename)s] because its base '%(b_name)s' (%(b_pk)s) [%(b_filename)s] has "
 "never beendeployed."
 msgstr ""
-"A kér művelet nem hajtható végre a(z) „%(name)s” (%(pk)s) [%(filename)s] "
+"A kért művelet nem hajtható végre a(z) „%(name)s” (%(pk)s) [%(filename)s] "
 "lemezen, mivel az alapja,  „%(b_name)s” (%(b_pk)s) [%(b_filename)s]  nem "
 "volt még csatolva."
 
@@ -4677,20 +4668,21 @@ msgid "create disk %(name)s (%(size)s)"
 msgstr "%(name)s lemez létrehozása (%(size)s)"
 
 #: vm/operations.py:283
-#, fuzzy
 msgid "resize disk"
-msgstr "lemez létrehozása"
+msgstr "lemez átméretezése"
 
 #: vm/operations.py:284
 msgid ""
 "Resize the virtual disk image. Size must be greater value than the actual "
 "size."
 msgstr ""
+"Virtuális lemezkép átméretezése. Az új méret meg kell haladja "
+"a jelenlegit."
 
 #: vm/operations.py:298
-#, fuzzy, python-format
+#, python-format
 msgid "resize disk %(name)s to %(size)s"
-msgstr "%(name)s lemez létrehozása (%(size)s)"
+msgstr "%(name)s lemez átméretezése (%(size)s)"
 
 #: vm/operations.py:310
 msgid "download disk"
@@ -4714,7 +4706,7 @@ msgstr "%(name)s letöltése"
 #: vm/operations.py:336
 #, python-format
 msgid "Downloading %(url)s is finished. The file md5sum is: '%(checksum)s'."
-msgstr ""
+msgstr "%(url)s letöltése sikeres. A fájl md5sum összege: '%(checksum)s'."
 
 #: vm/operations.py:347
 msgid "deploy"
@@ -4742,14 +4734,12 @@ msgid "wait operating system loading"
 msgstr "várakozás az operációs rendszer betöltésére"
 
 #: vm/operations.py:405
-#, fuzzy
 msgid "deploy vm"
-msgstr "indítás"
+msgstr "vm indítása"
 
 #: vm/operations.py:406
-#, fuzzy
 msgid "Deploy virtual machine."
-msgstr "virtuális gép létrehozása"
+msgstr "Virtuális gép létrehozása."
 
 #: vm/operations.py:415
 msgid "deploy virtual machine"
@@ -4765,9 +4755,8 @@ msgid "deploy disks"
 msgstr "lemez létrehozása"
 
 #: vm/operations.py:423
-#, fuzzy
 msgid "Deploy all associated disks."
-msgstr "Ehhez a géphez nem tartozik szabály."
+msgstr "Csatolt lemezek létrehozása."
 
 #: vm/operations.py:440
 msgid "boot virtual machine"
@@ -4796,20 +4785,19 @@ msgstr "virtuális gép megsemmisítése"
 
 #: vm/operations.py:496
 msgid "removing memory dump"
-msgstr ""
+msgstr "memóriamentés törlése"
 
 #: vm/operations.py:510
 msgid "migrate"
 msgstr "migrálás"
 
 #: vm/operations.py:511
-#, fuzzy
 msgid ""
 "Move a running virtual machine to an other worker node keeping its full "
 "state."
 msgstr ""
-"A virtuális gép áthelyezése egy másik számítási csomópontra néhány másodperc "
-"kimaradással (live migration)."
+"A virtuális gép mozgatása egy másik számítási csomópontra állapotának "
+"megtartásával."
 
 #: vm/operations.py:528
 msgid "redeploy network (rollback)"
@@ -5037,29 +5025,30 @@ msgid "Activity is forcibly interrupted."
 msgstr "A tevékenység erőszakos megszakításra került."
 
 #: vm/operations.py:977
-#, fuzzy
 msgid "redeploy"
-msgstr "indítás"
+msgstr "újbóli létrehozás"
 
 #: vm/operations.py:978
 msgid ""
 "Change the virtual machine state to NOSTATE and redeploy the VM. This "
 "operation allows starting machines formerly running on a failed node."
 msgstr ""
+"A virtuális gép állapotának átállítása NOSTATE-re, majd a VM újbóli "
+"létrehozása. "
+"Ez a művelet lehetővé teszi olyan gépek elindítását, amelyek korábban egy "
+"meghibásodott csomóponton futnak."
 
 #: vm/operations.py:1014
 msgid "You cannot call this operation on an offline node."
 msgstr "Nem hívható ez a művelet elérhetetlen csomópontra."
 
 #: vm/operations.py:1042
-#, fuzzy
 msgid "Disable missing node and redeploy all instances on other ones."
-msgstr "Csomópont letiltása és az összes példány migrálása a többire."
+msgstr "Hiányzó csomópont letiltása és az összes példány elindítása a többin."
 
 #: vm/operations.py:1052
-#, fuzzy
 msgid "You cannot reset a disabled or online node."
-msgstr "Tiltott csomópont tiltása nem lehetséges."
+msgstr "Tiltott vagy elérhető csomópont resetelése nem lehetséges."
 
 #: vm/operations.py:1060 vm/operations.py:1080
 #, python-format
@@ -5210,9 +5199,8 @@ msgid "change ip"
 msgstr "IP cím beállítása"
 
 #: vm/operations.py:1371
-#, fuzzy
 msgid "update agent"
-msgstr "van ügynöke"
+msgstr "ügynök frissítése"
 
 #: vm/operations.py:1377
 #, python-format
@@ -5236,14 +5224,13 @@ msgid "attach disk"
 msgstr "lemez csatolása"
 
 #: vm/operations.py:1507
-#, fuzzy
 msgid "Resource was not found."
-msgstr "Nem található „%s” felhasználó."
+msgstr "Nem található az erőforrás."
 
 #: vm/operations.py:1508
 #, python-format
 msgid "Resource was not found. %(exception)s"
-msgstr ""
+msgstr "Nem található az erőforrás. %(exception)s"
 
 #: vm/operations.py:1517
 msgid "detach disk"
@@ -5547,9 +5534,8 @@ msgid "Can create a new VM."
 msgstr "Létrehozhat új VM-et."
 
 #: vm/models/instance.py:269
-#, fuzzy
 msgid "Can redeploy a VM."
-msgstr "Létrehozhat új VM-et."
+msgstr "Újból létrehozhat futó VM-et."
 
 #: vm/models/instance.py:270
 msgid "Can configure port forwards."
@@ -5593,7 +5579,7 @@ msgstr "példány létrehozása"
 #: vm/models/instance.py:450
 #, python-format
 msgid "vm state changed to %(state)s on %(node)s"
-msgstr "VM állapota erre változott: %(state)s, %(node)s"
+msgstr "VM állapota erre változott: %(state)s (ezen: %(node)s)"
 
 #: vm/models/instance.py:646
 #, python-format
