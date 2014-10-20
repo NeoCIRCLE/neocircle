@@ -49,7 +49,15 @@ class WorkerNotFound(Exception):
     pass
 
 
+def get_error_msg(exception):
+    try:
+        return unicode(exception)
+    except UnicodeDecodeError:
+        return unicode(str(exception), encoding='utf-8', errors='replace')
+
+
 def activitycontextimpl(act, on_abort=None, on_commit=None):
+    result = None
     try:
         try:
             yield act
@@ -62,7 +70,7 @@ def activitycontextimpl(act, on_abort=None, on_commit=None):
             result = create_readable(
                 ugettext_noop("Failure."),
                 ugettext_noop("Unhandled exception: %(error)s"),
-                error=unicode(e))
+                error=get_error_msg(e))
             raise
     except:
         logger.exception("Failed activity %s" % unicode(act))
