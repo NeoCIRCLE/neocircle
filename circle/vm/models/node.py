@@ -288,6 +288,11 @@ class Node(OperatedMixin, TimeStampedModel):
 
     @property
     @node_available
+    def driver_version(self):
+        return self.info['driver_version']
+
+    @property
+    @node_available
     def cpu_usage(self):
         return self.monitor_info.get('cpu.percent') / 100
 
