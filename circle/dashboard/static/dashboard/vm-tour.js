@@ -53,7 +53,7 @@ function get_steps() {
   steps = [
     {
       element: document.querySelector("#vm-details-start-template-tour"),
-      intro: "<p>" + gettext("Welcome to the template tutorial. In this quick tour, we gonna show you how to do the steps described above.") + "</p>" +
+      intro: "<p>" + gettext("Welcome to the template tutorial. In this quick tour, we are going to show you how to do the steps described above.") + "</p>" +
              "<p>" + gettext('For the next tour step press the "Next" button or the right arrow (or "Back" button/left arrow for the previous step).') + "</p>"
     },
     {
@@ -70,23 +70,36 @@ function get_steps() {
     },
     {
       element: document.querySelector('a[href="#resources"]'),
-      intro: gettext("On the resources tab you can edit the CPU/RAM options and add/remove disks."),
-    },
-    {
-      element: document.querySelector('#vm-details-resources-form'),
-      intro: '<p><strong>' + gettext("CPU priority") + ":</strong> " +
-              gettext("higher is better") + "</p>" +
-              "<p><strong>" + gettext("CPU count") + ":</strong> " +
-              gettext("number of CPU cores.") + "</p>" +
-              "<p><strong>" + gettext("RAM amount") + ":</strong> " +
-              gettext("amount of RAM.") + "</p>",
-      position: "top",
-    },
-    {
-      element: document.querySelector('#vm-details-resources-disk'),
-      intro: gettext("You can add empty disks, download new ones and remove existing ones here."),
-      position: "top",
-    },
+      intro: gettext("On the resources tab you can edit the CPU/RAM options and add/remove disks if you have required permissions."),
+    }
+  ];
+
+  if($("#vm-details-resources-save").length) {
+    steps.push(
+      {
+        element: document.querySelector('#vm-details-resources-form'),
+        intro: '<p><strong>' + gettext("CPU priority") + ":</strong> " +
+                gettext("higher is better") + "</p>" +
+                "<p><strong>" + gettext("CPU count") + ":</strong> " +
+                gettext("number of CPU cores.") + "</p>" +
+                "<p><strong>" + gettext("RAM amount") + ":</strong> " +
+                gettext("amount of RAM.") + "</p>",
+        position: "top",
+      }
+    );
+  }
+
+  if($(".operation-create_disk").length || $(".operation-download_disk").length) {
+    steps.push(
+      {
+        element: document.querySelector('#vm-details-resources-disk'),
+        intro: gettext("You can add empty disks, download new ones and remove existing ones here."),
+        position: "top",
+      }
+    );
+  }
+
+  steps.push(
     {
       element: document.querySelector('a[href="#network"]'),
       intro: gettext('You can add new network interfaces or remove existing ones here.'),
@@ -110,7 +123,7 @@ function get_steps() {
     {
       element: document.querySelector(".alert-new-template"),
       intro: gettext("This is the last message, if something is not clear you can do the the tour again."),
-    },
-  ];
+    }
+  );
   return steps;
 }
