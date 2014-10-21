@@ -817,7 +817,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         return acts
 
     def get_merged_activities(self, user=None):
-        whitelist = ("create_disk", "download_disk")
+        whitelist = ("create_disk", "download_disk", "add_port", "remove_port")
         acts = self.get_activities(user)
         merged_acts = []
         latest = None
