@@ -418,6 +418,7 @@ class VmMigrateView(FormOperationMixin, VmOperationView):
 
 class VmPortRemoveView(FormOperationMixin, VmOperationView):
 
+    template_name = 'dashboard/_vm-remove-port.html'
     op = 'remove_port'
     show_in_toolbar = False
     with_reload = True

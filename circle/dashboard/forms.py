@@ -948,21 +948,6 @@ class VmPortRemoveForm(OperationForm):
         if self.rule:
             self.fields['rule'].widget = HiddenInput()
 
-    @property
-    def helper(self):
-        helper = super(VmPortRemoveForm, self).helper
-        if self.rule:
-            helper.layout = Layout(
-                AnyTag(
-                    "div",
-                    HTML(format_html(_("<label>Port:</label> {0}/{1}"),
-                         escape(self.rule.dport), escape(self.rule.proto))),
-                    css_class="form-group",
-                ),
-                Field("rule"),
-            )
-        return helper
-
 
 class VmPortAddForm(OperationForm):
     port = forms.IntegerField(required=True, label=_('Port'),
