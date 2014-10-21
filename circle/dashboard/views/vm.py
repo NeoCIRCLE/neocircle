@@ -422,6 +422,7 @@ class VmPortRemoveView(FormOperationMixin, VmOperationView):
     op = 'remove_port'
     show_in_toolbar = False
     with_reload = True
+    wait_for_result = 0.5
     icon = 'times'
     effect = "danger"
     form_class = VmPortRemoveForm
@@ -449,7 +450,8 @@ class VmPortAddView(FormOperationMixin, VmOperationView):
     op = 'add_port'
     show_in_toolbar = False
     with_reload = True
-    icon = 'times'
+    wait_for_result = 0.5
+    icon = 'plus'
     effect = "success"
     form_class = VmPortAddForm
 
