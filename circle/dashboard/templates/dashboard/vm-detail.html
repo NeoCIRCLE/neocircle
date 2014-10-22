@@ -6,19 +6,19 @@
 {% block content %}
 
 {% if instance.is_base %}
-<div class="alert alert-info alert-new-template" id="alert-new-template" style="position: relative;"> 
+<div class="alert alert-info alert-new-template" id="alert-new-template" style="position: relative;">
   <form action="{% url "dashboard.views.vm-toggle-tutorial" pk=instance.pk %}"
     method="POST">
     {% csrf_token %}
-    <input name="hidden" type="hidden" 
+    <input name="hidden" type="hidden"
      value="{{ hide_tutorial|yesno:"false,true" }}"/>
-    <button type="submit" 
+    <button type="submit"
       id="dashboard-tutorial-toggle" class="btn btn-sm pull-right btn-success">
-      <i class="fa fa-caret-{% if hide_tutorial %}down{% else %}up{% endif %}"></i> 
+      <i class="fa fa-caret-{% if hide_tutorial %}down{% else %}up{% endif %}"></i>
       {% trans "Toggle tutorial panel" %}
     </button>
 
-    <a href="#" class="btn btn-default btn-sm pull-right" 
+    <a href="#" class="btn btn-default btn-sm pull-right"
       id="vm-details-start-template-tour">
       <i class="fa fa-play"></i> {% trans "Start template tutorial" %}
     </a>
@@ -121,7 +121,14 @@
         <dd style="font-size: 10px; text-align: right; padding-top: 8px;">
           <div id="vm-details-pw-reset">
           {% with op=op.password_reset %}{% if op %}
-          <a href="{% if op.disabled %}#{% else %}{{op.get_url}}{% endif %}" class="operation operation-{{op.op}}" data-disabled="{% if op.disabled %}true" title="{% trans "Start the VM to change the password." %}"{% else %}false" {% endif %}>{% trans "Generate new password!" %}</a>
+          <a href="{% if op.disabled %}#{% else %}{{op.get_url}}{% endif %}"
+            class="operation operation-{{op.op}}"
+            {% if op.disabled %}
+            data-disabled="true"
+            title="{% if instance.has_agent %}{% trans "Start the VM to change the password." %}{% else %}{% trans "This machine has no agent installed." %}{% endif %}"
+            {% endif %}>
+            {% trans "Generate new password!" %}
+          </a>
           {% endif %}{% endwith %}
           </div>
         </dd>
@@ -149,7 +156,7 @@
       </div>
       {% endfor %}
       {% if instance.get_connect_uri %}
-      <div id="dashboard-vm-details-connect" class="operation-wrapper">  
+      <div id="dashboard-vm-details-connect" class="operation-wrapper">
         {% if client_download %}
         <a id="dashboard-vm-details-connect-button" class="btn btn-xs btn-default operation " href="{{ instance.get_connect_uri}}" title="{% trans "Connect via the CIRCLE Client" %}">
                 <i class="fa fa-external-link"></i> {% trans "Connect" %}
