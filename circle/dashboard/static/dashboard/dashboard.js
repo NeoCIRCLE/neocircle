@@ -428,7 +428,7 @@ function generateVmHTML(pk, name, host, icon, _status, fav, is_last) {
   return '<a href="/dashboard/vm/' + pk + '/" class="list-group-item' +
          (is_last ? ' list-group-item-last' : '') + '">' +      
         '<span class="index-vm-list-name">' + 
-          '<i class="fa ' + icon + '" title="' + _status + '"></i> ' + name +
+          '<i class="fa ' + icon + '" title="' + _status + '"></i> ' + safe_tags_replace(name) +
         '</span>' + 
         '<small class="text-muted"> ' + host + '</small>' +
         '<div class="pull-right dashboard-vm-favourite" data-vm="' + pk + '">' +  
@@ -441,14 +441,14 @@ function generateVmHTML(pk, name, host, icon, _status, fav, is_last) {
 
 function generateGroupHTML(url, name, is_last) {
   return '<a href="' + url + '" class="list-group-item real-link' + (is_last ? " list-group-item-last" : "") +'">'+
-         '<i class="fa fa-users"></i> '+ name +
+         '<i class="fa fa-users"></i> '+ safe_tags_replace(name) +
          '</a>';
 }
 
 function generateNodeHTML(name, icon, _status, url, is_last) {
   return '<a href="' + url + '" class="list-group-item real-link' + (is_last ? ' list-group-item-last' : '') + '">' +
         '<span class="index-node-list-name">' +
-        '<i class="fa ' + icon + '" title="' + _status + '"></i> ' + name +
+        '<i class="fa ' + icon + '" title="' + _status + '"></i> ' + safe_tags_replace(name) +
         '</span>' +
         '<div style="clear: both;"></div>' +
         '</a>';
@@ -456,7 +456,7 @@ function generateNodeHTML(name, icon, _status, url, is_last) {
 
 function generateNodeTagHTML(name, icon, _status, label , url) {
   return '<a href="' + url + '" class="label ' + label + '" >' +
-        '<i class="fa ' + icon + '" title="' + _status + '"></i> ' + name +
+        '<i class="fa ' + icon + '" title="' + _status + '"></i> ' + safe_tags_replace(name) +
         '</a> ';
 }
 
@@ -677,4 +677,19 @@ function getParameterByName(name) {
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
         results = regex.exec(location.search);
     return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+
+var tagsToReplace = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;'
+};
+
+function replaceTag(tag) {
+    return tagsToReplace[tag] || tag;
+}
+
+function safe_tags_replace(str) {
+    return str.replace(/[&<>]/g, replaceTag);
 }
