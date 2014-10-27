@@ -71,26 +71,26 @@
               {% trans "Resources" %}
             </a>
           </li>
-      <li>
+          <li>
             <a href="{% url "dashboard.views.vm-list" %}?s=node:{{ node.name }}" 
               target="blank" class="text-center">
               <i class="fa fa-desktop fa-2x"></i><br>
               {% trans "Virtual Machines" %}
             </a>
           </li>
-      <li>
+          <li>
             <a href="#activity" data-toggle="pill" class="text-center">
               <i class="fa fa-clock-o fa-2x"></i><br>
               {% trans "Activity" %}
             </a>
           </li>
-    </ul>
+        </ul>
 
         <div id="panel-body"  class="tab-content panel-body">
           <div class="tab-pane active" id="home">{% include "dashboard/node-detail/home.html" %}</div>
-      <div class="tab-pane" id="resources">{% include "dashboard/node-detail/resources.html" %}</div>
+          <div class="tab-pane" id="resources">{% include "dashboard/node-detail/resources.html" %}</div>
           <div class="tab-pane" id="activity">{% include "dashboard/node-detail/activity.html" %}</div>
-    </div>
+        </div>
       </div>
     </div>
   </div>
