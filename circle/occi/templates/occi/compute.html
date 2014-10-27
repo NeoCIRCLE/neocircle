@@ -2,4 +2,5 @@ Category: compute; scheme="{{ kind.scheme }}"; class="{{ kind.class }}";
 {% spaceless %}
 {% for k, v in attrs.items %}
 X-OCCI-Attribute: {{ k }}={% if v.isdigit == False or k == "occi.core.id" %}"{{ v }}"{% else %}{{ v }}{% endif %}{% endfor %}
+{% for m in mixins %}{{ m.render_body }}{% endfor %}
 {% endspaceless %}

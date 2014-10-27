@@ -3,14 +3,17 @@ import re
 from django.contrib.auth.models import User
 from django.template.loader import render_to_string
 
-from vm.models import Instance, Lease
+from vm.models import Instance, InstanceTemplate, Lease
 from vm.models.common import ARCHITECTURES
-from vm.models.instance import ACCESS_METHODS
+from vm.models.instance import ACCESS_METHODS, pwgen
 
 OCCI_ADDR = "http://localhost:8080/"
 
+X86_ARCH = ARCHITECTURES[1][0]
+X64_ARCH = ARCHITECTURES[0][0]
+
 occi_attribute_regex = re.compile(
-    '^X-OCCI-Attribute: ?method="(?P<method>[a-zA-Z]+)"$')
+    '^X-OCCI-Attribute: ?(?P<attribute>[a-zA-Z\.]+)="?(?P<value>[^"]*)"?$')
 
 occi_action_regex = re.compile(
     '^Category: (?P<term>[a-zA-Z]+); ?scheme=".+"; ?class="action"$')
@@ -31,6 +34,12 @@ compute_action_to_operation = {
         'hibernate': "sleep",
     }
 }
+
+occi_os_tpl_regex = re.compile(
+    '^Category: ?os_tpl_(?P<template_pk>\d+); ?'
+    'scheme=".*/infrastructure/os_tpl#"; ?'
+    'class="mixin"; ?location=".*"; ?title=".*"$'
+)
 
 
 class Category():
@@ -113,64 +122,105 @@ class Resource(Entity):
 
 
 class Compute(Resource):
-    # TODO better init, for new resources
+    """ Note: 100 priority = 5 Ghz
+    """
 
-    def __init__(self, instance=None, attrs=None, **kwargs):
+    def __init__(self, instance=None, data=None):
         self.attrs = {}
         if instance:
             self.location = "%svm/%d/" % (OCCI_ADDR, instance.pk)
             self.instance = instance
             self.init_attrs()
-        elif attrs:
-            self.attrs = attrs
-            self._create_object()
 
-    translate = {
-        'occi.core.id': "id",
-        'occi.compute.architecture': "arch",
-        'occi.compute.cores': "num_cores",
-        'occi.compute.hostname': "short_hostname",
-        'occi.compute.speed': "priority",
-        'occi.compute.memory': "ram_size",
-    }
+    @classmethod
+    def create_object(cls, data):
+        # TODO user
+        user = User.objects.get(username="test")
+        template = None
+        attributes = {}
 
-    translate_arch = {
+        for d in data:
+            tmpl = occi_os_tpl_regex.match(d)
+            if tmpl:
+                pk = tmpl.group("template_pk")
+                template = InstanceTemplate.objects.get(pk=pk)
 
-    }
+            attr = occi_attribute_regex.match(d)
+            if attr:
+                attributes[attr.group("attribute")] = attr.group("value")
 
-    def _create_object(self):
         params = {}
-        for a in self.attrs:
-            t = a.split("=")
-            params[self.translate.get(t[0])] = t[1]
+        params['owner'] = user
+        title = attributes.get("occi.core.title")
+        if title:
+            params['name'] = title
 
-        params['lease'] = Lease.objects.all()[0]
-        params['priority'] = 10
-        params['max_ram_size'] = params['ram_size']
-        params['system'] = ""
-        params['pw'] = "killmenow"
-        params['arch'] = (ARCHITECTURES[0][0] if "64" in params['arch'] else
-                          ARCHITECTURES[1][0])
-        params['access_method'] = ACCESS_METHODS[0][0]
-        params['owner'] = User.objects.get(username="test")
-        params['name'] = "from occi yo"
-        i = Instance.create(params=params, disks=[], networks=[],
-                            req_traits=[], tags=[])
-        self.location = "%svm/%d/" % (OCCI_ADDR, i.pk)
+        if template:
+            inst = Instance.create_from_template(template=template, **params)
+        else:
+            # trivial
+            if "x86" in attributes['occi.compute.architecture']:
+                params['arch'] = X86_ARCH
+            else:
+                params['arch'] = X64_ARCH
+
+            params['num_cores'] = int(attributes['occi.compute.cores'])
+            speed = float(attributes['occi.compute.speed'])
+            if speed/5.0 > 1:
+                priority = 100
+            else:
+                priority = int(speed/5.0 * 100.0)
+            params['priority'] = priority
+
+            memory = float(attributes['occi.compute.memory']) * 1024
+            params['ram_size'] = params['max_ram_size'] = int(memory)
+
+            params['pw'] = pwgen()
+
+            # non trivial
+            params['system'] = "OCCI Blank Compute"
+            params['lease'] = Lease.objects.all()[0]
+            params['access_method'] = ACCESS_METHODS[0][0]
+
+            # if no name is given
+            if not params.get("name"):
+                params['name'] = "Created via OCCI by %s" % user
+
+            inst = Instance.create(params=params, disks=[], networks=[],
+                                   req_traits=[], tags=[])
+
+        cls.location = "%svm/%d" % (OCCI_ADDR, inst.pk)
+        return cls
 
     def render_location(self):
         return "%s" % self.location
 
     def render_body(self):
         kind = COMPUTE_KIND
+        mixins = []
+        if self.instance.template:
+            mixins.append(OsTemplate(self.instance.template))
+
         return render_to_string("occi/compute.html", {
             'kind': kind,
             'attrs': self.attrs,
+            'mixins': mixins,
         })
 
     def init_attrs(self):
-        for k, v in self.translate.items():
+        translate = {
+            'occi.core.id': "id",
+            'occi.compute.architecture': "arch",
+            'occi.compute.cores': "num_cores",
+            'occi.compute.hostname': "short_hostname",
+            'occi.compute.speed': "priority",
+            'occi.compute.memory': "ram_size",
+        }
+        for k, v in translate.items():
             self.attrs[k] = getattr(self.instance, v, None)
+
+        priority = self.instance.priority
+        self.attrs['occi.compute.speed'] = priority/100.0 * 5.0
 
     def trigger_action(self, data):
         method = None
@@ -178,7 +228,10 @@ class Compute(Resource):
         for d in data:
             m = occi_attribute_regex.match(d)
             if m:
-                method = m.group("method")
+                attribute = m.group("attribute")
+                if attribute == "method":
+                    method = m.group("value")
+
             m = occi_action_regex.match(d)
             if m:
                 action_term = m.group("term")

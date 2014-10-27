@@ -14,6 +14,26 @@ from .occi import (
 )
 
 
+def get_post_data_from_request(request):
+    """ Returns the post data in an array
+    """
+    post_data = []
+    accept = request.META.get("HTTP_ACCEPT")
+    if accept and accept.split(",")[0] == "text/occi":
+        for k, v in request.META.iteritems():
+            if k.startswith("HTTP_X_OCCI_ATTRIBUTE"):
+                for l in v.split(","):
+                    post_data.append("X-OCCI-Attribute: %s" % l.strip())
+            if k.startswith("HTTP_CATEGORY"):
+                for l in v.split(","):
+                    post_data.append("Category: %s" % l.strip())
+    else:  # text/plain or missing
+        for l in request.readlines():
+            if l:
+                post_data.append(l.strip())
+    return post_data
+
+
 class QueryInterface(View):
 
     def get(self, request, *args, **kwargs):
@@ -50,17 +70,14 @@ class ComputeInterface(View):
         )
 
     def post(self, request, *args, **kwargs):
-        occi_attrs = None
-        category = None
-        for k, v in request.META.iteritems():
-            if k.startswith("HTTP_X_OCCI_ATTRIBUTE"):
-                occi_attrs = v.split(",")
-            elif k.startswith("HTTP_CATEGORY") and category is None:
-                category = v
+        data = get_post_data_from_request(request)
 
-        c = Compute(attrs=occi_attrs)
-        response = HttpResponse()
-        response['Location'] = c.location
+        c = Compute.create_object(data=data)
+        response = HttpResponse(
+            "X-OCCI-Location: %s" % c.location,
+            status=201,
+            content_type="text/plain",
+        )
         return response
 
     @method_decorator(csrf_exempt)  # decorator on post method doesn't work
@@ -80,23 +97,12 @@ class VmInterface(DetailView):
         )
 
     def post(self, request, *args, **kwargs):
-        data = self.get_post_data(request)
+        data = get_post_data_from_request(request)
         action = request.GET.get("action")
         vm = self.get_object()
         if action:
             Compute(instance=vm).trigger_action(data)
         return HttpResponse()
-
-    def get_post_data(self, request):
-        post_data = []
-        accept = request.META.get("HTTP_ACCEPT")
-        if accept and accept.split(",")[0] == "text/occi":
-            pass
-        else:  # text/plain or missing
-            for l in request.readlines():
-                if l:
-                    post_data.append(l.strip())
-        return post_data
 
     @method_decorator(csrf_exempt)  # decorator on post method doesn't work
     def dispatch(self, *args, **kwargs):
