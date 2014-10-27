@@ -26,7 +26,7 @@ from django.http import HttpResponse, Http404
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import View
 
-from braces.views import LoginRequiredMixin, SuperuserRequiredMixin
+from braces.views import LoginRequiredMixin
 
 from vm.models import Instance, Node
 
@@ -142,22 +142,28 @@ class VmGraphView(GraphViewBase):
     base = VmMetric
 
 
-class NodeGraphView(SuperuserRequiredMixin, GraphViewBase):
+class NodeGraphView(GraphViewBase):
     model = Node
     base = NodeMetric
 
     def get_object(self, request, pk):
+        if not self.request.user.has_perm('vm.view_statistics'):
+            raise PermissionDenied()
         return self.model.objects.get(id=pk)
 
 
-class NodeListGraphView(SuperuserRequiredMixin, GraphViewBase):
+class NodeListGraphView(GraphViewBase):
     model = Node
     base = Metric
 
     def get_object(self, request, pk):
+        if not self.request.user.has_perm('vm.view_statistics'):
+            raise PermissionDenied()
         return Node.objects.filter(enabled=True)
 
     def get(self, request, metric, time, *args, **kwargs):
+        if not self.request.user.has_perm('vm.view_statistics'):
+            raise PermissionDenied()
         return super(NodeListGraphView, self).get(request, None, metric, time)
 
 

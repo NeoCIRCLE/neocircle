@@ -88,7 +88,9 @@ class Node(OperatedMixin, TimeStampedModel):
     class Meta:
         app_label = 'vm'
         db_table = 'vm_node'
-        permissions = ()
+        permissions = (
+            ('view_statistics', _('Can view Node box and statistics.')),
+        )
         ordering = ('-enabled', 'normalized_name')
 
     def __unicode__(self):
