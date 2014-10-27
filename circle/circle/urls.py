@@ -68,7 +68,7 @@ urlpatterns = patterns(
     url(r'^info/support/$',
         TemplateView.as_view(template_name="info/support.html"),
         name="info.support"),
-    url(r'^occi/', include('occi.urls')),
+    url(r'^', include('occi.urls')),  # this seems silly
 )
 
 

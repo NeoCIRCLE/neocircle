@@ -5,7 +5,7 @@ from vm.models import Instance, Lease
 from vm.models.common import ARCHITECTURES
 from vm.models.instance import ACCESS_METHODS
 
-OCCI_ADDR = "https://miskolc.cloud.bme.hu:12598/"
+OCCI_ADDR = "http://localhost:8080/"
 
 
 class Category():
@@ -36,7 +36,7 @@ class Category():
                 ret += ' %s="%s";' % (i, getattr(self, i))
 
         if hasattr(self, "location"):
-            ret += ' location="%s";' % (self.location % OCCI_ADDR)
+            ret += ' location="%s";' % self.location
         if hasattr(self, "attributes"):
             ret += ' attributes="%s";' % " ".join(
                 [a.render() for a in self.attributes])
@@ -49,6 +49,10 @@ class Category():
 
 # TODO related, entity_type, entities
 class Kind(Category):
+    pass
+
+
+class Mixin(Category):
     pass
 
 
@@ -89,7 +93,7 @@ class Compute(Resource):
     def __init__(self, instance=None, attrs=None, **kwargs):
         self.attrs = {}
         if instance:
-            self.location = "%socci/vm/%d/" % (OCCI_ADDR, instance.pk)
+            self.location = "%svm/%d/" % (OCCI_ADDR, instance.pk)
             self.instance = instance
             self.init_attrs()
         elif attrs:
@@ -127,7 +131,7 @@ class Compute(Resource):
         params['name'] = "from occi yo"
         i = Instance.create(params=params, disks=[], networks=[],
                             req_traits=[], tags=[])
-        self.location = "%socci/vm/%d/" % (OCCI_ADDR, i.pk)
+        self.location = "%svm/%d/" % (OCCI_ADDR, i.pk)
 
     def render_location(self):
         return "%s" % self.location
@@ -142,6 +146,28 @@ class Compute(Resource):
     def init_attrs(self):
         for k, v in self.translate.items():
             self.attrs[k] = getattr(self.instance, v, None)
+
+
+class OsTemplate(Mixin):
+    def __init__(self, template):
+        self.term = "os_tpl_%d" % template.pk
+        self.title = template.system
+        self.scheme = "http://cloud.bme.hu/occi/infrastructure/os_tpl#"
+        self.rel = "http://schemas.ogf.org/occi/infrastructure#os_tpl"
+        self.location = "/mixin/os_tpl/%s/" % self.term
+
+    def render_location(self):
+        return self.location
+
+    def render_body(self):
+        return render_to_string("occi/os_tpl.html", {
+            'term': self.term,
+            'scheme': self.scheme,
+            'rel': self.rel,
+            'location': self.location,
+            'class': "mixin",
+            'title': self.title,
+        })
 
 
 """predefined stuffs
@@ -204,5 +230,13 @@ COMPUTE_KIND = Kind(
     rel="http://schemas.ogf.org/occi/core#resource",
     attributes=COMPUTE_ATTRS,
     actions=COMPUTE_ACTIONS,
-    location="%scompute/",
+    location="/compute/",
+)
+
+OS_TPL_MIXIN = Mixin(
+    term="os_tpl",
+    scheme="http://schemas.ogf.org/occi/infrastructure#",
+    class_="mixin",
+    title="os template",
+    location="/mixin/os_tpl/",
 )

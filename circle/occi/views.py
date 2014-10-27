@@ -3,12 +3,14 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View, DetailView
 
-from vm.models import Instance
+from vm.models import Instance, InstanceTemplate
 
 from .occi import (
     Compute,
+    OsTemplate,
     COMPUTE_KIND,
     COMPUTE_ACTIONS,
+    OS_TPL_MIXIN,
 )
 
 
@@ -16,8 +18,12 @@ class QueryInterface(View):
 
     def get(self, request, *args, **kwargs):
         response = "Category: %s\n" % COMPUTE_KIND.render_values()
+        response += "Category: %s\n" % OS_TPL_MIXIN.render_values()
         for c in COMPUTE_ACTIONS:
             response += "Category: %s\n" % c.render_values()
+
+        for t in InstanceTemplate.objects.all():
+            response += OsTemplate(t).render_body()
 
         return HttpResponse(
             response,
@@ -80,6 +86,25 @@ class VmInterface(DetailView):
     @method_decorator(csrf_exempt)  # decorator on post method doesn't work
     def dispatch(self, *args, **kwargs):
         return super(VmInterface, self).dispatch(*args, **kwargs)
+
+
+class OsTplInterface(View):
+
+    def get(self, request, *args, **kwargs):
+        response = "\n".join([OsTemplate(template=t).render_location()
+                             for t in InstanceTemplate.objects.all()])
+        return HttpResponse(
+            response,
+            content_type="text/plain",
+        )
+
+    def post(self, request, *args, **kwargs):
+        pass
+
+    @method_decorator(csrf_exempt)  # decorator on post method doesn't work
+    def dispatch(self, *args, **kwargs):
+        return super(OsTplInterface, self).dispatch(*args, **kwargs)
+
 
 """
 test commands:
