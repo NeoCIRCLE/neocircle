@@ -16,16 +16,19 @@
         {% endif %}
       </div>
  {% load crispy_forms_tags %}
+
 <style>
   .row {
     margin-bottom: 15px;
   }
 </style>
 
-  <form action="{% url "dashboard.views.node-addtrait" node.pk %}" method="POST">
-  {% csrf_token %}
-  {% crispy trait_form %}
-  </form>
+  {% if request.user.is_superuser %}
+    <form action="{% url "dashboard.views.node-addtrait" node.pk %}" method="POST">
+    {% csrf_token %}
+    {% crispy trait_form %}
+    </form>
+  {% endif %}
     </div><!-- id:node-details-traits -->
   </div>
   <div class="col-md-8">
