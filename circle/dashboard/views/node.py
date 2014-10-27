@@ -82,9 +82,12 @@ class NodeDetailView(LoginRequiredMixin,
     form = None
     form_class = TraitForm
 
-    def get_context_data(self, form=None, **kwargs):
+    def get(self, *args, **kwargs):
         if not self.request.user.has_perm('vm.view_statistics'):
             raise PermissionDenied()
+        return super(NodeDetailView, self).get(*args, **kwargs)
+
+    def get_context_data(self, form=None, **kwargs):
         if form is None:
             form = self.form_class()
         context = super(NodeDetailView, self).get_context_data(**kwargs)
