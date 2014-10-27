@@ -10,8 +10,10 @@
       {% include "dashboard/vm-detail/_operations.html" %}
     </div>
      <div class="pull-right" style="padding-top: 15px;">
+     {% if request.user.is_superuser %}
       <a title="{% trans "Rename" %}" href="#" class="btn btn-default btn-xs node-details-rename-button"><i class="fa fa-pencil"></i></a>
       <a title="{% trans "Delete" %}" data-node-pk="{{ node.pk }}" class="btn btn-default btn-xs real-link node-delete" href="{% url "dashboard.views.delete-node" pk=node.pk %}"><i class="fa fa-trash-o"></i></a>
+     {% endif  %}
     </div>
    <h1>
       <div id="node-details-rename">
