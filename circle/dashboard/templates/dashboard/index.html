@@ -35,7 +35,7 @@
     </div>
     {% endif %}
 
-    {% if user.is_superuser %}
+    {% if perms.vm.view_statistics %}
     <div class="col-lg-4 col-sm-6">
       {% include "dashboard/index-nodes.html" %}
     </div>
