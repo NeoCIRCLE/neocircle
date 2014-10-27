@@ -80,8 +80,23 @@ class VmInterface(DetailView):
         )
 
     def post(self, request, *args, **kwargs):
-        # actions, resource change
-        pass
+        data = self.get_post_data(request)
+        action = request.GET.get("action")
+        vm = self.get_object()
+        if action:
+            Compute(instance=vm).trigger_action(data)
+        return HttpResponse()
+
+    def get_post_data(self, request):
+        post_data = []
+        accept = request.META.get("HTTP_ACCEPT")
+        if accept and accept.split(",")[0] == "text/occi":
+            pass
+        else:  # text/plain or missing
+            for l in request.readlines():
+                if l:
+                    post_data.append(l.strip())
+        return post_data
 
     @method_decorator(csrf_exempt)  # decorator on post method doesn't work
     def dispatch(self, *args, **kwargs):

@@ -1,3 +1,5 @@
+import re
+
 from django.contrib.auth.models import User
 from django.template.loader import render_to_string
 
@@ -6,6 +8,29 @@ from vm.models.common import ARCHITECTURES
 from vm.models.instance import ACCESS_METHODS
 
 OCCI_ADDR = "http://localhost:8080/"
+
+occi_attribute_regex = re.compile(
+    '^X-OCCI-Attribute: ?method="(?P<method>[a-zA-Z]+)"$')
+
+occi_action_regex = re.compile(
+    '^Category: (?P<term>[a-zA-Z]+); ?scheme=".+"; ?class="action"$')
+
+compute_action_to_operation = {
+    'stop': {
+        'graceful': "shutdown",
+        'acpioff': "shutdown",
+        'poweroff': "shut_off",
+    },
+    'restart': {
+        'graceful': "restart",
+        'warm': "restart",
+        'cold': "reset",
+    },
+    'suspend': {
+        'suspend': "sleep",
+        'hibernate': "sleep",
+    }
+}
 
 
 class Category():
@@ -146,6 +171,30 @@ class Compute(Resource):
     def init_attrs(self):
         for k, v in self.translate.items():
             self.attrs[k] = getattr(self.instance, v, None)
+
+    def trigger_action(self, data):
+        method = None
+        action_term = None
+        for d in data:
+            m = occi_attribute_regex.match(d)
+            if m:
+                method = m.group("method")
+            m = occi_action_regex.match(d)
+            if m:
+                action_term = m.group("term")
+
+        if action_term == "start":
+            if self.instance.status == "SUSPENDED":
+                operation = "wake_up"
+            else:
+                operation = "deploy"
+        else:
+            action = compute_action_to_operation.get(action_term)
+            operation = action.get(method)
+
+        # TODO user
+        user = User.objects.get(username="test")
+        getattr(self.instance, operation).async(user=user)
 
 
 class OsTemplate(Mixin):
