@@ -6,6 +6,7 @@ from django.core.management.base import BaseCommand
 from django.conf import settings
 
 STATIC_FILES = u'--include-path={}'.format(':'.join(settings.STATICFILES_DIRS))
+IGNORED_FOLDERS = ("static_collected", "bower_components", )
 
 
 class LessUtils(object):
@@ -39,8 +40,7 @@ class LessUtils(object):
                     continue
 
                 relpath = os.path.relpath(root, settings.SITE_ROOT)
-                if relpath.startswith(("static_collected",
-                                       "bower_components")):
+                if relpath.startswith(IGNORED_FOLDERS):
                     continue
 
                 less_pathname = "%s/%s" % (root, f)
@@ -57,6 +57,10 @@ class LessUtils(object):
         class EventHandler(pyinotify.ProcessEvent):
             def process_IN_MODIFY(self, event):
                 if not event.name.endswith(".less"):
+                    return
+
+                relpath = os.path.relpath(event.pathname, settings.SITE_ROOT)
+                if relpath.startswith(IGNORED_FOLDERS):
                     return
 
                 css_pathname = LessUtils.less_path_to_css_path(event.pathname)
