@@ -16,24 +16,32 @@
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, unicode_literals
+from base64 import encodestring
+from hashlib import md5
 from logging import getLogger
+import os
 from re import search
 from string import ascii_lowercase
+from StringIO import StringIO
+from tarfile import TarFile, TarInfo
+import time
 from urlparse import urlsplit
 
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _, ugettext_noop
 from django.conf import settings
+from django.db.models import Q
 
 from sizefield.utils import filesizeformat
 
-from celery.exceptions import TimeLimitExceeded
+from celery.contrib.abortable import AbortableAsyncResult
+from celery.exceptions import TimeLimitExceeded, TimeoutError
 
 from common.models import (
     create_readable, humanize_exception, HumanReadableException
 )
-from common.operations import Operation, register_operation
+from common.operations import Operation, register_operation, SubOperationMixin
 from manager.scheduler import SchedulerError
 from .tasks.local_tasks import (
     abortable_async_instance_operation, abortable_async_node_operation,
@@ -42,11 +50,46 @@ from .models import (
     Instance, InstanceActivity, InstanceTemplate, Interface, Node,
     NodeActivity, pwgen
 )
-from .tasks import agent_tasks, local_agent_tasks
+from .tasks import agent_tasks, vm_tasks
 
 from dashboard.store_api import Store, NoStoreException
+from firewall.models import Host
+from monitor.client import Client
+from storage.tasks import storage_tasks
 
 logger = getLogger(__name__)
+
+
+class RemoteOperationMixin(object):
+
+    remote_timeout = 30
+
+    def _operation(self, **kwargs):
+        args = self._get_remote_args(**kwargs)
+        return self.task.apply_async(
+            args=args, queue=self._get_remote_queue()
+        ).get(timeout=self.remote_timeout)
+
+    def check_precond(self):
+        super(RemoteOperationMixin, self).check_precond()
+        self._get_remote_queue()
+
+
+class AbortableRemoteOperationMixin(object):
+    remote_step = property(lambda self: self.remote_timeout / 10)
+
+    def _operation(self, task, **kwargs):
+        args = self._get_remote_args(**kwargs),
+        remote = self.task.apply_async(
+            args=args, queue=self._get_remote_queue())
+        for i in xrange(0, self.remote_timeout, self.remote_step):
+            try:
+                return remote.get(timeout=self.remote_step)
+            except TimeoutError as e:
+                if task is not None and task.is_aborted():
+                    AbortableAsyncResult(remote.id).abort()
+                    raise humanize_exception(ugettext_noop(
+                        "Operation aborted by user."), e)
 
 
 class InstanceOperation(Operation):
@@ -100,12 +143,13 @@ class InstanceOperation(Operation):
                                  "parent activity does not match the user "
                                  "provided as parameter.")
 
-            return parent.create_sub(code_suffix=self.activity_code_suffix,
-                                     readable_name=name,
-                                     resultant_state=self.resultant_state)
+            return parent.create_sub(
+                code_suffix=self.get_activity_code_suffix(),
+                readable_name=name, resultant_state=self.resultant_state)
         else:
             return InstanceActivity.create(
-                code_suffix=self.activity_code_suffix, instance=self.instance,
+                code_suffix=self.get_activity_code_suffix(),
+                instance=self.instance,
                 readable_name=name, user=user,
                 concurrency_check=self.concurrency_check,
                 resultant_state=self.resultant_state)
@@ -116,9 +160,43 @@ class InstanceOperation(Operation):
         return False
 
 
+class RemoteInstanceOperation(RemoteOperationMixin, InstanceOperation):
+
+    remote_queue = ('vm', 'fast')
+
+    def _get_remote_queue(self):
+        return self.instance.get_remote_queue_name(*self.remote_queue)
+
+    def _get_remote_args(self, **kwargs):
+        return [self.instance.vm_name]
+
+
+class EnsureAgentMixin(object):
+    accept_states = ('RUNNING', )
+
+    def check_precond(self):
+        super(EnsureAgentMixin, self).check_precond()
+
+        last_boot_time = self.instance.activity_log.filter(
+            succeeded=True, activity_code__in=(
+                "vm.Instance.deploy", "vm.Instance.reset",
+                "vm.Instance.reboot")).latest("finished").finished
+
+        try:
+            InstanceActivity.objects.filter(
+                activity_code="vm.Instance.agent.starting",
+                started__gt=last_boot_time).latest("started")
+        except InstanceActivity.DoesNotExist:  # no agent since last boot
+            raise self.instance.NoAgentError(self.instance)
+
+
+class RemoteAgentOperation(EnsureAgentMixin, RemoteInstanceOperation):
+    remote_queue = ('agent', )
+    concurrency_check = False
+
+
 @register_operation
 class AddInterfaceOperation(InstanceOperation):
-    activity_code_suffix = 'add_interface'
     id = 'add_interface'
     name = _("add interface")
     description = _("Add a new network interface for the specified VLAN to "
@@ -146,16 +224,15 @@ class AddInterfaceOperation(InstanceOperation):
 
         if self.instance.is_running:
             try:
-                with activity.sub_activity(
-                    'attach_network',
-                        readable_name=ugettext_noop("attach network")):
-                    self.instance.attach_network(net)
+                self.instance._attach_network(
+                    interface=net, parent_activity=activity)
             except Exception as e:
                 if hasattr(e, 'libvirtError'):
                     self.rollback(net, activity)
                 raise
             net.deploy()
-            local_agent_tasks.send_networking_commands(self.instance, activity)
+            self.instance._change_ip(parent_activity=activity)
+            self.instance._restart_networking(parent_activity=activity)
 
     def get_activity_name(self, kwargs):
         return create_readable(ugettext_noop("add %(vlan)s interface"),
@@ -165,7 +242,6 @@ class AddInterfaceOperation(InstanceOperation):
 @register_operation
 class CreateDiskOperation(InstanceOperation):
 
-    activity_code_suffix = 'create_disk'
     id = 'create_disk'
     name = _("create disk")
     description = _("Create and attach empty disk to the virtual machine.")
@@ -192,11 +268,7 @@ class CreateDiskOperation(InstanceOperation):
                 readable_name=ugettext_noop("deploying disk")
             ):
                 disk.deploy()
-            with activity.sub_activity(
-                'attach_disk',
-                readable_name=ugettext_noop("attach disk")
-            ):
-                self.instance.attach_disk(disk)
+            self.instance._attach_disk(parent_activity=activity, disk=disk)
 
     def get_activity_name(self, kwargs):
         return create_readable(
@@ -205,9 +277,8 @@ class CreateDiskOperation(InstanceOperation):
 
 
 @register_operation
-class ResizeDiskOperation(InstanceOperation):
+class ResizeDiskOperation(RemoteInstanceOperation):
 
-    activity_code_suffix = 'resize_disk'
     id = 'resize_disk'
     name = _("resize disk")
     description = _("Resize the virtual disk image. "
@@ -215,19 +286,26 @@ class ResizeDiskOperation(InstanceOperation):
     required_perms = ('storage.resize_disk', )
     accept_states = ('RUNNING', )
     async_queue = "localhost.man.slow"
+    remote_queue = ('vm', 'slow')
+    task = vm_tasks.resize_disk
 
-    def _operation(self, user, disk, size, activity):
-        self.instance.resize_disk_live(disk, size)
+    def _get_remote_args(self, disk, size, **kwargs):
+        return (super(ResizeDiskOperation, self)
+                ._get_remote_args(**kwargs) + [disk.path, size])
 
     def get_activity_name(self, kwargs):
         return create_readable(
             ugettext_noop("resize disk %(name)s to %(size)s"),
             size=filesizeformat(kwargs['size']), name=kwargs['disk'].name)
 
+    def _operation(self, disk, size):
+        super(ResizeDiskOperation, self)._operation(disk=disk, size=size)
+        disk.size = size
+        disk.save()
+
 
 @register_operation
 class DownloadDiskOperation(InstanceOperation):
-    activity_code_suffix = 'download_disk'
     id = 'download_disk'
     name = _("download disk")
     description = _("Download and attach disk image (ISO file) for the "
@@ -241,7 +319,6 @@ class DownloadDiskOperation(InstanceOperation):
     async_queue = "localhost.man.slow"
 
     def _operation(self, user, url, task, activity, name=None):
-        activity.result = url
         from storage.models import Disk
 
         disk = Disk.download(url=url, name=name, task=task)
@@ -255,18 +332,17 @@ class DownloadDiskOperation(InstanceOperation):
         activity.readable_name = create_readable(
             ugettext_noop("download %(name)s"), name=disk.name)
 
+        activity.result = create_readable(ugettext_noop(
+            "Downloading %(url)s is finished. The file md5sum "
+            "is: '%(checksum)s'."),
+            url=url, checksum=disk.checksum)
         # TODO iso (cd) hot-plug is not supported by kvm/guests
         if self.instance.is_running and disk.type not in ["iso"]:
-            with activity.sub_activity(
-                'attach_disk',
-                readable_name=ugettext_noop("attach disk")
-            ):
-                self.instance.attach_disk(disk)
+            self.instance._attach_disk(parent_activity=activity, disk=disk)
 
 
 @register_operation
 class DeployOperation(InstanceOperation):
-    activity_code_suffix = 'deploy'
     id = 'deploy'
     name = _("deploy")
     description = _("Deploy and start the virtual machine (including storage "
@@ -290,25 +366,21 @@ class DeployOperation(InstanceOperation):
                           "deployed to node: %(node)s"),
             node=self.instance.node)
 
-    def _operation(self, activity, timeout=15):
+    def _operation(self, activity, node=None):
         # Allocate VNC port and host node
         self.instance.allocate_vnc_port()
-        self.instance.allocate_node(activity)
+        if node is not None:
+            self.instance.node = node
+            self.instance.save()
+        else:
+            self.instance.allocate_node()
 
         # Deploy virtual images
-        with activity.sub_activity(
-            'deploying_disks', readable_name=ugettext_noop(
-                "deploy disks")):
-            self.instance.deploy_disks()
+        self.instance._deploy_disks(parent_activity=activity)
 
         # Deploy VM on remote machine
         if self.instance.state not in ['PAUSED']:
-            rn = create_readable(ugettext_noop("deploy virtual machine"),
-                                 ugettext_noop("deploy vm to %(node)s"),
-                                 node=self.instance.node)
-            with activity.sub_activity(
-                    'deploying_vm', readable_name=rn) as deploy_act:
-                deploy_act.result = self.instance.deploy_vm(timeout=timeout)
+            self.instance._deploy_vm(parent_activity=activity)
 
         # Establish network connection (vmdriver)
         with activity.sub_activity(
@@ -321,20 +393,57 @@ class DeployOperation(InstanceOperation):
         except:
             pass
 
-        # Resume vm
-        with activity.sub_activity(
-            'booting', readable_name=ugettext_noop(
-                "boot virtual machine")):
-            self.instance.resume_vm(timeout=timeout)
+        self.instance._resume_vm(parent_activity=activity)
 
         if self.instance.has_agent:
             activity.sub_activity('os_boot', readable_name=ugettext_noop(
                 "wait operating system loading"), interruptible=True)
 
+    @register_operation
+    class DeployVmOperation(SubOperationMixin, RemoteInstanceOperation):
+        id = "_deploy_vm"
+        name = _("deploy vm")
+        description = _("Deploy virtual machine.")
+        remote_queue = ("vm", "slow")
+        task = vm_tasks.deploy
+
+        def _get_remote_args(self, **kwargs):
+            return [self.instance.get_vm_desc()]
+            # intentionally not calling super
+
+        def get_activity_name(self, kwargs):
+            return create_readable(ugettext_noop("deploy virtual machine"),
+                                   ugettext_noop("deploy vm to %(node)s"),
+                                   node=self.instance.node)
+
+    @register_operation
+    class DeployDisksOperation(SubOperationMixin, InstanceOperation):
+        id = "_deploy_disks"
+        name = _("deploy disks")
+        description = _("Deploy all associated disks.")
+
+        def _operation(self):
+            devnums = list(ascii_lowercase)  # a-z
+            for disk in self.instance.disks.all():
+                # assign device numbers
+                if disk.dev_num in devnums:
+                    devnums.remove(disk.dev_num)
+                else:
+                    disk.dev_num = devnums.pop(0)
+                    disk.save()
+                # deploy disk
+                disk.deploy()
+
+    @register_operation
+    class ResumeVmOperation(SubOperationMixin, RemoteInstanceOperation):
+        id = "_resume_vm"
+        name = _("boot virtual machine")
+        remote_queue = ("vm", "slow")
+        task = vm_tasks.resume
+
 
 @register_operation
 class DestroyOperation(InstanceOperation):
-    activity_code_suffix = 'destroy'
     id = 'destroy'
     name = _("destroy")
     description = _("Permanently destroy virtual machine, its network "
@@ -342,7 +451,7 @@ class DestroyOperation(InstanceOperation):
     required_perms = ()
     resultant_state = 'DESTROYED'
 
-    def _operation(self, activity):
+    def _operation(self, activity, system):
         # Destroy networks
         with activity.sub_activity(
                 'destroying_net',
@@ -352,11 +461,7 @@ class DestroyOperation(InstanceOperation):
             self.instance.destroy_net()
 
         if self.instance.node:
-            # Delete virtual machine
-            with activity.sub_activity(
-                    'destroying_vm',
-                    readable_name=ugettext_noop("destroy virtual machine")):
-                self.instance.delete_vm()
+            self.instance._delete_vm(parent_activity=activity)
 
         # Destroy disks
         with activity.sub_activity(
@@ -366,7 +471,7 @@ class DestroyOperation(InstanceOperation):
 
         # Delete mem. dump if exists
         try:
-            self.instance.delete_mem_dump()
+            self.instance._delete_mem_dump(parent_activity=activity)
         except:
             pass
 
@@ -377,18 +482,45 @@ class DestroyOperation(InstanceOperation):
         self.instance.destroyed_at = timezone.now()
         self.instance.save()
 
+    @register_operation
+    class DeleteVmOperation(SubOperationMixin, RemoteInstanceOperation):
+        id = "_delete_vm"
+        name = _("destroy virtual machine")
+        task = vm_tasks.destroy
+        # if e.libvirtError and "Domain not found" in str(e):
+
+    @register_operation
+    class DeleteMemDumpOperation(RemoteOperationMixin, SubOperationMixin,
+                                 InstanceOperation):
+        id = "_delete_mem_dump"
+        name = _("removing memory dump")
+        task = storage_tasks.delete_dump
+
+        def _get_remote_queue(self):
+            return self.instance.mem_dump['datastore'].get_remote_queue_name(
+                "storage", "fast")
+
+        def _get_remote_args(self, **kwargs):
+            return [self.instance.mem_dump['path']]
+
 
 @register_operation
-class MigrateOperation(InstanceOperation):
-    activity_code_suffix = 'migrate'
+class MigrateOperation(RemoteInstanceOperation):
     id = 'migrate'
     name = _("migrate")
-    description = _("Move virtual machine to an other worker node with a few "
-                    "seconds of interruption (live migration).")
+    description = _("Move a running virtual machine to an other worker node "
+                    "keeping its full state.")
     required_perms = ()
     superuser_required = True
     accept_states = ('RUNNING', )
     async_queue = "localhost.man.slow"
+    task = vm_tasks.migrate
+    remote_queue = ("vm", "slow")
+    remote_timeout = 1000
+
+    def _get_remote_args(self, to_node, live_migration, **kwargs):
+        return (super(MigrateOperation, self)._get_remote_args(**kwargs)
+                + [to_node.host.hostname, live_migration])
 
     def rollback(self, activity):
         with activity.sub_activity(
@@ -396,14 +528,20 @@ class MigrateOperation(InstanceOperation):
                 "redeploy network (rollback)")):
             self.instance.deploy_net()
 
-    def _operation(self, activity, to_node=None, timeout=120):
+    def _operation(self, activity, to_node=None, live_migration=True):
         if not to_node:
-            self.instance.allocate_node(activity)
+            with activity.sub_activity('scheduling',
+                                       readable_name=ugettext_noop(
+                                           "schedule")) as sa:
+                to_node = self.instance.select_node()
+                sa.result = to_node
+
         try:
             with activity.sub_activity(
                 'migrate_vm', readable_name=create_readable(
                     ugettext_noop("migrate to %(node)s"), node=to_node)):
-                self.instance.migrate_vm(to_node=to_node, timeout=timeout)
+                super(MigrateOperation, self)._operation(
+                    to_node=to_node, live_migration=live_migration)
         except Exception as e:
             if hasattr(e, 'libvirtError'):
                 self.rollback(activity)
@@ -418,6 +556,7 @@ class MigrateOperation(InstanceOperation):
         # Refresh node information
         self.instance.node = to_node
         self.instance.save()
+
         # Estabilish network connection (vmdriver)
         with activity.sub_activity(
             'deploying_net', readable_name=ugettext_noop(
@@ -426,17 +565,17 @@ class MigrateOperation(InstanceOperation):
 
 
 @register_operation
-class RebootOperation(InstanceOperation):
-    activity_code_suffix = 'reboot'
+class RebootOperation(RemoteInstanceOperation):
     id = 'reboot'
     name = _("reboot")
     description = _("Warm reboot virtual machine by sending Ctrl+Alt+Del "
                     "signal to its console.")
     required_perms = ()
     accept_states = ('RUNNING', )
+    task = vm_tasks.reboot
 
-    def _operation(self, activity, timeout=5):
-        self.instance.reboot_vm(timeout=timeout)
+    def _operation(self, activity):
+        super(RebootOperation, self)._operation()
         if self.instance.has_agent:
             activity.sub_activity('os_boot', readable_name=ugettext_noop(
                 "wait operating system loading"), interruptible=True)
@@ -444,7 +583,6 @@ class RebootOperation(InstanceOperation):
 
 @register_operation
 class RemoveInterfaceOperation(InstanceOperation):
-    activity_code_suffix = 'remove_interface'
     id = 'remove_interface'
     name = _("remove interface")
     description = _("Remove the specified network interface and erase IP "
@@ -455,11 +593,8 @@ class RemoveInterfaceOperation(InstanceOperation):
 
     def _operation(self, activity, user, system, interface):
         if self.instance.is_running:
-            with activity.sub_activity(
-                'detach_network',
-                readable_name=ugettext_noop("detach network")
-            ):
-                self.instance.detach_network(interface)
+            self.instance._detach_network(interface=interface,
+                                          parent_activity=activity)
             interface.shutdown()
 
         interface.destroy()
@@ -472,7 +607,6 @@ class RemoveInterfaceOperation(InstanceOperation):
 
 @register_operation
 class RemoveDiskOperation(InstanceOperation):
-    activity_code_suffix = 'remove_disk'
     id = 'remove_disk'
     name = _("remove disk")
     description = _("Remove the specified disk from the virtual machine, and "
@@ -482,15 +616,12 @@ class RemoveDiskOperation(InstanceOperation):
 
     def _operation(self, activity, user, system, disk):
         if self.instance.is_running and disk.type not in ["iso"]:
-            with activity.sub_activity(
-                'detach_disk',
-                readable_name=ugettext_noop('detach disk')
-            ):
-                self.instance.detach_disk(disk)
+            self.instance._detach_disk(disk=disk, parent_activity=activity)
         with activity.sub_activity(
             'destroy_disk',
             readable_name=ugettext_noop('destroy disk')
         ):
+            disk.destroy()
             return self.instance.disks.remove(disk)
 
     def get_activity_name(self, kwargs):
@@ -499,16 +630,16 @@ class RemoveDiskOperation(InstanceOperation):
 
 
 @register_operation
-class ResetOperation(InstanceOperation):
-    activity_code_suffix = 'reset'
+class ResetOperation(RemoteInstanceOperation):
     id = 'reset'
     name = _("reset")
     description = _("Cold reboot virtual machine (power cycle).")
     required_perms = ()
     accept_states = ('RUNNING', )
+    task = vm_tasks.reset
 
-    def _operation(self, activity, timeout=5):
-        self.instance.reset_vm(timeout=timeout)
+    def _operation(self, activity):
+        super(ResetOperation, self)._operation()
         if self.instance.has_agent:
             activity.sub_activity('os_boot', readable_name=ugettext_noop(
                 "wait operating system loading"), interruptible=True)
@@ -516,7 +647,6 @@ class ResetOperation(InstanceOperation):
 
 @register_operation
 class SaveAsTemplateOperation(InstanceOperation):
-    activity_code_suffix = 'save_as_template'
     id = 'save_as_template'
     name = _("save as template")
     description = _("Save virtual machine as a template so they can be shared "
@@ -548,8 +678,13 @@ class SaveAsTemplateOperation(InstanceOperation):
             for disk in self.disks:
                 disk.destroy()
 
-    def _operation(self, activity, user, system, timeout=300, name=None,
-                   with_shutdown=True, task=None, **kwargs):
+    def _operation(self, activity, user, system, name=None,
+                   with_shutdown=True, clone=False, task=None, **kwargs):
+        try:
+            self.instance._cleanup(parent_activity=activity, user=user)
+        except:
+            pass
+
         if with_shutdown:
             try:
                 ShutdownOperation(self.instance).call(parent_activity=activity,
@@ -599,6 +734,8 @@ class SaveAsTemplateOperation(InstanceOperation):
         tmpl = InstanceTemplate(**params)
         tmpl.full_clean()  # Avoiding database errors.
         tmpl.save()
+        if clone:
+            tmpl.clone_acl(self.instance.template)
         try:
             tmpl.disks.add(*self.disks)
             # create interface templates
@@ -612,8 +749,8 @@ class SaveAsTemplateOperation(InstanceOperation):
 
 
 @register_operation
-class ShutdownOperation(InstanceOperation):
-    activity_code_suffix = 'shutdown'
+class ShutdownOperation(AbortableRemoteOperationMixin,
+                        RemoteInstanceOperation):
     id = 'shutdown'
     name = _("shutdown")
     description = _("Try to halt virtual machine by a standard ACPI signal, "
@@ -624,9 +761,12 @@ class ShutdownOperation(InstanceOperation):
     required_perms = ()
     accept_states = ('RUNNING', )
     resultant_state = 'STOPPED'
+    task = vm_tasks.shutdown
+    remote_queue = ("vm", "slow")
+    remote_timeout = 120
 
-    def _operation(self, task=None):
-        self.instance.shutdown_vm(task=task)
+    def _operation(self, task):
+        super(ShutdownOperation, self)._operation(task=task)
         self.instance.yield_node()
 
     def on_abort(self, activity, error):
@@ -643,7 +783,6 @@ class ShutdownOperation(InstanceOperation):
 
 @register_operation
 class ShutOffOperation(InstanceOperation):
-    activity_code_suffix = 'shut_off'
     id = 'shut_off'
     name = _("shut off")
     description = _("Forcibly halt a virtual machine without notifying the "
@@ -654,7 +793,7 @@ class ShutOffOperation(InstanceOperation):
                     "operation is the same as interrupting the power supply "
                     "of a physical machine.")
     required_perms = ()
-    accept_states = ('RUNNING', )
+    accept_states = ('RUNNING', 'PAUSED')
     resultant_state = 'STOPPED'
 
     def _operation(self, activity):
@@ -662,16 +801,12 @@ class ShutOffOperation(InstanceOperation):
         with activity.sub_activity('shutdown_net'):
             self.instance.shutdown_net()
 
-        # Delete virtual machine
-        with activity.sub_activity('delete_vm'):
-            self.instance.delete_vm()
-
+        self.instance._delete_vm(parent_activity=activity)
         self.instance.yield_node()
 
 
 @register_operation
 class SleepOperation(InstanceOperation):
-    activity_code_suffix = 'sleep'
     id = 'sleep'
     name = _("sleep")
     description = _("Suspend virtual machine. This means the machine is "
@@ -697,25 +832,30 @@ class SleepOperation(InstanceOperation):
         else:
             activity.resultant_state = 'ERROR'
 
-    def _operation(self, activity, timeout=240):
-        # Destroy networks
-        with activity.sub_activity('shutdown_net', readable_name=ugettext_noop(
-                "shutdown network")):
-            self.instance.shutdown_net()
-
-        # Suspend vm
-        with activity.sub_activity('suspending',
+    def _operation(self, activity, system):
+        with activity.sub_activity('shutdown_net',
                                    readable_name=ugettext_noop(
-                                       "suspend virtual machine")):
-            self.instance.suspend_vm(timeout=timeout)
-
+                                       "shutdown network")):
+            self.instance.shutdown_net()
+        self.instance._suspend_vm(parent_activity=activity)
         self.instance.yield_node()
-        # VNC port needs to be kept
+
+    @register_operation
+    class SuspendVmOperation(SubOperationMixin, RemoteInstanceOperation):
+        id = "_suspend_vm"
+        name = _("suspend virtual machine")
+        task = vm_tasks.sleep
+        remote_queue = ("vm", "slow")
+        remote_timeout = 1000
+
+        def _get_remote_args(self, **kwargs):
+            return (super(SleepOperation.SuspendVmOperation, self)
+                    ._get_remote_args(**kwargs)
+                    + [self.instance.mem_dump['path']])
 
 
 @register_operation
 class WakeUpOperation(InstanceOperation):
-    activity_code_suffix = 'wake_up'
     id = 'wake_up'
     name = _("wake up")
     description = _("Wake up sleeping (suspended) virtual machine. This will "
@@ -724,6 +864,7 @@ class WakeUpOperation(InstanceOperation):
     required_perms = ()
     accept_states = ('SUSPENDED', )
     resultant_state = 'RUNNING'
+    async_queue = "localhost.man.slow"
 
     def is_preferred(self):
         return self.instance.status == self.instance.STATUS.SUSPENDED
@@ -734,16 +875,13 @@ class WakeUpOperation(InstanceOperation):
         else:
             activity.resultant_state = 'ERROR'
 
-    def _operation(self, activity, timeout=60):
+    def _operation(self, activity):
         # Schedule vm
         self.instance.allocate_vnc_port()
-        self.instance.allocate_node(activity)
+        self.instance.allocate_node()
 
         # Resume vm
-        with activity.sub_activity(
-            'resuming', readable_name=ugettext_noop(
-                "resume virtual machine")):
-            self.instance.wake_up_vm(timeout=timeout)
+        self.instance._wake_up_vm(parent_activity=activity)
 
         # Estabilish network connection (vmdriver)
         with activity.sub_activity(
@@ -756,10 +894,22 @@ class WakeUpOperation(InstanceOperation):
         except:
             pass
 
+    @register_operation
+    class WakeUpVmOperation(SubOperationMixin, RemoteInstanceOperation):
+        id = "_wake_up_vm"
+        name = _("resume virtual machine")
+        task = vm_tasks.wake_up
+        remote_queue = ("vm", "slow")
+        remote_timeout = 1000
+
+        def _get_remote_args(self, **kwargs):
+            return (super(WakeUpOperation.WakeUpVmOperation, self)
+                    ._get_remote_args(**kwargs)
+                    + [self.instance.mem_dump['path']])
+
 
 @register_operation
 class RenewOperation(InstanceOperation):
-    activity_code_suffix = 'renew'
     id = 'renew'
     name = _("renew")
     description = _("Virtual machines are suspended and destroyed after they "
@@ -794,7 +944,6 @@ class RenewOperation(InstanceOperation):
 
 @register_operation
 class ChangeStateOperation(InstanceOperation):
-    activity_code_suffix = 'emergency_change_state'
     id = 'emergency_change_state'
     name = _("emergency state change")
     description = _("Change the virtual machine state to NOSTATE. This "
@@ -824,7 +973,6 @@ class ChangeStateOperation(InstanceOperation):
 
 @register_operation
 class RedeployOperation(InstanceOperation):
-    activity_code_suffix = 'redeploy'
     id = 'redeploy'
     name = _("redeploy")
     description = _("Change the virtual machine state to NOSTATE "
@@ -878,17 +1026,17 @@ class NodeOperation(Operation):
                                  "parent activity does not match the user "
                                  "provided as parameter.")
 
-            return parent.create_sub(code_suffix=self.activity_code_suffix,
-                                     readable_name=name)
+            return parent.create_sub(
+                code_suffix=self.get_activity_code_suffix(),
+                readable_name=name)
         else:
-            return NodeActivity.create(code_suffix=self.activity_code_suffix,
-                                       node=self.node, user=user,
-                                       readable_name=name)
+            return NodeActivity.create(
+                code_suffix=self.get_activity_code_suffix(), node=self.node,
+                user=user, readable_name=name)
 
 
 @register_operation
 class ResetNodeOperation(NodeOperation):
-    activity_code_suffix = 'reset'
     id = 'reset'
     name = _("reset")
     description = _("Disable missing node and redeploy all instances "
@@ -917,7 +1065,6 @@ class ResetNodeOperation(NodeOperation):
 
 @register_operation
 class FlushOperation(NodeOperation):
-    activity_code_suffix = 'flush'
     id = 'flush'
     name = _("flush")
     description = _("Passivate node and move all instances to other ones.")
@@ -938,7 +1085,6 @@ class FlushOperation(NodeOperation):
 
 @register_operation
 class ActivateOperation(NodeOperation):
-    activity_code_suffix = 'activate'
     id = 'activate'
     name = _("activate")
     description = _("Make node active, i.e. scheduler is allowed to deploy "
@@ -959,7 +1105,6 @@ class ActivateOperation(NodeOperation):
 
 @register_operation
 class PassivateOperation(NodeOperation):
-    activity_code_suffix = 'passivate'
     id = 'passivate'
     name = _("passivate")
     description = _("Make node passive, i.e. scheduler is denied to deploy "
@@ -981,7 +1126,6 @@ class PassivateOperation(NodeOperation):
 
 @register_operation
 class DisableOperation(NodeOperation):
-    activity_code_suffix = 'disable'
     id = 'disable'
     name = _("disable")
     description = _("Disable node.")
@@ -1005,8 +1149,7 @@ class DisableOperation(NodeOperation):
 
 
 @register_operation
-class ScreenshotOperation(InstanceOperation):
-    activity_code_suffix = 'screenshot'
+class ScreenshotOperation(RemoteInstanceOperation):
     id = 'screenshot'
     name = _("screenshot")
     description = _("Get a screenshot about the virtual machine's console. A "
@@ -1015,14 +1158,11 @@ class ScreenshotOperation(InstanceOperation):
     acl_level = "owner"
     required_perms = ()
     accept_states = ('RUNNING', )
-
-    def _operation(self):
-        return self.instance.get_screenshot(timeout=20)
+    task = vm_tasks.screenshot
 
 
 @register_operation
 class RecoverOperation(InstanceOperation):
-    activity_code_suffix = 'recover'
     id = 'recover'
     name = _("recover")
     description = _("Try to recover virtual machine disks from destroyed "
@@ -1050,7 +1190,6 @@ class RecoverOperation(InstanceOperation):
 
 @register_operation
 class ResourcesOperation(InstanceOperation):
-    activity_code_suffix = 'Resources change'
     id = 'resources_change'
     name = _("resources change")
     description = _("Change resources of a stopped virtual machine.")
@@ -1076,28 +1215,8 @@ class ResourcesOperation(InstanceOperation):
         )
 
 
-class EnsureAgentMixin(object):
-    accept_states = ('RUNNING', )
-
-    def check_precond(self):
-        super(EnsureAgentMixin, self).check_precond()
-
-        last_boot_time = self.instance.activity_log.filter(
-            succeeded=True, activity_code__in=(
-                "vm.Instance.deploy", "vm.Instance.reset",
-                "vm.Instance.reboot")).latest("finished").finished
-
-        try:
-            InstanceActivity.objects.filter(
-                activity_code="vm.Instance.agent.starting",
-                started__gt=last_boot_time).latest("started")
-        except InstanceActivity.DoesNotExist:  # no agent since last boot
-            raise self.instance.NoAgentError(self.instance)
-
-
 @register_operation
-class PasswordResetOperation(EnsureAgentMixin, InstanceOperation):
-    activity_code_suffix = 'password_reset'
+class PasswordResetOperation(RemoteAgentOperation):
     id = 'password_reset'
     name = _("password reset")
     description = _("Generate and set a new login password on the virtual "
@@ -1106,19 +1225,237 @@ class PasswordResetOperation(EnsureAgentMixin, InstanceOperation):
                     "logging in as other settings are possible to prevent "
                     "it.")
     acl_level = "owner"
+    task = agent_tasks.change_password
     required_perms = ()
 
-    def _operation(self):
-        self.instance.pw = pwgen()
-        queue = self.instance.get_remote_queue_name("agent")
-        agent_tasks.change_password.apply_async(
-            queue=queue, args=(self.instance.vm_name, self.instance.pw))
+    def _get_remote_args(self, password, **kwargs):
+        return (super(PasswordResetOperation, self)._get_remote_args(**kwargs)
+                + [password])
+
+    def _operation(self, password=None):
+        if not password:
+            password = pwgen()
+        super(PasswordResetOperation, self)._operation(password=password)
+        self.instance.pw = password
         self.instance.save()
 
 
 @register_operation
+class AgentStartedOperation(InstanceOperation):
+    id = 'agent_started'
+    name = _("agent")
+    acl_level = "owner"
+    required_perms = ()
+    concurrency_check = False
+
+    @classmethod
+    def get_activity_code_suffix(cls):
+        return 'agent'
+
+    @property
+    def initialized(self):
+        return self.instance.activity_log.filter(
+            activity_code='vm.Instance.agent._cleanup').exists()
+
+    def measure_boot_time(self):
+        if not self.instance.template:
+            return
+
+        deploy_time = InstanceActivity.objects.filter(
+            instance=self.instance, activity_code="vm.Instance.deploy"
+        ).latest("finished").finished
+
+        total_boot_time = (timezone.now() - deploy_time).total_seconds()
+
+        Client().send([
+            "template.%(pk)d.boot_time %(val)f %(time)s" % {
+                'pk': self.instance.template.pk,
+                'val': total_boot_time,
+                'time': time.time(),
+            }
+        ])
+
+    def finish_agent_wait(self):
+        for i in InstanceActivity.objects.filter(
+                (Q(activity_code__endswith='.os_boot') |
+                 Q(activity_code__endswith='.agent_wait')),
+                instance=self.instance, finished__isnull=True):
+            i.finish(True)
+
+    def _operation(self, user, activity, old_version=None, agent_system=None):
+        with activity.sub_activity('starting', concurrency_check=False,
+                                   readable_name=ugettext_noop('starting')):
+            pass
+
+        self.finish_agent_wait()
+
+        self.instance._change_ip(parent_activity=activity)
+        self.instance._restart_networking(parent_activity=activity)
+
+        new_version = settings.AGENT_VERSION
+        if new_version and old_version and new_version != old_version:
+            try:
+                self.instance.update_agent(
+                    parent_activity=activity, agent_system=agent_system)
+            except TimeoutError:
+                pass
+            else:
+                activity.sub_activity(
+                    'agent_wait', readable_name=ugettext_noop(
+                        "wait agent restarting"), interruptible=True)
+                return  # agent is going to restart
+
+        if not self.initialized:
+            try:
+                self.measure_boot_time()
+            except:
+                logger.exception('Unhandled error in measure_boot_time()')
+            self.instance._cleanup(parent_activity=activity)
+            self.instance.password_reset(
+                parent_activity=activity, password=self.instance.pw)
+            self.instance._set_time(parent_activity=activity)
+            self.instance._set_hostname(parent_activity=activity)
+
+    @register_operation
+    class CleanupOperation(SubOperationMixin, RemoteAgentOperation):
+        id = '_cleanup'
+        name = _("cleanup")
+        task = agent_tasks.cleanup
+
+    @register_operation
+    class SetTimeOperation(SubOperationMixin, RemoteAgentOperation):
+        id = '_set_time'
+        name = _("set time")
+        task = agent_tasks.set_time
+
+        def _get_remote_args(self, **kwargs):
+            cls = AgentStartedOperation.SetTimeOperation
+            return (super(cls, self)._get_remote_args(**kwargs)
+                    + [time.time()])
+
+    @register_operation
+    class SetHostnameOperation(SubOperationMixin, RemoteAgentOperation):
+        id = '_set_hostname'
+        name = _("set hostname")
+        task = agent_tasks.set_hostname
+
+        def _get_remote_args(self, **kwargs):
+            cls = AgentStartedOperation.SetHostnameOperation
+            return (super(cls, self)._get_remote_args(**kwargs)
+                    + [self.instance.short_hostname])
+
+    @register_operation
+    class RestartNetworkingOperation(SubOperationMixin, RemoteAgentOperation):
+        id = '_restart_networking'
+        name = _("restart networking")
+        task = agent_tasks.restart_networking
+
+    @register_operation
+    class ChangeIpOperation(SubOperationMixin, RemoteAgentOperation):
+        id = '_change_ip'
+        name = _("change ip")
+        task = agent_tasks.change_ip
+
+        def _get_remote_args(self, **kwargs):
+            hosts = Host.objects.filter(interface__instance=self.instance)
+            interfaces = {str(host.mac): host.get_network_config()
+                          for host in hosts}
+            cls = AgentStartedOperation.ChangeIpOperation
+            return (super(cls, self)._get_remote_args(**kwargs)
+                    + [interfaces, settings.FIREWALL_SETTINGS['rdns_ip']])
+
+
+@register_operation
+class UpdateAgentOperation(RemoteAgentOperation):
+    id = 'update_agent'
+    name = _("update agent")
+    acl_level = "owner"
+    required_perms = ()
+
+    def get_activity_name(self, kwargs):
+        return create_readable(
+            ugettext_noop('update agent to %(version)s'),
+            version=settings.AGENT_VERSION)
+
+    @staticmethod
+    def create_linux_tar():
+        def exclude(tarinfo):
+            ignored = ('./.', './misc', './windows')
+            if any(tarinfo.name.startswith(x) for x in ignored):
+                return None
+            else:
+                return tarinfo
+
+        f = StringIO()
+
+        with TarFile.open(fileobj=f, mode='w:gz') as tar:
+            agent_path = os.path.join(settings.AGENT_DIR, "agent-linux")
+            tar.add(agent_path, arcname='.', filter=exclude)
+
+            version_fileobj = StringIO(settings.AGENT_VERSION)
+            version_info = TarInfo(name='version.txt')
+            version_info.size = len(version_fileobj.buf)
+            tar.addfile(version_info, version_fileobj)
+
+        return encodestring(f.getvalue()).replace('\n', '')
+
+    @staticmethod
+    def create_windows_tar():
+        f = StringIO()
+
+        agent_path = os.path.join(settings.AGENT_DIR, "agent-win")
+        with TarFile.open(fileobj=f, mode='w|gz') as tar:
+            tar.add(agent_path, arcname='.')
+
+            version_fileobj = StringIO(settings.AGENT_VERSION)
+            version_info = TarInfo(name='version.txt')
+            version_info.size = len(version_fileobj.buf)
+            tar.addfile(version_info, version_fileobj)
+
+        return encodestring(f.getvalue()).replace('\n', '')
+
+    def _operation(self, user, activity, agent_system):
+        queue = self._get_remote_queue()
+        instance = self.instance
+        if agent_system == "Windows":
+            executable = os.listdir(
+                os.path.join(settings.AGENT_DIR, "agent-win"))[0]
+            data = self.create_windows_tar()
+        elif agent_system == "Linux":
+            executable = ""
+            data = self.create_linux_tar()
+        else:
+            # Legacy update method
+            executable = ""
+            return agent_tasks.update_legacy.apply_async(
+                queue=queue,
+                args=(instance.vm_name, self.create_linux_tar())
+            ).get(timeout=60)
+
+        checksum = md5(data).hexdigest()
+        chunk_size = 1024 * 1024
+        chunk_number = 0
+        index = 0
+        filename = settings.AGENT_VERSION + ".tar"
+        while True:
+            chunk = data[index:index+chunk_size]
+            if chunk:
+                agent_tasks.append.apply_async(
+                    queue=queue,
+                    args=(instance.vm_name, chunk,
+                          filename, chunk_number)).get(timeout=60)
+                index = index + chunk_size
+                chunk_number = chunk_number + 1
+            else:
+                agent_tasks.update.apply_async(
+                    queue=queue,
+                    args=(instance.vm_name, filename, executable, checksum)
+                ).get(timeout=60)
+                break
+
+
+@register_operation
 class MountStoreOperation(EnsureAgentMixin, InstanceOperation):
-    activity_code_suffix = 'mount_store'
     id = 'mount_store'
     name = _("mount store")
     description = _(
@@ -1143,3 +1480,61 @@ class MountStoreOperation(EnsureAgentMixin, InstanceOperation):
         password = user.profile.smb_password
         agent_tasks.mount_store.apply_async(
             queue=queue, args=(inst.vm_name, host, username, password))
+
+
+class AbstractDiskOperation(SubOperationMixin, RemoteInstanceOperation):
+    required_perms = ()
+
+    def _get_remote_args(self, disk, **kwargs):
+        return (super(AbstractDiskOperation, self)._get_remote_args(**kwargs)
+                + [disk.get_vmdisk_desc()])
+
+
+@register_operation
+class AttachDisk(AbstractDiskOperation):
+    id = "_attach_disk"
+    name = _("attach disk")
+    task = vm_tasks.attach_disk
+
+
+class DetachMixin(object):
+    def _operation(self, activity, **kwargs):
+        try:
+            super(DetachMixin, self)._operation(**kwargs)
+        except Exception as e:
+            if hasattr(e, "libvirtError") and "not found" in unicode(e):
+                activity.result = create_readable(
+                    ugettext_noop("Resource was not found."),
+                    ugettext_noop("Resource was not found. %(exception)s"),
+                    exception=unicode(e))
+            else:
+                raise
+
+
+@register_operation
+class DetachDisk(DetachMixin, AbstractDiskOperation):
+    id = "_detach_disk"
+    name = _("detach disk")
+    task = vm_tasks.detach_disk
+
+
+class AbstractNetworkOperation(SubOperationMixin, RemoteInstanceOperation):
+    required_perms = ()
+
+    def _get_remote_args(self, interface, **kwargs):
+        return (super(AbstractNetworkOperation, self)
+                ._get_remote_args(**kwargs) + [interface.get_vmnetwork_desc()])
+
+
+@register_operation
+class AttachNetwork(AbstractNetworkOperation):
+    id = "_attach_network"
+    name = _("attach network")
+    task = vm_tasks.attach_network
+
+
+@register_operation
+class DetachNetwork(DetachMixin, AbstractNetworkOperation):
+    id = "_detach_network"
+    name = _("detach network")
+    task = vm_tasks.detach_network

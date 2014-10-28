@@ -4,23 +4,23 @@
   <div class="list-group-item">
     <div class="row">
       <div class="col-sm-6">
-        <a href="{% url "dashboard.views.store-upload"%}?directory={{ current }}"
+        <a href="{% url "dashboard.views.store-upload"%}?directory={{ current|urlencode }}"
           class="btn btn-info btn-xs js-hidden">
           {% trans "Upload" %}
         </a>
-        <form action="" data-action="{% url "dashboard.views.store-upload-url" %}" 
+        <form action="" data-action="{% url "dashboard.views.store-upload-url" %}"
           method="POST" enctype="multipart/form-data" class="no-js-hidden"
           id="store-upload-form">
           {% csrf_token %}
-          <input type="hidden" name="current_dir" value="{{ current }}"/>
+          <input type="hidden" name="current_dir" value="{{ current|urlencode }}"/>
           <input type="hidden" name="next" value="{{ next_url }}"/>
           <div class="input-group" style="max-width: 350px;">
             <span class="input-group-btn" id="store-upload-browse">
               <span class="btn btn-primary btn-xs">
                 {% trans "Browse..." %}
-              </span>     
+              </span>
             </span>
-            <input type="text" class="form-control input-tags" 
+            <input type="text" class="form-control input-tags"
              id="store-upload-filename"/>
             <span class="input-group-btn">
               <button type="submit" class="btn btn-primary btn-xs" disabled>
@@ -33,13 +33,13 @@
       </div><!-- .col-sm-6 upload -->
 
       <div class="col-sm-6">
-        <a href="{% url "dashboard.views.store-remove" %}?path={{ current }}" 
-          class="btn btn-danger btn-xs pull-right store-action-button" 
+        <a href="{% url "dashboard.views.store-remove" %}?path={{ current|urlencode }}"
+          class="btn btn-danger btn-xs pull-right store-action-button"
           title="{% trans "Remove directory" %}">
           <i class="fa fa-times"></i>
         </a>
-        <a href="{% url "dashboard.views.store-download" %}?path={{ current }}" 
-          class="btn btn-primary btn-xs pull-right store-action-button" 
+        <a href="{% url "dashboard.views.store-download" %}?path={{ current|urlencode }}"
+          class="btn btn-primary btn-xs pull-right store-action-button"
           title="{% trans "Download directory" %}">
           <i class="fa fa-cloud-download"></i>
         </a>
@@ -51,7 +51,7 @@
             <span class="input-group-addon input-tags" title="{% trans "New directory" %}">
               <i class="fa fa-folder-open"></i>
             </span>
-            <input type="text" class="form-control input-tags" name="name" 
+            <input type="text" class="form-control input-tags" name="name"
              placeholder="{% trans "Name "%}" required/>
             <span class="input-group-btn">
               <input type="submit" class="btn btn-success btn-xs" value="{% trans "Create" %}"/>
@@ -64,7 +64,7 @@
 </div><!-- .list-group -->
 
 <div class="list-group" id="store-list-list">
-  <a href="{% url "dashboard.views.store-list" %}?directory={{ up_url }}" 
+  <a href="{% url "dashboard.views.store-list" %}?directory={{ up_url|urlencode }}"
     class="list-group-item store-list-item" data-item-type="D">
     {% if current == "/" %}
       <div class="store-list-item-icon">
@@ -85,8 +85,8 @@
 
   {% for f in root %}
   <a class="list-group-item store-list-item" data-item-type="{{ f.TYPE }}"
-    href="{% if f.TYPE == "D" %}{% url "dashboard.views.store-list" %}?directory={{ f.path }}{% else %}
-    {% url "dashboard.views.store-download" %}?path={{ f.path }}{% endif %}"
+    href="{% if f.TYPE == "D" %}{% url "dashboard.views.store-list" %}?directory={{ f.path|urlencode }}{% else %}
+    {% url "dashboard.views.store-download" %}?path={{ f.path|urlencode }}{% endif %}"
     >
     <div class="store-list-item-icon">
       <i class="
@@ -101,7 +101,7 @@
         <span class="badge badge-pulse">{% trans "new" %}</span>
       {% endif %}
     </div>
-    
+
     <div class="store-list-item-size">
       {{ f.human_readable_size }}
     </div>
@@ -122,12 +122,12 @@
         </dl>
       </div>
       <div class="col-sm-2" style="text-align: right;">
-        <a href="{% url "dashboard.views.store-download" %}?path={{ f.path }}" 
+        <a href="{% url "dashboard.views.store-download" %}?path={{ f.path|urlencode }}"
           class="btn btn-primary btn-sm store-download-button">
           <i class="fa fa-download"></i>
           {% trans "Download" %}
         </a>
-        <a href="{% url "dashboard.views.store-remove" %}?path={{ f.path }}" 
+        <a href="{% url "dashboard.views.store-remove" %}?path={{ f.path|urlencode }}"
           class="btn btn-danger btn-xs store-remove-button">
           <i class="fa fa-times"></i>
           {% trans "Remove" %}

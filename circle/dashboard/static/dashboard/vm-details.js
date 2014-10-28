@@ -1,7 +1,8 @@
 var show_all = false;
 var in_progress = false;
 var activity_hash = 5;
-var Websock_native;
+var Websock_native; // not sure
+var reload_vm_detail = false;
 
 $(function() {
   /* do we need to check for new activities */
@@ -28,7 +29,7 @@ $(function() {
   });
 
   /* save resources */
-  $('#vm-details-resources-save').click(function() {
+  $('#vm-details-resources-save').click(function(e) {
     var error = false;
     $(".cpu-count-input, .ram-input").each(function() {
       if(!$(this)[0].checkValidity()) {
@@ -61,7 +62,7 @@ $(function() {
         }
       }
     });
-    return false;
+    e.preventDefault();
   });
 
   /* remove tag */
@@ -205,11 +206,11 @@ $(function() {
   });
 
   /* rename in home tab */
-  $(".vm-details-home-edit-name-click").click(function() {
+  $(".vm-details-home-edit-name-click").click(function(e) {
     $(".vm-details-home-edit-name-click").hide();
     $("#vm-details-home-rename").show();
     $("input", $("#vm-details-home-rename")).select();
-    return false;
+    e.preventDefault();
   });
 
   /* rename ajax */
@@ -236,15 +237,15 @@ $(function() {
   });
 
   /* update description click */
-  $(".vm-details-home-edit-description-click").click(function() {
+  $(".vm-details-home-edit-description-click").click(function(e) {
     $(".vm-details-home-edit-description-click").hide();
     $("#vm-details-home-description").show();
     var ta = $("#vm-details-home-description textarea");
     var tmp = ta.val();
     ta.val("");
     ta.focus();
-    ta.val(tmp);
-    return false;
+    ta.val(tmp)
+    e.preventDefault();
   });
 
   /* description update ajax */
@@ -316,6 +317,24 @@ $(function() {
     if(Boolean($(this).data("disabled"))) return false;
   });
 
+  $("#dashboard-tutorial-toggle").click(function() {
+    var box = $("#alert-new-template");
+    var list = box.find("ol")
+    list.stop().slideToggle(function() {
+      var url = box.find("form").prop("action");
+      var hidden = list.css("display") === "none";
+      box.find("button i").prop("class", "fa fa-caret-" + (hidden ? "down" : "up"));
+      $.ajax({
+        type: 'POST',
+        url: url,
+        data: {'hidden': hidden},
+        headers: {"X-CSRFToken": getCookie('csrftoken')},
+        success: function(re, textStatus, xhr) {}
+      });
+    }); 
+    return false;
+  });
+
 });
 
 
@@ -343,9 +362,6 @@ function decideActivityRefresh() {
   var check = false;
   /* if something is still spinning */
   if($('.timeline .activity i').hasClass('fa-spin'))
-    check = true;
-  /* if there is only one activity */
-  if($('#activity-timeline div[class="activity"]').length < 2)
     check = true;
 
   return check;
@@ -377,8 +393,9 @@ function checkNewActivity(runs) {
       } else {
         icon.prop("class", "fa " + data.icon);
       }
-      $("#vm-details-state span").html(data.human_readable_status.toUpperCase());
-      if(data.status == "RUNNING") {
+      $("#vm-details-state").data("status", data['status']);
+      $("#vm-details-state span").html(data['human_readable_status'].toUpperCase());
+      if(data['status'] == "RUNNING") {
         if(data['connect_uri']) {
             $("#dashboard-vm-details-connect-button").removeClass('disabled');
         }
@@ -405,6 +422,7 @@ function checkNewActivity(runs) {
         );
       } else {
         in_progress = false;
+        if(reload_vm_detail) location.reload();
       }
       $('a[href="#activity"] i').removeClass('fa-spin');
     },

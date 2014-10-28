@@ -299,7 +299,7 @@ class VmDetailTest(LoginMixin, TestCase):
         leases = Lease.objects.count()
         response = c.post("/dashboard/lease/delete/1/")
         # redirect to the login page
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 403)
         self.assertEqual(leases, Lease.objects.count())
 
     def test_notification_read(self):
@@ -512,20 +512,20 @@ class VmDetailTest(LoginMixin, TestCase):
         self.login(c, "user2")
         with patch.object(Instance, 'select_node', return_value=None), \
                 patch.object(WakeUpOperation, 'async') as new_wake_up, \
-                patch('vm.tasks.vm_tasks.wake_up.apply_async') as wuaa, \
                 patch.object(Instance.WrongStateError, 'send_message') as wro:
             inst = Instance.objects.get(pk=1)
             new_wake_up.side_effect = inst.wake_up
+            inst._wake_up_vm = Mock()
             inst.get_remote_queue_name = Mock(return_value='test')
             inst.status = 'SUSPENDED'
             inst.set_level(self.u2, 'owner')
             with patch('dashboard.views.messages') as msg:
                 response = c.post("/dashboard/vm/1/op/wake_up/")
                 assert not msg.error.called
+            assert inst._wake_up_vm.called
             self.assertEqual(response.status_code, 302)
             self.assertEqual(inst.status, 'RUNNING')
             assert new_wake_up.called
-            assert wuaa.called
             assert not wro.called
 
     def test_unpermitted_wake_up(self):
@@ -637,7 +637,7 @@ class NodeDetailTest(LoginMixin, TestCase):
         c = Client()
         self.login(c, 'user1')
         response = c.get('/dashboard/node/25555/')
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 403)
 
     def test_anon_node_page(self):
         c = Client()
@@ -667,7 +667,7 @@ class NodeDetailTest(LoginMixin, TestCase):
         node = Node.objects.get(pk=1)
         old_name = node.name
         response = c.post("/dashboard/node/1/", {'new_name': 'test1235'})
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 403)
         self.assertEqual(Node.objects.get(pk=1).name, old_name)
 
     def test_permitted_set_name(self):
@@ -721,7 +721,7 @@ class NodeDetailTest(LoginMixin, TestCase):
         c = Client()
         self.login(c, "user2")
         response = c.post("/dashboard/node/1/", {'to_remove': traitid})
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 403)
         self.assertEqual(Node.objects.get(pk=1).traits.count(), trait_count)
 
     def test_permitted_remove_trait(self):

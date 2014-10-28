@@ -73,6 +73,10 @@
                 {% trans "Lease" as t %}
                 {% include "dashboard/vm-list/header-link.html" with name=t sort="lease" %}
               </th>
+              <th data-sort="string" class="orderable sortable">
+                {% trans "Memory" as t %}
+                {% include "dashboard/vm-list/header-link.html" with name=t sort="ram_size" %}
+              </th>
               {% if user.is_superuser %}
                 <th data-sort="string" class="orderable sortable">
                   {% trans "IP address" as t %}
@@ -87,7 +91,9 @@
           {% for i in object_list %}
           <tr class="{% cycle 'odd' 'even' %}" data-vm-pk="{{ i.pk }}">
             <td class="pk"><div id="vm-{{i.pk}}">{{i.pk}}</div> </td>
-            <td class="name"><a class="real-link" href="{% url "dashboard.views.detail" i.pk %}">{{ i.name }}</a>  </td>
+            <td class="name"><a class="real-link" href="{% url "dashboard.views.detail" i.pk %}">
+                {{ i.name }}</a>
+            </td>
             <td class="state">
               <i class="fa fa-fw
                 {% if show_acts_in_progress and i.is_in_status_change %}
@@ -105,7 +111,12 @@
               {# include "dashboard/_display-name.html" with user=i.owner show_org=True #}
             </td>
             <td class="lease "data-sort-value="{{ i.lease.name }}">
-              {{ i.lease.name }}
+              <span title="{{ i.time_of_suspend|timeuntil }} | {{ i.time_of_delete|timeuntil }}">
+                {{ i.lease.name }}
+              </span>
+            </td>
+            <td class="memory "data-sort-value="{{ i.ram_size }}">
+              {{ i.ram_size }} MiB
             </td>
             {% if user.is_superuser %}
             <td class="ip_addr "data-sort-value="{{ i.ipv4 }}">

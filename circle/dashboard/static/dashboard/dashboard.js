@@ -411,14 +411,25 @@ $(function () {
     $(this).removeClass("btn-default").addClass("btn-primary");
     return false;
   });
+
+  // vm migrate select for node
+  $(document).on("click", "#vm-migrate-node-list li", function(e) {
+    var li = $(this).closest('li');
+    if (li.find('input').attr('disabled'))
+      return true;
+    $('#vm-migrate-node-list li').removeClass('panel-primary');
+    li.addClass('panel-primary').find('input').prop("checked", true);
+    return true;
+  });
+
 });
 
 function generateVmHTML(pk, name, host, icon, _status, fav, is_last) {
   return '<a href="/dashboard/vm/' + pk + '/" class="list-group-item' +
-         (is_last ? ' list-group-item-last' : '') + '">' +
-        '<span class="index-vm-list-name">' +
-          '<i class="fa ' + icon + '" title="' + _status + '"></i> ' + name +
-        '</span>' +
+         (is_last ? ' list-group-item-last' : '') + '">' +      
+        '<span class="index-vm-list-name">' + 
+          '<i class="fa ' + icon + '" title="' + _status + '"></i> ' + safe_tags_replace(name) +
+        '</span>' + 
         '<small class="text-muted"> ' + host + '</small>' +
         '<div class="pull-right dashboard-vm-favourite" data-vm="' + pk + '">' +
           (fav ? '<i class="fa fa-star text-primary title-favourite" title="Unfavourite"></i>' :
@@ -430,14 +441,14 @@ function generateVmHTML(pk, name, host, icon, _status, fav, is_last) {
 
 function generateGroupHTML(url, name, is_last) {
   return '<a href="' + url + '" class="list-group-item real-link' + (is_last ? " list-group-item-last" : "") +'">'+
-         '<i class="fa fa-users"></i> '+ name +
+         '<i class="fa fa-users"></i> '+ safe_tags_replace(name) +
          '</a>';
 }
 
 function generateNodeHTML(name, icon, _status, url, is_last) {
   return '<a href="' + url + '" class="list-group-item real-link' + (is_last ? ' list-group-item-last' : '') + '">' +
         '<span class="index-node-list-name">' +
-        '<i class="fa ' + icon + '" title="' + _status + '"></i> ' + name +
+        '<i class="fa ' + icon + '" title="' + _status + '"></i> ' + safe_tags_replace(name) +
         '</span>' +
         '<div style="clear: both;"></div>' +
         '</a>';
@@ -445,7 +456,7 @@ function generateNodeHTML(name, icon, _status, url, is_last) {
 
 function generateNodeTagHTML(name, icon, _status, label , url) {
   return '<a href="' + url + '" class="label ' + label + '" >' +
-        '<i class="' + icon + '" title="' + _status + '"></i> ' + name +
+        '<i class="fa ' + icon + '" title="' + _status + '"></i> ' + safe_tags_replace(name) +
         '</a> ';
 }
 
@@ -619,7 +630,7 @@ function addModalConfirmation(func, data) {
 }
 
 function clientInstalledAction(location) {   
-  setCookie('downloaded_client', true, 365 * 24 * 60 * 60, "/");
+  setCookie('downloaded_client', true, 365 * 24 * 60 * 60 * 1000, "/");
   window.location.href = location;
   $('#confirmation-modal').modal("hide");
 }
@@ -687,3 +698,17 @@ $(function() {
     return choice.children().html();
   }
 });
+
+var tagsToReplace = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;'
+};
+
+function replaceTag(tag) {
+    return tagsToReplace[tag] || tag;
+}
+
+function safe_tags_replace(str) {
+    return str.replace(/[&<>]/g, replaceTag);
+}

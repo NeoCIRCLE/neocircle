@@ -22,6 +22,7 @@ from mock import MagicMock
 
 from .models import TestClass
 from ..models import HumanSortField
+from ..models import activitycontextimpl
 
 
 class MethodCacheTestCase(TestCase):
@@ -80,3 +81,22 @@ class TestHumanSortField(TestCase):
 
             test_result = HumanSortField.get_normalized_value(obj, val)
             self.assertEquals(test_result, result)
+
+
+class ActivityContextTestCase(TestCase):
+    class MyException(Exception):
+        pass
+
+    def test_unicode(self):
+        act = MagicMock()
+        gen = activitycontextimpl(act)
+        gen.next()
+        with self.assertRaises(self.MyException):
+            gen.throw(self.MyException(u'test\xe1'))
+
+    def test_str(self):
+        act = MagicMock()
+        gen = activitycontextimpl(act)
+        gen.next()
+        with self.assertRaises(self.MyException):
+            gen.throw(self.MyException('test\xbe'))

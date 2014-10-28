@@ -16,15 +16,13 @@
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, unicode_literals
+from contextlib import contextmanager
 from datetime import timedelta
 from functools import partial
 from importlib import import_module
 from logging import getLogger
-from string import ascii_lowercase
 from warnings import warn
 
-from celery.exceptions import TimeoutError
-from celery.contrib.abortable import AbortableAsyncResult
 import django.conf
 from django.contrib.auth.models import User
 from django.core import signing
@@ -38,17 +36,17 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _, ugettext_noop
 
 from model_utils import Choices
+from model_utils.managers import QueryManager
 from model_utils.models import TimeStampedModel, StatusModel
 from taggit.managers import TaggableManager
 
 from acl.models import AclBase
 from common.models import (
-    create_readable, HumanReadableException, humanize_exception
+    activitycontextimpl, create_readable, HumanReadableException,
 )
 from common.operations import OperatedMixin
-from ..tasks import vm_tasks, agent_tasks
-from .activity import (ActivityInProgressError, instance_activity,
-                       InstanceActivity)
+from ..tasks import agent_tasks
+from .activity import (ActivityInProgressError, InstanceActivity)
 from .common import BaseResourceConfigModel, Lease
 from .network import Interface
 from .node import Node, Trait
@@ -90,13 +88,6 @@ def find_unused_vnc_port():
         raise Exception("No unused port could be found for VNC.")
     else:
         return port
-
-
-class InstanceActiveManager(Manager):
-
-    def get_query_set(self):
-        return super(InstanceActiveManager,
-                     self).get_query_set().filter(destroyed_at=None)
 
 
 class VirtualMachineDescModel(BaseResourceConfigModel):
@@ -264,7 +255,7 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                                  help_text=_("The virtual machine's time of "
                                              "destruction."))
     objects = Manager()
-    active = InstanceActiveManager()
+    active = QueryManager(destroyed_at=None)
 
     class Meta:
         app_label = 'vm'
@@ -374,9 +365,9 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         def __on_commit(activity):
             activity.resultant_state = 'PENDING'
 
-        with instance_activity(code_suffix='create', instance=inst,
-                               readable_name=ugettext_noop("create instance"),
-                               on_commit=__on_commit, user=inst.owner) as act:
+        with inst.activity(code_suffix='create',
+                           readable_name=ugettext_noop("create instance"),
+                           on_commit=__on_commit, user=inst.owner) as act:
             # create related entities
             inst.disks.add(*[disk.get_exclusive() for disk in disks])
 
@@ -677,10 +668,10 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
                     "%(success)s notifications succeeded."),
                     success=len(success), successes=success)
 
-        with instance_activity('notification_about_expiration', instance=self,
-                               readable_name=ugettext_noop(
-                                   "notify owner about expiration"),
-                               on_commit=on_commit):
+        with self.activity('notification_about_expiration',
+                           readable_name=ugettext_noop(
+                               "notify owner about expiration"),
+                           on_commit=on_commit):
             from dashboard.views import VmRenewView, absolute_url
             level = self.get_level_object("owner")
             for u, ulevel in self.get_users_with_level(level__pk=level.pk):
@@ -745,75 +736,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         """
         return scheduler.select_node(self, Node.objects.all())
 
-    def attach_disk(self, disk, timeout=15):
-        queue_name = self.get_remote_queue_name('vm', 'fast')
-        return vm_tasks.attach_disk.apply_async(
-            args=[self.vm_name,
-                  disk.get_vmdisk_desc()],
-            queue=queue_name
-        ).get(timeout=timeout)
-
-    def detach_disk(self, disk, timeout=15):
-        try:
-            queue_name = self.get_remote_queue_name('vm', 'fast')
-            return vm_tasks.detach_disk.apply_async(
-                args=[self.vm_name,
-                      disk.get_vmdisk_desc()],
-                queue=queue_name
-            ).get(timeout=timeout)
-        except Exception as e:
-            if e.libvirtError and "not found" in str(e):
-                logger.debug("Disk %s was not found."
-                             % disk.name)
-            else:
-                raise
-
-    def attach_network(self, network, timeout=15):
-        queue_name = self.get_remote_queue_name('vm', 'fast')
-        return vm_tasks.attach_network.apply_async(
-            args=[self.vm_name,
-                  network.get_vmnetwork_desc()],
-            queue=queue_name
-        ).get(timeout=timeout)
-
-    def detach_network(self, network, timeout=15):
-        try:
-            queue_name = self.get_remote_queue_name('vm', 'fast')
-            return vm_tasks.detach_network.apply_async(
-                args=[self.vm_name,
-                      network.get_vmnetwork_desc()],
-                queue=queue_name
-            ).get(timeout=timeout)
-        except Exception as e:
-            if e.libvirtError and "not found" in str(e):
-                logger.debug("Interface %s was not found."
-                             % (network.__unicode__()))
-            else:
-                raise
-
-    def resize_disk_live(self, disk, size, timeout=15):
-        queue_name = self.get_remote_queue_name('vm', 'slow')
-        result = vm_tasks.resize_disk.apply_async(
-            args=[self.vm_name, disk.path, size],
-            queue=queue_name).get(timeout=timeout)
-        disk.size = size
-        disk.save()
-        return result
-
-    def deploy_disks(self):
-        """Deploy all associated disks.
-        """
-        devnums = list(ascii_lowercase)  # a-z
-        for disk in self.disks.all():
-            # assign device numbers
-            if disk.dev_num in devnums:
-                devnums.remove(disk.dev_num)
-            else:
-                disk.dev_num = devnums.pop(0)
-                disk.save()
-            # deploy disk
-            disk.deploy()
-
     def destroy_disks(self):
         """Destroy all associated disks.
         """
@@ -838,96 +760,9 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
         for net in self.interface_set.all():
             net.shutdown()
 
-    def delete_vm(self, timeout=15):
-        queue_name = self.get_remote_queue_name('vm', 'fast')
-        try:
-            return vm_tasks.destroy.apply_async(args=[self.vm_name],
-                                                queue=queue_name
-                                                ).get(timeout=timeout)
-        except Exception as e:
-            if e.libvirtError and "Domain not found" in str(e):
-                logger.debug("Domain %s was not found at %s"
-                             % (self.vm_name, queue_name))
-            else:
-                raise
-
-    def deploy_vm(self, timeout=15):
-        queue_name = self.get_remote_queue_name('vm', 'slow')
-        return vm_tasks.deploy.apply_async(args=[self.get_vm_desc()],
-                                           queue=queue_name
-                                           ).get(timeout=timeout)
-
-    def migrate_vm(self, to_node, timeout=120):
-        queue_name = self.get_remote_queue_name('vm', 'slow')
-        return vm_tasks.migrate.apply_async(args=[self.vm_name,
-                                                  to_node.host.hostname,
-                                                  True],
-                                            queue=queue_name
-                                            ).get(timeout=timeout)
-
-    def reboot_vm(self, timeout=5):
-        queue_name = self.get_remote_queue_name('vm', 'fast')
-        return vm_tasks.reboot.apply_async(args=[self.vm_name],
-                                           queue=queue_name
-                                           ).get(timeout=timeout)
-
-    def reset_vm(self, timeout=5):
-        queue_name = self.get_remote_queue_name('vm', 'fast')
-        return vm_tasks.reset.apply_async(args=[self.vm_name],
-                                          queue=queue_name
-                                          ).get(timeout=timeout)
-
-    def resume_vm(self, timeout=15):
-        queue_name = self.get_remote_queue_name('vm', 'slow')
-        return vm_tasks.resume.apply_async(args=[self.vm_name],
-                                           queue=queue_name
-                                           ).get(timeout=timeout)
-
-    def shutdown_vm(self, task=None, step=5):
-        queue_name = self.get_remote_queue_name('vm', 'slow')
-        logger.debug("RPC Shutdown at queue: %s, for vm: %s.", queue_name,
-                     self.vm_name)
-        remote = vm_tasks.shutdown.apply_async(kwargs={'name': self.vm_name},
-                                               queue=queue_name)
-
-        while True:
-            try:
-                return remote.get(timeout=step)
-            except TimeoutError as e:
-                if task is not None and task.is_aborted():
-                    AbortableAsyncResult(remote.id).abort()
-                    raise humanize_exception(ugettext_noop(
-                        "Operation aborted by user."), e)
-
-    def suspend_vm(self, timeout=230):
-        queue_name = self.get_remote_queue_name('vm', 'slow')
-        return vm_tasks.sleep.apply_async(args=[self.vm_name,
-                                                self.mem_dump['path']],
-                                          queue=queue_name
-                                          ).get(timeout=timeout)
-
-    def wake_up_vm(self, timeout=60):
-        queue_name = self.get_remote_queue_name('vm', 'slow')
-        return vm_tasks.wake_up.apply_async(args=[self.vm_name,
-                                                  self.mem_dump['path']],
-                                            queue=queue_name
-                                            ).get(timeout=timeout)
-
-    def delete_mem_dump(self, timeout=15):
-        queue_name = self.mem_dump['datastore'].get_remote_queue_name(
-            'storage', 'fast')
-        from storage.tasks.storage_tasks import delete_dump
-        delete_dump.apply_async(args=[self.mem_dump['path']],
-                                queue=queue_name).get(timeout=timeout)
-
-    def allocate_node(self, activity):
-        if self.node is not None:
-            return None
-
-        with activity.sub_activity(
-                'scheduling',
-                readable_name=ugettext_noop("schedule")) as sa:
-            sa.result = self.node = self.select_node()
+    def allocate_node(self):
+        if self.node is None:
+            self.node = self.select_node()
             self.save()
             return self.node
 
@@ -1002,12 +837,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
 
         return merged_acts
 
-    def get_screenshot(self, timeout=5):
-        queue_name = self.get_remote_queue_name("vm", "fast")
-        return vm_tasks.screenshot.apply_async(args=[self.vm_name],
-                                               queue=queue_name
-                                               ).get(timeout=timeout)
-
     def get_latest_activity_in_progress(self):
         try:
             return InstanceActivity.objects.filter(
@@ -1023,3 +852,17 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
     @property
     def metric_prefix(self):
         return 'vm.%s' % self.vm_name
+
+    @contextmanager
+    def activity(self, code_suffix, readable_name, on_abort=None,
+                 on_commit=None, task_uuid=None, user=None,
+                 concurrency_check=True, resultant_state=None):
+        """Create a transactional context for an instance activity.
+        """
+        if not readable_name:
+            warn("Set readable_name", stacklevel=3)
+        act = InstanceActivity.create(
+            code_suffix=code_suffix, instance=self, task_uuid=task_uuid,
+            user=user, concurrency_check=concurrency_check,
+            readable_name=readable_name, resultant_state=resultant_state)
+        return activitycontextimpl(act, on_abort=on_abort, on_commit=on_commit)

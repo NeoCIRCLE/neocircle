@@ -32,6 +32,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import (
     CharField, DateTimeField, ForeignKey, NullBooleanField
 )
+from django.template import defaultfilters
 from django.utils import timezone
 from django.utils.encoding import force_text
 from django.utils.functional import Promise
@@ -48,7 +49,15 @@ class WorkerNotFound(Exception):
     pass
 
 
+def get_error_msg(exception):
+    try:
+        return unicode(exception)
+    except UnicodeDecodeError:
+        return unicode(str(exception), encoding='utf-8', errors='replace')
+
+
 def activitycontextimpl(act, on_abort=None, on_commit=None):
+    result = None
     try:
         try:
             yield act
@@ -61,7 +70,7 @@ def activitycontextimpl(act, on_abort=None, on_commit=None):
             result = create_readable(
                 ugettext_noop("Failure."),
                 ugettext_noop("Unhandled exception: %(error)s"),
-                error=unicode(e))
+                error=get_error_msg(e))
             raise
     except:
         logger.exception("Failed activity %s" % unicode(act))
@@ -428,6 +437,14 @@ class HumanReadableObject(object):
             admin_text_template = admin_text_template._proxy____args[0]
         self.user_text_template = user_text_template
         self.admin_text_template = admin_text_template
+        for k, v in params.iteritems():
+            try:
+                v = timezone.datetime.strptime(
+                    v, "%Y-%m-%dT%H:%M:%S.%fZ").replace(tzinfo=timezone.UTC())
+            except (ValueError, TypeError):  # Mock raises TypeError
+                pass
+            if isinstance(v, timezone.datetime):
+                params[k] = defaultfilters.date(v, "DATETIME_FORMAT")
         self.params = params
 
     @classmethod
@@ -444,24 +461,27 @@ class HumanReadableObject(object):
     def from_dict(cls, d):
         return None if d is None else cls(**d)
 
-    def get_admin_text(self):
-        if self.admin_text_template == "":
+    def _get_parsed_text(self, key):
+        value = getattr(self, key)
+        if value == "":
             return ""
         try:
-            return _(self.admin_text_template) % self.params
+            return _(value) % self.params
         except KeyError:
-            logger.exception("Can't render admin_text_template '%s' %% %s",
-                             self.admin_text_template, unicode(self.params))
+            logger.exception("Can't render %s '%s' %% %s",
+                             key, value, unicode(self.params))
+            raise
+
+    def get_admin_text(self):
+        try:
+            return self._get_parsed_text("admin_text_template")
+        except KeyError:
             return self.get_user_text()
 
     def get_user_text(self):
-        if self.user_text_template == "":
-            return ""
         try:
-            return _(self.user_text_template) % self.params
+            return self._get_parsed_text("user_text_template")
         except KeyError:
-            logger.exception("Can't render user_text_template '%s' %% %s",
-                             self.user_text_template, unicode(self.params))
             return self.user_text_template
 
     def get_text(self, user):

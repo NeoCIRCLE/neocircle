@@ -10,41 +10,6 @@ $(function() {
 	$('.true').closest("tr").removeClass('danger');
   }
 
-  /* rename */
-  $("#node-list-rename-button, .node-details-rename-button").click(function() {
-    $("#node-list-column-name", $(this).closest("tr")).hide();
-    $("#node-list-rename", $(this).closest("tr")).css('display', 'inline');
-  });
-
-  /* rename ajax */
-  $('.node-list-rename-submit').click(function() {
-    var row = $(this).closest("tr");
-    var name = $('#node-list-rename-name', row).val();
-    var url = '/dashboard/node/' + row.children("td:first-child").text().replace(" ", "") + '/';
-    $.ajax({
-      method: 'POST',
-      url: url,
-      data: {'new_name': name},
-      headers: {"X-CSRFToken": getCookie('csrftoken')},
-      success: function(data, textStatus, xhr) {
-
-        $("#node-list-column-name", row).html(
-          $("<a/>", {
-            'class': "real-link",
-            href: "/dashboard/node/" + data.node_pk + "/",
-            text: data.new_name
-          })
-        ).show();
-        $('#node-list-rename', row).hide();
-        // addMessage(data['message'], "success");
-      },
-      error: function(xhr, textStatus, error) {
-	 addMessage("Error during renaming!", "danger");
-      }
-    });
-    return false;
-  });
-
   function statuschangeSuccess(tr){
    var tspan=tr.children('.enabled').children();
     var buttons=tr.children('.actions').children('.btn-group').children('.dropdown-menu').children('li').children('.node-enable');

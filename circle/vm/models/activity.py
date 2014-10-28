@@ -20,7 +20,6 @@ from contextlib import contextmanager
 from logging import getLogger
 from warnings import warn
 
-from celery.signals import worker_ready
 from celery.contrib.abortable import AbortableAsyncResult
 
 from django.core.urlresolvers import reverse
@@ -206,21 +205,6 @@ class InstanceActivity(ActivityModel):
             self.activity_code)
 
 
-@contextmanager
-def instance_activity(code_suffix, instance, on_abort=None, on_commit=None,
-                      task_uuid=None, user=None, concurrency_check=True,
-                      readable_name=None, resultant_state=None):
-    """Create a transactional context for an instance activity.
-    """
-    if not readable_name:
-        warn("Set readable_name", stacklevel=3)
-    act = InstanceActivity.create(code_suffix, instance, task_uuid, user,
-                                  concurrency_check,
-                                  readable_name=readable_name,
-                                  resultant_state=resultant_state)
-    return activitycontextimpl(act, on_abort=on_abort, on_commit=on_commit)
-
-
 class NodeActivity(ActivityModel):
     ACTIVITY_CODE_BASE = join_activity_code('vm', 'Node')
     node = ForeignKey('Node', related_name='activity_log',
@@ -278,17 +262,17 @@ def node_activity(code_suffix, node, task_uuid=None, user=None,
     return activitycontextimpl(act)
 
 
-@worker_ready.connect()
 def cleanup(conf=None, **kwargs):
     # TODO check if other manager workers are running
-    from celery.task.control import discard_all
-    discard_all()
     msg_txt = ugettext_noop("Manager is restarted, activity is cleaned up. "
                             "You can try again now.")
     message = create_readable(msg_txt, msg_txt)
+    queue_name = kwargs.get('queue_name', None)
     for i in InstanceActivity.objects.filter(finished__isnull=True):
-        i.finish(False, result=message)
-        logger.error('Forced finishing stale activity %s', i)
+        op = i.get_operation()
+        if op and op.async_queue == queue_name:
+            i.finish(False, result=message)
+            logger.error('Forced finishing stale activity %s', i)
     for i in NodeActivity.objects.filter(finished__isnull=True):
         i.finish(False, result=message)
         logger.error('Forced finishing stale activity %s', i)

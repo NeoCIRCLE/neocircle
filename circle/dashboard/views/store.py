@@ -23,6 +23,7 @@ from os.path import join, normpath, dirname, basename
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.template.defaultfilters import urlencode
 from django.core.cache import get_cache
 from django.core.exceptions import SuspiciousOperation
 from django.core.urlresolvers import reverse
@@ -55,7 +56,7 @@ class StoreList(LoginRequiredMixin, TemplateView):
         context['current'] = directory
         context['next_url'] = "%s%s?directory=%s" % (
             settings.DJANGO_URL.rstrip("/"),
-            reverse("dashboard.views.store-list"), directory)
+            reverse("dashboard.views.store-list"), urlencode(directory))
         return context
 
     def get(self, *args, **kwargs):
@@ -112,7 +113,7 @@ def store_upload(request):
 
     next_url = "%s%s?directory=%s" % (
         settings.DJANGO_URL.rstrip("/"),
-        reverse("dashboard.views.store-list"), directory)
+        reverse("dashboard.views.store-list"), urlencode(directory))
 
     return render(request, "dashboard/store/upload.html",
                   {'directory': directory, 'action': action,
@@ -168,7 +169,7 @@ class StoreRemove(LoginRequiredMixin, TemplateView):
 
         return redirect("%s?directory=%s" % (
             reverse("dashboard.views.store-list"),
-            dirname(dirname(path)),
+            urlencode(dirname(dirname(path))),
         ))
 
 
@@ -185,7 +186,7 @@ def store_new_directory(request):
                          name, path, unicode(request.user))
         messages.error(request, _("Unable to create folder."))
     return redirect("%s?directory=%s" % (
-        reverse("dashboard.views.store-list"), path))
+        reverse("dashboard.views.store-list"), urlencode(path)))
 
 
 @require_POST

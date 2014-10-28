@@ -32,11 +32,12 @@ from django.views.generic import (
 )
 
 from braces.views import (
-    LoginRequiredMixin, PermissionRequiredMixin, SuperuserRequiredMixin,
+    LoginRequiredMixin, PermissionRequiredMixin,
 )
 from django_tables2 import SingleTableView
 
 from vm.models import InstanceTemplate, InterfaceTemplate, Instance, Lease
+from storage.models import Disk
 
 from ..forms import (
     TemplateForm, TemplateListSearchForm, AclUserOrGroupAddForm, LeaseForm,
@@ -239,6 +240,16 @@ class TemplateDelete(LoginRequiredMixin, DeleteView):
         else:
             return ['dashboard/confirm/base-delete.html']
 
+    def get(self, request, *args, **kwargs):
+        if not self.get_object().has_level(request.user, "owner"):
+            message = _("Only the owners can delete the selected template.")
+            if request.is_ajax():
+                raise PermissionDenied()
+            else:
+                messages.warning(request, message)
+                return redirect(self.get_success_url())
+        return super(TemplateDelete, self).get(request, *args, **kwargs)
+
     def delete(self, request, *args, **kwargs):
         object = self.get_object()
         if not object.has_level(request.user, 'owner'):
@@ -319,6 +330,57 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return kwargs
 
 
+class DiskRemoveView(DeleteView):
+    model = Disk
+
+    def get_queryset(self):
+        qs = super(DiskRemoveView, self).get_queryset()
+        return qs.exclude(template_set=None)
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/confirm/ajax-delete.html']
+        else:
+            return ['dashboard/confirm/base-delete.html']
+
+    def get_context_data(self, **kwargs):
+        context = super(DiskRemoveView, self).get_context_data(**kwargs)
+        disk = self.get_object()
+        template = disk.template_set.get()
+        if not template.has_level(self.request.user, 'owner'):
+            raise PermissionDenied()
+        context['title'] = _("Disk remove confirmation")
+        context['text'] = _("Are you sure you want to remove "
+                            "<strong>%(disk)s</strong> from "
+                            "<strong>%(app)s</strong>?" % {'disk': disk,
+                                                           'app': template}
+                            )
+        return context
+
+    def delete(self, request, *args, **kwargs):
+        disk = self.get_object()
+        template = disk.template_set.get()
+
+        if not template.has_level(request.user, 'owner'):
+            raise PermissionDenied()
+
+        template.remove_disk(disk=disk, user=request.user)
+        disk.destroy()
+
+        next_url = request.POST.get("next")
+        success_url = next_url if next_url else template.get_absolute_url()
+        success_message = _("Disk successfully removed.")
+
+        if request.is_ajax():
+            return HttpResponse(
+                json.dumps({'message': success_message}),
+                content_type="application/json",
+            )
+        else:
+            messages.success(request, success_message)
+            return HttpResponseRedirect("%s#resources" % success_url)
+
+
 class LeaseCreate(LoginRequiredMixin, PermissionRequiredMixin,
                   SuccessMessageMixin, CreateView):
     model = Lease
@@ -330,13 +392,17 @@ class LeaseCreate(LoginRequiredMixin, PermissionRequiredMixin,
     def get_success_url(self):
         return reverse_lazy("dashboard.views.template-list")
 
+    def form_valid(self, form):
+        retval = super(LeaseCreate, self).form_valid(form)
+        self.object.set_level(self.request.user, "owner")
+        return retval
+
 
 class LeaseAclUpdateView(AclUpdateView):
     model = Lease
 
 
-class LeaseDetail(LoginRequiredMixin, SuperuserRequiredMixin,
-                  SuccessMessageMixin, UpdateView):
+class LeaseDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Lease
     form_class = LeaseForm
     template_name = "dashboard/lease-edit.html"
@@ -352,8 +418,21 @@ class LeaseDetail(LoginRequiredMixin, SuperuserRequiredMixin,
     def get_success_url(self):
         return reverse_lazy("dashboard.views.lease-detail", kwargs=self.kwargs)
 
+    def get(self, request, *args, **kwargs):
+        if not self.get_object().has_level(request.user, "owner"):
+            message = _("Only the owners can modify the selected lease.")
+            messages.warning(request, message)
+            return redirect(reverse_lazy("dashboard.views.template-list"))
+        return super(LeaseDetail, self).get(request, *args, **kwargs)
 
-class LeaseDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
+    def post(self, request, *args, **kwargs):
+        if not self.get_object().has_level(request.user, "owner"):
+            raise PermissionDenied()
+
+        return super(LeaseDetail, self).post(request, *args, **kwargs)
+
+
+class LeaseDelete(LoginRequiredMixin, DeleteView):
     model = Lease
 
     def get_success_url(self):
@@ -379,10 +458,22 @@ class LeaseDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
             c['disable_submit'] = True
         return c
 
+    def get(self, request, *args, **kwargs):
+        if not self.get_object().has_level(request.user, "owner"):
+            message = _("Only the owners can delete the selected lease.")
+            if request.is_ajax():
+                raise PermissionDenied()
+            else:
+                messages.warning(request, message)
+                return redirect(self.get_success_url())
+        return super(LeaseDelete, self).get(request, *args, **kwargs)
+
     def delete(self, request, *args, **kwargs):
         object = self.get_object()
 
-        if (object.instancetemplate_set.count() > 0):
+        if not object.has_level(request.user, "owner"):
+            raise PermissionDenied()
+        if object.instancetemplate_set.count() > 0:
             raise SuspiciousOperation()
 
         object.delete()

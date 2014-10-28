@@ -34,6 +34,13 @@ from ..views import AclUpdateView
 from .. import views
 
 
+class QuerySet(list):
+    model = MagicMock()
+
+    def get(self, *args, **kwargs):
+        return self.pop()
+
+
 class ViewUserTestCase(unittest.TestCase):
 
     def test_404(self):
@@ -145,58 +152,66 @@ class VmOperationViewTestCase(unittest.TestCase):
                 view.as_view()(request, pk=1234).render()
 
     def test_migrate(self):
-        request = FakeRequestFactory(POST={'node': 1}, superuser=True)
+        request = FakeRequestFactory(
+            POST={'to_node': 1, 'live_migration': True}, superuser=True)
         view = vm_ops['migrate']
+        node = MagicMock(pk=1, name='node1')
 
         with patch.object(view, 'get_object') as go, \
                 patch('dashboard.views.util.messages') as msg, \
-                patch('dashboard.views.vm.get_object_or_404') as go4:
+                patch.object(view, 'get_form_kwargs') as form_kwargs:
             inst = MagicMock(spec=Instance)
             inst._meta.object_name = "Instance"
             inst.migrate = Instance._ops['migrate'](inst)
             inst.migrate.async = MagicMock()
             inst.has_level.return_value = True
+            form_kwargs.return_value = {
+                'default': 100, 'choices': QuerySet([node])}
             go.return_value = inst
-            go4.return_value = MagicMock()
             assert view.as_view()(request, pk=1234)['location']
             assert not msg.error.called
-            assert go4.called
+            inst.migrate.async.assert_called_once_with(
+                to_node=node, live_migration=True, user=request.user)
 
     def test_migrate_failed(self):
-        request = FakeRequestFactory(POST={'node': 1}, superuser=True)
+        request = FakeRequestFactory(POST={'to_node': 1}, superuser=True)
         view = vm_ops['migrate']
+        node = MagicMock(pk=1, name='node1')
 
         with patch.object(view, 'get_object') as go, \
                 patch('dashboard.views.util.messages') as msg, \
-                patch('dashboard.views.vm.get_object_or_404') as go4:
+                patch.object(view, 'get_form_kwargs') as form_kwargs:
             inst = MagicMock(spec=Instance)
             inst._meta.object_name = "Instance"
             inst.migrate = Instance._ops['migrate'](inst)
             inst.migrate.async = MagicMock()
             inst.migrate.async.side_effect = Exception
             inst.has_level.return_value = True
+            form_kwargs.return_value = {
+                'default': 100, 'choices': QuerySet([node])}
             go.return_value = inst
-            go4.return_value = MagicMock()
             assert view.as_view()(request, pk=1234)['location']
+            assert inst.migrate.async.called
             assert msg.error.called
-            assert go4.called
 
     def test_migrate_wo_permission(self):
-        request = FakeRequestFactory(POST={'node': 1}, superuser=False)
+        request = FakeRequestFactory(POST={'to_node': 1}, superuser=False)
         view = vm_ops['migrate']
+        node = MagicMock(pk=1, name='node1')
 
         with patch.object(view, 'get_object') as go, \
-                patch('dashboard.views.vm.get_object_or_404') as go4:
+                patch.object(view, 'get_form_kwargs') as form_kwargs:
             inst = MagicMock(spec=Instance)
             inst._meta.object_name = "Instance"
             inst.migrate = Instance._ops['migrate'](inst)
             inst.migrate.async = MagicMock()
             inst.has_level.return_value = True
+            form_kwargs.return_value = {
+                'default': 100, 'choices': QuerySet([node])}
             go.return_value = inst
-            go4.return_value = MagicMock()
             with self.assertRaises(PermissionDenied):
                 assert view.as_view()(request, pk=1234)['location']
-            assert go4.called
+            assert not inst.migrate.async.called
 
     def test_migrate_template(self):
         """check if GET dialog's template can be rendered"""
@@ -219,6 +234,7 @@ class VmOperationViewTestCase(unittest.TestCase):
         with patch.object(view, 'get_object') as go, \
                 patch('dashboard.views.util.messages') as msg:
             inst = MagicMock(spec=Instance)
+            inst.name = "asd"
             inst._meta.object_name = "Instance"
             inst.save_as_template = Instance._ops['save_as_template'](inst)
             inst.save_as_template.async = MagicMock()
@@ -235,6 +251,7 @@ class VmOperationViewTestCase(unittest.TestCase):
         with patch.object(view, 'get_object') as go, \
                 patch('dashboard.views.util.messages') as msg:
             inst = MagicMock(spec=Instance)
+            inst.name = "asd"
             inst._meta.object_name = "Instance"
             inst.save_as_template = Instance._ops['save_as_template'](inst)
             inst.save_as_template.async = MagicMock()
@@ -301,7 +318,7 @@ class VmMassOperationViewTestCase(unittest.TestCase):
                 view.as_view()(request, pk=1234).render()
 
     def test_migrate(self):
-        request = FakeRequestFactory(POST={'node': 1}, superuser=True)
+        request = FakeRequestFactory(POST={'to_node': 1}, superuser=True)
         view = vm_mass_ops['migrate']
 
         with patch.object(view, 'get_object') as go, \
@@ -318,7 +335,7 @@ class VmMassOperationViewTestCase(unittest.TestCase):
             assert not msg2.error.called
 
     def test_migrate_failed(self):
-        request = FakeRequestFactory(POST={'node': 1}, superuser=True)
+        request = FakeRequestFactory(POST={'to_node': 1}, superuser=True)
         view = vm_mass_ops['migrate']
 
         with patch.object(view, 'get_object') as go, \
@@ -334,7 +351,7 @@ class VmMassOperationViewTestCase(unittest.TestCase):
             assert msg.error.called
 
     def test_migrate_wo_permission(self):
-        request = FakeRequestFactory(POST={'node': 1}, superuser=False)
+        request = FakeRequestFactory(POST={'to_node': 1}, superuser=False)
         view = vm_mass_ops['migrate']
 
         with patch.object(view, 'get_object') as go:

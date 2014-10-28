@@ -45,6 +45,7 @@ from .views import (
     VmTraitsUpdate, VmRawDataUpdate,
     GroupPermissionsView,
     LeaseAclUpdateView,
+    toggle_template_tutorial,
     ClientCheck, TokenLogin,
     VmGraphView, NodeGraphView, NodeListGraphView,
 )
@@ -99,6 +100,8 @@ urlpatterns = patterns(
         name='dashboard.views.vm-traits'),
     url(r'^vm/(?P<pk>\d+)/raw_data/$', VmRawDataUpdate.as_view(),
         name='dashboard.views.vm-raw-data'),
+    url(r'^vm/(?P<pk>\d+)/toggle_tutorial/$', toggle_template_tutorial,
+        name='dashboard.views.vm-toggle-tutorial'),
 
     url(r'^node/list/$', NodeList.as_view(), name='dashboard.views.node-list'),
     url(r'^node/(?P<pk>\d+)/$', NodeDetailView.as_view(),

@@ -88,7 +88,9 @@ class Node(OperatedMixin, TimeStampedModel):
     class Meta:
         app_label = 'vm'
         db_table = 'vm_node'
-        permissions = ()
+        permissions = (
+            ('view_statistics', _('Can view Node box and statistics.')),
+        )
         ordering = ('-enabled', 'normalized_name')
 
     def __unicode__(self):
@@ -114,8 +116,8 @@ class Node(OperatedMixin, TimeStampedModel):
     def get_info(self):
         return self.remote_query(vm_tasks.get_info,
                                  priority='fast',
-                                 default={'core_num': '',
-                                          'ram_size': '0',
+                                 default={'core_num': 0,
+                                          'ram_size': 0,
                                           'architecture': ''})
 
     info = property(get_info)
@@ -313,10 +315,11 @@ class Node(OperatedMixin, TimeStampedModel):
     def get_status_label(self):
         return {
             'OFFLINE': 'label-warning',
-            'DISABLED': 'label-warning',
+            'DISABLED': 'label-danger',
             'MISSING': 'label-danger',
-            'ONLINE': 'label-success'}.get(self.get_state(),
-                                           'label-danger')
+            'ACTIVE': 'label-success',
+            'PASSIVE': 'label-warning',
+        }.get(self.get_state(), 'label-danger')
 
     @node_available
     def update_vm_states(self):

@@ -23,6 +23,7 @@ celerybeat-schedule
 .coverage
 *,cover
 coverage.xml
+.noseids
 
 # Gettext object file:
 *.mo

@@ -94,6 +94,10 @@ def make_messages():
 def test(test=""):
     "Run portal tests"
     with _workon("circle"), cd("~/circle/circle"):
+        if test == "f":
+            test = "--failed"
+        else:
+            test += " --with-id"
         run("./manage.py test --settings=circle.settings.test %s" % test)
 
 

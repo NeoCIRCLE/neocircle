@@ -14,7 +14,7 @@
       data: {'new_name': name},
       headers: {"X-CSRFToken": getCookie('csrftoken')},
       success: function(data, textStatus, xhr) {
-        $("#group-details-h1-name").html(data.new_name).show();
+        $("#group-details-h1-name").text(data['new_name']).show();
         $('#group-details-rename').hide();
         // addMessage(data['message'], "success");
       },

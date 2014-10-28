@@ -3,6 +3,7 @@ $(function() {
   $("#group-list-rename-button, .group-details-rename-button").click(function() {
     $("#group-list-column-name", $(this).closest("tr")).hide();
     $("#group-list-rename", $(this).closest("tr")).css('display', 'inline');
+    $("#group-list-rename").find("input").select();
   });
 
   /* rename ajax */

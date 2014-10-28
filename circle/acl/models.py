@@ -71,6 +71,17 @@ class AclBase(Model):
     """Define permission levels for Users/Groups per object."""
     object_level_set = GenericRelation(ObjectLevel)
 
+    def clone_acl(self, other):
+        """Clone full ACL from other object."""
+        assert self.id != other.id or type(self) != type(other)
+        self.object_level_set.clear()
+        for i in other.object_level_set.all():
+            ol = self.object_level_set.create(level=i.level)
+            for j in i.users.all():
+                ol.users.add(j)
+            for j in i.groups.all():
+                ol.groups.add(j)
+
     @classmethod
     def get_level_object(cls, level):
 
@@ -229,7 +240,7 @@ class AclBase(Model):
             levelfilter,
             content_type=ct, level__weight__gte=level.weight).distinct()
         clsfilter = Q(object_level_set__in=ols.all())
-        return cls.objects.filter(clsfilter)
+        return cls.objects.filter(clsfilter).distinct()
 
     def save(self, *args, **kwargs):
         super(AclBase, self).save(*args, **kwargs)

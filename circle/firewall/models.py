@@ -874,7 +874,7 @@ class Record(models.Model):
                              verbose_name=_('host'))
     type = models.CharField(max_length=6, choices=CHOICES_type,
                             verbose_name=_('type'))
-    address = models.CharField(max_length=200,
+    address = models.CharField(max_length=400,
                                verbose_name=_('address'))
     ttl = models.IntegerField(default=600, verbose_name=_('ttl'))
     owner = models.ForeignKey(User, verbose_name=_('owner'))

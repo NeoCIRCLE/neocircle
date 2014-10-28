@@ -2,7 +2,7 @@ $(function() {
   /* for template removes buttons */
   $('.template-delete').click(function() {
     var template_pk = $(this).data('template-pk');
-    addModalConfirmation(deleteTemplate,
+    addModalConfirmationOrDisplayMessage(deleteTemplate,
       { 'url': '/dashboard/template/delete/' + template_pk + '/',
         'data': [],
         'template_pk': template_pk,
@@ -13,7 +13,7 @@ $(function() {
   /* for lease removes buttons */
   $('.lease-delete').click(function() {
     var lease_pk = $(this).data('lease-pk');
-    addModalConfirmation(deleteLease,
+    addModalConfirmationOrDisplayMessage(deleteLease,
       { 'url': '/dashboard/lease/delete/' + lease_pk + '/',
         'data': [],
         'lease_pk': lease_pk,
@@ -78,6 +78,32 @@ function deleteLease(data) {
     },
     error: function(xhr, textStatus, error) {
       addMessage('Uh oh :(', 'danger');
+    }
+  });
+}
+
+function addModalConfirmationOrDisplayMessage(func, data) {
+  $.ajax({
+    type: 'GET',
+    url: data['url'],
+    data: jQuery.param(data['data']),
+    success: function(result) {
+      $('body').append(result);
+      $('#confirmation-modal').modal('show');
+      $('#confirmation-modal').on('hidden.bs.modal', function() {
+        $('#confirmation-modal').remove();
+      });
+      $('#confirmation-modal-button').click(function() {
+        func(data);
+        $('#confirmation-modal').modal('hide');
+      });
+    },
+    error: function(xhr, textStatus, error) {
+      if(xhr.status === 403) {
+        addMessage(gettext("Only the owners can delete the selected object."), "warning");
+      } else {
+        addMessage(gettext("An error occurred. (") + xhr.status + ")", 'danger')
+      }
     }
   });
 }
