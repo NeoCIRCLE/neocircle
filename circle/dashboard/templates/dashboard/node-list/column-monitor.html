@@ -2,7 +2,7 @@
 {% load i18n %}
 
 <i class="fa fa-gears"></i> {% trans "CPU" %}
- <div class="progress pull-right">
+<div class="progress pull-right">
   <div class="progress-bar progress-bar-success" role="progressbar"
     aria-valuenow="{{ record.cpu_usage|stringformat:"f" }}"
     aria-valuemin="0" aria-valuemax="1"
@@ -13,12 +13,14 @@
       {% else %}
         -
       {% endif %}
-   </span>
+    </span>
   </div>
- </div>
+</div>
+
 <br>
+
 <i class="fa fa-ticket"></i> {% trans "Memory" %}
- <div class="progress pull-right">
+<div class="progress pull-right">
   <div class="progress-bar" role="progressbar"
     aria-valuenow="{{ record.ram_usage|stringformat:"f" }}"
     aria-valuemin="0" aria-valuemax="100"
@@ -31,4 +33,4 @@
       {% endif %}
     </span>
   </div>
- </div>
+</div>
