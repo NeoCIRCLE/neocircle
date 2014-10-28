@@ -16,7 +16,7 @@ import django.core.validators
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('taggit', '0002_auto_20141028_1416'),
+        ('taggit', '0001_initial'),
         ('storage', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('firewall', '0001_initial'),
