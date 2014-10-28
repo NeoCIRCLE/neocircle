@@ -54,7 +54,9 @@ from .validators import connect_command_template_validator
 
 logger = getLogger(__name__)
 
-pwgen = User.objects.make_random_password
+
+def pwgen():
+    return User.objects.make_random_password()
 
 
 class Favourite(Model):
