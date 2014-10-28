@@ -21,7 +21,8 @@
     <div id="dashboard-files-toplist">
     {% for t in files.toplist %}
     {% if t.TYPE == "F" %}
-      <div class="list-group-item">
+      <div class="list-group-item
+        {% if forloop.last and files.toplist|length < 5 %}list-group-item-last{% endif %}">
         <i class="fa fa-{{ t.icon }} dashboard-toplist-icon"></i> 
         <div class="store-list-item-name">
           {{ t.NAME }}
@@ -38,7 +39,8 @@
       </div>
     {% else %}
     <a href="{% url "dashboard.views.store-list" %}?directory={{ t.path }}" 
-      class="list-group-item">
+      class="list-group-item
+      {% if forloop.last and files.toplist|length < 5 %}list-group-item-last{% endif %}">
       <i class="fa fa-{{ t.icon }} dashboard-toplist-icon"></i>
         <div class="store-list-item-name">
         {{ t.NAME }}
