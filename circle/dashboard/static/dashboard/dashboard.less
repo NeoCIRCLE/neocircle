@@ -1104,3 +1104,17 @@ textarea[name="new_members"] {
   white-space: nowrap;
   text-align: center;
 }
+
+/* for introjs
+ * newer version has this fixed
+ * but it doesn't work w bootstrap 3.2.0
+ */
+.introjs-helperLayer *,
+.introjs-helperLayer *:before,
+.introjs-helperLayer *:after {
+  -webkit-box-sizing: content-box;
+    -moz-box-sizing: content-box;
+      -ms-box-sizing: content-box;
+      -o-box-sizing: content-box;
+          box-sizing: content-box;
+}

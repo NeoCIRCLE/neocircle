@@ -185,7 +185,7 @@ PIPELINE_CSS = {
         "bootstrap/dist/css/bootstrap-theme.css",
         "fontawesome/css/font-awesome.css",
         "jquery-simple-slider/css/simple-slider.css",
-        "bootstrap-tour/build/css/bootstrap-tour.css",
+        "intro.js/introjs.css",
         "template.less",
         "dashboard/dashboard.less",
         "network/network.less",
@@ -199,7 +199,7 @@ PIPELINE_JS = {
         # "jquery/dist/jquery.js",  # included separately
         "bootbox/bootbox.js",
         "bootstrap/dist/js/bootstrap.js",
-        "bootstrap-tour/build/css/bootstrap-tour.js",
+        "intro.js/intro.js",
         "jquery-knob/dist/jquery.knob.min.js",
         "jquery-simple-slider/js/simple-slider.js",
         "dashboard/dashboard.js",

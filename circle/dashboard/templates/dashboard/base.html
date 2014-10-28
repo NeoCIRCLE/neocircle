@@ -5,13 +5,6 @@
 {% block title-site %}Dashboard | CIRCLE{% endblock %}
 
 
-{% block extra_link %}
-  <link rel="stylesheet" href="{{ STATIC_URL }}dashboard/loopj-jquery-simple-slider/css/simple-slider.css"/>
-  <link rel="stylesheet" href="{{ STATIC_URL }}dashboard/introjs/introjs.min.css">
-  <link href="{{ STATIC_URL }}dashboard/dashboard.css" rel="stylesheet">
-{% endblock %}
-
-
 {% block navbar-brand %}
   <a class="navbar-brand" href="{% url "dashboard.index" %}" style="padding: 10px 15px;">
     {% include "branding.html" %}
