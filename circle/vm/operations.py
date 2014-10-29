@@ -734,6 +734,7 @@ class SaveAsTemplateOperation(InstanceOperation):
         tmpl = InstanceTemplate(**params)
         tmpl.full_clean()  # Avoiding database errors.
         tmpl.save()
+        tmpl.req_traits.add(*self.instance.req_traits.all())
         if clone:
             tmpl.clone_acl(self.instance.template)
         try:
