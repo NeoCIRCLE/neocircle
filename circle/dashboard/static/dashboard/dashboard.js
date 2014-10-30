@@ -50,6 +50,21 @@ $(function () {
     return false;
   });
 
+  $('.tx-tpl-ownership').click(function(e) {
+    $.ajax({
+      type: 'GET',
+      url: $('.tx-tpl-ownership').attr('href'),
+      success: function(data) {
+        $('body').append(data);
+        $('#confirmation-modal').modal('show');
+        $('#confirmation-modal').on('hidden.bs.modal', function() {
+          $('#confirmation-modal').remove();
+        });
+      }
+    });
+    return false;
+  });
+
   $('.template-choose').click(function(e) {
     $.ajax({
       type: 'GET',

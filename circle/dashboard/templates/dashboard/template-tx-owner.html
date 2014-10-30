@@ -1,0 +1,16 @@
+{% load i18n %}
+
+<div class="pull-right">
+    <form action="{% url "dashboard.views.template-transfer-ownership" pk=object.pk %}" method="POST" style="max-width: 400px;">
+    {% csrf_token %}
+    <label>
+        {{ form.name.label }}
+    </label>
+    <div class="input-group">
+        {{form.name}}
+        <div class="input-group-btn">
+            <input type="submit" value="{% trans "Save" %}" class="btn btn-primary">
+        </div>
+    </div>
+    </form>
+</div>
