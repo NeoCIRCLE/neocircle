@@ -27,8 +27,8 @@ from .views import (
     MyPreferencesView, NodeAddTraitView, NodeCreate, NodeDelete,
     NodeDetailView, NodeList, NodeStatus,
     NotificationView, PortDelete, TemplateAclUpdateView, TemplateCreate,
-    TemplateDelete, TemplateDetail, TemplateList, TransferOwnershipConfirmView,
-    TransferOwnershipView, vm_activity, VmCreate, VmDetailView,
+    TemplateDelete, TemplateDetail, TemplateList,
+    vm_activity, VmCreate, VmDetailView,
     VmDetailVncTokenView, VmList,
     DiskRemoveView, get_disk_download_status, InterfaceDeleteView,
     GroupRemoveUserView,
@@ -48,6 +48,8 @@ from .views import (
     toggle_template_tutorial,
     ClientCheck, TokenLogin,
     VmGraphView, NodeGraphView, NodeListGraphView,
+    TransferInstanceOwnershipView, TransferInstanceOwnershipConfirmView,
+    TransferTemplateOwnershipView, TransferTemplateOwnershipConfirmView,
 )
 from .views.vm import vm_ops, vm_mass_ops
 from .views.node import node_ops
@@ -86,7 +88,7 @@ urlpatterns = patterns(
         name='dashboard.views.detail-vnc'),
     url(r'^vm/(?P<pk>\d+)/acl/$', AclUpdateView.as_view(model=Instance),
         name='dashboard.views.vm-acl'),
-    url(r'^vm/(?P<pk>\d+)/tx/$', TransferOwnershipView.as_view(),
+    url(r'^vm/(?P<pk>\d+)/tx/$', TransferInstanceOwnershipView.as_view(),
         name='dashboard.views.vm-transfer-ownership'),
     url(r'^vm/list/$', VmList.as_view(), name='dashboard.views.vm-list'),
     url(r'^vm/create/$', VmCreate.as_view(),
@@ -108,7 +110,8 @@ urlpatterns = patterns(
         name='dashboard.views.node-detail'),
     url(r'^node/(?P<pk>\d+)/add-trait/$', NodeAddTraitView.as_view(),
         name='dashboard.views.node-addtrait'),
-    url(r'^tx/(?P<key>.*)/?$', TransferOwnershipConfirmView.as_view(),
+    url(r'^vm/tx/(?P<key>.*)/?$',
+        TransferInstanceOwnershipConfirmView.as_view(),
         name='dashboard.views.vm-transfer-ownership-confirm'),
     url(r'^node/delete/(?P<pk>\d+)/$', NodeDelete.as_view(),
         name="dashboard.views.delete-node"),
