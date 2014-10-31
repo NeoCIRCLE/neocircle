@@ -1,4 +1,4 @@
-$('i[class="fa fa-times"]').click(function() {
+$('.ethernet-devices-mini-table i[class="fa fa-times"]').click(function() {
     href = $(this).parent('a').attr('href');
     csrf = getCookie('csrftoken');
     var click_this = this;

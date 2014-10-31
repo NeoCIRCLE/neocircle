@@ -1,4 +1,4 @@
-$('i[class="fa fa-times"]').click(function() {
+$('#small_rule_table i[class="fa fa-times"]').click(function() {
     href = $(this).parent('a').attr('href');
     csrf = getCookie('csrftoken');
     var click_this = this;
