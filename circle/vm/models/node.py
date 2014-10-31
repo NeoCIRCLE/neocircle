@@ -291,7 +291,7 @@ class Node(OperatedMixin, TimeStampedModel):
     @property
     @node_available
     def driver_version(self):
-        return self.info['driver_version']
+        return self.info.get('driver_version')
 
     @property
     @node_available
