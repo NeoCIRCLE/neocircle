@@ -1100,6 +1100,7 @@ class ActivateOperation(NodeOperation):
     def _operation(self):
         self.node.enabled = True
         self.node.schedule_enabled = True
+        self.node.get_info(invalidate_cache=True)
         self.node.save()
 
 
@@ -1121,6 +1122,7 @@ class PassivateOperation(NodeOperation):
     def _operation(self):
         self.node.enabled = True
         self.node.schedule_enabled = False
+        self.node.get_info(invalidate_cache=True)
         self.node.save()
 
 
