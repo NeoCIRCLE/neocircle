@@ -51,6 +51,7 @@ from .views import (
     TransferInstanceOwnershipView, TransferInstanceOwnershipConfirmView,
     TransferTemplateOwnershipView, TransferTemplateOwnershipConfirmView,
     OpenSearchDescriptionView,
+    NodeActivityView,
 )
 from .views.vm import vm_ops, vm_mass_ops
 from .views.node import node_ops
@@ -119,6 +120,7 @@ urlpatterns = patterns(
         name='dashboard.views.template-transfer-ownership-confirm'),
     url(r'^node/delete/(?P<pk>\d+)/$', NodeDelete.as_view(),
         name="dashboard.views.delete-node"),
+    url(r'^node/(?P<pk>\d+)/activity/$', NodeActivityView.as_view()),
     url(r'^node/create/$', NodeCreate.as_view(),
         name='dashboard.views.node-create'),
 

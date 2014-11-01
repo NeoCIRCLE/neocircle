@@ -1,4 +1,38 @@
+var in_progress = false;
+var activity_hash = 5;
+
 $(function() {
+  /* do we need to check for new activities */
+  if(decideActivityRefresh()) {
+    if(!in_progress) {
+      checkNewActivity(1);
+      in_progress = true;
+    }
+  }
+
+  $('a[href="#activity"]').click(function(){
+    $('a[href="#activity"] i').addClass('fa-spin');
+    if(!in_progress) {
+      checkNewActivity(1);
+      in_progress = true;
+    }
+  });
+
+  $('a.operation.btn').click(function(e) {
+    $.ajax({
+      type: 'GET',
+      url: $(this).attr('href'),
+      success: function(data) {
+        $('body').append(data);
+        $('#confirmation-modal').modal('show');
+        $('#confirmation-modal').on('hidden.bs.modal', function() {
+          $('#confirmation-modal').remove();
+        });
+      }
+    });
+    return false;
+  });
+
   /* rename */
   $("#node-details-h1-name, .node-details-rename-button").click(function() {
     $("#node-details-h1-name").hide();
@@ -55,3 +89,54 @@ $(function() {
   });
 
 });
+
+function decideActivityRefresh() {
+  var check = false;
+  /* if something is still spinning */
+  if($('.timeline .activity i').hasClass('fa-spin'))
+    check = true;
+
+  return check;
+}
+
+function checkNewActivity(runs) {
+  var node = location.href.split('/'); node = node[node.length - 2];
+
+  $.ajax({
+    type: 'GET',
+    url: '/dashboard/node/' + node + '/activity/',
+    success: function(data) {
+      var new_activity_hash = (data['activities'] + "").hashCode();
+      if(new_activity_hash != activity_hash) {
+        $("#activity-refresh").html(data['activities']);
+      }
+      activity_hash = new_activity_hash;
+
+      $("[title]").tooltip();
+
+      if(runs > 0 && decideActivityRefresh()) {
+        setTimeout(
+          function() {checkNewActivity(runs + 1)},
+          1000 + Math.exp(runs * 0.05)
+        );
+      } else {
+        in_progress = false;
+      }
+      $('a[href="#activity"] i').removeClass('fa-spin');
+    },
+    error: function() {
+      in_progress = false;
+    }
+  });
+}
+
+String.prototype.hashCode = function() {
+  var hash = 0, i, chr, len;
+  if (this.length == 0) return hash;
+  for (i = 0, len = this.length; i < len; i++) {
+    chr   = this.charCodeAt(i);
+    hash  = ((hash << 5) - hash) + chr;
+    hash |= 0; // Convert to 32bit integer
+  }
+  return hash;
+};

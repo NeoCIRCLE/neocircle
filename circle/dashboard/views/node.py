@@ -27,8 +27,10 @@ from django.db.models import Count
 from django.forms.models import inlineformset_factory
 from django.http import HttpResponse
 from django.shortcuts import redirect
+from django.template import RequestContext
+from django.template.loader import render_to_string
 from django.utils.translation import ugettext as _
-from django.views.generic import DetailView, TemplateView
+from django.views.generic import DetailView, TemplateView, View
 
 from braces.views import LoginRequiredMixin, SuperuserRequiredMixin
 from django_tables2 import SingleTableView
@@ -279,3 +281,22 @@ class NodeAddTraitView(SuperuserRequiredMixin, DetailView):
             return redirect(self.get_success_url())
         else:
             return self.get(self, request, pk, *args, **kwargs)
+
+
+class NodeActivityView(LoginRequiredMixin, SuperuserRequiredMixin, View):
+    def get(self, request, pk):
+        node = Node.objects.get(pk=pk)
+
+        activities = NodeActivity.objects.filter(
+            node=node, parent=None).order_by('-started').select_related()
+
+        response = {
+            'activities': render_to_string(
+                "dashboard/node-detail/_activity-timeline.html",
+                RequestContext(request, {'activities': activities}))
+        }
+
+        return HttpResponse(
+            json.dumps(response),
+            content_type="application/json"
+        )
