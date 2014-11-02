@@ -12,10 +12,12 @@
     <dt>{% trans "Priority" %}:</dt><dd>{{ node.priority }}</dd>
     <dt>{% trans "Driver Version:" %}</dt>
     <dd>
-      {{ node.driver_version.branch }} at
-      {{ node.driver_version.commit }} ({{ node.driver_version.commit_text }})
-      {% if node.driver_version.is_dirty %}
-        <span class="label label-danger">{% trans "with uncommitted changes!" %}</span>
+      {% if node.driver_version %}
+        {{ node.driver_version.branch }} at
+        {{ node.driver_version.commit }} ({{ node.driver_version.commit_text }})
+        {% if node.driver_version.is_dirty %}
+          <span class="label label-danger">{% trans "with uncommitted changes!" %}</span>
+        {% endif %}
       {% endif %}
     </dd>
     <dt>{% trans "Host owner" %}:</dt>
