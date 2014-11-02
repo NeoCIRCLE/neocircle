@@ -87,8 +87,9 @@
         {% if user == object.owner %}
         {% blocktrans %}You are the current owner of this template.{% endblocktrans %}
         {% else %}
+        {% url "dashboard.views.profile" username=object.owner.username as url %}
         {% blocktrans with owner=object.owner name=object.owner.get_full_name%}
-          The current owner of this template is <strong>{{name}} ({{owner}})</strong>.
+          The current owner of this template is <a href="{{url}}">{{name}} ({{owner}})</a>.
         {% endblocktrans %}
         {% endif %}
         {% if user == object.owner or user.is_superuser %}
