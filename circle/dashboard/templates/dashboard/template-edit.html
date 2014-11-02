@@ -81,6 +81,26 @@
 
     <div class="panel panel-default">
       <div class="panel-heading">
+        <h4 class="no-margin"><i class="fa fa-user"></i> {% trans "Owner"  %}</h4>
+      </div>
+      <div class="panel-body">
+        {% if user == object.owner %}
+        {% blocktrans %}You are the current owner of this template.{% endblocktrans %}
+        {% else %}
+        {% url "dashboard.views.profile" username=object.owner.username as url %}
+        {% blocktrans with owner=object.owner name=object.owner.get_full_name%}
+          The current owner of this template is <a href="{{url}}">{{name}} ({{owner}})</a>.
+        {% endblocktrans %}
+        {% endif %}
+        {% if user == object.owner or user.is_superuser %}
+        <a href="{% url "dashboard.views.template-transfer-ownership" object.pk %}"
+           class="btn btn-link tx-tpl-ownership">{% trans "Transfer ownership..." %}</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="panel panel-default">
+      <div class="panel-heading">
         <h4 class="no-margin"><i class="fa fa-group"></i> {% trans "Manage access"  %}</h4>
       </div>
       <div class="panel-body">

@@ -29,7 +29,7 @@ from django.core import signing
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.http import HttpResponse, Http404, HttpResponseRedirect
-from django.shortcuts import redirect, get_object_or_404, render
+from django.shortcuts import redirect, get_object_or_404
 from django.template import RequestContext
 from django.template.loader import render_to_string
 from django.utils.translation import (
@@ -37,7 +37,7 @@ from django.utils.translation import (
 )
 from django.views.decorators.http import require_GET
 from django.views.generic import (
-    UpdateView, ListView, TemplateView, DeleteView, DetailView, View,
+    UpdateView, ListView, TemplateView, DeleteView
 )
 
 from braces.views import SuperuserRequiredMixin, LoginRequiredMixin
@@ -54,16 +54,17 @@ from vm.models import (
 )
 from .util import (
     CheckedDetailView, AjaxOperationMixin, OperationView, AclUpdateView,
-    FormOperationMixin, FilterMixin, search_user, GraphMixin,
+    FormOperationMixin, FilterMixin, GraphMixin,
+    TransferOwnershipConfirmView, TransferOwnershipView,
 )
 from ..forms import (
     AclUserOrGroupAddForm, VmResourcesForm, TraitsForm, RawDataForm,
     VmAddInterfaceForm, VmCreateDiskForm, VmDownloadDiskForm, VmSaveForm,
     VmRenewForm, VmStateChangeForm, VmListSearchForm, VmCustomizeForm,
-    TransferOwnershipForm, VmDiskResizeForm, RedeployForm, VmDiskRemoveForm,
+    VmDiskResizeForm, RedeployForm, VmDiskRemoveForm,
     VmMigrateForm, VmDeployForm,
 )
-from ..models import Favourite, Profile
+from ..models import Favourite
 
 logger = logging.getLogger(__name__)
 
@@ -1306,139 +1307,29 @@ class FavouriteView(TemplateView):
             return HttpResponse("Added.")
 
 
-class TransferOwnershipView(CheckedDetailView, DetailView):
+class TransferInstanceOwnershipConfirmView(TransferOwnershipConfirmView):
+    template = "dashboard/confirm/transfer-instance-ownership.html"
     model = Instance
 
-    def get_template_names(self):
-        if self.request.is_ajax():
-            return ['dashboard/_modal.html']
-        else:
-            return ['dashboard/nojs-wrapper.html']
-
-    def get_context_data(self, *args, **kwargs):
-        context = super(TransferOwnershipView, self).get_context_data(
-            *args, **kwargs)
-        context['form'] = TransferOwnershipForm()
-        context.update({
-            'box_title': _("Transfer ownership"),
-            'ajax_title': True,
-            'template': "dashboard/vm-detail/tx-owner.html",
-        })
-        return context
-
-    def post(self, request, *args, **kwargs):
-        form = TransferOwnershipForm(request.POST)
-        if not form.is_valid():
-            return self.get(request)
-        try:
-            new_owner = search_user(request.POST['name'])
-        except User.DoesNotExist:
-            messages.error(request, _('Can not find specified user.'))
-            return self.get(request, *args, **kwargs)
-        except KeyError:
-            raise SuspiciousOperation()
-
-        obj = self.get_object()
-        if not (obj.owner == request.user or
-                request.user.is_superuser):
-            raise PermissionDenied()
-
-        token = signing.dumps((obj.pk, new_owner.pk),
-                              salt=TransferOwnershipConfirmView.get_salt())
-        token_path = reverse(
-            'dashboard.views.vm-transfer-ownership-confirm', args=[token])
-        try:
-            new_owner.profile.notify(
-                ugettext_noop('Ownership offer'),
-                ugettext_noop('%(user)s offered you to take the ownership of '
-                              'his/her virtual machine called %(instance)s. '
-                              '<a href="%(token)s" '
-                              'class="btn btn-success btn-small">Accept</a>'),
-                {'instance': obj, 'token': token_path})
-        except Profile.DoesNotExist:
-            messages.error(request, _('Can not notify selected user.'))
-        else:
-            messages.success(request,
-                             _('User %s is notified about the offer.') % (
-                                 unicode(new_owner), ))
-
-        return redirect(reverse_lazy("dashboard.views.detail",
-                                     kwargs={'pk': obj.pk}))
+    def change_owner(self, instance, new_owner):
+        with instance.activity(
+            code_suffix='ownership-transferred',
+                readable_name=ugettext_noop("transfer ownership"),
+                concurrency_check=False, user=new_owner):
+            super(TransferInstanceOwnershipConfirmView, self).change_owner(
+                instance, new_owner)
 
 
-class TransferOwnershipConfirmView(LoginRequiredMixin, View):
-    """User can accept an ownership offer."""
-
-    max_age = 3 * 24 * 3600
-    success_message = _("Ownership successfully transferred to you.")
-
-    @classmethod
-    def get_salt(cls):
-        return unicode(cls)
-
-    def get(self, request, key, *args, **kwargs):
-        """Confirm ownership transfer based on token.
-        """
-        logger.debug('Confirm dialog for token %s.', key)
-        try:
-            instance, new_owner = self.get_instance(key, request.user)
-        except PermissionDenied:
-            messages.error(request, _('This token is for an other user.'))
-            raise
-        except SuspiciousOperation:
-            messages.error(request, _('This token is invalid or has expired.'))
-            raise PermissionDenied()
-        return render(request,
-                      "dashboard/confirm/base-transfer-ownership.html",
-                      dictionary={'instance': instance, 'key': key})
-
-    def post(self, request, key, *args, **kwargs):
-        """Really transfer ownership based on token.
-        """
-        instance, owner = self.get_instance(key, request.user)
-
-        old = instance.owner
-        with instance.activity(code_suffix='ownership-transferred',
-                               concurrency_check=False, user=request.user):
-            instance.owner = request.user
-            instance.clean()
-            instance.save()
-        messages.success(request, self.success_message)
-        logger.info('Ownership of %s transferred from %s to %s.',
-                    unicode(instance), unicode(old), unicode(request.user))
-        if old.profile:
-            old.profile.notify(
-                ugettext_noop('Ownership accepted'),
-                ugettext_noop('Your ownership offer of %(instance)s has been '
-                              'accepted by %(user)s.'),
-                {'instance': instance})
-        return redirect(instance.get_absolute_url())
-
-    def get_instance(self, key, user):
-        """Get object based on signed token.
-        """
-        try:
-            instance, new_owner = (
-                signing.loads(key, max_age=self.max_age,
-                              salt=self.get_salt()))
-        except (signing.BadSignature, ValueError, TypeError) as e:
-            logger.error('Tried invalid token. Token: %s, user: %s. %s',
-                         key, unicode(user), unicode(e))
-            raise SuspiciousOperation()
-
-        try:
-            instance = Instance.objects.get(id=instance)
-        except Instance.DoesNotExist as e:
-            logger.error('Tried token to nonexistent instance %d. '
-                         'Token: %s, user: %s. %s',
-                         instance, key, unicode(user), unicode(e))
-            raise Http404()
-
-        if new_owner != user.pk:
-            logger.error('%s (%d) tried the token for %s. Token: %s.',
-                         unicode(user), user.pk, new_owner, key)
-            raise PermissionDenied()
-        return (instance, new_owner)
+class TransferInstanceOwnershipView(TransferOwnershipView):
+    confirm_view = TransferInstanceOwnershipConfirmView
+    model = Instance
+    notification_msg = ugettext_noop(
+        '%(user)s offered you to take the ownership of '
+        'his/her virtual machine called %(instance)s. '
+        '<a href="%(token)s" '
+        'class="btn btn-success btn-small">Accept</a>')
+    token_url = 'dashboard.views.vm-transfer-ownership-confirm'
+    template = "dashboard/vm-detail/tx-owner.html"
 
 
 @login_required
