@@ -26,6 +26,7 @@ from StringIO import StringIO
 from tarfile import TarFile, TarInfo
 import time
 from urlparse import urlsplit
+from salt.client import LocalClient
 
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.utils import timezone
@@ -1188,6 +1189,62 @@ class DisableOperation(NodeOperation):
         self.node.enabled = False
         self.node.schedule_enabled = False
         self.node.save()
+
+
+@register_operation
+class UpdateNodeOperation(NodeOperation):
+    id = 'update_node'
+    name = _("update node")
+    description = _("Update node.")
+    required_perms = ()
+    online_required = False
+    async_queue = "localhost.man.slow"
+
+    def minion_cmd(self, module, params, timeout=3600):
+        name = self.node.host.hostname
+        client = LocalClient()
+        data = client.cmd(
+            name, module, timeout=timeout, kwarg={'mods': params})
+        try:
+            return data[name]
+        except KeyError:
+            raise HumanReadableException.create(ugettext_noop(
+                "No minions matched the target."))
+
+    def _operation(self, activity):
+        with activity.sub_activity(
+                'upgrade_packages',
+                readable_name=ugettext_noop('upgrade packages')) as sa:
+            data = self.minion_cmd('pkg.upgrade', [])
+            upgraded = len(filter(lambda x: x['old'] and x['new'],
+                           data.values()))
+            installed = len(filter(lambda x: not x['old'] and x['new'],
+                            data.values()))
+            removed = len(filter(lambda x: x['old'] and not x['new'],
+                                 data.values()))
+            sa.result = create_readable(ugettext_noop(
+                "Upgraded: %(upgraded)s, Installed: %(installed)s, "
+                "Removed: %(removed)s"), upgraded=upgraded,
+                installed=installed, removed=removed)
+
+        data = self.minion_cmd('state.sls', ['node', 'nfs-client'])
+        failed = 0
+        for k, v in data.iteritems():
+            logger.debug('salt state %s %s', k, v)
+            act_name = ': '.join(k.split('_|-')[:2])
+            if not v["result"] or v["changes"]:
+                act = activity.create_sub(
+                    act_name[:70], readable_name=act_name)
+                act.result = create_readable(ugettext_noop(
+                    "Changes: %(changes)s Comment: %(comment)s"),
+                    changes=v["changes"], comment=v["comment"])
+                act.finish(v["result"])
+                if not v["result"]:
+                    failed += 1
+
+        if failed:
+            raise HumanReadableException.create(ugettext_noop(
+                "Failed: %(failed)s"), failed=failed)
 
 
 @register_operation
