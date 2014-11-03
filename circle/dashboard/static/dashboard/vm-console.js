@@ -20,7 +20,7 @@ $(function() {
           rfb = 0;
       }
       $("#vm-info-pane").fadeIn();
-      $("#vm-detail-pane").removeClass("col-md-12");
+      $("#vm-detail-pane").removeClass("col-md-12").addClass("col-md-8");
   });
   $('#sendCtrlAltDelButton').click(function() {
       rfb.sendCtrlAltDel(); return false;});
@@ -35,7 +35,7 @@ $(function() {
       var host, port, password, path;
 
       $("#vm-info-pane").hide();
-      $("#vm-detail-pane").addClass("col-md-12");
+      $("#vm-detail-pane").removeClass("col-md-8").addClass("col-md-12");
       WebUtil.init_logging('warn');
 
       host = window.location.hostname;
@@ -58,13 +58,13 @@ $(function() {
                              'local_cursor': true,
                              'shared':       true,
                              'view_only':    false,
-                             'updateState':  updateState});
+                             'onUpdateState':  updateState});
               rfb.connect(host, port, password, data);
       }
       }).fail(function(){
           $('#noVNC_status').html("Can't connect to console.");
       });
   });
-  if (window.location.hash == "#console")
-      window.onscriptsload = function(){$('a[href$="console"]').click();};
+  if (window.location.hash === "#console")
+    $('a[href$="console"]').trigger("click");
 });

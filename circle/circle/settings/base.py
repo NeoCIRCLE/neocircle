@@ -233,6 +233,8 @@ PIPELINE_JS = {
         "no-vnc/include/base64.js",
         "no-vnc/include/websock.js",
         "no-vnc/include/des.js",
+        "no-vnc/include/keysym.js",
+        "no-vnc/include/keysymdef.js",
         "no-vnc/include/keyboard.js",
         "no-vnc/include/input.js",
         "no-vnc/include/display.js",
