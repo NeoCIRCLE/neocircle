@@ -243,6 +243,13 @@ class Rule(models.Model):
 
         return retval
 
+    @classmethod
+    def portforwards(cls, host=None):
+        qs = cls.objects.filter(dport__isnull=False, direction='in')
+        if host is not None:
+            qs = qs.filter(host=host)
+        return qs
+
     class Meta:
         verbose_name = _("rule")
         verbose_name_plural = _("rules")
@@ -762,7 +769,7 @@ class Host(models.Model):
         Return a list of ports with forwarding rules set.
         """
         retval = []
-        for rule in self.rules.filter(dport__isnull=False, direction='in'):
+        for rule in Rule.portforwards(host=self):
             forward = {
                 'proto': rule.proto,
                 'private': rule.dport,

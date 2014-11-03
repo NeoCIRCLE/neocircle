@@ -27,7 +27,7 @@ from tarfile import TarFile, TarInfo
 import time
 from urlparse import urlsplit
 
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _, ugettext_noop
 from django.conf import settings
@@ -603,6 +603,41 @@ class RemoveInterfaceOperation(InstanceOperation):
     def get_activity_name(self, kwargs):
         return create_readable(ugettext_noop("remove %(vlan)s interface"),
                                vlan=kwargs['interface'].vlan)
+
+
+@register_operation
+class RemovePortOperation(InstanceOperation):
+    id = 'remove_port'
+    name = _("close port")
+    description = _("Close the specified port.")
+    concurrency_check = False
+    required_perms = ('vm.config_ports', )
+
+    def _operation(self, activity, rule):
+        interface = rule.host.interface_set.get()
+        if interface.instance != self.instance:
+            raise SuspiciousOperation()
+        activity.readable_name = create_readable(
+            ugettext_noop("close %(proto)s/%(port)d on %(host)s"),
+            proto=rule.proto, port=rule.dport, host=rule.host)
+        rule.delete()
+
+
+@register_operation
+class AddPortOperation(InstanceOperation):
+    id = 'add_port'
+    name = _("open port")
+    description = _("Open the specified port.")
+    concurrency_check = False
+    required_perms = ('vm.config_ports', )
+
+    def _operation(self, activity, host, proto, port):
+        if host.interface_set.get().instance != self.instance:
+            raise SuspiciousOperation()
+        host.add_port(proto, private=port)
+        activity.readable_name = create_readable(
+            ugettext_noop("open %(proto)s/%(port)d on %(host)s"),
+            proto=proto, port=port, host=host)
 
 
 @register_operation

@@ -40,7 +40,7 @@ from django.contrib.auth.forms import UserCreationForm as OrgUserCreationForm
 from django.forms.widgets import TextInput, HiddenInput
 from django.template import Context
 from django.template.loader import render_to_string
-from django.utils.html import escape
+from django.utils.html import escape, format_html
 from django.utils.translation import ugettext_lazy as _
 from sizefield.widgets import FileSizeWidget
 from django.core.urlresolvers import reverse_lazy
@@ -933,6 +933,56 @@ class VmDeployForm(OperationForm):
                 queryset=choices, required=False, label=_('Node'), help_text=_(
                     "Deploy virtual machine to this node "
                     "(blank allows scheduling automatically).")))
+
+
+class VmPortRemoveForm(OperationForm):
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('choices')
+        self.rule = kwargs.pop('default')
+
+        super(VmPortRemoveForm, self).__init__(*args, **kwargs)
+
+        self.fields.insert(0, 'rule', forms.ModelChoiceField(
+            queryset=choices, initial=self.rule, required=True,
+            empty_label=None, label=_('Port')))
+        if self.rule:
+            self.fields['rule'].widget = HiddenInput()
+
+
+class VmPortAddForm(OperationForm):
+    port = forms.IntegerField(required=True, label=_('Port'),
+                              min_value=1, max_value=65535)
+    proto = forms.ChoiceField((('tcp', 'tcp'), ('udp', 'udp')),
+                              required=True, label=_('Protocol'))
+
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('choices')
+        self.host = kwargs.pop('default')
+
+        super(VmPortAddForm, self).__init__(*args, **kwargs)
+
+        self.fields.insert(0, 'host', forms.ModelChoiceField(
+            queryset=choices, initial=self.host, required=True,
+            empty_label=None, label=_('Host')))
+        if self.host:
+            self.fields['host'].widget = HiddenInput()
+
+    @property
+    def helper(self):
+        helper = super(VmPortAddForm, self).helper
+        if self.host:
+            helper.layout = Layout(
+                AnyTag(
+                    "div",
+                    HTML(format_html(
+                        _("<label>Host:</label> {0}"), self.host)),
+                    css_class="form-group",
+                ),
+                Field("host"),
+                Field("proto"),
+                Field("port"),
+            )
+        return helper
 
 
 class CircleAuthenticationForm(AuthenticationForm):

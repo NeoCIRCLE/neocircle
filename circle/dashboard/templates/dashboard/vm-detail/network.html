@@ -78,7 +78,7 @@
                         {{ l.private }}/{{ l.proto }}
                       </td>
                       <td>
-                        <a href="{% url "dashboard.views.remove-port" pk=instance.pk rule=l.ipv4.pk %}" class="btn btn-link btn-xs vm-details-remove-port" data-rule="{{ l.ipv4.pk }}" title="{% trans "Remove" %}"><i class="fa fa-times"><span class="sr-only">{% trans "Remove" %}</span></i></a>
+                        <a href="{{ op.remove_port.get_url }}?rule={{ l.ipv4.pk }}" class="btn btn-link btn-xs vm-details-remove-port" data-rule="{{ l.ipv4.pk }}" title="{% trans "Remove" %}"><i class="fa fa-times"><span class="sr-only">{% trans "Remove" %}</span></i></a>
                       </td>
                     </tr>
                   {% endif %}
@@ -110,7 +110,7 @@
                         {{ l.private }}/{{ l.proto }}
                       </td>
                       <td>
-                        <a href="{% url "dashboard.views.remove-port" pk=instance.pk rule=l.ipv4.pk %}" class="btn btn-link btn-xs vm-details-remove-port" data-rule="{{ l.ipv6.pk }}" title="{% trans "Remove" %}"><i class="fa fa-times"><span class="sr-only">{% trans "Remove" %}</span></i></a>
+                        <a href="{{ op.remove_port.get_url }}?rule={{ l.ipv4.pk }}" class="btn btn-link btn-xs vm-details-remove-port" data-rule="{{ l.ipv6.pk }}" title="{% trans "Remove" %}"><i class="fa fa-times"><span class="sr-only">{% trans "Remove" %}</span></i></a>
                       </td>
                     </tr>
                   {% endif %}

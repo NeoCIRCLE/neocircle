@@ -63,6 +63,7 @@ from ..forms import (
     VmRenewForm, VmStateChangeForm, VmListSearchForm, VmCustomizeForm,
     VmDiskResizeForm, RedeployForm, VmDiskRemoveForm,
     VmMigrateForm, VmDeployForm,
+    VmPortRemoveForm, VmPortAddForm,
 )
 from ..models import Favourite
 
@@ -175,7 +176,6 @@ class VmDetailView(GraphMixin, CheckedDetailView):
             'new_description': self.__set_description,
             'new_tag': self.__add_tag,
             'to_remove': self.__remove_tag,
-            'port': self.__add_port,
             'abort_operation': self.__abort_operation,
         }
         for k, v in options.iteritems():
@@ -270,40 +270,6 @@ class VmDetailView(GraphMixin, CheckedDetailView):
         else:
             return redirect(reverse_lazy("dashboard.views.detail",
                             kwargs={'pk': self.object.pk}))
-
-    def __add_port(self, request):
-        object = self.get_object()
-        if not (object.has_level(request.user, "operator") and
-                request.user.has_perm('vm.config_ports')):
-            raise PermissionDenied()
-
-        port = request.POST.get("port")
-        proto = request.POST.get("proto")
-
-        try:
-            error = None
-            interfaces = object.interface_set.all()
-            host = Host.objects.get(pk=request.POST.get("host_pk"),
-                                    interface__in=interfaces)
-            host.add_port(proto, private=port)
-        except Host.DoesNotExist:
-            logger.error('Tried to add port to nonexistent host %d. User: %s. '
-                         'Instance: %s', request.POST.get("host_pk"),
-                         unicode(request.user), object)
-            raise PermissionDenied()
-        except ValueError:
-            error = _("There is a problem with your input.")
-        except Exception as e:
-            error = _("Unknown error.")
-            logger.error(e)
-
-        if request.is_ajax():
-            pass
-        else:
-            if error:
-                messages.error(request, error)
-            return redirect(reverse_lazy("dashboard.views.detail",
-                                         kwargs={'pk': self.get_object().pk}))
 
     def __abort_operation(self, request):
         self.object = self.get_object()
@@ -447,6 +413,62 @@ class VmMigrateView(FormOperationMixin, VmOperationView):
             logger.exception("scheduler error:")
 
         val = super(VmMigrateView, self).get_form_kwargs()
+        val.update({'choices': choices, 'default': default})
+        return val
+
+
+class VmPortRemoveView(FormOperationMixin, VmOperationView):
+
+    template_name = 'dashboard/_vm-remove-port.html'
+    op = 'remove_port'
+    show_in_toolbar = False
+    with_reload = True
+    wait_for_result = 0.5
+    icon = 'times'
+    effect = "danger"
+    form_class = VmPortRemoveForm
+
+    def get_form_kwargs(self):
+        instance = self.get_op().instance
+        choices = Rule.portforwards().filter(
+            host__interface__instance=instance)
+        rule_pk = self.request.GET.get('rule')
+        if rule_pk:
+            try:
+                default = choices.get(pk=rule_pk)
+            except (ValueError, Rule.DoesNotExist):
+                raise Http404()
+        else:
+            default = None
+
+        val = super(VmPortRemoveView, self).get_form_kwargs()
+        val.update({'choices': choices, 'default': default})
+        return val
+
+
+class VmPortAddView(FormOperationMixin, VmOperationView):
+
+    op = 'add_port'
+    show_in_toolbar = False
+    with_reload = True
+    wait_for_result = 0.5
+    icon = 'plus'
+    effect = "success"
+    form_class = VmPortAddForm
+
+    def get_form_kwargs(self):
+        instance = self.get_op().instance
+        choices = Host.objects.filter(interface__instance=instance)
+        host_pk = self.request.GET.get('host')
+        if host_pk:
+            try:
+                default = choices.get(pk=host_pk)
+            except (ValueError, Host.DoesNotExist):
+                raise Http404()
+        else:
+            default = None
+
+        val = super(VmPortAddView, self).get_form_kwargs()
         val.update({'choices': choices, 'default': default})
         return val
 
@@ -684,6 +706,8 @@ vm_ops = OrderedDict([
         op='remove_disk', form_class=VmDiskRemoveForm,
         icon='times', effect="danger")),
     ('add_interface', VmAddInterfaceView),
+    ('remove_port', VmPortRemoveView),
+    ('add_port', VmPortAddView),
     ('renew', VmRenewView),
     ('resources_change', VmResourcesChangeView),
     ('password_reset', VmOperationView.factory(
@@ -1165,52 +1189,6 @@ def get_disk_download_status(request, pk):
         }),
         content_type="application/json",
     )
-
-
-class PortDelete(LoginRequiredMixin, DeleteView):
-    model = Rule
-    pk_url_kwarg = 'rule'
-
-    def get_template_names(self):
-        if self.request.is_ajax():
-            return ['dashboard/confirm/ajax-delete.html']
-        else:
-            return ['dashboard/confirm/base-delete.html']
-
-    def get_context_data(self, **kwargs):
-        context = super(PortDelete, self).get_context_data(**kwargs)
-        rule = kwargs.get('object')
-        instance = rule.host.interface_set.get().instance
-        context['title'] = _("Port delete confirmation")
-        context['text'] = _("Are you sure you want to close %(port)d/"
-                            "%(proto)s on %(vm)s?" % {'port': rule.dport,
-                                                      'proto': rule.proto,
-                                                      'vm': instance})
-        return context
-
-    def delete(self, request, *args, **kwargs):
-        rule = Rule.objects.get(pk=kwargs.get("rule"))
-        instance = rule.host.interface_set.get().instance
-        if not instance.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-
-        super(PortDelete, self).delete(request, *args, **kwargs)
-
-        success_url = self.get_success_url()
-        success_message = _("Port successfully removed.")
-
-        if request.is_ajax():
-            return HttpResponse(
-                json.dumps({'message': success_message}),
-                content_type="application/json",
-            )
-        else:
-            messages.success(request, success_message)
-            return HttpResponseRedirect("%s#network" % success_url)
-
-    def get_success_url(self):
-        return reverse_lazy('dashboard.views.detail',
-                            kwargs={'pk': self.kwargs.get("pk")})
 
 
 class ClientCheck(LoginRequiredMixin, TemplateView):

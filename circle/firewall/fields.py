@@ -34,6 +34,10 @@ reverse_domain_re = re.compile(r'^(%\([abcd]\)d|[a-z0-9.-])+$')
 ipv6_template_re = re.compile(r'^(%\([abcd]\)[dxX]|[A-Za-z0-9:-])+$')
 
 
+class mac_custom(mac_unix):
+    word_fmt = '%.2X'
+
+
 class MACAddressFormField(forms.Field):
     default_error_messages = {
         'invalid': _(u'Enter a valid MAC address. %s'),
@@ -51,9 +55,6 @@ class MACAddressField(models.Field):
     description = _('MAC Address object')
     __metaclass__ = models.SubfieldBase
 
-    class mac_custom(mac_unix):
-        word_fmt = '%.2X'
-
     def __init__(self, *args, **kwargs):
         kwargs['max_length'] = 17
         super(MACAddressField, self).__init__(*args, **kwargs)
@@ -65,7 +66,7 @@ class MACAddressField(models.Field):
         if isinstance(value, EUI):
             return value
 
-        return EUI(value, dialect=MACAddressField.mac_custom)
+        return EUI(value, dialect=mac_custom)
 
     def get_internal_type(self):
         return 'CharField'
