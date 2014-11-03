@@ -737,8 +737,8 @@ class SaveAsTemplateOperation(InstanceOperation):
         # Copy traits from the VM instance
         tmpl.req_traits.add(*self.instance.req_traits.all())
         if clone:
-            # Add permission for the original owner of the template
             tmpl.clone_acl(self.instance.template)
+            # Add permission for the original owner of the template
             tmpl.set_level(self.instance.template.owner, 'owner')
             tmpl.set_level(user, 'owner')
         try:
