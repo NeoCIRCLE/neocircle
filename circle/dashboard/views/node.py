@@ -75,12 +75,17 @@ node_ops = OrderedDict([
 ])
 
 
-class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin,
+class NodeDetailView(LoginRequiredMixin,
                      GraphMixin, DetailView):
     template_name = "dashboard/node-detail.html"
     model = Node
     form = None
     form_class = TraitForm
+
+    def get(self, *args, **kwargs):
+        if not self.request.user.has_perm('vm.view_statistics'):
+            raise PermissionDenied()
+        return super(NodeDetailView, self).get(*args, **kwargs)
 
     def get_context_data(self, form=None, **kwargs):
         if form is None:
@@ -98,6 +103,8 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin,
         return context
 
     def post(self, request, *args, **kwargs):
+        if not request.user.is_superuser:
+            raise PermissionDenied()
         if request.POST.get('new_name'):
             return self.__set_name(request)
         if request.POST.get('to_remove'):
@@ -145,13 +152,14 @@ class NodeDetailView(LoginRequiredMixin, SuperuserRequiredMixin,
             return redirect(self.object.get_absolute_url())
 
 
-class NodeList(LoginRequiredMixin, SuperuserRequiredMixin,
-               GraphMixin, SingleTableView):
+class NodeList(LoginRequiredMixin, GraphMixin, SingleTableView):
     template_name = "dashboard/node-list.html"
     table_class = NodeListTable
     table_pagination = False
 
     def get(self, *args, **kwargs):
+        if not self.request.user.has_perm('vm.view_statistics'):
+            raise PermissionDenied()
         if self.request.is_ajax():
             nodes = Node.objects.all()
             nodes = [{

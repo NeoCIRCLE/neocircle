@@ -637,7 +637,7 @@ class NodeDetailTest(LoginMixin, TestCase):
         c = Client()
         self.login(c, 'user1')
         response = c.get('/dashboard/node/25555/')
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 403)
 
     def test_anon_node_page(self):
         c = Client()
@@ -667,7 +667,7 @@ class NodeDetailTest(LoginMixin, TestCase):
         node = Node.objects.get(pk=1)
         old_name = node.name
         response = c.post("/dashboard/node/1/", {'new_name': 'test1235'})
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 403)
         self.assertEqual(Node.objects.get(pk=1).name, old_name)
 
     def test_permitted_set_name(self):
@@ -721,7 +721,7 @@ class NodeDetailTest(LoginMixin, TestCase):
         c = Client()
         self.login(c, "user2")
         response = c.post("/dashboard/node/1/", {'to_remove': traitid})
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 403)
         self.assertEqual(Node.objects.get(pk=1).traits.count(), trait_count)
 
     def test_permitted_remove_trait(self):

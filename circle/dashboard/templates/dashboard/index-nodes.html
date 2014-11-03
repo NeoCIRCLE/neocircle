@@ -74,9 +74,11 @@
               {% trans "list" %}
           {% endif %}
         </a>
+        {% if request.user.is_superuser %}
         <a class="btn btn-success btn-xs node-create" href="{% url "dashboard.views.node-create" %}">
           <i class="fa fa-plus-circle"></i> {% trans "new" %}
         </a>
+        {% endif  %}
       </div>
     </div>
   </div>

@@ -88,7 +88,9 @@ class Node(OperatedMixin, TimeStampedModel):
     class Meta:
         app_label = 'vm'
         db_table = 'vm_node'
-        permissions = ()
+        permissions = (
+            ('view_statistics', _('Can view Node box and statistics.')),
+        )
         ordering = ('-enabled', 'normalized_name')
 
     def __unicode__(self):
@@ -285,6 +287,11 @@ class Node(OperatedMixin, TimeStampedModel):
             logger.exception('Unhandled exception: ')
             return self.remote_query(vm_tasks.get_node_metrics, timeout=30,
                                      priority="fast")
+
+    @property
+    @node_available
+    def driver_version(self):
+        return self.info.get('driver_version')
 
     @property
     @node_available

@@ -717,7 +717,7 @@ class SaveAsTemplateOperation(InstanceOperation):
                    with_shutdown=True, clone=False, task=None, **kwargs):
         try:
             self.instance._cleanup(parent_activity=activity, user=user)
-        except Instance.WrongStateError:
+        except:
             pass
 
         if with_shutdown:
@@ -1135,6 +1135,7 @@ class ActivateOperation(NodeOperation):
     def _operation(self):
         self.node.enabled = True
         self.node.schedule_enabled = True
+        self.node.get_info(invalidate_cache=True)
         self.node.save()
 
 
@@ -1156,6 +1157,7 @@ class PassivateOperation(NodeOperation):
     def _operation(self):
         self.node.enabled = True
         self.node.schedule_enabled = False
+        self.node.get_info(invalidate_cache=True)
         self.node.save()
 
 
@@ -1214,13 +1216,27 @@ class RecoverOperation(InstanceOperation):
         except Instance.InstanceDestroyedError:
             pass
 
-    def _operation(self):
-        for disk in self.instance.disks.all():
-            disk.destroyed = None
-            disk.restore()
-            disk.save()
-        self.instance.destroyed_at = None
-        self.instance.save()
+    def _operation(self, user, activity):
+        with activity.sub_activity(
+            'recover_instance',
+                readable_name=ugettext_noop("recover instance")):
+            self.instance.destroyed_at = None
+            for disk in self.instance.disks.all():
+                disk.destroyed = None
+                disk.restore()
+                disk.save()
+            self.instance.status = 'PENDING'
+            self.instance.save()
+
+        try:
+            self.instance.renew(parent_activity=activity)
+        except:
+            pass
+
+        if self.instance.template:
+            for net in self.instance.template.interface_set.all():
+                self.instance.add_interface(
+                    parent_activity=activity, user=user, vlan=net.vlan)
 
 
 @register_operation

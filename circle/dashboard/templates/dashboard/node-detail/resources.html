@@ -10,6 +10,16 @@
     <dt>{% trans "Enabled" %}:</dt><dd>{{ node.enabled }}</dd>
     <dt>{% trans "Host online" %}:</dt><dd> {{ node.online }}</dd>
     <dt>{% trans "Priority" %}:</dt><dd>{{ node.priority }}</dd>
+    <dt>{% trans "Driver Version:" %}</dt>
+    <dd>
+      {% if node.driver_version %}
+        {{ node.driver_version.branch }} at
+        {{ node.driver_version.commit }} ({{ node.driver_version.commit_text }})
+        {% if node.driver_version.is_dirty %}
+          <span class="label label-danger">{% trans "with uncommitted changes!" %}</span>
+        {% endif %}
+      {% endif %}
+    </dd>
     <dt>{% trans "Host owner" %}:</dt>
     <dd>
       {% include "dashboard/_display-name.html" with user=node.host.owner show_org=True %}
@@ -18,10 +28,12 @@
     <dt>{% trans "Host name" %}:</dt>
     <dd>
       {{ node.host.hostname }}
+      {% if request.user.is_superuser %}
       <a href="{{ node.host.get_absolute_url }}" class="btn btn-default btn-xs">
         <i class="fa fa-pencil"></i>
         {% trans "Edit host" %}
       </a>
+      {% endif  %}
     </dd>
     </dl>
 
