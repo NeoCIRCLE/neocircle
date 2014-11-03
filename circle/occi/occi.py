@@ -215,12 +215,20 @@ class Compute(Resource):
             'occi.compute.hostname': "short_hostname",
             'occi.compute.speed': "priority",
             'occi.compute.memory': "ram_size",
+            'occi.core.title': "name",
         }
         for k, v in translate.items():
             self.attrs[k] = getattr(self.instance, v, None)
 
         priority = self.instance.priority
         self.attrs['occi.compute.speed'] = priority/100.0 * 5.0
+
+        status = {
+            'RUNNING': "active",
+            'SUSPENDED': "suspended",
+        }
+        self.attrs['occi.compute.state'] = status.get(self.instance.status,
+                                                      "inactive")
 
     def trigger_action(self, data):
         method = None
