@@ -23,6 +23,7 @@ import os.path
 from warnings import warn
 import requests
 from salt.client import LocalClient
+from salt.exceptions import SaltClientError
 import salt.utils
 from time import time, sleep
 
@@ -169,11 +170,11 @@ class Node(OperatedMixin, TimeStampedModel):
     @method_cache(20)
     def get_minion_online(self):
         name = self.host.hostname
-        client = MyLocalClient()
-        client.opts['timeout'] = 0.2
         try:
+            client = MyLocalClient()
+            client.opts['timeout'] = 0.2
             return bool(client.cmd(name, 'test.ping')[name])
-        except KeyError:
+        except (KeyError, SaltClientError):
             return False
 
     minion_online = property(get_minion_online)
