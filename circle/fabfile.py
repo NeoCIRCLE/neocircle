@@ -61,7 +61,6 @@ def compile_js():
 def collectstatic():
     "Collect static files"
     with _workon("circle"), cd("~/circle/circle"):
-        run("./manage.py compileless")
         run("./manage.py collectstatic --noinput")
 
 

@@ -170,13 +170,8 @@ STATICFILES_STORAGE = 'pipeline.storage.PipelineCachedStorage'
 PIPELINE_COMPILERS = (
     'pipeline.compilers.less.LessCompiler',
 )
-PIPELINE_DISABLED_COMPILERS = (
-    'pipeline.compilers.less.LessCompiler',
-)
 PIPELINE_CSS_COMPRESSOR = 'pipeline.compressors.yuglify.YuglifyCompressor'
-# PIPELINE_JS_COMPRESSOR = 'pipeline.compressors.jsmin.JSMinCompressor'
-# PIPELINE_JS_COMPRESSOR = 'pipeline.compressors.yuglify.YuglifyCompressor'
-PIPELINE_JS_COMPRESSOR = None  # js compressors don't really like our deps
+PIPELINE_JS_COMPRESSOR = 'pipeline.compressors.slimit.SlimItCompressor'
 PIPELINE_DISABLE_WRAPPER = True
 PIPELINE_LESS_ARGUMENTS = u'--include-path={}'.format(':'.join(STATICFILES_DIRS))
 PIPELINE_CSS = {
@@ -242,7 +237,6 @@ PIPELINE_JS = {
         "no-vnc/include/rfb.js",
         "dashboard/vm-console.js",
         "dashboard/vm-tour.js",
-        "dashboard/disk-list.js",
     ),
         "output_filename": "vm-detail.js",
     },
