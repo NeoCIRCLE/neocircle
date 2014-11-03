@@ -18,9 +18,11 @@
 from django.conf.urls import patterns, include, url
 from django.views.generic import TemplateView
 
+from django.conf import settings
 from django.contrib import admin
-from django.shortcuts import redirect
 from django.core.urlresolvers import reverse
+from django.shortcuts import redirect
+
 
 from circle.settings.base import get_env_variable
 from dashboard.views import circle_login, HelpView
@@ -69,6 +71,13 @@ urlpatterns = patterns(
         TemplateView.as_view(template_name="info/support.html"),
         name="info.support"),
 )
+
+
+if 'rosetta' in settings.INSTALLED_APPS:
+    urlpatterns += patterns(
+        '',
+        url(r'^rosetta/', include('rosetta.urls')),
+    )
 
 
 if get_env_variable('DJANGO_SAML', 'FALSE') == 'TRUE':

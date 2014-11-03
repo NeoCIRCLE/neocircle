@@ -4,8 +4,9 @@
   {% if user == instance.owner %}
   {% blocktrans %}You are the current owner of this instance.{% endblocktrans %}
   {% else %}
-  {% blocktrans with owner=instance.owner %}
-    The current owner of this instance is {{owner}}.
+  {% url "dashboard.views.profile" username=instance.owner.username as url %}
+  {% blocktrans with owner=instance.owner name=instance.owner.get_full_name%}
+    The current owner of this instance is <a href="{{url}}">{{name}} ({{owner}})</a>.
   {% endblocktrans %}
   {% endif %}
   {% if user == instance.owner or user.is_superuser %}

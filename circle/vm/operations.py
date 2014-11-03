@@ -27,7 +27,7 @@ from tarfile import TarFile, TarInfo
 import time
 from urlparse import urlsplit
 
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _, ugettext_noop
 from django.conf import settings
@@ -606,6 +606,41 @@ class RemoveInterfaceOperation(InstanceOperation):
 
 
 @register_operation
+class RemovePortOperation(InstanceOperation):
+    id = 'remove_port'
+    name = _("close port")
+    description = _("Close the specified port.")
+    concurrency_check = False
+    required_perms = ('vm.config_ports', )
+
+    def _operation(self, activity, rule):
+        interface = rule.host.interface_set.get()
+        if interface.instance != self.instance:
+            raise SuspiciousOperation()
+        activity.readable_name = create_readable(
+            ugettext_noop("close %(proto)s/%(port)d on %(host)s"),
+            proto=rule.proto, port=rule.dport, host=rule.host)
+        rule.delete()
+
+
+@register_operation
+class AddPortOperation(InstanceOperation):
+    id = 'add_port'
+    name = _("open port")
+    description = _("Open the specified port.")
+    concurrency_check = False
+    required_perms = ('vm.config_ports', )
+
+    def _operation(self, activity, host, proto, port):
+        if host.interface_set.get().instance != self.instance:
+            raise SuspiciousOperation()
+        host.add_port(proto, private=port)
+        activity.readable_name = create_readable(
+            ugettext_noop("open %(proto)s/%(port)d on %(host)s"),
+            proto=proto, port=port, host=host)
+
+
+@register_operation
 class RemoveDiskOperation(InstanceOperation):
     id = 'remove_disk'
     name = _("remove disk")
@@ -1100,6 +1135,7 @@ class ActivateOperation(NodeOperation):
     def _operation(self):
         self.node.enabled = True
         self.node.schedule_enabled = True
+        self.node.get_info(invalidate_cache=True)
         self.node.save()
 
 
@@ -1121,6 +1157,7 @@ class PassivateOperation(NodeOperation):
     def _operation(self):
         self.node.enabled = True
         self.node.schedule_enabled = False
+        self.node.get_info(invalidate_cache=True)
         self.node.save()
 
 
@@ -1179,13 +1216,27 @@ class RecoverOperation(InstanceOperation):
         except Instance.InstanceDestroyedError:
             pass
 
-    def _operation(self):
-        for disk in self.instance.disks.all():
-            disk.destroyed = None
-            disk.restore()
-            disk.save()
-        self.instance.destroyed_at = None
-        self.instance.save()
+    def _operation(self, user, activity):
+        with activity.sub_activity(
+            'recover_instance',
+                readable_name=ugettext_noop("recover instance")):
+            self.instance.destroyed_at = None
+            for disk in self.instance.disks.all():
+                disk.destroyed = None
+                disk.restore()
+                disk.save()
+            self.instance.status = 'PENDING'
+            self.instance.save()
+
+        try:
+            self.instance.renew(parent_activity=activity)
+        except:
+            pass
+
+        if self.instance.template:
+            for net in self.instance.template.interface_set.all():
+                self.instance.add_interface(
+                    parent_activity=activity, user=user, vlan=net.vlan)
 
 
 @register_operation

@@ -29,7 +29,7 @@ from django.core import signing
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.http import HttpResponse, Http404, HttpResponseRedirect
-from django.shortcuts import redirect, get_object_or_404, render
+from django.shortcuts import redirect, get_object_or_404
 from django.template import RequestContext
 from django.template.loader import render_to_string
 from django.utils.translation import (
@@ -37,7 +37,7 @@ from django.utils.translation import (
 )
 from django.views.decorators.http import require_GET
 from django.views.generic import (
-    UpdateView, ListView, TemplateView, DeleteView, DetailView, View,
+    UpdateView, ListView, TemplateView, DeleteView
 )
 
 from braces.views import SuperuserRequiredMixin, LoginRequiredMixin
@@ -54,16 +54,18 @@ from vm.models import (
 )
 from .util import (
     CheckedDetailView, AjaxOperationMixin, OperationView, AclUpdateView,
-    FormOperationMixin, FilterMixin, search_user, GraphMixin,
+    FormOperationMixin, FilterMixin, GraphMixin,
+    TransferOwnershipConfirmView, TransferOwnershipView,
 )
 from ..forms import (
     AclUserOrGroupAddForm, VmResourcesForm, TraitsForm, RawDataForm,
     VmAddInterfaceForm, VmCreateDiskForm, VmDownloadDiskForm, VmSaveForm,
     VmRenewForm, VmStateChangeForm, VmListSearchForm, VmCustomizeForm,
-    TransferOwnershipForm, VmDiskResizeForm, RedeployForm, VmDiskRemoveForm,
+    VmDiskResizeForm, RedeployForm, VmDiskRemoveForm,
     VmMigrateForm, VmDeployForm,
+    VmPortRemoveForm, VmPortAddForm,
 )
-from ..models import Favourite, Profile
+from ..models import Favourite
 
 logger = logging.getLogger(__name__)
 
@@ -174,7 +176,6 @@ class VmDetailView(GraphMixin, CheckedDetailView):
             'new_description': self.__set_description,
             'new_tag': self.__add_tag,
             'to_remove': self.__remove_tag,
-            'port': self.__add_port,
             'abort_operation': self.__abort_operation,
         }
         for k, v in options.iteritems():
@@ -269,40 +270,6 @@ class VmDetailView(GraphMixin, CheckedDetailView):
         else:
             return redirect(reverse_lazy("dashboard.views.detail",
                             kwargs={'pk': self.object.pk}))
-
-    def __add_port(self, request):
-        object = self.get_object()
-        if not (object.has_level(request.user, "operator") and
-                request.user.has_perm('vm.config_ports')):
-            raise PermissionDenied()
-
-        port = request.POST.get("port")
-        proto = request.POST.get("proto")
-
-        try:
-            error = None
-            interfaces = object.interface_set.all()
-            host = Host.objects.get(pk=request.POST.get("host_pk"),
-                                    interface__in=interfaces)
-            host.add_port(proto, private=port)
-        except Host.DoesNotExist:
-            logger.error('Tried to add port to nonexistent host %d. User: %s. '
-                         'Instance: %s', request.POST.get("host_pk"),
-                         unicode(request.user), object)
-            raise PermissionDenied()
-        except ValueError:
-            error = _("There is a problem with your input.")
-        except Exception as e:
-            error = _("Unknown error.")
-            logger.error(e)
-
-        if request.is_ajax():
-            pass
-        else:
-            if error:
-                messages.error(request, error)
-            return redirect(reverse_lazy("dashboard.views.detail",
-                                         kwargs={'pk': self.get_object().pk}))
 
     def __abort_operation(self, request):
         self.object = self.get_object()
@@ -446,6 +413,62 @@ class VmMigrateView(FormOperationMixin, VmOperationView):
             logger.exception("scheduler error:")
 
         val = super(VmMigrateView, self).get_form_kwargs()
+        val.update({'choices': choices, 'default': default})
+        return val
+
+
+class VmPortRemoveView(FormOperationMixin, VmOperationView):
+
+    template_name = 'dashboard/_vm-remove-port.html'
+    op = 'remove_port'
+    show_in_toolbar = False
+    with_reload = True
+    wait_for_result = 0.5
+    icon = 'times'
+    effect = "danger"
+    form_class = VmPortRemoveForm
+
+    def get_form_kwargs(self):
+        instance = self.get_op().instance
+        choices = Rule.portforwards().filter(
+            host__interface__instance=instance)
+        rule_pk = self.request.GET.get('rule')
+        if rule_pk:
+            try:
+                default = choices.get(pk=rule_pk)
+            except (ValueError, Rule.DoesNotExist):
+                raise Http404()
+        else:
+            default = None
+
+        val = super(VmPortRemoveView, self).get_form_kwargs()
+        val.update({'choices': choices, 'default': default})
+        return val
+
+
+class VmPortAddView(FormOperationMixin, VmOperationView):
+
+    op = 'add_port'
+    show_in_toolbar = False
+    with_reload = True
+    wait_for_result = 0.5
+    icon = 'plus'
+    effect = "success"
+    form_class = VmPortAddForm
+
+    def get_form_kwargs(self):
+        instance = self.get_op().instance
+        choices = Host.objects.filter(interface__instance=instance)
+        host_pk = self.request.GET.get('host')
+        if host_pk:
+            try:
+                default = choices.get(pk=host_pk)
+            except (ValueError, Host.DoesNotExist):
+                raise Http404()
+        else:
+            default = None
+
+        val = super(VmPortAddView, self).get_form_kwargs()
         val.update({'choices': choices, 'default': default})
         return val
 
@@ -683,6 +706,8 @@ vm_ops = OrderedDict([
         op='remove_disk', form_class=VmDiskRemoveForm,
         icon='times', effect="danger")),
     ('add_interface', VmAddInterfaceView),
+    ('remove_port', VmPortRemoveView),
+    ('add_port', VmPortAddView),
     ('renew', VmRenewView),
     ('resources_change', VmResourcesChangeView),
     ('password_reset', VmOperationView.factory(
@@ -1166,52 +1191,6 @@ def get_disk_download_status(request, pk):
     )
 
 
-class PortDelete(LoginRequiredMixin, DeleteView):
-    model = Rule
-    pk_url_kwarg = 'rule'
-
-    def get_template_names(self):
-        if self.request.is_ajax():
-            return ['dashboard/confirm/ajax-delete.html']
-        else:
-            return ['dashboard/confirm/base-delete.html']
-
-    def get_context_data(self, **kwargs):
-        context = super(PortDelete, self).get_context_data(**kwargs)
-        rule = kwargs.get('object')
-        instance = rule.host.interface_set.get().instance
-        context['title'] = _("Port delete confirmation")
-        context['text'] = _("Are you sure you want to close %(port)d/"
-                            "%(proto)s on %(vm)s?" % {'port': rule.dport,
-                                                      'proto': rule.proto,
-                                                      'vm': instance})
-        return context
-
-    def delete(self, request, *args, **kwargs):
-        rule = Rule.objects.get(pk=kwargs.get("rule"))
-        instance = rule.host.interface_set.get().instance
-        if not instance.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-
-        super(PortDelete, self).delete(request, *args, **kwargs)
-
-        success_url = self.get_success_url()
-        success_message = _("Port successfully removed.")
-
-        if request.is_ajax():
-            return HttpResponse(
-                json.dumps({'message': success_message}),
-                content_type="application/json",
-            )
-        else:
-            messages.success(request, success_message)
-            return HttpResponseRedirect("%s#network" % success_url)
-
-    def get_success_url(self):
-        return reverse_lazy('dashboard.views.detail',
-                            kwargs={'pk': self.kwargs.get("pk")})
-
-
 class ClientCheck(LoginRequiredMixin, TemplateView):
 
     def get_template_names(self):
@@ -1306,139 +1285,29 @@ class FavouriteView(TemplateView):
             return HttpResponse("Added.")
 
 
-class TransferOwnershipView(CheckedDetailView, DetailView):
+class TransferInstanceOwnershipConfirmView(TransferOwnershipConfirmView):
+    template = "dashboard/confirm/transfer-instance-ownership.html"
     model = Instance
 
-    def get_template_names(self):
-        if self.request.is_ajax():
-            return ['dashboard/_modal.html']
-        else:
-            return ['dashboard/nojs-wrapper.html']
-
-    def get_context_data(self, *args, **kwargs):
-        context = super(TransferOwnershipView, self).get_context_data(
-            *args, **kwargs)
-        context['form'] = TransferOwnershipForm()
-        context.update({
-            'box_title': _("Transfer ownership"),
-            'ajax_title': True,
-            'template': "dashboard/vm-detail/tx-owner.html",
-        })
-        return context
-
-    def post(self, request, *args, **kwargs):
-        form = TransferOwnershipForm(request.POST)
-        if not form.is_valid():
-            return self.get(request)
-        try:
-            new_owner = search_user(request.POST['name'])
-        except User.DoesNotExist:
-            messages.error(request, _('Can not find specified user.'))
-            return self.get(request, *args, **kwargs)
-        except KeyError:
-            raise SuspiciousOperation()
-
-        obj = self.get_object()
-        if not (obj.owner == request.user or
-                request.user.is_superuser):
-            raise PermissionDenied()
-
-        token = signing.dumps((obj.pk, new_owner.pk),
-                              salt=TransferOwnershipConfirmView.get_salt())
-        token_path = reverse(
-            'dashboard.views.vm-transfer-ownership-confirm', args=[token])
-        try:
-            new_owner.profile.notify(
-                ugettext_noop('Ownership offer'),
-                ugettext_noop('%(user)s offered you to take the ownership of '
-                              'his/her virtual machine called %(instance)s. '
-                              '<a href="%(token)s" '
-                              'class="btn btn-success btn-small">Accept</a>'),
-                {'instance': obj, 'token': token_path})
-        except Profile.DoesNotExist:
-            messages.error(request, _('Can not notify selected user.'))
-        else:
-            messages.success(request,
-                             _('User %s is notified about the offer.') % (
-                                 unicode(new_owner), ))
-
-        return redirect(reverse_lazy("dashboard.views.detail",
-                                     kwargs={'pk': obj.pk}))
+    def change_owner(self, instance, new_owner):
+        with instance.activity(
+            code_suffix='ownership-transferred',
+                readable_name=ugettext_noop("transfer ownership"),
+                concurrency_check=False, user=new_owner):
+            super(TransferInstanceOwnershipConfirmView, self).change_owner(
+                instance, new_owner)
 
 
-class TransferOwnershipConfirmView(LoginRequiredMixin, View):
-    """User can accept an ownership offer."""
-
-    max_age = 3 * 24 * 3600
-    success_message = _("Ownership successfully transferred to you.")
-
-    @classmethod
-    def get_salt(cls):
-        return unicode(cls)
-
-    def get(self, request, key, *args, **kwargs):
-        """Confirm ownership transfer based on token.
-        """
-        logger.debug('Confirm dialog for token %s.', key)
-        try:
-            instance, new_owner = self.get_instance(key, request.user)
-        except PermissionDenied:
-            messages.error(request, _('This token is for an other user.'))
-            raise
-        except SuspiciousOperation:
-            messages.error(request, _('This token is invalid or has expired.'))
-            raise PermissionDenied()
-        return render(request,
-                      "dashboard/confirm/base-transfer-ownership.html",
-                      dictionary={'instance': instance, 'key': key})
-
-    def post(self, request, key, *args, **kwargs):
-        """Really transfer ownership based on token.
-        """
-        instance, owner = self.get_instance(key, request.user)
-
-        old = instance.owner
-        with instance.activity(code_suffix='ownership-transferred',
-                               concurrency_check=False, user=request.user):
-            instance.owner = request.user
-            instance.clean()
-            instance.save()
-        messages.success(request, self.success_message)
-        logger.info('Ownership of %s transferred from %s to %s.',
-                    unicode(instance), unicode(old), unicode(request.user))
-        if old.profile:
-            old.profile.notify(
-                ugettext_noop('Ownership accepted'),
-                ugettext_noop('Your ownership offer of %(instance)s has been '
-                              'accepted by %(user)s.'),
-                {'instance': instance})
-        return redirect(instance.get_absolute_url())
-
-    def get_instance(self, key, user):
-        """Get object based on signed token.
-        """
-        try:
-            instance, new_owner = (
-                signing.loads(key, max_age=self.max_age,
-                              salt=self.get_salt()))
-        except (signing.BadSignature, ValueError, TypeError) as e:
-            logger.error('Tried invalid token. Token: %s, user: %s. %s',
-                         key, unicode(user), unicode(e))
-            raise SuspiciousOperation()
-
-        try:
-            instance = Instance.objects.get(id=instance)
-        except Instance.DoesNotExist as e:
-            logger.error('Tried token to nonexistent instance %d. '
-                         'Token: %s, user: %s. %s',
-                         instance, key, unicode(user), unicode(e))
-            raise Http404()
-
-        if new_owner != user.pk:
-            logger.error('%s (%d) tried the token for %s. Token: %s.',
-                         unicode(user), user.pk, new_owner, key)
-            raise PermissionDenied()
-        return (instance, new_owner)
+class TransferInstanceOwnershipView(TransferOwnershipView):
+    confirm_view = TransferInstanceOwnershipConfirmView
+    model = Instance
+    notification_msg = ugettext_noop(
+        '%(user)s offered you to take the ownership of '
+        'his/her virtual machine called %(instance)s. '
+        '<a href="%(token)s" '
+        'class="btn btn-success btn-small">Accept</a>')
+    token_url = 'dashboard.views.vm-transfer-ownership-confirm'
+    template = "dashboard/vm-detail/tx-owner.html"
 
 
 @login_required

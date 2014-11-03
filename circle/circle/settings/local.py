@@ -64,6 +64,13 @@ CACHES = {
 ########## END CACHE CONFIGURATION
 
 
+########## ROSETTA CONFIGURATION
+INSTALLED_APPS += (
+    'rosetta',
+)
+########## END ROSETTA CONFIGURATION
+
+
 ########## TOOLBAR CONFIGURATION
 # https://github.com/django-debug-toolbar/django-debug-toolbar#installation
 if get_env_variable('DJANGO_TOOLBAR', 'FALSE') == 'TRUE':

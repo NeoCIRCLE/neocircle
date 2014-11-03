@@ -26,7 +26,7 @@ from django.core.urlresolvers import reverse, reverse_lazy
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, get_object_or_404
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ugettext_noop
 from django.views.generic import (
     TemplateView, CreateView, DeleteView, UpdateView,
 )
@@ -44,7 +44,10 @@ from ..forms import (
 )
 from ..tables import TemplateListTable, LeaseListTable
 
-from .util import AclUpdateView, FilterMixin
+from .util import (
+    AclUpdateView, FilterMixin,
+    TransferOwnershipConfirmView, TransferOwnershipView,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -488,3 +491,20 @@ class LeaseDelete(LoginRequiredMixin, DeleteView):
         else:
             messages.success(request, success_message)
             return HttpResponseRedirect(success_url)
+
+
+class TransferTemplateOwnershipConfirmView(TransferOwnershipConfirmView):
+    template = "dashboard/confirm/transfer-template-ownership.html"
+    model = InstanceTemplate
+
+
+class TransferTemplateOwnershipView(TransferOwnershipView):
+    confirm_view = TransferTemplateOwnershipConfirmView
+    model = InstanceTemplate
+    notification_msg = ugettext_noop(
+        '%(user)s offered you to take the ownership of '
+        'his/her template called %(instance)s. '
+        '<a href="%(token)s" '
+        'class="btn btn-success btn-small">Accept</a>')
+    token_url = 'dashboard.views.template-transfer-ownership-confirm'
+    template = "dashboard/template-tx-owner.html"
