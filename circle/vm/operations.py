@@ -769,8 +769,13 @@ class SaveAsTemplateOperation(InstanceOperation):
         tmpl = InstanceTemplate(**params)
         tmpl.full_clean()  # Avoiding database errors.
         tmpl.save()
+        # Copy traits from the VM instance
+        tmpl.req_traits.add(*self.instance.req_traits.all())
         if clone:
             tmpl.clone_acl(self.instance.template)
+            # Add permission for the original owner of the template
+            tmpl.set_level(self.instance.template.owner, 'owner')
+            tmpl.set_level(user, 'owner')
         try:
             tmpl.disks.add(*self.disks)
             # create interface templates
