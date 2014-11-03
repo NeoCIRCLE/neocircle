@@ -31,7 +31,7 @@
   <a class="navbar-brand pull-right" href="{% url "logout" %}?next={% url "login" %}" style="color: white; font-size: 10px;">
     <i class="fa fa-sign-out"></i> {% trans "Log out" %}
   </a>
-  <a class="navbar-brand pull-right" href="{% url "dashboard.views.profile-preferences" %}" title="{% trans "User profile" %}" style="color: white; font-size: 10px;">
+  <a class="navbar-brand pull-right" href="{% url "dashboard.views.profile-preferences" %}" style="color: white; font-size: 10px;">
     <i class="fa fa-user"></i>
     {% include "dashboard/_display-name.html" with user=user show_org=True %}
   </a>
