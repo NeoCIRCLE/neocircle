@@ -25,7 +25,7 @@ from django.template.loader import find_template_loader
 from django.core.urlresolvers import NoReverseMatch
 
 
-class SubscribeTestCase(unittest.TestCase):
+class TemplateSyntaxTestCase(unittest.TestCase):
 
     def test_templates(self):
         """Test all templates for syntax errors."""
