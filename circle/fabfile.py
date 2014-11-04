@@ -204,3 +204,12 @@ def _stopped(*services):
 def _workon(name):
     return prefix("source ~/.virtualenvs/%s/bin/activate && "
                   "source ~/.virtualenvs/%s/bin/postactivate" % (name, name))
+
+
+@roles('portal')
+def install_bash_completion_script():
+    sudo("wget https://raw.githubusercontent.com/marcelor/fabric-bash-"
+         "autocompletion/48baf5735bafbb2be5be8787d2c2c04a44b6cdb0/fab "
+         "-O /etc/bash_completion.d/fab")
+    print("To have bash completion instantly, run\n"
+          "  source /etc/bash_completion.d/fab")
