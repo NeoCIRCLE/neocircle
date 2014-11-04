@@ -12,6 +12,8 @@ from .occi import (
     OsTemplate,
     COMPUTE_KIND,
     STORAGE_KIND,
+    LINK_KIND,
+    STORAGE_LINK_KIND,
     COMPUTE_ACTIONS,
     OS_TPL_MIXIN,
 )
@@ -42,6 +44,8 @@ class QueryInterface(View):
     def get(self, request, *args, **kwargs):
         response = "Category: %s\n" % COMPUTE_KIND.render_values()
         response += "Category: %s\n" % STORAGE_KIND.render_values()
+        response += "Category: %s\n" % LINK_KIND.render_values()
+        response += "Category: %s\n" % STORAGE_LINK_KIND.render_values()
         response += "Category: %s\n" % OS_TPL_MIXIN.render_values()
         for c in COMPUTE_ACTIONS:
             response += "Category: %s\n" % c.render_values()
@@ -173,16 +177,3 @@ class DiskInterface(DetailView):
     @method_decorator(csrf_exempt)
     def dispatch(self, *args, **kwargs):
         return super(DiskInterface, self).dispatch(*args, **kwargs)
-
-"""
-test commands:
-    curl 10.7.0.103:8080/occi/-/ -X GET
-
-    curl 10.7.0.103:8080/occi/compute/ -X GET
-
-    curl 10.7.0.103:8080/occi/compute/ -X POST
-    --header "X-OCCI-Attribute: occi.compute.cores=2"
-    --header "X-OCCI-Attribute: occi.compute.architecture=x86"
-    --header "X-OCCI-Attribute: occi.compute.speed=1"
-    --header "X-OCCI-Attribute: occi.compute.memory=1024" -I
-"""

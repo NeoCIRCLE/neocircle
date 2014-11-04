@@ -114,6 +114,10 @@ class Entity():
         self.kind = kind
 
 
+class Link(Entity):
+    pass
+
+
 class Resource(Entity):
     def __init__(self, id, title, kind, summary, links):
         super(Resource, self).__init__(id, title, kind)
@@ -128,7 +132,7 @@ class Compute(Resource):
     def __init__(self, instance=None, data=None):
         self.attrs = {}
         if instance:
-            self.location = "%svm/%d/" % (OCCI_ADDR, instance.pk)
+            self.location = "/vm/%d/" % (instance.pk)
             self.instance = instance
             self.init_attrs()
 
@@ -198,13 +202,18 @@ class Compute(Resource):
     def render_body(self):
         kind = COMPUTE_KIND
         mixins = []
+        links = []
         if self.instance.template:
             mixins.append(OsTemplate(self.instance.template))
+
+        for d in self.instance.disks.all():
+            links.append(StorageLink(self.instance, d))
 
         return render_to_string("occi/compute.html", {
             'kind': kind,
             'attrs': self.attrs,
             'mixins': mixins,
+            'links': links,
         })
 
     def init_attrs(self):
@@ -287,7 +296,7 @@ class Storage(Resource):
     def __init__(self, disk=None, data=None):
         self.attrs = {}
         if disk:
-            self.location = "%sdisk/%d/" % (OCCI_ADDR, disk.pk)
+            self.location = "/disk/%d/" % (disk.pk)
             self.disk = disk
             self.init_attrs()
 
@@ -346,6 +355,38 @@ class Storage(Resource):
         # TODO user
         user = User.objects.get(username="test")
         getattr(self.instance, operation).async(user=user)
+
+
+class StorageLink(Link):
+    def __init__(self, instance=None, disk=None, data=None):
+        if instance and disk:
+            self.init_attrs(instance, disk)
+        elif data:
+            pass
+
+    def init_attrs(self, instance, disk):
+        self.attrs = {}
+        self.attrs['occi.core.id'] = "%d_at_%d" % (disk.pk, instance.pk)
+        self.attrs['occi.core.target'] = Storage(disk).render_location()
+        self.attrs['occi.core.source'] = Compute(instance).render_location()
+        # deviceid? mountpoint?
+        self.attrs['occi.core.state'] = "active"
+
+        self.instance = instance
+        self.disk = disk
+
+    def render_location(self):
+        return "/link/storagelink/%d_at_%d" % (self.disk.pk, self.instance.pk)
+
+    def render_body(self):
+        kind = STORAGE_LINK_KIND
+
+        return render_to_string("occi/link.html", {
+            'kind': kind,
+            'location': self.render_location(),
+            'target': self.attrs['occi.core.target'],
+            'attrs': self.attrs,
+        })
 
 
 """predefined stuffs
@@ -445,4 +486,39 @@ OS_TPL_MIXIN = Mixin(
     class_="mixin",
     title="os template",
     location="/mixin/os_tpl/",
+)
+
+
+LINK_ATTRS = [
+    Attribute("occi.core.id", "immutable"),
+    Attribute("occi.core.title"),
+    Attribute("occi.core.target"),
+    Attribute("occi.core.source"),
+]
+
+LINK_KIND = Kind(
+    term="link",
+    scheme="http://schemas.ogf.org/occi/core#",
+    class_="kind",
+    title="Link",
+    rel="http://schemas.ogf.org/occi/core#entity",
+    location="/link/",
+    attributes=LINK_ATTRS
+)
+
+
+STORAGE_LINK_ATTRS = LINK_ATTRS + [
+    Attribute("occi.storagelink.deviceid"),
+    Attribute("occi.storagelink.mountpoint"),
+    Attribute("occi.core.state", "immutable"),
+]
+
+STORAGE_LINK_KIND = Kind(
+    term="storagelink",
+    scheme="http://schemas.ogf.org/occi/infrastructure#",
+    class_="kind",
+    title="Storage link",
+    rel="http://schemas.ogf.org/occi/core#link",
+    location="/link/storagelink/",
+    attributes=STORAGE_LINK_ATTRS
 )
