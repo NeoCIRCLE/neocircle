@@ -4,11 +4,14 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View, DetailView
 
 from vm.models import Instance, InstanceTemplate
+from storage.models import Disk
 
 from .occi import (
     Compute,
+    Storage,
     OsTemplate,
     COMPUTE_KIND,
+    STORAGE_KIND,
     COMPUTE_ACTIONS,
     OS_TPL_MIXIN,
 )
@@ -38,6 +41,7 @@ class QueryInterface(View):
 
     def get(self, request, *args, **kwargs):
         response = "Category: %s\n" % COMPUTE_KIND.render_values()
+        response += "Category: %s\n" % STORAGE_KIND.render_values()
         response += "Category: %s\n" % OS_TPL_MIXIN.render_values()
         for c in COMPUTE_ACTIONS:
             response += "Category: %s\n" % c.render_values()
@@ -126,6 +130,49 @@ class OsTplInterface(View):
     def dispatch(self, *args, **kwargs):
         return super(OsTplInterface, self).dispatch(*args, **kwargs)
 
+
+class StorageInterface(View):
+
+    def get(self, request, *args, **kwargs):
+        response = "\n".join([Storage(disk=d).render_location()
+                             for d in Disk.objects.filter(destroyed=None)])
+        return HttpResponse(
+            response,
+            content_type="text/plain",
+        )
+
+    def post(self, request, *args, **kwargs):
+        # TODO
+        pass
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super(StorageInterface, self).dispatch(*args, **kwargs)
+
+
+class DiskInterface(DetailView):
+    model = Disk
+
+    def get(self, request, *args, **kwargs):
+        disk = self.get_object()
+        c = Storage(disk=disk)
+        return HttpResponse(
+            c.render_body(),
+            content_type="text/plain",
+        )
+
+    def post(self, request, *args, **kwargs):
+        # TODO
+        data = get_post_data_from_request(request)
+        action = request.GET.get("action")
+        disk = self.get_object()
+        if action:
+            Storage(disk=disk).trigger_action(data)
+        return HttpResponse()
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super(DiskInterface, self).dispatch(*args, **kwargs)
 
 """
 test commands:

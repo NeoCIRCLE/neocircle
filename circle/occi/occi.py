@@ -280,6 +280,74 @@ class OsTemplate(Mixin):
         })
 
 
+class Storage(Resource):
+    """ Note: 100 priority = 5 Ghz
+    """
+
+    def __init__(self, disk=None, data=None):
+        self.attrs = {}
+        if disk:
+            self.location = "%sdisk/%d/" % (OCCI_ADDR, disk.pk)
+            self.disk = disk
+            self.init_attrs()
+
+    @classmethod
+    def create_object(cls, data):
+        pass
+
+    def render_location(self):
+        return "%s" % self.location
+
+    def render_body(self):
+        kind = STORAGE_KIND
+        mixins = []
+
+        return render_to_string("occi/storage.html", {
+            'kind': kind,
+            'attrs': self.attrs,
+            'mixins': mixins,
+        })
+
+    def init_attrs(self):
+        translate = {
+            'occi.core.id': "id",
+            'occi.storage.size': "size",
+            'occi.core.title': "name",
+        }
+        for k, v in translate.items():
+            self.attrs[k] = getattr(self.disk, v, None)
+
+        self.attrs['occi.storage.state'] = "online"
+        self.attrs['occi.storage.size'] /= 1024*1024*1024.0
+
+    def trigger_action(self, data):
+        method = None
+        action_term = None
+        for d in data:
+            m = occi_attribute_regex.match(d)
+            if m:
+                attribute = m.group("attribute")
+                if attribute == "method":
+                    method = m.group("value")
+
+            m = occi_action_regex.match(d)
+            if m:
+                action_term = m.group("term")
+
+        if action_term == "start":
+            if self.instance.status == "SUSPENDED":
+                operation = "wake_up"
+            else:
+                operation = "deploy"
+        else:
+            action = compute_action_to_operation.get(action_term)
+            operation = action.get(method)
+
+        # TODO user
+        user = User.objects.get(username="test")
+        getattr(self.instance, operation).async(user=user)
+
+
 """predefined stuffs
 
 
@@ -342,6 +410,34 @@ COMPUTE_KIND = Kind(
     actions=COMPUTE_ACTIONS,
     location="/compute/",
 )
+
+
+STORAGE_ATTRS = [
+    Attribute("occi.storage.architecture"),
+    Attribute("occi.storage.state", "immutable"),
+]
+
+STORAGE_ACTIONS = [
+    Action(
+        "resize",
+        "http://schemas.ogf.org/occi/infrastructure/storage/action#",
+        "action",
+        title="Resize disk",
+        attributes=[Attribute("size")],
+    ),
+]
+
+STORAGE_KIND = Kind(
+    term="storage",
+    scheme="http://schemas.ogf.org/occi/infrastructure#",
+    class_="kind",
+    title="Storage Resource type",
+    rel="http://schemas.ogf.org/occi/core#resource",
+    attributes=STORAGE_ATTRS,
+    actions=STORAGE_ACTIONS,
+    location="/storage/",
+)
+
 
 OS_TPL_MIXIN = Mixin(
     term="os_tpl",
