@@ -50,7 +50,7 @@
             <dd>{{ object.task_uuid|default:'n/a' }}</dd>
 
             <dt>{% trans "status" %}</dt>
-            <dd>{{ object.get_status_id }}</dd>
+            <dd id="activity_result">{{ object.get_status_id }}</dd>
 
 
             <dt>{% trans "result" %}</dt>
