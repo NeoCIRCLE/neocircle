@@ -103,16 +103,23 @@ def pull(dir="~/circle/circle"):
 
 
 @roles('portal')
-def update_portal(test=False):
+def update_portal(test=False, git=True):
     "Update and restart portal+manager"
     with _stopped("portal", "manager"):
-        pull()
+        if git:
+            pull()
         cleanup()
         pip("circle", "~/circle/requirements.txt")
         migrate()
         compile_things()
         if test:
             test()
+
+
+@roles('portal')
+def build_portal():
+    "Update portal without pulling from git"
+    return update_portal(False, False)
 
 
 @roles('portal')
