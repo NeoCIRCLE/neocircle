@@ -24,14 +24,15 @@ from urlparse import urljoin
 
 from django.conf import settings
 from django.contrib.auth.models import User, Group
-from django.core.exceptions import PermissionDenied
+from django.core import signing
+from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.core.urlresolvers import reverse
 from django.contrib import messages
 from django.contrib.auth.views import redirect_to_login
 from django.db.models import Q
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import redirect
-from django.utils.translation import ugettext_lazy as _
+from django.http import HttpResponse, Http404, HttpResponseRedirect
+from django.shortcuts import redirect, render
+from django.utils.translation import ugettext_lazy as _, ugettext_noop
 from django.views.generic import DetailView, View
 from django.views.generic.detail import SingleObjectMixin
 
@@ -40,7 +41,8 @@ from braces.views._access import AccessMixin
 from celery.exceptions import TimeoutError
 
 from common.models import HumanReadableException, HumanReadableObject
-from ..models import GroupProfile
+from ..models import GroupProfile, Profile
+from ..forms import TransferOwnershipForm
 
 logger = logging.getLogger(__name__)
 saml_available = hasattr(settings, "SAML_CONFIG")
@@ -563,3 +565,132 @@ class GraphMixin(object):
 
 def absolute_url(url):
     return urljoin(settings.DJANGO_URL, url)
+
+
+class TransferOwnershipView(CheckedDetailView, DetailView):
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/_modal.html']
+        else:
+            return ['dashboard/nojs-wrapper.html']
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(TransferOwnershipView, self).get_context_data(
+            *args, **kwargs)
+        context['form'] = TransferOwnershipForm()
+        context.update({
+            'box_title': _("Transfer ownership"),
+            'ajax_title': True,
+            'template': self.template,
+        })
+        return context
+
+    def post(self, request, *args, **kwargs):
+        form = TransferOwnershipForm(request.POST)
+        if not form.is_valid():
+            return self.get(request)
+        try:
+            new_owner = search_user(request.POST['name'])
+        except User.DoesNotExist:
+            messages.error(request, _('Can not find specified user.'))
+            return self.get(request, *args, **kwargs)
+        except KeyError:
+            raise SuspiciousOperation()
+
+        obj = self.get_object()
+        if not (obj.owner == request.user or
+                request.user.is_superuser):
+            raise PermissionDenied()
+
+        token = signing.dumps(
+            (obj.pk, new_owner.pk),
+            salt=self.confirm_view.get_salt())
+        token_path = reverse(self.token_url, args=[token])
+        try:
+            new_owner.profile.notify(
+                ugettext_noop('Ownership offer'),
+                self.notification_msg,
+                {'instance': obj, 'token': token_path})
+        except Profile.DoesNotExist:
+            messages.error(request, _('Can not notify selected user.'))
+        else:
+            messages.success(request,
+                             _('User %s is notified about the offer.') % (
+                                 unicode(new_owner), ))
+
+        return redirect(obj.get_absolute_url())
+
+
+class TransferOwnershipConfirmView(LoginRequiredMixin, View):
+    """User can accept an ownership offer."""
+
+    max_age = 3 * 24 * 3600
+    success_message = _("Ownership successfully transferred to you.")
+
+    @classmethod
+    def get_salt(cls):
+        return unicode(cls) + unicode(cls.model)
+
+    def get(self, request, key, *args, **kwargs):
+        """Confirm ownership transfer based on token.
+        """
+        logger.debug('Confirm dialog for token %s.', key)
+        try:
+            instance, new_owner = self.get_instance(key, request.user)
+        except PermissionDenied:
+            messages.error(request, _('This token is for an other user.'))
+            raise
+        except SuspiciousOperation:
+            messages.error(request, _('This token is invalid or has expired.'))
+            raise PermissionDenied()
+        return render(request, self.template,
+                      dictionary={'instance': instance, 'key': key})
+
+    def change_owner(self, instance, new_owner):
+        instance.owner = new_owner
+        instance.clean()
+        instance.save()
+
+    def post(self, request, key, *args, **kwargs):
+        """Really transfer ownership based on token.
+        """
+        instance, owner = self.get_instance(key, request.user)
+
+        old = instance.owner
+        self.change_owner(instance, request.user)
+        messages.success(request, self.success_message)
+        logger.info('Ownership of %s transferred from %s to %s.',
+                    unicode(instance), unicode(old), unicode(request.user))
+        if old.profile:
+            old.profile.notify(
+                ugettext_noop('Ownership accepted'),
+                ugettext_noop('Your ownership offer of %(instance)s has been '
+                              'accepted by %(user)s.'),
+                {'instance': instance})
+        return redirect(instance.get_absolute_url())
+
+    def get_instance(self, key, user):
+        """Get object based on signed token.
+        """
+        try:
+            instance, new_owner = (
+                signing.loads(key, max_age=self.max_age,
+                              salt=self.get_salt()))
+        except (signing.BadSignature, ValueError, TypeError) as e:
+            logger.error('Tried invalid token. Token: %s, user: %s. %s',
+                         key, unicode(user), unicode(e))
+            raise SuspiciousOperation()
+
+        try:
+            instance = self.model.objects.get(id=instance)
+        except self.model.DoesNotExist as e:
+            logger.error('Tried token to nonexistent instance %d. '
+                         'Token: %s, user: %s. %s',
+                         instance, key, unicode(user), unicode(e))
+            raise Http404()
+
+        if new_owner != user.pk:
+            logger.error('%s (%d) tried the token for %s. Token: %s.',
+                         unicode(user), user.pk, new_owner, key)
+            raise PermissionDenied()
+        return (instance, new_owner)

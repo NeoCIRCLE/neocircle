@@ -1,0 +1,23 @@
+{% extends "dashboard/operate.html" %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block formfields %}
+  {% if form %}
+    {% crispy form %}
+  {% endif %}
+
+  {% if form.fields.rule.initial != None %}
+    {% with rule=form.fields.rule.initial %}
+      <dl>
+        <dt>{% trans "Port" %}:</dt>
+        <dd>{{ rule.dport }}/{{ rule.proto }}</dd>
+        <dt>{% trans "Host" %}:</dt>
+        <dd>{{ rule.host.hostname }}</dd>
+        <dt>{% trans "Vlan" %}:</dt>
+        <dd>{{ rule.host.vlan.name }}</dd>
+      </dl>
+    {% endwith %}
+  {% endif %}
+
+{% endblock %}

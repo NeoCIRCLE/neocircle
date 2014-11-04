@@ -6,15 +6,15 @@
     <div class="panel panel-default">
       <div class="panel-heading">
         <h3 class="no-margin">
-            {% trans "Ownership transfer" %}
+          {% trans "Ownership transfer" %}
         </h3>
       </div>
       <div class="panel-body">
-          {% blocktrans with owner=instance.owner name=instance.name id=instance.id%}
-          <strong>{{ owner }}</strong> offered to take the ownership of
-          virtual machine <strong>{{name}} ({{id}})</strong>.
-          Do you accept the responsility of being the host's owner?
-          {% endblocktrans %}
+        {% blocktrans with owner=instance.owner name=instance.name id=instance.id%}
+        <strong>{{ owner }}</strong> offered to take the ownership of
+        template <strong>{{name}} ({{id}})</strong>.
+        Do you accept the responsility of being the template's owner?
+        {% endblocktrans %}
         <div class="pull-right">
           <form action="" method="POST">
             {% csrf_token %}

@@ -1,142 +1,129 @@
+var intro;
 $(function() {
-  $(".vm-details-start-template-tour").click(function() {
-    ttour = createTemplateTour();
-    ttour.init();
-    ttour.start();
+  $("#vm-details-start-template-tour").click(function() {
+    intro = introJs();
+    intro.setOptions({
+      'nextLabel': gettext("Next") + ' <i class="fa fa-chevron-right"></i>',
+      'prevLabel': '<i class="fa fa-chevron-left"></i> ' + gettext("Previous"),
+      'skipLabel': '<i class="fa fa-times"></i> ' + gettext("End tour"),
+      'doneLabel': gettext("Done"),
+    });
+    intro.setOptions({
+      'steps': get_steps(),
+    });
+    intro.onbeforechange(function(target) {
+      /* if the tab menu item is highlighted */
+      if($(target).data("toggle") == "pill") {
+        $(target).trigger("click");
+      }
+
+      /* if anything in a tab is highlighted change to that tab */
+      var tab = $(target).closest('.tab-pane:not([id^="ipv"])');
+      var id = tab.prop("id");
+      if(id) {
+        id = id.substring(1, id.length);
+        $('a[href="#' + id + '"]').trigger("click");
+      }
+    });
+    intro.start();
+
+    return false;
+  });
+
+  $(document).on('click', '#vm-details-resources-save, .vm-details-home-edit-name-click, .vm-details-home-edit-description-click, a.operation', function() {
+    if(intro)
+      intro.exit();
   });
 });
 
-function createTemplateTour() {
-  var ttour = new Tour({
-      storage: false,
-      name: "template",
-      template: "<div class='popover'>" +
-                  "<div class='arrow'></div>" +
-                  "<h3 class='popover-title'></h3>" +
-                  "<div class='popover-content'></div>" +
-                  "<div class='popover-navigation'>" +
-                    "<div class='btn-group'>" +
-                      "<button class='btn btn-sm btn-default' data-role='prev'>" +
-                        '<i class="fa fa-chevron-left"></i> ' + gettext("Prev") + "</button> " +
-                      "<button class='btn btn-sm btn-default' data-role='next'>" +
-                        gettext("Next") + ' <i class="fa fa-chevron-right"></i></button> ' +
-                      "<button class='btn btn-sm btn-default' data-role='pause-resume' data-pause-text='Pause' data-resume-text='Resume'>Pause</button> " +
-                    "</div>" +
-                    "<button class='btn btn-sm btn-default' data-role='end'>" +
-                      gettext("End tour") + ' <i class="fa fa-flag-checkered"></i></button>' +
-                  "</div>" +
-                "</div>",
-  });
 
-  ttour.addStep({
-    element: "#vm-details-template-tour-button",
-    title: gettext("Template Tutorial Tour"),
-    content: "<p>" + gettext("Welcome to the template tutorial. In this quick tour, we gonna show you how to do the steps described above.") + "</p>" +
-             "<p>" + gettext('For the next tour step press the "Next" button or the right arrow (or "Back" button/left arrow for the previous step).') + "</p>" +
-             "<p>" + gettext("During the tour please don't try the functions because it may lead to graphical glitches, however " +
-                             "you can end the tour any time you want with the End Tour button!") + "</p>",
-    placement: "bottom",
-    backdrop: true,
-  });
+function get_steps() {
+  // if an activity is running the #ops will be refreshed
+  // and the intro will break
+  deploy_selector = "#ops";
+  save_as_selector = "#ops";
+  if(!$('.timeline .activity i').hasClass('fa-spin')) {
+    vm_status = $("#vm-details-state").data("status");
+    if(vm_status === "PENDING")
+      deploy_selector += ' a[class*="operation-deploy"]';
+    if(vm_status === "RUNNING" || vm_status === "STOPPED")
+      save_as_selector += ' a[class*="operation-save_as_template"]';
+  }
 
-  ttour.addStep({
-    backdrop: true,
-    element: 'a[href="#home"]',
-    title: gettext("Home tab"), 
-    content: gettext("In this tab you can tag your virtual machine and modify the name and description."),
-    placement: 'top',
-    onShow: function() {
-      $('a[href="#home"]').trigger("click");
+  steps = [
+    {
+      element: document.querySelector("#vm-details-start-template-tour"),
+      intro: "<p>" + gettext("Welcome to the template tutorial. In this quick tour, we are going to show you how to do the steps described above.") + "</p>" +
+             "<p>" + gettext('For the next tour step press the "Next" button or the right arrow (or "Back" button/left arrow for the previous step).') + "</p>"
     },
-  });
-
-  ttour.addStep({
-    element: 'a[href="#resources"]',
-    title: gettext("Resources tab"),
-    backdrop: true,
-    placement: 'top',
-    content: gettext("On the resources tab you can edit the CPU/RAM options and add/remove disks!"),
-    onShow: function() {
-      $('a[href="#resources"]').trigger("click");
+    {
+      element: document.querySelector('a[href="#home"]'),
+      intro: gettext("In this tab you can extend the expiration date of your virtual machine, add tags and modify the name and description."),
     },
-  });
-
-  ttour.addStep({
-    element: '#vm-details-resources-form',
-    placement: 'top',
-    backdrop: true,
-    title: gettext("Resources"),
-    content: '<p><strong>' + gettext("CPU priority") + ":</strong> " + gettext("higher is better") + "</p>" + 
-             '<p><strong>' + gettext("CPU count") + ":</strong> " + gettext("number of CPU cores.") + "</p>" +
-             '<p><strong>' + gettext("RAM amount") + ":</strong> " + gettext("amount of RAM.") + "</p>", 
-    onShow: function() {
-      $('a[href="#resources"]').trigger("click");
+    {
+      element: document.querySelector('#home_name_and_description'),
+      intro: gettext("Please add a meaningful description to the virtual machine. Changing the name is also recommended, however you can choose a new name when saving the template."),
     },
-  });
-
-  ttour.addStep({
-    element: '#vm-details-resources-disk',
-    backdrop: true,
-    placement: 'top',
-    title: gettext("Disks"),
-    content: gettext("You can add empty disks, download new ones and remove existing ones here."),
-    onShow: function() {
-      $('a[href="#resources"]').trigger("click");
+    {
+      element: document.querySelector('#home_expiration_and_lease'),
+      intro: gettext("You can change the lease to extend the expiration date. This will be the lease of the new template."),
     },
-  });
+    {
+      element: document.querySelector('a[href="#resources"]'),
+      intro: gettext("On the resources tab you can edit the CPU/RAM options and add/remove disks if you have required permissions."),
+    }
+  ];
 
-  ttour.addStep({
-    element: 'a[href="#network"]',
-    backdrop: true,
-    placement: 'top',
-    title: gettext("Network tab"),
-    content: gettext('You can add new network interfaces or remove existing ones here.'),
-    onShow: function() {
-      $('a[href="#network"]').trigger("click");
+  if($("#vm-details-resources-save").length) {
+    steps.push(
+      {
+        element: document.querySelector('#vm-details-resources-form'),
+        intro: '<p><strong>' + gettext("CPU priority") + ":</strong> " +
+                gettext("higher is better") + "</p>" +
+                "<p><strong>" + gettext("CPU count") + ":</strong> " +
+                gettext("number of CPU cores.") + "</p>" +
+                "<p><strong>" + gettext("RAM amount") + ":</strong> " +
+                gettext("amount of RAM.") + "</p>",
+        position: "top",
+      }
+    );
+  }
+
+  if($(".operation-create_disk").length || $(".operation-download_disk").length) {
+    steps.push(
+      {
+        element: document.querySelector('#vm-details-resources-disk'),
+        intro: gettext("You can add empty disks, download new ones and remove existing ones here."),
+        position: "top",
+      }
+    );
+  }
+
+  steps.push(
+    {
+      element: document.querySelector('a[href="#network"]'),
+      intro: gettext('You can add new network interfaces or remove existing ones here.'),
     },
-  });
-
-
-  ttour.addStep({
-    element: "#ops",
-    title: '<i class="fa fa-play"></i> ' + gettext("Deploy"),
-    placement: "left",
-    backdrop: true,
-    content: gettext("Deploy the virtual machine."),
-  });
-
-  ttour.addStep({
-    element: "#vm-info-pane",
-    title: gettext("Connect"),
-    placement: "top",
-    backdrop: true,
-    content: gettext("Use the connection string or connect with your choice of client!"),
-    
-  });
-
-  ttour.addStep({
-    element: "#vm-info-pane",
-    placement: "top",
-    title: gettext("Customize the virtual machine"),
-    content: gettext("After you have connected to the virtual machine do your modifications then log off."),
-  });
-
-  ttour.addStep({
-    element: "#ops",
-    title: '<i class="fa fa-floppy-o"></i> ' + gettext("Save as"),
-    placement: "left",
-    backdrop: true,
-    content: gettext('Press the "Save as template" button and wait until the activity finishes.'),
-  });
-  
-  
-  ttour.addStep({
-    element: ".alert-new-template",
-    title: gettext("Finish"),
-    backdrop: true,
-    placement: "bottom",
-    content: gettext("This is the last message, if something is not clear you can do the the tour again!"),
-  });
-  
-  return ttour;
+    {
+      element: document.querySelector(deploy_selector),
+      intro: gettext("Deploy the virtual machine."),
+    },
+    {
+      element: document.querySelector("#vm-info-pane"),
+      intro: gettext("Use the CIRCLE client or the connection string to connect to the virtual machine."),
+    },
+    {
+      element: document.querySelector("#vm-info-pane"),
+      intro: gettext("After you have connected to the virtual machine do your modifications then log off."),
+    },
+    {
+      element: document.querySelector(save_as_selector),
+      intro: gettext('Press the "Save as template" button and wait until the activity finishes.'),
+    },
+    {
+      element: document.querySelector(".alert-new-template"),
+      intro: gettext("This is the last message, if something is not clear you can do the the tour again."),
+    }
+  );
+  return steps;
 }

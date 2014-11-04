@@ -1,13 +1,14 @@
 {% load i18n %}
 <div class="vm-details-network-port-add pull-right">
-  <form action="" method="POST">
+  <form action="{{ op.add_port.get_url }}" method="POST">
     {% csrf_token %}
-    <input type="hidden" name="host_pk" value="{{ i.host.pk }}"/>
+    <input type="hidden" name="host" value="{{ i.host.pk }}"/>
     <div class="input-group input-group-sm">
       <span class="input-group-addon">
         <i class="fa fa-plus"></i> <i class="fa fa-long-arrow-right"></i>
       </span>
-      <input type="text" class="form-control" size="5" style="width: 80px;" name="port"/>
+      <input type="number" class="form-control" size="5" min="1" max="65535"
+             style="width: 80px;" name="port" required/>
       <span class="input-group-addon">/</span>
       <select class="form-control" name="proto" style="width: 70px;"><option>tcp</option><option>udp</option></select>
       <div class="input-group-btn">

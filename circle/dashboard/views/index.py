@@ -62,7 +62,7 @@ class IndexView(LoginRequiredMixin, TemplateView):
         })
 
         # nodes
-        if user.is_superuser:
+        if user.has_perm('vm.view_statistics'):
             nodes = Node.objects.all()
             context.update({
                 'nodes': nodes[:5],

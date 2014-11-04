@@ -26,7 +26,7 @@
             {% csrf_token %}
             <a class="btn btn-default">{% trans "Cancel" %}</a>
             <button type="button" class="btn btn-default" data-dismiss="modal"></button>
-	    <input type="hidden" name="change_status" value=""/>
+            <input type="hidden" name="change_status" value=""/>
             <button class="btn btn-warning">{% blocktrans with status=status %}Yes, {{status}}{% endblocktrans %}</button>
           </form>
         </div>

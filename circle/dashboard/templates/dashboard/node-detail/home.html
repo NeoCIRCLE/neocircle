@@ -8,24 +8,27 @@
           {% for t in node.traits.all %}
             <div class="label label-success label-tag" style="display: inline-block">
               {{ t }}
-	      <a data-trait-pk="{{ t.pk }}" href="#" class="node-details-remove-trait"><i class="fa fa-times"></i></a>
+              <a data-trait-pk="{{ t.pk }}" href="#" class="node-details-remove-trait"><i class="fa fa-times"></i></a>
             </div>
           {% endfor %}
         {% else %}
-	<small>{% trans "No trait added!" %}</small>
+          <small>{% trans "No trait added!" %}</small>
         {% endif %}
       </div>
  {% load crispy_forms_tags %}
+
 <style>
   .row {
     margin-bottom: 15px;
   }
 </style>
 
-  <form action="{% url "dashboard.views.node-addtrait" node.pk %}" method="POST">
-  {% csrf_token %}
-  {% crispy trait_form %}
-  </form>
+  {% if request.user.is_superuser %}
+    <form action="{% url "dashboard.views.node-addtrait" node.pk %}" method="POST">
+    {% csrf_token %}
+    {% crispy trait_form %}
+    </form>
+  {% endif %}
     </div><!-- id:node-details-traits -->
   </div>
   <div class="col-md-8">
