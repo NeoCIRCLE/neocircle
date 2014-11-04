@@ -107,6 +107,7 @@ def update_portal(test=False):
     "Update and restart portal+manager"
     with _stopped("portal", "manager"):
         pull()
+        cleanup()
         pip("circle", "~/circle/requirements.txt")
         migrate()
         compile_things()
@@ -126,10 +127,15 @@ def update_node():
     with _stopped("node", "agentdriver", "monitor-client"):
         pull("~/vmdriver")
         pip("vmdriver", "~/vmdriver/requirements/production.txt")
+        _cleanup("~/vmdriver")
+
         pull("~/agentdriver")
         pip("agentdriver", "~/agentdriver/requirements.txt")
+        _cleanup("~/agentdriver")
+
         pull("~/monitor-client")
         pip("monitor-client", "~/monitor-client/requirements.txt")
+        _cleanup("~/monitor-client")
 
 
 @parallel
@@ -149,6 +155,18 @@ def checkout(vmdriver="master", agent="master"):
         run("git checkout %s" % vmdriver)
     with settings(warn_only=True), cd("~/agentdriver"):
         run("git checkout %s" % agent)
+
+
+@roles('portal')
+def cleanup():
+    "Clean pyc files of portal"
+    _cleanup()
+
+
+def _cleanup(dir="~/circle/circle"):
+    "Clean pyc files"
+    with cd("~/circle/circle"):
+        run("find -name '*.py[co]' -exec rm -f {} +")
 
 
 def _stop_services(*services):
