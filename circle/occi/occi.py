@@ -2,7 +2,9 @@ import re
 
 from django.contrib.auth.models import User
 from django.template.loader import render_to_string
+from django.utils import timezone
 
+from storage.models import Disk
 from vm.models import Instance, InstanceTemplate, Lease
 from vm.models.common import ARCHITECTURES
 from vm.models.instance import ACCESS_METHODS, pwgen
@@ -290,8 +292,6 @@ class OsTemplate(Mixin):
 
 
 class Storage(Resource):
-    """ Note: 100 priority = 5 Ghz
-    """
 
     def __init__(self, disk=None, data=None):
         self.attrs = {}
@@ -302,7 +302,36 @@ class Storage(Resource):
 
     @classmethod
     def create_object(cls, data):
-        pass
+        attributes = {}
+
+        for d in data:
+            attr = occi_attribute_regex.match(d)
+            if attr:
+                attributes[attr.group("attribute")] = attr.group("value")
+
+        size = attributes.get("occi.storage.size")
+        if not (size and size.isdigit()):
+            return None
+
+        name = attributes.get("occi.core.title")
+        if not name:
+            name = "disk create from OCCI at %s" % timezone.now()
+
+        # TODO user
+        user = User.objects.get(username="test")
+
+        params = {
+            'user': user,
+            'size': int(float(size) * 1024**3),  # GiB to byte
+            'type': "qcow2-norm",
+            'name': name,
+        }
+
+        disk = Disk.create(**params)
+        disk.full_clean()
+
+        cls.location = "%sdisk/%d" % (OCCI_ADDR, disk.pk)
+        return cls
 
     def render_location(self):
         return "%s" % self.location

@@ -146,8 +146,15 @@ class StorageInterface(View):
         )
 
     def post(self, request, *args, **kwargs):
-        # TODO
-        pass
+        data = get_post_data_from_request(request)
+
+        d = Storage.create_object(data=data)
+        response = HttpResponse(
+            "X-OCCI-Location: %s" % d.location,
+            status=201,
+            content_type="text/plain",
+        )
+        return response
 
     @method_decorator(csrf_exempt)
     def dispatch(self, *args, **kwargs):
