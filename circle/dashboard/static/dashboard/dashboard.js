@@ -108,9 +108,9 @@ $(function () {
     e.stopImmediatePropagation();
     return false;
   });
-  $('[title]:not(.title-favourite)').tooltip();
-  $('.title-favourite').tooltip({'placement': 'right'});
-  $(':input[title]').tooltip({trigger: 'focus', placement: 'auto right'});
+  $('body [title]:not(.title-favourite)').tooltip();
+  $('body .title-favourite').tooltip({'placement': 'right'});
+  $('body :input[title]').tooltip({trigger: 'focus', placement: 'auto right'});
   $(".knob").knob();
 
   $('[data-toggle="pill"]').click(function() {
