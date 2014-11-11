@@ -132,7 +132,7 @@ $(function () {
   $('.js-hidden').hide();
 
   /* favourite star */
-  $("#dashboard-vm-list").on('click', '.dashboard-vm-favourite', function(e) {
+  $("#dashboard-vm-list, .page-header").on('click', '.dashboard-vm-favourite', function(e) {
     var star = $(this).children("i");
     var pk = $(this).data("vm");
     if(star.hasClass("fa-star-o")) {

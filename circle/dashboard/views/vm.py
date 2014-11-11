@@ -115,6 +115,7 @@ class VmDetailView(GraphMixin, CheckedDetailView):
             'op': {i.op: i for i in ops},
             'connect_commands': user.profile.get_connect_commands(instance),
             'hide_tutorial': hide_tutorial,
+            'fav': instance.favourite_set.filter(user=user).exists(),
         })
 
         # activity data
