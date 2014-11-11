@@ -70,6 +70,13 @@
         {{ instance.name }}
       </div>
       <small>{{ instance.primary_host.get_fqdn }}</small>
+      <small class="dashboard-vm-favourite" style="line-height: 39.6px;" data-vm="{{ instance.pk }}">
+        {% if fav %}
+          <i class="fa fa-star text-primary title-favourite" title="{% trans "Unfavourite" %}"></i>
+        {% else %}
+          <i class="fa fa-star-o text-primary title-favourite" title="{% trans "Mark as favorite" %}"></i>
+        {% endif %}
+      </small>
     </h1>
     <div style="clear: both;"></div>
   </div>
