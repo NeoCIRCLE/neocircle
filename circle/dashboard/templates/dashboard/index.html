@@ -7,7 +7,7 @@
 <link rel="search"
   type="application/opensearchdescription+xml"
   href="{% url "dashboard.views.vm-opensearch" %}"
-  title="{% trans "VM search" %}" />
+  title="{% blocktrans with name=COMPANY_NAME %}{{name}} virtual machines{% endblocktrans %}" />
 {% endblock %}
 
 {% block content %}
