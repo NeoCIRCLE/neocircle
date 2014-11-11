@@ -62,5 +62,5 @@ def reload_blacklist(data):
 
 
 @celery.task(name='firewall.get_dhcp_clients')
-def get_dhcp_clients(data):
+def get_dhcp_clients():
     pass
