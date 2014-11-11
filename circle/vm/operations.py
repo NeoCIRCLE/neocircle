@@ -1295,6 +1295,12 @@ class AttachDiskOperation(InstanceOperation):
     accept_states = ('STOPPED', 'PENDING', 'RUNNING')
 
     def _operation(self, user, activity, disk):
+        if disk in self.instance.disks.all():
+            raise humanize_exception(ugettext_noop(
+                "Disk (#%d) is already attached to this virtual machine."
+            ) % disk.pk,
+                Exception())
+
         devnums = list(ascii_lowercase)
         for d in self.instance.disks.all():
             devnums.remove(d.dev_num)

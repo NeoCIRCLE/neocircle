@@ -1,6 +1,5 @@
 import re
 
-from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from django.template.loader import render_to_string
 from django.utils import timezone
@@ -428,17 +427,24 @@ class StorageLink(Link):
         g = re.match(occi_attribute_link_regex % "vm", source)
         vm_pk = g.group("id")
 
-        disk = get_object_or_404(Disk, pk=disk_pk)
-        vm = get_object_or_404(Instance, pk=vm_pk)
+        try:
+            vm = Instance.objects.filter(destroyed_at=None).get(pk=vm_pk)
+            disk = Disk.objects.filter(destroyed=None).get(pk=disk_pk)
+        except (Instance.DoesNotExist, Disk.DoesNotExist):
+            return None
 
+        try:
+            vm.attach_disk(user=user, disk=disk)
+        except:
+            pass
 
-        vm.attach_disk(user=user, disk=disk)
         cls.location = "%sstoragelink/%svm_%sdisk" % (OCCI_ADDR, vm_pk,
                                                       disk_pk)
         return cls
 
     def render_location(self):
-        return "/link/storagelink/vm%d_disk%d" % (instance.pk, disk.pk)
+        return "/link/storagelink/vm%d_disk%d" % (self.instance.pk,
+                                                  self.disk.pk)
 
     def render_as_link(self):
         kind = STORAGE_LINK_KIND

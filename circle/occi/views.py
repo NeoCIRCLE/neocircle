@@ -1,5 +1,4 @@
-from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
+from django.http import HttpResponse, Http404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View, DetailView
@@ -191,9 +190,14 @@ class DiskInterface(DetailView):
 class StorageLinkInterface(View):
 
     def get_vm_and_disk(self):
-        vm = get_object_or_404(Instance, pk=self.kwargs['vm_pk'])
-        disk = get_object_or_404(Disk, pk=self.kwargs['disk_pk'])
-        return vm, disk
+        try:
+            vm = Instance.objects.filter(destroyed=None
+                                         ).get(pk=self.kwargs['vm_pk'])
+            disk = Disk.objects.filter(destroyed=None
+                                       ).get(pk=self.kwargs['disk_pk'])
+            return vm, disk
+        except (Instance.DoesNotExist, Disk.DoesNotExist):
+            raise Http404
 
     def get(self, request, *args, **kwargs):
         vm, disk = self.get_vm_and_disk()
@@ -208,17 +212,18 @@ class StorageLinkInterface(View):
         # (they don't even exist in the model)
         if request.GET.get("action"):
             return HttpResponse("", status=500)
-        else:
-            data = get_post_data_from_request(request)
-            sl = StorageLink.create_object(data=data)
+
+        data = get_post_data_from_request(request)
+        sl = StorageLink.create_object(data=data)
+        if sl:
             response = HttpResponse(
                 "X-OCCI-Location: %s" % sl.location,
                 status=201,
                 content_type="text/plain",
             )
             return response
-
-        return HttpResponse()
+        else:
+            return HttpResponse("VM or Storage does not exist.", status=500)
 
     @method_decorator(csrf_exempt)
     def dispatch(self, *args, **kwargs):
