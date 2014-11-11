@@ -1,5 +1,6 @@
 import re
 
+from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import User
 from django.template.loader import render_to_string
 from django.utils import timezone
@@ -42,6 +43,8 @@ occi_os_tpl_regex = re.compile(
     'scheme=".*/infrastructure/os_tpl#"; ?'
     'class="mixin"; ?location=".*"; ?title=".*"$'
 )
+
+occi_attribute_link_regex = '^/%s/(?P<id>\d+)/?'
 
 
 class Category():
@@ -395,7 +398,7 @@ class StorageLink(Link):
 
     def init_attrs(self, instance, disk):
         self.attrs = {}
-        self.attrs['occi.core.id'] = "%d_at_%d" % (disk.pk, instance.pk)
+        self.attrs['occi.core.id'] = "vm%d_disk%d" % (instance.pk, disk.pk)
         self.attrs['occi.core.target'] = Storage(disk).render_location()
         self.attrs['occi.core.source'] = Compute(instance).render_location()
         # deviceid? mountpoint?
@@ -404,16 +407,54 @@ class StorageLink(Link):
         self.instance = instance
         self.disk = disk
 
-    def render_location(self):
-        return "/link/storagelink/%d_at_%d" % (self.disk.pk, self.instance.pk)
+    @classmethod
+    def create_object(cls, data):
+        attributes = {}
 
-    def render_body(self):
+        for d in data:
+            attr = occi_attribute_regex.match(d)
+            if attr:
+                attributes[attr.group("attribute")] = attr.group("value")
+
+        source = attributes.get("occi.core.source")
+        target = attributes.get("occi.core.target")
+        if not (source and target):
+            return None
+
+        # TODO user
+        user = User.objects.get(username="test")
+        g = re.match(occi_attribute_link_regex % "storage", target)
+        disk_pk = g.group("id")
+        g = re.match(occi_attribute_link_regex % "vm", source)
+        vm_pk = g.group("id")
+
+        disk = get_object_or_404(Disk, pk=disk_pk)
+        vm = get_object_or_404(Instance, pk=vm_pk)
+
+
+        vm.attach_disk(user=user, disk=disk)
+        cls.location = "%sstoragelink/%svm_%sdisk" % (OCCI_ADDR, vm_pk,
+                                                      disk_pk)
+        return cls
+
+    def render_location(self):
+        return "/link/storagelink/vm%d_disk%d" % (instance.pk, disk.pk)
+
+    def render_as_link(self):
         kind = STORAGE_LINK_KIND
 
         return render_to_string("occi/link.html", {
             'kind': kind,
             'location': self.render_location(),
             'target': self.attrs['occi.core.target'],
+            'attrs': self.attrs,
+        })
+
+    def render_as_category(self):
+        kind = STORAGE_LINK_KIND
+
+        return render_to_string("occi/storagelink.html", {
+            'kind': kind,
             'attrs': self.attrs,
         })
 

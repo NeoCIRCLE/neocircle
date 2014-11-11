@@ -1284,3 +1284,39 @@ class DetachNetwork(DetachMixin, AbstractNetworkOperation):
     id = "_detach_network"
     name = _("detach network")
     task = vm_tasks.detach_network
+
+
+@register_operation
+class AttachDiskOperation(InstanceOperation):
+    id = 'attach_disk'
+    name = _("attach disk")
+    description = _("Attach an already created disk to the virtual machine.")
+    required_perms = ()
+    accept_states = ('STOPPED', 'PENDING', 'RUNNING')
+
+    def _operation(self, user, activity, disk):
+        devnums = list(ascii_lowercase)
+        for d in self.instance.disks.all():
+            devnums.remove(d.dev_num)
+        disk.dev_num = devnums.pop(0)
+        disk.save()
+
+        self.instance.disks.add(disk)
+
+        if self.instance.is_running:
+            with activity.sub_activity(
+                'deploying_disk',
+                readable_name=ugettext_noop("deploying disk")
+            ):
+                disk.deploy()
+            self.instance._attach_disk(parent_activity=activity, disk=disk)
+
+        activity.result = create_readable(
+            ugettext_noop("%(name)s (#%(pk)s), dev num: %(dev_num)s"),
+            name=disk.name, pk=disk.pk, dev_num=disk.dev_num
+        )
+
+    def get_activity_name(self, kwargs):
+        return create_readable(
+            ugettext_noop("attach disk %(name)s"),
+            name=kwargs['disk'].name)

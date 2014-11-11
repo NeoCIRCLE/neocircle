@@ -1,13 +1,4 @@
 Category: compute; scheme="{{ kind.scheme }}"; class="{{ kind.class }}";
-
-{% for m in mixins %}
-  {{ m.render_body }}
-{% endfor %}
-
 {% for k, v in attrs.items %}
   X-OCCI-Attribute: {{ k }}={% if v.isdigit == False or k == "occi.core.id" %}"{{ v }}"{% else %}{{ v }}{% endif %}
-{% endfor %}
-
-{% for l in links %}
-  {{ l.render_as_link }}
 {% endfor %}

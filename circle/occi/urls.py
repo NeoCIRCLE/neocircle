@@ -20,7 +20,7 @@ from django.conf.urls import url, patterns
 
 from occi.views import (
     QueryInterface, ComputeInterface, VmInterface, OsTplInterface,
-    StorageInterface, DiskInterface,
+    StorageInterface, DiskInterface, StorageLinkInterface
 )
 
 urlpatterns = patterns(
@@ -31,4 +31,8 @@ urlpatterns = patterns(
     url(r'^vm/(?P<pk>\d+)/$', VmInterface.as_view(), name="occi.vm"),
     url(r'^storage/$', StorageInterface.as_view(), name="occi.storage"),
     url(r'^disk/(?P<pk>\d+)/$', DiskInterface.as_view(), name="occi.disk"),
+
+    url(r'^link/storagelink/$', StorageLinkInterface.as_view()),
+    url(r'^link/storagelink/vm(?P<vm_pk>\d+)_disk(?P<disk_pk>\d+)/$',
+        StorageLinkInterface.as_view(), name="occi.storagelink"),
 )
