@@ -20,7 +20,7 @@ from django.views.generic import (TemplateView, UpdateView, DeleteView,
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse_lazy
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 
 from django_tables2 import SingleTableView
 
@@ -30,7 +30,7 @@ from vm.models import Interface
 from .tables import (HostTable, VlanTable, SmallHostTable, DomainTable,
                      GroupTable, RecordTable, BlacklistItemTable, RuleTable,
                      VlanGroupTable, SmallRuleTable, SmallGroupRuleTable,
-                     SmallRecordTable, SwitchPortTable)
+                     SmallRecordTable, SwitchPortTable, SmallDhcpTable, )
 from .forms import (HostForm, VlanForm, DomainForm, GroupForm, RecordForm,
                     BlacklistItemForm, RuleForm, VlanGroupForm, SwitchPortForm)
 
@@ -434,6 +434,8 @@ class HostCreate(LoginRequiredMixin, SuperuserRequiredMixin,
             if i in self.request.GET and i not in self.request.POST:
                 initial[i] = self.request.GET[i]
         if "vlan" in initial:
+            if not initial['vlan'].isnumeric():
+                raise Http404()
             vlan = get_object_or_404(Vlan.objects, pk=initial['vlan'])
             try:
                 initial.update(vlan.get_new_address())
@@ -711,6 +713,7 @@ class VlanDetail(LoginRequiredMixin, SuperuserRequiredMixin,
     def get_context_data(self, **kwargs):
         context = super(VlanDetail, self).get_context_data(**kwargs)
         context['host_list'] = SmallHostTable(self.object.host_set.all())
+        context['dhcp_list'] = SmallDhcpTable(self.object.get_dhcp_clients())
         context['vlan_vid'] = self.kwargs.get('vid')
         context['acl'] = AclUpdateView.get_acl_data(
             self.object, self.request.user, 'network.vlan-acl')

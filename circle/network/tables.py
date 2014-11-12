@@ -122,6 +122,20 @@ class SmallHostTable(Table):
         attrs = {'class': 'table table-striped table-condensed'}
         fields = ('hostname', 'ipv4')
         order_by = ('vlan', 'hostname', )
+        empty_text = _("No hosts.")
+
+
+class SmallDhcpTable(Table):
+    mac = MACColumn(verbose_name=_("MAC address"))
+    hostname = Column(verbose_name=_("hostname"))
+    ip = Column(verbose_name=_("requested IP"))
+    register = TemplateColumn(
+        template_name="network/columns/host-register.html",
+        attrs={"th": {"style": "display: none;"}})
+
+    class Meta:
+        attrs = {'class': 'table table-striped table-condensed'}
+        empty_text = _("No hosts.")
 
 
 class RecordTable(Table):
