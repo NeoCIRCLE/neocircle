@@ -30,4 +30,23 @@ function getURLParameter(name) {
 
 $(function() {
   $("[title]").tooltip();
+
+$("#ipv6-magic").click(function() {
+    $.ajax({url: window.location,
+            data: {ipv4: $("[name=ipv4]").val(),
+                   vlan: $("[name=vlan]").val()},
+            success: function(data) {
+                       $("[name=ipv6]").val(data["ipv6"]);
+            }});
+});
+$("#ipv4-magic").click(function() {
+    $.ajax({url: window.location,
+            data: {vlan: $("[name=vlan]").val()},
+            success: function(data) {
+                       $("[name=ipv4]").val(data["ipv4"]);
+                       if (!$("[name=ipv6]").val()) {
+                         $("[name=ipv6]").val(data["ipv6"]);
+                       }
+            }});
+});
 });
