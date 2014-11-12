@@ -29,7 +29,7 @@ from django.utils.translation import ugettext_lazy as _
 from firewall.fields import (MACAddressField, val_alfanum, val_reverse_domain,
                              val_ipv6_template, val_domain, val_ipv4,
                              val_domain_wildcard,
-                             val_ipv6, val_mx, convert_ipv4_to_ipv6,
+                             val_ipv6, val_mx,
                              IPNetworkField, IPAddressField)
 from django.core.validators import MinValueValidator, MaxValueValidator
 import django.conf
@@ -403,7 +403,7 @@ class Vlan(AclBase, models.Model):
             logger.debug("Found unused IPv4 address %s.", ipv4)
             ipv6 = None
             if self.network6 is not None:
-                ipv6 = convert_ipv4_to_ipv6(self.ipv6_template, ipv4)
+                ipv6 = self.convert_ipv4_to_ipv6(ipv4)
                 if ipv6 in used_v6:
                     continue
                 else:
@@ -411,6 +411,11 @@ class Vlan(AclBase, models.Model):
             return {'ipv4': ipv4, 'ipv6': ipv6}
         else:
             raise ValidationError(_("All IP addresses are already in use."))
+
+    def convert_ipv4_to_ipv6(self, ipv4):
+        """Convert IPv4 address string to IPv6 address string."""
+        nums = {ascii_letters[i]: int(ipv4.words[i]) for i in range(4)}
+        return IPAddress(self.ipv6_template % nums)
 
 
 class VlanGroup(models.Model):
@@ -582,8 +587,7 @@ class Host(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.id and self.ipv6 == "auto":
-            self.ipv6 = convert_ipv4_to_ipv6(self.vlan.ipv6_template,
-                                             self.ipv4)
+            self.ipv6 = self.vlan.convert_ipv4_to_ipv6(self.ipv4)
         self.full_clean()
 
         super(Host, self).save(*args, **kwargs)
