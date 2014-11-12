@@ -40,7 +40,7 @@ from django.contrib.auth.forms import UserCreationForm as OrgUserCreationForm
 from django.forms.widgets import TextInput, HiddenInput
 from django.template import Context
 from django.template.loader import render_to_string
-from django.utils.html import escape
+from django.utils.html import escape, format_html
 from django.utils.translation import ugettext_lazy as _
 from sizefield.widgets import FileSizeWidget
 from django.core.urlresolvers import reverse_lazy
@@ -71,9 +71,7 @@ priority_choices = (
 )
 
 
-class VmSaveForm(forms.Form):
-    name = forms.CharField(max_length=100, label=_('Name'),
-                           help_text=_('Human readable name of template.'))
+class NoFormTagMixin(object):
 
     @property
     def helper(self):
@@ -81,11 +79,26 @@ class VmSaveForm(forms.Form):
         helper.form_tag = False
         return helper
 
+
+class OperationForm(NoFormTagMixin, forms.Form):
+    pass
+
+
+class VmSaveForm(OperationForm):
+    name = forms.CharField(max_length=100, label=_('Name'),
+                           help_text=_('Human readable name of template.'))
+
     def __init__(self, *args, **kwargs):
         default = kwargs.pop('default', None)
+        clone = kwargs.pop('clone', False)
         super(VmSaveForm, self).__init__(*args, **kwargs)
         if default:
             self.fields['name'].initial = default
+        if clone:
+            self.fields.insert(2, "clone", forms.BooleanField(
+                required=False, label=_("Clone template permissions"),
+                help_text=_("Clone the access list of parent template. Useful "
+                            "for updating a template.")))
 
 
 class VmCustomizeForm(forms.Form):
@@ -193,7 +206,7 @@ class VmCustomizeForm(forms.Form):
                         del self.cleaned_data[name]
 
 
-class GroupCreateForm(forms.ModelForm):
+class GroupCreateForm(NoFormTagMixin, forms.ModelForm):
 
     description = forms.CharField(label=_("Description"), required=False,
                                   widget=forms.Textarea(attrs={'rows': 3}))
@@ -232,9 +245,8 @@ class GroupCreateForm(forms.ModelForm):
 
     @property
     def helper(self):
-        helper = FormHelper(self)
+        helper = super(GroupCreateForm, self).helper
         helper.add_input(Submit("submit", _("Create")))
-        helper.form_tag = False
         return helper
 
     class Meta:
@@ -242,7 +254,7 @@ class GroupCreateForm(forms.ModelForm):
         fields = ('name', )
 
 
-class GroupProfileUpdateForm(forms.ModelForm):
+class GroupProfileUpdateForm(NoFormTagMixin, forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         new_groups = kwargs.pop('new_groups', None)
@@ -261,9 +273,8 @@ class GroupProfileUpdateForm(forms.ModelForm):
 
     @property
     def helper(self):
-        helper = FormHelper(self)
+        helper = super(GroupProfileUpdateForm, self).helper
         helper.add_input(Submit("submit", _("Save")))
-        helper.form_tag = False
         return helper
 
     def save(self, commit=True):
@@ -278,17 +289,16 @@ class GroupProfileUpdateForm(forms.ModelForm):
         fields = ('description', 'org_id')
 
 
-class HostForm(forms.ModelForm):
+class HostForm(NoFormTagMixin, forms.ModelForm):
 
     def setowner(self, user):
         self.instance.owner = user
 
-    def __init__(self, *args, **kwargs):
-        super(HostForm, self).__init__(*args, **kwargs)
-        self.helper = FormHelper(self)
-        self.helper.form_show_labels = False
-        self.helper.form_tag = False
-        self.helper.layout = Layout(
+    @property
+    def helper(self):
+        helper = super(HostForm, self).helper
+        helper.form_show_labels = False
+        helper.layout = Layout(
             Div(
                 Div(  # host
                     Div(
@@ -345,6 +355,7 @@ class HostForm(forms.ModelForm):
                 ),
             ),
         )
+        return helper
 
     class Meta:
         model = Host
@@ -725,7 +736,7 @@ class LeaseForm(forms.ModelForm):
         model = Lease
 
 
-class VmRenewForm(forms.Form):
+class VmRenewForm(OperationForm):
 
     force = forms.BooleanField(required=False, label=_(
         "Set expiration times even if they are shorter than "
@@ -745,16 +756,15 @@ class VmRenewForm(forms.Form):
             self.fields['lease'].widget = HiddenInput()
             self.fields['save'].widget = HiddenInput()
 
-    @property
-    def helper(self):
-        helper = FormHelper(self)
-        helper.form_tag = False
-        return helper
-
 
 class VmMigrateForm(forms.Form):
     live_migration = forms.BooleanField(
-        required=False, initial=True, label=_("live migration"))
+        required=False, initial=True, label=_("Live migration"),
+        help_text=_(
+            "Live migration is a way of moving virtual machines between "
+            "hosts with a service interruption of at most some seconds. "
+            "Please note that it can take very long and cause "
+            "much network traffic in case of busy machines."))
 
     def __init__(self, *args, **kwargs):
         choices = kwargs.pop('choices')
@@ -766,7 +776,7 @@ class VmMigrateForm(forms.Form):
             widget=forms.RadioSelect(), label=_("Node")))
 
 
-class VmStateChangeForm(forms.Form):
+class VmStateChangeForm(OperationForm):
 
     interrupt = forms.BooleanField(required=False, label=_(
         "Forcibly interrupt all running activities."),
@@ -785,25 +795,13 @@ class VmStateChangeForm(forms.Form):
             self.fields['interrupt'].widget = HiddenInput()
         self.fields['new_state'].initial = status
 
-    @property
-    def helper(self):
-        helper = FormHelper(self)
-        helper.form_tag = False
-        return helper
 
-
-class RedeployForm(forms.Form):
+class RedeployForm(OperationForm):
     with_emergency_change_state = forms.BooleanField(
         required=False, initial=True, label=_("use emergency state change"))
 
-    @property
-    def helper(self):
-        helper = FormHelper(self)
-        helper.form_tag = False
-        return helper
 
-
-class VmCreateDiskForm(forms.Form):
+class VmCreateDiskForm(OperationForm):
     name = forms.CharField(max_length=100, label=_("Name"))
     size = forms.CharField(
         widget=FileSizeWidget, initial=(10 << 30), label=_('Size'),
@@ -823,14 +821,8 @@ class VmCreateDiskForm(forms.Form):
                                           " GB or MB!"))
         return size_in_bytes
 
-    @property
-    def helper(self):
-        helper = FormHelper(self)
-        helper.form_tag = False
-        return helper
 
-
-class VmDiskResizeForm(forms.Form):
+class VmDiskResizeForm(OperationForm):
     size = forms.CharField(
         widget=FileSizeWidget, initial=(10 << 30), label=_('Size'),
         help_text=_('Size to resize the disk in bytes or with units '
@@ -863,8 +855,7 @@ class VmDiskResizeForm(forms.Form):
 
     @property
     def helper(self):
-        helper = FormHelper(self)
-        helper.form_tag = False
+        helper = super(VmDiskResizeForm, self).helper
         if self.disk:
             helper.layout = Layout(
                 HTML(_("<label>Disk:</label> %s") % escape(self.disk)),
@@ -872,7 +863,7 @@ class VmDiskResizeForm(forms.Form):
         return helper
 
 
-class VmDiskRemoveForm(forms.Form):
+class VmDiskRemoveForm(OperationForm):
     def __init__(self, *args, **kwargs):
         choices = kwargs.pop('choices')
         self.disk = kwargs.pop('default')
@@ -887,8 +878,7 @@ class VmDiskRemoveForm(forms.Form):
 
     @property
     def helper(self):
-        helper = FormHelper(self)
-        helper.form_tag = False
+        helper = super(VmDiskRemoveForm, self).helper
         if self.disk:
             helper.layout = Layout(
                 AnyTag(
@@ -901,15 +891,9 @@ class VmDiskRemoveForm(forms.Form):
         return helper
 
 
-class VmDownloadDiskForm(forms.Form):
+class VmDownloadDiskForm(OperationForm):
     name = forms.CharField(max_length=100, label=_("Name"), required=False)
     url = forms.CharField(label=_('URL'), validators=[URLValidator(), ])
-
-    @property
-    def helper(self):
-        helper = FormHelper(self)
-        helper.form_tag = False
-        return helper
 
     def clean(self):
         cleaned_data = super(VmDownloadDiskForm, self).clean()
@@ -924,7 +908,7 @@ class VmDownloadDiskForm(forms.Form):
         return cleaned_data
 
 
-class VmAddInterfaceForm(forms.Form):
+class VmAddInterfaceForm(OperationForm):
     def __init__(self, *args, **kwargs):
         choices = kwargs.pop('choices')
         super(VmAddInterfaceForm, self).__init__(*args, **kwargs)
@@ -936,10 +920,68 @@ class VmAddInterfaceForm(forms.Form):
             field.empty_label = _('No more networks.')
         self.fields['vlan'] = field
 
+
+class VmDeployForm(OperationForm):
+
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('choices', None)
+
+        super(VmDeployForm, self).__init__(*args, **kwargs)
+
+        if choices is not None:
+            self.fields.insert(0, 'node', forms.ModelChoiceField(
+                queryset=choices, required=False, label=_('Node'), help_text=_(
+                    "Deploy virtual machine to this node "
+                    "(blank allows scheduling automatically).")))
+
+
+class VmPortRemoveForm(OperationForm):
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('choices')
+        self.rule = kwargs.pop('default')
+
+        super(VmPortRemoveForm, self).__init__(*args, **kwargs)
+
+        self.fields.insert(0, 'rule', forms.ModelChoiceField(
+            queryset=choices, initial=self.rule, required=True,
+            empty_label=None, label=_('Port')))
+        if self.rule:
+            self.fields['rule'].widget = HiddenInput()
+
+
+class VmPortAddForm(OperationForm):
+    port = forms.IntegerField(required=True, label=_('Port'),
+                              min_value=1, max_value=65535)
+    proto = forms.ChoiceField((('tcp', 'tcp'), ('udp', 'udp')),
+                              required=True, label=_('Protocol'))
+
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('choices')
+        self.host = kwargs.pop('default')
+
+        super(VmPortAddForm, self).__init__(*args, **kwargs)
+
+        self.fields.insert(0, 'host', forms.ModelChoiceField(
+            queryset=choices, initial=self.host, required=True,
+            empty_label=None, label=_('Host')))
+        if self.host:
+            self.fields['host'].widget = HiddenInput()
+
     @property
     def helper(self):
-        helper = FormHelper(self)
-        helper.form_tag = False
+        helper = super(VmPortAddForm, self).helper
+        if self.host:
+            helper.layout = Layout(
+                AnyTag(
+                    "div",
+                    HTML(format_html(
+                        _("<label>Host:</label> {0}"), self.host)),
+                    css_class="form-group",
+                ),
+                Field("host"),
+                Field("proto"),
+                Field("port"),
+            )
         return helper
 
 

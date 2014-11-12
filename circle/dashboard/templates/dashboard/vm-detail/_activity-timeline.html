@@ -3,7 +3,8 @@
 <div id="activity-timeline" class="timeline">
 
 {% for a in activities %}
-<div class="activity{% if a.pk == active.pk %} activity-active{%endif%}" data-activity-id="{{ a.pk }}">
+<div class="activity{% if a.pk == active.pk %} activity-active{%endif%}"
+  data-activity-id="{{ a.pk }}" data-activity-code="{{ a.activity_code }}">
   <span class="timeline-icon{% if a.has_failed %} timeline-icon-failed{% endif %}">
   <i class="fa {% if not a.finished %}fa-refresh fa-spin {% else %}fa-{{a.icon}}{% endif %}"></i>
 </span>
@@ -33,7 +34,8 @@
   {% if a.children.count > 0 %}
     <div class="sub-timeline">
       {% for s in a.children.all %}
-      <div data-activity-id="{{ s.pk }}" class="sub-activity{% if s.has_failed %} sub-activity-failed{% endif %}{% if s.pk == active.pk %} sub-activity-active{% endif %}">
+      <div data-activity-id="{{ s.pk }}" data-activity-code="{{ s.activity_code }}"
+        class="sub-activity{% if s.has_failed %} sub-activity-failed{% endif %}{% if s.pk == active.pk %} sub-activity-active{% endif %}">
         <span{% if s.result %} title="{{ s.result|get_text:user }}"{% endif %}>
           <a href="{{ s.get_absolute_url }}">
               {{ s.readable_name|get_text:user|capfirst }}</a></span> &ndash;

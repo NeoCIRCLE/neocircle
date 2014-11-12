@@ -655,12 +655,7 @@ class VlanDetail(LoginRequiredMixin, SuperuserRequiredMixin,
 
     def get_context_data(self, **kwargs):
         context = super(VlanDetail, self).get_context_data(**kwargs)
-
-        q = Host.objects.filter(interface__in=Interface.objects.filter(
-            vlan=self.object
-        ))
-
-        context['host_list'] = SmallHostTable(q)
+        context['host_list'] = SmallHostTable(self.object.host_set.all())
         context['vlan_vid'] = self.kwargs.get('vid')
         context['acl'] = AclUpdateView.get_acl_data(
             self.object, self.request.user, 'network.vlan-acl')

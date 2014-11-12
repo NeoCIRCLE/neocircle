@@ -19,7 +19,7 @@ $(function() {
         $('#vm-migrate-node-list li input:checked').closest('li').addClass('panel-primary');
       }
     });
-    return false;
+    e.preventDefault();
   });
 
   /* if the operation fails show the modal again */

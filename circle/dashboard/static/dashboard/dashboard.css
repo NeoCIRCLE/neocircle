@@ -216,7 +216,7 @@ html {
 }
 
 #vm-list-rename-name, #node-list-rename-name, #group-list-rename-name {
-  max-width: 100px;
+  max-width: 150px;
 }
 
 .label-tag {
@@ -688,7 +688,7 @@ textarea[name="new_members"] {
 
 .dashboard-vm-details-connect-command {
   /* for mobile view */
-  margin-bottom: 20px;
+  padding-bottom: 20px;
 }
 
 #store-list-list {
@@ -961,6 +961,14 @@ textarea[name="new_members"] {
   cursor: pointer
 }
 
+#vm-details-resources-disk {
+  padding: 2px 5px 10px 5px;
+}
+
+#vm-details-start-template-tour {
+  margin-right: 5px;
+}
+
 #vm-activity-state {
   margin-bottom: 15px;
 }
@@ -972,6 +980,24 @@ textarea[name="new_members"] {
 
 .hilight .autocomplete-hl {
   color: orange;
+}
+
+.introjs-skipbutton {
+  color: #333;
+}
+
+.introjs-button:focus {
+  text-decoration: none;
+  color: #333;
+  outline: none;
+}
+
+.introjs-button:hover:not(.introjs-disabled) {
+  color: #428bca;
+}
+
+.introjs-tooltip {
+  min-width: 250px;
 }
 
 #vm-info-pane {
@@ -1015,4 +1041,13 @@ textarea[name="new_members"] {
 
 #vm-migrate-node-list li {
   cursor: pointer;
+}
+
+.group-list-table .actions,
+.group-list-table .admin,
+.group-list-table .number_of_users,
+.group-list-table .pk {
+  width: 1px;
+  white-space: nowrap;
+  text-align: center;
 }

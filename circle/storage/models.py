@@ -416,6 +416,7 @@ class Disk(TimeStampedModel):
                         "Operation aborted by user."), e)
         disk.size = result['size']
         disk.type = result['type']
+        disk.checksum = result.get('checksum', None)
         disk.is_ready = True
         disk.save()
         return disk
