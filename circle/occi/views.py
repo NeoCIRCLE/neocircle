@@ -201,14 +201,15 @@ class DiskInterface(DetailView):
 class StorageLinkInterface(View):
 
     def get_vm_and_disk(self):
-        try:
-            vm = Instance.objects.filter(destroyed=None
-                                         ).get(pk=self.kwargs['vm_pk'])
-            disk = Disk.objects.filter(destroyed=None
-                                       ).get(pk=self.kwargs['disk_pk'])
-            return vm, disk
-        except (Instance.DoesNotExist, Disk.DoesNotExist):
+        vm = get_object_or_404(Instance.objects.filter(destroyed_at=None),
+                               pk=self.kwargs['vm_pk'])
+        disk = get_object_or_404(Disk.objects.filter(destroyed=None),
+                                 pk=self.kwargs['disk_pk'])
+
+        if disk not in vm.disks.all():
             raise Http404
+
+        return vm, disk
 
     def get(self, request, *args, **kwargs):
         vm, disk = self.get_vm_and_disk()
@@ -235,6 +236,13 @@ class StorageLinkInterface(View):
             return response
         else:
             return HttpResponse("VM or Storage does not exist.", status=500)
+
+    def delete(self, request, *args, **kwargs):
+        vm, disk = self.get_vm_and_disk()
+        sl = StorageLink(instance=vm, disk=disk)
+
+        sl.delete()
+        return HttpResponse("")
 
     @method_decorator(csrf_exempt)
     def dispatch(self, *args, **kwargs):

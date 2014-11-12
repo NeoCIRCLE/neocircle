@@ -1326,3 +1326,21 @@ class AttachDiskOperation(InstanceOperation):
         return create_readable(
             ugettext_noop("attach disk %(name)s"),
             name=kwargs['disk'].name)
+
+
+@register_operation
+class DetachDiskOperation(InstanceOperation):
+    id = 'detach_disk'
+    name = _("detach disk")
+    description = _("Detach the specified disk from the virtual machine.")
+    required_perms = ()
+    accept_states = ('STOPPED', 'PENDING', 'RUNNING')
+
+    def _operation(self, activity, user, disk):
+        if self.instance.is_running and disk.type not in ["iso"]:
+            self.instance._detach_disk(disk=disk, parent_activity=activity)
+        return self.instance.disks.remove(disk)
+
+    def get_activity_name(self, kwargs):
+        return create_readable(ugettext_noop('deatch disk %(name)s'),
+                               name=kwargs["disk"].name)

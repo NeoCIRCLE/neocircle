@@ -505,6 +505,13 @@ class StorageLink(Link):
             'attrs': self.attrs,
         })
 
+    def delete(self):
+        # TODO
+        user = User.objects.get(username="test")
+
+        if self.disk in self.instance.disks.all():
+            self.instance.detach_disk(user=user, disk=self.disk)
+
 
 """predefined stuffs
 
