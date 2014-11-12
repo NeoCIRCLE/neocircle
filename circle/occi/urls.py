@@ -30,7 +30,7 @@ urlpatterns = patterns(
     url(r'^os_tpl/$', OsTplInterface.as_view(), name="occi.os_tpl"),
     url(r'^vm/(?P<pk>\d+)/?$', VmInterface.as_view(), name="occi.vm"),
     url(r'^storage/$', StorageInterface.as_view(), name="occi.storage"),
-    url(r'^disk/(?P<pk>\d+)/$', DiskInterface.as_view(), name="occi.disk"),
+    url(r'^storage/(?P<pk>\d+)/?$', DiskInterface.as_view(), name="occi.disk"),
 
     url(r'^link/storagelink/$', StorageLinkInterface.as_view()),
     url(r'^link/storagelink/vm(?P<vm_pk>\d+)_disk(?P<disk_pk>\d+)/?$',

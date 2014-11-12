@@ -339,7 +339,7 @@ class Storage(Resource):
     def __init__(self, disk=None, data=None):
         self.attrs = {}
         if disk:
-            self.location = "/disk/%d/" % (disk.pk)
+            self.location = "/storage/%d/" % (disk.pk)
             self.disk = disk
             self.init_attrs()
 
@@ -373,7 +373,7 @@ class Storage(Resource):
         disk = Disk.create(**params)
         disk.full_clean()
 
-        cls.location = "%sdisk/%d" % (OCCI_ADDR, disk.pk)
+        cls.location = "%sstorage/%d" % (OCCI_ADDR, disk.pk)
         return cls
 
     def render_location(self):
@@ -479,13 +479,13 @@ class StorageLink(Link):
         except:
             pass
 
-        cls.location = "%sstoragelink/%svm_%sdisk" % (OCCI_ADDR, vm_pk,
-                                                      disk_pk)
+        cls.location = "%sstoragelink/vm_%s_storage_%s" % (OCCI_ADDR, vm_pk,
+                                                           disk_pk)
         return cls
 
     def render_location(self):
-        return "/link/storagelink/vm%d_disk%d" % (self.instance.pk,
-                                                  self.disk.pk)
+        return "/link/storagelink/vm_%d_storage_%d" % (self.instance.pk,
+                                                       self.disk.pk)
 
     def render_as_link(self):
         kind = STORAGE_LINK_KIND

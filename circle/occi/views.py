@@ -185,7 +185,7 @@ class DiskInterface(DetailView):
         )
 
     def post(self, request, *args, **kwargs):
-        # TODO
+        # TODO actions (we only support resize)
         data = get_post_data_from_request(request)
         action = request.GET.get("action")
         disk = self.get_object()
