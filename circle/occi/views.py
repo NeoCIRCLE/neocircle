@@ -193,6 +193,10 @@ class DiskInterface(DetailView):
             Storage(disk=disk).trigger_action(data)
         return HttpResponse()
 
+    def delete(self, request, *args, **kwargs):
+        Storage(disk=self.get_object()).delete()
+        return HttpResponse("")
+
     @method_decorator(csrf_exempt)
     def dispatch(self, *args, **kwargs):
         return super(DiskInterface, self).dispatch(*args, **kwargs)

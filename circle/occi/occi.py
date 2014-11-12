@@ -402,6 +402,7 @@ class Storage(Resource):
         self.attrs['occi.storage.size'] /= 1024*1024*1024.0
 
     def trigger_action(self, data):
+        # TODO, this is copypaste ATM
         method = None
         action_term = None
         for d in data:
@@ -427,6 +428,15 @@ class Storage(Resource):
         # TODO user
         user = User.objects.get(username="test")
         getattr(self.instance, operation).async(user=user)
+
+    def delete(self):
+        # TODO
+        user = User.objects.get(username="test")
+
+        if self.disk.instance_set.count() > 0:
+            for i in self.disk.instance_set.all():
+                i.detach_disk(user=user, disk=self.disk)
+        self.disk.destroy()
 
 
 class StorageLink(Link):
