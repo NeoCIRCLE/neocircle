@@ -46,6 +46,23 @@ import json
 from dashboard.views import AclUpdateView
 from dashboard.forms import AclUserOrGroupAddForm
 
+from django.utils import simplejson
+
+try:
+    from django.http import JsonResponse
+except ImportError:
+    class JsonResponse(HttpResponse):
+        """JSON response for Django < 1.7
+        https://gist.github.com/philippeowagner/3179eb475fe1795d6515
+        """
+        def __init__(self, content, mimetype='application/json',
+                     status=None, content_type=None):
+            super(JsonResponse, self).__init__(
+                content=simplejson.dumps(content),
+                mimetype=mimetype,
+                status=status,
+                content_type=content_type)
+
 
 class InitialOwnerMixin(FormMixin):
     def get_initial(self):
@@ -423,6 +440,29 @@ class HostCreate(LoginRequiredMixin, SuperuserRequiredMixin,
             except ValidationError as e:
                 messages.error(self.request, e.message)
         return initial
+
+    def _get_ajax(self, *args, **kwargs):
+        GET = self.request.GET
+        result = {}
+        if "vlan" in GET:
+            vlan = get_object_or_404(Vlan.objects, pk=GET["vlan"])
+            try:
+                result.update(vlan.get_new_address())
+            except ValidationError:
+                result["ipv4"] = ""
+                result["ipv6"] = ""
+            if "ipv4" in GET:
+                try:
+                    result["ipv6"] = vlan.convert_ipv4_to_ipv6(GET["ipv4"])
+                except:
+                    result["ipv6"] = ""
+            return JsonResponse({k: unicode(result[k] or "") for k in result})
+
+    def get(self, *args, **kwargs):
+        if self.request.is_ajax():
+            return self._get_ajax(*args, **kwargs)
+        else:
+            return super(HostCreate, self).get(*args, **kwargs)
 
 
 class HostDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
