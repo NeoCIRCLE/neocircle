@@ -101,7 +101,7 @@ $(function() {
   });
 
 
-  $("body").on("click", "#op-form-send", function() {
+  $("body").on("click", "#mass-op-form-send", function() {
     var url = $(this).closest("form").prop("action");
     $(this).find("i").prop("class", "fa fa-fw fa-spinner fa-spin");
 
