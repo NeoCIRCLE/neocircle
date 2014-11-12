@@ -17,8 +17,9 @@
 
 from django.views.generic import (TemplateView, UpdateView, DeleteView,
                                   CreateView)
+from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse_lazy
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 
 from django_tables2 import SingleTableView
@@ -408,6 +409,20 @@ class HostCreate(LoginRequiredMixin, SuperuserRequiredMixin,
     template_name = "network/host-create.html"
     form_class = HostForm
     success_message = _(u'Successfully created host %(hostname)s!')
+
+    def get_initial(self):
+        initial = super(HostCreate, self).get_initial()
+
+        for i in ("vlan", "mac", "hostname"):
+            if i in self.request.GET and i not in self.request.POST:
+                initial[i] = self.request.GET[i]
+        if "vlan" in initial:
+            vlan = get_object_or_404(Vlan.objects, pk=initial['vlan'])
+            try:
+                initial.update(vlan.get_new_address())
+            except ValidationError as e:
+                messages.error(self.request, e.message)
+        return initial
 
 
 class HostDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
