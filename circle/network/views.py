@@ -444,19 +444,19 @@ class HostCreate(LoginRequiredMixin, SuperuserRequiredMixin,
     def _get_ajax(self, *args, **kwargs):
         GET = self.request.GET
         result = {}
-        if "vlan" in GET:
-            vlan = get_object_or_404(Vlan.objects, pk=GET["vlan"])
+        vlan = get_object_or_404(Vlan.objects, pk=GET.get("vlan", ""))
+        if "ipv4" in GET:
+            try:
+                result["ipv6"] = vlan.convert_ipv4_to_ipv6(GET["ipv4"])
+            except:
+                result["ipv6"] = ""
+        else:
             try:
                 result.update(vlan.get_new_address())
             except ValidationError:
                 result["ipv4"] = ""
                 result["ipv6"] = ""
-            if "ipv4" in GET:
-                try:
-                    result["ipv6"] = vlan.convert_ipv4_to_ipv6(GET["ipv4"])
-                except:
-                    result["ipv6"] = ""
-            return JsonResponse({k: unicode(result[k] or "") for k in result})
+        return JsonResponse({k: unicode(result[k] or "") for k in result})
 
     def get(self, *args, **kwargs):
         if self.request.is_ajax():

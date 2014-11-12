@@ -414,6 +414,8 @@ class Vlan(AclBase, models.Model):
 
     def convert_ipv4_to_ipv6(self, ipv4):
         """Convert IPv4 address string to IPv6 address string."""
+        if isinstance(ipv4, basestring):
+            ipv4 = IPAddress(ipv4, 4)
         nums = {ascii_letters[i]: int(ipv4.words[i]) for i in range(4)}
         return IPAddress(self.ipv6_template % nums)
 
