@@ -1,4 +1,5 @@
 from django.http import HttpResponse, Http404
+from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View, DetailView
@@ -97,6 +98,10 @@ class ComputeInterface(View):
 class VmInterface(DetailView):
     model = Instance
 
+    def get_object(self):
+        return get_object_or_404(Instance.objects.filter(destroyed_at=None),
+                                 pk=self.kwargs['pk'])
+
     def get(self, request, *args, **kwargs):
         vm = self.get_object()
         c = Compute(instance=vm)
@@ -111,6 +116,12 @@ class VmInterface(DetailView):
         vm = self.get_object()
         if action:
             Compute(instance=vm).trigger_action(data)
+        return HttpResponse()
+
+    def delete(self, request, *args, **kwargs):
+        vm = self.get_object()
+        Compute(instance=vm).delete()
+
         return HttpResponse()
 
     @method_decorator(csrf_exempt)  # decorator on post method doesn't work

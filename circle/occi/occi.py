@@ -306,6 +306,11 @@ class Compute(Resource):
         user = User.objects.get(username="test")
         getattr(self.instance, operation).async(user=user)
 
+    def delete(self):
+        # TODO
+        user = User.objects.get(username="test")
+        self.instance.destroy(user=user)
+
 
 class OsTemplate(Mixin):
     def __init__(self, template):

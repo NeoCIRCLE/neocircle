@@ -28,7 +28,7 @@ urlpatterns = patterns(
     url(r'^-/$', QueryInterface.as_view(), name="occi.query"),
     url(r'^compute/$', ComputeInterface.as_view(), name="occi.compute"),
     url(r'^os_tpl/$', OsTplInterface.as_view(), name="occi.os_tpl"),
-    url(r'^vm/(?P<pk>\d+)/$', VmInterface.as_view(), name="occi.vm"),
+    url(r'^vm/(?P<pk>\d+)/?$', VmInterface.as_view(), name="occi.vm"),
     url(r'^storage/$', StorageInterface.as_view(), name="occi.storage"),
     url(r'^disk/(?P<pk>\d+)/$', DiskInterface.as_view(), name="occi.disk"),
 
