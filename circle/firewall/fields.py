@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
+from string import ascii_letters
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
@@ -22,7 +23,7 @@ from django.utils.ipv6 import is_valid_ipv6_address
 from south.modelsinspector import add_introspection_rules
 from django import forms
 from netaddr import (IPAddress, IPNetwork, AddrFormatError, ZEROFILL,
-                     EUI, mac_unix)
+                     EUI, mac_unix, AddrConversionError)
 import re
 
 
@@ -31,7 +32,6 @@ domain_re = re.compile(r'^([A-Za-z0-9_-]\.?)+$')
 domain_wildcard_re = re.compile(r'^(\*\.)?([A-Za-z0-9_-]\.?)+$')
 ipv4_re = re.compile('^([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)$')
 reverse_domain_re = re.compile(r'^(%\([abcd]\)d|[a-z0-9.-])+$')
-ipv6_template_re = re.compile(r'^(%\([abcd]\)[dxX]|[A-Za-z0-9:-])+$')
 
 
 class mac_custom(mac_unix):
@@ -246,15 +246,60 @@ def val_reverse_domain(value):
         raise ValidationError(u'%s - invalid reverse domain name' % value)
 
 
-def is_valid_ipv6_template(value):
-    """Check whether the parameter is a valid ipv6 template."""
-    return ipv6_template_re.match(value) is not None
-
-
 def val_ipv6_template(value):
-    """Validate whether the parameter is a valid ipv6 template."""
-    if not is_valid_ipv6_template(value):
-        raise ValidationError(u'%s - invalid reverse ipv6 template' % value)
+    """Validate whether the parameter is a valid ipv6 template.
+
+    Normal use:
+    >>> val_ipv6_template("123::%(a)d:%(b)d:%(c)d:%(d)d")
+    >>> val_ipv6_template("::%(a)x:%(b)x:%(c)d:%(d)d")
+
+    Don't have to use all bytes from the left (no a):
+    >>> val_ipv6_template("::%(b)x:%(c)d:%(d)d")
+
+    But have to use all ones to the right (a, but no b):
+    >>> val_ipv6_template("::%(a)x:%(c)d:%(d)d")
+    Traceback (most recent call last):
+        ...
+    ValidationError: [u"template doesn't use parameter b"]
+
+    Detects valid templates building invalid ips:
+    >>> val_ipv6_template("xxx::%(a)d:%(b)d:%(c)d:%(d)d")
+    Traceback (most recent call last):
+        ...
+    ValidationError: [u'template renders invalid IPv6 address']
+
+    Also IPv4-compatible addresses are invalid:
+    >>> val_ipv6_template("::%(a)02x%(b)02x:%(c)d:%(d)d")
+    Traceback (most recent call last):
+        ...
+    ValidationError: [u'template results in IPv4 address']
+    """
+    tpl = {ascii_letters[i]: 255 for i in range(4)}
+    try:
+        v6 = value % tpl
+    except:
+        raise ValidationError(_('%s: invalid template') % value)
+
+    used = False
+    for i in ascii_letters[:4]:
+        try:
+            value % {k: tpl[k] for k in tpl if k != i}
+        except KeyError:
+            used = True  # ok, it misses this key
+        else:
+            if used:
+                raise ValidationError(
+                    _("template doesn't use parameter %s") % i)
+    try:
+        v6 = IPAddress(v6, 6)
+    except:
+        raise ValidationError(_('template renders invalid IPv6 address'))
+    try:
+        v6.ipv4()
+    except (AddrConversionError, AddrFormatError):
+        pass  # can't converted to ipv4 == it's real ipv6
+    else:
+        raise ValidationError(_('template results in IPv4 address'))
 
 
 def is_valid_ipv4_address(value):

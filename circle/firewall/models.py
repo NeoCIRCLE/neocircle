@@ -17,9 +17,10 @@
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
+from string import ascii_letters
 from itertools import islice, ifilter
 import logging
-from netaddr import IPSet, EUI, IPNetwork
+from netaddr import IPSet, EUI, IPNetwork, IPAddress
 
 from django.contrib.auth.models import User
 from django.db import models
