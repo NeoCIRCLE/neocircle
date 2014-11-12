@@ -43,6 +43,14 @@ occi_os_tpl_regex = re.compile(
     'class="mixin"; ?location=".*"; ?title=".*"$'
 )
 
+
+occi_link_regex = re.compile(
+    '^Link: <(?P<link>[a-zA-Z0-9/]+)>; ?'
+    '.*$'
+)
+
+occi_inline_attribute_regex = '.*%(attribute)s="?(?P<value>[\w/\.:#\-]+)"?.*'
+
 occi_attribute_link_regex = '^/%s/(?P<id>\d+)/?'
 
 
@@ -146,6 +154,7 @@ class Compute(Resource):
         user = User.objects.get(username="test")
         template = None
         attributes = {}
+        links = []
 
         for d in data:
             tmpl = occi_os_tpl_regex.match(d)
@@ -156,6 +165,10 @@ class Compute(Resource):
             attr = occi_attribute_regex.match(d)
             if attr:
                 attributes[attr.group("attribute")] = attr.group("value")
+
+            link = occi_link_regex.match(d)
+            if link:
+                links.append(d)
 
         params = {}
         params['owner'] = user
@@ -198,7 +211,30 @@ class Compute(Resource):
                                    req_traits=[], tags=[])
 
         cls.location = "%svm/%d" % (OCCI_ADDR, inst.pk)
+        cls.instance = inst
+
+        cls.create_links(user, links)
         return cls
+
+    @classmethod
+    def create_links(cls, user, links):
+        storagelinks = []
+        for l in links:
+            rel = re.match(occi_inline_attribute_regex % {'attribute': "rel"},
+                           l)
+            if rel and rel.group("value").endswith("#storage"):
+                target = re.match(
+                    occi_inline_attribute_regex % {
+                        'attribute': "occi.core.target"
+                    }, l
+                ).group("value")
+                disk_pk = re.match(occi_attribute_link_regex % "storage",
+                                   target).group("id")
+                disk = Disk.objects.get(pk=disk_pk)
+                storagelinks.append(disk)
+
+        for sl in storagelinks:
+            cls.instance.attach_disk(user=user, disk=disk)
 
     def render_location(self):
         return "%s" % self.location
