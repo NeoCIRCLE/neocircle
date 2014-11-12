@@ -523,6 +523,52 @@ class StorageLink(Link):
             self.instance.detach_disk(user=user, disk=self.disk)
 
 
+class Network(Resource):
+    def __init__(self, vlan=None, data=None):
+        self.attrs = {}
+        if vlan:
+            self.location = "/network2/%d/" % (vlan.vid)
+            self.vlan = vlan
+            self.init_attrs()
+
+    @classmethod
+    def create_object(cls, data):
+        pass
+
+    def render_location(self):
+        return "%s" % self.location
+
+    def render_body(self):
+        kind = NETWORK_KIND
+        mixins = []
+
+        return render_to_string("occi/network.html", {
+            'kind': kind,
+            'attrs': self.attrs,
+            'mixins': mixins,
+        })
+
+    def init_attrs(self):
+        translate = {
+            'occi.core.id': "vid",
+            'occi.core.title': "name",
+            'occi.network.vlan': "vid",
+            'occi.network.label': "name",
+        }
+        for k, v in translate.items():
+            self.attrs[k] = getattr(self.vlan, v, None)
+
+        self.attrs['occi.compute.state'] = "active"
+
+    def trigger_action(self, data):
+        pass
+
+    def delete(self):
+        # TODO
+        user = User.objects.get(username="test")
+        self.instance.destroy(user=user)
+
+
 """predefined stuffs
 
 
@@ -655,4 +701,36 @@ STORAGE_LINK_KIND = Kind(
     rel="http://schemas.ogf.org/occi/core#link",
     location="/link/storagelink/",
     attributes=STORAGE_LINK_ATTRS
+)
+
+
+NETWORK_ATTRS = [
+    Attribute("occi.network.vlan"),
+    Attribute("occi.network.label"),
+    Attribute("occi.network.state", "immutable"),
+]
+
+NETWORK_KIND = Kind(
+    term="network",
+    scheme="http://schemas.ogf.org/occi/infrastructure#network",
+    class_="kind",
+    title="network resource",
+    rel="http://schemas.ogf.org/occi/core#resource",
+    location="/network2/",
+    attributes=NETWORK_ATTRS,
+)
+
+IPNETWORK_ATTRS = [
+    Attribute("occi.network.address"),
+    Attribute("occi.network.gateway"),
+    Attribute("occi.network.allocation"),
+]
+
+IPNETWORK_MIXIN = Kind(
+    term="ipnetwork",
+    scheme="http://schemas.ogf.org/occi/infrastructure/network#",
+    class_="mixin",
+    title="ipnetwork",
+    location="/mixin/ipnetwork/",
+    attributes=IPNETWORK_ATTRS,
 )

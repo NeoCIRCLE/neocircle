@@ -4,12 +4,14 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View, DetailView
 
+from firewall.models import Vlan
 from vm.models import Instance, InstanceTemplate
 from storage.models import Disk
 
 from .occi import (
     Compute,
     Storage,
+    Network,
     OsTemplate,
     StorageLink,
     COMPUTE_KIND,
@@ -18,6 +20,8 @@ from .occi import (
     STORAGE_LINK_KIND,
     COMPUTE_ACTIONS,
     OS_TPL_MIXIN,
+    NETWORK_KIND,
+    IPNETWORK_MIXIN,
 )
 
 
@@ -49,6 +53,8 @@ class QueryInterface(View):
         response += "Category: %s\n" % LINK_KIND.render_values()
         response += "Category: %s\n" % STORAGE_LINK_KIND.render_values()
         response += "Category: %s\n" % OS_TPL_MIXIN.render_values()
+        response += "Category: %s\n" % NETWORK_KIND.render_values()
+        response += "Category: %s\n" % IPNETWORK_MIXIN.render_values()
         for c in COMPUTE_ACTIONS:
             response += "Category: %s\n" % c.render_values()
 
@@ -251,3 +257,48 @@ class StorageLinkInterface(View):
     @method_decorator(csrf_exempt)
     def dispatch(self, *args, **kwargs):
         return super(StorageLinkInterface, self).dispatch(*args, **kwargs)
+
+
+class NetworkInterface(View):
+
+    def get(self, request, *args, **kwargs):
+        response = "\n".join([Network(vlan=v).render_location()
+                             for v in Vlan.objects.all()])
+        return HttpResponse(
+            response,
+            content_type="text/plain",
+        )
+
+    def post(self, request, *args, **kwargs):
+        pass  # we don't really want to create networks via OCCI yet
+
+    @method_decorator(csrf_exempt)  # decorator on post method doesn't work
+    def dispatch(self, *args, **kwargs):
+        return super(NetworkInterface, self).dispatch(*args, **kwargs)
+
+
+class VlanInterface(DetailView):
+    model = Vlan
+    slug_field = 'vid'
+    slug_url_kwarg = 'vid'
+
+    def get(self, request, *args, **kwargs):
+        vlan = self.get_object()
+        c = Network(vlan=vlan)
+        return HttpResponse(
+            c.render_body(),
+            content_type="text/plain",
+        )
+
+    def post(self, request, *args, **kwargs):
+        pass  # no actions
+
+    def delete(self, request, *args, **kwargs):
+        vm = self.get_object()
+        Compute(instance=vm).delete()
+
+        return HttpResponse()
+
+    @method_decorator(csrf_exempt)  # decorator on post method doesn't work
+    def dispatch(self, *args, **kwargs):
+        return super(VlanInterface, self).dispatch(*args, **kwargs)
