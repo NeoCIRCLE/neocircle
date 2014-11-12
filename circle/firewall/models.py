@@ -18,9 +18,9 @@
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
 from string import ascii_letters
-from itertools import islice, ifilter
+from itertools import islice, ifilter, chain
 import logging
-from netaddr import IPSet, EUI, IPNetwork, IPAddress
+import random
 
 from django.contrib.auth.models import User
 from django.db import models
@@ -34,10 +34,12 @@ from firewall.fields import (MACAddressField, val_alfanum, val_reverse_domain,
 from django.core.validators import MinValueValidator, MaxValueValidator
 import django.conf
 from django.db.models.signals import post_save, post_delete
-import random
+from celery.exceptions import TimeoutError
+from netaddr import IPSet, EUI, IPNetwork, IPAddress
 
 from common.models import method_cache, WorkerNotFound, HumanSortField
 from firewall.tasks.local_tasks import reloadtask
+from firewall.tasks.remote_tasks import get_dhcp_clients
 from .iptables import IptRule
 from acl.models import AclBase
 
@@ -418,6 +420,13 @@ class Vlan(AclBase, models.Model):
             ipv4 = IPAddress(ipv4, 4)
         nums = {ascii_letters[i]: int(ipv4.words[i]) for i in range(4)}
         return IPAddress(self.ipv6_template % nums)
+
+    def get_dhcp_clients(self):
+        macs = set(i.mac for i in self.host_set.all())
+        return [{"mac": k, "ip": v["ip"], "hostname": v["hostname"]}
+                for k, v in chain(*(fw.get_dhcp_clients().iteritems()
+                                    for fw in Firewall.objects.all() if fw))
+                if v["interface"] == self.name and EUI(k) not in macs]
 
 
 class VlanGroup(models.Model):
@@ -845,7 +854,7 @@ class Firewall(models.Model):
         return self.name
 
     @method_cache(30)
-    def get_remote_queue_name(self, queue_id):
+    def get_remote_queue_name(self, queue_id="firewall"):
         """Returns the name of the remote celery queue for this node.
 
         Throws Exception if there is no worker on the queue.
@@ -857,6 +866,14 @@ class Firewall(models.Model):
             return self.name + "." + queue_id
         else:
             raise WorkerNotFound()
+
+    @method_cache(20)
+    def get_dhcp_clients(self):
+        try:
+            return get_dhcp_clients.apply_async(
+                queue=self.get_remote_queue_name(), expires=60).get(timeout=2)
+        except TimeoutError:
+            return None
 
 
 class Domain(models.Model):
