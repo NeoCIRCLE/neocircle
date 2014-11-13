@@ -405,7 +405,8 @@ class Vlan(AclBase, models.Model):
                         _("%(ip6)s (translated from %(ip4)s) is outside of "
                           "the IPv6 network.") % {"ip4": i, "ip6": i6})
         if not self.ipv6_template and self.network6:
-            self.ipv6_template = self._magic_ipv6_template()
+            self.ipv6_template = self._magic_ipv6_template(self.network4,
+                                                           self.network6)
         host4_bytes = self._host_bytes(self.network4.prefixlen, 4)
         host6_bytes = self._host_bytes(self.network6.prefixlen, 16)
         if host4_bytes > host6_bytes:
