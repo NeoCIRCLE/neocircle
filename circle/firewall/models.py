@@ -19,6 +19,7 @@
 
 from string import ascii_letters
 from itertools import islice, ifilter, chain
+from math import ceil
 import logging
 import random
 
@@ -35,7 +36,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 import django.conf
 from django.db.models.signals import post_save, post_delete
 from celery.exceptions import TimeoutError
-from netaddr import IPSet, EUI, IPNetwork, IPAddress
+from netaddr import IPSet, EUI, IPNetwork, IPAddress, ipv6_full
 
 from common.models import method_cache, WorkerNotFound, HumanSortField
 from firewall.tasks.local_tasks import reloadtask
@@ -363,9 +364,20 @@ class Vlan(AclBase, models.Model):
                     'address is: "%(d)d.%(c)d.%(b)d.%(a)d.in-addr.arpa".'),
         default="%(d)d.%(c)d.%(b)d.%(a)d.in-addr.arpa")
     ipv6_template = models.TextField(
-        validators=[val_ipv6_template],
-        verbose_name=_('ipv6 template'),
-        default="2001:738:2001:4031:%(b)d:%(c)d:%(d)d:0")
+        blank=True,
+        help_text=_('Template for translating IPv4 addresses to IPv6. '
+                    'Automatically generated hosts in dual-stack networks '
+                    'will get this address. The template '
+                    'can contain four tokens: "%(a)d", "%(b)d", '
+                    '"%(c)d", and "%(d)d", representing the four bytes '
+                    'of the IPv4 address, respectively, in decimal notation. '
+                    'Moreover you can use any standard printf format '
+                    'specification like %(a)02x to get the first byte as two '
+                    'hexadecimal digits. Usual choices for mapping '
+                    '198.51.100.0/24 to 2001:0DB8:1:1::/64 would be '
+                    '"2001:0DB8:51:1:1:%(d)d::" and '
+                    '"2001:0DB8:51:1:1:%(d)x00::".'),
+        validators=[val_ipv6_template], verbose_name=_('ipv6 template'))
     dhcp_pool = models.TextField(blank=True, verbose_name=_('DHCP pool'),
                                  help_text=_(
                                      'The address range of the DHCP pool: '
@@ -379,6 +391,52 @@ class Vlan(AclBase, models.Model):
                               verbose_name=_('owner'))
     modified_at = models.DateTimeField(auto_now=True,
                                        verbose_name=_('modified at'))
+
+    def clean(self):
+        super(Vlan, self).clean()
+        if self.ipv6_template:
+            if not self.network6:
+                raise ValidationError(
+                    _("You cannot specify an IPv6 template if there is no "
+                      "IPv6 network set."))
+            for i in (self.network4[1], self.network4[-1]):
+                i6 = self.convert_ipv4_to_ipv6(i)
+                if i6 not in self.network6:
+                    raise ValidationError(
+                        _("%(ip6)s (translated from %(ip4)s) is outside of "
+                          "the IPv6 network.") % {"ip4": i, "ip6": i6})
+        if not self.ipv6_template and self.network6:
+            # come up with some sensible default
+            self.ipv6_template = self._magic_ipv6_template()
+        host4_bytes = int(ceil((32 - self.network4.prefixlen) / 8))
+        host6_bytes = int(ceil((128 - self.network6.prefixlen) / 8))
+        if host4_bytes > host6_bytes:
+            raise ValidationError(
+                _("IPv6 network is too small to map IPv4 addresses to it."))
+
+    def _magic_ipv6_template(self):
+            host4_bytes = int(ceil((32 - self.network4.prefixlen) / 8))
+            host6_bytes = int(ceil((128 - self.network6.prefixlen) / 8))
+            letters = ascii_letters[4-host4_bytes:4]
+            remove = host6_bytes // 2
+            ipstr = self.network6.network.format(ipv6_full)
+            s = ipstr.split(":")[0:-remove]
+            if 2 * (host4_bytes + 1) < host6_bytes:  # use verbose format
+                for i in letters:
+                    s.append("%({})d".format(i))
+            else:  # use short format
+                remain = host6_bytes
+                for i in letters:
+                    if remain % 2 == 1:  # can use last half word
+                        if s[-1].endswith("00"):
+                            s[-1] = s[-1][:-2]
+                        s[-1] += "%({})02x".format(i)
+                    else:
+                        s.append("%({})02x00".format(i))
+                    remain -= 1
+            if host6_bytes > host4_bytes:
+                s.append(":")
+            return ":".join(s)
 
     def __unicode__(self):
         return "%s - %s" % ("managed" if self.managed else "unmanaged",
