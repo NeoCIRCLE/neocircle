@@ -49,4 +49,12 @@ $("#ipv4-magic").click(function() {
                        }
             }});
 });
+$("#ipv6-tpl-magic").click(function() {
+    $.ajax({url: window.location,
+            data: {network4: $("[name=network4]").val(),
+                   network6: $("[name=network6]").val()},
+            success: function(data) {
+                       $("[name=ipv6_template]").val(data["ipv6_template"]);
+            }});
+});
 });

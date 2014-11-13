@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
+from netaddr import IPNetwork
 from django.views.generic import (TemplateView, UpdateView, DeleteView,
                                   CreateView)
 from django.core.exceptions import ValidationError
@@ -701,7 +702,27 @@ class VlanAclUpdateView(AclUpdateView):
     model = Vlan
 
 
-class VlanDetail(LoginRequiredMixin, SuperuserRequiredMixin,
+class VlanMagicMixin(object):
+    def _get_ajax(self, *args, **kwargs):
+        GET = self.request.GET
+        result = {}
+        if "network4" in GET and "network6" in GET:
+            try:
+                result["ipv6_template"] = Vlan._magic_ipv6_template(
+                    IPNetwork(GET['network4']),
+                    IPNetwork(GET['network6']))
+            except:
+                result["ipv6_template"] = ""
+        return JsonResponse({k: unicode(result[k] or "") for k in result})
+
+    def get(self, *args, **kwargs):
+        if self.request.is_ajax():
+            return self._get_ajax(*args, **kwargs)
+        else:
+            return super(VlanMagicMixin, self).get(*args, **kwargs)
+
+
+class VlanDetail(VlanMagicMixin, LoginRequiredMixin, SuperuserRequiredMixin,
                  SuccessMessageMixin, UpdateView):
     model = Vlan
     template_name = "network/vlan-edit.html"
@@ -723,7 +744,7 @@ class VlanDetail(LoginRequiredMixin, SuperuserRequiredMixin,
     success_url = reverse_lazy('network.vlan_list')
 
 
-class VlanCreate(LoginRequiredMixin, SuperuserRequiredMixin,
+class VlanCreate(VlanMagicMixin, LoginRequiredMixin, SuperuserRequiredMixin,
                  SuccessMessageMixin, InitialOwnerMixin, CreateView):
     model = Vlan
     template_name = "network/vlan-create.html"

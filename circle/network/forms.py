@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.forms import ModelForm
+from django.forms import ModelForm, widgets
 from django.core.urlresolvers import reverse_lazy
 from django.utils.translation import ugettext_lazy as _
 
@@ -254,7 +254,8 @@ class VlanForm(ModelForm):
             Fieldset(
                 _('IPv6'),
                 'network6',
-                'ipv6_template',
+                FieldWithButtons('ipv6_template', StrictButton(
+                    '<i class="fa fa-magic"></i>', css_id="ipv6-tpl-magic")),
                 'host_ipv6_prefixlen',
             ),
             Fieldset(
@@ -279,6 +280,9 @@ class VlanForm(ModelForm):
 
     class Meta:
         model = Vlan
+        widgets = {
+            'ipv6_template': widgets.TextInput,
+        }
 
 
 class VlanGroupForm(ModelForm):
