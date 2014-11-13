@@ -21,7 +21,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, Div, Submit, BaseInput
-from crispy_forms.bootstrap import FormActions, AppendedText
+from crispy_forms.bootstrap import FormActions, FieldWithButtons, StrictButton
 
 from firewall.models import (Host, Vlan, Domain, Group, Record, BlacklistItem,
                              Rule, VlanGroup, SwitchPort)
@@ -122,10 +122,10 @@ class HostForm(ModelForm):
             Fieldset(
                 _('Network'),
                 'vlan',
-                AppendedText('ipv4',
-                             '<i class="fa fa-magic" id="ipv4-magic"></i>'),
-                AppendedText('ipv6',
-                             '<i class="fa fa-magic" id="ipv6-magic"></i>'),
+                FieldWithButtons('ipv4', StrictButton(
+                    '<i class="fa fa-magic"></i>', css_id="ipv4-magic")),
+                FieldWithButtons('ipv6', StrictButton(
+                    '<i class="fa fa-magic"></i>', css_id="ipv6-magic")),
                 'shared_ip',
                 'external_ipv4',
             ),
