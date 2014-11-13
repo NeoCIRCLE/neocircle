@@ -137,10 +137,10 @@ $(function () {
     var pk = $(this).data("vm");
     if(star.hasClass("fa-star-o")) {
       star.removeClass("fa-star-o").addClass("fa-star");
-      star.prop("title", "Unfavourite");
+      star.prop("title", gettext("Unfavourite"));
     } else {
       star.removeClass("fa-star").addClass("fa-star-o");
-      star.prop("title", "Mark as favourite");
+      star.prop("title", gettext("Mark as favourite"));
     }
     $.ajax({
       url: "/dashboard/favourite/",
@@ -447,8 +447,8 @@ function generateVmHTML(pk, name, host, icon, _status, fav, is_last) {
         '</span>' + 
         '<small class="text-muted"> ' + host + '</small>' +
         '<div class="pull-right dashboard-vm-favourite" data-vm="' + pk + '">' +
-          (fav ? '<i class="fa fa-star text-primary title-favourite" title="Unfavourite"></i>' :
-          '<i class="fa fa-star-o text-primary title-favourite" title="Mark as favorite"></i>' ) +
+          (fav ? '<i class="fa fa-star text-primary title-favourite" title="' + gettext("Unfavourite") + '"></i>' :
+          '<i class="fa fa-star-o text-primary title-favourite" title="' + gettext("Mark as favorite") + '"></i>' ) +
         '</div>' +
       '<div style="clear: both;"></div>' +
       '</a>';
