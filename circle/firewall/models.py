@@ -411,15 +411,21 @@ class Vlan(AclBase, models.Model):
                 self.ipv6_template = tpl
             if not self.host_ipv6_prefixlen:
                 self.host_ipv6_prefixlen = prefixlen
-        host4_bytes = self._host_bytes(self.network4.prefixlen, 4)
-        host6_bytes = self._host_bytes(self.network6.prefixlen, 16)
-        if host4_bytes > host6_bytes:
-            raise ValidationError(
-                _("IPv6 network is too small to map IPv4 addresses to it."))
 
     @staticmethod
     def _host_bytes(prefixlen, maxbytes):
         return int(ceil((maxbytes - prefixlen / 8.0)))
+
+    @staticmethod
+    def _append_hexa(s, v, lasthalf):
+        if lasthalf:  # can use last half word
+            assert s[-1] == "0" or s[-1].endswith("00")
+            if s[-1].endswith("00"):
+                s[-1] = s[-1][:-2]
+            s[-1] += "%({})02x".format(v)
+            s[-1].lstrip("0")
+        else:
+            s.append("%({})02x00".format(v))
 
     @classmethod
     def _magic_ipv6_template(cls, network4, network6, verbose=None):
@@ -438,6 +444,9 @@ class Vlan(AclBase, models.Model):
         """
         host4_bytes = cls._host_bytes(network4.prefixlen, 4)
         host6_bytes = cls._host_bytes(network6.prefixlen, 16)
+        if host4_bytes > host6_bytes:
+            raise ValidationError(
+                _("IPv6 network is too small to map IPv4 addresses to it."))
         letters = ascii_letters[4-host4_bytes:4]
         remove = host6_bytes // 2
         ipstr = network6.network.format(ipv6_full)
