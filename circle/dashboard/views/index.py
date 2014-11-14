@@ -19,6 +19,7 @@ from __future__ import unicode_literals, absolute_import
 import logging
 
 from django.core.cache import get_cache
+from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.views.generic import TemplateView
@@ -121,3 +122,15 @@ class HelpView(TemplateView):
         ctx.update({"saml": hasattr(settings, "SAML_CONFIG"),
                     "store": settings.STORE_URL})
         return ctx
+
+
+class OpenSearchDescriptionView(TemplateView):
+    template_name = "dashboard/vm-opensearch.xml"
+    content_type = "application/opensearchdescription+xml"
+
+    def get_context_data(self, **kwargs):
+        context = super(OpenSearchDescriptionView, self).get_context_data(
+            **kwargs)
+        context['url'] = self.request.build_absolute_uri(
+            reverse("dashboard.views.vm-list"))
+        return context
