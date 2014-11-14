@@ -123,9 +123,11 @@ class HostForm(ModelForm):
                 _('Network'),
                 'vlan',
                 FieldWithButtons('ipv4', StrictButton(
-                    '<i class="fa fa-magic"></i>', css_id="ipv4-magic")),
+                    '<i class="fa fa-magic"></i>', css_id="ipv4-magic",
+                    title=_("Generate random address."))),
                 FieldWithButtons('ipv6', StrictButton(
-                    '<i class="fa fa-magic"></i>', css_id="ipv6-magic")),
+                    '<i class="fa fa-magic"></i>', css_id="ipv6-magic",
+                    title=_("Generate IPv6 pair of IPv4 address."))),
                 'shared_ip',
                 'external_ipv4',
             ),
@@ -255,7 +257,8 @@ class VlanForm(ModelForm):
                 _('IPv6'),
                 'network6',
                 FieldWithButtons('ipv6_template', StrictButton(
-                    '<i class="fa fa-magic"></i>', css_id="ipv6-tpl-magic")),
+                    '<i class="fa fa-magic"></i>', css_id="ipv6-tpl-magic",
+                    title=_("Generate sensible template."))),
                 'host_ipv6_prefixlen',
             ),
             Fieldset(
