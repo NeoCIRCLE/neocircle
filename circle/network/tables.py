@@ -15,12 +15,28 @@
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
+from netaddr import EUI
 from django.utils.translation import ugettext_lazy as _
+from django.utils.html import format_html
 
 from django_tables2 import Table, A
-from django_tables2.columns import LinkColumn, TemplateColumn
+from django_tables2.columns import LinkColumn, TemplateColumn, Column
 
 from firewall.models import Host, Vlan, Domain, Group, Record, Rule, SwitchPort
+
+
+class MACColumn(Column):
+    def render(self, value):
+        if isinstance(value, basestring):
+            try:
+                value = EUI(value)
+            except:
+                return value
+        try:
+            return format_html('<abbr title="{0}">{1}</abbr>',
+                               value.oui.registration().org, value)
+        except:
+            return value
 
 
 class BlacklistItemTable(Table):
@@ -55,9 +71,7 @@ class GroupTable(Table):
 
 class HostTable(Table):
     hostname = LinkColumn('network.host', args=[A('pk')])
-    mac = TemplateColumn(
-        template_name="network/columns/mac.html"
-    )
+    mac = MACColumn()
 
     class Meta:
         model = Host
@@ -108,6 +122,20 @@ class SmallHostTable(Table):
         attrs = {'class': 'table table-striped table-condensed'}
         fields = ('hostname', 'ipv4')
         order_by = ('vlan', 'hostname', )
+        empty_text = _("No hosts.")
+
+
+class SmallDhcpTable(Table):
+    mac = MACColumn(verbose_name=_("MAC address"))
+    hostname = Column(verbose_name=_("hostname"))
+    ip = Column(verbose_name=_("requested IP"))
+    register = TemplateColumn(
+        template_name="network/columns/host-register.html",
+        attrs={"th": {"style": "display: none;"}})
+
+    class Meta:
+        attrs = {'class': 'table table-striped table-condensed'}
+        empty_text = _("No hosts.")
 
 
 class RecordTable(Table):
