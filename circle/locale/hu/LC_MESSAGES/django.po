@@ -7,15 +7,16 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-11-14 13:44+0100\n"
-"PO-Revision-Date: 2014-10-20 13:01+0200\n"
-"Last-Translator: Mate Ory <ory.mate@ik.bme.hu>\n"
+"PO-Revision-Date: 2014-11-14 14:00+0100\n"
+"Last-Translator:   <asd@example.org>\n"
 "Language-Team: Hungarian <cloud@ik.bme.hu>\n"
-"Language: hu\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: hu\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Lokalize 1.5\n"
+"X-Translated-Using: django-rosetta 0.7.4\n"
 
 #: circle/settings/base.py:123
 msgid "English"
@@ -289,9 +290,10 @@ msgid ""
 "service interruption of at most some seconds. Please note that it can take "
 "very long and cause much network traffic in case of busy machines."
 msgstr ""
-"A live migration lehetővé teszi virtuális gépek csomópontok közti mozgatását "
-"legfeljebb néhány másodperces szolgáltatáskimaradással. Vegye figyelembe, "
-"hogy ez terhelt gépek esetén sokáig tarthat és nagy hálózati forgalommal jár."
+"A live migration lehetővé teszi virtuális gépek csomópontok közti mozgatását"
+" legfeljebb néhány másodperces szolgáltatáskimaradással. Vegye figyelembe, "
+"hogy ez terhelt gépek esetén sokáig tarthat és nagy hálózati forgalommal "
+"jár."
 
 #: dashboard/forms.py:782
 msgid "Forcibly interrupt all running activities."
@@ -372,16 +374,16 @@ msgstr ""
 #: dashboard/forms.py:947 dashboard/forms.py:953
 #: dashboard/templates/dashboard/_vm-remove-port.html:13
 msgid "Port"
-msgstr ""
+msgstr "Port"
 
 #: dashboard/forms.py:956 dashboard/templates/dashboard/vm-detail.html:97
 msgid "Protocol"
 msgstr "Protokoll"
 
 #: dashboard/forms.py:978
-#, fuzzy, python-brace-format
+#, python-brace-format
 msgid "<label>Host:</label> {0}"
-msgstr "<label>Lemez:</label> %s"
+msgstr "<label>Gép:</label> {0}"
 
 #: dashboard/forms.py:1006 dashboard/templates/dashboard/profile.html:31
 #: dashboard/templates/dashboard/vm-detail.html:115
@@ -580,9 +582,8 @@ msgid "Monitor"
 msgstr "Állapot"
 
 #: dashboard/tables.py:91
-#, fuzzy
 msgid "Number of users"
-msgstr "Felhasználó neve"
+msgstr "Felhasználók száma"
 
 #: dashboard/tables.py:98 dashboard/templates/dashboard/base.html:48
 msgid "Admin"
@@ -686,40 +687,29 @@ msgstr "Megerősítés"
 #: dashboard/templates/dashboard/_client-check.html:4
 msgid ""
 "\n"
-"    To effortlessly connect to all kind of virtual machines you have to "
-"install the <strong>CIRCLE Client</strong>.\n"
+"    To effortlessly connect to all kind of virtual machines you have to install the <strong>CIRCLE Client</strong>.\n"
 "    "
 msgstr ""
 "\n"
-"    A virtuális gépekhez való könnyű csatlakozáshoz telepítse a "
-"<strong>CIRCLE klienst</strong>.\n"
+"    A virtuális gépekhez való könnyű csatlakozáshoz telepítse a <strong>CIRCLE klienst</strong>.\n"
 "    "
 
 #: dashboard/templates/dashboard/_client-check.html:9
 msgid ""
 "\n"
-"    To install the <strong>CIRCLE Client</strong> click on the "
-"<strong>Download the Client</strong> button. \n"
-"    The button takes you to the installation detail page, where you can "
-"choose your operating system and start \n"
-"    the download or read more detailed information about the <strong>Client</"
-"strong>. The program can be installed on Windows XP (and above)\n"
-"    or Debian based Linux operating systems. To successfully install the "
-"client you have to have admin (root or elevated) rights.\n"
-"    After the installation complete clicking on the <strong>I have the "
-"Client installed</strong> button will launch the appropriate tool\n"
-"    designed for that connection with necessarily predefined configurations. "
-"This option will also save your answer and this prompt about\n"
+"    To install the <strong>CIRCLE Client</strong> click on the <strong>Download the Client</strong> button. \n"
+"    The button takes you to the installation detail page, where you can choose your operating system and start \n"
+"    the download or read more detailed information about the <strong>Client</strong>. The program can be installed on Windows XP (and above)\n"
+"    or Debian based Linux operating systems. To successfully install the client you have to have admin (root or elevated) rights.\n"
+"    After the installation complete clicking on the <strong>I have the Client installed</strong> button will launch the appropriate tool\n"
+"    designed for that connection with necessarily predefined configurations. This option will also save your answer and this prompt about\n"
 "    installation will not pop up again.\n"
 "    "
 msgstr ""
 "\n"
-"    A <strong>CIRCLE kliens</strong> letöltéséhez kattintson a "
-"<strong>Kliens letöltése</strong> gombra. \n"
-"    A gomb a letöltőoldalra visz, ahol kiválaszthatja a megfelelő "
-"<strong>kliens</strong> telepítőcsomagot.\n"
-"    A telepítés után kattintson a <strong>Már telepítve van</strong> gombra "
-"a megfelelő eszköz indításához. Ezt a választást a rendszer megjegyzi.\n"
+"    A <strong>CIRCLE kliens</strong> letöltéséhez kattintson a <strong>Kliens letöltése</strong> gombra. \n"
+"    A gomb a letöltőoldalra visz, ahol kiválaszthatja a megfelelő <strong>kliens</strong> telepítőcsomagot.\n"
+"    A telepítés után kattintson a <strong>Már telepítve van</strong> gombra a megfelelő eszköz indításához. Ezt a választást a rendszer megjegyzi.\n"
 "    "
 
 #: dashboard/templates/dashboard/_client-check.html:23
@@ -825,7 +815,8 @@ msgstr "RAM-méret mebibyte-okban."
 
 #: dashboard/templates/dashboard/_template-choose.html:5
 msgid "Customize an existing template or create a brand new one from scratch."
-msgstr "Szabjon testre egy meglévő sablont, vagy készítsen egyet az alapoktól."
+msgstr ""
+"Szabjon testre egy meglévő sablont, vagy készítsen egyet az alapoktól."
 
 #: dashboard/templates/dashboard/_template-choose.html:7
 msgid "Customize an existing template."
@@ -935,7 +926,8 @@ msgstr "Újraütemezés"
 
 #: dashboard/templates/dashboard/_vm-mass-migrate.html:17
 msgid "This option will reschedule each virtual machine to the optimal node."
-msgstr "Ez a lehetőség minden virtuális gépet az optimális csomópontra migrál."
+msgstr ""
+"Ez a lehetőség minden virtuális gépet az optimális csomópontra migrál."
 
 #: dashboard/templates/dashboard/_vm-mass-migrate.html:29
 #: dashboard/templates/dashboard/_vm-migrate.html:31
@@ -1157,8 +1149,8 @@ msgid ""
 "List of compute nodes, also called worker nodes or hypervisors, which run "
 "the virtual machines."
 msgstr ""
-"A virtuális gépeket futtató számítási csomópontok (más néven worker node-ok, "
-"hypervisorok) listája."
+"A virtuális gépeket futtató számítási csomópontok (más néven worker node-ok,"
+" hypervisorok) listája."
 
 #: dashboard/templates/dashboard/index-nodes.html:16
 #: dashboard/templates/dashboard/node-list.html:5
@@ -1293,9 +1285,9 @@ msgid "Index"
 msgstr "Kezdőoldal"
 
 #: dashboard/templates/dashboard/index.html:10
-#, fuzzy, python-format
+#, python-format
 msgid "%(name)s virtual machines"
-msgstr "virtuális gép ébresztése"
+msgstr "%(name)s virtuális gépek"
 
 #: dashboard/templates/dashboard/index.html:23
 msgid "You have no permission to start or manage virtual machines."
@@ -1384,20 +1376,16 @@ msgstr "Jogosultságok kezelése"
 #, python-format
 msgid ""
 "\n"
-"Do you want to perform the <strong>%(op)s</strong> operation on the "
-"following instance?\n"
+"Do you want to perform the <strong>%(op)s</strong> operation on the following instance?\n"
 msgid_plural ""
 "\n"
-"Do you want to perform the <strong>%(op)s</strong> operation on the "
-"following %(count)s instances?\n"
+"Do you want to perform the <strong>%(op)s</strong> operation on the following %(count)s instances?\n"
 msgstr[0] ""
 "\n"
-"Biztosan végrehajtja a(z) <strong>%(op)s</strong> műveletet a következő "
-"példányon?\n"
+"Biztosan végrehajtja a(z) <strong>%(op)s</strong> műveletet a következő példányon?\n"
 msgstr[1] ""
 "\n"
-"Biztosan végrehajtja a(z) <strong>%(op)s</strong> műveletet a következő "
-"%(count)s példányon?\n"
+"Biztosan végrehajtja a(z) <strong>%(op)s</strong> műveletet a következő %(count)s példányon?\n"
 
 #: dashboard/templates/dashboard/node-add-trait.html:19
 msgid "Add Trait"
@@ -1450,8 +1438,7 @@ msgstr "Grafikonok"
 msgid ""
 "\n"
 "Do you want to perform the following operation on\n"
-"<a data-dismiss=\"modal\" href=\"%(url)s\">%(obj)s</a>: <strong>%(op)s</"
-"strong>?\n"
+"<a data-dismiss=\"modal\" href=\"%(url)s\">%(obj)s</a>: <strong>%(op)s</strong>?\n"
 msgstr ""
 "\n"
 "Biztosan végrehajtja a(z) <strong>%(op)s</strong> műveletet\n"
@@ -1570,21 +1557,18 @@ msgid "Delete template"
 msgstr "Sablon törlése"
 
 #: dashboard/templates/dashboard/template-edit.html:88
-#, fuzzy
 msgid "You are the current owner of this template."
-msgstr "Ön a jelenlegi tulajdonosa a példánynak."
+msgstr "Ön a jelenlegi tulajdonosa a sablonnak."
 
 #: dashboard/templates/dashboard/template-edit.html:91
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "\n"
-"          The current owner of this template is <a href=\"%(url)s\">%(name)s "
-"(%(owner)s)</a>.\n"
+"          The current owner of this template is <a href=\"%(url)s\">%(name)s (%(owner)s)</a>.\n"
 "        "
 msgstr ""
 "\n"
-"                <a href=\"%(url)s\">%(name)s</a> résztevékenysége\n"
-"              "
+"A sablon jelenlegi tulajdonosa <a href=\"%(url)s\">%(name)s (%(owner)s)</a>."
 
 #: dashboard/templates/dashboard/template-edit.html:97
 #: dashboard/templates/dashboard/vm-detail/access.html:15
@@ -1707,9 +1691,8 @@ msgid "Start the VM to change the password."
 msgstr "Jelszóváltoztatáshoz el kell indítani a gépet."
 
 #: dashboard/templates/dashboard/vm-detail.html:135
-#, fuzzy
 msgid "This machine has no agent installed."
-msgstr "Már telepítve van"
+msgstr "A gépre nincs ügynök telepítve."
 
 #: dashboard/templates/dashboard/vm-detail.html:137
 msgid "Generate new password!"
@@ -1788,8 +1771,8 @@ msgstr "Nincs eredmény."
 
 #: dashboard/templates/dashboard/vm-list.html:152
 msgid ""
-"You can select multiple vm instances while holding down the <strong>CTRL</"
-"strong> key."
+"You can select multiple vm instances while holding down the "
+"<strong>CTRL</strong> key."
 msgstr ""
 "Több virtuális gépet is kiválaszthat a  <strong>CTRL</strong> billentyű "
 "lenyomásával."
@@ -1799,8 +1782,8 @@ msgid ""
 "If you want to select multiple instances by one click select an instance "
 "then hold down <strong>SHIFT</strong> key and select another one!"
 msgstr ""
-"Ha több egymást követő példányt szeretne kiválasztani, válassza ki az elsőt, "
-"majd a <strong>SHIFT</strong> billentyűt lenyomva tartva az utolsót."
+"Ha több egymást követő példányt szeretne kiválasztani, válassza ki az elsőt,"
+" majd a <strong>SHIFT</strong> billentyűt lenyomva tartva az utolsót."
 
 #: dashboard/templates/dashboard/confirm/ajax-delete.html:9
 #, python-format
@@ -1818,13 +1801,11 @@ msgstr ""
 #, python-format
 msgid ""
 "\n"
-"              Are you sure you want to change <strong>%(object)s</strong> "
-"status?\n"
+"              Are you sure you want to change <strong>%(object)s</strong> status?\n"
 "            "
 msgstr ""
 "\n"
-"              Biztosan megváltoztatja a következő állapotát: <strong>"
-"%(object)s</strong>?\n"
+"              Biztosan megváltoztatja a következő állapotát: <strong>%(object)s</strong>?\n"
 "            "
 
 #: dashboard/templates/dashboard/confirm/ajax-node-status.html:19
@@ -1834,16 +1815,14 @@ msgid "Yes, %(status)s"
 msgstr "Igen, %(status)s"
 
 #: dashboard/templates/dashboard/confirm/ajax-remove.html:9
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "\n"
-"            Are you sure you want to remove <strong>%(member)s</strong> from "
-"<strong>%(object)s</strong>?\n"
+"            Are you sure you want to remove <strong>%(member)s</strong> from <strong>%(object)s</strong>?\n"
 "          "
 msgstr ""
 "\n"
-"\t  Biztosan eltávolítja a(z) <strong>%(member)s</strong> tagot a "
-"következőből: <strong>%(object)s</strong>?\n"
+"Biztosan eltávolítja a(z) <strong>%(member)s</strong> tagot a következőből: <strong>%(object)s</strong>?\n"
 "          "
 
 #: dashboard/templates/dashboard/confirm/base-delete.html:12
@@ -1909,8 +1888,7 @@ msgid ""
 msgstr ""
 "\n"
 "            A példány felfüggesztése <em>%(suspend)s</em> időpontban,\n"
-"            törlése <em>%(delete)s</em> időpontban történik, ha most "
-"megújítja.\n"
+"            törlése <em>%(delete)s</em> időpontban történik, ha most megújítja.\n"
 "        "
 
 #: dashboard/templates/dashboard/confirm/base-renew.html:27
@@ -1942,7 +1920,7 @@ msgid "Ownership transfer"
 msgstr "Átruházás"
 
 #: dashboard/templates/dashboard/confirm/transfer-instance-ownership.html:13
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "\n"
 "        <strong>%(owner)s</strong> offered to take the ownership of\n"
@@ -1951,10 +1929,8 @@ msgid ""
 "        "
 msgstr ""
 "\n"
-"          <strong>%(owner)s</strong> kezdeményezte a(z) <strong>%(name)s\n"
-"          (%(id)s)</strong> virtuális gép átruházását.\n"
-"          Elfogadja a gép birtoklásával járó felelősséget?\n"
-"          "
+"<strong>%(owner)s</strong> kezdeményezte a(z) <strong>%(name)s (%(id)s)</strong> virtuális gép átruházását.\n"
+"Elfogadja a gép birtoklásával járó felelősséget?"
 
 #: dashboard/templates/dashboard/confirm/transfer-instance-ownership.html:21
 #: dashboard/templates/dashboard/confirm/transfer-template-ownership.html:21
@@ -1962,7 +1938,7 @@ msgid "No"
 msgstr "Nem"
 
 #: dashboard/templates/dashboard/confirm/transfer-template-ownership.html:13
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "\n"
 "        <strong>%(owner)s</strong> offered to take the ownership of\n"
@@ -1971,10 +1947,8 @@ msgid ""
 "        "
 msgstr ""
 "\n"
-"          <strong>%(owner)s</strong> kezdeményezte a(z) <strong>%(name)s\n"
-"          (%(id)s)</strong> virtuális gép átruházását.\n"
-"          Elfogadja a gép birtoklásával járó felelősséget?\n"
-"          "
+"<strong>%(owner)s</strong> kezdeményezte a(z) <strong>%(name)s (%(id)s)</strong> sablon átruházását.\n"
+"Elfogadja a sablon birtoklásával járó felelősséget?"
 
 #: dashboard/templates/dashboard/connect-command-list/column-command-actions.html:2
 #: dashboard/templates/dashboard/template-list/column-lease-actions.html:2
@@ -2026,11 +2000,11 @@ msgstr "Prioritás"
 
 #: dashboard/templates/dashboard/node-detail/resources.html:13
 msgid "Driver Version:"
-msgstr ""
+msgstr "Driver verziója:"
 
 #: dashboard/templates/dashboard/node-detail/resources.html:19
 msgid "with uncommitted changes!"
-msgstr ""
+msgstr "beküldetlen változásokkal!"
 
 #: dashboard/templates/dashboard/node-detail/resources.html:23
 msgid "Host owner"
@@ -2124,13 +2098,11 @@ msgstr "A legújabb fájlok listája."
 #, python-format
 msgid ""
 "\n"
-"      You are currently using %(used)s, your soft limit is %(soft)s, your "
-"hard limit is %(hard)s.\n"
+"      You are currently using %(used)s, your soft limit is %(soft)s, your hard limit is %(hard)s.\n"
 "      "
 msgstr ""
 "\n"
-"      Jelenlegi használat: %(used)s, puha korlát: %(soft)s, kemény korlát: "
-"%(hard)s.\n"
+"      Jelenlegi használat: %(used)s, puha korlát: %(soft)s, kemény korlát: %(hard)s.\n"
 "      "
 
 #: dashboard/templates/dashboard/store/index-files.html:16
@@ -2207,8 +2179,7 @@ msgstr "Fájl helye"
 #, python-format
 msgid ""
 "\n"
-"          Are you sure you want to remove the file at <strong>%(path)s</"
-"strong>?\n"
+"          Are you sure you want to remove the file at <strong>%(path)s</strong>?\n"
 "          "
 msgstr ""
 "\n"
@@ -2219,13 +2190,11 @@ msgstr ""
 #, python-format
 msgid ""
 "\n"
-"          Are you sure you want to remove the directory <strong>"
-"%(directory)s</strong>?\n"
+"          Are you sure you want to remove the directory <strong>%(directory)s</strong>?\n"
 "          "
 msgstr ""
 "\n"
-"            Biztosan törli a következő könyvtárat: <strong> %(directory)s</"
-"strong>?\n"
+"            Biztosan törli a következő könyvtárat: <strong> %(directory)s</strong>?\n"
 "          "
 
 #: dashboard/templates/dashboard/store/upload.html:16
@@ -2272,16 +2241,14 @@ msgid "You are the current owner of this instance."
 msgstr "Ön a jelenlegi tulajdonosa a példánynak."
 
 #: dashboard/templates/dashboard/vm-detail/access.html:8
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "\n"
-"    The current owner of this instance is <a href=\"%(url)s\">%(name)s "
-"(%(owner)s)</a>.\n"
+"    The current owner of this instance is <a href=\"%(url)s\">%(name)s (%(owner)s)</a>.\n"
 "  "
 msgstr ""
 "\n"
-"    A példány jelenlegi tulajdonosa: %(owner)s.\n"
-"  "
+"A példány jelenlegi tulajdonosa: <a href=\"%(url)s\">%(name)s (%(owner)s)</a>."
 
 #: dashboard/templates/dashboard/vm-detail/access.html:19
 msgid "Permissions"
@@ -2542,8 +2509,8 @@ msgstr "Lemez törlésének megerősítése"
 #: dashboard/views/template.py:356
 #, python-format
 msgid ""
-"Are you sure you want to remove <strong>%(disk)s</strong> from <strong>"
-"%(app)s</strong>?"
+"Are you sure you want to remove <strong>%(disk)s</strong> from "
+"<strong>%(app)s</strong>?"
 msgstr ""
 "Biztosan eltávolítja a(z) <strong>%(disk)s</strong> lemezt a következőből: "
 "%(app)s?"
@@ -2581,14 +2548,14 @@ msgid "Lease successfully deleted."
 msgstr "A bérlési mód törlésre került."
 
 #: dashboard/views/template.py:505
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "%(user)s offered you to take the ownership of his/her template called "
-"%(instance)s. <a href=\"%(token)s\" class=\"btn btn-success btn-small"
-"\">Accept</a>"
+"%(instance)s. <a href=\"%(token)s\" class=\"btn btn-success btn-"
+"small\">Accept</a>"
 msgstr ""
-"%(user)s át kívánja ruházni %(instance)s nevű virtuális gépét Önre. <a href="
-"\"%(token)s\" class=\"btn btn-success btn-small\">Elfogadás</a>"
+"%(user)s át kívánja ruházni %(instance)s nevű sablonját Önre. <a "
+"href=\"%(token)s\" class=\"btn btn-success btn-small\">Elfogadás</a>"
 
 #: dashboard/views/user.py:134
 #, python-format
@@ -2814,19 +2781,18 @@ msgid "About CIRCLE Client"
 msgstr "A CIRCLE kliensről"
 
 #: dashboard/views/vm.py:1296
-#, fuzzy
 msgid "transfer ownership"
-msgstr "Tulajdon átruházása"
+msgstr "tulajdon átruházása"
 
 #: dashboard/views/vm.py:1306
 #, python-format
 msgid ""
-"%(user)s offered you to take the ownership of his/her virtual machine called "
-"%(instance)s. <a href=\"%(token)s\" class=\"btn btn-success btn-small"
-"\">Accept</a>"
+"%(user)s offered you to take the ownership of his/her virtual machine called"
+" %(instance)s. <a href=\"%(token)s\" class=\"btn btn-success btn-"
+"small\">Accept</a>"
 msgstr ""
-"%(user)s át kívánja ruházni %(instance)s nevű virtuális gépét Önre. <a href="
-"\"%(token)s\" class=\"btn btn-success btn-small\">Elfogadás</a>"
+"%(user)s át kívánja ruházni %(instance)s nevű virtuális gépét Önre. <a "
+"href=\"%(token)s\" class=\"btn btn-success btn-small\">Elfogadás</a>"
 
 #: firewall/fields.py:43
 #, python-format
@@ -2862,24 +2828,22 @@ msgid "%s - invalid domain name"
 msgstr "%s – érvénytelen tartománynév"
 
 #: firewall/fields.py:281
-#, fuzzy, python-format
+#, python-format
 msgid "%s: invalid template"
-msgstr "Érvénytelen sablon."
+msgstr "%s: érvénytelen sablon"
 
 #: firewall/fields.py:292
 #, python-format
 msgid "template doesn't use parameter %s"
-msgstr ""
+msgstr "a sablon nem használja a(z) %s paramétert"
 
 #: firewall/fields.py:296
-#, fuzzy
 msgid "template renders invalid IPv6 address"
-msgstr "külső IPv4 cím"
+msgstr "a sablon érvénytelen IPv6 címet ad"
 
 #: firewall/fields.py:302
-#, fuzzy
 msgid "template results in IPv4 address"
-msgstr "külső IPv4 cím"
+msgstr "a sablon IPv4 címet ad"
 
 #: firewall/fields.py:313
 #, python-format
@@ -3123,8 +3087,8 @@ msgstr "IPv6 prefixhossz/gép"
 
 #: firewall/models.py:311
 msgid ""
-"The prefix length of the subnet assigned to a host. For example /112 = 65536 "
-"addresses/host."
+"The prefix length of the subnet assigned to a host. For example /112 = 65536"
+" addresses/host."
 msgstr ""
 "A géphez rendelt alhálózat prefixhossza. Például a /112 beállítás 65536 "
 "címet jelent gépenként."
@@ -3146,8 +3110,8 @@ msgid ""
 "Common IPv4 address used for address translation of connections to the "
 "networks selected below (typically to the internet)."
 msgstr ""
-"Közös címfordításra használt IPv4 cím a kiválasztott hálózatok felé irányuló "
-"kapcsolatokhoz (tipikusan az internet felé)."
+"Közös címfordításra használt IPv4 cím a kiválasztott hálózatok felé irányuló"
+" kapcsolatokhoz (tipikusan az internet felé)."
 
 #: firewall/models.py:333
 msgid "NAT to"
@@ -3197,29 +3161,38 @@ msgstr "reverz tartomány"
 #, python-format
 msgid ""
 "Template of the IPv4 reverse domain name that should be generated for each "
-"host. The template should contain four tokens: \"%(a)d\", \"%(b)d\", \"%(c)d"
-"\", and \"%(d)d\", representing the four bytes of the address, respectively, "
-"in decimal notation. For example, the template for the standard reverse "
-"address is: \"%(d)d.%(c)d.%(b)d.%(a)d.in-addr.arpa\"."
+"host. The template should contain four tokens: \"%(a)d\", \"%(b)d\", "
+"\"%(c)d\", and \"%(d)d\", representing the four bytes of the address, "
+"respectively, in decimal notation. For example, the template for the "
+"standard reverse address is: \"%(d)d.%(c)d.%(b)d.%(a)d.in-addr.arpa\"."
 msgstr ""
 "Az IPv4 reverz tartománynevek generálásához használt sablon. A sablon négy "
 "tokent kell tartalmazzon: \"%(a)d\", \"%(b)d\", \"%(c)d\" és \"%(d)d\", "
 "amelyek rendre a cím négy byte-ját reprezentálják, decimális jelölésben. "
-"Például a szabványos reverz név sablonja: \"%(d)d.%(c)d.%(b)d.%(a)d.in-addr."
-"arpa\"."
+"Például a szabványos reverz név sablonja: \"%(d)d.%(c)d.%(b)d.%(a)d.in-"
+"addr.arpa\"."
 
 #: firewall/models.py:368
 #, python-format
 msgid ""
 "Template for translating IPv4 addresses to IPv6. Automatically generated "
-"hosts in dual-stack networks will get this address. The template can contain "
-"four tokens: \"%(a)d\", \"%(b)d\", \"%(c)d\", and \"%(d)d\", representing "
+"hosts in dual-stack networks will get this address. The template can contain"
+" four tokens: \"%(a)d\", \"%(b)d\", \"%(c)d\", and \"%(d)d\", representing "
 "the four bytes of the IPv4 address, respectively, in decimal notation. "
 "Moreover you can use any standard printf format specification like %(a)02x "
 "to get the first byte as two hexadecimal digits. Usual choices for mapping "
 "198.51.100.0/24 to 2001:0DB8:1:1::/64 would be \"2001:db8:1:1:%(d)d::\" and "
 "\"2001:db8:1:1:%(d)02x00::\"."
 msgstr ""
+"Sablon az IPv4 címek IPv6-ra való fordításához. A dual-stack hálózatokban "
+"automatikusan generált gépek ezt a címet fogják kapni. A sablon négy tokent "
+"(\"%(a)d\", \"%(b)d\", \"%(c)d\" és \"%(d)d\") tartalmazhat, amelyek rendre "
+"az IPv4 cím négy byte-ját tartalmazzák decimális formában. Ezen kívül más "
+"szabványos printf formátumspecifikációk is használhatóak, mint például a "
+"%(a)02x, amely az első byte-ot két hexadecimális számjegyként reprezentálja."
+" Például a 198.51.100.0/24 hálózat 2001:0DB8:1:1::/64 alá képezésére "
+"szokásos választás lehet a \"2001:db8:1:1:%(d)d::\" és a "
+"\"2001:db8:1:1:%(d)02x00::\"."
 
 #: firewall/models.py:379
 msgid "ipv6 template"
@@ -3241,16 +3214,16 @@ msgstr ""
 
 #: firewall/models.py:399
 msgid "You cannot specify an IPv6 template if there is no IPv6 network set."
-msgstr ""
+msgstr "Nem adhat meg IPv6 sablont, ha nincs IPv6 hálózat beállítva."
 
 #: firewall/models.py:405
 #, python-format
 msgid "%(ip6)s (translated from %(ip4)s) is outside of the IPv6 network."
-msgstr ""
+msgstr "%(ip6)s (ebből képezve: %(ip4)s) kívül esik az IPv6 hálózaton."
 
 #: firewall/models.py:449
 msgid "IPv6 network is too small to map IPv4 addresses to it."
-msgstr ""
+msgstr "Az IPv6 hálózat túl kicsi az IPv4 címek leképezéséhez."
 
 #: firewall/models.py:507
 msgid "All IP addresses are already in use."
@@ -3286,11 +3259,11 @@ msgstr "reverz"
 
 #: firewall/models.py:589
 msgid ""
-"The fully qualified reverse hostname of the host, if different than hostname."
-"domain."
+"The fully qualified reverse hostname of the host, if different than "
+"hostname.domain."
 msgstr ""
-"A gép teljes reverz tartományneve, amennyiben különbözik ettől: gépnév."
-"tartomány."
+"A gép teljes reverz tartományneve, amennyiben különbözik ettől: "
+"gépnév.tartomány."
 
 #: firewall/models.py:593 network/tables.py:129
 msgid "MAC address"
@@ -3298,8 +3271,8 @@ msgstr "MAC cím"
 
 #: firewall/models.py:594
 msgid ""
-"The MAC (Ethernet) address of the network interface. For example: 99:AA:BB:"
-"CC:DD:EE."
+"The MAC (Ethernet) address of the network interface. For example: "
+"99:AA:BB:CC:DD:EE."
 msgstr "A hálózati interfész  MAC (Ethernet) címe. Például 99:AA:BB:CC:DD:EE."
 
 #: firewall/models.py:599
@@ -3362,7 +3335,8 @@ msgstr "Gépcsoportok, amelyeknek tagja a gép."
 #: firewall/models.py:685
 msgid "If shared_ip has been checked, external_ipv4 has to be unique."
 msgstr ""
-"Amennyiben az osztott IP mező igaz, a külső IPv4 cím mező egyedi kell legyen."
+"Amennyiben az osztott IP mező igaz, a külső IPv4 cím mező egyedi kell "
+"legyen."
 
 #: firewall/models.py:688
 msgid "You can't use another host's NAT'd address as your own IPv4."
@@ -3513,20 +3487,19 @@ msgstr ""
 
 #: manager/scheduler.py:49
 msgid ""
-"No node can satisfy the required traits of the new virtual machine currently."
+"No node can satisfy the required traits of the new virtual machine "
+"currently."
 msgstr ""
 "Egy csomópont sem biztosítja a virtuális gép indításához szükséges "
 "jellemzőket."
 
 #: network/forms.py:127
-#, fuzzy
 msgid "Generate random address."
-msgstr "Érvénytelen IP cím. %s"
+msgstr "Véletlenszerű cím generálása."
 
 #: network/forms.py:130
-#, fuzzy
 msgid "Generate IPv6 pair of IPv4 address."
-msgstr "Érvénytelen IP cím. %s"
+msgstr "IPv4-es cím IPv6-os párjának generálása."
 
 #: network/forms.py:135
 msgid "Information"
@@ -3537,9 +3510,8 @@ msgid "External"
 msgstr "Külső"
 
 #: network/forms.py:261
-#, fuzzy
 msgid "Generate sensible template."
-msgstr "Sablon létrehozása"
+msgstr "Ésszerű sablon generálása."
 
 #: network/forms.py:265
 msgid "Domain name service"
@@ -3550,13 +3522,12 @@ msgid "Info"
 msgstr "Infó"
 
 #: network/tables.py:125 network/tables.py:138
-#, fuzzy
 msgid "No hosts."
-msgstr "gép"
+msgstr "Nincs gép."
 
 #: network/tables.py:131
 msgid "requested IP"
-msgstr ""
+msgstr "kért IP"
 
 #: network/tables.py:230
 msgid "No records."
@@ -3967,7 +3938,7 @@ msgstr "Gépek"
 
 #: network/templates/network/vlan-edit.html:28
 msgid "Unregistered hosts"
-msgstr ""
+msgstr "Regisztrálatlan gépek"
 
 #: network/templates/network/vlan-group-create.html:12
 #: network/templates/network/vlan-group-list.html:11
@@ -3979,9 +3950,8 @@ msgid "list of all vlans"
 msgstr "összes vlan"
 
 #: network/templates/network/columns/host-register.html:3
-#, fuzzy
 msgid "register host"
-msgstr "Gép szerkesztése"
+msgstr "gép regisztrálása"
 
 #: network/templates/network/confirm/base_delete.html:8
 #, python-format
@@ -4091,8 +4061,8 @@ msgstr ""
 #: storage/models.py:148
 #, python-format
 msgid ""
-"The requested operation can't be performed on disk '%(name)s' because it has "
-"never been deployed."
+"The requested operation can't be performed on disk '%(name)s' because it has"
+" never been deployed."
 msgstr ""
 "A kért művelet nem hajtható végre a(z) „%(name)s” lemezen, mivel nem volt "
 "még csatolva."
@@ -4119,8 +4089,8 @@ msgstr ""
 #, python-format
 msgid ""
 "The requested operation can't be performed on disk '%(name)s' (%(pk)s) "
-"[%(filename)s] because its base '%(b_name)s' (%(b_pk)s) [%(b_filename)s] has "
-"never beendeployed."
+"[%(filename)s] because its base '%(b_name)s' (%(b_pk)s) [%(b_filename)s] has"
+" never beendeployed."
 msgstr ""
 "A kért művelet nem hajtható végre a(z) „%(name)s” (%(pk)s) [%(filename)s] "
 "lemezen, mivel az alapja,  „%(b_name)s” (%(b_pk)s) [%(b_filename)s]  nem "
@@ -4163,49 +4133,41 @@ msgid ""
 msgstr ""
 "\n"
 "        Ez a <a href=\"http://circlecloud.org/\">CIRCLE\n"
-"            Cloud</a> szoftver egy telepítése. A CIRCLE egy szabad, nyílt "
-"forrású felhőmenedzser.\n"
+"            Cloud</a> szoftver egy telepítése. A CIRCLE egy szabad, nyílt forrású felhőmenedzser.\n"
 "        "
 
 #: templates/info/help.html:20
 msgid ""
 "\n"
-"        Its most important function is starting and managing virtual "
-"machine\n"
+"        Its most important function is starting and managing virtual machine\n"
 "        instances based on templates.\n"
 "        These templates are also easy to create.\n"
 "        "
 msgstr ""
 "\n"
-"Legfontosabb funkciója a virtuális gépek indítása és kezelése könnyen "
-"létrehozható sablonok alapján."
+"Legfontosabb funkciója a virtuális gépek indítása és kezelése könnyen létrehozható sablonok alapján."
 
 #: templates/info/help.html:26
 msgid ""
 "\n"
-"        Apart from this tutorial we recommend to try the system, it is "
-"quite\n"
+"        Apart from this tutorial we recommend to try the system, it is quite\n"
 "        intuitive, and the web interface shows detailed instructions on\n"
 "        advanced options.\n"
 "        "
 msgstr ""
 "\n"
-"Ezen az útmutatón kívül javasoljuk, hogy próbálja ki a rendszert, amelynek "
-"használata magától értetődő. A webes felületen részletes útmutatást talál a "
-"haladó lehetőségekről."
+"Ezen az útmutatón kívül javasoljuk, hogy próbálja ki a rendszert, amelynek használata magától értetődő. A webes felületen részletes útmutatást talál a haladó lehetőségekről."
 
 #: templates/info/help.html:34
 #, python-format
 msgid ""
 "\n"
-"        You can reach this service at <tt>https://%(host)s/</tt> where you "
-"can log in\n"
+"        You can reach this service at <tt>https://%(host)s/</tt> where you can log in\n"
 "        to the dashboard.\n"
 "        "
 msgstr ""
 "\n"
-"A szolgáltatást a <tt>https://%(host)s/</tt> címen érheti el. Itt "
-"bejelentkezhet az irányítópultra."
+"A szolgáltatást a <tt>https://%(host)s/</tt> címen érheti el. Itt bejelentkezhet az irányítópultra."
 
 #: templates/info/help.html:39
 msgid ""
@@ -4216,8 +4178,7 @@ msgid ""
 "        "
 msgstr ""
 "\n"
-"Az irányítópult összefoglalja a virtuális gépeket és más erőforrásokat. Ez a "
-"kiindulópont a rendszer lehetőségeinek eléréséhez."
+"Az irányítópult összefoglalja a virtuális gépeket és más erőforrásokat. Ez a kiindulópont a rendszer lehetőségeinek eléréséhez."
 
 #: templates/info/help.html:49
 msgid "Sorry, you have no permission to launch virtual machines."
@@ -4235,10 +4196,7 @@ msgid ""
 "          "
 msgstr ""
 "\n"
-"A <em>virtuális gépek</em> dobozban találja legutóbbi virtuális gépeit. Egy "
-"összefoglaló nézet is elérhető az műszer gombra (<i class=\"fa fa-dashboard"
-"\"></i>) kattintva. Kattintson a virtuális gép nevére a kapcsolódási adatok, "
-"beállítások megtekintéséhez, vagy az állapotának megváltoztatásához."
+"A <em>virtuális gépek</em> dobozban találja legutóbbi virtuális gépeit. Egy összefoglaló nézet is elérhető az műszer gombra (<i class=\"fa fa-dashboard\"></i>) kattintva. Kattintson a virtuális gép nevére a kapcsolódási adatok, beállítások megtekintéséhez, vagy az állapotának megváltoztatásához."
 
 #: templates/info/help.html:61
 msgid ""
@@ -4254,32 +4212,22 @@ msgid ""
 "          "
 msgstr ""
 "\n"
-"A fontos vagy gyakran használt gépeket megjelölheti kedvencként (<i class="
-"\"fa fa-star-o\"></i>). A keresés mező inkrementálisan mutatja az "
-"eredményeket, beküldésével (⏎) közvetlenül a megtalált gépre ugrik, ha "
-"pontosan egy találat van. Új virtuális gépeket az <span class=\"btn btn-"
-"success disabled btn-xs\"><i class=\"fa fa-plus-circle\"></i> új</span> "
-"gombra kattintva, majd a sablont kiválasztva indíthat. "
+"A fontos vagy gyakran használt gépeket megjelölheti kedvencként (<i class=\"fa fa-star-o\"></i>). A keresés mező inkrementálisan mutatja az eredményeket, beküldésével (⏎) közvetlenül a megtalált gépre ugrik, ha pontosan egy találat van. Új virtuális gépeket az <span class=\"btn btn-success disabled btn-xs\"><i class=\"fa fa-plus-circle\"></i> új</span> gombra kattintva, majd a sablont kiválasztva indíthat. "
 
 #: templates/info/help.html:72
 msgid ""
 "\n"
 "          If you select a virtual machine, you get to a page with all the\n"
-"          details and operations listed. On the left, you will see the "
-"state\n"
+"          details and operations listed. On the left, you will see the state\n"
 "          of the machine and a summary about how you can\n"
 "          <strong>connect</strong> to the\n"
 "          machine.\n"
-"          In the middle there is a tabbed pane, which contains details "
-"about\n"
+"          In the middle there is a tabbed pane, which contains details about\n"
 "          the machine in categories.\n"
 "          "
 msgstr ""
 "\n"
-"Ha kiválaszt egy virtuális gépet, a gép adatait és műveleteit elérhetővé "
-"tévő oldalra jut. Baloldalt a gép állapotát és a <strong>csatlakozáshoz</"
-"strong> szükséges adatokat találja. Középen egy több lapból álló panel van, "
-"amely a gép összes részletét kategorizálva mutatja be."
+"Ha kiválaszt egy virtuális gépet, a gép adatait és műveleteit elérhetővé tévő oldalra jut. Baloldalt a gép állapotát és a <strong>csatlakozáshoz</strong> szükséges adatokat találja. Középen egy több lapból álló panel van, amely a gép összes részletét kategorizálva mutatja be."
 
 #: templates/info/help.html:81
 msgid ""
@@ -4290,14 +4238,12 @@ msgid ""
 "          "
 msgstr ""
 "\n"
-"A jobb felső sarokban a műveleteket tartalmazó eszköztár található a gép "
-"<strong>életciklusát</strong> befolyásoló, legfontosabb műveletekkel."
+"A jobb felső sarokban a műveleteket tartalmazó eszköztár található a gép <strong>életciklusát</strong> befolyásoló, legfontosabb műveletekkel."
 
 #: templates/info/help.html:87
 msgid ""
 "\n"
-"          The tool buttons are color coded by their effect, and enabled/"
-"disabled\n"
+"          The tool buttons are color coded by their effect, and enabled/disabled\n"
 "          based on the current state of the machine.\n"
 "          The recommended operation is always the biggest tool button with\n"
 "          the name displayed.\n"
@@ -4306,11 +4252,7 @@ msgid ""
 "          "
 msgstr ""
 "\n"
-"Az eszköztár gombjai színkódoltak a hatásuk szerint, valamint a gép "
-"állapotától függően kerülnek engedélyezésre/tiltásra. Az ajánlott művelet "
-"gombja a legnagyobb, amelyen szerepel az adott művelet megnevezése is. "
-"Nyugodtan rákattinthat a gombokra, a megerősítő ablak részletesen bemutatja "
-"az egyes műveleteket."
+"Az eszköztár gombjai színkódoltak a hatásuk szerint, valamint a gép állapotától függően kerülnek engedélyezésre/tiltásra. Az ajánlott művelet gombja a legnagyobb, amelyen szerepel az adott művelet megnevezése is. Nyugodtan rákattinthat a gombokra, a megerősítő ablak részletesen bemutatja az egyes műveleteket."
 
 #: templates/info/help.html:96
 msgid ""
@@ -4328,29 +4270,18 @@ msgid ""
 "          "
 msgstr ""
 "\n"
-"A <strong><i class=\"fa fa-compass\"></i> Kezdőoldal</strong> lap "
-"statisztikát mutat be a gép működéséről, valamint itt változtathatja meg a "
-"gép nevét, leírását és címkéit. Kifejezetten ajánljuk a leírás kitöltését, "
-"amely megkönnyíti a felhő üzemeltetőinek dolgát karbantartás esetén. Itt "
-"található a <strong>lejárati idők</strong> összefoglalása is. Minden "
-"virtuális gépnek van egy-egy határideje, amikor felfüggesztésre és amikor "
-"törlésre kerül. Ez előre megadott bérlési módok szerint kerül beállításra. A "
-"megújítás gomb segítségével ezeket a határidőket frissítheti. Természetesen "
-"értesítjük, ha egy gépe a lejárathoz közeledik."
+"A <strong><i class=\"fa fa-compass\"></i> Kezdőoldal</strong> lap statisztikát mutat be a gép működéséről, valamint itt változtathatja meg a gép nevét, leírását és címkéit. Kifejezetten ajánljuk a leírás kitöltését, amely megkönnyíti a felhő üzemeltetőinek dolgát karbantartás esetén. Itt található a <strong>lejárati idők</strong> összefoglalása is. Minden virtuális gépnek van egy-egy határideje, amikor felfüggesztésre és amikor törlésre kerül. Ez előre megadott bérlési módok szerint kerül beállításra. A megújítás gomb segítségével ezeket a határidőket frissítheti. Természetesen értesítjük, ha egy gépe a lejárathoz közeledik."
 
 #: templates/info/help.html:109
 msgid ""
 "\n"
-"          <strong><i class=\"fa fa-tasks\"></i> Resources</strong> pane "
-"shows\n"
+"          <strong><i class=\"fa fa-tasks\"></i> Resources</strong> pane shows\n"
 "          details about how much memory and CPU the VM has, and how is it\n"
 "          scheduled.\n"
 "          "
 msgstr ""
 "\n"
-"Az          <strong><i class=\"fa fa-tasks\"></i> Erőforrások</strong> lap "
-"bemutatja, hogy a virtuális gép mennyi CPU-val és memóriával rendelkezik, "
-"valamint milyen az ütemezése.          "
+"Az          <strong><i class=\"fa fa-tasks\"></i> Erőforrások</strong> lap bemutatja, hogy a virtuális gép mennyi CPU-val és memóriával rendelkezik, valamint milyen az ütemezése.          "
 
 #: templates/info/help.html:115
 msgid ""
@@ -4359,22 +4290,18 @@ msgid ""
 "              the machine is stopped."
 msgstr ""
 "\n"
-"A megfelelő jogosultsággal rendelkező felhasználók megváltoztathatják ezeket "
-"a beállításokat, ha a gépet leállították."
+"A megfelelő jogosultsággal rendelkező felhasználók megváltoztathatják ezeket a beállításokat, ha a gépet leállították."
 
 #: templates/info/help.html:119
 msgid ""
 "\n"
-"          <strong><i class=\"fa fa-desktop\"></i> Console</strong> pane "
-"allows\n"
+"          <strong><i class=\"fa fa-desktop\"></i> Console</strong> pane allows\n"
 "          to see the console of the virutal machine for troubleshooting and\n"
 "          operating system installation."
 msgstr ""
 "\n"
 "A\n"
-"          <strong><i class=\"fa fa-desktop\"></i> Konzol</strong> lap "
-"lehetővé teszi a virtuális gépek hibaelhárítását és az operációs rendszer "
-"telepítését."
+"          <strong><i class=\"fa fa-desktop\"></i> Konzol</strong> lap lehetővé teszi a virtuális gépek hibaelhárítását és az operációs rendszer telepítését."
 
 #: templates/info/help.html:124
 msgid "You can also use the keyboard and mouse."
@@ -4407,10 +4334,7 @@ msgid ""
 "          "
 msgstr ""
 "\n"
-"A <strong><i class=\"fa fa-group\"></i> Hozzáférés</strong> lap a gép "
-"megosztását és a tulajdon átruházását teszi lehetővé. A gép felhasználói "
-"láthatják a gép részleteit, az operátorok használhatják a legtöbb műveletet, "
-"a tulajdonosok törölhetik is a gépet."
+"A <strong><i class=\"fa fa-group\"></i> Hozzáférés</strong> lap a gép megosztását és a tulajdon átruházását teszi lehetővé. A gép felhasználói láthatják a gép részleteit, az operátorok használhatják a legtöbb műveletet, a tulajdonosok törölhetik is a gépet."
 
 #: templates/info/help.html:140
 msgid ""
@@ -4423,27 +4347,20 @@ msgid ""
 msgstr ""
 "\n"
 "A\n"
-"          <strong><i class=\"fa fa-globe\"></i> Hálózat</strong> lap a "
-"virtuális gép hálózati kapcsolatait mutatja be. Lehetőség van interfészek "
-"hozzáadására és törlésére, valamint a különböző TCP/UDP portok távoli "
-"elérését is itt lehet engedélyezni."
+"          <strong><i class=\"fa fa-globe\"></i> Hálózat</strong> lap a virtuális gép hálózati kapcsolatait mutatja be. Lehetőség van interfészek hozzáadására és törlésére, valamint a különböző TCP/UDP portok távoli elérését is itt lehet engedélyezni."
 
 #: templates/info/help.html:147
 msgid ""
 "\n"
-"          <strong><i class=\"fa fa-clock-o\"></i> Activity</strong> pane "
-"shows\n"
+"          <strong><i class=\"fa fa-clock-o\"></i> Activity</strong> pane shows\n"
 "          the full life history of the virtual machine. This is where you\n"
-"          can see the causes of failed actions (just point the mouse to the "
-"name of\n"
+"          can see the causes of failed actions (just point the mouse to the name of\n"
 "          the action).\n"
 "          "
 msgstr ""
 "\n"
 "A \n"
-"          <strong><i class=\"fa fa-clock-o\"></i> Tevékenységek</strong> "
-"lapon látszik a virtuális gép teljes élettörténete. Itt lehet a műveletek "
-"meghiúsulásának okait is megtekinteni (húzza az egeret a művelet nevére)."
+"          <strong><i class=\"fa fa-clock-o\"></i> Tevékenységek</strong> lapon látszik a virtuális gép teljes élettörténete. Itt lehet a műveletek meghiúsulásának okait is megtekinteni (húzza az egeret a művelet nevére)."
 
 #: templates/info/help.html:159
 msgid "Sorry, you have no permission to create templates."
@@ -4459,37 +4376,30 @@ msgid ""
 "            "
 msgstr ""
 "\n"
-"A             <em>sablonok</em> a virtuálisgép-példányok prototípusai, "
-"megadják a létrehozandó VM különböző technikai beállításait, beleértve a "
-"hálózati interfészeket és a csatolandó lemezeket."
+"A             <em>sablonok</em> a virtuálisgép-példányok prototípusai, megadják a létrehozandó VM különböző technikai beállításait, beleértve a hálózati interfészeket és a csatolandó lemezeket."
 
 #: templates/info/help.html:170
 msgid ""
 "\n"
 "            In the dashboard box you see your own templates and those, for\n"
-"            which you have <em>operator</em> permission. This means that you "
-"can\n"
+"            which you have <em>operator</em> permission. This means that you can\n"
 "            share them with your groups or other users.\n"
 "            "
 msgstr ""
 "\n"
-"Az irányítópulti dobozban a saját sablonait, valamint azokat látja, "
-"amelyekhez legalább <em>operátor</em> jogosultsága van. Ez azt jelenti, hogy "
-"megoszthatja őket csoportjaival vagy egyes felhasználókkal."
+"Az irányítópulti dobozban a saját sablonait, valamint azokat látja, amelyekhez legalább <em>operátor</em> jogosultsága van. Ez azt jelenti, hogy megoszthatja őket csoportjaival vagy egyes felhasználókkal."
 
 #: templates/info/help.html:176
 msgid ""
 "\n"
 "            You can create templates from any virtual machine with the\n"
-"            <span class=\"btn btn-info disabled btn-xs\"><i class=\"fa fa-"
-"save\"></i>\n"
+"            <span class=\"btn btn-info disabled btn-xs\"><i class=\"fa fa-save\"></i>\n"
 "              save as template</span>\n"
 "            button.\n"
 "            "
 msgstr ""
 "\n"
-"            Bármely virtuális gépből létrehozhat sablont a            <span "
-"class=\"btn btn-info disabled btn-xs\"><i class=\"fa fa-save\"></i>\n"
+"            Bármely virtuális gépből létrehozhat sablont a            <span class=\"btn btn-info disabled btn-xs\"><i class=\"fa fa-save\"></i>\n"
 "              mentés sablonként</span>\n"
 "            gomb segítségével.\n"
 "            "
@@ -4504,9 +4414,7 @@ msgid ""
 "            "
 msgstr ""
 "\n"
-"Ezen felül a sablonok dobozban lévő <span class=\"btn btn-success disabled "
-"btn-xs\"><i class=\"fa fa-plus-circle\"></i> új</span> gombbal is elindíthat "
-"egy sablonkészítő varázslót."
+"Ezen felül a sablonok dobozban lévő <span class=\"btn btn-success disabled btn-xs\"><i class=\"fa fa-plus-circle\"></i> új</span> gombbal is elindíthat egy sablonkészítő varázslót."
 
 #: templates/info/help.html:195
 msgid "Sorry, you have no permission to create groups."
@@ -4520,8 +4428,7 @@ msgid ""
 "            "
 msgstr ""
 "\n"
-"A csoportok a jogosultságkezelés epítőelemei. Az irányítópulton azon "
-"csoportokat látja, amelykhez hozzáférése van."
+"A csoportok a jogosultságkezelés epítőelemei. Az irányítópulton azon csoportokat látja, amelykhez hozzáférése van."
 
 #: templates/info/help.html:204
 msgid ""
@@ -4533,15 +4440,12 @@ msgid ""
 "            "
 msgstr ""
 "\n"
-"Saját csoportokat is létrehozhat a csoportok dobozban lévő <span class=\"btn "
-"btn-success disabled btn-xs\"><i class=\"fa fa-plus-circle\"></i> új</span> "
-"gombbal."
+"Saját csoportokat is létrehozhat a csoportok dobozban lévő <span class=\"btn btn-success disabled btn-xs\"><i class=\"fa fa-plus-circle\"></i> új</span> gombbal."
 
 #: templates/info/help.html:211
 msgid ""
 "\n"
-"            Users logged in with SSO authentication can automatically "
-"become\n"
+"            Users logged in with SSO authentication can automatically become\n"
 "            members of groups based on its organizational identifier.\n"
 "            Those who are administrators of an organizational group (or a\n"
 "            professor of a subject in academics) can create groups with the\n"
@@ -4550,11 +4454,7 @@ msgid ""
 "            "
 msgstr ""
 "\n"
-"SSO azonosítással belépett felhasználók automatikusan tagjai lehetnek "
-"csoportoknak a szervezeti azonosítójuk alapján. Aki adminisztrátorai egy "
-"csoportnak (vagy oktatói egy tantárgynak az akadémiai szférában) olyan "
-"csoportokat is létrehozhatnak, amelyeknek a tagjai bejelentkezéskor "
-"automatikusan bekerülnek."
+"SSO azonosítással belépett felhasználók automatikusan tagjai lehetnek csoportoknak a szervezeti azonosítójuk alapján. Aki adminisztrátorai egy csoportnak (vagy oktatói egy tantárgynak az akadémiai szférában) olyan csoportokat is létrehozhatnak, amelyeknek a tagjai bejelentkezéskor automatikusan bekerülnek."
 
 #: templates/info/help.html:219
 msgid ""
@@ -4564,8 +4464,7 @@ msgid ""
 "            "
 msgstr ""
 "\n"
-"Azonosítójuk alapján is hozzáadhat felhasználókat, akkor is, ha még nem "
-"léptek be a rendszerbe."
+"Azonosítójuk alapján is hozzáadhat felhasználókat, akkor is, ha még nem léptek be a rendszerbe."
 
 #: templates/info/help.html:230
 msgid "Sorry, this deployment of CIRCLE does not support file store."
@@ -4574,14 +4473,12 @@ msgstr "Ez a CIRCLE-telepítés nem támogatja a tárhelyet."
 #: templates/info/help.html:234
 msgid ""
 "\n"
-"            Each user has a simple personal file store, which is the "
-"easiest\n"
+"            Each user has a simple personal file store, which is the easiest\n"
 "            way to keep and retrieve your work done on virtual machines.\n"
 "            "
 msgstr ""
 "\n"
-"Minden felhasználónak van egy személyes tárhelye, ami a egyszerű módot ad a "
-"virtuális gépeken elkészített munka tárolására és letöltésére."
+"Minden felhasználónak van egy személyes tárhelye, ami a egyszerű módot ad a virtuális gépeken elkészített munka tárolására és letöltésére."
 
 #: templates/info/help.html:239
 msgid ""
@@ -4598,12 +4495,7 @@ msgid ""
 "            "
 msgstr ""
 "\n"
-"Fájljait a webes felületről és a virtuális gépekről is eléri. A webes "
-"felület olyan, mint bármelyik fájlböngésző. A virtuális gépek alapesetben "
-"nem kapják meg a tárhely eléréséhez szükséges azonosítókat elkerülendő "
-"megosztásukat a gép esetleges többi használójával. A tárhely használatához "
-"nyomja meg a <span class=\"btn btn-info disabled btn-xs\"><i class=\"fa fa-"
-"briefcase\"></i> tárhely csatolása</span> gombot a virtuális gépen."
+"Fájljait a webes felületről és a virtuális gépekről is eléri. A webes felület olyan, mint bármelyik fájlböngésző. A virtuális gépek alapesetben nem kapják meg a tárhely eléréséhez szükséges azonosítókat elkerülendő megosztásukat a gép esetleges többi használójával. A tárhely használatához nyomja meg a <span class=\"btn btn-info disabled btn-xs\"><i class=\"fa fa-briefcase\"></i> tárhely csatolása</span> gombot a virtuális gépen."
 
 #: templates/info/help.html:251
 msgid ""
@@ -4617,13 +4509,11 @@ msgstr ""
 msgid ""
 "\n"
 "        CIRCLE Cloud is a complete and open source cloud solution \n"
-"        that can be deployed with minimal effort on a single computer as "
-"well as on a larger cluster.\n"
+"        that can be deployed with minimal effort on a single computer as well as on a larger cluster.\n"
 "        "
 msgstr ""
 "\n"
-"A CIRCLE Cloud egy teljeskörű nyílt forrású felhőmegoldás, amely könnyen "
-"telepíthető egy gépre, vagy akár egy nagyobb fürtre."
+"A CIRCLE Cloud egy teljeskörű nyílt forrású felhőmegoldás, amely könnyen telepíthető egy gépre, vagy akár egy nagyobb fürtre."
 
 #: templates/info/legal.html:23
 #, python-format
@@ -4652,10 +4542,8 @@ msgstr ""
 #: templates/info/policy.html:22
 msgid ""
 " \n"
-"            Every virtual machine has an expiration date, when this date is "
-"reached\n"
-"            the machine will be stopped, if the user doesn't renew the "
-"machine\n"
+"            Every virtual machine has an expiration date, when this date is reached\n"
+"            the machine will be stopped, if the user doesn't renew the machine\n"
 "            it will be deleted and all data on it will be lost.\n"
 "            "
 msgstr ""
@@ -4666,41 +4554,32 @@ msgstr ""
 msgid ""
 "\n"
 "            Running the the virtual machine safely and \n"
-"            updating the operating system is the responsibility of the "
-"user.\n"
+"            updating the operating system is the responsibility of the user.\n"
 "            "
 msgstr ""
 "\n"
-"A virtuális gépek biztonságos üzemeltetése, a rajtuk futó szoftverek "
-"frissítése a felhasználó felelőssége."
+"A virtuális gépek biztonságos üzemeltetése, a rajtuk futó szoftverek frissítése a felhasználó felelőssége."
 
 #: templates/info/policy.html:41
 msgid ""
 "\n"
-"            You can connect to the running virtual machines the usual way: "
-"for Windows machines\n"
-"            this mean RDP (remote desktop), Linux machines can be accessed "
-"either via SSH\n"
+"            You can connect to the running virtual machines the usual way: for Windows machines\n"
+"            this mean RDP (remote desktop), Linux machines can be accessed either via SSH\n"
 "            or NoMachine NX (GUI).\n"
 "          "
 msgstr ""
 "\n"
-"A gépekhez az adott operációs rendszeren szokásos módon csatlakozhat: Window "
-"alatt RDP-vel (távoli asztali kapcsolat), Linuxot futtató gépekhez SSH-val "
-"vagy grafikusan a NoMachine NX rendszerrel."
+"A gépekhez az adott operációs rendszeren szokásos módon csatlakozhat: Window alatt RDP-vel (távoli asztali kapcsolat), Linuxot futtató gépekhez SSH-val vagy grafikusan a NoMachine NX rendszerrel."
 
 #: templates/info/support.html:14
 msgid ""
 "\n"
-"        CIRCLE Cloud is an open source cloud solution. If you notice any "
-"bugs or\n"
-"        you have an idea for a feature please contact the maintainer of the "
-"site.\n"
+"        CIRCLE Cloud is an open source cloud solution. If you notice any bugs or\n"
+"        you have an idea for a feature please contact the maintainer of the site.\n"
 "        "
 msgstr ""
 "\n"
-"A CIRCLE Cloud egy nyílt forrású felhőmegoldás. Amennyiben hibát tapasztal, "
-"vagy fejlesztési javaslata van, keresse meg a szolgáltatás üzemeltetőjét."
+"A CIRCLE Cloud egy nyílt forrású felhőmegoldás. Amennyiben hibát tapasztal, vagy fejlesztési javaslata van, keresse meg a szolgáltatás üzemeltetőjét."
 
 #: templates/registration/login.html:6
 msgid "Login"
@@ -4737,8 +4616,7 @@ msgstr "Megerősítés jelszó-visszaállításról"
 #: templates/registration/password_reset_confirm.html:15
 msgid ""
 "\n"
-"      Please enter your new password twice so we can verify you typed it in "
-"correctly.\n"
+"      Please enter your new password twice so we can verify you typed it in correctly.\n"
 "      "
 msgstr ""
 "\n"
@@ -4748,8 +4626,8 @@ msgstr ""
 #: templates/registration/password_reset_confirm.html:25
 #, python-format
 msgid ""
-"This token is expired, please <a href=\"%(url)s\">request</a> a new password "
-"reset link again."
+"This token is expired, please <a href=\"%(url)s\">request</a> a new password"
+" reset link again."
 msgstr ""
 "A token lejárt, <a href=\"%(url)s\">igényeljen</a> új jelszó-visszaállítást."
 
@@ -4970,7 +4848,8 @@ msgstr "újraindítás"
 msgid ""
 "Warm reboot virtual machine by sending Ctrl+Alt+Del signal to its console."
 msgstr ""
-"Virtuális gép újraindítása a konzoljára a Ctrl+Alt+Del kombináció küldésével."
+"Virtuális gép újraindítása a konzoljára a Ctrl+Alt+Del kombináció "
+"küldésével."
 
 #: vm/operations.py:587
 msgid "remove interface"
@@ -4990,34 +4869,30 @@ msgid "remove %(vlan)s interface"
 msgstr "%(vlan)s interfész törlése"
 
 #: vm/operations.py:611
-#, fuzzy
 msgid "close port"
-msgstr "forrásport"
+msgstr "port bezárása"
 
 #: vm/operations.py:612
-#, fuzzy
 msgid "Close the specified port."
-msgstr "A megadott lemez hozzáadása a VM-hez."
+msgstr "A megadott port bezárása."
 
 #: vm/operations.py:621
 #, python-format
 msgid "close %(proto)s/%(port)d on %(host)s"
-msgstr ""
+msgstr "%(proto)s/%(port)d bezárása ezen: %(host)s"
 
 #: vm/operations.py:629
-#, fuzzy
 msgid "open port"
-msgstr "forrásport"
+msgstr "port nyitása"
 
 #: vm/operations.py:630
-#, fuzzy
 msgid "Open the specified port."
-msgstr "A megadott lemez hozzáadása a VM-hez."
+msgstr "A megadott port kinyitása."
 
 #: vm/operations.py:639
 #, python-format
 msgid "open %(proto)s/%(port)d on %(host)s"
-msgstr ""
+msgstr "%(proto)s/%(port)d kinyitása ezen: %(host)s"
 
 #: vm/operations.py:646
 msgid "remove disk"
@@ -5056,8 +4931,8 @@ msgid ""
 "will be able to start an instance of it."
 msgstr ""
 "Virtuális gép mentése sablonként, amelyet meg lehet osztani más "
-"felhasználókkal és csoportokkal. Mindenki, aki hozzáférést kap egy sablonhoz "
-"(és az általa használt hálózatokhoz), képes lesz egy példányát elindítani."
+"felhasználókkal és csoportokkal. Mindenki, aki hozzáférést kap egy sablonhoz"
+" (és az általa használt hálózatokhoz), képes lesz egy példányát elindítani."
 
 #: vm/operations.py:763
 #, python-format
@@ -5084,8 +4959,8 @@ msgid ""
 "the time this is caused by incorrect ACPI settings. You can also try to "
 "power off the machine from the operating system manually."
 msgstr ""
-"A virtuális gép nem állt le a biztosított időkorlát alatt. A legtöbb esetben "
-"ez a nem megfelelő ACPI beállítások miatt van. Megpróbálhatja a gépet az "
+"A virtuális gép nem állt le a biztosított időkorlát alatt. A legtöbb esetben"
+" ez a nem megfelelő ACPI beállítások miatt van. Megpróbálhatja a gépet az "
 "operációs rendszerből, kézzel leállítani."
 
 #: vm/operations.py:827
@@ -5094,16 +4969,16 @@ msgstr "kikapcsolás"
 
 #: vm/operations.py:828
 msgid ""
-"Forcibly halt a virtual machine without notifying the operating system. This "
-"operation will even work in cases when shutdown does not, but the operating "
-"system and the file systems are likely to be in an inconsistent state,  so "
+"Forcibly halt a virtual machine without notifying the operating system. This"
+" operation will even work in cases when shutdown does not, but the operating"
+" system and the file systems are likely to be in an inconsistent state,  so "
 "data loss is also possible. The effect of this operation is the same as "
 "interrupting the power supply of a physical machine."
 msgstr ""
-"Virtuális gép erőltetett leállítása az operációs rendszer értesítése nélkül. "
-"Ez a művelet akkor is működik, ha a normál leállítás nem, de az operációs "
-"rendszer és a fájlrendszer sérülhet, adatvesztés történhet. A művelet hatása "
-"hasonló, mint egy fizikai gép tápellátásának megszüntetése."
+"Virtuális gép erőltetett leállítása az operációs rendszer értesítése nélkül."
+" Ez a művelet akkor is működik, ha a normál leállítás nem, de az operációs "
+"rendszer és a fájlrendszer sérülhet, adatvesztés történhet. A művelet hatása"
+" hasonló, mint egy fizikai gép tápellátásának megszüntetése."
 
 #: vm/operations.py:851
 msgid "sleep"
@@ -5111,19 +4986,19 @@ msgstr "altatás"
 
 #: vm/operations.py:852
 msgid ""
-"Suspend virtual machine. This means the machine is stopped and its memory is "
-"saved to disk, so if the machine is waked up, all the applications will keep "
-"running. Most of the applications will be able to continue even after a long "
-"suspension, but those which need a continous network connection may fail "
-"when resumed. In the meantime, the machine will only use storage resources, "
-"and keep network resources allocated."
+"Suspend virtual machine. This means the machine is stopped and its memory is"
+" saved to disk, so if the machine is waked up, all the applications will "
+"keep running. Most of the applications will be able to continue even after a"
+" long suspension, but those which need a continous network connection may "
+"fail when resumed. In the meantime, the machine will only use storage "
+"resources, and keep network resources allocated."
 msgstr ""
 "Virtuális gép felfüggesztése. A virtuális gép megállításra, memóriája "
 "lemezre mentésre kerül. Így a gép ébresztése után minden futó alkalmazás "
 "folytatódik. A legtöbb alkalmazás elviseli akár a hosszabb idejű "
 "felfüggesztést, azonban a folyamatos hálózati kapcsolatot igénylő programok "
-"megállhatnak visszaállítás után. A felfüggesztés ideje alatt a virtuális gép "
-"csak tárterületet és hálózati erőforrásokat foglal."
+"megállhatnak visszaállítás után. A felfüggesztés ideje alatt a virtuális gép"
+" csak tárterületet és hálózati erőforrásokat foglal."
 
 #: vm/operations.py:886
 msgid "suspend virtual machine"
@@ -5155,8 +5030,8 @@ msgid ""
 "operation renews expiration times according to the lease type. If the "
 "machine is close to the expiration, its owner will be notified."
 msgstr ""
-"A virtuális gépek lejáratuk után felfüggesztésre, majd törlésre kerülnek. Ez "
-"a művelet megújítja a bérletet a kiválasztott típusnak megfelelően. Ha egy "
+"A virtuális gépek lejáratuk után felfüggesztésre, majd törlésre kerülnek. Ez"
+" a művelet megújítja a bérletet a kiválasztott típusnak megfelelően. Ha egy "
 "gép közeledik a lejárathoz, a tulajdonost értesítjük."
 
 #: vm/operations.py:968
@@ -5169,8 +5044,8 @@ msgstr ""
 
 #: vm/operations.py:973
 msgid ""
-"Renewing the machine with the selected lease would result in its delete time "
-"get earlier than before."
+"Renewing the machine with the selected lease would result in its delete time"
+" get earlier than before."
 msgstr ""
 "A gép megújítása a kiválasztott bérleti mód mellett a törlési időt korábbra "
 "állította volna, mint a jelenlegi érték."
@@ -5245,8 +5120,10 @@ msgstr "aktiválás"
 
 #: vm/operations.py:1130
 msgid ""
-"Make node active, i.e. scheduler is allowed to deploy virtual machines to it."
-msgstr "Csomópont aktívvá tétele: az ütemező indíthat virtuális gépeket rajta."
+"Make node active, i.e. scheduler is allowed to deploy virtual machines to "
+"it."
+msgstr ""
+"Csomópont aktívvá tétele: az ütemező indíthat virtuális gépeket rajta."
 
 #: vm/operations.py:1138
 msgid "You cannot activate an active node."
@@ -5262,8 +5139,8 @@ msgid ""
 "it, but remaining instances and the ones manually migrated will continue "
 "running."
 msgstr ""
-"Csomópont passzívvá tétele: az ütemező nem indíthat rajta virtuális gépeket, "
-"azonban a megmaradt példányok és a kézzel idemigráltak tovább működnek."
+"Csomópont passzívvá tétele: az ütemező nem indíthat rajta virtuális gépeket,"
+" azonban a megmaradt példányok és a kézzel idemigráltak tovább működnek."
 
 #: vm/operations.py:1159
 msgid "You cannot passivate a passive node."
@@ -5303,18 +5180,17 @@ msgstr "visszaállítás"
 
 #: vm/operations.py:1210
 msgid ""
-"Try to recover virtual machine disks from destroyed state. Network resources "
-"(allocations) are already lost, so you will have to manually add interfaces "
-"afterwards."
+"Try to recover virtual machine disks from destroyed state. Network resources"
+" (allocations) are already lost, so you will have to manually add interfaces"
+" afterwards."
 msgstr ""
 "Megsemmisített virtuális gép lemezeinek visszaállítását kísérli meg. A "
 "hálózati erőforrások foglalásai már végleg elvesztek, így az interfészeket "
 "kézzel kell a visszaállítás után pótolni."
 
 #: vm/operations.py:1227
-#, fuzzy
 msgid "recover instance"
-msgstr "példány létrehozása"
+msgstr "példány helyreállítása"
 
 #: vm/operations.py:1250
 msgid "resources change"
@@ -5338,9 +5214,9 @@ msgstr "jelszó visszaállítása"
 
 #: vm/operations.py:1278
 msgid ""
-"Generate and set a new login password on the virtual machine. This operation "
-"requires the agent running. Resetting the password is not warranted to allow "
-"you logging in as other settings are possible to prevent it."
+"Generate and set a new login password on the virtual machine. This operation"
+" requires the agent running. Resetting the password is not warranted to "
+"allow you logging in as other settings are possible to prevent it."
 msgstr ""
 "Egy új belépési jelszó generálása és beállítása a virtuális gépen. Ez a "
 "művelet megköveteli az ügynök futását. A jelszó átállítása nem garantálja a "
@@ -5457,7 +5333,8 @@ msgstr "csomópont"
 #: vm/models/activity.py:267
 msgid "Manager is restarted, activity is cleaned up. You can try again now."
 msgstr ""
-"A menedzser újraindítása miatt a tevékenység lezárásra került. Próbálja újra."
+"A menedzser újraindítása miatt a tevékenység lezárásra került. Próbálja "
+"újra."
 
 #: vm/models/common.py:39
 msgid "number of cores"
@@ -5535,8 +5412,8 @@ msgstr "rendszerbetöltő menüje"
 #: vm/models/instance.py:102
 msgid "Show boot device selection menu on boot."
 msgstr ""
-"A rendszerbetöltés eszközének kiválasztását lehetővé tevő menü megjelenítése "
-"indításkor."
+"A rendszerbetöltés eszközének kiválasztását lehetővé tevő menü megjelenítése"
+" indításkor."
 
 #: vm/models/instance.py:103
 msgid "Preferred expiration periods."
@@ -5765,13 +5642,11 @@ msgstr "VM állapota erre változott: %(state)s (ezen: %(node)s)"
 #, python-format
 msgid ""
 "Your instance <a href=\"%(url)s\">%(instance)s</a> is going to expire. It "
-"will be suspended at %(suspend)s and destroyed at %(delete)s. Please, either "
-"<a href=\"%(token)s\">renew</a> or <a href=\"%(url)s\">destroy</a> it now."
+"will be suspended at %(suspend)s and destroyed at %(delete)s. Please, either"
+" <a href=\"%(token)s\">renew</a> or <a href=\"%(url)s\">destroy</a> it now."
 msgstr ""
 "<a href=\"%(url)s\">%(instance)s</a> gépe hamarosan lejár:\n"
-"%(suspend)s időpontban felfüggesztésre, %(delete)s időpontban törlésre "
-"kerül.  Kérjük, <a href=\"%(token)s\">újítsa meg</a> vagy <a href=\"%(url)s"
-"\">törölje</a> most."
+"%(suspend)s időpontban felfüggesztésre, %(delete)s időpontban törlésre kerül.  Kérjük, <a href=\"%(token)s\">újítsa meg</a> vagy <a href=\"%(url)s\">törölje</a> most."
 
 #: vm/models/instance.py:658
 #, python-format
@@ -5836,8 +5711,8 @@ msgstr "Az interfész létrehozásra került."
 #: vm/models/network.py:136
 #, python-format
 msgid ""
-"Interface successfully created. New addresses: ipv4: %(ip4)s, ipv6: %(ip6)s, "
-"vlan: %(vlan)s."
+"Interface successfully created. New addresses: ipv4: %(ip4)s, ipv6: %(ip6)s,"
+" vlan: %(vlan)s."
 msgstr ""
 "Az interfész létrehozásra került.Az új címek: %(ip4)s (ipv4), %(ip6)s "
 "(ipv6). Vlan: %(vlan)s."
@@ -5888,7 +5763,7 @@ msgstr "Az összes memória és a túlfoglalható memória aránya."
 
 #: vm/models/node.py:92
 msgid "Can view Node box and statistics."
-msgstr ""
+msgstr "Láthatja a csomópontok dobozt és a statisztikát."
 
 #: vm/models/node.py:140
 msgid "missing"
@@ -5922,8 +5797,8 @@ msgstr "%(instance)s megsemmisítve"
 #: vm/tasks/local_periodic_tasks.py:53
 #, python-format
 msgid ""
-"Your instance <a href=\"%(url)s\">%(instance)s</a> has been destroyed due to "
-"expiration."
+"Your instance <a href=\"%(url)s\">%(instance)s</a> has been destroyed due to"
+" expiration."
 msgstr ""
 "<a href=\"%(url)s\">%(instance)s</a> gépe megsemmisítésre került, mivel "
 "lejárt."
@@ -5936,8 +5811,8 @@ msgstr "%(instance)s felfüggesztve"
 #: vm/tasks/local_periodic_tasks.py:67
 #, python-format
 msgid ""
-"Your instance <a href=\"%(url)s\">%(instance)s</a> has been suspended due to "
-"expiration. You can resume or destroy it."
+"Your instance <a href=\"%(url)s\">%(instance)s</a> has been suspended due to"
+" expiration. You can resume or destroy it."
 msgstr ""
 "<a href=\"%(url)s\">%(instance)s</a> gépe felfüggesztésre került, mivel "
 "lejárt. Felébresztheti vagy megsemmisítheti."
@@ -5956,8 +5831,7 @@ msgstr "x"
 #~ msgstr "Porteltávolítás megerősítése"
 
 #~ msgid "Are you sure you want to close %(port)d/%(proto)s on %(vm)s?"
-#~ msgstr ""
-#~ "Biztosan bezárja a(z) %(port)d/%(proto)s portot a következőn: %(vm)s?"
+#~ msgstr "Biztosan bezárja a(z) %(port)d/%(proto)s portot a következőn: %(vm)s?"
 
 #~ msgid "Port successfully removed."
 #~ msgstr "A port eltávolításra került."
@@ -6049,8 +5923,7 @@ msgstr "x"
 #~ "Virtuális gép mentése sablonként.\n"
 #~ "\n"
 #~ "        A sablonokat megoszthatja csoportokkal vagy felhasználókkal.\n"
-#~ "        A felhasználók virtuális gépeket példányosíthatnak a "
-#~ "sablonokból.\n"
+#~ "        A felhasználók virtuális gépeket példányosíthatnak a sablonokból.\n"
 #~ "        "
 
 #~ msgid "Shutdown virtual machine with ACPI signal."
@@ -6148,13 +6021,11 @@ msgstr "x"
 
 #~ msgid ""
 #~ "\n"
-#~ "Please, either <a href=\"%(token)s\">renew</a> or <a href=\"%(url)s"
-#~ "\">destroy</a>\n"
+#~ "Please, either <a href=\"%(token)s\">renew</a> or <a href=\"%(url)s\">destroy</a>\n"
 #~ "it now.\n"
 #~ msgstr ""
 #~ "\n"
-#~ "<a href=\"%(token)s\">Újítsa meg</a> vagy <a href=\"%(url)s\">törölje</"
-#~ "a>\n"
+#~ "<a href=\"%(token)s\">Újítsa meg</a> vagy <a href=\"%(url)s\">törölje</a>\n"
 #~ "most.\n"
 
 #~ msgid "Add new network interface!"
