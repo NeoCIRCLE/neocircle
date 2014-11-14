@@ -965,7 +965,13 @@ class Firewall(models.Model):
             return get_dhcp_clients.apply_async(
                 queue=self.get_remote_queue_name(), expires=60).get(timeout=2)
         except TimeoutError:
-            return None
+            logger.info("get_dhcp_clients task timed out")
+        except IOError:
+            logger.exception("get_dhcp_clients failed. "
+                             "maybe syslog isn't readble by firewall worker")
+        except:
+            logger.exception("get_dhcp_clients failed")
+        return None
 
 
 class Domain(models.Model):
