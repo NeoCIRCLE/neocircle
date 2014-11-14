@@ -971,7 +971,7 @@ class Firewall(models.Model):
                              "maybe syslog isn't readble by firewall worker")
         except:
             logger.exception("get_dhcp_clients failed")
-        return None
+        return {}
 
 
 class Domain(models.Model):
