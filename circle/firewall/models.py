@@ -404,9 +404,13 @@ class Vlan(AclBase, models.Model):
                     raise ValidationError(
                         _("%(ip6)s (translated from %(ip4)s) is outside of "
                           "the IPv6 network.") % {"ip4": i, "ip6": i6})
-        if not self.ipv6_template and self.network6:
-            self.ipv6_template = self._magic_ipv6_template(self.network4,
-                                                           self.network6)
+        if self.network6:
+            tpl, prefixlen = self._magic_ipv6_template(self.network4,
+                                                       self.network6)
+            if not self.ipv6_template:
+                self.ipv6_template = tpl
+            if not self.host_ipv6_prefixlen:
+                self.host_ipv6_prefixlen = prefixlen
         host4_bytes = self._host_bytes(self.network4.prefixlen, 4)
         host6_bytes = self._host_bytes(self.network6.prefixlen, 16)
         if host4_bytes > host6_bytes:
@@ -419,7 +423,19 @@ class Vlan(AclBase, models.Model):
 
     @classmethod
     def _magic_ipv6_template(cls, network4, network6, verbose=None):
-        """Offer a sensible ipv6_template value."""
+        """Offer a sensible ipv6_template value.
+
+        Based on prefix lengths the method magically selects verbose (decimal)
+        format:
+        >>> Vlan._magic_ipv6_template(IPNetwork("198.51.100.0/24"),
+        ...                           IPNetwork("2001:0DB8:1:1::/64"))
+        ('2001:db8:1:1:%(d)d::', 80)
+
+        However you can explicitly select non-verbose, i.e. hexa format:
+        >>> Vlan._magic_ipv6_template(IPNetwork("198.51.100.0/24"),
+        ...                           IPNetwork("2001:0DB8:1:1::/64"), False)
+        ('2001:db8:1:1:%(d)02x00::', 72)
+        """
         host4_bytes = cls._host_bytes(network4.prefixlen, 4)
         host6_bytes = cls._host_bytes(network6.prefixlen, 16)
         letters = ascii_letters[4-host4_bytes:4]
@@ -434,18 +450,18 @@ class Vlan(AclBase, models.Model):
         else:
             remain = host6_bytes
             for i in letters:
-                if remain % 2 == 1:  # can use last half word
-                    assert s[-1] == "0" or s[-1].endswith("00")
-                    if s[-1].endswith("00"):
-                        s[-1] = s[-1][:-2]
-                    s[-1] += "%({})02x".format(i)
-                    s[-1].lstrip("0")
-                else:
-                    s.append("%({})02x00".format(i))
+                cls._append_hexa(s, i, remain % 2 == 1)
                 remain -= 1
         if host6_bytes > host4_bytes:
             s.append(":")
-        return ":".join(s)
+        tpl = ":".join(s)
+        # compute prefix length
+        mask = int(IPAddress(tpl % {"a": 1, "b": 1, "c": 1, "d": 1}))
+        prefixlen = 128
+        while mask % 2 == 0:
+            mask /= 2
+            prefixlen -= 1
+        return (tpl, prefixlen)
 
     def __unicode__(self):
         return "%s - %s" % ("managed" if self.managed else "unmanaged",

@@ -708,11 +708,11 @@ class VlanMagicMixin(object):
         result = {}
         if "network4" in GET and "network6" in GET:
             try:
-                result["ipv6_template"] = Vlan._magic_ipv6_template(
-                    IPNetwork(GET['network4']),
-                    IPNetwork(GET['network6']))
+                result["ipv6_template"], result["host_ipv6_prefixlen"] = (
+                    Vlan._magic_ipv6_template(IPNetwork(GET['network4']),
+                                              IPNetwork(GET['network6'])))
             except:
-                result["ipv6_template"] = ""
+                result["ipv6_template"] = result["host_ipv6_prefixlen"] = ""
         return JsonResponse({k: unicode(result[k] or "") for k in result})
 
     def get(self, *args, **kwargs):
