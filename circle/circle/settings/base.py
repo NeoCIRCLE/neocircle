@@ -197,6 +197,7 @@ PIPELINE_JS = {
         "intro.js/intro.js",
         "jquery-knob/dist/jquery.knob.min.js",
         "jquery-simple-slider/js/simple-slider.js",
+        "knockout/dist/knockout.js",
         "dashboard/dashboard.js",
         "dashboard/group-details.js",
         "dashboard/group-list.js",
