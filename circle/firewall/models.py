@@ -17,9 +17,11 @@
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
-from itertools import islice, ifilter
+from string import ascii_letters
+from itertools import islice, ifilter, chain
+from math import ceil
 import logging
-from netaddr import IPSet, EUI, IPNetwork
+import random
 
 from django.contrib.auth.models import User
 from django.db import models
@@ -28,15 +30,17 @@ from django.utils.translation import ugettext_lazy as _
 from firewall.fields import (MACAddressField, val_alfanum, val_reverse_domain,
                              val_ipv6_template, val_domain, val_ipv4,
                              val_domain_wildcard,
-                             val_ipv6, val_mx, convert_ipv4_to_ipv6,
+                             val_ipv6, val_mx,
                              IPNetworkField, IPAddressField)
 from django.core.validators import MinValueValidator, MaxValueValidator
 import django.conf
 from django.db.models.signals import post_save, post_delete
-import random
+from celery.exceptions import TimeoutError
+from netaddr import IPSet, EUI, IPNetwork, IPAddress, ipv6_full
 
 from common.models import method_cache, WorkerNotFound, HumanSortField
 from firewall.tasks.local_tasks import reloadtask
+from firewall.tasks.remote_tasks import get_dhcp_clients
 from .iptables import IptRule
 from acl.models import AclBase
 
@@ -360,9 +364,19 @@ class Vlan(AclBase, models.Model):
                     'address is: "%(d)d.%(c)d.%(b)d.%(a)d.in-addr.arpa".'),
         default="%(d)d.%(c)d.%(b)d.%(a)d.in-addr.arpa")
     ipv6_template = models.TextField(
-        validators=[val_ipv6_template],
-        verbose_name=_('ipv6 template'),
-        default="2001:738:2001:4031:%(b)d:%(c)d:%(d)d:0")
+        blank=True,
+        help_text=_('Template for translating IPv4 addresses to IPv6. '
+                    'Automatically generated hosts in dual-stack networks '
+                    'will get this address. The template '
+                    'can contain four tokens: "%(a)d", "%(b)d", '
+                    '"%(c)d", and "%(d)d", representing the four bytes '
+                    'of the IPv4 address, respectively, in decimal notation. '
+                    'Moreover you can use any standard printf format '
+                    'specification like %(a)02x to get the first byte as two '
+                    'hexadecimal digits. Usual choices for mapping '
+                    '198.51.100.0/24 to 2001:0DB8:1:1::/64 would be '
+                    '"2001:db8:1:1:%(d)d::" and "2001:db8:1:1:%(d)02x00::".'),
+        validators=[val_ipv6_template], verbose_name=_('ipv6 template'))
     dhcp_pool = models.TextField(blank=True, verbose_name=_('DHCP pool'),
                                  help_text=_(
                                      'The address range of the DHCP pool: '
@@ -376,6 +390,87 @@ class Vlan(AclBase, models.Model):
                               verbose_name=_('owner'))
     modified_at = models.DateTimeField(auto_now=True,
                                        verbose_name=_('modified at'))
+
+    def clean(self):
+        super(Vlan, self).clean()
+        if self.ipv6_template:
+            if not self.network6:
+                raise ValidationError(
+                    _("You cannot specify an IPv6 template if there is no "
+                      "IPv6 network set."))
+            for i in (self.network4[1], self.network4[-1]):
+                i6 = self.convert_ipv4_to_ipv6(i)
+                if i6 not in self.network6:
+                    raise ValidationError(
+                        _("%(ip6)s (translated from %(ip4)s) is outside of "
+                          "the IPv6 network.") % {"ip4": i, "ip6": i6})
+        if self.network6:
+            tpl, prefixlen = self._magic_ipv6_template(self.network4,
+                                                       self.network6)
+            if not self.ipv6_template:
+                self.ipv6_template = tpl
+            if not self.host_ipv6_prefixlen:
+                self.host_ipv6_prefixlen = prefixlen
+
+    @staticmethod
+    def _host_bytes(prefixlen, maxbytes):
+        return int(ceil((maxbytes - prefixlen / 8.0)))
+
+    @staticmethod
+    def _append_hexa(s, v, lasthalf):
+        if lasthalf:  # can use last half word
+            assert s[-1] == "0" or s[-1].endswith("00")
+            if s[-1].endswith("00"):
+                s[-1] = s[-1][:-2]
+            s[-1] += "%({})02x".format(v)
+            s[-1].lstrip("0")
+        else:
+            s.append("%({})02x00".format(v))
+
+    @classmethod
+    def _magic_ipv6_template(cls, network4, network6, verbose=None):
+        """Offer a sensible ipv6_template value.
+
+        Based on prefix lengths the method magically selects verbose (decimal)
+        format:
+        >>> Vlan._magic_ipv6_template(IPNetwork("198.51.100.0/24"),
+        ...                           IPNetwork("2001:0DB8:1:1::/64"))
+        ('2001:db8:1:1:%(d)d::', 80)
+
+        However you can explicitly select non-verbose, i.e. hexa format:
+        >>> Vlan._magic_ipv6_template(IPNetwork("198.51.100.0/24"),
+        ...                           IPNetwork("2001:0DB8:1:1::/64"), False)
+        ('2001:db8:1:1:%(d)02x00::', 72)
+        """
+        host4_bytes = cls._host_bytes(network4.prefixlen, 4)
+        host6_bytes = cls._host_bytes(network6.prefixlen, 16)
+        if host4_bytes > host6_bytes:
+            raise ValidationError(
+                _("IPv6 network is too small to map IPv4 addresses to it."))
+        letters = ascii_letters[4-host4_bytes:4]
+        remove = host6_bytes // 2
+        ipstr = network6.network.format(ipv6_full)
+        s = ipstr.split(":")[0:-remove]
+        if verbose is None:  # use verbose format if net6 much wider
+            verbose = 2 * (host4_bytes + 1) < host6_bytes
+        if verbose:
+            for i in letters:
+                s.append("%({})d".format(i))
+        else:
+            remain = host6_bytes
+            for i in letters:
+                cls._append_hexa(s, i, remain % 2 == 1)
+                remain -= 1
+        if host6_bytes > host4_bytes:
+            s.append(":")
+        tpl = ":".join(s)
+        # compute prefix length
+        mask = int(IPAddress(tpl % {"a": 1, "b": 1, "c": 1, "d": 1}))
+        prefixlen = 128
+        while mask % 2 == 0:
+            mask /= 2
+            prefixlen -= 1
+        return (tpl, prefixlen)
 
     def __unicode__(self):
         return "%s - %s" % ("managed" if self.managed else "unmanaged",
@@ -402,7 +497,7 @@ class Vlan(AclBase, models.Model):
             logger.debug("Found unused IPv4 address %s.", ipv4)
             ipv6 = None
             if self.network6 is not None:
-                ipv6 = convert_ipv4_to_ipv6(self.ipv6_template, ipv4)
+                ipv6 = self.convert_ipv4_to_ipv6(ipv4)
                 if ipv6 in used_v6:
                     continue
                 else:
@@ -410,6 +505,20 @@ class Vlan(AclBase, models.Model):
             return {'ipv4': ipv4, 'ipv6': ipv6}
         else:
             raise ValidationError(_("All IP addresses are already in use."))
+
+    def convert_ipv4_to_ipv6(self, ipv4):
+        """Convert IPv4 address string to IPv6 address string."""
+        if isinstance(ipv4, basestring):
+            ipv4 = IPAddress(ipv4, 4)
+        nums = {ascii_letters[i]: int(ipv4.words[i]) for i in range(4)}
+        return IPAddress(self.ipv6_template % nums)
+
+    def get_dhcp_clients(self):
+        macs = set(i.mac for i in self.host_set.all())
+        return [{"mac": k, "ip": v["ip"], "hostname": v["hostname"]}
+                for k, v in chain(*(fw.get_dhcp_clients().iteritems()
+                                    for fw in Firewall.objects.all() if fw))
+                if v["interface"] == self.name and EUI(k) not in macs]
 
 
 class VlanGroup(models.Model):
@@ -581,8 +690,7 @@ class Host(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.id and self.ipv6 == "auto":
-            self.ipv6 = convert_ipv4_to_ipv6(self.vlan.ipv6_template,
-                                             self.ipv4)
+            self.ipv6 = self.vlan.convert_ipv4_to_ipv6(self.ipv4)
         self.full_clean()
 
         super(Host, self).save(*args, **kwargs)
@@ -838,7 +946,7 @@ class Firewall(models.Model):
         return self.name
 
     @method_cache(30)
-    def get_remote_queue_name(self, queue_id):
+    def get_remote_queue_name(self, queue_id="firewall"):
         """Returns the name of the remote celery queue for this node.
 
         Throws Exception if there is no worker on the queue.
@@ -850,6 +958,20 @@ class Firewall(models.Model):
             return self.name + "." + queue_id
         else:
             raise WorkerNotFound()
+
+    @method_cache(20)
+    def get_dhcp_clients(self):
+        try:
+            return get_dhcp_clients.apply_async(
+                queue=self.get_remote_queue_name(), expires=60).get(timeout=2)
+        except TimeoutError:
+            logger.info("get_dhcp_clients task timed out")
+        except IOError:
+            logger.exception("get_dhcp_clients failed. "
+                             "maybe syslog isn't readble by firewall worker")
+        except:
+            logger.exception("get_dhcp_clients failed")
+        return {}
 
 
 class Domain(models.Model):

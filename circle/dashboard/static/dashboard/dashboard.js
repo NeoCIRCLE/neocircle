@@ -108,9 +108,9 @@ $(function () {
     e.stopImmediatePropagation();
     return false;
   });
-  $('[title]:not(.title-favourite)').tooltip();
-  $('.title-favourite').tooltip({'placement': 'right'});
-  $(':input[title]').tooltip({trigger: 'focus', placement: 'auto right'});
+  $('body [title]:not(.title-favourite)').tooltip();
+  $('body .title-favourite').tooltip({'placement': 'right'});
+  $('body :input[title]').tooltip({trigger: 'focus', placement: 'auto right'});
   $(".knob").knob();
 
   $('[data-toggle="pill"]').click(function() {
@@ -132,7 +132,7 @@ $(function () {
   $('.js-hidden').hide();
 
   /* favourite star */
-  $("#dashboard-vm-list").on('click', '.dashboard-vm-favourite', function(e) {
+  $("#dashboard-vm-list, .page-header").on('click', '.dashboard-vm-favourite', function(e) {
     var star = $(this).children("i");
     var pk = $(this).data("vm");
     if(star.hasClass("fa-star-o")) {
