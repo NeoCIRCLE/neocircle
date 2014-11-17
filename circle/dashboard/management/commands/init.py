@@ -23,7 +23,7 @@ from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 
 from firewall.models import (Vlan, VlanGroup, Domain, Firewall, Rule,
-                             SwitchPort, EthernetDevice)
+                             SwitchPort, EthernetDevice, Host)
 from storage.models import DataStore
 from vm.models import Lease
 
@@ -31,6 +31,7 @@ from vm.models import Lease
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
         make_option('--force', action="store_true"),
+        make_option('--portal-ip'),
         make_option('--external-net'),
         make_option('--management-net'),
         make_option('--vm-net'),
@@ -96,11 +97,13 @@ class Command(BaseCommand):
                           network4=options['management_net'], domain=domain,
                           snat_ip=options['external_net'].split('/')[0])
         man.snat_to.add(net)
+        man.snat_to.add(man)
 
         vm = self.create(Vlan, 'name', name='vm', vid=2, dhcp_pool='manual',
                          network4=options['vm_net'], domain=domain,
                          snat_ip=options['external_net'].split('/')[0])
         vm.snat_to.add(net)
+        vm.snat_to.add(vm)
 
         # default vlan groups
         vg_all = self.create(VlanGroup, 'name', name='all')
@@ -111,6 +114,14 @@ class Command(BaseCommand):
 
         vg_net = self.create(VlanGroup, 'name', name='net')
         vg_net.vlans.add(net)
+
+        # portal host
+        portal = self.create(Host, 'hostname', hostname='portal', vlan=man,
+                             mac='11:22:33:44:55:66', owner=admin,
+                             shared_ip=True, external_ipv4=man.snat_ip,
+                             ipv4=options['portal_ip'])
+        portal.add_port(proto='tcp', public=443, private=443)
+        portal.add_port(proto='tcp', public=22, private=22)
 
         # firewall rules
         fw = self.create(Firewall, 'name', name=options['firewall_queue'])
