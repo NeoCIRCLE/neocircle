@@ -25,7 +25,7 @@ $(function() {
       retval = false;
     } else if(shiftDown) {
       if(selected.length > 0) {
-        start = selected[selected.length - 1]['index'] + 1;
+        start = selected[selected.length - 1].index + 1;
         end = $(this).index();
 
         if(start > end) {
@@ -101,7 +101,7 @@ $(function() {
   });
 
 
-  $("body").on("click", "#op-form-send", function() {
+  $("body").on("click", "#mass-op-form-send", function() {
     var url = $(this).closest("form").prop("action");
     $(this).find("i").prop("class", "fa fa-fw fa-spinner fa-spin");
 

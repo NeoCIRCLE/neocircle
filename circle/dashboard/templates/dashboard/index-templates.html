@@ -1,7 +1,7 @@
 {% load i18n %}
 <div class="panel panel-default">
   <div class="panel-heading">
-    <span class="btn btn-default btn-xs infobtn pull-right" title="{% trans "List of VM templates that are available for you. You can create new ones from scratch or customize existing ones (preferred)." %}">
+    <span class="btn btn-default btn-xs infobtn pull-right" data-container="body" title="{% trans "List of VM templates that are available for you. You can create new ones from scratch or customize existing ones (preferred)." %}">
       <i class="fa fa-info-circle"></i>
     </span>
     <h3 class="no-margin"><i class="fa fa-puzzle-piece"></i> {% trans "Templates" %}
@@ -16,7 +16,10 @@
           <i class="fa fa-{{ t.os_type }}"></i> {{ t.name }}
         </span>
         <small class="text-muted index-template-list-system">{{ t.system }}</small>
-        <div class="pull-right vm-create" data-template="{{ t.pk }}"><i title="{% trans "Start vm instance" %}" class="fa fa-play"></i></div>
+        <div class="pull-right vm-create" data-template="{{ t.pk }}">
+          <i data-container="body" title="{% trans "Start VM instance" %}" 
+            class="fa fa-play"></i>
+        </div>
         <div class="clearfix"></div>
       </a>
       {% empty %}

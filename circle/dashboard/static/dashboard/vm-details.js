@@ -1,6 +1,7 @@
 var show_all = false;
 var in_progress = false;
 var activity_hash = 5;
+var Websock_native; // not sure
 var reload_vm_detail = false;
 
 $(function() {
@@ -42,7 +43,7 @@ $(function() {
     var vm = $(this).data("vm");
     $.ajax({
       type: 'POST',
-      url: "/dashboard/vm/" + vm + "/op/resources_change/", 
+      url: "/dashboard/vm/" + vm + "/op/resources_change/",
       data: $('#vm-details-resources-form').serialize(),
       success: function(data, textStatus, xhr) {
         if(data.success) {
@@ -58,7 +59,7 @@ $(function() {
           addMessage("500 Internal Server Error", "danger");
         } else {
           addMessage(xhr.status + " Unknown Error", "danger");
-        }  
+        }
       }
     });
     e.preventDefault();
@@ -71,17 +72,17 @@ $(function() {
     $.ajax({
       type: 'POST',
       url: location.href,
-      headers: {"X-CSRFToken": getCookie('csrftoken')}, 
+      headers: {"X-CSRFToken": getCookie('csrftoken')},
       data: {'to_remove': to_remove},
       success: function(re) {
-        if(re['message'].toLowerCase() == "success") {
+        if(re.message.toLowerCase() == "success") {
           $(clicked).closest(".label").fadeOut(500, function() {
             $(this).remove();
           });
         }
       },
       error: function() {
-        addMessage(re['message'], 'danger');
+        addMessage(re.message, 'danger');
       }
 
     });
@@ -90,7 +91,7 @@ $(function() {
 
   /* remove port */
   $('.vm-details-remove-port').click(function() {
-    addModalConfirmation(removePort, 
+    addModalConfirmation(removePort,
       {
         'url': $(this).prop("href"),
         'data': [],
@@ -101,7 +102,7 @@ $(function() {
 
   /* for js fallback */
   $("#vm-details-pw-show").parent("div").children("input").prop("type", "password");
-  
+
   /* show password */
   $("#vm-details-pw-show").click(function() {
     var input = $(this).parent("div").children("input");
@@ -150,7 +151,7 @@ $(function() {
         }
       });
     } else {
-      $("#vm-details-pw-confirm").fadeOut(); 
+      $("#vm-details-pw-confirm").fadeOut();
     }
     return false;
   });
@@ -170,7 +171,7 @@ $(function() {
   /* for interface remove buttons */
   $('.interface-remove').click(function() {
     var interface_pk = $(this).data('interface-pk');
-    addModalConfirmation(removeInterface, 
+    addModalConfirmation(removeInterface,
       { 'url': '/dashboard/interface/' + interface_pk + '/delete/',
         'data': [],
         'pk': interface_pk,
@@ -183,15 +184,15 @@ $(function() {
   function removeInterface(data) {
     $.ajax({
       type: 'POST',
-      url: data['url'],
-      headers: {"X-CSRFToken": getCookie('csrftoken')}, 
-      success: function(re, textStatus, xhr) { 
+      url: data.url,
+      headers: {"X-CSRFToken": getCookie('csrftoken')},
+      success: function(re, textStatus, xhr) {
         /* remove the html element */
         $('a[data-interface-pk="' + data.pk + '"]').closest("div").fadeOut();
         location.reload();
       },
       error: function(xhr, textStatus, error) {
-        addMessage('Uh oh :(', 'danger')
+        addMessage('Uh oh :(', 'danger');
       }
     });
   }
@@ -221,12 +222,12 @@ $(function() {
       data: {'new_name': name},
       headers: {"X-CSRFToken": getCookie('csrftoken')},
       success: function(data, textStatus, xhr) {
-        $(".vm-details-home-edit-name").text(data['new_name']).show();
+        $(".vm-details-home-edit-name").text(data.new_name).show();
         $(".vm-details-home-edit-name").parent("div").show();
         $(".vm-details-home-edit-name-click").show();
         $(".vm-details-home-rename-form-div").hide();
         // update the inputs too
-        $(".vm-details-rename-submit").parent("span").prev("input").val(data['new_name']);  
+        $(".vm-details-rename-submit").parent("span").prev("input").val(data.new_name);
       },
       error: function(xhr, textStatus, error) {
         addMessage("Error during renaming!", "danger");
@@ -234,7 +235,7 @@ $(function() {
     });
     return false;
   });
-  
+
   /* update description click */
   $(".vm-details-home-edit-description-click").click(function(e) {
     $(".vm-details-home-edit-description-click").hide();
@@ -246,7 +247,7 @@ $(function() {
     ta.val(tmp)
     e.preventDefault();
   });
-  
+
   /* description update ajax */
   $('.vm-details-description-submit').click(function() {
     var description = $(this).prev("textarea").val();
@@ -256,14 +257,14 @@ $(function() {
       data: {'new_description': description},
       headers: {"X-CSRFToken": getCookie('csrftoken')},
       success: function(data, textStatus, xhr) {
-        var new_desc = data['new_description'];
-        /* we can't simply use $.text, because we need new lines */ 
+        var new_desc = data.new_description;
+        /* we can't simply use $.text, because we need new lines */
         var tagsToReplace = {
           '&': "&amp;",
           '<': "&lt;",
           '>': "&gt;",
         };
-        
+
         new_desc = new_desc.replace(/[&<>]/g, function(tag) {
           return tagsToReplace[tag] || tag;
         });
@@ -273,7 +274,7 @@ $(function() {
         $(".vm-details-home-edit-description-click").show();
         $("#vm-details-home-description").hide();
         // update the textareia
-        $("vm-details-home-description textarea").text(data['new_description']);  
+        $("vm-details-home-description textarea").text(data.new_description);
       },
       error: function(xhr, textStatus, error) {
         addMessage("Error during renaming!", "danger");
@@ -300,8 +301,8 @@ $(function() {
     .find("i").removeClass("fa-spinner fa-spin");
 
   });
-    
-  
+
+
   // screenshot close
   $("#vm-console-screenshot button").click(function() {
     $(this).parent("div").slideUp();
@@ -340,15 +341,15 @@ $(function() {
 function removePort(data) {
   $.ajax({
     type: 'POST',
-    url: data['url'],
+    url: data.url,
     headers: {"X-CSRFToken": getCookie('csrftoken')},
     success: function(re, textStatus, xhr) {
-      $("a[data-rule=" + data['rule'] + "]").each(function() {
+      $("a[data-rule=" + data.rule + "]").each(function() {
         $(this).closest("tr").fadeOut(500, function() {
           $(this).remove();
         });
       });
-      addMessage(re['message'], "success");
+      addMessage(re.message, "success");
     },
     error: function(xhr, textStatus, error) {
 
@@ -374,23 +375,23 @@ function checkNewActivity(runs) {
     url: '/dashboard/vm/' + instance + '/activity/',
     data: {'show_all': show_all},
     success: function(data) {
-      var new_activity_hash = (data['activities'] + "").hashCode();
+      var new_activity_hash = (data.activities + "").hashCode();
       if(new_activity_hash != activity_hash) {
-        $("#activity-refresh").html(data['activities']);
+        $("#activity-refresh").html(data.activities);
       }
       activity_hash = new_activity_hash;
 
-      $("#ops").html(data['ops']);
-      $("#disk-ops").html(data['disk_ops']);
+      $("#ops").html(data.ops);
+      $("#disk-ops").html(data.disk_ops);
       $("[title]").tooltip();
 
       /* changing the status text */
       var icon = $("#vm-details-state i");
-      if(data['is_new_state']) {
+      if(data.is_new_state) {
         if(!icon.hasClass("fa-spin"))
           icon.prop("class", "fa fa-spinner fa-spin");
       } else {
-        icon.prop("class", "fa " + data['icon']);
+        icon.prop("class", "fa " + data.icon);
       }
       $("#vm-details-state").data("status", data['status']);
       $("#vm-details-state span").html(data['human_readable_status'].toUpperCase());
@@ -406,7 +407,7 @@ function checkNewActivity(runs) {
         $("[data-target=#_console]").attr("data-toggle", "_pill").attr("href", "#").parent("li").addClass("disabled");
       }
 
-      if(data['status'] == "STOPPED" || data['status'] == "PENDING") {
+      if(data.status == "STOPPED" || data.status == "PENDING") {
         $(".change-resources-button").prop("disabled", false);
         $(".change-resources-help").hide();
       } else {
@@ -416,7 +417,7 @@ function checkNewActivity(runs) {
 
       if(runs > 0 && decideActivityRefresh()) {
         setTimeout(
-          function() {checkNewActivity(runs + 1)}, 
+          function() {checkNewActivity(runs + 1);},
           1000 + Math.exp(runs * 0.05)
         );
       } else {
@@ -433,7 +434,7 @@ function checkNewActivity(runs) {
 
 String.prototype.hashCode = function() {
   var hash = 0, i, chr, len;
-  if (this.length == 0) return hash;
+  if (this.length === 0) return hash;
   for (i = 0, len = this.length; i < len; i++) {
     chr   = this.charCodeAt(i);
     hash  = ((hash << 5) - hash) + chr;

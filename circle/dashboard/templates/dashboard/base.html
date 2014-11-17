@@ -1,13 +1,11 @@
 {% extends "base.html" %}
+{% load staticfiles %}
 {% load i18n %}
 
 {% block title-site %}Dashboard | CIRCLE{% endblock %}
 
 
 {% block extra_link %}
-  <link rel="stylesheet" href="{{ STATIC_URL }}dashboard/loopj-jquery-simple-slider/css/simple-slider.css"/>
-  <link rel="stylesheet" href="{{ STATIC_URL }}dashboard/introjs/introjs.min.css">
-  <link href="{{ STATIC_URL }}dashboard/dashboard.css" rel="stylesheet">
   {% block extra_link_2 %}{% endblock %}
 {% endblock %}
 
@@ -22,14 +20,14 @@
 {% if user.is_authenticated and user.pk and not request.token_user %}
   <ul class="nav navbar-nav pull-right">
     <li class="dropdown" id="notification-button">
-      <a href="{% url "dashboard.views.notifications" %}" style="color: white; font-size: 12px;"
+      <a href="{% url "dashboard.views.notifications" %}"
         class="dropdown-toggle" data-toggle="dropdown">
         {% trans "Notifications" %}
         {% if NEW_NOTIFICATIONS_COUNT > 0 %}
           <span class="badge badge-pulse">{{ NEW_NOTIFICATIONS_COUNT }}</span>
         {% endif %}
       </a>
-      <ul class="dropdown-menu notification-messages">
+      <ul class="dropdown-menu" id="notification-messages">
           <li>{% trans "Loading..." %}</li>
       </ul>
     </li>
@@ -38,7 +36,7 @@
   <a class="navbar-brand pull-right" href="{% url "logout" %}?next={% url "login" %}" style="color: white; font-size: 10px;">
     <i class="fa fa-sign-out"></i> {% trans "Log out" %}
   </a>
-  <a class="navbar-brand pull-right" href="{% url "dashboard.views.profile-preferences" %}" title="{% trans "User profile" %}" style="color: white; font-size: 10px;">
+  <a class="navbar-brand pull-right" href="{% url "dashboard.views.profile-preferences" %}" style="color: white; font-size: 10px;">
     <i class="fa fa-user"></i>
     {% include "dashboard/_display-name.html" with user=user show_org=True %}
   </a>
@@ -51,10 +49,4 @@
   <a class="navbar-brand pull-right" href="{% url "login" %}?next={{ request.path }}" style="color: white; font-size: 10px;"><i class="fa fa-sign-in"></i> {% trans "Log in " %}</a>
 {% endif %}
 
-{% endblock %}
-
-
-{% block extra_script %}
-  <script src="{{ STATIC_URL }}dashboard/js/jquery.knob.js"></script>
-  <script src="{{ STATIC_URL }}dashboard/dashboard.js"></script>
 {% endblock %}

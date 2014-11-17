@@ -4,19 +4,16 @@ $(function() {
   });
 
   // find disabled nodes, set danger (red) on the rows
-  function colortable() 
+  function colortable()
   {
-	var tr= $('.false').closest("tr");
-	tr.addClass('danger');
-	var tr= $('.true').closest("tr");
-	tr.removeClass('danger');
+	$('.false').closest("tr").addClass('danger');
+	$('.true').closest("tr").removeClass('danger');
   }
-
 
   function statuschangeSuccess(tr){
    var tspan=tr.children('.enabled').children();
     var buttons=tr.children('.actions').children('.btn-group').children('.dropdown-menu').children('li').children('.node-enable');
- 
+
     buttons.each(function(index){
       if ($(this).css("display")=="block"){
           $(this).css("display","none");
@@ -24,12 +21,12 @@ $(function() {
       else{
          $(this).css("display","block");
         }
-    }); 
+    });
     if(tspan.hasClass("false")){
           tspan.removeClass("false");
 	  tspan.addClass("true");
  	  tspan.text("✔");
-      } 
+      }
   else{
   	  tspan.removeClass("true");
 	  tspan.addClass("false");

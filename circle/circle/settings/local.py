@@ -109,3 +109,7 @@ CRISPY_FAIL_SILENTLY = not DEBUG
 if DEBUG:
     from django.dispatch import Signal
     Signal.send_robust = Signal.send
+
+PIPELINE_DISABLED_COMPILERS = (
+    'pipeline.compilers.less.LessCompiler',
+)

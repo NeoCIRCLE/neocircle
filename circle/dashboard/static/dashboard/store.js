@@ -25,18 +25,18 @@ $(function() {
     $('#store-upload-form button[type="submit"] i').addClass("fa-spinner fa-spin");
     var current_dir = $("#store-upload-form").find('[name="current_dir"]').val();
     $.get($("#store-upload-form").data("action") + "?current_dir=" + current_dir, function(result) {
-      $("#store-upload-form").get(0).setAttribute("action", result['url']);
+      $("#store-upload-form").get(0).setAttribute("action", result.url);
       $("#store-upload-form").submit();
     });
 
     return false;
   });
-  
+
   /* "fake" browse button */
   $("#store-list-container").on("click", "#store-upload-browse", function() {
     $('#store-upload-form input[type="file"]').click();
   });
-  
+
   $("#store-list-container").on("change", "#store-upload-file", function() {
     var input = $(this);
     var numFiles = input.get(0).files ? input.get(0).files.length : 1;
