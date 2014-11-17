@@ -22,12 +22,12 @@
 
 <div id="vm-details-resources-disk">
   <h3>
-    {% trans "Disks" %}
     <div class="pull-right">
       <div id="disk-ops">
         {% include "dashboard/vm-detail/_disk-operations.html" %}
       </div>
     </div>
+    {% trans "Disks" %}
   </h3>
 
   {% if not instance.disks.all %}
