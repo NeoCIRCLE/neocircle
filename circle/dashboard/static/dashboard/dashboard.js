@@ -245,7 +245,7 @@ $(function () {
         for(var i in result) {
           my_vms.push({
             'pk': result[i].pk,
-            'name': result[i].name.toLowerCase(),
+            'name': result[i].name,
             'state': result[i].state,
             'fav': result[i].fav,
             'host': result[i].host,
@@ -262,7 +262,7 @@ $(function () {
     var search_result = []
     var html = '';
     for(var i in my_vms) {
-      if(my_vms[i].name.indexOf(input) != -1 || my_vms[i].host.indexOf(input) != -1) {
+      if(my_vms[i].name.toLowerCase().indexOf(input) != -1 || my_vms[i].host.indexOf(input) != -1) {
         search_result.push(my_vms[i]);
       }
     }
@@ -296,7 +296,7 @@ $(function () {
       $.get("/dashboard/node/list/", function(result) {
         for(var i in result) {
           my_nodes.push({
-            'name': result[i].name.toLowerCase(),
+            'name': result[i].name,
             'icon': result[i].icon,
             'status': result[i].status,
             'label': result[i].label,
@@ -311,7 +311,7 @@ $(function () {
     var search_result = []
     var html = '';
     for(var i in my_nodes) {
-      if(my_nodes[i].name.indexOf(input) != -1) {
+      if(my_nodes[i].name.toLowerCase().indexOf(input) != -1) {
         search_result.push(my_nodes[i]);
       }
     }
@@ -353,7 +353,7 @@ $(function () {
         for(var i in result) {
           my_groups.push({
             'url': result[i].url,
-            'name': result[i].name.toLowerCase(),
+            'name': result[i].name,
           });
         }
       });
@@ -364,7 +364,7 @@ $(function () {
     var search_result = []
     var html = '';
     for(var i in my_groups) {
-      if(my_groups[i].name.indexOf(input) != -1) {
+      if(my_groups[i].name.toLowerCase().indexOf(input) != -1) {
         search_result.push(my_groups[i]);
       }
     }
