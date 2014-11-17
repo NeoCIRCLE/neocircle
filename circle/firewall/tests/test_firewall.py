@@ -78,12 +78,16 @@ class GetNewAddressTestCase(TestCase):
         self.vlan = Vlan(vid=1, name='test', network4='10.0.0.0/29',
                          network6='2001:738:2001:4031::/80', domain=d,
                          owner=self.u1)
+        self.vlan.clean()
         self.vlan.save()
         self.vlan.host_set.all().delete()
         for i in [1] + range(3, 6):
             Host(hostname='h-%d' % i, mac='01:02:03:04:05:%02d' % i,
                  ipv4='10.0.0.%d' % i, vlan=self.vlan,
                  owner=self.u1).save()
+
+    def tearDown(self):
+        self.vlan.delete()
 
     def test_new_addr_w_empty_vlan(self):
         self.vlan.host_set.all().delete()
@@ -94,12 +98,6 @@ class GetNewAddressTestCase(TestCase):
             Host(hostname='h-%d' % i, mac='01:02:03:04:05:%02d' % i,
                  ipv4='10.0.0.%d' % i, vlan=self.vlan,
                  owner=self.u1).save()
-        self.assertRaises(ValidationError, self.vlan.get_new_address)
-
-    def test_all_addr_in_use_w_ipv6(self):
-        Host(hostname='h-x', mac='01:02:03:04:05:06',
-             ipv4='10.0.0.6', ipv6='2001:738:2001:4031:0:0:2:0',
-             vlan=self.vlan, owner=self.u1).save()
         self.assertRaises(ValidationError, self.vlan.get_new_address)
 
     def test_new_addr(self):

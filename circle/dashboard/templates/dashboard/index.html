@@ -3,6 +3,13 @@
 
 {% block title-page %}{% trans "Index" %}{% endblock %}
 
+{% block extra_link_2 %}
+<link rel="search"
+  type="application/opensearchdescription+xml"
+  href="{% url "dashboard.views.vm-opensearch" %}"
+  title="{% blocktrans with name=COMPANY_NAME %}{{name}} virtual machines{% endblocktrans %}" />
+{% endblock %}
+
 {% block content %}
 <div class="body-content dashboard-index">
   <div class="row">

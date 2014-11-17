@@ -1,0 +1,6 @@
+{% load i18n %}<?xml version="1.0" encoding="UTF-8"?>
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
+  <ShortName>{% blocktrans with name=COMPANY_NAME %}{{name}} virtual machines{% endblocktrans %}</ShortName>
+  <Url type="text/html"
+    template="{{ url }}?s={searchTerms}&amp;stype=shared" />
+</OpenSearchDescription>
