@@ -313,11 +313,6 @@ class ReloadTestCase(TestCase):
         new_rules = h.rules.count()
         self.assertEqual(new_rules, old_rules)
 
-    def test_host_add_port_w_validationerror(self):
-        h = self.h1
-        self.assertRaises(ValidationError, h.add_port,
-                          'tcp', public=1000, private=22)
-
     def test_periodic_task(self):
         # TODO
         with patch('firewall.tasks.local_tasks.cache') as cache:
