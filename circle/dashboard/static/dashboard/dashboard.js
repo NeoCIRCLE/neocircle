@@ -1,4 +1,6 @@
 $(function () {
+  $(".not-tab-pane").removeClass("not-tab-pane").addClass("tab-pane");
+
   $('.vm-create').click(function(e) {
     var template = $(this).data("template");
     $.ajax({
