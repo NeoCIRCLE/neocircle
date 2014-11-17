@@ -514,6 +514,17 @@ footer a, footer a:hover, footer a:visited {
   float: left;
 }
 
+
+.index-vm-list-host {
+  display: inline-block;
+  max-width: 25%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  float: left;
+  padding-top: 3px;
+}
+
 #dashboard-vm-list a small {
   padding-left: 10px;
 }
@@ -1050,4 +1061,23 @@ textarea[name="new_members"] {
   width: 1px;
   white-space: nowrap;
   text-align: center;
+}
+
+.vm-create-list-name {
+  display: inline-block;
+  max-width: 60%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  float: left;
+}
+
+
+.vm-create-list-system {
+  display: inline-block;
+  max-width: 40%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  float: right;
 }
