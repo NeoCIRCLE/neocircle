@@ -25,6 +25,12 @@ from .occi import (
 )
 
 
+class CSRFExemptMixin(object):
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super(CSRFExemptMixin, self).dispatch(*args, **kwargs)
+
+
 def get_post_data_from_request(request):
     """ Returns the post data in an array
     """
@@ -45,7 +51,7 @@ def get_post_data_from_request(request):
     return post_data
 
 
-class QueryInterface(View):
+class QueryInterface(CSRFExemptMixin, View):
 
     def get(self, request, *args, **kwargs):
         response = "Category: %s\n" % COMPUTE_KIND.render_values()
@@ -70,12 +76,8 @@ class QueryInterface(View):
         response = HttpResponse(status=501)
         return response
 
-    @method_decorator(csrf_exempt)  # decorator on post method doesn't work
-    def dispatch(self, *args, **kwargs):
-        return super(QueryInterface, self).dispatch(*args, **kwargs)
 
-
-class ComputeInterface(View):
+class ComputeInterface(CSRFExemptMixin, View):
 
     def get(self, request, *args, **kwargs):
         response = "\n".join([Compute(instance=i).render_location()
@@ -96,12 +98,8 @@ class ComputeInterface(View):
         )
         return response
 
-    @method_decorator(csrf_exempt)  # decorator on post method doesn't work
-    def dispatch(self, *args, **kwargs):
-        return super(ComputeInterface, self).dispatch(*args, **kwargs)
 
-
-class VmInterface(DetailView):
+class VmInterface(CSRFExemptMixin, DetailView):
     model = Instance
 
     def get_object(self):
@@ -130,12 +128,8 @@ class VmInterface(DetailView):
 
         return HttpResponse()
 
-    @method_decorator(csrf_exempt)  # decorator on post method doesn't work
-    def dispatch(self, *args, **kwargs):
-        return super(VmInterface, self).dispatch(*args, **kwargs)
 
-
-class OsTplInterface(View):
+class OsTplInterface(CSRFExemptMixin, View):
 
     def get(self, request, *args, **kwargs):
         response = "\n".join([OsTemplate(template=t).render_location()
@@ -148,12 +142,8 @@ class OsTplInterface(View):
     def post(self, request, *args, **kwargs):
         pass
 
-    @method_decorator(csrf_exempt)  # decorator on post method doesn't work
-    def dispatch(self, *args, **kwargs):
-        return super(OsTplInterface, self).dispatch(*args, **kwargs)
 
-
-class StorageInterface(View):
+class StorageInterface(CSRFExemptMixin, View):
 
     def get(self, request, *args, **kwargs):
         response = "\n".join([Storage(disk=d).render_location()
@@ -174,12 +164,8 @@ class StorageInterface(View):
         )
         return response
 
-    @method_decorator(csrf_exempt)
-    def dispatch(self, *args, **kwargs):
-        return super(StorageInterface, self).dispatch(*args, **kwargs)
 
-
-class DiskInterface(DetailView):
+class DiskInterface(CSRFExemptMixin, DetailView):
     model = Disk
 
     def get(self, request, *args, **kwargs):
@@ -203,12 +189,8 @@ class DiskInterface(DetailView):
         Storage(disk=self.get_object()).delete()
         return HttpResponse("")
 
-    @method_decorator(csrf_exempt)
-    def dispatch(self, *args, **kwargs):
-        return super(DiskInterface, self).dispatch(*args, **kwargs)
 
-
-class StorageLinkInterface(View):
+class StorageLinkInterface(CSRFExemptMixin, View):
 
     def get_vm_and_disk(self):
         vm = get_object_or_404(Instance.objects.filter(destroyed_at=None),
@@ -254,12 +236,8 @@ class StorageLinkInterface(View):
         sl.delete()
         return HttpResponse("")
 
-    @method_decorator(csrf_exempt)
-    def dispatch(self, *args, **kwargs):
-        return super(StorageLinkInterface, self).dispatch(*args, **kwargs)
 
-
-class NetworkInterface(View):
+class NetworkInterface(CSRFExemptMixin, View):
 
     def get(self, request, *args, **kwargs):
         response = "\n".join([Network(vlan=v).render_location()
@@ -272,12 +250,8 @@ class NetworkInterface(View):
     def post(self, request, *args, **kwargs):
         pass  # we don't really want to create networks via OCCI yet
 
-    @method_decorator(csrf_exempt)  # decorator on post method doesn't work
-    def dispatch(self, *args, **kwargs):
-        return super(NetworkInterface, self).dispatch(*args, **kwargs)
 
-
-class VlanInterface(DetailView):
+class VlanInterface(CSRFExemptMixin, DetailView):
     model = Vlan
     slug_field = 'vid'
     slug_url_kwarg = 'vid'
@@ -298,7 +272,3 @@ class VlanInterface(DetailView):
         Compute(instance=vm).delete()
 
         return HttpResponse()
-
-    @method_decorator(csrf_exempt)  # decorator on post method doesn't work
-    def dispatch(self, *args, **kwargs):
-        return super(VlanInterface, self).dispatch(*args, **kwargs)
