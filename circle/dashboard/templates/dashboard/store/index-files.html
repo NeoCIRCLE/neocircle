@@ -54,7 +54,7 @@
       </div>
     {% endfor %}
   </div>
-    <div class="list-group-item text-right no-hover">
+    <div class="list-group-item list-group-footer text-right no-hover">
       <form class="pull-left" method="POST" action="{% url "dashboard.views.store-refresh-toplist" %}">
         {% csrf_token %}
         <button class="btn btn-success btn-xs" type="submit" title="{% trans "Refresh" %}"/>
