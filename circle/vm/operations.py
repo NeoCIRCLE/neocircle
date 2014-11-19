@@ -723,8 +723,8 @@ class SaveAsTemplateOperation(InstanceOperation):
 
         if with_shutdown:
             try:
-                ShutdownOperation(self.instance).call(parent_activity=activity,
-                                                      user=user, task=task)
+                self.instance.shutdown(parent_activity=activity,
+                                       user=user, task=task)
             except Instance.WrongStateError:
                 pass
 
