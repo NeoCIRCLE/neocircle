@@ -51,14 +51,14 @@
 function removeMember(data) {
   $.ajax({
     type: 'POST',
-    url: data['url'],
+    url: data.url,
     headers: {"X-CSRFToken": getCookie('csrftoken')},
     success: function(re, textStatus, xhr) {
-    data['tr'].fadeOut(function() {
+    data.tr.fadeOut(function() {
 	    $(this).remove();});
     },
     error: function(xhr, textStatus, error) {
-      addMessage('Uh oh :(', 'danger')
+      addMessage('Uh oh :(', 'danger');
     }
   });
 }

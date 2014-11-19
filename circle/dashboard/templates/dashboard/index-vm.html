@@ -10,7 +10,7 @@
           data-container="body"
           title="{% trans "list view" %}"><i class="fa fa-list"></i></a>
       </div>
-      <span class="btn btn-default btn-xs infobtn" title="{% trans "List of your current virtual machines. Favourited ones are ahead of others." %}"><i class="fa fa-info-circle"></i></span>
+      <span class="btn btn-default btn-xs infobtn" data-container="body" title="{% trans "List of your current virtual machines. Favourited ones are ahead of others." %}"><i class="fa fa-info-circle"></i></span>
     </div>
     <h3 class="no-margin">
       <span class="visible-xs">
@@ -51,23 +51,20 @@
         </div>
       {% endfor %}
     </div>
-    <style>
-      .list-group-item-last {
-        border-bottom: 1px solid #ddd !important;
-      }
-    </style>
     <div href="#" class="list-group-item list-group-footer">
       <div class="row">
+        <div class="col-xs-6">
         <form action="{% url "dashboard.views.vm-list" %}" method="GET" id="dashboard-vm-search-form">
-          <div class="col-sm-6 col-xs-6 input-group input-group-sm">
-            <input id="dashboard-vm-search-input" type="text" class="form-control" name="s"
+          <div class="input-group input-group-sm">
+            <input id="dashboard-vm-search-input" type="text" class="form-control" name="s" 
             placeholder="{% trans "Search..." %}" />
             <div class="input-group-btn">
               <button type="submit" class="form-control btn btn-primary"><i class="fa fa-search"></i></button>
             </div>
           </div>
         </form>
-        <div class="col-sm-6 text-right">
+        </div>
+        <div class="col-xs-6 text-right">
           <a class="btn btn-primary btn-xs" href="{% url "dashboard.views.vm-list" %}">
             <i class="fa fa-chevron-circle-right"></i>
             {% if more_instances > 0 %}

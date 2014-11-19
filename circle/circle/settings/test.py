@@ -58,3 +58,6 @@ for i in LOCAL_APPS:
     LOGGING['loggers'][i] = {'handlers': ['console'], 'level': level}
 # Forbid store usage
 STORE_URL = ""
+
+# buildbot doesn't love pipeline
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'

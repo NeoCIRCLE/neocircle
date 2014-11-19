@@ -1,4 +1,5 @@
 {% extends "dashboard/base.html" %}
+{% load staticfiles %}
 {% load i18n %}
 
 {% block title-page %}{{ node.name }} | {% trans "Node" %}{% endblock %}
@@ -95,8 +96,4 @@
     </div>
   </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-  <script src="{{ STATIC_URL}}dashboard/node-details.js"></script>
 {% endblock %}

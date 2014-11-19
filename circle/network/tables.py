@@ -97,7 +97,8 @@ class SmallRuleTable(Table):
 
     class Meta:
         model = Rule
-        attrs = {'class': 'table table-striped table-bordered table-condensed'}
+        attrs = {'class': 'table table-striped table-bordered table-condensed',
+                 'id': "small_rule_table"}
         fields = ('rule', 'action', )
 
 

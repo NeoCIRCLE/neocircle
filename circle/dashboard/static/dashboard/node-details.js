@@ -17,7 +17,7 @@ $(function() {
       success: function(data, textStatus, xhr) {
         $("#node-details-h1-name").text(data['new_name']).show();
         $('#node-details-rename').hide();
-        // addMessage(data['message'], "success");
+        // addMessage(data.message, "success");
       },
       error: function(xhr, textStatus, error) {
         addMessage("Error during renaming!", "danger");
@@ -34,7 +34,7 @@ $(function() {
   $('.node-enable').click(function() {
     var node_pk = $(this).data('node-pk');
     var dir = window.location.pathname.indexOf('list') == -1;
-    addModalConfirmation(changeNodeStatus, 
+    addModalConfirmation(changeNodeStatus,
       { 'url': '/dashboard/node/status/' + node_pk + '/',
         'data': [],
         'pk': node_pk,
@@ -51,17 +51,17 @@ $(function() {
     $.ajax({
       type: 'POST',
       url: location.href,
-      headers: {"X-CSRFToken": getCookie('csrftoken')}, 
+      headers: {"X-CSRFToken": getCookie('csrftoken')},
       data: {'to_remove': to_remove},
       success: function(re) {
-        if(re['message'].toLowerCase() == "success") {
+        if(re.message.toLowerCase() == "success") {
           $(clicked).closest(".label").fadeOut(500, function() {
             $(this).remove();
           });
         }
       },
       error: function() {
-        addMessage(re['message'], 'danger');
+        addMessage(re.message, 'danger');
       }
 
     });
@@ -73,18 +73,18 @@ $(function() {
 function changeNodeStatus(data) {
   $.ajax({
     type: 'POST',
-    url: data['url'],
+    url: data.url,
     headers: {"X-CSRFToken": getCookie('csrftoken')},
     success: function(re, textStatus, xhr) {
-      if(!data['redirect']) {
+      if(!data.redirect) {
         selected = [];
-        addMessage(re['message'], 'success');
+        addMessage(re.message, 'success');
       } else {
         window.location.replace('/dashboard');
       }
     },
     error: function(xhr, textStatus, error) {
-      addMessage('Uh oh :(', 'danger')
+      addMessage('Uh oh :(', 'danger');
     }
   });
 }

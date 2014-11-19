@@ -1,4 +1,5 @@
 {% extends "dashboard/base.html" %}
+{% load staticfiles %}
 {% load i18n %}
 {% load sizefieldtags %}
 {% load crispy_forms_tags %}
@@ -152,6 +153,4 @@
       $("#hint_id_num_cores, #hint_id_priority, #hint_id_ram_size").hide();
     });
   </script>
-
-  <script src="{{ STATIC_URL }}dashboard/disk-list.js"></script>
 {% endblock %}

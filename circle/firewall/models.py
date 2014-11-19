@@ -824,9 +824,6 @@ class Host(models.Model):
                         proto=proto, nat=False, action='accept',
                         host=self, foreign_network=vg)
             if self.behind_nat:
-                if public < 1024:
-                    raise ValidationError(
-                        _("Only ports above 1024 can be used."))
                 rule.nat_external_port = public
                 rule.nat = True
             rule.full_clean()
