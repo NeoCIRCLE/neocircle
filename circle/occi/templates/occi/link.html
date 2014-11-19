@@ -1,3 +1,3 @@
 {% spaceless %}
-Link: <{{ target }}>; rel="{{ kind.rel }}"; self="{{ location }}"; category="{{ kind.scheme }}storagelink"; {% for k, v in attrs.items %}{{ k }}={% if v.isdigit == False or k == "occi.core.id" %}"{{ v }}"{% else %}{{ v }}{% endif %}{% if not forloop.last %}; {% endif %}{% endfor %}
+Link: <{{ target }}>; rel="{{ kind.rel }}"; self="{{ location }}"; category="{{ kind.scheme }}"; {% for k, v in attrs.items %}{{ k }}={% if v.isdigit == False or k == "occi.core.id" %}"{{ v }}"{% else %}{{ v }}{% endif %}{% if not forloop.last %}; {% endif %}{% endfor %}
 {% endspaceless %}

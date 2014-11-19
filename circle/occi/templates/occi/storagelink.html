@@ -1,4 +1,4 @@
-Category: compute; scheme="{{ kind.scheme }}"; class="{{ kind.class }}";
+Category: storagelink; scheme="{{ kind.scheme }}"; class="{{ kind.class }}";
 {% for k, v in attrs.items %}
   X-OCCI-Attribute: {{ k }}={% if v.isdigit == False or k == "occi.core.id" %}"{{ v }}"{% else %}{{ v }}{% endif %}
 {% endfor %}

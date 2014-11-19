@@ -448,7 +448,7 @@ class StorageLink(Link):
 
     def init_attrs(self, instance, disk):
         self.attrs = {}
-        self.attrs['occi.core.id'] = "vm%d_disk%d" % (instance.pk, disk.pk)
+        self.attrs['occi.core.id'] = "vm_%d_disk_%d" % (instance.pk, disk.pk)
         self.attrs['occi.core.target'] = Storage(disk).render_location()
         self.attrs['occi.core.source'] = Compute(instance).render_location()
         # deviceid? mountpoint?
@@ -715,12 +715,12 @@ LINK_KIND = Kind(
 STORAGE_LINK_ATTRS = LINK_ATTRS + [
     Attribute("occi.storagelink.deviceid"),
     Attribute("occi.storagelink.mountpoint"),
-    Attribute("occi.core.state", "immutable"),
+    Attribute("occi.storagelink.state", "immutable"),
 ]
 
 STORAGE_LINK_KIND = Kind(
     term="storagelink",
-    scheme="http://schemas.ogf.org/occi/infrastructure#",
+    scheme="http://schemas.ogf.org/occi/infrastructure#storagelink",
     class_="kind",
     title="Storage link",
     rel="http://schemas.ogf.org/occi/core#link",
