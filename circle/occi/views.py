@@ -275,7 +275,4 @@ class VlanInterface(CSRFExemptMixin, DetailView):
         pass  # no actions
 
     def delete(self, request, *args, **kwargs):
-        vm = self.get_object()
-        Compute(instance=vm).delete()
-
-        return HttpResponse()
+        pass
