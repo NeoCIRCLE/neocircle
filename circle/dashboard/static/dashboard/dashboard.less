@@ -516,26 +516,6 @@ footer a, footer a:hover, footer a:visited {
   padding: 5px; /* it's nice this way in the tour */
 }
 
-.index-vm-list-name {
-  display: inline-block;
-  max-width: 70%;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-  float: left;
-}
-
-
-.index-vm-list-host {
-  display: inline-block;
-  max-width: 25%;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-  float: left;
-  padding-top: 3px;
-}
-
 #dashboard-vm-list a small {
   padding-left: 10px;
 }
@@ -1179,5 +1159,26 @@ textarea[name="new_members"] {
 
   &:hover {
     background-position: 0 0px;
+  }
+}
+
+#dashboard-vm-list {
+  .list-group-item {
+    display: flex;
+  }
+
+  .index-vm-list-name, .index-vm-list-host {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .index-vm-list-name {
+    max-width: 65%;
+  }
+
+  .index-vm-list-host {
+    padding-top: 3px;
+    flex: 1;
   }
 }
