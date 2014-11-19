@@ -3,8 +3,8 @@ $(function () {
     var template = $(this).data("template");
     $.ajax({
       type: 'GET',
-      url: '/dashboard/vm/create/' + (typeof template === "undefined" ? '' : '?template=' + template), 
-      success: function(data) { 
+      url: '/dashboard/vm/create/' + (typeof template === "undefined" ? '' : '?template=' + template),
+      success: function(data) {
         $('body').append(data);
         vmCreateLoaded();
         addSliderMiscs();
@@ -16,12 +16,12 @@ $(function () {
     });
     return false;
   });
- 
+
   $('.node-create').click(function(e) {
     $.ajax({
       type: 'GET',
-      url: '/dashboard/node/create/', 
-      success: function(data) { 
+      url: '/dashboard/node/create/',
+      success: function(data) {
         $('body').append(data);
         nodeCreateLoaded();
         addSliderMiscs();
@@ -68,8 +68,8 @@ $(function () {
   $('.template-choose').click(function(e) {
     $.ajax({
       type: 'GET',
-      url: '/dashboard/template/choose/', 
-      success: function(data) { 
+      url: '/dashboard/template/choose/',
+      success: function(data) {
         $('body').append(data);
         $('#create-modal').modal('show');
         $('#create-modal').on('hidden.bs.modal', function() {
@@ -108,9 +108,9 @@ $(function () {
     e.stopImmediatePropagation();
     return false;
   });
-  $('[title]:not(.title-favourite)').tooltip();
-  $('.title-favourite').tooltip({'placement': 'right'});
-  $(':input[title]').tooltip({trigger: 'focus', placement: 'auto right'});
+  $('body [title]:not(.title-favourite)').tooltip();
+  $('body .title-favourite').tooltip({'placement': 'right'});
+  $('body :input[title]').tooltip({trigger: 'focus', placement: 'auto right'});
   $(".knob").knob();
 
   $('[data-toggle="pill"]').click(function() {
@@ -137,10 +137,10 @@ $(function () {
     var pk = $(this).data("vm");
     if(star.hasClass("fa-star-o")) {
       star.removeClass("fa-star-o").addClass("fa-star");
-      star.prop("title", "Unfavourite");
+      star.prop("title", gettext("Unfavourite"));
     } else {
       star.removeClass("fa-star").addClass("fa-star-o");
-      star.prop("title", "Mark as favourite");
+      star.prop("title", gettext("Mark as favourite"));
     }
     $.ajax({
       url: "/dashboard/favourite/",
@@ -169,7 +169,7 @@ $(function () {
   $('.vm-delete').click(function() {
     var vm_pk = $(this).data('vm-pk');
     var dir = window.location.pathname.indexOf('list') == -1;
-    addModalConfirmation(deleteObject, 
+    addModalConfirmation(deleteObject,
       { 'url': '/dashboard/vm/delete/' + vm_pk + '/',
         'data': [],
         'pk': vm_pk,
@@ -177,11 +177,11 @@ $(function () {
         'redirect': dir});
     return false;
   });
-  
+
   /* for disk remove buttons */
   $('.disk-remove').click(function() {
     var disk_pk = $(this).data('disk-pk');
-    addModalConfirmation(deleteObject, 
+    addModalConfirmation(deleteObject,
       { 'url': '/dashboard/disk/' + disk_pk + '/remove/',
         'data': [],
         'pk': disk_pk,
@@ -194,13 +194,13 @@ $(function () {
   $('.node-delete').click(function() {
     var node_pk = $(this).data('node-pk');
     var dir = window.location.pathname.indexOf('list') == -1;
-    addModalConfirmation(deleteObject, 
+    addModalConfirmation(deleteObject,
       { 'url': '/dashboard/node/delete/' + node_pk + '/',
         'data': [],
         'pk': node_pk,
         'type': "node",
         'redirect': dir});
-    
+
     return false;
   });
 
@@ -209,8 +209,8 @@ $(function () {
     var node_pk = $(this).data('node-pk');
     var postto = $(this).attr('href');
     var dir = window.location.pathname.indexOf('list') == -1;
-    addModalConfirmation(function(){}, 
-      { 'url': postto, 
+    addModalConfirmation(function(){},
+      { 'url': postto,
         'data': [],
         'pk': node_pk,
         'type': "node",
@@ -223,18 +223,18 @@ $(function () {
   $('.group-delete').click(function() {
     var group_pk = $(this).data('group-pk');
     var dir = window.location.pathname.indexOf('list') == -1;
-    addModalConfirmation(deleteObject, 
+    addModalConfirmation(deleteObject,
       { 'url': '/dashboard/group/delete/' + group_pk + '/',
         'data': [],
         'type': "group",
         'pk': group_pk,
         'redirect': dir});
-    
+
     return false;
   });
 
  /* search for vms */
-  var my_vms = []
+  var my_vms = [];
   $("#dashboard-vm-search-input").keyup(function(e) {
     // if my_vms is empty get a list of our vms
     if(my_vms.length < 1) {
@@ -257,7 +257,7 @@ $(function () {
     }
 
     input = $("#dashboard-vm-search-input").val().toLowerCase();
-    var search_result = []
+    var search_result = [];
     var html = '';
     for(var i in my_vms) {
       if(my_vms[i].name.indexOf(input) != -1 || my_vms[i].host.indexOf(input) != -1) {
@@ -270,7 +270,7 @@ $(function () {
                              search_result[i].owner ? search_result[i].owner : search_result[i].host, search_result[i].icon,
                              search_result[i].status, search_result[i].fav,
                              (search_result.length < 5));
-    if(search_result.length == 0)
+    if(search_result.length === 0)
       html += '<div class="list-group-item list-group-item-last">' + gettext("No result") + '</div>';
     $("#dashboard-vm-list").html(html);
     $('.title-favourite').tooltip({'placement': 'right'});
@@ -286,7 +286,7 @@ $(function () {
   });
 
   /* search for nodes */
-  var my_nodes = []
+  var my_nodes = [];
   $("#dashboard-node-search-input").keyup(function(e) {
     // if my_nodes is empty get a list of our nodes
     if(my_nodes.length < 1) {
@@ -306,29 +306,29 @@ $(function () {
     }
 
     input = $("#dashboard-node-search-input").val().toLowerCase();
-    var search_result = []
+    var search_result = [];
     var html = '';
     for(var i in my_nodes) {
       if(my_nodes[i].name.indexOf(input) != -1) {
         search_result.push(my_nodes[i]);
       }
     }
-    for(var i=0; i<5 && i<search_result.length; i++)
+    for(i=0; i<5 && i<search_result.length; i++)
       html += generateNodeHTML(search_result[i].name,
                              search_result[i].icon, search_result[i].status,
                              search_result[i].url,
                              (search_result.length < 5));
-    if(search_result.length == 0)
+    if(search_result.length === 0)
       html += '<div class="list-group-item list-group-item-last">' + gettext("No result") + '</div>';
     $("#dashboard-node-list").html(html);
 
     html = '';
 
-    for(var i=0; i<5 && i<search_result.length; i++)
+    for(i=0; i<5 && i<search_result.length; i++)
       html += generateNodeTagHTML(search_result[i].name,
                              search_result[i].icon, search_result[i].status,
                              search_result[i].label, search_result[i].url);
-    if(search_result.length == 0)
+    if(search_result.length === 0)
       html += '<div class="list-group-item list-group-item-last">' + gettext("No result") + '</div>';
     $("#dashboard-node-taglist").html(html);
 
@@ -342,7 +342,7 @@ $(function () {
   });
 
   /* search for groups */
-  var my_groups = []
+  var my_groups = [];
   $("#dashboard-group-search-input").keyup(function(e) {
     // if my_groups is empty get a list of our groups
       if(my_groups.length < 1) {
@@ -359,16 +359,16 @@ $(function () {
     }
 
     input = $("#dashboard-group-search-input").val().toLowerCase();
-    var search_result = []
+    var search_result = [];
     var html = '';
     for(var i in my_groups) {
       if(my_groups[i].name.indexOf(input) != -1) {
         search_result.push(my_groups[i]);
       }
     }
-    for(var i=0; i<5 && i<search_result.length; i++)
+    for(i=0; i<5 && i<search_result.length; i++)
       html += generateGroupHTML(search_result[i].url, search_result[i].name, search_result.length < 5);
-    if(search_result.length == 0)
+    if(search_result.length === 0)
       html += '<div class="list-group-item list-group-item-last">No result</div>';
     $("#dashboard-group-list").html(html);
 
@@ -388,16 +388,16 @@ $(function () {
   });
 
   /* don't close notifications window on missclick */
-  $(document).on("click", ".notification-messages", function(e) {
+  $(document).on("click", "#notification-messages", function(e) {
     if($(e.target).closest("a").length)
-      return true
+      return true;
     else
       return false;
   });
 
   $("#notification-button a").click(function() {
-    $('.notification-messages').load("/dashboard/notifications/");
-    $('#notification-button a span[class*="badge-pulse"]').remove();  
+    $('#notification-messages').load("/dashboard/notifications/");
+    $('#notification-button a span[class*="badge-pulse"]').remove();
   });
   
   /* on the client confirmation button fire the clientInstalledAction */
@@ -446,12 +446,12 @@ function generateVmHTML(pk, name, host, icon, _status, fav, is_last) {
           '<i class="fa ' + icon + '" title="' + _status + '"></i> ' + safe_tags_replace(name) +
         '</span>' + 
         '<small class="text-muted"> ' + host + '</small>' +
-        '<div class="pull-right dashboard-vm-favourite" data-vm="' + pk + '">' +  
-          (fav ? '<i class="fa fa-star text-primary title-favourite" title="Unfavourite"></i>' :
-          '<i class="fa fa-star-o text-primary title-favourite" title="Mark as favorite"></i>' ) +
-        '</div>' +                                                               
-      '<div style="clear: both;"></div>' +                                       
-      '</a>';     
+        '<div class="pull-right dashboard-vm-favourite" data-vm="' + pk + '">' +
+          (fav ? '<i class="fa fa-star text-primary title-favourite" title="' + gettext("Unfavourite") + '"></i>' :
+          '<i class="fa fa-star-o text-primary title-favourite" title="' + gettext("Mark as favorite") + '"></i>' ) +
+        '</div>' +
+      '<div style="clear: both;"></div>' +
+      '</a>';
 }
 
 function generateGroupHTML(url, name, is_last) {
@@ -478,7 +478,7 @@ function generateNodeTagHTML(name, icon, _status, label , url) {
 /* copare vm-s by fav, pk order */
 function compareVmByFav(a, b) {
   if(a.fav && b.fav) {
-    return a.pk < b.pk ? -1 : 1; 
+    return a.pk < b.pk ? -1 : 1;
   }
   else if(a.fav && !b.fav) {
     return -1;
@@ -487,13 +487,13 @@ function compareVmByFav(a, b) {
     return 1;
   }
   else
-    return a.pk < b.pk ? -1 : 1; 
+    return a.pk < b.pk ? -1 : 1;
 }
 
 $(document).on('shown.bs.tab', 'a[href="#resources"]', function (e) {
   $(".cpu-priority-input").trigger("change");
   $(".cpu-count-input, .ram-input").trigger("input");
-})
+});
 
 function addSliderMiscs() {
   // set max values based on inputs
@@ -524,7 +524,7 @@ function addSliderMiscs() {
     if(!val) return;
     $(".cpu-count-slider").simpleSlider("setValue", val);
   });
-  
+
 
   var ram_fire = false;
   $(".ram-slider").bind("slider:changed", function (event, data) {
@@ -562,21 +562,21 @@ function setDefaultSliderValues() {
 function deleteObject(data) {
   $.ajax({
     type: 'POST',
-    data: {'redirect': data['redirect']},
-    url: data['url'],
-    headers: {"X-CSRFToken": getCookie('csrftoken')}, 
-    success: function(re, textStatus, xhr) { 
-      if(!data['redirect']) {
+    data: {'redirect': data.redirect},
+    url: data.url,
+    headers: {"X-CSRFToken": getCookie('csrftoken')},
+    success: function(re, textStatus, xhr) {
+      if(!data.redirect) {
         selected = [];
-        addMessage(re['message'], 'success');
+        addMessage(re.message, 'success');
         if(data.type === "disk") {
           // no need to remove them from DOM
           $('a[data-disk-pk="' + data.pk + '"]').parent("li").fadeOut();
           $('a[data-disk-pk="' + data.pk + '"]').parent("h4").fadeOut();
-        } 
-        else { 
-          $('a[data-'+data['type']+'-pk="' + data['pk'] + '"]').closest('tr').fadeOut(function() {
-            $(this).remove();  
+        }
+        else {
+          $('a[data-'+data.type+'-pk="' + data.pk + '"]').closest('tr').fadeOut(function() {
+            $(this).remove();
           });
         }
       } else {
@@ -584,32 +584,33 @@ function deleteObject(data) {
       }
     },
     error: function(xhr, textStatus, error) {
-      addMessage('Uh oh :(', 'danger')
+      addMessage('Uh oh :(', 'danger');
     }
   });
 }
 
 function massDeleteVm(data) {
-  $.ajax({                                                                
-      traditional: true,                                                    
-      url: data['url'],                                    
-      headers: {"X-CSRFToken": getCookie('csrftoken')},                     
-      type: 'POST',                                                         
-      data: {'vms': data['data']['v']},                                  
-      success: function(re, textStatus, xhr) {                            
-        for(var i=0; i< data['data']['v'].length; i++)                               
-          $('.vm-list-table tbody tr[data-vm-pk="' + data['data']['v'][i] + '"]').fadeOut(500, function() {
-            selected = [];                                                  
-            // reset group buttons                                          
-            $('.vm-list-group-control a').attr('disabled', true);           
-            $(this).remove();                                               
-          }); 
-        addMessage(re['message'], 'success');                         
-      },                                                                    
-      error: function(xhr, textStatus, error) {                             
-        // TODO this                                                        
-      }                                                                     
-    });          
+  f = function() {
+    selected = [];
+    // reset group buttons
+    $('.vm-list-group-control a').attr('disabled', true);
+    $(this).remove();
+  };
+  $.ajax({
+      traditional: true,
+      url: data.url,
+      headers: {"X-CSRFToken": getCookie('csrftoken')},
+      type: 'POST',
+      data: {'vms': data.data.v},
+      success: function(re, textStatus, xhr) {
+        for(var i=0; i< data.data.v.length; i++)
+          $('.vm-list-table tbody tr[data-vm-pk="' + data.data.v[i] + '"]').fadeOut(500, f);
+        addMessage(re.message, 'success');
+      },
+      error: function(xhr, textStatus, error) {
+        // TODO this
+      }
+    });
 }
 
 
@@ -627,8 +628,8 @@ function addMessage(text, type) {
 function addModalConfirmation(func, data) {
   $.ajax({
     type: 'GET',
-    url: data['url'],
-    data: jQuery.param(data['data']),
+    url: data.url,
+    data: jQuery.param(data.data),
     success: function(result) {
       $('body').append(result);
       $('#confirmation-modal').modal('show');
@@ -647,28 +648,6 @@ function clientInstalledAction(location) {
   setCookie('downloaded_client', true, 365 * 24 * 60 * 60 * 1000, "/");
   window.location.href = location;
   $('#confirmation-modal').modal("hide");
-}
-
-// for AJAX calls
-/**                                                                         
- * Getter for user cookies                                                  
- * @param  {String} name Cookie name                                        
- * @return {String}      Cookie value                                       
- */                                                                         
-                                                                            
-function getCookie(name) {                                                  
-  var cookieValue = null;                                                   
-  if (document.cookie && document.cookie != '') {                           
-    var cookies = document.cookie.split(';');                               
-    for (var i = 0; i < cookies.length; i++) {                              
-      var cookie = jQuery.trim(cookies[i]);                                 
-      if (cookie.substring(0, name.length + 1) == (name + '=')) {           
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        break;                                                              
-      }                                                                     
-    }                                                                       
-  }                                                                         
-  return cookieValue;                                                       
 }
 
 function setCookie(name, value, seconds, path) {
@@ -694,6 +673,46 @@ function getParameterByName(name) {
     return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
+// for AJAX calls
+/**
+ * Getter for user cookies
+ * @param  {String} name Cookie name
+ * @return {String}      Cookie value
+ */
+
+function getCookie(name) {
+  var cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    var cookies = document.cookie.split(';');
+    for (var i = 0; i < cookies.length; i++) {
+      var cookie = jQuery.trim(cookies[i]);
+      if (cookie.substring(0, name.length + 1) == (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+function csrfSafeMethod(method) {
+  // these HTTP methods do not require CSRF protection
+  return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+$.ajaxSetup({
+  beforeSend: function(xhr, settings) {
+    if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+      xhr.setRequestHeader("X-CSRFToken", getCookie("csrftoken"));
+    }
+  }
+});
+
+/* for autocomplete */
+$(function() {
+  yourlabs.TextWidget.prototype.getValue = function(choice) {
+    return choice.children().html();
+  }
+});
 
 var tagsToReplace = {
     '&': '&amp;',

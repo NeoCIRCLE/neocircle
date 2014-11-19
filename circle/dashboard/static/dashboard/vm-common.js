@@ -66,7 +66,7 @@ $(function() {
       },
       error: function(xhr, textStatus, error) {
         $('#confirmation-modal').modal("hide");
-        
+
         if (xhr.status == 500) {
           addMessage("500 Internal Server Error", "danger");
         } else {

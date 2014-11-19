@@ -7,10 +7,10 @@ $(function() {
     $.ajax({
       type: 'POST',
       url:"/dashboard/profile/" + user + "/use_gravatar/",
-      headers: {"X-CSRFToken": getCookie('csrftoken')}, 
+      headers: {"X-CSRFToken": getCookie('csrftoken')},
       success: function(re) {
         if(re.new_avatar_url) {
-          $("#dashboard-profile-avatar").prop("src", re.new_avatar_url);  
+          $("#dashboard-profile-avatar").prop("src", re.new_avatar_url);
         }
       },
       error: function(xhr, textStatus, error) {

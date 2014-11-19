@@ -160,10 +160,88 @@ STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 )
 ########## END STATIC FILE CONFIGURATION
+STATICFILES_DIRS = [normpath(join(SITE_ROOT, 'bower_components'))]
 
 p = normpath(join(SITE_ROOT, '../../site-circle/static'))
 if exists(p):
-    STATICFILES_DIRS = (p, )
+    STATICFILES_DIRS.append(p)
+
+STATICFILES_STORAGE = 'pipeline.storage.PipelineCachedStorage'
+PIPELINE_COMPILERS = (
+    'pipeline.compilers.less.LessCompiler',
+)
+PIPELINE_CSS_COMPRESSOR = 'pipeline.compressors.yuglify.YuglifyCompressor'
+PIPELINE_JS_COMPRESSOR = 'pipeline.compressors.slimit.SlimItCompressor'
+PIPELINE_DISABLE_WRAPPER = True
+PIPELINE_LESS_ARGUMENTS = u'--include-path={}'.format(':'.join(STATICFILES_DIRS))
+PIPELINE_CSS = {
+    "all": {"source_filenames": (
+        "compile_bootstrap.less",
+        "bootstrap/dist/css/bootstrap-theme.css",
+        "fontawesome/css/font-awesome.css",
+        "jquery-simple-slider/css/simple-slider.css",
+        "intro.js/introjs.css",
+        "template.less",
+        "dashboard/dashboard.less",
+        "network/network.less",
+        "autocomplete_light/style.css",
+    ),
+        "output_filename": "all.css",
+    }
+}
+PIPELINE_JS = {
+    "all": {"source_filenames": (
+        # "jquery/dist/jquery.js",  # included separately
+        "bootbox/bootbox.js",
+        "bootstrap/dist/js/bootstrap.js",
+        "intro.js/intro.js",
+        "jquery-knob/dist/jquery.knob.min.js",
+        "jquery-simple-slider/js/simple-slider.js",
+        "dashboard/dashboard.js",
+        "dashboard/group-details.js",
+        "dashboard/group-list.js",
+        "dashboard/js/stupidtable.min.js",  # no bower file
+        "dashboard/node-create.js",
+        "dashboard/node-details.js",
+        "dashboard/node-list.js",
+        "dashboard/profile.js",
+        "dashboard/store.js",
+        "dashboard/template-list.js",
+        "dashboard/vm-common.js",
+        "dashboard/vm-create.js",
+        "dashboard/vm-list.js",
+        "js/host.js",
+        "js/network.js",
+        "js/switch-port.js",
+        "autocomplete_light/autocomplete.js",
+        "autocomplete_light/widget.js",
+        "autocomplete_light/addanother.js",
+        "autocomplete_light/text_widget.js",
+        "autocomplete_light/remote.js",
+    ),
+        "output_filename": "all.js",
+    },
+    "vm-detail": {"source_filenames": (
+        "dashboard/vm-details.js",
+        "no-vnc/include/util.js",
+        "no-vnc/include/webutil.js",
+        "no-vnc/include/base64.js",
+        "no-vnc/include/websock.js",
+        "no-vnc/include/des.js",
+        "no-vnc/include/keysym.js",
+        "no-vnc/include/keysymdef.js",
+        "no-vnc/include/keyboard.js",
+        "no-vnc/include/input.js",
+        "no-vnc/include/display.js",
+        "no-vnc/include/jsunzip.js",
+        "no-vnc/include/rfb.js",
+        "dashboard/vm-console.js",
+        "dashboard/vm-tour.js",
+    ),
+        "output_filename": "vm-detail.js",
+    },
+}
+
 
 
 ########## SECRET CONFIGURATION
@@ -267,6 +345,7 @@ THIRD_PARTY_APPS = (
     'statici18n',
     'django_sshkey',
     'autocomplete_light',
+    'pipeline',
 )
 
 # Apps specific for this project go here.

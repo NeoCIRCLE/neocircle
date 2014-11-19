@@ -1,0 +1,3 @@
+{% load i18n %}
+<a href="{% url "network.host_create" %}?vlan={{ object.pk }}&amp;mac={{ record.mac }}&amp;hostname={{ record.hostname }}&amp;ipv4={{ record.ip }}"
+    title="{% trans "register host" %}"><i class="fa fa-plus-circle"></i></a>

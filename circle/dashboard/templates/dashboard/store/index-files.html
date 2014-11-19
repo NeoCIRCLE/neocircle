@@ -3,10 +3,11 @@
 <div class="panel panel-default">
   <div class="panel-heading">
     <span class="btn btn-default btn-xs infobtn pull-right store-action-button" 
-      title="{% trans "A list of your most recent files." %}">
+      title="{% trans "A list of your most recent files." %}"
+      data-container="body">
       <i class="fa fa-info-circle"></i>
     </span>
-    <span class="btn btn-default btn-xs pull-right" 
+    <span class="btn btn-default btn-xs pull-right" data-container="body"
       title="
       {% blocktrans with used=files.quota.readable_used soft=files.quota.readable_soft hard=files.quota.readable_hard %}
       You are currently using {{ used }}, your soft limit is {{ soft }}, your hard limit is {{ hard }}.
@@ -20,7 +21,8 @@
     <div id="dashboard-files-toplist">
     {% for t in files.toplist %}
     {% if t.TYPE == "F" %}
-      <div class="list-group-item">
+      <div class="list-group-item
+        {% if forloop.last and files.toplist|length < 5 %}list-group-item-last{% endif %}">
         <i class="fa fa-{{ t.icon }} dashboard-toplist-icon"></i> 
         <div class="store-list-item-name">
           {{ t.NAME }}
@@ -37,7 +39,8 @@
       </div>
     {% else %}
     <a href="{% url "dashboard.views.store-list" %}?directory={{ t.path }}" 
-      class="list-group-item">
+      class="list-group-item
+      {% if forloop.last and files.toplist|length < 5 %}list-group-item-last{% endif %}">
       <i class="fa fa-{{ t.icon }} dashboard-toplist-icon"></i>
         <div class="store-list-item-name">
         {{ t.NAME }}

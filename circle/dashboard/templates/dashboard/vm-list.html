@@ -1,4 +1,5 @@
 {% extends "dashboard/base.html" %}
+{% load staticfiles %}
 {% load i18n %}
 
 {% block title-page %}{% trans "Virtual machines" %}{% endblock %}
@@ -153,9 +154,4 @@
   {% trans "If you want to select multiple instances by one click select an instance then hold down <strong>SHIFT</strong> key and select another one!" %}
 </div>
 
-{% endblock %}
-
-{% block extra_js %}
-  <script src="{{ STATIC_URL}}dashboard/vm-list.js"></script>
-  <script src="{{ STATIC_URL}}dashboard/js/stupidtable.min.js"></script>
 {% endblock %}

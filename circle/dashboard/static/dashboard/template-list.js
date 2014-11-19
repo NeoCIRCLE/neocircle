@@ -20,7 +20,7 @@ $(function() {
     });
     return false;
   });
-  
+
   /* template table sort */
   var ttable = $(".template-list-table").stupidtable();
 
@@ -37,7 +37,7 @@ $(function() {
 
   // only if js is enabled
   $(".template-list-table thead th").css("cursor", "pointer");
-  
+
   $(".template-list-table th a").on("click", function(event) {
     if(!$(this).closest("th").data("sort")) return true;
     event.preventDefault();
@@ -49,16 +49,16 @@ $(function() {
 function deleteTemplate(data) {
   $.ajax({
     type: 'POST',
-    url: data['url'],
-    headers: {"X-CSRFToken": getCookie('csrftoken')}, 
-    success: function(re, textStatus, xhr) { 
-      addMessage(re['message'], 'success');
-      $('a[data-template-pk="' + data['template_pk'] + '"]').closest('tr').fadeOut(function() {
+    url: data.url,
+    headers: {"X-CSRFToken": getCookie('csrftoken')},
+    success: function(re, textStatus, xhr) {
+      addMessage(re.message, 'success');
+      $('a[data-template-pk="' + data.template_pk + '"]').closest('tr').fadeOut(function() {
         $(this).remove();
       });
     },
     error: function(xhr, textStatus, error) {
-      addMessage('Uh oh :(', 'danger')
+      addMessage('Uh oh :(', 'danger');
     }
   });
 }
@@ -68,16 +68,16 @@ function deleteTemplate(data) {
 function deleteLease(data) {
   $.ajax({
     type: 'POST',
-    url: data['url'],
-    headers: {"X-CSRFToken": getCookie('csrftoken')}, 
-    success: function(re, textStatus, xhr) { 
-      addMessage(re['message'], 'success');
-      $('a[data-lease-pk="' + data['lease_pk'] + '"]').closest('tr').fadeOut(function() {
+    url: data.url,
+    headers: {"X-CSRFToken": getCookie('csrftoken')},
+    success: function(re, textStatus, xhr) {
+      addMessage(re.message, 'success');
+      $('a[data-lease-pk="' + data.lease_pk + '"]').closest('tr').fadeOut(function() {
         $(this).remove();
       });
     },
     error: function(xhr, textStatus, error) {
-      addMessage('Uh oh :(', 'danger')
+      addMessage('Uh oh :(', 'danger');
     }
   });
 }

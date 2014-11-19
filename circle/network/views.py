@@ -15,11 +15,13 @@
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
+from netaddr import IPNetwork
 from django.views.generic import (TemplateView, UpdateView, DeleteView,
                                   CreateView)
+from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse_lazy
-from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse, Http404
 
 from django_tables2 import SingleTableView
 
@@ -29,7 +31,7 @@ from vm.models import Interface
 from .tables import (HostTable, VlanTable, SmallHostTable, DomainTable,
                      GroupTable, RecordTable, BlacklistItemTable, RuleTable,
                      VlanGroupTable, SmallRuleTable, SmallGroupRuleTable,
-                     SmallRecordTable, SwitchPortTable)
+                     SmallRecordTable, SwitchPortTable, SmallDhcpTable, )
 from .forms import (HostForm, VlanForm, DomainForm, GroupForm, RecordForm,
                     BlacklistItemForm, RuleForm, VlanGroupForm, SwitchPortForm)
 
@@ -41,9 +43,35 @@ from braces.views import LoginRequiredMixin, SuperuserRequiredMixin
 # from django.db.models import Q
 from operator import itemgetter
 from itertools import chain
-import json
 from dashboard.views import AclUpdateView
 from dashboard.forms import AclUserOrGroupAddForm
+
+from django.utils import simplejson
+
+try:
+    from django.http import JsonResponse
+except ImportError:
+    class JsonResponse(HttpResponse):
+        """JSON response for Django < 1.7
+        https://gist.github.com/philippeowagner/3179eb475fe1795d6515
+        """
+        def __init__(self, content, mimetype='application/json',
+                     status=None, content_type=None):
+            super(JsonResponse, self).__init__(
+                content=simplejson.dumps(content),
+                mimetype=mimetype,
+                status=status,
+                content_type=content_type)
+
+
+class MagicMixin(object):
+
+    def get(self, *args, **kwargs):
+        if self.request.is_ajax():
+            result = self._get_ajax(*args, **kwargs)
+            return JsonResponse({k: unicode(result[k] or "") for k in result})
+        else:
+            return super(MagicMixin, self).get(*args, **kwargs)
 
 
 class InitialOwnerMixin(FormMixin):
@@ -310,6 +338,25 @@ class GroupDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
         return context
 
 
+class HostMagicMixin(MagicMixin):
+    def _get_ajax(self, *args, **kwargs):
+        GET = self.request.GET
+        result = {}
+        vlan = get_object_or_404(Vlan.objects, pk=GET.get("vlan", ""))
+        if "ipv4" in GET:
+            try:
+                result["ipv6"] = vlan.convert_ipv4_to_ipv6(GET["ipv4"]) or ""
+            except:
+                result["ipv6"] = ""
+        else:
+            try:
+                result.update(vlan.get_new_address())
+            except ValidationError:
+                result["ipv4"] = ""
+                result["ipv6"] = ""
+        return result
+
+
 class HostList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
     model = Host
     table_class = HostTable
@@ -331,15 +378,15 @@ class HostList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
         return data
 
 
-class HostDetail(LoginRequiredMixin, SuperuserRequiredMixin,
+class HostDetail(HostMagicMixin, LoginRequiredMixin, SuperuserRequiredMixin,
                  SuccessMessageMixin, UpdateView):
     model = Host
     template_name = "network/host-edit.html"
     form_class = HostForm
     success_message = _(u'Successfully modified host %(hostname)s!')
 
-    def get(self, request, *args, **kwargs):
-        if request.is_ajax():
+    def _get_ajax(self, *args, **kwargs):
+        if "vlan" not in self.request.GET:
             host = Host.objects.get(pk=kwargs['pk'])
             host = {
                 'hostname': host.hostname,
@@ -347,11 +394,13 @@ class HostDetail(LoginRequiredMixin, SuperuserRequiredMixin,
                 'ipv6': str(host.ipv6),
                 'fqdn': host.get_fqdn()
             }
-            return HttpResponse(json.dumps(host),
-                                content_type="application/json")
+            return host
         else:
-            self.object = self.get_object()
-            return super(HostDetail, self).get(request, *args, **kwargs)
+            return super(HostDetail, self)._get_ajax(*args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super(HostDetail, self).get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         pk = self.kwargs.get('pk')
@@ -402,12 +451,28 @@ class HostDetail(LoginRequiredMixin, SuperuserRequiredMixin,
             return reverse_lazy('network.host', kwargs=self.kwargs)
 
 
-class HostCreate(LoginRequiredMixin, SuperuserRequiredMixin,
+class HostCreate(HostMagicMixin, LoginRequiredMixin, SuperuserRequiredMixin,
                  SuccessMessageMixin, InitialOwnerMixin, CreateView):
     model = Host
     template_name = "network/host-create.html"
     form_class = HostForm
     success_message = _(u'Successfully created host %(hostname)s!')
+
+    def get_initial(self):
+        initial = super(HostCreate, self).get_initial()
+
+        for i in ("vlan", "mac", "hostname"):
+            if i in self.request.GET and i not in self.request.POST:
+                initial[i] = self.request.GET[i]
+        if "vlan" in initial:
+            if not initial['vlan'].isnumeric():
+                raise Http404()
+            vlan = get_object_or_404(Vlan.objects, pk=initial['vlan'])
+            try:
+                initial.update(vlan.get_new_address())
+            except ValidationError as e:
+                messages.error(self.request, e.message)
+        return initial
 
 
 class HostDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
@@ -644,7 +709,21 @@ class VlanAclUpdateView(AclUpdateView):
     model = Vlan
 
 
-class VlanDetail(LoginRequiredMixin, SuperuserRequiredMixin,
+class VlanMagicMixin(MagicMixin):
+    def _get_ajax(self, *args, **kwargs):
+        GET = self.request.GET
+        result = {}
+        if "network4" in GET and "network6" in GET:
+            try:
+                result["ipv6_template"], result["host_ipv6_prefixlen"] = (
+                    Vlan._magic_ipv6_template(IPNetwork(GET['network4']),
+                                              IPNetwork(GET['network6'])))
+            except:
+                result["ipv6_template"] = result["host_ipv6_prefixlen"] = ""
+        return result
+
+
+class VlanDetail(VlanMagicMixin, LoginRequiredMixin, SuperuserRequiredMixin,
                  SuccessMessageMixin, UpdateView):
     model = Vlan
     template_name = "network/vlan-edit.html"
@@ -656,6 +735,7 @@ class VlanDetail(LoginRequiredMixin, SuperuserRequiredMixin,
     def get_context_data(self, **kwargs):
         context = super(VlanDetail, self).get_context_data(**kwargs)
         context['host_list'] = SmallHostTable(self.object.host_set.all())
+        context['dhcp_list'] = SmallDhcpTable(self.object.get_dhcp_clients())
         context['vlan_vid'] = self.kwargs.get('vid')
         context['acl'] = AclUpdateView.get_acl_data(
             self.object, self.request.user, 'network.vlan-acl')
@@ -665,7 +745,7 @@ class VlanDetail(LoginRequiredMixin, SuperuserRequiredMixin,
     success_url = reverse_lazy('network.vlan_list')
 
 
-class VlanCreate(LoginRequiredMixin, SuperuserRequiredMixin,
+class VlanCreate(VlanMagicMixin, LoginRequiredMixin, SuperuserRequiredMixin,
                  SuccessMessageMixin, InitialOwnerMixin, CreateView):
     model = Vlan
     template_name = "network/vlan-create.html"
