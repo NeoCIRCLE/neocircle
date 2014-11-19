@@ -31,12 +31,23 @@ class CSRFExemptMixin(object):
         return super(CSRFExemptMixin, self).dispatch(*args, **kwargs)
 
 
-def get_post_data_from_request(request):
-    """ Returns the post data in an array
-    """
-    post_data = []
-    accept = request.META.get("HTTP_ACCEPT")
-    if accept and accept.split(",")[0] == "text/occi":
+class OCCIPostDataAsListMixin(object):
+
+    def get_post_data(self, request):
+        """ Returns the post data in an array
+        """
+        post_data = []
+        accept = request.META.get("HTTP_ACCEPT")
+        if accept and accept.split(",")[0] == "text/occi":
+            post_data = self._parse_from_header(request)
+        else:  # text/plain or missing
+            for l in request.readlines():
+                if l:
+                    post_data.append(l.strip())
+        return post_data
+
+    def _parse_from_header(self, request):
+        post_data = []
         for k, v in request.META.iteritems():
             if k.startswith("HTTP_X_OCCI_ATTRIBUTE"):
                 for l in v.split(","):
@@ -44,11 +55,7 @@ def get_post_data_from_request(request):
             if k.startswith("HTTP_CATEGORY"):
                 for l in v.split(","):
                     post_data.append("Category: %s" % l.strip())
-    else:  # text/plain or missing
-        for l in request.readlines():
-            if l:
-                post_data.append(l.strip())
-    return post_data
+        return post_data
 
 
 class QueryInterface(CSRFExemptMixin, View):
@@ -77,7 +84,7 @@ class QueryInterface(CSRFExemptMixin, View):
         return response
 
 
-class ComputeInterface(CSRFExemptMixin, View):
+class ComputeInterface(CSRFExemptMixin, OCCIPostDataAsListMixin, View):
 
     def get(self, request, *args, **kwargs):
         response = "\n".join([Compute(instance=i).render_location()
@@ -88,7 +95,7 @@ class ComputeInterface(CSRFExemptMixin, View):
         )
 
     def post(self, request, *args, **kwargs):
-        data = get_post_data_from_request(request)
+        data = self.get_post_data(request)
 
         c = Compute.create_object(data=data)
         response = HttpResponse(
@@ -99,7 +106,7 @@ class ComputeInterface(CSRFExemptMixin, View):
         return response
 
 
-class VmInterface(CSRFExemptMixin, DetailView):
+class VmInterface(CSRFExemptMixin, OCCIPostDataAsListMixin, DetailView):
     model = Instance
 
     def get_object(self):
@@ -115,7 +122,7 @@ class VmInterface(CSRFExemptMixin, DetailView):
         )
 
     def post(self, request, *args, **kwargs):
-        data = get_post_data_from_request(request)
+        data = self.get_post_data(request)
         action = request.GET.get("action")
         vm = self.get_object()
         if action:
@@ -143,7 +150,7 @@ class OsTplInterface(CSRFExemptMixin, View):
         pass
 
 
-class StorageInterface(CSRFExemptMixin, View):
+class StorageInterface(CSRFExemptMixin, OCCIPostDataAsListMixin, View):
 
     def get(self, request, *args, **kwargs):
         response = "\n".join([Storage(disk=d).render_location()
@@ -154,7 +161,7 @@ class StorageInterface(CSRFExemptMixin, View):
         )
 
     def post(self, request, *args, **kwargs):
-        data = get_post_data_from_request(request)
+        data = self.get_post_data(request)
 
         d = Storage.create_object(data=data)
         response = HttpResponse(
@@ -165,7 +172,7 @@ class StorageInterface(CSRFExemptMixin, View):
         return response
 
 
-class DiskInterface(CSRFExemptMixin, DetailView):
+class DiskInterface(CSRFExemptMixin, OCCIPostDataAsListMixin, DetailView):
     model = Disk
 
     def get(self, request, *args, **kwargs):
@@ -178,7 +185,7 @@ class DiskInterface(CSRFExemptMixin, DetailView):
 
     def post(self, request, *args, **kwargs):
         # TODO actions (we only support resize)
-        data = get_post_data_from_request(request)
+        data = self.get_post_data(request)
         action = request.GET.get("action")
         disk = self.get_object()
         if action:
@@ -190,7 +197,7 @@ class DiskInterface(CSRFExemptMixin, DetailView):
         return HttpResponse("")
 
 
-class StorageLinkInterface(CSRFExemptMixin, View):
+class StorageLinkInterface(CSRFExemptMixin, OCCIPostDataAsListMixin, View):
 
     def get_vm_and_disk(self):
         vm = get_object_or_404(Instance.objects.filter(destroyed_at=None),
@@ -217,7 +224,7 @@ class StorageLinkInterface(CSRFExemptMixin, View):
         if request.GET.get("action"):
             return HttpResponse("", status=500)
 
-        data = get_post_data_from_request(request)
+        data = self.get_post_data(request)
         sl = StorageLink.create_object(data=data)
         if sl:
             response = HttpResponse(
