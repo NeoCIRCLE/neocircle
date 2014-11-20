@@ -18,8 +18,35 @@
 
 {% block navbar %}
 {% if user.is_authenticated and user.pk and not request.token_user %}
-  <ul class="nav navbar-nav pull-right">
-    <li class="dropdown" id="notification-button">
+  <ul class="nav navbar-nav navbar-right">
+    {% if user.is_superuser %}
+    <li>
+      <a href="/admin/"><i class="fa fa-cogs"></i> {% trans "Admin" %}</a>
+    </li>
+    <li>
+      <a href="/network/"><i class="fa fa-globe"></i> {% trans "Network" %}</a>
+    </li>
+    {% endif %}
+    <li>
+      <a href="{% url "dashboard.views.profile-preferences" %}">
+        <i class="fa fa-user"></i>
+        {% include "dashboard/_display-name.html" with user=user show_org=True %}
+      </a>
+    </li>
+    <li>
+      <a href="{% url "logout" %}?next={% url "login" %}">
+        <i class="fa fa-sign-out"></i> {% trans "Log out" %}
+      </a>
+    </li>
+    <li class="visible-xs">
+      <a href="{% url "dashboard.views.notifications" %}">
+        {% trans "Notifications" %}
+        {% if NEW_NOTIFICATIONS_COUNT > 0 %}
+          <span class="badge badge-pulse">{{ NEW_NOTIFICATIONS_COUNT }}</span>
+        {% endif %}
+      </a>
+    </li>
+    <li class="dropdown hidden-xs" id="notification-button">
       <a href="{% url "dashboard.views.notifications" %}"
         class="dropdown-toggle" data-toggle="dropdown">
         {% trans "Notifications" %}
@@ -33,20 +60,8 @@
     </li>
   </ul>
 
-  <a class="navbar-brand pull-right" href="{% url "logout" %}?next={% url "login" %}" style="color: white; font-size: 10px;">
-    <i class="fa fa-sign-out"></i> {% trans "Log out" %}
-  </a>
-  <a class="navbar-brand pull-right" href="{% url "dashboard.views.profile-preferences" %}" style="color: white; font-size: 10px;">
-    <i class="fa fa-user"></i>
-    {% include "dashboard/_display-name.html" with user=user show_org=True %}
-  </a>
-
-  {% if user.is_superuser %}
-    <a class="navbar-brand pull-right" href="/network/" style="color: white; font-size: 10px;"><i class="fa fa-globe"></i> {% trans "Network" %}</a>
-    <a class="navbar-brand pull-right" href="/admin/" style="color: white; font-size: 10px;"><i class="fa fa-cogs"></i> {% trans "Admin" %}</a>
-  {% endif %}
 {% else %}
-  <a class="navbar-brand pull-right" href="{% url "login" %}?next={{ request.path }}" style="color: white; font-size: 10px;"><i class="fa fa-sign-in"></i> {% trans "Log in " %}</a>
+  <a class="navbar-brand pull-right" href="{% url "login" %}?next={{ request.path }}"><i class="fa fa-sign-in"></i> {% trans "Log in " %}</a>
 {% endif %}
 
 {% endblock %}
