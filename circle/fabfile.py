@@ -71,10 +71,17 @@ def compile_messages():
         run("./manage.py compilemessages")
 
 
+def compile_less():
+    "Compile LESS files"
+    with _workon("circle"), cd("~/circle/circle"):
+        run("./manage.py compileless")
+
+
 @roles('portal')
 def compile_things():
     "Compile translation and collect static files"
     compile_js()
+    compile_less()
     collectstatic()
     compile_messages()
 

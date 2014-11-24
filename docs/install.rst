@@ -61,8 +61,8 @@ Update the package lists, and install the required system software::
   sudo apt-get update
   sudo apt-get install --yes virtualenvwrapper postgresql git \
     python-pip rabbitmq-server libpq-dev python-dev ntp memcached \
-    libmemcached-dev npm
-  sudo npm -g install bower less
+    libmemcached-dev npm nodejs-legacy
+  sudo npm -g install bower less yuglify
 
 Set up *PostgreSQL* to listen on localhost and restart it::
 
