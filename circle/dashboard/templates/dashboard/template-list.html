@@ -1,4 +1,5 @@
 {% extends "dashboard/base.html" %}
+{% load staticfiles %}
 {% load i18n %}
 {% load render_table from django_tables2 %}
 
@@ -74,9 +75,4 @@
   {% endcomment %}
 </div>
 {% endif %}
-{% endblock %}
-
-{% block extra_js %}
-  <script src="{{ STATIC_URL}}dashboard/template-list.js"></script>
-  <script src="{{ STATIC_URL}}dashboard/js/stupidtable.min.js"></script>
 {% endblock %}

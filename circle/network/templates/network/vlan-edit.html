@@ -19,9 +19,16 @@
   </div>
   <div class="col-sm-6">
     <div class="page-header">
+      <a href="{% url "network.host_create" %}?vlan={{vlan.pk}}" class="btn btn-success pull-right"><i class="fa fa-plus-circle"></i> {% trans "Create a new host" %}</a>
       <h3>{% trans "Host list" %}</h3>
     </div>
     {% render_table host_list %}
+
+    <div class="page-header">
+      <h3>{% trans "Unregistered hosts" %}</h3>
+    </div>
+    {% render_table dhcp_list %}
+
     <div class="page-header">
       <h3>{% trans "Manage access" %}</h3>
     </div>

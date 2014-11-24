@@ -1,7 +1,15 @@
 {% extends "dashboard/base.html" %}
+{% load staticfiles %}
 {% load i18n %}
 
 {% block title-page %}{% trans "Index" %}{% endblock %}
+
+{% block extra_link_2 %}
+<link rel="search"
+  type="application/opensearchdescription+xml"
+  href="{% url "dashboard.views.vm-opensearch" %}"
+  title="{% blocktrans with name=COMPANY_NAME %}{{name}} virtual machines{% endblocktrans %}" />
+{% endblock %}
 
 {% block content %}
 <div class="body-content dashboard-index">
@@ -42,9 +50,4 @@
     {% endif %}
   </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script src="{{ STATIC_URL }}dashboard/vm-create.js"></script>
-<script src="{{ STATIC_URL }}dashboard/node-create.js"></script>
 {% endblock %}

@@ -34,6 +34,15 @@ def pip(env, req):
         run("pip install -r %s" % req)
 
 
+def bower(component=None):
+    "Install bower component"
+    with cd("~/circle/circle"):
+        if component:
+            run("bower install %s" % component)
+        else:
+            run("bower install")
+
+
 @roles('portal')
 def migrate():
     "Run db migrations"
@@ -113,15 +122,24 @@ def pull(dir="~/circle/circle"):
 
 
 @roles('portal')
-def update_portal(test=False):
+def update_portal(test=False, git=True):
     "Update and restart portal+manager"
     with _stopped("portal", "manager"):
-        pull()
+        if git:
+            pull()
+        cleanup()
         pip("circle", "~/circle/requirements.txt")
+        bower()
         migrate()
         compile_things()
         if test:
             test()
+
+
+@roles('portal')
+def build_portal():
+    "Update portal without pulling from git"
+    return update_portal(False, False)
 
 
 @roles('portal')
@@ -136,10 +154,15 @@ def update_node():
     with _stopped("node", "agentdriver", "monitor-client"):
         pull("~/vmdriver")
         pip("vmdriver", "~/vmdriver/requirements/production.txt")
+        _cleanup("~/vmdriver")
+
         pull("~/agentdriver")
         pip("agentdriver", "~/agentdriver/requirements.txt")
+        _cleanup("~/agentdriver")
+
         pull("~/monitor-client")
         pip("monitor-client", "~/monitor-client/requirements.txt")
+        _cleanup("~/monitor-client")
 
 
 @parallel
@@ -159,6 +182,18 @@ def checkout(vmdriver="master", agent="master"):
         run("git checkout %s" % vmdriver)
     with settings(warn_only=True), cd("~/agentdriver"):
         run("git checkout %s" % agent)
+
+
+@roles('portal')
+def cleanup():
+    "Clean pyc files of portal"
+    _cleanup()
+
+
+def _cleanup(dir="~/circle/circle"):
+    "Clean pyc files"
+    with cd("~/circle/circle"):
+        run("find -name '*.py[co]' -exec rm -f {} +")
 
 
 def _stop_services(*services):
@@ -189,3 +224,12 @@ def _stopped(*services):
 def _workon(name):
     return prefix("source ~/.virtualenvs/%s/bin/activate && "
                   "source ~/.virtualenvs/%s/bin/postactivate" % (name, name))
+
+
+@roles('portal')
+def install_bash_completion_script():
+    sudo("wget https://raw.githubusercontent.com/marcelor/fabric-bash-"
+         "autocompletion/48baf5735bafbb2be5be8787d2c2c04a44b6cdb0/fab "
+         "-O /etc/bash_completion.d/fab")
+    print("To have bash completion instantly, run\n"
+          "  source /etc/bash_completion.d/fab")

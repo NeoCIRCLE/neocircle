@@ -1,4 +1,5 @@
 {% load i18n %}
+{% load staticfiles %}
 <div class="btn-toolbar">
 {% if perms.vm.access_console %}
   <button id="sendCtrlAltDelButton" class="btn btn-danger btn-sm">{% trans "Send Ctrl+Alt+Del" %}</button>
@@ -22,9 +23,8 @@
 <canvas id="noVNC_canvas" width="640px" height="20px">Canvas not supported.
 </canvas>
 
-<script src="{{ STATIC_URL }}dashboard/novnc/util.js"></script>
 <script>
-  var INCLUDE_URI = '{{ STATIC_URL }}dashboard/novnc/';
+  var INCLUDE_URI = '{% static "no-vnc/include/" %}';
   var VNC_URL = "{{ vnc_url }}";
 </script>
 {% endif %}
