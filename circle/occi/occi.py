@@ -533,7 +533,7 @@ class Network(Resource):
     def __init__(self, vlan=None, data=None):
         self.attrs = {}
         if vlan:
-            self.location = "/network2/%d/" % (vlan.vid)
+            self.location = "/network/%d/" % (vlan.vid)
             self.vlan = vlan
             self.init_attrs()
 
@@ -608,19 +608,20 @@ class NetworkInterface(Link):
         self.vlan = vlan
 
         self.attrs = {}
-        self.attrs['occi.core.id'] = "vm_%d_vlan_%d" % (instance.pk, vlan.vid)
+        self.attrs['occi.core.id'] = "vm_%d_network_%d" % (instance.pk,
+                                                           vlan.vid)
         self.attrs['occi.core.target'] = Network(vlan).render_location()
         self.attrs['occi.core.source'] = Compute(instance).render_location()
 
         interface = Interface.objects.get(vlan=vlan, instance=instance)
         # via networkinterface
-        self.attrs['occi.networkinterface.mac'] = unicode(interface.host.mac)
+        self.attrs['occi.networkinterface.mac'] = unicode(interface.mac)
         self.attrs['occi.networkinterface.interface'] = self._get_interface()
         self.attrs['occi.core.state'] = "active"
 
         # via ipnetworkinterface mixin
         self.attrs['occi.networkinterface.address'] = unicode(
-            interface.host.ipv4)
+            interface.host.ipv4) if interface.host else "-"
         self.attrs['occi.networkinterface.gateway'] = unicode(
             interface.vlan.network4.ip)
         self.attrs['occi.networkinterface.allocation'] = "dynamic"
@@ -647,14 +648,14 @@ class NetworkInterface(Link):
 
         # TODO user
         user = User.objects.get(username="test")
-        g = re.match(occi_attribute_link_regex % "vlan", target)
+        g = re.match(occi_attribute_link_regex % "network", target)
         vlan_vid = g.group("id")
         g = re.match(occi_attribute_link_regex % "vm", source)
         vm_pk = g.group("id")
 
         try:
             vm = Instance.objects.filter(destroyed_at=None).get(pk=vm_pk)
-            vlan = Vlan.objects.filter(destroyed=None).get(vid=vlan_vid)
+            vlan = Vlan.objects.get(vid=vlan_vid)
         except (Instance.DoesNotExist, Vlan.DoesNotExist):
             return None
 
@@ -663,13 +664,13 @@ class NetworkInterface(Link):
         except:
             pass
 
-        cls.location = "%slink/networkinterface/vm_%s_vlan_%s" % (
+        cls.location = "%slink/networkinterface/vm_%s_network_%s" % (
             OCCI_ADDR, vm_pk, vlan_vid)
         return cls
 
     def render_location(self):
-        return "/link/networkinterface/vm_%d_vlan_%d" % (self.instance.pk,
-                                                         self.vlan.vid)
+        return "/link/networkinterface/vm_%d_network_%d" % (self.instance.pk,
+                                                            self.vlan.vid)
 
     def render_as_link(self):
         kind = NETWORK_INTERFACE_KIND
@@ -683,9 +684,11 @@ class NetworkInterface(Link):
 
     def render_as_category(self):
         kind = NETWORK_INTERFACE_KIND
+        mixins = [IPNetworkInterface()]
 
         return render_to_string("occi/networkinterface.html", {
             'kind': kind,
+            'mixins': mixins,
             'attrs': self.attrs,
         })
 
@@ -696,6 +699,28 @@ class NetworkInterface(Link):
         interface = Interface.objects.get(vlan=self.vlan,
                                           instance=self.instance)
         self.instance.remove_interface(user=user, interface=interface)
+
+
+class IPNetworkInterface(Mixin):
+    def __init__(self):
+        self.term = "ipnetworkinterface"
+        self.title = "ipnnetwork interface mixin"
+        self.scheme = ("http://schemas.ogf.org/occi/infrastructure/"
+                       "networkinterface#")
+        self.location = "/mixin/ipnetworkinterface/"
+
+    def render_location(self):
+        return self.location
+
+    def render_body(self):
+
+        return render_to_string("occi/ipnetworkinterface.html", {
+            'term': self.term,
+            'scheme': self.scheme,
+            'location': self.location,
+            'class': "mixin",
+            'title': self.title,
+        })
 
 
 """predefined stuffs
@@ -893,6 +918,6 @@ IPNETWORK_INTERFACE_MIXIN = Kind(
     scheme="http://schemas.ogf.org/occi/infrastructure/networkinterface#",
     class_="mixin",
     title="ipnetwork",
-    location="/mixin/ipnetwork/",
+    location="/mixin/ipnetworkinterface/",
     attributes=IPNETWORK_ATTRS,
 )

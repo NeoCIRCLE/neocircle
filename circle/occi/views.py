@@ -12,7 +12,7 @@ from .occi import (
     Compute,
     Storage,
     Network,
-    # NetworkInterface,
+    NetworkInterface,
     OsTemplate,
     StorageLink,
     COMPUTE_KIND,
@@ -284,5 +284,44 @@ class VlanInterface(CSRFExemptMixin, DetailView):
         pass
 
 
-class CIRCLEInterface(CSRFExemptMixin, View):
-    pass
+class CIRCLEInterface(CSRFExemptMixin, OCCIPostDataAsListMixin, View):
+    def get_vm_and_vlan(self):
+        vlan_vid = self.kwargs['vlan_vid']
+        vm = get_object_or_404(Instance.objects.filter(destroyed_at=None),
+                               pk=self.kwargs['vm_pk'])
+        vlan = get_object_or_404(Vlan, vid=vlan_vid)
+
+        return vm, vlan
+
+    def get(self, request, *args, **kwargs):
+        vm, vlan = self.get_vm_and_vlan()
+        ni = NetworkInterface(instance=vm, vlan=vlan)
+        return HttpResponse(
+            ni.render_as_category(),
+            content_type="text/plain",
+        )
+
+    def post(self, request, *args, **kwargs):
+        # we don't support actions for networkinterfaces
+        # (they don't even exist in the model)
+        if request.GET.get("action"):
+            return HttpResponse("", status=500)
+
+        data = self.get_post_data(request)
+        sl = NetworkInterface.create_object(data=data)
+        if sl:
+            response = HttpResponse(
+                "X-OCCI-Location: %s" % sl.location,
+                status=201,
+                content_type="text/plain",
+            )
+            return response
+        else:
+            return HttpResponse("VM or Network does not exist.", status=500)
+
+    def delete(self, request, *args, **kwargs):
+        vm, vlan = self.get_vm_and_vlan()
+        ni = NetworkInterface(instance=vm, vlan=vlan)
+
+        ni.delete()
+        return HttpResponse("")

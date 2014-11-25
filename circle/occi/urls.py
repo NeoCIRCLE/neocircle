@@ -40,9 +40,10 @@ urlpatterns = patterns(
         StorageLinkInterface.as_view(), name="occi.storagelink"),
 
     url(r'^network2/?$', NetworkInterfaceView.as_view(), ),
-    url(r'^network2/(?P<vid>\d+)/?$', VlanInterface.as_view(), ),
+    url(r'^network/(?P<vid>\d+)/?$', VlanInterface.as_view(), ),
 
     url(r'^link/networkinterface/$', CIRCLEInterface.as_view()),
-    url(r'^link/networkinterface/vm(?P<vm_pk>\d+)_vlan(?P<vlan_vid>\d+)/?$',
+    url(r'^link/networkinterface/'
+        'vm_(?P<vm_pk>\d+)_network_(?P<vlan_vid>\d+)/?$',
         CIRCLEInterface.as_view(), name="occi.networkinterface"),
 )
