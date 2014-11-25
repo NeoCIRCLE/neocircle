@@ -453,7 +453,8 @@ class StorageLink(Link):
 
     def init_attrs(self, instance, disk):
         self.attrs = {}
-        self.attrs['occi.core.id'] = "vm_%d_disk_%d" % (instance.pk, disk.pk)
+        self.attrs['occi.core.id'] = "vm_%d_storage_%d" % (instance.pk,
+                                                           disk.pk)
         self.attrs['occi.core.target'] = Storage(disk).render_location()
         self.attrs['occi.core.source'] = Compute(instance).render_location()
         # deviceid? mountpoint?
