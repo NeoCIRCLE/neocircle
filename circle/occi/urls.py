@@ -21,7 +21,8 @@ from django.conf.urls import url, patterns
 from occi.views import (
     QueryInterface, ComputeInterface, VmInterface, OsTplInterface,
     StorageInterface, DiskInterface, StorageLinkInterface,
-    NetworkInterface, VlanInterface,
+    NetworkInterfaceView, VlanInterface,
+    CIRCLEInterface,
 )
 
 urlpatterns = patterns(
@@ -38,6 +39,10 @@ urlpatterns = patterns(
     url(r'^link/storagelink/vm(?P<vm_pk>\d+)_disk(?P<disk_pk>\d+)/?$',
         StorageLinkInterface.as_view(), name="occi.storagelink"),
 
-    url(r'^network2/?$', NetworkInterface.as_view(), ),
+    url(r'^network2/?$', NetworkInterfaceView.as_view(), ),
     url(r'^network2/(?P<vid>\d+)/?$', VlanInterface.as_view(), ),
+
+    url(r'^link/networkinterface/$', CIRCLEInterface.as_view()),
+    url(r'^link/networkinterface/vm(?P<vm_pk>\d+)_vlan(?P<vlan_vid>\d+)/?$',
+        CIRCLEInterface.as_view(), name="occi.networkinterface"),
 )

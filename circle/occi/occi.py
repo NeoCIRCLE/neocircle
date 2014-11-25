@@ -4,8 +4,9 @@ from django.contrib.auth.models import User
 from django.template.loader import render_to_string
 from django.utils import timezone
 
+from firewall.models import Vlan
 from storage.models import Disk
-from vm.models import Instance, InstanceTemplate, Lease
+from vm.models import Instance, InstanceTemplate, Lease, Interface
 from vm.models.common import ARCHITECTURES
 from vm.models.instance import ACCESS_METHODS, pwgen
 
@@ -245,6 +246,10 @@ class Compute(Resource):
         links = []
         if self.instance.template:
             mixins.append(OsTemplate(self.instance.template))
+
+        for i in self.instance.interface_set.all():
+            links.append(NetworkInterface(instance=i.instance,
+                                          vlan=i.vlan))
 
         for d in self.instance.disks.all():
             links.append(StorageLink(self.instance, d))
@@ -555,16 +560,12 @@ class Network(Resource):
             'occi.network.vlan': "vid",
             'occi.network.label': "name",
         }
-        alloc = {
-            True: "dynamic",
-            False: "static",
-        }
         for k, v in translate.items():
             self.attrs[k] = getattr(self.vlan, v, None)
 
         self.attrs['occi.network.gateway'] = unicode(self.vlan.network4.ip)
         self.attrs['occi.network.address'] = unicode(self.vlan.network4.cidr)
-        self.attrs['occi.network.allocation'] = alloc.get(self.vlan.managed)
+        self.attrs['occi.network.allocation'] = "dynamic"
         self.attrs['occi.compute.state'] = "active"
 
     def trigger_action(self, data):
@@ -592,6 +593,108 @@ class IPNetwork(Mixin):
             'class': "mixin",
             'title': self.title,
         })
+
+
+class NetworkInterface(Link):
+    def __init__(self, instance=None, vlan=None, data=None):
+        if instance and vlan:
+            self.init_attrs(instance, vlan)
+        elif data:
+            pass
+
+    def init_attrs(self, instance, vlan):
+        self.instance = instance
+        self.vlan = vlan
+
+        self.attrs = {}
+        self.attrs['occi.core.id'] = "vm_%d_vlan_%d" % (instance.pk, vlan.vid)
+        self.attrs['occi.core.target'] = Network(vlan).render_location()
+        self.attrs['occi.core.source'] = Compute(instance).render_location()
+
+        interface = Interface.objects.get(vlan=vlan, instance=instance)
+        # via networkinterface
+        self.attrs['occi.networkinterface.mac'] = unicode(interface.host.mac)
+        self.attrs['occi.networkinterface.interface'] = self._get_interface()
+        self.attrs['occi.core.state'] = "active"
+
+        # via ipnetworkinterface mixin
+        self.attrs['occi.networkinterface.address'] = unicode(
+            interface.host.ipv4)
+        self.attrs['occi.networkinterface.gateway'] = unicode(
+            interface.vlan.network4.ip)
+        self.attrs['occi.networkinterface.allocation'] = "dynamic"
+
+    def _get_interface(self):
+        vlan_pks = self.instance.interface_set.values_list("vlan", flat=True)
+        vlans = Vlan.objects.filter(pk__in=vlan_pks).order_by("vid")
+        index = list(vlans).index(self.vlan)
+        return "eth%d" % index
+
+    @classmethod
+    def create_object(cls, data):
+        attributes = {}
+
+        for d in data:
+            attr = occi_attribute_regex.match(d)
+            if attr:
+                attributes[attr.group("attribute")] = attr.group("value")
+
+        source = attributes.get("occi.core.source")
+        target = attributes.get("occi.core.target")
+        if not (source and target):
+            return None
+
+        # TODO user
+        user = User.objects.get(username="test")
+        g = re.match(occi_attribute_link_regex % "vlan", target)
+        vlan_vid = g.group("id")
+        g = re.match(occi_attribute_link_regex % "vm", source)
+        vm_pk = g.group("id")
+
+        try:
+            vm = Instance.objects.filter(destroyed_at=None).get(pk=vm_pk)
+            vlan = Vlan.objects.filter(destroyed=None).get(vid=vlan_vid)
+        except (Instance.DoesNotExist, Vlan.DoesNotExist):
+            return None
+
+        try:
+            vm.add_interface(user=user, vlan=vlan)
+        except:
+            pass
+
+        cls.location = "%slink/networkinterface/vm_%s_vlan_%s" % (
+            OCCI_ADDR, vm_pk, vlan_vid)
+        return cls
+
+    def render_location(self):
+        return "/link/networkinterface/vm_%d_vlan_%d" % (self.instance.pk,
+                                                         self.vlan.vid)
+
+    def render_as_link(self):
+        kind = NETWORK_INTERFACE_KIND
+
+        return render_to_string("occi/link.html", {
+            'kind': kind,
+            'location': self.render_location(),
+            'target': self.attrs['occi.core.target'],
+            'attrs': self.attrs,
+        })
+
+    def render_as_category(self):
+        kind = NETWORK_INTERFACE_KIND
+
+        return render_to_string("occi/networkinterface.html", {
+            'kind': kind,
+            'attrs': self.attrs,
+        })
+
+    def delete(self):
+        # TODO
+        user = User.objects.get(username="test")
+
+        interface = Interface.objects.get(vlan=self.vlan,
+                                          instance=self.instance)
+        self.instance.remove_interface(user=user, interface=interface)
 
 
 """predefined stuffs
@@ -754,6 +857,39 @@ IPNETWORK_ATTRS = [
 IPNETWORK_MIXIN = Kind(
     term="ipnetwork",
     scheme="http://schemas.ogf.org/occi/infrastructure/network#",
+    class_="mixin",
+    title="ipnetwork",
+    location="/mixin/ipnetwork/",
+    attributes=IPNETWORK_ATTRS,
+)
+
+
+NETWORK_INTERFACE_ATTRS = LINK_ATTRS + [
+    Attribute("occi.networkinterface.interface"),
+    Attribute("occi.networkinterface.mac"),
+    Attribute("occi.networkinterface.state", "immutable"),
+]
+
+NETWORK_INTERFACE_KIND = Kind(
+    term="networkinterface",
+    scheme="http://schemas.ogf.org/occi/infrastructure#networkinterface",
+    class_="kind",
+    title="Network Interface",
+    rel="http://schemas.ogf.org/occi/core#link",
+    location="/link/networkinterface/",
+    attributes=NETWORK_INTERFACE_ATTRS,
+)
+
+
+IPNETWORK_INTERFACE_ATTRS = [
+    Attribute("occi.networkinterface.address"),
+    Attribute("occi.networkinterface.gateway"),
+    Attribute("occi.networkinterface.allocation"),
+]
+
+IPNETWORK_INTERFACE_MIXIN = Kind(
+    term="ipnetworkinterface",
+    scheme="http://schemas.ogf.org/occi/infrastructure/networkinterface#",
     class_="mixin",
     title="ipnetwork",
     location="/mixin/ipnetwork/",

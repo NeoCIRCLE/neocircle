@@ -12,6 +12,7 @@ from .occi import (
     Compute,
     Storage,
     Network,
+    # NetworkInterface,
     OsTemplate,
     StorageLink,
     COMPUTE_KIND,
@@ -22,6 +23,8 @@ from .occi import (
     OS_TPL_MIXIN,
     NETWORK_KIND,
     IPNETWORK_MIXIN,
+    NETWORK_INTERFACE_KIND,
+    IPNETWORK_INTERFACE_MIXIN,
 )
 
 
@@ -68,6 +71,9 @@ class QueryInterface(CSRFExemptMixin, View):
         response += "Category: %s\n" % OS_TPL_MIXIN.render_values()
         response += "Category: %s\n" % NETWORK_KIND.render_values()
         response += "Category: %s\n" % IPNETWORK_MIXIN.render_values()
+        response += "Category: %s\n" % NETWORK_INTERFACE_KIND.render_values()
+        response += "Category: %s\n" % (
+            IPNETWORK_INTERFACE_MIXIN.render_values())
         for c in COMPUTE_ACTIONS:
             response += "Category: %s\n" % c.render_values()
 
@@ -244,7 +250,7 @@ class StorageLinkInterface(CSRFExemptMixin, OCCIPostDataAsListMixin, View):
         return HttpResponse("")
 
 
-class NetworkInterface(CSRFExemptMixin, View):
+class NetworkInterfaceView(CSRFExemptMixin, View):
 
     def get(self, request, *args, **kwargs):
         response = "\n".join([Network(vlan=v).render_location()
@@ -276,3 +282,7 @@ class VlanInterface(CSRFExemptMixin, DetailView):
 
     def delete(self, request, *args, **kwargs):
         pass
+
+
+class CIRCLEInterface(CSRFExemptMixin, View):
+    pass
