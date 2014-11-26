@@ -1,3 +1,6 @@
+import logging
+
+from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, Http404
 from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
@@ -5,7 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View, DetailView
 
 from firewall.models import Vlan
-from vm.models import Instance, InstanceTemplate
+from vm.models import Instance, InstanceTemplate, Interface
 from storage.models import Disk
 
 from .occi import (
@@ -26,6 +29,8 @@ from .occi import (
     NETWORK_INTERFACE_KIND,
     IPNETWORK_INTERFACE_MIXIN,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class CSRFExemptMixin(object):
@@ -77,7 +82,9 @@ class QueryInterface(CSRFExemptMixin, View):
         for c in COMPUTE_ACTIONS:
             response += "Category: %s\n" % c.render_values()
 
-        for t in InstanceTemplate.objects.all():
+        templates = InstanceTemplate.get_objects_with_level("user",
+                                                            self.request.user)
+        for t in templates:
             response += OsTemplate(t).render_body()
 
         return HttpResponse(
@@ -93,8 +100,9 @@ class QueryInterface(CSRFExemptMixin, View):
 class ComputeInterface(CSRFExemptMixin, OCCIPostDataAsListMixin, View):
 
     def get(self, request, *args, **kwargs):
+        vms = Instance.get_objects_with_level("user", self.request.user)
         response = "\n".join([Compute(instance=i).render_location()
-                             for i in Instance.active.all()])
+                             for i in vms])
         return HttpResponse(
             response,
             content_type="text/plain",
@@ -103,7 +111,7 @@ class ComputeInterface(CSRFExemptMixin, OCCIPostDataAsListMixin, View):
     def post(self, request, *args, **kwargs):
         data = self.get_post_data(request)
 
-        c = Compute.create_object(data=data)
+        c = Compute.create_object(data=data, user=self.request.user)
         response = HttpResponse(
             "X-OCCI-Location: %s" % c.location,
             status=201,
@@ -116,8 +124,11 @@ class VmInterface(CSRFExemptMixin, OCCIPostDataAsListMixin, DetailView):
     model = Instance
 
     def get_object(self):
-        return get_object_or_404(Instance.objects.filter(destroyed_at=None),
-                                 pk=self.kwargs['pk'])
+        vm = get_object_or_404(Instance.objects.filter(destroyed_at=None),
+                               pk=self.kwargs['pk'])
+        if not vm.has_level(self.request.user, "user"):
+            raise PermissionDenied()
+        return vm
 
     def get(self, request, *args, **kwargs):
         vm = self.get_object()
@@ -132,12 +143,12 @@ class VmInterface(CSRFExemptMixin, OCCIPostDataAsListMixin, DetailView):
         action = request.GET.get("action")
         vm = self.get_object()
         if action:
-            Compute(instance=vm).trigger_action(data)
+            Compute(instance=vm).trigger_action(data, self.request.user)
         return HttpResponse()
 
     def delete(self, request, *args, **kwargs):
         vm = self.get_object()
-        Compute(instance=vm).delete()
+        Compute(instance=vm).delete(self.request.user)
 
         return HttpResponse()
 
@@ -145,8 +156,10 @@ class VmInterface(CSRFExemptMixin, OCCIPostDataAsListMixin, DetailView):
 class OsTplInterface(CSRFExemptMixin, View):
 
     def get(self, request, *args, **kwargs):
+        templates = InstanceTemplate.get_objects_with_level("user",
+                                                            self.request.user)
         response = "\n".join([OsTemplate(template=t).render_location()
-                             for t in InstanceTemplate.objects.all()])
+                             for t in templates])
         return HttpResponse(
             response,
             content_type="text/plain",
@@ -169,7 +182,7 @@ class StorageInterface(CSRFExemptMixin, OCCIPostDataAsListMixin, View):
     def post(self, request, *args, **kwargs):
         data = self.get_post_data(request)
 
-        d = Storage.create_object(data=data)
+        d = Storage.create_object(data=data, user=self.request.user)
         response = HttpResponse(
             "X-OCCI-Location: %s" % d.location,
             status=201,
@@ -195,11 +208,11 @@ class DiskInterface(CSRFExemptMixin, OCCIPostDataAsListMixin, DetailView):
         action = request.GET.get("action")
         disk = self.get_object()
         if action:
-            Storage(disk=disk).trigger_action(data)
+            Storage(disk=disk).trigger_action(data, self.request.user)
         return HttpResponse()
 
     def delete(self, request, *args, **kwargs):
-        Storage(disk=self.get_object()).delete()
+        Storage(disk=self.get_object()).delete(self.request.user)
         return HttpResponse("")
 
 
@@ -213,6 +226,9 @@ class StorageLinkInterface(CSRFExemptMixin, OCCIPostDataAsListMixin, View):
 
         if disk not in vm.disks.all():
             raise Http404
+
+        if not vm.has_level(self.request.user, "user"):
+            raise PermissionDenied()
 
         return vm, disk
 
@@ -231,7 +247,7 @@ class StorageLinkInterface(CSRFExemptMixin, OCCIPostDataAsListMixin, View):
             return HttpResponse("", status=500)
 
         data = self.get_post_data(request)
-        sl = StorageLink.create_object(data=data)
+        sl = StorageLink.create_object(data=data, user=self.request.user)
         if sl:
             response = HttpResponse(
                 "X-OCCI-Location: %s" % sl.location,
@@ -246,15 +262,16 @@ class StorageLinkInterface(CSRFExemptMixin, OCCIPostDataAsListMixin, View):
         vm, disk = self.get_vm_and_disk()
         sl = StorageLink(instance=vm, disk=disk)
 
-        sl.delete()
+        sl.delete(user=self.request.user)
         return HttpResponse("")
 
 
 class NetworkInterfaceView(CSRFExemptMixin, View):
 
     def get(self, request, *args, **kwargs):
+        vlans = Vlan.get_objects_with_level("user", self.request.user)
         response = "\n".join([Network(vlan=v).render_location()
-                             for v in Vlan.objects.all()])
+                             for v in vlans])
         return HttpResponse(
             response,
             content_type="text/plain",
@@ -268,6 +285,13 @@ class VlanInterface(CSRFExemptMixin, DetailView):
     model = Vlan
     slug_field = 'vid'
     slug_url_kwarg = 'vid'
+
+    def get_object(self):
+        vlan = get_object_or_404(Vlan, vid=self.kwargs['vid'])
+        if not vlan.has_level(self.request.user, "user"):
+            raise PermissionDenied()
+
+        return vlan
 
     def get(self, request, *args, **kwargs):
         vlan = self.get_object()
@@ -291,6 +315,11 @@ class CIRCLEInterface(CSRFExemptMixin, OCCIPostDataAsListMixin, View):
                                pk=self.kwargs['vm_pk'])
         vlan = get_object_or_404(Vlan, vid=vlan_vid)
 
+        if not vm.has_level(self.request.user, "user"):
+            raise PermissionDenied()
+
+        get_object_or_404(Interface, vlan=vlan, instance=vm)
+
         return vm, vlan
 
     def get(self, request, *args, **kwargs):
@@ -303,12 +332,11 @@ class CIRCLEInterface(CSRFExemptMixin, OCCIPostDataAsListMixin, View):
 
     def post(self, request, *args, **kwargs):
         # we don't support actions for networkinterfaces
-        # (they don't even exist in the model)
         if request.GET.get("action"):
             return HttpResponse("", status=500)
 
         data = self.get_post_data(request)
-        sl = NetworkInterface.create_object(data=data)
+        sl = NetworkInterface.create_object(data=data, user=self.request.user)
         if sl:
             response = HttpResponse(
                 "X-OCCI-Location: %s" % sl.location,
@@ -323,5 +351,5 @@ class CIRCLEInterface(CSRFExemptMixin, OCCIPostDataAsListMixin, View):
         vm, vlan = self.get_vm_and_vlan()
         ni = NetworkInterface(instance=vm, vlan=vlan)
 
-        ni.delete()
+        ni.delete(user=self.request.user)
         return HttpResponse("")

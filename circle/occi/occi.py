@@ -94,7 +94,6 @@ class Category():
         return ret[:-1]  # trailing semicolon
 
 
-# TODO related, entity_type, entities
 class Kind(Category):
     pass
 
@@ -150,9 +149,7 @@ class Compute(Resource):
             self.init_attrs()
 
     @classmethod
-    def create_object(cls, data):
-        # TODO user
-        user = User.objects.get(username="test")
+    def create_object(cls, data, user):
         template = None
         attributes = {}
         links = []
@@ -284,7 +281,7 @@ class Compute(Resource):
         self.attrs['occi.compute.state'] = status.get(self.instance.status,
                                                       "inactive")
 
-    def trigger_action(self, data):
+    def trigger_action(self, data, user):
         method = None
         action_term = None
         for d in data:
@@ -311,9 +308,7 @@ class Compute(Resource):
         user = User.objects.get(username="test")
         getattr(self.instance, operation).async(user=user)
 
-    def delete(self):
-        # TODO
-        user = User.objects.get(username="test")
+    def delete(self, user):
         self.instance.destroy(user=user)
 
 
@@ -349,7 +344,7 @@ class Storage(Resource):
             self.init_attrs()
 
     @classmethod
-    def create_object(cls, data):
+    def create_object(cls, data, user):
         attributes = {}
 
         for d in data:
@@ -365,11 +360,8 @@ class Storage(Resource):
         if not name:
             name = "disk create from OCCI at %s" % timezone.now()
 
-        # TODO user
-        user = User.objects.get(username="test")
-
         params = {
-            'user': user,
+            'user': user,  # not used
             'size': int(float(size) * 1024**3),  # GiB to byte
             'type': "qcow2-norm",
             'name': name,
@@ -406,7 +398,7 @@ class Storage(Resource):
         self.attrs['occi.storage.state'] = "online"
         self.attrs['occi.storage.size'] /= 1024*1024*1024.0
 
-    def trigger_action(self, data):
+    def trigger_action(self, data, user):
         # TODO, this is copypaste ATM
         method = None
         action_term = None
@@ -430,14 +422,10 @@ class Storage(Resource):
             action = compute_action_to_operation.get(action_term)
             operation = action.get(method)
 
-        # TODO user
-        user = User.objects.get(username="test")
         getattr(self.instance, operation).async(user=user)
 
-    def delete(self):
-        # TODO
-        user = User.objects.get(username="test")
-
+    def delete(self, user):
+        # random deletes? template?
         if self.disk.instance_set.count() > 0:
             for i in self.disk.instance_set.all():
                 i.detach_disk(user=user, disk=self.disk)
@@ -464,7 +452,7 @@ class StorageLink(Link):
         self.disk = disk
 
     @classmethod
-    def create_object(cls, data):
+    def create_object(cls, data, user):
         attributes = {}
 
         for d in data:
@@ -477,8 +465,6 @@ class StorageLink(Link):
         if not (source and target):
             return None
 
-        # TODO user
-        user = User.objects.get(username="test")
         g = re.match(occi_attribute_link_regex % "storage", target)
         disk_pk = g.group("id")
         g = re.match(occi_attribute_link_regex % "vm", source)
@@ -521,10 +507,7 @@ class StorageLink(Link):
             'attrs': self.attrs,
         })
 
-    def delete(self):
-        # TODO
-        user = User.objects.get(username="test")
-
+    def delete(self, user):
         if self.disk in self.instance.disks.all():
             self.instance.detach_disk(user=user, disk=self.disk)
 
@@ -633,7 +616,7 @@ class NetworkInterface(Link):
         return "eth%d" % index
 
     @classmethod
-    def create_object(cls, data):
+    def create_object(cls, data, user):
         attributes = {}
 
         for d in data:
@@ -646,8 +629,6 @@ class NetworkInterface(Link):
         if not (source and target):
             return None
 
-        # TODO user
-        user = User.objects.get(username="test")
         g = re.match(occi_attribute_link_regex % "network", target)
         vlan_vid = g.group("id")
         g = re.match(occi_attribute_link_regex % "vm", source)
@@ -692,10 +673,7 @@ class NetworkInterface(Link):
             'attrs': self.attrs,
         })
 
-    def delete(self):
-        # TODO
-        user = User.objects.get(username="test")
-
+    def delete(self, user):
         interface = Interface.objects.get(vlan=self.vlan,
                                           instance=self.instance)
         self.instance.remove_interface(user=user, interface=interface)
@@ -723,19 +701,7 @@ class IPNetworkInterface(Mixin):
         })
 
 
-"""predefined stuffs
-
-
-storage attributes and actions
-    http://ogf.org/documents/GFD.184.pdf 3.3 (page 7)
-
-storagelink attributes
-    http://ogf.org/documents/GFD.184.pdf 3.4.2 (page 10)
-"""
-
-
 # compute attributes and actions
-# http://ogf.org/documents/GFD.184.pdf 3.1 (page 5)
 COMPUTE_ATTRS = [
     Attribute("occi.compute.architecture"),
     Attribute("occi.compute.cores"),
