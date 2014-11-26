@@ -168,35 +168,6 @@ $(function() {
     return false;
   });
 
-  /* for interface remove buttons */
-  $('.interface-remove').click(function() {
-    var interface_pk = $(this).data('interface-pk');
-    addModalConfirmation(removeInterface,
-      { 'url': '/dashboard/interface/' + interface_pk + '/delete/',
-        'data': [],
-        'pk': interface_pk,
-	'type': "interface",
-      });
-    return false;
-  });
-
-  /* removing interface post */
-  function removeInterface(data) {
-    $.ajax({
-      type: 'POST',
-      url: data.url,
-      headers: {"X-CSRFToken": getCookie('csrftoken')},
-      success: function(re, textStatus, xhr) {
-        /* remove the html element */
-        $('a[data-interface-pk="' + data.pk + '"]').closest("div").fadeOut();
-        location.reload();
-      },
-      error: function(xhr, textStatus, error) {
-        addMessage('Uh oh :(', 'danger');
-      }
-    });
-  }
-
   /* rename */
   $("#vm-details-h1-name, .vm-details-rename-button").click(function() {
     $("#vm-details-h1-name").hide();

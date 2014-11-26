@@ -908,6 +908,36 @@ class VmDownloadDiskForm(OperationForm):
         return cleaned_data
 
 
+class VmRemoveInterfaceForm(OperationForm):
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('choices')
+        self.interface = kwargs.pop('default')
+
+        super(VmRemoveInterfaceForm, self).__init__(*args, **kwargs)
+
+        self.fields.insert(0, 'interface', forms.ModelChoiceField(
+            queryset=choices, initial=self.interface, required=True,
+            empty_label=None, label=_('Interface')))
+        if self.interface:
+            self.fields['interface'].widget = HiddenInput()
+
+    @property
+    def helper(self):
+        helper = super(VmRemoveInterfaceForm, self).helper
+        print 'hi'
+        if self.interface:
+            helper.layout = Layout(
+                AnyTag(
+                    "div",
+                    HTML(format_html(
+                        _("<label>Vlan:</label> {0}"),
+                        self.interface.vlan)),
+                    css_class="form-group",
+                ),
+            )
+        return helper
+
+
 class VmAddInterfaceForm(OperationForm):
     def __init__(self, *args, **kwargs):
         choices = kwargs.pop('choices')

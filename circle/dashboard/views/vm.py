@@ -37,7 +37,7 @@ from django.utils.translation import (
 )
 from django.views.decorators.http import require_GET
 from django.views.generic import (
-    UpdateView, ListView, TemplateView, DeleteView
+    UpdateView, ListView, TemplateView
 )
 
 from braces.views import SuperuserRequiredMixin, LoginRequiredMixin
@@ -64,6 +64,7 @@ from ..forms import (
     VmDiskResizeForm, RedeployForm, VmDiskRemoveForm,
     VmMigrateForm, VmDeployForm,
     VmPortRemoveForm, VmPortAddForm,
+    VmRemoveInterfaceForm,
 )
 from ..models import Favourite
 
@@ -322,6 +323,32 @@ def get_operations(instance, user):
         else:
             ops.append(v.bind_to_object(instance))
     return ops
+
+
+class VmRemoveInterfaceView(FormOperationMixin, VmOperationView):
+    op = 'remove_interface'
+    form_class = VmRemoveInterfaceForm
+    show_in_toolbar = False
+    wait_for_result = 0.5
+    icon = 'times'
+    effect = "danger"
+    with_reload = True
+
+    def get_form_kwargs(self):
+        instance = self.get_op().instance
+        choices = instance.interface_set.all()
+        interface_pk = self.request.GET.get('interface')
+        if interface_pk:
+            try:
+                default = choices.get(pk=interface_pk)
+            except (ValueError, Interface.DoesNotExist):
+                raise Http404()
+        else:
+            default = None
+
+        val = super(VmRemoveInterfaceView, self).get_form_kwargs()
+        val.update({'choices': choices, 'default': default})
+        return val
 
 
 class VmAddInterfaceView(FormOperationMixin, VmOperationView):
@@ -707,6 +734,7 @@ vm_ops = OrderedDict([
         op='remove_disk', form_class=VmDiskRemoveForm,
         icon='times', effect="danger")),
     ('add_interface', VmAddInterfaceView),
+    ('remove_interface', VmRemoveInterfaceView),
     ('remove_port', VmPortRemoveView),
     ('add_port', VmPortAddView),
     ('renew', VmRenewView),
@@ -1109,56 +1137,6 @@ def get_vm_screenshot(request, pk):
         raise Http404()
 
     return HttpResponse(image, mimetype="image/png")
-
-
-class InterfaceDeleteView(DeleteView):
-    model = Interface
-
-    def get_template_names(self):
-        if self.request.is_ajax():
-            return ['dashboard/confirm/ajax-delete.html']
-        else:
-            return ['dashboard/confirm/base-delete.html']
-
-    def get_context_data(self, **kwargs):
-        context = super(InterfaceDeleteView, self).get_context_data(**kwargs)
-        interface = self.get_object()
-        context['text'] = _("Are you sure you want to remove this interface "
-                            "from <strong>%(vm)s</strong>?" %
-                            {'vm': interface.instance.name})
-        return context
-
-    def delete(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        instance = self.object.instance
-
-        if not instance.has_level(request.user, "owner"):
-            raise PermissionDenied()
-
-        instance.remove_interface(interface=self.object, user=request.user)
-        success_url = self.get_success_url()
-        success_message = _("Interface successfully deleted.")
-
-        if request.is_ajax():
-            return HttpResponse(
-                json.dumps(
-                    {'message': success_message,
-                     'removed_network': {
-                         'vlan': self.object.vlan.name,
-                         'vlan_pk': self.object.vlan.pk,
-                         'managed': self.object.host is not None,
-                     }}),
-                content_type="application/json",
-            )
-        else:
-            messages.success(request, success_message)
-            return HttpResponseRedirect("%s#network" % success_url)
-
-    def get_success_url(self):
-        redirect = self.request.POST.get("next")
-        if redirect:
-            return redirect
-        self.object.instance.get_absolute_url()
 
 
 class InstanceActivityDetail(CheckedDetailView):
