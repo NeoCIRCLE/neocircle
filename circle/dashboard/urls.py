@@ -25,7 +25,7 @@ from .views import (
     GroupDetailView, GroupList, IndexView,
     InstanceActivityDetail, LeaseCreate, LeaseDelete, LeaseDetail,
     MyPreferencesView, NodeAddTraitView, NodeCreate, NodeDelete,
-    NodeDetailView, NodeList, NodeStatus,
+    NodeDetailView, NodeList,
     NotificationView, TemplateAclUpdateView, TemplateCreate,
     TemplateDelete, TemplateDetail, TemplateList,
     vm_activity, VmCreate, VmDetailView,
@@ -119,8 +119,6 @@ urlpatterns = patterns(
         name='dashboard.views.template-transfer-ownership-confirm'),
     url(r'^node/delete/(?P<pk>\d+)/$', NodeDelete.as_view(),
         name="dashboard.views.delete-node"),
-    url(r'^node/status/(?P<pk>\d+)/$', NodeStatus.as_view(),
-        name="dashboard.views.status-node"),
     url(r'^node/create/$', NodeCreate.as_view(),
         name='dashboard.views.node-create'),
 
