@@ -979,7 +979,7 @@ class VmCreate(LoginRequiredMixin, TemplateView):
 
     def get_template_names(self):
         if self.request.is_ajax():
-            return ['dashboard/modal-wrapper.html']
+            return ['dashboard/_modal.html']
         else:
             return ['dashboard/nojs-wrapper.html']
 

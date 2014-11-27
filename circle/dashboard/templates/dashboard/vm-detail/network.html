@@ -79,7 +79,13 @@
                         {{ l.private }}/{{ l.proto }}
                       </td>
                       <td>
-                        <a href="{{ op.remove_port.get_url }}?rule={{ l.ipv4.pk }}" class="btn btn-link btn-xs vm-details-remove-port" data-rule="{{ l.ipv4.pk }}" title="{% trans "Remove" %}"><i class="fa fa-times"><span class="sr-only">{% trans "Remove" %}</span></i></a>
+                        <span class="operation-wrapper">
+                          <a href="{{ op.remove_port.get_url }}?rule={{ l.ipv4.pk }}"
+                             class="btn btn-link btn-xs operation"
+                             title="{% trans "Remove" %}">
+                            <i class="fa fa-times"><span class="sr-only">{% trans "Remove" %}</span></i>
+                          </a>
+                        </span>
                       </td>
                     </tr>
                   {% endif %}

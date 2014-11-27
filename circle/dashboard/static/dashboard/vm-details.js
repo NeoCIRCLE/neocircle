@@ -43,7 +43,7 @@ $(function() {
     var vm = $(this).data("vm");
     $.ajax({
       type: 'POST',
-      url: "/dashboard/vm/" + vm + "/op/resources_change/",
+      url: $(this).parent("form").prop('action'),
       data: $('#vm-details-resources-form').serialize(),
       success: function(data, textStatus, xhr) {
         if(data.success) {
@@ -86,17 +86,6 @@ $(function() {
       }
 
     });
-    return false;
-  });
-
-  /* remove port */
-  $('.vm-details-remove-port').click(function() {
-    addModalConfirmation(removePort,
-      {
-        'url': $(this).prop("href"),
-        'data': [],
-        'rule': $(this).data("rule")
-      });
     return false;
   });
 
