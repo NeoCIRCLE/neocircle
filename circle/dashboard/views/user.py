@@ -299,7 +299,7 @@ class ProfileView(LoginRequiredMixin, DetailView):
         # if the intersection of the 2 lists is empty the logged in user
         # has no permission to check the target's profile
         # (except if the user want to see his own profile)
-        if len(intersection) < 1 and target != user:
+        if len(intersection) < 1 and target != user and not user.is_superuser:
             raise PermissionDenied
 
         return super(ProfileView, self).get(*args, **kwargs)
