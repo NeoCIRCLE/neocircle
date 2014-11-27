@@ -29,7 +29,7 @@ from django.core.urlresolvers import reverse, reverse_lazy
 from django.http import HttpResponse, Http404
 from django.shortcuts import redirect
 from django.utils.translation import ugettext as _
-from django.views.generic import UpdateView, DeleteView, TemplateView
+from django.views.generic import UpdateView, TemplateView
 
 from braces.views import SuperuserRequiredMixin, LoginRequiredMixin
 from django_tables2 import SingleTableView
