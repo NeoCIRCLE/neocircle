@@ -27,7 +27,7 @@ from django.contrib.auth import authenticate
 from dashboard.views import VmAddInterfaceView
 from vm.models import Instance, InstanceTemplate, Lease, Node, Trait
 from vm.operations import (WakeUpOperation, AddInterfaceOperation,
-                           AddPortOperation)
+                           AddPortOperation, RemoveInterfaceOperation)
 from ..models import Profile
 from firewall.models import Vlan, Host, VlanGroup
 from mock import Mock, patch

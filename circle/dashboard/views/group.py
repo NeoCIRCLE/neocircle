@@ -41,7 +41,8 @@ from ..forms import (
 from ..models import FutureMember, GroupProfile
 from vm.models import Instance, InstanceTemplate
 from ..tables import GroupListTable
-from .util import CheckedDetailView, AclUpdateView, search_user, saml_available
+from .util import (CheckedDetailView, AclUpdateView, search_user,
+                   saml_available, DeleteViewBase)
 
 logger = logging.getLogger(__name__)
 
@@ -224,15 +225,18 @@ class GroupList(LoginRequiredMixin, SingleTableView):
         return groups
 
 
-class GroupRemoveUserView(CheckedDetailView, DeleteView):
+class GroupRemoveUserView(DeleteViewBase):
     model = Group
     slug_field = 'pk'
     slug_url_kwarg = 'group_pk'
-    read_level = 'operator'
+    level = 'operator'
     member_key = 'member_pk'
+    success_message = _("Member successfully removed from group.")
 
-    def get_has_level(self):
-        return self.object.profile.has_level
+    def check_auth(self):
+        if not self.get_object().profile.has_level(
+                self.request.user, self.level):
+            raise PermissionDenied()
 
     def get_context_data(self, **kwargs):
         context = super(GroupRemoveUserView, self).get_context_data(**kwargs)
@@ -243,50 +247,24 @@ class GroupRemoveUserView(CheckedDetailView, DeleteView):
         return context
 
     def get_success_url(self):
-        next = self.request.POST.get('next')
-        if next:
-            return next
-        else:
-            return reverse_lazy("dashboard.views.group-detail",
-                                kwargs={'pk': self.get_object().pk})
+        return reverse_lazy("dashboard.views.group-detail",
+                            kwargs={'pk': self.get_object().pk})
 
     def get(self, request, member_pk, *args, **kwargs):
         self.member_pk = member_pk
         return super(GroupRemoveUserView, self).get(request, *args, **kwargs)
 
-    def get_template_names(self):
-        if self.request.is_ajax():
-            return ['dashboard/confirm/ajax-remove.html']
-        else:
-            return ['dashboard/confirm/base-remove.html']
-
     def remove_member(self, pk):
         container = self.get_object()
         container.user_set.remove(User.objects.get(pk=pk))
 
-    def get_success_message(self):
-        return _("Member successfully removed from group.")
-
-    def delete(self, request, *args, **kwargs):
-        object = self.get_object()
-        if not object.profile.has_level(request.user, 'operator'):
-            raise PermissionDenied()
+    def delete_obj(self, request, *args, **kwargs):
         self.remove_member(kwargs[self.member_key])
-        success_url = self.get_success_url()
-        success_message = self.get_success_message()
-        if request.is_ajax():
-            return HttpResponse(
-                json.dumps({'message': success_message}),
-                content_type="application/json",
-            )
-        else:
-            messages.success(request, success_message)
-            return redirect(success_url)
 
 
 class GroupRemoveFutureUserView(GroupRemoveUserView):
-
     member_key = 'member_org_id'
+    success_message = _("Future user successfully removed from group.")
 
     def get(self, request, member_org_id, *args, **kwargs):
         self.member_org_id = member_org_id
@@ -305,53 +283,17 @@ class GroupRemoveFutureUserView(GroupRemoveUserView):
         FutureMember.objects.filter(org_id=org_id,
                                     group=self.get_object()).delete()
 
-    def get_success_message(self):
-        return _("Future user successfully removed from group.")
 
-
-class GroupDelete(CheckedDetailView, DeleteView):
-
-    """This stuff deletes the group.
-    """
+class GroupDelete(DeleteViewBase):
     model = Group
-    template_name = "dashboard/confirm/base-delete.html"
-    read_level = 'operator'
+    success_message = _("Group successfully deleted.")
 
-    def get_has_level(self):
-        return self.object.profile.has_level
-
-    def get_template_names(self):
-        if self.request.is_ajax():
-            return ['dashboard/confirm/ajax-delete.html']
-        else:
-            return ['dashboard/confirm/base-delete.html']
-
-    # github.com/django/django/blob/master/django/views/generic/edit.py#L245
-    def delete(self, request, *args, **kwargs):
-        object = self.get_object()
-        if not object.profile.has_level(request.user, 'owner'):
+    def check_auth(self):
+        if not self.get_object().profile.has_level(self.request.user, 'owner'):
             raise PermissionDenied()
-        object.delete()
-        success_url = self.get_success_url()
-        success_message = _("Group successfully deleted.")
-
-        if request.is_ajax():
-            if request.POST.get('redirect').lower() == "true":
-                messages.success(request, success_message)
-            return HttpResponse(
-                json.dumps({'message': success_message}),
-                content_type="application/json",
-            )
-        else:
-            messages.success(request, success_message)
-            return redirect(success_url)
 
     def get_success_url(self):
-        next = self.request.POST.get('next')
-        if next:
-            return next
-        else:
-            return reverse_lazy('dashboard.index')
+        return reverse_lazy('dashboard.views.group-list')
 
 
 class GroupCreate(GroupCodeMixin, LoginRequiredMixin, TemplateView):
