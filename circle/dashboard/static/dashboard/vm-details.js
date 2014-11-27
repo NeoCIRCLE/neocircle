@@ -112,51 +112,6 @@ $(function() {
     span.tooltip();
   });
 
-  /* change password confirmation */
-  $("#vm-details-pw-change").click(function() {
-    $("#vm-details-pw-confirm").fadeIn();
-    return false;
-  });
-
-  /* change password */
-  $(".vm-details-pw-confirm-choice").click(function() {
-    choice = $(this).data("choice");
-    if(choice) {
-      pk = $(this).data("vm");
-      $.ajax({
-        type: 'POST',
-        url: "/dashboard/vm/" + pk + "/",
-        data: {'change_password': 'true'},
-        headers: {"X-CSRFToken": getCookie('csrftoken')},
-        success: function(re, textStatus, xhr) {
-          location.reload();
-        },
-        error: function(xhr, textStatus, error) {
-          if (xhr.status == 500) {
-            addMessage("Internal Server Error", "danger");
-          } else {
-            addMessage(xhr.status + " Unknown Error", "danger");
-          }
-        }
-      });
-    } else {
-      $("#vm-details-pw-confirm").fadeOut();
-    }
-    return false;
-  });
-
-  /* add network button */
-  $("#vm-details-network-add").click(function() {
-    $("#vm-details-network-add-form").toggle();
-    return false;
-  });
-
-  /* add disk button */
-  $("#vm-details-disk-add").click(function() {
-    $("#vm-details-disk-add-for-form").html($("#vm-details-disk-add-form").html());
-    return false;
-  });
-
   /* rename */
   $("#vm-details-h1-name, .vm-details-rename-button").click(function() {
     $("#vm-details-h1-name").hide();
@@ -296,27 +251,6 @@ $(function() {
   });
 
 });
-
-
-function removePort(data) {
-  $.ajax({
-    type: 'POST',
-    url: data.url,
-    headers: {"X-CSRFToken": getCookie('csrftoken')},
-    success: function(re, textStatus, xhr) {
-      $("a[data-rule=" + data.rule + "]").each(function() {
-        $(this).closest("tr").fadeOut(500, function() {
-          $(this).remove();
-        });
-      });
-      addMessage(re.message, "success");
-    },
-    error: function(xhr, textStatus, error) {
-
-    }
-  });
-
-}
 
 function decideActivityRefresh() {
   var check = false;

@@ -18,7 +18,7 @@ $(function () {
     return false;
   });
 
-  $('.group-create, .node-create, .tx-tpl-ownership, .group-delete, .node-delete, .disk-remove').click(function(e) {
+  $('.group-create, .node-create, .tx-tpl-ownership, .group-delete, .node-delete, .disk-remove, .template-delete, .delete-from-group').click(function(e) {
     $.ajax({
       type: 'GET',
       url: $(this).prop('href'),
@@ -29,6 +29,13 @@ $(function () {
         modal.on('hidden.bs.modal', function() {
           modal.remove();
         });
+      },
+      error: function(xhr, textStatus, error) {
+        if(xhr.status === 403) {
+          addMessage(gettext("Only the owners can delete the selected object."), "warning");
+        } else {
+          addMessage(gettext("An error occurred. (") + xhr.status + ")", 'danger')
+        }
       }
     });
     return false;
