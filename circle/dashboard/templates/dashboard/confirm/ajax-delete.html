@@ -16,7 +16,7 @@
         <div class="pull-right" style="margin-top: 15px;">
           <form action="{{ request.path }}" method="POST">
             {% csrf_token %}
-            <a class="btn btn-default">{% trans "Cancel" %}</a>
+            <button type="button" class="btn btn-default" data-dismiss="modal">{% trans "Cancel" %}</button>
             <input type="hidden" name="next" value="{{ request.GET.next }}"/>
             <button class="btn btn-danger"
               {% if disable_submit %}disabled{% endif %}
