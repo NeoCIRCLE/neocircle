@@ -304,8 +304,6 @@ class Compute(Resource):
             action = compute_action_to_operation.get(action_term)
             operation = action.get(method)
 
-        # TODO user
-        user = User.objects.get(username="test")
         getattr(self.instance, operation).async(user=user)
 
     def delete(self, user):
