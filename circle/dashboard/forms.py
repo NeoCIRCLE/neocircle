@@ -924,7 +924,6 @@ class VmRemoveInterfaceForm(OperationForm):
     @property
     def helper(self):
         helper = super(VmRemoveInterfaceForm, self).helper
-        print 'hi'
         if self.interface:
             helper.layout = Layout(
                 AnyTag(
