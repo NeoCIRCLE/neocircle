@@ -90,6 +90,7 @@ class AbortableRemoteOperationMixin(object):
                     AbortableAsyncResult(remote.id).abort()
                     raise humanize_exception(ugettext_noop(
                         "Operation aborted by user."), e)
+        raise TimeLimitExceeded()
 
 
 class InstanceOperation(Operation):
@@ -722,8 +723,8 @@ class SaveAsTemplateOperation(InstanceOperation):
 
         if with_shutdown:
             try:
-                ShutdownOperation(self.instance).call(parent_activity=activity,
-                                                      user=user, task=task)
+                self.instance.shutdown(parent_activity=activity,
+                                       user=user, task=task)
             except Instance.WrongStateError:
                 pass
 
@@ -803,7 +804,7 @@ class ShutdownOperation(AbortableRemoteOperationMixin,
     resultant_state = 'STOPPED'
     task = vm_tasks.shutdown
     remote_queue = ("vm", "slow")
-    remote_timeout = 120
+    remote_timeout = 180
 
     def _operation(self, task):
         super(ShutdownOperation, self)._operation(task=task)
