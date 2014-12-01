@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.formats import date_format
+from django.utils.translation import ugettext_noop
 
 from django_sshkey.models import UserKey
 
@@ -13,6 +14,7 @@ from storage.models import Disk
 from vm.models import Instance, InstanceTemplate, Lease, Interface
 from vm.models.common import ARCHITECTURES
 from vm.models.instance import ACCESS_METHODS, pwgen
+from common.models import humanize_exception
 
 logger = logging.getLogger(__name__)
 
@@ -327,6 +329,10 @@ class Compute(Resource):
                 operation = "deploy"
         else:
             action = compute_action_to_operation.get(action_term)
+            if not method:
+                raise humanize_exception(ugettext_noop(
+                    "Missing 'method' attribute."),
+                    Exception())
             operation = action.get(method)
 
         getattr(self.instance, operation).async(user=user)

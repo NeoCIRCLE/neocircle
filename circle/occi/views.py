@@ -7,6 +7,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View, DetailView
 
+from common.models import HumanReadableException
 from firewall.models import Vlan
 from vm.models import Instance, InstanceTemplate, Interface
 from storage.models import Disk
@@ -36,8 +37,10 @@ logger = logging.getLogger(__name__)
 class CSRFExemptMixin(object):
     @method_decorator(csrf_exempt)
     def dispatch(self, *args, **kwargs):
-        return super(CSRFExemptMixin, self).dispatch(*args, **kwargs)
-
+        try:
+            return super(CSRFExemptMixin, self).dispatch(*args, **kwargs)
+        except HumanReadableException as e:
+            return HttpResponse(e.get_user_text(), status=400)
 
 class OCCIPostDataAsListMixin(object):
 
