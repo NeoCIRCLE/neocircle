@@ -1,14 +1,20 @@
 import re
+import logging
 
 from django.contrib.auth.models import User
 from django.template.loader import render_to_string
 from django.utils import timezone
+from django.utils.formats import date_format
+
+from django_sshkey.models import UserKey
 
 from firewall.models import Vlan
 from storage.models import Disk
 from vm.models import Instance, InstanceTemplate, Lease, Interface
 from vm.models.common import ARCHITECTURES
 from vm.models.instance import ACCESS_METHODS, pwgen
+
+logger = logging.getLogger(__name__)
 
 OCCI_ADDR = "http://localhost:8080/"
 
@@ -168,6 +174,8 @@ class Compute(Resource):
             if link:
                 links.append(d)
 
+        cls.create_public_key(user, attributes)
+
         params = {}
         params['owner'] = user
         title = attributes.get("occi.core.title")
@@ -233,6 +241,23 @@ class Compute(Resource):
 
         for sl in storagelinks:
             cls.instance.attach_disk(user=user, disk=disk)
+
+    @classmethod
+    def create_public_key(cls, user, attributes):
+        key_name = attributes.get("org.openstack.credentials.publickey.name")
+        key_data = attributes.get("org.openstack.credentials.publickey.data")
+
+        if key_name and key_data:
+            if UserKey.objects.filter(name=key_name, user=user):
+                key_name = "%s via OCCI @ %s" % (
+                    key_name,
+                    date_format(timezone.now(), "DATETIME_FORMAT")
+                )
+
+            key = UserKey(name=key_name[:50], key=key_data, user=user)
+            if not UserKey.objects.filter(key=key.key):
+                key.full_clean()
+                key.save()
 
     def render_location(self):
         return "%s" % self.location
