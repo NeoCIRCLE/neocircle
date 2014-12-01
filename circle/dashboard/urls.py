@@ -50,7 +50,7 @@ from .views import (
     VmGraphView, NodeGraphView, NodeListGraphView,
     TransferInstanceOwnershipView, TransferInstanceOwnershipConfirmView,
     TransferTemplateOwnershipView, TransferTemplateOwnershipConfirmView,
-    OpenSearchDescriptionView,
+    OpenSearchDescriptionView, LazyLoadView,
 )
 from .views.vm import vm_ops, vm_mass_ops
 from .views.node import node_ops
@@ -224,6 +224,8 @@ urlpatterns = patterns(
         name="dashboard.views.token-login"),
     url(r'^vm/opensearch.xml$', OpenSearchDescriptionView.as_view(),
         name="dashboard.views.vm-opensearch"),
+    url(r'^lazyload/(?P<token>.*)/$', LazyLoadView.as_view(),
+        name=LazyLoadView.url_name),
 )
 
 urlpatterns += patterns(

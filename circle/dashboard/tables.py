@@ -16,15 +16,53 @@
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
+from timeit import default_timer
 
 from django.contrib.auth.models import Group, User
+from django.utils import six
+from django.utils.functional import lazy
 from django_tables2 import Table, A
 from django_tables2.columns import TemplateColumn, Column, LinkColumn
+from celery.exceptions import TimeoutError
 
 from vm.models import Node, InstanceTemplate, Lease
 from django.utils.translation import ugettext_lazy as _
 from django_sshkey.models import UserKey
 from dashboard.models import ConnectCommand
+
+from .tasks.local_tasks import lazy_column
+
+
+class LazyColumnMixin(object):
+    timeout = 0.5
+
+    def __init__(self, *args, **kwargs):
+        self.__args = args
+        self.__kwargs = kwargs
+        super(LazyColumnMixin, self).__init__(*args, **kwargs)
+
+    def render(self, **kwargs):
+        task = lazy_column.apply_async(args=[self.__class__,
+                                             self.__args,
+                                             self.__kwargs,
+                                             kwargs],
+                                       queue="localhost.man")
+        queued = default_timer()
+
+        def get_result():
+            remains = max(0, self.timeout - (default_timer() - queued))
+            try:
+                return task.get(timeout=remains)
+            except TimeoutError:
+                pass
+            from .views import LazyLoadView
+            return LazyLoadView.get_link(task.id)
+
+        return lazy(get_result, six.text_type)()
+
+
+class LazyTemplateColumn(LazyColumnMixin, TemplateColumn):
+    pass
 
 
 class NodeListTable(Table):
@@ -60,7 +98,7 @@ class NodeListTable(Table):
         attrs={'th': {'class': 'node-list-table-thin'}},
     )
 
-    monitor = TemplateColumn(
+    monitor = LazyTemplateColumn(
         verbose_name=_("Monitor"),
         template_name='dashboard/node-list/column-monitor.html',
         attrs={'th': {'class': 'node-list-table-monitor'}},

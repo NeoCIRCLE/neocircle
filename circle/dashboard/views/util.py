@@ -20,18 +20,23 @@ import json
 import logging
 import re
 from collections import OrderedDict
+from timeit import default_timer
 from urlparse import urljoin
 
 from django.conf import settings
 from django.contrib.auth.models import User, Group
 from django.core import signing
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
+from django.core.signing import dumps, loads
 from django.core.urlresolvers import reverse
 from django.contrib import messages
 from django.contrib.auth.views import redirect_to_login
 from django.db.models import Q
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.shortcuts import redirect, render
+from django.utils import six
+from django.utils.functional import lazy as functional_lazy
+from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _, ugettext_noop
 from django.views.generic import DetailView, View
 from django.views.generic.detail import SingleObjectMixin
@@ -43,6 +48,7 @@ from celery.exceptions import TimeoutError
 from common.models import HumanReadableException, HumanReadableObject
 from ..models import GroupProfile, Profile
 from ..forms import TransferOwnershipForm
+from ..tasks.local_tasks import lazy_evaluator
 
 logger = logging.getLogger(__name__)
 saml_available = hasattr(settings, "SAML_CONFIG")
@@ -694,3 +700,54 @@ class TransferOwnershipConfirmView(LoginRequiredMixin, View):
                          unicode(user), user.pk, new_owner, key)
             raise PermissionDenied()
         return (instance, new_owner)
+
+
+class LazyLoadView(View):
+    url_name = "dashboard.view.lazyload"
+
+    @classmethod
+    def get_url(cls, id):
+        return reverse(cls.url_name, kwargs={
+            'token': dumps(id, salt=cls.url_name, compress=True)})
+
+    @classmethod
+    def get_link(cls, id):
+            return format_html(
+                '<a href="{0}" class="lazy-loading">{1}</a>',
+                cls.get_url(id), _("Loading..."))
+
+    def get(self, request, token):
+        id = loads(token, salt=self.url_name, max_age=60*60)
+        try:
+            value = lazy_evaluator.AsyncResult(id).get(timeout=10)
+        except TimeoutError:
+            raise Http404()
+        else:
+            return HttpResponse(value)
+
+
+def lazy(obj, prop, timeout=None, force=False, types=None):
+    """Evaluate callable in the background and return value or html token.
+
+    timeout: how much to wait for the result (in secs, counted from queuing)
+    force: don't wait for result
+    """
+    task = lazy_evaluator.apply_async(args=[obj.__class__, obj.pk, prop],
+                                      queue="localhost.man")
+    queued = default_timer()
+
+    def get_result():
+        if timeout is not None:
+            remains = timeout - (default_timer() - queued)
+        else:
+            remains = None
+        if not force:
+            try:
+                return task.get(timeout=remains)
+            except TimeoutError:
+                pass
+        return LazyLoadView.get_link(task.id)
+
+    if types is None:
+        types = [six.text_type]
+    return functional_lazy(get_result, *types)()

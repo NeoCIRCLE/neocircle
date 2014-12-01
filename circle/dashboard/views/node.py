@@ -38,7 +38,7 @@ from vm.models import Node, NodeActivity, Trait
 
 from ..forms import TraitForm, HostForm, NodeForm
 from ..tables import NodeListTable
-from .util import AjaxOperationMixin, OperationView, GraphMixin
+from .util import AjaxOperationMixin, OperationView, GraphMixin, lazy
 
 
 def get_operations(instance, user):
@@ -100,6 +100,7 @@ class NodeDetailView(LoginRequiredMixin,
         context['trait_form'] = form
         context['graphite_enabled'] = (
             settings.GRAPHITE_URL is not None)
+        context['node_online'] = lazy(self.object, "online", 0.5)
         return context
 
     def post(self, request, *args, **kwargs):

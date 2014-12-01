@@ -88,3 +88,4 @@ for i in LOCAL_APPS:
     LOGGING['loggers'][i] = {'handlers': ['syslog'], 'level': level}
 LOGGING['loggers']['djangosaml2'] = {'handlers': ['syslog'], 'level': level}
 LOGGING['loggers']['django'] = {'handlers': ['syslog'], 'level': level}
+DEBUG=True

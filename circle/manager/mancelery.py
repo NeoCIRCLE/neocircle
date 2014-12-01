@@ -35,6 +35,7 @@ celery = Celery('manager',
                          'storage.tasks.periodic_tasks',
                          'firewall.tasks.local_tasks',
                          'dashboard.tasks.local_periodic_tasks',
+                         'dashboard.tasks.local_tasks',
                          ])
 
 celery.conf.update(
