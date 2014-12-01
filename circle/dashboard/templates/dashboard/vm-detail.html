@@ -214,12 +214,17 @@
         </ul>
 
         <div class="tab-content panel-body">
-          <div class="tab-pane active" id="_home">{% include "dashboard/vm-detail/home.html" %}</div>
-          <div class="tab-pane" id="_resources">{% include "dashboard/vm-detail/resources.html" %}</div>
+          <div class="not-tab-pane active" id="_home">{% include "dashboard/vm-detail/home.html" %}</div>
+          <hr class="js-hidden"/>
+          <div class="not-tab-pane" id="_resources">{% include "dashboard/vm-detail/resources.html" %}</div>
           <div class="tab-pane" id="_console">{% include "dashboard/vm-detail/console.html" %}</div>
-          <div class="tab-pane" id="_access">{% include "dashboard/vm-detail/access.html" %} </div>
-          <div class="tab-pane" id="_network">{% include "dashboard/vm-detail/network.html" %}</div>
-          <div class="tab-pane" id="_activity">{% include "dashboard/vm-detail/activity.html" %}</div>
+          <hr class="js-hidden"/>
+          <div class="not-tab-pane" id="_access">{% include "dashboard/vm-detail/access.html" %} </div>
+          <hr class="js-hidden"/>
+          <div class="not-tab-pane" id="_network">{% include "dashboard/vm-detail/network.html" %}</div>
+          <hr class="js-hidden"/>
+          <div class="not-tab-pane" id="_activity">{% include "dashboard/vm-detail/activity.html" %}</div>
+          <hr class="js-hidden"/>
         </div>
       </div>
     </div>
