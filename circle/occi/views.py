@@ -41,6 +41,9 @@ class CSRFExemptMixin(object):
             return super(CSRFExemptMixin, self).dispatch(*args, **kwargs)
         except HumanReadableException as e:
             return HttpResponse(e.get_user_text(), status=400)
+        except PermissionDenied as e:
+            return HttpResponse("", status=401)
+
 
 class OCCIPostDataAsListMixin(object):
 
@@ -103,7 +106,8 @@ class QueryInterface(CSRFExemptMixin, View):
 class ComputeInterface(CSRFExemptMixin, OCCIPostDataAsListMixin, View):
 
     def get(self, request, *args, **kwargs):
-        vms = Instance.get_objects_with_level("user", self.request.user)
+        vms = Instance.get_objects_with_level(
+            "user", self.request.user).filter(destroyed_at=None)
         response = "\n".join([Compute(instance=i).render_location()
                              for i in vms])
         return HttpResponse(
@@ -183,6 +187,9 @@ class StorageInterface(CSRFExemptMixin, OCCIPostDataAsListMixin, View):
         )
 
     def post(self, request, *args, **kwargs):
+        if not self.request.user.has_perm("storage.create_empty_disk"):
+            raise PermissionDenied
+
         data = self.get_post_data(request)
 
         d = Storage.create_object(data=data, user=self.request.user)
