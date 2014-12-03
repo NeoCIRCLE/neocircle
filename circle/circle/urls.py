@@ -70,7 +70,6 @@ urlpatterns = patterns(
     url(r'^info/support/$',
         TemplateView.as_view(template_name="info/support.html"),
         name="info.support"),
-    url(r'^', include('occi.urls')),  # this seems silly
 )
 
 
@@ -86,5 +85,13 @@ if get_env_variable('DJANGO_SAML', 'FALSE') == 'TRUE':
         '',
         (r'^saml2/', include('djangosaml2.urls')),
     )
+
+
+if get_env_variable('OCCI', 'FALSE') == 'TRUE':
+    urlpatterns = patterns(
+        '',
+        url(r'^', include('occi.urls')),  # this seems silly
+    )
+
 
 handler500 = 'common.views.handler500'
