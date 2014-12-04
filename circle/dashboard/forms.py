@@ -898,7 +898,7 @@ class VmDownloadDiskForm(OperationForm):
     def clean(self):
         cleaned_data = super(VmDownloadDiskForm, self).clean()
         if not cleaned_data['name']:
-            if cleaned_data['url']:
+            if cleaned_data.get('url'):
                 cleaned_data['name'] = urlparse(
                     cleaned_data['url']).path.split('/')[-1]
             if not cleaned_data['name']:
@@ -933,6 +933,7 @@ class VmRemoveInterfaceForm(OperationForm):
                         self.interface.vlan)),
                     css_class="form-group",
                 ),
+                Field("interface"),
             )
         return helper
 
