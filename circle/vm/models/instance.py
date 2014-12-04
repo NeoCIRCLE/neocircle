@@ -354,6 +354,12 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
     def create(cls, params, disks, networks, req_traits, tags):
         """ Create new Instance object.
         """
+
+        # permission check
+        for network in networks:
+            if not network.vlan.has_level(params['owner'], 'user'):
+                raise PermissionDenied()
+
         # create instance and do additional setup
         inst = cls(**params)
 
@@ -407,10 +413,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
 
         networks = (template.interface_set.all() if networks is None
                     else networks)
-
-        for network in networks:
-            if not network.vlan.has_level(owner, 'user'):
-                raise PermissionDenied()
 
         req_traits = (template.req_traits.all() if req_traits is None
                       else req_traits)
