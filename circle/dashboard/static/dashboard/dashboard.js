@@ -3,7 +3,7 @@ $(function () {
     var template = $(this).data("template");
     $.ajax({
       type: 'GET',
-      url: $(this).prop('href') + (typeof template === "undefined" ? '' : '?template=' + template),
+      url: $(this).attr('href'),
       success: function(data) {
         $('body').append(data);
         vmCreateLoaded();
