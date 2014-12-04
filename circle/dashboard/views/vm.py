@@ -983,6 +983,17 @@ class VmCreate(LoginRequiredMixin, TemplateView):
         else:
             return ['dashboard/nojs-wrapper.html']
 
+    def get_template(self, request, pk):
+        try:
+            template = InstanceTemplate.objects.get(
+                pk=int(pk))
+        except (ValueError, InstanceTemplate.DoesNotExist):
+            raise Http404()
+        if not template.has_level(request.user, 'user'):
+            raise PermissionDenied()
+
+        return template
+
     def get(self, request, form=None, *args, **kwargs):
         if not request.user.has_perm('vm.create_vm'):
             raise PermissionDenied()
@@ -993,9 +1004,7 @@ class VmCreate(LoginRequiredMixin, TemplateView):
             template_pk = form.template.pk
 
         if template_pk:
-            template = get_object_or_404(InstanceTemplate, pk=template_pk)
-            if not template.has_level(request.user, 'user'):
-                raise PermissionDenied()
+            template = self.get_template(request, template_pk)
             if form is None:
                 form = self.form_class(user=request.user, template=template)
         else:
@@ -1020,32 +1029,20 @@ class VmCreate(LoginRequiredMixin, TemplateView):
             })
         return self.render_to_response(context)
 
-    def __create_normal(self, request, *args, **kwargs):
-        user = request.user
-        template = InstanceTemplate.objects.get(
-            pk=request.POST.get("template"))
-
-        # permission check
-        if not template.has_level(request.user, 'user'):
-            raise PermissionDenied()
-
-        args = {"template": template, "owner": user}
-        instances = [Instance.create_from_template(**args)]
+    def __create_normal(self, request, template, *args, **kwargs):
+        instances = [Instance.create_from_template(
+            template=template,
+            owner=request.user)]
         return self.__deploy(request, instances)
 
-    def __create_customized(self, request, *args, **kwargs):
+    def __create_customized(self, request, template, *args, **kwargs):
         user = request.user
         # no form yet, using POST directly:
-        template = get_object_or_404(InstanceTemplate,
-                                     pk=request.POST.get("template"))
         form = self.form_class(
             request.POST, user=request.user, template=template)
         if not form.is_valid():
             return self.get(request, form, *args, **kwargs)
         post = form.cleaned_data
-
-        if not template.has_level(user, 'user'):
-            raise PermissionDenied()
 
         ikwargs = {
             'name': post['name'],
@@ -1099,6 +1096,8 @@ class VmCreate(LoginRequiredMixin, TemplateView):
         if not request.user.has_perm('vm.create_vm'):
             raise PermissionDenied()
 
+        template = self.get_template(request, request.POST.get("template"))
+
         # limit chekcs
         try:
             limit = user.profile.instance_limit
@@ -1124,7 +1123,7 @@ class VmCreate(LoginRequiredMixin, TemplateView):
                        request.POST.get("customized") is None else
                        self.__create_customized)
 
-        return create_func(request, *args, **kwargs)
+        return create_func(request, template, *args, **kwargs)
 
 
 @require_GET
