@@ -48,7 +48,7 @@ $(function() {
   });
 
   /* if the operation fails show the modal again */
-  $("body").on("click", "#op-form-send", function() {
+  $("body").on("click", "#confirmation-modal #op-form-send", function() {
     var url = $(this).closest("form").prop("action");
 
     $.ajax({

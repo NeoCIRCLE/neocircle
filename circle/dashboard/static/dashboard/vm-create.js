@@ -211,7 +211,7 @@ function vmCustomizeLoaded() {
   });
 
   /* start vm button clicks */
-  $('#vm-create-customized-start').click(function() {
+  $('#confirmation-modal #vm-create-customized-start').click(function() {
     var error = false;
     $(".cpu-count-input, .ram-input, #id_name, #id_amount ").each(function() {
       if(!$(this)[0].checkValidity()) {
@@ -221,8 +221,6 @@ function vmCustomizeLoaded() {
     if(error) return true;
 
     $(this).find("i").prop("class", "fa fa-spinner fa-spin");
-
-    if($("#confirmation-modal")) return true;
 
     $.ajax({
       url: '/dashboard/vm/create/',
