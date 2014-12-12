@@ -902,23 +902,26 @@ class GroupDeleteTest(LoginMixin, TestCase):
     def test_permitted_group_page(self):
         c = Client()
         self.login(c, 'user0')
-        response = c.get('/dashboard/group/delete/' + str(self.g1.pk) + '/')
+        with patch('dashboard.views.util.messages') as msg:
+            response = c.get('/dashboard/group/delete/%d/' % self.g1.pk)
+            assert not msg.error.called and not msg.warning.called
         self.assertEqual(response.status_code, 200)
 
     def test_unpermitted_group_page(self):
         c = Client()
         self.login(c, 'user1')
-        groupnum = Group.objects.count()
-        response = c.get('/dashboard/group/delete/' + str(self.g1.pk) + '/')
+        with patch('dashboard.views.util.messages') as msg:
+            response = c.get('/dashboard/group/delete/%d/' % self.g1.pk)
+            assert msg.error.called or msg.warning.called
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(Group.objects.count(), groupnum)
 
     def test_anon_group_delete(self):
         c = Client()
-        groupnum = Group.objects.count()
-        response = c.post('/dashboard/group/delete/' + str(self.g1.pk) + '/')
+        response = c.get('/dashboard/group/delete/%d/' % self.g1.pk)
+        self.assertRedirects(
+            response, '/accounts/login/?next=/dashboard/group/delete/5/',
+            status_code=302)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(Group.objects.count(), groupnum)
 
     def test_unpermitted_group_delete(self):
         c = Client()
