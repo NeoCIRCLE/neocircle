@@ -245,8 +245,8 @@ class NodeDelete(SuperuserRequiredMixin, DeleteViewBase):
     success_message = _("Node successfully deleted.")
 
     def check_auth(self):
-        if not self.request.user.is_superuser:
-            raise PermissionDenied()
+        # SuperuserRequiredMixin
+        pass
 
     def get_success_url(self):
         return reverse_lazy('dashboard.views.node-list')
