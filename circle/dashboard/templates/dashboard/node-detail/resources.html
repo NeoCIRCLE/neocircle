@@ -7,8 +7,9 @@
     <dt>{% trans "RAM size" %}:</dt> <dd>{% widthratio node.info.ram_size 1048576 1 %} MiB</dd>
     <dt>{% trans "Architecture" %}:</dt><dd>{{ node.info.architecture }}</dd>
     <dt>{% trans "Host IP" %}:</dt><dd>{{ node.host.ipv4 }}</dd>
-    <dt>{% trans "Enabled" %}:</dt><dd>{{ node.enabled }}</dd>
-    <dt>{% trans "Host online" %}:</dt><dd> {{ node.online }}</dd>
+    <dt>{% trans "Enabled" %}:</dt><dd>{{ node.enabled|yesno }}</dd>
+    <dt>{% trans "Host online" %}:</dt><dd> {{ node.online|yesno }}</dd>
+    <dt>{% trans "Minion online" %}:</dt><dd> {{ node.minion_online|yesno }}</dd>
     <dt>{% trans "Priority" %}:</dt><dd>{{ node.priority }}</dd>
     <dt>{% trans "Driver Version:" %}</dt>
     <dd>

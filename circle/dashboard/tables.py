@@ -19,7 +19,8 @@ from __future__ import absolute_import
 
 from django.contrib.auth.models import Group, User
 from django_tables2 import Table, A
-from django_tables2.columns import TemplateColumn, Column, LinkColumn
+from django_tables2.columns import (TemplateColumn, Column, LinkColumn,
+                                    BooleanColumn)
 
 from vm.models import Node, InstanceTemplate, Lease
 from django.utils.translation import ugettext_lazy as _
@@ -67,12 +68,18 @@ class NodeListTable(Table):
         orderable=False,
     )
 
+    minion_online = BooleanColumn(
+        verbose_name=_("Minion online"),
+        attrs={'th': {'class': 'node-list-table-thin'}},
+        orderable=False,
+    )
+
     class Meta:
         model = Node
         attrs = {'class': ('table table-bordered table-striped table-hover '
                            'node-list-table')}
         fields = ('pk', 'name', 'host', 'get_status_display', 'priority',
-                  'overcommit', 'number_of_VMs', )
+                  'minion_online', 'overcommit', 'number_of_VMs', )
 
 
 class GroupListTable(Table):

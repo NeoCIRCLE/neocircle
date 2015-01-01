@@ -68,6 +68,8 @@ node_ops = OrderedDict([
         op='passivate', icon='play-circle-o', effect='info')),
     ('disable', NodeOperationView.factory(
         op='disable', icon='times-circle-o', effect='danger')),
+    ('update_node', NodeOperationView.factory(
+        op='update_node', icon='refresh', effect='warning')),
     ('reset', NodeOperationView.factory(
         op='reset', icon='stethoscope', effect='danger')),
     ('flush', NodeOperationView.factory(
