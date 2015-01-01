@@ -20,7 +20,7 @@ $(function () {
     return false;
   });
 
-  $('.group-create, .node-create, .tx-tpl-ownership, .group-delete, .node-delete, .disk-remove, .template-delete, .delete-from-group').click(function(e) {
+  $('.group-create, .node-create, .tx-tpl-ownership, .group-delete, .node-delete, .disk-remove, .template-delete, .delete-from-group, .lease-delete').click(function(e) {
     $.ajax({
       type: 'GET',
       url: $(this).prop('href'),
