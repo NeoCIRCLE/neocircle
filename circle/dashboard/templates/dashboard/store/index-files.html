@@ -42,7 +42,7 @@
       class="list-group-item
       {% if forloop.last and files.toplist|length < 5 %}list-group-item-last{% endif %}">
       <i class="fa fa-{{ t.icon }} dashboard-toplist-icon"></i>
-        <div class="store-list-item-name">
+      <div class="store-list-item-name">
         {{ t.NAME }}
       </div>
       <div style="clear: both;"></div>
@@ -53,20 +53,22 @@
         {% trans "Your toplist is empty, upload something." %}
       </div>
     {% endfor %}
-  </div>
-    <div class="list-group-item text-right no-hover">
-      <form class="pull-left" method="POST" action="{% url "dashboard.views.store-refresh-toplist" %}">
-        {% csrf_token %}
-        <button class="btn btn-success btn-xs" type="submit" title="{% trans "Refresh" %}"/>
-          <i class="fa fa-refresh"></i>
-        </button>
-      </form>
-      <a href="{% url "dashboard.views.store-list" %}" class="btn btn-primary btn-xs">
-        <i class="fa fa-chevron-circle-right"></i> {% trans "show my files" %}
-      </a>
-      <a href="{% url "dashboard.views.store-upload" %}" class="btn btn-success btn-xs">
-        <i class="fa fa-cloud-upload"></i> {% trans "upload" %}
-      </a>
+    </div>
+    <div class="list-group-item list-group-footer no-hover">
+      <div class="text-right">
+        <form class="pull-left" method="POST" action="{% url "dashboard.views.store-refresh-toplist" %}">
+          {% csrf_token %}
+          <button class="btn btn-success btn-xs" type="submit" title="{% trans "Refresh" %}"/>
+            <i class="fa fa-refresh"></i>
+          </button>
+        </form>
+        <a href="{% url "dashboard.views.store-list" %}" class="btn btn-primary btn-xs">
+          <i class="fa fa-chevron-circle-right"></i> {% trans "show my files" %}
+        </a>
+        <a href="{% url "dashboard.views.store-upload" %}" class="btn btn-success btn-xs">
+          <i class="fa fa-cloud-upload"></i> {% trans "upload" %}
+        </a>
+      </div>
     </div>
   </div>
 </div>
