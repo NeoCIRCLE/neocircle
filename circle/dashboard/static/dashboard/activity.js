@@ -1,9 +1,9 @@
-var in_progress = false;
-var activity_hash = 5;
-var show_all = false;
-var reload_vm_detail = false;
-
 $(function() {
+  var in_progress = false;
+  var activity_hash = 5;
+  var show_all = false;
+  var reload_vm_detail = false;
+
   /* do we need to check for new activities */
   if(decideActivityRefresh()) {
     if(!in_progress) {
@@ -102,83 +102,82 @@ $(function() {
     return false;
   });
 
+  function decideActivityRefresh() {
+    var check = false;
+    /* if something is still spinning */
+    if($('.timeline .activity i').hasClass('fa-spin'))
+      check = true;
+
+    return check;
+  }
+
+  function checkNewActivity(runs) {
+    $.ajax({
+      type: 'GET',
+      url: $('a[href="#activity"]').attr('data-activity-url'),
+      data: {'show_all': show_all},
+      success: function(data) {
+        var new_activity_hash = (data.activities + "").hashCode();
+        if(new_activity_hash != activity_hash) {
+          $("#activity-refresh").html(data.activities);
+        }
+        activity_hash = new_activity_hash;
+
+        $("#ops").html(data.ops);
+        $("#disk-ops").html(data.disk_ops);
+        $("[title]").tooltip();
+
+        /* changing the status text */
+        var icon = $("#vm-details-state i");
+        if(data.is_new_state) {
+          if(!icon.hasClass("fa-spin"))
+            icon.prop("class", "fa fa-spinner fa-spin");
+        } else {
+          icon.prop("class", "fa " + data.icon);
+        }
+        var vm_state = $("#vm-details-state");
+        if (vm_state.length) {
+          vm_state.data("status", data['status']);
+          $("#vm-details-state span").html(data['human_readable_status'].toUpperCase());
+        }
+        if(data['status'] == "RUNNING") {
+          if(data['connect_uri']) {
+              $("#dashboard-vm-details-connect-button").removeClass('disabled');
+          }
+          $("[data-target=#_console]").attr("data-toggle", "pill").attr("href", "#console").parent("li").removeClass("disabled");
+        } else {
+          if(data['connect_uri']) {
+              $("#dashboard-vm-details-connect-button").addClass('disabled');
+          }
+          $("[data-target=#_console]").attr("data-toggle", "_pill").attr("href", "#").parent("li").addClass("disabled");
+        }
+
+        if(data.status == "STOPPED" || data.status == "PENDING") {
+          $(".change-resources-button").prop("disabled", false);
+          $(".change-resources-help").hide();
+        } else {
+          $(".change-resources-button").prop("disabled", true);
+          $(".change-resources-help").show();
+        }
+
+        if(runs > 0 && decideActivityRefresh()) {
+          setTimeout(
+            function() {checkNewActivity(runs + 1);},
+            1000 + Math.exp(runs * 0.05)
+          );
+        } else {
+          in_progress = false;
+          if(reload_vm_detail) location.reload();
+        }
+        $('a[href="#activity"] i').removeClass('fa-spin');
+      },
+      error: function() {
+        in_progress = false;
+      }
+    });
+  }
 });
 
-
-function decideActivityRefresh() {
-  var check = false;
-  /* if something is still spinning */
-  if($('.timeline .activity i').hasClass('fa-spin'))
-    check = true;
-
-  return check;
-}
-
-function checkNewActivity(runs) {
-  $.ajax({
-    type: 'GET',
-    url: $('a[href="#activity"]').attr('data-activity-url'),
-    data: {'show_all': show_all},
-    success: function(data) {
-      var new_activity_hash = (data.activities + "").hashCode();
-      if(new_activity_hash != activity_hash) {
-        $("#activity-refresh").html(data.activities);
-      }
-      activity_hash = new_activity_hash;
-
-      $("#ops").html(data.ops);
-      $("#disk-ops").html(data.disk_ops);
-      $("[title]").tooltip();
-
-      /* changing the status text */
-      var icon = $("#vm-details-state i");
-      if(data.is_new_state) {
-        if(!icon.hasClass("fa-spin"))
-          icon.prop("class", "fa fa-spinner fa-spin");
-      } else {
-        icon.prop("class", "fa " + data.icon);
-      }
-      var vm_state = $("#vm-details-state");
-      if (vm_state.length) {
-        vm_state.data("status", data['status']);
-        $("#vm-details-state span").html(data['human_readable_status'].toUpperCase());
-      }
-      if(data['status'] == "RUNNING") {
-        if(data['connect_uri']) {
-            $("#dashboard-vm-details-connect-button").removeClass('disabled');
-        }
-        $("[data-target=#_console]").attr("data-toggle", "pill").attr("href", "#console").parent("li").removeClass("disabled");
-      } else {
-        if(data['connect_uri']) {
-            $("#dashboard-vm-details-connect-button").addClass('disabled');
-        }
-        $("[data-target=#_console]").attr("data-toggle", "_pill").attr("href", "#").parent("li").addClass("disabled");
-      }
-
-      if(data.status == "STOPPED" || data.status == "PENDING") {
-        $(".change-resources-button").prop("disabled", false);
-        $(".change-resources-help").hide();
-      } else {
-        $(".change-resources-button").prop("disabled", true);
-        $(".change-resources-help").show();
-      }
-
-      if(runs > 0 && decideActivityRefresh()) {
-        setTimeout(
-          function() {checkNewActivity(runs + 1);},
-          1000 + Math.exp(runs * 0.05)
-        );
-      } else {
-        in_progress = false;
-        if(reload_vm_detail) location.reload();
-      }
-      $('a[href="#activity"] i').removeClass('fa-spin');
-    },
-    error: function() {
-      in_progress = false;
-    }
-  });
-}
 
 String.prototype.hashCode = function() {
   var hash = 0, i, chr, len;
