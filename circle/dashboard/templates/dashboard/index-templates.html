@@ -16,7 +16,7 @@
           <i class="fa fa-{{ t.os_type }}"></i> {{ t.name }}
         </span>
         <small class="text-muted index-template-list-system">{{ t.system }}</small>
-        <div class="pull-right vm-create" data-template="{{ t.pk }}">
+        <div href="{% url "dashboard.views.vm-create" %}?template={{ t.pk }}" class="pull-right vm-create">
           <i data-container="body" title="{% trans "Start VM instance" %}" 
             class="fa fa-play"></i>
         </div>

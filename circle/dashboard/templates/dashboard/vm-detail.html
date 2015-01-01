@@ -207,7 +207,8 @@
               {% trans "Network" %}</a>
           </li>
           <li>
-            <a href="#activity" data-toggle="pill" data-target="#_activity" class="text-center">
+            <a href="#activity" data-toggle="pill" data-target="#_activity" class="text-center"
+               data-activity-url="{% url "dashboard.views.vm-activity-list" instance.pk %}">
               <i class="fa fa-clock-o fa-2x"></i><br>
               {% trans "Activity" %}</a>
           </li>

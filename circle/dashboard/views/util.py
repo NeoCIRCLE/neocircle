@@ -33,7 +33,7 @@ from django.db.models import Q
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.utils.translation import ugettext_lazy as _, ugettext_noop
-from django.views.generic import DetailView, View
+from django.views.generic import DetailView, View, DeleteView
 from django.views.generic.detail import SingleObjectMixin
 
 from braces.views import LoginRequiredMixin
@@ -694,3 +694,45 @@ class TransferOwnershipConfirmView(LoginRequiredMixin, View):
                          unicode(user), user.pk, new_owner, key)
             raise PermissionDenied()
         return (instance, new_owner)
+
+
+class DeleteViewBase(LoginRequiredMixin, DeleteView):
+    level = 'owner'
+
+    def get_template_names(self):
+        if self.request.is_ajax():
+            return ['dashboard/confirm/ajax-delete.html']
+        else:
+            return ['dashboard/confirm/base-delete.html']
+
+    def check_auth(self):
+        if not self.get_object().has_level(self.request.user, self.level):
+            raise PermissionDenied()
+
+    def get(self, request, *args, **kwargs):
+        try:
+            self.check_auth()
+        except PermissionDenied:
+            message = _("Only the owners can delete the selected object.")
+            if request.is_ajax():
+                raise PermissionDenied()
+            else:
+                messages.warning(request, message)
+                return redirect(self.get_success_url())
+        return super(DeleteViewBase, self).get(request, *args, **kwargs)
+
+    def delete_obj(self, request, *args, **kwargs):
+        self.get_object().delete()
+
+    def delete(self, request, *args, **kwargs):
+        self.check_auth()
+        self.delete_obj(request, *args, **kwargs)
+
+        if request.is_ajax():
+            return HttpResponse(
+                json.dumps({'message': self.success_message}),
+                content_type="application/json",
+            )
+        else:
+            messages.success(request, self.success_message)
+            return HttpResponseRedirect(self.get_success_url())

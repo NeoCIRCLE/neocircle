@@ -20,15 +20,15 @@ function vmCreateLoaded() {
     var template = $(this).data("template-pk");
 
     $.get("/dashboard/vm/create/?template=" + template, function(data) {
-        var r = $('#create-modal'); r.next('div').remove(); r.remove();
+        var r = $('#confirmation-modal'); r.next('div').remove(); r.remove();
         $('body').append(data);
         vmCreateLoaded();
         addSliderMiscs();
-        $('#create-modal').modal('show');
-        $('#create-modal').on('hidden.bs.modal', function() {
-            $('#create-modal').remove();
+        $('#confirmation-modal').modal('show');
+        $('#confirmation-modal').on('hidden.bs.modal', function() {
+            $('#confirmation-modal').remove();
         });
-        $("#create-modal").on("shown.bs.modal", function() {
+        $("#confirmation-modal").on("shown.bs.modal", function() {
           setDefaultSliderValues();
         });
     });
@@ -48,18 +48,18 @@ function vmCreateLoaded() {
           window.location.replace(data.redirect + '#activity');
         }
         else {
-            var r = $('#create-modal'); r.next('div').remove(); r.remove();
+            var r = $('#confirmation-modal'); r.next('div').remove(); r.remove();
             $('body').append(data);
             vmCreateLoaded();
             addSliderMiscs();
-            $('#create-modal').modal('show');
-            $('#create-modal').on('hidden.bs.modal', function() {
-                $('#create-modal').remove();
+            $('#confirmation-modal').modal('show');
+            $('#confirmation-modal').on('hidden.bs.modal', function() {
+                $('#confirmation-modal').remove();
             });
         }
       },
       error: function(xhr, textStatus, error) {
-        var r = $('#create-modal'); r.next('div').remove(); r.remove();
+        var r = $('#confirmation-modal'); r.next('div').remove(); r.remove();
 
         if (xhr.status == 500) {
           addMessage("500 Internal Server Error", "danger");
@@ -211,7 +211,7 @@ function vmCustomizeLoaded() {
   });
 
   /* start vm button clicks */
-  $('#vm-create-customized-start').click(function() {
+  $('#confirmation-modal #vm-create-customized-start').click(function() {
     var error = false;
     $(".cpu-count-input, .ram-input, #id_name, #id_amount ").each(function() {
       if(!$(this)[0].checkValidity()) {
@@ -221,8 +221,6 @@ function vmCustomizeLoaded() {
     if(error) return true;
 
     $(this).find("i").prop("class", "fa fa-spinner fa-spin");
-
-    if($("#create-modal")) return true;
 
     $.ajax({
       url: '/dashboard/vm/create/',
@@ -238,18 +236,18 @@ function vmCustomizeLoaded() {
           window.location.href = data.redirect + '#activity';
         }
         else {
-            var r = $('#create-modal'); r.next('div').remove(); r.remove();
+            var r = $('#confirmation-modal'); r.next('div').remove(); r.remove();
             $('body').append(data);
             vmCreateLoaded();
             addSliderMiscs();
-            $('#create-modal').modal('show');
-            $('#create-modal').on('hidden.bs.modal', function() {
-                $('#create-modal').remove();
+            $('#confirmation-modal').modal('show');
+            $('#confirmation-modal').on('hidden.bs.modal', function() {
+                $('#confirmation-modal').remove();
             });
         }
       },
       error: function(xhr, textStatus, error) {
-        var r = $('#create-modal'); r.next('div').remove(); r.remove();
+        var r = $('#confirmation-modal'); r.next('div').remove(); r.remove();
 
         if (xhr.status == 500) {
           addMessage("500 Internal Server Error", "danger");

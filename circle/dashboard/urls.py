@@ -25,12 +25,12 @@ from .views import (
     GroupDetailView, GroupList, IndexView,
     InstanceActivityDetail, LeaseCreate, LeaseDelete, LeaseDetail,
     MyPreferencesView, NodeAddTraitView, NodeCreate, NodeDelete,
-    NodeDetailView, NodeList, NodeStatus,
+    NodeDetailView, NodeList,
     NotificationView, TemplateAclUpdateView, TemplateCreate,
     TemplateDelete, TemplateDetail, TemplateList,
     vm_activity, VmCreate, VmDetailView,
     VmDetailVncTokenView, VmList,
-    DiskRemoveView, get_disk_download_status, InterfaceDeleteView,
+    DiskRemoveView, get_disk_download_status,
     GroupRemoveUserView,
     GroupRemoveFutureUserView,
     GroupCreate, GroupProfileUpdate,
@@ -51,6 +51,7 @@ from .views import (
     TransferInstanceOwnershipView, TransferInstanceOwnershipConfirmView,
     TransferTemplateOwnershipView, TransferTemplateOwnershipConfirmView,
     OpenSearchDescriptionView,
+    NodeActivityView,
 )
 from .views.vm import vm_ops, vm_mass_ops
 from .views.node import node_ops
@@ -94,7 +95,8 @@ urlpatterns = patterns(
     url(r'^vm/list/$', VmList.as_view(), name='dashboard.views.vm-list'),
     url(r'^vm/create/$', VmCreate.as_view(),
         name='dashboard.views.vm-create'),
-    url(r'^vm/(?P<pk>\d+)/activity/$', vm_activity),
+    url(r'^vm/(?P<pk>\d+)/activity/$', vm_activity,
+        name='dashboard.views.vm-activity-list'),
     url(r'^vm/activity/(?P<pk>\d+)/$', InstanceActivityDetail.as_view(),
         name='dashboard.views.vm-activity'),
     url(r'^vm/(?P<pk>\d+)/screenshot/$', get_vm_screenshot,
@@ -119,8 +121,8 @@ urlpatterns = patterns(
         name='dashboard.views.template-transfer-ownership-confirm'),
     url(r'^node/delete/(?P<pk>\d+)/$', NodeDelete.as_view(),
         name="dashboard.views.delete-node"),
-    url(r'^node/status/(?P<pk>\d+)/$', NodeStatus.as_view(),
-        name="dashboard.views.status-node"),
+    url(r'^node/(?P<pk>\d+)/activity/$', NodeActivityView.as_view(),
+        name='dashboard.views.node-activity-list'),
     url(r'^node/create/$', NodeCreate.as_view(),
         name='dashboard.views.node-create'),
 
@@ -155,9 +157,6 @@ urlpatterns = patterns(
         name="dashboard.views.disk-remove"),
     url(r'^disk/(?P<pk>\d+)/status/$', get_disk_download_status,
         name="dashboard.views.disk-status"),
-
-    url(r'^interface/(?P<pk>\d+)/delete/$', InterfaceDeleteView.as_view(),
-        name="dashboard.views.interface-delete"),
 
     url(r'^profile/$', MyPreferencesView.as_view(),
         name="dashboard.views.profile-preferences"),

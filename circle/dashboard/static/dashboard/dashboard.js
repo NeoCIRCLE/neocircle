@@ -5,63 +5,39 @@ $(function () {
     var template = $(this).data("template");
     $.ajax({
       type: 'GET',
-      url: '/dashboard/vm/create/' + (typeof template === "undefined" ? '' : '?template=' + template),
+      url: $(this).attr('href'),
       success: function(data) {
         $('body').append(data);
         vmCreateLoaded();
         addSliderMiscs();
-        $('#create-modal').modal('show');
-        $('#create-modal').on('hidden.bs.modal', function() {
-          $('#create-modal').remove();
+        var modal = $('#confirmation-modal');
+        modal.modal('show');
+        modal.on('hidden.bs.modal', function() {
+          modal.remove();
         });
       }
     });
     return false;
   });
 
-  $('.node-create').click(function(e) {
+  $('.group-create, .node-create, .tx-tpl-ownership, .group-delete, .node-delete, .disk-remove, .template-delete, .delete-from-group').click(function(e) {
     $.ajax({
       type: 'GET',
-      url: '/dashboard/node/create/',
+      url: $(this).prop('href'),
       success: function(data) {
         $('body').append(data);
-        nodeCreateLoaded();
-        addSliderMiscs();
-        $('#create-modal').modal('show');
-        $('#create-modal').on('hidden.bs.modal', function() {
-          $('#create-modal').remove();
+        var modal = $('#confirmation-modal');
+        modal.modal('show');
+        modal.on('hidden.bs.modal', function() {
+          modal.remove();
         });
-      }
-    });
-    return false;
-  });
-
-  $('.group-create').click(function(e) {
-    $.ajax({
-      type: 'GET',
-      url: '/dashboard/group/create/',
-      success: function(data) {
-        $('body').append(data);
-        addSliderMiscs();
-        $('#create-modal').modal('show');
-        $('#create-modal').on('hidden.bs.modal', function() {
-          $('#create-modal').remove();
-        });
-      }
-    });
-    return false;
-  });
-
-  $('.tx-tpl-ownership').click(function(e) {
-    $.ajax({
-      type: 'GET',
-      url: $('.tx-tpl-ownership').attr('href'),
-      success: function(data) {
-        $('body').append(data);
-        $('#confirmation-modal').modal('show');
-        $('#confirmation-modal').on('hidden.bs.modal', function() {
-          $('#confirmation-modal').remove();
-        });
+      },
+      error: function(xhr, textStatus, error) {
+        if(xhr.status === 403) {
+          addMessage(gettext("Only the owners can delete the selected object."), "warning");
+        } else {
+          addMessage(gettext("An error occurred. (") + xhr.status + ")", 'danger')
+        }
       }
     });
     return false;
@@ -70,12 +46,13 @@ $(function () {
   $('.template-choose').click(function(e) {
     $.ajax({
       type: 'GET',
-      url: '/dashboard/template/choose/',
+      url: $(this).prop('href'),
       success: function(data) {
         $('body').append(data);
-        $('#create-modal').modal('show');
-        $('#create-modal').on('hidden.bs.modal', function() {
-          $('#create-modal').remove();
+        var modal = $('#confirmation-modal');
+        modal.modal('show');
+        modal.on('hidden.bs.modal', function() {
+          modal.remove();
         });
         // check if user selected anything
         $("#template-choose-next-button").click(function() {
@@ -101,6 +78,7 @@ $(function () {
     e.stopImmediatePropagation();
     return false;
   });
+
   $('[href=#index-list-view]').click(function (e) {
     var box = $(this).data('index-box');
     $('#' + box + '-graph-view').hide();
@@ -110,9 +88,10 @@ $(function () {
     e.stopImmediatePropagation();
     return false;
   });
-  $('body [title]:not(.title-favourite)').tooltip();
+
   $('body .title-favourite').tooltip({'placement': 'right'});
   $('body :input[title]').tooltip({trigger: 'focus', placement: 'auto right'});
+  $('body [title]').tooltip();
   $(".knob").knob();
 
   $('[data-toggle="pill"]').click(function() {
@@ -166,74 +145,6 @@ $(function () {
     $('body').animate({scrollTop: 0});
 
   addSliderMiscs();
-
-  /* for VM removes buttons */
-  $('.vm-delete').click(function() {
-    var vm_pk = $(this).data('vm-pk');
-    var dir = window.location.pathname.indexOf('list') == -1;
-    addModalConfirmation(deleteObject,
-      { 'url': '/dashboard/vm/delete/' + vm_pk + '/',
-        'data': [],
-        'pk': vm_pk,
-        'type': "vm",
-        'redirect': dir});
-    return false;
-  });
-
-  /* for disk remove buttons */
-  $('.disk-remove').click(function() {
-    var disk_pk = $(this).data('disk-pk');
-    addModalConfirmation(deleteObject,
-      { 'url': '/dashboard/disk/' + disk_pk + '/remove/',
-        'data': [],
-        'pk': disk_pk,
-        'type': "disk",
-      });
-    return false;
-  });
-
-  /* for Node removes buttons */
-  $('.node-delete').click(function() {
-    var node_pk = $(this).data('node-pk');
-    var dir = window.location.pathname.indexOf('list') == -1;
-    addModalConfirmation(deleteObject,
-      { 'url': '/dashboard/node/delete/' + node_pk + '/',
-        'data': [],
-        'pk': node_pk,
-        'type': "node",
-        'redirect': dir});
-
-    return false;
-  });
-
-  /* for Node flush buttons */
-  $('.node-flush').click(function() {
-    var node_pk = $(this).data('node-pk');
-    var postto = $(this).attr('href');
-    var dir = window.location.pathname.indexOf('list') == -1;
-    addModalConfirmation(function(){},
-      { 'url': postto,
-        'data': [],
-        'pk': node_pk,
-        'type': "node",
-        'redirect': dir});
-
-    return false;
-  });
-
-  /* for Group removes buttons */
-  $('.group-delete').click(function() {
-    var group_pk = $(this).data('group-pk');
-    var dir = window.location.pathname.indexOf('list') == -1;
-    addModalConfirmation(deleteObject,
-      { 'url': '/dashboard/group/delete/' + group_pk + '/',
-        'data': [],
-        'type': "group",
-        'pk': group_pk,
-        'redirect': dir});
-
-    return false;
-  });
 
  /* search for vms */
   var my_vms = [];
@@ -558,62 +469,6 @@ function setDefaultSliderValues() {
 }
 
 
-/* deletes the VM with the pk
- * if dir is true, then redirect to the dashboard landing page
- * else it adds a success message */
-function deleteObject(data) {
-  $.ajax({
-    type: 'POST',
-    data: {'redirect': data.redirect},
-    url: data.url,
-    headers: {"X-CSRFToken": getCookie('csrftoken')},
-    success: function(re, textStatus, xhr) {
-      if(!data.redirect) {
-        selected = [];
-        addMessage(re.message, 'success');
-        if(data.type === "disk") {
-          // no need to remove them from DOM
-          $('a[data-disk-pk="' + data.pk + '"]').parent("li").fadeOut();
-          $('a[data-disk-pk="' + data.pk + '"]').parent("h4").fadeOut();
-        }
-        else {
-          $('a[data-'+data.type+'-pk="' + data.pk + '"]').closest('tr').fadeOut(function() {
-            $(this).remove();
-          });
-        }
-      } else {
-        window.location.replace('/dashboard');
-      }
-    },
-    error: function(xhr, textStatus, error) {
-      addMessage('Uh oh :(', 'danger');
-    }
-  });
-}
-
-function massDeleteVm(data) {
-  f = function() {
-    selected = [];
-    // reset group buttons
-    $('.vm-list-group-control a').attr('disabled', true);
-    $(this).remove();
-  };
-  $.ajax({
-      traditional: true,
-      url: data.url,
-      headers: {"X-CSRFToken": getCookie('csrftoken')},
-      type: 'POST',
-      data: {'vms': data.data.v},
-      success: function(re, textStatus, xhr) {
-        for(var i=0; i< data.data.v.length; i++)
-          $('.vm-list-table tbody tr[data-vm-pk="' + data.data.v[i] + '"]').fadeOut(500, f);
-        addMessage(re.message, 'success');
-      },
-      error: function(xhr, textStatus, error) {
-        // TODO this
-      }
-    });
-}
 
 
 function addMessage(text, type) {
@@ -701,6 +556,7 @@ function csrfSafeMethod(method) {
   // these HTTP methods do not require CSRF protection
   return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
 }
+
 $.ajaxSetup({
   beforeSend: function(xhr, settings) {
     if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
