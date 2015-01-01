@@ -1195,7 +1195,8 @@ class DisableOperation(NodeOperation):
 class UpdateNodeOperation(NodeOperation):
     id = 'update_node'
     name = _("update node")
-    description = _("Update node.")
+    description = _("Upgrade or install node software (vmdriver, agentdriver, "
+                    "monitor-client) with Salt.")
     required_perms = ()
     online_required = False
     async_queue = "localhost.man.slow"
@@ -1204,12 +1205,19 @@ class UpdateNodeOperation(NodeOperation):
         name = self.node.host.hostname
         client = LocalClient()
         data = client.cmd(
-            name, module, timeout=timeout, kwarg={'mods': params})
+            name, module, params, timeout=timeout)
+
         try:
-            return data[name]
+            data = data[name]
         except KeyError:
             raise HumanReadableException.create(ugettext_noop(
                 "No minions matched the target."))
+
+        if not isinstance(data, dict):
+            raise HumanReadableException.create(ugettext_noop(
+                "Unhandled exception: %(msg)s"), msg=unicode(data))
+
+        return data
 
     def _operation(self, activity):
         with activity.sub_activity(
