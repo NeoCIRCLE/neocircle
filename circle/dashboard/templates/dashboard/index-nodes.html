@@ -46,8 +46,10 @@
     </p>
     <ul class="list-inline" id="dashboard-node-taglist">
       {% for i in nodes %}
-      <a href="{{ i.get_absolute_url }}" class="label {{i.get_status_label}}" >
-      <i class="fa {{ i.get_status_icon }}" title="{{ i.get_status_display }}"></i> {{ i.name }}</a>
+      <li>
+        <a href="{{ i.get_absolute_url }}" class="label {{i.get_status_label}}" >
+        <i class="fa {{ i.get_status_icon }}" title="{{ i.get_status_display }}"></i> {{ i.name }}</a>
+      </li>
       {% endfor %}
     </ul>
 

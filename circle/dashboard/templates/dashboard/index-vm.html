@@ -44,7 +44,7 @@
         </div>
       {% endfor %}
     </div>
-    <div href="#" class="list-group-item list-group-footer">
+    <div class="list-group-item list-group-footer">
       <div class="row">
         <div class="col-xs-6">
         <form action="{% url "dashboard.views.vm-list" %}" method="GET" id="dashboard-vm-search-form">
@@ -79,7 +79,7 @@
     <p class="pull-right">
     <input class="knob" data-fgColor="chartreuse" data-thickness=".4" data-max="{{ request.user.profile.instance_limit }}" data-width="100" data-height="100" data-readOnly="true" value="{{ instances|length|add:more_instances }}">
     </p>
-    <p><span class="bigbig">{% blocktrans with count=running_vm_num %}<big>{{ count }}</big> running{% endblocktrans %}</span>
+    <span class="bigbig">{% blocktrans with count=running_vm_num %}<big>{{ count }}</big> running{% endblocktrans %}</span>
       <ul class="list-inline" style="max-height: 95px; overflow: hidden;">
         {% for vm in running_vms %}
         <li style="display: inline-block; padding: 2px;">
@@ -89,7 +89,6 @@
         </li>
         {% endfor %}
       </ul>
-    </p>
 
     <div class="clearfix"></div>
     <div>
