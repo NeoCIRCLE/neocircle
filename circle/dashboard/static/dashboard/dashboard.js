@@ -1,4 +1,11 @@
 $(function () {
+  var favicon= new Favico({
+        animation:'none'
+  });
+
+  var notifications = $("#notification_count").data("notifications");
+  favicon.badge(notifications);
+
   $(".not-tab-pane").removeClass("not-tab-pane").addClass("tab-pane");
 
   $('.vm-create').click(function(e) {
@@ -311,6 +318,8 @@ $(function () {
   $("#notification-button a").click(function() {
     $('#notification-messages').load("/dashboard/notifications/");
     $('#notification-button a span[class*="badge-pulse"]').remove();
+
+    favicon.reset();
   });
   
   /* on the client confirmation button fire the clientInstalledAction */
@@ -349,7 +358,6 @@ $(function () {
     li.addClass('panel-primary').find('input').prop("checked", true);
     return true;
   });
-
 });
 
 function generateVmHTML(pk, name, host, icon, _status, fav, is_last) {
