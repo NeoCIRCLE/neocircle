@@ -30,6 +30,7 @@ from django.core.exceptions import (
     PermissionDenied, SuspiciousOperation,
 )
 from django.core.urlresolvers import reverse, reverse_lazy
+from django.core.paginator import Paginator, InvalidPage
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import redirect, get_object_or_404
 from django.utils.translation import ugettext as _
@@ -67,9 +68,18 @@ class NotificationView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, *args, **kwargs):
         context = super(NotificationView, self).get_context_data(
             *args, **kwargs)
-        n = 10 if self.request.is_ajax() else 1000
-        context['notifications'] = list(
-            self.request.user.notification_set.all()[:n])
+        paginate_by = 10 if self.request.is_ajax() else 25
+        page = self.request.GET.get("page", 1)
+
+        notifications = self.request.user.notification_set.all()
+        paginator = Paginator(notifications, paginate_by)
+        try:
+            current_page = paginator.page(page)
+        except InvalidPage:
+            current_page = paginator.page(1)
+
+        context['page'] = current_page
+        context['paginator'] = paginator
         return context
 
     def get(self, *args, **kwargs):
