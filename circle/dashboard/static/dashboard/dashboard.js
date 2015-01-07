@@ -4,7 +4,8 @@ $(function () {
   });
 
   var notifications = $("#notification_count").data("notifications");
-  favicon.badge(notifications);
+  if(notifications)
+    favicon.badge(notifications);
 
   $(".not-tab-pane").removeClass("not-tab-pane").addClass("tab-pane");
 
