@@ -20,7 +20,7 @@ $(function () {
     return false;
   });
 
-  $('.group-create, .node-create, .tx-tpl-ownership, .group-delete, .node-delete, .disk-remove, .template-delete, .delete-from-group').click(function(e) {
+  $('.group-create, .node-create, .tx-tpl-ownership, .group-delete, .node-delete, .disk-remove, .template-delete, .delete-from-group, .lease-delete').click(function(e) {
     $.ajax({
       type: 'GET',
       url: $(this).prop('href'),
@@ -282,7 +282,7 @@ $(function () {
     for(i=0; i<5 && i<search_result.length; i++)
       html += generateGroupHTML(search_result[i].url, search_result[i].name, search_result.length < 5);
     if(search_result.length === 0)
-      html += '<div class="list-group-item list-group-item-last">No result</div>';
+      html += '<div class="list-group-item list-group-item-last">' + gettext("No result") + '</div>';
     $("#dashboard-group-list").html(html);
 
     // if there is only one result and ENTER is pressed redirect

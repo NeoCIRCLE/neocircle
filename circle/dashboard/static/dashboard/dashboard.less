@@ -85,8 +85,11 @@ html {
 }
 
 .list-group .list-group-footer {
-  padding-top: 5px;
-  padding-bottom: 5px;
+  height: 41px;
+}
+
+.list-group-footer .text-right {
+  padding-top: 4px;
 }
 
 .big {
@@ -194,7 +197,7 @@ html {
 }
 
 .dashboard-index .panel {
-    height: 300px;
+    height: 294px;
 }
 
 #vm-details-rename, #vm-details-h1-name, #vm-details-rename ,
@@ -590,8 +593,8 @@ footer a, footer a:hover, footer a:visited {
 }
 
 #dashboard-vm-list, #dashboard-node-list, #dashboard-group-list,
-#dashboard-template-list {
-  min-height: 204px;
+#dashboard-template-list, #dashboard-files-toplist {
+  min-height: 200px;
 }
 
 #group-detail-user-table td:first-child, #group-detail-user-table th:last-child,
@@ -751,10 +754,6 @@ textarea[name="new_members"] {
 
 .store-remove-button {
   margin-top: 8px;
-}
-
-#dashboard-files-toplist {
-  min-height: 204px;
 }
 
 #dashboard-files-toplist div.list-group-item {
@@ -961,6 +960,11 @@ textarea[name="new_members"] {
 #vm-list-search, #vm-mass-ops {
   margin-top: 8px;
 }
+
+.list-group-item {
+  border-bottom: 0px !important;
+}
+
 .list-group-item-last {
   border-bottom: 1px solid #ddd !important;
 }
