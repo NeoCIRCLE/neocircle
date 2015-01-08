@@ -27,8 +27,10 @@ from django.db.models import Count
 from django.forms.models import inlineformset_factory
 from django.http import HttpResponse
 from django.shortcuts import redirect
+from django.template import RequestContext
+from django.template.loader import render_to_string
 from django.utils.translation import ugettext as _
-from django.views.generic import DetailView, TemplateView, DeleteView
+from django.views.generic import DetailView, TemplateView, View
 
 from braces.views import LoginRequiredMixin, SuperuserRequiredMixin
 from django_tables2 import SingleTableView
@@ -38,7 +40,7 @@ from vm.models import Node, NodeActivity, Trait
 
 from ..forms import TraitForm, HostForm, NodeForm
 from ..tables import NodeListTable
-from .util import AjaxOperationMixin, OperationView, GraphMixin
+from .util import AjaxOperationMixin, OperationView, GraphMixin, DeleteViewBase
 
 
 def get_operations(instance, user):
@@ -59,6 +61,8 @@ class NodeOperationView(AjaxOperationMixin, OperationView):
 
     model = Node
     context_object_name = 'node'  # much simpler to mock object
+    with_reload = True
+    wait_for_result = 1
 
 
 node_ops = OrderedDict([
@@ -68,6 +72,8 @@ node_ops = OrderedDict([
         op='passivate', icon='play-circle-o', effect='info')),
     ('disable', NodeOperationView.factory(
         op='disable', icon='times-circle-o', effect='danger')),
+    ('update_node', NodeOperationView.factory(
+        op='update_node', icon='refresh', effect='warning')),
     ('reset', NodeOperationView.factory(
         op='reset', icon='stethoscope', effect='danger')),
     ('flush', NodeOperationView.factory(
@@ -191,7 +197,7 @@ class NodeCreate(LoginRequiredMixin, SuperuserRequiredMixin, TemplateView):
 
     def get_template_names(self):
         if self.request.is_ajax():
-            return ['dashboard/modal-wrapper.html']
+            return ['dashboard/_modal.html']
         else:
             return ['dashboard/nojs-wrapper.html']
 
@@ -203,7 +209,7 @@ class NodeCreate(LoginRequiredMixin, SuperuserRequiredMixin, TemplateView):
         context = self.get_context_data(**kwargs)
         context.update({
             'template': 'dashboard/node-create.html',
-            'box_title': 'Create a Node',
+            'box_title': _('Create a node'),
             'hostform': hostform,
             'formset': formset,
 
@@ -236,44 +242,16 @@ class NodeCreate(LoginRequiredMixin, SuperuserRequiredMixin, TemplateView):
             return redirect(path)
 
 
-class NodeDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
-
-    """This stuff deletes the node.
-    """
+class NodeDelete(SuperuserRequiredMixin, DeleteViewBase):
     model = Node
-    template_name = "dashboard/confirm/base-delete.html"
+    success_message = _("Node successfully deleted.")
 
-    def get_template_names(self):
-        if self.request.is_ajax():
-            return ['dashboard/confirm/ajax-delete.html']
-        else:
-            return ['dashboard/confirm/base-delete.html']
-
-    # github.com/django/django/blob/master/django/views/generic/edit.py#L245
-    def delete(self, request, *args, **kwargs):
-        object = self.get_object()
-
-        object.delete()
-        success_url = self.get_success_url()
-        success_message = _("Node successfully deleted.")
-
-        if request.is_ajax():
-            if request.POST.get('redirect').lower() == "true":
-                messages.success(request, success_message)
-            return HttpResponse(
-                json.dumps({'message': success_message}),
-                content_type="application/json",
-            )
-        else:
-            messages.success(request, success_message)
-            return redirect(success_url)
+    def check_auth(self):
+        # SuperuserRequiredMixin
+        pass
 
     def get_success_url(self):
-        next = self.request.POST.get('next')
-        if next:
-            return next
-        else:
-            return reverse_lazy('dashboard.index')
+        return reverse_lazy('dashboard.views.node-list')
 
 
 class NodeAddTraitView(SuperuserRequiredMixin, DetailView):
@@ -309,55 +287,20 @@ class NodeAddTraitView(SuperuserRequiredMixin, DetailView):
             return self.get(self, request, pk, *args, **kwargs)
 
 
-class NodeStatus(LoginRequiredMixin, SuperuserRequiredMixin, DetailView):
-    template_name = "dashboard/confirm/node-status.html"
-    model = Node
+class NodeActivityView(LoginRequiredMixin, SuperuserRequiredMixin, View):
+    def get(self, request, pk):
+        node = Node.objects.get(pk=pk)
 
-    def get_template_names(self):
-        if self.request.is_ajax():
-            return ['dashboard/confirm/ajax-node-status.html']
-        else:
-            return ['dashboard/confirm/node-status.html']
+        activities = NodeActivity.objects.filter(
+            node=node, parent=None).order_by('-started').select_related()
 
-    def get_success_url(self):
-        next = self.request.GET.get('next')
-        if next:
-            return next
-        else:
-            return reverse_lazy("dashboard.views.node-detail",
-                                kwargs={'pk': self.object.pk})
+        response = {
+            'activities': render_to_string(
+                "dashboard/node-detail/_activity-timeline.html",
+                RequestContext(request, {'activities': activities}))
+        }
 
-    def get_context_data(self, **kwargs):
-        context = super(NodeStatus, self).get_context_data(**kwargs)
-        if self.object.enabled:
-            context['status'] = "disable"
-        else:
-            context['status'] = "enable"
-        return context
-
-    def post(self, request, *args, **kwargs):
-        if request.POST.get('change_status') is not None:
-            return self.__set_status(request)
-        return redirect(reverse_lazy("dashboard.views.node-detail",
-                                     kwargs={'pk': self.get_object().pk}))
-
-    def __set_status(self, request):
-        self.object = self.get_object()
-        if not self.object.enabled:
-            self.object.enable(user=request.user)
-        else:
-            self.object.disable(user=request.user)
-        success_message = _("Node successfully changed status.")
-
-        if request.is_ajax():
-            response = {
-                'message': success_message,
-                'node_pk': self.object.pk
-            }
-            return HttpResponse(
-                json.dumps(response),
-                content_type="application/json"
-            )
-        else:
-            messages.success(request, success_message)
-            return redirect(self.get_success_url())
+        return HttpResponse(
+            json.dumps(response),
+            content_type="application/json"
+        )

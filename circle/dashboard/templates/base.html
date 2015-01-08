@@ -64,7 +64,6 @@
       <a href="{% url "info.support" %}">{% trans "Support" %}</a>
       <span class="pull-right">{{ COMPANY_NAME }}</span>
     </footer>
-  </body>
 
   <script src="{% static "jquery/dist/jquery.min.js" %}"></script>
   <script src="{{ STATIC_URL }}jsi18n/{{ LANGUAGE_CODE }}/djangojs.js"></script>
@@ -78,4 +77,5 @@
 
   {% block extra_etc %}
   {% endblock %}
+  </body>
 </html>

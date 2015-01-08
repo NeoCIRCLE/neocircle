@@ -80,7 +80,8 @@
             </a>
           </li>
           <li>
-            <a href="#activity" data-toggle="pill" class="text-center">
+            <a href="#activity" data-toggle="pill" class="text-center"
+               data-activity-url="{% url "dashboard.views.node-activity-list" node.pk %}">
               <i class="fa fa-clock-o fa-2x"></i><br>
               {% trans "Activity" %}
             </a>

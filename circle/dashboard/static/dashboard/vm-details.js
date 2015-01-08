@@ -1,33 +1,6 @@
-var show_all = false;
-var in_progress = false;
-var activity_hash = 5;
 var Websock_native; // not sure
-var reload_vm_detail = false;
 
 $(function() {
-  /* do we need to check for new activities */
-  if(decideActivityRefresh()) {
-    if(!in_progress) {
-      checkNewActivity(1);
-      in_progress = true;
-    }
-  }
-
-  $('a[href="#activity"]').click(function(){
-    $('a[href="#activity"] i').addClass('fa-spin');
-    if(!in_progress) {
-      checkNewActivity(1);
-      in_progress = true;
-    }
-  });
-
-  $("#activity-refresh").on("click", "#show-all-activities", function() {
-    $(this).find("i").addClass("fa-spinner fa-spin");
-    show_all = !show_all;
-    $('a[href="#activity"]').trigger("click");
-    return false;
-  });
-
   /* save resources */
   $('#vm-details-resources-save').click(function(e) {
     var error = false;
@@ -43,7 +16,7 @@ $(function() {
     var vm = $(this).data("vm");
     $.ajax({
       type: 'POST',
-      url: "/dashboard/vm/" + vm + "/op/resources_change/",
+      url: $(this).parent("form").prop('action'),
       data: $('#vm-details-resources-form').serialize(),
       success: function(data, textStatus, xhr) {
         if(data.success) {
@@ -89,17 +62,6 @@ $(function() {
     return false;
   });
 
-  /* remove port */
-  $('.vm-details-remove-port').click(function() {
-    addModalConfirmation(removePort,
-      {
-        'url': $(this).prop("href"),
-        'data': [],
-        'rule': $(this).data("rule")
-      });
-    return false;
-  });
-
   /* for js fallback */
   $("#vm-details-pw-show").parent("div").children("input").prop("type", "password");
 
@@ -122,80 +84,6 @@ $(function() {
     }
     span.tooltip();
   });
-
-  /* change password confirmation */
-  $("#vm-details-pw-change").click(function() {
-    $("#vm-details-pw-confirm").fadeIn();
-    return false;
-  });
-
-  /* change password */
-  $(".vm-details-pw-confirm-choice").click(function() {
-    choice = $(this).data("choice");
-    if(choice) {
-      pk = $(this).data("vm");
-      $.ajax({
-        type: 'POST',
-        url: "/dashboard/vm/" + pk + "/",
-        data: {'change_password': 'true'},
-        headers: {"X-CSRFToken": getCookie('csrftoken')},
-        success: function(re, textStatus, xhr) {
-          location.reload();
-        },
-        error: function(xhr, textStatus, error) {
-          if (xhr.status == 500) {
-            addMessage("Internal Server Error", "danger");
-          } else {
-            addMessage(xhr.status + " Unknown Error", "danger");
-          }
-        }
-      });
-    } else {
-      $("#vm-details-pw-confirm").fadeOut();
-    }
-    return false;
-  });
-
-  /* add network button */
-  $("#vm-details-network-add").click(function() {
-    $("#vm-details-network-add-form").toggle();
-    return false;
-  });
-
-  /* add disk button */
-  $("#vm-details-disk-add").click(function() {
-    $("#vm-details-disk-add-for-form").html($("#vm-details-disk-add-form").html());
-    return false;
-  });
-
-  /* for interface remove buttons */
-  $('.interface-remove').click(function() {
-    var interface_pk = $(this).data('interface-pk');
-    addModalConfirmation(removeInterface,
-      { 'url': '/dashboard/interface/' + interface_pk + '/delete/',
-        'data': [],
-        'pk': interface_pk,
-	'type': "interface",
-      });
-    return false;
-  });
-
-  /* removing interface post */
-  function removeInterface(data) {
-    $.ajax({
-      type: 'POST',
-      url: data.url,
-      headers: {"X-CSRFToken": getCookie('csrftoken')},
-      success: function(re, textStatus, xhr) {
-        /* remove the html element */
-        $('a[data-interface-pk="' + data.pk + '"]').closest("div").fadeOut();
-        location.reload();
-      },
-      error: function(xhr, textStatus, error) {
-        addMessage('Uh oh :(', 'danger');
-      }
-    });
-  }
 
   /* rename */
   $("#vm-details-h1-name, .vm-details-rename-button").click(function() {
@@ -336,109 +224,3 @@ $(function() {
   });
 
 });
-
-
-function removePort(data) {
-  $.ajax({
-    type: 'POST',
-    url: data.url,
-    headers: {"X-CSRFToken": getCookie('csrftoken')},
-    success: function(re, textStatus, xhr) {
-      $("a[data-rule=" + data.rule + "]").each(function() {
-        $(this).closest("tr").fadeOut(500, function() {
-          $(this).remove();
-        });
-      });
-      addMessage(re.message, "success");
-    },
-    error: function(xhr, textStatus, error) {
-
-    }
-  });
-
-}
-
-function decideActivityRefresh() {
-  var check = false;
-  /* if something is still spinning */
-  if($('.timeline .activity i').hasClass('fa-spin'))
-    check = true;
-
-  return check;
-}
-
-function checkNewActivity(runs) {
-  var instance = location.href.split('/'); instance = instance[instance.length - 2];
-
-  $.ajax({
-    type: 'GET',
-    url: '/dashboard/vm/' + instance + '/activity/',
-    data: {'show_all': show_all},
-    success: function(data) {
-      var new_activity_hash = (data.activities + "").hashCode();
-      if(new_activity_hash != activity_hash) {
-        $("#activity-refresh").html(data.activities);
-      }
-      activity_hash = new_activity_hash;
-
-      $("#ops").html(data.ops);
-      $("#disk-ops").html(data.disk_ops);
-      $("[title]").tooltip();
-
-      /* changing the status text */
-      var icon = $("#vm-details-state i");
-      if(data.is_new_state) {
-        if(!icon.hasClass("fa-spin"))
-          icon.prop("class", "fa fa-spinner fa-spin");
-      } else {
-        icon.prop("class", "fa " + data.icon);
-      }
-      $("#vm-details-state").data("status", data['status']);
-      $("#vm-details-state span").html(data['human_readable_status'].toUpperCase());
-      if(data['status'] == "RUNNING") {
-        if(data['connect_uri']) {
-            $("#dashboard-vm-details-connect-button").removeClass('disabled');
-        }
-        $("[data-target=#_console]").attr("data-toggle", "pill").attr("href", "#console").parent("li").removeClass("disabled");
-      } else {
-        if(data['connect_uri']) {
-            $("#dashboard-vm-details-connect-button").addClass('disabled');
-        }
-        $("[data-target=#_console]").attr("data-toggle", "_pill").attr("href", "#").parent("li").addClass("disabled");
-      }
-
-      if(data.status == "STOPPED" || data.status == "PENDING") {
-        $(".change-resources-button").prop("disabled", false);
-        $(".change-resources-help").hide();
-      } else {
-        $(".change-resources-button").prop("disabled", true);
-        $(".change-resources-help").show();
-      }
-
-      if(runs > 0 && decideActivityRefresh()) {
-        setTimeout(
-          function() {checkNewActivity(runs + 1);},
-          1000 + Math.exp(runs * 0.05)
-        );
-      } else {
-        in_progress = false;
-        if(reload_vm_detail) location.reload();
-      }
-      $('a[href="#activity"] i').removeClass('fa-spin');
-    },
-    error: function() {
-      in_progress = false;
-    }
-  });
-}
-
-String.prototype.hashCode = function() {
-  var hash = 0, i, chr, len;
-  if (this.length === 0) return hash;
-  for (i = 0, len = this.length; i < len; i++) {
-    chr   = this.charCodeAt(i);
-    hash  = ((hash << 5) - hash) + chr;
-    hash |= 0; // Convert to 32bit integer
-  }
-  return hash;
-};

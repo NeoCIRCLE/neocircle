@@ -7,7 +7,7 @@
     <h3 class="no-margin"><i class="fa fa-puzzle-piece"></i> {% trans "Templates" %}
     </h3>
   </div>
-  <div class="list-group" id="dashboard-template-list">
+  <div class="list-group" id="template-list-view">
     <div id="dashboard-template-list">
       {% for t in templates %}
       <a href="{% url "dashboard.views.template-detail" pk=t.pk %}" class="list-group-item
@@ -16,7 +16,7 @@
           <i class="fa fa-{{ t.os_type }}"></i> {{ t.name }}
         </span>
         <small class="text-muted index-template-list-system">{{ t.system }}</small>
-        <div class="pull-right vm-create" data-template="{{ t.pk }}">
+        <div href="{% url "dashboard.views.vm-create" %}?template={{ t.pk }}" class="pull-right vm-create">
           <i data-container="body" title="{% trans "Start VM instance" %}" 
             class="fa fa-play"></i>
         </div>
@@ -32,15 +32,15 @@
         </div>
       {% endfor %}
     </div>
-    <div href="#" class="list-group-item list-group-footer text-right">
-      <p>
+    <div class="list-group-item list-group-footer">
+      <div class="text-right">
         <a href="{% url "dashboard.views.template-list" %}" class="btn btn-primary btn-xs">
           <i class="fa fa-chevron-circle-right"></i> {% trans "show all" %}
         </a>
         <a href="{% url "dashboard.views.template-choose" %}" class="btn btn-success btn-xs template-choose">
           <i class="fa fa-plus-circle"></i> {% trans "new" %}
         </a>
-      </p>
+      </div>
     </div>
   </div>
 </div>

@@ -3,19 +3,25 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-body">
-        {% if text %}
-          {{ text|safe }}
+        {% if member %}
+          {% blocktrans with group=object member=member %}
+          Do you really want to remove <strong>{{ member }}</strong> from {{ group }}?
+          {% endblocktrans %}
         {% else %}
-          {%blocktrans with object=object%}
+          {% blocktrans with object=object %}
             Are you sure you want to delete <strong>{{ object }}</strong>?
-          {%endblocktrans%}
+          {% endblocktrans %}
         {% endif %}
         <br />
         <div class="pull-right" style="margin-top: 15px;">
-          <button type="button" class="btn btn-default" data-dismiss="modal">{% trans "Cancel" %}</button>
-          <button id="confirmation-modal-button" type="button" class="btn btn-danger"
-          {% if disable_submit %}disabled{% endif %}
-            >{% trans "Delete" %}</button>
+          <form action="{{ request.path }}" method="POST">
+            {% csrf_token %}
+            <button type="button" class="btn btn-default" data-dismiss="modal">{% trans "Cancel" %}</button>
+            <input type="hidden" name="next" value="{{ request.GET.next }}"/>
+            <button class="btn btn-danger"
+              {% if disable_submit %}disabled{% endif %}
+              >{% trans "Delete" %}</button>
+          </form>
         </div>
         <div class="clearfix"></div>
       </div>

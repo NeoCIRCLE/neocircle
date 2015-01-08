@@ -198,6 +198,7 @@ PIPELINE_JS = {
         "jquery-knob/dist/jquery.knob.min.js",
         "jquery-simple-slider/js/simple-slider.js",
         "dashboard/dashboard.js",
+        "dashboard/activity.js",
         "dashboard/group-details.js",
         "dashboard/group-list.js",
         "dashboard/js/stupidtable.min.js",  # no bower file

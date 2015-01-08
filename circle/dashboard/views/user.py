@@ -35,7 +35,7 @@ from django.shortcuts import redirect, get_object_or_404
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_POST
 from django.views.generic import (
-    TemplateView, DetailView, View, DeleteView, UpdateView, CreateView,
+    TemplateView, DetailView, View, UpdateView, CreateView,
 )
 from django_sshkey.models import UserKey
 
@@ -50,7 +50,7 @@ from ..forms import (
 from ..models import Profile, GroupProfile, ConnectCommand, create_profile
 from ..tables import UserKeyListTable, ConnectCommandListTable
 
-from .util import saml_available
+from .util import saml_available, DeleteViewBase
 
 
 logger = logging.getLogger(__name__)
@@ -299,7 +299,7 @@ class ProfileView(LoginRequiredMixin, DetailView):
         # if the intersection of the 2 lists is empty the logged in user
         # has no permission to check the target's profile
         # (except if the user want to see his own profile)
-        if len(intersection) < 1 and target != user:
+        if not intersection and target != user and not user.is_superuser:
             raise PermissionDenied
 
         return super(ProfileView, self).get(*args, **kwargs)
@@ -385,35 +385,16 @@ class UserKeyDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return super(UserKeyDetail, self).post(self, request, args, kwargs)
 
 
-class UserKeyDelete(LoginRequiredMixin, DeleteView):
+class UserKeyDelete(DeleteViewBase):
     model = UserKey
+    success_message = _("SSH key successfully deleted.")
 
     def get_success_url(self):
         return reverse("dashboard.views.profile-preferences")
 
-    def get_template_names(self):
-        if self.request.is_ajax():
-            return ['dashboard/confirm/ajax-delete.html']
-        else:
-            return ['dashboard/confirm/base-delete.html']
-
-    def delete(self, request, *args, **kwargs):
-        object = self.get_object()
-        if object.user != request.user:
+    def check_auth(self):
+        if self.get_object().user != self.request.user:
             raise PermissionDenied()
-
-        object.delete()
-        success_url = self.get_success_url()
-        success_message = _("SSH key successfully deleted.")
-
-        if request.is_ajax():
-            return HttpResponse(
-                json.dumps({'message': success_message}),
-                content_type="application/json",
-            )
-        else:
-            messages.success(request, success_message)
-            return HttpResponseRedirect(success_url)
 
 
 class UserKeyCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
@@ -460,35 +441,16 @@ class ConnectCommandDetail(LoginRequiredMixin, SuccessMessageMixin,
         return kwargs
 
 
-class ConnectCommandDelete(LoginRequiredMixin, DeleteView):
+class ConnectCommandDelete(DeleteViewBase):
     model = ConnectCommand
+    success_message = _("Command template successfully deleted.")
 
     def get_success_url(self):
         return reverse("dashboard.views.profile-preferences")
 
-    def get_template_names(self):
-        if self.request.is_ajax():
-            return ['dashboard/confirm/ajax-delete.html']
-        else:
-            return ['dashboard/confirm/base-delete.html']
-
-    def delete(self, request, *args, **kwargs):
-        object = self.get_object()
-        if object.user != request.user:
+    def check_auth(self):
+        if self.get_object().user != self.request.user:
             raise PermissionDenied()
-
-        object.delete()
-        success_url = self.get_success_url()
-        success_message = _("Command template successfully deleted.")
-
-        if request.is_ajax():
-            return HttpResponse(
-                json.dumps({'message': success_message}),
-                content_type="application/json",
-            )
-        else:
-            messages.success(request, success_message)
-            return HttpResponseRedirect(success_url)
 
 
 class ConnectCommandCreate(LoginRequiredMixin, SuccessMessageMixin,
