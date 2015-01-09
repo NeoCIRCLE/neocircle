@@ -35,6 +35,10 @@ html {
   margin-right: 15px;
 }
 
+/* we need this for mobile view */
+.container > :first-child {
+  margin-top: 15px;
+}
 
 /* Responsive: Portrait tablets and up */
 @media screen and (min-width: 768px) {
@@ -53,6 +57,7 @@ html {
   }
 
 }
+
 .no-margin {
   margin: 0!important;
 }
@@ -1166,4 +1171,27 @@ textarea[name="new_members"] {
 
 .btn-op-form-send {
   padding: 6px 12px 6px 8px;
+}
+
+
+@media (max-width: 767px) {
+  #vm-detail-panel .graph-buttons {
+    padding-top: 15px;
+  }
+
+  .graph-buttons a {
+    margin-bottom: 8px;
+  }
+
+  #ops .operation {
+    margin-bottom: 5px;
+  }
+
+  .vm-details-connection dd {
+    margin-left: 25px;
+  }
+
+  .vm-details-connection dt {
+    padding-left: 0px;
+  }
 }
