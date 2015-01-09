@@ -18,7 +18,7 @@
 
 {% block navbar %}
 {% if user.is_authenticated and user.pk and not request.token_user %}
-  <ul class="nav navbar-nav navbar-right">
+  <ul class="nav navbar-nav navbar-right" id="dashboard-menu">
     {% if user.is_superuser %}
     <li>
       <a href="/admin/"><i class="fa fa-cogs"></i> {% trans "Admin" %}</a>
