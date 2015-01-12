@@ -6,12 +6,47 @@
   <div class="col-md-12">
     <div class="panel panel-default">
       <div class="panel-heading">
+        <div id="notifications-upper-pagination" class="pull-right">
+          {% if page.has_previous %}
+            <a href="?page={{ page.previous_page_number }}">
+              <i class="fa fa-chevron-left"></i></a>
+            </a>
+          {% endif %}
+          {{ page.number }} / {{ paginator.num_pages }}
+          {% if page.has_next %}
+          <a href="?page={{ page.next_page_number }}"><i class="fa fa-chevron-right"></i></a>
+          {% endif %}
+        </div>
+
         <h3 class="no-margin"><i class="fa fa-desktop"></i> {% trans "Notifications" %}</h3>
       </div>
       <div class="panel-body">
         <ul style="list-style: none;">
           {% include "dashboard/_notifications-timeline.html" %}
         </ul>
+      </div>
+      <div class="panel-body text-center" id="notifications-bottom-pagination">
+        {% if page.has_previous %}
+        <a href="?page=1">
+          <i class="fa fa-angle-double-left"></i>
+        </a>
+        <a href="{% if page.has_previous %}?page={{ page.previous_page_number}}{% else %}#{% endif %}">
+          <i class="fa fa-angle-left"></i>
+        </a>
+        {% endif %}
+
+        <div class="page-numbers">
+          {{ page.number }} / {{ paginator.num_pages }}
+        </div>
+
+        {% if page.has_next %}
+        <a href="{% if page.has_next %}?page={{ page.next_page_number}}{% else %}#{% endif %}">
+          <i class="fa fa-angle-right"></i>
+        </a>
+        <a href="?page={{ paginator.num_pages }}">
+          <i class="fa fa-angle-double-right"></i>
+        </a>
+        {% endif %}
       </div>
     </div>
   </div>
