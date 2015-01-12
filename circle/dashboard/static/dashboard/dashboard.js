@@ -151,7 +151,8 @@ $(function () {
   $("#dashboard-vm-search-input").keyup(function(e) {
     // if my_vms is empty get a list of our vms
     if(my_vms.length < 1) {
-      $.ajaxSetup( { "async": false } );
+      $("#dashboard-vm-search-form button i").addClass("fa-spinner fa-spin");
+
       $.get("/dashboard/vm/list/", function(result) {
         for(var i in result) {
           my_vms.push({
@@ -165,8 +166,10 @@ $(function () {
             'owner': result[i].owner,
           });
         }
+        $("#dashboard-vm-search-input").trigger("keyup");
+        $("#dashboard-vm-search-form button i").removeClass("fa-spinner fa-spin").addClass("fa-search");
       });
-      $.ajaxSetup( { "async": true } );
+      return;
     }
 
     input = $("#dashboard-vm-search-input").val().toLowerCase();
@@ -358,7 +361,7 @@ function generateVmHTML(pk, name, host, icon, _status, fav, is_last) {
         '<span class="index-vm-list-name">' + 
           '<i class="fa ' + icon + '" title="' + _status + '"></i> ' + safe_tags_replace(name) +
         '</span>' + 
-        '<small class="text-muted"> ' + host + '</small>' +
+        '<small class="text-muted index-vm-list-host"> ' + host + '</small>' +
         '<div class="pull-right dashboard-vm-favourite" data-vm="' + pk + '">' +
           (fav ? '<i class="fa fa-star text-primary title-favourite" title="' + gettext("Unfavourite") + '"></i>' :
           '<i class="fa fa-star-o text-primary title-favourite" title="' + gettext("Mark as favorite") + '"></i>' ) +

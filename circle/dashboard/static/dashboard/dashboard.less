@@ -23,45 +23,22 @@ html {
   padding-right: 15px;
 }
 
-/* values for 45px tall navbar */
-.navbar {
-  min-height: 45px;
-}
-
-.navbar-brand {
-  height: 45px;
-  padding: 12.5px 12.5px;
-}
-
-.navbar-toggle {
-  margin-top: 5.5px;
-  margin-bottom: 5.5px;
-}
-
-.navbar-form {
-  margin-top: 5.5px;
-  margin-bottom: 5.5px;
-}
-
-.navbar-btn {
-  margin-top: 5.5px;
-  margin-bottom: 5.5px;
-}
-
-.navbar-btn.btn-sm {
-  margin-top: 7.5px;
-  margin-bottom: 7.5px;
-}
-.navbar-btn.btn-xs {
-  margin-top: 11.5px;
-  margin-bottom: 11.5px;
-}
-.navbar-text {
-  margin-top: 12.5px;
-  margin-bottom: 12.5px;
-}
-
 /* --- */
+
+#dashboard-menu > li > a {
+  color: white;
+  font-size: 10px;
+}
+
+
+#dashboard-menu {
+  margin-right: 15px;
+}
+
+/* we need this for mobile view */
+.container > :first-child {
+  margin-top: 15px;
+}
 
 /* Responsive: Portrait tablets and up */
 @media screen and (min-width: 768px) {
@@ -80,6 +57,7 @@ html {
   }
 
 }
+
 .no-margin {
   margin: 0!important;
 }
@@ -400,10 +378,6 @@ a.hover-black {
   font-size: 12px;
 }
 
-#notification-button {
-  margin-right: 15px;
-}
-
 #vm-migrate-node-list {
   list-style: none;
 }
@@ -517,15 +491,6 @@ footer a, footer a:hover, footer a:visited {
 
 #vm-details-resources-form {
   padding: 5px; /* it's nice this way in the tour */
-}
-
-.index-vm-list-name {
-  display: inline-block;
-  max-width: 70%;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-  float: left;
 }
 
 #dashboard-vm-list a small {
@@ -756,12 +721,15 @@ textarea[name="new_members"] {
   margin-top: 8px;
 }
 
-#dashboard-files-toplist div.list-group-item {
-  color: #555;
-}
+#dashboard-files-toplist {
+  div.list-group-item {
+    color: #555;
+    height: 41px;
 
-#dashboard-files-toplist div.list-group-item:hover {
-  background: #eee;
+    &:hover {
+      background: #eee;
+    }
+  }
 }
 
 .store-list-item-name {
@@ -1109,6 +1077,25 @@ textarea[name="new_members"] {
   text-align: center;
 }
 
+.vm-create-list-name {
+  display: inline-block;
+  max-width: 60%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  float: left;
+}
+
+
+.vm-create-list-system {
+  display: inline-block;
+  max-width: 40%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  float: right;
+}
+
 /* for introjs
  * newer version has this fixed
  * but it doesn't work w bootstrap 3.2.0
@@ -1153,5 +1140,58 @@ textarea[name="new_members"] {
 
   &:hover {
     background-position: 0 0px;
+  }
+}
+
+#dashboard-vm-list {
+  .list-group-item {
+    display: flex;
+  }
+
+  .index-vm-list-name, .index-vm-list-host {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .index-vm-list-name {
+    max-width: 70%;
+  }
+
+  .index-vm-list-host {
+    padding-top: 3px;
+    flex: 1;
+  }
+}
+
+.fa-fw-12 {
+  /* fa-fw is too wide */
+  width: 12px;
+}
+
+.btn-op-form-send {
+  padding: 6px 12px 6px 8px;
+}
+
+
+@media (max-width: 767px) {
+  #vm-detail-panel .graph-buttons {
+    padding-top: 15px;
+  }
+
+  .graph-buttons a {
+    margin-bottom: 8px;
+  }
+
+  #ops .operation {
+    margin-bottom: 5px;
+  }
+
+  .vm-details-connection dd {
+    margin-left: 25px;
+  }
+
+  .vm-details-connection dt {
+    padding-left: 0px;
   }
 }
