@@ -23,11 +23,35 @@ Choose a compute node to migrate {{obj}} to.
             <i class="fa {{n.get_status_icon}}"></i> {{n.get_status_display}}</div>
           {% if current == n.pk %}<div class="label label-info">{% trans "current" %}</div>{% endif %}
           {% if recommended == n.pk %}<div class="label label-success">{% trans "recommended" %}</div>{% endif %}
+          {% if n.pk not in nodes_w_traits %}
+            <div class="label label-warning">
+              <i class="fa fa-warning"></i>
+              {% trans "missing traits" %}</div>
+          {% endif %}
         </label>
         <input id="migrate-to-{{n.pk}}" type="radio" name="to_node" value="{{ n.pk }}" style="float: right;"
           {% if current == n.pk %}disabled="disabled"{% endif %}
           {% if recommended == n.pk %}checked="checked"{% endif %}
         />
+        {% if n.pk not in nodes_w_traits %}
+          <span class="vm-migrate-node-property">
+            {% trans "Node traits" %}:
+            {% if n.traits.all %}
+              {{ n.traits.all|join:", " }}
+            {% else %}
+              -
+            {% endif %}
+          </span>
+          <span class="vm-migrate-node-property">
+            {% trans "Required traits" %}:
+            {% if object.req_traits.all %}
+              {{ object.req_traits.all|join:", " }}
+            {% else %}
+              -
+            {% endif %}
+          </span>
+          <hr />
+        {% endif %}
         <span class="vm-migrate-node-property">{% trans "CPU load" %}: {{ n.cpu_usage }}</span>
         <span class="vm-migrate-node-property">
           {% trans "RAM usage" %}: {{ n.byte_ram_usage|filesize }}/{{ n.ram_size|filesize }}</span>
