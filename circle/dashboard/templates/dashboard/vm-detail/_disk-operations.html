@@ -4,7 +4,7 @@
 {% if op.is_disk_operation %}
     <a href="{{op.get_url}}" class="btn btn-success btn-xs
             operation operation-{{op.op}}">
-      <i class="fa fa-{{op.icon}}"></i>
+      <i class="fa fa-{{op.icon}} fa-fw-12"></i>
             {{op.name}} </a>
 {% endif %}
 {% endfor %}

@@ -5,8 +5,14 @@
   {% for t in templates %}
   <div class="vm-create-template">
     <div class="vm-create-template-summary">
-      {{ t.name }}
-      <span class="pull-right"><i class="fa fa-{{ t.os_type }}"></i> {{ t.system }}</span>
+      <span class="vm-create-list-name">
+        {{ t.name }}
+      </span>
+      <span class="vm-create-list-system">
+        <i class="fa fa-{{ t.os_type }}"></i>
+        {{ t.system }}
+      </span>
+      <div class="clearfix"></div>
     </div>
     <div class="vm-create-template-details">
       <ul>

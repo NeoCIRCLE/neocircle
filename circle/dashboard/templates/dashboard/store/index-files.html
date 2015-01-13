@@ -54,7 +54,7 @@
       </div>
     {% endfor %}
     </div>
-    <div class="list-group-item list-group-footer no-hover">
+    <div class="list-group-item list-group-footer">
       <div class="text-right">
         <form class="pull-left" method="POST" action="{% url "dashboard.views.store-refresh-toplist" %}">
           {% csrf_token %}
