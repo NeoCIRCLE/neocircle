@@ -52,6 +52,7 @@ from .views import (
     TransferTemplateOwnershipView, TransferTemplateOwnershipConfirmView,
     OpenSearchDescriptionView,
     NodeActivityView,
+    UserList,
 )
 from .views.vm import vm_ops, vm_mass_ops
 from .views.node import node_ops
@@ -61,6 +62,8 @@ autocomplete_light.autodiscover()
 urlpatterns = patterns(
     '',
     url(r'^$', IndexView.as_view(), name="dashboard.index"),
+    url(r"^profile/list/$", UserList.as_view(),
+        name="dashboard.views.user-list"),
     url(r'^lease/(?P<pk>\d+)/$', LeaseDetail.as_view(),
         name="dashboard.views.lease-detail"),
     url(r'^lease/create/$', LeaseCreate.as_view(),

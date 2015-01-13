@@ -48,6 +48,12 @@
       {% include "dashboard/index-nodes.html" %}
     </div>
     {% endif %}
+
+    {% if perms.auth.change_user %}
+    <div class="col-lg-4 col-sm-6">
+      {% include "dashboard/index-users.html" %}
+    </div>
+    {% endif %}
   </div>
 </div>
 {% endblock %}

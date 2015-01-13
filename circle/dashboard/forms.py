@@ -1494,3 +1494,10 @@ class TemplateListSearchForm(forms.Form):
             data = self.data.copy()
             data['stype'] = "owned"
             self.data = data
+
+
+class UserListSearchForm(forms.Form):
+    s = forms.CharField(widget=forms.TextInput(attrs={
+        'class': "form-control input-tags",
+        'placeholder': _("Search...")
+    }))

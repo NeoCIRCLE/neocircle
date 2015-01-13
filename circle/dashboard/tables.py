@@ -123,26 +123,24 @@ class GroupListTable(Table):
 
 
 class UserListTable(Table):
-    pk = TemplateColumn(
-        template_name='dashboard/vm-list/column-id.html',
-        verbose_name="ID",
-        attrs={'th': {'class': 'vm-list-table-thin'}},
+    username = LinkColumn(
+        'dashboard.views.profile',
+        args=[A('username')],
     )
-
-    username = TemplateColumn(
-        template_name="dashboard/group-list/column-username.html"
+    profile__org_id = LinkColumn(
+        'dashboard.views.profile',
+        accessor='profile.org_id',
+        args=[A('username')],
+        verbose_name=_('Organization ID')
     )
+    is_superuser = BooleanColumn()
+    is_active = BooleanColumn()
 
     class Meta:
         model = User
-        attrs = {'class': ('table table-bordered table-striped table-hover '
-                           'vm-list-table')}
-        fields = ('pk', 'username', )
-
-
-class UserListTablex(Table):
-    class Meta:
-        model = User
+        attrs = {'class': ('table table-bordered table-striped table-hover')}
+        fields = ('username', 'last_name', 'first_name', 'profile__org_id',
+                  'email', 'is_active', 'is_superuser')
 
 
 class TemplateListTable(Table):

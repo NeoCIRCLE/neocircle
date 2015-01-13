@@ -31,6 +31,7 @@ from django.core.exceptions import (
 )
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.core.paginator import Paginator, InvalidPage
+from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import redirect, get_object_or_404
 from django.utils.translation import ugettext as _
@@ -42,14 +43,19 @@ from django_sshkey.models import UserKey
 
 from braces.views import LoginRequiredMixin, PermissionRequiredMixin
 
+from django_tables2 import SingleTableView
+
 from vm.models import Instance, InstanceTemplate
 
 from ..forms import (
     CircleAuthenticationForm, MyProfileForm, UserCreationForm, UnsubscribeForm,
     UserKeyForm, CirclePasswordChangeForm, ConnectCommandForm,
+    UserListSearchForm,
 )
 from ..models import Profile, GroupProfile, ConnectCommand, create_profile
-from ..tables import UserKeyListTable, ConnectCommandListTable
+from ..tables import (
+    UserKeyListTable, ConnectCommandListTable, UserListTable,
+)
 
 from .util import saml_available, DeleteViewBase
 
@@ -480,3 +486,46 @@ class ConnectCommandCreate(LoginRequiredMixin, SuccessMessageMixin,
         kwargs = super(ConnectCommandCreate, self).get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
+
+
+class UserList(LoginRequiredMixin, PermissionRequiredMixin, SingleTableView):
+    template_name = "dashboard/user-list.html"
+    permission_required = "auth.change_user"
+    model = User
+    table_class = UserListTable
+    table_pagination = True
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(UserList, self).get_context_data(*args, **kwargs)
+        context['search_form'] = self.search_form
+        return context
+
+    def get(self, *args, **kwargs):
+        self.search_form = UserListSearchForm(self.request.GET)
+        self.search_form.full_clean()
+
+        if self.request.is_ajax():
+            users = [
+                {'url': reverse("dashboard.views.profile", args=[i.username]),
+                 'name': i.get_full_name() or i.username}
+                for i in self.get_queryset()]
+            return HttpResponse(
+                json.dumps(users), content_type="application/json")
+        else:
+            return super(UserList, self).get(*args, **kwargs)
+
+    def get_queryset(self):
+        logger.debug('UserList.get_queryset() called. User: %s',
+                     unicode(self.request.user))
+        qs = User.objects.all()
+
+        q = self.search_form.cleaned_data.get('s')
+        if q:
+            filters = (Q(username__icontains=q) | Q(email__icontains=q)
+                       | Q(profile__org_id__icontains=q))
+            for w in q.split()[:3]:
+                filters |= (
+                    Q(first_name__icontains=w) | Q(last_name__icontains=w))
+            qs = qs.filter(filters)
+
+        return qs.select_related("profile")
