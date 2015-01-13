@@ -362,6 +362,20 @@ $(function () {
     li.addClass('panel-primary').find('input').prop("checked", true);
     return true;
   });
+
+  emojify.setConfig({
+    'img_dir': "/static/emojify/images/emoji",
+    'ignored_tags': {
+      'script': 1,
+      'textarea': 1,
+      'a': 0,
+      'pre': 0,
+      'code': 0,
+    },
+    'ignore_emoticons': true,
+  });
+
+  emojify.run();
 });
 
 function generateVmHTML(pk, name, host, icon, _status, fav, is_last) {

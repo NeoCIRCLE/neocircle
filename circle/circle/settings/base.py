@@ -185,6 +185,7 @@ PIPELINE_CSS = {
         "dashboard/dashboard.less",
         "network/network.less",
         "autocomplete_light/style.css",
+        "emojify/emojify.css",
     ),
         "output_filename": "all.css",
     }
@@ -198,6 +199,7 @@ PIPELINE_JS = {
         "jquery-knob/dist/jquery.knob.min.js",
         "jquery-simple-slider/js/simple-slider.js",
         "favico.js/favico.js",
+        "emojify/emojify.js",
         "dashboard/dashboard.js",
         "dashboard/activity.js",
         "dashboard/group-details.js",
