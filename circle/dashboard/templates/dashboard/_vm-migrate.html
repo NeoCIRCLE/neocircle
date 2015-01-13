@@ -31,7 +31,7 @@ Choose a compute node to migrate {{obj}} to.
         </label>
         <input id="migrate-to-{{n.pk}}" type="radio" name="to_node" value="{{ n.pk }}" style="float: right;"
           {% if current == n.pk %}disabled="disabled"{% endif %}
-          {% if recommended == n.pk %}checked="checked"{% endif %}
+          {% if recommended == n.pk and n.pk != current %}checked="checked"{% endif %}
         />
         {% if n.pk not in nodes_w_traits %}
           <span class="vm-migrate-node-property">
