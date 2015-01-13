@@ -154,156 +154,61 @@ $(function () {
 
   addSliderMiscs();
 
- /* search for vms */
-  var my_vms = [];
-  $("#dashboard-vm-search-input").keyup(function(e) {
-    // if my_vms is empty get a list of our vms
-    if(my_vms.length < 1) {
-      $("#dashboard-vm-search-form button i").addClass("fa-spinner fa-spin");
+ /* search */
+  function register_search(form, list, generateHTML) {
+    var my_vms = [];
 
-      $.get("/dashboard/vm/list/", function(result) {
-        for(var i in result) {
-          my_vms.push({
-            'pk': result[i].pk,
-            'name': result[i].name,
-            'state': result[i].state,
-            'fav': result[i].fav,
-            'host': result[i].host,
-            'icon': result[i].icon,
-            'status': result[i].status,
-            'owner': result[i].owner,
-          });
-        }
-        $("#dashboard-vm-search-input").trigger("keyup");
-        $("#dashboard-vm-search-form button i").removeClass("fa-spinner fa-spin").addClass("fa-search");
-      });
-      return;
-    }
+    form.find('input').keyup(function(e) {
+      // if my_vms is empty get a list of our vms
+      if(my_vms.length < 1) {
+        var btn = form.find('button');
+        btn.find('i').addClass("fa-spinner fa-spin");
 
-    input = $("#dashboard-vm-search-input").val().toLowerCase();
-    var search_result = [];
-    var html = '';
-    for(var i in my_vms) {
-      if(my_vms[i].name.toLowerCase().indexOf(input) != -1 || my_vms[i].host.indexOf(input) != -1) {
-        search_result.push(my_vms[i]);
+        $.get(form.prop('action'), function(result) {
+          my_vms = result;
+          $(this).trigger("keyup");
+          btn.find('i').removeClass("fa-spinner fa-spin").addClass("fa-search");
+        });
+        return;
       }
-    }
-    search_result.sort(compareVmByFav);
-    for(i=0; i<5 && i<search_result.length; i++)
-      html += generateVmHTML(search_result[i].pk, search_result[i].name,
-                             search_result[i].owner ? search_result[i].owner : search_result[i].host, search_result[i].icon,
-                             search_result[i].status, search_result[i].fav,
-                             (search_result.length < 5));
-    if(search_result.length === 0)
-      html += '<div class="list-group-item list-group-item-last">' + gettext("No result") + '</div>';
-    $("#dashboard-vm-list").html(html);
-    $('.title-favourite').tooltip({'placement': 'right'});
-  });
 
-  $("#dashboard-vm-search-form").submit(function() {
-    var vm_list_items = $("#dashboard-vm-list .list-group-item");
-    if(vm_list_items.length == 1 && vm_list_items.first().prop("href")) {
-      window.location.href = vm_list_items.first().prop("href");
-      return false;
-    }
-    return true;
-  });
-
-  /* search for nodes */
-  var my_nodes = [];
-  $("#dashboard-node-search-input").keyup(function(e) {
-    // if my_nodes is empty get a list of our nodes
-    if(my_nodes.length < 1) {
-      $.ajaxSetup( { "async": false } );
-      $.get("/dashboard/node/list/", function(result) {
-        for(var i in result) {
-          my_nodes.push({
-            'name': result[i].name,
-            'icon': result[i].icon,
-            'status': result[i].status,
-            'label': result[i].label,
-            'url': result[i].url,
-          });
+      input = $(this).val().toLowerCase();
+      var search_result = [];
+      for(var i in my_vms) {
+        if(my_vms[i].name.toLowerCase().indexOf(input) != -1 ||
+           my_vms[i].host && my_vms[i].host.indexOf(input) != -1) {
+          search_result.push(my_vms[i]);
         }
-      });
-      $.ajaxSetup( { "async": true } );
-    }
-
-    input = $("#dashboard-node-search-input").val().toLowerCase();
-    var search_result = [];
-    var html = '';
-    for(var i in my_nodes) {
-      if(my_nodes[i].name.toLowerCase().indexOf(input) != -1) {
-        search_result.push(my_nodes[i]);
       }
-    }
-    for(i=0; i<5 && i<search_result.length; i++)
-      html += generateNodeHTML(search_result[i].name,
-                             search_result[i].icon, search_result[i].status,
-                             search_result[i].url,
-                             (search_result.length < 5));
-    if(search_result.length === 0)
-      html += '<div class="list-group-item list-group-item-last">' + gettext("No result") + '</div>';
-    $("#dashboard-node-list").html(html);
+      search_result.sort(compareVmByFav);
 
-    html = '';
+      var html = '';
+      var is_last = search_result.length < 5;
 
-    for(i=0; i<5 && i<search_result.length; i++)
-      html += generateNodeTagHTML(search_result[i].name,
-                             search_result[i].icon, search_result[i].status,
-                             search_result[i].label, search_result[i].url);
-    if(search_result.length === 0)
-      html += '<div class="list-group-item list-group-item-last">' + gettext("No result") + '</div>';
-    $("#dashboard-node-taglist").html(html);
+      for(var i=0; i<5 && i<search_result.length; i++)
+        html += generateHTML(search_result[i], is_last);
 
-    // if there is only one result and ENTER is pressed redirect
-    if(e.keyCode == 13 && search_result.length == 1) {
-      window.location.href = search_result[0].url;
-    }
-    if(e.keyCode == 13 && search_result.length > 1 && input.length > 0) {
-      window.location.href = "/dashboard/node/list/?s=" + input;
-    }
-  });
+      if(search_result.length === 0)
+        html += '<div class="list-group-item list-group-item-last">' + gettext("No result") + '</div>';
 
-  /* search for groups */
-  var my_groups = [];
-  $("#dashboard-group-search-input").keyup(function(e) {
-    // if my_groups is empty get a list of our groups
-      if(my_groups.length < 1) {
-      $.ajaxSetup( { "async": false } );
-      $.get("/dashboard/group/list/", function(result) {
-        for(var i in result) {
-          my_groups.push({
-            'url': result[i].url,
-            'name': result[i].name,
-          });
-        }
-      });
-      $.ajaxSetup( { "async": true } );
-    }
+      list.html(html);
+      $('.title-favourite').tooltip({'placement': 'right'});
+    });
 
-    input = $("#dashboard-group-search-input").val().toLowerCase();
-    var search_result = [];
-    var html = '';
-    for(var i in my_groups) {
-      if(my_groups[i].name.toLowerCase().indexOf(input) != -1) {
-        search_result.push(my_groups[i]);
+    form.submit(function() {
+      var vm_list_items = list.find(".list-group-item");
+      if(vm_list_items.length == 1 && vm_list_items.first().prop("href")) {
+        window.location.href = vm_list_items.first().prop("href");
+        return false;
       }
-    }
-    for(i=0; i<5 && i<search_result.length; i++)
-      html += generateGroupHTML(search_result[i].url, search_result[i].name, search_result.length < 5);
-    if(search_result.length === 0)
-      html += '<div class="list-group-item list-group-item-last">' + gettext("No result") + '</div>';
-    $("#dashboard-group-list").html(html);
+      return true;
+    });
+  }
 
-    // if there is only one result and ENTER is pressed redirect
-    if(e.keyCode == 13 && search_result.length == 1) {
-      window.location.href = search_result[0].url;
-    }
-    if(e.keyCode == 13 && search_result.length > 1 && input.length > 0) {
-      window.location.href = "/dashboard/group/list/?s=" + input;
-    }
-  });
+  register_search($("#dashboard-vm-search-form"), $("#dashboard-vm-list"), generateVmHTML);
+  register_search($("#dashboard-node-search-form"), $("#dashboard-node-list"), generateNodeHTML);
+  register_search($("#dashboard-group-search-form"), $("#dashboard-group-list"), generateGroupHTML);
+  register_search($("#dashboard-user-search-form"), $("#dashboard-user-list"), generateUserHTML);
 
   /* notification message toggle */
   $(document).on('click', ".notification-message-subject", function() {
@@ -364,40 +269,40 @@ $(function () {
   });
 });
 
-function generateVmHTML(pk, name, host, icon, _status, fav, is_last) {
-  return '<a href="/dashboard/vm/' + pk + '/" class="list-group-item' +
-         (is_last ? ' list-group-item-last' : '') + '">' +      
-        '<span class="index-vm-list-name">' + 
-          '<i class="fa ' + icon + '" title="' + _status + '"></i> ' + safe_tags_replace(name) +
-        '</span>' + 
-        '<small class="text-muted index-vm-list-host"> ' + host + '</small>' +
-        '<div class="pull-right dashboard-vm-favourite" data-vm="' + pk + '">' +
-          (fav ? '<i class="fa fa-star text-primary title-favourite" title="' + gettext("Unfavourite") + '"></i>' :
-          '<i class="fa fa-star-o text-primary title-favourite" title="' + gettext("Mark as favorite") + '"></i>' ) +
-        '</div>' +
-      '<div style="clear: both;"></div>' +
-      '</a>';
-}
-
-function generateGroupHTML(url, name, is_last) {
-  return '<a href="' + url + '" class="list-group-item real-link' + (is_last ? " list-group-item-last" : "") +'">'+
-         '<i class="fa fa-users"></i> '+ safe_tags_replace(name) +
+function generateVmHTML(data, is_last) {
+  return '<a href="' + data.url + '" class="list-group-item' +
+         (is_last ? ' list-group-item-last' : '') + '">' +
+         '<span class="index-vm-list-name">' +
+         '<i class="fa ' + data.icon + '" title="' + data.status + '"></i> ' + safe_tags_replace(data.name) +
+         '</span>' +
+         '<small class="text-muted index-vm-list-host"> ' + data.host + '</small>' +
+         '<div class="pull-right dashboard-vm-favourite" data-vm="' + data.pk + '">' +
+         (data.fav ? '<i class="fa fa-star text-primary title-favourite" title="' + gettext("Unfavourite") + '"></i>' :
+         '<i class="fa fa-star-o text-primary title-favourite" title="' + gettext("Mark as favorite") + '"></i>' ) +
+         '</div>' +
+         '<div style="clear: both;"></div>' +
          '</a>';
 }
 
-function generateNodeHTML(name, icon, _status, url, is_last) {
-  return '<a href="' + url + '" class="list-group-item real-link' + (is_last ? ' list-group-item-last' : '') + '">' +
-        '<span class="index-node-list-name">' +
-        '<i class="fa ' + icon + '" title="' + _status + '"></i> ' + safe_tags_replace(name) +
-        '</span>' +
-        '<div style="clear: both;"></div>' +
-        '</a>';
+function generateGroupHTML(data, is_last) {
+  return '<a href="' + data.url + '" class="list-group-item real-link' + (is_last ? " list-group-item-last" : "") +'">'+
+         '<i class="fa fa-users"></i> '+ safe_tags_replace(data.name) +
+         '</a>';
 }
 
-function generateNodeTagHTML(name, icon, _status, label , url) {
-  return '<a href="' + url + '" class="label ' + label + '" >' +
-        '<i class="fa ' + icon + '" title="' + _status + '"></i> ' + safe_tags_replace(name) +
-        '</a> ';
+function generateUserHTML(data, is_last) {
+  return '<a href="' + data.url + '" class="list-group-item real-link' + (is_last ? " list-group-item-last" : "") +'">'+
+         '<i class="fa fa-user"></i> '+ safe_tags_replace(data.name) +
+         '</a>';
+}
+
+function generateNodeHTML(data, is_last) {
+  return '<a href="' + data.url + '" class="list-group-item real-link' + (is_last ? ' list-group-item-last' : '') + '">' +
+         '<span class="index-node-list-name">' +
+         '<i class="fa ' + data.icon + '" title="' + data.status + '"></i> ' + safe_tags_replace(data.name) +
+         '</span>' +
+         '<div style="clear: both;"></div>' +
+         '</a>';
 }
 
 /* copare vm-s by fav, pk order */

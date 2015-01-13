@@ -950,6 +950,7 @@ class VmList(LoginRequiredMixin, FilterMixin, ListView):
                 destroyed_at=None).all()
             instances = [{
                 'pk': i.pk,
+                'url': reverse('dashboard.views.detail', args=[i.pk]),
                 'name': i.name,
                 'icon': i.get_status_icon(),
                 'host': i.short_hostname,
