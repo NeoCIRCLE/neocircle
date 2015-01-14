@@ -95,10 +95,10 @@ class VmSaveForm(OperationForm):
         if default:
             self.fields['name'].initial = default
         if clone:
-            self.fields.insert(2, "clone", forms.BooleanField(
+            self.fields["clone"] = forms.BooleanField(
                 required=False, label=_("Clone template permissions"),
                 help_text=_("Clone the access list of parent template. Useful "
-                            "for updating a template.")))
+                            "for updating a template."))
 
 
 class VmCustomizeForm(forms.Form):
@@ -749,9 +749,9 @@ class VmRenewForm(OperationForm):
         default = kwargs.pop('default')
         super(VmRenewForm, self).__init__(*args, **kwargs)
 
-        self.fields.insert(0, 'lease', forms.ModelChoiceField(
+        self.fields['lease'] = forms.ModelChoiceField(
             queryset=choices, initial=default, required=False,
-            empty_label=None, label=_('Length')))
+            empty_label=None, label=_('Length'))
         if len(choices) < 2:
             self.fields['lease'].widget = HiddenInput()
             self.fields['save'].widget = HiddenInput()
@@ -771,9 +771,9 @@ class VmMigrateForm(forms.Form):
         default = kwargs.pop('default')
         super(VmMigrateForm, self).__init__(*args, **kwargs)
 
-        self.fields.insert(0, 'to_node', forms.ModelChoiceField(
+        self.fields['to_node'] = forms.ModelChoiceField(
             queryset=choices, initial=default, required=False,
-            widget=forms.RadioSelect(), label=_("Node")))
+            widget=forms.RadioSelect(), label=_("Node"))
 
 
 class VmStateChangeForm(OperationForm):
@@ -834,9 +834,9 @@ class VmDiskResizeForm(OperationForm):
 
         super(VmDiskResizeForm, self).__init__(*args, **kwargs)
 
-        self.fields.insert(0, 'disk', forms.ModelChoiceField(
+        self.fields['disk'] = forms.ModelChoiceField(
             queryset=choices, initial=self.disk, required=True,
-            empty_label=None, label=_('Disk')))
+            empty_label=None, label=_('Disk'))
         if self.disk:
             self.fields['disk'].widget = HiddenInput()
             self.fields['size'].initial += self.disk.size
@@ -870,9 +870,9 @@ class VmDiskRemoveForm(OperationForm):
 
         super(VmDiskRemoveForm, self).__init__(*args, **kwargs)
 
-        self.fields.insert(0, 'disk', forms.ModelChoiceField(
+        self.fields['disk'] = forms.ModelChoiceField(
             queryset=choices, initial=self.disk, required=True,
-            empty_label=None, label=_('Disk')))
+            empty_label=None, label=_('Disk'))
         if self.disk:
             self.fields['disk'].widget = HiddenInput()
 
@@ -915,9 +915,9 @@ class VmRemoveInterfaceForm(OperationForm):
 
         super(VmRemoveInterfaceForm, self).__init__(*args, **kwargs)
 
-        self.fields.insert(0, 'interface', forms.ModelChoiceField(
+        self.fields['interface'] = forms.ModelChoiceField(
             queryset=choices, initial=self.interface, required=True,
-            empty_label=None, label=_('Interface')))
+            empty_label=None, label=_('Interface'))
         if self.interface:
             self.fields['interface'].widget = HiddenInput()
 
@@ -959,10 +959,10 @@ class VmDeployForm(OperationForm):
         super(VmDeployForm, self).__init__(*args, **kwargs)
 
         if choices is not None:
-            self.fields.insert(0, 'node', forms.ModelChoiceField(
+            self.fields['node'] = forms.ModelChoiceField(
                 queryset=choices, required=False, label=_('Node'), help_text=_(
                     "Deploy virtual machine to this node "
-                    "(blank allows scheduling automatically).")))
+                    "(blank allows scheduling automatically)."))
 
 
 class VmPortRemoveForm(OperationForm):
@@ -972,9 +972,9 @@ class VmPortRemoveForm(OperationForm):
 
         super(VmPortRemoveForm, self).__init__(*args, **kwargs)
 
-        self.fields.insert(0, 'rule', forms.ModelChoiceField(
+        self.fields['rule'] = forms.ModelChoiceField(
             queryset=choices, initial=self.rule, required=True,
-            empty_label=None, label=_('Port')))
+            empty_label=None, label=_('Port'))
         if self.rule:
             self.fields['rule'].widget = HiddenInput()
 
@@ -991,9 +991,9 @@ class VmPortAddForm(OperationForm):
 
         super(VmPortAddForm, self).__init__(*args, **kwargs)
 
-        self.fields.insert(0, 'host', forms.ModelChoiceField(
+        self.fields['host'] = forms.ModelChoiceField(
             queryset=choices, initial=self.host, required=True,
-            empty_label=None, label=_('Host')))
+            empty_label=None, label=_('Host'))
         if self.host:
             self.fields['host'].widget = HiddenInput()
 
