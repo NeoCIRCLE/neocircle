@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
+from collections import OrderedDict
+
 from netaddr import IPNetwork
 from django.views.generic import (TemplateView, UpdateView, DeleteView,
                                   CreateView)
@@ -597,10 +599,25 @@ class RuleList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
     template_name = "network/rule-list.html"
     table_pagination = False
 
+    def get_context_data(self, **kwargs):
+        self.types = OrderedDict([
+            ('vlan', _("Vlan")), ('vlangroup', _("Vlan group")),
+            ('host', _("Host")), ('hostgroup', _("Host group")),
+            ('firewall', _("Firewall"))
+        ])
+        context = super(RuleList, self).get_context_data(**kwargs)
+        context['types'] = self.types
+        return context
+
     def get_table_data(self):
-        return Rule.objects.select_related('host', 'hostgroup', 'vlan',
-                                           'vlangroup', 'firewall',
-                                           'foreign_network', 'owner')
+        rules = Rule.objects.select_related('host', 'hostgroup', 'vlan',
+                                            'vlangroup', 'firewall',
+                                            'foreign_network', 'owner')
+
+        rule_type = self.request.GET.get("type")
+        if rule_type and rule_type in self.types.keys():
+            rules = rules.filter(**{'%s__isnull' % rule_type: False})
+        return rules
 
 
 class RuleDetail(LoginRequiredMixin, SuperuserRequiredMixin,

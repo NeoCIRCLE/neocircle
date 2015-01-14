@@ -8,11 +8,28 @@
 
 {% block content %}
 <div class="page-header">
-    <a href="{% url "network.rule_create" %}" class="btn btn-success pull-right"><i class="fa fa-plus-circle"></i> {% trans "Create a new rule" %}</a>
-    <h1>{% trans "Rules" %} <small>{% trans "list of all rules" %}</small></h1>
+  <a href="{% url "network.rule_create" %}" class="btn btn-success pull-right">
+    <i class="fa fa-plus-circle"></i> {% trans "Create a new rule" %}
+  </a>
+  <h1>{% trans "Rules" %} <small>{% trans "list of all rules" %}</small></h1>
 </div>
 
+
+<ul class="nav nav-pills" style="margin: 5px 0 20px 0;">
+  <li class="disabled">
+    <a href="#">{% trans "Filter by types" %}</a>
+  </li>
+  <li {% if not request.GET.type %} class="active"{% endif %}>
+    <a href="{{ request.path }}">{% trans "ALL" %}</a>
+  </li>
+  {% for k, v in types.items %}
+    <li{% if request.GET.type == k %} class="active"{% endif %}>
+      <a href="?type={{ k }}">{{ v }}</a>
+    </li>
+  {% endfor %}
+</ul>
+
 <div class="table-responsive">
-    {% render_table table %}
+  {% render_table table %}
 </div>
 {% endblock %}
