@@ -337,6 +337,9 @@ class DiskRemoveView(DeleteViewBase):
         template.remove_disk(disk)
         disk.destroy()
 
+    def get_success_url(self):
+        return self.request.POST.get("next") or "/"
+
 
 class LeaseCreate(LoginRequiredMixin, PermissionRequiredMixin,
                   SuccessMessageMixin, CreateView):
