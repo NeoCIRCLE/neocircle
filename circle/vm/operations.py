@@ -740,7 +740,7 @@ class SaveAsTemplateOperation(InstanceOperation):
             'name': name or self._rename(self.instance.name),
             'num_cores': self.instance.num_cores,
             'owner': user,
-            'parent': self.instance.template,  # Can be problem
+            'parent': self.instance.template or None,  # Can be problem
             'priority': self.instance.priority,
             'ram_size': self.instance.ram_size,
             'raw_data': self.instance.raw_data,
