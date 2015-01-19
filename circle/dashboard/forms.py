@@ -41,6 +41,7 @@ from django.forms.widgets import TextInput, HiddenInput
 from django.template import Context
 from django.template.loader import render_to_string
 from django.utils.html import escape, format_html
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 from sizefield.widgets import FileSizeWidget
 from django.core.urlresolvers import reverse_lazy
@@ -951,18 +952,45 @@ class VmAddInterfaceForm(OperationForm):
         self.fields['vlan'] = field
 
 
+class DeployChoiceField(forms.ModelChoiceField):
+    def __init__(self, *args, **kwargs):
+        self.instance = kwargs.pop("instance")
+        super(DeployChoiceField, self).__init__(*args, **kwargs)
+
+    def label_from_instance(self, obj):
+        traits = set(obj.traits.all())
+        req_traits = set(self.instance.req_traits.all())
+        # if the subset is empty the node satisfies the required traits
+        subset = req_traits - traits
+
+        label = "%s %s" % (
+            "&#xf071" if subset else "&#xf00c;", escape(obj.name),
+        )
+
+        if subset:
+            missing_traits = ", ".join(map(lambda x: escape(x.name), subset))
+            label += _(" (missing_traits: %s)") % missing_traits
+
+        return mark_safe(label)
+
+
 class VmDeployForm(OperationForm):
 
     def __init__(self, *args, **kwargs):
         choices = kwargs.pop('choices', None)
+        instance = kwargs.pop("instance")
 
         super(VmDeployForm, self).__init__(*args, **kwargs)
 
         if choices is not None:
-            self.fields.insert(0, 'node', forms.ModelChoiceField(
+            self.fields.insert(0, 'node', DeployChoiceField(
                 queryset=choices, required=False, label=_('Node'), help_text=_(
                     "Deploy virtual machine to this node "
-                    "(blank allows scheduling automatically).")))
+                    "(blank allows scheduling automatically)."),
+                widget=forms.Select(attrs={
+                    'class': "font-awesome-font",
+                }), instance=instance
+            ))
 
 
 class VmPortRemoveForm(OperationForm):

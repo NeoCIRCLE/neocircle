@@ -143,8 +143,13 @@ class NodeDetailView(LoginRequiredMixin,
     def __remove_trait(self, request):
         try:
             to_remove = request.POST.get('to_remove')
-            self.object = self.get_object()
-            self.object.traits.remove(to_remove)
+            trait = Trait.objects.get(pk=to_remove)
+            node = self.get_object()
+            node.traits.remove(to_remove)
+
+            if not trait.in_use:
+                trait.delete()
+
             message = u"Success"
         except:  # note this won't really happen
             message = u"Not success"
@@ -155,7 +160,7 @@ class NodeDetailView(LoginRequiredMixin,
                 content_type="application/json"
             )
         else:
-            return redirect(self.object.get_absolute_url())
+            return redirect(node.get_absolute_url())
 
 
 class NodeList(LoginRequiredMixin, GraphMixin, SingleTableView):
