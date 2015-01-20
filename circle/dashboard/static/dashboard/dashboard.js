@@ -44,7 +44,7 @@ $(function () {
         if(xhr.status === 403) {
           addMessage(gettext("Only the owners can delete the selected object."), "warning");
         } else {
-          addMessage(gettext("An error occurred. (") + xhr.status + ")", 'danger')
+          addMessage(gettext("An error occurred. (") + xhr.status + ")", 'danger');
         }
       }
     });
@@ -189,8 +189,8 @@ $(function () {
       }
     }
     search_result.sort(compareVmByFav);
-    for(var i=0; i<5 && i<search_result.length; i++)
-      html += generateVmHTML(search_result[i].pk, search_result[i].name, 
+    for(i=0; i<5 && i<search_result.length; i++)
+      html += generateVmHTML(search_result[i].pk, search_result[i].name,
                              search_result[i].owner ? search_result[i].owner : search_result[i].host, search_result[i].icon,
                              search_result[i].status, search_result[i].fav,
                              (search_result.length < 5));
@@ -513,19 +513,19 @@ function addModalConfirmation(func, data) {
   });
 }
 
-function clientInstalledAction(location) {   
+function clientInstalledAction(location) {
   setCookie('downloaded_client', true, 365 * 24 * 60 * 60 * 1000, "/");
   window.location.href = location;
   $('#confirmation-modal').modal("hide");
 }
 
 function setCookie(name, value, seconds, path) {
-  if (seconds!=null) {
+  if (seconds !== null) {
     var today = new Date();
     var expire = new Date();
     expire.setTime(today.getTime() + seconds);
+    document.cookie = name+"="+escape(value)+"; expires="+expire.toUTCString()+"; path="+path;
   }
-  document.cookie = name+"="+escape(value)+"; expires="+expire.toUTCString()+"; path="+path;
 }
 
 /* no js compatibility */
@@ -539,7 +539,7 @@ function getParameterByName(name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
         results = regex.exec(location.search);
-    return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
 // for AJAX calls
@@ -581,7 +581,7 @@ $.ajaxSetup({
 $(function() {
   yourlabs.TextWidget.prototype.getValue = function(choice) {
     return choice.children().html();
-  }
+  };
 });
 
 var tagsToReplace = {

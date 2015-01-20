@@ -1,25 +1,25 @@
 // for AJAX calls
 
-/**                                                                         
- * Getter for user cookies                                                  
- * @param  {String} name Cookie name                                        
- * @return {String}      Cookie value                                       
- */                                                                         
-                                                                            
-function getCookie(name) {                                                  
-  var cookieValue = null;                                                   
-  if (document.cookie && document.cookie != '') {                           
-    var cookies = document.cookie.split(';');                               
-    for (var i = 0; i < cookies.length; i++) {                              
-      var cookie = jQuery.trim(cookies[i]);                                 
-      if (cookie.substring(0, name.length + 1) == (name + '=')) {           
+/**
+ * Getter for user cookies
+ * @param  {String} name Cookie name
+ * @return {String}      Cookie value
+ */
+
+function getCookie(name) {
+  var cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    var cookies = document.cookie.split(';');
+    for (var i = 0; i < cookies.length; i++) {
+      var cookie = jQuery.trim(cookies[i]);
+      if (cookie.substring(0, name.length + 1) == (name + '=')) {
         cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        break;                                                              
-      }                                                                     
-    }                                                                       
-  }                                                                         
-  return cookieValue;                                                       
-} 
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
 
 
 function getURLParameter(name) {
@@ -34,7 +34,7 @@ function doBlink(id, count) {
             $(this).delay(200).queue(function() {
                 $(this).removeClass("has-warning").dequeue();
                 doBlink(id, count-1);});
-            $(this).addClass("has-warning").dequeue()
+            $(this).addClass("has-warning").dequeue();
         });
     }
 }
