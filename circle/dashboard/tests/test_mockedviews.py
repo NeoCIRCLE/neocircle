@@ -389,6 +389,7 @@ class RenewViewTest(unittest.TestCase):
             inst = MagicMock(spec=Instance)
             inst._meta.object_name = "Instance"
             inst.name = 'foo'
+            inst.lease = MagicMock(pk=99)
             inst.renew = Instance._ops['renew'](inst)
             inst.has_level.return_value = True
             go.return_value = inst
@@ -403,6 +404,7 @@ class RenewViewTest(unittest.TestCase):
                 patch('dashboard.views.util.messages') as msg:
             inst = MagicMock(spec=Instance)
             inst._meta.object_name = "Instance"
+            inst.lease = MagicMock(pk=99)
             inst.renew = Instance._ops['renew'](inst)
             inst.renew.async = MagicMock()
             inst.has_level.return_value = True
@@ -421,6 +423,7 @@ class RenewViewTest(unittest.TestCase):
                 patch('dashboard.views.util.messages') as msg:
             inst = MagicMock(spec=Instance)
             inst._meta.object_name = "Instance"
+            inst.lease = MagicMock(pk=99)
             inst.renew = Instance._ops['renew'](inst)
             inst.renew.async = MagicMock()
             inst.has_level.return_value = True
@@ -463,6 +466,7 @@ class RenewViewTest(unittest.TestCase):
         with patch.object(view, 'get_object') as go:
             inst = MagicMock(spec=Instance, pk=11)
             inst._meta.object_name = "Instance"
+            inst.lease = MagicMock(pk=99)
             inst.renew = Instance._ops['renew'](inst)
             inst.renew.async = MagicMock()
             inst.has_level.return_value = False

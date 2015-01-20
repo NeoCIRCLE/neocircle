@@ -110,9 +110,8 @@ class VirtualMachineDescModel(BaseResourceConfigModel):
                                              "for hosting the VM."),
                                  verbose_name=_("required traits"))
     system = TextField(verbose_name=_('operating system'),
-                       help_text=(_('Name of operating system in '
-                                    'format like "%s".') %
-                                  'Ubuntu 12.04 LTS Desktop amd64'))
+                       help_text=(_('Name of operating system in format like '
+                                    '"Ubuntu 12.04 LTS Desktop amd64".')))
     tags = TaggableManager(blank=True, verbose_name=_("tags"))
     has_agent = BooleanField(verbose_name=_('has agent'), default=True,
                              help_text=_(

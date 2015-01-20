@@ -1151,7 +1151,7 @@ def get_vm_screenshot(request, pk):
         # TODO handle this better
         raise Http404()
 
-    return HttpResponse(image, mimetype="image/png")
+    return HttpResponse(image, content_type="image/png")
 
 
 class InstanceActivityDetail(CheckedDetailView):
