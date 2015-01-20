@@ -50,6 +50,7 @@ try:
     from django.http import JsonResponse
 except ImportError:
     from django.utils import simplejson
+
     class JsonResponse(HttpResponse):
         """JSON response for Django < 1.7
         https://gist.github.com/philippeowagner/3179eb475fe1795d6515
