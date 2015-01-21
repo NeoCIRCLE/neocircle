@@ -37,7 +37,7 @@ from django.shortcuts import redirect, get_object_or_404
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_POST
 from django.views.generic import (
-    TemplateView, DetailView, View, UpdateView, CreateView,
+    TemplateView, View, UpdateView, CreateView,
 )
 from django_sshkey.models import UserKey
 
@@ -50,7 +50,7 @@ from vm.models import Instance, InstanceTemplate
 from ..forms import (
     CircleAuthenticationForm, MyProfileForm, UserCreationForm, UnsubscribeForm,
     UserKeyForm, CirclePasswordChangeForm, ConnectCommandForm,
-    UserListSearchForm,
+    UserListSearchForm, UserEditForm,
 )
 from ..models import Profile, GroupProfile, ConnectCommand
 from ..tables import (
@@ -294,11 +294,13 @@ class UserCreationView(LoginRequiredMixin, PermissionRequiredMixin,
         return val
 
 
-class ProfileView(LoginRequiredMixin, DetailView):
+class ProfileView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = "dashboard/profile.html"
     model = User
     slug_field = "username"
     slug_url_kwarg = "username"
+    form_class = UserEditForm
+    success_message = _("Successfully modified user.")
 
     def get(self, *args, **kwargs):
         user = self.request.user
@@ -358,6 +360,15 @@ class ProfileView(LoginRequiredMixin, DetailView):
             context['login_token'] = TokenLogin.get_token_url(
                 user, self.request.user)
         return context
+
+    def post(self, request, *args, **kwargs):
+        if not request.user.has_perm('auth.change_user'):
+            raise PermissionDenied()
+        return super(ProfileView, self).post(self, request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse('dashboard.views.profile',
+                       kwargs=self.kwargs)
 
 
 @require_POST

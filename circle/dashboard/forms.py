@@ -1286,6 +1286,35 @@ class UserCreationForm(OrgUserCreationForm):
         return user
 
 
+class UserEditForm(forms.ModelForm):
+    instance_limit = forms.IntegerField(
+        label=_('Instance limit'),
+        min_value=0, widget=NumberInput)
+
+    def __init__(self, *args, **kwargs):
+        super(UserEditForm, self).__init__(*args, **kwargs)
+        self.fields["instance_limit"].initial = (
+            self.instance.profile.instance_limit)
+
+    class Meta:
+        model = User
+        fields = ('email', 'first_name', 'last_name', 'instance_limit',
+                  'is_active')
+
+    def save(self, commit=True):
+        user = super(UserEditForm, self).save()
+        user.profile.instance_limit = (
+            self.cleaned_data['instance_limit'] or None)
+        user.profile.save()
+        return user
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.add_input(Submit("submit", _("Save")))
+        return helper
+
+
 class AclUserOrGroupAddForm(forms.Form):
     name = forms.CharField(widget=autocomplete_light.TextWidget(
         'AclUserGroupAutocomplete',
