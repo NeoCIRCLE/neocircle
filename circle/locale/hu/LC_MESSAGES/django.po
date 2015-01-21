@@ -6,9 +6,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-11-14 13:44+0100\n"
-"PO-Revision-Date: 2014-11-14 14:00+0100\n"
-"Last-Translator:   <asd@example.org>\n"
+"POT-Creation-Date: 2015-01-21 14:22+0100\n"
+"PO-Revision-Date: 2015-01-21 14:37+0116\n"
+"Last-Translator: Daniel Bach <bd@doszgep.hu>\n"
 "Language-Team: Hungarian <cloud@ik.bme.hu>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -18,11 +18,11 @@ msgstr ""
 "X-Generator: Lokalize 1.5\n"
 "X-Translated-Using: django-rosetta 0.7.4\n"
 
-#: circle/settings/base.py:123
+#: circle/settings/base.py:118
 msgid "English"
 msgstr "Angol"
 
-#: circle/settings/base.py:124
+#: circle/settings/base.py:119
 msgid "Hungarian"
 msgstr "Magyar"
 
@@ -58,8 +58,8 @@ msgstr "feladat uuid"
 
 #: common/models.py:157
 #: dashboard/templates/dashboard/instanceactivity_detail.html:37
-#: firewall/models.py:284 vm/models/common.py:84 vm/models/instance.py:131
-#: vm/models/instance.py:212
+#: firewall/models.py:284 vm/models/common.py:84 vm/models/instance.py:130
+#: vm/models/instance.py:211
 msgid "user"
 msgstr "felhasználó"
 
@@ -96,15 +96,15 @@ msgstr "eredmény"
 msgid "Human readable result of activity."
 msgstr "A tevékenység eredménye olvasható formában."
 
-#: common/models.py:543
+#: common/models.py:549
 msgid "Permission Denied"
 msgstr "Hozzáférés megtagadva"
 
-#: common/models.py:545
+#: common/models.py:551
 msgid "Unknown error"
 msgstr "Ismeretlen hiba"
 
-#: common/models.py:546
+#: common/models.py:552
 #, python-format
 msgid "Unknown error: %(ex)s"
 msgstr "Ismeretlen hiba: %(ex)s"
@@ -122,57 +122,57 @@ msgstr "%s (csoport)"
 msgid "no matches found"
 msgstr "nincs találat"
 
-#: dashboard/forms.py:67
+#: dashboard/forms.py:68
 msgid "idle"
 msgstr "üresjáratban"
 
-#: dashboard/forms.py:68
+#: dashboard/forms.py:69
 msgid "normal"
 msgstr "normál"
 
-#: dashboard/forms.py:69
+#: dashboard/forms.py:70
 msgid "server"
 msgstr "szerver"
 
-#: dashboard/forms.py:70
+#: dashboard/forms.py:71
 msgid "realtime"
 msgstr "valós idejű"
 
-#: dashboard/forms.py:88 dashboard/forms.py:805 dashboard/forms.py:895
-#: dashboard/forms.py:1246 dashboard/tables.py:228
+#: dashboard/forms.py:89 dashboard/forms.py:806 dashboard/forms.py:896
+#: dashboard/forms.py:1332 dashboard/tables.py:233
 #: dashboard/templates/dashboard/_vm-create-2.html:20
-#: dashboard/templates/dashboard/vm-list.html:60
-#: dashboard/templates/dashboard/vm-detail/home.html:8 firewall/models.py:296
+#: dashboard/templates/dashboard/vm-detail/home.html:8
+#: dashboard/templates/dashboard/vm-list.html:62 firewall/models.py:296
 #: network/templates/network/index.html:24
 #: network/templates/network/switch-port-edit.html:45
 msgid "Name"
 msgstr "Név"
 
-#: dashboard/forms.py:89 vm/models/instance.py:136
+#: dashboard/forms.py:90 vm/models/instance.py:135
 msgid "Human readable name of template."
 msgstr "A sablon olvasható neve."
 
-#: dashboard/forms.py:99
+#: dashboard/forms.py:100
 msgid "Clone template permissions"
 msgstr "Sablon jogosultságainak klónozása"
 
-#: dashboard/forms.py:100
+#: dashboard/forms.py:101
 msgid ""
 "Clone the access list of parent template. Useful for updating a template."
 msgstr ""
 "A szülősablon hozzáférési listájának másolása. Sablonok frissítéséhez "
 "ajánlott."
 
-#: dashboard/forms.py:211 dashboard/templates/dashboard/_vm-create-1.html:53
+#: dashboard/forms.py:212 dashboard/templates/dashboard/_vm-create-1.html:59
 #: dashboard/templates/dashboard/vm-detail/home.html:33
 msgid "Description"
 msgstr "Leírás"
 
-#: dashboard/forms.py:222 dashboard/forms.py:269
+#: dashboard/forms.py:223 dashboard/forms.py:270
 msgid "Directory identifier"
 msgstr "Címtári azonosító"
 
-#: dashboard/forms.py:225
+#: dashboard/forms.py:226
 msgid ""
 "If you select an item here, the members of this directory group will be "
 "automatically added to the group at the time they log in. Please note that "
@@ -183,7 +183,7 @@ msgstr ""
 "kerülnek, ha bejelentkeznek. Vegye figyelembe, hogy más, az önhöz hasonló "
 "jogosultságú felhasználók is csoportadminisztrátorrá válhatnak."
 
-#: dashboard/forms.py:249
+#: dashboard/forms.py:250
 #: dashboard/templates/dashboard/store/_list-box.html:57
 #: network/templates/network/blacklist-create.html:8
 #: network/templates/network/dashboard.html:25
@@ -205,13 +205,13 @@ msgstr ""
 msgid "Create"
 msgstr "Létrehozás"
 
-#: dashboard/forms.py:277 dashboard/forms.py:1166 dashboard/forms.py:1183
-#: dashboard/forms.py:1209 dashboard/forms.py:1259 dashboard/forms.py:1300
-#: dashboard/forms.py:1320 dashboard/forms.py:1349
+#: dashboard/forms.py:278 dashboard/forms.py:1224 dashboard/forms.py:1241
+#: dashboard/forms.py:1267 dashboard/forms.py:1302 dashboard/forms.py:1345
+#: dashboard/forms.py:1386 dashboard/forms.py:1406 dashboard/forms.py:1435
 #: dashboard/templates/dashboard/_manage_access.html:73
 #: dashboard/templates/dashboard/connect-command-create.html:37
 #: dashboard/templates/dashboard/connect-command-edit.html:37
-#: dashboard/templates/dashboard/group-detail.html:140
+#: dashboard/templates/dashboard/group-detail.html:130
 #: dashboard/templates/dashboard/lease-edit.html:96
 #: dashboard/templates/dashboard/template-tx-owner.html:12
 #: dashboard/templates/dashboard/vm-detail/tx-owner.html:12
@@ -221,70 +221,70 @@ msgstr "Létrehozás"
 msgid "Save"
 msgstr "Mentés"
 
-#: dashboard/forms.py:307 dashboard/forms.py:966
+#: dashboard/forms.py:308 dashboard/forms.py:1024
 #: dashboard/templates/dashboard/_vm-remove-port.html:15
-#: dashboard/templates/dashboard/vm-detail.html:99
+#: dashboard/templates/dashboard/vm-detail.html:101
 msgid "Host"
 msgstr "Gép"
 
-#: dashboard/forms.py:378 dashboard/forms.py:776 dashboard/forms.py:933
-#: dashboard/templates/dashboard/node-detail.html:4
-#: dashboard/templates/dashboard/vm-list.html:85
+#: dashboard/forms.py:379 dashboard/forms.py:777 dashboard/forms.py:987
+#: dashboard/templates/dashboard/node-detail.html:5
 #: dashboard/templates/dashboard/vm-detail/home.html:116
+#: dashboard/templates/dashboard/vm-list.html:87
 msgid "Node"
 msgstr "Csomópont"
 
-#: dashboard/forms.py:457
+#: dashboard/forms.py:458
 msgid "Networks"
 msgstr "Hálózatok"
 
-#: dashboard/forms.py:683
+#: dashboard/forms.py:684
 msgid "Suspend in"
 msgstr "Felfüggesztés ideje"
 
-#: dashboard/forms.py:687 dashboard/forms.py:711
+#: dashboard/forms.py:688 dashboard/forms.py:712
 msgid "hours"
 msgstr "óra"
 
-#: dashboard/forms.py:692 dashboard/forms.py:716
+#: dashboard/forms.py:693 dashboard/forms.py:717
 msgid "days"
 msgstr "nap"
 
-#: dashboard/forms.py:697 dashboard/forms.py:721
+#: dashboard/forms.py:698 dashboard/forms.py:722
 msgid "weeks"
 msgstr "hét"
 
-#: dashboard/forms.py:702 dashboard/forms.py:726
+#: dashboard/forms.py:703 dashboard/forms.py:727
 msgid "months"
 msgstr "hónap"
 
-#: dashboard/forms.py:707
+#: dashboard/forms.py:708
 msgid "Delete in"
 msgstr "Törlés ideje"
 
-#: dashboard/forms.py:732 dashboard/templates/dashboard/template-edit.html:63
+#: dashboard/forms.py:733 dashboard/templates/dashboard/template-edit.html:64
 #: network/forms.py:60
 msgid "Save changes"
 msgstr "Változások mentése"
 
-#: dashboard/forms.py:742
+#: dashboard/forms.py:743
 msgid "Set expiration times even if they are shorter than the current value."
 msgstr ""
 "Akkor is állítsa át a lejárati időket, ha rövidebbek lesznek a jelenleginél."
 
-#: dashboard/forms.py:745
+#: dashboard/forms.py:746
 msgid "Save selected lease."
 msgstr "Kiválasztott bérlet mentése."
 
-#: dashboard/forms.py:754
+#: dashboard/forms.py:755
 msgid "Length"
 msgstr "Hossz"
 
-#: dashboard/forms.py:762
+#: dashboard/forms.py:763
 msgid "Live migration"
 msgstr "Live migration"
 
-#: dashboard/forms.py:764
+#: dashboard/forms.py:765
 msgid ""
 "Live migration is a way of moving virtual machines between hosts with a "
 "service interruption of at most some seconds. Please note that it can take "
@@ -295,209 +295,233 @@ msgstr ""
 "hogy ez terhelt gépek esetén sokáig tarthat és nagy hálózati forgalommal "
 "jár."
 
-#: dashboard/forms.py:782
+#: dashboard/forms.py:783
 msgid "Forcibly interrupt all running activities."
 msgstr "Futó tevékenységek erőltetett befejezése."
 
-#: dashboard/forms.py:783
+#: dashboard/forms.py:784
 msgid "Set all activities to finished state, but don't interrupt any tasks."
 msgstr ""
 "Minden tevékenység befejezettre állítása (a feladatok megszakítása nélkül)."
 
-#: dashboard/forms.py:786
+#: dashboard/forms.py:787
 msgid "New status"
 msgstr "Új állapot"
 
-#: dashboard/forms.py:787
+#: dashboard/forms.py:788
 msgid "Reset node"
 msgstr "Csomópont visszaállítása"
 
-#: dashboard/forms.py:801
+#: dashboard/forms.py:802
 msgid "use emergency state change"
 msgstr "vész-állapotváltás használata"
 
-#: dashboard/forms.py:807 dashboard/forms.py:827
+#: dashboard/forms.py:808 dashboard/forms.py:828
 #: dashboard/templates/dashboard/store/_list-box.html:117
 msgid "Size"
 msgstr "Méret"
 
-#: dashboard/forms.py:808
+#: dashboard/forms.py:809
 msgid "Size of disk to create in bytes or with units like MB or GB."
 msgstr "Létrehozandó lemez mérete byte-okban vagy mértékegységgel (MB, GB)."
 
-#: dashboard/forms.py:820 dashboard/forms.py:849
+#: dashboard/forms.py:821 dashboard/forms.py:850
 msgid "Invalid format, you can use  GB or MB!"
 msgstr "Érvénytelen formátum. „GB” és „MB” is használható."
 
-#: dashboard/forms.py:828
+#: dashboard/forms.py:829
 msgid "Size to resize the disk in bytes or with units like MB or GB."
 msgstr "A lemez kívánt mérete byte-okban vagy mértékegységgel (MB, GB)."
 
-#: dashboard/forms.py:839 dashboard/forms.py:875
+#: dashboard/forms.py:840 dashboard/forms.py:876
 msgid "Disk"
 msgstr "Lemez"
 
-#: dashboard/forms.py:852
+#: dashboard/forms.py:853
 msgid "Disk size must be greater than the actual size."
 msgstr "A lemez mérete nagyobb kell legyen a jelenleginél."
 
-#: dashboard/forms.py:861 dashboard/forms.py:886
+#: dashboard/forms.py:862 dashboard/forms.py:887
 #, python-format
 msgid "<label>Disk:</label> %s"
 msgstr "<label>Lemez:</label> %s"
 
-#: dashboard/forms.py:896
+#: dashboard/forms.py:897
 msgid "URL"
 msgstr "URL"
 
-#: dashboard/forms.py:906
+#: dashboard/forms.py:907
 msgid "Could not find filename in URL, please specify a name explicitly."
 msgstr "Az URL-ben nem található fájlnév. Kérem adja meg explicite."
 
-#: dashboard/forms.py:917
+#: dashboard/forms.py:921
+#| msgid "Interfaces"
+msgid "Interface"
+msgstr "Interfészek"
+
+#: dashboard/forms.py:933
+#, python-brace-format
+#| msgid "<label>Host:</label> {0}"
+msgid "<label>Vlan:</label> {0}"
+msgstr "<label>Vlan:</label> {0}"
+
+#: dashboard/forms.py:948
 #: dashboard/templates/dashboard/_vm-remove-port.html:17
-#: dashboard/templates/dashboard/node-detail/resources.html:27
+#: dashboard/templates/dashboard/node-detail/resources.html:28
 msgid "Vlan"
 msgstr "Vlan"
 
-#: dashboard/forms.py:920
+#: dashboard/forms.py:951
 msgid "No more networks."
 msgstr "Nincs több hálózat."
 
-#: dashboard/forms.py:934
+#: dashboard/forms.py:972
+#, python-format
+msgid " (missing_traits: %s)"
+msgstr "(hiányzó jellemzők: %s)"
+
+#: dashboard/forms.py:988
 msgid ""
 "Deploy virtual machine to this node (blank allows scheduling automatically)."
 msgstr ""
 "A virtuális gép elindítása ezen a csomóponton (üresen hagyva automatikus "
 "ütemezés)."
 
-#: dashboard/forms.py:947 dashboard/forms.py:953
+#: dashboard/forms.py:1005 dashboard/forms.py:1011
 #: dashboard/templates/dashboard/_vm-remove-port.html:13
 msgid "Port"
 msgstr "Port"
 
-#: dashboard/forms.py:956 dashboard/templates/dashboard/vm-detail.html:97
+#: dashboard/forms.py:1014 dashboard/templates/dashboard/vm-detail.html:99
 msgid "Protocol"
 msgstr "Protokoll"
 
-#: dashboard/forms.py:978
+#: dashboard/forms.py:1036
 #, python-brace-format
 msgid "<label>Host:</label> {0}"
 msgstr "<label>Gép:</label> {0}"
 
-#: dashboard/forms.py:1006 dashboard/templates/dashboard/profile.html:31
-#: dashboard/templates/dashboard/vm-detail.html:115
+#: dashboard/forms.py:1064 dashboard/templates/dashboard/profile.html:32
+#: dashboard/templates/dashboard/vm-detail.html:117
 msgid "Username"
 msgstr "Felhasználónév"
 
-#: dashboard/forms.py:1020 dashboard/templates/dashboard/vm-detail.html:117
+#: dashboard/forms.py:1078 dashboard/templates/dashboard/vm-detail.html:119
 msgid "Password"
 msgstr "Jelszó"
 
-#: dashboard/forms.py:1025
+#: dashboard/forms.py:1083
 msgid "Sign in"
 msgstr "Bejelentkezés"
 
-#: dashboard/forms.py:1048 dashboard/templates/dashboard/profile.html:37
+#: dashboard/forms.py:1106 dashboard/templates/dashboard/profile.html:38
 msgid "Email address"
 msgstr "E-mail cím"
 
-#: dashboard/forms.py:1053
+#: dashboard/forms.py:1111
 msgid "Reset password"
 msgstr "Új jelszó"
 
-#: dashboard/forms.py:1069 dashboard/forms.py:1192
+#: dashboard/forms.py:1127 dashboard/forms.py:1250
 msgid "Change password"
 msgstr "Jelszóváltoztatás"
 
-#: dashboard/forms.py:1141
+#: dashboard/forms.py:1199
 msgid "Add trait"
 msgstr "Jellemző hozzáadása"
 
-#: dashboard/forms.py:1223 dashboard/templates/dashboard/lease-edit.html:86
+#: dashboard/forms.py:1280
+#| msgid "Instance count"
+msgid "Instance limit"
+msgstr "Példány limit"
+
+#: dashboard/forms.py:1309 dashboard/templates/dashboard/lease-edit.html:86
 msgid "Name of group or user"
 msgstr "Csoport vagy felhasználó neve"
 
-#: dashboard/forms.py:1231 dashboard/forms.py:1240
+#: dashboard/forms.py:1317 dashboard/forms.py:1326
 msgid "Name of user"
 msgstr "Felhasználó neve"
 
-#: dashboard/forms.py:1233 dashboard/forms.py:1242
+#: dashboard/forms.py:1319 dashboard/forms.py:1328
 msgid "E-mail address or identifier of user"
 msgstr "A felhasználó e-mail címe vagy azonosítója"
 
-#: dashboard/forms.py:1248
+#: dashboard/forms.py:1334
 msgid "Key"
 msgstr "Kulcs"
 
-#: dashboard/forms.py:1249
+#: dashboard/forms.py:1335
 msgid "For example: ssh-rsa AAAAB3NzaC1yc2ED..."
 msgstr "Például: ssh-rsa AAAAB3NzaC1yc2ED…"
 
-#: dashboard/forms.py:1335
+#: dashboard/forms.py:1421
 msgid "permissions"
 msgstr "jogosultságok"
 
-#: dashboard/forms.py:1392
+#: dashboard/forms.py:1478
 msgid "owned"
 msgstr "saját"
 
-#: dashboard/forms.py:1393
+#: dashboard/forms.py:1479
 msgid "shared"
 msgstr "osztott"
 
-#: dashboard/forms.py:1394
+#: dashboard/forms.py:1480
 msgid "all"
 msgstr "összes"
 
-#: dashboard/forms.py:1401 dashboard/forms.py:1425
-#: dashboard/templates/dashboard/index-groups.html:21
-#: dashboard/templates/dashboard/index-nodes.html:61
-#: dashboard/templates/dashboard/index-vm.html:57
+#: dashboard/forms.py:1487 dashboard/forms.py:1511 dashboard/forms.py:1530
+#: dashboard/templates/dashboard/index-groups.html:23
+#: dashboard/templates/dashboard/index-nodes.html:40
+#: dashboard/templates/dashboard/index-templates.html:40
+#: dashboard/templates/dashboard/index-users.html:23
+#: dashboard/templates/dashboard/index-vm.html:60
 msgid "Search..."
 msgstr "Keresés..."
 
-#: dashboard/models.py:65 dashboard/templates/dashboard/index-groups.html:39
-#: dashboard/templates/dashboard/index-nodes.html:79
-#: dashboard/templates/dashboard/index-templates.html:38
-#: dashboard/templates/dashboard/index-vm.html:76
+#: dashboard/models.py:68 dashboard/templates/dashboard/index-groups.html:43
+#: dashboard/templates/dashboard/index-nodes.html:60
+#: dashboard/templates/dashboard/index-templates.html:52
+#: dashboard/templates/dashboard/index-users.html:43
+#: dashboard/templates/dashboard/index-vm.html:80
 #: dashboard/templates/dashboard/store/_list-box.html:101
 msgid "new"
 msgstr "új"
 
-#: dashboard/models.py:66
+#: dashboard/models.py:69
 msgid "delivered"
 msgstr "kézbesített"
 
-#: dashboard/models.py:67
+#: dashboard/models.py:70
 msgid "read"
 msgstr "olvasott"
 
-#: dashboard/models.py:108 vm/models/instance.py:98
+#: dashboard/models.py:119 vm/models/instance.py:98
 msgid "access method"
 msgstr "elérés módja"
 
-#: dashboard/models.py:109
+#: dashboard/models.py:120
 msgid "Type of the remote access method."
 msgstr "Távoli elérési mód típusa."
 
-#: dashboard/models.py:110 firewall/models.py:529 firewall/models.py:556
-#: firewall/models.py:943 firewall/models.py:979 firewall/models.py:1000
+#: dashboard/models.py:121 firewall/models.py:529 firewall/models.py:556
+#: firewall/models.py:940 firewall/models.py:976 firewall/models.py:997
 #: storage/models.py:47 storage/models.py:86 vm/models/common.py:65
-#: vm/models/common.py:89 vm/models/common.py:165 vm/models/instance.py:135
-#: vm/models/instance.py:225 vm/models/node.py:65
+#: vm/models/common.py:89 vm/models/common.py:165 vm/models/instance.py:134
+#: vm/models/instance.py:224 vm/models/node.py:121
 msgid "name"
 msgstr "név"
 
-#: dashboard/models.py:111
+#: dashboard/models.py:122
 msgid "Name of your custom command."
 msgstr "Egyedi parancs neve"
 
-#: dashboard/models.py:113
+#: dashboard/models.py:124
 msgid "command template"
 msgstr "parancssablon"
 
-#: dashboard/models.py:114
+#: dashboard/models.py:125
 msgid ""
 "Template for connection command string. Available parameters are: username, "
 "password, host, port."
@@ -505,152 +529,158 @@ msgstr ""
 "Sablon a csatlakozási parancshoz. Elérhető paraméterek: username, password, "
 "host, port."
 
-#: dashboard/models.py:126
+#: dashboard/models.py:137
 msgid "preferred language"
 msgstr "választott nyelv"
 
-#: dashboard/models.py:132 dashboard/models.py:217
+#: dashboard/models.py:143 dashboard/models.py:228
 msgid "Unique identifier of the person, e.g. a student number."
 msgstr "A személy egyedi azonosítója, például hallgatói azonosító."
 
-#: dashboard/models.py:135
+#: dashboard/models.py:146
 msgid "Use Gravatar"
 msgstr "Gravatar használata"
 
-#: dashboard/models.py:136
+#: dashboard/models.py:147
 msgid "Whether to use email address as Gravatar profile image"
 msgstr "Használható-e az e-mail cím a Gravatar profilkép betöltésére"
 
-#: dashboard/models.py:138
+#: dashboard/models.py:149
 msgid "Email notifications"
 msgstr "E-mail értesítések"
 
-#: dashboard/models.py:139
+#: dashboard/models.py:150
 msgid "Whether user wants to get digested email notifications."
 msgstr "A felhasználó kéri-e tömbösített e-mail értesítések küldését."
 
-#: dashboard/models.py:142
+#: dashboard/models.py:153
 msgid "Samba password"
 msgstr "Samba jelszó"
 
-#: dashboard/models.py:144
+#: dashboard/models.py:155
 msgid "Generated password for accessing store from virtual machines."
 msgstr "A tárhely virtuális gépekről való eléréséhez generált jelszó."
 
-#: dashboard/models.py:149
+#: dashboard/models.py:160
 msgid "disk quota"
 msgstr "lemezkvóta"
 
-#: dashboard/models.py:151
+#: dashboard/models.py:162
 msgid "Disk quota in mebibytes."
 msgstr "Lemezkvóta mebibyte-okban."
 
-#: dashboard/models.py:211
+#: dashboard/models.py:222
 msgid "Can use autocomplete."
 msgstr "Használhat automatikus kiegészítést."
 
-#: dashboard/models.py:229 firewall/models.py:285 vm/models/common.py:85
-#: vm/models/instance.py:132 vm/models/instance.py:213
+#: dashboard/models.py:240 firewall/models.py:285 vm/models/common.py:85
+#: vm/models/instance.py:131 vm/models/instance.py:212
 msgid "operator"
 msgstr "operátor"
 
-#: dashboard/models.py:230 firewall/models.py:104 firewall/models.py:390
+#: dashboard/models.py:241 firewall/models.py:104 firewall/models.py:390
 #: firewall/models.py:538 firewall/models.py:561 firewall/models.py:626
-#: firewall/models.py:980 firewall/models.py:1009 vm/models/common.py:86
-#: vm/models/instance.py:133 vm/models/instance.py:214
+#: firewall/models.py:977 firewall/models.py:1006 vm/models/common.py:86
+#: vm/models/instance.py:132 vm/models/instance.py:213
 msgid "owner"
 msgstr "tulajdonos"
 
-#: dashboard/models.py:236
+#: dashboard/models.py:247
 msgid "Unique identifier of the group at the organization."
 msgstr "A csoport egyedi szervezeti azonosítója."
 
-#: dashboard/tables.py:38
+#: dashboard/tables.py:39
 msgid "Overcommit"
 msgstr "Túlfoglalás"
 
-#: dashboard/tables.py:43
+#: dashboard/tables.py:44
 msgid "Status"
 msgstr "Állapot"
 
-#: dashboard/tables.py:58
+#: dashboard/tables.py:59
 msgid "Number of VMs"
 msgstr "VM-ek száma"
 
-#: dashboard/tables.py:64
+#: dashboard/tables.py:65
 msgid "Monitor"
 msgstr "Állapot"
 
-#: dashboard/tables.py:91
+#: dashboard/tables.py:72
+#: dashboard/templates/dashboard/node-detail/resources.html:12
+#| msgid "Host online"
+msgid "Minion online"
+msgstr "Elérhető minionok"
+
+#: dashboard/tables.py:98
 msgid "Number of users"
 msgstr "Felhasználók száma"
 
-#: dashboard/tables.py:98 dashboard/templates/dashboard/base.html:48
+#: dashboard/tables.py:105 dashboard/templates/dashboard/base.html:24
 msgid "Admin"
 msgstr "Adminisztráció"
 
-#: dashboard/tables.py:105 dashboard/tables.py:178 dashboard/tables.py:209
-#: dashboard/tables.py:243 dashboard/tables.py:272
+#: dashboard/tables.py:112 dashboard/tables.py:183 dashboard/tables.py:214
+#: dashboard/tables.py:248 dashboard/tables.py:277
 msgid "Actions"
 msgstr "Műveletek"
 
-#: dashboard/tables.py:148 dashboard/templates/dashboard/_vm-create-2.html:38
-#: dashboard/templates/dashboard/node-detail.html:71
-#: dashboard/templates/dashboard/vm-detail.html:191
+#: dashboard/tables.py:134 dashboard/templates/dashboard/profile.html:33
+msgid "Organization ID"
+msgstr "Címtári azonosító"
+
+#: dashboard/tables.py:153 dashboard/templates/dashboard/_vm-create-2.html:38
+#: dashboard/templates/dashboard/node-detail.html:72
+#: dashboard/templates/dashboard/vm-detail.html:193
 msgid "Resources"
 msgstr "Erőforrások"
 
-#: dashboard/tables.py:154 dashboard/templates/dashboard/vm-list.html:72
+#: dashboard/tables.py:159 dashboard/templates/dashboard/vm-list.html:74
 #: vm/models/instance.py:104
 msgid "Lease"
 msgstr "Bérlet"
 
-#: dashboard/tables.py:165 dashboard/templates/dashboard/template-edit.html:84
-#: dashboard/templates/dashboard/vm-list.html:68
+#: dashboard/tables.py:170 dashboard/templates/dashboard/template-edit.html:85
 #: dashboard/templates/dashboard/vm-detail/access.html:2
+#: dashboard/templates/dashboard/vm-list.html:70
 msgid "Owner"
 msgstr "Tulajdonos"
 
-#: dashboard/tables.py:170 dashboard/tables.py:238
+#: dashboard/tables.py:175 dashboard/tables.py:243
 msgid "Created at"
 msgstr "Létrehozva"
 
-#: dashboard/tables.py:174
+#: dashboard/tables.py:179
 msgid "Running"
 msgstr "Fut"
 
-#: dashboard/tables.py:221
+#: dashboard/tables.py:226
 msgid "No available leases."
 msgstr "Nincs elérhető bérlési mód."
 
-#: dashboard/tables.py:233
+#: dashboard/tables.py:238
 msgid "Fingerprint"
 msgstr "Ujjlenyomat"
 
-#: dashboard/tables.py:254
+#: dashboard/tables.py:259
 msgid "You haven't added any public keys yet."
 msgstr "Még nem adott meg publikus kulcsot."
 
-#: dashboard/tables.py:264
+#: dashboard/tables.py:269
 msgid "Access method"
 msgstr "Elérés módja"
 
-#: dashboard/tables.py:268
+#: dashboard/tables.py:273
 #: dashboard/templates/dashboard/vm-detail/home.html:129
 msgid "Template"
 msgstr "Sablon"
 
-#: dashboard/tables.py:285
+#: dashboard/tables.py:290
 msgid ""
 "You don't have any custom connection commands yet. You can specify commands "
 "to be displayed on VM detail pages instead of the defaults."
 msgstr ""
 "Még nincs egyedi csatlakozási parancsa. Az itt megadott parancsok fognak "
 "megjelenni a VM-részletező oldalon az alapértelmezettek helyett."
-
-#: dashboard/validators.py:57
-msgid "Invalid template string."
-msgstr "Érvénytelen sablon."
 
 #: dashboard/tasks/local_periodic_tasks.py:60
 #, python-format
@@ -659,23 +689,22 @@ msgid_plural "%d new notifications"
 msgstr[0] "%d új értesítés"
 msgstr[1] "%d új értesítés"
 
-#: dashboard/templates/base.html:62 templates/info/legal.html:4
+#: dashboard/templates/base.html:61 templates/info/legal.html:4
 #: templates/info/legal.html.py:9
 msgid "Legal notice"
 msgstr "Impresszum"
 
-#: dashboard/templates/base.html:63 templates/info/policy.html:4
+#: dashboard/templates/base.html:62 templates/info/policy.html:4
 #: templates/info/policy.html.py:9
 msgid "Policy"
 msgstr "Szabályzat"
 
-#: dashboard/templates/base.html:64
-#: dashboard/templates/dashboard/group-detail.html:18
-#: templates/info/help.html:4 templates/info/help.html.py:9
+#: dashboard/templates/base.html:63 templates/info/help.html:4
+#: templates/info/help.html.py:9
 msgid "Help"
 msgstr "Súgó"
 
-#: dashboard/templates/base.html:65 templates/info/support.html:4
+#: dashboard/templates/base.html:64 templates/info/support.html:4
 #: templates/info/support.html.py:9
 msgid "Support"
 msgstr "Támogatás"
@@ -713,13 +742,10 @@ msgstr ""
 "    "
 
 #: dashboard/templates/dashboard/_client-check.html:23
+#: dashboard/templates/dashboard/confirm/ajax-delete.html:19
+#: dashboard/templates/dashboard/confirm/base-delete.html:33
 #: dashboard/templates/dashboard/mass-operate.html:33
 #: dashboard/templates/dashboard/operate.html:21
-#: dashboard/templates/dashboard/confirm/ajax-delete.html:15
-#: dashboard/templates/dashboard/confirm/ajax-node-status.html:17
-#: dashboard/templates/dashboard/confirm/base-delete.html:27
-#: dashboard/templates/dashboard/confirm/mass-delete.html:11
-#: dashboard/templates/dashboard/confirm/node-status.html:27
 #: dashboard/templates/dashboard/store/remove.html:34
 msgid "Cancel"
 msgstr "Mégsem"
@@ -742,16 +768,16 @@ msgstr "Már telepítve van"
 #: dashboard/templates/dashboard/_disk-list-element.html:12
 #: dashboard/templates/dashboard/_manage_access.html:34
 #: dashboard/templates/dashboard/_manage_access.html:56
-#: dashboard/templates/dashboard/group-detail.html:99
+#: dashboard/templates/dashboard/group-detail.html:89
 #: dashboard/templates/dashboard/lease-edit.html:60
 #: dashboard/templates/dashboard/lease-edit.html:80
-#: dashboard/templates/dashboard/template-edit.html:127
-#: dashboard/templates/dashboard/template-edit.html:128
-#: dashboard/templates/dashboard/confirm/base-remove.html:12
 #: dashboard/templates/dashboard/store/_list-box.html:133
 #: dashboard/templates/dashboard/store/remove.html:36
-#: dashboard/templates/dashboard/vm-detail/network.html:81
-#: dashboard/templates/dashboard/vm-detail/network.html:113
+#: dashboard/templates/dashboard/template-edit.html:128
+#: dashboard/templates/dashboard/template-edit.html:129
+#: dashboard/templates/dashboard/vm-detail/network.html:85
+#: dashboard/templates/dashboard/vm-detail/network.html:86
+#: dashboard/templates/dashboard/vm-detail/network.html:120
 msgid "Remove"
 msgstr "Eltávolítás"
 
@@ -769,7 +795,7 @@ msgid "username"
 msgstr "felhasználónév"
 
 #: dashboard/templates/dashboard/_manage_access.html:7
-#: dashboard/templates/dashboard/group-detail.html:99
+#: dashboard/templates/dashboard/group-detail.html:89
 #: dashboard/templates/dashboard/lease-edit.html:35
 msgid "Who"
 msgstr "Ki"
@@ -831,17 +857,17 @@ msgid "Next"
 msgstr "Tovább"
 
 #: dashboard/templates/dashboard/_template-create.html:15
-#: dashboard/templates/dashboard/template-edit.html:39
+#: dashboard/templates/dashboard/template-edit.html:40
 msgid "Resource configuration"
 msgstr "Erőforrásbeállítások"
 
 #: dashboard/templates/dashboard/_template-create.html:21
-#: dashboard/templates/dashboard/template-edit.html:45
+#: dashboard/templates/dashboard/template-edit.html:46
 msgid "Virtual machine settings"
 msgstr "Virtuális gépek beállításai"
 
 #: dashboard/templates/dashboard/_template-create.html:31
-#: dashboard/templates/dashboard/template-edit.html:56
+#: dashboard/templates/dashboard/template-edit.html:57
 msgid "External resources"
 msgstr "Külső erőforrások"
 
@@ -859,48 +885,48 @@ msgstr "Hozzon létre egy bérlési módot."
 msgid "Create new template"
 msgstr "Sablon létrehozása"
 
-#: dashboard/templates/dashboard/_vm-create-1.html:14
+#: dashboard/templates/dashboard/_vm-create-1.html:20
 #: dashboard/templates/dashboard/node-list/column-monitor.html:4
 msgid "CPU"
 msgstr "CPU"
 
-#: dashboard/templates/dashboard/_vm-create-1.html:23
-#: dashboard/templates/dashboard/vm-list.html:76
-#: dashboard/templates/dashboard/node-list/column-monitor.html:20
+#: dashboard/templates/dashboard/_vm-create-1.html:29
+#: dashboard/templates/dashboard/node-list/column-monitor.html:22
+#: dashboard/templates/dashboard/vm-list.html:78
 msgid "Memory"
 msgstr "Memória"
 
-#: dashboard/templates/dashboard/_vm-create-1.html:33
+#: dashboard/templates/dashboard/_vm-create-1.html:39
 #: dashboard/templates/dashboard/_vm-create-2.html:49
 #: dashboard/templates/dashboard/vm-detail/resources.html:25
 msgid "Disks"
 msgstr "Lemezek"
 
-#: dashboard/templates/dashboard/_vm-create-1.html:40
+#: dashboard/templates/dashboard/_vm-create-1.html:46
 #: dashboard/templates/dashboard/_vm-create-2.html:65
-#: dashboard/templates/dashboard/base.html:47
-#: dashboard/templates/dashboard/vm-detail.html:205
+#: dashboard/templates/dashboard/base.html:27
+#: dashboard/templates/dashboard/vm-detail.html:207
 #: dashboard/views/graph.py:198 dashboard/views/graph.py:221
 #: network/forms.py:123 network/templates/network/base.html:7
 msgid "Network"
 msgstr "Hálózat"
 
-#: dashboard/templates/dashboard/_vm-create-1.html:46
+#: dashboard/templates/dashboard/_vm-create-1.html:52
 #: network/templates/network/index.html:46
 msgid "Type"
 msgstr "Típus"
 
-#: dashboard/templates/dashboard/_vm-create-1.html:62
+#: dashboard/templates/dashboard/_vm-create-1.html:68
 msgid "Customize"
 msgstr "Testreszabás"
 
-#: dashboard/templates/dashboard/_vm-create-1.html:68
+#: dashboard/templates/dashboard/_vm-create-1.html:74
 #: dashboard/templates/dashboard/_vm-create-2.html:18
 #: dashboard/templates/dashboard/template-list/column-template-actions.html:3
 msgid "Start"
 msgstr "Indítás"
 
-#: dashboard/templates/dashboard/_vm-create-1.html:76
+#: dashboard/templates/dashboard/_vm-create-1.html:82
 msgid ""
 "You can't start new virtual machines because no templates are shared with "
 "you."
@@ -912,7 +938,7 @@ msgid "Amount"
 msgstr "Mennyiség"
 
 #: dashboard/templates/dashboard/_vm-create-2.html:56
-#: dashboard/templates/dashboard/vm-detail/resources.html:34
+#: dashboard/templates/dashboard/vm-detail/resources.html:35
 msgid "No disks are added."
 msgstr "Egy lemez sincs hozzáadva."
 
@@ -930,12 +956,12 @@ msgstr ""
 "Ez a lehetőség minden virtuális gépet az optimális csomópontra migrál."
 
 #: dashboard/templates/dashboard/_vm-mass-migrate.html:29
-#: dashboard/templates/dashboard/_vm-migrate.html:31
+#: dashboard/templates/dashboard/_vm-migrate.html:55
 msgid "CPU load"
 msgstr "CPU-terhelés"
 
 #: dashboard/templates/dashboard/_vm-mass-migrate.html:30
-#: dashboard/templates/dashboard/_vm-migrate.html:33
+#: dashboard/templates/dashboard/_vm-migrate.html:57
 msgid "RAM usage"
 msgstr "RAM-használat"
 
@@ -956,6 +982,21 @@ msgstr "jelenlegi"
 msgid "recommended"
 msgstr "javasolt"
 
+#: dashboard/templates/dashboard/_vm-migrate.html:29
+#| msgid "missing"
+msgid "missing traits"
+msgstr "hiányzó jellemzők"
+
+#: dashboard/templates/dashboard/_vm-migrate.html:38
+#| msgid "traits"
+msgid "Node traits"
+msgstr "Csomópontjellemzők"
+
+#: dashboard/templates/dashboard/_vm-migrate.html:46
+#: dashboard/templates/dashboard/vm-detail/resources.html:52
+msgid "Required traits"
+msgstr "Elvárt jellemzők"
+
 #: dashboard/templates/dashboard/_vm-save.html:7
 msgid ""
 "\n"
@@ -968,26 +1009,131 @@ msgstr ""
 msgid "Name of template"
 msgstr "Sablon neve"
 
-#: dashboard/templates/dashboard/base.html:27
-#: dashboard/templates/dashboard/notifications.html:9
-msgid "Notifications"
-msgstr "Értesítések"
-
-#: dashboard/templates/dashboard/base.html:33
-msgid "Loading..."
-msgstr "Betöltés..."
-
-#: dashboard/templates/dashboard/base.html:39
+#: dashboard/templates/dashboard/base.html:38
 msgid "Log out"
 msgstr "Kijelentkezés"
 
-#: dashboard/templates/dashboard/base.html:41
-msgid "User profile"
-msgstr "Felhasználói profil"
+#: dashboard/templates/dashboard/base.html:43
+#: dashboard/templates/dashboard/base.html:53
+#: dashboard/templates/dashboard/notifications.html:21
+msgid "Notifications"
+msgstr "Értesítések"
 
-#: dashboard/templates/dashboard/base.html:51
+#: dashboard/templates/dashboard/base.html:61
+msgid "Loading..."
+msgstr "Betöltés..."
+
+#: dashboard/templates/dashboard/base.html:67
 msgid "Log in "
 msgstr "Bejelentkezés"
+
+#: dashboard/templates/dashboard/confirm/ajax-delete.html:7
+#, python-format
+#| msgid ""
+#| " you sure you want to remove <strong>%(member)s</strong> m "
+#| "rong>%(object)s</strong>?\n"
+msgid ""
+"\n"
+"          Do you really want to remove <strong>%(member)s</strong> from %(group)s?\n"
+"          "
+msgstr ""
+"\n"
+"Biztosan eltávolítja a(z) <strong>%(member)s</strong> tagot a következőből: %(group)s?\n"
+"          "
+
+#: dashboard/templates/dashboard/confirm/ajax-delete.html:11
+#, python-format
+msgid ""
+"\n"
+"            Are you sure you want to delete <strong>%(object)s</strong>?\n"
+"          "
+msgstr ""
+"\n"
+"            Biztosan törli a következőt: <strong>%(object)s</strong>?\n"
+"          "
+
+#: dashboard/templates/dashboard/confirm/ajax-delete.html:23
+#: dashboard/templates/dashboard/connect-command-list/column-command-actions.html:5
+#: dashboard/templates/dashboard/group-detail.html:15
+#: dashboard/templates/dashboard/node-detail.html:16
+#: dashboard/templates/dashboard/template-edit.html:76
+#: dashboard/templates/dashboard/template-list/column-lease-actions.html:5
+#: dashboard/templates/dashboard/template-list/column-template-actions.html:9
+#: dashboard/templates/dashboard/userkey-list/column-userkey-actions.html:5
+msgid "Delete"
+msgstr "Törlés"
+
+#: dashboard/templates/dashboard/confirm/base-delete.html:12
+msgid "Delete confirmation"
+msgstr "Törlés megerősítése"
+
+#: dashboard/templates/dashboard/confirm/base-delete.html:21
+#, python-format
+#| msgid ""
+#| " you sure you want to remove <strong>%(member)s</strong> m "
+#| "rong>%(object)s</strong>?\n"
+msgid ""
+"\n"
+"              Do you really want to remove <strong>%(member)s</strong> from %(group)s?\n"
+"              "
+msgstr ""
+"\n"
+"Biztosan eltávolítja a(z) <strong>%(member)s</strong> tagot a következőből: <strong>%(group)s</strong>?\n"
+"          "
+
+#: dashboard/templates/dashboard/confirm/base-delete.html:25
+#, python-format
+#| msgid "  Are you sure you want to delete <strong>%(object)s</ong>?\n"
+msgid ""
+"\n"
+"                Are you sure you want to delete <strong>%(object)s</strong>?\n"
+"              "
+msgstr ""
+"\n"
+"Biztosan törli a következőt: <strong>%(object)s</strong>?\n"
+"            "
+
+#: dashboard/templates/dashboard/confirm/base-delete.html:37
+#: dashboard/templates/dashboard/confirm/transfer-instance-ownership.html:23
+#: dashboard/templates/dashboard/confirm/transfer-template-ownership.html:23
+msgid "Yes"
+msgstr "Igen"
+
+#: dashboard/templates/dashboard/confirm/transfer-instance-ownership.html:9
+#: dashboard/templates/dashboard/confirm/transfer-template-ownership.html:9
+msgid "Ownership transfer"
+msgstr "Átruházás"
+
+#: dashboard/templates/dashboard/confirm/transfer-instance-ownership.html:13
+#, python-format
+msgid ""
+"\n"
+"        <strong>%(owner)s</strong> offered to take the ownership of\n"
+"        virtual machine <strong>%(name)s (%(id)s)</strong>.\n"
+"        Do you accept the responsility of being the host's owner?\n"
+"        "
+msgstr ""
+"\n"
+"<strong>%(owner)s</strong> kezdeményezte a(z) <strong>%(name)s (%(id)s)</strong> virtuális gép átruházását.\n"
+"Elfogadja a gép birtoklásával járó felelősséget?"
+
+#: dashboard/templates/dashboard/confirm/transfer-instance-ownership.html:21
+#: dashboard/templates/dashboard/confirm/transfer-template-ownership.html:21
+msgid "No"
+msgstr "Nem"
+
+#: dashboard/templates/dashboard/confirm/transfer-template-ownership.html:13
+#, python-format
+msgid ""
+"\n"
+"        <strong>%(owner)s</strong> offered to take the ownership of\n"
+"        template <strong>%(name)s (%(id)s)</strong>.\n"
+"        Do you accept the responsility of being the template's owner?\n"
+"        "
+msgstr ""
+"\n"
+"<strong>%(owner)s</strong> kezdeményezte a(z) <strong>%(name)s (%(id)s)</strong> sablon átruházását.\n"
+"Elfogadja a sablon birtoklásával járó felelősséget?"
 
 #: dashboard/templates/dashboard/connect-command-create.html:5
 msgid "Create command template"
@@ -997,15 +1143,13 @@ msgstr "Parancssablon létrehozása"
 #: dashboard/templates/dashboard/connect-command-edit.html:13
 #: dashboard/templates/dashboard/lease-create.html:13
 #: dashboard/templates/dashboard/lease-edit.html:12
-#: dashboard/templates/dashboard/profile.html:19
-#: dashboard/templates/dashboard/template-edit.html:15
+#: dashboard/templates/dashboard/profile.html:20
+#: dashboard/templates/dashboard/template-edit.html:16
 #: dashboard/templates/dashboard/userkey-create.html:13
-#: dashboard/templates/dashboard/userkey-edit.html:14
-#: dashboard/templates/dashboard/confirm/base-renew.html:26
-#: dashboard/templates/dashboard/confirm/node-flush.html:26
-#: network/forms.py:61 network/forms.py:83 network/forms.py:104
-#: network/forms.py:144 network/forms.py:169 network/forms.py:208
-#: network/forms.py:229 network/forms.py:280 network/forms.py:305
+#: dashboard/templates/dashboard/userkey-edit.html:14 network/forms.py:61
+#: network/forms.py:83 network/forms.py:104 network/forms.py:144
+#: network/forms.py:169 network/forms.py:208 network/forms.py:229
+#: network/forms.py:280 network/forms.py:305
 msgid "Back"
 msgstr "Vissza"
 
@@ -1023,6 +1167,13 @@ msgstr "Példák"
 msgid "Edit command template"
 msgstr "Parancssablon szerkesztése"
 
+#: dashboard/templates/dashboard/connect-command-list/column-command-actions.html:2
+#: dashboard/templates/dashboard/template-list/column-lease-actions.html:2
+#: dashboard/templates/dashboard/template-list/column-template-actions.html:6
+#: dashboard/templates/dashboard/userkey-list/column-userkey-actions.html:2
+msgid "Edit"
+msgstr "Szerkesztés"
+
 #: dashboard/templates/dashboard/group-create.html:5
 msgid ""
 "User groups allow sharing templates or other resources with multiple users "
@@ -1037,79 +1188,61 @@ msgstr "csoport"
 
 #: dashboard/templates/dashboard/group-detail.html:12
 #: dashboard/templates/dashboard/group-detail.html:27
-#: dashboard/templates/dashboard/group-detail.html:40
-#: dashboard/templates/dashboard/node-detail.html:14
-#: dashboard/templates/dashboard/node-detail.html:23
-#: dashboard/templates/dashboard/vm-detail.html:63
 #: dashboard/templates/dashboard/group-list/column-name.html:7
+#: dashboard/templates/dashboard/node-detail.html:15
+#: dashboard/templates/dashboard/node-detail.html:24
 #: dashboard/templates/dashboard/node-list/column-name.html:7
+#: dashboard/templates/dashboard/vm-detail.html:65
 #: dashboard/templates/dashboard/vm-detail/home.html:24
 #: dashboard/templates/dashboard/vm-list/column-name.html:7
 msgid "Rename"
 msgstr "Átnevezés"
 
-#: dashboard/templates/dashboard/group-detail.html:15
-#: dashboard/templates/dashboard/group-detail.html:44
-#: dashboard/templates/dashboard/node-detail.html:15
-#: dashboard/templates/dashboard/template-edit.html:75
-#: dashboard/templates/dashboard/confirm/ajax-delete.html:18
-#: dashboard/templates/dashboard/confirm/mass-delete.html:12
-#: dashboard/templates/dashboard/connect-command-list/column-command-actions.html:5
-#: dashboard/templates/dashboard/template-list/column-lease-actions.html:5
-#: dashboard/templates/dashboard/template-list/column-template-actions.html:9
-#: dashboard/templates/dashboard/userkey-list/column-userkey-actions.html:5
-msgid "Delete"
-msgstr "Törlés"
-
-#: dashboard/templates/dashboard/group-detail.html:41
-msgid "Change the name of the group."
-msgstr "Válasszon csoportnevet."
-
-#: dashboard/templates/dashboard/group-detail.html:45
-msgid "Delete group."
-msgstr "Csoport törlése."
-
-#: dashboard/templates/dashboard/group-detail.html:59
+#: dashboard/templates/dashboard/group-detail.html:49
 msgid "Available objects for this group"
 msgstr "Csoport számára elérhető objektumok"
 
-#: dashboard/templates/dashboard/group-detail.html:89
+#: dashboard/templates/dashboard/group-detail.html:79
 msgid "User list"
 msgstr "Felhasználók"
 
-#: dashboard/templates/dashboard/group-detail.html:92
+#: dashboard/templates/dashboard/group-detail.html:82
 msgid "Create user"
 msgstr "Új felhasználó"
 
-#: dashboard/templates/dashboard/group-detail.html:111
-#: dashboard/templates/dashboard/group-detail.html:125
+#: dashboard/templates/dashboard/group-detail.html:101
+#: dashboard/templates/dashboard/group-detail.html:115
 #: dashboard/templates/dashboard/vm-detail/network.html:28
 msgid "remove"
 msgstr "eltávolítás"
 
-#: dashboard/templates/dashboard/group-detail.html:138
+#: dashboard/templates/dashboard/group-detail.html:128
 msgid "Add multiple users at once (one identifier per line)."
 msgstr "Több felhasználó hozzáadása (egy azonosító soronként)."
 
-#: dashboard/templates/dashboard/group-detail.html:144
+#: dashboard/templates/dashboard/group-detail.html:134
 msgid "Access permissions"
 msgstr "Hozzáférési jogosultságok"
 
-#: dashboard/templates/dashboard/group-detail.html:154
+#: dashboard/templates/dashboard/group-detail.html:144
 msgid "Group permissions"
 msgstr "Csoportjogosultságok"
 
-#: dashboard/templates/dashboard/group-list.html:5
+#: dashboard/templates/dashboard/group-list.html:6
 msgid "Group list"
 msgstr "Csoportok"
 
-#: dashboard/templates/dashboard/group-list.html:13
+#: dashboard/templates/dashboard/group-list.html:14
 #: dashboard/templates/dashboard/index-groups.html:7
-#: dashboard/templates/dashboard/profile.html:56
-#: dashboard/templates/dashboard/vm-detail/network.html:39
+#: dashboard/templates/dashboard/profile.html:57
+#: dashboard/templates/dashboard/vm-detail/network.html:40
 #: network/templates/network/host-edit.html:32 templates/info/help.html:192
 msgid "Groups"
 msgstr "Csoportok"
+
+#: dashboard/templates/dashboard/group-list/column-details.html:2
+msgid "Members"
+msgstr "Tagok"
 
 #: dashboard/templates/dashboard/groupprofile_form.html:10
 msgid "Update group"
@@ -1119,7 +1252,8 @@ msgstr "Csoport frissítése"
 msgid "List of groups that you have access to."
 msgstr "Azon csoportok, amelyekhez hozzáférése van."
 
-#: dashboard/templates/dashboard/index-groups.html:30
+#: dashboard/templates/dashboard/index-groups.html:34
+#: dashboard/templates/dashboard/index-users.html:34
 #, python-format
 msgid ""
 "\n"
@@ -1138,9 +1272,10 @@ msgstr[1] ""
 "            még <strong>%(more)s</strong>\n"
 "        "
 
-#: dashboard/templates/dashboard/index-groups.html:36
-#: dashboard/templates/dashboard/index-nodes.html:74
-#: dashboard/templates/dashboard/index-vm.html:73
+#: dashboard/templates/dashboard/index-groups.html:40
+#: dashboard/templates/dashboard/index-nodes.html:55
+#: dashboard/templates/dashboard/index-users.html:40
+#: dashboard/templates/dashboard/index-vm.html:77
 msgid "list"
 msgstr "felsorolás"
 
@@ -1153,15 +1288,15 @@ msgstr ""
 " hypervisorok) listája."
 
 #: dashboard/templates/dashboard/index-nodes.html:16
-#: dashboard/templates/dashboard/node-list.html:5
+#: dashboard/templates/dashboard/node-list.html:6
 msgid "Nodes"
 msgstr "Csomópontok"
 
-#: dashboard/templates/dashboard/index-nodes.html:63
+#: dashboard/templates/dashboard/index-nodes.html:42
 msgid "Search"
 msgstr "Keresés"
 
-#: dashboard/templates/dashboard/index-nodes.html:72
+#: dashboard/templates/dashboard/index-nodes.html:53
 #, python-format
 msgid "<strong>%(count)s</strong>  more"
 msgstr "még <strong>%(count)s</strong>"
@@ -1175,17 +1310,18 @@ msgstr ""
 "személyre szabhat egy meglévőt (ajánlott)."
 
 #: dashboard/templates/dashboard/index-templates.html:7
-#: dashboard/templates/dashboard/template-list.html:5
-#: dashboard/templates/dashboard/template-list.html:16
+#: dashboard/templates/dashboard/template-list.html:6
+#: dashboard/templates/dashboard/template-list.html:17
 #: templates/info/help.html:156
 msgid "Templates"
 msgstr "Sablonok"
 
-#: dashboard/templates/dashboard/index-templates.html:19
-msgid "Start vm instance"
+#: dashboard/templates/dashboard/index-templates.html:20
+#| msgid "Start vm instance"
+msgid "Start VM instance"
 msgstr "VM-példány indítása"
 
-#: dashboard/templates/dashboard/index-templates.html:26
+#: dashboard/templates/dashboard/index-templates.html:29
 msgid ""
 "You don't have any templates, however you can still start virtual machines "
 "and even save them as new templates!"
@@ -1193,9 +1329,20 @@ msgstr ""
 "Még nincs saját sablonja, de ettől függetlenül indíthat virtuális gépeket, "
 "amelyeket el is menthet sablonként."
 
-#: dashboard/templates/dashboard/index-templates.html:35
+#: dashboard/templates/dashboard/index-templates.html:49
 msgid "show all"
 msgstr "összes"
+
+#: dashboard/templates/dashboard/index-users.html:5
+msgid "List of CIRCLE users."
+msgstr "Felhasználók listája"
+
+#: dashboard/templates/dashboard/index-users.html:7
+#: dashboard/templates/dashboard/user-list.html:6
+#: dashboard/templates/dashboard/user-list.html:17
+#| msgid "User list"
+msgid "Users"
+msgstr "Felhasználók"
 
 #: dashboard/templates/dashboard/index-vm.html:8
 msgid "summary view"
@@ -1210,28 +1357,32 @@ msgid ""
 "List of your current virtual machines. Favourited ones are ahead of others."
 msgstr "A meglévő virtuális gépei. A megjelöltek megelőzik a többit."
 
-#: dashboard/templates/dashboard/index-vm.html:16
-#: dashboard/templates/dashboard/vm-list.html:4
-#: dashboard/templates/dashboard/vm-list.html:16 templates/info/help.html:46
+#: dashboard/templates/dashboard/index-vm.html:18
+msgid "VMs"
+msgstr ""
+
+#: dashboard/templates/dashboard/index-vm.html:22
+#: dashboard/templates/dashboard/vm-list.html:5
+#: dashboard/templates/dashboard/vm-list.html:17 templates/info/help.html:46
 msgid "Virtual machines"
 msgstr "Virtuális gépek"
 
-#: dashboard/templates/dashboard/index-vm.html:34
-#: dashboard/templates/dashboard/vm-detail.html:75
+#: dashboard/templates/dashboard/index-vm.html:41
+#: dashboard/templates/dashboard/vm-detail.html:77
 msgid "Unfavourite"
 msgstr "Kedvencnek jelölés törlése"
 
-#: dashboard/templates/dashboard/index-vm.html:36
-#: dashboard/templates/dashboard/vm-detail.html:77
+#: dashboard/templates/dashboard/index-vm.html:43
+#: dashboard/templates/dashboard/vm-detail.html:79
 msgid "Mark as favorite"
 msgstr "Kedvencnek jelölés"
 
-#: dashboard/templates/dashboard/index-vm.html:43
-#: dashboard/templates/dashboard/vm-list.html:135
+#: dashboard/templates/dashboard/index-vm.html:50
+#: dashboard/templates/dashboard/vm-list.html:137
 msgid "You have no virtual machines."
 msgstr "Még nincs virtuális gépe."
 
-#: dashboard/templates/dashboard/index-vm.html:67
+#: dashboard/templates/dashboard/index-vm.html:71
 #, python-format
 msgid ""
 "\n"
@@ -1250,12 +1401,12 @@ msgstr[1] ""
 "            még <strong>%(counter)s</strong>\n"
 "        "
 
-#: dashboard/templates/dashboard/index-vm.html:85
+#: dashboard/templates/dashboard/index-vm.html:89
 #, python-format
 msgid "<big>%(count)s</big> running"
 msgstr "<big>%(count)s</big> fut"
 
-#: dashboard/templates/dashboard/index-vm.html:101
+#: dashboard/templates/dashboard/index-vm.html:104
 #, python-format
 msgid ""
 "\n"
@@ -1274,35 +1425,35 @@ msgstr[1] ""
 "            összesen <strong>%(counter)s</strong> gép\n"
 "        "
 
-#: dashboard/templates/dashboard/index-vm.html:107
+#: dashboard/templates/dashboard/index-vm.html:110
 #, python-format
 msgid "<big>%(count)s</big> stopped"
 msgstr "<big>%(count)s</big> leállítva"
 
-#: dashboard/templates/dashboard/index.html:4
+#: dashboard/templates/dashboard/index.html:5
 #: network/templates/network/index.html:6
 msgid "Index"
 msgstr "Kezdőoldal"
 
-#: dashboard/templates/dashboard/index.html:10
+#: dashboard/templates/dashboard/index.html:11
 #, python-format
 msgid "%(name)s virtual machines"
 msgstr "%(name)s virtuális gépek"
 
-#: dashboard/templates/dashboard/index.html:23
+#: dashboard/templates/dashboard/index.html:24
 msgid "You have no permission to start or manage virtual machines."
 msgstr "Nincs jogosultsága virtuális gépek indítására vagy kezelésére."
 
 #: dashboard/templates/dashboard/instanceactivity_detail.html:25
-#: dashboard/templates/dashboard/node-detail.html:84
-#: dashboard/templates/dashboard/vm-detail.html:210
+#: dashboard/templates/dashboard/node-detail.html:86
 #: dashboard/templates/dashboard/node-detail/activity.html:3
+#: dashboard/templates/dashboard/vm-detail.html:213
 #: dashboard/templates/dashboard/vm-detail/activity.html:3
 msgid "Activity"
 msgstr "Tevékenységek"
 
 #: dashboard/templates/dashboard/instanceactivity_detail.html:31
-#: vm/models/activity.py:70 vm/models/instance.py:274 vm/models/network.py:67
+#: vm/models/activity.py:70 vm/models/instance.py:273 vm/models/network.py:67
 msgid "instance"
 msgstr "példány"
 
@@ -1311,7 +1462,7 @@ msgid "time"
 msgstr "idő"
 
 #: dashboard/templates/dashboard/instanceactivity_detail.html:40
-#: firewall/models.py:1005 firewall/models.py:1131
+#: firewall/models.py:1002 firewall/models.py:1128
 msgid "type"
 msgstr "típus"
 
@@ -1347,7 +1498,7 @@ msgid "subactivities"
 msgstr "altevékenységek"
 
 #: dashboard/templates/dashboard/instanceactivity_detail.html:74
-#: dashboard/templates/dashboard/node-detail/_activity-timeline.html:28
+#: dashboard/templates/dashboard/node-detail/_activity-timeline.html:29
 #: dashboard/templates/dashboard/vm-detail/_activity-timeline.html:48
 msgid "failed"
 msgstr "meghiúsult"
@@ -1367,7 +1518,7 @@ msgid "Edit lease"
 msgstr "Bérlési mód szerkesztése"
 
 #: dashboard/templates/dashboard/lease-edit.html:27
-#: dashboard/templates/dashboard/template-edit.html:104
+#: dashboard/templates/dashboard/template-edit.html:105
 #: network/templates/network/vlan-edit.html:33
 msgid "Manage access"
 msgstr "Jogosultságok kezelése"
@@ -1391,47 +1542,127 @@ msgstr[1] ""
 msgid "Add Trait"
 msgstr "Jellemző hozzáadása"
 
-#: dashboard/templates/dashboard/node-detail.html:43
+#: dashboard/templates/dashboard/node-detail.html:44
 #: dashboard/templates/dashboard/node-detail/resources.html:10
 msgid "Enabled"
 msgstr "Engedélyezve"
 
-#: dashboard/templates/dashboard/node-detail.html:45
+#: dashboard/templates/dashboard/node-detail.html:46
 msgid "Schedule enabled"
 msgstr "Ütemezés engedélyezve"
 
-#: dashboard/templates/dashboard/node-detail.html:47
+#: dashboard/templates/dashboard/node-detail.html:48
 msgid "Schedule disabled"
 msgstr "Ütemezés tiltva"
 
-#: dashboard/templates/dashboard/node-detail.html:50
+#: dashboard/templates/dashboard/node-detail.html:51
 msgid "Disabled"
 msgstr "Tiltás"
 
-#: dashboard/templates/dashboard/node-detail.html:53
+#: dashboard/templates/dashboard/node-detail.html:54
 msgid "Online"
 msgstr "Elérhető"
 
-#: dashboard/templates/dashboard/node-detail.html:55
+#: dashboard/templates/dashboard/node-detail.html:56
 msgid "Offline"
 msgstr "Offline"
 
-#: dashboard/templates/dashboard/node-detail.html:65
-#: dashboard/templates/dashboard/vm-detail.html:186
+#: dashboard/templates/dashboard/node-detail.html:66
+#: dashboard/templates/dashboard/vm-detail.html:188
 msgid "Home"
 msgstr "Kezdőoldal"
 
-#: dashboard/templates/dashboard/node-detail.html:78
+#: dashboard/templates/dashboard/node-detail.html:79
 msgid "Virtual Machines"
 msgstr "Virtuális gépek"
 
-#: dashboard/templates/dashboard/node-list.html:13
+#: dashboard/templates/dashboard/node-detail/home.html:4
+msgid "Traits the node provides"
+msgstr "A csomópont által biztosított jellemzők"
+
+#: dashboard/templates/dashboard/node-detail/home.html:15
+msgid "No trait added!"
+msgstr "Nincs jellemző."
+
+#: dashboard/templates/dashboard/node-detail/resources.html:5
+msgid "Node name"
+msgstr "Csomópont neve"
+
+#: dashboard/templates/dashboard/node-detail/resources.html:6
+msgid "CPU cores"
+msgstr "CPU-magok"
+
+#: dashboard/templates/dashboard/node-detail/resources.html:7
+#: vm/models/common.py:43
+msgid "RAM size"
+msgstr "RAM-méret"
+
+#: dashboard/templates/dashboard/node-detail/resources.html:8
+msgid "Architecture"
+msgstr "Architektúra"
+
+#: dashboard/templates/dashboard/node-detail/resources.html:9
+msgid "Host IP"
+msgstr "Gép IP címe"
+
+#: dashboard/templates/dashboard/node-detail/resources.html:11
+msgid "Host online"
+msgstr "Gép elérhető"
+
+#: dashboard/templates/dashboard/node-detail/resources.html:13
+msgid "Priority"
+msgstr "Prioritás"
+
+#: dashboard/templates/dashboard/node-detail/resources.html:14
+msgid "Driver Version:"
+msgstr "Driver verziója:"
+
+#: dashboard/templates/dashboard/node-detail/resources.html:20
+msgid "with uncommitted changes!"
+msgstr "beküldetlen változásokkal!"
+
+#: dashboard/templates/dashboard/node-detail/resources.html:24
+msgid "Host owner"
+msgstr "Gép tulajdonosa"
+
+#: dashboard/templates/dashboard/node-detail/resources.html:29
+msgid "Host name"
+msgstr "Gépnév"
+
+#: dashboard/templates/dashboard/node-detail/resources.html:35
+msgid "Edit host"
+msgstr "Gép szerkesztése"
+
+#: dashboard/templates/dashboard/node-list.html:14
 msgid "Compute nodes"
 msgstr "Számítási csomópontok"
 
-#: dashboard/templates/dashboard/node-list.html:31
+#: dashboard/templates/dashboard/node-list.html:34
 msgid "Graphs"
 msgstr "Grafikonok"
+
+#: dashboard/templates/dashboard/notifications/email.txt:2
+#, python-format
+msgid "Dear %(u)s,"
+msgstr "Kedves %(u)s!"
+
+#: dashboard/templates/dashboard/notifications/email.txt:5
+#, python-format
+msgid "You have a new notification:"
+msgid_plural "You have %(n)s new notifications:"
+msgstr[0] "Egy új értesítése van:"
+msgstr[1] "%(n)s új értesítése van:"
+
+#: dashboard/templates/dashboard/notifications/email.txt:10
+#, python-format
+msgid "See it in detail on <%(url)s>."
+msgid_plural " See them in detail on <%(url)s>."
+msgstr[0] "Részletek: <%(url)s>."
+msgstr[1] "Részletek: <%(url)s>."
+
+#: dashboard/templates/dashboard/notifications/email.txt:15
+msgid "You can change your subscription without logging in:"
+msgstr "Bejelentkezés nélkül módosíthatja feliratkozásait:"
 
 #: dashboard/templates/dashboard/operate.html:6
 #, python-format
@@ -1444,63 +1675,64 @@ msgstr ""
 "Biztosan végrehajtja a(z) <strong>%(op)s</strong> műveletet\n"
 "a következőn: <a data-dismiss=\"modal\" href=\"%(url)s\">%(obj)s</a>?\n"
 
-#: dashboard/templates/dashboard/profile.html:5
+#: dashboard/templates/dashboard/profile.html:6
 #: dashboard/templates/dashboard/profile_form.html:6
 msgid "Profile"
 msgstr "Profil"
 
-#: dashboard/templates/dashboard/profile.html:16
+#: dashboard/templates/dashboard/profile.html:17
 msgid "Log in as this user. Recommended to open in an incognito window."
 msgstr ""
 "Bejelentkezés a felhasználó nevében. Ajánlott inkognitóablakban megnyitni."
 
-#: dashboard/templates/dashboard/profile.html:17
+#: dashboard/templates/dashboard/profile.html:18
 msgid "Login as this user"
 msgstr "Bejelentkezés a felhasználó nevében"
 
-#: dashboard/templates/dashboard/profile.html:32
-msgid "Organization ID"
-msgstr "Címtári azonosító"
-
-#: dashboard/templates/dashboard/profile.html:33
+#: dashboard/templates/dashboard/profile.html:34
 msgid "First name"
 msgstr "Keresztnév"
 
-#: dashboard/templates/dashboard/profile.html:34
+#: dashboard/templates/dashboard/profile.html:35
 msgid "Last name"
 msgstr "Vezetéknév"
 
-#: dashboard/templates/dashboard/profile.html:42
+#: dashboard/templates/dashboard/profile.html:43
 msgid "Use email address as Gravatar profile image"
 msgstr "E-mail cím használata a Gravatar profilkép betöltésére"
 
-#: dashboard/templates/dashboard/profile.html:45
+#: dashboard/templates/dashboard/profile.html:46
 msgid "What's Gravatar?"
 msgstr "Mi az a Gravatar?"
 
-#: dashboard/templates/dashboard/profile.html:47
+#: dashboard/templates/dashboard/profile.html:48
 msgid "Change my preferences"
 msgstr "Személyes beállítások"
 
-#: dashboard/templates/dashboard/profile.html:62
+#: dashboard/templates/dashboard/profile.html:63
 msgid "This user is not in any group."
 msgstr "A felhasználó nem tagja csoportnak."
 
-#: dashboard/templates/dashboard/profile.html:71
+#: dashboard/templates/dashboard/profile.html:72
 msgid "Virtual machines owned by the user"
 msgstr "A felhasználó virtuális gépei"
 
-#: dashboard/templates/dashboard/profile.html:83
+#: dashboard/templates/dashboard/profile.html:84
 msgid "This user have no virtual machines."
 msgstr "A felhasználónak nincs virtuális gépe."
 
-#: dashboard/templates/dashboard/profile.html:92
+#: dashboard/templates/dashboard/profile.html:93
 msgid "Virtual machines with access"
 msgstr "Elérhető virtuális gépek"
 
-#: dashboard/templates/dashboard/profile.html:104
+#: dashboard/templates/dashboard/profile.html:105
 msgid "This user have no access to any virtual machine."
 msgstr "A felhasználónak egy géphez sincs hozzáférése."
+
+#: dashboard/templates/dashboard/profile.html:118
+#| msgid "Edit lease"
+msgid "Edit user"
+msgstr "Felhasználó szerkesztése"
 
 #: dashboard/templates/dashboard/profile_form.html:16
 #: dashboard/templates/dashboard/profile_form.html:42
@@ -1539,508 +1771,6 @@ msgstr "új parancssablon"
 msgid "Command templates"
 msgstr "Parancssablonok"
 
-#: dashboard/templates/dashboard/template-edit.html:6
-#: vm/models/instance.py:158 vm/models/instance.py:231 vm/models/network.py:44
-msgid "template"
-msgstr "sablon"
-
-#: dashboard/templates/dashboard/template-edit.html:17
-msgid "Edit template"
-msgstr "Sablon szerkesztése"
-
-#: dashboard/templates/dashboard/template-edit.html:29
-msgid "Parent template"
-msgstr "Szülősablon"
-
-#: dashboard/templates/dashboard/template-edit.html:77
-msgid "Delete template"
-msgstr "Sablon törlése"
-
-#: dashboard/templates/dashboard/template-edit.html:88
-msgid "You are the current owner of this template."
-msgstr "Ön a jelenlegi tulajdonosa a sablonnak."
-
-#: dashboard/templates/dashboard/template-edit.html:91
-#, python-format
-msgid ""
-"\n"
-"          The current owner of this template is <a href=\"%(url)s\">%(name)s (%(owner)s)</a>.\n"
-"        "
-msgstr ""
-"\n"
-"A sablon jelenlegi tulajdonosa <a href=\"%(url)s\">%(name)s (%(owner)s)</a>."
-
-#: dashboard/templates/dashboard/template-edit.html:97
-#: dashboard/templates/dashboard/vm-detail/access.html:15
-msgid "Transfer ownership..."
-msgstr "Tulajdon átruházása..."
-
-#: dashboard/templates/dashboard/template-edit.html:114
-msgid "Disk list"
-msgstr "Lemezek"
-
-#: dashboard/templates/dashboard/template-edit.html:119
-msgid "No disks are added!"
-msgstr "Egy lemez sincs hozzáadva!"
-
-#: dashboard/templates/dashboard/template-list.html:14
-msgid "new template"
-msgstr "új sablon"
-
-#: dashboard/templates/dashboard/template-list.html:50
-msgid "new lease"
-msgstr "bérlési mód létrehozása"
-
-#: dashboard/templates/dashboard/template-list.html:53
-msgid "Leases"
-msgstr "Bérlési módok"
-
-#: dashboard/templates/dashboard/unsubscribe.html:10
-msgid "Subscription settings"
-msgstr "Feliratkozások"
-
-#: dashboard/templates/dashboard/userkey-create.html:5
-#: dashboard/templates/dashboard/userkey-create.html:14
-msgid "Create SSH public key"
-msgstr "SSH publikus kulcs létrehozása"
-
-#: dashboard/templates/dashboard/userkey-edit.html:6
-#: dashboard/templates/dashboard/userkey-edit.html:15
-msgid "Edit SSH public key"
-msgstr "SSH publikus kulcs módosítása"
-
-#: dashboard/templates/dashboard/vm-detail.html:18
-msgid "Toggle tutorial panel"
-msgstr "Kalauz engedélyezése/tiltása"
-
-#: dashboard/templates/dashboard/vm-detail.html:23
-msgid "Start template tutorial"
-msgstr "Sablon-kalauz indítása"
-
-#: dashboard/templates/dashboard/vm-detail.html:26
-msgid "This is the master vm of your new template"
-msgstr "Ez a mesterpéldány egy új sablonhoz"
-
-#: dashboard/templates/dashboard/vm-detail.html:28
-msgid ""
-"Modify the virtual machine to suit your needs <strong>(optional)</strong>"
-msgstr "Módosítsa a virtuális gépet <strong>(igény szerint)</strong>"
-
-#: dashboard/templates/dashboard/vm-detail.html:30
-msgid "Change the description"
-msgstr "Változtassa meg a leírást"
-
-#: dashboard/templates/dashboard/vm-detail.html:31
-msgid "Change resources (CPU and RAM)"
-msgstr "Állítsa be az erőforrásokat (CPU és memória)"
-
-#: dashboard/templates/dashboard/vm-detail.html:32
-msgid "Attach or detach disks"
-msgstr "Csatoljon vagy válasszon le lemezeket"
-
-#: dashboard/templates/dashboard/vm-detail.html:33
-msgid "Add or remove network interfaces"
-msgstr "Adjon hozz vagy törljön hálózati interfészeket"
-
-#: dashboard/templates/dashboard/vm-detail.html:36
-msgid "Deploy the virtual machine"
-msgstr "Indítsa el a virtuális gépet"
-
-#: dashboard/templates/dashboard/vm-detail.html:37
-msgid "Connect to the machine"
-msgstr "Csatlakozzon a géphez"
-
-#: dashboard/templates/dashboard/vm-detail.html:38
-msgid "Do all the needed installations/customizations"
-msgstr "Végezze el a szükséges telepítéseket, testreszabásokat"
-
-#: dashboard/templates/dashboard/vm-detail.html:39
-msgid "Log off from the machine"
-msgstr "Jelentkezzen ki a gépből"
-
-#: dashboard/templates/dashboard/vm-detail.html:41
-msgid "Press the Save as template button"
-msgstr "Kattintson a Mentés sablonként gombra"
-
-#: dashboard/templates/dashboard/vm-detail.html:44
-msgid "Delete this virtual machine <strong>(optional)</strong>"
-msgstr "Törölje a virtális gépet <strong>(ha szükséges)</strong>"
-
-#: dashboard/templates/dashboard/vm-detail.html:95
-msgid "Connection details"
-msgstr "Kapcsolat részletei"
-
-#: dashboard/templates/dashboard/vm-detail.html:104
-msgid "The VM doesn't have any network interface."
-msgstr "A VM-nek nincs hálózati interfésze."
-
-#: dashboard/templates/dashboard/vm-detail.html:106
-msgid "The required port for this protocol is not forwarded."
-msgstr "A csatlakozáshoz szükséges port nincs továbbítva."
-
-#: dashboard/templates/dashboard/vm-detail.html:111
-msgid "Host (IPv6)"
-msgstr "Gép (IPv6)"
-
-#: dashboard/templates/dashboard/vm-detail.html:123
-msgid "Show password"
-msgstr "Jelszó megjelenítése"
-
-#: dashboard/templates/dashboard/vm-detail.html:135
-msgid "Start the VM to change the password."
-msgstr "Jelszóváltoztatáshoz el kell indítani a gépet."
-
-#: dashboard/templates/dashboard/vm-detail.html:135
-msgid "This machine has no agent installed."
-msgstr "A gépre nincs ügynök telepítve."
-
-#: dashboard/templates/dashboard/vm-detail.html:137
-msgid "Generate new password!"
-msgstr "Új jelszó generálása"
-
-#: dashboard/templates/dashboard/vm-detail.html:145
-#: dashboard/templates/dashboard/vm-detail.html:157
-msgid "Command"
-msgstr "Parancs"
-
-#: dashboard/templates/dashboard/vm-detail.html:150
-#: dashboard/templates/dashboard/vm-detail.html:161
-#: dashboard/templates/dashboard/vm-list.html:22
-msgid "Select all"
-msgstr "Összes kiválasztása"
-
-#: dashboard/templates/dashboard/vm-detail.html:158
-msgid "Connection is not possible."
-msgstr "A csatlakozás nem lehetséges."
-
-#: dashboard/templates/dashboard/vm-detail.html:168
-msgid "Connect via the CIRCLE Client"
-msgstr "Csatlakozás CIRCLE klienssel"
-
-#: dashboard/templates/dashboard/vm-detail.html:169
-msgid "Connect"
-msgstr "Csatlakozás"
-
-#: dashboard/templates/dashboard/vm-detail.html:171
-msgid "Download client"
-msgstr "Kliens letöltése"
-
-#: dashboard/templates/dashboard/vm-detail.html:173
-msgid "Download the CIRCLE Client"
-msgstr "A CIRCLE kliens letöltése"
-
-#: dashboard/templates/dashboard/vm-detail.html:174
-msgid "Connect (download client)"
-msgstr "Csatlakozás (kliens letöltése)"
-
-#: dashboard/templates/dashboard/vm-detail.html:196
-msgid "Console"
-msgstr "Konzol"
-
-#: dashboard/templates/dashboard/vm-detail.html:200
-msgid "Access"
-msgstr "Hozzáférés"
-
-#: dashboard/templates/dashboard/vm-list.html:13
-msgid "Sorting ... "
-msgstr "Rendezés…"
-
-#: dashboard/templates/dashboard/vm-list.html:21
-msgid "Group actions"
-msgstr "Csoportos műveletek"
-
-#: dashboard/templates/dashboard/vm-list.html:37
-msgid "Include deleted VMs"
-msgstr "Törölt VM-ek megjelenítése"
-
-#: dashboard/templates/dashboard/vm-list.html:56
-msgid "ID"
-msgstr "ID"
-
-#: dashboard/templates/dashboard/vm-list.html:64
-msgid "State"
-msgstr "Állapot"
-
-#: dashboard/templates/dashboard/vm-list.html:81
-msgid "IP address"
-msgstr "IP cím"
-
-#: dashboard/templates/dashboard/vm-list.html:133
-msgid "No result."
-msgstr "Nincs eredmény."
-
-#: dashboard/templates/dashboard/vm-list.html:152
-msgid ""
-"You can select multiple vm instances while holding down the "
-"<strong>CTRL</strong> key."
-msgstr ""
-"Több virtuális gépet is kiválaszthat a  <strong>CTRL</strong> billentyű "
-"lenyomásával."
-
-#: dashboard/templates/dashboard/vm-list.html:153
-msgid ""
-"If you want to select multiple instances by one click select an instance "
-"then hold down <strong>SHIFT</strong> key and select another one!"
-msgstr ""
-"Ha több egymást követő példányt szeretne kiválasztani, válassza ki az elsőt,"
-" majd a <strong>SHIFT</strong> billentyűt lenyomva tartva az utolsót."
-
-#: dashboard/templates/dashboard/confirm/ajax-delete.html:9
-#, python-format
-msgid ""
-"\n"
-"            Are you sure you want to delete <strong>%(object)s</strong>?\n"
-"          "
-msgstr ""
-"\n"
-"            Biztosan törli a következőt: <strong>%(object)s</strong>?\n"
-"          "
-
-#: dashboard/templates/dashboard/confirm/ajax-node-status.html:10
-#: dashboard/templates/dashboard/confirm/node-status.html:20
-#, python-format
-msgid ""
-"\n"
-"              Are you sure you want to change <strong>%(object)s</strong> status?\n"
-"            "
-msgstr ""
-"\n"
-"              Biztosan megváltoztatja a következő állapotát: <strong>%(object)s</strong>?\n"
-"            "
-
-#: dashboard/templates/dashboard/confirm/ajax-node-status.html:19
-#: dashboard/templates/dashboard/confirm/node-status.html:30
-#, python-format
-msgid "Yes, %(status)s"
-msgstr "Igen, %(status)s"
-
-#: dashboard/templates/dashboard/confirm/ajax-remove.html:9
-#, python-format
-msgid ""
-"\n"
-"            Are you sure you want to remove <strong>%(member)s</strong> from <strong>%(object)s</strong>?\n"
-"          "
-msgstr ""
-"\n"
-"Biztosan eltávolítja a(z) <strong>%(member)s</strong> tagot a következőből: <strong>%(object)s</strong>?\n"
-"          "
-
-#: dashboard/templates/dashboard/confirm/base-delete.html:12
-msgid "Delete confirmation"
-msgstr "Törlés megerősítése"
-
-#: dashboard/templates/dashboard/confirm/base-delete.html:20
-#, python-format
-msgid ""
-"\n"
-"              Are you sure you want to delete <strong>%(object)s</strong>?\n"
-"            "
-msgstr ""
-"\n"
-"              Biztosan törli a következőt: <strong>%(object)s</strong>?\n"
-"            "
-
-#: dashboard/templates/dashboard/confirm/base-delete.html:31
-#: dashboard/templates/dashboard/confirm/node-flush.html:28
-#: dashboard/templates/dashboard/confirm/transfer-instance-ownership.html:23
-#: dashboard/templates/dashboard/confirm/transfer-template-ownership.html:23
-msgid "Yes"
-msgstr "Igen"
-
-#: dashboard/templates/dashboard/confirm/base-remove.html:7
-#, python-format
-msgid ""
-"\n"
-"Do you really want to remove %(member)s from %(group)s?\n"
-msgstr ""
-"\n"
-"Biztosan törli %(member)s tagot a(z) %(group)s csoportból?\n"
-
-#: dashboard/templates/dashboard/confirm/base-renew.html:9
-#, python-format
-msgid ""
-"\n"
-"          Renewing <em>%(instance)s</em>\n"
-"          "
-msgstr ""
-"\n"
-"          <em>%(instance)s</em> megújítása\n"
-"          "
-
-#: dashboard/templates/dashboard/confirm/base-renew.html:15
-#, python-format
-msgid ""
-"\n"
-"            Do you want to renew <strong>%(object)s</strong>?\n"
-"        "
-msgstr ""
-"\n"
-"            Megújítja a következőt: <strong>%(object)s</strong>?\n"
-"        "
-
-#: dashboard/templates/dashboard/confirm/base-renew.html:18
-#, python-format
-msgid ""
-"\n"
-"            The instance will be suspended at <em>%(suspend)s</em>\n"
-"            and removed at <em>%(delete)s</em> if you renew it now.\n"
-"        "
-msgstr ""
-"\n"
-"            A példány felfüggesztése <em>%(suspend)s</em> időpontban,\n"
-"            törlése <em>%(delete)s</em> időpontban történik, ha most megújítja.\n"
-"        "
-
-#: dashboard/templates/dashboard/confirm/base-renew.html:27
-msgid "Renew"
-msgstr "Megújítás"
-
-#: dashboard/templates/dashboard/confirm/mass-delete.html:6
-msgid "Are you sure you want to delete the following objects?"
-msgstr "Biztosan törli a következő objektumokat?"
-
-#: dashboard/templates/dashboard/confirm/node-flush.html:19
-#, python-format
-msgid ""
-"\n"
-"              Are you sure you want to flush <strong>%(object)s</strong>?\n"
-"            "
-msgstr ""
-"\n"
-"              Biztosan üríti a következőt: <strong>%(object)s</strong>?\n"
-"            "
-
-#: dashboard/templates/dashboard/confirm/node-status.html:12
-msgid "Status changing confirmation"
-msgstr "Állapotváltozás megerősítése"
-
-#: dashboard/templates/dashboard/confirm/transfer-instance-ownership.html:9
-#: dashboard/templates/dashboard/confirm/transfer-template-ownership.html:9
-msgid "Ownership transfer"
-msgstr "Átruházás"
-
-#: dashboard/templates/dashboard/confirm/transfer-instance-ownership.html:13
-#, python-format
-msgid ""
-"\n"
-"        <strong>%(owner)s</strong> offered to take the ownership of\n"
-"        virtual machine <strong>%(name)s (%(id)s)</strong>.\n"
-"        Do you accept the responsility of being the host's owner?\n"
-"        "
-msgstr ""
-"\n"
-"<strong>%(owner)s</strong> kezdeményezte a(z) <strong>%(name)s (%(id)s)</strong> virtuális gép átruházását.\n"
-"Elfogadja a gép birtoklásával járó felelősséget?"
-
-#: dashboard/templates/dashboard/confirm/transfer-instance-ownership.html:21
-#: dashboard/templates/dashboard/confirm/transfer-template-ownership.html:21
-msgid "No"
-msgstr "Nem"
-
-#: dashboard/templates/dashboard/confirm/transfer-template-ownership.html:13
-#, python-format
-msgid ""
-"\n"
-"        <strong>%(owner)s</strong> offered to take the ownership of\n"
-"        template <strong>%(name)s (%(id)s)</strong>.\n"
-"        Do you accept the responsility of being the template's owner?\n"
-"        "
-msgstr ""
-"\n"
-"<strong>%(owner)s</strong> kezdeményezte a(z) <strong>%(name)s (%(id)s)</strong> sablon átruházását.\n"
-"Elfogadja a sablon birtoklásával járó felelősséget?"
-
-#: dashboard/templates/dashboard/connect-command-list/column-command-actions.html:2
-#: dashboard/templates/dashboard/template-list/column-lease-actions.html:2
-#: dashboard/templates/dashboard/template-list/column-template-actions.html:6
-#: dashboard/templates/dashboard/userkey-list/column-userkey-actions.html:2
-msgid "Edit"
-msgstr "Szerkesztés"
-
-#: dashboard/templates/dashboard/group-list/column-details.html:2
-msgid "Members"
-msgstr "Tagok"
-
-#: dashboard/templates/dashboard/node-detail/home.html:4
-msgid "Traits the node provides"
-msgstr "A csomópont által biztosított jellemzők"
-
-#: dashboard/templates/dashboard/node-detail/home.html:15
-msgid "No trait added!"
-msgstr "Nincs jellemző."
-
-#: dashboard/templates/dashboard/node-detail/resources.html:5
-msgid "Node name"
-msgstr "Csomópont neve"
-
-#: dashboard/templates/dashboard/node-detail/resources.html:6
-msgid "CPU cores"
-msgstr "CPU-magok"
-
-#: dashboard/templates/dashboard/node-detail/resources.html:7
-#: vm/models/common.py:43
-msgid "RAM size"
-msgstr "RAM-méret"
-
-#: dashboard/templates/dashboard/node-detail/resources.html:8
-msgid "Architecture"
-msgstr "Architektúra"
-
-#: dashboard/templates/dashboard/node-detail/resources.html:9
-msgid "Host IP"
-msgstr "Gép IP címe"
-
-#: dashboard/templates/dashboard/node-detail/resources.html:11
-msgid "Host online"
-msgstr "Gép elérhető"
-
-#: dashboard/templates/dashboard/node-detail/resources.html:12
-msgid "Priority"
-msgstr "Prioritás"
-
-#: dashboard/templates/dashboard/node-detail/resources.html:13
-msgid "Driver Version:"
-msgstr "Driver verziója:"
-
-#: dashboard/templates/dashboard/node-detail/resources.html:19
-msgid "with uncommitted changes!"
-msgstr "beküldetlen változásokkal!"
-
-#: dashboard/templates/dashboard/node-detail/resources.html:23
-msgid "Host owner"
-msgstr "Gép tulajdonosa"
-
-#: dashboard/templates/dashboard/node-detail/resources.html:28
-msgid "Host name"
-msgstr "Gépnév"
-
-#: dashboard/templates/dashboard/node-detail/resources.html:34
-msgid "Edit host"
-msgstr "Gép szerkesztése"
-
-#: dashboard/templates/dashboard/notifications/email.txt:2
-#, python-format
-msgid "Dear %(u)s,"
-msgstr "Kedves %(u)s!"
-
-#: dashboard/templates/dashboard/notifications/email.txt:5
-#, python-format
-msgid "You have a new notification:"
-msgid_plural "You have %(n)s new notifications:"
-msgstr[0] "Egy új értesítése van:"
-msgstr[1] "%(n)s új értesítése van:"
-
-#: dashboard/templates/dashboard/notifications/email.txt:10
-#, python-format
-msgid "See it in detail on <%(url)s>."
-msgid_plural " See them in detail on <%(url)s>."
-msgstr[0] "Részletek: <%(url)s>."
-msgstr[1] "Részletek: <%(url)s>."
-
-#: dashboard/templates/dashboard/notifications/email.txt:15
-msgid "You can change your subscription without logging in:"
-msgstr "Bejelentkezés nélkül módosíthatja feliratkozásait:"
-
 #: dashboard/templates/dashboard/store/_list-box.html:9
 #: dashboard/templates/dashboard/store/_list-box.html:27
 #: dashboard/templates/dashboard/store/upload.html:4
@@ -2069,7 +1799,7 @@ msgid "Name "
 msgstr "Név "
 
 #: dashboard/templates/dashboard/store/_list-box.html:73
-#: dashboard/templates/dashboard/store/index-files.html:57
+#: dashboard/templates/dashboard/store/index-files.html:61
 msgid "Refresh"
 msgstr "Frissítés"
 
@@ -2082,7 +1812,7 @@ msgid "Latest modification"
 msgstr "Legutóbbi változtatás"
 
 #: dashboard/templates/dashboard/store/_list-box.html:128
-#: dashboard/templates/dashboard/store/index-files.html:30
+#: dashboard/templates/dashboard/store/index-files.html:32
 msgid "Download"
 msgstr "Letöltés"
 
@@ -2094,7 +1824,7 @@ msgstr "A mappa üres."
 msgid "A list of your most recent files."
 msgstr "A legújabb fájlok listája."
 
-#: dashboard/templates/dashboard/store/index-files.html:11
+#: dashboard/templates/dashboard/store/index-files.html:12
 #, python-format
 msgid ""
 "\n"
@@ -2105,28 +1835,28 @@ msgstr ""
 "      Jelenlegi használat: %(used)s, puha korlát: %(soft)s, kemény korlát: %(hard)s.\n"
 "      "
 
-#: dashboard/templates/dashboard/store/index-files.html:16
+#: dashboard/templates/dashboard/store/index-files.html:17
 #: templates/info/help.html:227
 msgid "Files"
 msgstr "Fájlok"
 
-#: dashboard/templates/dashboard/store/index-files.html:34
+#: dashboard/templates/dashboard/store/index-files.html:36
 msgid "Show in directory"
 msgstr "Megjelenítés könyvtárban"
 
-#: dashboard/templates/dashboard/store/index-files.html:50
+#: dashboard/templates/dashboard/store/index-files.html:53
 msgid "Your toplist is empty, upload something."
 msgstr "Nincs friss fájlja. Töltsön föl valamit most."
 
-#: dashboard/templates/dashboard/store/index-files.html:62
+#: dashboard/templates/dashboard/store/index-files.html:66
 msgid "show my files"
 msgstr "fájlok megjelenítése"
 
-#: dashboard/templates/dashboard/store/index-files.html:65
+#: dashboard/templates/dashboard/store/index-files.html:69
 msgid "upload"
 msgstr "feltöltés"
 
-#: dashboard/templates/dashboard/store/list.html:4
+#: dashboard/templates/dashboard/store/list.html:5
 #: network/templates/network/dashboard.html:24
 #: network/templates/network/dashboard.html:40
 #: network/templates/network/dashboard.html:56
@@ -2138,13 +1868,13 @@ msgstr "feltöltés"
 msgid "List"
 msgstr "Felsorolás"
 
-#: dashboard/templates/dashboard/store/list.html:4
+#: dashboard/templates/dashboard/store/list.html:5
 #: dashboard/templates/dashboard/store/upload.html:4
 #: dashboard/templates/dashboard/vm-detail/home.html:146
 msgid "Store"
 msgstr "Tárhely"
 
-#: dashboard/templates/dashboard/store/list.html:21
+#: dashboard/templates/dashboard/store/list.html:22
 #, python-format
 msgid ""
 "\n"
@@ -2155,11 +1885,11 @@ msgstr ""
 "          %(used)s használatban\n"
 "        "
 
-#: dashboard/templates/dashboard/store/list.html:28
+#: dashboard/templates/dashboard/store/list.html:30
 msgid "Hard limit"
 msgstr "Kemény korlát"
 
-#: dashboard/templates/dashboard/store/list.html:32
+#: dashboard/templates/dashboard/store/list.html:34
 msgid "Soft limit"
 msgstr "Puha korlát"
 
@@ -2205,6 +1935,62 @@ msgstr "Fájlfeltöltés"
 msgid "Currently uploading to"
 msgstr "Feltöltés helye:"
 
+#: dashboard/templates/dashboard/template-edit.html:7
+#: vm/models/instance.py:157 vm/models/instance.py:230 vm/models/network.py:44
+msgid "template"
+msgstr "sablon"
+
+#: dashboard/templates/dashboard/template-edit.html:18
+msgid "Edit template"
+msgstr "Sablon szerkesztése"
+
+#: dashboard/templates/dashboard/template-edit.html:30
+msgid "Parent template"
+msgstr "Szülősablon"
+
+#: dashboard/templates/dashboard/template-edit.html:78
+msgid "Delete template"
+msgstr "Sablon törlése"
+
+#: dashboard/templates/dashboard/template-edit.html:89
+msgid "You are the current owner of this template."
+msgstr "Ön a jelenlegi tulajdonosa a sablonnak."
+
+#: dashboard/templates/dashboard/template-edit.html:92
+#, python-format
+msgid ""
+"\n"
+"          The current owner of this template is <a href=\"%(url)s\">%(name)s (%(owner)s)</a>.\n"
+"        "
+msgstr ""
+"\n"
+"A sablon jelenlegi tulajdonosa <a href=\"%(url)s\">%(name)s (%(owner)s)</a>."
+
+#: dashboard/templates/dashboard/template-edit.html:98
+#: dashboard/templates/dashboard/vm-detail/access.html:15
+msgid "Transfer ownership..."
+msgstr "Tulajdon átruházása..."
+
+#: dashboard/templates/dashboard/template-edit.html:115
+msgid "Disk list"
+msgstr "Lemezek"
+
+#: dashboard/templates/dashboard/template-edit.html:120
+msgid "No disks are added!"
+msgstr "Egy lemez sincs hozzáadva!"
+
+#: dashboard/templates/dashboard/template-list.html:15
+msgid "new template"
+msgstr "új sablon"
+
+#: dashboard/templates/dashboard/template-list.html:53
+msgid "new lease"
+msgstr "bérlési mód létrehozása"
+
+#: dashboard/templates/dashboard/template-list.html:56
+msgid "Leases"
+msgstr "Bérlési módok"
+
 #: dashboard/templates/dashboard/template-list/column-template-resources.html:5
 #, python-format
 msgid ""
@@ -2220,6 +2006,157 @@ msgstr[1] ""
 "\n"
 "  %(num_cores)s CPU mag\n"
 
+#: dashboard/templates/dashboard/unsubscribe.html:10
+msgid "Subscription settings"
+msgstr "Feliratkozások"
+
+#: dashboard/templates/dashboard/user-list.html:15
+#| msgid "new lease"
+msgid "new user"
+msgstr "új felhasználó létrehozása"
+
+#: dashboard/templates/dashboard/userkey-create.html:5
+#: dashboard/templates/dashboard/userkey-create.html:14
+msgid "Create SSH public key"
+msgstr "SSH publikus kulcs létrehozása"
+
+#: dashboard/templates/dashboard/userkey-edit.html:6
+#: dashboard/templates/dashboard/userkey-edit.html:15
+msgid "Edit SSH public key"
+msgstr "SSH publikus kulcs módosítása"
+
+#: dashboard/templates/dashboard/vm-detail.html:20
+msgid "Toggle tutorial panel"
+msgstr "Kalauz engedélyezése/tiltása"
+
+#: dashboard/templates/dashboard/vm-detail.html:25
+msgid "Start template tutorial"
+msgstr "Sablon-kalauz indítása"
+
+#: dashboard/templates/dashboard/vm-detail.html:28
+msgid "This is the master vm of your new template"
+msgstr "Ez a mesterpéldány egy új sablonhoz"
+
+#: dashboard/templates/dashboard/vm-detail.html:30
+msgid ""
+"Modify the virtual machine to suit your needs <strong>(optional)</strong>"
+msgstr "Módosítsa a virtuális gépet <strong>(igény szerint)</strong>"
+
+#: dashboard/templates/dashboard/vm-detail.html:32
+msgid "Change the description"
+msgstr "Változtassa meg a leírást"
+
+#: dashboard/templates/dashboard/vm-detail.html:33
+msgid "Change resources (CPU and RAM)"
+msgstr "Állítsa be az erőforrásokat (CPU és memória)"
+
+#: dashboard/templates/dashboard/vm-detail.html:34
+msgid "Attach or detach disks"
+msgstr "Csatoljon vagy válasszon le lemezeket"
+
+#: dashboard/templates/dashboard/vm-detail.html:35
+msgid "Add or remove network interfaces"
+msgstr "Adjon hozz vagy törljön hálózati interfészeket"
+
+#: dashboard/templates/dashboard/vm-detail.html:38
+msgid "Deploy the virtual machine"
+msgstr "Indítsa el a virtuális gépet"
+
+#: dashboard/templates/dashboard/vm-detail.html:39
+msgid "Connect to the machine"
+msgstr "Csatlakozzon a géphez"
+
+#: dashboard/templates/dashboard/vm-detail.html:40
+msgid "Do all the needed installations/customizations"
+msgstr "Végezze el a szükséges telepítéseket, testreszabásokat"
+
+#: dashboard/templates/dashboard/vm-detail.html:41
+msgid "Log off from the machine"
+msgstr "Jelentkezzen ki a gépből"
+
+#: dashboard/templates/dashboard/vm-detail.html:43
+msgid "Press the Save as template button"
+msgstr "Kattintson a Mentés sablonként gombra"
+
+#: dashboard/templates/dashboard/vm-detail.html:46
+msgid "Delete this virtual machine <strong>(optional)</strong>"
+msgstr "Törölje a virtális gépet <strong>(ha szükséges)</strong>"
+
+#: dashboard/templates/dashboard/vm-detail.html:97
+msgid "Connection details"
+msgstr "Kapcsolat részletei"
+
+#: dashboard/templates/dashboard/vm-detail.html:106
+msgid "The VM doesn't have any network interface."
+msgstr "A VM-nek nincs hálózati interfésze."
+
+#: dashboard/templates/dashboard/vm-detail.html:108
+msgid "The required port for this protocol is not forwarded."
+msgstr "A csatlakozáshoz szükséges port nincs továbbítva."
+
+#: dashboard/templates/dashboard/vm-detail.html:113
+msgid "Host (IPv6)"
+msgstr "Gép (IPv6)"
+
+#: dashboard/templates/dashboard/vm-detail.html:125
+msgid "Show password"
+msgstr "Jelszó megjelenítése"
+
+#: dashboard/templates/dashboard/vm-detail.html:137
+msgid "Start the VM to change the password."
+msgstr "Jelszóváltoztatáshoz el kell indítani a gépet."
+
+#: dashboard/templates/dashboard/vm-detail.html:137
+msgid "This machine has no agent installed."
+msgstr "A gépre nincs ügynök telepítve."
+
+#: dashboard/templates/dashboard/vm-detail.html:139
+msgid "Generate new password!"
+msgstr "Új jelszó generálása"
+
+#: dashboard/templates/dashboard/vm-detail.html:147
+#: dashboard/templates/dashboard/vm-detail.html:159
+msgid "Command"
+msgstr "Parancs"
+
+#: dashboard/templates/dashboard/vm-detail.html:152
+#: dashboard/templates/dashboard/vm-detail.html:163
+#: dashboard/templates/dashboard/vm-list.html:23
+msgid "Select all"
+msgstr "Összes kiválasztása"
+
+#: dashboard/templates/dashboard/vm-detail.html:160
+msgid "Connection is not possible."
+msgstr "A csatlakozás nem lehetséges."
+
+#: dashboard/templates/dashboard/vm-detail.html:170
+msgid "Connect via the CIRCLE Client"
+msgstr "Csatlakozás CIRCLE klienssel"
+
+#: dashboard/templates/dashboard/vm-detail.html:171
+msgid "Connect"
+msgstr "Csatlakozás"
+
+#: dashboard/templates/dashboard/vm-detail.html:173
+msgid "Download client"
+msgstr "Kliens letöltése"
+
+#: dashboard/templates/dashboard/vm-detail.html:175
+msgid "Download the CIRCLE Client"
+msgstr "A CIRCLE kliens letöltése"
+
+#: dashboard/templates/dashboard/vm-detail.html:176
+msgid "Connect (download client)"
+msgstr "Csatlakozás (kliens letöltése)"
+
+#: dashboard/templates/dashboard/vm-detail.html:198
+msgid "Console"
+msgstr "Konzol"
+
+#: dashboard/templates/dashboard/vm-detail.html:202
+msgid "Access"
+msgstr "Hozzáférés"
+
 #: dashboard/templates/dashboard/vm-detail/_activity-timeline.html:31
 msgid "Abort"
 msgstr "Megszakítás"
@@ -2232,7 +2169,7 @@ msgstr "Kevesebb tevékenység megjelenítése"
 msgid "Show all activities"
 msgstr "Összes tevékenység megjelenítése"
 
-#: dashboard/templates/dashboard/vm-detail/_network-port-add.html:16
+#: dashboard/templates/dashboard/vm-detail/_network-port-add.html:17
 msgid "Add"
 msgstr "Hozzáadás"
 
@@ -2254,20 +2191,20 @@ msgstr ""
 msgid "Permissions"
 msgstr "Jogosultságok"
 
-#: dashboard/templates/dashboard/vm-detail/console.html:4
+#: dashboard/templates/dashboard/vm-detail/console.html:5
 msgid "Send Ctrl+Alt+Del"
 msgstr "Ctrl+Alt+Del küldése"
 
-#: dashboard/templates/dashboard/vm-detail/console.html:5
+#: dashboard/templates/dashboard/vm-detail/console.html:6
 msgid "Type password"
 msgstr "Jelszó begépelése"
 
-#: dashboard/templates/dashboard/vm-detail/console.html:7
-#: dashboard/templates/dashboard/vm-detail/console.html:16
+#: dashboard/templates/dashboard/vm-detail/console.html:8
+#: dashboard/templates/dashboard/vm-detail/console.html:17
 msgid "Screenshot"
 msgstr "Képernyőkép"
 
-#: dashboard/templates/dashboard/vm-detail/console.html:15
+#: dashboard/templates/dashboard/vm-detail/console.html:16
 msgid "Close"
 msgstr "Bezárás"
 
@@ -2303,7 +2240,7 @@ msgstr "Nincs címke."
 msgid "Add tag"
 msgstr "Címke hozzáadása"
 
-#: dashboard/templates/dashboard/vm-detail/network.html:8 vm/operations.py:201
+#: dashboard/templates/dashboard/vm-detail/network.html:8 vm/operations.py:203
 msgid "add interface"
 msgstr "új interfész"
 
@@ -2319,35 +2256,35 @@ msgstr "nem menedzselt"
 msgid "edit"
 msgstr "szerkesztés"
 
-#: dashboard/templates/dashboard/vm-detail/network.html:36
+#: dashboard/templates/dashboard/vm-detail/network.html:37
 #: firewall/models.py:598
 msgid "IPv4 address"
 msgstr "IPv4 cím"
 
-#: dashboard/templates/dashboard/vm-detail/network.html:37
+#: dashboard/templates/dashboard/vm-detail/network.html:38
 #: firewall/models.py:608
 msgid "IPv6 address"
 msgstr "IPv6 cím"
 
-#: dashboard/templates/dashboard/vm-detail/network.html:38
+#: dashboard/templates/dashboard/vm-detail/network.html:39
 msgid "DNS name"
 msgstr "DNS név"
 
-#: dashboard/templates/dashboard/vm-detail/network.html:51
+#: dashboard/templates/dashboard/vm-detail/network.html:52
 #: network/forms.py:250
 msgid "IPv4"
 msgstr "IPv4"
 
-#: dashboard/templates/dashboard/vm-detail/network.html:52
+#: dashboard/templates/dashboard/vm-detail/network.html:53
 #: network/forms.py:257
 msgid "IPv6"
 msgstr "IPv6"
 
-#: dashboard/templates/dashboard/vm-detail/network.html:54
+#: dashboard/templates/dashboard/vm-detail/network.html:55
 msgid "Port access"
 msgstr "Portok elérése"
 
-#: dashboard/templates/dashboard/vm-detail/network.html:121
+#: dashboard/templates/dashboard/vm-detail/network.html:128
 msgid "This VM doesn't have an IPv6 address!"
 msgstr "A VM-nek nincs IPv6 címe."
 
@@ -2364,13 +2301,57 @@ msgstr "Erőforrások mentése"
 msgid "Stop your VM to change resources."
 msgstr "Állítsa le a VM-et az erőforrások módosításához."
 
-#: dashboard/templates/dashboard/vm-detail/resources.html:51
-msgid "Required traits"
-msgstr "Elvárt jellemzők"
-
-#: dashboard/templates/dashboard/vm-detail/resources.html:63
+#: dashboard/templates/dashboard/vm-detail/resources.html:64
 msgid "Raw data"
 msgstr "Nyers adat"
+
+#: dashboard/templates/dashboard/vm-list.html:14
+msgid "Sorting ... "
+msgstr "Rendezés…"
+
+#: dashboard/templates/dashboard/vm-list.html:22
+msgid "Group actions"
+msgstr "Csoportos műveletek"
+
+#: dashboard/templates/dashboard/vm-list.html:38
+msgid "Include deleted VMs"
+msgstr "Törölt VM-ek megjelenítése"
+
+#: dashboard/templates/dashboard/vm-list.html:58
+msgid "ID"
+msgstr "ID"
+
+#: dashboard/templates/dashboard/vm-list.html:66
+msgid "State"
+msgstr "Állapot"
+
+#: dashboard/templates/dashboard/vm-list.html:83
+msgid "IP address"
+msgstr "IP cím"
+
+#: dashboard/templates/dashboard/vm-list.html:135
+msgid "No result."
+msgstr "Nincs eredmény."
+
+#: dashboard/templates/dashboard/vm-list.html:155
+msgid ""
+"You can select multiple vm instances while holding down the "
+"<strong>CTRL</strong> key."
+msgstr ""
+"Több virtuális gépet is kiválaszthat a  <strong>CTRL</strong> billentyű "
+"lenyomásával."
+
+#: dashboard/templates/dashboard/vm-list.html:156
+msgid ""
+"If you want to select multiple instances by one click select an instance "
+"then hold down <strong>SHIFT</strong> key and select another one!"
+msgstr ""
+"Ha több egymást követő példányt szeretne kiválasztani, válassza ki az elsőt,"
+" majd a <strong>SHIFT</strong> billentyűt lenyomva tartva az utolsót."
+
+#: dashboard/validators.py:57
+msgid "Invalid template string."
+msgstr "Érvénytelen sablon."
 
 #: dashboard/views/graph.py:172 dashboard/views/graph.py:173
 msgid "RAM usage (%)"
@@ -2392,58 +2373,59 @@ msgstr "példányok száma"
 msgid "Allocated memory (bytes)"
 msgstr "Foglalt memória (byte)"
 
-#: dashboard/views/group.py:150
+#: dashboard/views/group.py:151
 #, python-format
 msgid "User \"%s\" not found."
 msgstr "Nem található „%s” felhasználó."
 
-#: dashboard/views/group.py:164
+#: dashboard/views/group.py:165
 msgid "Group successfully renamed."
 msgstr "A csoport átnevezésre került."
 
-#: dashboard/views/group.py:268
+#: dashboard/views/group.py:234
 msgid "Member successfully removed from group."
 msgstr "A csoporttag eltávolításra került."
 
-#: dashboard/views/group.py:309
+#: dashboard/views/group.py:267
 msgid "Future user successfully removed from group."
 msgstr "A leendő csoporttag eltávolításra került."
 
-#: dashboard/views/group.py:336
+#: dashboard/views/group.py:289
 msgid "Group successfully deleted."
 msgstr "A csoport törlésre került."
 
-#: dashboard/views/group.py:376
+#: dashboard/views/group.py:318
 msgid "Create a Group"
 msgstr "Csoport létrehozása"
 
-#: dashboard/views/group.py:392
+#: dashboard/views/group.py:334
 msgid "Group successfully created."
 msgstr "A csoport létrehozásra került."
 
-#: dashboard/views/group.py:406
+#: dashboard/views/group.py:348
 msgid "Group is successfully updated."
 msgstr "A csoport frissítésre került."
 
-#: dashboard/views/node.py:121
+#: dashboard/views/node.py:127
 msgid "Node successfully renamed."
 msgstr "A csomópont átnevezésre került."
 
-#: dashboard/views/node.py:230
+#: dashboard/views/node.py:217
+#| msgid "Create a new record"
+msgid "Create a node"
+msgstr "Új csomópont hozzáadása"
+
+#: dashboard/views/node.py:241
 msgid "Node successfully created."
 msgstr "A csomópont létrehozásra került."
 
-#: dashboard/views/node.py:258
+#: dashboard/views/node.py:252
 msgid "Node successfully deleted."
 msgstr "A csomópont törlésre került."
 
-#: dashboard/views/node.py:305
+#: dashboard/views/node.py:288
 msgid "Trait successfully added to node."
 msgstr "A csomópontjellemző hozzáadásra került."
-
-#: dashboard/views/node.py:350
-msgid "Node successfully changed status."
-msgstr "A csomópont állapota megváltoztatásra került."
 
 #: dashboard/views/store.py:73
 msgid "No store."
@@ -2474,39 +2456,39 @@ msgstr "%s törlése sikertelen."
 msgid "Unable to create folder."
 msgstr "Mappa létrehozása sikertelen."
 
-#: dashboard/views/template.py:68
+#: dashboard/views/template.py:69
 msgid "Choose template"
 msgstr "Válasszon sablont"
 
-#: dashboard/views/template.py:83
+#: dashboard/views/template.py:84
 msgid "Select an option to proceed."
 msgstr "Válasszon a folytatáshoz."
 
-#: dashboard/views/template.py:114
+#: dashboard/views/template.py:115
 msgid "Create a new base VM"
 msgstr "Alap VM létrehozása"
 
-#: dashboard/views/template.py:229
+#: dashboard/views/template.py:242
 msgid "Error during filtering."
 msgstr "A szűrés sikertelen."
 
-#: dashboard/views/template.py:248
-msgid "Only the owners can delete the selected template."
-msgstr "A kiválasztott sablont csak a tulajdonosok törölhetik."
-
-#: dashboard/views/template.py:264
+#: dashboard/views/template.py:249
 msgid "Template successfully deleted."
 msgstr "A sablon törlésre került."
 
-#: dashboard/views/template.py:280
+#: dashboard/views/template.py:264
 msgid "Successfully modified template."
 msgstr "A sablon módosításra került."
 
-#: dashboard/views/template.py:355
+#: dashboard/views/template.py:322
+msgid "Disk successfully removed."
+msgstr "A lemez eltávolításra került."
+
+#: dashboard/views/template.py:338
 msgid "Disk remove confirmation"
 msgstr "Lemez törlésének megerősítése"
 
-#: dashboard/views/template.py:356
+#: dashboard/views/template.py:339
 #, python-format
 msgid ""
 "Are you sure you want to remove <strong>%(disk)s</strong> from "
@@ -2515,23 +2497,23 @@ msgstr ""
 "Biztosan eltávolítja a(z) <strong>%(disk)s</strong> lemezt a következőből: "
 "%(app)s?"
 
-#: dashboard/views/template.py:375
-msgid "Disk successfully removed."
-msgstr "A lemez eltávolításra került."
-
-#: dashboard/views/template.py:393
+#: dashboard/views/template.py:362
 msgid "Successfully created a new lease."
 msgstr "Új bérlési mód létrehozásra került."
 
-#: dashboard/views/template.py:412
+#: dashboard/views/template.py:381
 msgid "Successfully modified lease."
 msgstr "A bérlési mód megváltoztatásra került."
 
-#: dashboard/views/template.py:426
+#: dashboard/views/template.py:395
 msgid "Only the owners can modify the selected lease."
 msgstr "Csak a tulajdonosai törölhetik a kiválasztott bérleti módot."
 
-#: dashboard/views/template.py:455
+#: dashboard/views/template.py:409
+msgid "Lease successfully deleted."
+msgstr "A bérlési mód törlésre került."
+
+#: dashboard/views/template.py:419
 msgid ""
 "You can't delete this lease because some templates are still using it, "
 "modify these to proceed: "
@@ -2539,15 +2521,7 @@ msgstr ""
 "Nem törölhető a bérleti mód, mivel az alábbi sablonok még használják. A "
 "folytatáshoz módosítsa őket: "
 
-#: dashboard/views/template.py:466
-msgid "Only the owners can delete the selected lease."
-msgstr "Csak a tulajdonos törölheti a kiválasztott bérleti módot."
-
-#: dashboard/views/template.py:484
-msgid "Lease successfully deleted."
-msgstr "A bérlési mód törlésre került."
-
-#: dashboard/views/template.py:505
+#: dashboard/views/template.py:444
 #, python-format
 msgid ""
 "%(user)s offered you to take the ownership of his/her template called "
@@ -2557,40 +2531,45 @@ msgstr ""
 "%(user)s át kívánja ruházni %(instance)s nevű sablonját Önre. <a "
 "href=\"%(token)s\" class=\"btn btn-success btn-small\">Elfogadás</a>"
 
-#: dashboard/views/user.py:134
+#: dashboard/views/user.py:150
 #, python-format
 msgid "Logged in as user %s."
 msgstr "Bejelentkezve mint %s."
 
-#: dashboard/views/user.py:167
+#: dashboard/views/user.py:183
 msgid "You don't have a profile."
 msgstr "Nincs profilja."
 
-#: dashboard/views/user.py:205
+#: dashboard/views/user.py:221
 msgid "Successfully modified subscription."
 msgstr "A feliratkozás módosításra került."
 
-#: dashboard/views/user.py:369
+#: dashboard/views/user.py:307
+#| msgid "Successfully modified lease."
+msgid "Successfully modified user."
+msgstr "A felhasználó megváltoztatásra került."
+
+#: dashboard/views/user.py:399
 msgid "Successfully modified SSH key."
 msgstr "Az SSH kulcs módosításra került."
 
-#: dashboard/views/user.py:407
+#: dashboard/views/user.py:420
 msgid "SSH key successfully deleted."
 msgstr "Az SSH kulcs törlésre került."
 
-#: dashboard/views/user.py:423
+#: dashboard/views/user.py:434
 msgid "Successfully created a new SSH key."
 msgstr "Az új SSH kulcs hozzáadásra került."
 
-#: dashboard/views/user.py:439
+#: dashboard/views/user.py:450
 msgid "Successfully modified command template."
 msgstr "A parancssablon módosításra került."
 
-#: dashboard/views/user.py:482
+#: dashboard/views/user.py:476
 msgid "Command template successfully deleted."
 msgstr "A parancssablon törlésre került."
 
-#: dashboard/views/user.py:499
+#: dashboard/views/user.py:491
 msgid "Successfully created a new command template."
 msgstr "A parancssablon létrehozásra került."
 
@@ -2715,76 +2694,70 @@ msgstr "Átruházás elfogadva"
 msgid "Your ownership offer of %(instance)s has been accepted by %(user)s."
 msgstr "%(instance)s gépre vonatkozó átruházási ajánlatát elfogadta %(user)s."
 
-#: dashboard/views/vm.py:86
+#: dashboard/views/util.py:716
+#| msgid "Only the owners can delete the selected lease."
+msgid "Only the owners can delete the selected object."
+msgstr "Csak a tulajdonos törölheti a kiválasztott objektumot."
+
+#: dashboard/views/vm.py:88
 msgid "console access"
 msgstr "konzolhozzáférés"
 
-#: dashboard/views/vm.py:195
+#: dashboard/views/vm.py:197
 msgid "VM successfully renamed."
 msgstr "A virtuális gép átnevezésre került."
 
-#: dashboard/views/vm.py:219
+#: dashboard/views/vm.py:221
 msgid "VM description successfully updated."
 msgstr "A VM leírása megváltoztatásra került."
 
-#: dashboard/views/vm.py:567
+#: dashboard/views/vm.py:609
 msgid "The token has expired."
 msgstr "A token lejárt."
 
-#: dashboard/views/vm.py:783
+#: dashboard/views/vm.py:827
 #, python-format
 msgid "Failed to execute %(op)s operation on instance %(instance)s."
 msgstr "%(op)s végrehajtása meghiúsult a következőn: %(instance)s."
 
-#: dashboard/views/vm.py:799
+#: dashboard/views/vm.py:843
 #, python-format
 msgid "You are not permitted to execute %(op)s on instance %(instance)s."
 msgstr "Nem engedélyezett a(z) %(op)s végrehajtása a(z) %(instance)s gépen."
 
-#: dashboard/views/vm.py:981
+#: dashboard/views/vm.py:1035
 msgid "Customize VM"
 msgstr "VM testreszabása"
 
-#: dashboard/views/vm.py:989
+#: dashboard/views/vm.py:1043
 msgid "Create a VM"
 msgstr "VM létrehozása"
 
-#: dashboard/views/vm.py:1054
+#: dashboard/views/vm.py:1096
 #, python-format
 msgid "Successfully created %(count)d VM."
 msgid_plural "Successfully created %(count)d VMs."
 msgstr[0] "%(count)d VM létrehozásra került."
 msgstr[1] "%(count)d VM létrehozásra került."
 
-#: dashboard/views/vm.py:1059
+#: dashboard/views/vm.py:1101
 msgid "VM successfully created."
 msgstr "VM létrehozásra került."
 
-#: dashboard/views/vm.py:1088
+#: dashboard/views/vm.py:1132
 #, python-format
 msgid "Instance limit (%d) exceeded."
 msgstr "A példányok létrehozási korlátját (%d) túllépte."
 
-#: dashboard/views/vm.py:1126
-#, python-format
-msgid ""
-"Are you sure you want to remove this interface from <strong>%(vm)s</strong>?"
-msgstr ""
-"Biztosan eltávolítja az interfészt a(z) <strong>%(vm)s</strong> gépből?"
-
-#: dashboard/views/vm.py:1140
-msgid "Interface successfully deleted."
-msgstr "Az interfész törlésre került."
-
-#: dashboard/views/vm.py:1206
+#: dashboard/views/vm.py:1200
 msgid "About CIRCLE Client"
 msgstr "A CIRCLE kliensről"
 
-#: dashboard/views/vm.py:1296
+#: dashboard/views/vm.py:1290
 msgid "transfer ownership"
 msgstr "tulajdon átruházása"
 
-#: dashboard/views/vm.py:1306
+#: dashboard/views/vm.py:1300
 #, python-format
 msgid ""
 "%(user)s offered you to take the ownership of his/her virtual machine called"
@@ -2888,9 +2861,9 @@ msgid "If the rule matches egress or ingress packets."
 msgstr "A szabály kimenő vagy bejövő csomagokra illeszkedik."
 
 #: firewall/models.py:72 firewall/models.py:345 firewall/models.py:535
-#: firewall/models.py:558 firewall/models.py:615 firewall/models.py:986
-#: firewall/models.py:1010 firewall/models.py:1080 vm/models/instance.py:137
-#: vm/models/instance.py:227
+#: firewall/models.py:558 firewall/models.py:615 firewall/models.py:983
+#: firewall/models.py:1007 firewall/models.py:1077 vm/models/instance.py:136
+#: vm/models/instance.py:226
 msgid "description"
 msgstr "leírás"
 
@@ -3007,10 +2980,10 @@ msgstr "vlan-csoport"
 msgid "Group of vlans the rule applies to (if type is vlan)."
 msgstr "Erre a vlan-csoportra vonatkozik a szabály (ha a típus vlan)."
 
-#: firewall/models.py:137 firewall/models.py:1003 firewall/models.py:1123
+#: firewall/models.py:137 firewall/models.py:1000 firewall/models.py:1120
 #: network/templates/network/host-create.html:8
 #: network/templates/network/host-edit.html:8 vm/models/network.py:66
-#: vm/models/node.py:70
+#: vm/models/node.py:126
 msgid "host"
 msgstr "gép"
 
@@ -3245,7 +3218,7 @@ msgstr "A csoport tagjait képező vlanok."
 msgid "Description of the group."
 msgstr "A csoport leírása."
 
-#: firewall/models.py:581 network/tables.py:130 storage/models.py:50
+#: firewall/models.py:581 network/tables.py:135 storage/models.py:50
 msgid "hostname"
 msgstr "gépnév"
 
@@ -3265,7 +3238,7 @@ msgstr ""
 "A gép teljes reverz tartományneve, amennyiben különbözik ettől: "
 "gépnév.tartomány."
 
-#: firewall/models.py:593 network/tables.py:129
+#: firewall/models.py:593 network/tables.py:134
 msgid "MAC address"
 msgstr "MAC cím"
 
@@ -3352,54 +3325,50 @@ msgstr "Minden %s port használatban van."
 msgid "Port %(proto)s %(public)s is already in use."
 msgstr "A(z) %(public)s %(proto)s port használatban van."
 
-#: firewall/models.py:829
-msgid "Only ports above 1024 can be used."
-msgstr "Csak az 1024 feletti portok használhatóak."
-
-#: firewall/models.py:982 firewall/models.py:1012 firewall/models.py:1082
-#: firewall/models.py:1110 firewall/models.py:1134
+#: firewall/models.py:979 firewall/models.py:1009 firewall/models.py:1079
+#: firewall/models.py:1107 firewall/models.py:1131
 msgid "created_at"
 msgstr "létrehozva"
 
-#: firewall/models.py:984 firewall/models.py:1014 firewall/models.py:1084
-#: firewall/models.py:1112 firewall/models.py:1136
+#: firewall/models.py:981 firewall/models.py:1011 firewall/models.py:1081
+#: firewall/models.py:1109 firewall/models.py:1133
 msgid "modified_at"
 msgstr "módosítva"
 
-#: firewall/models.py:985 firewall/models.py:1008
+#: firewall/models.py:982 firewall/models.py:1005
 msgid "ttl"
 msgstr "ttl"
 
-#: firewall/models.py:1001 network/templates/network/domain-create.html:8
+#: firewall/models.py:998 network/templates/network/domain-create.html:8
 #: network/templates/network/domain-edit.html:8
 msgid "domain"
 msgstr "tartomány"
 
-#: firewall/models.py:1007
+#: firewall/models.py:1004
 msgid "address"
 msgstr "cím"
 
-#: firewall/models.py:1029
+#: firewall/models.py:1026
 msgid "Address must be specified!"
 msgstr "A cím megadása kötelező."
 
-#: firewall/models.py:1042
+#: firewall/models.py:1039
 msgid "Unknown record type."
 msgstr "Ismeretlen rekordtípus."
 
-#: firewall/models.py:1076
+#: firewall/models.py:1073
 msgid "untagged vlan"
 msgstr "untagged vlan"
 
-#: firewall/models.py:1079
+#: firewall/models.py:1076
 msgid "tagged vlans"
 msgstr "tagged vlanok"
 
-#: firewall/models.py:1102
+#: firewall/models.py:1099
 msgid "interface"
 msgstr "interfész"
 
-#: firewall/models.py:1103
+#: firewall/models.py:1100
 msgid ""
 "The name of network interface the gateway should serve this network on. For "
 "example eth2."
@@ -3407,24 +3376,24 @@ msgstr ""
 "Azon hálózati interfész nevve, amelyen az útválasztó ezt a hálózatot "
 "kiszolgálja. Például eth2."
 
-#: firewall/models.py:1108 network/templates/network/switch-port-create.html:8
+#: firewall/models.py:1105 network/templates/network/switch-port-create.html:8
 #: network/templates/network/switch-port-edit.html:8
 msgid "switch port"
 msgstr "switch port"
 
-#: firewall/models.py:1124
+#: firewall/models.py:1121
 msgid "reason"
 msgstr "indok"
 
-#: firewall/models.py:1126
+#: firewall/models.py:1123
 msgid "short message"
 msgstr "rövid üzenet"
 
-#: firewall/models.py:1146
+#: firewall/models.py:1143
 msgid "blacklist item"
 msgstr "tiltólista eleme"
 
-#: firewall/models.py:1147 network/templates/network/blacklist-create.html:8
+#: firewall/models.py:1144 network/templates/network/blacklist-create.html:8
 #: network/templates/network/blacklist-edit.html:8
 msgid "blacklist"
 msgstr "tiltólista"
@@ -3521,169 +3490,17 @@ msgstr "DNS szolgáltatás"
 msgid "Info"
 msgstr "Infó"
 
-#: network/tables.py:125 network/tables.py:138
+#: network/tables.py:130 network/tables.py:143
 msgid "No hosts."
 msgstr "Nincs gép."
 
-#: network/tables.py:131
+#: network/tables.py:136
 msgid "requested IP"
 msgstr "kért IP"
 
-#: network/tables.py:230
+#: network/tables.py:235
 msgid "No records."
 msgstr "Nincs rekord."
-
-#: network/views.py:132
-#, python-format
-msgid "Successfully modified blacklist item%(ipv4)s - %(type)s!"
-msgstr "Tiltólista eleme sikeresen módosítva (%(ipv4)s %(type)s)."
-
-#: network/views.py:150
-#, python-format
-msgid "Successfully created blacklist item %(ipv4)s - %(type)s!"
-msgstr "Tiltólista eleme sikeresen létrehozva (%(ipv4)s %(type)s)."
-
-#: network/views.py:188
-#, python-format
-msgid "Successfully modified domain %(name)s!"
-msgstr "A(z) %(name)s tartománynév módosításra került."
-
-#: network/views.py:215
-#, python-format
-msgid "Successfully created domain %(name)s!"
-msgstr "A(z) %(name)s tartománynév létrehozásra került."
-
-#: network/views.py:232 network/views.py:507 network/views.py:774
-msgid "Object name does not match!"
-msgstr "Az objektum neve nem egyezik."
-
-#: network/views.py:236
-msgid "Domain successfully deleted!"
-msgstr "A tartománynév törlésre került."
-
-#: network/views.py:242
-msgid "Records from hosts"
-msgstr "A gépek rekordjai"
-
-#: network/views.py:248 network/templates/network/menu.html:8
-#: network/templates/network/vlan-list.html:7
-msgid "Vlans"
-msgstr "Vlanok"
-
-#: network/views.py:256 network/views.py:789
-#: network/templates/network/host-list.html:7
-#: network/templates/network/host-list.html:13
-#: network/templates/network/menu.html:5
-msgid "Hosts"
-msgstr "Gépek"
-
-#: network/views.py:299
-#, python-format
-msgid "Successfully created host group %(name)s!"
-msgstr "%(name)s gépcsoport létrehozásra került."
-
-#: network/views.py:307
-#, python-format
-msgid "Successfully modified host group %(name)s!"
-msgstr "%(name)s gépcsoport módosításra került."
-
-#: network/views.py:386
-#, python-format
-msgid "Successfully modified host %(hostname)s!"
-msgstr "%(hostname)s gép módosításra került."
-
-#: network/views.py:459
-#, python-format
-msgid "Successfully created host %(hostname)s!"
-msgstr "%(hostname)s gép létrehozásra került."
-
-#: network/views.py:496 network/views.py:797
-#: network/templates/network/host-edit.html:75
-#: network/templates/network/menu.html:14
-#: network/templates/network/record-list.html:7
-#: network/templates/network/record-list.html:13
-msgid "Records"
-msgstr "Rekordok"
-
-#: network/views.py:511
-msgid "Host successfully deleted!"
-msgstr "A gép törlésre került."
-
-#: network/views.py:541
-msgid "Successfully modified record!"
-msgstr "A rekord módosításra került."
-
-#: network/views.py:560
-msgid "Successfully created record!"
-msgstr "A rekord létrehozásra került."
-
-#: network/views.py:611
-msgid "Successfully modified rule!"
-msgstr "A szabály módosításra került."
-
-#: network/views.py:631
-msgid "Successfully created rule!"
-msgstr "A szabály létrehozásra került."
-
-#: network/views.py:667
-msgid "Succesfully modified switch port!"
-msgstr "A switch-port módosításra került."
-
-#: network/views.py:686
-msgid "Successfully created switch port!"
-msgstr "A switch-port létrehozásra került."
-
-#: network/views.py:733
-#, python-format
-msgid "Succesfully modified vlan %(name)s!"
-msgstr "A(z) %(name)s vlan módosításra került."
-
-#: network/views.py:753
-#, python-format
-msgid "Successfully created vlan %(name)s!"
-msgstr "A(z) %(name)s vlan létrehozásra került."
-
-#: network/views.py:778
-msgid "Vlan successfully deleted!"
-msgstr "A vlan törlésre került."
-
-#: network/views.py:820
-#, python-format
-msgid "Successfully modified vlan group %(name)s!"
-msgstr "A(z) %(name)s vlan-csoport módosításra került."
-
-#: network/views.py:833
-#, python-format
-msgid "Successfully created vlan group %(name)s!"
-msgstr "A(z) %(name)s vlan-csoport módosításra került."
-
-#: network/views.py:865
-#, python-format
-msgid "Successfully removed %(host)s from %(group)s group!"
-msgstr "A(z) %(host)s csoport törlésre került a(z) %(group)s csoportból."
-
-#: network/views.py:881
-#, python-format
-msgid "Successfully added %(host)s to group %(group)s!"
-msgstr "A(z) %(host)s csoport hozzáadásra került a(z) %(group)s csoporthoz."
-
-#: network/views.py:900
-#, python-format
-msgid "Successfully deleted ethernet device %(name)s!"
-msgstr "A(z) %(name)s ethernet-eszköz törlésre került."
-
-#: network/views.py:918
-#, python-format
-msgid "Successfully added %(name)s to this switch port"
-msgstr "%(name)s hozzáadásra került a switch-porthoz."
-
-#: network/views.py:925
-msgid "Ethernet device name cannot be empty!"
-msgstr "Az ethernet-eszköz megadása kötelező."
-
-#: network/views.py:928
-msgid "There is already an ethernet device with that name!"
-msgstr "Már létezik a megadott nevű ethernet-eszköz."
 
 #: network/templates/network/base.html:46
 msgid "dashboard"
@@ -3706,6 +3523,39 @@ msgstr "Tiltólista"
 #: network/templates/network/blacklist-list.html:11
 msgid "Create a new blacklist item"
 msgstr "Tiltólista elemének hozzáadása"
+
+#: network/templates/network/columns/host-register.html:3
+msgid "register host"
+msgstr "gép regisztrálása"
+
+#: network/templates/network/confirm/base_delete.html:8
+#, python-format
+msgid ""
+"\n"
+"            Are you sure you want to delete\n"
+"            <strong>\"%(object)s\"</strong>?\n"
+"        "
+msgstr ""
+"\n"
+"            Biztosan törli a(z) \n"
+"            <strong>„%(object)s”</strong> elemet?\n"
+"        "
+
+#: network/templates/network/confirm/base_delete.html:18
+msgid "This action also <strong>removes</strong> the following"
+msgstr "A művelet <strong>törli</strong> a következőket"
+
+#: network/templates/network/confirm/base_delete.html:30
+msgid "No dependencies, \"safe\" to delete!"
+msgstr "Nincsenek függőségek, a törlés „biztonságos”."
+
+#: network/templates/network/confirm/base_delete.html:37
+msgid "If you are really sure, type in the object's name!"
+msgstr "Amennyiben biztos benne, gépelje be az objektum nevét."
+
+#: network/templates/network/confirm/base_delete.html:42
+msgid "Yes, delete it!"
+msgstr "Igen, törlés!"
 
 #: network/templates/network/domain-create.html:12
 #: network/templates/network/domain-list.html:11
@@ -3797,6 +3647,21 @@ msgstr "Csoport hozzáadása"
 msgid "Add new CNAME record"
 msgstr "CNAME rekord hozzáadása"
 
+#: network/templates/network/host-edit.html:75
+#: network/templates/network/menu.html:14
+#: network/templates/network/record-list.html:7
+#: network/templates/network/record-list.html:13 network/views.py:496
+#: network/views.py:797
+msgid "Records"
+msgstr "Rekordok"
+
+#: network/templates/network/host-list.html:7
+#: network/templates/network/host-list.html:13
+#: network/templates/network/menu.html:5 network/views.py:256
+#: network/views.py:789
+msgid "Hosts"
+msgstr "Gépek"
+
 #: network/templates/network/host-list.html:15
 msgid "list of all hosts"
 msgstr "összes gép"
@@ -3850,6 +3715,11 @@ msgstr "IP"
 #: network/templates/network/index.html:45
 msgid "Reason"
 msgstr "Indok"
+
+#: network/templates/network/menu.html:8
+#: network/templates/network/vlan-list.html:7 network/views.py:248
+msgid "Vlans"
+msgstr "Vlanok"
 
 #: network/templates/network/menu.html:23
 #: network/templates/network/switch-port-list.html:7
@@ -3949,38 +3819,137 @@ msgstr "Vlan-csoport létrehozása"
 msgid "list of all vlans"
 msgstr "összes vlan"
 
-#: network/templates/network/columns/host-register.html:3
-msgid "register host"
-msgstr "gép regisztrálása"
-
-#: network/templates/network/confirm/base_delete.html:8
+#: network/views.py:132
 #, python-format
-msgid ""
-"\n"
-"            Are you sure you want to delete\n"
-"            <strong>\"%(object)s\"</strong>?\n"
-"        "
-msgstr ""
-"\n"
-"            Biztosan törli a(z) \n"
-"            <strong>„%(object)s”</strong> elemet?\n"
-"        "
+msgid "Successfully modified blacklist item%(ipv4)s - %(type)s!"
+msgstr "Tiltólista eleme sikeresen módosítva (%(ipv4)s %(type)s)."
 
-#: network/templates/network/confirm/base_delete.html:18
-msgid "This action also <strong>removes</strong> the following"
-msgstr "A művelet <strong>törli</strong> a következőket"
+#: network/views.py:150
+#, python-format
+msgid "Successfully created blacklist item %(ipv4)s - %(type)s!"
+msgstr "Tiltólista eleme sikeresen létrehozva (%(ipv4)s %(type)s)."
 
-#: network/templates/network/confirm/base_delete.html:30
-msgid "No dependencies, \"safe\" to delete!"
-msgstr "Nincsenek függőségek, a törlés „biztonságos”."
+#: network/views.py:188
+#, python-format
+msgid "Successfully modified domain %(name)s!"
+msgstr "A(z) %(name)s tartománynév módosításra került."
 
-#: network/templates/network/confirm/base_delete.html:37
-msgid "If you are really sure, type in the object's name!"
-msgstr "Amennyiben biztos benne, gépelje be az objektum nevét."
+#: network/views.py:215
+#, python-format
+msgid "Successfully created domain %(name)s!"
+msgstr "A(z) %(name)s tartománynév létrehozásra került."
 
-#: network/templates/network/confirm/base_delete.html:42
-msgid "Yes, delete it!"
-msgstr "Igen, törlés!"
+#: network/views.py:232 network/views.py:507 network/views.py:774
+msgid "Object name does not match!"
+msgstr "Az objektum neve nem egyezik."
+
+#: network/views.py:236
+msgid "Domain successfully deleted!"
+msgstr "A tartománynév törlésre került."
+
+#: network/views.py:242
+msgid "Records from hosts"
+msgstr "A gépek rekordjai"
+
+#: network/views.py:299
+#, python-format
+msgid "Successfully created host group %(name)s!"
+msgstr "%(name)s gépcsoport létrehozásra került."
+
+#: network/views.py:307
+#, python-format
+msgid "Successfully modified host group %(name)s!"
+msgstr "%(name)s gépcsoport módosításra került."
+
+#: network/views.py:386
+#, python-format
+msgid "Successfully modified host %(hostname)s!"
+msgstr "%(hostname)s gép módosításra került."
+
+#: network/views.py:459
+#, python-format
+msgid "Successfully created host %(hostname)s!"
+msgstr "%(hostname)s gép létrehozásra került."
+
+#: network/views.py:511
+msgid "Host successfully deleted!"
+msgstr "A gép törlésre került."
+
+#: network/views.py:541
+msgid "Successfully modified record!"
+msgstr "A rekord módosításra került."
+
+#: network/views.py:560
+msgid "Successfully created record!"
+msgstr "A rekord létrehozásra került."
+
+#: network/views.py:611
+msgid "Successfully modified rule!"
+msgstr "A szabály módosításra került."
+
+#: network/views.py:631
+msgid "Successfully created rule!"
+msgstr "A szabály létrehozásra került."
+
+#: network/views.py:667
+msgid "Succesfully modified switch port!"
+msgstr "A switch-port módosításra került."
+
+#: network/views.py:686
+msgid "Successfully created switch port!"
+msgstr "A switch-port létrehozásra került."
+
+#: network/views.py:733
+#, python-format
+msgid "Succesfully modified vlan %(name)s!"
+msgstr "A(z) %(name)s vlan módosításra került."
+
+#: network/views.py:753
+#, python-format
+msgid "Successfully created vlan %(name)s!"
+msgstr "A(z) %(name)s vlan létrehozásra került."
+
+#: network/views.py:778
+msgid "Vlan successfully deleted!"
+msgstr "A vlan törlésre került."
+
+#: network/views.py:820
+#, python-format
+msgid "Successfully modified vlan group %(name)s!"
+msgstr "A(z) %(name)s vlan-csoport módosításra került."
+
+#: network/views.py:833
+#, python-format
+msgid "Successfully created vlan group %(name)s!"
+msgstr "A(z) %(name)s vlan-csoport módosításra került."
+
+#: network/views.py:865
+#, python-format
+msgid "Successfully removed %(host)s from %(group)s group!"
+msgstr "A(z) %(host)s csoport törlésre került a(z) %(group)s csoportból."
+
+#: network/views.py:881
+#, python-format
+msgid "Successfully added %(host)s to group %(group)s!"
+msgstr "A(z) %(host)s csoport hozzáadásra került a(z) %(group)s csoporthoz."
+
+#: network/views.py:900
+#, python-format
+msgid "Successfully deleted ethernet device %(name)s!"
+msgstr "A(z) %(name)s ethernet-eszköz törlésre került."
+
+#: network/views.py:918
+#, python-format
+msgid "Successfully added %(name)s to this switch port"
+msgstr "%(name)s hozzáadásra került a switch-porthoz."
+
+#: network/views.py:925
+msgid "Ethernet device name cannot be empty!"
+msgstr "Az ethernet-eszköz megadása kötelező."
+
+#: network/views.py:928
+msgid "There is already an ethernet device with that name!"
+msgstr "Már létezik a megadott nevű ethernet-eszköz."
 
 #: storage/models.py:48
 msgid "path"
@@ -4010,7 +3979,7 @@ msgstr "eszközazonosító"
 msgid "disk"
 msgstr "lemez"
 
-#: storage/models.py:104 vm/models/instance.py:142 vm/models/instance.py:248
+#: storage/models.py:104 vm/models/instance.py:141 vm/models/instance.py:247
 msgid "disks"
 msgstr "lemezek"
 
@@ -4096,7 +4065,7 @@ msgstr ""
 "lemezen, mivel az alapja,  „%(b_name)s” (%(b_pk)s) [%(b_filename)s]  nem "
 "volt még csatolva."
 
-#: storage/models.py:416 storage/models.py:493 vm/operations.py:92
+#: storage/models.py:416 storage/models.py:493 vm/operations.py:93
 msgid "Operation aborted by user."
 msgstr "A műveletet a felhasználó megszakította."
 
@@ -4581,19 +4550,19 @@ msgstr ""
 "\n"
 "A CIRCLE Cloud egy nyílt forrású felhőmegoldás. Amennyiben hibát tapasztal, vagy fejlesztési javaslata van, keresse meg a szolgáltatás üzemeltetőjét."
 
-#: templates/registration/login.html:6
+#: templates/registration/login.html:7
 msgid "Login"
 msgstr "Bejelentkezés"
 
-#: templates/registration/login.html:31
+#: templates/registration/login.html:32
 msgid "Login with SSO"
 msgstr "SSO bejelentkezés"
 
-#: templates/registration/login.html:32
+#: templates/registration/login.html:33
 msgid "Click here!"
 msgstr "Kattintson ide!"
 
-#: templates/registration/login.html:38
+#: templates/registration/login.html:39
 msgid "Forgot your password?"
 msgstr "Elfelejtett jelszó"
 
@@ -4651,654 +4620,6 @@ msgstr "Jelszó visszaállítása"
 #: templates/registration/password_reset_form.html:16
 msgid "Enter your email address to reset your password."
 msgstr "Adja meg e-mail címét a jelszó visszaállításához."
-
-#: vm/operations.py:129
-#, python-format
-msgid "%(acl_level)s level is required for this operation."
-msgstr "%(acl_level)s jogosultság szükséges a művelethez."
-
-#: vm/operations.py:202
-msgid "Add a new network interface for the specified VLAN to the VM."
-msgstr "Új hálózati interfész hozzáadása a megadott VLAN-ba."
-
-#: vm/operations.py:210
-msgid "destroy network (rollback)"
-msgstr "hálózat megsemmisítése (visszagörgetés)"
-
-#: vm/operations.py:217
-#, python-format
-msgid "User acces to vlan %(vlan)s is required."
-msgstr "Használói jogosultság szükséges a(z) %(vlan)s vlan-hoz."
-
-#: vm/operations.py:238
-#, python-format
-msgid "add %(vlan)s interface"
-msgstr "új %(vlan)s interfész"
-
-#: vm/operations.py:246
-msgid "create disk"
-msgstr "lemez létrehozása"
-
-#: vm/operations.py:247
-msgid "Create and attach empty disk to the virtual machine."
-msgstr "Üres lemez létehozása és virtuális géphez csatolása."
-
-#: vm/operations.py:268
-msgid "deploying disk"
-msgstr "lemez létrehozása"
-
-#: vm/operations.py:275
-#, python-format
-msgid "create disk %(name)s (%(size)s)"
-msgstr "%(name)s lemez létrehozása (%(size)s)"
-
-#: vm/operations.py:283
-msgid "resize disk"
-msgstr "lemez átméretezése"
-
-#: vm/operations.py:284
-msgid ""
-"Resize the virtual disk image. Size must be greater value than the actual "
-"size."
-msgstr ""
-"Virtuális lemezkép átméretezése. Az új méret meg kell haladja a jelenlegit."
-
-#: vm/operations.py:298
-#, python-format
-msgid "resize disk %(name)s to %(size)s"
-msgstr "%(name)s lemez átméretezése (%(size)s)"
-
-#: vm/operations.py:310
-msgid "download disk"
-msgstr "lemez letöltése"
-
-#: vm/operations.py:311
-msgid ""
-"Download and attach disk image (ISO file) for the virtual machine. Most "
-"operating systems do not detect a new optical drive, so you may have to "
-"reboot the machine."
-msgstr ""
-"Lemezképek (ISO) letöltése és csatolása a virtuális géphez. A legtöbb "
-"operációs rendszer nem érzékeli az új optikai meghajtót, így valószínűleg "
-"újra kell indítania a virtuális gépet."
-
-#: vm/operations.py:333
-#, python-format
-msgid "download %(name)s"
-msgstr "%(name)s letöltése"
-
-#: vm/operations.py:336
-#, python-format
-msgid "Downloading %(url)s is finished. The file md5sum is: '%(checksum)s'."
-msgstr "%(url)s letöltése sikeres. A fájl md5sum összege: '%(checksum)s'."
-
-#: vm/operations.py:347
-msgid "deploy"
-msgstr "indítás"
-
-#: vm/operations.py:348
-msgid ""
-"Deploy and start the virtual machine (including storage and network "
-"configuration)."
-msgstr ""
-"Virtuális gép elhelyezése és indítása (valamint a lemezek és a hálózat "
-"beállítása)."
-
-#: vm/operations.py:365
-#, python-format
-msgid "virtual machine successfully deployed to node: %(node)s"
-msgstr "a virtuális gép sikeresen elindítva a következő csomóponton: %(node)s"
-
-#: vm/operations.py:388 vm/operations.py:563 vm/operations.py:929
-msgid "deploy network"
-msgstr "hálózati kapcsolat létrehozása"
-
-#: vm/operations.py:400 vm/operations.py:581 vm/operations.py:680
-msgid "wait operating system loading"
-msgstr "várakozás az operációs rendszer betöltésére"
-
-#: vm/operations.py:405
-msgid "deploy vm"
-msgstr "vm indítása"
-
-#: vm/operations.py:406
-msgid "Deploy virtual machine."
-msgstr "Virtuális gép létrehozása."
-
-#: vm/operations.py:415
-msgid "deploy virtual machine"
-msgstr "virtuális gép létrehozása"
-
-#: vm/operations.py:416
-#, python-format
-msgid "deploy vm to %(node)s"
-msgstr "vm létrehozása: %(node)s"
-
-#: vm/operations.py:422
-msgid "deploy disks"
-msgstr "lemez létrehozása"
-
-#: vm/operations.py:423
-msgid "Deploy all associated disks."
-msgstr "Csatolt lemezek létrehozása."
-
-#: vm/operations.py:440
-msgid "boot virtual machine"
-msgstr "virtuális gép indítása"
-
-#: vm/operations.py:448
-msgid "destroy"
-msgstr "megsemmisítés"
-
-#: vm/operations.py:449
-msgid "Permanently destroy virtual machine, its network settings and disks."
-msgstr ""
-"Virtuális gép és lemezeinek, hálózati beállításainak végleges eltávolítása."
-
-#: vm/operations.py:458
-msgid "destroy network"
-msgstr "hálózat megsemmisítése"
-
-#: vm/operations.py:469
-msgid "destroy disks"
-msgstr "lemez megsemmisítése"
-
-#: vm/operations.py:488
-msgid "destroy virtual machine"
-msgstr "virtuális gép megsemmisítése"
-
-#: vm/operations.py:496
-msgid "removing memory dump"
-msgstr "memóriamentés törlése"
-
-#: vm/operations.py:510
-msgid "migrate"
-msgstr "migrálás"
-
-#: vm/operations.py:511
-msgid ""
-"Move a running virtual machine to an other worker node keeping its full "
-"state."
-msgstr ""
-"A virtuális gép mozgatása egy másik számítási csomópontra állapotának "
-"megtartásával."
-
-#: vm/operations.py:528
-msgid "redeploy network (rollback)"
-msgstr "hálózati kapcsolat újraépítése (visszagörgetés)"
-
-#: vm/operations.py:535
-msgid "schedule"
-msgstr "ütemezés"
-
-#: vm/operations.py:542
-#, python-format
-msgid "migrate to %(node)s"
-msgstr "migrálás %(node)s csomópontra"
-
-#: vm/operations.py:553 vm/operations.py:878
-msgid "shutdown network"
-msgstr "hálózati kapcsolat leállítása"
-
-#: vm/operations.py:570
-msgid "reboot"
-msgstr "újraindítás"
-
-#: vm/operations.py:571
-msgid ""
-"Warm reboot virtual machine by sending Ctrl+Alt+Del signal to its console."
-msgstr ""
-"Virtuális gép újraindítása a konzoljára a Ctrl+Alt+Del kombináció "
-"küldésével."
-
-#: vm/operations.py:587
-msgid "remove interface"
-msgstr "interfész törlése"
-
-#: vm/operations.py:588
-msgid ""
-"Remove the specified network interface and erase IP address allocations, "
-"related firewall rules and hostnames."
-msgstr ""
-"A kiválasztott hálózati interfész eltávolítása, a foglalt IP címek, "
-"tűzfalszabályok és gépnevek törlése."
-
-#: vm/operations.py:604
-#, python-format
-msgid "remove %(vlan)s interface"
-msgstr "%(vlan)s interfész törlése"
-
-#: vm/operations.py:611
-msgid "close port"
-msgstr "port bezárása"
-
-#: vm/operations.py:612
-msgid "Close the specified port."
-msgstr "A megadott port bezárása."
-
-#: vm/operations.py:621
-#, python-format
-msgid "close %(proto)s/%(port)d on %(host)s"
-msgstr "%(proto)s/%(port)d bezárása ezen: %(host)s"
-
-#: vm/operations.py:629
-msgid "open port"
-msgstr "port nyitása"
-
-#: vm/operations.py:630
-msgid "Open the specified port."
-msgstr "A megadott port kinyitása."
-
-#: vm/operations.py:639
-#, python-format
-msgid "open %(proto)s/%(port)d on %(host)s"
-msgstr "%(proto)s/%(port)d kinyitása ezen: %(host)s"
-
-#: vm/operations.py:646
-msgid "remove disk"
-msgstr "lemez eltávolítása"
-
-#: vm/operations.py:647
-msgid ""
-"Remove the specified disk from the virtual machine, and destroy the data."
-msgstr "A megadott lemez eltávolítása a virtuális gépből és az adat törlése."
-
-#: vm/operations.py:657
-msgid "destroy disk"
-msgstr "lemez megsemmisítése"
-
-#: vm/operations.py:663
-#, python-format
-msgid "remove disk %(name)s"
-msgstr "%(name)s lemez eltávolítása"
-
-#: vm/operations.py:670 vm/operations.py:1081
-msgid "reset"
-msgstr "reset"
-
-#: vm/operations.py:671
-msgid "Cold reboot virtual machine (power cycle)."
-msgstr "Virtuális gép hideg újraindítása (hálózati tápellátás megszakítása)."
-
-#: vm/operations.py:686
-msgid "save as template"
-msgstr "mentés sablonként"
-
-#: vm/operations.py:687
-msgid ""
-"Save virtual machine as a template so they can be shared with users and "
-"groups.  Anyone who has access to a template (and to the networks it uses) "
-"will be able to start an instance of it."
-msgstr ""
-"Virtuális gép mentése sablonként, amelyet meg lehet osztani más "
-"felhasználókkal és csoportokkal. Mindenki, aki hozzáférést kap egy sablonhoz"
-" (és az általa használt hálózatokhoz), képes lesz egy példányát elindítani."
-
-#: vm/operations.py:763
-#, python-format
-msgid "saving disk %(name)s"
-msgstr "%(name)s lemez mentése"
-
-#: vm/operations.py:795
-msgid "shutdown"
-msgstr "leállítás"
-
-#: vm/operations.py:796
-msgid ""
-"Try to halt virtual machine by a standard ACPI signal, allowing the "
-"operating system to keep a consistent state. The operation will fail if the "
-"machine does not turn itself off in a period."
-msgstr ""
-"Virtuális gép megállítása szabványos ACPI jelzéssel, lehetővé téve az "
-"operációs rendszer számár a szabályos leállást. A művelet meghiúsul, ha a "
-"gép nem áll le."
-
-#: vm/operations.py:815
-msgid ""
-"The virtual machine did not switch off in the provided time limit. Most of "
-"the time this is caused by incorrect ACPI settings. You can also try to "
-"power off the machine from the operating system manually."
-msgstr ""
-"A virtuális gép nem állt le a biztosított időkorlát alatt. A legtöbb esetben"
-" ez a nem megfelelő ACPI beállítások miatt van. Megpróbálhatja a gépet az "
-"operációs rendszerből, kézzel leállítani."
-
-#: vm/operations.py:827
-msgid "shut off"
-msgstr "kikapcsolás"
-
-#: vm/operations.py:828
-msgid ""
-"Forcibly halt a virtual machine without notifying the operating system. This"
-" operation will even work in cases when shutdown does not, but the operating"
-" system and the file systems are likely to be in an inconsistent state,  so "
-"data loss is also possible. The effect of this operation is the same as "
-"interrupting the power supply of a physical machine."
-msgstr ""
-"Virtuális gép erőltetett leállítása az operációs rendszer értesítése nélkül."
-" Ez a művelet akkor is működik, ha a normál leállítás nem, de az operációs "
-"rendszer és a fájlrendszer sérülhet, adatvesztés történhet. A művelet hatása"
-" hasonló, mint egy fizikai gép tápellátásának megszüntetése."
-
-#: vm/operations.py:851
-msgid "sleep"
-msgstr "altatás"
-
-#: vm/operations.py:852
-msgid ""
-"Suspend virtual machine. This means the machine is stopped and its memory is"
-" saved to disk, so if the machine is waked up, all the applications will "
-"keep running. Most of the applications will be able to continue even after a"
-" long suspension, but those which need a continous network connection may "
-"fail when resumed. In the meantime, the machine will only use storage "
-"resources, and keep network resources allocated."
-msgstr ""
-"Virtuális gép felfüggesztése. A virtuális gép megállításra, memóriája "
-"lemezre mentésre kerül. Így a gép ébresztése után minden futó alkalmazás "
-"folytatódik. A legtöbb alkalmazás elviseli akár a hosszabb idejű "
-"felfüggesztést, azonban a folyamatos hálózati kapcsolatot igénylő programok "
-"megállhatnak visszaállítás után. A felfüggesztés ideje alatt a virtuális gép"
-" csak tárterületet és hálózati erőforrásokat foglal."
-
-#: vm/operations.py:886
-msgid "suspend virtual machine"
-msgstr "virtuális gép felfüggesztése"
-
-#: vm/operations.py:900
-msgid "wake up"
-msgstr "virtuális gép ébresztése"
-
-#: vm/operations.py:901
-msgid ""
-"Wake up sleeping (suspended) virtual machine. This will load the saved "
-"memory of the system and start the virtual machine from this state."
-msgstr ""
-"Alvó (felfüggesztett) gép ébresztése: az elmentett memóriatartalom "
-"visszatöltése és a virtuális gép indítása ebből a mentett állapotból."
-
-#: vm/operations.py:940
-msgid "resume virtual machine"
-msgstr "virtuális gép ébresztése"
-
-#: vm/operations.py:954
-msgid "renew"
-msgstr "megújítás"
-
-#: vm/operations.py:955
-msgid ""
-"Virtual machines are suspended and destroyed after they expire. This "
-"operation renews expiration times according to the lease type. If the "
-"machine is close to the expiration, its owner will be notified."
-msgstr ""
-"A virtuális gépek lejáratuk után felfüggesztésre, majd törlésre kerülnek. Ez"
-" a művelet megújítja a bérletet a kiválasztott típusnak megfelelően. Ha egy "
-"gép közeledik a lejárathoz, a tulajdonost értesítjük."
-
-#: vm/operations.py:968
-msgid ""
-"Renewing the machine with the selected lease would result in its suspension "
-"time get earlier than before."
-msgstr ""
-"A gép megújítása a kiválasztott bérleti mód mellett a felfüggesztési időt "
-"korábbra állította volna, mint a jelenlegi érték."
-
-#: vm/operations.py:973
-msgid ""
-"Renewing the machine with the selected lease would result in its delete time"
-" get earlier than before."
-msgstr ""
-"A gép megújítása a kiválasztott bérleti mód mellett a törlési időt korábbra "
-"állította volna, mint a jelenlegi érték."
-
-#: vm/operations.py:981
-#, python-format
-msgid "Renewed to suspend at %(suspend)s and destroy at %(delete)s."
-msgstr ""
-"Megújítás után felfüggesztés ideje: %(suspend)s, a törlésé: %(delete)s."
-
-#: vm/operations.py:988
-msgid "emergency state change"
-msgstr "vész-állapotváltás"
-
-#: vm/operations.py:989
-msgid ""
-"Change the virtual machine state to NOSTATE. This should only be used if "
-"manual intervention was needed in the virtualization layer, and the machine "
-"has to be redeployed without losing its storage and network resources."
-msgstr ""
-"A virtuális gép állapotának változtatása NOSTATE-re. Ezt a műveletet csak "
-"akkor hajtsa végre, ha kézi beavatkozásra kényszerült a virtualizációs "
-"rétegben, és úgy szeretné a gépet újból elindítani, hogy ne vesszenek el "
-"lemezei vagy hálózati erőforrásai."
-
-#: vm/operations.py:1002
-msgid "Activity is forcibly interrupted."
-msgstr "A tevékenység erőszakos megszakításra került."
-
-#: vm/operations.py:1017
-msgid "redeploy"
-msgstr "újbóli létrehozás"
-
-#: vm/operations.py:1018
-msgid ""
-"Change the virtual machine state to NOSTATE and redeploy the VM. This "
-"operation allows starting machines formerly running on a failed node."
-msgstr ""
-"A virtuális gép állapotának átállítása NOSTATE-re, majd a VM újbóli "
-"létrehozása. Ez a művelet lehetővé teszi olyan gépek elindítását, amelyek "
-"korábban egy meghibásodott csomóponton futnak."
-
-#: vm/operations.py:1054
-msgid "You cannot call this operation on an offline node."
-msgstr "Nem hívható ez a művelet elérhetetlen csomópontra."
-
-#: vm/operations.py:1082
-msgid "Disable missing node and redeploy all instances on other ones."
-msgstr "Hiányzó csomópont letiltása és az összes példány elindítása a többin."
-
-#: vm/operations.py:1092
-msgid "You cannot reset a disabled or online node."
-msgstr "Tiltott vagy elérhető csomópont resetelése nem lehetséges."
-
-#: vm/operations.py:1100 vm/operations.py:1120
-#, python-format
-msgid "migrate %(instance)s (%(pk)s)"
-msgstr "%(instance)s (%(pk)s) migrálása"
-
-#: vm/operations.py:1109
-msgid "flush"
-msgstr "ürítés"
-
-#: vm/operations.py:1110
-msgid "Passivate node and move all instances to other ones."
-msgstr ""
-"A csomópont passzívra állítása és az összes példány másikakra mozgatása."
-
-#: vm/operations.py:1129
-msgid "activate"
-msgstr "aktiválás"
-
-#: vm/operations.py:1130
-msgid ""
-"Make node active, i.e. scheduler is allowed to deploy virtual machines to "
-"it."
-msgstr ""
-"Csomópont aktívvá tétele: az ütemező indíthat virtuális gépeket rajta."
-
-#: vm/operations.py:1138
-msgid "You cannot activate an active node."
-msgstr "Aktív csomópont aktiválása nem lehetséges."
-
-#: vm/operations.py:1150
-msgid "passivate"
-msgstr "passziválás"
-
-#: vm/operations.py:1151
-msgid ""
-"Make node passive, i.e. scheduler is denied to deploy virtual machines to "
-"it, but remaining instances and the ones manually migrated will continue "
-"running."
-msgstr ""
-"Csomópont passzívvá tétele: az ütemező nem indíthat rajta virtuális gépeket,"
-" azonban a megmaradt példányok és a kézzel idemigráltak tovább működnek."
-
-#: vm/operations.py:1159
-msgid "You cannot passivate a passive node."
-msgstr "Passzív csomópont passziválása nem lehetséges."
-
-#: vm/operations.py:1172
-msgid "disable"
-msgstr "tiltás"
-
-#: vm/operations.py:1173
-msgid "Disable node."
-msgstr "Csomópont tiltása."
-
-#: vm/operations.py:1180
-msgid "You cannot disable a disabled node."
-msgstr "Tiltott csomópont tiltása nem lehetséges."
-
-#: vm/operations.py:1183
-msgid "You cannot disable a node which is hosting instances."
-msgstr "Nem tiltható le olyan csomópont, amelyen még futnak példányok."
-
-#: vm/operations.py:1196
-msgid "screenshot"
-msgstr "képernyőkép"
-
-#: vm/operations.py:1197
-msgid ""
-"Get a screenshot about the virtual machine's console. A key will be pressed "
-"on the keyboard to stop screensaver."
-msgstr ""
-"Képernyőkép készítése a virtuális gép konzoljáról. Egy billentyűnyomást "
-"követően készül a kép a képernyővédő miatt."
-
-#: vm/operations.py:1209
-msgid "recover"
-msgstr "visszaállítás"
-
-#: vm/operations.py:1210
-msgid ""
-"Try to recover virtual machine disks from destroyed state. Network resources"
-" (allocations) are already lost, so you will have to manually add interfaces"
-" afterwards."
-msgstr ""
-"Megsemmisített virtuális gép lemezeinek visszaállítását kísérli meg. A "
-"hálózati erőforrások foglalásai már végleg elvesztek, így az interfészeket "
-"kézzel kell a visszaállítás után pótolni."
-
-#: vm/operations.py:1227
-msgid "recover instance"
-msgstr "példány helyreállítása"
-
-#: vm/operations.py:1250
-msgid "resources change"
-msgstr "erőforrások módosítása"
-
-#: vm/operations.py:1251
-msgid "Change resources of a stopped virtual machine."
-msgstr "Leállított virtuális gép erőforrásainak változtatása."
-
-#: vm/operations.py:1268
-#, python-format
-msgid ""
-"Priority: %(priority)s, Num cores: %(num_cores)s, Ram size: %(ram_size)s"
-msgstr ""
-"Prioritás: %(priority)s, magok száma: %(num_cores)s, memória mérete: "
-"%(ram_size)s"
-
-#: vm/operations.py:1277
-msgid "password reset"
-msgstr "jelszó visszaállítása"
-
-#: vm/operations.py:1278
-msgid ""
-"Generate and set a new login password on the virtual machine. This operation"
-" requires the agent running. Resetting the password is not warranted to "
-"allow you logging in as other settings are possible to prevent it."
-msgstr ""
-"Egy új belépési jelszó generálása és beállítása a virtuális gépen. Ez a "
-"művelet megköveteli az ügynök futását. A jelszó átállítása nem garantálja a "
-"sikeres belépést, mivel más beállítások is megakadályozhatják ezt."
-
-#: vm/operations.py:1302
-msgid "agent"
-msgstr "ügynök"
-
-#: vm/operations.py:1343
-msgid "starting"
-msgstr "indítás"
-
-#: vm/operations.py:1361
-msgid "wait agent restarting"
-msgstr "várakozás az ügynök újraindulására"
-
-#: vm/operations.py:1378
-msgid "cleanup"
-msgstr "takarítás"
-
-#: vm/operations.py:1384
-msgid "set time"
-msgstr "óra beállítása"
-
-#: vm/operations.py:1395
-msgid "set hostname"
-msgstr "gépnév beállítása"
-
-#: vm/operations.py:1406
-msgid "restart networking"
-msgstr "hálózat újratöltése"
-
-#: vm/operations.py:1412
-msgid "change ip"
-msgstr "IP cím beállítása"
-
-#: vm/operations.py:1427
-msgid "update agent"
-msgstr "ügynök frissítése"
-
-#: vm/operations.py:1433
-#, python-format
-msgid "update agent to %(version)s"
-msgstr "ügynökfrissítés erre: %(version)s"
-
-#: vm/operations.py:1516
-msgid "mount store"
-msgstr "tárhely csatolása"
-
-#: vm/operations.py:1518
-msgid ""
-"This operation attaches your personal file store. Other users who have "
-"access to this machine can see these files as well."
-msgstr ""
-"Ez a művelet csatolja az ön személyes tárhelyét. A gép más felhasználói is "
-"elérhetik fájljait."
-
-#: vm/operations.py:1552
-msgid "attach disk"
-msgstr "lemez csatolása"
-
-#: vm/operations.py:1563
-msgid "Resource was not found."
-msgstr "Nem található az erőforrás."
-
-#: vm/operations.py:1564
-#, python-format
-msgid "Resource was not found. %(exception)s"
-msgstr "Nem található az erőforrás. %(exception)s"
-
-#: vm/operations.py:1573
-msgid "detach disk"
-msgstr "lemez leválasztása"
-
-#: vm/operations.py:1588
-msgid "attach network"
-msgstr "hálózat csatolása"
-
-#: vm/operations.py:1595
-msgid "detach network"
-msgstr "hálózat lecsatolása"
 
 #: vm/models/activity.py:46
 #, python-format
@@ -5360,7 +4681,7 @@ msgstr "Felső memóriaméret-korlát ballooning esetén."
 msgid "architecture"
 msgstr "architektúra"
 
-#: vm/models/common.py:52 vm/models/node.py:68
+#: vm/models/common.py:52 vm/models/node.py:124
 msgid "priority"
 msgstr "prioritás"
 
@@ -5442,19 +4763,20 @@ msgid "operating system"
 msgstr "operációs rendszer"
 
 #: vm/models/instance.py:113
-#, python-format
-msgid "Name of operating system in format like \"%s\"."
-msgstr "Az operációs rendszer neve. Például „%s”."
+#| msgid "Name of operating system in format like \"%s\"."
+msgid ""
+"Name of operating system in format like \"Ubuntu 12.04 LTS Desktop amd64\"."
+msgstr "Az operációs rendszer neve. Például „Ubuntu 12.04 LTS Desktop amd64”."
 
-#: vm/models/instance.py:116 vm/models/node.py:83
+#: vm/models/instance.py:115 vm/models/node.py:139
 msgid "tags"
 msgstr "címkék"
 
-#: vm/models/instance.py:117
+#: vm/models/instance.py:116
 msgid "has agent"
 msgstr "van ügynöke"
 
-#: vm/models/instance.py:119
+#: vm/models/instance.py:118
 msgid ""
 "If the machine has agent installed, and the manager should wait for its "
 "start."
@@ -5462,165 +4784,165 @@ msgstr ""
 "A gépre telepítve van-e az ügynökszoftver, vagyis a menedzser várjon-e az "
 "indulására."
 
-#: vm/models/instance.py:139
+#: vm/models/instance.py:138
 msgid "parent template"
 msgstr "szülősablon"
 
-#: vm/models/instance.py:141
+#: vm/models/instance.py:140
 msgid "Template which this one is derived of."
 msgstr "Az a sablon, amelyből az aktuális származik."
 
-#: vm/models/instance.py:144
+#: vm/models/instance.py:143
 msgid "Disks which are to be mounted."
 msgstr "A csatolandó lemezek."
 
-#: vm/models/instance.py:152
+#: vm/models/instance.py:151
 msgid "Can create an instance template."
 msgstr "Létrehozhat példánysablont."
 
-#: vm/models/instance.py:154
+#: vm/models/instance.py:153
 msgid "Can create an instance template (base)."
 msgstr "Létrehozhat példánysablont (alapokból)."
 
-#: vm/models/instance.py:156
+#: vm/models/instance.py:155
 msgid "Can change resources of a template."
 msgstr "Változtathatja egy sablon erőforrásait."
 
-#: vm/models/instance.py:159
+#: vm/models/instance.py:158
 msgid "templates"
 msgstr "sablonok"
 
-#: vm/models/instance.py:217
+#: vm/models/instance.py:216
 msgid "no state"
 msgstr "nincs állapot"
 
-#: vm/models/instance.py:218
+#: vm/models/instance.py:217
 msgid "running"
 msgstr "fut"
 
-#: vm/models/instance.py:219
+#: vm/models/instance.py:218
 msgid "stopped"
 msgstr "leállítva"
 
-#: vm/models/instance.py:220
+#: vm/models/instance.py:219
 msgid "suspended"
 msgstr "felfüggesztve"
 
-#: vm/models/instance.py:221
+#: vm/models/instance.py:220
 msgid "error"
 msgstr "hiba"
 
-#: vm/models/instance.py:222
+#: vm/models/instance.py:221
 msgid "pending"
 msgstr "függő"
 
-#: vm/models/instance.py:223
+#: vm/models/instance.py:222
 msgid "destroyed"
 msgstr "megsemmisítve"
 
-#: vm/models/instance.py:226
+#: vm/models/instance.py:225
 msgid "Human readable name of instance."
 msgstr "A példány olvasható neve."
 
-#: vm/models/instance.py:230
+#: vm/models/instance.py:229
 msgid "Template the instance derives from."
 msgstr "Az a sablon, amelyből a példány származik."
 
-#: vm/models/instance.py:232
+#: vm/models/instance.py:231
 msgid "Original password of the instance."
 msgstr "A példány eredeti jelszava."
 
-#: vm/models/instance.py:233
+#: vm/models/instance.py:232
 msgid "password"
 msgstr "jelszó"
 
-#: vm/models/instance.py:235
+#: vm/models/instance.py:234
 msgid "time of suspend"
 msgstr "felfüggesztés ideje"
 
-#: vm/models/instance.py:236
+#: vm/models/instance.py:235
 msgid "Proposed time of automatic suspension."
 msgstr "A felfüggesztés kijelölt ideje."
 
-#: vm/models/instance.py:239
+#: vm/models/instance.py:238
 msgid "time of delete"
 msgstr "törlés ideje"
 
-#: vm/models/instance.py:240
+#: vm/models/instance.py:239
 msgid "Proposed time of automatic deletion."
 msgstr "Automatikus törlés kijelölt ideje."
 
-#: vm/models/instance.py:244
+#: vm/models/instance.py:243
 msgid "Current hypervisor of this instance."
 msgstr "A példány jelenlegi hypervisorja."
 
-#: vm/models/instance.py:245
+#: vm/models/instance.py:244
 msgid "host node"
 msgstr "csomópont"
 
-#: vm/models/instance.py:247
+#: vm/models/instance.py:246
 msgid "Set of mounted disks."
 msgstr "1Csatolt lemezek halmaza."
 
-#: vm/models/instance.py:250
+#: vm/models/instance.py:249
 msgid "TCP port where VNC console listens."
 msgstr "Az a TCP port, amelyen a VNC konzol hallgat."
 
-#: vm/models/instance.py:251
+#: vm/models/instance.py:250
 msgid "vnc_port"
 msgstr "VNC port"
 
-#: vm/models/instance.py:255
+#: vm/models/instance.py:254
 msgid "The virtual machine's time of destruction."
 msgstr "A virtuális gép megsemmisítésének ideje."
 
-#: vm/models/instance.py:265
+#: vm/models/instance.py:264
 msgid "Can access the graphical console of a VM."
 msgstr "Elérheti a VM grafikus konzolját."
 
-#: vm/models/instance.py:266
+#: vm/models/instance.py:265
 msgid "Can change resources of a running VM."
 msgstr "Megváltoztathatja a VM erőforrásait."
 
-#: vm/models/instance.py:267
+#: vm/models/instance.py:266
 msgid "Can change resources of a new VM."
 msgstr "Megválaszthatja egy új VM erőforrásait."
 
-#: vm/models/instance.py:268
+#: vm/models/instance.py:267
 msgid "Can create a new VM."
 msgstr "Létrehozhat új VM-et."
 
-#: vm/models/instance.py:269
+#: vm/models/instance.py:268
 msgid "Can redeploy a VM."
 msgstr "Újból létrehozhat futó VM-et."
 
-#: vm/models/instance.py:270
+#: vm/models/instance.py:269
 msgid "Can configure port forwards."
 msgstr "Beállíthat porttovábbításokat."
 
-#: vm/models/instance.py:271
+#: vm/models/instance.py:270
 msgid "Can recover a destroyed VM."
 msgstr "Visszaállíthat egy megsemmisített VM-et."
 
-#: vm/models/instance.py:272
+#: vm/models/instance.py:271
 msgid "Can change VM state to NOSTATE."
 msgstr "Átállíthatja a VM állapotát NOSTATE-re."
 
-#: vm/models/instance.py:275
+#: vm/models/instance.py:274
 msgid "instances"
 msgstr "példányok"
 
-#: vm/models/instance.py:287
+#: vm/models/instance.py:286
 #, python-format
 msgid "Instance %(instance)s has already been destroyed."
 msgstr "%(instance)s példány már meg van semmisítve."
 
-#: vm/models/instance.py:291
+#: vm/models/instance.py:290
 #, python-format
 msgid "No agent software is running on instance %(instance)s."
 msgstr "Nem fut ügynökszoftver a következőn: %(instance)s."
 
-#: vm/models/instance.py:295
+#: vm/models/instance.py:294
 #, python-format
 msgid ""
 "Current state (%(state)s) of instance %(instance)s is inappropriate for the "
@@ -5629,16 +4951,16 @@ msgstr ""
 "A(z) %(instance)s példány aktuális állapota (%(state)s) nem megfelelő a "
 "választott művelethez."
 
-#: vm/models/instance.py:369
+#: vm/models/instance.py:374
 msgid "create instance"
 msgstr "példány létrehozása"
 
-#: vm/models/instance.py:450
+#: vm/models/instance.py:451
 #, python-format
 msgid "vm state changed to %(state)s on %(node)s"
 msgstr "VM állapota erre változott: %(state)s (ezen: %(node)s)"
 
-#: vm/models/instance.py:646
+#: vm/models/instance.py:647
 #, python-format
 msgid ""
 "Your instance <a href=\"%(url)s\">%(instance)s</a> is going to expire. It "
@@ -5648,7 +4970,7 @@ msgstr ""
 "<a href=\"%(url)s\">%(instance)s</a> gépe hamarosan lejár:\n"
 "%(suspend)s időpontban felfüggesztésre, %(delete)s időpontban törlésre kerül.  Kérjük, <a href=\"%(token)s\">újítsa meg</a> vagy <a href=\"%(url)s\">törölje</a> most."
 
-#: vm/models/instance.py:658
+#: vm/models/instance.py:659
 #, python-format
 msgid ""
 "%(failed)s notifications failed and %(success) succeeded. Failed ones are: "
@@ -5657,7 +4979,7 @@ msgstr ""
 "%(failed)s értesítés sikertelen és %(success) sikeres. A sikertelenek: "
 "%(faileds)s."
 
-#: vm/models/instance.py:660
+#: vm/models/instance.py:661
 #, python-format
 msgid ""
 "%(failed)s notifications failed and %(success) succeeded. Failed ones are: "
@@ -5666,16 +4988,16 @@ msgstr ""
 "%(failed)s értesítés sikertelen és %(success) sikeres. A sikertelenek: "
 "%(faileds_ex)s."
 
-#: vm/models/instance.py:668
+#: vm/models/instance.py:669
 #, python-format
 msgid "%(success)s notifications succeeded."
 msgstr "%(success)s sikeres értesítés."
 
-#: vm/models/instance.py:673
+#: vm/models/instance.py:674
 msgid "notify owner about expiration"
 msgstr "tulaj értesítése a lejáratról"
 
-#: vm/models/instance.py:681
+#: vm/models/instance.py:682
 #, python-format
 msgid "%(instance)s expiring soon"
 msgstr "%(instance)s hamarosan lejár"
@@ -5717,73 +5039,764 @@ msgstr ""
 "Az interfész létrehozásra került.Az új címek: %(ip4)s (ipv4), %(ip6)s "
 "(ipv6). Vlan: %(vlan)s."
 
-#: vm/models/node.py:66
+#: vm/models/node.py:122
 msgid "Human readable name of node."
 msgstr "A csomópont olvasható neve."
 
-#: vm/models/node.py:69
+#: vm/models/node.py:125
 msgid "Node usage priority."
 msgstr "Csomóponthasználat prioritása."
 
-#: vm/models/node.py:71
+#: vm/models/node.py:127
 msgid "Host in firewall."
 msgstr "Tűzfalbeli gép."
 
-#: vm/models/node.py:72
+#: vm/models/node.py:128
 msgid "enabled"
 msgstr "engedélyezve"
 
-#: vm/models/node.py:73
+#: vm/models/node.py:129
 msgid "Indicates whether the node can be used for hosting."
 msgstr "A csomópont használható-e gépek fogadására."
 
-#: vm/models/node.py:75
+#: vm/models/node.py:131
 msgid "schedule enabled"
 msgstr "ütemezés engedélyezve"
 
-#: vm/models/node.py:77
+#: vm/models/node.py:133
 msgid "Indicates whether a vm can be automatically scheduled to this node."
 msgstr "A csomópontra ütemezhetőek-e automatikusan gépek."
 
-#: vm/models/node.py:81
+#: vm/models/node.py:137
 msgid "Declared traits."
 msgstr "Biztosított jellemzők."
 
-#: vm/models/node.py:82
+#: vm/models/node.py:138
 msgid "traits"
 msgstr "jellemzők"
 
-#: vm/models/node.py:84
+#: vm/models/node.py:140
 msgid "overcommit ratio"
 msgstr "túlfoglalási arány"
 
-#: vm/models/node.py:85
+#: vm/models/node.py:141
 msgid "The ratio of total memory with to without overcommit."
 msgstr "Az összes memória és a túlfoglalható memória aránya."
 
-#: vm/models/node.py:92
+#: vm/models/node.py:148
 msgid "Can view Node box and statistics."
 msgstr "Láthatja a csomópontok dobozt és a statisztikát."
 
-#: vm/models/node.py:140
+#: vm/models/node.py:208
 msgid "missing"
 msgstr "eltűnt"
 
-#: vm/models/node.py:141
+#: vm/models/node.py:209
 msgid "offline"
 msgstr "nem elérhető"
 
-#: vm/models/node.py:142
+#: vm/models/node.py:210
 msgid "disabled"
 msgstr "tiltva"
 
-#: vm/models/node.py:143
+#: vm/models/node.py:211
 msgid "passive"
 msgstr "passzív"
 
-#: vm/models/node.py:144
+#: vm/models/node.py:212
 msgid "active"
 msgstr "aktív"
+
+#: vm/operations.py:131
+#, python-format
+msgid "%(acl_level)s level is required for this operation."
+msgstr "%(acl_level)s jogosultság szükséges a művelethez."
+
+#: vm/operations.py:204
+msgid "Add a new network interface for the specified VLAN to the VM."
+msgstr "Új hálózati interfész hozzáadása a megadott VLAN-ba."
+
+#: vm/operations.py:212
+msgid "destroy network (rollback)"
+msgstr "hálózat megsemmisítése (visszagörgetés)"
+
+#: vm/operations.py:219
+#, python-format
+msgid "User acces to vlan %(vlan)s is required."
+msgstr "Használói jogosultság szükséges a(z) %(vlan)s vlan-hoz."
+
+#: vm/operations.py:240
+#, python-format
+msgid "add %(vlan)s interface"
+msgstr "új %(vlan)s interfész"
+
+#: vm/operations.py:248
+msgid "create disk"
+msgstr "lemez létrehozása"
+
+#: vm/operations.py:249
+msgid "Create and attach empty disk to the virtual machine."
+msgstr "Üres lemez létehozása és virtuális géphez csatolása."
+
+#: vm/operations.py:270
+msgid "deploying disk"
+msgstr "lemez létrehozása"
+
+#: vm/operations.py:277
+#, python-format
+msgid "create disk %(name)s (%(size)s)"
+msgstr "%(name)s lemez létrehozása (%(size)s)"
+
+#: vm/operations.py:285
+msgid "resize disk"
+msgstr "lemez átméretezése"
+
+#: vm/operations.py:286
+msgid ""
+"Resize the virtual disk image. Size must be greater value than the actual "
+"size."
+msgstr ""
+"Virtuális lemezkép átméretezése. Az új méret meg kell haladja a jelenlegit."
+
+#: vm/operations.py:300
+#, python-format
+msgid "resize disk %(name)s to %(size)s"
+msgstr "%(name)s lemez átméretezése (%(size)s)"
+
+#: vm/operations.py:312
+msgid "download disk"
+msgstr "lemez letöltése"
+
+#: vm/operations.py:313
+msgid ""
+"Download and attach disk image (ISO file) for the virtual machine. Most "
+"operating systems do not detect a new optical drive, so you may have to "
+"reboot the machine."
+msgstr ""
+"Lemezképek (ISO) letöltése és csatolása a virtuális géphez. A legtöbb "
+"operációs rendszer nem érzékeli az új optikai meghajtót, így valószínűleg "
+"újra kell indítania a virtuális gépet."
+
+#: vm/operations.py:335
+#, python-format
+msgid "download %(name)s"
+msgstr "%(name)s letöltése"
+
+#: vm/operations.py:338
+#, python-format
+msgid "Downloading %(url)s is finished. The file md5sum is: '%(checksum)s'."
+msgstr "%(url)s letöltése sikeres. A fájl md5sum összege: '%(checksum)s'."
+
+#: vm/operations.py:349
+msgid "deploy"
+msgstr "indítás"
+
+#: vm/operations.py:350
+msgid ""
+"Deploy and start the virtual machine (including storage and network "
+"configuration)."
+msgstr ""
+"Virtuális gép elhelyezése és indítása (valamint a lemezek és a hálózat "
+"beállítása)."
+
+#: vm/operations.py:367
+#, python-format
+msgid "virtual machine successfully deployed to node: %(node)s"
+msgstr "a virtuális gép sikeresen elindítva a következő csomóponton: %(node)s"
+
+#: vm/operations.py:390 vm/operations.py:565 vm/operations.py:931
+msgid "deploy network"
+msgstr "hálózati kapcsolat létrehozása"
+
+#: vm/operations.py:402 vm/operations.py:583 vm/operations.py:682
+msgid "wait operating system loading"
+msgstr "várakozás az operációs rendszer betöltésére"
+
+#: vm/operations.py:407
+msgid "deploy vm"
+msgstr "vm indítása"
+
+#: vm/operations.py:408
+msgid "Deploy virtual machine."
+msgstr "Virtuális gép létrehozása."
+
+#: vm/operations.py:417
+msgid "deploy virtual machine"
+msgstr "virtuális gép létrehozása"
+
+#: vm/operations.py:418
+#, python-format
+msgid "deploy vm to %(node)s"
+msgstr "vm létrehozása: %(node)s"
+
+#: vm/operations.py:424
+msgid "deploy disks"
+msgstr "lemez létrehozása"
+
+#: vm/operations.py:425
+msgid "Deploy all associated disks."
+msgstr "Csatolt lemezek létrehozása."
+
+#: vm/operations.py:442
+msgid "boot virtual machine"
+msgstr "virtuális gép indítása"
+
+#: vm/operations.py:450
+msgid "destroy"
+msgstr "megsemmisítés"
+
+#: vm/operations.py:451
+msgid "Permanently destroy virtual machine, its network settings and disks."
+msgstr ""
+"Virtuális gép és lemezeinek, hálózati beállításainak végleges eltávolítása."
+
+#: vm/operations.py:460
+msgid "destroy network"
+msgstr "hálózat megsemmisítése"
+
+#: vm/operations.py:471
+msgid "destroy disks"
+msgstr "lemez megsemmisítése"
+
+#: vm/operations.py:490
+msgid "destroy virtual machine"
+msgstr "virtuális gép megsemmisítése"
+
+#: vm/operations.py:498
+msgid "removing memory dump"
+msgstr "memóriamentés törlése"
+
+#: vm/operations.py:512
+msgid "migrate"
+msgstr "migrálás"
+
+#: vm/operations.py:513
+msgid ""
+"Move a running virtual machine to an other worker node keeping its full "
+"state."
+msgstr ""
+"A virtuális gép mozgatása egy másik számítási csomópontra állapotának "
+"megtartásával."
+
+#: vm/operations.py:530
+msgid "redeploy network (rollback)"
+msgstr "hálózati kapcsolat újraépítése (visszagörgetés)"
+
+#: vm/operations.py:537
+msgid "schedule"
+msgstr "ütemezés"
+
+#: vm/operations.py:544
+#, python-format
+msgid "migrate to %(node)s"
+msgstr "migrálás %(node)s csomópontra"
+
+#: vm/operations.py:555 vm/operations.py:880
+msgid "shutdown network"
+msgstr "hálózati kapcsolat leállítása"
+
+#: vm/operations.py:572
+msgid "reboot"
+msgstr "újraindítás"
+
+#: vm/operations.py:573
+msgid ""
+"Warm reboot virtual machine by sending Ctrl+Alt+Del signal to its console."
+msgstr ""
+"Virtuális gép újraindítása a konzoljára a Ctrl+Alt+Del kombináció "
+"küldésével."
+
+#: vm/operations.py:589
+msgid "remove interface"
+msgstr "interfész törlése"
+
+#: vm/operations.py:590
+msgid ""
+"Remove the specified network interface and erase IP address allocations, "
+"related firewall rules and hostnames."
+msgstr ""
+"A kiválasztott hálózati interfész eltávolítása, a foglalt IP címek, "
+"tűzfalszabályok és gépnevek törlése."
+
+#: vm/operations.py:606
+#, python-format
+msgid "remove %(vlan)s interface"
+msgstr "%(vlan)s interfész törlése"
+
+#: vm/operations.py:613
+msgid "close port"
+msgstr "port bezárása"
+
+#: vm/operations.py:614
+msgid "Close the specified port."
+msgstr "A megadott port bezárása."
+
+#: vm/operations.py:623
+#, python-format
+msgid "close %(proto)s/%(port)d on %(host)s"
+msgstr "%(proto)s/%(port)d bezárása ezen: %(host)s"
+
+#: vm/operations.py:631
+msgid "open port"
+msgstr "port nyitása"
+
+#: vm/operations.py:632
+msgid "Open the specified port."
+msgstr "A megadott port kinyitása."
+
+#: vm/operations.py:641
+#, python-format
+msgid "open %(proto)s/%(port)d on %(host)s"
+msgstr "%(proto)s/%(port)d kinyitása ezen: %(host)s"
+
+#: vm/operations.py:648
+msgid "remove disk"
+msgstr "lemez eltávolítása"
+
+#: vm/operations.py:649
+msgid ""
+"Remove the specified disk from the virtual machine, and destroy the data."
+msgstr "A megadott lemez eltávolítása a virtuális gépből és az adat törlése."
+
+#: vm/operations.py:659
+msgid "destroy disk"
+msgstr "lemez megsemmisítése"
+
+#: vm/operations.py:665
+#, python-format
+msgid "remove disk %(name)s"
+msgstr "%(name)s lemez eltávolítása"
+
+#: vm/operations.py:672 vm/operations.py:1083
+msgid "reset"
+msgstr "reset"
+
+#: vm/operations.py:673
+msgid "Cold reboot virtual machine (power cycle)."
+msgstr "Virtuális gép hideg újraindítása (hálózati tápellátás megszakítása)."
+
+#: vm/operations.py:688
+msgid "save as template"
+msgstr "mentés sablonként"
+
+#: vm/operations.py:689
+msgid ""
+"Save virtual machine as a template so they can be shared with users and "
+"groups.  Anyone who has access to a template (and to the networks it uses) "
+"will be able to start an instance of it."
+msgstr ""
+"Virtuális gép mentése sablonként, amelyet meg lehet osztani más "
+"felhasználókkal és csoportokkal. Mindenki, aki hozzáférést kap egy sablonhoz"
+" (és az általa használt hálózatokhoz), képes lesz egy példányát elindítani."
+
+#: vm/operations.py:765
+#, python-format
+msgid "saving disk %(name)s"
+msgstr "%(name)s lemez mentése"
+
+#: vm/operations.py:797
+msgid "shutdown"
+msgstr "leállítás"
+
+#: vm/operations.py:798
+msgid ""
+"Try to halt virtual machine by a standard ACPI signal, allowing the "
+"operating system to keep a consistent state. The operation will fail if the "
+"machine does not turn itself off in a period."
+msgstr ""
+"Virtuális gép megállítása szabványos ACPI jelzéssel, lehetővé téve az "
+"operációs rendszer számár a szabályos leállást. A művelet meghiúsul, ha a "
+"gép nem áll le."
+
+#: vm/operations.py:817
+msgid ""
+"The virtual machine did not switch off in the provided time limit. Most of "
+"the time this is caused by incorrect ACPI settings. You can also try to "
+"power off the machine from the operating system manually."
+msgstr ""
+"A virtuális gép nem állt le a biztosított időkorlát alatt. A legtöbb esetben"
+" ez a nem megfelelő ACPI beállítások miatt van. Megpróbálhatja a gépet az "
+"operációs rendszerből, kézzel leállítani."
+
+#: vm/operations.py:829
+msgid "shut off"
+msgstr "kikapcsolás"
+
+#: vm/operations.py:830
+msgid ""
+"Forcibly halt a virtual machine without notifying the operating system. This"
+" operation will even work in cases when shutdown does not, but the operating"
+" system and the file systems are likely to be in an inconsistent state,  so "
+"data loss is also possible. The effect of this operation is the same as "
+"interrupting the power supply of a physical machine."
+msgstr ""
+"Virtuális gép erőltetett leállítása az operációs rendszer értesítése nélkül."
+" Ez a művelet akkor is működik, ha a normál leállítás nem, de az operációs "
+"rendszer és a fájlrendszer sérülhet, adatvesztés történhet. A művelet hatása"
+" hasonló, mint egy fizikai gép tápellátásának megszüntetése."
+
+#: vm/operations.py:853
+msgid "sleep"
+msgstr "altatás"
+
+#: vm/operations.py:854
+msgid ""
+"Suspend virtual machine. This means the machine is stopped and its memory is"
+" saved to disk, so if the machine is waked up, all the applications will "
+"keep running. Most of the applications will be able to continue even after a"
+" long suspension, but those which need a continous network connection may "
+"fail when resumed. In the meantime, the machine will only use storage "
+"resources, and keep network resources allocated."
+msgstr ""
+"Virtuális gép felfüggesztése. A virtuális gép megállításra, memóriája "
+"lemezre mentésre kerül. Így a gép ébresztése után minden futó alkalmazás "
+"folytatódik. A legtöbb alkalmazás elviseli akár a hosszabb idejű "
+"felfüggesztést, azonban a folyamatos hálózati kapcsolatot igénylő programok "
+"megállhatnak visszaállítás után. A felfüggesztés ideje alatt a virtuális gép"
+" csak tárterületet és hálózati erőforrásokat foglal."
+
+#: vm/operations.py:888
+msgid "suspend virtual machine"
+msgstr "virtuális gép felfüggesztése"
+
+#: vm/operations.py:902
+msgid "wake up"
+msgstr "virtuális gép ébresztése"
+
+#: vm/operations.py:903
+msgid ""
+"Wake up sleeping (suspended) virtual machine. This will load the saved "
+"memory of the system and start the virtual machine from this state."
+msgstr ""
+"Alvó (felfüggesztett) gép ébresztése: az elmentett memóriatartalom "
+"visszatöltése és a virtuális gép indítása ebből a mentett állapotból."
+
+#: vm/operations.py:942
+msgid "resume virtual machine"
+msgstr "virtuális gép ébresztése"
+
+#: vm/operations.py:956
+msgid "renew"
+msgstr "megújítás"
+
+#: vm/operations.py:957
+msgid ""
+"Virtual machines are suspended and destroyed after they expire. This "
+"operation renews expiration times according to the lease type. If the "
+"machine is close to the expiration, its owner will be notified."
+msgstr ""
+"A virtuális gépek lejáratuk után felfüggesztésre, majd törlésre kerülnek. Ez"
+" a művelet megújítja a bérletet a kiválasztott típusnak megfelelően. Ha egy "
+"gép közeledik a lejárathoz, a tulajdonost értesítjük."
+
+#: vm/operations.py:970
+msgid ""
+"Renewing the machine with the selected lease would result in its suspension "
+"time get earlier than before."
+msgstr ""
+"A gép megújítása a kiválasztott bérleti mód mellett a felfüggesztési időt "
+"korábbra állította volna, mint a jelenlegi érték."
+
+#: vm/operations.py:975
+msgid ""
+"Renewing the machine with the selected lease would result in its delete time"
+" get earlier than before."
+msgstr ""
+"A gép megújítása a kiválasztott bérleti mód mellett a törlési időt korábbra "
+"állította volna, mint a jelenlegi érték."
+
+#: vm/operations.py:983
+#, python-format
+msgid "Renewed to suspend at %(suspend)s and destroy at %(delete)s."
+msgstr ""
+"Megújítás után felfüggesztés ideje: %(suspend)s, a törlésé: %(delete)s."
+
+#: vm/operations.py:990
+msgid "emergency state change"
+msgstr "vész-állapotváltás"
+
+#: vm/operations.py:991
+msgid ""
+"Change the virtual machine state to NOSTATE. This should only be used if "
+"manual intervention was needed in the virtualization layer, and the machine "
+"has to be redeployed without losing its storage and network resources."
+msgstr ""
+"A virtuális gép állapotának változtatása NOSTATE-re. Ezt a műveletet csak "
+"akkor hajtsa végre, ha kézi beavatkozásra kényszerült a virtualizációs "
+"rétegben, és úgy szeretné a gépet újból elindítani, hogy ne vesszenek el "
+"lemezei vagy hálózati erőforrásai."
+
+#: vm/operations.py:1004
+msgid "Activity is forcibly interrupted."
+msgstr "A tevékenység erőszakos megszakításra került."
+
+#: vm/operations.py:1019
+msgid "redeploy"
+msgstr "újbóli létrehozás"
+
+#: vm/operations.py:1020
+msgid ""
+"Change the virtual machine state to NOSTATE and redeploy the VM. This "
+"operation allows starting machines formerly running on a failed node."
+msgstr ""
+"A virtuális gép állapotának átállítása NOSTATE-re, majd a VM újbóli "
+"létrehozása. Ez a művelet lehetővé teszi olyan gépek elindítását, amelyek "
+"korábban egy meghibásodott csomóponton futnak."
+
+#: vm/operations.py:1056
+msgid "You cannot call this operation on an offline node."
+msgstr "Nem hívható ez a művelet elérhetetlen csomópontra."
+
+#: vm/operations.py:1084
+msgid "Disable missing node and redeploy all instances on other ones."
+msgstr "Hiányzó csomópont letiltása és az összes példány elindítása a többin."
+
+#: vm/operations.py:1094
+msgid "You cannot reset a disabled or online node."
+msgstr "Tiltott vagy elérhető csomópont resetelése nem lehetséges."
+
+#: vm/operations.py:1102 vm/operations.py:1122
+#, python-format
+msgid "migrate %(instance)s (%(pk)s)"
+msgstr "%(instance)s (%(pk)s) migrálása"
+
+#: vm/operations.py:1111
+msgid "flush"
+msgstr "ürítés"
+
+#: vm/operations.py:1112
+msgid "Passivate node and move all instances to other ones."
+msgstr ""
+"A csomópont passzívra állítása és az összes példány másikakra mozgatása."
+
+#: vm/operations.py:1131
+msgid "activate"
+msgstr "aktiválás"
+
+#: vm/operations.py:1132
+msgid ""
+"Make node active, i.e. scheduler is allowed to deploy virtual machines to "
+"it."
+msgstr ""
+"Csomópont aktívvá tétele: az ütemező indíthat virtuális gépeket rajta."
+
+#: vm/operations.py:1140
+msgid "You cannot activate an active node."
+msgstr "Aktív csomópont aktiválása nem lehetséges."
+
+#: vm/operations.py:1152
+msgid "passivate"
+msgstr "passziválás"
+
+#: vm/operations.py:1153
+msgid ""
+"Make node passive, i.e. scheduler is denied to deploy virtual machines to "
+"it, but remaining instances and the ones manually migrated will continue "
+"running."
+msgstr ""
+"Csomópont passzívvá tétele: az ütemező nem indíthat rajta virtuális gépeket,"
+" azonban a megmaradt példányok és a kézzel idemigráltak tovább működnek."
+
+#: vm/operations.py:1161
+msgid "You cannot passivate a passive node."
+msgstr "Passzív csomópont passziválása nem lehetséges."
+
+#: vm/operations.py:1174
+msgid "disable"
+msgstr "tiltás"
+
+#: vm/operations.py:1175
+msgid "Disable node."
+msgstr "Csomópont tiltása."
+
+#: vm/operations.py:1182
+msgid "You cannot disable a disabled node."
+msgstr "Tiltott csomópont tiltása nem lehetséges."
+
+#: vm/operations.py:1185
+msgid "You cannot disable a node which is hosting instances."
+msgstr "Nem tiltható le olyan csomópont, amelyen még futnak példányok."
+
+#: vm/operations.py:1198
+#| msgid "update agent"
+msgid "update node"
+msgstr "csomópont frissítése"
+
+#: vm/operations.py:1199
+msgid ""
+"Upgrade or install node software (vmdriver, agentdriver, monitor-client) "
+"with Salt."
+msgstr ""
+"Csomópont frissítése vagy telepítése (vmdriver, agentdriver, monitor-client)"
+" Salt segítségével."
+
+#: vm/operations.py:1215
+msgid "No minions matched the target."
+msgstr ""
+
+#: vm/operations.py:1219
+#, python-format
+#| msgid "Unhandled exception: %(error)s"
+msgid "Unhandled exception: %(msg)s"
+msgstr "Kezeletlen kivétel: %(msg)s"
+
+#: vm/operations.py:1226
+msgid "upgrade packages"
+msgstr "csomagok frissítése"
+
+#: vm/operations.py:1235
+#, python-format
+msgid "Upgraded: %(upgraded)s, Installed: %(installed)s, Removed: %(removed)s"
+msgstr ""
+"Frissítve: %(upgraded)s, Telepítve: %(installed)s, Törölve: %(removed)s"
+
+#: vm/operations.py:1248
+#, python-format
+msgid "Changes: %(changes)s Comment: %(comment)s"
+msgstr ""
+
+#: vm/operations.py:1256
+#, python-format
+msgid "Failed: %(failed)s"
+msgstr ""
+
+#: vm/operations.py:1262
+msgid "screenshot"
+msgstr "képernyőkép"
+
+#: vm/operations.py:1263
+msgid ""
+"Get a screenshot about the virtual machine's console. A key will be pressed "
+"on the keyboard to stop screensaver."
+msgstr ""
+"Képernyőkép készítése a virtuális gép konzoljáról. Egy billentyűnyomást "
+"követően készül a kép a képernyővédő miatt."
+
+#: vm/operations.py:1275
+msgid "recover"
+msgstr "visszaállítás"
+
+#: vm/operations.py:1276
+msgid ""
+"Try to recover virtual machine disks from destroyed state. Network resources"
+" (allocations) are already lost, so you will have to manually add interfaces"
+" afterwards."
+msgstr ""
+"Megsemmisített virtuális gép lemezeinek visszaállítását kísérli meg. A "
+"hálózati erőforrások foglalásai már végleg elvesztek, így az interfészeket "
+"kézzel kell a visszaállítás után pótolni."
+
+#: vm/operations.py:1293
+msgid "recover instance"
+msgstr "példány helyreállítása"
+
+#: vm/operations.py:1316
+msgid "resources change"
+msgstr "erőforrások módosítása"
+
+#: vm/operations.py:1317
+msgid "Change resources of a stopped virtual machine."
+msgstr "Leállított virtuális gép erőforrásainak változtatása."
+
+#: vm/operations.py:1334
+#, python-format
+msgid ""
+"Priority: %(priority)s, Num cores: %(num_cores)s, Ram size: %(ram_size)s"
+msgstr ""
+"Prioritás: %(priority)s, magok száma: %(num_cores)s, memória mérete: "
+"%(ram_size)s"
+
+#: vm/operations.py:1343
+msgid "password reset"
+msgstr "jelszó visszaállítása"
+
+#: vm/operations.py:1344
+msgid ""
+"Generate and set a new login password on the virtual machine. This operation"
+" requires the agent running. Resetting the password is not warranted to "
+"allow you logging in as other settings are possible to prevent it."
+msgstr ""
+"Egy új belépési jelszó generálása és beállítása a virtuális gépen. Ez a "
+"művelet megköveteli az ügynök futását. A jelszó átállítása nem garantálja a "
+"sikeres belépést, mivel más beállítások is megakadályozhatják ezt."
+
+#: vm/operations.py:1368
+msgid "agent"
+msgstr "ügynök"
+
+#: vm/operations.py:1409
+msgid "starting"
+msgstr "indítás"
+
+#: vm/operations.py:1427
+msgid "wait agent restarting"
+msgstr "várakozás az ügynök újraindulására"
+
+#: vm/operations.py:1444
+msgid "cleanup"
+msgstr "takarítás"
+
+#: vm/operations.py:1450
+msgid "set time"
+msgstr "óra beállítása"
+
+#: vm/operations.py:1461
+msgid "set hostname"
+msgstr "gépnév beállítása"
+
+#: vm/operations.py:1472
+msgid "restart networking"
+msgstr "hálózat újratöltése"
+
+#: vm/operations.py:1478
+msgid "change ip"
+msgstr "IP cím beállítása"
+
+#: vm/operations.py:1493
+msgid "update agent"
+msgstr "ügynök frissítése"
+
+#: vm/operations.py:1499
+#, python-format
+msgid "update agent to %(version)s"
+msgstr "ügynökfrissítés erre: %(version)s"
+
+#: vm/operations.py:1582
+msgid "mount store"
+msgstr "tárhely csatolása"
+
+#: vm/operations.py:1584
+msgid ""
+"This operation attaches your personal file store. Other users who have "
+"access to this machine can see these files as well."
+msgstr ""
+"Ez a művelet csatolja az ön személyes tárhelyét. A gép más felhasználói is "
+"elérhetik fájljait."
+
+#: vm/operations.py:1618
+msgid "attach disk"
+msgstr "lemez csatolása"
+
+#: vm/operations.py:1629
+msgid "Resource was not found."
+msgstr "Nem található az erőforrás."
+
+#: vm/operations.py:1630
+#, python-format
+msgid "Resource was not found. %(exception)s"
+msgstr "Nem található az erőforrás. %(exception)s"
+
+#: vm/operations.py:1639
+msgid "detach disk"
+msgstr "lemez leválasztása"
+
+#: vm/operations.py:1654
+msgid "attach network"
+msgstr "hálózat csatolása"
+
+#: vm/operations.py:1661
+msgid "detach network"
+msgstr "hálózat lecsatolása"
 
 #: vm/tasks/local_agent_tasks.py:39
 msgid "stopping"
@@ -5820,6 +5833,98 @@ msgstr ""
 #: vm/tests/test_models.py:219
 msgid "x"
 msgstr "x"
+
+#~ msgid "User profile"
+#~ msgstr "Felhasználói profil"
+
+#~ msgid "Change the name of the group."
+#~ msgstr "Válasszon csoportnevet."
+
+#~ msgid "Delete group."
+#~ msgstr "Csoport törlése."
+
+#~ msgid ""
+#~ "\n"
+#~ "              Are you sure you want to change <strong>%(object)s</strong> status?\n"
+#~ "            "
+#~ msgstr ""
+#~ "\n"
+#~ "              Biztosan megváltoztatja a következő állapotát: <strong>%(object)s</strong>?\n"
+#~ "            "
+
+#~ msgid "Yes, %(status)s"
+#~ msgstr "Igen, %(status)s"
+
+#~ msgid ""
+#~ "\n"
+#~ "Do you really want to remove %(member)s from %(group)s?\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Biztosan törli %(member)s tagot a(z) %(group)s csoportból?\n"
+
+#~ msgid ""
+#~ "\n"
+#~ "          Renewing <em>%(instance)s</em>\n"
+#~ "          "
+#~ msgstr ""
+#~ "\n"
+#~ "          <em>%(instance)s</em> megújítása\n"
+#~ "          "
+
+#~ msgid ""
+#~ "\n"
+#~ "            Do you want to renew <strong>%(object)s</strong>?\n"
+#~ "        "
+#~ msgstr ""
+#~ "\n"
+#~ "            Megújítja a következőt: <strong>%(object)s</strong>?\n"
+#~ "        "
+
+#~ msgid ""
+#~ "\n"
+#~ "            The instance will be suspended at <em>%(suspend)s</em>\n"
+#~ "            and removed at <em>%(delete)s</em> if you renew it now.\n"
+#~ "        "
+#~ msgstr ""
+#~ "\n"
+#~ "            A példány felfüggesztése <em>%(suspend)s</em> időpontban,\n"
+#~ "            törlése <em>%(delete)s</em> időpontban történik, ha most megújítja.\n"
+#~ "        "
+
+#~ msgid "Renew"
+#~ msgstr "Megújítás"
+
+#~ msgid "Are you sure you want to delete the following objects?"
+#~ msgstr "Biztosan törli a következő objektumokat?"
+
+#~ msgid ""
+#~ "\n"
+#~ "              Are you sure you want to flush <strong>%(object)s</strong>?\n"
+#~ "            "
+#~ msgstr ""
+#~ "\n"
+#~ "              Biztosan üríti a következőt: <strong>%(object)s</strong>?\n"
+#~ "            "
+
+#~ msgid "Status changing confirmation"
+#~ msgstr "Állapotváltozás megerősítése"
+
+#~ msgid "Node successfully changed status."
+#~ msgstr "A csomópont állapota megváltoztatásra került."
+
+#~ msgid "Only the owners can delete the selected template."
+#~ msgstr "A kiválasztott sablont csak a tulajdonosok törölhetik."
+
+#~ msgid ""
+#~ "Are you sure you want to remove this interface from <strong>%(vm)s</strong>?"
+#~ msgstr ""
+#~ "Biztosan eltávolítja az interfészt a(z) <strong>%(vm)s</strong> gépből?"
+
+#~ msgid "Interface successfully deleted."
+#~ msgstr "Az interfész törlésre került."
+
+#~ msgid "Only ports above 1024 can be used."
+#~ msgstr "Csak az 1024 feletti portok használhatóak."
 
 #~ msgid "There is a problem with your input."
 #~ msgstr "A megadott érték nem megfelelő."
