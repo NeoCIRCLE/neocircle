@@ -22,6 +22,7 @@ from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse_lazy
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, Http404
+from django.db.models import Q
 
 from django_tables2 import SingleTableView
 
@@ -375,6 +376,11 @@ class HostList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
             data = Host.objects.filter(vlan=vlan_id).select_related()
         else:
             data = Host.objects.select_related()
+
+        search = self.request.GET.get("s")
+        if search:
+            data = data.filter(Q(hostname__icontains=search) |
+                               Q(ipv4=search))  # ipv4 does not work TODO
         return data
 
 

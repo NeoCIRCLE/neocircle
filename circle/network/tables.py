@@ -79,10 +79,11 @@ class HostTable(Table):
 
     class Meta:
         model = Host
-        attrs = {'class': 'table table-striped table-condensed'}
+        attrs = {'class': "table table-striped table-condensed",
+                 'id': "network-host-list-table"}
         fields = ('hostname', 'vlan', 'mac', 'ipv4', 'ipv6',
                   'external_ipv4', 'created_at', 'owner', )
-        order_by = ('vlan', 'hostname', )
+        order_by = ("hostname", )
 
 
 class SmallRuleTable(Table):
