@@ -1293,24 +1293,26 @@ class GroupDetailTest(LoginMixin, TestCase):
         self.login(c, 'user1')
         self.u1.user_permissions.add(Permission.objects.get(
             name='Can add user'))
-        response = c.post('/dashboard/group/%d/create/' % self.g1.pk,
+        response = c.post('/dashboard/profile/create/',
                           {'username': 'userx1',
+                           'groups': self.g1.pk,
                            'password1': 'test123',
                            'password2': 'test123'})
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(user_count, self.g1.user_set.count())
 
     def test_permitted_user_add_wo_can_add_user_perm(self):
         user_count = self.g1.user_set.count()
         c = Client()
         self.login(c, 'user0')
-        response = c.post('/dashboard/group/%d/create/' % self.g1.pk,
+        response = c.post('/dashboard/profile/create/',
                           {'username': 'userx2',
+                           'groups': self.g1.pk,
                            'password1': 'test123',
                            'password2': 'test123'})
         self.assertRedirects(
             response,
-            '/accounts/login/?next=/dashboard/group/%d/create/' % self.g1.pk)
+            '/accounts/login/?next=/dashboard/profile/create/')
         self.assertEqual(response.status_code, 302)
         self.assertEqual(user_count, self.g1.user_set.count())
 
@@ -1320,11 +1322,12 @@ class GroupDetailTest(LoginMixin, TestCase):
             name='Can add user'))
         c = Client()
         self.login(c, 'user0')
-        response = c.post('/dashboard/group/%d/create/' % self.g1.pk,
+        response = c.post('/dashboard/profile/create/',
                           {'username': 'userx2',
+                           'groups': self.g1.pk,
                            'password1': 'test123',
                            'password2': 'test123'})
-        self.assertRedirects(response, '/dashboard/group/%d/' % self.g1.pk)
+        self.assertRedirects(response, '/dashboard/profile/userx2/')
         self.assertEqual(user_count + 1, self.g1.user_set.count())
         self.assertEqual(response.status_code, 302)
 
