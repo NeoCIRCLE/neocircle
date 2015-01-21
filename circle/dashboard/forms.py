@@ -1211,7 +1211,10 @@ class TraitForm(forms.ModelForm):
 
 
 class MyProfileForm(forms.ModelForm):
-    preferred_language = forms.ChoiceField(LANGUAGES_WITH_CODE)
+    preferred_language = forms.ChoiceField(
+        LANGUAGES_WITH_CODE,
+        label=_("Preferred language"),
+    )
 
     class Meta:
         fields = ('preferred_language', 'email_notifications',
