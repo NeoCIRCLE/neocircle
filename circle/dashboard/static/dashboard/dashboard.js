@@ -215,6 +215,7 @@ $(function () {
   register_search($("#dashboard-node-search-form"), $("#dashboard-node-list"), generateNodeHTML);
   register_search($("#dashboard-group-search-form"), $("#dashboard-group-list"), generateGroupHTML);
   register_search($("#dashboard-user-search-form"), $("#dashboard-user-list"), generateUserHTML);
+  register_search($("#dashboard-template-search-form"), $("#dashboard-template-list"), generateTemplateHTML);
 
   /* notification message toggle */
   $(document).on('click', ".notification-message-subject", function() {
@@ -299,6 +300,16 @@ function generateGroupHTML(data, is_last) {
 function generateUserHTML(data, is_last) {
   return '<a href="' + data.url + '" class="list-group-item real-link' + (is_last ? " list-group-item-last" : "") +'">'+
          '<i class="fa fa-user"></i> '+ safe_tags_replace(data.name) +
+         '</a>';
+}
+
+function generateTemplateHTML(data, is_last) {
+  return '<a href="' + data.url + '" class="list-group-item real-link' + (is_last ? " list-group-item-last" : "") +'">'+
+         '  <span class="index-template-list-name">' +
+         '    <i class="fa fa-' + data.icon + '"></i> '+ safe_tags_replace(data.name) +
+         '  </span>' +
+         '  <small class="text-muted index-template-list-system">' + safe_tags_replace(data.system) + '</small>' +
+         '  <div class="clearfix"></div>' +
          '</a>';
 }
 

@@ -33,13 +33,25 @@
       {% endfor %}
     </div>
     <div class="list-group-item list-group-footer">
-      <div class="text-right">
-        <a href="{% url "dashboard.views.template-list" %}" class="btn btn-primary btn-xs">
-          <i class="fa fa-chevron-circle-right"></i> {% trans "show all" %}
-        </a>
-        <a href="{% url "dashboard.views.template-choose" %}" class="btn btn-success btn-xs template-choose">
-          <i class="fa fa-plus-circle"></i> {% trans "new" %}
-        </a>
+      <div class="row">
+        <div class="col-xs-6">
+          <form action="{% url "dashboard.views.template-list" %}" method="GET" id="dashboard-template-search-form">
+            <div class="input-group input-group-sm">
+              <input id="dashboard-group-search-input" name="s" type="text" class="form-control" placeholder="{% trans "Search..." %}" />
+              <div class="input-group-btn">
+                <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i></button>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="col-xs-6 text-right">
+          <a href="{% url "dashboard.views.template-list" %}" class="btn btn-primary btn-xs">
+            <i class="fa fa-chevron-circle-right"></i> {% trans "show all" %}
+          </a>
+          <a href="{% url "dashboard.views.template-choose" %}" class="btn btn-success btn-xs template-choose">
+            <i class="fa fa-plus-circle"></i> {% trans "new" %}
+          </a>
+        </div>
       </div>
     </div>
   </div>
