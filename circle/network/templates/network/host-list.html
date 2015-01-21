@@ -18,26 +18,32 @@
   </h1>
 </div>
 
-<ul class="nav nav-pills" style="margin: 5px 0 20px 0;">
-  <li class="disabled"><a href="#">{% trans "Filter by vlans" %}</a></li>
-  <li {% if not request.GET.vlan %} class="active"{% endif %}>
-    <a href="{{ request.path }}">{% trans "ALL" %}</a>
-  </li>
-  {% for vlan in vlans %}
-    <li{% if request.GET.vlan|add:"0" == vlan.id %} class="active"{% endif %}>
-      <a href="?vlan={{ vlan.id }}">{{ vlan.name }}</a>
-    </li>
-  {% endfor %}
-  <form action="" method="GET">
-    <div class="input-group pull-right" style="max-width: 300px;">
-      <input type="text" id="network-host-list-input" name="s" class="form-control"
-       value="{{ request.GET.s }}"/>
-      <span class="input-group-btn">
-        <button class="btn btn-primary"><i class="fa fa-search"></i></button>
-      </span>
-    </div>
-  </form>
-</ul>
+<div class="row">
+  <div class="col-md-9">
+    <ul class="nav nav-pills" style="margin: 5px 0 20px 0;">
+      <li class="disabled"><a href="#">{% trans "Filter by vlans" %}</a></li>
+      <li {% if not request.GET.vlan %} class="active"{% endif %}>
+        <a href="{{ request.path }}">{% trans "ALL" %}</a>
+      </li>
+      {% for vlan in vlans %}
+        <li{% if request.GET.vlan|add:"0" == vlan.id %} class="active"{% endif %}>
+          <a href="?vlan={{ vlan.id }}">{{ vlan.name }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+  <div class="col-md-3">
+    <form action="" method="GET">
+      <div class="input-group pull-right">
+        <input type="text" id="network-host-list-input" name="s" class="form-control"
+        value="{{ request.GET.s }}" placeholder="{% trans "Search..." %}"/>
+        <span class="input-group-btn">
+          <button class="btn btn-primary"><i class="fa fa-search"></i></button>
+        </span>
+      </div>
+    </form>
+  </div>
+</div>
 
 <div class="table-responsive">
   {% render_table table %}
