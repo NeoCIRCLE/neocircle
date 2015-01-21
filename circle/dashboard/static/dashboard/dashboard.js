@@ -157,14 +157,20 @@ $(function () {
  /* search */
   function register_search(form, list, generateHTML) {
     var my_vms = [];
+    var search_in_progress = false;
 
     form.find('input').keyup(function(e) {
+      if (search_in_progress) {
+        return;
+      }
       // if my_vms is empty get a list of our vms
       if(my_vms.length < 1) {
+        search_in_progress = true;
         var btn = form.find('button');
         btn.find('i').addClass("fa-spinner fa-spin");
 
         $.get(form.prop('action'), function(result) {
+          search_in_progress = false;
           my_vms = result;
           $(this).trigger("keyup");
           btn.find('i').removeClass("fa-spinner fa-spin").addClass("fa-search");
