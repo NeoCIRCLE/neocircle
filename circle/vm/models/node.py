@@ -17,9 +17,15 @@
 
 from __future__ import absolute_import, unicode_literals
 from functools import update_wrapper
+from glob import glob
 from logging import getLogger
+import os.path
 from warnings import warn
 import requests
+from salt.client import LocalClient
+from salt.exceptions import SaltClientError
+import salt.utils
+from time import time, sleep
 
 from django.conf import settings
 from django.db.models import (
@@ -42,6 +48,56 @@ from .common import Trait
 
 
 logger = getLogger(__name__)
+
+
+class MyLocalClient(LocalClient):
+    def get_returns(self, jid, minions, timeout=None):
+        '''
+        Get the returns for the command line interface via the event system
+        '''
+        minions = set(minions)
+        if timeout is None:
+            timeout = self.opts['timeout']
+        jid_dir = salt.utils.jid_dir(jid,
+                                     self.opts['cachedir'],
+                                     self.opts['hash_type'])
+        start = time()
+        timeout_at = start + timeout
+
+        found = set()
+        ret = {}
+        wtag = os.path.join(jid_dir, 'wtag*')
+        # Check to see if the jid is real, if not return the empty dict
+        if not os.path.isdir(jid_dir):
+            logger.warning("jid_dir (%s) does not exist", jid_dir)
+            return ret
+        # Wait for the hosts to check in
+        while True:
+            time_left = timeout_at - time()
+            raw = self.event.get_event(time_left, jid)
+            if raw is not None and 'return' in raw:
+                found.add(raw['id'])
+                ret[raw['id']] = raw['return']
+                if len(found.intersection(minions)) >= len(minions):
+                    # All minions have returned, break out of the loop
+                    logger.debug("jid %s found all minions", jid)
+                    break
+                continue
+            # Then event system timeout was reached and nothing was returned
+            if len(found.intersection(minions)) >= len(minions):
+                # All minions have returned, break out of the loop
+                logger.debug("jid %s found all minions", jid)
+                break
+            if glob(wtag) and time() <= timeout_at + 1:
+                # The timeout +1 has not been reached and there is still a
+                # write tag for the syndic
+                continue
+            if time() > timeout_at:
+                logger.info('jid %s minions %s did not return in time',
+                            jid, (minions - found))
+                break
+            sleep(0.01)
+        return ret
 
 
 def node_available(function):
@@ -110,6 +166,18 @@ class Node(OperatedMixin, TimeStampedModel):
             return True
 
     online = property(get_online)
+
+    @method_cache(20)
+    def get_minion_online(self):
+        name = self.host.hostname
+        try:
+            client = MyLocalClient()
+            client.opts['timeout'] = 0.2
+            return bool(client.cmd(name, 'test.ping')[name])
+        except (KeyError, SaltClientError):
+            return False
+
+    minion_online = property(get_minion_online)
 
     @node_available
     @method_cache(300)

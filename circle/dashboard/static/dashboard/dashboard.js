@@ -1,65 +1,51 @@
 $(function () {
+  var favicon= new Favico({
+        animation:'none'
+  });
+
+  var notifications = $("#notification_count").data("notifications");
+  if(notifications)
+    favicon.badge(notifications);
+
+  $(".not-tab-pane").removeClass("not-tab-pane").addClass("tab-pane");
+
   $('.vm-create').click(function(e) {
     var template = $(this).data("template");
     $.ajax({
       type: 'GET',
-      url: '/dashboard/vm/create/' + (typeof template === "undefined" ? '' : '?template=' + template),
+      url: $(this).attr('href'),
       success: function(data) {
         $('body').append(data);
         vmCreateLoaded();
         addSliderMiscs();
-        $('#create-modal').modal('show');
-        $('#create-modal').on('hidden.bs.modal', function() {
-          $('#create-modal').remove();
+        var modal = $('#confirmation-modal');
+        modal.modal('show');
+        modal.on('hidden.bs.modal', function() {
+          modal.remove();
         });
       }
     });
     return false;
   });
 
-  $('.node-create').click(function(e) {
+  $('.group-create, .node-create, .tx-tpl-ownership, .group-delete, .node-delete, .disk-remove, .template-delete, .delete-from-group, .lease-delete').click(function(e) {
     $.ajax({
       type: 'GET',
-      url: '/dashboard/node/create/',
+      url: $(this).prop('href'),
       success: function(data) {
         $('body').append(data);
-        nodeCreateLoaded();
-        addSliderMiscs();
-        $('#create-modal').modal('show');
-        $('#create-modal').on('hidden.bs.modal', function() {
-          $('#create-modal').remove();
+        var modal = $('#confirmation-modal');
+        modal.modal('show');
+        modal.on('hidden.bs.modal', function() {
+          modal.remove();
         });
-      }
-    });
-    return false;
-  });
-
-  $('.group-create').click(function(e) {
-    $.ajax({
-      type: 'GET',
-      url: '/dashboard/group/create/',
-      success: function(data) {
-        $('body').append(data);
-        addSliderMiscs();
-        $('#create-modal').modal('show');
-        $('#create-modal').on('hidden.bs.modal', function() {
-          $('#create-modal').remove();
-        });
-      }
-    });
-    return false;
-  });
-
-  $('.tx-tpl-ownership').click(function(e) {
-    $.ajax({
-      type: 'GET',
-      url: $('.tx-tpl-ownership').attr('href'),
-      success: function(data) {
-        $('body').append(data);
-        $('#confirmation-modal').modal('show');
-        $('#confirmation-modal').on('hidden.bs.modal', function() {
-          $('#confirmation-modal').remove();
-        });
+      },
+      error: function(xhr, textStatus, error) {
+        if(xhr.status === 403) {
+          addMessage(gettext("Only the owners can delete the selected object."), "warning");
+        } else {
+          addMessage(gettext("An error occurred. (") + xhr.status + ")", 'danger');
+        }
       }
     });
     return false;
@@ -68,12 +54,13 @@ $(function () {
   $('.template-choose').click(function(e) {
     $.ajax({
       type: 'GET',
-      url: '/dashboard/template/choose/',
+      url: $(this).prop('href'),
       success: function(data) {
         $('body').append(data);
-        $('#create-modal').modal('show');
-        $('#create-modal').on('hidden.bs.modal', function() {
-          $('#create-modal').remove();
+        var modal = $('#confirmation-modal');
+        modal.modal('show');
+        modal.on('hidden.bs.modal', function() {
+          modal.remove();
         });
         // check if user selected anything
         $("#template-choose-next-button").click(function() {
@@ -99,6 +86,7 @@ $(function () {
     e.stopImmediatePropagation();
     return false;
   });
+
   $('[href=#index-list-view]').click(function (e) {
     var box = $(this).data('index-box');
     $('#' + box + '-graph-view').hide();
@@ -108,9 +96,10 @@ $(function () {
     e.stopImmediatePropagation();
     return false;
   });
-  $('body [title]:not(.title-favourite)').tooltip();
+
   $('body .title-favourite').tooltip({'placement': 'right'});
   $('body :input[title]').tooltip({trigger: 'focus', placement: 'auto right'});
+  $('body [title]').tooltip();
   $(".knob").knob();
 
   $('[data-toggle="pill"]').click(function() {
@@ -165,85 +154,18 @@ $(function () {
 
   addSliderMiscs();
 
-  /* for VM removes buttons */
-  $('.vm-delete').click(function() {
-    var vm_pk = $(this).data('vm-pk');
-    var dir = window.location.pathname.indexOf('list') == -1;
-    addModalConfirmation(deleteObject,
-      { 'url': '/dashboard/vm/delete/' + vm_pk + '/',
-        'data': [],
-        'pk': vm_pk,
-        'type': "vm",
-        'redirect': dir});
-    return false;
-  });
-
-  /* for disk remove buttons */
-  $('.disk-remove').click(function() {
-    var disk_pk = $(this).data('disk-pk');
-    addModalConfirmation(deleteObject,
-      { 'url': '/dashboard/disk/' + disk_pk + '/remove/',
-        'data': [],
-        'pk': disk_pk,
-        'type': "disk",
-      });
-    return false;
-  });
-
-  /* for Node removes buttons */
-  $('.node-delete').click(function() {
-    var node_pk = $(this).data('node-pk');
-    var dir = window.location.pathname.indexOf('list') == -1;
-    addModalConfirmation(deleteObject,
-      { 'url': '/dashboard/node/delete/' + node_pk + '/',
-        'data': [],
-        'pk': node_pk,
-        'type': "node",
-        'redirect': dir});
-
-    return false;
-  });
-
-  /* for Node flush buttons */
-  $('.node-flush').click(function() {
-    var node_pk = $(this).data('node-pk');
-    var postto = $(this).attr('href');
-    var dir = window.location.pathname.indexOf('list') == -1;
-    addModalConfirmation(function(){},
-      { 'url': postto,
-        'data': [],
-        'pk': node_pk,
-        'type': "node",
-        'redirect': dir});
-
-    return false;
-  });
-
-  /* for Group removes buttons */
-  $('.group-delete').click(function() {
-    var group_pk = $(this).data('group-pk');
-    var dir = window.location.pathname.indexOf('list') == -1;
-    addModalConfirmation(deleteObject,
-      { 'url': '/dashboard/group/delete/' + group_pk + '/',
-        'data': [],
-        'type': "group",
-        'pk': group_pk,
-        'redirect': dir});
-
-    return false;
-  });
-
  /* search for vms */
   var my_vms = [];
   $("#dashboard-vm-search-input").keyup(function(e) {
     // if my_vms is empty get a list of our vms
     if(my_vms.length < 1) {
-      $.ajaxSetup( { "async": false } );
+      $("#dashboard-vm-search-form button i").addClass("fa-spinner fa-spin");
+
       $.get("/dashboard/vm/list/", function(result) {
         for(var i in result) {
           my_vms.push({
             'pk': result[i].pk,
-            'name': result[i].name.toLowerCase(),
+            'name': result[i].name,
             'state': result[i].state,
             'fav': result[i].fav,
             'host': result[i].host,
@@ -252,21 +174,23 @@ $(function () {
             'owner': result[i].owner,
           });
         }
+        $("#dashboard-vm-search-input").trigger("keyup");
+        $("#dashboard-vm-search-form button i").removeClass("fa-spinner fa-spin").addClass("fa-search");
       });
-      $.ajaxSetup( { "async": true } );
+      return;
     }
 
     input = $("#dashboard-vm-search-input").val().toLowerCase();
     var search_result = [];
     var html = '';
     for(var i in my_vms) {
-      if(my_vms[i].name.indexOf(input) != -1 || my_vms[i].host.indexOf(input) != -1) {
+      if(my_vms[i].name.toLowerCase().indexOf(input) != -1 || my_vms[i].host.indexOf(input) != -1) {
         search_result.push(my_vms[i]);
       }
     }
     search_result.sort(compareVmByFav);
-    for(var i=0; i<5 && i<search_result.length; i++)
-      html += generateVmHTML(search_result[i].pk, search_result[i].name, 
+    for(i=0; i<5 && i<search_result.length; i++)
+      html += generateVmHTML(search_result[i].pk, search_result[i].name,
                              search_result[i].owner ? search_result[i].owner : search_result[i].host, search_result[i].icon,
                              search_result[i].status, search_result[i].fav,
                              (search_result.length < 5));
@@ -294,7 +218,7 @@ $(function () {
       $.get("/dashboard/node/list/", function(result) {
         for(var i in result) {
           my_nodes.push({
-            'name': result[i].name.toLowerCase(),
+            'name': result[i].name,
             'icon': result[i].icon,
             'status': result[i].status,
             'label': result[i].label,
@@ -309,7 +233,7 @@ $(function () {
     var search_result = [];
     var html = '';
     for(var i in my_nodes) {
-      if(my_nodes[i].name.indexOf(input) != -1) {
+      if(my_nodes[i].name.toLowerCase().indexOf(input) != -1) {
         search_result.push(my_nodes[i]);
       }
     }
@@ -351,7 +275,7 @@ $(function () {
         for(var i in result) {
           my_groups.push({
             'url': result[i].url,
-            'name': result[i].name.toLowerCase(),
+            'name': result[i].name,
           });
         }
       });
@@ -362,14 +286,14 @@ $(function () {
     var search_result = [];
     var html = '';
     for(var i in my_groups) {
-      if(my_groups[i].name.indexOf(input) != -1) {
+      if(my_groups[i].name.toLowerCase().indexOf(input) != -1) {
         search_result.push(my_groups[i]);
       }
     }
     for(i=0; i<5 && i<search_result.length; i++)
       html += generateGroupHTML(search_result[i].url, search_result[i].name, search_result.length < 5);
     if(search_result.length === 0)
-      html += '<div class="list-group-item list-group-item-last">No result</div>';
+      html += '<div class="list-group-item list-group-item-last">' + gettext("No result") + '</div>';
     $("#dashboard-group-list").html(html);
 
     // if there is only one result and ENTER is pressed redirect
@@ -398,6 +322,8 @@ $(function () {
   $("#notification-button a").click(function() {
     $('#notification-messages').load("/dashboard/notifications/");
     $('#notification-button a span[class*="badge-pulse"]').remove();
+
+    favicon.reset();
   });
   
   /* on the client confirmation button fire the clientInstalledAction */
@@ -436,7 +362,6 @@ $(function () {
     li.addClass('panel-primary').find('input').prop("checked", true);
     return true;
   });
-
 });
 
 function generateVmHTML(pk, name, host, icon, _status, fav, is_last) {
@@ -445,7 +370,7 @@ function generateVmHTML(pk, name, host, icon, _status, fav, is_last) {
         '<span class="index-vm-list-name">' + 
           '<i class="fa ' + icon + '" title="' + _status + '"></i> ' + safe_tags_replace(name) +
         '</span>' + 
-        '<small class="text-muted"> ' + host + '</small>' +
+        '<small class="text-muted index-vm-list-host"> ' + host + '</small>' +
         '<div class="pull-right dashboard-vm-favourite" data-vm="' + pk + '">' +
           (fav ? '<i class="fa fa-star text-primary title-favourite" title="' + gettext("Unfavourite") + '"></i>' :
           '<i class="fa fa-star-o text-primary title-favourite" title="' + gettext("Mark as favorite") + '"></i>' ) +
@@ -556,62 +481,6 @@ function setDefaultSliderValues() {
 }
 
 
-/* deletes the VM with the pk
- * if dir is true, then redirect to the dashboard landing page
- * else it adds a success message */
-function deleteObject(data) {
-  $.ajax({
-    type: 'POST',
-    data: {'redirect': data.redirect},
-    url: data.url,
-    headers: {"X-CSRFToken": getCookie('csrftoken')},
-    success: function(re, textStatus, xhr) {
-      if(!data.redirect) {
-        selected = [];
-        addMessage(re.message, 'success');
-        if(data.type === "disk") {
-          // no need to remove them from DOM
-          $('a[data-disk-pk="' + data.pk + '"]').parent("li").fadeOut();
-          $('a[data-disk-pk="' + data.pk + '"]').parent("h4").fadeOut();
-        }
-        else {
-          $('a[data-'+data.type+'-pk="' + data.pk + '"]').closest('tr').fadeOut(function() {
-            $(this).remove();
-          });
-        }
-      } else {
-        window.location.replace('/dashboard');
-      }
-    },
-    error: function(xhr, textStatus, error) {
-      addMessage('Uh oh :(', 'danger');
-    }
-  });
-}
-
-function massDeleteVm(data) {
-  f = function() {
-    selected = [];
-    // reset group buttons
-    $('.vm-list-group-control a').attr('disabled', true);
-    $(this).remove();
-  };
-  $.ajax({
-      traditional: true,
-      url: data.url,
-      headers: {"X-CSRFToken": getCookie('csrftoken')},
-      type: 'POST',
-      data: {'vms': data.data.v},
-      success: function(re, textStatus, xhr) {
-        for(var i=0; i< data.data.v.length; i++)
-          $('.vm-list-table tbody tr[data-vm-pk="' + data.data.v[i] + '"]').fadeOut(500, f);
-        addMessage(re.message, 'success');
-      },
-      error: function(xhr, textStatus, error) {
-        // TODO this
-      }
-    });
-}
 
 
 function addMessage(text, type) {
@@ -644,19 +513,19 @@ function addModalConfirmation(func, data) {
   });
 }
 
-function clientInstalledAction(location) {   
+function clientInstalledAction(location) {
   setCookie('downloaded_client', true, 365 * 24 * 60 * 60 * 1000, "/");
   window.location.href = location;
   $('#confirmation-modal').modal("hide");
 }
 
 function setCookie(name, value, seconds, path) {
-  if (seconds!=null) {
+  if (seconds !== null) {
     var today = new Date();
     var expire = new Date();
     expire.setTime(today.getTime() + seconds);
+    document.cookie = name+"="+escape(value)+"; expires="+expire.toUTCString()+"; path="+path;
   }
-  document.cookie = name+"="+escape(value)+"; expires="+expire.toUTCString()+"; path="+path;
 }
 
 /* no js compatibility */
@@ -670,7 +539,7 @@ function getParameterByName(name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
         results = regex.exec(location.search);
-    return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
 // for AJAX calls
@@ -699,6 +568,7 @@ function csrfSafeMethod(method) {
   // these HTTP methods do not require CSRF protection
   return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
 }
+
 $.ajaxSetup({
   beforeSend: function(xhr, settings) {
     if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
@@ -711,7 +581,7 @@ $.ajaxSetup({
 $(function() {
   yourlabs.TextWidget.prototype.getValue = function(choice) {
     return choice.children().html();
-  }
+  };
 });
 
 var tagsToReplace = {

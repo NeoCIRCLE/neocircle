@@ -73,14 +73,15 @@
             </a>
           </li>
           <li>
-            <a href="{% url "dashboard.views.vm-list" %}?s=node:{{ node.name }}" 
+            <a href="{% url "dashboard.views.vm-list" %}?s=node_exact:{{ node.name }}"
               target="blank" class="text-center">
               <i class="fa fa-desktop fa-2x"></i><br>
               {% trans "Virtual Machines" %}
             </a>
           </li>
           <li>
-            <a href="#activity" data-toggle="pill" class="text-center">
+            <a href="#activity" data-toggle="pill" class="text-center"
+               data-activity-url="{% url "dashboard.views.node-activity-list" node.pk %}">
               <i class="fa fa-clock-o fa-2x"></i><br>
               {% trans "Activity" %}
             </a>

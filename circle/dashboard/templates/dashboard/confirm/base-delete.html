@@ -17,12 +17,18 @@
           {% if text %}
             {{ text|safe }}
           {% else %}
-            {%blocktrans with object=object%}
-              Are you sure you want to delete <strong>{{ object }}</strong>?
-            {%endblocktrans%}
+            {% if member %}
+              {% blocktrans with group=object member=member %}
+              Do you really want to remove <strong>{{ member }}</strong> from {{ group }}?
+              {% endblocktrans %}
+            {% else %}
+              {% blocktrans with object=object %}
+                Are you sure you want to delete <strong>{{ object }}</strong>?
+              {% endblocktrans %}
+            {% endif %}
           {% endif %}
         <div class="pull-right">
-          <form action="" method="POST">
+          <form action="{{ request.path }}" method="POST">
             {% csrf_token %}
             <a class="btn btn-default">{% trans "Cancel" %}</a>
             <input type="hidden" name="next" value="{{ request.GET.next }}"/>

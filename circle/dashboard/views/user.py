@@ -30,12 +30,13 @@ from django.core.exceptions import (
     PermissionDenied, SuspiciousOperation,
 )
 from django.core.urlresolvers import reverse, reverse_lazy
+from django.core.paginator import Paginator, InvalidPage
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import redirect, get_object_or_404
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_POST
 from django.views.generic import (
-    TemplateView, DetailView, View, DeleteView, UpdateView, CreateView,
+    TemplateView, DetailView, View, UpdateView, CreateView,
 )
 from django_sshkey.models import UserKey
 
@@ -50,7 +51,7 @@ from ..forms import (
 from ..models import Profile, GroupProfile, ConnectCommand, create_profile
 from ..tables import UserKeyListTable, ConnectCommandListTable
 
-from .util import saml_available
+from .util import saml_available, DeleteViewBase
 
 
 logger = logging.getLogger(__name__)
@@ -67,9 +68,18 @@ class NotificationView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, *args, **kwargs):
         context = super(NotificationView, self).get_context_data(
             *args, **kwargs)
-        n = 10 if self.request.is_ajax() else 1000
-        context['notifications'] = list(
-            self.request.user.notification_set.all()[:n])
+        paginate_by = 10 if self.request.is_ajax() else 25
+        page = self.request.GET.get("page", 1)
+
+        notifications = self.request.user.notification_set.all()
+        paginator = Paginator(notifications, paginate_by)
+        try:
+            current_page = paginator.page(page)
+        except InvalidPage:
+            current_page = paginator.page(1)
+
+        context['page'] = current_page
+        context['paginator'] = paginator
         return context
 
     def get(self, *args, **kwargs):
@@ -257,6 +267,9 @@ class UserCreationView(LoginRequiredMixin, PermissionRequiredMixin,
     template_name = 'dashboard/user-create.html'
     permission_required = "auth.add_user"
 
+    def get_success_url(self):
+        reverse('dashboard.views.group-detail', args=[self.group.pk])
+
     def get_group(self, group_pk):
         self.group = get_object_or_404(Group, pk=group_pk)
         if not self.group.profile.has_level(self.request.user, 'owner'):
@@ -299,7 +312,7 @@ class ProfileView(LoginRequiredMixin, DetailView):
         # if the intersection of the 2 lists is empty the logged in user
         # has no permission to check the target's profile
         # (except if the user want to see his own profile)
-        if len(intersection) < 1 and target != user:
+        if not intersection and target != user and not user.is_superuser:
             raise PermissionDenied
 
         return super(ProfileView, self).get(*args, **kwargs)
@@ -385,35 +398,16 @@ class UserKeyDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return super(UserKeyDetail, self).post(self, request, args, kwargs)
 
 
-class UserKeyDelete(LoginRequiredMixin, DeleteView):
+class UserKeyDelete(DeleteViewBase):
     model = UserKey
+    success_message = _("SSH key successfully deleted.")
 
     def get_success_url(self):
         return reverse("dashboard.views.profile-preferences")
 
-    def get_template_names(self):
-        if self.request.is_ajax():
-            return ['dashboard/confirm/ajax-delete.html']
-        else:
-            return ['dashboard/confirm/base-delete.html']
-
-    def delete(self, request, *args, **kwargs):
-        object = self.get_object()
-        if object.user != request.user:
+    def check_auth(self):
+        if self.get_object().user != self.request.user:
             raise PermissionDenied()
-
-        object.delete()
-        success_url = self.get_success_url()
-        success_message = _("SSH key successfully deleted.")
-
-        if request.is_ajax():
-            return HttpResponse(
-                json.dumps({'message': success_message}),
-                content_type="application/json",
-            )
-        else:
-            messages.success(request, success_message)
-            return HttpResponseRedirect(success_url)
 
 
 class UserKeyCreate(LoginRequiredMixin, SuccessMessageMixin, CreateView):
@@ -460,35 +454,16 @@ class ConnectCommandDetail(LoginRequiredMixin, SuccessMessageMixin,
         return kwargs
 
 
-class ConnectCommandDelete(LoginRequiredMixin, DeleteView):
+class ConnectCommandDelete(DeleteViewBase):
     model = ConnectCommand
+    success_message = _("Command template successfully deleted.")
 
     def get_success_url(self):
         return reverse("dashboard.views.profile-preferences")
 
-    def get_template_names(self):
-        if self.request.is_ajax():
-            return ['dashboard/confirm/ajax-delete.html']
-        else:
-            return ['dashboard/confirm/base-delete.html']
-
-    def delete(self, request, *args, **kwargs):
-        object = self.get_object()
-        if object.user != request.user:
+    def check_auth(self):
+        if self.get_object().user != self.request.user:
             raise PermissionDenied()
-
-        object.delete()
-        success_url = self.get_success_url()
-        success_message = _("Command template successfully deleted.")
-
-        if request.is_ajax():
-            return HttpResponse(
-                json.dumps({'message': success_message}),
-                content_type="application/json",
-            )
-        else:
-            messages.success(request, success_message)
-            return HttpResponseRedirect(success_url)
 
 
 class ConnectCommandCreate(LoginRequiredMixin, SuccessMessageMixin,

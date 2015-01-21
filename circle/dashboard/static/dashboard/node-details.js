@@ -15,7 +15,7 @@ $(function() {
       data: {'new_name': name},
       headers: {"X-CSRFToken": getCookie('csrftoken')},
       success: function(data, textStatus, xhr) {
-        $("#node-details-h1-name").text(data['new_name']).show();
+        $("#node-details-h1-name").text(data.new_name).show();
         $('#node-details-rename').hide();
         // addMessage(data.message, "success");
       },
@@ -28,20 +28,6 @@ $(function() {
 
   $(".node-details-help-button").click(function() {
     $(".node-details-help").stop().slideToggle();
-  });
-
-  /* for Node removes buttons */
-  $('.node-enable').click(function() {
-    var node_pk = $(this).data('node-pk');
-    var dir = window.location.pathname.indexOf('list') == -1;
-    addModalConfirmation(changeNodeStatus,
-      { 'url': '/dashboard/node/status/' + node_pk + '/',
-        'data': [],
-        'pk': node_pk,
-        'type': "node",
-        'redirect': dir});
-
-    return false;
   });
 
   // remove trait
@@ -69,22 +55,3 @@ $(function() {
   });
 
 });
-
-function changeNodeStatus(data) {
-  $.ajax({
-    type: 'POST',
-    url: data.url,
-    headers: {"X-CSRFToken": getCookie('csrftoken')},
-    success: function(re, textStatus, xhr) {
-      if(!data.redirect) {
-        selected = [];
-        addMessage(re.message, 'success');
-      } else {
-        window.location.replace('/dashboard');
-      }
-    },
-    error: function(xhr, textStatus, error) {
-      addMessage('Uh oh :(', 'danger');
-    }
-  });
-}

@@ -31,6 +31,7 @@ from django.db.models import (
 )
 from django.db.models.signals import post_save, pre_delete, post_delete
 from django.templatetags.static import static
+from django.utils.html import escape
 from django.utils.translation import ugettext_lazy as _
 from django_sshkey.models import UserKey
 from django.core.exceptions import ObjectDoesNotExist
@@ -53,7 +54,9 @@ from .validators import connect_command_template_validator
 
 logger = getLogger(__name__)
 
-pwgen = User.objects.make_random_password
+
+def pwgen():
+    return User.objects.make_random_password()
 
 
 class Favourite(Model):
@@ -87,7 +90,8 @@ class Notification(TimeStampedModel):
 
     @property
     def subject(self):
-        return HumanReadableObject.from_dict(self.subject_data)
+        return HumanReadableObject.from_dict(
+            self.escape_dict(self.subject_data))
 
     @subject.setter
     def subject(self, value):
@@ -95,7 +99,14 @@ class Notification(TimeStampedModel):
 
     @property
     def message(self):
-        return HumanReadableObject.from_dict(self.message_data)
+        return HumanReadableObject.from_dict(
+            self.escape_dict(self.message_data))
+
+    def escape_dict(self, data):
+        for k, v in data['params'].items():
+            if isinstance(v, basestring):
+                data['params'][k] = escape(v)
+        return data
 
     @message.setter
     def message(self, value):

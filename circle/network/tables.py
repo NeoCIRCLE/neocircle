@@ -70,7 +70,11 @@ class GroupTable(Table):
 
 
 class HostTable(Table):
-    hostname = LinkColumn('network.host', args=[A('pk')])
+    hostname = LinkColumn(
+        'network.host',
+        args=[A('pk')],
+        order_by="normalized_hostname",
+    )
     mac = MACColumn()
 
     class Meta:

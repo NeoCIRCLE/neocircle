@@ -6,7 +6,7 @@
     </div>
     <h3 class="no-margin"><i class="fa fa-group"></i> {% trans "Groups" %}</h3>
   </div>
-  <div class="list-group" id="vm-list-view">
+  <div class="list-group" id="group-list-view">
     <div id="dashboard-group-list">
       {% for i in groups %}
       <a href="{% url "dashboard.views.group-detail" pk=i.pk %}" class="list-group-item real-link
@@ -15,14 +15,14 @@
       </a>
       {% endfor %}
     </div>
-    <div href="#" class="list-group-item list-group-footer text-right">
+    <div class="list-group-item list-group-footer text-right">
       <div class="row">
         <div class="col-xs-6">
           <form action="{% url "dashboard.views.group-list" %}" method="GET" id="dashboard-group-search-form">
             <div class="input-group input-group-sm">
               <input id="dashboard-group-search-input" name="s" type="text" class="form-control" placeholder="{% trans "Search..." %}" />
               <div class="input-group-btn">
-                <button type="submit" class="form-control btn btn-primary"><i class="fa fa-search"></i></button>
+                <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i></button>
               </div>
             </div>
           </form>
