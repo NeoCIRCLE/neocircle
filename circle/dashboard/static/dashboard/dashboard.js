@@ -191,7 +191,7 @@ $(function () {
       var html = '';
       var is_last = search_result.length < 5;
 
-      for(var i=0; i<5 && i<search_result.length; i++)
+      for(i=0; i<5 && i<search_result.length; i++)
         html += generateHTML(search_result[i], is_last);
 
       if(search_result.length === 0)
