@@ -59,7 +59,7 @@ from django.utils.translation import string_concat
 
 from .validators import domain_validator
 
-from dashboard.models import ConnectCommand
+from dashboard.models import ConnectCommand, create_profile
 
 LANGUAGES_WITH_CODE = ((l[0], string_concat(l[1], " (", l[0], ")"))
                        for l in LANGUAGES)
@@ -1254,10 +1254,19 @@ class CirclePasswordChangeForm(PasswordChangeForm):
 
 
 class UserCreationForm(OrgUserCreationForm):
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('choices')
+        group = kwargs.pop('default')
+
+        super(UserCreationForm, self).__init__(*args, **kwargs)
+
+        self.fields['groups'] = forms.ModelMultipleChoiceField(
+            queryset=choices, initial=[group], required=False,
+            label=_('Groups'))
 
     class Meta:
         model = User
-        fields = ("username", 'email', 'first_name', 'last_name')
+        fields = ("username", 'email', 'first_name', 'last_name', 'groups')
 
     @property
     def helper(self):
@@ -1272,6 +1281,8 @@ class UserCreationForm(OrgUserCreationForm):
         user.set_password(self.cleaned_data["password1"])
         if commit:
             user.save()
+            create_profile(user)
+            user.groups.add(*self.cleaned_data["groups"])
         return user
 
 

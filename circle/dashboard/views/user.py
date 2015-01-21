@@ -52,7 +52,7 @@ from ..forms import (
     UserKeyForm, CirclePasswordChangeForm, ConnectCommandForm,
     UserListSearchForm,
 )
-from ..models import Profile, GroupProfile, ConnectCommand, create_profile
+from ..models import Profile, GroupProfile, ConnectCommand
 from ..tables import (
     UserKeyListTable, ConnectCommandListTable, UserListTable,
 )
@@ -274,28 +274,24 @@ class UserCreationView(LoginRequiredMixin, PermissionRequiredMixin,
     permission_required = "auth.add_user"
 
     def get_success_url(self):
-        reverse('dashboard.views.group-detail', args=[self.group.pk])
+        return reverse('dashboard.views.profile', args=[self.object.username])
 
-    def get_group(self, group_pk):
-        self.group = get_object_or_404(Group, pk=group_pk)
-        if not self.group.profile.has_level(self.request.user, 'owner'):
-            raise PermissionDenied()
-
-    def get(self, *args, **kwargs):
-        self.get_group(kwargs.pop('group_pk'))
-        return super(UserCreationView, self).get(*args, **kwargs)
-
-    def post(self, *args, **kwargs):
-        group_pk = kwargs.pop('group_pk')
-        self.get_group(group_pk)
-        ret = super(UserCreationView, self).post(*args, **kwargs)
-        if self.object:
-            create_profile(self.object)
-            self.object.groups.add(self.group)
-            return redirect(
-                reverse('dashboard.views.group-detail', args=[group_pk]))
+    def get_form_kwargs(self):
+        profiles = GroupProfile.get_objects_with_level(
+            'owner', self.request.user)
+        choices = Group.objects.filter(groupprofile__in=profiles)
+        group_pk = self.request.GET.get('group_pk')
+        if group_pk:
+            try:
+                default = choices.get(pk=group_pk)
+            except (ValueError, Group.DoesNotExist):
+                raise Http404()
         else:
-            return ret
+            default = None
+
+        val = super(UserCreationView, self).get_form_kwargs()
+        val.update({'choices': choices, 'default': default})
+        return val
 
 
 class ProfileView(LoginRequiredMixin, DetailView):
