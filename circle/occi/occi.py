@@ -160,6 +160,7 @@ class Compute(Resource):
 
     @classmethod
     def create_object(cls, data, user):
+        templates = InstanceTemplate.get_objects_with_level("user", user)
         template = None
         attributes = {}
         links = []
@@ -168,7 +169,11 @@ class Compute(Resource):
             tmpl = occi_os_tpl_regex.match(d)
             if tmpl:
                 pk = tmpl.group("template_pk")
-                template = InstanceTemplate.objects.get(pk=pk)
+                try:
+                    template = templates.get(pk=pk)
+                except InstanceTemplate.DoesNotExist:
+                    raise humanize_exception(ugettext_noop("Unknown template"),
+                                             Exception())
 
             attr = occi_attribute_regex.match(d)
             if attr:
