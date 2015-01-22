@@ -2,11 +2,7 @@ import re
 import logging
 
 from django.template.loader import render_to_string
-from django.utils import timezone
-from django.utils.formats import date_format
 from django.utils.translation import ugettext_noop
-
-from django_sshkey.models import UserKey
 
 from firewall.models import Vlan
 from storage.models import Disk
@@ -58,6 +54,15 @@ occi_link_regex = re.compile(
 occi_inline_attribute_regex = '.*%(attribute)s="?(?P<value>[\w/\.:#\-]+)"?.*'
 
 occi_attribute_link_regex = '^/%s/(?P<id>\d+)/?'
+
+
+def check_missing_attributes(required, given):
+    subset = set(required) - set(given.keys())
+    if subset:
+        raise humanize_exception(ugettext_noop(
+            "Missing attribute(s): %s" % ", ".join(subset)),
+            Exception()
+        )
 
 
 class Category():
@@ -177,12 +182,21 @@ class Compute(Resource):
         params['owner'] = user
         title = attributes.get("occi.core.title")
         if title:
-            params['name'] = title
+            params['name'] = title.decode("utf-8")
 
         if template:
             inst = Instance.create_from_template(template=template, **params)
         else:
             # trivial
+            required = [
+                "occi.compute.architecture",
+                "occi.compute.cores",
+                "occi.compute.speed",
+                "occi.compute.memory",
+                "occi.core.title"
+            ]
+            check_missing_attributes(required, attributes)
+
             if "x86" in attributes['occi.compute.architecture']:
                 params['arch'] = X86_ARCH
             else:
@@ -205,10 +219,6 @@ class Compute(Resource):
             params['system'] = "OCCI Blank Compute"
             params['lease'] = Lease.objects.all()[0]
             params['access_method'] = ACCESS_METHODS[0][0]
-
-            # if no name is given
-            if not params.get("name"):
-                params['name'] = "Created via OCCI by %s" % user
 
             inst = Instance.create(params=params, disks=[], networks=[],
                                    req_traits=[], tags=[])
@@ -287,14 +297,12 @@ class Compute(Resource):
                                                       "inactive")
 
     def trigger_action(self, data, user):
-        method = None
+        attributes = {}
         action_term = None
         for d in data:
-            m = occi_attribute_regex.match(d)
-            if m:
-                attribute = m.group("attribute")
-                if attribute == "method":
-                    method = m.group("value")
+            attr = occi_attribute_regex.match(d)
+            if attr:
+                attributes[attr.group("attribute")] = attr.group("value")
 
             m = occi_action_regex.match(d)
             if m:
@@ -307,11 +315,8 @@ class Compute(Resource):
                 operation = "deploy"
         else:
             action = compute_action_to_operation.get(action_term)
-            if not method:
-                raise humanize_exception(ugettext_noop(
-                    "Missing 'method' attribute."),
-                    Exception())
-            operation = action.get(method)
+            check_missing_attributes(["method"], attributes)
+            operation = action.get(attributes['method'])
 
         getattr(self.instance, operation).async(user=user)
 
@@ -359,13 +364,14 @@ class Storage(Resource):
             if attr:
                 attributes[attr.group("attribute")] = attr.group("value")
 
+        check_missing_attributes(
+            ["occi.storage.size", "occi.core.title"], attributes)
+
         size = attributes.get("occi.storage.size")
         if not (size and size.isdigit()):
             return None
 
         name = attributes.get("occi.core.title")
-        if not name:
-            name = "disk create from OCCI at %s" % timezone.now()
 
         params = {
             'user': user,  # not used
