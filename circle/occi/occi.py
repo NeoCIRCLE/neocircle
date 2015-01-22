@@ -17,8 +17,6 @@ from common.models import humanize_exception
 
 logger = logging.getLogger(__name__)
 
-OCCI_ADDR = "http://localhost:8080/"
-
 X86_ARCH = ARCHITECTURES[1][0]
 X64_ARCH = ARCHITECTURES[0][0]
 
@@ -217,7 +215,7 @@ class Compute(Resource):
             inst = Instance.create(params=params, disks=[], networks=[],
                                    req_traits=[], tags=[])
 
-        cls.location = "%svm/%d" % (OCCI_ADDR, inst.pk)
+        cls.location = "/vm/%d" % inst.pk
         cls.instance = inst
 
         cls.create_links(user, links)
@@ -398,7 +396,7 @@ class Storage(Resource):
         disk = Disk.create(**params)
         disk.full_clean()
 
-        cls.location = "%sstorage/%d" % (OCCI_ADDR, disk.pk)
+        cls.location = "/storage/%d" % disk.pk
         return cls
 
     def render_location(self):
@@ -509,8 +507,7 @@ class StorageLink(Link):
         except:
             pass
 
-        cls.location = "%sstoragelink/vm_%s_storage_%s" % (OCCI_ADDR, vm_pk,
-                                                           disk_pk)
+        cls.location = "/storagelink/vm_%s_storage_%s" % (vm_pk, disk_pk)
         return cls
 
     def render_location(self):
@@ -673,8 +670,8 @@ class NetworkInterface(Link):
         except:
             pass
 
-        cls.location = "%slink/networkinterface/vm_%s_network_%s" % (
-            OCCI_ADDR, vm_pk, vlan_vid)
+        cls.location = "/link/networkinterface/vm_%s_network_%s" % (vm_pk,
+                                                                    vlan_vid)
         return cls
 
     def render_location(self):
