@@ -173,8 +173,6 @@ class Compute(Resource):
             if link:
                 links.append(d)
 
-        cls.create_public_key(user, attributes)
-
         params = {}
         params['owner'] = user
         title = attributes.get("occi.core.title")
@@ -240,23 +238,6 @@ class Compute(Resource):
 
         for sl in storagelinks:
             cls.instance.attach_disk(user=user, disk=disk)
-
-    @classmethod
-    def create_public_key(cls, user, attributes):
-        key_name = attributes.get("org.openstack.credentials.publickey.name")
-        key_data = attributes.get("org.openstack.credentials.publickey.data")
-
-        if key_name and key_data:
-            if UserKey.objects.filter(name=key_name, user=user):
-                key_name = "%s via OCCI @ %s" % (
-                    key_name,
-                    date_format(timezone.now(), "DATETIME_FORMAT")
-                )
-
-            key = UserKey(name=key_name[:50], key=key_data, user=user)
-            if not UserKey.objects.filter(key=key.key):
-                key.full_clean()
-                key.save()
 
     def render_location(self):
         return "%s" % self.location
