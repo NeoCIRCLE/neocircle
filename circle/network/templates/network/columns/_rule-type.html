@@ -1,0 +1,16 @@
+{% if record.r_type == "host" %}
+  {{ record.host.get_fqdn }}
+{% elif record.r_type == "vlan" %}
+  {{ record.vlan.name }}
+{% elif record.r_type == "vlangroup" %}
+  {{ record.vlangroup }} 
+  [{% for v in record.vlangroup.vlans.all %}
+    {{ v.name }}{% if not forloop.last %},{% endif %}
+  {% endfor %}]
+{% elif record.r_type == "group" %}
+  {{ record.hostgroup.name }}
+{% elif record.r_type == "firewall" %}
+  {{ record.firewall }}
+{% else %}
+  -
+{% endif %}
