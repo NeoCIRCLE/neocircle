@@ -1,9 +1,10 @@
 {% extends "network/base.html" %}
+{% load render_table from django_tables2 %}
 {% load i18n %}
 {% load staticfiles %}
 {% load crispy_forms_tags %}
 
-{% block title-page %}{{ switch_port_pk }} | {% trans "firewall" %}{% endblock %}
+{% block title-page %}{{ object.name }} | {% trans "firewall" %}{% endblock %}
 
 {% block content %}
 <div class="page-header">
@@ -16,6 +17,15 @@
 <div class="row">
   <div class="col-sm-5">
     {% crispy form %}
+  </div>
+</div>
+
+<div class="page-header">
+  <h2>{% trans "Related rules" %}</h2>
+</div>
+<div class="row">
+  <div class="col-sm-12">
+    {% render_table rule_table %}
   </div>
 </div>
 {% endblock %}

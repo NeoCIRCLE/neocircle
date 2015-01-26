@@ -35,7 +35,7 @@ from .tables import (
     HostTable, VlanTable, SmallHostTable, DomainTable, GroupTable,
     RecordTable, BlacklistItemTable, RuleTable, VlanGroupTable,
     SmallRuleTable, SmallGroupRuleTable, SmallRecordTable, SwitchPortTable,
-    SmallDhcpTable, FirewallTable
+    SmallDhcpTable, FirewallTable, FirewallRuleTable,
 )
 from .forms import (
     HostForm, VlanForm, DomainForm, GroupForm, RecordForm, BlacklistItemForm,
@@ -312,6 +312,9 @@ class FirewallDetail(LoginRequiredMixin, SuperuserRequiredMixin,
 
     def get_context_data(self, **kwargs):
         context = super(FirewallDetail, self).get_context_data(**kwargs)
+        rules = Rule.objects.filter(firewall=self.object)
+        context['rule_table'] = FirewallRuleTable(rules,
+                                                  request=self.request)
         return context
 
 
