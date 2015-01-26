@@ -93,7 +93,7 @@ class DomainForm(ModelForm):
 class FirewallForm(ModelForm):
     helper = FormHelper()
     helper.layout = Layout(
-        Div(Fieldset('', 'name', ) ),
+        Div(Fieldset('', 'name', )),
         FormActions(
             Submit('submit', _("Save")),
             LinkButton('back', _("Back"),
