@@ -1,6 +1,7 @@
 {% load sizefieldtags %}
 {% load i18n %}
 
+<span class="{% if not record.enabled %}node-disabled{% endif %}"></span>
 <i class="fa fa-gears"></i> {% trans "CPU" %}
 <div class="progress pull-right">
   <div class="progress-bar progress-bar-success" role="progressbar"

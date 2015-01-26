@@ -1,141 +1,141 @@
 {% load i18n %}
-{% load l10n %}
 {% load staticfiles %}
 
-<style>
-    .thumbnail {
-        margin-bottom: 30px;
-    }
-
-    .dashboard-text {
-        text-align: justify;
-    }
-</style>
-
 <div class="row">
-    <div class="col-sm-3">
-        <div class="thumbnail">
-            <div class="caption">
-                <p class="lead"> <a href="{% url "network.host_list" %}">Hosts</a> are machines on the network.</p>
-                <p class="dashboard-text">
-                    Proin mattis enim risus. Ut eu enim quis auctor. Duis lobort sollicitudin lacus, scelerisque dictum arcu aliquam nec.
-                </p>
-                <p class="text-right">
-                    <a href="{% url "network.host_list" %}" class="btn btn-default">{% trans "List" %}</a>
-                    <a href="{% url "network.host_create" %}" class="btn btn-success">{% trans "Create" %}</a>
-                </p>
-            </div>
-        </div>
-    </div>
+  <div class="col-sm-12">
+    <h3>
+      <div class="pull-right">
+        <a href="{% url "network.host_list" %}" class="btn btn-xs btn-default">
+          <i class="fa fa-list"></i> {% trans "list" %}
+        </a>
+        <a href="{% url "network.host_create" %}" class="btn btn-xs btn-success">
+          <i class="fa fa-plus-circle"></i> {% trans "new" %}
+        </a>
+      </div>
+      {% trans "Hosts" %}
+      <div>
+        <small>{% trans "Hosts are machines on the network" %}</small>
+      </div>
+    </h3>
 
+    <h3>
+      <div class="pull-right">
+        <a href="{% url "network.vlan_list" %}" class="btn btn-xs btn-default">
+          <i class="fa fa-list"></i> {% trans "list" %}
+        </a>
+        <a href="{% url "network.vlan_create" %}" class="btn btn-xs btn-success">
+          <i class="fa fa-plus-circle"></i> {% trans "new" %}
+        </a>
+      </div>
+      {% trans "Vlans" %}
+      <div>
+        <small>{% trans "Hosts are machines on the network" %}</small>
+      </div>
+    </h3>
 
-    <div class="col-sm-3">
-        <div class="thumbnail">
-            <div class="caption">
-                <p class="lead"> <a href="{% url "network.vlan_list" %}">Vlans</a> are machines on the network.</p>
-                <p class="dashboard-text">
-                    Proin mattis enim risus. Ut eu enim quis auctor. Duis lobort sollicitudin lacus, scelerisque dictum arcu aliquam nec.
-                </p>
-                <p class="text-right">
-                    <a href="{% url "network.vlan_list" %}" class="btn btn-default">{% trans "List" %}</a>
-                    <a href="{% url "network.vlan_create" %}" class="btn btn-success">{% trans "Create" %}</a>
-                </p>
-            </div>
-        </div>
-    </div>
+    <h3>
+      <div class="pull-right">
+        <a href="{% url "network.domain_list" %}" class="btn btn-xs btn-default">
+          <i class="fa fa-list"></i> {% trans "list" %}
+        </a>
+        <a href="{% url "network.domain_create" %}" class="btn btn-xs btn-success">
+          <i class="fa fa-plus-circle"></i> {% trans "new" %}
+        </a>
+      </div>
+      {% trans "Domains" %}
+      <div>
+        <small>{% trans "Hosts are machines on the network" %}</small>
+      </div>
+    </h3>
 
+    <h3>
+      <div class="pull-right">
+        <a href="{% url "network.record_list" %}" class="btn btn-xs btn-default">
+          <i class="fa fa-list"></i> {% trans "list" %}
+        </a>
+        <a href="{% url "network.record_create" %}" class="btn btn-xs btn-success">
+          <i class="fa fa-plus-circle"></i> {% trans "new" %}
+        </a>
+      </div>
+      {% trans "Records" %}
+      <div>
+        <small>{% trans "Hosts are machines on the network" %}</small>
+      </div>
+    </h3>
 
-    <div class="col-sm-3">
-        <div class="thumbnail">
-            <div class="caption">
-                <p class="lead"> <a href="{% url "network.domain_list" %}">Domains</a> are machines on the network.</p>
-                <p class="dashboard-text">
-                    Proin mattis enim risus. Ut eu enim quis auctor. Duis lobort sollicitudin lacus, scelerisque dictum arcu aliquam nec.
-                </p>
-                <p class="text-right">
-                    <a href="{% url "network.domain_list" %}" class="btn btn-default">{% trans "List" %}</a>
-                    <a href="{% url "network.domain_create" %}" class="btn btn-success">{% trans "Create" %}</a>
-                </p>
-            </div>
-        </div>
-    </div>
+    <h3>
+      <div class="pull-right">
+        <a href="{% url "network.blacklist_list" %}" class="btn btn-xs btn-default">
+          <i class="fa fa-list"></i> {% trans "list" %}
+        </a>
+        <a href="{% url "network.blacklist_create" %}" class="btn btn-xs btn-success">
+          <i class="fa fa-plus-circle"></i> {% trans "new" %}
+        </a>
+      </div>
+      {% trans "Blacklist items" %}
+      <div>
+        <small>{% trans "Hosts are machines on the network" %}</small>
+      </div>
+    </h3>
 
+    <h3>
+      <div class="pull-right">
+        <a href="{% url "network.rule_list" %}" class="btn btn-xs btn-default">
+          <i class="fa fa-list"></i> {% trans "list" %}
+        </a>
+        <a href="{% url "network.rule_create" %}" class="btn btn-xs btn-success">
+          <i class="fa fa-plus-circle"></i> {% trans "new" %}
+        </a>
+      </div>
+      {% trans "Rules" %}
+      <div>
+        <small>{% trans "Hosts are machines on the network" %}</small>
+      </div>
+    </h3>
 
-    <div class="col-sm-3">
-        <div class="thumbnail">
-            <div class="caption">
-                <p class="lead"> <a href="{% url "network.record_list" %}">Records</a> are machines on the network.</p>
-                <p class="dashboard-text">
-                    Proin mattis enim risus. Ut eu enim quis auctor. Duis lobort sollicitudin lacus, scelerisque dictum arcu aliquam nec.
-                </p>
-                <p class="text-right">
-                    <a href="{% url "network.record_list" %}" class="btn btn-default">{% trans "List" %}</a>
-                    <a href="{% url "network.record_create" %}" class="btn btn-success">{% trans "Create" %}</a>
-                </p>
-            </div>
-        </div>
-    </div>
+    <h3>
+      <div class="pull-right">
+        <a href="{% url "network.switch_port_list" %}" class="btn btn-xs btn-default">
+          <i class="fa fa-list"></i> {% trans "list" %}
+        </a>
+        <a href="{% url "network.switch_port_create" %}" class="btn btn-xs btn-success">
+          <i class="fa fa-plus-circle"></i> {% trans "new" %}
+        </a>
+      </div>
+      {% trans "Switch ports" %}
+      <div>
+        <small>{% trans "Hosts are machines on the network" %}</small>
+      </div>
+    </h3>
 
+    <h3>
+      <div class="pull-right">
+        <a href="{% url "network.vlan_group_list" %}" class="btn btn-xs btn-default">
+          <i class="fa fa-list"></i> {% trans "list" %}
+        </a>
+        <a href="{% url "network.vlan_group_create" %}" class="btn btn-xs btn-success">
+          <i class="fa fa-plus-circle"></i> {% trans "new" %}
+        </a>
+      </div>
+      {% trans "Vlan groups" %}
+      <div>
+        <small>{% trans "Hosts are machines on the network" %}</small>
+      </div>
+    </h3>
 
-    <div class="col-sm-3">
-        <div class="thumbnail">
-            <div class="caption">
-                <p class="lead"> <a href="{% url "network.blacklist_list" %}">Blacklists</a> are machines on the network.</p>
-                <p class="dashboard-text">
-                    Proin mattis enim risus. Ut eu enim quis auctor. Duis lobort sollicitudin lacus, scelerisque dictum arcu aliquam nec.
-                </p>
-                <p class="text-right">
-                    <a href="{% url "network.blacklist_list" %}" class="btn btn-default">{% trans "List" %}</a>
-                    <a href="{% url "network.blacklist_create" %}" class="btn btn-success">{% trans "Create" %}</a>
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-sm-3">
-        <div class="thumbnail">
-            <div class="caption">
-                <p class="lead"> <a href="{% url "network.rule_list" %}">Rules</a> are machines on the network.</p>
-                <p class="dashboard-text">
-                    Proin mattis enim risus. Ut eu enim quis auctor. Duis lobort sollicitudin lacus, scelerisque dictum arcu aliquam nec.
-                </p>
-                <p class="text-right">
-                    <a href="{% url "network.rule_list" %}" class="btn btn-default">{% trans "List" %}</a>
-                    <a href="{% url "network.rule_create" %}" class="btn btn-success">{% trans "Create" %}</a>
-                </p>
-            </div>
-        </div>
-    </div>
-
-
-    <div class="col-sm-3">
-        <div class="thumbnail">
-            <div class="caption">
-                <p class="lead"> <a href="{% url "network.group_list" %}">Host groups</a> are machines on the network.</p>
-                <p class="dashboard-text">
-                    Proin mattis enim risus. Ut eu enim quis auctor. Duis lobort sollicitudin lacus, scelerisque dictum arcu aliquam nec.
-                </p>
-                <p class="text-right">
-                    <a href="{% url "network.group_list" %}" class="btn btn-default">{% trans "List" %}</a>
-                    <a href="{% url "network.group_create" %}" class="btn btn-success">{% trans "Create" %}</a>
-                </p>
-            </div>
-        </div>
-    </div>
-
-
-    <div class="col-sm-3">
-        <div class="thumbnail">
-            <div class="caption">
-                <p class="lead"> <a href="{% url "network.vlan_group_list" %}">Vlan groups</a> are machines on the network.</p>
-                <p class="dashboard-text">
-                    Proin mattis enim risus. Ut eu enim quis auctor. Duis lobort sollicitudin lacus, scelerisque dictum arcu aliquam nec.
-                </p>
-                <p class="text-right">
-                    <a href="{% url "network.vlan_group_list" %}" class="btn btn-default">{% trans "List" %}</a>
-                    <a href="{% url "network.vlan_group_create" %}" class="btn btn-success">{% trans "Create" %}</a>
-                </p>
-            </div>
-        </div>
-    </div>
+    <h3>
+      <div class="pull-right">
+        <a href="{% url "network.group_list" %}" class="btn btn-xs btn-default">
+          <i class="fa fa-list"></i> {% trans "list" %}
+        </a>
+        <a href="{% url "network.group_create" %}" class="btn btn-xs btn-success">
+          <i class="fa fa-plus-circle"></i> {% trans "new" %}
+        </a>
+      </div>
+      {% trans "Host groups" %}
+      <div>
+        <small>{% trans "Hosts are machines on the network" %}</small>
+      </div>
+    </h3>
+  </div>
 </div>
