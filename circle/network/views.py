@@ -25,15 +25,20 @@ from django.http import HttpResponse, Http404
 
 from django_tables2 import SingleTableView
 
-from firewall.models import (Host, Vlan, Domain, Group, Record, BlacklistItem,
-                             Rule, VlanGroup, SwitchPort, EthernetDevice)
+from firewall.models import (
+    Host, Vlan, Domain, Group, Record, BlacklistItem, Rule, VlanGroup,
+    SwitchPort, EthernetDevice, Firewall)
 from vm.models import Interface
-from .tables import (HostTable, VlanTable, SmallHostTable, DomainTable,
-                     GroupTable, RecordTable, BlacklistItemTable, RuleTable,
-                     VlanGroupTable, SmallRuleTable, SmallGroupRuleTable,
-                     SmallRecordTable, SwitchPortTable, SmallDhcpTable, )
-from .forms import (HostForm, VlanForm, DomainForm, GroupForm, RecordForm,
-                    BlacklistItemForm, RuleForm, VlanGroupForm, SwitchPortForm)
+from .tables import (
+    HostTable, VlanTable, SmallHostTable, DomainTable, GroupTable,
+    RecordTable, BlacklistItemTable, RuleTable, VlanGroupTable,
+    SmallRuleTable, SmallGroupRuleTable, SmallRecordTable, SwitchPortTable,
+    SmallDhcpTable, FirewallTable
+)
+from .forms import (
+    HostForm, VlanForm, DomainForm, GroupForm, RecordForm, BlacklistItemForm,
+    RuleForm, VlanGroupForm, SwitchPortForm, FirewallForm
+)
 
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
@@ -282,6 +287,50 @@ class DomainDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
         context['deps'] = deps
         context['confirmation'] = True
         return context
+
+
+class FirewallList(LoginRequiredMixin, SuperuserRequiredMixin,
+                   SingleTableView):
+    model = Firewall
+    table_class = FirewallTable
+    template_name = "network/firewall-list.html"
+    table_pagination = False
+
+
+class FirewallDetail(LoginRequiredMixin, SuperuserRequiredMixin,
+                     SuccessMessageMixin, UpdateView):
+    model = Firewall
+    template_name = "network/firewall-edit.html"
+    form_class = FirewallForm
+    success_message = _(u'Succesfully modified firewall.')
+
+    def get_success_url(self):
+        if 'pk' in self.kwargs:
+            return reverse_lazy('network.firewall', kwargs=self.kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(FirewallDetail, self).get_context_data(**kwargs)
+        return context
+
+
+class FirewallCreate(LoginRequiredMixin, SuperuserRequiredMixin,
+                     SuccessMessageMixin, CreateView):
+    model = Firewall
+    template_name = "network/firewall-create.html"
+    form_class = FirewallForm
+    success_message = _(u'Successfully created firewall.')
+
+
+class FirewallDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
+    model = Firewall
+    template_name = "network/confirm/base_delete.html"
+
+    def get_success_url(self):
+        next = self.request.POST.get('next')
+        if next:
+            return next
+        else:
+            return reverse_lazy('network.firewall_list')
 
 
 class GroupList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):

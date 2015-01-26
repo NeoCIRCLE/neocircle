@@ -970,6 +970,10 @@ class Firewall(models.Model):
             logger.exception("get_dhcp_clients failed")
         return {}
 
+    @models.permalink
+    def get_absolute_url(self):
+        return ('network.firewall', None, {'pk': self.pk})
+
 
 class Domain(models.Model):
     name = models.CharField(max_length=40, validators=[val_domain],

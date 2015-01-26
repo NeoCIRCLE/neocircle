@@ -1,0 +1,21 @@
+{% extends "network/base.html" %}
+{% load i18n %}
+{% load staticfiles %}
+{% load crispy_forms_tags %}
+
+{% block title-page %}{{ switch_port_pk }} | {% trans "firewall" %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <a href="{% url "network.firewall_delete" pk=object.pk %}" class="btn btn-danger pull-right">
+    <i class="fa fa-times-circle"></i> {% trans "Delete this firewall" %}
+  </a>
+  <h2>{{ object.name }}</h2>
+</div>
+
+<div class="row">
+  <div class="col-sm-5">
+    {% crispy form %}
+  </div>
+</div>
+{% endblock %}

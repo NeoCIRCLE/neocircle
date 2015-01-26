@@ -233,3 +233,14 @@ class HostRecordsTable(Table):
         fields = ("type", "fqdn")
         order_by = ("name", )
         empty_text = _("No records.")
+
+
+class FirewallTable(Table):
+    pk = LinkColumn('network.firewall', args=[A('pk')],
+                    verbose_name="ID")
+
+    class Meta:
+        model = SwitchPort
+        attrs = {'class': 'table table-striped'}
+        fields = ('pk', 'name', )
+        order_by = 'pk'

@@ -23,8 +23,10 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, Div, Submit, BaseInput
 from crispy_forms.bootstrap import FormActions, FieldWithButtons, StrictButton
 
-from firewall.models import (Host, Vlan, Domain, Group, Record, BlacklistItem,
-                             Rule, VlanGroup, SwitchPort)
+from firewall.models import (
+    Host, Vlan, Domain, Group, Record, BlacklistItem, Rule, VlanGroup,
+    SwitchPort, Firewall
+)
 
 
 class LinkButton(BaseInput):
@@ -86,6 +88,21 @@ class DomainForm(ModelForm):
 
     class Meta:
         model = Domain
+
+
+class FirewallForm(ModelForm):
+    helper = FormHelper()
+    helper.layout = Layout(
+        Div(Fieldset('', 'name', ) ),
+        FormActions(
+            Submit('submit', _("Save")),
+            LinkButton('back', _("Back"),
+                       reverse_lazy('network.firewall_list'))
+        )
+    )
+
+    class Meta:
+        model = Firewall
 
 
 class GroupForm(ModelForm):
