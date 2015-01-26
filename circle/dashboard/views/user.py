@@ -273,6 +273,18 @@ class UserCreationView(LoginRequiredMixin, PermissionRequiredMixin,
     template_name = 'dashboard/user-create.html'
     permission_required = "auth.add_user"
 
+    def get_template_names(self):
+        return ['dashboard/nojs-wrapper.html']
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(UserCreationView, self).get_context_data(*args,
+                                                                 **kwargs)
+        context.update({
+            'template': self.template_name,
+            'box_title': _('Create a User'),
+        })
+        return context
+
     def get_success_url(self):
         return reverse('dashboard.views.profile', args=[self.object.username])
 
