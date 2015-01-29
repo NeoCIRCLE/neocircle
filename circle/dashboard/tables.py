@@ -18,13 +18,16 @@
 from __future__ import absolute_import
 
 from django.contrib.auth.models import Group, User
+from django.utils.translation import ugettext_lazy as _
+from django.utils.html import mark_safe
+
 from django_tables2 import Table, A
-from django_tables2.columns import (TemplateColumn, Column, LinkColumn,
-                                    BooleanColumn)
+from django_tables2.columns import (
+    TemplateColumn, Column, LinkColumn, BooleanColumn
+)
+from django_sshkey.models import UserKey
 
 from vm.models import Node, InstanceTemplate, Lease
-from django.utils.translation import ugettext_lazy as _
-from django_sshkey.models import UserKey
 from dashboard.models import ConnectCommand
 
 
@@ -133,11 +136,17 @@ class UserListTable(Table):
         args=[A('username')],
         verbose_name=_('Organization ID')
     )
-    is_superuser = BooleanColumn()
+
+    is_superuser = BooleanColumn(
+        verbose_name=mark_safe(
+            _('<abbr data-placement="left" title="Superuser status">SU</abbr>')
+        )
+    )
     is_active = BooleanColumn()
 
     class Meta:
         model = User
+        template = "django_tables2/table_no_page.html"
         attrs = {'class': ('table table-bordered table-striped table-hover')}
         fields = ('username', 'last_name', 'first_name', 'profile__org_id',
                   'email', 'is_active', 'is_superuser')

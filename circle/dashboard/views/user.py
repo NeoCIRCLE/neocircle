@@ -526,7 +526,9 @@ class UserList(LoginRequiredMixin, PermissionRequiredMixin, SingleTableView):
         if self.request.is_ajax():
             users = [
                 {'url': reverse("dashboard.views.profile", args=[i.username]),
-                 'name': i.get_full_name() or i.username}
+                 'name': i.get_full_name() or i.username,
+                 'org_id': i.profile.org_id,
+                 }
                 for i in self.get_queryset()]
             return HttpResponse(
                 json.dumps(users), content_type="application/json")
@@ -536,7 +538,7 @@ class UserList(LoginRequiredMixin, PermissionRequiredMixin, SingleTableView):
     def get_queryset(self):
         logger.debug('UserList.get_queryset() called. User: %s',
                      unicode(self.request.user))
-        qs = User.objects.all()
+        qs = User.objects.all().order_by("-pk")
 
         q = self.search_form.cleaned_data.get('s')
         if q:

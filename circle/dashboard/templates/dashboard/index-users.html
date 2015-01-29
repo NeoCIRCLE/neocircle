@@ -11,7 +11,12 @@
       {% for i in users %}
       <a href="{% url "dashboard.views.profile" username=i.username %}" class="list-group-item real-link
       {% if forloop.last and users|length < 5 %} list-group-item-last{% endif %}">
-        <i class="fa fa-user"></i> {% firstof i.get_full_name|safe i.username|safe %}
+        <span class="index-user-list-name">
+          <i class="fa fa-user"></i> {% firstof i.get_full_name|safe i.username|safe %}
+        </span>
+        <span class="index-user-list-org">
+          <small class="text-muted"> {{ i.profile.org_id|default:"" }}</small>
+        </span>
       </a>
       {% endfor %}
     </div>

@@ -1168,6 +1168,28 @@ textarea[name="new_members"] {
   }
 }
 
+
+#dashboard-user-list {
+  .list-group-item {
+    display: flex;
+  }
+
+  .index-user-list-name, .index-user-list-org {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .index-user-list-name {
+    max-width: 80%;
+  }
+
+  .index-user-list-org {
+    padding-left: 5px;
+    flex: 1;
+  }
+}
+
 .fa-fw-12 {
   /* fa-fw is too wide */
   width: 12px;

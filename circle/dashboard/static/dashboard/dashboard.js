@@ -182,7 +182,9 @@ $(function () {
       var search_result = [];
       for(var i in my_vms) {
         if(my_vms[i].name.toLowerCase().indexOf(input) != -1 ||
-           my_vms[i].host && my_vms[i].host.indexOf(input) != -1) {
+           (my_vms[i].host && my_vms[i].host.indexOf(input) != -1) ||
+           (my_vms[i].org_id && my_vms[i].org_id.toLowerCase().indexOf(input) != -1)
+           ) {
           search_result.push(my_vms[i]);
         }
       }
@@ -237,7 +239,7 @@ $(function () {
 
     favicon.reset();
   });
-  
+
   /* on the client confirmation button fire the clientInstalledAction */
   $(document).on("click", "#client-check-button", function(event) {
     var connectUri = $('#connect-uri').val();
@@ -299,8 +301,10 @@ function generateGroupHTML(data, is_last) {
 
 function generateUserHTML(data, is_last) {
   return '<a href="' + data.url + '" class="list-group-item real-link' + (is_last ? " list-group-item-last" : "") +'">'+
-         '<i class="fa fa-user"></i> '+ safe_tags_replace(data.name) +
-         '</a>';
+         '<span class="index-user-list-name"><i class="fa fa-user"></i> '+ safe_tags_replace(data.name) + '</span>' +
+         '<span class="index-user-list-org">' +
+         '<small class="text-muted"> ' + (data.org_id ? safe_tags_replace(data.org_id) : "") + '</small>' +
+         '</span></a>';
 }
 
 function generateTemplateHTML(data, is_last) {
