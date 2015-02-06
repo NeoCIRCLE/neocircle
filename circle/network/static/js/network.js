@@ -74,3 +74,50 @@ $("#ipv6-tpl-magic").click(function() {
             }});
 });
 });
+
+/* sort methods for DataTables */
+var hostname_max_0_len = 10;
+var hostname_zeros = new Array(hostname_max_0_len).join("0");
+jQuery.extend( jQuery.fn.dataTableExt.oSort, {
+  "cloud-hostname-pre": function ( a ) {
+    var x = String(a).replace( /<[\s\S]*?>/g, "" ).replace(/^cloud\-/i, "");
+    if(parseFloat(x) && x.length < hostname_max_0_len) {
+      x = hostname_zeros.substring(0, 10-x.length) + x;
+    }
+    return x;
+  },
+
+  "cloud-hostname-asc": function ( a, b ) {
+    return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+  },
+
+  "cloud-hostname-desc": function ( a, b ) {
+    return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+  }
+} );
+
+jQuery.extend( jQuery.fn.dataTableExt.oSort, {
+  "ip-address-pre": function ( a ) {
+    var m = a.split("."), x = "";
+
+    for(var i = 0; i < m.length; i++) {
+        var item = m[i];
+        if(item.length == 1) {
+            x += "00" + item;
+        } else if(item.length == 2) {
+            x += "0" + item;
+        } else {
+            x += item;
+        }
+    }
+
+    return x;
+  },
+
+  "ip-address-asc": function ( a, b ) {
+    return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+  },
+  "ip-address-desc": function ( a, b ) {
+    return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+  }
+} );

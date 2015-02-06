@@ -19,6 +19,7 @@
     "jquery-simple-slider": "https://github.com/BME-IK/jquery-simple-slider.git",
     "bootbox": "~4.3.0",
     "intro.js": "0.9.0",
-    "favico.js": "~0.3.5"
+    "favico.js": "~0.3.5",
+    "datatables": "~1.10.4"
   }
 }
