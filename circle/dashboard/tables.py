@@ -21,10 +21,12 @@ from django.contrib.auth.models import Group, User
 from django_tables2 import Table, A
 from django_tables2.columns import (TemplateColumn, Column, LinkColumn,
                                     BooleanColumn)
+from django.utils.safestring import mark_safe
+from django.utils.html import escape
 
 from vm.models import Node, InstanceTemplate, Lease
 from storage.models import Disk
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _, ugettext
 from django_sshkey.models import UserKey
 from dashboard.models import ConnectCommand
 
@@ -36,6 +38,22 @@ class FileSizeColumn(Column):
         size = filesizeformat(value)
         return size
 
+
+class ApplianceColumn(TemplateColumn):
+    def render(self, *args, **kwargs):
+        value = super(ApplianceColumn, self).render(*args, **kwargs)
+
+        abbr = '<abbr title="%s">%s</abbr>'
+        appliance = kwargs['record'].get_appliance()
+        if appliance is None:
+            return value
+        elif isinstance(appliance, InstanceTemplate):
+            # Translators: [T] as Template
+            title, text = ugettext("Template"), ugettext("[T]")
+        else:
+            # Translators: [VM] as Virtual Machine
+            title, text = ugettext("Virtual machine"), ugettext("[VM]")
+        return mark_safe("%s %s" % (abbr % (title, text), value))
 
 class NodeListTable(Table):
 
@@ -306,12 +324,20 @@ class ConnectCommandListTable(Table):
 class DiskListTable(Table):
 
     size = FileSizeColumn()
+    appliance = ApplianceColumn(
+        template_name="dashboard/storage/column-appliance.html",
+        verbose_name=_("Appliance"),
+        orderable=False,
+    )
+    is_ready = BooleanColumn(
+        verbose_name=_("ready")
+    )
 
     class Meta:
         model = Disk
         attrs = {'class': "table table-bordered table-striped table-hover",
                  'id': "disk-list-table"}
-        fields = ("pk", "name", "filename", "size", "is_ready")
+        fields = ("pk", "appliance", "filename", "size", "is_ready")
         prefix = "disk-"
         order_by = ("-pk", )
         per_page = 65536

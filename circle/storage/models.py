@@ -27,6 +27,7 @@ import re
 from celery.contrib.abortable import AbortableAsyncResult
 from django.db.models import (Model, BooleanField, CharField, DateTimeField,
                               ForeignKey)
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _, ugettext_noop
 from model_utils.models import TimeStampedModel
@@ -290,9 +291,10 @@ class Disk(TimeStampedModel):
         """
         from vm.models import Instance
         try:
-            return self.instance_set.get()
-        except Instance.DoesNotExist:
-            return self.template_set.get()
+            app = self.template_set.all() or self.instance_set.all()
+            return app.get()
+        except ObjectDoesNotExist:
+            return None
 
     def get_exclusive(self):
         """Get an instance of the disk for exclusive usage.
