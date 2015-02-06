@@ -22,7 +22,6 @@ from django_tables2 import Table, A
 from django_tables2.columns import (TemplateColumn, Column, LinkColumn,
                                     BooleanColumn)
 from django.utils.safestring import mark_safe
-from django.utils.html import escape
 
 from vm.models import Node, InstanceTemplate, Lease
 from storage.models import Disk
@@ -54,6 +53,7 @@ class ApplianceColumn(TemplateColumn):
             # Translators: [VM] as Virtual Machine
             title, text = ugettext("Virtual machine"), ugettext("[VM]")
         return mark_safe("%s %s" % (abbr % (title, text), value))
+
 
 class NodeListTable(Table):
 
@@ -322,7 +322,11 @@ class ConnectCommandListTable(Table):
 
 
 class DiskListTable(Table):
-
+    pk = LinkColumn(
+        'dashboard.views.disk-detail',
+        args=[A('pk')],
+        verbose_name=_("ID"),
+    )
     size = FileSizeColumn()
     appliance = ApplianceColumn(
         template_name="dashboard/storage/column-appliance.html",

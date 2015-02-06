@@ -1,0 +1,33 @@
+{% extends "dashboard/base.html" %}
+{% load staticfiles %}
+{% load i18n %}
+{% load render_table from django_tables2 %}
+{% load crispy_forms_tags %}
+
+{% block title-page %}{% trans "Disk" %} | {% trans "Storage" %}{% endblock %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <div class="pull-right">
+          {% with app=object.get_appliance %}
+            {% if app %}
+              {% trans "Appliance" %}: <a href="{{ app.get_absolute_url }}">{{ app.name }}</a>
+            {% else %}
+              This disk is not attached to anything.
+            {% endif %}
+          {% endwith %}
+        </div>
+        <h3 class="no-margin"><i class="fa fa-file"></i> {% trans "Disk" %}</h3>
+      </div>
+      <div class="panel-body">
+        {% crispy form %}
+      </div><!-- .panel-body -->
+    </div>
+  </div>
+</div>
+
+{% endblock %}

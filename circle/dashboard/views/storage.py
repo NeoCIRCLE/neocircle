@@ -17,19 +17,18 @@
 from __future__ import unicode_literals, absolute_import
 
 
-from django.views.generic import (
-    UpdateView
-)
+from django.views.generic import UpdateView
 from django.core.urlresolvers import reverse
 
 from sizefield.utils import filesizeformat
+from braces.views import SuperuserRequiredMixin
 
 from storage.models import DataStore, Disk
 from ..tables import DiskListTable
-from ..forms import DataStoreForm
+from ..forms import DataStoreForm, DiskForm
 
 
-class StorageDetail(UpdateView):
+class StorageDetail(SuperuserRequiredMixin, UpdateView):
     model = DataStore
     form_class = DataStoreForm
     template_name = "dashboard/storage/detail.html"
@@ -67,3 +66,9 @@ class StorageDetail(UpdateView):
 
     def get_success_url(self):
         return reverse("dashboard.views.storage")
+
+
+class DiskDetail(SuperuserRequiredMixin, UpdateView):
+    model = Disk
+    form_class = DiskForm
+    template_name = "dashboard/storage/disk.html"

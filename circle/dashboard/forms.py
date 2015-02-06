@@ -54,7 +54,7 @@ from firewall.models import Vlan, Host
 from vm.models import (
     InstanceTemplate, Lease, InterfaceTemplate, Node, Trait, Instance
 )
-from storage.models import DataStore
+from storage.models import DataStore, Disk
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth.models import Permission
 from .models import Profile, GroupProfile
@@ -1523,3 +1523,14 @@ class DataStoreForm(ModelForm):
 
     class Meta:
         model = DataStore
+
+
+class DiskForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(DiskForm, self).__init__(*args, **kwargs)
+
+        for k, v in self.fields.iteritems():
+            v.widget.attrs['readonly'] = True
+
+    class Meta:
+        model = Disk

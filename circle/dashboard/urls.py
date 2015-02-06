@@ -52,7 +52,7 @@ from .views import (
     TransferTemplateOwnershipView, TransferTemplateOwnershipConfirmView,
     OpenSearchDescriptionView,
     NodeActivityView,
-    StorageDetail,
+    StorageDetail, DiskDetail,
 )
 from .views.vm import vm_ops, vm_mass_ops
 from .views.node import node_ops
@@ -228,6 +228,8 @@ urlpatterns = patterns(
 
     url(r'^storage/$', StorageDetail.as_view(),
         name="dashboard.views.storage"),
+    url(r'^disk/(?P<pk>\d+)/$', DiskDetail.as_view(),
+        name="dashboard.views.disk-detail"),
 )
 
 urlpatterns += patterns(
