@@ -32,23 +32,29 @@
           </div>
         </div>
         <div class="text-muted text-center">
-          {{ stats.used_space}}/{{ stats.total_space }} used
+          {{ stats.used_space}}/{{ stats.total_space }}
         </div>
 
-        <h3>Missing disks <small>disk objects without images files</small></h3>
+        <h3>
+          {% trans "Missing disks" %}
+          <small>{% trans "disk objects without images files" %}</small>
+        </h3>
         {% for m in missing_disks %}
           <p>
           {{ m }} - {{ m.filename }}
           </p>
           {% empty %}
-          None
+          {% trans "None" %}
         {% endfor %}
 
-        <h3>Orphan disks <small>image files without disk object in the database</small></h3>
+        <h3>
+          {% trans "Orphan disks" %}
+          <small>{% trans "image files without disk object in the database" %}</small>
+        </h3>
         {% for o in orphan_disks %}
           {{ o }}
           {% empty %}
-          None
+          {% trans "None" %}
         {% endfor %}
       </div><!-- .panel-body -->
     </div>
