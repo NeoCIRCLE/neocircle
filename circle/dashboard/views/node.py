@@ -62,7 +62,7 @@ class NodeOperationView(AjaxOperationMixin, OperationView):
     model = Node
     context_object_name = 'node'  # much simpler to mock object
     with_reload = True
-    wait_for_result = 1
+    wait_for_result = None
 
 
 node_ops = OrderedDict([
