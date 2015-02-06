@@ -289,7 +289,6 @@ class Disk(TimeStampedModel):
         """Return the Instance or InstanceTemplate object where the disk
         is used
         """
-        from vm.models import Instance
         try:
             app = self.template_set.all() or self.instance_set.all()
             return app.get()
