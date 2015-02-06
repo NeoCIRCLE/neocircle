@@ -1213,7 +1213,8 @@ class UpdateNodeOperation(NodeOperation):
             data = data[name]
         except KeyError:
             raise HumanReadableException.create(ugettext_noop(
-                "No minions matched the target."))
+                "No minions matched the target (%(target)s). "
+                "Data: (%(data)s)"), target=name, data=data)
 
         if not isinstance(data, dict):
             raise HumanReadableException.create(ugettext_noop(
@@ -1226,18 +1227,24 @@ class UpdateNodeOperation(NodeOperation):
                 'upgrade_packages',
                 readable_name=ugettext_noop('upgrade packages')) as sa:
             data = self.minion_cmd('pkg.upgrade', [])
-            upgraded = len(filter(lambda x: x['old'] and x['new'],
-                           data.values()))
-            installed = len(filter(lambda x: not x['old'] and x['new'],
-                            data.values()))
-            removed = len(filter(lambda x: x['old'] and not x['new'],
-                                 data.values()))
+            if not data.get('result'):
+                raise HumanReadableException.create(ugettext_noop(
+                    "Unhandled exception: %(msg)s"), msg=unicode(data))
+
+            # data = {'vim': {'new': '1.2.7', 'old': '1.3.7'}}
+            data = [v for v in data.values() if isinstance(v, dict)]
+            upgraded = len([x for x in data
+                            if x.get('old') and x.get('new')])
+            installed = len([x for x in data
+                             if not x.get('old') and x.get('new')])
+            removed = len([x for x in data
+                           if x.get('old') and not x.get('new')])
             sa.result = create_readable(ugettext_noop(
                 "Upgraded: %(upgraded)s, Installed: %(installed)s, "
                 "Removed: %(removed)s"), upgraded=upgraded,
                 installed=installed, removed=removed)
 
-        data = self.minion_cmd('state.sls', ['node', 'nfs-client'])
+        data = self.minion_cmd('state.sls', ['node'])
         failed = 0
         for k, v in data.iteritems():
             logger.debug('salt state %s %s', k, v)
