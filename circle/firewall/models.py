@@ -33,6 +33,7 @@ from firewall.fields import (MACAddressField, val_alfanum, val_reverse_domain,
                              val_ipv6, val_mx,
                              IPNetworkField, IPAddressField)
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.urlresolvers import reverse
 import django.conf
 from django.db.models.signals import post_save, post_delete
 from celery.exceptions import TimeoutError
@@ -191,9 +192,8 @@ class Rule(models.Model):
                 return field.__class__.__name__.lower()
         return None
 
-    @models.permalink
     def get_absolute_url(self):
-        return ('network.rule', None, {'pk': self.pk})
+        return reverse('network.rule', kwargs={'pk': self.pk})
 
     def get_chain_name(self, local, remote):
         if local:  # host or vlan
@@ -476,9 +476,8 @@ class Vlan(AclBase, models.Model):
         return "%s - %s" % ("managed" if self.managed else "unmanaged",
                             self.name)
 
-    @models.permalink
     def get_absolute_url(self):
-        return ('network.vlan', None, {'vid': self.vid})
+        return reverse('network.vlan', kwargs={'vid': self.vid})
 
     def get_random_addresses(self, used_v4, buffer_size=100, max_hosts=10000):
         addresses = islice(self.network4.iter_hosts(), max_hosts)
@@ -544,9 +543,8 @@ class VlanGroup(models.Model):
     def __unicode__(self):
         return self.name
 
-    @models.permalink
     def get_absolute_url(self):
-        return ('network.vlan_group', None, {'pk': self.pk})
+        return reverse('network.vlan_group', kwargs={'pk': self.pk})
 
 
 class Group(models.Model):
@@ -567,9 +565,8 @@ class Group(models.Model):
     def __unicode__(self):
         return self.name
 
-    @models.permalink
     def get_absolute_url(self):
-        return ('network.group', None, {'pk': self.pk})
+        return reverse('network.group', kwargs={'pk': self.pk})
 
 
 class Host(models.Model):
@@ -919,9 +916,8 @@ class Host(models.Model):
         endpoints['ipv6'] = (self.ipv6, port) if public_port else None
         return endpoints
 
-    @models.permalink
     def get_absolute_url(self):
-        return ('network.host', None, {'pk': self.pk})
+        return reverse('network.host', kwargs={'pk': self.pk})
 
     @property
     def eui(self):
@@ -970,9 +966,8 @@ class Firewall(models.Model):
             logger.exception("get_dhcp_clients failed")
         return {}
 
-    @models.permalink
     def get_absolute_url(self):
-        return ('network.firewall', None, {'pk': self.pk})
+        return reverse('network.firewall', kwargs={'pk': self.pk})
 
 
 class Domain(models.Model):
@@ -989,9 +984,8 @@ class Domain(models.Model):
     def __unicode__(self):
         return self.name
 
-    @models.permalink
     def get_absolute_url(self):
-        return ('network.domain', None, {'pk': self.pk})
+        return reverse('network.domain', kwargs={'pk': self.pk})
 
 
 class Record(models.Model):
@@ -1060,9 +1054,8 @@ class Record(models.Model):
         else:
             return self.domain.name
 
-    @models.permalink
     def get_absolute_url(self):
-        return ('network.record', None, {'pk': self.pk})
+        return reverse('network.record', kwargs={'pk': self.pk})
 
     class Meta:
         ordering = (
@@ -1092,9 +1085,8 @@ class SwitchPort(models.Model):
                                                      self.untagged_vlan,
                                                      tagged_vlans)
 
-    @models.permalink
     def get_absolute_url(self):
-        return ('network.switch_port', None, {'pk': self.pk})
+        return reverse('network.switch_port', kwargs={'pk': self.pk})
 
 
 class EthernetDevice(models.Model):
@@ -1147,9 +1139,8 @@ class BlacklistItem(models.Model):
         verbose_name = _('blacklist item')
         verbose_name_plural = _('blacklist')
 
-    @models.permalink
     def get_absolute_url(self):
-        return ('network.blacklist', None, {'pk': self.pk})
+        return reverse('network.blacklist', kwargs={'pk': self.pk})
 
 
 def send_task(sender, instance, created=False, **kwargs):
