@@ -1,0 +1,53 @@
+{% load i18n %}
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <div class="pull-right toolbar">
+      <span class="btn btn-default btn-xs infobtn" data-container="body" title="{% trans "List of CIRCLE users." %}"><i class="fa fa-info-circle"></i></span>
+    </div>
+    <h3 class="no-margin"><i class="fa fa-users"></i> {% trans "Users" %}</h3>
+  </div>
+  <div class="list-group" id="user-list-view">
+    <div id="dashboard-user-list">
+      {% for i in users %}
+      <a href="{% url "dashboard.views.profile" username=i.username %}" class="list-group-item real-link
+      {% if forloop.last and users|length < 5 %} list-group-item-last{% endif %}">
+        <span class="index-user-list-name">
+          <i class="fa fa-user"></i> {% firstof i.get_full_name|safe i.username|safe %}
+        </span>
+        <span class="index-user-list-org">
+          <small class="text-muted"> {{ i.profile.org_id|default:"" }}</small>
+        </span>
+      </a>
+      {% endfor %}
+    </div>
+    <div class="list-group-item list-group-footer text-right">
+      <div class="row">
+        <div class="col-xs-6">
+          <form action="{% url "dashboard.views.user-list" %}" method="GET" id="dashboard-user-search-form">
+            <div class="input-group input-group-sm">
+              <input id="dashboard-group-search-input" name="s" type="text" class="form-control" placeholder="{% trans "Search..." %}" />
+              <div class="input-group-btn">
+                <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i></button>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="col-xs-6 text-right">
+          <a class="btn btn-primary btn-xs" href="{% url "dashboard.views.user-list" %}">
+            <i class="fa fa-chevron-circle-right"></i>
+            {% if more_users > 0 %}
+              {% blocktrans count more=more_users %}
+                <strong>{{ more }}</strong>  more
+              {% plural %}
+                <strong>{{ more }}</strong>  more
+              {% endblocktrans %}
+            {% else %}
+              {% trans "list" %}
+            {% endif %}
+          </a>
+          <a class="btn btn-success btn-xs user-create" href="{% url "dashboard.views.user-create" %}"><i class="fa fa-plus-circle"></i> {% trans "new" %} </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

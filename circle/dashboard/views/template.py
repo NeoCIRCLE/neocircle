@@ -207,7 +207,19 @@ class TemplateList(LoginRequiredMixin, FilterMixin, SingleTableView):
     def get(self, *args, **kwargs):
         self.search_form = TemplateListSearchForm(self.request.GET)
         self.search_form.full_clean()
-        return super(TemplateList, self).get(*args, **kwargs)
+        if self.request.is_ajax():
+            templates = [{
+                'icon': i.os_type,
+                'system': i.system,
+                'url': reverse("dashboard.views.template-detail",
+                               kwargs={'pk': i.pk}),
+                'name': i.name} for i in self.get_queryset()]
+            return HttpResponse(
+                json.dumps(templates),
+                content_type="application/json",
+            )
+        else:
+            return super(TemplateList, self).get(*args, **kwargs)
 
     def create_acl_queryset(self, model):
         queryset = super(TemplateList, self).create_acl_queryset(model)

@@ -31,25 +31,31 @@ from django.core.exceptions import (
 )
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.core.paginator import Paginator, InvalidPage
+from django.db.models import Q
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.shortcuts import redirect, get_object_or_404
 from django.utils.translation import ugettext as _
 from django.views.decorators.http import require_POST
 from django.views.generic import (
-    TemplateView, DetailView, View, UpdateView, CreateView,
+    TemplateView, View, UpdateView, CreateView,
 )
 from django_sshkey.models import UserKey
 
 from braces.views import LoginRequiredMixin, PermissionRequiredMixin
+
+from django_tables2 import SingleTableView
 
 from vm.models import Instance, InstanceTemplate
 
 from ..forms import (
     CircleAuthenticationForm, MyProfileForm, UserCreationForm, UnsubscribeForm,
     UserKeyForm, CirclePasswordChangeForm, ConnectCommandForm,
+    UserListSearchForm, UserEditForm,
 )
-from ..models import Profile, GroupProfile, ConnectCommand, create_profile
-from ..tables import UserKeyListTable, ConnectCommandListTable
+from ..models import Profile, GroupProfile, ConnectCommand
+from ..tables import (
+    UserKeyListTable, ConnectCommandListTable, UserListTable,
+)
 
 from .util import saml_available, DeleteViewBase
 
@@ -267,36 +273,46 @@ class UserCreationView(LoginRequiredMixin, PermissionRequiredMixin,
     template_name = 'dashboard/user-create.html'
     permission_required = "auth.add_user"
 
+    def get_template_names(self):
+        return ['dashboard/nojs-wrapper.html']
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(UserCreationView, self).get_context_data(*args,
+                                                                 **kwargs)
+        context.update({
+            'template': self.template_name,
+            'box_title': _('Create a User'),
+        })
+        return context
+
     def get_success_url(self):
-        reverse('dashboard.views.group-detail', args=[self.group.pk])
+        return reverse('dashboard.views.profile', args=[self.object.username])
 
-    def get_group(self, group_pk):
-        self.group = get_object_or_404(Group, pk=group_pk)
-        if not self.group.profile.has_level(self.request.user, 'owner'):
-            raise PermissionDenied()
-
-    def get(self, *args, **kwargs):
-        self.get_group(kwargs.pop('group_pk'))
-        return super(UserCreationView, self).get(*args, **kwargs)
-
-    def post(self, *args, **kwargs):
-        group_pk = kwargs.pop('group_pk')
-        self.get_group(group_pk)
-        ret = super(UserCreationView, self).post(*args, **kwargs)
-        if self.object:
-            create_profile(self.object)
-            self.object.groups.add(self.group)
-            return redirect(
-                reverse('dashboard.views.group-detail', args=[group_pk]))
+    def get_form_kwargs(self):
+        profiles = GroupProfile.get_objects_with_level(
+            'owner', self.request.user)
+        choices = Group.objects.filter(groupprofile__in=profiles)
+        group_pk = self.request.GET.get('group_pk')
+        if group_pk:
+            try:
+                default = choices.get(pk=group_pk)
+            except (ValueError, Group.DoesNotExist):
+                raise Http404()
         else:
-            return ret
+            default = None
+
+        val = super(UserCreationView, self).get_form_kwargs()
+        val.update({'choices': choices, 'default': default})
+        return val
 
 
-class ProfileView(LoginRequiredMixin, DetailView):
+class ProfileView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     template_name = "dashboard/profile.html"
     model = User
     slug_field = "username"
     slug_url_kwarg = "username"
+    form_class = UserEditForm
+    success_message = _("Successfully modified user.")
 
     def get(self, *args, **kwargs):
         user = self.request.user
@@ -356,6 +372,15 @@ class ProfileView(LoginRequiredMixin, DetailView):
             context['login_token'] = TokenLogin.get_token_url(
                 user, self.request.user)
         return context
+
+    def post(self, request, *args, **kwargs):
+        if not request.user.has_perm('auth.change_user'):
+            raise PermissionDenied()
+        return super(ProfileView, self).post(self, request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse('dashboard.views.profile',
+                       kwargs=self.kwargs)
 
 
 @require_POST
@@ -480,3 +505,48 @@ class ConnectCommandCreate(LoginRequiredMixin, SuccessMessageMixin,
         kwargs = super(ConnectCommandCreate, self).get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
+
+
+class UserList(LoginRequiredMixin, PermissionRequiredMixin, SingleTableView):
+    template_name = "dashboard/user-list.html"
+    permission_required = "auth.change_user"
+    model = User
+    table_class = UserListTable
+    table_pagination = True
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(UserList, self).get_context_data(*args, **kwargs)
+        context['search_form'] = self.search_form
+        return context
+
+    def get(self, *args, **kwargs):
+        self.search_form = UserListSearchForm(self.request.GET)
+        self.search_form.full_clean()
+
+        if self.request.is_ajax():
+            users = [
+                {'url': reverse("dashboard.views.profile", args=[i.username]),
+                 'name': i.get_full_name() or i.username,
+                 'org_id': i.profile.org_id,
+                 }
+                for i in self.get_queryset()]
+            return HttpResponse(
+                json.dumps(users), content_type="application/json")
+        else:
+            return super(UserList, self).get(*args, **kwargs)
+
+    def get_queryset(self):
+        logger.debug('UserList.get_queryset() called. User: %s',
+                     unicode(self.request.user))
+        qs = User.objects.all().order_by("-pk")
+
+        q = self.search_form.cleaned_data.get('s')
+        if q:
+            filters = (Q(username__icontains=q) | Q(email__icontains=q)
+                       | Q(profile__org_id__icontains=q))
+            for w in q.split()[:3]:
+                filters |= (
+                    Q(first_name__icontains=w) | Q(last_name__icontains=w))
+            qs = qs.filter(filters)
+
+        return qs.select_related("profile")

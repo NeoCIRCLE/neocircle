@@ -562,7 +562,7 @@ footer a, footer a:hover, footer a:visited {
 }
 
 #dashboard-vm-list, #dashboard-node-list, #dashboard-group-list,
-#dashboard-template-list, #dashboard-files-toplist {
+#dashboard-template-list, #dashboard-files-toplist, #dashboard-user-list {
   min-height: 200px;
 }
 
@@ -1164,6 +1164,28 @@ textarea[name="new_members"] {
 
   .index-vm-list-host {
     padding-top: 3px;
+    flex: 1;
+  }
+}
+
+
+#dashboard-user-list {
+  .list-group-item {
+    display: flex;
+  }
+
+  .index-user-list-name, .index-user-list-org {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  .index-user-list-name {
+    max-width: 80%;
+  }
+
+  .index-user-list-org {
+    padding-left: 5px;
     flex: 1;
   }
 }

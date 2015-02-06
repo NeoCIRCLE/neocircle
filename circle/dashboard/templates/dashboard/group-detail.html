@@ -78,7 +78,7 @@
         <h3>
           {% trans "User list" %}
           {% if perms.auth.add_user %}
-          <a href="{% url "dashboard.views.create-user" group.pk %}" class="btn btn-success pull-right">
+          <a href="{% url "dashboard.views.user-create" %}?group_pk={{ group.pk}}" class="btn btn-success pull-right">
             {% trans "Create user" %}
           </a>
           {% endif %}

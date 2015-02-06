@@ -21,7 +21,7 @@ import logging
 from django.core.cache import get_cache
 from django.core.urlresolvers import reverse
 from django.conf import settings
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
 from django.views.generic import TemplateView
 
 from braces.views import LoginRequiredMixin
@@ -84,6 +84,14 @@ class IndexView(LoginRequiredMixin, TemplateView):
             context.update({
                 'groups': groups[:5],
                 'more_groups': groups.count() - len(groups[:5]),
+            })
+
+        # users
+        if user.has_module_perms('auth.change_user'):
+            users = User.objects.all()
+            context.update({
+                'users': users[:5],
+                'more_users': users.count() - len(users[:5]),
             })
 
         # template

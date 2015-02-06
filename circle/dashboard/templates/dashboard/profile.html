@@ -8,7 +8,7 @@
 {% block content %}
 
 <div class="row">
-  <div class="col-md-12">
+  <div class="col-md-{% if perms.auth.change_user %}8{% else %}12{% endif %}">
     <div class="panel panel-default">
       <div class="panel-heading">
         {% if request.user.is_superuser %}
@@ -17,7 +17,7 @@
              title="{% trans "Log in as this user. Recommended to open in an incognito window." %}">
              {% trans "Login as this user" %}</a>
         {% endif %}
-        <a class="pull-right btn btn-default btn-xs" href="{% url "dashboard.index" %}">{% trans "Back" %}</a>
+        <a class="pull-right btn btn-default btn-xs" href="{% url "dashboard.views.user-list" %}">{% trans "Back" %}</a>
         <h3 class="no-margin">
           <i class="fa fa-user"></i>
           {% include "dashboard/_display-name.html" with user=profile show_org=True %}
@@ -109,6 +109,23 @@
       </div>
     </div>
   </div>
+
+  {% if perms.auth.change_user %}
+  <div class="col-md-4">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="no-margin">
+          <i class="fa fa-user"></i>
+          {% trans "Edit user" %}
+        </h3>
+      </div>
+      <div class="panel-body">
+        {% crispy form %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
 </div>
 
 {% endblock %}

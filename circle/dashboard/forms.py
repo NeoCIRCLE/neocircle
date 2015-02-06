@@ -59,7 +59,7 @@ from django.utils.translation import string_concat
 
 from .validators import domain_validator
 
-from dashboard.models import ConnectCommand
+from dashboard.models import ConnectCommand, create_profile
 
 LANGUAGES_WITH_CODE = ((l[0], string_concat(l[1], " (", l[0], ")"))
                        for l in LANGUAGES)
@@ -1257,10 +1257,19 @@ class CirclePasswordChangeForm(PasswordChangeForm):
 
 
 class UserCreationForm(OrgUserCreationForm):
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('choices')
+        group = kwargs.pop('default')
+
+        super(UserCreationForm, self).__init__(*args, **kwargs)
+
+        self.fields['groups'] = forms.ModelMultipleChoiceField(
+            queryset=choices, initial=[group], required=False,
+            label=_('Groups'))
 
     class Meta:
         model = User
-        fields = ("username", 'email', 'first_name', 'last_name')
+        fields = ("username", 'email', 'first_name', 'last_name', 'groups')
 
     @property
     def helper(self):
@@ -1275,7 +1284,38 @@ class UserCreationForm(OrgUserCreationForm):
         user.set_password(self.cleaned_data["password1"])
         if commit:
             user.save()
+            create_profile(user)
+            user.groups.add(*self.cleaned_data["groups"])
         return user
+
+
+class UserEditForm(forms.ModelForm):
+    instance_limit = forms.IntegerField(
+        label=_('Instance limit'),
+        min_value=0, widget=NumberInput)
+
+    def __init__(self, *args, **kwargs):
+        super(UserEditForm, self).__init__(*args, **kwargs)
+        self.fields["instance_limit"].initial = (
+            self.instance.profile.instance_limit)
+
+    class Meta:
+        model = User
+        fields = ('email', 'first_name', 'last_name', 'instance_limit',
+                  'is_active')
+
+    def save(self, commit=True):
+        user = super(UserEditForm, self).save()
+        user.profile.instance_limit = (
+            self.cleaned_data['instance_limit'] or None)
+        user.profile.save()
+        return user
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.add_input(Submit("submit", _("Save")))
+        return helper
 
 
 class AclUserOrGroupAddForm(forms.Form):
@@ -1497,3 +1537,10 @@ class TemplateListSearchForm(forms.Form):
             data = self.data.copy()
             data['stype'] = "owned"
             self.data = data
+
+
+class UserListSearchForm(forms.Form):
+    s = forms.CharField(widget=forms.TextInput(attrs={
+        'class': "form-control input-tags",
+        'placeholder': _("Search...")
+    }))
