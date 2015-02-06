@@ -189,7 +189,7 @@ def cleanup():
 
 def _cleanup(dir="~/circle/circle"):
     "Clean pyc files"
-    with cd("~/circle/circle"):
+    with cd(dir):
         run("find -name '*.py[co]' -exec rm -f {} +")
 
 
