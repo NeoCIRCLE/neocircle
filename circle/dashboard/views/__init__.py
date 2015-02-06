@@ -12,4 +12,4 @@ from user import *
 from util import *
 from vm import *
 from graph import *
-from disk import *
+from storage import *

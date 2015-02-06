@@ -52,7 +52,7 @@ from .views import (
     TransferTemplateOwnershipView, TransferTemplateOwnershipConfirmView,
     OpenSearchDescriptionView,
     NodeActivityView,
-    DataStoreDetail,
+    StorageDetail,
 )
 from .views.vm import vm_ops, vm_mass_ops
 from .views.node import node_ops
@@ -226,8 +226,8 @@ urlpatterns = patterns(
         name="dashboard.views.vm-opensearch"),
 
 
-    url(r'^datastore/$', DataStoreDetail.as_view(),
-        name="dashboard.views.datastore"),
+    url(r'^storage/$', StorageDetail.as_view(),
+        name="dashboard.views.storage"),
 )
 
 urlpatterns += patterns(

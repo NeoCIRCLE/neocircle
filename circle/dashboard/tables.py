@@ -314,4 +314,4 @@ class DiskListTable(Table):
         fields = ("pk", "name", "filename", "size", "is_ready")
         prefix = "disk-"
         order_by = ("-pk", )
-        per_page = 99999999999
+        per_page = 65536

@@ -29,16 +29,16 @@ from ..tables import DiskListTable
 from ..forms import DataStoreForm
 
 
-class DataStoreDetail(UpdateView):
+class StorageDetail(UpdateView):
     model = DataStore
     form_class = DataStoreForm
-    template_name = "dashboard/datastore/detail.html"
+    template_name = "dashboard/storage/detail.html"
 
     def get_object(self):
         return DataStore.objects.get()
 
     def get_context_data(self, **kwargs):
-        context = super(DataStoreDetail, self).get_context_data(**kwargs)
+        context = super(StorageDetail, self).get_context_data(**kwargs)
 
         ds = self.get_object()
         context['stats'] = self._get_stats()
@@ -66,4 +66,4 @@ class DataStoreDetail(UpdateView):
         }
 
     def get_success_url(self):
-        return reverse("dashboard.views.datastore")
+        return reverse("dashboard.views.storage")
