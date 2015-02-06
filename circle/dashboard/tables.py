@@ -23,9 +23,18 @@ from django_tables2.columns import (TemplateColumn, Column, LinkColumn,
                                     BooleanColumn)
 
 from vm.models import Node, InstanceTemplate, Lease
+from storage.models import Disk
 from django.utils.translation import ugettext_lazy as _
 from django_sshkey.models import UserKey
 from dashboard.models import ConnectCommand
+
+
+class FileSizeColumn(Column):
+    def render(self, value):
+        from sizefield.utils import filesizeformat
+
+        size = filesizeformat(value)
+        return size
 
 
 class NodeListTable(Table):
@@ -292,3 +301,17 @@ class ConnectCommandListTable(Table):
             "You don't have any custom connection commands yet. You can "
             "specify commands to be displayed on VM detail pages instead of "
             "the defaults.")
+
+
+class DiskListTable(Table):
+
+    size = FileSizeColumn()
+
+    class Meta:
+        model = Disk
+        attrs = {'class': "table table-bordered table-striped table-hover",
+                 'id': "disk-list-table"}
+        fields = ("pk", "name", "filename", "size", "is_ready")
+        prefix = "disk-"
+        order_by = ("-pk", )
+        per_page = 99999999999

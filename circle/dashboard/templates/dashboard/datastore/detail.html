@@ -1,0 +1,73 @@
+{% extends "dashboard/base.html" %}
+{% load staticfiles %}
+{% load i18n %}
+{% load render_table from django_tables2 %}
+{% load crispy_forms_tags %}
+
+{% block title-page %}{% trans "Datastores" %}{% endblock %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-md-5">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="no-margin"><i class="fa fa-desktop"></i> {% trans "Datastore" %}</h3>
+      </div>
+      <div class="panel-body">
+        {% crispy form %}
+      </div><!-- .panel-body -->
+    </div>
+  </div>
+  <div class="col-md-7">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="no-margin"><i class="fa fa-desktop"></i> {% trans "Statistics" %}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="progress">
+          <div class="progress-bar progress-bar-success progress-bar-stripped"
+            role="progressbar" style="min-width: 30px; width: {{ stats.used_percent }}%">
+            {{ stats.used_percent }}%
+          </div>
+        </div>
+        <div class="text-muted text-center">
+          {{ stats.used_space}}/{{ stats.total_space }} used
+        </div>
+
+        <h3>Missing disks <small>disk objects without images files</small></h3>
+        {% for m in missing_disks %}
+          <p>
+          {{ m }} - {{ m.filename }}
+          </p>
+          {% empty %}
+          None
+        {% endfor %}
+
+        <h3>Orphan disks <small>image files without disk object in the database</small></h3>
+        {% for o in orphan_disks %}
+          {{ o }}
+          {% empty %}
+          None
+        {% endfor %}
+      </div><!-- .panel-body -->
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="no-margin"><i class="fa fa-desktop"></i> {% trans "Related disks" %}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="table-responsive">
+          {% render_table disk_table %}
+        </div>
+      </div><!-- .panel-body -->
+    </div>
+  </div>
+</div>
+
+{% endblock %}

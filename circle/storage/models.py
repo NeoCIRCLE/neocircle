@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 import logging
 from os.path import join
 import uuid
+import re
 
 from celery.contrib.abortable import AbortableAsyncResult
 from django.db.models import (Model, BooleanField, CharField, DateTimeField,
@@ -34,7 +35,7 @@ from sizefield.models import FileSizeField
 from .tasks import local_tasks, storage_tasks
 from celery.exceptions import TimeoutError
 from common.models import (
-    WorkerNotFound, HumanReadableException, humanize_exception
+    WorkerNotFound, HumanReadableException, humanize_exception, method_cache
 )
 
 logger = logging.getLogger(__name__)
@@ -75,6 +76,37 @@ class DataStore(Model):
         return [disk.filename for disk in
                 self.disk_set.filter(
                     destroyed__isnull=False) if disk.is_deletable]
+
+    @method_cache(30)
+    def get_statistics(self, timeout=15):
+        q = self.get_remote_queue_name("storage", priority="fast")
+        return storage_tasks.get_storage_stat.apply_async(
+            args=[self.path], queue=q).get(timeout=timeout)
+
+    @method_cache(30)
+    def get_orphan_disks(self, timeout=15):
+        """Disk image files without Disk object in the database.
+        """
+        queue_name = self.get_remote_queue_name('storage', "slow")
+        files = set(storage_tasks.list_files.apply_async(
+            args=[self.path], queue=queue_name).get(timeout=timeout))
+        disks = set([disk.filename for disk in self.disk_set.all()])
+
+        orphans = []
+        for i in files - disks:
+            if not re.match('cloud-[0-9]*\.dump', i):
+                orphans.append(i)
+        return orphans
+
+    @method_cache(30)
+    def get_missing_disks(self, timeout=15):
+        """Disk objects without disk image files.
+        """
+        queue_name = self.get_remote_queue_name('storage', "slow")
+        files = set(storage_tasks.list_files.apply_async(
+            args=[self.path], queue=queue_name).get(timeout=timeout))
+        disks = Disk.objects.filter(destroyed__isnull=True, is_ready=True)
+        return disks.exclude(filename__in=files)
 
 
 class Disk(TimeStampedModel):

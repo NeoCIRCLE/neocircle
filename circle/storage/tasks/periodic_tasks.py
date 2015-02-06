@@ -62,7 +62,7 @@ def list_orphan_disks(timeout=15):
     """
     import re
     for ds in DataStore.objects.all():
-        queue_name = ds.get_remote_queue_name('storage')
+        queue_name = ds.get_remote_queue_name('storage', "slow")
         files = set(storage_tasks.list_files.apply_async(
             args=[ds.path], queue=queue_name).get(timeout=timeout))
         disks = set([disk.filename for disk in ds.disk_set.all()])
@@ -79,7 +79,7 @@ def list_missing_disks(timeout=15):
     :type timeoit: int
     """
     for ds in DataStore.objects.all():
-        queue_name = ds.get_remote_queue_name('storage')
+        queue_name = ds.get_remote_queue_name('storage', "slow")
         files = set(storage_tasks.list_files.apply_async(
             args=[ds.path], queue=queue_name).get(timeout=timeout))
         disks = set([disk.filename for disk in

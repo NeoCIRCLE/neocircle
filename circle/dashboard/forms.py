@@ -20,6 +20,7 @@ from __future__ import absolute_import
 from datetime import timedelta
 from urlparse import urlparse
 
+from django.forms import ModelForm
 from django.contrib.auth.forms import (
     AuthenticationForm, PasswordResetForm, SetPasswordForm,
     PasswordChangeForm,
@@ -31,10 +32,12 @@ from django.core.exceptions import PermissionDenied, ValidationError
 import autocomplete_light
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import (
-    Layout, Div, BaseInput, Field, HTML, Submit, TEMPLATE_PACK,
+    Layout, Div, BaseInput, Field, HTML, Submit, TEMPLATE_PACK, Fieldset
 )
 
 from crispy_forms.utils import render_field
+from crispy_forms.bootstrap import FormActions
+
 from django import forms
 from django.contrib.auth.forms import UserCreationForm as OrgUserCreationForm
 from django.forms.widgets import TextInput, HiddenInput
@@ -51,6 +54,7 @@ from firewall.models import Vlan, Host
 from vm.models import (
     InstanceTemplate, Lease, InterfaceTemplate, Node, Trait, Instance
 )
+from storage.models import DataStore
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth.models import Permission
 from .models import Profile, GroupProfile
@@ -1497,3 +1501,25 @@ class TemplateListSearchForm(forms.Form):
             data = self.data.copy()
             data['stype'] = "owned"
             self.data = data
+
+
+class DataStoreForm(ModelForm):
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.layout = Layout(
+            Fieldset(
+                '',
+                'name',
+                'path',
+                'hostname',
+            ),
+            FormActions(
+                Submit('submit', _('Save')),
+            )
+        )
+        return helper
+
+    class Meta:
+        model = DataStore
