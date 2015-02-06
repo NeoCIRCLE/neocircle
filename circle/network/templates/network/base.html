@@ -6,32 +6,6 @@
 
 {% block title-site %}{% trans "Network" %} | CIRCLE{% endblock %}
 
-{% block extra_link %}
-  <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:200,400&amp;subset=latin,latin-ext' rel='stylesheet' type='text/css'>
-  <link href="{% static "network/network.css" %}" rel="stylesheet">
-{% endblock %}
-
-{% block extra_css %}
-<style type="text/css">
-  body {
-    padding-top:40px;
-  }
-
-  /* note: this doesn't really work */
-  a i:hover {
-      text-decoration: none;
-  }
-
-  footer {
-      margin-top: 45px;
-  }
-
-  .messagelist {
-      margin-top: 25px;
-  }
-</style>
-{% endblock %}
-
 {% block navbar-brand %}
   <a class="navbar-brand" href="{% url "network.index" %}">CIRCLE Network</a>
 {% endblock %}

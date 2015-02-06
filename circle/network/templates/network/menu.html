@@ -22,25 +22,19 @@
 {% url "network.switch_port_list" as u %}
 {% trans "Switch ports" as t %}
 {% include "network/menu-item.html" with href=u text=t %}
+{% url "network.firewall_list" as u %}
+{% trans "Firewalls" as t %}
+{% include "network/menu-item.html" with href=u text=t %}
 
 <li class="dropdown{% if "groups" in request.path %} active{% endif %}">
-    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Groups <b class="caret"></b></a>
-    <ul class="dropdown-menu">
-        {% url "network.vlan_group_list" as u %}
-        {% trans "Vlan groups" as t %}
-        {% include "network/menu-item.html" with href=u text=t %}
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Groups <b class="caret"></b></a>
+  <ul class="dropdown-menu">
+    {% url "network.vlan_group_list" as u %}
+    {% trans "Vlan groups" as t %}
+    {% include "network/menu-item.html" with href=u text=t %}
 
-        {% url "network.group_list" as u %}
-        {% trans "Host groups" as t %}
-        {% include "network/menu-item.html" with href=u text=t %}
-    </ul>
+    {% url "network.group_list" as u %}
+    {% trans "Host groups" as t %}
+    {% include "network/menu-item.html" with href=u text=t %}
+  </ul>
 </li>
-
-{# <li><a href="/vlans/">{% trans "Vlans" %}</a></li> #}
-{# <li><a href="/vlangroups/">{% trans "Vlan groups" %}</a></li> #}
-{# <li><a href="/hostgroups/">{% trans "Host groups" %}</a></li> #}
-{# <li><a href="/hosts/">{% trans "Hosts" %}</a></li> #}
-{# <li><a href="/firewalls/">{% trans "Firewalls" %}</a></li> #}
-{# <li><a href="/domains/">{% trans "Domains" %}</a></li> #}
-{# <li><a href="/records/">{% trans "DNS records" %}</a></li> #}
-{# <li><a href="/blacklist/">{% trans "Blacklist" %}</a></li> #}

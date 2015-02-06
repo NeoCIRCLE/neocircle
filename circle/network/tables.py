@@ -245,3 +245,37 @@ class HostRecordsTable(Table):
         fields = ("type", "fqdn")
         order_by = ("name", )
         empty_text = _("No records.")
+
+
+class FirewallTable(Table):
+    pk = LinkColumn('network.firewall', args=[A('pk')],
+                    verbose_name="ID")
+
+    class Meta:
+        model = SwitchPort
+        attrs = {'class': 'table table-striped'}
+        fields = ('pk', 'name', )
+        order_by = 'pk'
+
+
+class FirewallRuleTable(Table):
+    color_desc = TemplateColumn(
+        template_name="network/columns/rule-short-description.html",
+        verbose_name=_("Short description"),
+        orderable=False,
+    )
+    actions = TemplateColumn(
+        template_name="network/columns/firewall-rule-actions.html",
+        verbose_name=_("Actions"),
+        orderable=False,
+    )
+
+    class Meta:
+        model = Rule
+        template = "django_tables2/table_no_page.html"
+        attrs = {'class': 'table table-striped table-hover table-condensed',
+                 'id': "rule-list-table"}
+        fields = ('color_desc', 'extra', 'direction',
+                  'action', 'proto', 'actions')
+        order_by = '-pk'
+        empty_text = _("No related rules found.")

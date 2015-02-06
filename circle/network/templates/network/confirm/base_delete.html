@@ -31,7 +31,7 @@
 </div>
 {% endif %}
 <form action="" method="post">{% csrf_token %}
-    <input type="hidden" value="{{ request.GET.from }}" name="next" />
+    <input type="hidden" value="{{ request.GET.next }}" name="next" />
     {% if confirmation %}
         <label><p>
             {% trans "If you are really sure, type in the object's name!" %}
