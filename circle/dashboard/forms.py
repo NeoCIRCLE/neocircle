@@ -978,7 +978,7 @@ class VmDeployForm(OperationForm):
 
     def __init__(self, *args, **kwargs):
         choices = kwargs.pop('choices', None)
-        instance = kwargs.pop("instance")
+        instance = kwargs.pop('instance', None)
 
         super(VmDeployForm, self).__init__(*args, **kwargs)
 
