@@ -10,6 +10,8 @@ from fabric.decorators import roles, parallel
 env.roledefs['portal'] = ['localhost']
 
 try:
+    import django
+    django.setup()
     from vm.models import Node as _Node
     from storage.models import DataStore as _DataStore
 except Exception as e:
