@@ -70,15 +70,20 @@ class GroupTable(Table):
 
 
 class HostTable(Table):
-    hostname = LinkColumn('network.host', args=[A('pk')])
+    hostname = LinkColumn(
+        'network.host',
+        args=[A('pk')],
+        order_by="normalized_hostname",
+    )
     mac = MACColumn()
 
     class Meta:
         model = Host
-        attrs = {'class': 'table table-striped table-condensed'}
+        attrs = {'class': "table table-striped table-condensed",
+                 'id': "network-host-list-table"}
         fields = ('hostname', 'vlan', 'mac', 'ipv4', 'ipv6',
                   'external_ipv4', 'created_at', 'owner', )
-        order_by = ('vlan', 'hostname', )
+        order_by = ("hostname", )
 
 
 class SmallRuleTable(Table):
@@ -144,6 +149,7 @@ class RecordTable(Table):
     address = TemplateColumn(
         template_name="network/columns/records-address.html"
     )
+    ttl = Column(verbose_name=_("TTL"))
 
     class Meta:
         model = Record
@@ -167,16 +173,26 @@ class SmallRecordTable(Table):
 
 
 class RuleTable(Table):
-    r_type = LinkColumn('network.rule', args=[A('pk')])
+    r_type = LinkColumn(
+        'network.rule', args=[A('pk')],
+        verbose_name=_("type"),
+        orderable=False,
+    )
     color_desc = TemplateColumn(
-        template_name="network/columns/color-desc.html"
+        template_name="network/columns/rule-short-description.html",
+        verbose_name=_("Short description"),
+        orderable=False,
+    )
+    nat_external_port = Column(
+        verbose_name=_("NAT")
     )
 
     class Meta:
         model = Rule
-        attrs = {'class': 'table table-striped table-hover table-condensed'}
-        fields = ('r_type', 'color_desc', 'owner', 'extra', 'direction',
-                  'action', 'proto', 'sport', 'dport', 'nat',
+        attrs = {'class': 'table table-striped table-hover table-condensed',
+                 'id': "rule-list-table"}
+        fields = ('r_type', 'color_desc', 'extra', 'direction',
+                  'action', 'proto', 'dport',
                   'nat_external_port', )
         order_by = 'direction'
 
@@ -198,7 +214,7 @@ class VlanTable(Table):
     class Meta:
         model = Vlan
         attrs = {'class': 'table table-striped table-condensed'}
-        fields = ('vid', 'name', 'interface', 'network4', 'network6',
+        fields = ('vid', 'name', 'network4', 'network6',
                   'domain', )
         order_by = 'vid'
 

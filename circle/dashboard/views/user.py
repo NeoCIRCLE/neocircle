@@ -267,6 +267,9 @@ class UserCreationView(LoginRequiredMixin, PermissionRequiredMixin,
     template_name = 'dashboard/user-create.html'
     permission_required = "auth.add_user"
 
+    def get_success_url(self):
+        reverse('dashboard.views.group-detail', args=[self.group.pk])
+
     def get_group(self, group_pk):
         self.group = get_object_or_404(Group, pk=group_pk)
         if not self.group.profile.has_level(self.request.user, 'owner'):

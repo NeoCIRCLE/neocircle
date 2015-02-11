@@ -67,6 +67,7 @@ from ..forms import (
     VmRemoveInterfaceForm,
 )
 from ..models import Favourite
+from manager.scheduler import has_traits
 
 logger = logging.getLogger(__name__)
 
@@ -444,6 +445,20 @@ class VmMigrateView(FormOperationMixin, VmOperationView):
         val.update({'choices': choices, 'default': default})
         return val
 
+    def get_context_data(self, *args, **kwargs):
+        ctx = super(VmMigrateView, self).get_context_data(*args, **kwargs)
+
+        inst = self.get_object()
+        if isinstance(inst, Instance):
+            nodes_w_traits = [
+                n.pk for n in Node.objects.filter(enabled=True)
+                if n.online and
+                has_traits(inst.req_traits.all(), n)
+            ]
+            ctx['nodes_w_traits'] = nodes_w_traits
+
+        return ctx
+
 
 class VmPortRemoveView(FormOperationMixin, VmOperationView):
 
@@ -698,6 +713,7 @@ class VmDeployView(FormOperationMixin, VmOperationView):
             online = (n.pk for n in
                       Node.objects.filter(enabled=True) if n.online)
             kwargs['choices'] = Node.objects.filter(pk__in=online)
+            kwargs['instance'] = self.get_object()
         return kwargs
 
 
@@ -1135,7 +1151,7 @@ def get_vm_screenshot(request, pk):
         # TODO handle this better
         raise Http404()
 
-    return HttpResponse(image, mimetype="image/png")
+    return HttpResponse(image, content_type="image/png")
 
 
 class InstanceActivityDetail(CheckedDetailView):

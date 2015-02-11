@@ -26,7 +26,6 @@ from StringIO import StringIO
 from tarfile import TarFile, TarInfo
 import time
 from urlparse import urlsplit
-from salt.client import LocalClient
 
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.utils import timezone
@@ -1203,6 +1202,8 @@ class UpdateNodeOperation(NodeOperation):
     async_queue = "localhost.man.slow"
 
     def minion_cmd(self, module, params, timeout=3600):
+        # see https://git.ik.bme.hu/circle/cloud/issues/377
+        from salt.client import LocalClient
         name = self.node.host.hostname
         client = LocalClient()
         data = client.cmd(

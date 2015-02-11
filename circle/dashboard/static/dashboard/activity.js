@@ -137,16 +137,16 @@ $(function() {
         }
         var vm_state = $("#vm-details-state");
         if (vm_state.length) {
-          vm_state.data("status", data['status']);
-          $("#vm-details-state span").html(data['human_readable_status'].toUpperCase());
+          vm_state.data("status", data['status']); // jshint ignore:line
+          $("#vm-details-state span").html(data.human_readable_status.toUpperCase());
         }
-        if(data['status'] == "RUNNING") {
-          if(data['connect_uri']) {
+        if(data['status'] == "RUNNING") {  // jshint ignore:line
+          if(data.connect_uri) {
               $("#dashboard-vm-details-connect-button").removeClass('disabled');
           }
           $("[data-target=#_console]").attr("data-toggle", "pill").attr("href", "#console").parent("li").removeClass("disabled");
         } else {
-          if(data['connect_uri']) {
+          if(data.connect_uri) {
               $("#dashboard-vm-details-connect-button").addClass('disabled');
           }
           $("[data-target=#_console]").attr("data-toggle", "_pill").attr("href", "#").parent("li").addClass("disabled");
@@ -181,7 +181,7 @@ $(function() {
 
 String.prototype.hashCode = function() {
   var hash = 0, i, chr, len;
-  if (this.length == 0) return hash;
+  if (this.length === 0) return hash;
   for (i = 0, len = this.length; i < len; i++) {
     chr   = this.charCodeAt(i);
     hash  = ((hash << 5) - hash) + chr;

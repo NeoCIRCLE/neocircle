@@ -370,6 +370,12 @@ class HumanSortField(CharField):
     def get_monitored_value(self, instance):
         return getattr(instance, self.monitor)
 
+    def deconstruct(self):
+        name, path, args, kwargs = super(HumanSortField, self).deconstruct()
+        if self.monitor is not None:
+            kwargs['monitor'] = self.monitor
+        return name, path, args, kwargs
+
     @staticmethod
     def _partition(s, pred):
         """Partition a deque of chars to a tuple of a

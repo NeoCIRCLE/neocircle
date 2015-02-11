@@ -50,20 +50,20 @@ def get_env_variable(var_name, default=None):
 
 ########## PATH CONFIGURATION
 # Absolute filesystem path to the Django project directory:
-DJANGO_ROOT = dirname(dirname(abspath(__file__)))
+BASE_DIR = dirname(dirname(abspath(__file__)))
 
 # Absolute filesystem path to the top-level project folder:
-SITE_ROOT = dirname(DJANGO_ROOT)
+SITE_ROOT = dirname(BASE_DIR)
 
 # Site name:
-SITE_NAME = basename(DJANGO_ROOT)
+SITE_NAME = basename(BASE_DIR)
 
 # Url to site: (e.g. http://localhost:8080/)
 DJANGO_URL = get_env_variable('DJANGO_URL', '/')
 
 # Add our project to our pythonpath, this way we don't need to type our project
 # name in our dotted import paths:
-path.append(DJANGO_ROOT)
+path.append(BASE_DIR)
 ########## END PATH CONFIGURATION
 
 
@@ -78,14 +78,9 @@ TEMPLATE_DEBUG = DEBUG
 
 ########## MANAGER CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#admins
-ADMINS = (
-    ('Root', 'root@localhost'),
-)
 
 EMAIL_SUBJECT_PREFIX = get_env_variable('DJANGO_SUBJECT_PREFIX', '[CIRCLE] ')
 
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#managers
-MANAGERS = ADMINS
 ########## END MANAGER CONFIGURATION
 
 
@@ -198,6 +193,7 @@ PIPELINE_JS = {
         "jquery-knob/dist/jquery.knob.min.js",
         "jquery-simple-slider/js/simple-slider.js",
         "favico.js/favico.js",
+        "datatables/media/js/jquery.dataTables.js",
         "dashboard/dashboard.js",
         "dashboard/activity.js",
         "dashboard/group-details.js",
@@ -215,6 +211,7 @@ PIPELINE_JS = {
         "js/host.js",
         "js/network.js",
         "js/switch-port.js",
+        "js/host-list.js",
         "autocomplete_light/autocomplete.js",
         "autocomplete_light/widget.js",
         "autocomplete_light/addanother.js",
@@ -283,12 +280,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'dashboard.context_processors.extract_settings',
 )
 
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#template-loaders
-TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader',
-)
-
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs
 TEMPLATE_DIRS = (
     normpath(join(SITE_ROOT, '../../site-circle/templates')),
@@ -337,7 +328,6 @@ DJANGO_APPS = (
 )
 
 THIRD_PARTY_APPS = (
-    'south',
     'django_tables2',
     'crispy_forms',
     'djcelery',
@@ -348,6 +338,11 @@ THIRD_PARTY_APPS = (
     'autocomplete_light',
     'pipeline',
 )
+
+import django
+if django.get_version() < '1.7':
+    THIRD_PARTY_APPS += 'south',
+
 
 # Apps specific for this project go here.
 LOCAL_APPS = (
@@ -533,7 +528,13 @@ LOCALE_PATHS = (join(SITE_ROOT, 'locale'), )
 COMPANY_NAME = "BME IK 2014"
 SOUTH_MIGRATION_MODULES = {
     'taggit': 'taggit.south_migrations',
+    'vm': 'vm.south_migrations',
+    'firewall': 'firewall.south_migrations',
+    'acl': 'acl.south_migrations',
+    'dashboard': 'dashboard.south_migrations',
+    'storage': 'storage.south_migrations',
 }
+
 
 graphite_host = environ.get("GRAPHITE_HOST", None)
 graphite_port = environ.get("GRAPHITE_PORT", None)

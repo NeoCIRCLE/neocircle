@@ -70,8 +70,8 @@ $(function() {
     var input = $(this).parent("div").children("input");
     var eye = $(this).children("#vm-details-pw-eye");
     var span = $(this);
-    
-    span.tooltip("destroy")
+
+    span.tooltip("destroy");
     if(eye.hasClass("fa-eye")) {
       eye.removeClass("fa-eye").addClass("fa-eye-slash");
       input.prop("type", "text");
@@ -132,7 +132,7 @@ $(function() {
     var tmp = ta.val();
     ta.val("");
     ta.focus();
-    ta.val(tmp)
+    ta.val(tmp);
     e.preventDefault();
   });
 
@@ -207,7 +207,7 @@ $(function() {
 
   $("#dashboard-tutorial-toggle").click(function() {
     var box = $("#alert-new-template");
-    var list = box.find("ol")
+    var list = box.find("ol");
     list.stop().slideToggle(function() {
       var url = box.find("form").prop("action");
       var hidden = list.css("display") === "none";
@@ -219,7 +219,7 @@ $(function() {
         headers: {"X-CSRFToken": getCookie('csrftoken')},
         success: function(re, textStatus, xhr) {}
       });
-    }); 
+    });
     return false;
   });
 

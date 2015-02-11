@@ -17,9 +17,31 @@
 
 from django.test import TestCase
 from django.contrib.auth.models import User, Group, AnonymousUser
+from django.db.models import TextField, ForeignKey
 
-from ..models import ObjectLevel
-from .models import TestModel, Test2Model
+from ..models import ObjectLevel, AclBase
+
+
+class TestModel(AclBase):
+    normal_field = TextField()
+
+    ACL_LEVELS = (
+        ('alfa', 'Alfa'),
+        ('bravo', 'Bravo'),
+        ('charlie', 'Charlie'),
+    )
+
+
+class Test2Model(AclBase):
+    normal2_field = TextField()
+    owner = ForeignKey(User, null=True)
+
+    ACL_LEVELS = (
+        ('one', 'One'),
+        ('two', 'Two'),
+        ('three', 'Three'),
+        ('owner', 'owner'),
+    )
 
 
 class AclUserTest(TestCase):
