@@ -154,25 +154,29 @@ $(function () {
 
   addSliderMiscs();
 
- /* search */
+  /* search */
   function register_search(form, list, generateHTML) {
     var my_vms = [];
-    var search_in_progress = false;
+    /* 0 - default state
+     * 1 - ajax request sent
+     * 2 - ajax request received, we have our list of vms
+     */
+    var search_state = 0;
 
     form.find('input').keyup(function(e) {
-      if (search_in_progress) {
+      if (search_state == 1) {
         return;
       }
       // if my_vms is empty get a list of our vms
-      if(my_vms.length < 1) {
-        search_in_progress = true;
+      if(search_state === 0) {
+        search_state = 1;
         var btn = form.find('button');
         btn.find('i').addClass("fa-spinner fa-spin");
 
         $.get(form.prop('action'), function(result) {
-          search_in_progress = false;
+          search_state = 3;
           my_vms = result;
-          $(this).trigger("keyup");
+          form.find("input").trigger("keyup");
           btn.find('i').removeClass("fa-spinner fa-spin").addClass("fa-search");
         });
         return;
