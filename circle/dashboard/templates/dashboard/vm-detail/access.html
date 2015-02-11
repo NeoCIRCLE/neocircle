@@ -19,18 +19,25 @@
 <h3>{% trans "Permissions"|capfirst %}</h3>
 {% include "dashboard/_manage_access.html" with table_id="vm-access-table" %}
 
-<dl>
-  <dt>User</dt>
-  <dd>Grants access to the detail page so the users can connect to the virtual machine.
-  </dd>
-  <dt>Operator</dt>
-  <dd>Users or groups with operator access can modify the the name and description, open ports and grant user level accesses to the virtual machine. They can only revoke user level access.
-  </dd>
-  <dt>Owner</dt>
-  <dd>
-    Full access to the virtual machine. They can use operations, change resources and grant operator level access to users or groups.
-  Besides the access levels the instance also has an original owner.
-  The original owner's access cannot be revoked however the ownership is transferable.
-  </dd>
+<hr />
 
+<dl>
+  <dt>{% trans "User" %}</dt>
+  <dd>
+    {% trans "Grants access to the detail page so the users can connect to the virtual machine." %}
+  </dd>
+  <dt>{% trans "Operator" %}</dt>
+  <dd>
+    {% blocktrans %}
+    Users or groups with operator access can modify the the name and description, open ports and grant user level access to the virtual machine.
+    {% endblocktrans %}
+  </dd>
+  <dt>{% trans "Owner" %}</dt>
+  <dd>
+    {% blocktrans %}
+    Full access to the virtual machine. They can use operations, change resources and grant operator level access to users or groups.
+    Besides the access levels the instance also has an original owner.
+    The original owner's access cannot be revoked however the ownership is transferable.
+    {% endblocktrans %}
+  </dd>
 </dl>

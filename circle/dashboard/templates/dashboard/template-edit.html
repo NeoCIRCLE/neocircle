@@ -128,7 +128,7 @@
           <dd>
             {% blocktrans %}
             Same as user, however operators can grant user level access to this template
-            for groups and users but they can only revoke user level accesses.
+            for groups or users and they can revoke user level accesses.
             {% endblocktrans %}
           </dd>
           <dt>{% trans "Owner" %}</dt>
@@ -155,7 +155,7 @@
         {% for d in disks %}
           <li>
             <i class="fa fa-file"></i>
-            {{ d.name }} (#{{ d.id }}) -
+            {{ d.name }} (#{{ d.id }})
             <a href="{% url "dashboard.views.disk-remove" pk=d.pk %}?next={{ request.path }}"
               data-disk-pk="{{ d.pk }}" class="btn btn-xs btn-danger pull-right disk-remove"
               {% if not long_remove %}title="{% trans "Remove" %}"{% endif %}>
