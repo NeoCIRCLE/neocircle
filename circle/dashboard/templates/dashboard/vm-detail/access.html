@@ -19,9 +19,7 @@
 <h3>{% trans "Permissions"|capfirst %}</h3>
 {% include "dashboard/_manage_access.html" with table_id="vm-access-table" %}
 
-<hr />
-
-<dl>
+<dl class="well well-sm" id="vm-detail-access-help">
   <dt>{% trans "User" %}</dt>
   <dd>
     {% trans "Grants access to the detail page so the users can connect to the virtual machine." %}
