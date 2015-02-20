@@ -146,7 +146,7 @@ class UserListTable(Table):
 
     class Meta:
         model = User
-        template = "django_tables2/table_no_page.html"
+        template = "django_tables2/with_pagination.html"
         attrs = {'class': ('table table-bordered table-striped table-hover')}
         fields = ('username', 'last_name', 'first_name', 'profile__org_id',
                   'email', 'is_active', 'is_superuser')
