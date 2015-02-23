@@ -83,12 +83,15 @@ class Disk(TimeStampedModel):
     """
     TYPES = [('qcow2-norm', 'qcow2 normal'), ('qcow2-snap', 'qcow2 snapshot'),
              ('iso', 'iso'), ('raw-ro', 'raw read-only'), ('raw-rw', 'raw')]
+    BUS_TYPES = (('virtio', 'virtio'), ('ide', 'ide'), ('scsi', 'scsi'))
     name = CharField(blank=True, max_length=100, verbose_name=_("name"))
     filename = CharField(max_length=256, unique=True,
                          verbose_name=_("filename"))
     datastore = ForeignKey(DataStore, verbose_name=_("datastore"),
                            help_text=_("The datastore that holds the disk."))
     type = CharField(max_length=10, choices=TYPES)
+    bus = CharField(max_length=10, choices=BUS_TYPES, null=True, blank=True,
+                    default=None)
     size = FileSizeField(null=True, default=None)
     base = ForeignKey('self', blank=True, null=True,
                       related_name='derivatives')
@@ -222,6 +225,8 @@ class Disk(TimeStampedModel):
     def device_bus(self):
         """Returns the proper device prefix for different types of images.
         """
+        if self.bus:
+            return self.bus
         return {
             'qcow2-norm': 'virtio',
             'qcow2-snap': 'virtio',
