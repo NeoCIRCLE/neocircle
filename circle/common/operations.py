@@ -282,6 +282,8 @@ def register_operation(op_cls, op_id=None, target_cls=None):
                                       "in the 'target_cls' parameter to this "
                                       "call.")
 
+    assert not hasattr(target_cls, op_id), (
+        "target class already has an attribute with this id")
     if not issubclass(target_cls, OperatedMixin):
         raise TypeError("%r is not a subclass of %r" %
                         (target_cls.__name__, OperatedMixin.__name__))

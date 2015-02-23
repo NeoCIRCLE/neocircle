@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
+from collections import OrderedDict
+
 from netaddr import IPNetwork
 from django.views.generic import (TemplateView, UpdateView, DeleteView,
                                   CreateView)
@@ -22,18 +24,24 @@ from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse_lazy
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, Http404
+from django.db.models import Q
 
 from django_tables2 import SingleTableView
 
-from firewall.models import (Host, Vlan, Domain, Group, Record, BlacklistItem,
-                             Rule, VlanGroup, SwitchPort, EthernetDevice)
+from firewall.models import (
+    Host, Vlan, Domain, Group, Record, BlacklistItem, Rule, VlanGroup,
+    SwitchPort, EthernetDevice, Firewall)
 from vm.models import Interface
-from .tables import (HostTable, VlanTable, SmallHostTable, DomainTable,
-                     GroupTable, RecordTable, BlacklistItemTable, RuleTable,
-                     VlanGroupTable, SmallRuleTable, SmallGroupRuleTable,
-                     SmallRecordTable, SwitchPortTable, SmallDhcpTable, )
-from .forms import (HostForm, VlanForm, DomainForm, GroupForm, RecordForm,
-                    BlacklistItemForm, RuleForm, VlanGroupForm, SwitchPortForm)
+from .tables import (
+    HostTable, VlanTable, SmallHostTable, DomainTable, GroupTable,
+    RecordTable, BlacklistItemTable, RuleTable, VlanGroupTable,
+    SmallRuleTable, SmallGroupRuleTable, SmallRecordTable, SwitchPortTable,
+    SmallDhcpTable, FirewallTable, FirewallRuleTable,
+)
+from .forms import (
+    HostForm, VlanForm, DomainForm, GroupForm, RecordForm, BlacklistItemForm,
+    RuleForm, VlanGroupForm, SwitchPortForm, FirewallForm
+)
 
 from django.contrib import messages
 from django.contrib.messages.views import SuccessMessageMixin
@@ -46,11 +54,11 @@ from itertools import chain
 from dashboard.views import AclUpdateView
 from dashboard.forms import AclUserOrGroupAddForm
 
-from django.utils import simplejson
-
 try:
     from django.http import JsonResponse
 except ImportError:
+    from django.utils import simplejson
+
     class JsonResponse(HttpResponse):
         """JSON response for Django < 1.7
         https://gist.github.com/philippeowagner/3179eb475fe1795d6515
@@ -284,6 +292,53 @@ class DomainDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
         return context
 
 
+class FirewallList(LoginRequiredMixin, SuperuserRequiredMixin,
+                   SingleTableView):
+    model = Firewall
+    table_class = FirewallTable
+    template_name = "network/firewall-list.html"
+    table_pagination = False
+
+
+class FirewallDetail(LoginRequiredMixin, SuperuserRequiredMixin,
+                     SuccessMessageMixin, UpdateView):
+    model = Firewall
+    template_name = "network/firewall-edit.html"
+    form_class = FirewallForm
+    success_message = _(u'Succesfully modified firewall.')
+
+    def get_success_url(self):
+        if 'pk' in self.kwargs:
+            return reverse_lazy('network.firewall', kwargs=self.kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super(FirewallDetail, self).get_context_data(**kwargs)
+        rules = Rule.objects.filter(firewall=self.object)
+        context['rule_table'] = FirewallRuleTable(rules,
+                                                  request=self.request)
+        return context
+
+
+class FirewallCreate(LoginRequiredMixin, SuperuserRequiredMixin,
+                     SuccessMessageMixin, CreateView):
+    model = Firewall
+    template_name = "network/firewall-create.html"
+    form_class = FirewallForm
+    success_message = _(u'Successfully created firewall.')
+
+
+class FirewallDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
+    model = Firewall
+    template_name = "network/confirm/base_delete.html"
+
+    def get_success_url(self):
+        next = self.request.POST.get('next')
+        if next:
+            return next
+        else:
+            return reverse_lazy('network.firewall_list')
+
+
 class GroupList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
     model = Group
     table_class = GroupTable
@@ -375,6 +430,11 @@ class HostList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
             data = Host.objects.filter(vlan=vlan_id).select_related()
         else:
             data = Host.objects.select_related()
+
+        search = self.request.GET.get("s")
+        if search:
+            data = data.filter(Q(hostname__icontains=search) |
+                               Q(ipv4=search))  # ipv4 does not work TODO
         return data
 
 
@@ -597,10 +657,25 @@ class RuleList(LoginRequiredMixin, SuperuserRequiredMixin, SingleTableView):
     template_name = "network/rule-list.html"
     table_pagination = False
 
+    def get_context_data(self, **kwargs):
+        self.types = OrderedDict([
+            ('vlan', _("Vlan")), ('vlangroup', _("Vlan group")),
+            ('host', _("Host")), ('hostgroup', _("Host group")),
+            ('firewall', _("Firewall"))
+        ])
+        context = super(RuleList, self).get_context_data(**kwargs)
+        context['types'] = self.types
+        return context
+
     def get_table_data(self):
-        return Rule.objects.select_related('host', 'hostgroup', 'vlan',
-                                           'vlangroup', 'firewall',
-                                           'foreign_network', 'owner')
+        rules = Rule.objects.select_related('host', 'hostgroup', 'vlan',
+                                            'vlangroup', 'firewall',
+                                            'foreign_network', 'owner')
+
+        rule_type = self.request.GET.get("type")
+        if rule_type and rule_type in self.types.keys():
+            rules = rules.filter(**{'%s__isnull' % rule_type: False})
+        return rules
 
 
 class RuleDetail(LoginRequiredMixin, SuperuserRequiredMixin,

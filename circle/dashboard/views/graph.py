@@ -62,7 +62,7 @@ class GraphViewBase(LoginRequiredMixin, View):
         metric = self.create_class(metric)(instance)
 
         return HttpResponse(metric.get_graph(graphite_url, time),
-                            mimetype="image/png")
+                            content_type="image/png")
 
     def get_object(self, request, pk):
         instance = self.model.objects.get(id=pk)

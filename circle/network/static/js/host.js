@@ -3,7 +3,7 @@ $('#small_rule_table i[class="fa fa-times"]').click(function() {
     csrf = getCookie('csrftoken');
     var click_this = this;
 
-    host = $('.page-header').children('h2').text()
+    host = $('.page-header').children('h2').text();
     group = $(this).closest('h4').text();
 
     if(group.length > 0) {
@@ -47,13 +47,13 @@ function delete_rule_or_group(click_this) {
                     $(this).closest('tr').fadeOut(500, function() {
                         $(this).remove();
                     });
-                } 
+                }
                 // we delete the whole div around the table
                 else {
                     // we need to readd the deleted group to the select
                     group_pk = parseInt($(this).closest('h4').attr('id'));
                     group_name = $(this).closest('h4').text();
-                    
+
                     $(this).closest('div').fadeOut(500, function() {
                         $(this).remove();
                         $('#add_group')

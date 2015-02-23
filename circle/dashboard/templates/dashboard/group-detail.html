@@ -9,43 +9,33 @@
 <div class="body-content">
   <div class="page-header">
     <div class="pull-right" style="padding-top: 15px;">
-      <a title="{% trans "Rename" %}" href="#" class="btn btn-default btn-xs group-details-rename-button">
+      <a title="{% trans "Rename" %}" class="btn btn-default btn-xs group-details-rename-button">
         <i class="fa fa-pencil"></i>
       </a>
       <a title="{% trans "Delete" %}" data-group-pk="{{ group.pk }}" class="btn btn-default btn-xs real-link group-delete" href="{% url "dashboard.views.delete-group" pk=group.pk %}">
         <i class="fa fa-trash-o"></i>
       </a>
-      <a title="{% trans "Help" %}" href="#" class="btn btn-default btn-xs group-details-help-button">
-        <i class="fa fa-question"></i>
-      </a>
     </div>
-   <h1>
-      <div id="group-details-rename">
-        <form action="" method="POST" id="group-details-rename-form">
-          {% csrf_token %}
-          <input id="group-details-rename-name" class="form-control" name="new_name" type="text" value="{{ group.name }}"/>
-          <button type="submit" id="group-details-rename-submit" class="btn">{% trans "Rename" %}</button>
-        </form>
-      </div>
+    <h1>
+      <form action="" method="POST" id="group-details-rename-form" class="js-hidden">
+        {% csrf_token %}
+        <div class="input-group">
+          <input id="group-details-rename-name" class="form-control" name="new_name"
+            type="text" value="{{ group.name }}" required />
+          <span class="input-group-btn">
+            <button type="submit" id="group-details-rename-submit" class="btn">
+              {% trans "Rename" %}
+            </button>
+          </span>
+        </div>
+      </form>
       <div id="group-details-h1-name">
-        {{ group.name }}
+        <span class="no-js-hidden">{{ group.name }}</span>
         {% if group.groupprofile.org_id %}
         <small>{{group.groupprofile.org_id}}</small>
         {% endif %}
       </div>
     </h1>
-    <div class="group-details-help js-hidden">
-      <ul style="list-style: none;">
-        <li>
-          <strong>{% trans "Rename" %}:</strong>
-          {% trans "Change the name of the group." %}
-        </li>
-        <li>
-          <strong>{% trans "Delete" %}:</strong>
-          {% trans "Delete group." %}
-        </li>
-      </ul>
-    </div>
   </div><!-- .page-header -->
   <div class="row">
     <div class="col-md-12" id="group-detail-pane">
@@ -88,7 +78,7 @@
         <h3>
           {% trans "User list" %}
           {% if perms.auth.add_user %}
-          <a href="{% url "dashboard.views.create-user" group.pk %}" class="btn btn-success pull-right">
+          <a href="{% url "dashboard.views.user-create" %}?group_pk={{ group.pk}}" class="btn btn-success pull-right">
             {% trans "Create user" %}
           </a>
           {% endif %}

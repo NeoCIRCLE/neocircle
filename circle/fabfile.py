@@ -10,6 +10,8 @@ from fabric.decorators import roles, parallel
 env.roledefs['portal'] = ['localhost']
 
 try:
+    import django
+    django.setup()
     from vm.models import Node as _Node
     from storage.models import DataStore as _DataStore
 except Exception as e:
@@ -71,10 +73,17 @@ def compile_messages():
         run("./manage.py compilemessages")
 
 
+def compile_less():
+    "Compile LESS files"
+    with _workon("circle"), cd("~/circle/circle"):
+        run("./manage.py compileless")
+
+
 @roles('portal')
 def compile_things():
     "Compile translation and collect static files"
     compile_js()
+    compile_less()
     collectstatic()
     compile_messages()
 
@@ -192,7 +201,7 @@ def cleanup():
 
 def _cleanup(dir="~/circle/circle"):
     "Clean pyc files"
-    with cd("~/circle/circle"):
+    with cd(dir):
         run("find -name '*.py[co]' -exec rm -f {} +")
 
 

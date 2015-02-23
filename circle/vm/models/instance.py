@@ -110,9 +110,8 @@ class VirtualMachineDescModel(BaseResourceConfigModel):
                                              "for hosting the VM."),
                                  verbose_name=_("required traits"))
     system = TextField(verbose_name=_('operating system'),
-                       help_text=(_('Name of operating system in '
-                                    'format like "%s".') %
-                                  'Ubuntu 12.04 LTS Desktop amd64'))
+                       help_text=(_('Name of operating system in format like '
+                                    '"Ubuntu 12.04 LTS Desktop amd64".')))
     tags = TaggableManager(blank=True, verbose_name=_("tags"))
     has_agent = BooleanField(verbose_name=_('has agent'), default=True,
                              help_text=_(
@@ -354,6 +353,12 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
     def create(cls, params, disks, networks, req_traits, tags):
         """ Create new Instance object.
         """
+
+        # permission check
+        for network in networks:
+            if not network.vlan.has_level(params['owner'], 'user'):
+                raise PermissionDenied()
+
         # create instance and do additional setup
         inst = cls(**params)
 
@@ -407,10 +412,6 @@ class Instance(AclBase, VirtualMachineDescModel, StatusModel, OperatedMixin,
 
         networks = (template.interface_set.all() if networks is None
                     else networks)
-
-        for network in networks:
-            if not network.vlan.has_level(owner, 'user'):
-                raise PermissionDenied()
 
         req_traits = (template.req_traits.all() if req_traits is None
                       else req_traits)

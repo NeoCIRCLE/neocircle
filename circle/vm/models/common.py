@@ -170,3 +170,10 @@ class Trait(Model):
 
     def __unicode__(self):
         return self.name
+
+    @property
+    def in_use(self):
+        return (
+            self.instance_set.exists() or self.node_set.exists()
+            or self.instancetemplate_set.exists()
+        )

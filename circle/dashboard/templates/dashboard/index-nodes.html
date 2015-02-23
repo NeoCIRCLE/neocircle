@@ -29,9 +29,43 @@
       </a>
       {% endfor %}
     </div>
+
+    <div class="list-group-item list-group-footer">
+      <div class="row">
+        <div class="col-xs-6">
+          <form action="{% url "dashboard.views.node-list" %}" method="GET"
+            id="dashboard-node-search-form">
+            <div class="input-group input-group-sm">
+              <input id="dashboard-node-search-input" type="text" class="form-control"
+               name="s" placeholder="{% trans "Search..." %}" />
+              <div class="input-group-btn">
+                <button type="submit" class="btn btn-primary" title="{% trans "Search" %}" data-container="body">
+                  <i class="fa fa-search"></i>
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="col-xs-6 text-right">
+          <a class="btn btn-primary btn-xs" href="{% url "dashboard.views.node-list" %}">
+            <i class="fa fa-chevron-circle-right"></i>
+            {% if more_nodes > 0 %}
+                {% blocktrans with count=more_nodes %}<strong>{{count}}</strong>  more{% endblocktrans %}
+            {% else %}
+                {% trans "list" %}
+            {% endif %}
+          </a>
+          {% if request.user.is_superuser %}
+          <a class="btn btn-success btn-xs node-create" href="{% url "dashboard.views.node-create" %}">
+            <i class="fa fa-plus-circle"></i> {% trans "new" %}
+          </a>
+          {% endif  %}
+        </div>
+      </div>
+    </div>
   </div><!-- #node-list-view -->
 
-  <div class="panel-body" id="node-graph-view" style="display: none; min-height: 204px;">
+  <div class="panel-body" id="node-graph-view" style="display: none">
     <p class="pull-right">
       <input class="knob" data-fgColor="chartreuse"
       data-thickness=".4" data-width="60" data-height="60" data-readOnly="true"
@@ -46,45 +80,14 @@
     </p>
     <ul class="list-inline" id="dashboard-node-taglist">
       {% for i in nodes %}
-      <a href="{{ i.get_absolute_url }}" class="label {{i.get_status_label}}" >
-      <i class="fa {{ i.get_status_icon }}" title="{{ i.get_status_display }}"></i> {{ i.name }}</a>
+      <li>
+        <a href="{{ i.get_absolute_url }}" class="label {{i.get_status_label}}" >
+        <i class="fa {{ i.get_status_icon }}" title="{{ i.get_status_display }}"></i> {{ i.name }}</a>
+      </li>
       {% endfor %}
     </ul>
 
     <div class="clearfix"></div>
   </div>
 
-  <div href="#" class="list-group-item list-group-footer">
-    <div class="row">
-      <div class="col-xs-6">
-        <form action="{% url "dashboard.views.node-list" %}" method="GET"
-          id="dashboard-node-search-form">
-          <div class="input-group input-group-sm">
-            <input id="dashboard-node-search-input" type="text" class="form-control"
-             placeholder="{% trans "Search..." %}" />
-            <div class="input-group-btn">
-              <button type="submit" class="btn btn-primary" title="{% trans "Search" %}" data-container="body">
-                <i class="fa fa-search"></i>
-              </button>
-            </div>
-          </div>
-        </form>
-      </div>
-      <div class="col-xs-6 text-right">
-        <a class="btn btn-primary btn-xs" href="{% url "dashboard.views.node-list" %}">
-          <i class="fa fa-chevron-circle-right"></i>
-          {% if more_nodes > 0 %}
-              {% blocktrans with count=more_nodes %}<strong>{{count}}</strong>  more{% endblocktrans %}
-          {% else %}
-              {% trans "list" %}
-          {% endif %}
-        </a>
-        {% if request.user.is_superuser %}
-        <a class="btn btn-success btn-xs node-create" href="{% url "dashboard.views.node-create" %}">
-          <i class="fa fa-plus-circle"></i> {% trans "new" %}
-        </a>
-        {% endif  %}
-      </div>
-    </div>
-  </div>
 </div>

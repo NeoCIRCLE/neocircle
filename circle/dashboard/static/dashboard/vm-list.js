@@ -82,7 +82,7 @@ $(function() {
   /* mass operations */
   $("#vm-mass-ops").on('click', '.mass-operation', function(e) {
     var icon = $(this).children("i").addClass('fa-spinner fa-spin');
-    params = "?" + selected.map(function(a){return "vm=" + a.vm}).join("&");
+    params = "?" + selected.map(function(a){return "vm=" + a.vm;}).join("&");
 
     $.ajax({
       type: 'GET',
@@ -212,7 +212,7 @@ function updateStatuses(runs) {
 
     if(checkStatusUpdate()) {
       setTimeout(
-          function() {updateStatuses(runs + 1)},
+          function() {updateStatuses(runs + 1);},
           1000 + Math.exp(runs * 0.05)
       );
     }

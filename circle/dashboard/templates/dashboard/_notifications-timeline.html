@@ -1,6 +1,6 @@
 {% load i18n %}
 {% load hro %}
-{% for n in notifications %}
+{% for n in page %}
   <li class="notification-message" id="msg-{{n.id}}">
     <span class="notification-message-subject">
       {% if n.status == "new" %}<i class="fa fa-envelope-o"></i> {% endif %}

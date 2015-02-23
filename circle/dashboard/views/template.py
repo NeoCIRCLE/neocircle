@@ -28,7 +28,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, get_object_or_404
 from django.utils.translation import ugettext as _, ugettext_noop
 from django.views.generic import (
-    TemplateView, CreateView, DeleteView, UpdateView,
+    TemplateView, CreateView, UpdateView,
 )
 
 from braces.views import (
@@ -47,6 +47,7 @@ from ..tables import TemplateListTable, LeaseListTable
 from .util import (
     AclUpdateView, FilterMixin,
     TransferOwnershipConfirmView, TransferOwnershipView,
+    DeleteViewBase
 )
 
 logger = logging.getLogger(__name__)
@@ -56,7 +57,7 @@ class TemplateChoose(LoginRequiredMixin, TemplateView):
 
     def get_template_names(self):
         if self.request.is_ajax():
-            return ['dashboard/modal-wrapper.html']
+            return ['dashboard/_modal.html']
         else:
             return ['dashboard/nojs-wrapper.html']
 
@@ -206,7 +207,19 @@ class TemplateList(LoginRequiredMixin, FilterMixin, SingleTableView):
     def get(self, *args, **kwargs):
         self.search_form = TemplateListSearchForm(self.request.GET)
         self.search_form.full_clean()
-        return super(TemplateList, self).get(*args, **kwargs)
+        if self.request.is_ajax():
+            templates = [{
+                'icon': i.os_type,
+                'system': i.system,
+                'url': reverse("dashboard.views.template-detail",
+                               kwargs={'pk': i.pk}),
+                'name': i.name} for i in self.get_queryset()]
+            return HttpResponse(
+                json.dumps(templates),
+                content_type="application/json",
+            )
+        else:
+            return super(TemplateList, self).get(*args, **kwargs)
 
     def create_acl_queryset(self, model):
         queryset = super(TemplateList, self).create_acl_queryset(model)
@@ -231,46 +244,17 @@ class TemplateList(LoginRequiredMixin, FilterMixin, SingleTableView):
         return qs.select_related("lease", "owner", "owner__profile")
 
 
-class TemplateDelete(LoginRequiredMixin, DeleteView):
+class TemplateDelete(DeleteViewBase):
     model = InstanceTemplate
+    success_message = _("Template successfully deleted.")
 
     def get_success_url(self):
         return reverse("dashboard.views.template-list")
 
-    def get_template_names(self):
-        if self.request.is_ajax():
-            return ['dashboard/confirm/ajax-delete.html']
-        else:
-            return ['dashboard/confirm/base-delete.html']
-
-    def get(self, request, *args, **kwargs):
-        if not self.get_object().has_level(request.user, "owner"):
-            message = _("Only the owners can delete the selected template.")
-            if request.is_ajax():
-                raise PermissionDenied()
-            else:
-                messages.warning(request, message)
-                return redirect(self.get_success_url())
-        return super(TemplateDelete, self).get(request, *args, **kwargs)
-
-    def delete(self, request, *args, **kwargs):
+    def delete_obj(self, request, *args, **kwargs):
         object = self.get_object()
-        if not object.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-
         object.destroy_disks()
         object.delete()
-        success_url = self.get_success_url()
-        success_message = _("Template successfully deleted.")
-
-        if request.is_ajax():
-            return HttpResponse(
-                json.dumps({'message': success_message}),
-                content_type="application/json",
-            )
-        else:
-            messages.success(request, success_message)
-            return HttpResponseRedirect(success_url)
 
 
 class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
@@ -333,25 +317,24 @@ class TemplateDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return kwargs
 
 
-class DiskRemoveView(DeleteView):
+class DiskRemoveView(DeleteViewBase):
     model = Disk
+    success_message = _("Disk successfully removed.")
 
     def get_queryset(self):
         qs = super(DiskRemoveView, self).get_queryset()
         return qs.exclude(template_set=None)
 
-    def get_template_names(self):
-        if self.request.is_ajax():
-            return ['dashboard/confirm/ajax-delete.html']
-        else:
-            return ['dashboard/confirm/base-delete.html']
-
-    def get_context_data(self, **kwargs):
-        context = super(DiskRemoveView, self).get_context_data(**kwargs)
+    def check_auth(self):
         disk = self.get_object()
         template = disk.template_set.get()
         if not template.has_level(self.request.user, 'owner'):
             raise PermissionDenied()
+
+    def get_context_data(self, **kwargs):
+        disk = self.get_object()
+        template = disk.template_set.get()
+        context = super(DiskRemoveView, self).get_context_data(**kwargs)
         context['title'] = _("Disk remove confirmation")
         context['text'] = _("Are you sure you want to remove "
                             "<strong>%(disk)s</strong> from "
@@ -360,28 +343,14 @@ class DiskRemoveView(DeleteView):
                             )
         return context
 
-    def delete(self, request, *args, **kwargs):
+    def delete_obj(self, request, *args, **kwargs):
         disk = self.get_object()
         template = disk.template_set.get()
-
-        if not template.has_level(request.user, 'owner'):
-            raise PermissionDenied()
-
-        template.remove_disk(disk=disk, user=request.user)
+        template.remove_disk(disk)
         disk.destroy()
 
-        next_url = request.POST.get("next")
-        success_url = next_url if next_url else template.get_absolute_url()
-        success_message = _("Disk successfully removed.")
-
-        if request.is_ajax():
-            return HttpResponse(
-                json.dumps({'message': success_message}),
-                content_type="application/json",
-            )
-        else:
-            messages.success(request, success_message)
-            return HttpResponseRedirect("%s#resources" % success_url)
+    def get_success_url(self):
+        return self.request.POST.get("next") or "/"
 
 
 class LeaseCreate(LoginRequiredMixin, PermissionRequiredMixin,
@@ -435,17 +404,12 @@ class LeaseDetail(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return super(LeaseDetail, self).post(request, *args, **kwargs)
 
 
-class LeaseDelete(LoginRequiredMixin, DeleteView):
+class LeaseDelete(DeleteViewBase):
     model = Lease
+    success_message = _("Lease successfully deleted.")
 
     def get_success_url(self):
         return reverse("dashboard.views.template-list")
-
-    def get_template_names(self):
-        if self.request.is_ajax():
-            return ['dashboard/confirm/ajax-delete.html']
-        else:
-            return ['dashboard/confirm/base-delete.html']
 
     def get_context_data(self, *args, **kwargs):
         c = super(LeaseDelete, self).get_context_data(*args, **kwargs)
@@ -461,36 +425,11 @@ class LeaseDelete(LoginRequiredMixin, DeleteView):
             c['disable_submit'] = True
         return c
 
-    def get(self, request, *args, **kwargs):
-        if not self.get_object().has_level(request.user, "owner"):
-            message = _("Only the owners can delete the selected lease.")
-            if request.is_ajax():
-                raise PermissionDenied()
-            else:
-                messages.warning(request, message)
-                return redirect(self.get_success_url())
-        return super(LeaseDelete, self).get(request, *args, **kwargs)
-
-    def delete(self, request, *args, **kwargs):
+    def delete_obj(self, request, *args, **kwargs):
         object = self.get_object()
-
-        if not object.has_level(request.user, "owner"):
-            raise PermissionDenied()
         if object.instancetemplate_set.count() > 0:
             raise SuspiciousOperation()
-
         object.delete()
-        success_url = self.get_success_url()
-        success_message = _("Lease successfully deleted.")
-
-        if request.is_ajax():
-            return HttpResponse(
-                json.dumps({'message': success_message}),
-                content_type="application/json",
-            )
-        else:
-            messages.success(request, success_message)
-            return HttpResponseRedirect(success_url)
 
 
 class TransferTemplateOwnershipConfirmView(TransferOwnershipConfirmView):

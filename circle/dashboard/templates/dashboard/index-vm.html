@@ -13,7 +13,14 @@
       <span class="btn btn-default btn-xs infobtn" data-container="body" title="{% trans "List of your current virtual machines. Favourited ones are ahead of others." %}"><i class="fa fa-info-circle"></i></span>
     </div>
     <h3 class="no-margin">
-      <i class="fa fa-desktop"></i> {% trans "Virtual machines" %}
+      <span class="visible-xs">
+        <i class="fa fa-desktop"></i>
+        {% trans "VMs" %}
+      </span>
+      <span class="hidden-xs">
+        <i class="fa fa-desktop"></i>
+        {% trans "Virtual machines" %}
+      </span>
     </h3>
   </div>
   <div class="list-group" id="vm-list-view">
@@ -25,7 +32,7 @@
           <i class="fa {{ i.get_status_icon }}" title="{{ i.get_status_display }}"></i>
           {{ i.name }}
         </span>
-        <small class="text-muted">
+        <small class="text-muted index-vm-list-host">
           {% if i.owner == request.user %}{{ i.short_hostname }}
           {% else %}{{i.owner.profile.get_display_name}}{% endif %}
         </small>
@@ -44,7 +51,7 @@
         </div>
       {% endfor %}
     </div>
-    <div href="#" class="list-group-item list-group-footer">
+    <div class="list-group-item list-group-footer">
       <div class="row">
         <div class="col-xs-6">
         <form action="{% url "dashboard.views.vm-list" %}" method="GET" id="dashboard-vm-search-form">
@@ -52,7 +59,7 @@
             <input id="dashboard-vm-search-input" type="text" class="form-control" name="s" 
             placeholder="{% trans "Search..." %}" />
             <div class="input-group-btn">
-              <button type="submit" class="form-control btn btn-primary"><i class="fa fa-search"></i></button>
+              <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i></button>
             </div>
           </div>
         </form>
@@ -79,7 +86,7 @@
     <p class="pull-right">
     <input class="knob" data-fgColor="chartreuse" data-thickness=".4" data-max="{{ request.user.profile.instance_limit }}" data-width="100" data-height="100" data-readOnly="true" value="{{ instances|length|add:more_instances }}">
     </p>
-    <p><span class="bigbig">{% blocktrans with count=running_vm_num %}<big>{{ count }}</big> running{% endblocktrans %}</span>
+    <span class="bigbig">{% blocktrans with count=running_vm_num %}<big>{{ count }}</big> running{% endblocktrans %}</span>
       <ul class="list-inline" style="max-height: 95px; overflow: hidden;">
         {% for vm in running_vms %}
         <li style="display: inline-block; padding: 2px;">
@@ -89,7 +96,6 @@
         </li>
         {% endfor %}
       </ul>
-    </p>
 
     <div class="clearfix"></div>
     <div>

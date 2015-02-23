@@ -41,6 +41,7 @@ from django.forms.widgets import TextInput, HiddenInput
 from django.template import Context
 from django.template.loader import render_to_string
 from django.utils.html import escape, format_html
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 from sizefield.widgets import FileSizeWidget
 from django.core.urlresolvers import reverse_lazy
@@ -58,7 +59,7 @@ from django.utils.translation import string_concat
 
 from .validators import domain_validator
 
-from dashboard.models import ConnectCommand
+from dashboard.models import ConnectCommand, create_profile
 
 LANGUAGES_WITH_CODE = ((l[0], string_concat(l[1], " (", l[0], ")"))
                        for l in LANGUAGES)
@@ -95,10 +96,10 @@ class VmSaveForm(OperationForm):
         if default:
             self.fields['name'].initial = default
         if clone:
-            self.fields.insert(2, "clone", forms.BooleanField(
+            self.fields["clone"] = forms.BooleanField(
                 required=False, label=_("Clone template permissions"),
                 help_text=_("Clone the access list of parent template. Useful "
-                            "for updating a template.")))
+                            "for updating a template."))
 
 
 class VmCustomizeForm(forms.Form):
@@ -749,9 +750,9 @@ class VmRenewForm(OperationForm):
         default = kwargs.pop('default')
         super(VmRenewForm, self).__init__(*args, **kwargs)
 
-        self.fields.insert(0, 'lease', forms.ModelChoiceField(
+        self.fields['lease'] = forms.ModelChoiceField(
             queryset=choices, initial=default, required=False,
-            empty_label=None, label=_('Length')))
+            empty_label=None, label=_('Length'))
         if len(choices) < 2:
             self.fields['lease'].widget = HiddenInput()
             self.fields['save'].widget = HiddenInput()
@@ -771,9 +772,9 @@ class VmMigrateForm(forms.Form):
         default = kwargs.pop('default')
         super(VmMigrateForm, self).__init__(*args, **kwargs)
 
-        self.fields.insert(0, 'to_node', forms.ModelChoiceField(
+        self.fields['to_node'] = forms.ModelChoiceField(
             queryset=choices, initial=default, required=False,
-            widget=forms.RadioSelect(), label=_("Node")))
+            widget=forms.RadioSelect(), label=_("Node"))
 
 
 class VmStateChangeForm(OperationForm):
@@ -834,9 +835,9 @@ class VmDiskResizeForm(OperationForm):
 
         super(VmDiskResizeForm, self).__init__(*args, **kwargs)
 
-        self.fields.insert(0, 'disk', forms.ModelChoiceField(
+        self.fields['disk'] = forms.ModelChoiceField(
             queryset=choices, initial=self.disk, required=True,
-            empty_label=None, label=_('Disk')))
+            empty_label=None, label=_('Disk'))
         if self.disk:
             self.fields['disk'].widget = HiddenInput()
             self.fields['size'].initial += self.disk.size
@@ -870,9 +871,9 @@ class VmDiskRemoveForm(OperationForm):
 
         super(VmDiskRemoveForm, self).__init__(*args, **kwargs)
 
-        self.fields.insert(0, 'disk', forms.ModelChoiceField(
+        self.fields['disk'] = forms.ModelChoiceField(
             queryset=choices, initial=self.disk, required=True,
-            empty_label=None, label=_('Disk')))
+            empty_label=None, label=_('Disk'))
         if self.disk:
             self.fields['disk'].widget = HiddenInput()
 
@@ -898,7 +899,7 @@ class VmDownloadDiskForm(OperationForm):
     def clean(self):
         cleaned_data = super(VmDownloadDiskForm, self).clean()
         if not cleaned_data['name']:
-            if cleaned_data['url']:
+            if cleaned_data.get('url'):
                 cleaned_data['name'] = urlparse(
                     cleaned_data['url']).path.split('/')[-1]
             if not cleaned_data['name']:
@@ -906,6 +907,36 @@ class VmDownloadDiskForm(OperationForm):
                     _("Could not find filename in URL, "
                       "please specify a name explicitly."))
         return cleaned_data
+
+
+class VmRemoveInterfaceForm(OperationForm):
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('choices')
+        self.interface = kwargs.pop('default')
+
+        super(VmRemoveInterfaceForm, self).__init__(*args, **kwargs)
+
+        self.fields['interface'] = forms.ModelChoiceField(
+            queryset=choices, initial=self.interface, required=True,
+            empty_label=None, label=_('Interface'))
+        if self.interface:
+            self.fields['interface'].widget = HiddenInput()
+
+    @property
+    def helper(self):
+        helper = super(VmRemoveInterfaceForm, self).helper
+        if self.interface:
+            helper.layout = Layout(
+                AnyTag(
+                    "div",
+                    HTML(format_html(
+                        _("<label>Vlan:</label> {0}"),
+                        self.interface.vlan)),
+                    css_class="form-group",
+                ),
+                Field("interface"),
+            )
+        return helper
 
 
 class VmAddInterfaceForm(OperationForm):
@@ -921,18 +952,45 @@ class VmAddInterfaceForm(OperationForm):
         self.fields['vlan'] = field
 
 
+class DeployChoiceField(forms.ModelChoiceField):
+    def __init__(self, *args, **kwargs):
+        self.instance = kwargs.pop("instance")
+        super(DeployChoiceField, self).__init__(*args, **kwargs)
+
+    def label_from_instance(self, obj):
+        traits = set(obj.traits.all())
+        req_traits = set(self.instance.req_traits.all())
+        # if the subset is empty the node satisfies the required traits
+        subset = req_traits - traits
+
+        label = "%s %s" % (
+            "&#xf071" if subset else "&#xf00c;", escape(obj.name),
+        )
+
+        if subset:
+            missing_traits = ", ".join(map(lambda x: escape(x.name), subset))
+            label += _(" (missing_traits: %s)") % missing_traits
+
+        return mark_safe(label)
+
+
 class VmDeployForm(OperationForm):
 
     def __init__(self, *args, **kwargs):
         choices = kwargs.pop('choices', None)
+        instance = kwargs.pop('instance', None)
 
         super(VmDeployForm, self).__init__(*args, **kwargs)
 
         if choices is not None:
-            self.fields.insert(0, 'node', forms.ModelChoiceField(
+            self.fields['node'] = DeployChoiceField(
                 queryset=choices, required=False, label=_('Node'), help_text=_(
                     "Deploy virtual machine to this node "
-                    "(blank allows scheduling automatically).")))
+                    "(blank allows scheduling automatically)."),
+                widget=forms.Select(attrs={
+                    'class': "font-awesome-font",
+                }), instance=instance
+            )
 
 
 class VmPortRemoveForm(OperationForm):
@@ -942,9 +1000,9 @@ class VmPortRemoveForm(OperationForm):
 
         super(VmPortRemoveForm, self).__init__(*args, **kwargs)
 
-        self.fields.insert(0, 'rule', forms.ModelChoiceField(
+        self.fields['rule'] = forms.ModelChoiceField(
             queryset=choices, initial=self.rule, required=True,
-            empty_label=None, label=_('Port')))
+            empty_label=None, label=_('Port'))
         if self.rule:
             self.fields['rule'].widget = HiddenInput()
 
@@ -961,9 +1019,9 @@ class VmPortAddForm(OperationForm):
 
         super(VmPortAddForm, self).__init__(*args, **kwargs)
 
-        self.fields.insert(0, 'host', forms.ModelChoiceField(
+        self.fields['host'] = forms.ModelChoiceField(
             queryset=choices, initial=self.host, required=True,
-            empty_label=None, label=_('Host')))
+            empty_label=None, label=_('Host'))
         if self.host:
             self.fields['host'].widget = HiddenInput()
 
@@ -1153,7 +1211,10 @@ class TraitForm(forms.ModelForm):
 
 
 class MyProfileForm(forms.ModelForm):
-    preferred_language = forms.ChoiceField(LANGUAGES_WITH_CODE)
+    preferred_language = forms.ChoiceField(
+        LANGUAGES_WITH_CODE,
+        label=_("Preferred language"),
+    )
 
     class Meta:
         fields = ('preferred_language', 'email_notifications',
@@ -1196,10 +1257,19 @@ class CirclePasswordChangeForm(PasswordChangeForm):
 
 
 class UserCreationForm(OrgUserCreationForm):
+    def __init__(self, *args, **kwargs):
+        choices = kwargs.pop('choices')
+        group = kwargs.pop('default')
+
+        super(UserCreationForm, self).__init__(*args, **kwargs)
+
+        self.fields['groups'] = forms.ModelMultipleChoiceField(
+            queryset=choices, initial=[group], required=False,
+            label=_('Groups'))
 
     class Meta:
         model = User
-        fields = ("username", 'email', 'first_name', 'last_name')
+        fields = ("username", 'email', 'first_name', 'last_name', 'groups')
 
     @property
     def helper(self):
@@ -1214,7 +1284,38 @@ class UserCreationForm(OrgUserCreationForm):
         user.set_password(self.cleaned_data["password1"])
         if commit:
             user.save()
+            create_profile(user)
+            user.groups.add(*self.cleaned_data["groups"])
         return user
+
+
+class UserEditForm(forms.ModelForm):
+    instance_limit = forms.IntegerField(
+        label=_('Instance limit'),
+        min_value=0, widget=NumberInput)
+
+    def __init__(self, *args, **kwargs):
+        super(UserEditForm, self).__init__(*args, **kwargs)
+        self.fields["instance_limit"].initial = (
+            self.instance.profile.instance_limit)
+
+    class Meta:
+        model = User
+        fields = ('email', 'first_name', 'last_name', 'instance_limit',
+                  'is_active')
+
+    def save(self, commit=True):
+        user = super(UserEditForm, self).save()
+        user.profile.instance_limit = (
+            self.cleaned_data['instance_limit'] or None)
+        user.profile.save()
+        return user
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.add_input(Submit("submit", _("Save")))
+        return helper
 
 
 class AclUserOrGroupAddForm(forms.Form):
@@ -1436,3 +1537,10 @@ class TemplateListSearchForm(forms.Form):
             data = self.data.copy()
             data['stype'] = "owned"
             self.data = data
+
+
+class UserListSearchForm(forms.Form):
+    s = forms.CharField(widget=forms.TextInput(attrs={
+        'class': "form-control input-tags",
+        'placeholder': _("Search...")
+    }))

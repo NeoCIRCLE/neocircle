@@ -27,7 +27,7 @@ from django.contrib.auth import authenticate
 from dashboard.views import VmAddInterfaceView
 from vm.models import Instance, InstanceTemplate, Lease, Node, Trait
 from vm.operations import (WakeUpOperation, AddInterfaceOperation,
-                           AddPortOperation)
+                           AddPortOperation, RemoveInterfaceOperation)
 from ..models import Profile
 from firewall.models import Vlan, Host, VlanGroup
 from mock import Mock, patch
@@ -169,26 +169,12 @@ class VmDetailTest(LoginMixin, TestCase):
         inst.save()
 
         iface_count = inst.interface_set.count()
-        c.post("/dashboard/interface/1/delete/")
-        self.assertEqual(inst.interface_set.count(), iface_count - 1)
-
-    def test_permitted_network_delete_w_ajax(self):
-        c = Client()
-        self.login(c, "user1")
-        inst = Instance.objects.get(pk=1)
-        inst.set_level(self.u1, 'owner')
-        vlan = Vlan.objects.get(pk=1)
-        inst.add_interface(vlan=vlan, user=self.us)
-        inst.status = 'RUNNING'
-        inst.save()
-
-        iface_count = inst.interface_set.count()
-        response = c.post("/dashboard/interface/1/delete/",
-                          HTTP_X_REQUESTED_WITH='XMLHttpRequest')
-        removed_network = json.loads(response.content)['removed_network']
-        self.assertEqual(removed_network['vlan'], vlan.name)
-        self.assertEqual(removed_network['vlan_pk'], vlan.pk)
-        self.assertEqual(removed_network['managed'], vlan.managed)
+        with patch.object(RemoveInterfaceOperation, 'async') as mock_method:
+            mock_method.side_effect = inst.remove_interface
+            response = c.post("/dashboard/vm/1/op/remove_interface/",
+                              {'interface': 1})
+        self.assertEqual(response.status_code, 302)
+        assert mock_method.called
         self.assertEqual(inst.interface_set.count(), iface_count - 1)
 
     def test_unpermitted_network_delete(self):
@@ -199,7 +185,10 @@ class VmDetailTest(LoginMixin, TestCase):
         inst.add_interface(vlan=Vlan.objects.get(pk=1), user=self.us)
         iface_count = inst.interface_set.count()
 
-        response = c.post("/dashboard/interface/1/delete/")
+        with patch.object(RemoveInterfaceOperation, 'async') as mock_method:
+            mock_method.side_effect = inst.remove_interface
+            response = c.post("/dashboard/vm/1/op/remove_interface/",
+                              {'interface': 1})
         self.assertEqual(iface_count, inst.interface_set.count())
         self.assertEqual(response.status_code, 403)
 
@@ -766,42 +755,6 @@ class NodeDetailTest(LoginMixin, TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(len(Node.objects.get(pk=1).traits.all()), trait_count)
 
-    def test_anon_change_node_status(self):
-        c = Client()
-        node = Node.objects.get(pk=1)
-        node_enabled = node.enabled
-        response = c.post("/dashboard/node/1/", {'change_status': ''})
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(node_enabled, Node.objects.get(pk=1).enabled)
-
-    def test_unpermitted_change_node_status(self):
-        c = Client()
-        self.login(c, "user2")
-        node = Node.objects.get(pk=1)
-        node_enabled = node.enabled
-        response = c.post("/dashboard/node/status/1/", {'change_status': ''})
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(node_enabled, Node.objects.get(pk=1).enabled)
-
-    def test_permitted_change_node_status(self):
-        c = Client()
-        self.login(c, "superuser")
-        node = Node.objects.get(pk=1)
-        node_enabled = node.enabled
-        response = c.post("/dashboard/node/status/1/", {'change_status': ''})
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(node_enabled, not Node.objects.get(pk=1).enabled)
-
-    def test_permitted_change_node_status_w_ajax(self):
-        c = Client()
-        self.login(c, "superuser")
-        node = Node.objects.get(pk=1)
-        node_enabled = node.enabled
-        response = c.post("/dashboard/node/status/1/", {'change_status': ''},
-                          HTTP_X_REQUESTED_WITH='XMLHttpRequest')
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(node_enabled, not Node.objects.get(pk=1).enabled)
-
 
 class GroupCreateTest(LoginMixin, TestCase):
     fixtures = ['test-vm-fixture.json', 'node.json']
@@ -949,21 +902,26 @@ class GroupDeleteTest(LoginMixin, TestCase):
     def test_permitted_group_page(self):
         c = Client()
         self.login(c, 'user0')
-        response = c.get('/dashboard/group/delete/' + str(self.g1.pk) + '/')
+        with patch('dashboard.views.util.messages') as msg:
+            response = c.get('/dashboard/group/delete/%d/' % self.g1.pk)
+            assert not msg.error.called and not msg.warning.called
         self.assertEqual(response.status_code, 200)
 
     def test_unpermitted_group_page(self):
         c = Client()
         self.login(c, 'user1')
-        response = c.get('/dashboard/group/delete/' + str(self.g1.pk) + '/')
-        self.assertEqual(response.status_code, 403)
+        with patch('dashboard.views.util.messages') as msg:
+            response = c.get('/dashboard/group/delete/%d/' % self.g1.pk)
+            assert msg.error.called or msg.warning.called
+        self.assertEqual(response.status_code, 302)
 
     def test_anon_group_delete(self):
         c = Client()
-        groupnum = Group.objects.count()
-        response = c.post('/dashboard/group/delete/' + str(self.g1.pk) + '/')
+        response = c.get('/dashboard/group/delete/%d/' % self.g1.pk)
+        self.assertRedirects(
+            response, '/accounts/login/?next=/dashboard/group/delete/5/',
+            status_code=302)
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(Group.objects.count(), groupnum)
 
     def test_unpermitted_group_delete(self):
         c = Client()
@@ -1335,24 +1293,26 @@ class GroupDetailTest(LoginMixin, TestCase):
         self.login(c, 'user1')
         self.u1.user_permissions.add(Permission.objects.get(
             name='Can add user'))
-        response = c.post('/dashboard/group/%d/create/' % self.g1.pk,
+        response = c.post('/dashboard/profile/create/',
                           {'username': 'userx1',
+                           'groups': self.g1.pk,
                            'password1': 'test123',
                            'password2': 'test123'})
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(user_count, self.g1.user_set.count())
 
     def test_permitted_user_add_wo_can_add_user_perm(self):
         user_count = self.g1.user_set.count()
         c = Client()
         self.login(c, 'user0')
-        response = c.post('/dashboard/group/%d/create/' % self.g1.pk,
+        response = c.post('/dashboard/profile/create/',
                           {'username': 'userx2',
+                           'groups': self.g1.pk,
                            'password1': 'test123',
                            'password2': 'test123'})
         self.assertRedirects(
             response,
-            '/accounts/login/?next=/dashboard/group/%d/create/' % self.g1.pk)
+            '/accounts/login/?next=/dashboard/profile/create/')
         self.assertEqual(response.status_code, 302)
         self.assertEqual(user_count, self.g1.user_set.count())
 
@@ -1362,11 +1322,12 @@ class GroupDetailTest(LoginMixin, TestCase):
             name='Can add user'))
         c = Client()
         self.login(c, 'user0')
-        response = c.post('/dashboard/group/%d/create/' % self.g1.pk,
+        response = c.post('/dashboard/profile/create/',
                           {'username': 'userx2',
+                           'groups': self.g1.pk,
                            'password1': 'test123',
                            'password2': 'test123'})
-        self.assertRedirects(response, '/dashboard/group/%d/' % self.g1.pk)
+        self.assertRedirects(response, '/dashboard/profile/userx2/')
         self.assertEqual(user_count + 1, self.g1.user_set.count())
         self.assertEqual(response.status_code, 302)
 
@@ -1483,38 +1444,6 @@ class TransferOwnershipViewTest(LoginMixin, TestCase):
         assert response.status_code == 200
         response = c.post('/dashboard/vm/1/tx/', {'name': 'user2'})
         self.assertEqual(self.u2.notification_set.count(), c2 + 1)
-
-    def test_transfer(self):
-        self.skipTest("How did this ever pass?")
-        c = Client()
-        self.login(c, 'user1')
-        response = c.post('/dashboard/vm/1/tx/', {'name': 'user2'})
-        url = response.context['token']
-        c = Client()
-        self.login(c, 'user2')
-        response = c.post(url)
-        self.assertEquals(Instance.objects.get(pk=1).owner.pk, self.u2.pk)
-
-    def test_transfer_token_used_by_others(self):
-        self.skipTest("How did this ever pass?")
-        c = Client()
-        self.login(c, 'user1')
-        response = c.post('/dashboard/vm/1/tx/', {'name': 'user2'})
-        url = response.context['token']
-        response = c.post(url)  # token is for user2
-        assert response.status_code == 403
-        self.assertEquals(Instance.objects.get(pk=1).owner.pk, self.u1.pk)
-
-    def test_transfer_by_superuser(self):
-        self.skipTest("How did this ever pass?")
-        c = Client()
-        self.login(c, 'superuser')
-        response = c.post('/dashboard/vm/1/tx/', {'name': 'user2'})
-        url = response.context['token']
-        c = Client()
-        self.login(c, 'user2')
-        response = c.post(url)
-        self.assertEquals(Instance.objects.get(pk=1).owner.pk, self.u2.pk)
 
 
 class IndexViewTest(LoginMixin, TestCase):

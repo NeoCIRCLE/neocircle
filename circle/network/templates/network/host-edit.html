@@ -35,7 +35,7 @@
       {% for group in group_rule_list %}
         <div>
           <h4 id="{{ group.pk }}_group_pk">{{ group.name }}
-            <a href="{% url "network.remove_host_group" pk=host_pk group_pk=group.pk %}?from={{ request.path }}">
+            <a href="{% url "network.remove_host_group" pk=host_pk group_pk=group.pk %}?next={{ request.path }}">
               <i class="fa fa-times" style="vertical-align: middle;"></i></a>
             <a href="{% url "network.group" group.pk %}">
               <i class="fa fa-pencil" style="vertical-align: middle;"></i></a>

@@ -1,0 +1,32 @@
+{% load i18n %}
+
+{% if record.direction == "in" %}
+  {{ record.foreign_network }}
+  [{% for v in record.foreign_network.vlans.all %}
+    {{ v.name }}{% if not forloop.last %},{% endif %}
+  {% endfor %}]
+{% else %}
+  {% include "network/columns/_rule-type.html" %}
+{% endif %}
+
+<i class="fa fa-arrow-right"></i>
+
+{% if record.direction == "out" %}
+  {{ record.foreign_network }}
+  [{% for v in record.foreign_network.vlans.all %}
+    {{ v.name }}{% if not forloop.last %},{% endif %}
+  {% endfor %}]
+{% else %}
+  {% include "network/columns/_rule-type.html" %}
+{% endif %}
+
+{% if record.nat %}
+  <span class="label label-success">NAT
+      [
+        {{record.nat_external_port}}
+        <i class="fa fa-arrow-right"></i>
+        {{ record.dport }}
+      ]
+      {{ record.proto|upper }}
+  </span>
+{% endif %}
