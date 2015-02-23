@@ -20,7 +20,7 @@ from __future__ import absolute_import, unicode_literals
 from logging import getLogger
 from netaddr import EUI, mac_unix
 
-from django.db.models import Model, ForeignKey, BooleanField
+from django.db.models import Model, ForeignKey, BooleanField, CharField
 from django.utils.translation import ugettext_lazy as _, ugettext_noop
 
 from common.models import create_readable
@@ -61,11 +61,15 @@ class Interface(Model):
 
     """Network interface for an instance.
     """
+    MODEL_TYPES = (('virtio', 'virtio'), ('ne2k_pci', 'ne2k_pci'),
+                   ('pcnet', 'pcnet'), ('rtl8139', 'rtl8139'),
+                   ('e1000', 'e1000'))
     vlan = ForeignKey(Vlan, verbose_name=_('vlan'),
                       related_name="vm_interface")
     host = ForeignKey(Host, verbose_name=_('host'),  blank=True, null=True)
     instance = ForeignKey('Instance', verbose_name=_('instance'),
                           related_name='interface_set')
+    model = CharField(max_length=10, choices=MODEL_TYPES, default='virtio')
 
     class Meta:
         app_label = 'vm'
@@ -104,6 +108,7 @@ class Interface(Model):
             'ipv4': str(self.host.ipv4) if self.host is not None else None,
             'ipv6': str(self.host.ipv6) if self.host is not None else None,
             'vlan': self.vlan.vid,
+            'model': self.model,
             'managed': self.host is not None
         }
 
