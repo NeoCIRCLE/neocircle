@@ -26,6 +26,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.common.by import By
+from datetime import datetime
 random_pass = "".join([random.choice(
     '0123456789abcdefghijklmnopqrstvwxyz') for n in xrange(10)])
 random_accents = random_pass + "".join([random.choice(
@@ -35,39 +36,44 @@ host = 'https:127.0.0.1'
 
 
 class UtilityMixin(object):
-    def login(self, username, password='password'):
+    def login(self, username, password='password', location=None):
         driver = self.driver
-        driver.get('%s/accounts/login/' % host)
-        try:
-            name_input = driver.find_element_by_id("id_username")
-            password_input = driver.find_element_by_id("id_password")
-            submit_input = driver.find_element_by_id("submit-id-submit")
-        except:
-            inputs = driver.find_elements_by_tag_name("input")
-            for current_input in inputs:
-                input_type = current_input.get_attribute("type")
-                if input_type == "text":
-                    name_input = current_input
-                if input_type == "password":
-                    password_input = current_input
-                if input_type == "submit":
-                    submit_input = current_input
-        try:
-            name_input.clear()
-            name_input.send_keys(username)
-            password_input.clear()
-            password_input.send_keys(password)
-            submit_input.click()
+        if location is None:
+            location = '/dashboard/'
+        driver.get('%s%s' % (host, location))
+        #  Only if we aren't logged in already
+        if location not in urlparse.urlparse(self.driver.current_url).path:
             try:
-                # If selenium runs only in a small (virtual) screen
-                driver.find_element_by_class_name('navbar-toggle').click()
-                WebDriverWait(self.driver, wait_max_sec).until(
-                    EC.element_to_be_clickable((
-                        By.CSS_SELECTOR, "a[href*='/dashboard/profile/']")))
+                name_input = driver.find_element_by_id("id_username")
+                password_input = driver.find_element_by_id("id_password")
+                submit_input = driver.find_element_by_id("submit-id-submit")
             except:
-                time.sleep(0.5)
-        except:
-            raise Exception('Selenium cannot find the form controls')
+                inputs = driver.find_elements_by_tag_name("input")
+                for current_input in inputs:
+                    input_type = current_input.get_attribute("type")
+                    if input_type == "text":
+                        name_input = current_input
+                    if input_type == "password":
+                        password_input = current_input
+                    if input_type == "submit":
+                        submit_input = current_input
+            try:
+                name_input.clear()
+                name_input.send_keys(username)
+                password_input.clear()
+                password_input.send_keys(password)
+                submit_input.click()
+                try:
+                    # If selenium runs only in a small (virtual) screen
+                    driver.find_element_by_class_name('navbar-toggle').click()
+                    WebDriverWait(self.driver, wait_max_sec).until(
+                        EC.element_to_be_clickable((
+                            By.CSS_SELECTOR,
+                            "a[href*='/dashboard/profile/']")))
+                except:
+                    time.sleep(0.5)
+            except:
+                raise Exception('Selenium cannot find the form controls')
 
     def list_options(self, select):
         try:
@@ -106,7 +112,7 @@ class UtilityMixin(object):
             select.select_by_value(my_choice)
         except:
             raise Exception(
-                'Selenium cannot select the choosen one')
+                'Selenium cannot select the chosen one')
 
     def get_link_by_href(self, target_href, attributes=None):
         try:
@@ -187,9 +193,8 @@ class UtilityMixin(object):
             self.driver.get('%s/dashboard/template/choose/' % host)
             self.driver.find_element_by_css_selector(
                 "input[type='radio'][value='base_vm']").click()
-            next_button = self.driver.find_element_by_id(
-                "template-choose-next-button")
-            next_button.click()
+            self.driver.find_element_by_id(
+                "template-choose-next-button").click()
             template_name = WebDriverWait(self.driver, wait_max_sec).until(
                 EC.visibility_of_element_located((
                     By.ID, 'id_name')))
@@ -227,6 +232,129 @@ class UtilityMixin(object):
             raise Exception(
                 'Selenium cannot create a base template virtual machine')
 
+    def check_operation_result(self, operation_id):
+        try:
+            url_save = self.driver.current_url
+            self.driver.get('%(host)s/dashboard/vm/activity/%(id)s/' % {
+                'host': host,
+                'id': operation_id})
+            result = WebDriverWait(self.driver, wait_max_sec).until(
+                EC.visibility_of_element_located((
+                    By.ID, "activity_status")))
+            if (result.text == "success"):
+                out = True
+            else:
+                out = False
+            self.driver.get(url_save)
+            return out
+        except:
+            raise Exception(
+                'Selenium cannot check the result of an operation')
+
+    def recently(self, timeline_dict, second=90):
+        try:
+            if isinstance(timeline_dict, dict):
+                for key, value in timeline_dict.iteritems():
+                    time = datetime.strptime(key, '%Y-%m-%d %H:%M')
+                    delta = datetime.now() - time
+                    if delta.total_seconds() <= second:
+                        return value
+        except:
+            raise Exception(
+                'Selenium cannot filter timeline activities to recent')
+
+    def get_timeline_elements(self, code):
+        try:
+            self.get_link_by_href("#activity").click()
+            activity_dict = {}
+            timeline = WebDriverWait(self.driver, wait_max_sec).until(
+                EC.visibility_of_element_located((
+                    By.ID, "activity-timeline")))
+            searched_activity = timeline.find_elements_by_css_selector(
+                "div[data-activity-code='%s']" % code)
+            print "Found activity list for %s:" % code
+            for activity in searched_activity:
+                activity_id = activity.get_attribute('data-activity-id')
+                activity_text = activity.text
+                key = re.search(
+                    r'\d+-\d+-\d+ \d+:\d+,', activity_text).group()[:-1]
+                print ("%(id)s @ %(activity)s" % {
+                    'id': activity_id,
+                    'activity': key})
+                activity_dict[key] = activity_id
+            return activity_dict
+        except:
+            raise Exception('Selenium cannot find the searched activity')
+
+    def create_template_from_base(self, delete_disk=True, name=None):
+        #try:
+            if name is None:
+                name = "template_from_base_%s" % random_accents
+            self.driver.get('%s/dashboard/template/choose/' % host)
+            choice_list = []
+            choices = self.driver.find_elements_by_css_selector(
+                "input[type='radio']")
+            choice_list = [item for item in choices if (
+                'test' not in item.get_attribute('value')
+                and item.get_attribute('value') != 'base_vm')]
+            chosen = random.randint(0, len(choice_list) - 1)
+            choice_list[chosen].click()
+            self.driver.find_element_by_id(
+                "template-choose-next-button").click()
+            if delete_disk:
+                self.get_link_by_href("#resources").click()
+                disks = WebDriverWait(self.driver, wait_max_sec).until(
+                    EC.visibility_of_element_located((
+                        By.ID, 'vm-details-resources-disk')))
+                disk_list = disks.find_elements_by_css_selector(
+                    "h4[class*='list-group-item-heading']")
+                if len(disk_list) > 0:
+                    self.get_link_by_href("/op/remove_disk/").click()
+                    self.wait_and_accept_operation()
+                    WebDriverWait(self.driver, wait_max_sec).until(
+                        EC.visibility_of_element_located((
+                            By.ID, "_activity")))
+                    recent_remove_disk = self.recently(
+                        self.get_timeline_elements(
+                            "vm.Instance.remove_disk"))
+                    if not self.check_operation_result(recent_remove_disk):
+                        print ("Selenium cannot delete disk "
+                               "of the chosen template")
+                        raise Exception('Cannot delete disk')
+                    WebDriverWait(self.driver, wait_max_sec).until(
+                        EC.element_to_be_clickable((
+                            By.CSS_SELECTOR,
+                            "a[href$='/op/deploy/']")))
+            self.get_link_by_href("/op/deploy/").click()
+            self.wait_and_accept_operation()
+            time.sleep(5)
+            recent_deploy = self.recently(self.get_timeline_elements(
+                "vm.Instance.deploy"))
+            if not self.check_operation_result(recent_deploy):
+                print ("Selenium cannot deploy the "
+                       "chosen template virtual machine")
+                raise Exception('Cannot deploy the virtual machine')
+            WebDriverWait(self.driver, wait_max_sec).until(
+                EC.element_to_be_clickable((
+                    By.CSS_SELECTOR,
+                    "a[href$='/op/shut_off/']"))).click()
+            self.wait_and_accept_operation()
+            time.sleep(2)
+            recent_shut_off = self.recently(self.get_timeline_elements(
+                "vm.Instance.shut_off"))
+            if not self.check_operation_result(recent_shut_off):
+                print ("Selenium cannot shut off the "
+                       "chosen template virtual machine")
+                raise Exception('Cannot shut off the virtual machine')
+            WebDriverWait(self.driver, wait_max_sec).until(
+                EC.element_to_be_clickable((
+                    By.CSS_SELECTOR,
+                    "a[href$='/op/save_as_template/']"))).click()
+            self.wait_and_accept_operation(name)
+            return name
+        #except:
+        #    raise Exception('Selenium cannot start a template from a base one')
+
     def create_random_vm(self):
         try:
             self.driver.get('%s/dashboard/vm/create/' % host)
@@ -247,7 +375,7 @@ class UtilityMixin(object):
             pk = re.search(r'\d+', url.path).group()
             return pk
         except:
-            raise Exception('Selenium cannot start any VM')
+            raise Exception('Selenium cannot start a VM')
 
     def viewChange(self, target_box):
         driver = self.driver
@@ -293,7 +421,7 @@ class UtilityMixin(object):
 
 
 class VmDetailTest(UtilityMixin, SeleniumTestCase):
-    template_id = None
+    template_ids = []
 
     @classmethod
     def setup_class(cls):
@@ -306,92 +434,116 @@ class VmDetailTest(UtilityMixin, SeleniumTestCase):
     def teardown_class(cls):
         cls._user.delete()
 
-    def test_01_login(self):
-        title = 'Dashboard | CIRCLE'
-        location = '/dashboard/'
-        self.login('test_%s' % random_accents, random_accents)
-        self.driver.get('%s/dashboard/' % host)
-        url = urlparse.urlparse(self.driver.current_url)
-        (self.assertIn('%s' % title, self.driver.title,
-                       '%s is not found in the title' % title) or
-            self.assertEqual(url.path, '%s' % location,
-                             'URL path is not equal with %s' % location))
+    # def test_01_login(self):
+    #     title = 'Dashboard | CIRCLE'
+    #     location = '/dashboard/'
+    #     self.login('test_%s' % random_accents, random_accents)
+    #     self.driver.get('%s/dashboard/' % host)
+    #     url = urlparse.urlparse(self.driver.current_url)
+    #     (self.assertIn('%s' % title, self.driver.title,
+    #                    '%s is not found in the title' % title) or
+    #         self.assertEqual(url.path, '%s' % location,
+    #                          'URL path is not equal with %s' % location))
 
-    def test_02_able_to_create_template(self):
-        self.login('test_%s' % random_accents, random_accents)
-        template_list = None
-        create_template = self.get_link_by_href('/dashboard/template/choose/')
-        self.click_on_link(create_template)
-        WebDriverWait(self.driver, wait_max_sec).until(
-            EC.visibility_of_element_located((
-                By.ID, 'create-modal')))
-        template_list = self.driver.find_elements_by_class_name(
-            'template-choose-list-element')
-        print 'Selenium found %s template possibilities' % len(template_list)
-        (self.assertIsNotNone(
-            template_list, "Selenium can not find the create template list") or
-            self.assertGreater(len(template_list), 0,
-                               "The create template list is empty"))
+    # def test_02_able_to_create_template(self):
+    #     self.login('test_%s' % random_accents, random_accents)
+    #     template_list = None
+    #     create_template = self.get_link_by_href('/dashboard/template/choose/')
+    #     self.click_on_link(create_template)
+    #     WebDriverWait(self.driver, wait_max_sec).until(
+    #         EC.visibility_of_element_located((
+    #             By.ID, 'create-modal')))
+    #     template_list = self.driver.find_elements_by_class_name(
+    #         'template-choose-list-element')
+    #     print 'Selenium found %s template possibilities' % len(template_list)
+    #     (self.assertIsNotNone(
+    #         template_list, "Selenium can not find the create template list") or
+    #         self.assertGreater(len(template_list), 0,
+    #                            "The create template list is empty"))
 
-    def test_03_create_base_vm(self):
+    # def test_03_create_base_template(self):
+    #     self.login('test_%s' % random_accents, random_accents)
+    #     template_name = self.create_base_template()
+    #     self.driver.get('%s/dashboard/template/list/' % host)
+    #     templates = self.driver.find_elements_by_css_selector("td.name")
+    #     found = False
+    #     for template in templates:
+    #         if template_name in template.text:
+    #             found = True
+    #             self.template_ids.append(
+    #                 re.search(r'\d+', template.text).group())
+    #     self.assertTrue(
+    #         found,
+    #         "Coud not found the created template in the template list")
+
+    def test_04_create_template_from_base(self):
         self.login('test_%s' % random_accents, random_accents)
-        template_name = self.create_base_template()
+        template_name = self.create_template_from_base()
         self.driver.get('%s/dashboard/template/list/' % host)
         templates = self.driver.find_elements_by_css_selector("td.name")
         found = False
         for template in templates:
             if template_name in template.text:
                 found = True
-                self.template_id = re.search(r'\d+', template.text).group()
+                self.template_ids.append(
+                    re.search(r'\d+', template.text).group())
         self.assertTrue(
             found,
             "Coud not found the created template in the template list")
 
-    def test_10_able_to_create_vm(self):
+    def test_05_delete_templates(self):
         self.login('test_%s' % random_accents, random_accents)
-        vm_list = None
-        create_vm_link = self.get_link_by_href('/dashboard/vm/create/')
-        create_vm_link.click()
-        WebDriverWait(self.driver, wait_max_sec).until(
-            EC.visibility_of_element_located((
-                By.ID, 'create-modal')))
-        vm_list = self.driver.find_elements_by_class_name(
-            'vm-create-template-summary')
-        print ("Selenium found %(vm_number)s virtual machine template "
-               " possibilities" % {
-                   'vm_number': len(vm_list)})
-        (self.assertIsNotNone(
-            vm_list, "Selenium can not find the VM list") or
-            self.assertGreater(len(vm_list), 0, "The create VM list is empty"))
+        for template_id in self.template_ids:
+            # self.driver.get('%s/dashboard/template/%s/' % (host, template_id))
+            pass
+        assert False
 
-    def test_11_create_vm(self):
-        self.login('test_%s' % random_accents, random_accents)
-        pk = self.create_random_vm()
-        self.assertIsNotNone(pk, "Can not create a VM")
 
-    def test_12_vm_view_change(self):
-        self.login('test_%s' % random_accents, random_accents)
-        expected_states = ["", "none",
-                           "none", "",
-                           "block", "none"]
-        states = self.viewChange("vm")
-        print 'states: [%s]' % ', '.join(map(str, states))
-        print 'expected: [%s]' % ', '.join(map(str, expected_states))
-        self.assertListEqual(states, expected_states,
-                             "The view mode does not change for VM listing")
+    # def test_10_able_to_create_vm(self):
+    #     self.login('test_%s' % random_accents, random_accents)
+    #     vm_list = None
+    #     create_vm_link = self.get_link_by_href('/dashboard/vm/create/')
+    #     create_vm_link.click()
+    #     WebDriverWait(self.driver, wait_max_sec).until(
+    #         EC.visibility_of_element_located((
+    #             By.ID, 'create-modal')))
+    #     vm_list = self.driver.find_elements_by_class_name(
+    #         'vm-create-template-summary')
+    #     print ("Selenium found %(vm_number)s virtual machine template "
+    #            " possibilities" % {
+    #                'vm_number': len(vm_list)})
+    #     (self.assertIsNotNone(
+    #         vm_list, "Selenium can not find the VM list") or
+    #         self.assertGreater(len(vm_list), 0, "The create VM list is empty"))
 
-    def test_13_node_view_change(self):
-        self.login('test_%s' % random_accents, random_accents)
-        expected_states = ["", "none",
-                           "none", "",
-                           "block", "none"]
-        states = self.viewChange("node")
-        print 'states: [%s]' % ', '.join(map(str, states))
-        print 'expected: [%s]' % ', '.join(map(str, expected_states))
-        self.assertListEqual(states, expected_states,
-                             "The view mode does not change for NODE listing")
+    # def test_11_create_vm(self):
+    #     self.login('test_%s' % random_accents, random_accents)
+    #     pk = self.create_random_vm()
+    #     self.assertIsNotNone(pk, "Can not create a VM")
 
-    def test_14_delete_vm(self):
-        self.login('test_%s' % random_accents, random_accents)
-        pk = self.create_random_vm()
-        self.assertTrue(self.delete_vm(pk), "Can not delete a VM")
+    # def test_12_vm_view_change(self):
+    #     self.login('test_%s' % random_accents, random_accents)
+    #     expected_states = ["", "none",
+    #                        "none", "",
+    #                        "block", "none"]
+    #     states = self.viewChange("vm")
+    #     print 'states: [%s]' % ', '.join(map(str, states))
+    #     print 'expected: [%s]' % ', '.join(map(str, expected_states))
+    #     self.assertListEqual(states, expected_states,
+    #                          "The view mode does not change for VM listing")
+
+    # def test_13_node_view_change(self):
+    #     self.login('test_%s' % random_accents, random_accents)
+    #     expected_states = ["", "none",
+    #                        "none", "",
+    #                        "block", "none"]
+    #     states = self.viewChange("node")
+    #     print 'states: [%s]' % ', '.join(map(str, states))
+    #     print 'expected: [%s]' % ', '.join(map(str, expected_states))
+    #     self.assertListEqual(states, expected_states,
+    #                          "The view mode does not change for NODE listing")
+
+    # def test_14_delete_vm(self):
+    #     self.login('test_%s' % random_accents, random_accents)
+    #     pk = self.create_random_vm()
+    #     self.assertTrue(self.delete_vm(pk), "Can not delete a VM")
