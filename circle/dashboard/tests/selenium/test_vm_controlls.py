@@ -162,7 +162,7 @@ class UtilityMixin(object):
                 'Selenium cannot inject javascript to the page')
 
     def wait_and_accept_operation(self, argument=None):
-        try:
+        # try:
             accept = WebDriverWait(self.driver, wait_max_sec).until(
                 EC.element_to_be_clickable((
                     By.ID, "op-form-send")))
@@ -178,9 +178,9 @@ class UtilityMixin(object):
                         form.clear()
                         form.send_keys(argument)
             accept.click()
-        except:
-            raise Exception("Selenium cannot accept the"
-                            " operation confirmation")
+        # except:
+        #     raise Exception("Selenium cannot accept the"
+        #                     " operation confirmation")
 
     def create_base_template(self, name=None, architecture="x86-64",
                              method=None, op_system=None, lease=None,
@@ -231,6 +231,27 @@ class UtilityMixin(object):
         except:
             raise Exception(
                 'Selenium cannot create a base template virtual machine')
+
+    def get_template_id(self, name=None):
+        try:
+            self.driver.get('%s/dashboard/template/list/' % host)
+            templates = self.driver.find_elements_by_css_selector("td.name")
+            found_template_ids = []
+            for template in templates:
+                if name in template.text or name is None:
+                    template_link = template.find_element_by_css_selector(
+                        "a[data-original-title]")
+                    found_template_ids.append(
+                        re.search(r'\d+', template_link.get_attribute(
+                            'innerHTML')).group())
+            if not found_template_ids and name is not None:
+                print ("Selenium could not find the specified "
+                       "%(name)s template in the list" % {
+                           'name': name})
+            return found_template_ids
+        except:
+            raise Exception(
+                'Selenium cannot found the template\'s id')
 
     def check_operation_result(self, operation_id):
         try:
@@ -287,7 +308,7 @@ class UtilityMixin(object):
             raise Exception('Selenium cannot find the searched activity')
 
     def create_template_from_base(self, delete_disk=True, name=None):
-        #try:
+        try:
             if name is None:
                 name = "template_from_base_%s" % random_accents
             self.driver.get('%s/dashboard/template/choose/' % host)
@@ -302,14 +323,16 @@ class UtilityMixin(object):
             self.driver.find_element_by_id(
                 "template-choose-next-button").click()
             if delete_disk:
-                self.get_link_by_href("#resources").click()
+                self.click_on_link(
+                    self.get_link_by_href("#resources"))
                 disks = WebDriverWait(self.driver, wait_max_sec).until(
                     EC.visibility_of_element_located((
                         By.ID, 'vm-details-resources-disk')))
                 disk_list = disks.find_elements_by_css_selector(
                     "h4[class*='list-group-item-heading']")
                 if len(disk_list) > 0:
-                    self.get_link_by_href("/op/remove_disk/").click()
+                    self.click_on_link(
+                        self.get_link_by_href("/op/remove_disk/"))
                     self.wait_and_accept_operation()
                     WebDriverWait(self.driver, wait_max_sec).until(
                         EC.visibility_of_element_located((
@@ -325,7 +348,7 @@ class UtilityMixin(object):
                         EC.element_to_be_clickable((
                             By.CSS_SELECTOR,
                             "a[href$='/op/deploy/']")))
-            self.get_link_by_href("/op/deploy/").click()
+            self.click_on_link(self.get_link_by_href("/op/deploy/"))
             self.wait_and_accept_operation()
             time.sleep(5)
             recent_deploy = self.recently(self.get_timeline_elements(
@@ -334,10 +357,10 @@ class UtilityMixin(object):
                 print ("Selenium cannot deploy the "
                        "chosen template virtual machine")
                 raise Exception('Cannot deploy the virtual machine')
-            WebDriverWait(self.driver, wait_max_sec).until(
+            self.click_on_link(WebDriverWait(self.driver, wait_max_sec).until(
                 EC.element_to_be_clickable((
                     By.CSS_SELECTOR,
-                    "a[href$='/op/shut_off/']"))).click()
+                    "a[href$='/op/shut_off/']"))))
             self.wait_and_accept_operation()
             time.sleep(2)
             recent_shut_off = self.recently(self.get_timeline_elements(
@@ -346,14 +369,30 @@ class UtilityMixin(object):
                 print ("Selenium cannot shut off the "
                        "chosen template virtual machine")
                 raise Exception('Cannot shut off the virtual machine')
-            WebDriverWait(self.driver, wait_max_sec).until(
+            self.click_on_link(WebDriverWait(self.driver, wait_max_sec).until(
                 EC.element_to_be_clickable((
                     By.CSS_SELECTOR,
-                    "a[href$='/op/save_as_template/']"))).click()
+                    "a[href$='/op/save_as_template/']"))))
             self.wait_and_accept_operation(name)
             return name
-        #except:
-        #    raise Exception('Selenium cannot start a template from a base one')
+        except:
+            raise Exception('Selenium cannot start a template from a base one')
+
+    def delete_template(self, template_id):
+        try:
+            self.driver.get('%s/dashboard/template/%s/' % (host, template_id))
+            self.click_on_link(
+                self.get_link_by_href(
+                    "/dashboard/template/delete/%s/" % template_id))
+            self.wait_and_accept_operation()
+            WebDriverWait(self.driver, wait_max_sec).until(
+                EC.visibility_of_element_located((
+                    By.CLASS_NAME, 'alert-success')))
+            url = urlparse.urlparse(self.driver.current_url)
+            if "/template/list/" not in url.path:
+                raise Exception()
+        except:
+            raise Exception('Selenium cannot delete the desired template')
 
     def create_random_vm(self):
         try:
@@ -364,10 +403,9 @@ class UtilityMixin(object):
                 'vm-create-template-summary')
             choice = random.randint(0, len(vm_list) - 1)
             vm_list[choice].click()
-            create = WebDriverWait(self.driver, wait_max_sec).until(
+            WebDriverWait(self.driver, wait_max_sec).until(
                 EC.element_to_be_clickable((
-                    By.CLASS_NAME, 'vm-create-start')))
-            create.click()
+                    By.CLASS_NAME, 'vm-create-start'))).click()
             WebDriverWait(self.driver, wait_max_sec).until(
                 EC.visibility_of_element_located((
                     By.CLASS_NAME, 'alert-success')))
@@ -406,12 +444,10 @@ class UtilityMixin(object):
             driver = self.driver
             driver.get('%s/dashboard/vm/%s/' % (host, pk))
             status_span = driver.find_element_by_id('vm-details-state')
-            destroy_link = self.get_link_by_href(
-                "/dashboard/vm/%s/op/destroy/" % pk)
-            destroy_link.click()
-            destroy = WebDriverWait(self.driver, wait_max_sec).until(
-                EC.element_to_be_clickable((By.ID, 'op-form-send')))
-            destroy.click()
+            self.get_link_by_href(
+                "/dashboard/vm/%s/op/destroy/" % pk).click()
+            WebDriverWait(self.driver, wait_max_sec).until(
+                EC.element_to_be_clickable((By.ID, 'op-form-send'))).click()
             WebDriverWait(status_span, wait_max_sec).until(
                 EC.visibility_of_element_located((
                     By.CLASS_NAME, 'fa-trash-o')))
@@ -478,15 +514,11 @@ class VmDetailTest(UtilityMixin, SeleniumTestCase):
 
     def test_04_create_template_from_base(self):
         self.login('test_%s' % random_accents, random_accents)
-        template_name = self.create_template_from_base()
-        self.driver.get('%s/dashboard/template/list/' % host)
-        templates = self.driver.find_elements_by_css_selector("td.name")
-        found = False
-        for template in templates:
-            if template_name in template.text:
-                found = True
-                self.template_ids.append(
-                    re.search(r'\d+', template.text).group())
+        created_template_id = self.get_template_id(
+            self.create_template_from_base())
+        found = created_template_id is not None
+        if found:
+            self.template_ids.extend(created_template_id)
         self.assertTrue(
             found,
             "Coud not found the created template in the template list")
@@ -494,9 +526,13 @@ class VmDetailTest(UtilityMixin, SeleniumTestCase):
     def test_05_delete_templates(self):
         self.login('test_%s' % random_accents, random_accents)
         for template_id in self.template_ids:
-            # self.driver.get('%s/dashboard/template/%s/' % (host, template_id))
-            pass
-        assert False
+            self.delete_template(template_id)
+            existing_templates = self.get_template_id()
+            for template_id in self.template_ids:
+                if template_id not in existing_templates:
+                    self.template_ids.remove(template_id)
+        self.assertListEqual([], self.template_ids,
+                             "Could not delete (all) the test template(s)")
 
 
     # def test_10_able_to_create_vm(self):
