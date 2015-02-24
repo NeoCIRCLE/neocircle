@@ -1,0 +1,9 @@
+{% load i18n %}
+
+{% with app=record.get_appliance %}
+  {% if app %}
+    <a href="{{ app.get_absolute_url }}">{{ app.name }}</a>
+  {% else %}
+    —
+  {% endif %}
+{% endwith %}

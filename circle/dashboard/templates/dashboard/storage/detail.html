@@ -1,0 +1,79 @@
+{% extends "dashboard/base.html" %}
+{% load staticfiles %}
+{% load i18n %}
+{% load render_table from django_tables2 %}
+{% load crispy_forms_tags %}
+
+{% block title-page %}{% trans "Storage" %}{% endblock %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-md-5">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="no-margin"><i class="fa fa-database"></i> {% trans "Datastore" %}</h3>
+      </div>
+      <div class="panel-body">
+        {% crispy form %}
+      </div><!-- .panel-body -->
+    </div>
+  </div>
+  <div class="col-md-7">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="no-margin"><i class="fa fa-bar-chart"></i> {% trans "Statistics" %}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="progress">
+          <div class="progress-bar progress-bar-success progress-bar-stripped"
+            role="progressbar" style="min-width: 30px; width: {{ stats.used_percent }}%">
+            {{ stats.used_percent }}%
+          </div>
+        </div>
+        <div class="text-muted text-center">
+          {{ stats.used_space}}/{{ stats.total_space }}
+        </div>
+
+        <h3>
+          {% trans "Missing disks" %}
+          <small>{% trans "disk objects without images files" %}</small>
+        </h3>
+        {% for m in missing_disks %}
+          <p>
+          {{ m }} - {{ m.filename }}
+          </p>
+          {% empty %}
+          {% trans "None" %}
+        {% endfor %}
+
+        <h3>
+          {% trans "Orphan disks" %}
+          <small>{% trans "image files without disk object in the database" %}</small>
+        </h3>
+        {% for o in orphan_disks %}
+          {{ o }}
+          {% empty %}
+          {% trans "None" %}
+        {% endfor %}
+      </div><!-- .panel-body -->
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="no-margin"><i class="fa fa-file"></i> {% trans "Disks" %}</h3>
+      </div>
+      <div class="panel-body">
+        <div class="table-responsive">
+          {% render_table disk_table %}
+        </div>
+      </div><!-- .panel-body -->
+    </div>
+  </div>
+</div>
+
+{% endblock %}

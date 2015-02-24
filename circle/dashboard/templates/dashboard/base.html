@@ -24,6 +24,11 @@
       <a href="/admin/"><i class="fa fa-cogs"></i> {% trans "Admin" %}</a>
     </li>
     <li>
+      <a href="{% url "dashboard.views.storage" %}"><i class="fa fa-database"></i>
+        {% trans "Storage" %}
+      </a>
+    </li>
+    <li>
       <a href="/network/"><i class="fa fa-globe"></i> {% trans "Network" %}</a>
     </li>
     {% endif %}

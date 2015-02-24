@@ -53,6 +53,7 @@ from .views import (
     OpenSearchDescriptionView,
     NodeActivityView,
     UserList,
+    StorageDetail, DiskDetail,
 )
 from .views.vm import vm_ops, vm_mass_ops
 from .views.node import node_ops
@@ -226,6 +227,12 @@ urlpatterns = patterns(
         name="dashboard.views.token-login"),
     url(r'^vm/opensearch.xml$', OpenSearchDescriptionView.as_view(),
         name="dashboard.views.vm-opensearch"),
+
+
+    url(r'^storage/$', StorageDetail.as_view(),
+        name="dashboard.views.storage"),
+    url(r'^disk/(?P<pk>\d+)/$', DiskDetail.as_view(),
+        name="dashboard.views.disk-detail"),
 )
 
 urlpatterns += patterns(
