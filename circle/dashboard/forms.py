@@ -1428,17 +1428,51 @@ class RawDataForm(forms.ModelForm):
         return helper
 
 
-permissions_filtered = Permission.objects.exclude(
-    codename__startswith="add_").exclude(
-    codename__startswith="delete_").exclude(
-    codename__startswith="change_")
-
-
 class GroupPermissionForm(forms.ModelForm):
     permissions = forms.ModelMultipleChoiceField(
-        queryset=permissions_filtered,
+        queryset=None,
         widget=FilteredSelectMultiple(_("permissions"), is_stacked=False)
     )
+
+    def get_filtered_permissions(self):
+        """ Collected with this + djcelery source
+        def get_model_classes_in_module(module):
+            import sys
+            import inspect
+            from django.db.models import Model
+            classes = []
+            for name, obj in inspect.getmembers(sys.modules[module]):
+                if inspect.isclass(obj) and issubclass(obj, Model):
+                    classes.append(name.lower())
+            return classes
+        """
+        excluded_objs = [
+            "tag", "taggeditem", "level", "objectlevel",
+            "permission", "contenttype", "migrationhistory", "site",
+            "session", "intervalschedule", "crontabschedule", "periodictask",
+            "periodictasks", "workerstate", "taskstate", "taskmeta",
+            "tasksetmeta", "logentry",
+            "baseresourceconfigmodel", "instance", "instanceactivity",
+            "instancetemplate", "interface", "interfacetemplate", "lease",
+            "namedbaseresourceconfig", "node", "nodeactivity", "trait",
+            "virtualmachinedescmodel", "aclbase", "connectcommand",
+            "favourite", "futuremember", "groupprofile", "model",
+            "notification", "profile", "timestampedmodel", "userkey",
+            "datastore", "disk", "model", "timestampedmodel", "aclbase",
+            "blacklistitem", "domain", "ethernetdevice", "firewall",
+            "host", "record", "rule", "switchport",
+            "vlan", "vlangroup", "sender",
+        ]
+
+        exclude_add = ["add_%s" % l for l in excluded_objs]
+        exclude_change = ["change_%s" % l for l in excluded_objs]
+        exclude_delete = ["delete_%s" % l for l in excluded_objs + ["user"]]
+        return Permission.objects.exclude(codename__in=exclude_add).exclude(
+            codename__in=exclude_change).exclude(codename__in=exclude_delete)
+
+    def __init__(self, *args, **kwargs):
+        super(GroupPermissionForm, self).__init__(*args, **kwargs)
+        self.fields['permissions'].queryset = self.get_filtered_permissions()
 
     class Meta:
         model = Group
