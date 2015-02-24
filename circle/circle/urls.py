@@ -41,7 +41,6 @@ urlpatterns = patterns(
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
     url(r'^$', lambda x: redirect(reverse("dashboard.index"))),
-    url(r'^admin/', include(admin.site.urls)),
     url(r'^network/', include('network.urls')),
     url(r'^dashboard/', include('dashboard.urls')),
 
@@ -77,6 +76,12 @@ if 'rosetta' in settings.INSTALLED_APPS:
     urlpatterns += patterns(
         '',
         url(r'^rosetta/', include('rosetta.urls')),
+    )
+
+if settings.ADMIN_ENABLED:
+    urlpatterns += patterns(
+        '',
+        url(r'^admin/', include(admin.site.urls)),
     )
 
 

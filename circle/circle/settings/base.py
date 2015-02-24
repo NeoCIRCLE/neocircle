@@ -559,3 +559,5 @@ MAX_NODE_RAM = get_env_variable("MAX_NODE_RAM", 1024)
 
 # Url to download the client: (e.g. http://circlecloud.org/client/download/)
 CLIENT_DOWNLOAD_URL = get_env_variable('CLIENT_DOWNLOAD_URL', 'http://circlecloud.org/client/download/')
+
+ADMIN_ENABLED = False
