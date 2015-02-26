@@ -18,9 +18,12 @@
 from __future__ import absolute_import, unicode_literals
 
 from datetime import timedelta
+from json import dumps
 import logging
 
 from netaddr import AddrFormatError, IPAddress
+from requests import post
+from requests.exceptions import RequestException
 
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
@@ -36,6 +39,28 @@ from django.conf import settings
 logger = logging.getLogger(__name__)
 
 
+def send_request(obj):
+    data = {"ip": obj.ipv4,
+            "msg": obj.snort_message,
+            "reason": obj.reason,
+            "expires_at": str(obj.expires_at).split('.')[0],
+            "object_kind": "ban"}
+    if obj.host:
+        data.update({"hostname": obj.host.hostname,
+                     "username": obj.host.owner.username,
+                     "fullname": obj.host.owner.get_full_name()})
+    try:
+        r = post(settings.BLACKLIST_HOOK_URL, data=dumps(data, indent=2),
+                 timeout=3)
+        r.raise_for_status()
+    except RequestException as e:
+        logger.warning("Error in HTTP POST: %s. url: %s params: %s",
+                       str(e), settings.BLACKLIST_HOOK_URL, data)
+    else:
+        logger.info("Successful HTTP POST. url: %s params: %s",
+                    settings.BLACKLIST_HOOK_URL, data)
+
+
 @csrf_exempt
 @require_POST
 def add_blacklist_item(request):
@@ -48,7 +73,7 @@ def add_blacklist_item(request):
 
     try:
         address = request.POST.get('address')
-        IPAddress(address, version=4)
+        address_object = IPAddress(address, version=4)
     except (AddrFormatError, TypeError) as e:
         logger.warning("Invalid IP address: %s (%s)", address, str(e))
         return HttpResponse(_("Invalid IP address."))
@@ -56,13 +81,15 @@ def add_blacklist_item(request):
     obj, created = BlacklistItem.objects.get_or_create(ipv4=address)
     if created:
         try:
-            obj.host = Host.objects.get(ipv4=address)
+            db_format = '.'.join("%03d" % x for x in address_object.words)
+            obj.host = Host.objects.get(ipv4=db_format)
         except Host.DoesNotExist:
             pass
 
     now = timezone.now()
     can_update = ((obj.whitelisted and now > obj.expires_at) or
                   not obj.whitelisted)
+    is_new = created or (obj.expires_at and now > obj.expires_at)
 
     if created or can_update:
         obj.reason = request.POST.get('reason')
@@ -76,5 +103,8 @@ def add_blacklist_item(request):
         logger.info("Successfully created blacklist item %s.", address)
     elif can_update:
         logger.info("Successfully modified blacklist item %s.", address)
+
+    if is_new and settings.BLACKLIST_HOOK_URL:
+        send_request(obj)
 
     return HttpResponse(unicode(_("OK")))

@@ -563,3 +563,4 @@ CLIENT_DOWNLOAD_URL = get_env_variable('CLIENT_DOWNLOAD_URL', 'http://circleclou
 ADMIN_ENABLED = False
 
 BLACKLIST_PASSWORD = get_env_variable("BLACKLIST_PASSWORD", "")
+BLACKLIST_HOOK_URL = get_env_variable("BLACKLIST_HOOK_URL", "")
