@@ -94,6 +94,7 @@
           <span>{{ instance.get_status_display|upper }}</span>
         </span>
       </div>
+
       <h3>{% trans "Connection details" %}</h3>
       <dl class="dl-horizontal vm-details-connection">
         <dt>{% trans "Protocol" %}</dt>
@@ -180,6 +181,12 @@
       {% endif %}
     </div>
     <div class="col-md-8" id="vm-detail-pane">
+      <div class="big" id="vm-detail-successfull-boot">
+        <span class="label label-info" data-status="{{ instance.status }}">
+          <i class="fa fa-check"></i>
+          {% trans "The virtual machine successfully started, you can connect now." %}
+        </span>
+      </div>
       <div class="panel panel-default" id="vm-detail-panel">
         <ul class="nav nav-pills panel-heading">
           <li class="active">
