@@ -168,6 +168,7 @@ $(function() {
         } else {
           in_progress = false;
           if(reload_vm_detail) location.reload();
+          if(runs > 1) addConnectText();
         }
         $('a[href="#activity"] i').removeClass('fa-spin');
       },
@@ -177,6 +178,17 @@ $(function() {
     });
   }
 });
+
+
+function addConnectText() {
+  var activities = $(".timeline .activity");
+  if(activities.length > 1) {
+    if(activities.eq(0).data("activity-code") == "vm.Instance.wake_up" ||
+       activities.eq(0).data("activity-code") == "vm.Instance.agent") {
+      $("#vm-detail-successfull-boot").slideDown(500);
+    }
+  }
+}
 
 
 String.prototype.hashCode = function() {
