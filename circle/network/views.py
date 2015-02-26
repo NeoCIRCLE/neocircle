@@ -137,8 +137,7 @@ class BlacklistDetail(LoginRequiredMixin, SuperuserRequiredMixin,
     model = BlacklistItem
     template_name = "network/blacklist-edit.html"
     form_class = BlacklistItemForm
-    success_message = _(u'Successfully modified blacklist item '
-                        '%(ipv4)s - %(type)s.')
+    success_message = _(u'Successfully modified blacklist item %(ipv4)s.')
 
     def get_success_url(self):
         if 'pk' in self.kwargs:
@@ -155,8 +154,7 @@ class BlacklistCreate(LoginRequiredMixin, SuperuserRequiredMixin,
     model = BlacklistItem
     template_name = "network/blacklist-create.html"
     form_class = BlacklistItemForm
-    success_message = _(u'Successfully created blacklist item '
-                        '%(ipv4)s - %(type)s.')
+    success_message = _(u'Successfully created blacklist item %(ipv4)s')
 
 
 class BlacklistDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
@@ -168,9 +166,7 @@ class BlacklistDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
         context = super(BlacklistDelete, self).get_context_data(**kwargs)
         if 'pk' in self.kwargs:
             to_delete = BlacklistItem.objects.get(pk=self.kwargs['pk'])
-            context['object'] = "%s - %s - %s" % (to_delete.ipv4,
-                                                  to_delete.reason,
-                                                  to_delete.type)
+            context['object'] = "%s - %s" % (to_delete.ipv4, to_delete.reason)
             return context
 
     def get_success_url(self):

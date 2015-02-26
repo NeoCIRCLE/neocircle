@@ -19,14 +19,12 @@ import re
 import logging
 from collections import OrderedDict
 from netaddr import IPAddress, AddrFormatError
-from datetime import timedelta
 from itertools import product
 
 from .models import (Host, Rule, Vlan, Domain, Record, BlacklistItem,
                      SwitchPort)
 from .iptables import IptRule, IptChain
 import django.conf
-from django.db.models import Q
 from django.template import loader, Context
 from django.utils import timezone
 
@@ -161,10 +159,9 @@ class BuildFirewall:
 
 
 def ipset():
-    week = timezone.now() - timedelta(days=2)
-    filter_ban = (Q(type='tempban', modified_at__gte=week) |
-                  Q(type='permban'))
-    return BlacklistItem.objects.filter(filter_ban).values('ipv4', 'reason')
+    now = timezone.now()
+    return BlacklistItem.objects.filter(whitelisted=False).exclude(
+        expires_at__lt=now).values('ipv4', 'reason')
 
 
 def ipv6_to_octal(ipv6):

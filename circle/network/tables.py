@@ -45,7 +45,7 @@ class BlacklistItemTable(Table):
     class Meta:
         model = Domain
         attrs = {'class': 'table table-striped table-condensed'}
-        fields = ('ipv4', 'host', 'reason', 'type')
+        fields = ('ipv4', 'host', 'expires_at', 'whitelisted', 'reason')
         order_by = ('ipv4', )
 
 

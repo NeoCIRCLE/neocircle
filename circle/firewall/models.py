@@ -1109,24 +1109,23 @@ class EthernetDevice(models.Model):
 
 
 class BlacklistItem(models.Model):
-    CHOICES_type = (('permban', 'permanent ban'), ('tempban', 'temporary ban'),
-                    ('whitelist', 'whitelist'), ('tempwhite', 'tempwhite'))
-    ipv4 = models.GenericIPAddressField(protocol='ipv4', unique=True)
-    host = models.ForeignKey('Host', blank=True, null=True,
-                             verbose_name=_('host'))
-    reason = models.TextField(blank=True, verbose_name=_('reason'))
-    snort_message = models.TextField(blank=True,
-                                     verbose_name=_('short message'))
-    type = models.CharField(
-        max_length=10,
-        choices=CHOICES_type,
-        default='tempban',
-        verbose_name=_('type')
-    )
+    ipv4 = models.GenericIPAddressField(
+        protocol='ipv4', unique=True, verbose_name=("IPv4 address"))
+    host = models.ForeignKey(
+        'Host', blank=True, null=True, verbose_name=_('host'))
+    reason = models.TextField(
+        blank=True, null=True, verbose_name=_('reason'))
+    snort_message = models.TextField(
+        blank=True, null=True, verbose_name=_('short message'))
+
+    whitelisted = models.BooleanField(
+        default=False, verbose_name=_("whitelisted"))
     created_at = models.DateTimeField(auto_now_add=True,
                                       verbose_name=_('created_at'))
     modified_at = models.DateTimeField(auto_now=True,
                                        verbose_name=_('modified_at'))
+    expires_at = models.DateTimeField(blank=True, null=True, default=None,
+                                      verbose_name=_('expires at'))
 
     def save(self, *args, **kwargs):
         self.full_clean()
