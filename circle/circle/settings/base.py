@@ -561,3 +561,5 @@ MAX_NODE_RAM = get_env_variable("MAX_NODE_RAM", 1024)
 CLIENT_DOWNLOAD_URL = get_env_variable('CLIENT_DOWNLOAD_URL', 'http://circlecloud.org/client/download/')
 
 ADMIN_ENABLED = False
+
+BLACKLIST_PASSWORD = get_env_variable("BLACKLIST_PASSWORD", "")

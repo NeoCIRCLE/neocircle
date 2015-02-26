@@ -15,69 +15,66 @@
 # You should have received a copy of the GNU General Public License along
 # with CIRCLE.  If not, see <http://www.gnu.org/licenses/>.
 
-import base64
-import datetime
-import json
+from __future__ import absolute_import, unicode_literals
 
-from django.core.exceptions import ValidationError
-from django.db import IntegrityError
+from datetime import timedelta
+import logging
+
+from netaddr import AddrFormatError, IPAddress
+
+from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
-from django.utils.timezone import utc
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from .tasks.local_tasks import reloadtask
 from .models import BlacklistItem, Host
 
+from django.conf import settings
 
-def reload_firewall(request):
-    if request.user.is_authenticated():
-        if request.user.is_superuser:
-            html = (_("Dear %s, you've signed in as administrator!<br />"
-                      "Reloading in 10 seconds...") % request.user.username)
-            reloadtask.delay()
-            reloadtask.delay('Vlan')
-        else:
-            html = (_("Dear %s, you've signed in!") % request.user.username)
-    else:
-        html = _("Dear anonymous, you've not signed in yet!")
-    return HttpResponse(html)
+logger = logging.getLogger(__name__)
 
 
 @csrf_exempt
 @require_POST
-def firewall_api(request):
+def add_blacklist_item(request):
+    password = request.POST.get('password')
+    if (not settings.BLACKLIST_PASSWORD or
+            password != settings.BLACKLIST_PASSWORD):
+        logger.warning("Tried invalid password. Password: %s IP: %s",
+                       password, request.META["REMOTE_ADDR"])
+        raise PermissionDenied()
+
     try:
-        data = json.loads(base64.b64decode(request.POST["data"]))
-        command = request.POST["command"]
-        if data["password"] != "bdmegintelrontottaanetet":
-            raise Exception(_("Wrong password."))
+        address = request.POST.get('address')
+        IPAddress(address, version=4)
+    except (AddrFormatError, TypeError) as e:
+        logger.warning("Invalid IP address: %s (%s)", address, str(e))
+        return HttpResponse(_("Invalid IP address."))
 
-        if command == "blacklist":
-            obj, created = BlacklistItem.objects.get_or_create(ipv4=data["ip"])
-            obj.reason = data["reason"]
-            obj.snort_message = data["snort_message"]
-            if created:
-                try:
-                    obj.host = Host.objects.get(ipv4=data["ip"])
-                except (Host.DoesNotExist, ValidationError,
-                        IntegrityError, AttributeError):
-                    pass
+    obj, created = BlacklistItem.objects.get_or_create(ipv4=address)
+    if created:
+        try:
+            obj.host = Host.objects.get(ipv4=address)
+        except Host.DoesNotExist:
+            pass
 
-            modified = obj.modified_at + datetime.timedelta(minutes=1)
-            now = datetime.dateime.utcnow().replace(tzinfo=utc)
-            if obj.type == 'tempwhite' and modified < now:
-                obj.type = 'tempban'
-            if obj.type != 'whitelist':
-                obj.save()
-            return HttpResponse(unicode(_("OK")))
-        else:
-            raise Exception(_("Unknown command."))
+    now = timezone.now()
+    can_update = ((obj.whitelisted and now > obj.expires_at) or
+                  not obj.whitelisted)
 
-    except (ValidationError, IntegrityError, AttributeError, Exception) as e:
-        return HttpResponse(_("Something went wrong!\n%s\n") % e)
-    except:
-        return HttpResponse(_("Something went wrong!\n"))
+    if created or can_update:
+        obj.reason = request.POST.get('reason')
+        obj.snort_message = request.POST.get('snort_message')
+        obj.whitelisted = False
+        obj.expires_at = now + timedelta(weeks=1)
+        obj.full_clean()
+        obj.save()
+
+    if created:
+        logger.info("Successfully created blacklist item %s.", address)
+    elif can_update:
+        logger.info("Successfully modified blacklist item %s.", address)
 
     return HttpResponse(unicode(_("OK")))
