@@ -18,7 +18,7 @@
             {% csrf_token %}
             <button type="button" class="btn btn-default" data-dismiss="modal">{% trans "Cancel" %}</button>
             <input type="hidden" name="next" value="{{ request.GET.next }}"/>
-            <button class="btn btn-danger"
+            <button class="btn btn-danger modal-accept"
               {% if disable_submit %}disabled{% endif %}
               >{% trans "Delete" %}</button>
           </form>
