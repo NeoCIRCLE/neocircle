@@ -87,8 +87,9 @@ def add_blacklist_item(request):
             pass
 
     now = timezone.now()
-    can_update = ((obj.whitelisted and now > obj.expires_at) or
-                  not obj.whitelisted)
+    can_update = (
+        (obj.whitelisted and obj.expires_at and now > obj.expires_at) or
+        not obj.whitelisted)
     is_new = created or (obj.expires_at and now > obj.expires_at)
 
     if created or can_update:
