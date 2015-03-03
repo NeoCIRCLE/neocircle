@@ -342,10 +342,6 @@ THIRD_PARTY_APPS = (
     'pipeline',
 )
 
-import django
-if django.get_version() < '1.7':
-    THIRD_PARTY_APPS += 'south',
-
 
 # Apps specific for this project go here.
 LOCAL_APPS = (
@@ -529,15 +525,6 @@ except:
 
 LOCALE_PATHS = (join(SITE_ROOT, 'locale'), )
 COMPANY_NAME = "BME IK 2014"
-SOUTH_MIGRATION_MODULES = {
-    'taggit': 'taggit.south_migrations',
-    'vm': 'vm.south_migrations',
-    'firewall': 'firewall.south_migrations',
-    'acl': 'acl.south_migrations',
-    'dashboard': 'dashboard.south_migrations',
-    'storage': 'storage.south_migrations',
-}
-
 
 graphite_host = environ.get("GRAPHITE_HOST", None)
 graphite_port = environ.get("GRAPHITE_PORT", None)
