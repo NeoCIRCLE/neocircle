@@ -102,6 +102,7 @@ def reloadtask(type='Host', timeout=15):
         'Rule': ['firewall'],
         'SwitchPort': ['firewall_vlan'],
         'EthernetDevice': ['firewall_vlan'],
+        'BlacklistItem': ['blacklist'],
     }[type]
     logger.info("Reload %s on next periodic iteration applying change to %s.",
                 ", ".join(reload), type)

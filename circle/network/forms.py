@@ -54,8 +54,10 @@ class BlacklistItemForm(ModelForm):
                 '',
                 'ipv4',
                 'host',
+                'expires_at',
+                'whitelisted',
                 'reason',
-                'type',
+                'snort_message',
             )
         ),
         FormActions(

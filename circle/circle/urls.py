@@ -27,21 +27,16 @@ from django.shortcuts import redirect
 from circle.settings.base import get_env_variable
 from dashboard.views import circle_login, HelpView
 from dashboard.forms import CirclePasswordResetForm, CircleSetPasswordForm
+from firewall.views import add_blacklist_item
 
 admin.autodiscover()
 
 urlpatterns = patterns(
     '',
-    # url(r'^$', TemplateView.as_view(template_name='base.html')),
-
-    # Examples:
-    # url(r'^$', 'circle.views.home', name='home'),
-    # url(r'^circle/', include('circle.foo.urls')),
-
-    # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
     url(r'^$', lambda x: redirect(reverse("dashboard.index"))),
     url(r'^network/', include('network.urls')),
+    url(r'^blacklist-add/', add_blacklist_item),
     url(r'^dashboard/', include('dashboard.urls')),
 
     # django/contrib/auth/urls.py (care when new version)
