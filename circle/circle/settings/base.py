@@ -355,6 +355,7 @@ LOCAL_APPS = (
     'manager',
     'acl',
     'monitor',
+    'request',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps

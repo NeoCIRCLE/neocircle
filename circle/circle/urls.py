@@ -43,6 +43,7 @@ urlpatterns = patterns(
     url(r'^$', lambda x: redirect(reverse("dashboard.index"))),
     url(r'^network/', include('network.urls')),
     url(r'^dashboard/', include('dashboard.urls')),
+    url(r'^request/', include('request.urls')),
 
     # django/contrib/auth/urls.py (care when new version)
     url((r'^accounts/reset/(?P<uidb64>[0-9A-Za-z_\-]+)/'

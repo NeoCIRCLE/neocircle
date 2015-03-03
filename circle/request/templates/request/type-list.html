@@ -1,0 +1,39 @@
+{% extends "dashboard/base.html" %}
+{% load staticfiles %}
+{% load i18n %}
+{% load render_table from django_tables2 %}
+
+{% block title-page %}{% trans "Group list" %}{% endblock %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <div class="pull-right">
+          <a class="btn btn-xs btn-success" href="{% url "request.views.lease-type-create" %}">
+            <i class="fa fa-plus-circle"></i>
+            {% trans "new lease type" %}
+          </a>
+          <a class="btn btn-xs btn-success" href="{% url "request.views.template-type-create" %}">
+            <i class="fa fa-plus-circle"></i>
+            {% trans "new template access type" %}
+          </a>
+        </div>
+        <h3 class="no-margin"><i class="fa fa-group"></i> {% trans "Requests" %}</h3>
+      </div>
+      <div class="panel-body">
+        <div id="table_container">
+          <div id="rendered_table" class="panel-body">
+            <div class="table-responsive">
+              {% render_table lease_table %}
+              {% render_table template_table %}
+            </div>
+          </div>
+        </div>
+      </div><!-- .panel-body -->
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -66,6 +66,7 @@ from ..forms import (
     VmPortRemoveForm, VmPortAddForm,
     VmRemoveInterfaceForm,
 )
+from request.models import TemplateAccessType
 from ..models import Favourite
 from manager.scheduler import has_traits
 
@@ -1038,11 +1039,14 @@ class VmCreate(LoginRequiredMixin, TemplateView):
                 'template_o': template,
             })
         else:
+            from request.forms import TemplateRequestForm
             context.update({
                 'template': 'dashboard/_vm-create-1.html',
                 'box_title': _('Create a VM'),
                 'ajax_title': True,
                 'templates': templates.all(),
+                'template_access_types': TemplateAccessType.objects.count(),
+                'form': TemplateRequestForm(),
             })
         return self.render_to_response(context)
 
