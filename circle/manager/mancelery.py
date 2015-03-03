@@ -22,7 +22,6 @@ from kombu import Queue, Exchange
 from os import getenv
 
 HOSTNAME = "localhost"
-CACHE_URI = getenv("CACHE_URI", "pylibmc://127.0.0.1:11211/")
 QUEUE_NAME = HOSTNAME + '.man'
 
 
@@ -38,8 +37,7 @@ celery = Celery('manager',
                          ])
 
 celery.conf.update(
-    CELERY_RESULT_BACKEND='cache',
-    CELERY_CACHE_BACKEND=CACHE_URI,
+    CELERY_RESULT_BACKEND='amqp',
     CELERY_TASK_RESULT_EXPIRES=300,
     CELERY_QUEUES=(
         Queue(HOSTNAME + '.man', Exchange('manager', type='direct'),
