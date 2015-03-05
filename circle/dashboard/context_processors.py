@@ -29,4 +29,5 @@ def notifications(request):
 def extract_settings(request):
     return {
         'COMPANY_NAME': getattr(settings, "COMPANY_NAME", None),
+        'ADMIN_ENABLED': getattr(settings, "ADMIN_ENABLED", False),
     }

@@ -78,6 +78,9 @@ TEMPLATE_DEBUG = DEBUG
 
 ########## MANAGER CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#admins
+ADMINS = (
+    ('Root', 'root@localhost'),
+)
 
 EMAIL_SUBJECT_PREFIX = get_env_variable('DJANGO_SUBJECT_PREFIX', '[CIRCLE] ')
 
@@ -339,10 +342,6 @@ THIRD_PARTY_APPS = (
     'pipeline',
 )
 
-import django
-if django.get_version() < '1.7':
-    THIRD_PARTY_APPS += 'south',
-
 
 # Apps specific for this project go here.
 LOCAL_APPS = (
@@ -526,15 +525,6 @@ except:
 
 LOCALE_PATHS = (join(SITE_ROOT, 'locale'), )
 COMPANY_NAME = "BME IK 2014"
-SOUTH_MIGRATION_MODULES = {
-    'taggit': 'taggit.south_migrations',
-    'vm': 'vm.south_migrations',
-    'firewall': 'firewall.south_migrations',
-    'acl': 'acl.south_migrations',
-    'dashboard': 'dashboard.south_migrations',
-    'storage': 'storage.south_migrations',
-}
-
 
 graphite_host = environ.get("GRAPHITE_HOST", None)
 graphite_port = environ.get("GRAPHITE_PORT", None)
@@ -559,3 +549,8 @@ MAX_NODE_RAM = get_env_variable("MAX_NODE_RAM", 1024)
 
 # Url to download the client: (e.g. http://circlecloud.org/client/download/)
 CLIENT_DOWNLOAD_URL = get_env_variable('CLIENT_DOWNLOAD_URL', 'http://circlecloud.org/client/download/')
+
+ADMIN_ENABLED = False
+
+BLACKLIST_PASSWORD = get_env_variable("BLACKLIST_PASSWORD", "")
+BLACKLIST_HOOK_URL = get_env_variable("BLACKLIST_HOOK_URL", "")

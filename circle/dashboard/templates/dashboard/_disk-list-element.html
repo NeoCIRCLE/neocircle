@@ -25,5 +25,6 @@
 <div style="clear: both;"></div>
 
 {% if request.user.is_superuser %}
-  <small>{% trans "File name" %}: {{ d.filename }}</small>
+  <small>{% trans "File name" %}: {{ d.filename }}</small><br/>
+  <small>{% trans "Bus" %}: {{ d.device_bus }}</small>
 {% endif %}

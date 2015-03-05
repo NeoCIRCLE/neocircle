@@ -20,7 +20,8 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils.html import format_html
 
 from django_tables2 import Table, A
-from django_tables2.columns import LinkColumn, TemplateColumn, Column
+from django_tables2.columns import (LinkColumn, TemplateColumn, Column,
+                                    BooleanColumn)
 
 from firewall.models import Host, Vlan, Domain, Group, Record, Rule, SwitchPort
 
@@ -41,12 +42,14 @@ class MACColumn(Column):
 
 class BlacklistItemTable(Table):
     ipv4 = LinkColumn('network.blacklist', args=[A('pk')])
+    whitelisted = BooleanColumn()
 
     class Meta:
         model = Domain
         attrs = {'class': 'table table-striped table-condensed'}
-        fields = ('ipv4', 'host', 'reason', 'type')
-        order_by = ('ipv4', )
+        fields = ('ipv4', 'host', 'reason', 'whitelisted', 'expires_at',
+                  'created_at')
+        order_by = ('-expires_at', )
 
 
 class DomainTable(Table):

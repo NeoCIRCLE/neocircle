@@ -137,8 +137,7 @@ class BlacklistDetail(LoginRequiredMixin, SuperuserRequiredMixin,
     model = BlacklistItem
     template_name = "network/blacklist-edit.html"
     form_class = BlacklistItemForm
-    success_message = _(u'Successfully modified blacklist item'
-                        '%(ipv4)s - %(type)s!')
+    success_message = _(u'Successfully modified blacklist item %(ipv4)s.')
 
     def get_success_url(self):
         if 'pk' in self.kwargs:
@@ -155,8 +154,7 @@ class BlacklistCreate(LoginRequiredMixin, SuperuserRequiredMixin,
     model = BlacklistItem
     template_name = "network/blacklist-create.html"
     form_class = BlacklistItemForm
-    success_message = _(u'Successfully created blacklist item '
-                        '%(ipv4)s - %(type)s!')
+    success_message = _(u'Successfully created blacklist item %(ipv4)s')
 
 
 class BlacklistDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
@@ -168,9 +166,7 @@ class BlacklistDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
         context = super(BlacklistDelete, self).get_context_data(**kwargs)
         if 'pk' in self.kwargs:
             to_delete = BlacklistItem.objects.get(pk=self.kwargs['pk'])
-            context['object'] = "%s - %s - %s" % (to_delete.ipv4,
-                                                  to_delete.reason,
-                                                  to_delete.type)
+            context['object'] = "%s - %s" % (to_delete.ipv4, to_delete.reason)
             return context
 
     def get_success_url(self):
@@ -193,7 +189,7 @@ class DomainDetail(LoginRequiredMixin, SuperuserRequiredMixin,
     model = Domain
     template_name = "network/domain-edit.html"
     form_class = DomainForm
-    success_message = _(u'Successfully modified domain %(name)s!')
+    success_message = _(u'Successfully modified domain %(name)s.')
 
     def get_success_url(self):
         if 'pk' in self.kwargs:
@@ -220,7 +216,7 @@ class DomainCreate(LoginRequiredMixin, SuperuserRequiredMixin,
     model = Domain
     template_name = "network/domain-create.html"
     form_class = DomainForm
-    success_message = _(u'Successfully created domain %(name)s!')
+    success_message = _(u'Successfully created domain %(name)s.')
 
 
 class DomainDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
@@ -237,11 +233,11 @@ class DomainDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
         if unicode(self.object) != request.POST.get('confirm'):
-            messages.error(request, _(u"Object name does not match!"))
+            messages.error(request, _(u"Object name does not match."))
             return self.get(request, *args, **kwargs)
 
         response = super(DomainDelete, self).delete(request, *args, **kwargs)
-        messages.success(request, _(u"Domain successfully deleted!"))
+        messages.success(request, _(u"Domain successfully deleted."))
         return response
 
     def get_context_data(self, **kwargs):
@@ -351,7 +347,7 @@ class GroupCreate(LoginRequiredMixin, SuperuserRequiredMixin,
     model = Group
     template_name = "network/group-create.html"
     form_class = GroupForm
-    success_message = _(u'Successfully created host group %(name)s!')
+    success_message = _(u'Successfully created host group %(name)s.')
 
 
 class GroupDetail(LoginRequiredMixin, SuperuserRequiredMixin,
@@ -359,7 +355,7 @@ class GroupDetail(LoginRequiredMixin, SuperuserRequiredMixin,
     model = Group
     template_name = "network/group-edit.html"
     form_class = GroupForm
-    success_message = _(u'Successfully modified host group %(name)s!')
+    success_message = _(u'Successfully modified host group %(name)s.')
 
     def get_success_url(self):
         if 'pk' in self.kwargs:
@@ -443,7 +439,7 @@ class HostDetail(HostMagicMixin, LoginRequiredMixin, SuperuserRequiredMixin,
     model = Host
     template_name = "network/host-edit.html"
     form_class = HostForm
-    success_message = _(u'Successfully modified host %(hostname)s!')
+    success_message = _(u'Successfully modified host %(hostname)s.')
 
     def _get_ajax(self, *args, **kwargs):
         if "vlan" not in self.request.GET:
@@ -516,7 +512,7 @@ class HostCreate(HostMagicMixin, LoginRequiredMixin, SuperuserRequiredMixin,
     model = Host
     template_name = "network/host-create.html"
     form_class = HostForm
-    success_message = _(u'Successfully created host %(hostname)s!')
+    success_message = _(u'Successfully created host %(hostname)s.')
 
     def get_initial(self):
         initial = super(HostCreate, self).get_initial()
@@ -564,11 +560,11 @@ class HostDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
         if unicode(self.object) != request.POST.get('confirm'):
-            messages.error(request, _(u"Object name does not match!"))
+            messages.error(request, _(u"Object name does not match."))
             return self.get(request, *args, **kwargs)
 
         response = super(HostDelete, self).delete(request, *args, **kwargs)
-        messages.success(request, _(u"Host successfully deleted!"))
+        messages.success(request, _(u"Host successfully deleted."))
         return response
 
 
@@ -598,7 +594,7 @@ class RecordDetail(LoginRequiredMixin, SuperuserRequiredMixin,
     template_name = "network/record-edit.html"
     form_class = RecordForm
     # TODO fqdn
-    success_message = _(u'Successfully modified record!')
+    success_message = _(u'Successfully modified record.')
 
     def get_context_data(self, **kwargs):
         context = super(RecordDetail, self).get_context_data(**kwargs)
@@ -617,7 +613,7 @@ class RecordCreate(LoginRequiredMixin, SuperuserRequiredMixin,
     template_name = "network/record-create.html"
     form_class = RecordForm
     # TODO fqdn
-    success_message = _(u'Successfully created record!')
+    success_message = _(u'Successfully created record.')
 
     def get_initial(self):
         initial = super(RecordCreate, self).get_initial()
@@ -683,7 +679,7 @@ class RuleDetail(LoginRequiredMixin, SuperuserRequiredMixin,
     model = Rule
     template_name = "network/rule-edit.html"
     form_class = RuleForm
-    success_message = _(u'Successfully modified rule!')
+    success_message = _(u'Successfully modified rule.')
 
     def get_success_url(self):
         if 'pk' in self.kwargs:
@@ -703,7 +699,7 @@ class RuleCreate(LoginRequiredMixin, SuperuserRequiredMixin,
     model = Rule
     template_name = "network/rule-create.html"
     form_class = RuleForm
-    success_message = _(u'Successfully created rule!')
+    success_message = _(u'Successfully created rule.')
 
     def get_initial(self):
         initial = super(RuleCreate, self).get_initial()
@@ -739,7 +735,7 @@ class SwitchPortDetail(LoginRequiredMixin, SuperuserRequiredMixin,
     model = SwitchPort
     template_name = "network/switch-port-edit.html"
     form_class = SwitchPortForm
-    success_message = _(u'Succesfully modified switch port!')
+    success_message = _(u'Succesfully modified switch port.')
 
     def get_success_url(self):
         if 'pk' in self.kwargs:
@@ -758,7 +754,7 @@ class SwitchPortCreate(LoginRequiredMixin, SuperuserRequiredMixin,
     model = SwitchPort
     template_name = "network/switch-port-create.html"
     form_class = SwitchPortForm
-    success_message = _(u'Successfully created switch port!')
+    success_message = _(u'Successfully created switch port.')
 
 
 class SwitchPortDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
@@ -805,7 +801,7 @@ class VlanDetail(VlanMagicMixin, LoginRequiredMixin, SuperuserRequiredMixin,
     form_class = VlanForm
     slug_field = 'vid'
     slug_url_kwarg = 'vid'
-    success_message = _(u'Succesfully modified vlan %(name)s!')
+    success_message = _(u'Succesfully modified vlan %(name)s.')
 
     def get_context_data(self, **kwargs):
         context = super(VlanDetail, self).get_context_data(**kwargs)
@@ -825,7 +821,7 @@ class VlanCreate(VlanMagicMixin, LoginRequiredMixin, SuperuserRequiredMixin,
     model = Vlan
     template_name = "network/vlan-create.html"
     form_class = VlanForm
-    success_message = _(u'Successfully created vlan %(name)s!')
+    success_message = _(u'Successfully created vlan %(name)s.')
 
 
 class VlanDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
@@ -846,11 +842,11 @@ class VlanDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
         if unicode(self.object) != request.POST.get('confirm'):
-            messages.error(request, _(u"Object name does not match!"))
+            messages.error(request, _(u"Object name does not match."))
             return self.get(request, *args, **kwargs)
 
         response = super(VlanDelete, self).delete(request, *args, **kwargs)
-        messages.success(request, _(u"Vlan successfully deleted!"))
+        messages.success(request, _(u"Vlan successfully deleted."))
         return response
 
     def get_context_data(self, **kwargs):
@@ -892,7 +888,7 @@ class VlanGroupDetail(LoginRequiredMixin, SuperuserRequiredMixin,
     template_name = "network/vlan-group-edit.html"
     form_class = VlanGroupForm
     success_url = reverse_lazy('network.vlan_group_list')
-    success_message = _(u'Successfully modified vlan group %(name)s!')
+    success_message = _(u'Successfully modified vlan group %(name)s.')
 
     def get_context_data(self, *args, **kwargs):
         context = super(VlanGroupDetail, self).get_context_data(**kwargs)
@@ -905,7 +901,7 @@ class VlanGroupCreate(LoginRequiredMixin, SuperuserRequiredMixin,
     model = VlanGroup
     template_name = "network/vlan-group-create.html"
     form_class = VlanGroupForm
-    success_message = _(u'Successfully created vlan group %(name)s!')
+    success_message = _(u'Successfully created vlan group %(name)s.')
 
 
 class VlanGroupDelete(LoginRequiredMixin, SuperuserRequiredMixin, DeleteView):
@@ -938,7 +934,7 @@ def remove_host_group(request, **kwargs):
         host.groups.remove(group)
         if not request.is_ajax():
             messages.success(request, _(u"Successfully removed %(host)s from "
-                                        "%(group)s group!" % {
+                                        "%(group)s group." % {
                                             'host': host,
                                             'group': group
                                         }))
@@ -954,7 +950,7 @@ def add_host_group(request, **kwargs):
         host.groups.add(group)
         if not request.is_ajax():
             messages.success(request, _(u"Successfully added %(host)s to group"
-                                        " %(group)s!" % {
+                                        " %(group)s." % {
                                             'host': host,
                                             'group': group
                                         }))
@@ -973,7 +969,7 @@ def remove_switch_port_device(request, **kwargs):
         device.delete()
         if not request.is_ajax():
             messages.success(request, _(u"Successfully deleted ethernet device"
-                                        " %(name)s!" % {
+                                        " %(name)s." % {
                                             'name': device.name,
                                         }))
         return redirect(reverse_lazy('network.switch_port',
@@ -997,9 +993,9 @@ def add_switch_port_device(request, **kwargs):
         return redirect(reverse_lazy('network.switch_port', kwargs=kwargs))
 
     elif not len(device_name) > 0:
-        messages.error(request, _("Ethernet device name cannot be empty!"))
+        messages.error(request, _("Ethernet device name cannot be empty."))
         return redirect(reverse_lazy('network.switch_port', kwargs=kwargs))
     elif EthernetDevice.objects.get(name=device_name) is not None:
         messages.error(request, _("There is already an ethernet device with"
-                                  " that name!"))
+                                  " that name."))
         return redirect(reverse_lazy('network.switch_port', kwargs=kwargs))

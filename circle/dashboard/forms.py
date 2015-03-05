@@ -20,6 +20,7 @@ from __future__ import absolute_import
 from datetime import timedelta
 from urlparse import urlparse
 
+from django.forms import ModelForm
 from django.contrib.auth.forms import (
     AuthenticationForm, PasswordResetForm, SetPasswordForm,
     PasswordChangeForm,
@@ -31,10 +32,12 @@ from django.core.exceptions import PermissionDenied, ValidationError
 import autocomplete_light
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import (
-    Layout, Div, BaseInput, Field, HTML, Submit, TEMPLATE_PACK,
+    Layout, Div, BaseInput, Field, HTML, Submit, TEMPLATE_PACK, Fieldset
 )
 
 from crispy_forms.utils import render_field
+from crispy_forms.bootstrap import FormActions
+
 from django import forms
 from django.contrib.auth.forms import UserCreationForm as OrgUserCreationForm
 from django.forms.widgets import TextInput, HiddenInput
@@ -51,6 +54,7 @@ from firewall.models import Vlan, Host
 from vm.models import (
     InstanceTemplate, Lease, InterfaceTemplate, Node, Trait, Instance
 )
+from storage.models import DataStore, Disk
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth.models import Permission
 from .models import Profile, GroupProfile
@@ -1424,17 +1428,51 @@ class RawDataForm(forms.ModelForm):
         return helper
 
 
-permissions_filtered = Permission.objects.exclude(
-    codename__startswith="add_").exclude(
-    codename__startswith="delete_").exclude(
-    codename__startswith="change_")
-
-
 class GroupPermissionForm(forms.ModelForm):
     permissions = forms.ModelMultipleChoiceField(
-        queryset=permissions_filtered,
+        queryset=None,
         widget=FilteredSelectMultiple(_("permissions"), is_stacked=False)
     )
+
+    def get_filtered_permissions(self):
+        """ Collected with this + djcelery source
+        def get_model_classes_in_module(module):
+            import sys
+            import inspect
+            from django.db.models import Model
+            classes = []
+            for name, obj in inspect.getmembers(sys.modules[module]):
+                if inspect.isclass(obj) and issubclass(obj, Model):
+                    classes.append(name.lower())
+            return classes
+        """
+        excluded_objs = [
+            "tag", "taggeditem", "level", "objectlevel",
+            "permission", "contenttype", "migrationhistory", "site",
+            "session", "intervalschedule", "crontabschedule", "periodictask",
+            "periodictasks", "workerstate", "taskstate", "taskmeta",
+            "tasksetmeta", "logentry",
+            "baseresourceconfigmodel", "instance", "instanceactivity",
+            "instancetemplate", "interface", "interfacetemplate", "lease",
+            "namedbaseresourceconfig", "node", "nodeactivity", "trait",
+            "virtualmachinedescmodel", "aclbase", "connectcommand",
+            "favourite", "futuremember", "groupprofile", "model",
+            "notification", "profile", "timestampedmodel", "userkey",
+            "datastore", "disk", "model", "timestampedmodel", "aclbase",
+            "blacklistitem", "domain", "ethernetdevice", "firewall",
+            "host", "record", "rule", "switchport",
+            "vlan", "vlangroup", "sender",
+        ]
+
+        exclude_add = ["add_%s" % l for l in excluded_objs]
+        exclude_change = ["change_%s" % l for l in excluded_objs]
+        exclude_delete = ["delete_%s" % l for l in excluded_objs + ["user"]]
+        return Permission.objects.exclude(codename__in=exclude_add).exclude(
+            codename__in=exclude_change).exclude(codename__in=exclude_delete)
+
+    def __init__(self, *args, **kwargs):
+        super(GroupPermissionForm, self).__init__(*args, **kwargs)
+        self.fields['permissions'].queryset = self.get_filtered_permissions()
 
     class Meta:
         model = Group
@@ -1544,3 +1582,36 @@ class UserListSearchForm(forms.Form):
         'class': "form-control input-tags",
         'placeholder': _("Search...")
     }))
+
+
+class DataStoreForm(ModelForm):
+
+    @property
+    def helper(self):
+        helper = FormHelper()
+        helper.layout = Layout(
+            Fieldset(
+                '',
+                'name',
+                'path',
+                'hostname',
+            ),
+            FormActions(
+                Submit('submit', _('Save')),
+            )
+        )
+        return helper
+
+    class Meta:
+        model = DataStore
+
+
+class DiskForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(DiskForm, self).__init__(*args, **kwargs)
+
+        for k, v in self.fields.iteritems():
+            v.widget.attrs['readonly'] = True
+
+    class Meta:
+        model = Disk

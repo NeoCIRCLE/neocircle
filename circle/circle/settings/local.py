@@ -113,3 +113,5 @@ if DEBUG:
 PIPELINE_DISABLED_COMPILERS = (
     'pipeline.compilers.less.LessCompiler',
 )
+
+ADMIN_ENABLED = True

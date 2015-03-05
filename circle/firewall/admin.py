@@ -132,7 +132,8 @@ class RecordAdmin(admin.ModelAdmin):
 
 
 class BlacklistItemAdmin(admin.ModelAdmin):
-    list_display = ('ipv4', 'type', 'reason', 'created_at', 'modified_at')
+    list_display = ('ipv4', 'whitelisted', 'reason', 'expires_at',
+                    'created_at', 'modified_at')
 
 
 class SwitchPortAdmin(admin.ModelAdmin):
