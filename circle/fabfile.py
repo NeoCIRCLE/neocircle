@@ -111,12 +111,14 @@ def test(test=""):
 
 @roles('portal')
 def selenium(test=""):
-    "Run portal selenium tests"
+    "Run selenium tests"
     with _workon("circle"), cd("~/circle/circle"):
-        # TODO Check if the user have any X so we don't have force xvfb
+        if test == "f":
+            test = "--failed"
+        else:
+            test += " --with-id"
         run("xvfb-run ./manage.py test "
-            "--settings=circle.settings.selenium_test %(test)s" % {
-                'test': test})
+            "--settings=circle.settings.selenium_test %s" % test)
 
 
 def pull(dir="~/circle/circle"):
