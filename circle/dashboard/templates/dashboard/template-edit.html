@@ -121,22 +121,22 @@
           <dt>{% trans "User" %}</dt>
           <dd>
             {% blocktrans %}
-            Can create instances from this template but cannot manage access or edit the attributes.
+            User can deploy instances from this template.
             {% endblocktrans %}
           </dd>
           <dt>{% trans "Operator" %}</dt>
           <dd>
             {% blocktrans %}
-            Same as user, however operators can grant user level access to this template
-            for groups or users and they can revoke user level accesses.
+            Operators are able to deploy and grant/revoke User level access to this template.
             {% endblocktrans %}
           </dd>
           <dt>{% trans "Owner" %}</dt>
           <dd>
             {% blocktrans %}
-            Owners can edit the template's attributes, delete it,
-            transfer the ownership and also grant user,
-            operator and owner level access to the template.
+            Owners can edit attributes or delete the template.
+            Owners are able to grant/revoke User, Operator and Owner level access to the template.
+            The accountable owner (the one who created the template) can not be demoted.
+            The accountable ownership can be transferred to other User via the "Transfer onwership" button.
             {% endblocktrans %}
           </dd>
         </dl>
