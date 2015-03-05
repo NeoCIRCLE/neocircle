@@ -71,7 +71,7 @@
     {% if is_owner %}
     <div class="panel panel-default">
       <div class="panel-heading">
-        <a href="{% url "dashboard.views.template-delete" pk=object.pk %}" 
+        <a href="{% url "dashboard.views.template-delete" pk=object.pk %}"
          class="btn btn-xs btn-danger pull-right template-delete">
           {% trans "Delete" %}
         </a>
@@ -109,6 +109,39 @@
       </div>
     </div>
 
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4 class="no-margin">
+          <i class="fa fa-question-circle"></i>
+          {% trans "Access level rights" %}
+        </h4>
+      </div>
+      <div class="panel-body">
+        <dl>
+          <dt>{% trans "User" %}</dt>
+          <dd>
+            {% blocktrans %}
+            Can create instances from this template but cannot manage access or edit the attributes.
+            {% endblocktrans %}
+          </dd>
+          <dt>{% trans "Operator" %}</dt>
+          <dd>
+            {% blocktrans %}
+            Same as user, however operators can grant user level access to this template
+            for groups or users and they can revoke user level accesses.
+            {% endblocktrans %}
+          </dd>
+          <dt>{% trans "Owner" %}</dt>
+          <dd>
+            {% blocktrans %}
+            Owners can edit the template's attributes, delete it,
+            transfer the ownership and also grant user,
+            operator and owner level access to the template.
+            {% endblocktrans %}
+          </dd>
+        </dl>
+      </div>
+    </div>
 
     <div class="panel panel-default">
       <div class="panel-heading">
@@ -122,7 +155,7 @@
         {% for d in disks %}
           <li>
             <i class="fa fa-file"></i>
-            {{ d.name }} (#{{ d.id }}) -
+            {{ d.name }} (#{{ d.id }})
             <a href="{% url "dashboard.views.disk-remove" pk=d.pk %}?next={{ request.path }}"
               data-disk-pk="{{ d.pk }}" class="btn btn-xs btn-danger pull-right disk-remove"
               {% if not long_remove %}title="{% trans "Remove" %}"{% endif %}>
