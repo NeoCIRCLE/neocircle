@@ -585,8 +585,8 @@ class VmDetailTest(UtilityMixin, SeleniumTestCase):
         user_name.clear()
         user_name.send_keys(client_name)
         self.select_option(user_status)
-        acces_form.find_element_by_css_selector(
-            "button[type='submit']").click()
+        # For strange reasons clicking on submit button doesn't work anymore
+        acces_form.submit()
         found_users = []
         acl_users = self.driver.find_elements_by_css_selector(
             "a[href*='/dashboard/profile/']")
@@ -626,7 +626,7 @@ class VmDetailTest(UtilityMixin, SeleniumTestCase):
             self.template_ids.extend(created_template_id)
         self.assertTrue(
             found,
-            "Coud not found the created template in the template list")
+            "Could not found the created template in the template list")
 
     def test_05_create_template_from_base(self):
         self.login(client_name, random_accents)
@@ -637,7 +637,7 @@ class VmDetailTest(UtilityMixin, SeleniumTestCase):
             self.template_ids.extend(created_template_id)
         self.assertTrue(
             found,
-            "Coud not found the created template in the template list")
+            "Could not found the created template in the template list")
 
     def test_06_delete_templates(self):
         success = False
