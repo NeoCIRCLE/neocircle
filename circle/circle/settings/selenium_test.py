@@ -36,6 +36,7 @@ SOUTH_TESTS_MIGRATE = False
 INSTALLED_APPS += (
         'acl.tests',
         'django_nose',
+        'django_jenkins',
 )
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
