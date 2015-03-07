@@ -1,0 +1,15 @@
+[Unit]
+Description=CIRCLE %I
+BindsTo=manager.service
+
+[Service]
+User=cloud
+Group=cloud
+
+KillSignal=SIGTERM
+TimeoutStopSec=600
+Restart=always
+
+WorkingDirectory=/home/cloud/circle/circle
+ExecStartPre=/bin/bash -c "source /etc/profile; workon circle; ./manage.py celery -f --app=manager.%I purge"
+ExecStart=/bin/bash -c "source /etc/profile; workon circle; exec ./manage.py celery --app=manager.%I worker --autoreload --loglevel=info --hostname=%I -B -c 3"

@@ -1,0 +1,13 @@
+[Unit]
+Description=CIRCLE portal
+After=network.target
+
+[Service]
+User=cloud
+Group=cloud
+WorkingDirectory=/home/cloud/circle/circle
+ExecStart=/bin/bash -c "source /etc/profile; workon circle; exec ./manage.py runserver '[::]:8080'"
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
