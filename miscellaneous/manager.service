@@ -1,0 +1,14 @@
+[Unit]
+Description=CIRCLE manager
+After=network.target
+BindsTo=managercelery@mancelery.service
+BindsTo=managercelery@moncelery.service
+BindsTo=managercelery@slowcelery.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/echo
+
+[Install]
+WantedBy=multi-user.target

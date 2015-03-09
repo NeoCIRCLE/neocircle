@@ -18,3 +18,28 @@
 </p>
 <h3>{% trans "Permissions"|capfirst %}</h3>
 {% include "dashboard/_manage_access.html" with table_id="vm-access-table" %}
+
+<dl class="well well-sm" id="vm-detail-access-help">
+  <dt>{% trans "Permissions" %}</dt>
+  <dd>
+  {% trans "With Permissions you can add Users and Groups with different levels to grant access to the virtual machine." %}
+  </dd>
+  <dt>{% trans "User" %}</dt>
+  <dd>
+    {% trans "User level grants access to the virtual machine's details page. Users are able to connect to this machine." %}
+  </dd>
+  <dt>{% trans "Operator" %}</dt>
+  <dd>
+    {% blocktrans %}
+    Operator level permit the modification of the name and description fields. Allow the operator to open ports and grant/revoke User level access to the virtual machine.
+    {% endblocktrans %}
+  </dd>
+  <dt>{% trans "Owner" %}</dt>
+  <dd>
+    {% blocktrans %}
+    Owner level enables all operations on the virtual machine. Owners are able to grant/revoke Operator, User and Owner level access to others.
+    The accountable owner (the one who deployed the machine) can not be demoted. The accountable ownership can be transferred
+    to other User via the "Transfer onwership" button.
+    {% endblocktrans %}
+  </dd>
+</dl>

@@ -6,9 +6,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-02-26 16:30+0100\n"
-"PO-Revision-Date: 2015-02-26 16:41+0116\n"
-"Last-Translator: Elek Elekebb EEeee <viktorvector@gmail.com>\n"
+"POT-Creation-Date: 2015-03-05 14:32+0100\n"
+"PO-Revision-Date: 2015-03-05 14:42+0116\n"
+"Last-Translator: Daniel Bach <bd@doszgep.hu>\n"
 "Language-Team: Hungarian <cloud@ik.bme.hu>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -18,11 +18,11 @@ msgstr ""
 "X-Generator: Lokalize 1.5\n"
 "X-Translated-Using: django-rosetta 0.7.4\n"
 
-#: circle/settings/base.py:118
+#: circle/settings/base.py:121
 msgid "English"
 msgstr "Angol"
 
-#: circle/settings/base.py:119
+#: circle/settings/base.py:122
 msgid "Hungarian"
 msgstr "Magyar"
 
@@ -96,15 +96,15 @@ msgstr "eredmény"
 msgid "Human readable result of activity."
 msgstr "A tevékenység eredménye olvasható formában."
 
-#: common/models.py:549
+#: common/models.py:535
 msgid "Permission Denied"
 msgstr "Hozzáférés megtagadva"
 
-#: common/models.py:551
+#: common/models.py:537
 msgid "Unknown error"
 msgstr "Ismeretlen hiba"
 
-#: common/models.py:552
+#: common/models.py:538
 #, python-format
 msgid "Unknown error: %(ex)s"
 msgstr "Ismeretlen hiba: %(ex)s"
@@ -209,15 +209,15 @@ msgstr "Létrehozás"
 #: dashboard/templates/dashboard/lease-edit.html:96
 #: dashboard/templates/dashboard/template-tx-owner.html:12
 #: dashboard/templates/dashboard/vm-detail/tx-owner.html:12
-#: network/forms.py:84 network/forms.py:98 network/forms.py:120
-#: network/forms.py:160 network/forms.py:185 network/forms.py:224
-#: network/forms.py:245 network/forms.py:296 network/forms.py:321
+#: network/forms.py:86 network/forms.py:100 network/forms.py:122
+#: network/forms.py:162 network/forms.py:187 network/forms.py:226
+#: network/forms.py:247 network/forms.py:298 network/forms.py:323
 msgid "Save"
 msgstr "Mentés"
 
 #: dashboard/forms.py:312 dashboard/forms.py:1028
 #: dashboard/templates/dashboard/_vm-remove-port.html:15
-#: dashboard/templates/dashboard/vm-detail.html:102 network/views.py:663
+#: dashboard/templates/dashboard/vm-detail.html:102 network/views.py:659
 msgid "Host"
 msgstr "Gép"
 
@@ -257,7 +257,7 @@ msgid "Delete in"
 msgstr "Törlés ideje"
 
 #: dashboard/forms.py:737 dashboard/templates/dashboard/template-edit.html:64
-#: network/forms.py:62
+#: network/forms.py:64
 msgid "Save changes"
 msgstr "Változások mentése"
 
@@ -362,7 +362,7 @@ msgstr "<label>Vlan:</label> {0}"
 #: dashboard/forms.py:952
 #: dashboard/templates/dashboard/_vm-remove-port.html:17
 #: dashboard/templates/dashboard/node-detail/resources.html:28
-#: network/views.py:662
+#: network/views.py:658
 msgid "Vlan"
 msgstr "Vlan"
 
@@ -426,7 +426,6 @@ msgid "Add trait"
 msgstr "Jellemző hozzáadása"
 
 #: dashboard/forms.py:1220
-#| msgid "preferred language"
 msgid "Preferred language"
 msgstr "Választott nyelv"
 
@@ -618,7 +617,6 @@ msgstr "[S]"
 
 #. Translators: [VM] as Virtual Machine
 #: dashboard/tables.py:56
-#| msgid "Virtual machines"
 msgid "Virtual machine"
 msgstr "Virtuális gép"
 
@@ -656,7 +654,7 @@ msgid "Admin"
 msgstr "Adminisztráció"
 
 #: dashboard/tables.py:141 dashboard/tables.py:218 dashboard/tables.py:249
-#: dashboard/tables.py:283 dashboard/tables.py:312 network/tables.py:269
+#: dashboard/tables.py:283 dashboard/tables.py:312 network/tables.py:272
 msgid "Actions"
 msgstr "Műveletek"
 
@@ -680,7 +678,9 @@ msgid "Lease"
 msgstr "Bérlet"
 
 #: dashboard/tables.py:205 dashboard/templates/dashboard/template-edit.html:85
+#: dashboard/templates/dashboard/template-edit.html:133
 #: dashboard/templates/dashboard/vm-detail/access.html:2
+#: dashboard/templates/dashboard/vm-detail/access.html:37
 #: dashboard/templates/dashboard/vm-list.html:70
 msgid "Owner"
 msgstr "Tulajdonos"
@@ -726,7 +726,6 @@ msgid "Appliance"
 msgstr "Felhasználás"
 
 #: dashboard/tables.py:343
-#| msgid "read"
 msgid "ready"
 msgstr "kész"
 
@@ -821,8 +820,8 @@ msgstr "Már telepítve van"
 #: dashboard/templates/dashboard/lease-edit.html:80
 #: dashboard/templates/dashboard/store/_list-box.html:133
 #: dashboard/templates/dashboard/store/remove.html:36
-#: dashboard/templates/dashboard/template-edit.html:128
-#: dashboard/templates/dashboard/template-edit.html:129
+#: dashboard/templates/dashboard/template-edit.html:161
+#: dashboard/templates/dashboard/template-edit.html:162
 #: dashboard/templates/dashboard/vm-detail/network.html:85
 #: dashboard/templates/dashboard/vm-detail/network.html:86
 #: dashboard/templates/dashboard/vm-detail/network.html:120
@@ -960,7 +959,7 @@ msgstr "Lemezek"
 #: dashboard/templates/dashboard/base.html:34
 #: dashboard/templates/dashboard/vm-detail.html:214
 #: dashboard/views/graph.py:198 dashboard/views/graph.py:221
-#: network/forms.py:140 network/templates/network/base.html:7
+#: network/forms.py:142 network/templates/network/base.html:7
 msgid "Network"
 msgstr "Hálózat"
 
@@ -1063,7 +1062,6 @@ msgstr "Sablon neve"
 #: dashboard/templates/dashboard/base.html:30
 #: dashboard/templates/dashboard/storage/detail.html:7
 #: dashboard/templates/dashboard/storage/disk.html:7
-#| msgid "Store"
 msgid "Storage"
 msgstr "Tárhely"
 
@@ -1197,10 +1195,10 @@ msgstr "Parancssablon létrehozása"
 #: dashboard/templates/dashboard/profile.html:20
 #: dashboard/templates/dashboard/template-edit.html:16
 #: dashboard/templates/dashboard/userkey-create.html:13
-#: dashboard/templates/dashboard/userkey-edit.html:14 network/forms.py:63
-#: network/forms.py:85 network/forms.py:99 network/forms.py:121
-#: network/forms.py:161 network/forms.py:186 network/forms.py:225
-#: network/forms.py:246 network/forms.py:297 network/forms.py:322
+#: dashboard/templates/dashboard/userkey-edit.html:14 network/forms.py:65
+#: network/forms.py:87 network/forms.py:101 network/forms.py:123
+#: network/forms.py:163 network/forms.py:188 network/forms.py:227
+#: network/forms.py:248 network/forms.py:299 network/forms.py:324
 msgid "Back"
 msgstr "Vissza"
 
@@ -1516,7 +1514,7 @@ msgid "time"
 msgstr "idő"
 
 #: dashboard/templates/dashboard/instanceactivity_detail.html:40
-#: firewall/models.py:1000 firewall/models.py:1124 network/tables.py:178
+#: firewall/models.py:1000 network/tables.py:181
 msgid "type"
 msgstr "típus"
 
@@ -1825,17 +1823,14 @@ msgid "Command templates"
 msgstr "Parancssablonok"
 
 #: dashboard/templates/dashboard/storage/detail.html:15
-#| msgid "datastore"
 msgid "Datastore"
 msgstr "Adattár"
 
 #: dashboard/templates/dashboard/storage/detail.html:25
-#| msgid "Status"
 msgid "Statistics"
 msgstr "Állapot"
 
 #: dashboard/templates/dashboard/storage/detail.html:39
-#| msgid "missing traits"
 msgid "Missing disks"
 msgstr "Hiányzó lemezek"
 
@@ -1849,7 +1844,6 @@ msgid "None"
 msgstr "Nincs"
 
 #: dashboard/templates/dashboard/storage/detail.html:51
-#| msgid "create disk"
 msgid "Orphan disks"
 msgstr "Árva lemezek"
 
@@ -2049,11 +2043,65 @@ msgstr ""
 msgid "Transfer ownership..."
 msgstr "Tulajdon átruházása..."
 
-#: dashboard/templates/dashboard/template-edit.html:115
+#: dashboard/templates/dashboard/template-edit.html:116
+msgid "Access level rights"
+msgstr "Hozzáférési jogosultsági szintek"
+
+#: dashboard/templates/dashboard/template-edit.html:121
+#: dashboard/templates/dashboard/vm-detail/access.html:27
+#, fuzzy
+#| msgid "Users"
+msgid "User"
+msgstr "Felhasználók"
+
+#: dashboard/templates/dashboard/template-edit.html:123
+#, fuzzy
+#| msgid ""
+#| "         The system cannot be used for illegal activites.\n"
+#| "         "
+msgid ""
+"\n"
+"            User can deploy instances from this template.\n"
+"            "
+msgstr ""
+"\n"
+"A rendszer nem használható jogszerűtlen célokra."
+
+#: dashboard/templates/dashboard/template-edit.html:127
+#: dashboard/templates/dashboard/vm-detail/access.html:31
+#, fuzzy
+#| msgid "operator"
+msgid "Operator"
+msgstr "operátor"
+
+#: dashboard/templates/dashboard/template-edit.html:129
+msgid ""
+"\n"
+"            Operators are able to deploy and grant/revoke User level access to this template.\n"
+"            "
+msgstr ""
+"\n"
+"Az Operátor adhat/visszavonhat User szintű hozzáférést, valamint példányosíthat a sablonból."
+
+#: dashboard/templates/dashboard/template-edit.html:135
+msgid ""
+"\n"
+"            Owners can edit attributes or delete the template.\n"
+"            Owners are able to grant/revoke User, Operator and Owner level access to the template.\n"
+"            The accountable owner (the one who created the template) can not be demoted.\n"
+"            The accountable ownership can be transferred to other User via the \"Transfer onwership\" button.\n"
+"            "
+msgstr ""
+"\n"
+"A Tulajdonos szerkesztheti és törölheti ezt a sablont.\n"
+"A Tulajdonos adhat/visszavonhat Felhasználó, Operátor és Tulajdonos szintű jogosultságokat.\n"
+"A sablonért felelős tulajdonos (aki elkészítette a sablont) nem fokozható le. A felelős tulajdonosi cím átruházható másik felhasználó számára, a \"Tulajdon átruházása\" gombbal."
+
+#: dashboard/templates/dashboard/template-edit.html:148
 msgid "Disk list"
 msgstr "Lemezek"
 
-#: dashboard/templates/dashboard/template-edit.html:120
+#: dashboard/templates/dashboard/template-edit.html:153
 msgid "No disks are added!"
 msgstr "Egy lemez sincs hozzáadva!"
 
@@ -2227,7 +2275,6 @@ msgid "Connect (download client)"
 msgstr "Csatlakozás (kliens letöltése)"
 
 #: dashboard/templates/dashboard/vm-detail.html:187
-#| msgid "virtual machine successfully deployed to node: %(node)s"
 msgid "The virtual machine successfully started, you can connect now."
 msgstr "A virtuális gép elindult, most már csatlakozhat."
 
@@ -2270,8 +2317,45 @@ msgstr ""
 "A példány jelenlegi tulajdonosa: <a href=\"%(url)s\">%(name)s (%(owner)s)</a>."
 
 #: dashboard/templates/dashboard/vm-detail/access.html:19
+#: dashboard/templates/dashboard/vm-detail/access.html:23
 msgid "Permissions"
 msgstr "Jogosultságok"
+
+#: dashboard/templates/dashboard/vm-detail/access.html:25
+msgid ""
+"With Permissions you can add Users and Groups with different levels to grant"
+" access to the virtual machine."
+msgstr ""
+"Az Engedélyek segítségével különböző szintű hozzáférést adhatunk "
+"felhasználóknak és csoportoknak. "
+
+#: dashboard/templates/dashboard/vm-detail/access.html:29
+msgid ""
+"User level grants access to the virtual machine's details page. Users are "
+"able to connect to this machine."
+msgstr ""
+"A Felhasználó szinttel elérhető virtuális gép részletező oldala. Ezek a "
+"felhasználók kapcsolódhatnak a géphez."
+
+#: dashboard/templates/dashboard/vm-detail/access.html:33
+msgid ""
+"\n"
+"    Operator level permit the modification of the name and description fields. Allow the operator to open ports and grant/revoke User level access to the virtual machine.\n"
+"    "
+msgstr ""
+"\n"
+"Az Operátori hozzáféréssel megváltoztatható a virtuális gép neve és leírása. Az Operátorok nyithatnak portokat valami adhatnak/visszavonhatnak Felhasználói szintű hozzáférést."
+
+#: dashboard/templates/dashboard/vm-detail/access.html:39
+msgid ""
+"\n"
+"    Owner level enables all operations on the virtual machine. Owners are able to grant/revoke Operator, User and Owner level access to others.\n"
+"    The accountable owner (the one who deployed the machine) can not be demoted. The accountable ownership can be transferred\n"
+"    to other User via the \"Transfer onwership\" button.\n"
+"    "
+msgstr ""
+"\n"
+"A Tulajdonos szint minden műveletet engedélyez. A Tulajdonosok adhatnak/visszavonhatnak Felhasználó, Operátor is Tulajdonos szintű hozzáféréseket. A virtuális gépért felelős tulajdonos nem fokozható le. A felelős tulajdonosi cím átruházható másik felhasználó számára, a \"Tulajdon átruházása\" gombbal."
 
 #: dashboard/templates/dashboard/vm-detail/console.html:5
 msgid "Send Ctrl+Alt+Del"
@@ -2353,12 +2437,12 @@ msgid "DNS name"
 msgstr "DNS név"
 
 #: dashboard/templates/dashboard/vm-detail/network.html:52
-#: network/forms.py:267
+#: network/forms.py:269
 msgid "IPv4"
 msgstr "IPv4"
 
 #: dashboard/templates/dashboard/vm-detail/network.html:53
-#: network/forms.py:274
+#: network/forms.py:276
 msgid "IPv6"
 msgstr "IPv6"
 
@@ -2630,7 +2714,6 @@ msgid "Successfully modified subscription."
 msgstr "A feliratkozás módosításra került."
 
 #: dashboard/views/user.py:284
-#| msgid "Create user"
 msgid "Create a User"
 msgstr "Felhasználó létrehozása"
 
@@ -2855,68 +2938,68 @@ msgstr ""
 "%(user)s át kívánja ruházni %(instance)s nevű virtuális gépét Önre. <a "
 "href=\"%(token)s\" class=\"btn btn-success btn-small\">Elfogadás</a>"
 
-#: firewall/fields.py:43
+#: firewall/fields.py:42
 #, python-format
 msgid "Enter a valid MAC address. %s"
 msgstr "Érvénytelen MAC cím. %s"
 
-#: firewall/fields.py:55
+#: firewall/fields.py:54
 msgid "MAC Address object"
 msgstr "MAC cím objektum"
 
-#: firewall/fields.py:91
+#: firewall/fields.py:90
 #, python-format
 msgid "Enter a valid IP address. %s"
 msgstr "Érvénytelen IP cím. %s"
 
-#: firewall/fields.py:108 firewall/fields.py:166
+#: firewall/fields.py:107 firewall/fields.py:165
 msgid "IP Network object"
 msgstr "IP hálózat objektum"
 
-#: firewall/fields.py:149
+#: firewall/fields.py:148
 #, python-format
 msgid "Enter a valid IP network. %s"
 msgstr "Érvénytelen IP hálózat. %s"
 
-#: firewall/fields.py:212
+#: firewall/fields.py:208
 #, python-format
 msgid "%s - only letters, numbers, underscores and hyphens are allowed!"
 msgstr "%s – csak betűk, számok, alulvonások és kötőjelek."
 
-#: firewall/fields.py:229 firewall/fields.py:235
+#: firewall/fields.py:225 firewall/fields.py:231
 #, python-format
 msgid "%s - invalid domain name"
 msgstr "%s – érvénytelen tartománynév"
 
-#: firewall/fields.py:281
+#: firewall/fields.py:277
 #, python-format
 msgid "%s: invalid template"
 msgstr "%s: érvénytelen sablon"
 
-#: firewall/fields.py:292
+#: firewall/fields.py:288
 #, python-format
 msgid "template doesn't use parameter %s"
 msgstr "a sablon nem használja a(z) %s paramétert"
 
-#: firewall/fields.py:296
+#: firewall/fields.py:292
 msgid "template renders invalid IPv6 address"
 msgstr "a sablon érvénytelen IPv6 címet ad"
 
-#: firewall/fields.py:302
+#: firewall/fields.py:298
 msgid "template results in IPv4 address"
 msgstr "a sablon IPv4 címet ad"
 
-#: firewall/fields.py:313
+#: firewall/fields.py:309
 #, python-format
 msgid "%s - not an IPv4 address"
 msgstr "%s – nem egy IPv4 cím"
 
-#: firewall/fields.py:319
+#: firewall/fields.py:315
 #, python-format
 msgid "%s - not an IPv6 address"
 msgstr "%s – nem egy IPv6 cím"
 
-#: firewall/fields.py:330
+#: firewall/fields.py:326
 msgid "Bad MX address format. Should be: <priority>:<hostname>"
 msgstr "Érvénytelen MX címformátum. Elvárt formátum: <prioritás>:<gépnév>"
 
@@ -3022,7 +3105,7 @@ msgstr "Az illeszkedő csomagok elfogadása, eldobása vagy ignorálása."
 msgid "The user responsible for this rule."
 msgstr "A szabályért felelős felhasználó."
 
-#: firewall/models.py:109 network/tables.py:187
+#: firewall/models.py:109 network/tables.py:190
 msgid "NAT"
 msgstr "NAT"
 
@@ -3068,7 +3151,7 @@ msgstr "vlan-csoport"
 msgid "Group of vlans the rule applies to (if type is vlan)."
 msgstr "Erre a vlan-csoportra vonatkozik a szabály (ha a típus vlan)."
 
-#: firewall/models.py:138 firewall/models.py:998 firewall/models.py:1116
+#: firewall/models.py:138 firewall/models.py:998 firewall/models.py:1115
 #: network/templates/network/host-create.html:8
 #: network/templates/network/host-edit.html:8 vm/models/network.py:69
 #: vm/models/node.py:126
@@ -3307,7 +3390,7 @@ msgstr "A csoport tagjait képező vlanok."
 msgid "Description of the group."
 msgstr "A csoport leírása."
 
-#: firewall/models.py:578 network/tables.py:136 storage/models.py:52
+#: firewall/models.py:578 network/tables.py:139 storage/models.py:52
 msgid "hostname"
 msgstr "gépnév"
 
@@ -3327,7 +3410,7 @@ msgstr ""
 "A gép teljes reverz tartományneve, amennyiben különbözik ettől: "
 "gépnév.tartomány."
 
-#: firewall/models.py:590 network/tables.py:135
+#: firewall/models.py:590 network/tables.py:138
 msgid "MAC address"
 msgstr "MAC cím"
 
@@ -3415,12 +3498,12 @@ msgid "Port %(proto)s %(public)s is already in use."
 msgstr "A(z) %(public)s %(proto)s port használatban van."
 
 #: firewall/models.py:978 firewall/models.py:1007 firewall/models.py:1076
-#: firewall/models.py:1103 firewall/models.py:1127
+#: firewall/models.py:1103 firewall/models.py:1124
 msgid "created_at"
 msgstr "létrehozva"
 
 #: firewall/models.py:980 firewall/models.py:1009 firewall/models.py:1078
-#: firewall/models.py:1105 firewall/models.py:1129
+#: firewall/models.py:1105 firewall/models.py:1126
 msgid "modified_at"
 msgstr "módosítva"
 
@@ -3478,54 +3561,34 @@ msgstr "indok"
 msgid "short message"
 msgstr "rövid üzenet"
 
-#: firewall/models.py:1139
+#: firewall/models.py:1122
+msgid "whitelisted"
+msgstr ""
+
+#: firewall/models.py:1128
+#, fuzzy
+#| msgid "Expiration"
+msgid "expires at"
+msgstr "Lejárat"
+
+#: firewall/models.py:1138
 msgid "blacklist item"
 msgstr "tiltólista eleme"
 
-#: firewall/models.py:1140 network/templates/network/blacklist-create.html:8
+#: firewall/models.py:1139 network/templates/network/blacklist-create.html:8
 #: network/templates/network/blacklist-edit.html:8
 msgid "blacklist"
 msgstr "tiltólista"
 
-#: firewall/views.py:37
-#, python-format
-msgid ""
-"Dear %s, you've signed in as administrator!<br />Reloading in 10 seconds..."
-msgstr "Kedves %s, Ön rendszergazda!<br />Újratöltés 10 másodpercen belül..."
+#: firewall/views.py:79
+#, fuzzy
+#| msgid "Enter a valid IP address. %s"
+msgid "Invalid IP address."
+msgstr "Érvénytelen IP cím. %s"
 
-#: firewall/views.py:42
-#, python-format
-msgid "Dear %s, you've signed in!"
-msgstr "Kedves %s, Ön be van jelentkezve."
-
-#: firewall/views.py:44
-msgid "Dear anonymous, you've not signed in yet!"
-msgstr "Kedves Anonymus, Ön nincs bejelentkezve."
-
-#: firewall/views.py:55
-msgid "Wrong password."
-msgstr "Rossz jelszó."
-
-#: firewall/views.py:74 firewall/views.py:83
+#: firewall/views.py:111
 msgid "OK"
 msgstr "OK"
-
-#: firewall/views.py:76
-msgid "Unknown command."
-msgstr "Ismeretlen parancs."
-
-#: firewall/views.py:79
-#, python-format
-msgid ""
-"Something went wrong!\n"
-"%s\n"
-msgstr ""
-"Baj van...\n"
-"%s\n"
-
-#: firewall/views.py:81
-msgid "Something went wrong!\n"
-msgstr "Baj van!\n"
 
 #: manager/scheduler.py:39
 msgid ""
@@ -3551,57 +3614,55 @@ msgstr ""
 "Egy csomópont sem biztosítja a virtuális gép indításához szükséges "
 "jellemzőket."
 
-#: network/forms.py:144
+#: network/forms.py:146
 msgid "Generate random address."
 msgstr "Véletlenszerű cím generálása."
 
-#: network/forms.py:147
+#: network/forms.py:149
 msgid "Generate IPv6 pair of IPv4 address."
 msgstr "IPv4-es cím IPv6-os párjának generálása."
 
-#: network/forms.py:152
+#: network/forms.py:154
 msgid "Information"
 msgstr "Információ"
 
-#: network/forms.py:215
+#: network/forms.py:217
 msgid "External"
 msgstr "Külső"
 
-#: network/forms.py:278
+#: network/forms.py:280
 msgid "Generate sensible template."
 msgstr "Ésszerű sablon generálása."
 
-#: network/forms.py:282
+#: network/forms.py:284
 msgid "Domain name service"
 msgstr "DNS szolgáltatás"
 
-#: network/forms.py:287
+#: network/forms.py:289
 msgid "Info"
 msgstr "Infó"
 
-#: network/tables.py:131 network/tables.py:144
+#: network/tables.py:134 network/tables.py:147
 msgid "No hosts."
 msgstr "Nincs gép."
 
-#: network/tables.py:137
+#: network/tables.py:140
 msgid "requested IP"
 msgstr "kért IP"
 
-#: network/tables.py:152
+#: network/tables.py:155
 msgid "TTL"
 msgstr ""
 
-#: network/tables.py:183 network/tables.py:264
-#| msgid "description"
+#: network/tables.py:186 network/tables.py:267
 msgid "Short description"
 msgstr "Rövid leírás"
 
-#: network/tables.py:247
+#: network/tables.py:250
 msgid "No records."
 msgstr "Nincs rekord."
 
-#: network/tables.py:281
-#| msgid "no matches found"
+#: network/tables.py:284
 msgid "No related rules found."
 msgstr "Nincs kapcsolódó szabály."
 
@@ -3663,8 +3724,8 @@ msgstr "Igen, törlés!"
 #: network/templates/network/dashboard.html:15
 #: network/templates/network/host-list.html:7
 #: network/templates/network/host-list.html:16
-#: network/templates/network/menu.html:5 network/views.py:264
-#: network/views.py:864
+#: network/templates/network/menu.html:5 network/views.py:260
+#: network/views.py:860
 msgid "Hosts"
 msgstr "Gépek"
 
@@ -3684,7 +3745,7 @@ msgstr "Jegyzetek, megjegyzések a hálózatról"
 
 #: network/templates/network/dashboard.html:30
 #: network/templates/network/menu.html:8
-#: network/templates/network/vlan-list.html:7 network/views.py:256
+#: network/templates/network/vlan-list.html:7 network/views.py:252
 msgid "Vlans"
 msgstr "Vlanok"
 
@@ -3699,13 +3760,12 @@ msgstr "Tartománynevek"
 #: network/templates/network/host-edit.html:75
 #: network/templates/network/menu.html:14
 #: network/templates/network/record-list.html:7
-#: network/templates/network/record-list.html:13 network/views.py:556
-#: network/views.py:872
+#: network/templates/network/record-list.html:13 network/views.py:552
+#: network/views.py:868
 msgid "Records"
 msgstr "Rekordok"
 
 #: network/templates/network/dashboard.html:75
-#| msgid "blacklist item"
 msgid "Blacklist items"
 msgstr "Tiltólista elemek"
 
@@ -3758,24 +3818,20 @@ msgstr "A tartománynév rekordjainak felsorolása"
 
 #: network/templates/network/firewall-create.html:10
 #: network/templates/network/firewall-list.html:12
-#| msgid "Create a new rule"
 msgid "Create a new firewall"
 msgstr "Tűzfal létrehozása"
 
 #: network/templates/network/firewall-edit.html:12
-#| msgid "Delete this rule"
 msgid "Delete this firewall"
 msgstr "Tűzfal törlése"
 
 #: network/templates/network/firewall-edit.html:24
-#| msgid "Delete this rule"
 msgid "Related rules"
 msgstr "Kapcsolódó szabályok"
 
 #: network/templates/network/firewall-list.html:7
 #: network/templates/network/firewall-list.html:14
 #: network/templates/network/menu.html:26
-#| msgid "firewall"
 msgid "Firewalls"
 msgstr "Tűzfalak"
 
@@ -3923,7 +3979,6 @@ msgid "list of all rules"
 msgstr "összes szabály"
 
 #: network/templates/network/rule-list.html:20
-#| msgid "Filter by type"
 msgid "Filter by types"
 msgstr "Típus szerinti szűrés"
 
@@ -3979,160 +4034,194 @@ msgid "list of all vlans"
 msgstr "összes vlan"
 
 #: network/views.py:140
-#, python-format
-msgid "Successfully modified blacklist item%(ipv4)s - %(type)s!"
+#, fuzzy, python-format
+#| msgid "Successfully modified blacklist item%(ipv4)s - %(type)s!"
+msgid "Successfully modified blacklist item %(ipv4)s."
 msgstr "Tiltólista eleme sikeresen módosítva (%(ipv4)s %(type)s)."
 
-#: network/views.py:158
-#, python-format
-msgid "Successfully created blacklist item %(ipv4)s - %(type)s!"
+#: network/views.py:157
+#, fuzzy, python-format
+#| msgid "Successfully created blacklist item %(ipv4)s - %(type)s!"
+msgid "Successfully created blacklist item %(ipv4)s"
 msgstr "Tiltólista eleme sikeresen létrehozva (%(ipv4)s %(type)s)."
 
-#: network/views.py:196
-#, python-format
-msgid "Successfully modified domain %(name)s!"
+#: network/views.py:192
+#, fuzzy, python-format
+#| msgid "Successfully modified domain %(name)s!"
+msgid "Successfully modified domain %(name)s."
 msgstr "A(z) %(name)s tartománynév módosításra került."
 
-#: network/views.py:223
-#, python-format
-msgid "Successfully created domain %(name)s!"
+#: network/views.py:219
+#, fuzzy, python-format
+#| msgid "Successfully created domain %(name)s!"
+msgid "Successfully created domain %(name)s."
 msgstr "A(z) %(name)s tartománynév létrehozásra került."
 
-#: network/views.py:240 network/views.py:567 network/views.py:849
-msgid "Object name does not match!"
+#: network/views.py:236 network/views.py:563 network/views.py:845
+#, fuzzy
+#| msgid "Object name does not match!"
+msgid "Object name does not match."
 msgstr "Az objektum neve nem egyezik."
 
-#: network/views.py:244
-msgid "Domain successfully deleted!"
+#: network/views.py:240
+#, fuzzy
+#| msgid "Domain successfully deleted!"
+msgid "Domain successfully deleted."
 msgstr "A tartománynév törlésre került."
 
-#: network/views.py:250
+#: network/views.py:246
 msgid "Records from hosts"
 msgstr "A gépek rekordjai"
 
-#: network/views.py:308
-#| msgid "Successfully modified lease."
+#: network/views.py:304
 msgid "Succesfully modified firewall."
 msgstr "A tűzfal megváltoztatásra került."
 
-#: network/views.py:327
-#| msgid "Successfully created rule!"
+#: network/views.py:323
 msgid "Successfully created firewall."
 msgstr "A tűzfal létrehozásra került."
 
-#: network/views.py:354
-#, python-format
-msgid "Successfully created host group %(name)s!"
+#: network/views.py:350
+#, fuzzy, python-format
+#| msgid "Successfully created host group %(name)s!"
+msgid "Successfully created host group %(name)s."
 msgstr "%(name)s gépcsoport létrehozásra került."
 
-#: network/views.py:362
-#, python-format
-msgid "Successfully modified host group %(name)s!"
+#: network/views.py:358
+#, fuzzy, python-format
+#| msgid "Successfully modified host group %(name)s!"
+msgid "Successfully modified host group %(name)s."
 msgstr "%(name)s gépcsoport módosításra került."
 
-#: network/views.py:446
-#, python-format
-msgid "Successfully modified host %(hostname)s!"
+#: network/views.py:442
+#, fuzzy, python-format
+#| msgid "Successfully modified host %(hostname)s!"
+msgid "Successfully modified host %(hostname)s."
 msgstr "%(hostname)s gép módosításra került."
 
-#: network/views.py:519
-#, python-format
-msgid "Successfully created host %(hostname)s!"
+#: network/views.py:515
+#, fuzzy, python-format
+#| msgid "Successfully created host %(hostname)s!"
+msgid "Successfully created host %(hostname)s."
 msgstr "%(hostname)s gép létrehozásra került."
 
-#: network/views.py:571
-msgid "Host successfully deleted!"
+#: network/views.py:567
+#, fuzzy
+#| msgid "Host successfully deleted!"
+msgid "Host successfully deleted."
 msgstr "A gép törlésre került."
 
-#: network/views.py:601
-msgid "Successfully modified record!"
+#: network/views.py:597
+#, fuzzy
+#| msgid "Successfully modified record!"
+msgid "Successfully modified record."
 msgstr "A rekord módosításra került."
 
-#: network/views.py:620
-msgid "Successfully created record!"
+#: network/views.py:616
+#, fuzzy
+#| msgid "Successfully created record!"
+msgid "Successfully created record."
 msgstr "A rekord létrehozásra került."
 
-#: network/views.py:662
-#| msgid "Vlan groups"
+#: network/views.py:658
 msgid "Vlan group"
 msgstr "Vlan-csopor"
 
-#: network/views.py:663
-#| msgid "Host groups"
+#: network/views.py:659
 msgid "Host group"
 msgstr "Gépcsoport"
 
-#: network/views.py:664
-#| msgid "firewall"
+#: network/views.py:660
 msgid "Firewall"
 msgstr "Tűzfal"
 
-#: network/views.py:686
-msgid "Successfully modified rule!"
+#: network/views.py:682
+#, fuzzy
+#| msgid "Successfully modified rule!"
+msgid "Successfully modified rule."
 msgstr "A szabály módosításra került."
 
-#: network/views.py:706
-msgid "Successfully created rule!"
+#: network/views.py:702
+#, fuzzy
+#| msgid "Successfully created rule!"
+msgid "Successfully created rule."
 msgstr "A szabály létrehozásra került."
 
-#: network/views.py:742
-msgid "Succesfully modified switch port!"
+#: network/views.py:738
+#, fuzzy
+#| msgid "Succesfully modified switch port!"
+msgid "Succesfully modified switch port."
 msgstr "A switch-port módosításra került."
 
-#: network/views.py:761
-msgid "Successfully created switch port!"
+#: network/views.py:757
+#, fuzzy
+#| msgid "Successfully created switch port!"
+msgid "Successfully created switch port."
 msgstr "A switch-port létrehozásra került."
 
-#: network/views.py:808
-#, python-format
-msgid "Succesfully modified vlan %(name)s!"
+#: network/views.py:804
+#, fuzzy, python-format
+#| msgid "Succesfully modified vlan %(name)s!"
+msgid "Succesfully modified vlan %(name)s."
 msgstr "A(z) %(name)s vlan módosításra került."
 
-#: network/views.py:828
-#, python-format
-msgid "Successfully created vlan %(name)s!"
+#: network/views.py:824
+#, fuzzy, python-format
+#| msgid "Successfully created vlan %(name)s!"
+msgid "Successfully created vlan %(name)s."
 msgstr "A(z) %(name)s vlan létrehozásra került."
 
-#: network/views.py:853
-msgid "Vlan successfully deleted!"
+#: network/views.py:849
+#, fuzzy
+#| msgid "Vlan successfully deleted!"
+msgid "Vlan successfully deleted."
 msgstr "A vlan törlésre került."
 
-#: network/views.py:895
-#, python-format
-msgid "Successfully modified vlan group %(name)s!"
+#: network/views.py:891
+#, fuzzy, python-format
+#| msgid "Successfully modified vlan group %(name)s!"
+msgid "Successfully modified vlan group %(name)s."
 msgstr "A(z) %(name)s vlan-csoport módosításra került."
 
-#: network/views.py:908
-#, python-format
-msgid "Successfully created vlan group %(name)s!"
+#: network/views.py:904
+#, fuzzy, python-format
+#| msgid "Successfully created vlan group %(name)s!"
+msgid "Successfully created vlan group %(name)s."
 msgstr "A(z) %(name)s vlan-csoport módosításra került."
 
-#: network/views.py:940
-#, python-format
-msgid "Successfully removed %(host)s from %(group)s group!"
+#: network/views.py:936
+#, fuzzy, python-format
+#| msgid "Successfully removed %(host)s from %(group)s group!"
+msgid "Successfully removed %(host)s from %(group)s group."
 msgstr "A(z) %(host)s csoport törlésre került a(z) %(group)s csoportból."
 
-#: network/views.py:956
-#, python-format
-msgid "Successfully added %(host)s to group %(group)s!"
+#: network/views.py:952
+#, fuzzy, python-format
+#| msgid "Successfully added %(host)s to group %(group)s!"
+msgid "Successfully added %(host)s to group %(group)s."
 msgstr "A(z) %(host)s csoport hozzáadásra került a(z) %(group)s csoporthoz."
 
-#: network/views.py:975
-#, python-format
-msgid "Successfully deleted ethernet device %(name)s!"
+#: network/views.py:971
+#, fuzzy, python-format
+#| msgid "Successfully deleted ethernet device %(name)s!"
+msgid "Successfully deleted ethernet device %(name)s."
 msgstr "A(z) %(name)s ethernet-eszköz törlésre került."
 
-#: network/views.py:993
+#: network/views.py:989
 #, python-format
 msgid "Successfully added %(name)s to this switch port"
 msgstr "%(name)s hozzáadásra került a switch-porthoz."
 
-#: network/views.py:1000
-msgid "Ethernet device name cannot be empty!"
+#: network/views.py:996
+#, fuzzy
+#| msgid "Ethernet device name cannot be empty!"
+msgid "Ethernet device name cannot be empty."
 msgstr "Az ethernet-eszköz megadása kötelező."
 
-#: network/views.py:1003
-msgid "There is already an ethernet device with that name!"
+#: network/views.py:999
+#, fuzzy
+#| msgid "There is already an ethernet device with that name!"
+msgid "There is already an ethernet device with that name."
 msgstr "Már létezik a megadott nevű ethernet-eszköz."
 
 #: storage/models.py:50
@@ -6015,6 +6104,32 @@ msgstr ""
 #: vm/tests/test_models.py:219
 msgid "x"
 msgstr "x"
+
+#~ msgid ""
+#~ "Dear %s, you've signed in as administrator!<br />Reloading in 10 seconds..."
+#~ msgstr "Kedves %s, Ön rendszergazda!<br />Újratöltés 10 másodpercen belül..."
+
+#~ msgid "Dear %s, you've signed in!"
+#~ msgstr "Kedves %s, Ön be van jelentkezve."
+
+#~ msgid "Dear anonymous, you've not signed in yet!"
+#~ msgstr "Kedves Anonymus, Ön nincs bejelentkezve."
+
+#~ msgid "Wrong password."
+#~ msgstr "Rossz jelszó."
+
+#~ msgid "Unknown command."
+#~ msgstr "Ismeretlen parancs."
+
+#~ msgid ""
+#~ "Something went wrong!\n"
+#~ "%s\n"
+#~ msgstr ""
+#~ "Baj van...\n"
+#~ "%s\n"
+
+#~ msgid "Something went wrong!\n"
+#~ msgstr "Baj van!\n"
 
 #~ msgid "User profile"
 #~ msgstr "Felhasználói profil"

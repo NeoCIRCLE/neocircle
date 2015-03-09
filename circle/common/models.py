@@ -417,20 +417,6 @@ class HumanSortField(CharField):
         setattr(model_instance, self.attname, value[:self.max_length])
         return super(HumanSortField, self).pre_save(model_instance, add)
 
-# allow South to handle these fields smoothly
-try:
-    from south.modelsinspector import add_introspection_rules
-    add_introspection_rules(rules=[
-        (
-            (HumanSortField,),
-            [],
-            {'monitor': ('monitor', {}),
-             'maximum_number_length': ('maximum_number_length', {}), }
-        ),
-    ], patterns=['common\.models\.'])
-except ImportError:
-    pass
-
 
 class HumanReadableObject(object):
     def __init__(self, user_text_template, admin_text_template, params):

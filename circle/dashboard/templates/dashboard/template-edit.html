@@ -71,7 +71,7 @@
     {% if is_owner %}
     <div class="panel panel-default">
       <div class="panel-heading">
-        <a href="{% url "dashboard.views.template-delete" pk=object.pk %}" 
+        <a href="{% url "dashboard.views.template-delete" pk=object.pk %}"
          class="btn btn-xs btn-danger pull-right template-delete">
           {% trans "Delete" %}
         </a>
@@ -109,6 +109,39 @@
       </div>
     </div>
 
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4 class="no-margin">
+          <i class="fa fa-question-circle"></i>
+          {% trans "Access level rights" %}
+        </h4>
+      </div>
+      <div class="panel-body">
+        <dl>
+          <dt>{% trans "User" %}</dt>
+          <dd>
+            {% blocktrans %}
+            User can deploy instances from this template.
+            {% endblocktrans %}
+          </dd>
+          <dt>{% trans "Operator" %}</dt>
+          <dd>
+            {% blocktrans %}
+            Operators are able to deploy and grant/revoke User level access to this template.
+            {% endblocktrans %}
+          </dd>
+          <dt>{% trans "Owner" %}</dt>
+          <dd>
+            {% blocktrans %}
+            Owners can edit attributes or delete the template.
+            Owners are able to grant/revoke User, Operator and Owner level access to the template.
+            The accountable owner (the one who created the template) can not be demoted.
+            The accountable ownership can be transferred to other User via the "Transfer onwership" button.
+            {% endblocktrans %}
+          </dd>
+        </dl>
+      </div>
+    </div>
 
     <div class="panel panel-default">
       <div class="panel-heading">
@@ -122,7 +155,7 @@
         {% for d in disks %}
           <li>
             <i class="fa fa-file"></i>
-            {{ d.name }} (#{{ d.id }}) -
+            {{ d.name }} (#{{ d.id }})
             <a href="{% url "dashboard.views.disk-remove" pk=d.pk %}?next={{ request.path }}"
               data-disk-pk="{{ d.pk }}" class="btn btn-xs btn-danger pull-right disk-remove"
               {% if not long_remove %}title="{% trans "Remove" %}"{% endif %}>

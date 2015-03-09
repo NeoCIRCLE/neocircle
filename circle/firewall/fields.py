@@ -20,7 +20,6 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.utils.ipv6 import is_valid_ipv6_address
-from south.modelsinspector import add_introspection_rules
 from django import forms
 from netaddr import (IPAddress, IPNetwork, AddrFormatError, ZEROFILL,
                      EUI, mac_unix, AddrConversionError)
@@ -201,9 +200,6 @@ class IPNetworkField(models.Field):
         defaults['version'] = self.version
         defaults.update(kwargs)
         return super(IPNetworkField, self).formfield(**defaults)
-
-
-add_introspection_rules([], ["firewall\.fields\."])
 
 
 def val_alfanum(value):
