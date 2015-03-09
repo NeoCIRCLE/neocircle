@@ -652,7 +652,7 @@ class VmRenewView(FormOperationMixin, TokenOperationView, VmOperationView):
 
     op = 'renew'
     icon = 'calendar'
-    effect = 'info'
+    effect = 'success'
     show_in_toolbar = False
     form_class = VmRenewForm
     wait_for_result = 0.5
