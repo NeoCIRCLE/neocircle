@@ -525,7 +525,7 @@ except:
     AGENT_VERSION = None
 
 LOCALE_PATHS = (join(SITE_ROOT, 'locale'), )
-COMPANY_NAME = "BME IK 2014"
+COMPANY_NAME = get_env_variable("COMPANY_NAME", "BME IK 2015")
 
 graphite_host = environ.get("GRAPHITE_HOST", None)
 graphite_port = environ.get("GRAPHITE_PORT", None)
