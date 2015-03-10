@@ -22,7 +22,7 @@ from .views import (
     RequestList, RequestDetail, RequestTypeList,
     LeaseTypeCreate, LeaseTypeDetail,
     TemplateAccessTypeCreate, TemplateAccessTypeDetail,
-    TemplateRequestView,
+    TemplateRequestView, LeaseRequestView,
 )
 
 urlpatterns = patterns(
@@ -47,5 +47,7 @@ urlpatterns = patterns(
         name="request.views.template-type-detail"),
 
     url(r'template/$', TemplateRequestView.as_view(),
-        name="request.views.request-template")
+        name="request.views.request-template"),
+    url(r'lease/(?P<vm_pk>\d+)/$', LeaseRequestView.as_view(),
+        name="request.views.request-lease")
 )

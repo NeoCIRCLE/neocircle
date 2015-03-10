@@ -1,0 +1,10 @@
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+<form action="{% url "request.views.request-lease" vm_pk=vm.pk %}" method="POST">
+  {% include "display-form-errors.html" %}
+  {% csrf_token %}
+  {{ form.lease|as_crispy_field }}
+  {{ form.reason|as_crispy_field }}
+  <input type="submit" class="btn btn-primary"/>
+</form>

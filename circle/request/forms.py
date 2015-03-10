@@ -1,4 +1,6 @@
-from django.forms import ModelForm, ModelChoiceField, ChoiceField, Form, CharField
+from django.forms import (
+    ModelForm, ModelChoiceField, ChoiceField, Form, CharField, RadioSelect,
+)
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
@@ -6,7 +8,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit
 
 from request.models import (
-    Request, LeaseType, TemplateAccessType, TemplateAccessAction,
+    LeaseType, TemplateAccessType, TemplateAccessAction,
 )
 
 
@@ -39,11 +41,16 @@ class TemplateAccessTypeForm(ModelForm):
     class Meta:
         model = TemplateAccessType
 
-from django.forms import RadioSelect
 
 class TemplateRequestForm(Form):
     template = ModelChoiceField(TemplateAccessType.objects.all(),
                                 label="Template share")
     level = ChoiceField(TemplateAccessAction.LEVELS, widget=RadioSelect,
                         initial=TemplateAccessAction.LEVELS.user)
+    reason = CharField(widget=forms.Textarea)
+
+
+class LeaseRequestForm(Form):
+    lease = ModelChoiceField(LeaseType.objects.all(),
+                             label=_("Lease"))
     reason = CharField(widget=forms.Textarea)

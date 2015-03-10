@@ -3,17 +3,23 @@ from __future__ import unicode_literals, absolute_import
 from django.views.generic import (
     UpdateView, TemplateView, DetailView, CreateView, FormView,
 )
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
+from django.core.exceptions import PermissionDenied
 
 from braces.views import SuperuserRequiredMixin, LoginRequiredMixin
 from django_tables2 import SingleTableView
 
-from request.models import Request, TemplateAccessType, LeaseType
+from request.models import (
+    Request, TemplateAccessType, LeaseType, TemplateAccessAction,
+    # ExtendLeaseAction,
+)
+from vm.models import Instance
 from request.tables import (
     RequestTable, TemplateAccessTypeTable, LeaseTypeTable,
 )
 from request.forms import (
-    LeaseTypeForm, TemplateAccessTypeForm, TemplateRequestForm
+    LeaseTypeForm, TemplateAccessTypeForm, TemplateRequestForm,
+    LeaseRequestForm,
 )
 
 
@@ -87,7 +93,6 @@ class TemplateRequestView(FormView):
     template_name = "request/request-template.html"
 
     def form_valid(self, form):
-        from request.models import TemplateAccessAction
         data = form.cleaned_data
         user = self.request.user
 
@@ -107,3 +112,21 @@ class TemplateRequestView(FormView):
         req.save()
 
         return redirect("/")
+
+
+class LeaseRequestView(FormView):
+    form_class = LeaseRequestForm
+    template_name = "request/request-lease.html"
+
+    def get_context_data(self, **kwargs):
+        vm = get_object_or_404(Instance, pk=self.kwargs['vm_pk'])
+        user = self.request.user
+        if not vm.has_level(user, 'operator'):
+            raise PermissionDenied()
+
+        context = super(LeaseRequestView, self).get_context_data(**kwargs)
+        context['vm'] = vm
+        return context
+
+    def form_valid(self, form):
+        pass

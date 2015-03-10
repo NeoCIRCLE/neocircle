@@ -48,6 +48,12 @@ class Request(TimeStampedModel):
 class LeaseType(RequestType):
     lease = ForeignKey(Lease)
 
+    def __unicode__(self):
+        return _("%(name)s (suspend: %(s)s, remove: %(r)s)") % {
+            'name': self.name,
+            's': self.lease.get_readable_suspend_time(),
+            'r': self.lease.get_readable_delete_time()}
+
     def get_absolute_url(self):
         return reverse("request.views.lease-type-detail",
                        kwargs={'pk': self.pk})

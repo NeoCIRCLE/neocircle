@@ -1,8 +1,6 @@
 {% load i18n %}
 {% load crispy_forms_tags %}
 
-{% block content %}
-
 <form action="{% url "request.views.request-template" %}" method="POST">
   {% include "display-form-errors.html" %}
   {% csrf_token %}
@@ -26,5 +24,3 @@
   {{ form.reason|as_crispy_field }}
   <input type="submit" class="btn btn-primary"/>
 </form>
-
-{% endblock %}
